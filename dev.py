@@ -14,6 +14,7 @@
     ./dev.py prompt KIND [STEM ...]  render an operator prompt
     ./dev.py docs             print installed host guide paths
     ./dev.py install [PROVIDER...]  install provider CLIs into this repo as pnpm dev dependencies
+    ./dev.py init-config [--write]  print (or write) a suggested config.yaml from the provider CLIs found
     ./dev.py update-config    list the model names each provider serves and compare them with config.yaml
     ./dev.py probe [PROVIDER...]  send the probe prompt through each provider
     ./dev.py suggest SUMMARY  queue an idea for triage
@@ -74,6 +75,7 @@ def main() -> None:
     prompt.add_argument("stems", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
     sub.add_parser("install", help="install provider CLIs").add_argument("providers", nargs="*")
+    sub.add_parser("init-config", help="suggest config.yaml").add_argument("--write", action="store_true")
     sub.add_parser("update-config", help="compare served model names with config.yaml")
     sub.add_parser("probe", help="probe providers").add_argument("providers", nargs="*")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
@@ -117,6 +119,8 @@ def main() -> None:
         chupa(args.task, *args.ids)
     elif args.task == "prompt":
         chupa("prompt", args.kind, *args.stems)
+    elif args.task == "init-config":
+        chupa("init-config", *(["--write"] if args.write else []))
     elif args.task == "install":
         chupa("install", *args.providers)
     elif args.task == "probe":

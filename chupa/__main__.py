@@ -23,7 +23,7 @@ import yaml
 import chupa
 from chupa import ask, control, drain, hostfiles, observe, reconcile, requisition, runner, seams, serve, triage
 from chupa.box import UnknownBoxId
-from chupa.config import ConfigError, ConfigSnapshot, load_config, migrate_config
+from chupa.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from chupa.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
 from chupa.git import Git, GitError
 from chupa.journal import EventType, Journal, JournalCorruption
@@ -42,6 +42,7 @@ from chupa.providers import (
     child_env,
     cli_status,
     routed_conduct_paths,
+    suggest_config,
     tool_env,
 )
 from chupa.redact import Redactor
@@ -262,6 +263,7 @@ def _parser() -> argparse.ArgumentParser:
     prompt.add_argument("kind", choices=ask.KINDS)
     prompt.add_argument("stems", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
+    sub.add_parser("init-config", help="print a suggested config.yaml from the provider CLIs found").add_argument("--write", action="store_true")
     sub.add_parser("install", help="install provider CLIs into the host project as pnpm dev dependencies").add_argument("providers", nargs="*")
     sub.add_parser("update-config", help="list the model names each declared provider serves and compare them with config.yaml")
     sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
@@ -326,6 +328,26 @@ def main(
         if args.verb == "docs":
             for name, purpose in (("authoring", "ticket authoring"), ("running", "host operation"), ("contract", "host contract"), ("qwen", "local qwen provider setup")):
                 print(f"{Path(chupa.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
+            return 0
+        if args.verb == "init-config":
+
+            async def init_config():
+                exec_ = SubprocessExec()
+                statuses = [await cli_status(name, exec_=exec_, env=env, cwd=repo) for name in ADAPTERS]
+                listings = {status.name: await ADAPTERS[status.name].list_models(exec_=exec_, env=env, cwd=repo) for status in statuses if status.where != "absent"}
+                try:
+                    return suggest_config(statuses, listings)
+                except ValueError:
+                    raise runner.Refusal("no provider CLI found", f"run: chupa install {'|'.join(sorted(ADAPTERS))}") from None
+
+            text = asyncio.run(init_config())
+            load_config_text(text, path=repo / "config.yaml", cwd=repo)
+            print(text, end="")
+            if args.write:
+                try:
+                    LocalFileSystem().publish(repo / "config.yaml", text.encode())
+                except FileExistsError:
+                    raise runner.Refusal("config.yaml already exists", "remove it, or omit --write and merge the printed suggestion by hand") from None
             return 0
         if args.verb == "install":
             for name in args.providers:

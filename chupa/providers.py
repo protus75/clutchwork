@@ -11,7 +11,7 @@ import json
 import math
 import os
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -276,6 +276,7 @@ class CliAdapter:
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
         raise NotImplementedError
 
+    TIER_LABELS: dict[str, str] | None = None
     uses_base_url = False
     binary: str
     PACKAGE: str
@@ -476,6 +477,7 @@ def _events(out: str) -> list[dict]:
 
 
 class ClaudeAdapter(CliAdapter):
+    TIER_LABELS = {"low": "haiku", "medium": "sonnet", "high": "opus", "max": "fable"}
     PACKAGE = "@anthropic-ai/claude-code"
     binary = "claude"
     reports_cost = True
@@ -572,6 +574,7 @@ class CodexAdapter(CliAdapter):
 
 
 class QwenAdapter(ClaudeAdapter):
+    TIER_LABELS = None
     PACKAGE = "@qwen-code/qwen-code"
     binary = "qwen"
     reports_cost = False
@@ -639,6 +642,44 @@ class CliStatus:
     binary: str
     where: Literal["project", "system", "absent"]
     version: str | None
+
+
+def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelListing]) -> str:
+    present = [status for status in statuses if status.where != "absent"]
+    if not present:
+        raise ValueError("no provider CLI found")
+    tiers = ("low", "medium", "high", "max")
+    lines = [
+        "# Suggested by chupa init-config from the provider CLIs found; edit models, checks and routing, then run chupa doctor and chupa probe.",
+        "schema_version: 1",
+        "state_dir: .chupa",
+        "providers:",
+    ]
+    for status in present:
+        adapter = ADAPTERS[status.name]
+        listing = listings[status.name]
+        lines.extend([f"  - name: {status.name}", "    kind: cli", f"    package: '{adapter.PACKAGE}'"])
+        if adapter.uses_base_url:
+            lines.append("    base_url: http://localhost:11434/v1  # chupa/docs/host-qwen.md")
+        first = next(iter(listing.models.values()), PLACEHOLDER)
+        models = [listing.models.get(adapter.TIER_LABELS[tier], PLACEHOLDER) if adapter.TIER_LABELS else first for tier in tiers]
+        row = "    models_by_tier: {" + ", ".join(f"{tier}: {model or PLACEHOLDER}" for tier, model in zip(tiers, models, strict=True)) + "}"
+        if listing.models:
+            row += "  # served: " + " ".join(" ".join(listing.models.values()).split())
+        lines.append(row)
+        lines.extend("    # " + " ".join(problem.split()) for problem in listing.problems)
+        if adapter.reports_cost:
+            lines.append("    limits: {concurrency: 1}")
+        else:
+            estimate = "0" if adapter.uses_base_url else "0.25"
+            lines.append(f"    limits: {{concurrency: 1, est_cost_per_call_usd: {estimate}}}  # {adapter.binary} reports no cost: edit the estimate")
+    lines.append("routing:")
+    candidates = ", ".join(f"{{provider: {status.name}}}" for status in present)
+    for tier in tiers:
+        for surface in ("implement", "review"):
+            lines.append(f"  - {{tier: {tier}, surface: {surface}, candidates: [{candidates}]}}")
+    lines.extend(["review: {}  # add your host's checks: chupa/docs/host-contract.md", "merge: {}", "engine_plane_safety_inventory: [config.yaml]"])
+    return "\n".join(lines) + "\n"
 
 
 async def cli_status(name: str, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> CliStatus:

@@ -216,3 +216,11 @@ def test_update_config_forwards(monkeypatch):
     monkeypatch.setattr(dev, "run", run)
     dev.main()
     run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "update-config"])
+
+
+def test_init_config_forwards_write(monkeypatch):
+    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "init-config", "--write"])
+    run = Mock()
+    monkeypatch.setattr(dev, "run", run)
+    dev.main()
+    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "init-config", "--write"])

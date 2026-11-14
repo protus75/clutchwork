@@ -324,6 +324,12 @@ class _CandidatePath(Path):
         return self.text
 
 
+def load_config_text(text: str, *, path: Path, cwd: Path) -> Config:
+    source = _CandidatePath(path)
+    source.text = text
+    return load_config(source, cwd=cwd)
+
+
 def migrate_config(config_path: Path | None, *, cwd: Path, fs: FileSystem) -> bool:
     """Validate before publishing an exact-byte backup and the sole supported 0->1 edit."""
     path = config_path if config_path is not None else Path(cwd) / "config.yaml"
@@ -374,10 +380,8 @@ def migrate_config(config_path: Path | None, *, cwd: Path, fs: FileSystem) -> bo
             while end > start and text[end - 1].isspace():
                 end -= 1
         candidate = text[:start] + str(SCHEMA_VERSION) + text[end:]
-    source = _CandidatePath(path)
-    source.text = candidate
     try:
-        load_config(source, cwd=cwd)
+        load_config_text(candidate, path=path, cwd=cwd)
     except ConfigError as exc:
         exc.args = (f"{exc}; repair the selected config and retry migrate-config",)
         raise

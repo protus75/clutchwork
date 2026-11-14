@@ -15,6 +15,8 @@ Windows uses `.venv\Scripts\chupa.exe`; set `chupa.command` explicitly there.
 
 `uv run chupa install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run chupa install` with no names reports each adapter's package, location, and version.
 
+`uv run chupa init-config --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `chupa doctor` and `chupa probe` check.
+
 ## Copyable configuration
 
 Copy this YAML to `config.yaml` at the host checkout root and edit the models,
@@ -22,7 +24,7 @@ paths, package and checks for your host. `--config <path>` selects another file;
 otherwise the invocation cwd selects `config.yaml`. The loader uses PyYAML
 `safe_load`, refuses unknown fields and validates strict types (paths accept
 strings). These check commands and merge strategies are host choices, not engine
-presets. Loading this example does not run its commands or contact a provider.
+presets. Loading this example does not run its commands or contact a provider. `chupa init-config` prints the same shape filled from the CLIs it finds.
 
 ```yaml host-example
 schema_version: 1

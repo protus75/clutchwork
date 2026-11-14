@@ -54,6 +54,7 @@ prints `chupa <verb>: <message> -- <what to do instead>`.
 | `probe [PROVIDER...]` | no | Probe declared providers and models. |
 | `install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
 | `update-config` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
+| `init-config [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
 | `docs` | no | Prints the installed host guide paths and their purposes. |
 | `migrate-config` | no | Migrates a `schema_version: 0` config to the current schema. |
 | `new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
@@ -93,6 +94,7 @@ A unit test file may share its name with an integration test file.
 | `probe [PROVIDER...]` | `chupa probe` with the supplied providers |
 | `install [PROVIDER...]` | `chupa install` with the supplied providers |
 | `update-config` | `chupa update-config` |
+| `init-config [--write]` | `chupa init-config` with the supplied flag |
 | `suggest SUMMARY` | `chupa suggest <summary>` |
 | `core` | `chupa core` |
 | `covmap` | `chupa covmap` |
@@ -740,6 +742,8 @@ and notifications are Effects, so a crash never repeats one.
 One `config.yaml`, validated strictly: unknown keys, explicit nulls, and bad values are refused
 with the fix. The full field inventory is in `chupa/docs/host-contract.md`. This repo’s own
 `config.yaml` uses its Python host test setup.
+
+`chupa init-config` prints a suggestion built from the installed CLIs.
 
 | Area | Controls |
 |---|---|

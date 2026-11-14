@@ -22,6 +22,7 @@ Use the same prefix for the other verbs below; for example, `chupa install` repo
 | `core` | Yes | Refresh managed conduct files. |
 | `probe` | Yes | Probe declared providers and models. |
 | `install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |
+| `init-config` | Yes | Print a suggested `config.yaml` from the provider CLIs found and the models they serve; `--write` creates `config.yaml` when none exists. |
 | `update-config` | Yes | List the model names each declared provider serves and say which configured names are current, replaced, or not served; writes nothing. |
 | `docs` | Yes | Print the installed host guide paths and their purposes. |
 | `migrate-config` | Yes | Validate and migrate an older config. |
