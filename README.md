@@ -48,6 +48,7 @@ For example, ask your chat agent:
 ```sh
 # Setup
 uv run chupa install  # install provider CLIs into the host
+uv run chupa update-config  # list current model names per provider
 uv run chupa doctor   # inspect host setup
 uv run chupa core     # refresh managed conduct files
 # Authoring

@@ -208,3 +208,11 @@ def test_install_forwards_providers(monkeypatch):
     monkeypatch.setattr(dev, "run", run)
     dev.main()
     run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "install", "qwen"])
+
+
+def test_update_config_forwards(monkeypatch):
+    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "update-config"])
+    run = Mock()
+    monkeypatch.setattr(dev, "run", run)
+    dev.main()
+    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "update-config"])

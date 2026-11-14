@@ -1,0 +1,139 @@
+import asyncio
+import json
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
+
+import pytest
+
+from chupa import __main__ as cli
+from chupa.config import Limits, ModelsByTier, Provider
+from chupa.providers import CLAUDE_ALIASES, PROBE_PROMPT, ClaudeAdapter, CliAdapter, CodexAdapter, QwenAdapter
+from chupa.seams import ExecutableNotFound
+
+
+class Exec:
+    def __init__(self):
+        self.calls = []
+        self.responses = {}
+
+    async def run(self, argv, **kwargs):
+        self.calls.append((argv, kwargs))
+        key = argv[argv.index("--model") + 1] if "--model" in argv else argv[0]
+        if key in self.responses:
+            response = self.responses[key]
+            if isinstance(response, Exception):
+                raise response
+            return response
+        if argv[0] == "claude":
+            events = [{"type": "system", "subtype": "init", "model": f"claude-{key}-5-5"}, {"type": "result", "subtype": "error_during_execution" if key == "fable" else "success", "result": "ok"}]
+            return 0, "\n".join(map(json.dumps, events)), ""
+        if argv[0] == "codex":
+            return (
+                0,
+                json.dumps(
+                    {
+                        "models": [
+                            {"slug": "gpt-6-astra", "visibility": "list", "priority": 2},
+                            {"slug": "gpt-reserve", "visibility": "hide", "priority": 5},
+                            {"slug": "gpt-6.1-sol", "visibility": "list", "priority": 1},
+                        ]
+                    }
+                ),
+                "",
+            )
+        return 0, "NAME ID SIZE MODIFIED\nqwen3-coder:30b abc 18 GB\nllama3.2:latest def 2 GB\n", ""
+
+
+def listing(adapter, exec_):
+    return asyncio.run(adapter.list_models(exec_=exec_, env={"PATH": "/bin"}, cwd=Path("/repo")))
+
+
+def test_claude_listing():
+    exec_ = Exec()
+    result = listing(ClaudeAdapter, exec_)
+    assert result.models == {f: f"claude-{f}-5-5" for f in CLAUDE_ALIASES[:3]}
+    assert len(result.problems) == 1 and result.problems[0].startswith("fable: ")
+    for (argv, kwargs), alias in zip(exec_.calls, CLAUDE_ALIASES, strict=True):
+        assert argv == ["claude", "-p", PROBE_PROMPT, "--output-format", "stream-json", "--verbose", "--model", alias, "--tools", "Read", "--permission-mode", "dontAsk"]
+        assert kwargs["env"]["PATH"].startswith("/repo/node_modules/.bin")
+        assert kwargs["cwd"] == Path("/repo") and kwargs["timeout"] == 120
+    exec_.responses["sonnet"] = (1, "", "boom\n")
+    result = listing(ClaudeAdapter, exec_)
+    assert "sonnet" not in result.models and "sonnet: no terminal result event (rc 1)" in result.problems
+    with pytest.raises(NotImplementedError):
+        listing(CliAdapter, exec_)
+
+
+def test_codex_listing():
+    exec_ = Exec()
+    result = listing(CodexAdapter, exec_)
+    assert list(result.models.items()) == [("gpt-6.1-sol", "gpt-6.1-sol"), ("gpt-6-astra", "gpt-6-astra")]
+    assert not result.problems and exec_.calls[0][0] == ["codex", "debug", "models"]
+    exec_.responses["codex"] = (1, "", "error: not logged in\n")
+    assert "not logged in" in listing(CodexAdapter, exec_).problems[0]
+    exec_.responses["codex"] = (0, "not json", "")
+    assert listing(CodexAdapter, exec_).problems
+
+
+def test_qwen_listing():
+    exec_ = Exec()
+    assert listing(QwenAdapter, exec_).models == {"qwen3-coder:30b": "qwen3-coder:30b", "llama3.2:latest": "llama3.2:latest"}
+    assert exec_.calls[0][0] == ["ollama", "list"]
+    exec_.responses["ollama"] = ExecutableNotFound("ollama")
+    assert "host-qwen.md" in listing(QwenAdapter, exec_).problems[0]
+    exec_.responses["ollama"] = (1, "", "Error: could not connect to ollama app\n")
+    assert "could not connect" in listing(QwenAdapter, exec_).problems[0]
+
+
+def test_verb(monkeypatch, capsys):
+    def provider(name, values):
+        return Provider(
+            name=name, kind="cli", package="pkg", models_by_tier=ModelsByTier(**dict(zip(("low", "medium", "high", "max"), values, strict=True))), limits=Limits(concurrency=1, est_cost_per_call_usd=1)
+        )
+
+    claude = provider("claude", ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-4", "claude-opus-5-4"])
+    codex = provider("codex", ["gpt-6-astra"] * 4)
+    config = SimpleNamespace(providers=[claude, codex], routing=[SimpleNamespace(candidates=[SimpleNamespace(provider="claude", model="claude-opus-5-4")])])
+    exec_ = Exec()
+    monkeypatch.setattr(cli, "load_config", lambda *a, **k: config)
+    monkeypatch.setattr(cli, "Lockfile", Mock(side_effect=AssertionError("lock")))
+    monkeypatch.setattr(cli, "Journal", Mock(side_effect=AssertionError("journal")))
+    monkeypatch.setattr(cli, "SubprocessExec", lambda: exec_)
+
+    def run():
+        return cli.main(["update-config"], cwd=Path("/repo"), env={"PATH": "/bin"})
+
+    assert run() == 1
+    out = capsys.readouterr().out
+    for line in (
+        "serves: haiku=claude-haiku-5-5 sonnet=claude-sonnet-5-5 opus=claude-opus-5-5",
+        "problem: fable:",
+        "models_by_tier.low: claude-haiku-5-5 current",
+        "models_by_tier.high: claude-opus-5-4 -> claude-opus-5-5 (latest opus)",
+        "routing[0].candidates[0].model: claude-opus-5-4 -> claude-opus-5-5 (latest opus)",
+        "serves: gpt-6.1-sol gpt-6-astra",
+        "models_by_tier.low: gpt-6-astra current",
+    ):
+        assert line in out
+    claude.models_by_tier = ModelsByTier(low="claude-opus-5-5", medium="claude-opus-5-5", high="claude-opus-5-5", max="claude-opus-5-5")
+    config.routing = []
+    assert run() == 0
+    capsys.readouterr()
+    codex.models_by_tier.low = "gpt-4.1"
+    codex.models_by_tier.medium = "OPERATOR-SETS-THIS"
+    assert run() == 1
+    out = capsys.readouterr().out
+    assert "gpt-4.1 not served; pick a served name" in out
+    assert "OPERATOR-SETS-THIS is the placeholder; pick a served name" in out
+    config.providers = [provider("gemini", ["x"] * 4)]
+    assert run() == 1
+    assert "gemini: no shipped cli adapter; name one of claude, codex, qwen" in capsys.readouterr().out
+    config.providers = [codex]
+    exec_.responses["codex"] = (1, "", "error: not logged in\n")
+    assert run() == 1
+    assert "serves: nothing listed\n  problem: codex debug models: error: not logged in\n  models_by_tier.low: gpt-4.1 not served" in capsys.readouterr().out
+    config.providers = [claude]
+    exec_.responses["haiku"] = ExecutableNotFound("claude")
+    assert run() == 2
+    assert "run: chupa install claude" in capsys.readouterr().err

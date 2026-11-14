@@ -30,7 +30,20 @@ from chupa.journal import EventType, Journal, JournalCorruption
 from chupa.llm import LLMRequest
 from chupa.lockfile import ENGINE_VERBS, CommitLock, CommitLockTimeout, Lockfile, LockHeld
 from chupa.notify import NOTIFY_TIMEOUT_S, NotificationReconciler
-from chupa.providers import ADAPTERS, INSTALL_TIMEOUT_S, PREFLIGHT_TIMEOUT_S, PROBE_PROMPT, ProviderLLM, ProviderSession, ProviderSetupError, child_env, cli_status, routed_conduct_paths, tool_env
+from chupa.providers import (
+    ADAPTERS,
+    INSTALL_TIMEOUT_S,
+    PLACEHOLDER,
+    PREFLIGHT_TIMEOUT_S,
+    PROBE_PROMPT,
+    ProviderLLM,
+    ProviderSession,
+    ProviderSetupError,
+    child_env,
+    cli_status,
+    routed_conduct_paths,
+    tool_env,
+)
 from chupa.redact import Redactor
 from chupa.restart import Restart
 from chupa.seams import Clock, CommandNotifications, ExecutableNotFound, LocalFileSystem, ProcessExec, SubprocessExec
@@ -250,6 +263,7 @@ def _parser() -> argparse.ArgumentParser:
     prompt.add_argument("stems", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
     sub.add_parser("install", help="install provider CLIs into the host project as pnpm dev dependencies").add_argument("providers", nargs="*")
+    sub.add_parser("update-config", help="list the model names each declared provider serves and compare them with config.yaml")
     sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
     sub.add_parser("migrate-config", help="validate and migrate schema_version: 0 to the current config schema")
     for verb in ("pause", "resume"):
@@ -371,6 +385,48 @@ def main(
             pid = spawn([sys.executable, "-m", "chupa", *(["--config", str(args.config)] if args.config else []), "drain"], cwd=repo, env=env, output=output)
             print(f"drain: pid {pid}, output {output}")
             return 0
+        if args.verb == "update-config":
+
+            async def update_config():
+                suggested = False
+                exec_ = SubprocessExec()
+                for provider in config.providers:
+                    name = provider.name
+                    if name not in ADAPTERS:
+                        print(f"{name}: no shipped cli adapter; name one of {', '.join(sorted(ADAPTERS))}")
+                        suggested = True
+                        continue
+                    try:
+                        listing = await ADAPTERS[name].list_models(exec_=exec_, env=child_env(env, config, provider), cwd=repo)
+                    except ExecutableNotFound as exc:
+                        raise runner.Refusal(str(exc), f"run: chupa install {name}") from None
+                    print(name)
+                    served = " ".join(f"{label}={model}" if label != model else model for label, model in listing.models.items())
+                    print(f"  serves: {served or 'nothing listed'}")
+                    for problem in listing.problems:
+                        print(f"  problem: {problem}")
+                    configured = [(f"models_by_tier.{tier}", getattr(provider.models_by_tier, tier)) for tier in ("low", "medium", "high", "max")]
+                    configured += [
+                        (f"routing[{i}].candidates[{j}].model", candidate.model)
+                        for i, route in enumerate(config.routing)
+                        for j, candidate in enumerate(route.candidates)
+                        if candidate.provider == name and candidate.model is not None
+                    ]
+                    for where, model in configured:
+                        alias = next((label for label, value in listing.models.items() if label != value and label in model), None)
+                        if model in listing.models.values():
+                            status = "current"
+                        elif alias:
+                            status = f"-> {listing.models[alias]} (latest {alias})"
+                        elif model == PLACEHOLDER:
+                            status = "is the placeholder; pick a served name"
+                        else:
+                            status = "not served; pick a served name"
+                        print(f"  {where}: {model} {status}")
+                        suggested |= status != "current"
+                return int(suggested)
+
+            return asyncio.run(update_config())
         if args.verb == "probe":
             declared = {p.name: p for p in config.providers}
             unknown = set(args.providers) - declared.keys()

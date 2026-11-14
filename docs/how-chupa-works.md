@@ -53,6 +53,7 @@ prints `chupa <verb>: <message> -- <what to do instead>`.
 | `core` | no | Rewrites the managed `chupa:core` block in each routed agent's conduct file (section 12). |
 | `probe [PROVIDER...]` | no | Probe declared providers and models. |
 | `install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
+| `update-config` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
 | `docs` | no | Prints the installed host guide paths and their purposes. |
 | `migrate-config` | no | Migrates a `schema_version: 0` config to the current schema. |
 | `new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
@@ -91,6 +92,7 @@ A unit test file may share its name with an integration test file.
 | `docs` | `chupa docs` |
 | `probe [PROVIDER...]` | `chupa probe` with the supplied providers |
 | `install [PROVIDER...]` | `chupa install` with the supplied providers |
+| `update-config` | `chupa update-config` |
 | `suggest SUMMARY` | `chupa suggest <summary>` |
 | `core` | `chupa core` |
 | `covmap` | `chupa covmap` |
@@ -577,6 +579,8 @@ Three CLI adapters ship: `claude`, `codex`, and `qwen` (Qwen Code against a loca
   bypassPermissions`, `codex --dangerously-bypass-approvals-and-sandbox`, `qwen --approval-mode yolo`) and runs in the
   ticket's worktree. Every other surface is read-only.
 `claude` and `qwen` read `CLAUDE.md`, and `codex` reads `AGENTS.md`. chupa points qwen at `CLAUDE.md` through its packaged `qwen-settings.json`.
+
+**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `chupa update-config` prints them beside the configured names.
 
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own

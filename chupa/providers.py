@@ -260,8 +260,21 @@ class Parsed:
     usd: float | None  # None: the stream reports no cost, so the declared estimate charges
 
 
+CLAUDE_ALIASES = ("haiku", "sonnet", "opus", "fable")
+
+
+@dataclass(frozen=True)
+class ModelListing:
+    models: dict[str, str]
+    problems: tuple[str, ...]
+
+
 class CliAdapter:
     """Shared base for one agent CLI. Subclasses supply `binary`, `reports_cost`, `argv`, `parse`."""
+
+    @classmethod
+    async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
+        raise NotImplementedError
 
     uses_base_url = False
     binary: str
@@ -469,6 +482,27 @@ class ClaudeAdapter(CliAdapter):
     AUTH_MARKERS = ("invalid api key", "please run /login", "not logged in", "oauth token has expired")
     LOGIN_ROAD = "run claude interactively and complete /login, then uv run python -m chupa drain"
 
+    @classmethod
+    async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
+        async def resolve(alias):
+            rc, out, _ = await exec_.run(
+                [cls.binary, "-p", PROBE_PROMPT, "--output-format", "stream-json", "--verbose", "--model", alias, "--tools", "Read", "--permission-mode", "dontAsk"],
+                cwd=cwd,
+                env=tool_env(env, cwd),
+                timeout=PREFLIGHT_TIMEOUT_S,
+            )
+            events = _events(out)
+            result = next((e for e in reversed(events) if e.get("type") == "result"), None)
+            init = next((e for e in events if e.get("type") == "system" and e.get("subtype") == "init"), {})
+            model = init.get("model")
+            if result and result.get("subtype") == "success" and not result.get("is_error") and isinstance(model, str) and model:
+                return alias, model, None
+            reason = f"{result.get('subtype')}: {result.get('result')}" if result else f"no terminal result event (rc {rc})"
+            return alias, None, f"{alias}: {reason}"
+
+        results = await asyncio.gather(*(resolve(alias) for alias in CLAUDE_ALIASES))
+        return ModelListing({alias: model for alias, model, _ in results if model is not None}, tuple(problem for _, _, problem in results if problem is not None))
+
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
         # No effort flag: effort is recorded in provenance only. stream-json under -p requires --verbose.
         grant = ["--permission-mode", "bypassPermissions"] if writes else ["--tools", "Read", "Grep", "Glob", "LS", "--permission-mode", "dontAsk"]
@@ -497,6 +531,19 @@ class CodexAdapter(CliAdapter):
     reports_cost = False
     AUTH_MARKERS = ("not logged in", "401 unauthorized", "token has expired")
     LOGIN_ROAD = "run codex login, then uv run python -m chupa drain"
+
+    @classmethod
+    async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
+        rc, out, err = await exec_.run([cls.binary, "debug", "models"], cwd=cwd, env=tool_env(env, cwd), timeout=PREFLIGHT_TIMEOUT_S)
+        if rc:
+            lines = [line for line in err.splitlines() if line.strip()]
+            return ModelListing({}, (f"codex debug models: {lines[-1] if lines else ''}",))
+        try:
+            entries = json.loads(out)["models"]
+            models = {entry["slug"]: entry["slug"] for entry in sorted(entries, key=lambda entry: entry["priority"]) if entry["visibility"] == "list"}
+        except (ValueError, KeyError, TypeError) as exc:
+            return ModelListing({}, (f"codex debug models: {exc}",))
+        return ModelListing(models, ())
 
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
         grant = ["--dangerously-bypass-approvals-and-sandbox"] if writes else ["--sandbox", "read-only", "-c", "approval_policy=never"]
@@ -531,6 +578,18 @@ class QwenAdapter(ClaudeAdapter):
     uses_base_url = True
     AUTH_MARKERS = ()
     LOGIN_ROAD = "follow chupa/docs/host-qwen.md, then run chupa drain"
+
+    @classmethod
+    async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
+        try:
+            rc, out, err = await exec_.run(["ollama", "list"], cwd=cwd, env=tool_env(env, cwd), timeout=PREFLIGHT_TIMEOUT_S)
+        except ExecutableNotFound:
+            return ModelListing({}, ("ollama is not on PATH; run `ollama list` where Ollama runs (chupa/docs/host-qwen.md) and set models_by_tier by hand",))
+        if rc:
+            lines = [line for line in err.splitlines() if line.strip()]
+            return ModelListing({}, (lines[-1] if lines else "",))
+        names = [line.split()[0] for line in out.splitlines()[1:] if line.strip()]
+        return ModelListing({name: name for name in names}, ())
 
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
         return [

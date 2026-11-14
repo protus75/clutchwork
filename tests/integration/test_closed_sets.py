@@ -248,6 +248,7 @@ def test_providers_closed_sets_and_constants():
     )
     assert set(get_args_deep(providers.FailureClass)) == {"auth_error", "model_error", "outage", "quota_exhausted", "rate_limited", "unclassified"}
     assert {k: a.PACKAGE for k, a in providers.ADAPTERS.items()} == {"claude": "@anthropic-ai/claude-code", "codex": "@openai/codex", "qwen": "@qwen-code/qwen-code"}
+    assert providers.CLAUDE_ALIASES == ("haiku", "sonnet", "opus", "fable")
     assert providers.INSTALL_TIMEOUT_S == 600.0
     assert providers.PREFLIGHT_TIMEOUT_S == 120.0
     assert providers.WRITING_SURFACES == frozenset({"implement"})
