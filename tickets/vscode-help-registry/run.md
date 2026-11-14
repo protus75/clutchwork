@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-No repository files were changed.
+none
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket allows 75 minutes expected and 120 minutes stuck; implementation and verification were not completed.
+The ticket estimates 75 minutes; implementation and verification were not completed.
 
