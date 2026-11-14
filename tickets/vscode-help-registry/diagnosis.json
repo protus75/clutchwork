@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c075a8e1e3f0746a0689ca279da14ee8aa42ceaf",
+  "produced_at_sha": "be195bfc3e831812be9215ed08fdfbb9e8096d08",
   "stem": "vscode-help-registry",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "split",
+  "verdict": "retry",
   "lessons": [
-    "Attempt 1 stopped after 26s of inspection with no diff, saying it could not finish this run. Scope covers 8 fenced files and 12 criteria across a new module, snapshot wiring, stats, and three test fixtures, too many boundaries for one attempt.",
-    "Part 1: new chupa/help.py registry (topic keys, what/before/after/text/link, command map, helpPick builder, raise on unresolved link) with tests/unit/test_help.py and tests/integration/test_help.py covering criteria 1, 2, 4, 5, 6, 7. Builders take read and repo_url as parameters.",
-    "Part 2 depends on part 1: chupa/observe.py gets the one module-level help function, the status-key vocabulary, help/helpPick/headerHelp/boxHeaderHelp fields, row/step/box help keys, and engineVerbs detail from verb what. Covers criteria 3, 8, 10, 11, 12.",
-    "Part 2 also edits chupa/stats.py::stats_tree to add top-level row tooltips (criterion 9). It updates tests/integration/test_watch.py and monkeypatches the help function in tests/unit/test_menu_admission.py and tests/unit/test_verdict_menu_parity.py. Their assertions stay unchanged.",
-    "Both parts keep the ticket's Definition of rejected: no Repository URL literal in chupa/help.py, verb what read from the chupa/docs/host-running.md table, no changes under vscode-chupa/, and host-running.md, __main__.py, and project_stats left as they are."
+    "Attempt 2 read the context for about 16s, then reported incomplete with an empty diff. Redo the whole implementation from the merge base and do not stop after inspecting. Order: chupa/help.py, then chupa/observe.py, then chupa/stats.py, then the tests.",
+    "chupa/help.py builders take read: Callable[[Path], str] and repo_url: str. Call read only on packaged chupa/docs files. Each verb's what is its host-running.md 'What it does' cell with backticks removed. A missing heading or verb row raises. Never write the repo URL as a literal.",
+    "chupa/observe.py: add one module-level function that passes Path.read_text and the importlib.metadata Repository URL to the help builders. snapshot adds help, helpPick, headerHelp, boxHeaderHelp, row help/next/priorityHelp, step help/tooltip, and status.* keys. engineVerbs detail = verb what.",
+    "Monkeypatch that observe function in tests/unit/test_menu_admission.py (both read_text fixtures) and in the world fixture of test_verdict_menu_parity.py. In test_watch.py, change the engineVerbs[0] detail expectation. In stats.py, give stats_tree top-level rows only a stat.* tooltip.",
+    "Write tests/unit/test_help.py (fake read, no disk) and tests/integration/test_help.py (real docs, manifest and metadata) to cover criteria 1-9. Run every ## Verification command before reporting. Change no file under vscode-chupa/."
   ],
   "mechanical": null,
   "spec_version": "1.5",
