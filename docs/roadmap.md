@@ -24,7 +24,7 @@ Versions follow `pyproject.toml` (`0.1.5` today). Each release below is a minor 
 |---|---|---|---|
 | **0.2.0** | Truth, hygiene, and shared infrastructure | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean |
 | **0.3.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.5.0 and its slot is skipped | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.4.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.2.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`) | `scheduler.parallel.enabled: true` has run this repo's own queue for one week with no conflict rerun cap hit |
+| **0.4.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.2.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`); Gemini hand test A0 fact 7 answered (headless image generation, else `api-provider-client` joins this release) | `scheduler.parallel.enabled: true` has run this repo's own queue for one week with no conflict rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
 | **0.5.0** | Training flywheel (`docs/training-data-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens |
 | **0.6.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call`; the owner's lens prompts adapted | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
@@ -32,7 +32,7 @@ Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.2.
 
 ### 1.1 Why this order
 
-- **Truth first.** The audit found 16 places where the maintained documents say something the code does not do, a wrong surface label on every provider failure in Implement, Check, and Review, and a capture bug that has lost 1,491 of 3,944 raw model-call records. None of the feature plans can be authored against documents that are wrong, and the training plan cannot capture data that is being overwritten.
+- **Truth first.** The audit found 16 places where the maintained documents say something the code does not do, and a capture bug that has lost 1,662 of 3,960 raw model-call records (counted at `328d07d9`). None of the feature plans can be authored against documents that are wrong, and the training plan cannot capture data that is being overwritten.
 - **Dedup before parallel.** Parallel runs change the one-run assumption in six separate trackers and the merge path in two separate implementations. Making each of those a single owner first turns the parallel tickets from a rewrite into an edit.
 - **Capture early, export late.** The evidence store (0.2.0) only has value once it holds data. Export and eval (0.5.0) are useful on day one if capture started three releases earlier.
 - **Journal window is conditional.** Its measured trigger (157 of 164 seconds in journal reads) predates `journal-incremental-read`. The refactor freezes features for a release; it earns that only if re-measurement shows the cost is still there.
@@ -53,7 +53,7 @@ Ranked by how many later tickets it blocks. Every item names the single owner th
 | 5 | "Latest `state_transition` for stem" scanned inline 13 times: `stages.py:287,1562`; `serve.py:151,158,411`; `drain.py:107,456,547,586,594,681,699,731`. `status.last_states` returns only the state string | as listed | `journal.last_transition(events, stem)` beside `run_terminals` | `journal-last-transition-helper` |
 | 6 | Effect-completion lookups by key bypass `Effects._recorded` (`effects.py:49-53`): `stages.served_review:198`, `mergequeue.retained_ticket:138`, `merge.lifted_report_paths:370-376`, `runner.apply_admission:676-680`, `mergequeue._finish:164`, `checkpoint._history` | as listed | `Effects.recorded(key)` | `journal-last-transition-helper` |
 | 7 | Eligibility filter: `Scheduler.dispatch_next` (`scheduler.py:50-76`) and `_Drain._select` (`drain.py:508-558`) both compute `settled_dependencies`, `supersedes_maps`, `authored_at`, `parked_blob`, `reofferable`, then `order_tickets` + `write_queue`; drain adds `depends_cycle`, over-budget, storm, drought | as listed | one `eligible(events, tickets, ...)` in `drain.py`, consumed by `Scheduler` | `serve-parallel-dispatch` (it rewrites `dispatch_next` anyway) |
-| 8 | Provider-exception to `StageResult` mapping copied: `runner.drive:188-194` vs `run_stages` (`stages.py:1602-1615`). The copy hard-codes `surface="requisition_review"` at `stages.py:1609` for Implement, Check, and Review failures, so the Box `failure_report.stage` and the auth-notification identity name the wrong surface | as listed | one mapper in `runner.py` | `stage-failure-surface-label` (P0) |
+| 8 | Provider-exception to `StageResult` mapping copied: `runner.drive:188-194` vs `run_stages` (`stages.py:1602-1615`). The copy hard-codes `surface="requisition_review"` at `stages.py:1609`; a reproduction on 2026-11-14 showed the branch is unreachable because `Driver._run` maps the exception first (`driver.py:324`), so the wrong label never reaches the Box. Dead duplicated code | as listed | one mapper in `runner.py` | `provider-failure-single-mapper` |
 | 9 | `running` transition + reoffer written by three callers: `runner.run_ticket:525-526`, `drain._run_one:571-574`, `serve.py:150-154` | as listed | `runner.run_ticket` | `serve-parallel-dispatch` |
 | 10 | Constructors repeated: `EngineLog(...)` built 8 times (`runner.py:123,503`; `drain.py:232,357,606`; `serve.py:117`; `driver.py:190`; `triage.py:369`), `storm_producer(...)` 15 times with identical args, `Driver.from_config(...); driver.journal = ...; driver.effects = Effects(...)` 5 times (`__main__.py:619-621`, `triage.py:85-87,110-112`, `runner.py:139-141,487-489`). `Driver.from_config` builds a `Journal` and `Effects` every caller overwrites; `Effects.__init__` scans the whole journal, so each bind pays a wasted read | as listed | `Checkout`/`StageContext` carry `log` and `box`; `Driver.from_config` takes `journal` | `main-verb-groups` |
 | 11 | `gather_safety_evidence` runs twice per admission: `merge.py:307` then inside `gather_evidence` (`stages.py:911`); same at `mergequeue.py:312` + 330 | as listed | `gather_evidence` reuses the safety result | `merge-admission-single-owner` |
@@ -125,8 +125,8 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
 
 | Defect | Location | Ticket |
 |---|---|---|
-| Provider failures in Implement, Check, and Review are labelled `surface="requisition_review"` in the Box `failure_report` and the auth notification | `stages.py:1609` | `stage-failure-surface-label` (P0) |
-| Raw provider captures overwritten across processes: `_seq` restarts at 0 per process, so `providers/<stem>/<provider>-0001` is rewritten by the next run of the same stem. 3,944 journaled calls, 2,453 capture directories | `providers.py:294,324-325` | `provider-capture-overwrite` (P0); cause fix `evidence-envelope` |
+| A copied exception mapper hard-codes `surface="requisition_review"` for Implement, Check, and Review provider failures. Reproduced 2026-11-14: the branch is unreachable (the driver maps the exception first, `driver.py:324`), so no wrong label is observed. Dead code, not a defect | `stages.py:1602-1615` | `provider-failure-single-mapper` (P2 chore) |
+| Raw provider captures overwritten across processes: `_seq` restarts at 0 per process, so `providers/<stem>/<provider>-0001` is rewritten by the next run of the same stem. 3,960 journaled calls, 2,298 captures with `events.jsonl` at `328d07d9`; reproduced by `tickets/provider-capture-overwrite/evidence/` | `providers.py:294,324-325` | `provider-capture-overwrite` (P0, authored 2026-11-14); cause fix `evidence-envelope` |
 | `served_review` swallows `ValueError, KeyError, TypeError, AttributeError, GitError` to `(None, None)`, nulling the receipt's provider and model on any defect | `stages.py:227-228` | `docs-truth-sweep` names it; fix in `merge-admission-single-owner` |
 | Coverage parse `except: pass`, so coverage is silently absent although §5.4 says it is recorded; base `results` read then discarded | `stages.py:1104-1105,1191-1194` | `host-check-selection-single-owner` |
 | `diagnosis.json` is not written when the worktree is gone, although §6.3 promises it | `runner.py:275-277` | `docs-truth-sweep` (document the truth) |
@@ -246,6 +246,8 @@ Each decision settles a place where two plans overlapped or contradicted. The pl
 9. **Design-record departures are declared.** A plan that re-opens a `CHUPA_PLAN.md` §18 item names the item, the trigger, and the owner decision in a "Departures from the design record" table. The parallel plan already did; the training, evidence, and document plans now do (audit trail and blob store, §18.1; metadata taxonomies, §18.1). The owner's decision of 2026-11-13 is the cited incident.
 10. **Host-command lock.** The parallel plan's engine-wide semaphore around `run_host_command` also serializes the graphics plan's render command and the merge queue's host checks. One lock, stated in both plans.
 11. **The mergequeue docstring** is fixed by `docs-truth-sweep`, not by a parallel-plan ticket; that plan's row 2 now points at the roadmap's `active-slot-single-owner` and `merge-admission-single-owner`, the two 0.2.0 chores its dispatch and merge tickets depend on.
+12. **Optional dependencies.** The graphics plan's image libraries ship as the extras `chupa[images]` and `chupa[images-embed]`, imported lazily by `chupa/images.py`; core chupa gains no dependency. A later plan that needs a heavy library follows the same shape. The journal plan's `duckdb` is the one core dependency a plan adds, earned by D3's named trigger.
+13. **Generator and judge are different models.** Any surface that judges a model's output (`review_visual` now; a future image or audio judge) routes to a different model family than the surface that produced it; `doctor` warns and lint snags when a config breaks that. The owner's 2026-11-14 note on the Gemini models is the incident: image models answer with pictures, and a model grading its own family grades kindly.
 
 ## 6. Owner decisions (decided 2026-11-13)
 
@@ -262,6 +264,17 @@ Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section
 9. **Journal plan.** Decided: DuckDB; the SQL-only rule goes in `CLAUDE.md` and `AGENTS.md` with a lint gate that lands in the last port ticket and carries a named allowlist for the folds that stay Python.
 10. **Upstream issue plan.** Decided: five critical classes. The proposed four plus `wrong-refusal`: chupa refuses valid input (config, ticket, intake) with a message whose paved road cannot be followed.
 
+Decided 2026-11-14, from the plans' remaining open items:
+
+11. **Training eval.** Ships in chupa (`training-eval`, 0.5.0); it doubles as the deferred triage-dedup eval.
+12. **Per-attempt spools.** Move onto the evidence store later: `spools-onto-evidence-store` (0.5.0), after the store has run a release.
+13. **One parser per provider.** `CallMeter`, `Parsed`, and `live_call` move onto the evidence normalizers after a release of real traffic: `one-parser-per-provider` (0.5.0).
+14. **Document agent.** Doc sets are any `docs/<name>/` with a `docset.yaml`, found by search; panels default 3, minimum 2; this week's plans become the first doc sets once `doc-facet-registry` and `docset-manifest` merge, reviewed with `scope` and `buildability`.
+15. **Journal plan items 3-7** stay open until the 0.2.0 checkpoint, as that plan says.
+16. **Graphics scope.** AI-generated and AI-edited images are in v1 (`mode: generate`); they are the reason for the Gemini provider. Code-rendered output stays (`mode: command`).
+17. **Graphics routing and sign-off.** `Route.kinds` is built now (`route-kinds-filter`); the visual judge decides and only an undecidable result parks for a person; until the `visual_baseline` GO is recorded, every graphics ticket parks.
+18. **Graphics grading and libraries.** Three layers: deterministic checks (`image-quality-gate`), a vision-model judge on a rubric with structured output and majority sampling (`visual-review-surface`), best-of-N with a person only for unsure cases (`image-candidates-select`), calibrated on 20-50 hand labels (`visual-review-baseline`). Libraries ship as `chupa[images]` (Pillow, numpy, scikit-image, imagehash, opencv-python-headless) and `chupa[images-embed]` (open_clip, torch).
+
 ## 7. Plan document shape
 
 Every plan under `docs/` has these sections in this order, so the next audit can read them mechanically: title; one-paragraph summary; `## Status` (one line: "Draft plan. Nothing in it is in effect and no ticket is authored. Written <date> at commit `<sha>`; revised <date> at commit `<sha>`."); `## Roadmap` (release slot, what it needs from other plans, what needs it, shared budgets it spends); `## Current state`; `## Departures from the design record` (when any); `## Target design`; `## Where each piece lives`; `## Ticket breakdown` with columns `# | Stem | Kind | P | Depends on | Content` and a `Runs before` sentence under the table; `## Risks`; `## Open decisions`. Stems are unique across all plans and this document, and none reuses a stem the journal already holds (`journal-sql-refactor-plan` is taken, rejected).
@@ -274,8 +287,8 @@ Every proposed ticket, in release and priority order. "Owner" is the plan whose 
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 1 | `provider-capture-overwrite` | roadmap (decision 4) | bug | P0 | | `evidence-store` | Name capture directories by the journal call key so a later process cannot overwrite an earlier capture (`providers.py:294,325`). Evidence: 3,944 calls, 2,453 directories. |
-| 2 | `stage-failure-surface-label` | roadmap | bug | P0 | | | One provider-exception mapper in `runner.py`; delete the copy at `stages.py:1602-1615` whose `surface="requisition_review"` mislabels Implement, Check, and Review failures. |
+| 1 | `provider-capture-overwrite` | roadmap (decision 4) | bug | P0 | | `evidence-store` | **Authored 2026-11-14, confirmed** (`tickets/provider-capture-overwrite/`). Instance fix: a stem's capture numbering continues from the highest `<provider>-NNNN` already on disk, read through a new `FileSystem.entries` seam method, so a later process never overwrites an earlier capture (`providers.py:294,325`). Evidence at `328d07d9`: 3,960 calls, 2,298 captures with `events.jsonl`. Keying by the journal call key is the cause fix in `evidence-envelope`. |
+| 2 | `provider-failure-single-mapper` | roadmap | chore | P2 | | | One provider-exception mapper in `runner.py`; delete the copy at `stages.py:1602-1615`. Its hard-coded `surface="requisition_review"` is unreachable: `Driver._run` maps `ProviderCallError` first with the right surface (`driver.py:324`), which a reproduction on 2026-11-14 confirmed (the Box report carried `stage=implement`). Dead duplicated code, not a live defect; demoted from the P0 bug the audit reported. |
 | 3 | `release-verb` | journal plan (a) | feature | P1 | | | `./dev.py release --minor|--patch`: bumps `pyproject.toml`, commits, tags `v<version>`; `publish` keeps bumping only the patch. Needed to tag 0.2.0. |
 | 4 | `docs-truth-sweep` | roadmap | chore | P1 | | | Every row in section 4.1 and 4.2 that is a document fix; the `mergequeue.py` and `heartbeat.py` docstrings; the `redact.py` checklist; the `review` argparse help; `how-chupa-works.md` 10.1 and 10.2 gain the missing paths, the `checkpoint` type, and the signal-kind list. |
 | 5 | `conduct-files-parity` | roadmap | chore | P1 | | `upstream-issue-verb` | `AGENTS.md` gains the four rules it lacks; CORE_TEMPLATE drops "(authoring, running, config contract)"; `chupa core` refreshes both blocks. |
@@ -332,42 +345,50 @@ Every proposed ticket, in release and priority order. "Owner" is the plan whose 
 | 46 | `merge-model-resolve` | parallel plan 7 | feature | P2 | `merge-admission-single-owner` | | After reading the 13 `merge_conflict_facts` events: `specs/resolve.md`, bounds, re-review of the resolution delta, `model` step value. |
 | 47 | `conflict-discard-rerun` | parallel plan 8 | feature | P2 | `merge-model-resolve` | | Delete the Rework handoff; retire and re-offer; `prior-diff` lift; `implement.md` and `rework.md` bumps; rerun cap. |
 | 48 | `status-hot-paths` | parallel plan 9 | feature | P3 | | | Hot-paths table in the snapshot and extension. |
-| 49 | `graphics-kind` | gemini plan B1 | feature | P2 | `closed-sets-single-home` | | `kind: graphics`, `## Render`, `--reference`, lint, authoring guide, CORE_TEMPLATE `|graphics` (9 bytes). |
-| 50 | `graphics-render-check` | gemini plan B2 | feature | P2 | `graphics-kind` | `conflict-discard-rerun` | Render protocol at Check; `implement.md` block. |
-| 51 | `visual-review-surface` | gemini plan B3 | feature | P2 | `graphics-render-check` | | `review_visual` spec, stage, gate. |
+| 49 | `graphics-kind` | gemini plan B1 | feature | P2 | `closed-sets-single-home` | | `kind: graphics` with `mode: command|generate`, `## Render`, `--reference` and `--input`, lint, authoring guide, CORE_TEMPLATE `|graphics` (9 bytes). |
+| 50 | `graphics-render-check` | gemini plan B2 | feature | P2 | `graphics-kind` | `conflict-discard-rerun` | `command` mode render protocol at Check; `implement.md` block for both modes. |
+| 51 | `route-kinds-filter` | gemini plan B3 | feature | P2 | | | `Route.kinds`, kind-aware `resolve()`, judge-independence warning in `doctor` and lint. |
+| 52 | `image-quality-gate` | gemini plan B4 | feature | P2 | `graphics-kind` | | Layer 1: `chupa/images.py`, gate `image_quality`, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. |
+| 53 | `visual-review-surface` | gemini plan B5 | feature | P2 | `graphics-render-check`, `route-kinds-filter`, `image-quality-gate` | | Layer 2: `review_visual` spec with rubric, JSON schema, `graphics.judge_samples` majority. |
+| 54 | `image-candidates-select` | gemini plan B6 | feature | P2 | `visual-review-surface` | | Layer 3: candidates in Implement, ranking, the select commit, `visual_undecided` park, `confirm --select`. |
+| 55 | `visual-review-baseline` | gemini plan B7 | feature | P2 | `visual-review-surface` | | `eval/visual/` fixtures, `./dev.py visual-baseline`, the `visual_baseline` GO gate. |
+| (56) | `api-provider-client` | gemini plan (conditional) | feature | P2 | `gemini-provider` | `image-candidates-select` | Only if A0 fact 7 shows the CLI cannot generate images headlessly: the deferred `kind: api` client, scoped to image models. Row number is provisional. |
 
 ### 0.5.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 52 | `training-config` | training plan 1 | feature | P2 | | | `training_data: {enabled, exclude}` with the fixed exclude list; export refuses when off. |
-| 53 | `training-attempt-manifest` | training plan 2 | feature | P2 | `training-config`, `evidence-envelope` | | Attempt manifest and full diff before worktree removal on every terminal. |
-| 54 | `training-export` | training plan 3 | feature | P2 | `training-attempt-manifest` | | Record kinds, both formats, `--holdout`, scrub with drop count, provider-terms notice, `./dev.py training-export`. The `conflict` kind lands with `merge-model-resolve` merged, else is skipped with a count. |
-| 55 | `training-eval` | training plan 4 | feature | P3 | `training-export` | | Replay held-out records through a route; agreement scores. |
-| 56 | `training-docs` | training plan 5 | chore | P3 | `training-export` | | Host guide: enabling, exclusions, provider terms, retrieval first. |
-| 57 | `evidence-verbs` | evidence plan 6 | feature | P3 | `evidence-envelope`, rows 30-31 | | `evidence show`, `schema`, `renormalize`, `coverage`. |
+| 57 | `training-config` | training plan 1 | feature | P2 | | | `training_data: {enabled, exclude}` with the fixed exclude list; export refuses when off. |
+| 58 | `training-attempt-manifest` | training plan 2 | feature | P2 | `training-config`, `evidence-envelope` | | Attempt manifest and full diff before worktree removal on every terminal. |
+| 59 | `training-export` | training plan 3 | feature | P2 | `training-attempt-manifest` | | Record kinds, both formats, `--holdout`, scrub with drop count, provider-terms notice, `./dev.py training-export`. The `conflict` kind lands with `merge-model-resolve` merged, else is skipped with a count. |
+| 60 | `training-eval` | training plan 4 | feature | P3 | `training-export` | | Replay held-out records through a route; agreement scores. Decided to ship (decision 11). |
+| 61 | `training-docs` | training plan 5 | chore | P3 | `training-export` | | Host guide: enabling, exclusions, provider terms, retrieval first. |
+| 62 | `evidence-verbs` | evidence plan 6 | feature | P3 | `evidence-envelope`, rows 30-31 | | `evidence show`, `schema`, `renormalize`, `coverage`. |
+| 63 | `spools-onto-evidence-store` | evidence plan 7 | chore | P3 | `evidence-envelope` | | Per-attempt `spools/<stem>/<attempt>/` move into the store; harvest, diagnosis, and the spool readers follow; one capture path (decision 12). |
+| 64 | `one-parser-per-provider` | evidence plan 8 | chore | P3 | rows 30-31, `evidence-normalize-gemini` | | `CallMeter`, `Parsed`, and `live_call` read the normalized events; the adapter and watchdog parsers go (decision 13). |
 
 ### 0.6.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 58 | `doc-facet-registry` | document plan 1 | feature | P2 | | | Facet format, loader, `chupa doc facets`, facet files. |
-| 59 | `docset-manifest` | document plan 2 | feature | P2 | | | `chupa.docset/1.0`, section hashing, `chupa doc status`. |
-| 60 | `isolated-readonly-call` | document plan 3 | feature | P2 | `evidence-envelope` | | Scratch working directory with only the declared files; evidence record with `repo: null`. |
-| 61 | `doc-review-runner` | document plan 4 | feature | P2 | `doc-facet-registry`, `isolated-readonly-call` | | `doc_review` surface over `specs/doc/lens.md`, stage runner, accounting gate, report. |
-| 62 | `doc-lenses-from-owner-prompts` | document plan 5 | feature | P2 | `doc-review-runner` | | `scope`, `viability`, `buildability`, `compression` facets from the owner's files. |
-| 63 | `doc-lens-automatable` | document plan 6 | feature | P2 | `doc-review-runner`, `fence-overlap` | | The Automatable lens, mechanical ticket lint stage, automation ratio. |
-| 64 | `doc-derive-fidelity` | document plan 7 | feature | P2 | `docset-manifest`, `doc-lenses-from-owner-prompts` | | `doc_derive`, fidelity gate by derive class. |
-| 65 | `doc-fold-apply` | document plan 8 | feature | P2 | `docset-manifest`, `doc-derive-fidelity` | | `doc_fold`, `doc apply`, accept flow, `derive --stale`. |
-| 66 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
-| 67 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest` | | Headless draft and the `doc-plan` ask prompt. |
-| 68 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
+| 65 | `doc-facet-registry` | document plan 1 | feature | P2 | | | Facet format, loader, `chupa doc facets`, facet files. |
+| 66 | `docset-manifest` | document plan 2 | feature | P2 | | | `chupa.docset/1.0`, section hashing, `chupa doc status` over any `docs/<name>/` with a manifest. |
+| 67 | `isolated-readonly-call` | document plan 3 | feature | P2 | `evidence-envelope` | | Scratch working directory with only the declared files; evidence record with `repo: null`. |
+| 68 | `doc-review-runner` | document plan 4 | feature | P2 | `doc-facet-registry`, `isolated-readonly-call` | | `doc_review` surface over `specs/doc/lens.md`, stage runner, accounting gate, report; panel default 3, minimum 2. |
+| 69 | `doc-lenses-from-owner-prompts` | document plan 5 | feature | P2 | `doc-review-runner` | | `scope`, `viability`, `buildability`, `compression` facets from the owner's files. |
+| 70 | `doc-lens-automatable` | document plan 6 | feature | P2 | `doc-review-runner`, `fence-overlap` | | The Automatable lens, mechanical ticket lint stage, automation ratio. |
+| 71 | `doc-derive-fidelity` | document plan 7 | feature | P2 | `docset-manifest`, `doc-lenses-from-owner-prompts` | | `doc_derive`, fidelity gate by derive class. |
+| 72 | `doc-fold-apply` | document plan 8 | feature | P2 | `docset-manifest`, `doc-derive-fidelity` | | `doc_fold`, `doc apply`, accept flow, `derive --stale`. |
+| 73 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
+| 74 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest` | | Headless draft and the `doc-plan` ask prompt. |
+| 75 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
+| 76 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the eight `docs/*.md` plans into doc sets and run `scope` and `buildability` on each; 0.6.0's ship gate. |
 
 ### Operator actions (not tickets)
 
 - Decide `vscode-help`: edit its fence to include `tests/unit/test_menu_admission.py` and `tests/unit/test_verdict_menu_parity.py` (its diagnosis names them) and `confirm`, or `reject`.
 - Triage `box-000324`, `box-000440`, `box-000441`, `box-000442` to the rows above (10, 8, 9, 9) so the box and the roadmap agree.
-- Hand tests before authoring: Gemini CLI facts (gemini plan A0), GitHub prefill limits (upstream plan step 0), the 13 conflict-facts events (parallel plan A0), the journal re-measurement (row 35).
+- Hand tests before authoring: Gemini CLI facts including headless image generation and the judge call (gemini plan A0, nine facts), GitHub prefill limits (upstream plan step 0), the 13 conflict-facts events (parallel plan A0), the journal re-measurement (row 35).
 
 ## 9. Keeping this document true
 
