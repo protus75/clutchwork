@@ -1008,7 +1008,7 @@ async def _verdict(checkout, stem, verb, read_input, yes, extension):
         raise runner.Refusal("current control identity unavailable", str(exc)) from exc
     request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator")
     control.publish_request(checkout.config.state_dir, request, checkout.fs)
-    print(f"{verb} submitted: {request.request_id} -- ./dev.py status shows the outcome")
+    print(f"{verb} submitted: {request.request_id} -- `chupa status` shows the outcome")
     return 0
 
 

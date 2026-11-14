@@ -1,0 +1,20 @@
+import asyncio
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
+
+from chupa import __main__ as entry
+from chupa import control, runner
+from chupa.lockfile import LockHeld
+
+
+def test_verdict_submitted_names_the_chupa_verb(tmp_path, monkeypatch, capsys):
+    request_id = "d8cdcd906b374c46bc7b46cc9f9978a3"
+    checkout = SimpleNamespace(repo=tmp_path, journal=SimpleNamespace(read=lambda: []), config=SimpleNamespace(state_dir=tmp_path / "state"), git=None, fs=None)
+    monkeypatch.setattr(runner, "verdict", AsyncMock(side_effect=LockHeld(tmp_path / "chupa.lock", {"verb": "drain"})))
+    monkeypatch.setattr(runner, "ticket_pending", AsyncMock(return_value=False))
+    monkeypatch.setattr(control, "read_active", lambda *args: ("life-1", None))
+    monkeypatch.setattr(control, "publish_request", lambda *args: None)
+    monkeypatch.setattr(entry, "uuid4", lambda: SimpleNamespace(hex=request_id))
+
+    asyncio.run(entry._verdict(checkout, "sample", "confirm", Mock(), True, False))
+    assert capsys.readouterr().out.splitlines()[-1] == f"confirm submitted: {request_id} -- `chupa status` shows the outcome"
