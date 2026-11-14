@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6f8b94514114a4bfa68ba04c83510ea0cd2678c7",
+  "produced_at_sha": "c075a8e1e3f0746a0689ca279da14ee8aa42ceaf",
   "stem": "vscode-help-registry",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "retry",
+  "verdict": "split",
   "lessons": [
-    "The last attempt stopped after about 20s of inspection and changed nothing. Begin editing early, in this order: chupa/help.py, then chupa/observe.py::snapshot, then chupa/stats.py::stats_tree, then the tests in the fence.",
-    "The chupa/help.py builders take read: Callable[[Path], str] and repo_url: str, and read only docs under Path(chupa.__file__).parent / 'docs'. A verb's what is its 'What it does' cell in host-running.md with backticks removed. A heading or verb row that does not resolve must raise.",
-    "Add one module-level function in chupa/observe.py. It is the only caller that passes Path.read_text and the importlib.metadata Repository URL to the builders. Monkeypatch it in tests/unit/test_menu_admission.py (both read_text fixtures) and tests/unit/test_verdict_menu_parity.py (world fixture).",
-    "Replace the hand-written engineVerbs detail with the verb topic's what. In tests/integration/test_watch.py, set the expected engineVerbs[0] detail to the drain row cell and add the help assertions from criterion 8. Do not touch vscode-chupa/, host-running.md, __main__.py or project_stats.",
-    "Commit your work as you go and run every ## Verification command, finishing with ./dev.py test. Report incomplete only with a committed partial diff and the blocker named."
+    "Attempt 1 stopped after 26s of inspection with no diff, saying it could not finish this run. Scope covers 8 fenced files and 12 criteria across a new module, snapshot wiring, stats, and three test fixtures, too many boundaries for one attempt.",
+    "Part 1: new chupa/help.py registry (topic keys, what/before/after/text/link, command map, helpPick builder, raise on unresolved link) with tests/unit/test_help.py and tests/integration/test_help.py covering criteria 1, 2, 4, 5, 6, 7. Builders take read and repo_url as parameters.",
+    "Part 2 depends on part 1: chupa/observe.py gets the one module-level help function, the status-key vocabulary, help/helpPick/headerHelp/boxHeaderHelp fields, row/step/box help keys, and engineVerbs detail from verb what. Covers criteria 3, 8, 10, 11, 12.",
+    "Part 2 also edits chupa/stats.py::stats_tree to add top-level row tooltips (criterion 9). It updates tests/integration/test_watch.py and monkeypatches the help function in tests/unit/test_menu_admission.py and tests/unit/test_verdict_menu_parity.py. Their assertions stay unchanged.",
+    "Both parts keep the ticket's Definition of rejected: no Repository URL literal in chupa/help.py, verb what read from the chupa/docs/host-running.md table, no changes under vscode-chupa/, and host-running.md, __main__.py, and project_stats left as they are."
   ],
   "mechanical": null,
   "spec_version": "1.5",
