@@ -38,6 +38,9 @@ class ScriptFS:
     def __init__(self):
         self.files = {}
 
+    def entries(self, path):
+        return sorted({file.relative_to(path).parts[0] for file in self.files if file.is_relative_to(path) and file != path})
+
     def write(self, path, data):
         self.files[path] = data
 

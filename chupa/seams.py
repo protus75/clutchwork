@@ -205,6 +205,10 @@ async def _read_pipe(
 
 @runtime_checkable
 class FileSystem(Protocol):
+    def entries(self, path: Path) -> list[str]:
+        """Sorted names directly inside a directory, or an empty list if absent."""
+        ...
+
     def publish(self, path: Path, data: bytes) -> None:
         """Durable atomic publication; an existing destination is never overwritten."""
         ...
@@ -217,6 +221,12 @@ class FileSystem(Protocol):
 
 
 class LocalFileSystem:
+    def entries(self, path: Path) -> list[str]:
+        try:
+            return sorted(os.listdir(path))
+        except FileNotFoundError:
+            return []
+
     def publish(self, path: Path, data: bytes) -> None:
         # Sync every ancestor edge, including directories another publisher just created.
         path.parent.mkdir(parents=True, exist_ok=True)

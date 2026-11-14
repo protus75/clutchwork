@@ -33,6 +33,9 @@ class FakeExec:
 
 
 class FakeFS:
+    def entries(self, path):
+        return []
+
     def __init__(self) -> None:
         self.writes: list[tuple[Path, bytes]] = []
 

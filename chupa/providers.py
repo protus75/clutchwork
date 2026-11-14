@@ -10,7 +10,7 @@ import asyncio
 import json
 import math
 import re
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -40,6 +40,11 @@ FAILURE_MARKERS: tuple[tuple[FailureClass, tuple[str, ...]], ...] = (
     ("outage", ("service unavailable", "internal server error", "stream disconnected", "at capacity")),
     ("model_error", ("model unavailable", "model not found", "model is not supported")),
 )
+
+
+def capture_sequence(names: Iterable[str], provider: str) -> int:
+    pattern = re.compile(rf"{re.escape(provider)}-([0-9]{{4}})")
+    return max((int(match.group(1)) for name in names if (match := pattern.fullmatch(name))), default=0) + 1
 
 
 class ProviderSetupError(Exception):
@@ -291,7 +296,7 @@ class CliAdapter:
         self._cwd = cwd
         self._capture_dir = capture_dir
         self._timeout = timeout
-        self._seq = 0
+        self._seq: dict[str, int] = {}
         self._pgids: set[int] = set()
 
     def call_env(self) -> dict[str, str]:
@@ -321,8 +326,12 @@ class CliAdapter:
         writes = req.surface in WRITING_SURFACES
         if writes and req.worktree is None:
             raise ProviderSetupError(f"surface {req.surface!r} writes the tree but the request carries no worktree")
-        self._seq += 1
-        call_dir = self._capture_dir / (req.ticket or req.surface) / f"{self.provider.name}-{self._seq:04d}"
+        stem = req.ticket or req.surface
+        if stem not in self._seq:
+            self._seq[stem] = capture_sequence(self._fs.entries(self._capture_dir / stem), self.provider.name)
+        else:
+            self._seq[stem] += 1
+        call_dir = self._capture_dir / stem / f"{self.provider.name}-{self._seq[stem]:04d}"
         prompt = call_dir / "prompt.md"
         # The prompt reaches the CLI only as a file on stdin: an argv element is capped by the OS limit.
         self._fs.write(prompt, self._redactor.scrub(req.rendered).encode())

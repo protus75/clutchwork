@@ -16,6 +16,7 @@ def test_probe(monkeypatch, capsys):
     monkeypatch.setattr(cli, "Lockfile", Mock(side_effect=AssertionError("lock")))
     monkeypatch.setattr(cli, "Journal", Mock(side_effect=AssertionError("journal")))
     fs = Mock()
+    fs.entries.return_value = []
     monkeypatch.setattr(cli, "LocalFileSystem", lambda: fs)
 
     class Exec:

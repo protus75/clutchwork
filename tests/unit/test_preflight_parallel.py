@@ -10,6 +10,9 @@ from chupa.providers import ProviderLLM
 
 
 class MemoryFS:
+    def entries(self, path):
+        return []
+
     def write(self, path, data):
         pass
 
