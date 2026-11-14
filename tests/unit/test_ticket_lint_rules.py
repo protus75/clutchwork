@@ -62,7 +62,7 @@ def test_regression_requires_carried_path_not_runner_denylist(repo):
         ticket = parse("example", TEXT, root)
         [finding] = tickets.lint_findings(ticket, root)
         assert "does not name a carried file" in finding.message
-        assert "does not speak the regression protocol" in finding.paved_road
+        assert finding.paved_road == "run a reproducer under a `carries:` prefix; a bare test runner such as `pytest -q` does not speak the regression protocol"
     good = TEXT.replace("./dev.py test tests/x.py", "uv run python tests/regress_x.py")
     assert tickets.lint_findings(tickets.parse_ticket("example", good, root), root) == []
 

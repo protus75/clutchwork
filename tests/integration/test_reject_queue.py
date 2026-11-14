@@ -217,7 +217,7 @@ def test_verdict_refused_without_terminal(tmp_path, monkeypatch, capsys, verb):
     monkeypatch.setattr(Lockfile, "acquire", forbidden)
     monkeypatch.setattr(Journal, "read", forbidden)
     assert main([verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: False, forbidden)) == 2
-    assert "a human runs this in a terminal: ./dev.py confirm|reject <stem>" in capsys.readouterr().err
+    assert "a human runs this in a terminal: `chupa confirm|reject <stem>`" in capsys.readouterr().err
     assert not (root / ".chupa/state/control/inbox").exists()
 
 

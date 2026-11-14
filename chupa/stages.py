@@ -302,7 +302,7 @@ async def ticket_change_findings(ctx: StageContext, stem: str, *, expected: str 
             code="ticket_changed",
             path=rel,
             message=f"{stem}: ticket.md changed during the run",
-            paved_road=f"review the change to {rel}, then keep (./dev.py confirm {stem}) or kill (./dev.py reject {stem})",
+            paved_road=f"review the change to {rel}, then keep (`chupa confirm {stem}`) or kill (`chupa reject {stem}`)",
         )
     ]
 

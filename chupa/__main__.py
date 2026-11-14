@@ -324,7 +324,7 @@ def main(
         if args.verb in {"confirm", "reject"}:
             isatty, read_input = terminal if terminal is not None else (sys.stdin.isatty, input)
             if not (args.yes or args.extension) and not isatty():
-                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: ./dev.py confirm|reject <stem>")
+                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `chupa confirm|reject <stem>`")
         if args.verb == "docs":
             for name, purpose in (("authoring", "ticket authoring"), ("running", "host operation"), ("contract", "host contract"), ("qwen", "local qwen provider setup")):
                 print(f"{Path(chupa.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")

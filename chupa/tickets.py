@@ -570,7 +570,7 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
         findings.append(
             _f(
                 "`## Regression` command does not name a carried file",
-                "run a reproducer under a `carries:` prefix; a test runner such as `./dev.py test` or pytest does not speak the regression protocol",
+                "run a reproducer under a `carries:` prefix; a bare test runner such as `pytest -q` does not speak the regression protocol",
                 path,
             )
         )

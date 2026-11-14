@@ -324,7 +324,7 @@ def test_invalid_coverage_map_snags_before_model(tmp_path, contents):
     verdict = run(driver, repo, coverage_map=map_path)
     assert verdict.verdict == "snag"
     assert verdict.findings[0].code == "coverage_map"
-    assert verdict.findings[0].paved_road == "run ./dev.py covmap"
+    assert verdict.findings[0].paved_road == "run `chupa covmap`"
     assert verdict.calls == 0 and llm.requests == []
 
 

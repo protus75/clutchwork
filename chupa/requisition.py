@@ -188,7 +188,7 @@ async def review_ticket(
             if not isinstance(files, dict) or any(not isinstance(path, str) or not isinstance(tests, list) or any(not isinstance(test, str) for test in tests) for path, tests in files.items()):
                 raise ValueError("invalid files mapping")
         except OSError, UnicodeError, ValueError, KeyError, TypeError:
-            return snag("missing or invalid coverage map", "invalid coverage map", "coverage_map", "run ./dev.py covmap")
+            return snag("missing or invalid coverage map", "invalid coverage map", "coverage_map", "run `chupa covmap`")
         for path in ticket.scope_fence:
             for test in files.get(path, []):
                 if not _in_fence(test, ticket.scope_fence):

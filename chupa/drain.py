@@ -703,7 +703,7 @@ class _Drain:
                 cap_limit = getattr(self.c.config.caps, spent_cap or "retry")
                 if stem in held and spent_cap is None and to == "gate_failed":
                     why = f"{to}{where}; parked until its committed ticket.md changes"
-                    road = f"split or shrink the ticket under the diff budget and commit the `ticket.md` change, or retire it with `./dev.py reject {stem}`"
+                    road = f"split or shrink the ticket under the diff budget and commit the `ticket.md` change, or retire it with `chupa reject {stem}`"
                 elif stem in held and spent_cap is None:
                     why, road = f"{to}{where}; parked until its committed ticket.md changes", self._premise_road(t)
                 elif spent_cap is None:  # only a halt leaves budget unspent: the continuing drain re-offers it
@@ -716,7 +716,7 @@ class _Drain:
                 if stem in awaiting:
                     if "ticket_changed" in awaiting[stem].get("reason", "").split(","):
                         why = f"{to}{where}; ticket_changed; held for an operator"
-                        road = f"review the change to {ticket_path(stem)}, then keep (./dev.py confirm {stem}) or kill (./dev.py reject {stem})"
+                        road = f"review the change to {ticket_path(stem)}, then keep (`chupa confirm {stem}`) or kill (`chupa reject {stem}`)"
                     elif not (stem in held and to == "gate_failed" and spent_cap is None):
                         road = f"edit {ticket_path(stem)}, then uv run python -m chupa confirm {stem}; or retire it with uv run python -m chupa reject {stem}"
                 findings = self._findings(stem)

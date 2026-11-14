@@ -1414,7 +1414,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     harvest = json.loads((repo / f"tickets/{STEM}/attempts/0/harvest.json").read_text())
     (finding,) = harvest["findings"]
     assert finding["code"] == "ticket_changed" and STEM in finding["message"]
-    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (./dev.py confirm {STEM}) or kill (./dev.py reject {STEM})")
+    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (`chupa confirm {STEM}`) or kill (`chupa reject {STEM}`)")
     assert not (repo / f"tickets/{STEM}/checks.json").exists()
     # Even a subsequent intake/daemon lifetime must wait for an explicit keep.
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
