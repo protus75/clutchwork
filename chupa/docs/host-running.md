@@ -7,7 +7,7 @@ uv run chupa doctor
 uv run chupa serve
 ```
 
-Use the same prefix for the other verbs below. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `serve` is the normal mode: it runs until `kill`, `stop`, or Ctrl-C. `drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
+Use the same prefix for the other verbs below; for example, `chupa install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `serve` is the normal mode: it runs until `kill`, `stop`, or Ctrl-C. `drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
@@ -21,6 +21,7 @@ Use the same prefix for the other verbs below. The host checkout remains the wor
 | `prompt` | Yes | Render an operator prompt for a ticket, named box IDs, all committed drafts, or the drain loop without writing state. |
 | `core` | Yes | Refresh managed conduct files. |
 | `probe` | Yes | Probe declared providers and models. |
+| `install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |
 | `docs` | Yes | Print the installed host guide paths and their purposes. |
 | `migrate-config` | Yes | Validate and migrate an older config. |
 | `pause` | Yes | Ask the running engine to pause admission. |

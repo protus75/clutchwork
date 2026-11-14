@@ -15,6 +15,8 @@ uv add --dev chupa
 uv sync
 ```
 
+Install the provider CLIs you route with `uv run chupa install claude codex` (pnpm dev dependencies under `node_modules/.bin`; a CLI already on `PATH` works without it).
+
 Run its verbs as `uv run chupa <verb>`. Your host also needs `config.yaml`; start with the [copyable configuration](https://github.com/protus75/chupa/blob/main/chupa/docs/host-contract.md).
 
 ## Set up a host
@@ -45,6 +47,7 @@ For example, ask your chat agent:
 
 ```sh
 # Setup
+uv run chupa install  # install provider CLIs into the host
 uv run chupa doctor   # inspect host setup
 uv run chupa core     # refresh managed conduct files
 # Authoring

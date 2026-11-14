@@ -226,8 +226,8 @@ def test_llm_call_env_restores_only_the_serving_providers_key(tmp_path):
     asyncio.run(client.call(req("implement", worktree=tmp_path)))
     asyncio.run(client.call(req("review")))
     codex_env, claude_env = exec_.calls[0]["env"], exec_.calls[1]["env"]
-    assert codex_env == {"PATH": "/usr/bin", "HOME": "/home/op", "CODEX_KEY": "sk-codex-secret"}
-    assert claude_env == {"PATH": "/usr/bin", "HOME": "/home/op", "CLAUDE_KEY": "sk-claude-secret"}
+    assert codex_env == {"PATH": f"{tmp_path / 'checkout' / 'node_modules' / '.bin'}:/usr/bin", "HOME": "/home/op", "CODEX_KEY": "sk-codex-secret"}
+    assert claude_env == {"PATH": f"{tmp_path / 'checkout' / 'node_modules' / '.bin'}:/usr/bin", "HOME": "/home/op", "CLAUDE_KEY": "sk-claude-secret"}
 
 
 def test_serving_key_unset_is_a_setup_refusal(tmp_path):
@@ -430,10 +430,10 @@ class PreflightExec:
 
     async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
         if argv[1:] == ["--version"]:
-            self.version_envs.append(dict(env))
+            self.version_envs.append((argv[0], dict(env)))
             return 0, self.versions[argv[0]], ""
         if argv[0] == "pnpm":
-            self.version_envs.append(dict(env))
+            self.version_envs.append((argv[0], dict(env)))
             return 0, self.latest + "\n", ""
         model = argv[argv.index("--model" if argv[0] == "claude" else "-m") + 1]
         self.probed.append(model)
@@ -459,10 +459,10 @@ def test_preflight_version_children_carry_no_provider_key(tmp_path):
     exec_ = PreflightExec(CURRENT, "1.2.3")
     assert preflight(tmp_path, exec_) == []
     assert len(exec_.version_envs) == 4
-    for env in exec_.version_envs:
+    for binary, env in exec_.version_envs:
         assert "CLAUDE_KEY" not in env
         assert "CODEX_KEY" not in env
-        assert env["PATH"] == ENV["PATH"]
+        assert env["PATH"] == (ENV["PATH"] if binary == "pnpm" else f"{tmp_path / 'checkout' / 'node_modules' / '.bin'}:{ENV['PATH']}")
         assert env["HOME"] == ENV["HOME"]
 
 
@@ -470,7 +470,7 @@ def test_preflight_reports_a_stale_cli_without_refusing_the_run(tmp_path):
     llm_ = llm(config(tmp_path), PreflightExec({**CURRENT, "codex": "codex-cli 1.2.0"}, "1.2.3"), tmp_path)
     assert asyncio.run(llm_.preflight()) == []
     [notice] = llm_.preflight_notices
-    assert "codex 1.2.0 is not the latest release 1.2.3" in notice and "pnpm add -g test-cli@latest" in notice
+    assert "codex 1.2.0 is not the latest release 1.2.3" in notice and "-- run: chupa install codex" in notice and "pnpm add" not in notice
 
 
 def test_preflight_refuses_a_model_the_login_cannot_serve(tmp_path):

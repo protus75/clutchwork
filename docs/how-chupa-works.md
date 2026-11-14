@@ -52,6 +52,7 @@ prints `chupa <verb>: <message> -- <what to do instead>`.
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket. |
 | `core` | no | Rewrites the managed `chupa:core` block in each routed agent's conduct file (section 12). |
 | `probe [PROVIDER...]` | no | Probe declared providers and models. |
+| `install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
 | `docs` | no | Prints the installed host guide paths and their purposes. |
 | `migrate-config` | no | Migrates a `schema_version: 0` config to the current schema. |
 | `new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
@@ -89,6 +90,7 @@ A unit test file may share its name with an integration test file.
 | `prompt KIND [STEM ...]` | `chupa prompt` with the supplied kind and stems |
 | `docs` | `chupa docs` |
 | `probe [PROVIDER...]` | `chupa probe` with the supplied providers |
+| `install [PROVIDER...]` | `chupa install` with the supplied providers |
 | `suggest SUMMARY` | `chupa suggest <summary>` |
 | `core` | `chupa core` |
 | `covmap` | `chupa covmap` |
@@ -581,6 +583,7 @@ Three CLI adapters ship: `claude`, `codex`, and `qwen` (Qwen Code against a loca
   calls; git, checks, and notifications get no provider key.
 - **Preflight** (start of `run`/`drain`/`serve`/`triage`): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
+- A CLI installed in the host project (`chupa install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `chupa install <provider>`.
 
 ### 8.2 Routing
 

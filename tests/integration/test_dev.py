@@ -200,3 +200,11 @@ def test_prompt_forwards_once(monkeypatch):
     monkeypatch.setattr(dev, "run", run)
     dev.main()
     run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "prompt", "drafts"])  # No extra call or stem.
+
+
+def test_install_forwards_providers(monkeypatch):
+    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "install", "qwen"])
+    run = Mock()
+    monkeypatch.setattr(dev, "run", run)
+    dev.main()
+    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "install", "qwen"])

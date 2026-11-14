@@ -9,6 +9,7 @@ argv contract and event-stream parse.
 import asyncio
 import json
 import math
+import os
 import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
@@ -20,7 +21,7 @@ from chupa.config import Config, ConfigSnapshot, Provider
 from chupa.journal import EventType, render_ts
 from chupa.llm import AgentEffort, AgentTier, LLMRequest, LLMResult
 from chupa.redact import Redactor
-from chupa.seams import FileSystem, GroupExec
+from chupa.seams import ExecutableNotFound, FileSystem, GroupExec, ProcessExec
 
 if TYPE_CHECKING:
     from chupa.watchdog import EventConsumer
@@ -264,6 +265,7 @@ class CliAdapter:
 
     uses_base_url = False
     binary: str
+    PACKAGE: str
     reports_cost: bool
     AUTH_MARKERS: tuple[str, ...]
     LOGIN_ROAD: str
@@ -300,7 +302,7 @@ class CliAdapter:
         self._pgids: set[int] = set()
 
     def call_env(self) -> dict[str, str]:
-        return child_env(self._env, self._config, self.provider)
+        return tool_env(child_env(self._env, self._config, self.provider), self._cwd)
 
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
         raise NotImplementedError
@@ -461,6 +463,7 @@ def _events(out: str) -> list[dict]:
 
 
 class ClaudeAdapter(CliAdapter):
+    PACKAGE = "@anthropic-ai/claude-code"
     binary = "claude"
     reports_cost = True
     AUTH_MARKERS = ("invalid api key", "please run /login", "not logged in", "oauth token has expired")
@@ -489,6 +492,7 @@ class ClaudeAdapter(CliAdapter):
 
 
 class CodexAdapter(CliAdapter):
+    PACKAGE = "@openai/codex"
     binary = "codex"
     reports_cost = False
     AUTH_MARKERS = ("not logged in", "401 unauthorized", "token has expired")
@@ -521,6 +525,7 @@ class CodexAdapter(CliAdapter):
 
 
 class QwenAdapter(ClaudeAdapter):
+    PACKAGE = "@qwen-code/qwen-code"
     binary = "qwen"
     reports_cost = False
     uses_base_url = True
@@ -555,6 +560,36 @@ ADAPTERS: dict[str, type[CliAdapter]] = {"claude": ClaudeAdapter, "codex": Codex
 
 PROBE_PROMPT = "Reply with the single word ok."
 PREFLIGHT_TIMEOUT_S = 120.0
+INSTALL_TIMEOUT_S = 600.0
+
+
+def tool_env(env: Mapping[str, str], checkout: Path) -> dict[str, str]:
+    path = str(checkout / "node_modules" / ".bin")
+    return {**env, "PATH": path + os.pathsep + env["PATH"] if "PATH" in env else path}
+
+
+def installed_version(out: str, err: str) -> str | None:
+    match = re.search(r"\d+\.\d+\.\d+", out + err)
+    return match.group(0) if match else None
+
+
+@dataclass(frozen=True)
+class CliStatus:
+    name: str
+    package: str
+    binary: str
+    where: Literal["project", "system", "absent"]
+    version: str | None
+
+
+async def cli_status(name: str, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> CliStatus:
+    adapter = ADAPTERS[name]
+    try:
+        _, out, err = await exec_.run([adapter.binary, "--version"], cwd=cwd, env=tool_env(env, cwd), timeout=PREFLIGHT_TIMEOUT_S)
+    except ExecutableNotFound:
+        return CliStatus(name, adapter.PACKAGE, adapter.binary, "absent", None)
+    where = "project" if (cwd / "node_modules" / ".bin" / adapter.binary).is_file() else "system"
+    return CliStatus(name, adapter.PACKAGE, adapter.binary, where, installed_version(out, err))
 
 
 class ProviderLLM:
@@ -611,11 +646,11 @@ class ProviderLLM:
             if adapter.provider.name in self.session.exclusions():
                 continue
             package = adapter.provider.package
-            _, out, err = await self._exec.run([adapter.binary, "--version"], cwd=self._cwd, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S)
+            _, out, err = await self._exec.run([adapter.binary, "--version"], cwd=self._cwd, env=tool_env(child_env(self._env, self._config), self._cwd), timeout=PREFLIGHT_TIMEOUT_S)
             _, latest, _ = await self._exec.run(["pnpm", "view", str(package), "version"], cwd=self._cwd, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S)
-            installed = re.search(r"\d+\.\d+\.\d+", out + err)
-            if not latest.strip() or installed is None or installed.group(0) != latest.strip():
-                notices.append(f"{adapter.binary} {installed.group(0) if installed else '(unknown)'} is not the latest release {latest.strip() or '(unreadable)'} -- run: pnpm add -g {package}@latest")
+            installed = installed_version(out, err)
+            if not latest.strip() or installed is None or installed != latest.strip():
+                notices.append(f"{adapter.binary} {installed or '(unknown)'} is not the latest release {latest.strip() or '(unreadable)'} -- run: chupa install {adapter.provider.name}")
         probed: set[tuple[str, str]] = set()
         probes = []
         for route in self._config.routing:
@@ -639,7 +674,7 @@ class ProviderLLM:
             await asyncio.gather(*tasks, return_exceptions=True)
         for (provider, model, adapter, _), result in zip(probes, results, strict=True):
             if isinstance(result, Exception):
-                problems.append(f"{provider} model {model!r} failed its probe: {result} -- run: pnpm add -g {adapter.provider.package}@latest, or route a model this login serves in config.yaml")
+                problems.append(f"{provider} model {model!r} failed its probe: {result} -- run: chupa install {provider}, or route a model this login serves in config.yaml")
             elif isinstance(result, BaseException):
                 raise result
         if not problems:

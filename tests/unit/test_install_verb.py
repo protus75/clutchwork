@@ -1,0 +1,81 @@
+import asyncio
+from pathlib import Path
+from unittest.mock import Mock
+
+from chupa import __main__ as cli
+from chupa.providers import CliStatus, cli_status, installed_version, tool_env
+from chupa.seams import ExecutableNotFound
+
+
+class Exec:
+    def __init__(self):
+        self.calls = []
+        self.pnpm = (0, "", "")
+
+    async def run(self, argv, **kwargs):
+        self.calls.append((argv, kwargs))
+        if argv[0] == "pnpm":
+            if self.pnpm is None:
+                raise ExecutableNotFound("pnpm")
+            return self.pnpm
+        if argv[0] == "qwen":
+            raise ExecutableNotFound("qwen")
+        return 0, {"claude": "2.1.322 (Claude Code)\n", "codex": "codex-cli 0.167.1\n"}[argv[0]], ""
+
+
+def test_tool_env_and_version():
+    assert tool_env({"PATH": "/bin", "X": "1"}, Path("/repo")) == {"PATH": "/repo/node_modules/.bin:/bin", "X": "1"}
+    assert tool_env({}, Path("/repo"))["PATH"] == "/repo/node_modules/.bin"
+    assert installed_version("codex-cli 0.167.1\n", "") == "0.167.1"
+    assert installed_version("", "2.1.322 (Claude Code)") == "2.1.322"
+    assert installed_version("", "") is None
+
+
+def test_status(monkeypatch):
+    exec_ = Exec()
+    monkeypatch.setattr(Path, "is_file", lambda self: False)
+
+    def status(name):
+        return asyncio.run(cli_status(name, exec_=exec_, env={"PATH": "/bin"}, cwd=Path("/repo")))
+
+    assert status("claude") == CliStatus("claude", "@anthropic-ai/claude-code", "claude", "system", "2.1.322")
+    assert exec_.calls[0][1]["env"]["PATH"] == "/repo/node_modules/.bin:/bin"
+    monkeypatch.setattr(Path, "is_file", lambda self: self == Path("/repo/node_modules/.bin/claude"))
+    assert status("claude").where == "project"
+    assert status("qwen") == CliStatus("qwen", "@qwen-code/qwen-code", "qwen", "absent", None)
+
+
+def test_install(monkeypatch, capsys):
+    exec_ = Exec()
+    monkeypatch.setattr(cli, "SubprocessExec", lambda: exec_)
+    for name in ("load_config", "Lockfile", "Journal"):
+        monkeypatch.setattr(cli, name, Mock(side_effect=AssertionError(name)))
+    monkeypatch.setattr(Path, "is_file", lambda self: False)
+
+    def main(*args):
+        return cli.main(["install", *args], cwd=Path("/repo"), env={"PATH": "/bin"})
+
+    assert main() == 0
+    assert capsys.readouterr().out.splitlines() == [
+        "claude: system 2.1.322, package @anthropic-ai/claude-code",
+        "codex: system 0.167.1, package @openai/codex",
+        "qwen: absent, package @qwen-code/qwen-code -- run: chupa install qwen",
+        "ollama: not installed by chupa; follow chupa/docs/host-qwen.md",
+    ]
+    assert all(call[0][0] != "pnpm" for call in exec_.calls)
+    exec_.calls.clear()
+    assert main("codex") == 0
+    assert capsys.readouterr().out == "codex: system 0.167.1, package @openai/codex\n"
+    argv, kwargs = exec_.calls[0]
+    assert argv == ["pnpm", "add", "-D", "@openai/codex@latest"]
+    assert kwargs == {"cwd": Path("/repo"), "env": {"PATH": "/repo/node_modules/.bin:/bin"}, "timeout": 600.0}
+    exec_.calls.clear()
+    assert main("codex", "gemini") == 2
+    assert "claude, codex, qwen" in capsys.readouterr().err
+    assert not exec_.calls
+    exec_.pnpm = None
+    assert main("codex") == 2
+    assert "pnpm.io/installation" in capsys.readouterr().err
+    exec_.pnpm = (1, "", "ERR_PNPM_FETCH_404 not found\n")
+    assert main("codex") == 2
+    assert "ERR_PNPM_FETCH_404" in capsys.readouterr().err

@@ -30,7 +30,7 @@ from chupa.journal import EventType, Journal, JournalCorruption
 from chupa.llm import LLMRequest
 from chupa.lockfile import ENGINE_VERBS, CommitLock, CommitLockTimeout, Lockfile, LockHeld
 from chupa.notify import NOTIFY_TIMEOUT_S, NotificationReconciler
-from chupa.providers import ADAPTERS, PREFLIGHT_TIMEOUT_S, PROBE_PROMPT, ProviderLLM, ProviderSession, ProviderSetupError, child_env, routed_conduct_paths
+from chupa.providers import ADAPTERS, INSTALL_TIMEOUT_S, PREFLIGHT_TIMEOUT_S, PROBE_PROMPT, ProviderLLM, ProviderSession, ProviderSetupError, child_env, cli_status, routed_conduct_paths, tool_env
 from chupa.redact import Redactor
 from chupa.restart import Restart
 from chupa.seams import Clock, CommandNotifications, ExecutableNotFound, LocalFileSystem, ProcessExec, SubprocessExec
@@ -249,6 +249,7 @@ def _parser() -> argparse.ArgumentParser:
     prompt.add_argument("kind", choices=ask.KINDS)
     prompt.add_argument("stems", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
+    sub.add_parser("install", help="install provider CLIs into the host project as pnpm dev dependencies").add_argument("providers", nargs="*")
     sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
     sub.add_parser("migrate-config", help="validate and migrate schema_version: 0 to the current config schema")
     for verb in ("pause", "resume"):
@@ -311,6 +312,33 @@ def main(
         if args.verb == "docs":
             for name, purpose in (("authoring", "ticket authoring"), ("running", "host operation"), ("contract", "host contract"), ("qwen", "local qwen provider setup")):
                 print(f"{Path(chupa.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
+            return 0
+        if args.verb == "install":
+            for name in args.providers:
+                if name not in ADAPTERS:
+                    raise runner.Refusal(f"unknown provider {name!r}", f"name one of {', '.join(sorted(ADAPTERS))}")
+
+            async def install():
+                exec_ = SubprocessExec()
+                for name in args.providers or ADAPTERS:
+                    if args.providers:
+                        package = ADAPTERS[name].PACKAGE
+                        try:
+                            rc, _, err = await exec_.run(["pnpm", "add", "-D", f"{package}@latest"], cwd=repo, env=tool_env(env, repo), timeout=INSTALL_TIMEOUT_S)
+                        except ExecutableNotFound:
+                            raise runner.Refusal("pnpm is not on PATH", "install pnpm (https://pnpm.io/installation), then rerun chupa install") from None
+                        if rc:
+                            lines = [line for line in err.splitlines() if line.strip()]
+                            raise runner.Refusal(f"pnpm add {package}@latest failed (rc {rc}): {lines[-1] if lines else ''}", "fix the pnpm error, then rerun chupa install")
+                    status = await cli_status(name, exec_=exec_, env=env, cwd=repo)
+                    print(
+                        f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}"
+                        + (f" -- run: chupa install {name}" if status.where == "absent" else "")
+                    )
+                    if name == "qwen":
+                        print("ollama: not installed by chupa; follow chupa/docs/host-qwen.md")
+
+            asyncio.run(install())
             return 0
         if args.verb == "migrate-config":
             migrate_config(args.config, cwd=repo, fs=LocalFileSystem())

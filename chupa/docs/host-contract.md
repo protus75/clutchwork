@@ -13,6 +13,8 @@ For a specific release, pin it as `chupa==<version>`. Run `uv sync`; the
 executable is `.venv/bin/chupa`. Run verbs as `uv run chupa <verb>`. Native
 Windows uses `.venv\Scripts\chupa.exe`; set `chupa.command` explicitly there.
 
+`uv run chupa install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run chupa install` with no names reports each adapter's package, location, and version.
+
 ## Copyable configuration
 
 Copy this YAML to `config.yaml` at the host checkout root and edit the models,

@@ -46,7 +46,7 @@ Run `ollama pull qwen3-coder:30b`.
 
 ## Install Qwen Code
 
-Run `pnpm add -g @qwen-code/qwen-code@latest`.
+Run `chupa install qwen` (`./dev.py install qwen` in the chupa repo) to install it into the host project, or `pnpm add -g @qwen-code/qwen-code@latest` for a system-wide install.
 
 ## Declare it in config.yaml
 

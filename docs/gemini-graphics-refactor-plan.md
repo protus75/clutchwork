@@ -58,7 +58,7 @@ These three facts fix the roles in Part B: an image model generates (Implement),
 
 ### Target design
 
-- **`GeminiAdapter(CliAdapter)`** with its own `argv` and `parse`:
+- **`GeminiAdapter(CliAdapter)`** with its own `argv` and `parse`: it sets `PACKAGE = "@google/gemini-cli"`, required by `chupa install gemini` and the closed-set pin.
   - argv: `gemini -m <model> --output-format stream-json` plus the write grant; the prompt arrives on stdin, as for every adapter.
   - parse: read the `stream-json` events (`init`, `message`, `tool_use`, `tool_result`, `error`, `result`). The terminal `result` event carries the outcome and token stats. Raise `ValueError` when there is no successful `result`.
   - `reports_cost = False`, `AUTH_MARKERS`, and a `LOGIN_ROAD` naming `chupa/docs/host-gemini.md` and `chupa drain`.

@@ -13,6 +13,7 @@
     ./dev.py dismiss ID ...   dismiss messages
     ./dev.py prompt KIND [STEM ...]  render an operator prompt
     ./dev.py docs             print installed host guide paths
+    ./dev.py install [PROVIDER...]  install provider CLIs into this repo as pnpm dev dependencies
     ./dev.py probe [PROVIDER...]  send the probe prompt through each provider
     ./dev.py suggest SUMMARY  queue an idea for triage
     ./dev.py status           the engine's projected state
@@ -71,6 +72,7 @@ def main() -> None:
     prompt.add_argument("kind")
     prompt.add_argument("stems", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
+    sub.add_parser("install", help="install provider CLIs").add_argument("providers", nargs="*")
     sub.add_parser("probe", help="probe providers").add_argument("providers", nargs="*")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     sub.add_parser("status", help="the engine's projected state")
@@ -113,6 +115,8 @@ def main() -> None:
         chupa(args.task, *args.ids)
     elif args.task == "prompt":
         chupa("prompt", args.kind, *args.stems)
+    elif args.task == "install":
+        chupa("install", *args.providers)
     elif args.task == "probe":
         chupa("probe", *args.providers)
     elif args.task == "suggest":

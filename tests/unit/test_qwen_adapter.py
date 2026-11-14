@@ -44,7 +44,7 @@ def test_qwen_argv_and_env():
     path = Path(a.call_env()["QWEN_CODE_SYSTEM_SETTINGS_PATH"])
     assert path.is_absolute() and path == Path(chupa.__file__).parent / "qwen-settings.json"
     assert json.loads(path.read_text()) == {"context": {"fileName": "CLAUDE.md"}}
-    assert a.call_env()["PATH"] == "/bin"
+    assert a.call_env()["PATH"] == "/repo/node_modules/.bin:/bin"
 
 
 def test_parse_recorded_stream():
