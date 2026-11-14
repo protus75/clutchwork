@@ -6,7 +6,8 @@ kind: feature
 ---
 
 ## Depends on
-- vscode-help-registry
+- vscode-help-catalog
+- vscode-help-snapshot
 
 ## Context
 - vscode-chupa/extension.js
@@ -29,7 +30,7 @@ kind: feature
 - tests/vscode_command_not_found.js
 
 ## Goal / Why
-The VS Code extension's row statuses, section badges, lock icons, step kinds, Suggestion Box classes and counts, Stats rows, menu actions, and settings carry no hover text or doc links. `vscode-help-registry` puts help topics into the snapshot (`help`, `helpPick`, `headerHelp`, `boxHeaderHelp`, per-row and per-step keys, step `tooltip`) and Stats top-level `tooltip`s. This ticket makes the extension draw that help, adds the `chupa.help` command, and gives every setting help in the same shape, following the thin-wrapper rule: JavaScript only reads keys the snapshot or `stats --tree` row supplies.
+The VS Code extension's row statuses, section badges, lock icons, step kinds, Suggestion Box classes and counts, Stats rows, menu actions, and settings carry no hover text or doc links. `vscode-help-snapshot` puts help topics into the snapshot (`help`, `helpPick`, `headerHelp`, `boxHeaderHelp`, per-row and per-step keys, step `tooltip`) and Stats top-level `tooltip`s. This ticket makes the extension draw that help, adds the `chupa.help` command, and gives every setting help in the same shape, following the thin-wrapper rule: JavaScript only reads keys the snapshot or `stats --tree` row supplies.
 
 ## Scope in / Scope out
 Scope in:
