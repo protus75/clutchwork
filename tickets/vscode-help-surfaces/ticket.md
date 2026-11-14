@@ -46,9 +46,9 @@ Scope in:
   - handles a webview `{type: 'help', topic}` message by running `chupa.openHelp`;
   - handles a webview `{type: 'readme'}` message by opening the bundled `README.md` in the Markdown preview.
 - Webview changes:
-  - `media/view.js`: header counts and lock icons get `title` from their `headerHelp` topics; each row gets `title` from its status topic `text`; the priority tag gets `title` from `priority`.
+  - `media/view.js`: header counts and lock icons get `title` from their `headerHelp` topics; each row gets `title` from its status topic `text`; the priority tag gets `title` from the row's `priorityHelp` topic `text`.
   - `media/box.js`: header counts and rows get `title` from their topics.
-  - `media/detail.js`: the section badge gets `title` from the section topic, and the status line is followed by the status topic `text` and a "Learn more" link; a `Next` section lists each `next` topic's `what` with its own "Learn more" link; a box message shows its class and outcome topic `text` the same way; the empty state shows the `view.chupa.details` topic `text`, not the hard-coded sentence.
+  - `media/detail.js`: the section badge gets `title` from the section topic, and the status line is followed by the status topic `text` and a "Learn more" link; a `Next` section lists each `next` topic's `what` with its own "Learn more" link; a box message shows its class and outcome topic `text` the same way.
   - `media/view.js` and `media/box.js`: the `snapshot failed` error state adds an "Open setup help" link that posts `{type: 'readme'}`.
   - `media/view.css`: styling for the help text and links only.
 - `tests/vscode_step_icons.js`, `tests/vscode_task_identity.js`, and `tests/vscode_command_not_found.js` may gain only the `vscode` mock members the new extension code calls, such as `MarkdownString`. Their assertions do not change.
@@ -59,6 +59,7 @@ Scope out:
 - The lifecycle panel and `media/ticket-lifecycle.svg` stay as they are, because the image is static.
 - A `contributes.walkthroughs` onboarding flow is left out because it would copy the install steps that `chupa/docs/host-contract.md` owns.
 - Priority QuickPick items, the Activity Bar badge tooltip, and `showErrorMessage` texts stay as they are.
+- The Details view's empty-state sentence stays as it is: the snapshot names no topic key for the empty state, and JavaScript may not hard-code one.
 - `chupa/observe.py` and `chupa/stats.py` stay as they are.
 - No help text is written in JavaScript. The only user-visible JavaScript strings added are the link labels "Learn more" and "Open setup help", plus the section heading `Next`. Command ids, webview message types, and VS Code API arguments are not help text and may be added as needed.
 
