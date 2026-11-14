@@ -47,13 +47,13 @@ This ticket delivers the registry through the snapshot and `stats --tree` output
 ## Scope in / Scope out
 Scope in:
 - `chupa/observe.py` gains one module-level function, `help_payload()`. It is the only place that calls `chupa.help.help_map` with `Path.read_text` and the `importlib.metadata` `Repository` Project-URL. It returns the `help` map and the `helpPick` list (`help_pick` of that map). `snapshot` itself reads no doc and no metadata.
-- `chupa/observe.py::MenuEntry` gains one field, `command: str`, declared last: the VS Code command id that runs that action. Every entry in `MENU` names it:
+- `chupa/observe.py::MenuEntry` gains one field, the VS Code command id that runs that action, declared last as `command: str = field(kw_only=True)`. `field` joins `dataclass` in the `from dataclasses import` line, because the two fields before it carry defaults and a plain required field after them raises `TypeError` at class definition. Every entry in `MENU` passes it as the keyword `command=`:
   - `chupaReview` is `chupa.ticket.review`, `chupaLint` is `chupa.ticket.lint`, `chupaRun` is `chupa.ticket.run`, `chupaConfirm` is `chupa.ticket.confirm`, `chupaReject` is `chupa.ticket.reject`;
   - `chupaAskDiagnose` is `chupa.ticket.askDiagnose`, `chupaAskDrafts` is `chupa.ticket.askDrafts`, `chupaAskReview` is `chupa.ticket.askReview`;
   - `chupaPriority` is `chupa.ticket.priority`, `chupaRunsBefore` is `chupa.ticket.runsBefore`;
   - `chupaTriage` is `chupa.box.triage`, `chupaDismiss` is `chupa.box.dismiss`.
 
-  `chupaRun`, `chupaTriage`, and `chupaDismiss` pass `needs_lock` as a keyword so the new field is unambiguous. No other `MenuEntry` field and no admission changes. No test constructs a `MenuEntry`, and `tests/integration/test_menu_verb_parity.py` reads only `kind`, `extension_only`, and `admission`, so it stays as it is and out of the fence.
+  `chupaRun`, `chupaTriage`, and `chupaDismiss` keep passing `needs_lock=True` as a keyword. No other `MenuEntry` field and no admission changes. No test constructs a `MenuEntry`, and `tests/integration/test_menu_verb_parity.py` reads only `kind`, `extension_only`, and `admission`, so it stays as it is and out of the fence.
 - `chupa/observe.py` gains a module-level `STATUS_KEYS` tuple, the closed status-key vocabulary. Its members are `invalid`, `new`, `draft`, `held_change`, `held_operator`, `waits_on`, `not_eligible`, `interrupted`, `retry_pending`, `after`, `ready`, `running`, `merged`, and `already_satisfied`.
 - Each status branch in `snapshot` names its `status.*` key next to the text it builds; `snapshot` never parses status text. The branches and their keys are:
   - `why_blocked`: new is `status.new`, frontmatter state is `status.draft`, held until change is `status.held_change`, both reject-queue holds are `status.held_operator`, waits on is `status.waits_on`, and not eligible is `status.not_eligible`;
@@ -68,7 +68,7 @@ Scope in:
 - Snapshot items carry topic keys:
   - each ticket row carries `help: {"section": key, "status": key}`, and `priorityHelp: "priority"` when its `priorityTag` is non-empty;
   - each ticket row carries `next`, the help keys of its menu actions that are `on`, in `MENU` order. Each key comes from `chupa.help.COMMANDS[MENU[key].command]`; no code derives a command id from a menu key's spelling;
-  - each box row carries `help: {"class": "box.<messageClass>", "outcome": "boxOutcome.<outcome>"}`;
+  - each box row carries `help: {"class": "box.<messageClass>", "outcome": "boxOutcome.<outcome>"}`. The outcome comes from the message's own fields, never from parsing its status label: a pending message is `reopened` when its `reopen` flag is set and `pending` otherwise, and a resolved message takes `author` for `resolution.kind` `ticket`, `tombstone` for `tombstone`, and `declined` for `declined`. `chupa/box.py::Message` requires a resolution exactly when resolved, so the mapping is total;
   - each step carries `help`, its `step.<STEP_KINDS[kind]>` key, so start, ok, and failed share one topic;
   - each step carries `tooltip`, the full text that Python builds from `dateDisplay`, stem, step text, and the topic's `text`.
 - In `engineVerbs`, each `detail` becomes the `what` of the `verb.<argv[0]>` topic in the `help` map. This removes the hand-copied strings.
@@ -106,6 +106,8 @@ Scope out:
    - Every row's `help.section` and `help.status` and every key in its `next` are keys of `snap["help"]`. `help.section` is `section.<row section>`, and a `merged` section row's `help.status` is `status.merged` or `status.already_satisfied`.
    - Every step's `help` is a key of `snap["help"]`, and its `tooltip` contains that topic's `text`.
    - Every `headerHelp` and `boxHeaderHelp` value is a key of `snap["help"]`.
+   - In `test_snapshot_box_messages` and `test_snapshot_box_external_state_and_resolution_counts`, every box row's `help.class` and `help.outcome` are keys of `snap["help"]`, and a row resolved with `resolution.kind` `ticket` has outcome `boxOutcome.author`. A row that emits `boxOutcome.resolved` or `boxOutcome.ticket` fails.
+   - Every row's `priorityHelp`, where present, is the key `priority`, and a row with an empty `priorityTag` carries no `priorityHelp` key.
    - Every non-separator `helpPick` item carries either a `topic` that is a key of `snap["help"]`, or a `command`, which only the settings item carries.
 
    A row, step, or header that names a key missing from the map fails.
