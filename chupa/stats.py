@@ -6,6 +6,7 @@ import re
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
+from chupa.help import TOPICS, topic_text
 from chupa.journal import EventType
 
 SETTLED = {"merged", "already_satisfied", "rejected"}
@@ -210,5 +211,8 @@ def stats_tree(stats):
             children = row(key, value)["children"]
         else:
             children = [row(key, value)]
-        rows.append({"label": label, "description": "", "children": children})
+        item = {"label": label, "description": "", "children": children}
+        if f"stat.{key}" in TOPICS:
+            item["tooltip"] = topic_text(f"stat.{key}")
+        rows.append(item)
     return rows

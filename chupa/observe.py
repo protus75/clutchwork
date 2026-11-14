@@ -5,8 +5,9 @@ import json
 import os
 import re
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from importlib.metadata import metadata
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Literal, get_args
@@ -14,6 +15,7 @@ from typing import Literal, get_args
 from chupa.config import load_config
 from chupa.drain import RETIRED, authored_at, awaiting_operator, order_tickets, parked_blob
 from chupa.graph import layout
+from chupa.help import COMMANDS, help_map, help_pick
 from chupa.lockfile import ENGINE_VERBS
 from chupa.rework import settled_dependencies
 from chupa.status import (
@@ -49,6 +51,15 @@ STEP_KINDS: dict[str, str] = {
     **{f"{step}_{suffix}": step for step in (*STEP_NAMES, *PHASE_NAMES, "stage") for suffix in ("start", "ok", "failed")},
     **{event: event for event in ("engine_start", "engine_stop", "engine_lost")},
 }
+
+
+STATUS_KEYS = ("invalid", "new", "draft", "held_change", "held_operator", "waits_on", "not_eligible", "interrupted", "retry_pending", "after", "ready", "running", "merged", "already_satisfied")
+
+
+def help_payload():
+    repo_url = next(value.split(", ", 1)[1] for value in metadata("chupa").get_all("Project-URL") if value.startswith("Repository, "))
+    help = help_map(Path.read_text, repo_url)
+    return help, help_pick(help)
 
 
 @dataclass(frozen=True)
@@ -515,22 +526,23 @@ class MenuEntry:
     inputs: tuple[str, ...]
     needs_lock: bool = False
     extension_only: bool = False
+    command: str = field(kw_only=True)
 
 
 # Every emitted key lives here. Ask rules are extension-only; every other rule is a verb admission.
 MENU = {
-    "chupaReview": MenuEntry("ticket", review_admission, ("stem", "events", "file_exists", "ticket", "intake_decision", "stray", "pending")),
-    "chupaLint": MenuEntry("ticket", lint_admission, ("stem", "events", "file_exists")),
-    "chupaRun": MenuEntry("ticket", run_admission, ("stem", "events", "file_exists", "ticket", "intake_decision", "stray"), True),
-    "chupaConfirm": MenuEntry("ticket", confirm_admission, ("events", "stem", "draft", "interrupted")),
-    "chupaReject": MenuEntry("ticket", reject_admission, ("events", "stem", "draft", "interrupted")),
-    "chupaAskDiagnose": MenuEntry("ticket", lambda section: Admission("admit" if section != "merged" else "noop"), ("section",), extension_only=True),
-    "chupaAskDrafts": MenuEntry("ticket", lambda row_draft: Admission("admit" if row_draft else "noop"), ("row_draft",), extension_only=True),
-    "chupaAskReview": MenuEntry("ticket", lambda section: Admission("admit" if section in ("queued", "blocked") else "noop"), ("section",), extension_only=True),
-    "chupaPriority": MenuEntry("ticket", order_admission, ("stem", "events", "file_exists", "lock_holder", "ticket")),
-    "chupaRunsBefore": MenuEntry("ticket", order_admission, ("stem", "events", "file_exists", "lock_holder", "ticket")),
-    "chupaTriage": MenuEntry("box", triage_admission, ("id", "messages"), True),
-    "chupaDismiss": MenuEntry("box", dismiss_admission, ("id", "messages"), True),
+    "chupaReview": MenuEntry("ticket", review_admission, ("stem", "events", "file_exists", "ticket", "intake_decision", "stray", "pending"), command="chupa.ticket.review"),
+    "chupaLint": MenuEntry("ticket", lint_admission, ("stem", "events", "file_exists"), command="chupa.ticket.lint"),
+    "chupaRun": MenuEntry("ticket", run_admission, ("stem", "events", "file_exists", "ticket", "intake_decision", "stray"), needs_lock=True, command="chupa.ticket.run"),
+    "chupaConfirm": MenuEntry("ticket", confirm_admission, ("events", "stem", "draft", "interrupted"), command="chupa.ticket.confirm"),
+    "chupaReject": MenuEntry("ticket", reject_admission, ("events", "stem", "draft", "interrupted"), command="chupa.ticket.reject"),
+    "chupaAskDiagnose": MenuEntry("ticket", lambda section: Admission("admit" if section != "merged" else "noop"), ("section",), extension_only=True, command="chupa.ticket.askDiagnose"),
+    "chupaAskDrafts": MenuEntry("ticket", lambda row_draft: Admission("admit" if row_draft else "noop"), ("row_draft",), extension_only=True, command="chupa.ticket.askDrafts"),
+    "chupaAskReview": MenuEntry("ticket", lambda section: Admission("admit" if section in ("queued", "blocked") else "noop"), ("section",), extension_only=True, command="chupa.ticket.askReview"),
+    "chupaPriority": MenuEntry("ticket", order_admission, ("stem", "events", "file_exists", "lock_holder", "ticket"), command="chupa.ticket.priority"),
+    "chupaRunsBefore": MenuEntry("ticket", order_admission, ("stem", "events", "file_exists", "lock_holder", "ticket"), command="chupa.ticket.runsBefore"),
+    "chupaTriage": MenuEntry("box", triage_admission, ("id", "messages"), needs_lock=True, command="chupa.box.triage"),
+    "chupaDismiss": MenuEntry("box", dismiss_admission, ("id", "messages"), needs_lock=True, command="chupa.box.dismiss"),
 }
 
 
@@ -598,6 +610,7 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
 
 def snapshot(ctx) -> dict:
     state = ctx.state
+    help, help_pick_items = help_payload()
     now = datetime.now().astimezone()
     events = journal(state)
     log = read_lines(state / "engine.log", 4000) if (state / "engine.log").exists() else []
@@ -653,33 +666,34 @@ def snapshot(ctx) -> dict:
             return "approved an earlier version: re-reviewed before it runs"
         return "not reviewed: reviewed before its first run"
 
-    def why_blocked(t) -> str:
+    def why_blocked(t) -> tuple[str, str]:
         if t.stem in new:
-            return "new: confirmed by next intake"  # human intake auto-confirms a new hand-written ticket
+            return "new: confirmed by next intake", "new"  # human intake auto-confirms a new hand-written ticket
         if t.frontmatter.state != "confirmed":
-            return t.frontmatter.state
+            return t.frontmatter.state, "draft"
         if t.stem in held_stems and t.stem not in reject_stems:
-            return f"held until the ticket changes (last: {to(t.stem)})"
+            return f"held until the ticket changes (last: {to(t.stem)})", "held_change"
         if t.stem in reject_stems:
             spent = next((e["body"].get("mechanical") for e in reversed(events) if e.get("ticket") == t.stem and e.get("body", {}).get("signal") == "diagnosis"), None)
-            return f"held: {spent}" if spent else f"held (last: {to(t.stem)})"
+            return (f"held: {spent}" if spent else f"held (last: {to(t.stem)})"), "held_operator"
         waits = [d for d in t.depends if d not in settled]
-        return "waits on " + ", ".join(waits) if waits else "not eligible"
+        return ("waits on " + ", ".join(waits), "waits_on") if waits else ("not eligible", "not_eligible")
 
-    def why_queued(t) -> str:
+    def why_queued(t) -> tuple[str, str]:
         if to(t.stem) == "running":
-            return "interrupted: the engine stopped mid-run; reruns when it restarts"
+            return "interrupted: the engine stopped mid-run; reruns when it restarts", "interrupted"
         if to(t.stem) is not None:
-            return f"retry pending (last: {to(t.stem)})"
+            return f"retry pending (last: {to(t.stem)})", "retry_pending"
         waits = [d for d in t.depends if d not in settled]
-        return "after " + ", ".join(waits) if waits else "ready"
+        return ("after " + ", ".join(waits), "after") if waits else ("ready", "ready")
 
-    def base(stem: str, section: str, status: str) -> dict:
+    def base(stem: str, section: str, status: str, status_key: str) -> dict:
         t, path = tickets.get(stem), ctx.root / "tickets" / stem / "ticket.md"
         return {
             "stem": stem,
             "section": section,
             "status": status,
+            "help": {"section": f"section.{section}", "status": f"status.{status_key}"},
             "priority": t.frontmatter.priority if t else frontmatter(path).get("priority", ""),
             "depends": list(t.depends) if t else depends(path) if path.exists() else [],
             "goal": t.sections.get("Goal / Why", "") if t else "",
@@ -694,16 +708,16 @@ def snapshot(ctx) -> dict:
         }
 
     # Invalid rows lead the blocked section: they usually depend on valid ones, and graph edges only point down.
-    rows = [{**base(stem, "blocked", "invalid: " + why), "goal": ""} for stem, why in sorted(invalid.items()) if to(stem) not in SETTLED | RETIRED and stem not in running]
-    rows += [base(t.stem, "blocked", why_blocked(t)) for t in reversed(blocked)]
-    rows += [base(t.stem, "queued", why_queued(t)) for t in reversed(queued)]
+    rows = [{**base(stem, "blocked", "invalid: " + why, "invalid"), "goal": ""} for stem, why in sorted(invalid.items()) if to(stem) not in SETTLED | RETIRED and stem not in running]
+    rows += [base(t.stem, "blocked", *why_blocked(t)) for t in reversed(blocked)]
+    rows += [base(t.stem, "queued", *why_queued(t)) for t in reversed(queued)]
     for stem in running:
         step, began, _ = current_step(log, stem)
-        rows.append(base(stem, "running", f"running: {step}" + (f" for {ago(began)}" if began else "")))
+        rows.append(base(stem, "running", f"running: {step}" + (f" for {ago(began)}" if began else ""), "running"))
     log_rows = commits(ctx)
     for stem in merged:
         body = last[stem]
-        row = base(stem, "merged", "merged" if body["to"] == "merged" else body["to"].replace("_", " "))
+        row = base(stem, "merged", "merged" if body["to"] == "merged" else body["to"].replace("_", " "), body["to"])
         row["commit"] = log_rows.get(body.get("commit", ""))
         row["mergedAt"] = body["ts"]
         row["mergedAtAgo"] = relative(body["ts"], now)
@@ -722,8 +736,11 @@ def snapshot(ctx) -> dict:
             values["row_draft"] = r["draft"]
             values["draft"] = bool(tickets.get(r["stem"])) and tickets[r["stem"]].frontmatter.state == "draft"
         r["menu"] = row_menu("ticket", inputs, alive)
+        r["next"] = [COMMANDS[MENU[key].command] for key, value in r["menu"].items() if value == "on"]
         r["priorityChoices"] = [{"label": p, "description": "current" if p == r["priority"] else ""} for p in priorities]
         r["priorityTag"] = r["priority"] if r["section"] in ("running", "queued") else ""
+        if r["priorityTag"]:
+            r["priorityHelp"] = "priority"
         if r["section"] != "merged":
             r["runsBeforeChoices"] = [{"label": stem, "picked": stem in r["runsBefore"]} for stem in unmerged if stem != r["stem"]]
         r["depends"] = [d for d in r["depends"] if d in shown]
@@ -782,11 +799,16 @@ def snapshot(ctx) -> dict:
         link = None
         if m.resolution:
             link = str(Path("tickets") / m.resolution.link / "ticket.md") if m.resolution.kind == "ticket" else str(Path("tickets/decisions") / (m.resolution.link + ".md"))
+        outcome = ("author" if m.resolution.kind == "ticket" else m.resolution.kind) if m.resolution else ("reopened" if m.reopen else "pending")
         box_rows.append(
             {
                 "id": m.id,
                 "seq": m.seq,
                 "messageClass": cls,
+                "help": {
+                    "class": f"box.{cls}",
+                    "outcome": f"boxOutcome.{outcome}",
+                },
                 "state": m.status,
                 "menu": row_menu("box", {"id": m.id, "messages": messages}, alive),
                 "status": f"{cls} · {label}",
@@ -817,6 +839,8 @@ def snapshot(ctx) -> dict:
             step["path"] = str(path) if (ctx.root / path).is_file() else str(fallback) if (ctx.root / fallback).is_file() else None
         step["timeDisplay"] = clock(step["ts"])
         step["dateDisplay"] = local(step["ts"]).strftime("%x, %X")
+        step["help"] = f"step.{STEP_KINDS[step['kind']]}"
+        step["tooltip"] = " · ".join(filter(None, (step["dateDisplay"], step.get("stem"), step["text"]))) + "\n" + help[step["help"]]["text"]
     box_counts = {
         kind: sum(m.status == "pending" if kind == "pending" else m.resolution is not None and m.resolution.kind == ("ticket" if kind == "author" else kind) for m in messages)
         for kind in ("pending", "author", "tombstone", "declined")
@@ -826,6 +850,10 @@ def snapshot(ctx) -> dict:
     tooltip = f"{counts['running']} running, {counts['queued']} queued" if alive else f"engine stopped: {counts['blocked']} blocked, {counts['queued']} queued"
     badge = {"value": total, "tooltip": tooltip} if total else None
     return {
+        "help": help,
+        "helpPick": help_pick_items,
+        "headerHelp": {**{section: f"section.{section}" for section in counts}, "engine": "lock.engine", "commit": "lock.commit"},
+        "boxHeaderHelp": {kind: f"boxOutcome.{kind}" for kind in box_counts},
         "badge": badge,
         "box": box_rows,
         "boxCounts": box_counts,
@@ -833,12 +861,12 @@ def snapshot(ctx) -> dict:
         "watch": [{"base": str(ctx.root.resolve()), "glob": "tickets/*/ticket.md"}, {"base": str(state.resolve()), "glob": "{journal/*.jsonl,queue.json,engine.log,box/*.json}"}],
         "drainCommand": ["drain", "--detach"],
         "engineVerbs": [
-            {"label": "Drain", "detail": "Run every eligible ticket to quiescence, then exit.", "argv": ["drain", "--detach"]},
-            {"label": "Serve", "detail": "Run the continuous daemon until kill, stop, or a signal.", "argv": ["serve"]},
-            {"label": "Stop after the running ticket", "detail": "Finish the running ticket, admit nothing new, then exit.", "argv": ["stop"]},
-            {"label": "Kill (drain or serve)", "detail": "Hard-stop the running drain or serve.", "argv": ["kill"]},
-            {"label": "Status", "detail": "Print the journal projection.", "argv": ["status"]},
-            {"label": "Retro", "detail": "Run a retro report now, or after the running ticket when an engine is running.", "argv": ["retro"]},
+            {"label": "Drain", "detail": help["verb.drain"]["what"], "argv": ["drain", "--detach"]},
+            {"label": "Serve", "detail": help["verb.serve"]["what"], "argv": ["serve"]},
+            {"label": "Stop after the running ticket", "detail": help["verb.stop"]["what"], "argv": ["stop"]},
+            {"label": "Kill (drain or serve)", "detail": help["verb.kill"]["what"], "argv": ["kill"]},
+            {"label": "Status", "detail": help["verb.status"]["what"], "argv": ["status"]},
+            {"label": "Retro", "detail": help["verb.retro"]["what"], "argv": ["retro"]},
         ],
         "counts": counts,
         "runningStem": running[0] if running else None,

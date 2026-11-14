@@ -40,6 +40,7 @@ def world(monkeypatch):
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "exists", lambda p: p in files)
     monkeypatch.setattr(Path, "read_text", lambda p, *a, **kw: files[p])
+    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("chupa.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(runner, "intake", AsyncMock(return_value=SimpleNamespace(refused={})))
     monkeypatch.setattr(runner, "_dead_dependents", AsyncMock())
 

@@ -264,6 +264,7 @@ def test_snapshot_lock_holder(tmp_path, monkeypatch):
 
 def test_snapshot_display_fields(tmp_path, monkeypatch):
     from datetime import datetime
+    from pathlib import Path
     from types import SimpleNamespace
 
     ctx = watch.Context(tmp_path, tmp_path, tmp_path / "config.yaml", None, None, None)
@@ -300,13 +301,29 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
     (tmp_path / "engine.log").write_text(json.dumps({"event": "stage_start", "stem": "live", "surface": "implement", "ts": ts}) + "\n")
     snap = watch.snapshot(ctx)
     rows = {r["stem"]: r for r in snap["rows"]}
+    from chupa.help import COMMANDS
+
+    declared = {item["command"] for item in json.loads(Path("vscode-chupa/package.json").read_text())["contributes"]["commands"]}
+    assert all(entry.command in COMMANDS and entry.command in declared for entry in watch.MENU.values())
+    assert all(verb["detail"] == snap["help"]["verb." + verb["argv"][0]]["what"] for verb in snap["engineVerbs"])
+    assert any("on" in row["menu"].values() and "off" in row["menu"].values() for row in snap["rows"])
+    for row in snap["rows"]:
+        assert row["next"] == [COMMANDS[watch.MENU[key].command] for key, value in row["menu"].items() if value == "on"]
+        assert row["help"]["section"] == "section." + row["section"]
+        assert all(key in snap["help"] for key in (*row["help"].values(), *row["next"]))
+        assert (row.get("priorityHelp") == "priority") if row["priorityTag"] else "priorityHelp" not in row
+        if row["section"] == "merged":
+            assert row["help"]["status"] in ("status.merged", "status.already_satisfied")
+    assert all(step["help"] in snap["help"] and snap["help"][step["help"]]["text"] in step["tooltip"] for step in snap["steps"])
+    assert all(key in snap["help"] for key in (*snap["headerHelp"].values(), *snap["boxHeaderHelp"].values()))
+    assert all(item.get("topic") in snap["help"] or item.get("command") == "chupa.openSettings" for item in snap["helpPick"] if item.get("kind") != "separator")
     assert snap["watch"] == [
         {"base": str(tmp_path.resolve()), "glob": "tickets/*/ticket.md"},
         {"base": str(tmp_path.resolve()), "glob": "{journal/*.jsonl,queue.json,engine.log,box/*.json}"},
     ]  # Both locations must be watched.
     assert len(snap["engineVerbs"]) == 6 and snap["engineVerbs"][0] == {
         "label": "Drain",
-        "detail": "Run every eligible ticket to quiescence, then exit.",
+        "detail": next(line.split("|")[3].strip().replace("`", "") for line in Path("chupa/docs/host-running.md").read_text().splitlines() if line.startswith("| `drain` |")),
         "argv": ["drain", "--detach"],
     }  # The menu must not be empty or reordered.
     assert snap["drainCommand"] == ["drain", "--detach"]
@@ -589,6 +606,8 @@ def test_snapshot_box_messages(tmp_path, monkeypatch):
         proposed_paths=["tests/unit/test_x.py"],
     )
     snap = watch.snapshot(ctx)
+    assert all(key in snap["help"] for row in snap["box"] for key in row["help"].values())
+    assert all(row["help"]["outcome"] == "boxOutcome.author" for row in snap["box"] if row["link"] and row["link"].endswith("/ticket.md"))
     assert ["Test issue", "slow"] in snap["box"][0]["fields"]
     assert ["Proposed paths", "tests/unit/test_x.py"] in snap["box"][0]["fields"]
     snap["box"].pop(0)
@@ -619,6 +638,8 @@ def test_snapshot_box_external_state_and_resolution_counts(tmp_path, monkeypatch
     box.resolve(tomb, Resolution(kind="tombstone", link="covered"))
     box.resolve(decision, Resolution(kind="declined", link="chosen"))
     snap = watch.snapshot(ctx)
+    assert all(key in snap["help"] for row in snap["box"] for key in row["help"].values())
+    assert all(row["help"]["outcome"] == "boxOutcome.author" for row in snap["box"] if row["link"] and row["link"].endswith("/ticket.md"))
     assert snap["boxCounts"] == {"pending": 0, "author": 0, "tombstone": 1, "declined": 1}  # Resolution kinds must be counted separately.
     assert [row["link"] for row in snap["box"]] == ["tickets/decisions/chosen.md", "tickets/decisions/covered.md"]  # Both records use their own names.
     assert all(row["path"] is None for row in snap["box"])  # External files cannot be opened relative to the workspace.
