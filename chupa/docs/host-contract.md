@@ -64,6 +64,8 @@ engine_plane_safety_inventory: [config.yaml, chupa/specs/, chupa/gates.py]
 
 [Install chupa](#install), and install `vscode-chupa` from the VS Code Marketplace (in Cursor and VSCodium, use Install from VSIX). The `vscode-chupa` extension activates in a workspace containing `tickets/` and uses the first such folder. Set the resource-scoped `chupa.command` array to the host invocation, for example `["scripts/chupa"]`; its default is `[".venv/bin/chupa"]`, resolved relative to the workspace folder. The extension calls `snapshot` for its read-only view and watches the returned state directory. `chupa watch [--once]` provides the same host observation as text. Both verbs work while the engine holds its lock.
 
+The Help command lists help topics, and hover help explains extension surfaces.
+
 ## Python host test setup
 
 Merge this block into the example configuration, replacing the package placeholder in the
