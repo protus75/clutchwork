@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "5a714cae5bde16daf082c7491958d036cbcee627",
+  "stem": "vscode-help-surfaces",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "chupa.help in vscode-chupa/extension.js: snap.helpPick separators are {kind:'separator',label} (chupa/help.py:234). Map kind through a lookup table {separator: vscode.QuickPickItemKind.Separator} before showQuickPick so topic-kind labels are separators, not selectable no-op items.",
+    "Recent Steps tooltip: build new vscode.MarkdownString().appendText(step.tooltip).appendMarkdown('\\n\\n[Learn more](command:chupa.openHelp?...)') so lines keep breaks and '_' in outcomes is escaped; set isTrusted = {enabledCommands: ['chupa.openHelp']}, not true.",
+    "The tests/vscode_*.js mocks have no MarkdownString today. Add only the members the new code calls (constructor, appendText, appendMarkdown, isTrusted, QuickPickItemKind if activate() reads it) and change no assertion.",
+    "media/view.js:47-49: lock/commitLock titles show the holder (snap.lock || 'unlocked', snap.commitLock || 'unlocked'). Keep the holder and add the headerHelp topic text, e.g. [holder, snap.help[snap.headerHelp.<key>].text].join('\\n').",
+    "Redo all Scope-in work from the merge base: help.py command.chupa.help topic, package.json command/menus/markdownDescription/viewsWelcome, extension.js handlers, webview titles and links, test_manifest_covered checks. Review found the rest sound. Run every ## Verification command."
+  ],
+  "mechanical": null,
+  "spec_version": "1.5",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
