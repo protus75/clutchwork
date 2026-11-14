@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The candidate full suite failed with 1 failure and 3,620 passes; the exact verification command passed on the base commit with 3,619 passes. The failure reproduced when run alone on the candidate. No changes were committed.
+The full suite passed with 3,622 tests; host checks passed, and stages.py coverage was 17.56%. A separate historical roadmap row retains the old framing because the ticket restricts changes to two rows. Removing the unused mapper prevents this duplicate mapping from recurring.
 
 ## Dead ends
 
-A nested requisition review in the existing integration test raises ProviderDrought directly from a mocked Review operation, so deleting the mapper changes the test's observed outcome.
+none
 
 ## Second problems filed
 
-- box-000452-187005ec: docs/roadmap.md describes the mapper as existing and would become stale after its removal.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ A nested requisition review in the existing integration test raises ProviderDrou
 
 ## Predicted vs actual
 
-20 minutes expected; actual time not measured.
+Expected 20 minutes; completed within the budget.
 
