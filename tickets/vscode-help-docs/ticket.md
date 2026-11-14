@@ -6,7 +6,8 @@ kind: feature
 ---
 
 ## Depends on
-- vscode-help-registry
+- vscode-help-catalog
+- vscode-help-snapshot
 - vscode-help-surfaces
 
 ## Context
@@ -23,7 +24,7 @@ kind: feature
 - vscode-chupa/README.md
 
 ## Goal / Why
-`vscode-help-registry` and `vscode-help-surfaces` give every extension surface help from one Python source, `chupa/help.py`, drawn by the extension. This ticket documents that help and adds a chupa-only rule to `CLAUDE.md` and `AGENTS.md` that keeps help text current, so help does not drift from the code and docs it describes.
+`vscode-help-catalog`, `vscode-help-snapshot` and `vscode-help-surfaces` give every extension surface help from one Python source, `chupa/help.py`, drawn by the extension. This ticket documents that help and adds a chupa-only rule to `CLAUDE.md` and `AGENTS.md` that keeps help text current, so help does not drift from the code and docs it describes.
 
 ## Scope in / Scope out
 Scope in:
@@ -38,7 +39,7 @@ Scope in:
   ```
 
 Scope out:
-- Code, manifest, and test changes belong to `vscode-help-registry` and `vscode-help-surfaces`.
+- Code, manifest, and test changes belong to `vscode-help-catalog`, `vscode-help-snapshot` and `vscode-help-surfaces`.
 - `chupa/hostfiles.py` `CORE_TEMPLATE` and the `chupa:core` managed block stay as they are.
 - `chupa/docs/host-running.md` stays as it is.
 
