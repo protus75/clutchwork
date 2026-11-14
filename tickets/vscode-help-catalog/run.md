@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-none
+Both verification commands and all configured hard host checks passed; the full suite reported 3,630 passing tests.
 
 ## Dead ends
 
-A temporary copied verb description made the source-tracking test fail as expected; the guide lookup was restored before verification.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket budget was 45 minutes expected; implementation and verification finished within that budget.
 
