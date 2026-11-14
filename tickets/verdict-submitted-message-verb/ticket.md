@@ -13,6 +13,7 @@ none
 
 ## Context
 - chupa/__main__.py::_verdict
+- tests/unit/test_verdict_extension.py
 - tests/regress_dev_test_args.py
 
 ## Goal / Why
