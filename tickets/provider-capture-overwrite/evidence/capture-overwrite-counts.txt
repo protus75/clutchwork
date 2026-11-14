@@ -1,0 +1,19 @@
+# Journaled model calls vs surviving raw capture directories, repo HEAD 328d07d9, state .chupa/state
+# A capture dir is spools/providers/<stem>/<provider>-NNNN holding events.jsonl; the NNNN counter restarts at 1 per process (chupa/providers.py:294,325)
+total journaled llm calls: 3960
+total capture dirs with events.jsonl: 2298
+lost: 1662
+lost calls captures stem
+185 467 282 triage
+179 336 157 author
+46 48 2 retro
+27 35 8 commit-lock
+21 25 4 attempts-cap
+19 22 3 phase6-continue
+17 23 6 phase3-continue-09
+17 21 4 serve-self-upgrade
+16 20 4 phase7-continue
+14 22 8 split-test-serve
+13 18 5 box-view
+12 20 8 vscode-help
+# triage: 467 journaled calls, capture numbers present: 1..437 (282 dirs); every run of a stem starts again at 0001 and overwrites
