@@ -168,6 +168,8 @@ def test_split_order_requires_fresh_buildable_successors(ctx, monkeypatch, sourc
         assert result.outcome == "ok", result.findings
         assert result.artifact.action == "split" and {p.stem for p in result.artifact.tickets} == {s for s, _ in proposals}
         assert [r["stem"] for r in reviews] == ["piece-one", "piece-two"]
+        assert json.loads(reviews[0]["prior"])["sibling_proposals"] == [{"stem": proposals[1][0], "ticket": result.artifact.tickets[1].ticket}]
+        assert json.loads(reviews[1]["prior"])["sibling_proposals"] == [{"stem": proposals[0][0], "ticket": result.artifact.tickets[0].ticket}]
         assert len({r["call_seq"] for r in reviews}) == 2 and all(not r["repo"].exists() for r in reviews)
         assert [r.surface for r in requests] == ["rework", "requisition_review", "requisition_review"]
         assert ticket_bytes(ctx) == before and await ctx.git.rev_parse(ctx.repo, "HEAD") == head

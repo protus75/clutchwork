@@ -66,6 +66,20 @@ def _finding(message: str, road: str, *, path: str | None = None) -> Finding:
     return Finding(code="ticket_schema", path=path, message=message, paved_road=road)
 
 
+def review_prior(action, original_stem, original_ticket, snag_list, retry_findings, proposals, current_stem) -> str:
+    return json.dumps(
+        {
+            "action": action,
+            "original_stem": original_stem,
+            "original_ticket": original_ticket,
+            "snag_list": snag_list,
+            "retry_findings": retry_findings,
+            "sibling_proposals": [{"stem": p.stem, "ticket": p.ticket} for p in proposals if p.stem != current_stem],
+            "sibling_note": "These tickets are part of the same rework order, are absent from the checkout you browse, and count as existing for dependency and fence checks.",
+        }
+    )
+
+
 async def rework(
     ctx: StageContext,
     ticket: Ticket,
@@ -151,14 +165,14 @@ async def rework(
                     run_seq=attempt,
                     attempt=attempt,
                     call_seq=review_seq + 1,
-                    prior=json.dumps(
-                        {
-                            "action": artifact.action,
-                            "original_stem": ticket.stem,
-                            "original_ticket": text,
-                            "snag_list": [f.model_dump() for f in findings],
-                            "retry_findings": [f.model_dump() for f in retry_findings],
-                        }
+                    prior=review_prior(
+                        artifact.action,
+                        ticket.stem,
+                        text,
+                        [f.model_dump() for f in findings],
+                        [f.model_dump() for f in retry_findings],
+                        artifact.tickets,
+                        proposal.stem,
                     ),
                     expected_budget=ticket.expected_minutes * 60.0,
                 )
