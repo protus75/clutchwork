@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "09bfe881feaad5f709fae991f047bf2c5912a29c",
+  "stem": "provider-failure-single-mapper",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The premise 'the run_stages copy cannot run' is false. In tests/integration/test_provider_cooldown_failover.py:250, review_ticket is called inside a stage op outside Driver._run, so its ProviderDrought reaches the chupa/stages.py:1602 except block.",
+    "That test asserts surface == 'requisition_review' when nested=True (line 273), so the hard-coded surface in run_stages is the intended label for nested requisition reviews. It is not a mislabel for Implement, Check, and Review.",
+    "The base measurement was valid: the plain ./dev.py test passed on base (3,619 passed) and failed on the candidate only in test_mid_run_drought_is_harvested_without_spine_draws[True]. This is not a base failure.",
+    "A revised ticket must state where a nested review_ticket failure inside a stage gets mapped once the block is deleted. It must also fence tests/integration/test_provider_cooldown_failover.py and say how the nested=True case is revised.",
+    "If the block is removed, docs/roadmap.md §2.1 row 8 must be updated in the same change (box-000452-187005ec), so fence docs/roadmap.md too."
+  ],
+  "mechanical": null,
+  "spec_version": "1.5",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
