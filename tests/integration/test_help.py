@@ -40,10 +40,24 @@ def test_links_resolve():
 
 
 def test_manifest_covered():
-    manifest = json.loads((ROOT / "vscode-chupa/package.json").read_text())["contributes"]
+    package = json.loads((ROOT / "vscode-chupa/package.json").read_text())
+    manifest = package["contributes"]
     assert {row["command"] for row in manifest["commands"]} == COMMANDS.keys()
     assert set(COMMANDS.values()) <= TOPICS.keys()
-    assert {"view." + row["id"] for row in manifest["views"]["chupa"]} <= TOPICS.keys()
+    views = {row["id"] for row in manifest["views"]["chupa"]}
+    assert {"view." + view for view in views} <= TOPICS.keys()
+    menus = manifest["menus"]["view/title"]
+    assert all(any(item["command"] == "chupa.help" and item["when"] == f"view == {view}" and item.get("group") != "navigation" for item in menus) for view in views)
+    repo = package["repository"]["url"].removesuffix(".git").rstrip("/")
+    for setting in manifest["configuration"]["properties"].values():
+        assert "description" not in setting
+        description = setting["markdownDescription"]
+        assert "Before:" in description and "After:" in description
+        links = re.findall(r"\]\((https://[^)]+)\)", description)
+        assert len(links) == 1 and links[0].startswith(repo + "/blob/main/")
+        path, fragment = links[0].split("/blob/main/", 1)[1].split("#", 1)
+        headings = re.findall(r"^#+\s+(.+)$", (ROOT / path).read_text(), re.M)
+        assert fragment in [re.sub(r"[^\w\- ]", "", heading.lower()).replace(" ", "-") for heading in headings]
 
 
 def test_verb_what_from_run_guide():

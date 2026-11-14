@@ -31,6 +31,7 @@ _add(
 
 _commands = {
     "chupa.askDrainLoop": "Open a prompt about supervising the drain loop.",
+    "chupa.help": "Browse chupa help topics.",
     "chupa.refresh": "Refresh the displayed state.",
     "chupa.ticket.open": "Open the selected ticket.",
     "chupa.ticket.askDiagnose": "Open a prompt to diagnose the selected ticket.",

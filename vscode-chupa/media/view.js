@@ -44,18 +44,26 @@ function el(tag, cls, text) {
 function render(snap) {
 	const counts = snap.counts;
 	const lock = el('span', '', snap.lock ? '🔒' : '🔓');
-	lock.title = snap.lock || 'unlocked';
+	lock.title = [snap.lock || 'unlocked', snap.help[snap.headerHelp.engine].text].join('\n');
 	const commitLock = el('span', '', snap.commitLock ? '🔒' : '🔓');
-	commitLock.title = snap.commitLock || 'unlocked';
-	header.replaceChildren('engine ', lock, ' · commit ', commitLock, ` · ${counts.blocked ?? 0} blocked · ${counts.queued ?? 0} queued · ${counts.running ?? 0} running · ${counts.merged ?? 0} merged`);
+	commitLock.title = [snap.commitLock || 'unlocked', snap.help[snap.headerHelp.commit].text].join('\n');
+	const countNodes = Object.entries(snap.headerHelp).filter(([key]) => key !== 'engine' && key !== 'commit').map(([key, topic]) => {
+		const node = el('span', '', ` · ${counts[key] ?? 0} ${key}`);
+		node.title = snap.help[topic].text;
+		return node;
+	});
+	header.replaceChildren('engine ', lock, ' · commit ', commitLock, ...countNodes);
 	const rows = snap.rows.map(r => {
 		const row = el('div', `row ${r.section}`);
 		row.dataset.stem = r.stem;
+		row.title = snap.help[r.help.status].text;
 		// Context keys for the right-click menu's `when` clauses in package.json; the command receives this object.
 		row.dataset.vscodeContext = JSON.stringify({ ...r.menu, chupaStem: r.stem, preventDefaultContextMenuItems: true });
 		row.append(renderGraph(r.graph, COLOR[r.section], COLOR));
 		if (r.priorityTag) {
-			row.append(el('span', 'priority', r.priorityTag));
+			const priority = el('span', 'priority', r.priorityTag);
+			priority.title = snap.help[r.priorityHelp].text;
+			row.append(priority);
 		}
 		row.append(el('span', 'stem', r.stem));
 		row.append(el('span', 'status', r.status));
@@ -82,7 +90,10 @@ window.addEventListener('message', e => {
 	if (msg.type === 'data') {
 		render(msg.snap);
 	} else if (msg.type === 'error') {
-		header.textContent = `snapshot failed: ${msg.message}`;
+		const link = el('a', 'link', 'Open setup help');
+		link.href = '#';
+		link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+		header.replaceChildren(`snapshot failed: ${msg.message} `, link);
 	}
 });
 vscode.postMessage({ type: 'ready' });

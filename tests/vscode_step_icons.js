@@ -22,6 +22,7 @@ const vscode = {
 	commands: { registerCommand: () => disposable },
 	EventEmitter: class { constructor() { this.event = () => {}; } },
 	TreeItem: class {},
+	MarkdownString: class { appendText() { return this; } appendMarkdown() { return this; } },
 	ThemeIcon: class { constructor(id) { this.id = id; } },
 	ThemeColor: class {},
 };

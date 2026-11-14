@@ -109,3 +109,5 @@ body {
 .badge.pending { background: var(--chupa-queued); }
 .badge.resolved { background: var(--chupa-merged); }
 .detail-links .link + .link { margin-left: 8px; }
+
+.help-text { white-space: pre-wrap; color: var(--vscode-descriptionForeground); margin-top: 4px; }

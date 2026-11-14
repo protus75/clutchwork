@@ -15,7 +15,12 @@ function update() {
 	const ids = [];
 	for (const row of snap.box) if (selected.has(row.id)) ids.push(row.id);
 	const c = snap.boxCounts;
-	header.textContent = `${c.pending} pending · ${c.author} author · ${c.tombstone} tombstone · ${c.declined} declined` + (ids.length > 1 ? ` · ${ids.length} selected` : '');
+	const counts = Object.entries(snap.boxHeaderHelp).map(([key, topic], i) => {
+		const node = el('span', '', `${i ? ' · ' : ''}${c[key]} ${key}`);
+		node.title = snap.help[topic].text;
+		return node;
+	});
+	header.replaceChildren(...counts, ids.length > 1 ? ` · ${ids.length} selected` : '');
 	for (const node of list.children) {
 		const row = snap.box.find(r => r.id === node.dataset.id);
 		node.classList.toggle('pinned', selected.has(row.id));
@@ -33,6 +38,7 @@ function render(data) {
 	const rows = snap.box.map(r => {
 		const row = el('div', 'row');
 		row.dataset.id = r.id;
+		row.title = [snap.help[r.help.class].text, snap.help[r.help.outcome].text].join('\n');
 		const summary = el('span', 'stem', r.summary);
 		summary.style.color = COLOR[r.state];
 		row.append(summary, el('span', 'status', r.status));
@@ -68,6 +74,11 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('message', e => {
 	if (e.data.type === 'data') render(e.data.snap);
-	else if (e.data.type === 'error') header.textContent = `snapshot failed: ${e.data.message}`;
+	else if (e.data.type === 'error') {
+		const link = el('a', 'link', 'Open setup help');
+		link.href = '#';
+		link.addEventListener('click', event => { event.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+		header.replaceChildren(`snapshot failed: ${e.data.message} `, link);
+	}
 });
 vscode.postMessage({ type: 'ready' });

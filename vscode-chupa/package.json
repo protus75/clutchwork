@@ -79,19 +79,19 @@
 					"default": [
 						".venv/bin/chupa"
 					],
-					"description": "Command and arguments used to run chupa in this workspace. The default is the host\u2019s .venv/bin/chupa, resolved from the workspace folder."
+					"markdownDescription": "The command and arguments used to run chupa in this workspace.\n\nBefore: The default uses the host’s .venv/bin/chupa.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/chupa/docs/host-contract.md#vs-code-extension)"
 				},
 				"chupa.statsWindow": {
 					"type": "string",
 					"default": "7d",
 					"pattern": "^[1-9][0-9]*[hdt]$",
-					"description": "Stats window: hours (h), days (d), or last N settled tickets (t), as for chupa stats --window."
+					"markdownDescription": "The window used for Stats, in hours, days, or settled tickets.\n\nBefore: Stats uses 7d by default.\n\nAfter: Set a window such as 24h, 7d, or 10t.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/docs/how-chupa-works.md#22-devpy)"
 				},
 				"chupa.refreshSeconds": {
 					"type": "number",
 					"default": 15,
 					"minimum": 0,
-					"description": "Seconds between timed refreshes of the chupa views. Journal, queue, engine log and ticket file changes always refresh it; 0 turns the timer off."
+					"markdownDescription": "Seconds between timed view refreshes.\n\nBefore: Views also refresh on watched file changes.\n\nAfter: Set 0 to turn off the timer.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/docs/how-chupa-works.md#22-devpy)"
 				},
 				"chupa.unavailableMenuItems": {
 					"type": "string",
@@ -104,7 +104,7 @@
 						"Show every ticket action; grey out the ones that cannot run right now (engine running, unmet dependencies, uncommitted draft).",
 						"Show only the ticket actions that can run right now."
 					],
-					"description": "How the Tickets right-click menu shows actions that cannot run right now."
+					"markdownDescription": "How unavailable ticket actions appear in the menu.\n\nBefore: Unavailable actions are disabled by default.\n\nAfter: Choose hide to omit them.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/docs/how-chupa-works.md#22-devpy)"
 				},
 				"chupa.playAction": {
 					"type": "string",
@@ -117,7 +117,7 @@
 						"Run eligible tickets to quiescence, then exit.",
 						"Run the continuous daemon until stopped."
 					],
-					"description": "Action started by the Tickets view play button."
+					"markdownDescription": "The action started by the Tickets play button.\n\nBefore: The button starts drain by default.\n\nAfter: Choose serve to start the daemon.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/docs/how-chupa-works.md#22-devpy)"
 				}
 			}
 		},
@@ -192,13 +192,13 @@
 			},
 			{
 				"command": "chupa.ticket.priority",
-				"title": "Set priority\u2026",
+				"title": "Set priority…",
 				"category": "chupa",
 				"enablement": "chupaPriority == 'on'"
 			},
 			{
 				"command": "chupa.ticket.runsBefore",
-				"title": "Run before\u2026",
+				"title": "Run before…",
 				"category": "chupa",
 				"enablement": "chupaRunsBefore == 'on'"
 			},
@@ -236,7 +236,7 @@
 			},
 			{
 				"command": "chupa.engine",
-				"title": "Engine\u2026",
+				"title": "Engine…",
 				"icon": "$(server-process)"
 			},
 			{
@@ -264,6 +264,11 @@
 				"title": "Ask Claude: assess drafts",
 				"category": "chupa",
 				"enablement": "chupaAskDrafts == 'on'"
+			},
+			{
+				"command": "chupa.help",
+				"title": "Help",
+				"icon": "$(question)"
 			}
 		],
 		"menus": {
@@ -502,6 +507,31 @@
 					"command": "chupa.openConfig",
 					"when": "view == chupa.tickets",
 					"group": "chupa@5"
+				},
+				{
+					"command": "chupa.help",
+					"when": "view == chupa.details",
+					"group": "chupa@9"
+				},
+				{
+					"command": "chupa.help",
+					"when": "view == chupa.steps",
+					"group": "chupa@9"
+				},
+				{
+					"command": "chupa.help",
+					"when": "view == chupa.tickets",
+					"group": "chupa@9"
+				},
+				{
+					"command": "chupa.help",
+					"when": "view == chupa.box",
+					"group": "chupa@9"
+				},
+				{
+					"command": "chupa.help",
+					"when": "view == chupa.stats",
+					"group": "chupa@9"
 				}
 			]
 		},
@@ -535,6 +565,16 @@
 					"highContrast": "scmGraph.historyItemBaseRefColor",
 					"highContrastLight": "scmGraph.historyItemBaseRefColor"
 				}
+			}
+		],
+		"viewsWelcome": [
+			{
+				"view": "chupa.steps",
+				"contents": "No items to show.\n[Open chupa help](command:chupa.help)"
+			},
+			{
+				"view": "chupa.stats",
+				"contents": "No items to show.\n[Open chupa help](command:chupa.help)"
 			}
 		]
 	}

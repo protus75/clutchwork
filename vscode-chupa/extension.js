@@ -134,6 +134,11 @@ ${scripts.map(s => `<script nonce="${nonce}" src="${uri(s)}"></script>`).join('\
 </body></html>`;
 }
 
+function handleHelpMessage(msg, extensionUri) {
+	if (msg.type === 'help') vscode.commands.executeCommand('chupa.openHelp', msg.topic);
+	else if (msg.type === 'readme') vscode.commands.executeCommand('markdown.showPreview', vscode.Uri.joinPath(extensionUri, 'README.md'));
+}
+
 function showLifecycle(extensionUri) {
 	const media = vscode.Uri.joinPath(extensionUri, 'media');
 	const panel = vscode.window.createWebviewPanel('chupa.lifecycle', 'chupa ticket lifecycle', vscode.ViewColumn.Active, { localResourceRoots: [media] });
@@ -156,6 +161,7 @@ class TicketsView {
 		this.view = view;
 		webviewHtml(this.extensionUri, view.webview, '<div id="header">loading…</div><div id="list"></div>', ['graph.js', 'view.js']);
 		view.webview.onDidReceiveMessage(msg => {
+			handleHelpMessage(msg, this.extensionUri);
 			if (msg.type === 'ready') {
 				this.snapshot.snap ? this.post() : this.snapshot.refresh();
 			} else if (msg.type === 'focus') {
@@ -188,6 +194,7 @@ class BoxView {
 		this.view = view;
 		webviewHtml(this.extensionUri, view.webview, '<div id="header">loading…</div><div id="list"></div>', ['box.js']);
 		view.webview.onDidReceiveMessage(msg => {
+			handleHelpMessage(msg, this.extensionUri);
 			if (msg.type === 'ready') this.snapshot.snap ? this.post() : this.snapshot.refresh();
 			else if (msg.type === 'focus') this.details.setFocus('box', msg.id);
 			else if (msg.type === 'open' && msg.path) openTicket(msg.path);
@@ -214,6 +221,7 @@ class DetailsView {
 		this.view = view;
 		webviewHtml(this.extensionUri, view.webview, '<div id="detail"></div>', ['detail.js']);
 		view.webview.onDidReceiveMessage(msg => {
+			handleHelpMessage(msg, this.extensionUri);
 			if (msg.type === 'ready') {
 				this.snapshot.snap ? this.post() : this.snapshot.refresh();
 			} else if (msg.type === 'open') {
@@ -255,7 +263,8 @@ class StepsTree {
 	getTreeItem(step) {
 		const item = new vscode.TreeItem(`${step.timeDisplay}  ${step.stem ?? ''}`);
 		item.description = step.text;
-		item.tooltip = `${step.dateDisplay}\n${step.stem ? step.stem + ': ' : ''}${step.text}`;
+		item.tooltip = new vscode.MarkdownString().appendText(step.tooltip).appendMarkdown(`\n\n[Learn more](command:chupa.openHelp?${encodeURIComponent(JSON.stringify([step.help]))})`);
+		item.tooltip.isTrusted = { enabledCommands: ['chupa.openHelp'] };
 		const icons = { preflight_start: ['rocket'], preflight_ok: ['rocket', 'testing.iconPassed'], preflight_failed: ['rocket', 'testing.iconFailed'], retro_check_start: ['calendar'], retro_check_ok: ['calendar', 'testing.iconPassed'], retro_check_failed: ['calendar', 'testing.iconFailed'], requisition_review_start: ['law'], requisition_review_ok: ['law', 'testing.iconPassed'], requisition_review_failed: ['law', 'testing.iconFailed'], stage_start: ['question'], stage_ok: ['question', 'testing.iconPassed'], stage_failed: ['question', 'testing.iconFailed'], author_start: ['edit'], author_ok: ['edit', 'testing.iconPassed'], author_failed: ['edit', 'testing.iconFailed'], engine_start: ['debug-start'], engine_stop: ['debug-stop'], engine_lost: ['warning'], implement_start: ['code'], implement_ok: ['code', 'testing.iconPassed'], implement_failed: ['code', 'testing.iconFailed'], review_start: ['eye'], review_ok: ['eye', 'testing.iconPassed'], review_failed: ['eye', 'testing.iconFailed'], diagnose_start: ['debug'], diagnose_ok: ['debug', 'testing.iconPassed'], diagnose_failed: ['debug', 'testing.iconFailed'], rework_start: ['tools'], rework_ok: ['tools', 'testing.iconPassed'], rework_failed: ['tools', 'testing.iconFailed'], retro_start: ['history'], retro_ok: ['history', 'testing.iconPassed'], retro_failed: ['history', 'testing.iconFailed'], check_start: ['checklist'], check_ok: ['checklist', 'testing.iconPassed'], check_failed: ['checklist', 'testing.iconFailed'], merge_start: ['git-merge'], merge_ok: ['git-merge', 'testing.iconPassed'], merge_failed: ['git-merge', 'testing.iconFailed'], triage_start: ['inbox'], triage_ok: ['inbox', 'testing.iconPassed'], triage_failed: ['inbox', 'testing.iconFailed'] };
 		const [icon, color] = icons[step.kind];
 		item.iconPath = new vscode.ThemeIcon(icon, color ? new vscode.ThemeColor(color) : undefined);
@@ -306,6 +315,7 @@ class StatsTree {
 	getTreeItem(row) {
 		const item = new vscode.TreeItem(row.label, row.children.length ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
 		item.description = row.description;
+		item.tooltip = row.tooltip;
 		return item;
 	}
 }
@@ -341,6 +351,20 @@ function activate(context) {
 		vscode.commands.registerCommand('chupa.bulkTriage', () => devCommand('triage')),
 		vscode.commands.registerCommand('chupa.refresh', () => { snapshot.refresh(); stats.refresh(); }),
 		vscode.commands.registerCommand('chupa.openTicket', openTicket),
+		vscode.commands.registerCommand('chupa.help', async () => {
+			const kinds = { separator: vscode.QuickPickItemKind.Separator };
+			const items = (snapshot.snap?.helpPick ?? []).map(item => item.kind ? { ...item, kind: kinds[item.kind] } : item);
+			const item = await vscode.window.showQuickPick(items);
+			if (item?.command) vscode.commands.executeCommand(item.command);
+			else if (item?.topic) vscode.commands.executeCommand('chupa.openHelp', item.topic);
+		}),
+		vscode.commands.registerCommand('chupa.openHelp', topic => {
+			const link = snapshot.snap?.help[topic]?.link;
+			if (link?.path) {
+				const position = new vscode.Position(link.line, 0);
+				vscode.window.showTextDocument(vscode.Uri.file(link.path), { preview: true, selection: new vscode.Range(position, position) });
+			} else if (link?.url) vscode.env.openExternal(vscode.Uri.parse(link.url));
+		}),
 		vscode.commands.registerCommand('chupa.lifecycle', () => showLifecycle(context.extensionUri)),
 		vscode.commands.registerCommand('chupa.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:chunkydragon.vscode-chupa')),
 		vscode.commands.registerCommand('chupa.ticket.open', ctx => openTicket(`tickets/${ctx.chupaStem}/ticket.md`)),

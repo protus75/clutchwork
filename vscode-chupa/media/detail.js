@@ -32,13 +32,31 @@ function section(title, body) {
 	return wrap;
 }
 
-function content(row) {
+function helpText(snap, topic, short = false) {
+	const entry = snap.help[topic];
+	const wrap = el('div', 'help-text', short ? entry.what + ' ' : entry.text + ' ');
+	const link = el('a', 'link', 'Learn more');
+	link.href = '#';
+	link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'help', topic }); });
+	wrap.append(link);
+	return wrap;
+}
+
+function content(row, snap) {
 	const box = el('div');
 	const head = el('div', 'detail-title');
-	head.append(el('span', `badge ${row.section}`, row.section), el('span', 'detail-stem', ` ${row.stem}`));
+	const badge = el('span', `badge ${row.section}`, row.section);
+	badge.title = snap.help[row.help.section].text;
+	head.append(badge, el('span', 'detail-stem', ` ${row.stem}`));
 	box.append(head);
-	for (const { heading, text } of row.detail) {
+	for (const [index, { heading, text }] of row.detail.entries()) {
 		box.append(heading === null ? el('div', 'detail-meta', text) : section(heading, el('div', 'detail-text', text)));
+		if (index === 0) box.append(helpText(snap, row.help.status));
+	}
+	if (row.next.length) {
+		const next = el('div');
+		for (const topic of row.next) next.append(helpText(snap, topic, true));
+		box.append(section('Next', next));
 	}
 	const links = el('div', 'detail-links');
 	links.append(openLink(row.path));
@@ -46,11 +64,11 @@ function content(row) {
 	return box;
 }
 
-function boxContent(row) {
+function boxContent(row, snap) {
 	const result = el('div');
 	const head = el('div', 'detail-title');
 	head.append(el('span', `badge ${row.state}`, row.messageClass), el('span', 'detail-stem', ` ${row.id}`));
-	result.append(head);
+	result.append(head, helpText(snap, row.help.class), helpText(snap, row.help.outcome));
 	for (const [label, text] of row.fields) result.append(section(label, el('div', 'detail-text', text)));
 	const links = el('div', 'detail-links');
 	if (row.path) links.append(openLink(row.path, 'Open message file'));
@@ -64,6 +82,6 @@ window.addEventListener('message', e => {
 	const box = focus?.kind === 'box' ? snap.box.find(r => r.id === focus.id) : undefined;
 	const stem = focus?.kind === 'ticket' ? focus.id : snap.runningStem;
 	const row = snap.rows.find(r => r.stem === stem);
-	detail.replaceChildren(box ? boxContent(box) : row ? content(row) : el('div', 'detail-meta', 'Nothing running. Hover a ticket or message to see it here; click to pin.'));
+	detail.replaceChildren(box ? boxContent(box, snap) : row ? content(row, snap) : el('div', 'detail-meta', 'Nothing running. Hover a ticket or message to see it here; click to pin.'));
 });
 vscode.postMessage({ type: 'ready' });
