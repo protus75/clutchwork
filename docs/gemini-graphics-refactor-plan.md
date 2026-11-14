@@ -227,7 +227,7 @@ Grep `tests/` and `docs/` for `feature|bug|chore` and the kind tuple before auth
 
 ## Open decisions
 
-Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+These remain open; none was among the 2026-11-13 decisions recorded in `docs/roadmap.md` §6. They are decided before authoring B1.
 
 1. **Raster image generation.** Include AI-generated images, or only code-rendered output? Recommendation: code-rendered only for v1.
 2. **Routing by ticket kind.** A text-only implementer (qwen3-coder) cannot look at its renders. Options:

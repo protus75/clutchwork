@@ -143,7 +143,7 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
 
 | §18.2 item | Trigger | Fired | Decision |
 |---|---|---|---|
-| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | 0.2.0 widens the prompt rule to in-code registries (`fence-closure-registries`). A mechanical analyzer is an owner decision (section 6); the prompt rule has now failed once, so a third escape makes it a 0.3.0 candidate |
+| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.2.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.3.0 |
 | DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.3.0 is conditional on it |
 | Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.5.0) covers triage records and makes this the first lens to score |
 | Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.4.0, declared in `docs/parallel-tickets-plan.md` |
@@ -151,7 +151,7 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
 
 ### 3.4 Never built, no ticket
 
-- P8 `rules-render`: `chupa core --check` and a start-command file. `doctor` has a `core` drift row (`doctor.py:67-73`); `serve`, `drain`, `run` refuse on stale blocks. Owner decision whether `--check` is still wanted (section 6).
+- P8 `rules-render`: `chupa core --check` and a start-command file. `doctor` has a `core` drift row (`doctor.py:67-73`); `serve`, `drain`, `run` refuse on stale blocks. Decided 2026-11-13: dropped (section 6, decision 2).
 - `chupa/docs/host-contract.md` "Onboarding a host" and "Operating facts" sections (P8). Its two sections still titled "Pending report-inbox contract" and "Pending cutover contract" describe shipped code. `docs-truth-sweep` retitles them; the onboarding checklist is `training-docs`' sibling, `host-onboarding-doc`, scheduled in 0.2.0.
 - `review.surfaces`: refused at config load "until a host that uses them onboards". Stays refused. `docs/document-agent-plan.md` Open decision 2 is the first proposal that would need host-defined prompts and it routes them as data instead.
 - `kind: api` provider: refused at `config.py:460-465`; stays deferred.
@@ -247,20 +247,20 @@ Each decision settles a place where two plans overlapped or contradicted. The pl
 10. **Host-command lock.** The parallel plan's engine-wide semaphore around `run_host_command` also serializes the graphics plan's render command and the merge queue's host checks. One lock, stated in both plans.
 11. **The mergequeue docstring** is fixed by `docs-truth-sweep`, not by a parallel-plan ticket; that plan's row 2 now points at the roadmap's `active-slot-single-owner` and `merge-admission-single-owner`, the two 0.2.0 chores its dispatch and merge tickets depend on.
 
-## 6. Owner decisions pending
+## 6. Owner decisions (decided 2026-11-13)
 
-Not scheduled until the owner decides. Each names its default if nothing is said.
+Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section marks its decided items and keeps the rest open.
 
-1. **Mechanical fence-closure analyzer** (§18.2; trigger fired twice). Default: prompt rule only (`fence-closure-registries`); a third escape schedules a spike in 0.3.0.
-2. **P8 `core --check` and start-command file.** Default: not built; `doctor`'s `core` row and the start refusal cover the need.
-3. **Settled-ticket archive.** 537 directories under `tickets/`. Default: nothing until a measured cost (lint time, intake scan) is filed.
-4. **Split the five large test files.** Default: do-not-grow rule only (0.2.0); splitting is chore tickets during the 0.3.0 window if it runs, else 0.4.0.
-5. **Parallel plan**: `serve` only or `drain` too (default `serve`); chain ordering below P0 only (default yes); conflict reruns outside `retry` (default yes).
-6. **Training plan**: store the full tool-call stream (default yes); include Author-written tickets tagged by author (default yes).
-7. **Evidence plan**: copy providers' own session logs (default no); store Claude thinking text (default yes).
-8. **Document plan**: `diverse` panels by default (default off); host-defined lenses as data (default yes); verbs only, no `doc` ticket kind (default yes).
-9. **Journal plan**: DuckDB vs Polars (default DuckDB); whether the SQL-only rule becomes a gate (default yes, landing with the last port).
-10. **Upstream issue plan**: the four critical classes (default as proposed).
+1. **Mechanical fence-closure analyzer** (§18.2; trigger fired twice). Decided: instructions first. `fence-closure-registries` (0.2.0) widens the reviewer prompt to in-code registries and tables. A third escape schedules a bounded spike for the mechanical checker in 0.3.0.
+2. **P8 `core --check` and start-command file.** Decided: dropped. `doctor`'s `core` row and the start refusal cover drift detection; no host has asked for a start-command file. Both are recorded here as not built on purpose and are tracked nowhere else.
+3. **Settled-ticket archive.** 537 directories under `tickets/`. Decided: nothing until a scan (lint with no stems, intake, the snapshot) is timed and found slow; the timing is filed as evidence when it happens.
+4. **Split the five large test files.** Decided: the do-not-grow rule lands in 0.2.0 (`contention-authoring-rules`); splitting is chore tickets, one per file, during the 0.3.0 window if it runs, else in 0.4.0 before parallel runs start.
+5. **Parallel plan.** Decided: `serve` only; longest-chain ordering below P0 only (P0 keeps the emergency lane); conflict reruns have their own cap `CONFLICT_RERUN_LIMIT = 2` and never draw `retry`.
+6. **Training plan.** Decided: the export includes the full normalized tool-call trajectory (a per-run flag can trim it); Author-written tickets are included, tagged `authored_by: author`.
+7. **Evidence plan.** Decided: providers' own session transcripts are not copied, only their ids are recorded; Claude thinking text is stored as a blob with `visibility: text`.
+8. **Document plan.** Decided: `diverse: false` by default (same model per panel, `--diverse` per run); host-defined lenses and facets allowed as data inside the engine frame; commands only, no `doc` ticket kind in v1.
+9. **Journal plan.** Decided: DuckDB; the SQL-only rule goes in `CLAUDE.md` and `AGENTS.md` with a lint gate that lands in the last port ticket and carries a named allowlist for the folds that stay Python.
+10. **Upstream issue plan.** Decided: five critical classes. The proposed four plus `wrong-refusal`: chupa refuses valid input (config, ticket, intake) with a message whose paved road cannot be followed.
 
 ## 7. Plan document shape
 
@@ -307,7 +307,7 @@ Every proposed ticket, in release and priority order. "Owner" is the plan whose 
 | 31 | `evidence-normalize-claude` | evidence plan 5 | feature | P2 | `evidence-store` | | Claude normalizer and fixture; qwen reuses it flagged `unverified`. |
 | 32 | `gemini-provider` | gemini plan A1 | feature | P2 | | | `GeminiAdapter`, two settings files, watchdog branch, live view, `host-gemini.md`; after the hand test A0. |
 | 33 | `evidence-normalize-gemini` | evidence plan | feature | P3 | `evidence-store`, `gemini-provider` | | Gemini normalizer and fixture. |
-| 34 | `upstream-issue-verb` | upstream plan 1 | feature | P2 | | | `chupa issue`, the CORE_TEMPLATE sentence (about 264 bytes), docs; after its hand test. |
+| 34 | `upstream-issue-verb` | upstream plan 1 | feature | P2 | | | `chupa issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its hand test. |
 
 ### 0.3.0 (conditional)
 

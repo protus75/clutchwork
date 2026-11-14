@@ -240,10 +240,10 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 ## Open decisions
 
-Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record. Item 3 remains open.
 
-1. **Copy the provider's own session log** (Claude and Codex both write transcripts under the user's home directory)? Recommend not for now. It is outside chupa's custody, and the stdout stream holds the same events. `native_ids` keeps the join possible later.
-2. **Store thinking text?** Claude exposes it, and it is the most useful part for training reasoning. Recommend storing it as a blob, like any other text.
+1. **Copy the provider's own session log** (Claude and Codex both write transcripts under the user's home directory)? Decided 2026-11-13: no. It is outside chupa's custody, and the stdout stream holds the same events. `native_ids` keeps the join possible later.
+2. **Store thinking text?** Decided 2026-11-13: yes, as a blob like any other text, `visibility: text`; the export can exclude it per run.
 3. **Move `CallMeter`, `Parsed`, and `live_call` onto normalized events** (one parser per provider) after ticket 6? Recommend filing it with `chupa suggest` once normalizers have run on real traffic for a release.
 
 Settled by the roadmap (decision 2): capture is always on; only the training plan's attempt manifests, export, and eval are behind `training_data.enabled`.

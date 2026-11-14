@@ -163,9 +163,9 @@ Fence notes for authoring: ticket 6 touches `chupa/scheduler.py`, `chupa/daemon.
 
 ## Open decisions
 
-Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record.
 
-1. **Serve only, or drain too?** Recommend serve only. `drain` would need the queue and the conflict steps, which means a second admission path or moving `drain` onto the queue. `remove-merge-hold` already made `serve` usable for day-to-day work.
-2. **Chain order below P0, or below P1 too?** Recommend below P0 only. The CORE routing sends orchestration-cause fixes as P0 and product-cause fixes as P1. Only P0 has to jump the queue.
-3. **Rerun cap usage.** Recommend that conflict reruns do not use `retry`, and are capped by `CONFLICT_RERUN_LIMIT` instead.
-4. **Splitting the existing large test files.** Section 7 stops them growing but does not shrink them. Splitting `test_daemon_composition.py` and the other files is a set of chore tickets to run while parallel is off. Not authored by this plan.
+1. **Serve only, or drain too?** Decided 2026-11-13: serve only. `drain` would need the queue and the conflict steps, which means a second admission path or moving `drain` onto the queue. `remove-merge-hold` already made `serve` usable for day-to-day work.
+2. **Chain order below P0, or below P1 too?** Decided 2026-11-13: below P0 only. The CORE routing sends orchestration-cause fixes as P0 and product-cause fixes as P1. Only P0 has to jump the queue.
+3. **Rerun cap usage.** Decided 2026-11-13: conflict reruns do not use `retry`; they are capped by `CONFLICT_RERUN_LIMIT = 2`.
+4. **Splitting the existing large test files.** Decided 2026-11-13: section 7's do-not-grow rule lands in 0.2.0; splitting `test_daemon_composition.py` and the other four is one chore ticket per file during the 0.3.0 window if it runs, else in 0.4.0 before parallel runs start. Not authored by this plan (roadmap decision 4).

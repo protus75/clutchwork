@@ -113,10 +113,10 @@ grep -rnE '\.read\(\)|\.read_segments\(\)' chupa/ | grep -E 'journal|\.read_segm
 
 ## Open decisions
 
-Each item is undecided. Decide at the checkpoint, before authoring ticket 1. Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+Items 1 and 2 were decided on 2026-11-13 (`docs/roadmap.md` §6 is the record). The rest are decided at the checkpoint, before authoring ticket 1.
 
-1. **DuckDB or Polars.** Options: DuckDB SQL, or Polars `scan_ndjson` with dataframe code. Recommendation: DuckDB. It reads multiple JSONL files natively in parallel, and a SQL query is plain text that an agent can read and review. Pick one, not both.
-2. **Rule and gate.** Should "journal queries are SQL, not Python loops" become a `CLAUDE.md` and `AGENTS.md` rule? Should a lint gate enforce it? Recommendation: both, with the gate landing in ticket 6.
+1. **DuckDB or Polars.** Decided 2026-11-13: DuckDB. It reads multiple JSONL files natively in parallel, and a SQL query is plain text that an agent can read and review.
+2. **Rule and gate.** Decided 2026-11-13: both. The rule "journal queries are SQL, not Python loops" goes in `CLAUDE.md` and `AGENTS.md`; the lint gate lands in ticket 6 with a named allowlist for the folds item 6 keeps in Python.
 3. **Body access.** Options: raw `body->>'field'` everywhere, or one view per event type with typed columns. Recommendation: start raw, and add a view when the same extraction appears in three or more queries.
 4. **Validation and error messages.** Today a bad line raises `JournalCorruption` (`chupa/journal.py:124`) naming the file and line number, and DuckDB's error messages are less precise. Recommendation: run the Python line parser on a segment only when DuckDB's load of it fails.
 5. **Filesystem seam.** Options: pass bytes read through the seam into DuckDB, or accept direct reads for this one reader and record why. Recommendation: direct reads, recorded in `chupa/journal.py`'s docstring, because DuckDB's parallel reader is the point.

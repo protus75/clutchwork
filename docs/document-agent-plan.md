@@ -322,11 +322,11 @@ Tickets 1, 2, and 3 touch separate files and suit a first parallel trial.
 
 ## Open decisions
 
-Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record. Items 4 to 6 remain open.
 
-1. **`diverse` panels by default?** Recommend off by default, so that convergence counts compare with the owner's earlier manual runs, and on for a deliberate cross-provider review.
-2. **Host-defined lenses and facets.** Recommend allowing them as data blocks inside the engine frame. The owner's lenses ship as engine facets either way.
-3. **Verbs only, or a `doc` ticket kind too?** Recommend verbs only for v1.
+1. **`diverse` panels by default?** Decided 2026-11-13: off by default, so convergence counts compare with the owner's earlier manual runs; `--diverse` on a run rotates panelists across the route's candidates.
+2. **Host-defined lenses and facets.** Decided 2026-11-13: allowed, as data blocks inside the engine frame through `documents.facets_dir`. The owner's lenses ship as engine facets either way. The refusal of `review.surfaces` for code review stays.
+3. **Verbs only, or a `doc` ticket kind too?** Decided 2026-11-13: verbs only for v1; a `doc` kind is the follow-up if doc sets start being changed by the drain.
 4. **Where doc sets live.** Recommend `docs/<anything>/` with a `docset.yaml`, found by search.
 5. **Promote an `automatable` consensus ticket set into a Seed?** Recommend allowing it only as an explicit owner step, never automatically. Otherwise the instrument starts shaping the result it measures.
 6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Recommend yes, and run `scope` and `buildability` on them as the first real use.

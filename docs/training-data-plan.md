@@ -152,9 +152,9 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). R
 
 ## Open decisions
 
-Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record. Items 2 and 4 remain open.
 
-1. **Store the full tool-call stream in the export, or only prompts, outputs, and diffs?** The stream is the most valuable part (it shows how the work was done) and the largest. Recommend storing it; the evidence store already holds it.
+1. **Store the full tool-call stream in the export, or only prompts, outputs, and diffs?** Decided 2026-11-13: the export includes the full normalized trajectory; a per-run flag (`--no-trajectory`) trims it for review- and triage-only tuning.
 2. **Build `training eval` in chupa, or leave evaluation to hosts?** Recommend building it. Without an in-chupa measure, "the local model is good enough" is a guess, and the GO baseline already sets the precedent.
-3. **Should export include tickets from Author (engine-written), or only ones a person confirmed?** Recommend both, with an `authored_by` field so hosts can filter.
+3. **Should export include tickets from Author (engine-written), or only ones a person confirmed?** Decided 2026-11-13: both, with an `authored_by: human|author` field so hosts can filter.
 4. **Move `spools/<stem>/<attempt>/` onto the evidence store?** Not scheduled by any plan. Recommend a follow-up once the store has run for a release; until then two capture paths exist (the per-attempt spool and the store), which roadmap decision 1 accepts.

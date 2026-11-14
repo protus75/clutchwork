@@ -38,8 +38,9 @@ Closed set. A bug that fits none of these is not filed:
 | `secret-leak` | a configured secret reaches a log, journal, prompt, commit, or a process that should not have it |
 | `bad-merge` | chupa merges to main work that failed a hard gate or review, or changed files outside the fence |
 | `engine-stuck` | serve or drain cannot run any ticket on a setup `doctor` passes, and no documented verb releases it |
+| `wrong-refusal` | chupa refuses valid input (config, ticket, intake) with a message whose paved road cannot be followed |
 
-The class list is the owner's call; this is the proposed starting set.
+The owner settled this list on 2026-11-13 (`docs/roadmap.md` §6, decision 10): the four proposed classes plus `wrong-refusal`, because a refusal nobody can act on blocks an operator as surely as a stuck engine does.
 
 The verb is named `issue`, not `report`, so it cannot be confused with `report_inbox` or the `bug_report` message class.
 
@@ -56,7 +57,7 @@ The verb is named `issue`, not `report`, so it cannot be confused with `report_i
 ### The verb
 
 ```
-chupa issue --class state-loss|secret-leak|bad-merge|engine-stuck "<title>" --body FILE
+chupa issue --class state-loss|secret-leak|bad-merge|engine-stuck|wrong-refusal "<title>" --body FILE
 ```
 
 - `--class` and `--body` are required. A missing or unknown class refuses (exit 2) with the paved road "only critical bugs are filed upstream; name a non-critical chupa problem to the user in chat instead". An empty body refuses.
@@ -145,9 +146,9 @@ Before authoring, grep `tests/` for any closed set of verb names and fence each 
 
 ## Open decisions
 
-Defaults if the owner says nothing are recorded in `docs/roadmap.md` section 6.
+Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record.
 
-1. **Class list.** The four critical classes above are a proposal. The owner confirms or edits them before authoring, because they become the verb's closed vocabulary and its tests.
+1. **Class list.** Decided 2026-11-13: the five classes in the table above, `wrong-refusal` added. They are the verb's closed vocabulary and its tests.
 2. **`./dev.py issue`.** In this repo a chupa defect is just a chupa ticket, so the verb has no use here. Recommendation: no `dev.py` subcommand.
 3. **Inbound.** How a GitHub issue becomes a chupa ticket stays manual: the owner reads it and runs `chupa new`. Issues are never tickets; the "tickets are markdown files" rule stands.
 4. **Issue templates.** None needed: the verb owns the body shape. Add one only if people start filing by hand without the verb.
