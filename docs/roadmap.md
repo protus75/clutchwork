@@ -22,7 +22,7 @@ Versions follow `pyproject.toml` (`0.1.5` today). Each release below is a minor 
 
 | Release | Theme | Gate to start | Gate to ship |
 |---|---|---|---|
-| **0.2.0** | Truth, hygiene, and shared infrastructure | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean |
+| **0.2.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
 | **0.3.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.5.0 and its slot is skipped | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
 | **0.4.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.2.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`); Gemini hand test A0 fact 7 answered (headless image generation, else `api-provider-client` joins this release) | `scheduler.parallel.enabled: true` has run this repo's own queue for one week with no conflict rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
 | **0.5.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a review panel of two has run this repo's queue for a week with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
@@ -250,6 +250,8 @@ Each decision settles a place where two plans overlapped or contradicted. The pl
 13. **Generator and judge are different models.** Any surface that judges a model's output (`review_visual` now; a future image or audio judge) routes to a different model family than the surface that produced it; `doctor` warns and lint snags when a config breaks that. The owner's 2026-11-14 note on the Gemini models is the incident: image models answer with pictures, and a model grading its own family grades kindly.
 14. **One panel mechanism.** Running a stage as several independent calls and combining them is `docs/stage-panels-plan.md`'s `chupa/panel.py`, declared per routing row. The document agent's `doc-review-runner` depends on `panel-combiners` instead of building its own; the graphics judge's `judge_samples` majority is the `majority-verdict` combiner. No plan adds a second fan-out.
 15. **The index is a cache.** `<state_dir>/index.duckdb` (`docs/annotations-index-plan.md`) is derived and rebuildable, read by no gate and no dispatch. `duckdb` enters `pyproject.toml` once, with whichever of `journal-query-layer` or `index-build` lands first, under D3's named trigger. chupa ships no embedding model; vectors come from a host-declared command.
+16. **The driver's authority.** The roadmap driver (`docs/roadmap-driver-plan.md`) may edit a held ticket only through a reviewed Rework-update within the supervising rules, may keep it at most `caps.supervise` times per operator lineage, authors at most `--ahead` rows past the running set, and publishes only under `release.publish: true` or an operator confirm. The chat-session rules in CORE_TEMPLATE do not change: sessions still never confirm, reject, or push on their own.
+17. **Superseded is settled.** A split's parent enters a settled state `superseded` and leaves the Reject queue by itself; the three historical parents rejected by hand are the incident.
 
 ## 6. Owner decisions (decided 2026-11-13)
 
@@ -283,7 +285,7 @@ Every plan under `docs/` has these sections in this order, so the next audit can
 
 ## 8. Master ticket table
 
-Every proposed ticket, in release and priority order. "Owner" is the plan whose design the ticket implements; "roadmap" means the ticket comes from the audit above. `Depends on` lists only tickets whose merged code is needed; ordering that is not a dependency is in the `Runs before` column. No row is authored yet; authoring follows `chupa new` and the authoring guide, and the row gains a link when it is.
+Every proposed ticket, grouped by release and in priority order within a release. Row numbers are stable identifiers assigned in the order rows were added, not an ordering: the release sections and the `P` column order the work. "Owner" is the plan whose design the ticket implements; "roadmap" means the ticket comes from the audit above. `Depends on` lists only tickets whose merged code is needed; ordering that is not a dependency is in the `Runs before` column. Authoring follows `chupa new` and the authoring guide, and a row gains its link when it is authored (by hand today; by `roadmap author` once `docs/roadmap-driver-plan.md` lands).
 
 ### 0.2.0
 
@@ -323,6 +325,19 @@ Every proposed ticket, in release and priority order. "Owner" is the plan whose 
 | 32 | `gemini-provider` | gemini plan A1 | feature | P2 | | | `GeminiAdapter`, two settings files, watchdog branch, live view, `host-gemini.md`; after the hand test A0. |
 | 33 | `evidence-normalize-gemini` | evidence plan | feature | P3 | `evidence-store`, `gemini-provider` | | Gemini normalizer and fixture. |
 | 34 | `upstream-issue-verb` | upstream plan 1 | feature | P2 | | | `chupa issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its hand test. |
+
+### 0.2.0, last group: the roadmap driver
+
+Runs after the rows above; it is what runs every later release (`docs/roadmap-driver-plan.md`).
+
+| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
+|---|---|---|---|---|---|---|---|
+| 88 | `superseded-settles` | driver plan 1 | bug | P1 | | `supervisor-rework` | A split's parent enters the settled state `superseded` and leaves the Reject queue; `reject` refuses it as settled. Evidence: the three historical parents rejected by hand. |
+| 89 | `supervisor-rework` | driver plan 2 | feature | P1 | | | Rework-update on `premise_failed` and spent-cap terminals with the diagnosis lessons; allowed-edit gate (no goal or scope change); `caps.supervise`; supervisor keep that starts a new lineage; `rework.md` lifted on escalation. |
+| 90 | `roadmap-author` | driver plan 3 | feature | P1 | | | `roadmap_row` box message and policy row; `chupa/roadmap.py` table parser; `roadmap author --ahead N`; Author data blocks for the row and its plan; row linking and striking; hand-test refusal. |
+| 91 | `release-gates-as-commands` | driver plan 4 | chore | P2 | | | Fenced `gate` blocks per release in this document (`operator` where no command exists); `chupa roadmap status`. |
+| 92 | `release-publish` | driver plan 5 | feature | P2 | `release-verb` | | `chupa release`, `chupa publish` (PyPI, token env name in config), `./dev.py vscode-publish` (Marketplace); publish only on `release.publish: true`, else a park for `confirm`. |
+| 93 | `driver-loop` | driver plan 6 | feature | P1 | rows 88-92 | | The idle-point sequence in serve and drain (supervise, author ahead, release when the gate passes, digest); the rewritten `drain-loop` prompt; how-chupa-works "Roadmap driver". |
 
 ### 0.3.0 (conditional)
 
@@ -405,6 +420,6 @@ Every proposed ticket, in release and priority order. "Owner" is the plan whose 
 
 ## 9. Keeping this document true
 
-- A ticket authored from a row links its stem in that row; a merged row is struck through, not deleted, until the release ships; a shipped release's rows move to a "Shipped" section at the end.
+- A ticket authored from a row links its stem in that row; a merged row is struck through, not deleted, until the release ships; a shipped release's rows move to a "Shipped" section at the end. Once `roadmap-author` lands, the driver makes these edits as ticket-plane commits; until then a person does.
 - The audit (sections 2-4) is re-run before each minor release with the same six passes; rows that are fixed are removed, rows that recur are marked with the release that was supposed to fix them.
 - Shared budgets (section 5, decision 5) and shared files (decision 8) are updated whenever a plan adds a ticket that touches them.
