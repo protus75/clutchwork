@@ -8,7 +8,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.6.0, last (`docs/roadmap.md` rows 58-68). Needs from other plans: `evidence-envelope` (0.2.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.4.0) for the Automatable lens's overlap estimate. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `chupa/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
+Release 0.6.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.2.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.4.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.5.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.5.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `chupa/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
 
 ## What it is for
 
@@ -301,7 +301,7 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 | 1 | `doc-facet-registry` | feature | P2 | | Facet format (with `aliases`, `params`, `stages`, `verdicts`), loader, validation, `chupa doc facets`. Type, Audience, Tone, Format, and Theme facet files. |
 | 2 | `docset-manifest` | feature | P2 | | `chupa.docset/1.0`, section hashing, `chupa doc status`. |
 | 3 | `isolated-readonly-call` | feature | P2 | `evidence-envelope` | `isolated` request mode: scratch working directory with only the declared files, for Claude and Codex; the evidence record carries `isolated`, `conduct_file: null`, `repo: null`. Tests prove a panelist cannot read a repo file. |
-| 4 | `doc-review-runner` | feature | P2 | 1, 3 | Generic `doc_review` surface, stage runner, schema and verdict gates, accounting gate, report. |
+| 4 | `doc-review-runner` | feature | P2 | 1, 3, `panel-combiners` | Generic `doc_review` surface, stage runner on `chupa/panel.py` (the lens's `stages` map onto panel members and combiners; the synthesis role is a model combiner the lens supplies), schema and verdict gates, accounting gate, report. |
 | 5 | `doc-lenses-from-owner-prompts` | feature | P2 | 4 | `scope`, `viability`, `buildability`, and `compression` lens facets from the owner's prompt files, with schemas. Engine-side byte-identity checks of protected regions for `compression`. |
 | 6 | `doc-lens-automatable` | feature | P2 | 4, `fence-overlap` | The Appendix prompt as a lens facet, the mechanical ticket-lint stage, the automation ratio, the fence-overlap estimate, and `--deep`. |
 | 7 | `doc-derive-fidelity` | feature | P2 | 2, 5 | `doc_derive`, fidelity gate by derive class, `fidelity` recorded in `docset.yaml`. |
@@ -322,14 +322,14 @@ Tickets 1, 2, and 3 touch separate files and suit a first parallel trial.
 
 ## Open decisions
 
-Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record. Items 4 to 6 remain open.
+Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 is the record. Nothing here remains open.
 
 1. **`diverse` panels by default?** Decided 2026-11-13: off by default, so convergence counts compare with the owner's earlier manual runs; `--diverse` on a run rotates panelists across the route's candidates.
 2. **Host-defined lenses and facets.** Decided 2026-11-13: allowed, as data blocks inside the engine frame through `documents.facets_dir`. The owner's lenses ship as engine facets either way. The refusal of `review.surfaces` for code review stays.
 3. **Verbs only, or a `doc` ticket kind too?** Decided 2026-11-13: verbs only for v1; a `doc` kind is the follow-up if doc sets start being changed by the drain.
-4. **Where doc sets live.** Recommend `docs/<anything>/` with a `docset.yaml`, found by search.
-5. **Promote an `automatable` consensus ticket set into a Seed?** Recommend allowing it only as an explicit owner step, never automatically. Otherwise the instrument starts shaping the result it measures.
-6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Recommend yes, and run `scope` and `buildability` on them as the first real use.
+4. **Where doc sets live.** Decided 2026-11-14: any `docs/<name>/` with a `docset.yaml`, found by search; no registry file.
+5. **Panel size.** Decided 2026-11-14: default 3, minimum 2; `--panel 1` is refused because a single reviewer has nothing to converge with. Promoting an `automatable` consensus ticket set into a Seed stays an explicit owner step, never automatic.
+6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Decided 2026-11-14: yes; `plans-into-docsets` (roadmap row 76) runs `scope` and `buildability` on each as the first real use and is 0.6.0's ship gate.
 
 ## Appendix: draft `AutomatableReview` prompt
 

@@ -8,7 +8,7 @@ Deferred. The refactor starts only at the feature checkpoint described below, an
 
 ## Roadmap
 
-Release 0.3.0, conditional (`docs/roadmap.md` §1 and rows 35-41). The release verb this plan's step (a) asked for is the roadmap's row 3 (`release-verb`, 0.2.0), because tagging 0.2.0 needs it first. The window's port tickets touch the same files as the parallel plan's `serve-parallel-dispatch` and `conflict-discard-rerun` (`runner`, `stages`, `merge`, `mergequeue`, `drain`, `serve`, `daemon`, `scheduler`), so those land after the window, or before it if the window slides behind 0.5.0 (roadmap decision 7). Shared budgets: one new dependency (`duckdb`), which is the `CHUPA_PLAN.md` D3 and §18.2 "DuckDB analytics engine" return, earned by the measurement below.
+Release 0.3.0, conditional (`docs/roadmap.md` §1 and rows 35-41). The release verb this plan's step (a) asked for is the roadmap's row 3 (`release-verb`, 0.2.0), because tagging 0.2.0 needs it first. The window's port tickets touch the same files as the parallel plan's `serve-parallel-dispatch` and `conflict-discard-rerun` (`runner`, `stages`, `merge`, `mergequeue`, `drain`, `serve`, `daemon`, `scheduler`), so those land after the window, or before it if the window slides behind 0.5.0 (roadmap decision 7). Shared budgets: one new dependency (`duckdb`), which is the `CHUPA_PLAN.md` D3 and §18.2 "DuckDB analytics engine" return, earned by the measurement below. If this window slides, `index-build` (`docs/annotations-index-plan.md`, 0.5.0) adds the dependency first under the same trigger (roadmap decision 15).
 
 ## Release protocol
 

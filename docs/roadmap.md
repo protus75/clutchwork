@@ -25,7 +25,7 @@ Versions follow `pyproject.toml` (`0.1.5` today). Each release below is a minor 
 | **0.2.0** | Truth, hygiene, and shared infrastructure | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean |
 | **0.3.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.5.0 and its slot is skipped | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
 | **0.4.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.2.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`); Gemini hand test A0 fact 7 answered (headless image generation, else `api-provider-client` joins this release) | `scheduler.parallel.enabled: true` has run this repo's own queue for one week with no conflict rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
-| **0.5.0** | Training flywheel (`docs/training-data-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens |
+| **0.5.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a review panel of two has run this repo's queue for a week with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
 | **0.6.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call`; the owner's lens prompts adapted | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
 Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.2.0 because they touch nothing the later releases reshape, and both wait on a hand test (their plans say which facts).
@@ -248,6 +248,8 @@ Each decision settles a place where two plans overlapped or contradicted. The pl
 11. **The mergequeue docstring** is fixed by `docs-truth-sweep`, not by a parallel-plan ticket; that plan's row 2 now points at the roadmap's `active-slot-single-owner` and `merge-admission-single-owner`, the two 0.2.0 chores its dispatch and merge tickets depend on.
 12. **Optional dependencies.** The graphics plan's image libraries ship as the extras `chupa[images]` and `chupa[images-embed]`, imported lazily by `chupa/images.py`; core chupa gains no dependency. A later plan that needs a heavy library follows the same shape. The journal plan's `duckdb` is the one core dependency a plan adds, earned by D3's named trigger.
 13. **Generator and judge are different models.** Any surface that judges a model's output (`review_visual` now; a future image or audio judge) routes to a different model family than the surface that produced it; `doctor` warns and lint snags when a config breaks that. The owner's 2026-11-14 note on the Gemini models is the incident: image models answer with pictures, and a model grading its own family grades kindly.
+14. **One panel mechanism.** Running a stage as several independent calls and combining them is `docs/stage-panels-plan.md`'s `chupa/panel.py`, declared per routing row. The document agent's `doc-review-runner` depends on `panel-combiners` instead of building its own; the graphics judge's `judge_samples` majority is the `majority-verdict` combiner. No plan adds a second fan-out.
+15. **The index is a cache.** `<state_dir>/index.duckdb` (`docs/annotations-index-plan.md`) is derived and rebuildable, read by no gate and no dispatch. `duckdb` enters `pyproject.toml` once, with whichever of `journal-query-layer` or `index-build` lands first, under D3's named trigger. chupa ships no embedding model; vectors come from a host-declared command.
 
 ## 6. Owner decisions (decided 2026-11-13)
 
@@ -366,23 +368,34 @@ Every proposed ticket, in release and priority order. "Owner" is the plan whose 
 | 62 | `evidence-verbs` | evidence plan 6 | feature | P3 | `evidence-envelope`, rows 30-31 | | `evidence show`, `schema`, `renormalize`, `coverage`. |
 | 63 | `spools-onto-evidence-store` | evidence plan 7 | chore | P3 | `evidence-envelope` | | Per-attempt `spools/<stem>/<attempt>/` move into the store; harvest, diagnosis, and the spool readers follow; one capture path (decision 12). |
 | 64 | `one-parser-per-provider` | evidence plan 8 | chore | P3 | rows 30-31, `evidence-normalize-gemini` | | `CallMeter`, `Parsed`, and `live_call` read the normalized events; the adapter and watchdog parsers go (decision 13). |
+| 65 | `panel-combiners` | panels plan 1 | feature | P2 | | `doc-review-runner` | `chupa/panel.py`: `findings-union`, `majority-verdict`, `best-of-n` over the existing artifact models; `panel_facts` body. Pure. |
+| 66 | `panel-routing-config` | panels plan 2 | feature | P2 | `route-kinds-filter` | | `Route.panel {size, combine}`, surface-fit refusal, distinct-candidate assignment, `doctor` warning for single-slot providers. |
+| 67 | `review-panel` | panels plan 3 | feature | P2 | `panel-combiners`, `panel-routing-config` | | Driver fan-out with member effect keys and evidence records; review, requisition review, diagnosis, and triage use the combined result. |
+| 68 | `panel-scorecard` | panels plan 4 | feature | P3 | `review-panel` | | Per-member catch attribution; unique catches per 100 reviews and the cost multiplier in the retro report. |
+| 69 | `meta-schema-and-refresh` | annotations plan 1 | feature | P2 | | | Six-key `chupa.meta/1.0` block for Markdown and Python, parser, hash, generated fields, `meta refresh` and `meta check`, `meta` config; fills this repo's blocks. |
+| 70 | `meta-fill-surface` | annotations plan 2 | feature | P2 | `meta-schema-and-refresh` | | `specs/meta.md`, `meta fill` in batches, path validation, `verified` stamping. |
+| 71 | `meta-drift-lint` | annotations plan 3 | feature | P3 | `meta-schema-and-refresh` | | Soft `meta_drift` gate; Check runs `refresh` on changed files and commits `chupa(<stem>): meta`. |
+| 72 | `index-build` | annotations plan 4 | feature | P2 | `meta-schema-and-refresh`, `evidence-envelope` | | `chupa/index.py`: `files`, `chunks`, `embeddings` (host embed argv, VSS), `touches`, `calls`; incremental; post-merge build; adds `duckdb` if `journal-query-layer` has not. |
+| 73 | `context-suggest` | annotations plan 5 | feature | P2 | `index-build` | | `chupa context suggest <stem>` and the Author data block. |
+| 74 | `index-consumers` | annotations plan 6 | feature | P3 | `context-suggest` | | `index.implement_hint`, `doc draft --from <topic>`, the training export join. |
 
 ### 0.6.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 65 | `doc-facet-registry` | document plan 1 | feature | P2 | | | Facet format, loader, `chupa doc facets`, facet files. |
-| 66 | `docset-manifest` | document plan 2 | feature | P2 | | | `chupa.docset/1.0`, section hashing, `chupa doc status` over any `docs/<name>/` with a manifest. |
-| 67 | `isolated-readonly-call` | document plan 3 | feature | P2 | `evidence-envelope` | | Scratch working directory with only the declared files; evidence record with `repo: null`. |
-| 68 | `doc-review-runner` | document plan 4 | feature | P2 | `doc-facet-registry`, `isolated-readonly-call` | | `doc_review` surface over `specs/doc/lens.md`, stage runner, accounting gate, report; panel default 3, minimum 2. |
-| 69 | `doc-lenses-from-owner-prompts` | document plan 5 | feature | P2 | `doc-review-runner` | | `scope`, `viability`, `buildability`, `compression` facets from the owner's files. |
-| 70 | `doc-lens-automatable` | document plan 6 | feature | P2 | `doc-review-runner`, `fence-overlap` | | The Automatable lens, mechanical ticket lint stage, automation ratio. |
-| 71 | `doc-derive-fidelity` | document plan 7 | feature | P2 | `docset-manifest`, `doc-lenses-from-owner-prompts` | | `doc_derive`, fidelity gate by derive class. |
-| 72 | `doc-fold-apply` | document plan 8 | feature | P2 | `docset-manifest`, `doc-derive-fidelity` | | `doc_fold`, `doc apply`, accept flow, `derive --stale`. |
-| 73 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
-| 74 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest` | | Headless draft and the `doc-plan` ask prompt. |
-| 75 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
-| 76 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the eight `docs/*.md` plans into doc sets and run `scope` and `buildability` on each; 0.6.0's ship gate. |
+| 75 | `doc-facet-registry` | document plan 1 | feature | P2 | | | Facet format, loader, `chupa doc facets`, facet files. |
+| 76 | `docset-manifest` | document plan 2 | feature | P2 | | | `chupa.docset/1.0`, section hashing, `chupa doc status` over any `docs/<name>/` with a manifest. |
+| 77 | `isolated-readonly-call` | document plan 3 | feature | P2 | `evidence-envelope` | | Scratch working directory with only the declared files; evidence record with `repo: null`. |
+| 78 | `doc-review-runner` | document plan 4 | feature | P2 | `doc-facet-registry`, `isolated-readonly-call`, `panel-combiners` | | `doc_review` surface over `specs/doc/lens.md`, stage runner on `chupa/panel.py`, accounting gate, report; panel default 3, minimum 2. |
+| 79 | `doc-lenses-from-owner-prompts` | document plan 5 | feature | P2 | `doc-review-runner` | | `scope`, `viability`, `buildability`, `compression` facets from the owner's files. |
+| 80 | `doc-lens-automatable` | document plan 6 | feature | P2 | `doc-review-runner`, `fence-overlap` | | The Automatable lens, mechanical ticket lint stage, automation ratio. |
+| 81 | `doc-derive-fidelity` | document plan 7 | feature | P2 | `docset-manifest`, `doc-lenses-from-owner-prompts` | | `doc_derive`, fidelity gate by derive class. |
+| 82 | `doc-fold-apply` | document plan 8 | feature | P2 | `docset-manifest`, `doc-derive-fidelity` | | `doc_fold`, `doc apply`, accept flow, `derive --stale`. |
+| 83 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
+| 84 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest`, `context-suggest` | | Headless draft (with `--from <topic>` through the index) and the `doc-plan` ask prompt. |
+| 85 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
+| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten `docs/*.md` plans into doc sets and run `scope` and `buildability` on each; 0.6.0's ship gate. |
+| 87 | `implement-best-of-n` | panels plan 5 | feature | P3 | `panel-combiners`, `serve-parallel-dispatch` | | Per-member worktrees, Check on every candidate, selection by Check pass then fewest soft findings then smallest diff, retirement of the rest. |
 
 ### Operator actions (not tickets)
 
