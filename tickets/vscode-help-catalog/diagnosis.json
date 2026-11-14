@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "8422e25c92785462c481a70c1cabb8d7536de090",
+  "stem": "vscode-help-catalog",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In chupa/help.py, never let a bare next(...) StopIteration escape help_map. For the verb-row lookup in the chupa/docs/host-running.md table, use next(..., None). On None, raise LookupError naming the topic key, the verb, and the doc path, and say to restore the row or update chupa/help.py.",
+    "Do the same for the packaged-doc heading lookup in chupa/help.py: use next(..., None) and raise LookupError naming the topic key, the expected heading text, and the doc path. The builder must raise and never return a partial map (ticket Scope in, AC6).",
+    "In tests/unit/test_help.py::test_unresolved_link_raises, assert pytest.raises(LookupError) for both cases: a renamed linked heading and a missing run-guide verb row. Also match the message on the topic key, so StopIteration no longer passes the test.",
+    "Review found the rest of the earlier approach sound: TOPICS, COMMANDS, topic_text, help_map, help_pick, links, and the tests. Redo all of it from the merge base, inside the fence only: chupa/help.py, tests/unit/test_help.py, tests/integration/test_help.py.",
+    "Before finishing, run both Verification commands as written: `./dev.py test tests/unit/test_help.py tests/integration/test_help.py tests/unit/test_host_running.py` and `./dev.py test`."
+  ],
+  "mechanical": null,
+  "spec_version": "1.5",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
