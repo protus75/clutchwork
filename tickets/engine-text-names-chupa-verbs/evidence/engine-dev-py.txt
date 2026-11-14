@@ -12,21 +12,25 @@ chupa/__main__.py:1011:    print(f"{verb} submitted: {request.request_id} -- ./d
 chupa/requisition.py:191:            return snag("missing or invalid coverage map", "invalid coverage map", "coverage_map", "run ./dev.py covmap")
 chupa/stages.py:305:            paved_road=f"review the change to {rel}, then keep (./dev.py confirm {stem}) or kill (./dev.py reject {stem})",
 
-$ grep -rnoE "[^ ]*dev[.]py[^ ]*" chupa/specs/ | sort -u
-chupa/specs/ask/box.md:4:`./dev.py
-chupa/specs/ask/diagnose.md:1:`./dev.py`
-chupa/specs/ask/drafts.md:8:`./dev.py
-chupa/specs/ask/drain-loop.md:11:(`./dev.py
-chupa/specs/ask/drain-loop.md:11:`./dev.py
-chupa/specs/ask/drain-loop.md:14:`./dev.py
+$ grep -noE "[^ `(]*dev[.]py[^ `]*" chupa/specs/ask/*.md   (18 occurrences, 6 of 6 files)
+chupa/specs/ask/box.md:4:./dev.py
+chupa/specs/ask/box.md:4:./dev.py
+chupa/specs/ask/diagnose.md:1:./dev.py
+chupa/specs/ask/drafts.md:8:./dev.py
+chupa/specs/ask/drafts.md:8:./dev.py
 chupa/specs/ask/drain-loop.md:1:./dev.py
-chupa/specs/ask/drain-loop.md:24:`./dev.py
-chupa/specs/ask/drain-loop.md:25:`./dev.py
-chupa/specs/ask/drain-loop.md:5:`./dev.py
-chupa/specs/ask/drain-loop.md:7:`./dev.py
-chupa/specs/ask/review.md:1:`./dev.py`
-chupa/specs/ask/running.md:1:`./dev.py
-chupa/specs/ask/running.md:1:`./dev.py`
+chupa/specs/ask/drain-loop.md:5:./dev.py
+chupa/specs/ask/drain-loop.md:7:./dev.py
+chupa/specs/ask/drain-loop.md:7:./dev.py
+chupa/specs/ask/drain-loop.md:11:./dev.py
+chupa/specs/ask/drain-loop.md:11:./dev.py
+chupa/specs/ask/drain-loop.md:14:./dev.py
+chupa/specs/ask/drain-loop.md:24:./dev.py
+chupa/specs/ask/drain-loop.md:25:./dev.py
+chupa/specs/ask/review.md:1:./dev.py
+chupa/specs/ask/running.md:1:./dev.py
+chupa/specs/ask/running.md:1:./dev.py
+chupa/specs/ask/running.md:1:./dev.py
 
 Out of scope here, listed so the sweep's boundary is on record. Every verb named above exists on the chupa CLI, so each string has a correct host form:
 
