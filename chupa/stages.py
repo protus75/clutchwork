@@ -1587,32 +1587,17 @@ async def run_stages(ctx: StageContext, ticket: Ticket) -> StagesRun:
             assert isinstance(invoice, Invoice)
             operation = review(ctx, ticket, invoice, attempt=run.attempt)
         with ctx.driver.stage(stem=ticket.stem, attempt=run.attempt, surface="check") if stage == "check" else nullcontext() as event:
-            try:
-                if boundary.select is None:
-                    result = await operation
-                else:
-                    boundary.active = asyncio.create_task(operation)
-                    try:
-                        result = await asyncio.shield(boundary.active)
-                    except asyncio.CancelledError:
-                        await ctx.abort_current()
-                        raise
-                    finally:
-                        boundary.active = None
-            except Exception as exc:
-                from chupa.driver import ProviderDroughtResult
-                from chupa.providers import ProviderCallError, ProviderDrought
-
-                if isinstance(exc, ProviderDrought):
-                    result = ProviderDroughtResult(outcome="infra_error", artifact=None, findings=[], cost=Cost(), provider_drought=exc.record)
-                elif isinstance(exc, ProviderCallError):
-                    findings = await ctx.driver.provider_failure(exc, owner=ticket.stem, ticket=ticket.stem, sequence=run.attempt, surface="requisition_review", workspace=ctx.worktree(ticket.stem))
-                    meter = ctx.driver.detector.call if ctx.driver.detector else None
-                    result = StageResult(
-                        outcome="infra_error", artifact=None, findings=findings, cost=Cost(attempts=1, provider=meter.identity[0] if meter else None, model=meter.identity[1] if meter else None)
-                    )
-                else:
+            if boundary.select is None:
+                result = await operation
+            else:
+                boundary.active = asyncio.create_task(operation)
+                try:
+                    result = await asyncio.shield(boundary.active)
+                except asyncio.CancelledError:
+                    await ctx.abort_current()
                     raise
+                finally:
+                    boundary.active = None
             if stage == "check":
                 event.end(result.outcome)
         run.results[stage] = result

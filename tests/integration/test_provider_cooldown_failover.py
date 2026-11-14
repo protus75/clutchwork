@@ -208,8 +208,7 @@ async def test_all_candidates_cooling_recovers_on_timer_fired(tmp_path, monkeypa
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("nested", [False, True])
-async def test_mid_run_drought_is_harvested_without_spine_draws(root, monkeypatch, nested):
+async def test_mid_run_drought_is_harvested_without_spine_draws(root, monkeypatch):
     rig = await repository(root, monkeypatch)
     ticket = await rig.add("midrun")
     from tests.approval import approve
@@ -243,25 +242,6 @@ async def test_mid_run_drought_is_harvested_without_spine_draws(root, monkeypatc
         )
 
     async def review(ctx, ticket, invoice, *, attempt):
-        if nested:
-            from chupa.requisition import FIRST_REVIEW, review_ticket
-            from tests.integration.test_requisition import TICKET
-
-            await review_ticket(
-                ctx.driver,
-                repo=root,
-                stem="seed",
-                text=TICKET.replace("context.txt", "config.yaml"),
-                specs_dir=runner.SPECS_DIR,
-                coverage_map=None,
-                tier="medium",
-                stem_slot=ticket.stem,
-                run_seq=0,
-                attempt=attempt,
-                call_seq=1,
-                expected_budget=600,
-                prior=FIRST_REVIEW,
-            )
         return await stage(rig, ctx.driver, stem=ticket.stem, surface="review")
 
     monkeypatch.setattr(stages, "implement", implement)
@@ -270,7 +250,7 @@ async def test_mid_run_drought_is_harvested_without_spine_draws(root, monkeypatc
     rig.transition(ticket.stem, "running")
     assert await writer(ticket) == "infra_error"
     [terminal] = terminals(rig, ticket.stem)
-    assert terminal.body["provider_drought"]["surface"] == ("requisition_review" if nested else "review")
+    assert terminal.body["provider_drought"]["surface"] == "review"
     assert terminal.body["reason"] == "provider_drought" and "dispatch" not in terminal.body
     assert not any(e.type == EventType.CAP_CONSUMED or e.body.get("signal") in {"diagnosis", "reject_arrival"} for e in rig.journal.read())
     assert not writer.ctx.worktree(ticket.stem).exists()
