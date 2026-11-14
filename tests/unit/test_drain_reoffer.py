@@ -37,7 +37,7 @@ def test_escalated_reoffer_keeps_rung_draw(terminal):
     ]  # Skipping escalations or dropping the rung loses the next capability.
 
 
-@pytest.mark.parametrize("terminal", ["gate_failed", "abandoned"])
+@pytest.mark.parametrize("terminal", ["gate_failed", "abandoned", "incomplete"])
 def test_other_reoffer_draws_retry(terminal):
     assert reoffer({"to": terminal}) == [(EventType.CAP_CONSUMED, {"cap": "retry", "ticket_sha": "new-sha"}, "work")]  # Skipping all failed terminals leaves these re-offers undrawn.
 

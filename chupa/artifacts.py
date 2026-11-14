@@ -16,6 +16,7 @@ Outcome = Literal[
     "invalid_artifact",
     "gate_failed",
     "premise_failed",
+    "incomplete",
     "timeout",
     "infra_error",
     "budget_exceeded",

@@ -90,7 +90,7 @@ class SecondProblem(_Strict):
 class ImplementReply(_Strict):
     """The implement surface's model-facing reply (chupa/specs/implement.md); the stage stamps provenance."""
 
-    outcome: Literal["ok", "already_satisfied", "premise_failed"]
+    outcome: Literal["ok", "already_satisfied", "premise_failed", "incomplete"]
     summary: NonBlank
     surprises: str
     dead_ends: str
@@ -105,10 +105,10 @@ class ImplementReply(_Strict):
                 raise ValueError(
                     "premise_failed needs at least one finding, every code `premise` and every one naming `path` "
                     "(the file outside the fence, the file the criteria contradict, or the ticket); unfinished or large "
-                    "work is not a premise failure: implement the ticket and reply ok"
+                    "work is not a premise failure: implement the ticket and reply ok, or reply incomplete when you stopped before finishing"
                 )
         elif self.findings:
-            raise ValueError(f"{self.outcome} carries an empty findings list; reply premise_failed to stop")
+            raise ValueError(f"{self.outcome} carries an empty findings list; reply premise_failed for a ticket defect or incomplete for unfinished work")
         return self
 
 
@@ -684,8 +684,8 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
     record = f"{TICKETS_DIR}/{stem}/run.md"
     ctx.fs.write(worktree / record, run_record(reply, result.cost, spec, second_problem_ids).encode())
     await lift_outbox(ctx, stem, "run-record", attempt=attempt)
-    if reply.outcome == "premise_failed":
-        return _short(result, "premise_failed", list(reply.findings))
+    if reply.outcome in ("premise_failed", "incomplete"):
+        return _short(result, reply.outcome, list(reply.findings))
     slip = PackingSlip(
         produced_by_spec_version=_major(spec),
         produced_at_sha=await ctx.git.rev_parse(ctx.repo, stem),

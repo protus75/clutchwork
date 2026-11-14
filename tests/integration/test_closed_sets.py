@@ -67,8 +67,8 @@ def test_artifacts_closed_sets_and_constants():
     assert artifacts.DIAGNOSIS_MAX_LESSONS == 5
     assert artifacts.DIAGNOSIS_VERDICTS == ("retry", "escalate", "split", "reject", "abandon-human")
     assert set(get_args_deep(artifacts.DiagnosisVerdictName)) == {"abandon-human", "escalate", "reject", "retry", "split"}
-    assert artifacts.OUTCOMES == frozenset({"already_satisfied", "budget_exceeded", "gate_failed", "infra_error", "invalid_artifact", "ok", "premise_failed", "timeout"})
-    assert set(get_args_deep(artifacts.Outcome)) == {"already_satisfied", "budget_exceeded", "gate_failed", "infra_error", "invalid_artifact", "ok", "premise_failed", "timeout"}
+    assert artifacts.OUTCOMES == frozenset({"already_satisfied", "budget_exceeded", "gate_failed", "infra_error", "invalid_artifact", "ok", "premise_failed", "incomplete", "timeout"})
+    assert set(get_args_deep(artifacts.Outcome)) == {"already_satisfied", "budget_exceeded", "gate_failed", "infra_error", "invalid_artifact", "ok", "premise_failed", "incomplete", "timeout"}
     assert artifacts.REVIEW_SNAG_CODES == frozenset({"acceptance", "leak", "logic", "scope"})
     assert set(get_args_deep(artifacts.ReviewVerdictName)) == {"approve", "rma", "snag"}
 
@@ -210,7 +210,7 @@ def test_journal_closed_sets_and_constants():
         }
     )
     assert journal.TERMINAL_STATES == frozenset(
-        {"abandoned", "already_satisfied", "budget_exceeded", "gate_failed", "infra_error", "invalid_artifact", "merged", "premise_failed", "rejected", "timeout"}
+        {"abandoned", "already_satisfied", "budget_exceeded", "gate_failed", "incomplete", "infra_error", "invalid_artifact", "merged", "premise_failed", "rejected", "timeout"}
     )
 
 

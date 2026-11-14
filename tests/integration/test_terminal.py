@@ -147,3 +147,13 @@ def test_an_unbuildable_provider_layer_refuses_with_exit_2(repo, capsys):
     assert code == runner.EXIT_REFUSED
     assert "no shipped cli adapter" in capsys.readouterr().err
     assert transitions(repo) == []
+
+
+def test_an_incomplete_attempt_journals_a_retry_terminal(repo):
+    author(repo)
+    code, _ = run(repo, [implement_reply("incomplete"), diagnosis_reply()])
+
+    assert code == runner.EXIT_TICKET  # An unfinished attempt cannot report success.
+    assert transitions(repo)[-1] == {"to": "incomplete", "stage": "implement", "reason": "incomplete", "dispatch": "retry"}  # A premise route parks the ticket.
+    events = Journal(repo / ".chupa" / "state", clock).read()
+    assert not any(e.type == EventType.CAP_CONSUMED and e.ticket == STEM and e.body.get("cap") == "premise_bounce" for e in events)  # A bounce spends the wrong cap.

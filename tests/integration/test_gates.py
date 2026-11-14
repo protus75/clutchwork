@@ -78,6 +78,7 @@ def test_outcome_vocab_is_closed_and_includes_already_satisfied():
         "invalid_artifact",
         "gate_failed",
         "premise_failed",
+        "incomplete",
         "timeout",
         "infra_error",
         "budget_exceeded",

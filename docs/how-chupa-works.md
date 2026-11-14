@@ -213,6 +213,7 @@ Ticket Context files are UTF-8 text; lint renders each entry exactly as Implemen
 - `ok`: it committed the change.
 - `already_satisfied`: every acceptance criterion already holds on `main`; Check must prove it
   with green Verification on an empty diff.
+- `incomplete`: work stopped before it was committed, without an established ticket defect.
 - `premise_failed`: the ticket cannot be done as written; findings say why and name every forced
   file outside the scope fence separately.
 
@@ -362,7 +363,7 @@ After any other non-ok terminal, `runner.drive` does, in order:
 3. A provider **drought** or quota result parks the stem with no diagnosis (section 8.3).
 4. A failure reaching `caps.attempts` goes straight to the terminal, routed to the Reject queue
    with reason `attempts cap spent`, skipping the cap draw, Diagnosis, and Rework.
-5. `infra_error` / `timeout` draw the `infra` cap; `premise_failed` draws `premise_bounce`, except a requisition-stage snag ends before dispatch and draws no cap (section 6.7).
+5. `infra_error` / `timeout` draw the `infra` cap; `premise_failed` draws `premise_bounce`, except a requisition-stage snag ends before dispatch and draws no cap (section 6.7); `incomplete` draws neither cap.
 6. **Diagnosis** (section 6.3), unless the outcome is `budget_exceeded` or an over-bound render.
 7. **Rework** if diagnosis said `split`, or the render was over bound (section 6.5).
 8. Decide the dispatch (retry, escalate, or the Reject queue) and journal the terminal.
@@ -405,7 +406,7 @@ which counts failed terminal `state_transition` events directly and journals no 
 | `quarantine` | 5 | flake quarantine size |
 | `poison` | 2 | read by nothing |
 
-Failed attempts are `gate_failed`, `premise_failed`, `infra_error`, and `timeout` terminals.
+Failed attempts are `gate_failed`, `premise_failed`, `incomplete`, `infra_error`, and `timeout` terminals.
 A requisition-stage `premise_failed`, an `infra_error` with reason `provider_drought`, `budget_exceeded`, an `abandoned` reap,
 settled terminals, and `rejected` do not count. The failure reaching `caps.attempts` is itself
 routed with reason `attempts cap spent`, without another diagnosis or rework call, including

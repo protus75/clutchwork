@@ -45,7 +45,7 @@ def remaining(caps_config: Caps | ConfigSnapshot, events: Iterable[Event], stem:
 
 def failed_attempt(terminal: Mapping) -> bool:
     return (
-        terminal.get("to") in {"gate_failed", "premise_failed", "infra_error", "timeout"}
+        terminal.get("to") in {"gate_failed", "premise_failed", "incomplete", "infra_error", "timeout"}
         and not (terminal.get("to") == "infra_error" and terminal.get("reason") == "provider_drought")
         and not (terminal.get("to") == "premise_failed" and terminal.get("stage") == "requisition")
     )

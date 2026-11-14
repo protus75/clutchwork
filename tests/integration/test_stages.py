@@ -331,7 +331,7 @@ def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
     assert read_review((canonical / "review.md").read_text()) == review
     assert Invoice.model_validate_json((canonical / "checks.json").read_text()) == invoice
     run_md = (canonical / "run.md").read_text()
-    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.12" in run_md
+    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.13" in run_md
     assert git(repo, "diff", "--name-only", f"main...{STEM}").split() == ["chupa/thing.py"]
     outbox = config.worktree_root / STEM / "tickets" / STEM
     assert sorted(p.name for p in outbox.iterdir()) == ["ticket.md"]  # lifted and unlinked
@@ -917,3 +917,12 @@ async def test_outbox_lift_rejects_oversize(repo):
         await lift_outbox(ctx, STEM, "run-record", attempt=0)
     assert git(repo, "rev-parse", "main") == head
     assert not (repo / "tickets" / STEM / "run.md").exists()
+
+
+def test_incomplete_stops_after_implement_with_its_run_record(repo):
+    result, llm, _ = run(repo, [lambda req: implement_reply("incomplete")])
+
+    assert outcomes(result) == {"implement": "incomplete"}  # Mapping it to another outcome loses the terminal.
+    assert result.last[1].findings == []  # A stopping reply must not invent a defect.
+    assert "## Outcome\n\nincomplete\n" in (repo / "tickets" / STEM / "run.md").read_text()  # The record must retain the outcome.
+    assert len(llm.requests) == 1  # Continuing to Check or Review makes another call.
