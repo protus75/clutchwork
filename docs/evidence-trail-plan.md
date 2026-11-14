@@ -10,7 +10,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.2.0 for the store, envelope, and the Claude and Codex normalizers (`docs/roadmap.md` rows 28-31, 33); 0.5.0 for the verbs (row 57). Needs from the roadmap: `provider-capture-overwrite` (row 1, the P0 instance fix) and `fs-seam-mkdir-remove` (row 14). What needs it: `training-attempt-manifest` (0.5.0), `isolated-readonly-call` (0.6.0, records calls that have no repo), and the Gemini normalizer, which waits on `gemini-provider` (0.2.0). Shared budgets: one new config block `evidence`; no CORE_TEMPLATE text. `evidence-envelope` is the cause fix for the P0 under the CORE two-ticket rule: every capture path is keyed by the journal identity of what it captures (roadmap decision 4). It replaces `spools/providers/` outright (roadmap decision 1).
+Release 0.2.0 for the store, envelope, and the Claude and Codex normalizers (`docs/roadmap.md` rows 28-31, 33); 0.5.0 for the verbs, the spool move, and the one-parser consolidation (rows 62-64). Needs from the roadmap: `provider-capture-overwrite` (row 1, the P0 instance fix) and `fs-seam-mkdir-remove` (row 14). What needs it: `training-attempt-manifest` (0.5.0), `isolated-readonly-call` (0.6.0, records calls that have no repo), and the Gemini normalizer, which waits on `gemini-provider` (0.2.0). Shared budgets: one new config block `evidence`; no CORE_TEMPLATE text. `evidence-envelope` is the cause fix for the P0 under the CORE two-ticket rule: every capture path is keyed by the journal identity of what it captures (roadmap decision 4). It replaces `spools/providers/` outright (roadmap decision 1).
 
 ## Principles
 
@@ -228,6 +228,8 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 | 4 | `evidence-normalize-claude` | feature | P2 | `evidence-store` | Claude normalizer and golden fixture. qwen uses it, flagged `unverified` until a qwen fixture exists. Release 0.2.0. |
 | 5 | `evidence-normalize-gemini` | feature | P3 | `evidence-store`, `gemini-provider` | Gemini normalizer and fixture, from the hand-test capture in `docs/gemini-graphics-refactor-plan.md` A0. Release 0.2.0. |
 | 6 | `evidence-verbs` | feature | P3 | `evidence-envelope`, 3, 4 | `show`, `schema`, `renormalize`, `coverage`. Release 0.5.0. |
+| 7 | `spools-onto-evidence-store` | chore | P3 | `evidence-envelope` | The per-attempt `spools/<stem>/<attempt>/` (prompt, output, check output) move into the store as blobs referenced from the call and attempt records; harvest, diagnosis, and every spool reader follow; `spools/` is deleted. One capture path. Release 0.5.0 (decided 2026-11-14). |
+| 8 | `one-parser-per-provider` | chore | P3 | 3, 4, 5 | `CallMeter` (`chupa/watchdog.py`), `Parsed` (`chupa/providers.py`), and `live_call` (`chupa/observe.py`) read the normalized events and the envelope's `provider` block; the adapter `parse` methods and the watchdog's per-provider branches go. Release 0.5.0, after a release of real traffic and a coverage report that maps nearly every event (decided 2026-11-14). |
 
 `Runs before`: `contention-authoring-rules` (roadmap row 13) before every ticket here. Tickets 3 and 4 touch separate files and could run in parallel under `docs/parallel-tickets-plan.md` once it ships.
 
@@ -240,10 +242,10 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 ## Open decisions
 
-Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record. Item 3 remains open.
+Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 is the record. Nothing here remains open.
 
 1. **Copy the provider's own session log** (Claude and Codex both write transcripts under the user's home directory)? Decided 2026-11-13: no. It is outside chupa's custody, and the stdout stream holds the same events. `native_ids` keeps the join possible later.
 2. **Store thinking text?** Decided 2026-11-13: yes, as a blob like any other text, `visibility: text`; the export can exclude it per run.
-3. **Move `CallMeter`, `Parsed`, and `live_call` onto normalized events** (one parser per provider) after ticket 6? Recommend filing it with `chupa suggest` once normalizers have run on real traffic for a release.
+3. **Move `CallMeter`, `Parsed`, and `live_call` onto normalized events** (one parser per provider)? Decided 2026-11-14: yes, after a release of real traffic; ticket 8 above.
 
 Settled by the roadmap (decision 2): capture is always on; only the training plan's attempt manifests, export, and eval are behind `training_data.enabled`.
