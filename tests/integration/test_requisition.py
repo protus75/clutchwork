@@ -134,6 +134,20 @@ def test_spec_loads_and_names_finding_keys():
     assert "re-emit the same verdict as bare JSON" in source
 
 
+def test_requisition_review_spec_snags_unit_test_disk_read():
+    source = (SPECS / "requisition_review.md").read_text()
+    task = " ".join(load_spec(source).body.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
+    # Omitting any condition would miss a required snag or flag an exempt test.
+    for phrase in (
+        "a criterion or `## Verification` line names a `tests/unit/` file whose test the ticket adds or newly requires to read a named repo file",
+        "raise a `snag` finding: place that test under `tests/integration/` and fence that file",
+        "A test reading only `tmp_path` is not a hit.",
+        "A test reaching a repo file only through an injected seam or fake is not a hit.",
+        "Updating a pinned value in an existing unit test that already reads the file is not a hit.",
+    ):
+        assert phrase in task
+
+
 @pytest.mark.parametrize("kind", [None, "authoring_error"])
 def test_a_unit_requires_spec_gap_kind(kind):
     with pytest.raises(ValueError, match="unit is non-null only for kind spec_gap"):
