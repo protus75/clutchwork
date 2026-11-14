@@ -47,6 +47,9 @@ When this ticket is done, a process continues a stem's numbering from the highes
 - In: `tests/integration/test_provider_capture_overwrite.py` (new): the reproducer as a pytest test, using the `config`, `llm`, `FakeExec`, `claude_ok`, and `req` helpers from `tests/integration/test_providers.py`, plus the per-stem numbering case.
 - In: `tests/regress_provider_capture_overwrite.py` (new): the carried reproducer in the shape of `tests/regress_drain_deadline.py`. It runs `pytest` on `tests/integration/test_provider_capture_overwrite.py` with stdout redirected to stderr and prints the one `regression_result` line.
 - In: `tests/unit/test_preflight_parallel.py`. Its `MemoryFS` gains `entries` returning `[]`, because preflight probes reach `invoke` and `invoke` now lists the capture directory.
+- In: `tests/integration/test_effects.py`. `FakeFS` (line 35) gains `entries(path)` returning `[]`, so the `isinstance(fs, FileSystem)` assertion at line 65 still holds against the runtime-checkable protocol.
+- In: `tests/integration/test_daemon_composition.py`. `ScriptFS` (line 37) gains `entries(path)` returning the sorted names of its in-memory files directly under `path`, or `[]`, because `CoreRig` hands it to the adapters and runs calls through `invoke`. No test is added to this file.
+- In: `tests/unit/test_probe_verb.py`. The `Mock()` filesystem at line 18 sets `fs.entries.return_value = []` so `capture_sequence` receives a list; the assertions are unchanged.
 - In: `docs/how-chupa-works.md` section 10.1, the `spools/` row: after "`spools/providers/` holds raw CLI captures", add that a stem's capture numbers continue from the highest already on disk, so a later process never overwrites an earlier capture.
 - Out: keying captures by the journal's call key, which is the roadmap's `evidence-envelope` (`docs/roadmap.md` row 29) and replaces this directory layout. Moving captures anywhere else. `spools/probe/` (one probe set per process; its own `capture_dir`). `harvest`'s reader. The `evidence/` files of this ticket.
 
@@ -56,6 +59,9 @@ When this ticket is done, a process continues a stem's numbering from the highes
 - docs/how-chupa-works.md
 - tests/unit/test_capture_sequence.py
 - tests/unit/test_preflight_parallel.py
+- tests/unit/test_probe_verb.py
+- tests/integration/test_effects.py
+- tests/integration/test_daemon_composition.py
 - tests/integration/test_provider_capture_overwrite.py
 - tests/regress_provider_capture_overwrite.py
 
