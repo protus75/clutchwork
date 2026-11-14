@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-None.
+Preserved lock-holder information alongside help text; using only help text would have removed that information. The full suite passed 3,632 tests, and the coverage, integration, lint, and format gates passed.
 
 ## Dead ends
 
-None.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 75 minutes expected; the work completed within that budget.
+Expected 75 minutes; completed in less time.
 
