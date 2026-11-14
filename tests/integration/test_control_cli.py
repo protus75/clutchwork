@@ -585,3 +585,29 @@ def test_live_confirm_intakes_before_submission(root, monkeypatch, capsys, kind)
             assert requests(root) == []
     finally:
         lock.release()
+
+
+def test_confirm_multiple_stems_stops_on_refusal(tmp_path):
+    import asyncio
+
+    from chupa.journal import EventType
+    from tests.integration.test_mergequeue import ctx as context_fixture
+    from tests.integration.test_mergequeue import ready
+
+    ctx = context_fixture.__wrapped__(tmp_path)
+
+    async def exercise():
+        for stem in ("first", "second", "untouched"):
+            await ready(ctx, stem=stem)
+            ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "gate_failed", "routed": "reject_queue"}, ticket=stem)
+        terminal = (lambda: True, lambda _: "y")
+        assert await asyncio.to_thread(entry.main, ["confirm", "first", "second"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=terminal) == 0
+
+        def keeps():
+            return [e.ticket for e in ctx.driver.journal.read() if e.body.get("signal") == "reject_verdict"]
+
+        assert keeps() == ["first", "second"]
+        assert await asyncio.to_thread(entry.main, ["confirm", "first", "untouched"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=terminal) == 2
+        assert keeps() == ["first", "second"]
+
+    asyncio.run(exercise())

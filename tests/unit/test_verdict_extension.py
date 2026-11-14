@@ -31,7 +31,26 @@ def test_request_actor_and_parser():
     with pytest.raises(ValueError):
         control.validate_request({**body, "actor": "unknown"}, "request-1.json")
     args = entry._parser().parse_args(["confirm", "sample", "--extension"])
-    assert args.extension and args.stem == "sample" and not args.yes
+    assert args.extension and args.stems == ["sample"] and not args.yes
+
+
+def test_verdict_and_review_loop_over_stems(monkeypatch):
+    config = SimpleNamespace(state_dir="state", providers=[])
+    monkeypatch.setattr(entry, "load_config", lambda *args, **kwargs: config)
+    for name in ("Journal", "Git", "CommitLock", "SubprocessExec"):
+        monkeypatch.setattr(entry, name, lambda *args, **kwargs: object())
+    verdict = AsyncMock(return_value=0)
+    review = AsyncMock(return_value=0)
+    monkeypatch.setattr(entry, "_verdict", verdict)
+    monkeypatch.setattr(entry, "_review", review)
+    assert entry._parser().parse_args(["confirm", "a", "b"]).stems == ["a", "b"]
+    for verb, fake, args in (("confirm", verdict, ["--yes"]), ("review", review, [])):
+        assert entry.main([verb, "a", "b", *args], env={}) == 0
+        assert [call.args[1] for call in fake.await_args_list] == ["a", "b"]
+        fake.reset_mock()
+        fake.return_value = 7
+        assert entry.main([verb, "a", "b", *args], env={}) == 7
+        assert [call.args[1] for call in fake.await_args_list] == ["a"]
 
 
 def test_settle_passes_actor():

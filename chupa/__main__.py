@@ -272,7 +272,7 @@ def _parser() -> argparse.ArgumentParser:
         sub.add_parser(verb, help=f"submit {verb} to the running engine, or do nothing under the idle lock")
     sub.add_parser("kill", help="submit kill to the running engine; refuse when nothing is running")
     sub.add_parser("stop", help="finish the running ticket, admit nothing new, then exit")
-    sub.add_parser("review", help="review a committed ticket under the lock").add_argument("stem")
+    sub.add_parser("review", help="review a committed ticket under the lock").add_argument("stems", nargs="+")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
     sub.add_parser("dismiss", help="dismiss box messages under the lock").add_argument("ids", nargs="+")
@@ -293,7 +293,7 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("stem")
     for verb in ("confirm", "reject"):
         verdict = sub.add_parser(verb, help=f"{verb} a draft or Reject item; publish the verdict to a running serve holding the lock")
-        verdict.add_argument("stem")
+        verdict.add_argument("stems", nargs="+")
         verdict.add_argument("--yes", action="store_true")
         verdict.add_argument("--extension", action="store_true")
     dr = sub.add_parser("drain", help="run every eligible ticket to quiescence under the lock")
@@ -611,9 +611,15 @@ def main(
         if args.verb in {"pause", "resume", "kill", "stop"}:
             return asyncio.run(_control(checkout, args.verb))
         if args.verb in {"confirm", "reject"}:
-            return asyncio.run(_verdict(checkout, args.stem, args.verb, read_input, args.yes, args.extension))
+            for stem in args.stems:
+                if result := asyncio.run(_verdict(checkout, stem, args.verb, read_input, args.yes, args.extension)):
+                    return result
+            return 0
         if args.verb == "review":
-            return asyncio.run(_review(checkout, args.stem))
+            for stem in args.stems:
+                if result := asyncio.run(_review(checkout, stem)):
+                    return result
+            return 0
         if args.verb == "dismiss":
 
             async def dismiss_messages():
