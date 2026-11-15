@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The full suite passed with 3,632 tests; the unit coverage, integration, lint, and format checks also passed. The regression reported defect against the original projection and pass against the change. The coverage check left an untracked .coverage file in the worktree.
+The full suite passed 3,632 tests; the configured coverage, integration, lint, and format checks passed. The regression script passed on the candidate and reported defect with the merge-base projection. A reverse journal scan was the minimum needed to preserve ordering and distinguish later verdicts from earlier ones.
 
 ## Dead ends
 
-The first regression fixture lacked timestamps required by the scorecard projection; adding them fixed the fixture.
+none
 
 ## Second problems filed
 
-- box-000465-624173ac: Verdict refusals, intake, and reopens also retain whole-journal history without a retirement rule.
+- box-000468-7fc958d7: Verdict refusals, intake, and reopen projections also retain whole-journal history and may need separate retirement rules.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ The first regression fixture lacked timestamps required by the scorecard project
 
 ## Predicted vs actual
 
-The ticket estimated 25 minutes; the work took less than that.
+Expected 25 minutes; completed within the budget.
 
