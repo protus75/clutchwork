@@ -193,6 +193,15 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
     intake = tuple((e.ticket, e.body["source"], e.body["state"], e.body["commit"]) for e in events if e.type == EventType.SIGNAL and e.body.get("signal") == INTAKE_SIGNAL and e.ticket is not None)
     spend = sum(e.body["cost"].get("usd", 0.0) for e in events if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict))
     messages = box.messages() if box is not None else []
+    resolved_stems = set()
+    decisions = []
+    for e in reversed(events):
+        if e.type != EventType.SIGNAL:
+            continue
+        if e.ticket is not None and e.body.get("signal") in {"draft_confirmed", "reject_verdict"}:
+            resolved_stems.add(e.ticket)
+        if e.body.get("kind") == "control_decision" and e.body.get("decision") in {"stale", "rejected"} and e.body.get("stem") not in resolved_stems:
+            decisions.append((e.body["request_id"], e.body["verb"] or "", e.body.get("stem") or "", e.body["decision"], e.body["reason"]))
 
     def row(m):
         label = (
@@ -221,11 +230,7 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
             and e.body["result"].get("refusal")
             and e.ticket is not None
         ),
-        verdict_decisions=tuple(
-            (e.body["request_id"], e.body["verb"] or "", e.body.get("stem") or "", e.body["decision"], e.body["reason"])
-            for e in events
-            if e.type == EventType.SIGNAL and e.body.get("kind") == "control_decision" and e.body.get("decision") in {"stale", "rejected"}
-        ),
+        verdict_decisions=tuple(reversed(decisions)),
         tombstones=tuple((m.id, m.message_class, m.reports) for m in box.confirmed_tombstones(policy)) if box is not None else (),
         reopens=tuple(e.body for e in events if e.type == EventType.SIGNAL and e.body.get("kind") == "tombstone_auto_reopened"),
         scorecard=project_scorecard(window if window is not None else project_window(events)),
