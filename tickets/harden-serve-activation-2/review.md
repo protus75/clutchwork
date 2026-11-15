@@ -1,6 +1,6 @@
 # Review: approve
 
-The added text in unit 19.P3.serve-activation matches the merged code: triage_pass (chupa/triage.py:97) calls Driver.from_config, which builds its own Journal (chupa/driver.py:159), and that Driver's driver.effects becomes a second Effects owner with no seam to pass in checkout.journal; the serve-activation fence (CHUPA_PLAN.md:1782) leaves out chupa/triage.py and chupa/driver.py, and every edit stays inside the unit as the ticket requires.
+The added text in unit 19.P3.serve-activation matches the merged code: triage_pass (clutch/triage.py:97) calls Driver.from_config, which builds its own Journal (clutch/driver.py:159), and that Driver's driver.effects becomes a second Effects owner with no seam to pass in checkout.journal; the serve-activation fence (CLUTCH_PLAN.md:1782) leaves out clutch/triage.py and clutch/driver.py, and every edit stays inside the unit as the ticket requires.
 
 ## Findings
 
@@ -15,7 +15,7 @@ none
   "produced_at_sha": "c8c63dceac34239824cd7e0d9809f32ebaf57807",
   "stem": "harden-serve-activation-2",
   "reviewed_sha": "c8c63dceac34239824cd7e0d9809f32ebaf57807",
-  "summary": "The added text in unit 19.P3.serve-activation matches the merged code: triage_pass (chupa/triage.py:97) calls Driver.from_config, which builds its own Journal (chupa/driver.py:159), and that Driver's driver.effects becomes a second Effects owner with no seam to pass in checkout.journal; the serve-activation fence (CHUPA_PLAN.md:1782) leaves out chupa/triage.py and chupa/driver.py, and every edit stays inside the unit as the ticket requires.",
+  "summary": "The added text in unit 19.P3.serve-activation matches the merged code: triage_pass (clutch/triage.py:97) calls Driver.from_config, which builds its own Journal (clutch/driver.py:159), and that Driver's driver.effects becomes a second Effects owner with no seam to pass in checkout.journal; the serve-activation fence (CLUTCH_PLAN.md:1782) leaves out clutch/triage.py and clutch/driver.py, and every edit stays inside the unit as the ticket requires.",
   "findings": [],
   "spec_version": "1.0",
   "provider": "claude",

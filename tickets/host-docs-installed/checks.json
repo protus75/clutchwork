@@ -6,20 +6,20 @@
   "passed": true,
   "changed_files": [
     "README.md",
-    "chupa/__main__.py",
-    "chupa/docs/host-authoring.md",
-    "chupa/docs/host-contract.md",
-    "chupa/docs/host-running.md",
+    "clutch/__main__.py",
+    "clutch/docs/host-authoring.md",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-running.md",
     "config.yaml",
     "dev.py",
-    "docs/how-chupa-works.md",
+    "docs/how-clutch-works.md",
     "tests/integration/test_cli.py",
     "tests/integration/test_dev.py",
     "tests/integration/test_host_contract.py",
     "tests/integration/test_tickets.py",
     "tests/unit/test_docs_verb.py",
     "tests/unit/test_host_running.py",
-    "vscode-chupa/README.md"
+    "vscode-clutchwork/README.md"
   ],
   "inserted_lines": 105,
   "bypassed": [],
@@ -87,7 +87,7 @@
       "coverage": {
         "percent": 21.43796277074251,
         "files": {
-          "chupa/__main__.py": 17.806603773584907
+          "clutch/__main__.py": 17.806603773584907
         }
       }
     },
@@ -218,7 +218,7 @@
         "tests/integration/test_dev.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_host_running.py tests/unit/test_docs_verb.py tests/integration/test_host_contract.py tests/integration/test_cli.py tests/integration/test_tickets.py tests/integration/test_dev.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 49%]\n........................................................................ [ 98%]\n..                                                                       [100%]\n146 passed in 1.70s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_host_running.py tests/unit/test_docs_verb.py tests/integration/test_host_contract.py tests/integration/test_cli.py tests/integration/test_tickets.py tests/integration/test_dev.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 49%]\n........................................................................ [ 98%]\n..                                                                       [100%]\n146 passed in 1.70s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.07166
     }

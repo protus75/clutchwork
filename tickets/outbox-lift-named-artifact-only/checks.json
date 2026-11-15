@@ -5,8 +5,8 @@
   "stem": "outbox-lift-named-artifact-only",
   "passed": true,
   "changed_files": [
-    "chupa/stages.py",
-    "docs/how-chupa-works.md",
+    "clutch/stages.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_stages.py",
     "tests/unit/test_lift_decision.py"
   ],
@@ -76,7 +76,7 @@
       "coverage": {
         "percent": 21.52777777777778,
         "files": {
-          "chupa/stages.py": 14.545454545454545
+          "clutch/stages.py": 14.545454545454545
         }
       }
     },
@@ -164,7 +164,7 @@
           "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[review]": 1.2301829740172252,
           "tests/integration/test_drain.py::test_rework_split_preserves_dispatch_terminal_invariant[False]": 1.2278606399486307,
           "tests/integration/test_second_problems.py::test_repeated_line_number_dedups_and_absent_key_means_none": 1.2203732169873547,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.2177172530209646,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.2177172530209646,
           "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[exception]": 1.2107666099909693,
           "tests/integration/test_watch.py::test_observe_verbs_take_no_lock_and_write_nothing": 1.1995275039807893,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-6]": 1.1953561869740952,
@@ -218,7 +218,7 @@
         "outbox_lift"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_stages.py -k outbox_lift\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.06s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_stages.py -k outbox_lift\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.06s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.273995
     },
@@ -229,7 +229,7 @@
         "tests/unit/test_lift_decision.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_lift_decision.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 0.97s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_lift_decision.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 0.97s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.21036
     },
@@ -240,7 +240,7 @@
         "tests/integration"
       ],
       "rc": 0,
-      "tail": "on_soak_writer_validates_before_write\n  /home/djp/source/chupa/.chupa/state/worktrees/outbox-lift-named-artifact-only/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/outbox-lift-named-artifact-only/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3180 passed, 10 warnings in 59.48s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "on_soak_writer_validates_before_write\n  /home/djp/source/clutch/.clutch/state/worktrees/outbox-lift-named-artifact-only/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/outbox-lift-named-artifact-only/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3180 passed, 10 warnings in 59.48s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 61.379468
     },
@@ -249,7 +249,7 @@
         "grep",
         "-n",
         "refuses symlinks",
-        "docs/how-chupa-works.md"
+        "docs/how-clutch-works.md"
       ],
       "rc": 0,
       "tail": "163:refuses symlinks, and refuses a file over 256 KB.\n",

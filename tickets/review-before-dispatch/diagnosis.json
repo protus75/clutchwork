@@ -8,10 +8,10 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Keep the passing code and tests unchanged. The review snag concerns only docs/how-chupa-works.md, which is inside the scope fence.",
-    "In docs/how-chupa-works.md failure-dispatch step 5, say `premise_failed` draws `premise_bounce` except for a `requisition`-stage snag, which ends before dispatch and draws no cap (see section 6.7).",
-    "In docs/how-chupa-works.md, change the caps-table `premise_bounce` row to: each `premise_failed` (not over-bound renders or `requisition` snags).",
-    "Before finishing, search docs/how-chupa-works.md for every `premise_failed`, `premise_bounce` and cap-draw statement. Make each one match the ticket: a `requisition` snag draws no cap, makes no Diagnose call and is not routed to the Reject queue."
+    "Keep the passing code and tests unchanged. The review snag concerns only docs/how-clutch-works.md, which is inside the scope fence.",
+    "In docs/how-clutch-works.md failure-dispatch step 5, say `premise_failed` draws `premise_bounce` except for a `requisition`-stage snag, which ends before dispatch and draws no cap (see section 6.7).",
+    "In docs/how-clutch-works.md, change the caps-table `premise_bounce` row to: each `premise_failed` (not over-bound renders or `requisition` snags).",
+    "Before finishing, search docs/how-clutch-works.md for every `premise_failed`, `premise_bounce` and cap-draw statement. Make each one match the ticket: a `requisition` snag draws no cap, makes no Diagnose call and is not routed to the Reject queue."
   ],
   "mechanical": null,
   "spec_version": "1.2",

@@ -4,7 +4,7 @@ kind: declined
 link: box-000182-447e107b
 reopen_after_days: 90
 ---
-A bootstrap handoff review note said the `escalation-ladder` ticket's Context listed `chupa/llm.py` when it should have listed `chupa/providers.py`, because the ticket reads `providers.resolve` to tell models apart. It asked for the two files to be swapped in that ticket's Context.
+A bootstrap handoff review note said the `escalation-ladder` ticket's Context listed `clutch/llm.py` when it should have listed `clutch/providers.py`, because the ticket reads `providers.resolve` to tell models apart. It asked for the two files to be swapped in that ticket's Context.
 
 `escalation-ladder` has already merged, so its Context section no longer affects any run. The note points to a wording problem in one ticket. It shows no reachable incorrect runtime behavior and no current harm, so there is nothing for a ticket to fix.
 

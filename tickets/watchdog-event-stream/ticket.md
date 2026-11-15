@@ -11,13 +11,13 @@ state: confirmed
 - phase3-exit
 
 ## Context
-- chupa/providers.py
-- chupa/seams.py
+- clutch/providers.py
+- clutch/seams.py
 - tests/test_providers.py
-- chupa/llm.py
-- chupa/driver.py
-- chupa/runner.py
-- chupa/redact.py
+- clutch/llm.py
+- clutch/driver.py
+- clutch/runner.py
+- clutch/redact.py
 
 ## Plan contract
 - 19.I
@@ -30,18 +30,18 @@ state: confirmed
 Deliver scrubbed adapter events to a directly constructed consumer before the provider call ends.
 
 ## Scope in / Scope out
-Implement the watchdog-event-stream row only. The injected 19.P4.watchdog-event-stream contract supplies Owner, Records, Observable and Tests. chupa/watchdog.py owns the new per-call consumer; the existing process and adapter owners remain responsible for delivery and capture. Build construction evidence against the production provider and process seams while production Driver calls retain their unwatched behavior.
+Implement the watchdog-event-stream row only. The injected 19.P4.watchdog-event-stream contract supplies Owner, Records, Observable and Tests. clutch/watchdog.py owns the new per-call consumer; the existing process and adapter owners remain responsible for delivery and capture. Build construction evidence against the production provider and process seams while production Driver calls retain their unwatched behavior.
 
 Carry the entry's named obligations: test_event_consumer_receives_before_terminal, test_event_consumer_preserves_tool_identity_and_optional_usage, test_event_stream_is_dormant, test_inflight_events_are_scrubbed_and_capture_is_preserved and test_event_callback_unwind_kills_group. Exercise both provider shapes, incomplete stdout chunks, stderr drainage and exceptional unwind through the real process-group seam. Retain the provider tests for results, estimates, stdin delivery, surface write grants and abort binding. Run tests/test_git.py unchanged to preserve the process seam's existing timeout, cancellation, spawn and inherited-stdio obligations; it is a preservation suite, not an edit target.
 
-Read the production call chain and direct callers across chupa/, eval/ and tests/ before editing. Inspect eval/harness.py, eval/shakeout/providers.py and eval/daemon_soak.py from disk; delimiter-bearing files cannot be embedded. The entry's absent callback must preserve current callers' arguments and behavior; do not migrate unrelated ProcessExec callers or change LLMRequest/LLMResult or constructor arity. The existing fenced paths are embedded. No additional caller, allowlist or contradicted dormancy edit was earned at authoring. If implementing the entry actually forces another path, return premise_failed naming that closure instead of adding a parallel call path.
+Read the production call chain and direct callers across clutch/, eval/ and tests/ before editing. Inspect eval/harness.py, eval/shakeout/providers.py and eval/daemon_soak.py from disk; delimiter-bearing files cannot be embedded. The entry's absent callback must preserve current callers' arguments and behavior; do not migrate unrelated ProcessExec callers or change LLMRequest/LLMResult or constructor arity. The existing fenced paths are embedded. No additional caller, allowlist or contradicted dormancy edit was earned at authoring. If implementing the entry actually forces another path, return premise_failed naming that closure instead of adding a parallel call path.
 
 Journal retains durable-event ownership; the provider retains spool ownership. No detector, push, spend kill, polling of finished spools, cleanup redesign, new persisted record or activation belongs here. Later registry rows own those changes. Do not edit historical seeding tests, tickets, the plan, live state or preservation suites.
 
 ## Scope fence
-- chupa/watchdog.py
-- chupa/providers.py
-- chupa/seams.py
+- clutch/watchdog.py
+- clutch/providers.py
+- clutch/seams.py
 - tests/test_watchdog.py
 - tests/test_providers.py
 

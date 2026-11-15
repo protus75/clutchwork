@@ -12,16 +12,16 @@ state: confirmed
 - fixture-host-scaffold
 
 ## Context
-- chupa/tickets.py
-- chupa/gates.py
-- chupa/stages.py
+- clutch/tickets.py
+- clutch/gates.py
+- clutch/stages.py
 - tests/test_tickets.py
 - tests/test_gates.py
 - tests/test_mergequeue.py
-- chupa/merge.py
-- chupa/mergequeue.py
-- chupa/git.py
-- chupa/seams.py
+- clutch/merge.py
+- clutch/mergequeue.py
+- clutch/git.py
+- clutch/seams.py
 - hosts/fixture/scaffold.py
 - hosts/fixture/regression_test.py
 
@@ -45,9 +45,9 @@ The new tests/test_bug_gate.py owns the regression proofs. Under 19.L rule 2, up
 No new module, git operation, bypass, signal, frontmatter field or outcome; no inbox, escape attribution, host-loop producer, prompt-spec edits or historical fixture changes. Use existing process, Git, environment and scrubbed spool seams.
 
 ## Scope fence
-- chupa/tickets.py
-- chupa/gates.py
-- chupa/stages.py
+- clutch/tickets.py
+- clutch/gates.py
+- clutch/stages.py
 - tests/test_tickets.py
 - tests/test_gates.py
 - tests/test_bug_gate.py

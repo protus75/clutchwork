@@ -72,7 +72,7 @@ state: confirmed
 - eval/fixtures/logic-pagination/diff.patch
 - eval/fixtures/leak-child-env/diff.patch
 - eval/fixtures/leak-user-serializer/diff.patch
-- chupa/llm.py
+- clutch/llm.py
 - eval/fixtures/clean-retry-config/diff.patch
 - eval/fixtures/accept-config-precedence/diff.patch
 - eval/fixtures/logic-retry-backoff/diff.patch
@@ -81,18 +81,18 @@ state: confirmed
 - eval/fixtures/accept-csv-export/diff.patch
 - eval/fixtures/leak-log-token/diff.patch
 - tests/test_eval_harness.py
-- chupa/requisition.py
-- chupa/artifacts.py
+- clutch/requisition.py
+- clutch/artifacts.py
 - tests/test_fixture_host.py
 - tests/test_driver.py
 - eval/harness.py
-- chupa/driver.py
-- chupa/providers.py
+- clutch/driver.py
+- clutch/providers.py
 
 ## On-demand
 - tests/test_stages.py
 - tests/test_providers.py
-- chupa/stages.py
+- clutch/stages.py
 
 ## Plan contract
 - 19.I
@@ -104,7 +104,7 @@ state: confirmed
 Build bounded baseline evaluation and a validated report lane for the later producer.
 
 ## Scope in / Scope out
-Extend the existing owners named by the entry: eval/harness.py owns fixture loading, scoring, the local Author-graph runner, canonical writer and operator mode; chupa/artifacts.py owns the closed report schema, chupa/stages.py its registration and checks custody, chupa/llm.py the request budget and chupa/providers.py adapter enforcement. No new module or production Author prompt is introduced.
+Extend the existing owners named by the entry: eval/harness.py owns fixture loading, scoring, the local Author-graph runner, canonical writer and operator mode; clutch/artifacts.py owns the closed report schema, clutch/stages.py its registration and checks custody, clutch/llm.py the request budget and clutch/providers.py adapter enforcement. No new module or production Author prompt is introduced.
 
 Preserve the committed 22 review fixtures and their directory format byte-for-byte, including actual author identities. Keep the loader floors at 15 planted and 3 clean. Use separate 50-planted/15-clean completeness requirements; this smaller corpus is loadable measured partial NO_GO, even when its calls and graph finish. Corpus growth and any format migration belong to later operator-authored upkeep tickets, outside this admission. Scripted authored cases stay disposable and take identity from their actual call and journal/spools; never invent measured fixtures or author provenance.
 
@@ -113,16 +113,16 @@ Implement the cited unit's request ceiling, shared run cap, graph validation, cl
 ## Scope fence
 - eval/harness.py
 - eval/fixtures/
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/llm.py
-- chupa/providers.py
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/llm.py
+- clutch/providers.py
 - tests/test_eval_harness.py
 - tests/test_stages.py
 - tests/test_providers.py
 - tests/test_go_grade.py
-- chupa/driver.py
-- chupa/requisition.py
+- clutch/driver.py
+- clutch/requisition.py
 - tests/test_driver.py
 - tests/test_fixture_host.py
 

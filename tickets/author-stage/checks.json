@@ -5,9 +5,9 @@
   "stem": "author-stage",
   "passed": true,
   "changed_files": [
-    "chupa/author.py",
-    "chupa/git.py",
-    "chupa/triage.py",
+    "clutch/author.py",
+    "clutch/git.py",
+    "clutch/triage.py",
     "specs/author.md",
     "tests/test_author.py",
     "tests/test_eval_harness.py",

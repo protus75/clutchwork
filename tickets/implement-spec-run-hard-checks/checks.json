@@ -5,8 +5,8 @@
   "stem": "implement-spec-run-hard-checks",
   "passed": true,
   "changed_files": [
-    "chupa/specs/implement.md",
-    "docs/how-chupa-works.md",
+    "clutch/specs/implement.md",
+    "docs/how-clutch-works.md",
     "tests/integration/test_stages.py",
     "tests/unit/test_specs.py"
   ],
@@ -212,7 +212,7 @@
         "tests/unit/test_specs.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 1.07s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 1.07s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.265559
     },
@@ -223,7 +223,7 @@
         "tests/integration/test_stages.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_stages.py\nbringing up nodes...\nbringing up nodes...\n\n...................................................................      [100%]\n67 passed in 1.94s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_stages.py\nbringing up nodes...\nbringing up nodes...\n\n...................................................................      [100%]\n67 passed in 1.94s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.168846
     }

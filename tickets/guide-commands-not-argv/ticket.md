@@ -15,18 +15,18 @@ kind: chore
 ## Goal / Why
 The existing **Command surface** rule (`CLAUDE.md` section B) governs only what an interactive chat session runs. Nothing governs what a guide or ticket tells an operator to type.
 
-On 2026-11-10 the first draft of the qwen provider setup guide told operators to hand-type qwen's full provider command line as a smoke test: `qwen --auth-type openai --openai-base-url <base_url> --openai-api-key ollama -m <model> -o stream-json --approval-mode plan --chat-recording false`. That is a copy of the argv chupa builds. It drifts from what chupa actually runs, and it makes the operator type it. The fix was a `chupa probe` verb.
+On 2026-11-10 the first draft of the qwen provider setup guide told operators to hand-type qwen's full provider command line as a smoke test: `qwen --auth-type openai --openai-base-url <base_url> --openai-api-key ollama -m <model> -o stream-json --approval-mode plan --chat-recording false`. That is a copy of the argv clutch builds. It drifts from what clutch actually runs, and it makes the operator type it. The fix was a `clutch probe` verb.
 
-When this ticket is done, section A of `CLAUDE.md`, and the matching `## Engine conduct` list in `AGENTS.md`, carry a rule. A guide, setup step, or ticket that has an operator exercise something chupa drives names the `chupa` verb, or `./dev.py` subcommand in this repo, that runs it. A missing verb is added by the same change.
+When this ticket is done, section A of `CLAUDE.md`, and the matching `## Engine conduct` list in `AGENTS.md`, carry a rule. A guide, setup step, or ticket that has an operator exercise something clutch drives names the `clutch` verb, or `./dev.py` subcommand in this repo, that runs it. A missing verb is added by the same change.
 
 ## Scope in / Scope out
 - In: insert one bullet in `CLAUDE.md` section `## A. Engine conduct`, directly after the **Verification uses `./dev.py test`.** bullet and its `Why:` line. Insert the same bullet in `AGENTS.md`, directly after that file's **Verification uses `./dev.py test`.** bullet and its `Why:` line. The bullet text, exactly:
   ```
-  - **Guides name verbs, not command lines.** A host guide, setup step, or ticket that has an operator exercise something chupa drives (a provider CLI, a check, a gate) names the `chupa` verb, or `./dev.py` subcommand in this repo, that runs it; never a hand-built copy of chupa's argv. A step no verb covers gets a new verb in the same change. Third-party install and server commands (`pnpm add`, `ollama pull`) stay as written.
-    Why: a copied argv drifts from what chupa runs and makes the operator type it; the first qwen setup guide draft had operators hand-type qwen's full provider command line (2026-11-10).
+  - **Guides name verbs, not command lines.** A host guide, setup step, or ticket that has an operator exercise something clutch drives (a provider CLI, a check, a gate) names the `clutch` verb, or `./dev.py` subcommand in this repo, that runs it; never a hand-built copy of clutch's argv. A step no verb covers gets a new verb in the same change. Third-party install and server commands (`pnpm add`, `ollama pull`) stay as written.
+    Why: a copied argv drifts from what clutch runs and makes the operator type it; the first qwen setup guide draft had operators hand-type qwen's full provider command line (2026-11-10).
   ```
 - Out:
-  - every other line of `CLAUDE.md` and `AGENTS.md`, including the managed `## Engine conduct` block between the chupa core markers in `CLAUDE.md`;
+  - every other line of `CLAUDE.md` and `AGENTS.md`, including the managed `## Engine conduct` block between the clutch core markers in `CLAUDE.md`;
   - the section B **Command surface** bullet;
   - existing guides and tickets;
   - code, tests, and any lint or gate enforcing the rule.

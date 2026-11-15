@@ -14,9 +14,9 @@ state: confirmed
 - outbox-only-admission
 
 ## Context
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/merge.py
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/merge.py
 - tickets/reliability-battery/ticket.md
 - tickets/provider-cooldown-failover/ticket.md
 - tickets/outbox-only-admission/ticket.md
@@ -30,7 +30,7 @@ state: confirmed
 Produce the committed reliability evidence that the Phase 4 exit consumes, through the existing checks lift.
 
 ## Scope in / Scope out
-Realize every Owner, Records, Observable and Tests obligation in the two cited entry units by running the merged battery. eval/reliability_battery.py owns the runner and canonical writer; chupa/artifacts.py owns ReliabilityBatteryReport and RELIABILITY_BATTERY_REPORT; chupa/stages.py owns checks lifting; chupa/merge.py owns admission and retirement. This producer authors no code, schema, registration or tests. There are no earned fence additions: no public signature, constructor, composition, allowlist or negative assertion changes. Read the owners and predecessor tickets before running. Read eval/reliability_battery.py from disk; its delimiter-bearing source cannot enter Context.
+Realize every Owner, Records, Observable and Tests obligation in the two cited entry units by running the merged battery. eval/reliability_battery.py owns the runner and canonical writer; clutch/artifacts.py owns ReliabilityBatteryReport and RELIABILITY_BATTERY_REPORT; clutch/stages.py owns checks lifting; clutch/merge.py owns admission and retirement. This producer authors no code, schema, registration or tests. There are no earned fence additions: no public signature, constructor, composition, allowlist or negative assertion changes. Read the owners and predecessor tickets before running. Read eval/reliability_battery.py from disk; its delimiter-bearing source cannot enter Context.
 
 Require fresh all-green member-local evidence for classified_quota_exhaustion, all_candidates_cooling_recovery and unclassified_failure_preservation in that exact order. Each observed value must match its fixed expected value and its entire member-local journal must pass the auditor. producing_run identifies the member's actual fault attempt. Keep spec/source-HEAD provenance, closed report validation and the inherited schema-version policy. Missing, contradictory or cross-member observations and supplied success/auditor verdicts cannot earn green. Use the merged production fixture registry and injected clock, sleep, process-exec and filesystem seams; no live provider calls, config edits or wall waits.
 

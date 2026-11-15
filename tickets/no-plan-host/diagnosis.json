@@ -8,9 +8,9 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In tests/regress_no_plan_host.py, move the chupa and tests helper imports (line 14 area, including tests.test_drain.make_root and tests.test_cli.ENV) into a function called inside main_result's try block, so an import failure reaches `except Exception` and returns (\"error\", 2).",
+    "In tests/regress_no_plan_host.py, move the clutch and tests helper imports (line 14 area, including tests.test_drain.make_root and tests.test_cli.ENV) into a function called inside main_result's try block, so an import failure reaches `except Exception` and returns (\"error\", 2).",
     "Keep the sys.path insert at module level and keep the JSON print as the only stdout output; the ticket's Definition of rejected rejects any other stdout from the reproducer, and diagnostics go to stderr only.",
-    "Confirm the exit-code protocol from the ticket scope: exit 1 only for a FileNotFoundError naming CHUPA_PLAN.md, exit 2 for any other failure including ImportError. Leave the rest of the diff alone; the full suite passed (3906) and the review's only finding is this one."
+    "Confirm the exit-code protocol from the ticket scope: exit 1 only for a FileNotFoundError naming CLUTCH_PLAN.md, exit 2 for any other failure including ImportError. Leave the rest of the diff alone; the full suite passed (3906) and the review's only finding is this one."
   ],
   "mechanical": null,
   "spec_version": "1.1",

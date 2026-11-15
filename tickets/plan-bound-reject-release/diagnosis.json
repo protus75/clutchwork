@@ -8,9 +8,9 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In chupa/runner.py step (1), choose P as the latest lineage spec-gap terminal that carries a `round` record, not any terminal with `plan_units`; round-less `spec_gap_unresolved` or cap-spent terminals leave D empty and refile covered units.",
+    "In clutch/runner.py step (1), choose P as the latest lineage spec-gap terminal that carries a `round` record, not any terminal with `plan_units`; round-less `spec_gap_unresolved` or cap-spent terminals leave D empty and refile covered units.",
     "Add a test: round covers {A,B}, closes already_satisfied; stem ends spec_gap_unresolved {A,B}; a commit changes only A; the re-run gaps B and must route spec_gap_unresolved with no hardening draw and no new round.",
-    "In chupa/drain.py, draw `retry` unconditionally only for plan-bound re-offers (Reject terminal carries `plan_units`); keep the existing PREMISE and SPEC_GAP_HOLD exemptions for every other re-offer, per the ticket scope.",
+    "In clutch/drain.py, draw `retry` unconditionally only for plan-bound re-offers (Reject terminal carries `plan_units`); keep the existing PREMISE and SPEC_GAP_HOLD exemptions for every other re-offer, per the ticket scope.",
     "Add a test that a non-plan-bound premise_failed arrival re-offered after a ticket.md edit draws no `retry` unit, so the accounting matches the merge base."
   ],
   "mechanical": null,

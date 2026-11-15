@@ -11,18 +11,18 @@ state: confirmed
 - phase3-continue-18
 
 ## Context
-- chupa/storm.py
-- chupa/control.py
-- chupa/daemon.py
-- chupa/drain.py
-- chupa/__main__.py
+- clutch/storm.py
+- clutch/control.py
+- clutch/daemon.py
+- clutch/drain.py
+- clutch/__main__.py
 - tests/test_storm_notification_activation.py
 - tests/test_storm.py
 - tests/test_storm_producer.py
-- chupa/journal.py
-- chupa/box.py
-- chupa/config.py
-- chupa/seams.py
+- clutch/journal.py
+- clutch/box.py
+- clutch/config.py
+- clutch/seams.py
 
 ## Plan contract
 - 19.I
@@ -38,16 +38,16 @@ Activate the identity-bound storm dispatch hold and resume in the live bootstrap
 
 Earned closure under 19.L rules 2-5 adds tests/test_storm_notification_activation.py (rules 2-3: predecessor dispatch-absence test_storm_activation_does_not_hold_dispatch_or_notify and test_storm_leaves_daemon_selection_and_accounting_unchanged), tests/test_storm.py (rules 2-3: test_ledger_trip_uses_only_journal_and_box's hold prohibition), and tests/test_storm_producer.py (rules 2-3: test_storm_producer_hook_is_active's hold prohibition). All three additions are existing Context. Migrate only assertions the hold activation invalidates to positive hold/release evidence and retain the no-external-notify proof, direct construction idleness, and occurrence, replay, window, corruption, durability and crash obligations. The explicit run path stays operator-invoked; continuous serve stage selection remains section 12's later composition contract. Do not migrate historical seeding tests.
 
-Before changing wiring, grep flipped symbols, old assertion values, public surfaces, production absence assertions and direct callers across chupa/, eval/ and tests/. Keep existing public signatures where no change is required; a criteria-forced path not earned in this fence returns premise_failed. Read merged chupa/journal.py, chupa/box.py, chupa/config.py, chupa/storm.py, chupa/control.py, chupa/daemon.py, chupa/drain.py, chupa/runner.py, chupa/stages.py, chupa/flake.py, real CLI run/drain and build_daemon_core, and the merged production-composition harness before editing. Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Journal remains the sole durable event writer, Box the sole queue-record writer and ControlInbox the sole control-decision writer.
+Before changing wiring, grep flipped symbols, old assertion values, public surfaces, production absence assertions and direct callers across clutch/, eval/ and tests/. Keep existing public signatures where no change is required; a criteria-forced path not earned in this fence returns premise_failed. Read merged clutch/journal.py, clutch/box.py, clutch/config.py, clutch/storm.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/runner.py, clutch/stages.py, clutch/flake.py, real CLI run/drain and build_daemon_core, and the merged production-composition harness before editing. Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Journal remains the sole durable event writer, Box the sole queue-record writer and ControlInbox the sole control-decision writer.
 
 Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits. Unfenced suites are unchanged preservation suites in Verification only, neither fenced nor embedded. Out: replacement writers, second inbox, task graphs, manual HGATE release, notification transport, verification filtering, unearned records and adjacent cleanup.
 
 ## Scope fence
-- chupa/storm.py
-- chupa/control.py
-- chupa/daemon.py
-- chupa/drain.py
-- chupa/__main__.py
+- clutch/storm.py
+- clutch/control.py
+- clutch/daemon.py
+- clutch/drain.py
+- clutch/__main__.py
 - tests/test_storm_hold.py
 - tests/test_storm_notification_activation.py
 - tests/test_storm.py

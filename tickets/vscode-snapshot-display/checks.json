@@ -5,10 +5,10 @@
   "stem": "vscode-snapshot-display",
   "passed": true,
   "changed_files": [
-    "chupa/observe.py",
+    "clutch/observe.py",
     "tests/integration/test_watch.py",
-    "vscode-chupa/extension.js",
-    "vscode-chupa/media/detail.js"
+    "vscode-clutchwork/extension.js",
+    "vscode-clutchwork/media/detail.js"
   ],
   "inserted_lines": 91,
   "bypassed": [],
@@ -95,7 +95,7 @@
         "tests/integration/test_watch.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_watch.py\nbringing up nodes...\nbringing up nodes...\n\n.......................                                                  [100%]\n23 passed in 1.63s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_watch.py\nbringing up nodes...\nbringing up nodes...\n\n.......................                                                  [100%]\n23 passed in 1.63s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.858884
     }

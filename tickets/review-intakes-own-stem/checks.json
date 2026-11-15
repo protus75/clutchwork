@@ -5,10 +5,10 @@
   "stem": "review-intakes-own-stem",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/docs/host-running.md",
-    "chupa/tickets.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/docs/host-running.md",
+    "clutch/tickets.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_review_command.py",
     "tests/regress_review_intakes_own_stem.py",
     "tests/unit/test_git_commit.py"
@@ -86,7 +86,7 @@
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/review-intakes-own-stem\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/review-intakes-own-stem\nInstalled 19 packages in 6ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/review-intakes-own-stem\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/review-intakes-own-stem\nInstalled 19 packages in 6ms\n"
         }
       }
     },
@@ -105,8 +105,8 @@
       "coverage": {
         "percent": 34.04411274738455,
         "files": {
-          "chupa/__main__.py": 49.56331877729258,
-          "chupa/tickets.py": 67.07616707616708
+          "clutch/__main__.py": 49.56331877729258,
+          "clutch/tickets.py": 67.07616707616708
         }
       }
     },
@@ -245,7 +245,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "................................. [ 88%]\n........................................................................ [ 90%]\n........................................................................ [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n............................................                             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\n  /home/djp/source/chupa/.chupa/state/worktrees/review-intakes-own-stem/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3500 passed, 9 warnings in 67.31s (0:01:07)\n",
+      "tail": "................................. [ 88%]\n........................................................................ [ 90%]\n........................................................................ [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n............................................                             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\n  /home/djp/source/clutch/.clutch/state/worktrees/review-intakes-own-stem/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3500 passed, 9 warnings in 67.31s (0:01:07)\n",
       "base_red": false,
       "seconds": 70.743424
     }

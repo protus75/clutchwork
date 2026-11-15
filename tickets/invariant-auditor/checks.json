@@ -5,7 +5,7 @@
   "stem": "invariant-auditor",
   "passed": true,
   "changed_files": [
-    "chupa/audit.py",
+    "clutch/audit.py",
     "tests/test_audit.py"
   ],
   "inserted_lines": 198,

@@ -12,31 +12,31 @@ kind: bug
 - stage-event-owner-stem
 
 ## Context
-- chupa/requisition.py::review_ticket
+- clutch/requisition.py::review_ticket
 - tests/unit/test_requisition_stage_events.py
 - tests/regress_requisition_stage_events.py
-- docs/how-chupa-works.md#10. State on disk
+- docs/how-clutch-works.md#10. State on disk
 
 ## On-demand
 - tests/integration/test_requisition.py
 
 ## Goal / Why
-Ticket `requisition-events-owner-stem` (merged as 45e5c3af) changed `review_ticket`'s `stage_start` and `stage_end` to carry `stem=stem_slot` instead of `stem=stem`. The drain's dispatch passes `stem_slot == stem`, so it is unaffected. The `review` verb (`chupa/__main__.py`) passes `stem_slot=f"review-{stem}"`, so `./dev.py review foo` now shows in Recent Steps as a step of a made-up `review-foo`, not as a step of ticket `foo` (see `evidence/review-verb-stem-evidence.txt`). The operator wants it to read like every other step: ticket `foo`, `Requisition start`, then `Requisition end (<outcome>)`.
+Ticket `requisition-events-owner-stem` (merged as 45e5c3af) changed `review_ticket`'s `stage_start` and `stage_end` to carry `stem=stem_slot` instead of `stem=stem`. The drain's dispatch passes `stem_slot == stem`, so it is unaffected. The `review` verb (`clutch/__main__.py`) passes `stem_slot=f"review-{stem}"`, so `./dev.py review foo` now shows in Recent Steps as a step of a made-up `review-foo`, not as a step of ticket `foo` (see `evidence/review-verb-stem-evidence.txt`). The operator wants it to read like every other step: ticket `foo`, `Requisition start`, then `Requisition end (<outcome>)`.
 
 `stem_slot` is the spool and watch key and stays as it is. When this ticket is done, a standalone requisition review logs its stage events under the reviewed ticket's `stem`. A review nested inside author or rework still logs none (the `owns_watch` guard from 45e5c3af stays).
 
 ## Scope in / Scope out
-- In: `chupa/requisition.py::review_ticket`: `event_context` carries `stem=stem`, not `stem=stem_slot`. The `owns_watch` guard and every other field stay unchanged.
-- In: `docs/how-chupa-works.md`, section 10, the `engine.log` row: "a standalone review logs them under its watch owner" becomes "a standalone review logs them under the reviewed ticket's stem".
+- In: `clutch/requisition.py::review_ticket`: `event_context` carries `stem=stem`, not `stem=stem_slot`. The `owns_watch` guard and every other field stay unchanged.
+- In: `docs/how-clutch-works.md`, section 10, the `engine.log` row: "a standalone review logs them under its watch owner" becomes "a standalone review logs them under the reviewed ticket's stem".
 - In: flip the tests that pin `stem_slot` keying: `tests/unit/test_requisition_stage_events.py` (`context` and its `stem` assertions), `tests/integration/test_requisition.py::test_requisition_stage_events_in_engine_log`, and `tests/regress_requisition_stage_events.py`.
 - Out:
   - `stem_slot` values at any caller, and `begin_watch`'s owner.
   - The `owns_watch` guard and `tests/regress_requisition_events_owner_stem.py`.
-  - The snapshot step-path fallback in `chupa/observe.py`.
+  - The snapshot step-path fallback in `clutch/observe.py`.
 
 ## Scope fence
-- chupa/requisition.py
-- docs/how-chupa-works.md
+- clutch/requisition.py
+- docs/how-clutch-works.md
 - tests/unit/test_requisition_stage_events.py
 - tests/integration/test_requisition.py
 - tests/regress_requisition_stage_events.py

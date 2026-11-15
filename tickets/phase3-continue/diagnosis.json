@@ -8,7 +8,7 @@
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Criterion 3 can't be met on the current engine. At chupa/stages.py:840, _review_one calls validate_ticket(seed_stem, data, ctx.repo) against main. Main does not have the unlifted sibling merge-queue yet, so phase3-continue-02's required depends fails ticket lint with a snag.",
+    "Criterion 3 can't be met on the current engine. At clutch/stages.py:840, _review_one calls validate_ticket(seed_stem, data, ctx.repo) against main. Main does not have the unlifted sibling merge-queue yet, so phase3-continue-02's required depends fails ticket lint with a snag.",
     "Don't drop or rename phase3-continue-02's merge-queue dependency to get past the lint. The ticket requires it, and the Definition of rejected forbids changing it.",
     "Rerun only after a separate engine change, outside this fence, makes Check resolve a seed's depends against the sibling seeds in the same batch. The plan does not say which mechanism should do this. That missing fact must be added to the plan (sections 13/19) before the fix.",
     "On rerun, keep the approved merge-queue seed byte-identical (sha256 87e6cb2d...). A matching approve then holds without re-review, per the stages.py:803 check.",

@@ -12,8 +12,8 @@ state: confirmed
 - go-grade-run
 
 ## Context
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 - tests/test_gates.py
 - tests/test_stages.py
 - tests/test_fixture_host.py
@@ -44,8 +44,8 @@ state: confirmed
 - hosts/fixture/scaffold.py
 - hosts/fixture/scripts.json
 - hosts/fixture/settings.json
-- chupa/seams.py
-- chupa/git.py
+- clutch/seams.py
+- clutch/git.py
 - tests/test_inbox.py
 
 ## Plan contract
@@ -60,9 +60,9 @@ state: confirmed
 Build a supervised fixture runner and validated deterministic report writers that the terminal exit can run through Check.
 
 ## Scope in / Scope out
-Implement the registry machinery under its cited entry. New eval/host_loop.py owns the runner and both canonical writers; chupa/artifacts.py owns the schemas and constants, and chupa/stages.py owns registration and checks-lift custody. Read the cited entries for all record shapes, evidence requirements and refusal cases. This machinery tests production but does not lift its own reports; phase6-exit is the later producer.
+Implement the registry machinery under its cited entry. New eval/host_loop.py owns the runner and both canonical writers; clutch/artifacts.py owns the schemas and constants, and clutch/stages.py owns registration and checks-lift custody. Read the cited entries for all record shapes, evidence requirements and refusal cases. This machinery tests production but does not lift its own reports; phase6-exit is the later producer.
 
-Use the merged supervised serve subprocess, control-inbox identities, scripted adapter, report consumer, bug gate and squash-trailer reader. Read chupa/serve.py, chupa/control.py, chupa/audit.py, chupa/triage.py and chupa/gates.py before composing the runner. Inject the existing clock, process, filesystem and notification seams; bound waits and clean up process groups on every exit. Machine actors confirm only this disposable fixture's drafts and candidates, with no cap re-arm or GO recording. Derive every member observation from its own production evidence and require its invariant audit to pass. Missing evidence or a failed member must exit nonzero with the unmet read.
+Use the merged supervised serve subprocess, control-inbox identities, scripted adapter, report consumer, bug gate and squash-trailer reader. Read clutch/serve.py, clutch/control.py, clutch/audit.py, clutch/triage.py and clutch/gates.py before composing the runner. Inject the existing clock, process, filesystem and notification seams; bound waits and clean up process groups on every exit. Machine actors confirm only this disposable fixture's drafts and candidates, with no cap re-arm or GO recording. Derive every member observation from its own production evidence and require its invariant audit to pass. Missing evidence or a failed member must exit nonzero with the unmet read.
 
 Add only fixture support needed for this loop. The regression must be kind: bug with a Regression command and a carries prefix matching a branch-changed test/fixture path. Its test must already exist on the defective base; the overlay must preserve the defect and emit the regression_result JSON protocol. Keep durable report evidence in the authored bug's evidence directory. Preserve the scaffold's deterministic replay, closed scenarios, zero-cost adapter and disposable-write boundary.
 
@@ -75,8 +75,8 @@ Receipt regeneration consumes only validated committed input bytes and preserves
 Migrate tests/test_inbox.py::test_report_replay_to_regression to consume the migrated bug fixture instead of appending its own Regression section, keeping its report-custody and regression-overlay proofs.
 
 ## Scope fence
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 - eval/host_loop.py
 - tests/test_host_loop.py
 - tests/test_gates.py

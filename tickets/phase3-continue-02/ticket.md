@@ -24,7 +24,7 @@ state: confirmed
 ## Goal / Why
 Advance the Phase 3 seeding chain by exactly one admission: author rework-stage and phase3-continue-03 as confirmed seeds, leaving both uncommitted for this ticket's Check to review and lift.
 
-This is continuation 02. Its shrinking unseeded suffix is admissions[2:] of the YAML registry between BEGIN_REGISTRY_P3 and END_REGISTRY_P3 in CHUPA_PLAN.md, parsed directly from that file. The next admission is rework-stage alone. Never copy the registry into a repository file or alter its rows. tests/test_seeded_phase3_02.py owns this admission's historical structure and render pins; the already merged tests/test_seeded_phase3_core.py is its read-first idiom.
+This is continuation 02. Its shrinking unseeded suffix is admissions[2:] of the YAML registry between BEGIN_REGISTRY_P3 and END_REGISTRY_P3 in CLUTCH_PLAN.md, parsed directly from that file. The next admission is rework-stage alone. Never copy the registry into a repository file or alter its rows. tests/test_seeded_phase3_02.py owns this admission's historical structure and render pins; the already merged tests/test_seeded_phase3_core.py is its read-first idiom.
 
 ## Scope in / Scope out
 In: before writing, parse the current registry and read its next row and complete entry unit. Run entry_unit_gap and resolve_plan_contract for every entry unit either authored seed must cite, including 19.P3.rework-stage and 19.P3.thresh-runtime. A missing/thin unit or a needed omitted fact returns premise_failed naming the unit for section 11.4 hardening; never invent a fact.
@@ -46,7 +46,7 @@ Out: implementing Phase 3 machinery; creating thresh-runtime or seeds beyond thi
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_seeded_phase3_02.py` exits 0 over exactly rework-stage and phase3-continue-03, with grammar-valid confirmed seed birth, stuck budgets within the drain envelope, rework-stage depending on phase3-continue-02, and its successor depending on rework-stage.
 2. `uv run pytest -q tests/test_seeded_phase3_02.py` proves rework-stage's high/high start, exact own-entry-unit cites, registry fence floor plus only recorded closure additions, and the successor's medium/medium start, next-admission cites, tickets/test fence, and merged earlier idiom. Context closure and maximum-effort base render feasibility use fixed authoring-time sizes and plan-unit lengths recorded in that test.
-3. At Check, `tickets/phase3-continue-02/checks.json` records requisition_review approve for both seeds, which reach main together through one chupa(phase3-continue-02): seeds ticket-plane commit. Leave both files uncommitted; this branch's committed diff contains only its new seeding test, with no tickets path.
+3. At Check, `tickets/phase3-continue-02/checks.json` records requisition_review approve for both seeds, which reach main together through one clutch(phase3-continue-02): seeds ticket-plane commit. Leave both files uncommitted; this branch's committed diff contains only its new seeding test, with no tickets path.
 4. `uv run pytest -q` exits 0 with no test removed or skipped and no production behavior changed.
 
 ## Verification

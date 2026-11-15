@@ -5,10 +5,10 @@
   "stem": "requisition-prior-review",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/requisition.py",
-    "chupa/runner.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/requisition.py",
+    "clutch/runner.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_requisition_gate.py",
     "tests/integration/test_review_command.py",
     "tests/regress_requisition_prior_review.py",
@@ -82,12 +82,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/requisition-prior-review\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/requisition-prior-review\nInstalled 19 packages in 22ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/requisition-prior-review\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/requisition-prior-review\nInstalled 19 packages in 22ms\n"
         }
       }
     },
@@ -106,9 +106,9 @@
       "coverage": {
         "percent": 23.98653291191425,
         "files": {
-          "chupa/__main__.py": 25.570776255707763,
-          "chupa/requisition.py": 66.02564102564102,
-          "chupa/runner.py": 14.878892733564014
+          "clutch/__main__.py": 25.570776255707763,
+          "clutch/requisition.py": 66.02564102564102,
+          "clutch/runner.py": 14.878892733564014
         }
       }
     },
@@ -189,7 +189,7 @@
           "tests/integration/test_shakeout.py::test_review_reject_member_observes_snag_and_no_merge": 1.5146217130095465,
           "tests/integration/test_restart_timers.py::test_timers_rearm_from_journal": 1.5124625080061378,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[ok]": 1.4726452290196903,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.470617228987976,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.470617228987976,
           "tests/integration/test_daemon_composition.py::test_production_refuses_failed_rework_publication[all-commits-split]": 1.4560275419935351,
           "tests/integration/test_second_problems.py::test_repeated_line_number_dedups_and_absent_key_means_none": 1.45536177699978,
           "tests/integration/test_retro.py::test_escape_report_projection": 1.4376515049953014,
@@ -247,7 +247,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "..................... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n......                                                                   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/requisition-prior-review/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3318 passed, 9 warnings in 49.49s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "..................... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n......                                                                   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/requisition-prior-review/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3318 passed, 9 warnings in 49.49s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 51.609012
     }

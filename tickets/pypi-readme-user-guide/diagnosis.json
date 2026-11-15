@@ -8,11 +8,11 @@
   "stage": "check",
   "verdict": "retry",
   "lessons": [
-    "Redo the README.md rewrite from the merge base: sections 1-8 in the ticket's order, every link an absolute https:// URL, ./dev.py only under ## Developing chupa. Change only the first sentence of section 1 in docs/how-chupa-works.md.",
+    "Redo the README.md rewrite from the merge base: sections 1-8 in the ticket's order, every link an absolute https:// URL, ./dev.py only under ## Developing clutch. Change only the first sentence of section 1 in docs/how-clutch-works.md.",
     "The one failure, tests/integration/test_daemon_soak_runner.py::test_daemon_soak_runs_production_serve, runs a synthetic repo built in eval/daemon_soak.py. It never reads README.md or docs/, so the docs diff did not cause it.",
     "The implementer's own suite passed (3185 tests) but the check run failed (3310 tests), so the soak test may be flaky. Run ./dev.py test as written. Do not edit eval/ or tests/; both are outside the scope fence.",
-    "If the soak test fails again, run the plain ./dev.py test once in a base-commit git worktree with no environment overrides. If it also fails there, file it with chupa suggest and report it as a base failure. Do not widen the diff.",
-    "Before committing, check acceptance criteria 1-8 with the ticket's grep commands. Check that every verb and comment in ## Commands matches uv run chupa --help and docs/host-running.md."
+    "If the soak test fails again, run the plain ./dev.py test once in a base-commit git worktree with no environment overrides. If it also fails there, file it with clutch suggest and report it as a base failure. Do not widen the diff.",
+    "Before committing, check acceptance criteria 1-8 with the ticket's grep commands. Check that every verb and comment in ## Commands matches uv run clutch --help and docs/host-running.md."
   ],
   "mechanical": null,
   "spec_version": "1.4",

@@ -8,11 +8,11 @@
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "The Regression command `./dev.py test ... -k deadline` can never pass the gate. chupa/stages.py::regression_result needs stdout to be exactly one JSON object `{\"regression_result\": ...}`, and dev.py prints a `$` prefix plus pytest output. The ticket must be rewritten before any retry.",
+    "The Regression command `./dev.py test ... -k deadline` can never pass the gate. clutch/stages.py::regression_result needs stdout to be exactly one JSON object `{\"regression_result\": ...}`, and dev.py prints a `$` prefix plus pytest output. The ticket must be rewritten before any retry.",
     "Rewrite `## Regression` to run one argv command: a carried reproducer under tests/ that prints only {\"regression_result\":\"pass\"} with exit 0 on fixed code, and {\"regression_result\":\"defect\"} with a positive exit on base (the child dispatches `after`).",
     "List that reproducer path in both `- carries:` and `## Scope fence`. The last attempt said it was blocked because tests/regress_drain_deadline.py was outside the fence, and stages.py rejects carries paths that are not changed test or fixture files.",
     "Leave the implementation plan alone. The `--deadline` option on the drain subparser, the `deadline` keyword on drain()/_Drain, the reexec_argv insertion before `--stop-lifecycle`, the unit tests and the docs sentence were never challenged. Redo all of it from the merge base.",
-    "After the rewrite, run `chupa lint drain-ceiling-carried-on-handoff` and `chupa review drain-ceiling-carried-on-handoff`. Fix every finding before the ticket is confirmed again."
+    "After the rewrite, run `clutch lint drain-ceiling-carried-on-handoff` and `clutch review drain-ceiling-carried-on-handoff`. Fix every finding before the ticket is confirmed again."
   ],
   "mechanical": null,
   "spec_version": "1.3",

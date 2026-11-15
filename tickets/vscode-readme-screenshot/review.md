@@ -1,6 +1,6 @@
 # Review: approve
 
-The diff adds the two image lines exactly as the ticket specifies, using absolute PNG URLs, after the first paragraph and before the unchanged `Built for` line, and changes only vscode-chupa/README.md.
+The diff adds the two image lines exactly as the ticket specifies, using absolute PNG URLs, after the first paragraph and before the unchanged `Built for` line, and changes only vscode-clutchwork/README.md.
 
 ## Findings
 
@@ -15,7 +15,7 @@ none
   "produced_at_sha": "9f9b20f0a702b3f3071b05418af22019bb73a14e",
   "stem": "vscode-readme-screenshot",
   "reviewed_sha": "9f9b20f0a702b3f3071b05418af22019bb73a14e",
-  "summary": "The diff adds the two image lines exactly as the ticket specifies, using absolute PNG URLs, after the first paragraph and before the unchanged `Built for` line, and changes only vscode-chupa/README.md.",
+  "summary": "The diff adds the two image lines exactly as the ticket specifies, using absolute PNG URLs, after the first paragraph and before the unchanged `Built for` line, and changes only vscode-clutchwork/README.md.",
   "findings": [],
   "spec_version": "1.4",
   "provider": "claude",

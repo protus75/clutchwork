@@ -9,12 +9,12 @@ kind: feature
 - review-approval-records
 
 ## Context
-- chupa/requisition.py
-- chupa/author.py
+- clutch/requisition.py
+- clutch/author.py
 - tests/test_triage.py
 
 ## On-demand
-- chupa/runner.py
+- clutch/runner.py
 - eval/shakeout/bench.py
 - eval/reliability_battery.py
 - tests/test_terminal.py
@@ -22,16 +22,16 @@ kind: feature
 - tests/test_mergequeue.py
 - tests/test_cli.py
 - tests/test_drain.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
 A ticket an AI writes in a chat session reaches Implement without the buildability review the Author stage runs, so a fence that misses a forced file is found only when the run fails `premise_failed`: four failed runs on 2026-11-05, five more tickets carried the same defect. `ticket-review-command` lets an author run the review; nothing makes it happen. After this change every dispatch path (`run`, `drain`, `serve`, all through `runner.drive`) reviews a ticket before its first stage unless the journal already holds a `requisition_verdict` `approve` for its exact committed content. A snag stops the ticket before any worktree or Implement call; an author-reviewed, Author-stage, or Rework ticket pays nothing extra.
 
 ## Scope in / Scope out
-- In: `chupa/runner.py` `drive`: on a fresh run (`ctx.boundary.run is None`, not a continuation), before `run_stages`, read the committed blob of `tickets/<stem>/ticket.md` (`git rev-parse HEAD:<path>` for the sha, `ctx.git._run(ctx.repo, "show", f"HEAD:<path>")` for the text, as `chupa/rework.py` does). If no SIGNAL `requisition_verdict` with `verdict` `approve`, that `ticket_sha`, and `ticket=` this stem exists, call `requisition.review_ticket` on that text and journal its verdict with the Author stage's body keys (`verdict`, `ticket_sha`, `provider`, `model`, `spec_version`).
+- In: `clutch/runner.py` `drive`: on a fresh run (`ctx.boundary.run is None`, not a continuation), before `run_stages`, read the committed blob of `tickets/<stem>/ticket.md` (`git rev-parse HEAD:<path>` for the sha, `ctx.git._run(ctx.repo, "show", f"HEAD:<path>")` for the text, as `clutch/rework.py` does). If no SIGNAL `requisition_verdict` with `verdict` `approve`, that `ticket_sha`, and `ticket=` this stem exists, call `requisition.review_ticket` on that text and journal its verdict with the Author stage's body keys (`verdict`, `ticket_sha`, `provider`, `model`, `spec_version`).
   - `approve`: continue to `run_stages`.
   - `snag` whose findings all have code `render_feasibility`: continue to `run_stages`, so an oversized ticket still reaches the existing `render_over_bound` -> Rework split path.
-  - any other `snag`, or `rma`: end the run with terminal `premise_failed`, `stage` `requisition`, the review's findings in the terminal reason, not routed to the Reject queue (no `dispatch`/`routed`). Consume no cap (`premise_bounce`, `retry`, `diagnosis`), make no Diagnose call, create no worktree. The ticket is then held by the existing premise park (`chupa/drain.py` `premise_parked`): it is not dispatched again until its committed `ticket.md` changes, and a changed ticket is re-offered with no operator `confirm`, where the next dispatch reviews the new content.
+  - any other `snag`, or `rma`: end the run with terminal `premise_failed`, `stage` `requisition`, the review's findings in the terminal reason, not routed to the Reject queue (no `dispatch`/`routed`). Consume no cap (`premise_bounce`, `retry`, `diagnosis`), make no Diagnose call, create no worktree. The ticket is then held by the existing premise park (`clutch/drain.py` `premise_parked`): it is not dispatched again until its committed `ticket.md` changes, and a changed ticket is re-offered with no operator `confirm`, where the next dispatch reviews the new content.
   - `ProviderCallError` / `ProviderDrought` from the review: handle exactly as the same errors from the Implement stage are handled.
 - In: create `tests/approval.py` with `approve(repo, stem, clock)`: journal a real `requisition_verdict` approve for the blob intake will commit for `tickets/<stem>/ticket.md` (stamp with production `_intake_claims`), into `load_config(None, cwd=repo).state_dir`, with a timestamp no earlier than the journal's last event. No production code path may skip the review for tests.
 - In: call `approve` from the helpers that commit a ticket and then dispatch it: `tests/test_terminal.py` `author`, `tests/test_stages.py` `author`, `tests/test_mergequeue.py` `ready`, the `tests/test_cli.py` helpers that dispatch (not its plain `write`, which tests asserting an empty journal also use), `eval/shakeout/bench.py` `Bench.add_ticket`, and `eval/reliability_battery.py` after it writes and intakes its ticket.
@@ -43,16 +43,16 @@ A ticket an AI writes in a chat session reaches Implement without the buildabili
   - `test_render_feasibility_snag_proceeds_to_implement`: a snag with only `render_feasibility` findings still reaches Implement.
   - `test_edit_releases_and_reviews_the_new_content`: after a snag, committing an edited `ticket.md` re-offers it with no `confirm`, and the new sha is reviewed once.
   - `test_serve_holds_a_parked_ticket`: serve's scheduler does not pick a `premise_failed` stem parked at its committed sha, and picks it after the ticket changes.
-- In: `chupa/scheduler.py`: serve's held set also holds a stem whose last state is `premise_failed` and that `drain.premise_parked` reports parked at its committed `ticket.md` sha. Today serve holds only Reject-queue stems, so without this it would re-dispatch a parked ticket unchanged. Reuse `premise_parked`; never add a second park check. `chupa/daemon.py` builds the `Scheduler` (its only construction site); pass it a committed-ticket sha lookup wired through the existing git seam (`git rev-parse HEAD:tickets/<stem>/ticket.md`). The full chain: `chupa/__main__.py` `build_daemon_core` (which already holds the `checkout` and its git seam) passes the lookup into `daemon.daemon_core`, which passes it to `Scheduler`. `serve.py` needs no change.
-- In: `docs/how-chupa-works.md`: the stage order and the drain/serve dispatch description say a ticket without an approve for its committed content is reviewed before Implement; section 6.7's premise-park bullet names the `requisition` stage terminal and its release (edit the ticket; no confirm).
-- Out: `chupa/requisition.py` and the review prompt, the Author and Rework stages, intake, `CORE_TEMPLATE`, `hosts/fixture/bin/claude` (it already answers the review role).
+- In: `clutch/scheduler.py`: serve's held set also holds a stem whose last state is `premise_failed` and that `drain.premise_parked` reports parked at its committed `ticket.md` sha. Today serve holds only Reject-queue stems, so without this it would re-dispatch a parked ticket unchanged. Reuse `premise_parked`; never add a second park check. `clutch/daemon.py` builds the `Scheduler` (its only construction site); pass it a committed-ticket sha lookup wired through the existing git seam (`git rev-parse HEAD:tickets/<stem>/ticket.md`). The full chain: `clutch/__main__.py` `build_daemon_core` (which already holds the `checkout` and its git seam) passes the lookup into `daemon.daemon_core`, which passes it to `Scheduler`. `serve.py` needs no change.
+- In: `docs/how-clutch-works.md`: the stage order and the drain/serve dispatch description say a ticket without an approve for its committed content is reviewed before Implement; section 6.7's premise-park bullet names the `requisition` stage terminal and its release (edit the ticket; no confirm).
+- Out: `clutch/requisition.py` and the review prompt, the Author and Rework stages, intake, `CORE_TEMPLATE`, `hosts/fixture/bin/claude` (it already answers the review role).
 
 ## Scope fence
-- chupa/runner.py
-- chupa/scheduler.py
-- chupa/daemon.py
-- chupa/__main__.py
-- docs/how-chupa-works.md
+- clutch/runner.py
+- clutch/scheduler.py
+- clutch/daemon.py
+- clutch/__main__.py
+- docs/how-clutch-works.md
 - tests
 - eval
 

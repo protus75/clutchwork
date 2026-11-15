@@ -18,18 +18,18 @@ none
 - 19.P6
 
 ## Goal / Why
-`CHUPA_PLAN.md` states every fact `phase6-continue-05` needs from its gapped units.
+`CLUTCH_PLAN.md` states every fact `phase6-continue-05` needs from its gapped units.
 
 ## Scope in / Scope out
 - In: the fenced entry units, with their Owner, Records, Observable, and Tests parts; insert a missing unit after its phase's last unit.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P6.exit-receipt-machinery
+- CLUTCH_PLAN.md#19.P6.exit-receipt-machinery
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P6.exit-receipt-machinery` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+2. `CLUTCH_PLAN.md` unit `19.P6.exit-receipt-machinery` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > phase6-continue-06 must author the GO-grade admission and phase6-continue-07, whose next admission requires exit-receipt-machinery. Its registry row exists, but its entry unit is missing: entry_unit_gap reports missing and resolve_plan_contract matches zero headings, preventing successor-contract closure before seed writes.
 
 ## Verification

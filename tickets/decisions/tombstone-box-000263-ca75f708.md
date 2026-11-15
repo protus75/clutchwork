@@ -10,6 +10,6 @@ Registry record declined-box-000167-8e1c5733 already decided this request: the s
 
 - declined-box-000167-8e1c5733 covers the same diagnosis-eval-run code-lane report commit and the same 19.P2 question
 - diagnosis-eval-run is merged; outbox-only-admission is merged
-- CHUPA_PLAN.md is a frozen design record and is never edited
+- CLUTCH_PLAN.md is a frozen design record and is never edited
 
 Message: box-000263-ca75f708

@@ -8,7 +8,7 @@ Check owns the approval record and seed lift; the real retro receipt is required
 
 ## Dead ends
 
-Removed unnecessary chupa/tickets.py Context embedding after the initial render estimate exceeded headroom.
+Removed unnecessary clutch/tickets.py Context embedding after the initial render estimate exceeded headroom.
 
 ## Second problems filed
 

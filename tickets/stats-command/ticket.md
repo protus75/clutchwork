@@ -9,30 +9,30 @@ kind: feature
 none
 
 ## Context
-- chupa/__main__.py
-- chupa/status.py
-- chupa/journal.py
-- chupa/tickets.py
-- chupa/caps.py
-- chupa/stages.py
-- chupa/retro.py
+- clutch/__main__.py
+- clutch/status.py
+- clutch/journal.py
+- clutch/tickets.py
+- clutch/caps.py
+- clutch/stages.py
+- clutch/retro.py
 - dev.py
 - tests/test_status.py
 - tests/test_cli.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
 The operator has no way to see how the engine is doing over time: how long each stage takes, how many attempts a ticket needs, how often the ladder escalates, where failures land, or what a merge costs. `status` prints current state only, and the retro scorecard covers gates and review surfaces only. Asked for by the operator on 2026-11-06. A hand prototype over the live journal showed every figure below can be derived from the journal alone: implement p50 3.5m, 2.2 attempts per merged ticket, and 5 escalations in 7 days.
 
-After this change `chupa stats [--window W] [--json]` prints a read-only health and efficiency projection of the journal over a window. `./dev.py stats` runs it. The JSON form feeds the VS Code extension in a later ticket.
+After this change `clutch stats [--window W] [--json]` prints a read-only health and efficiency projection of the journal over a window. `./dev.py stats` runs it. The JSON form feeds the VS Code extension in a later ticket.
 
 The operator also wants to see how long the test suite takes (2026-11-06). Check already runs every `## Verification` command once per attempt and saves the results in `checks.json`, but records no time. After this change each saved result carries its run time, and `stats` reports it per command. No extra test run is added.
 
 ## Scope in / Scope out
-- In: `chupa/stages.py`:
+- In: `clutch/stages.py`:
   - `CommandResult` gains `seconds: float | None = None`;
   - the Check verification loop sets it to the command's wall time, read from `ctx.driver.clock()` before and after `ctx.exec_.run`, including a timed-out or unrunnable command.
-- In: new `chupa/stats.py`, a write-free fold of the journal, like `chupa/status.py`.
+- In: new `clutch/stats.py`, a write-free fold of the journal, like `clutch/status.py`.
   - `project_stats(events, kinds, checks, *, now, window) -> dict`. `kinds` maps stem to `feature` / `bug` / `chore`; a stem missing from it is `unknown`. `checks` maps a checks effect key to its parsed `Invoice`. It returns plain JSON-serializable data: dicts, lists, str, int, float, and None.
   - `render_stats(stats) -> str`: the text rendering, one titled block per top-level key.
 - In: **Window.** `--window` takes `<N>h` or `<N>d` (time), or `<N>t` (tickets); default `7d`. `N` is a positive integer.
@@ -88,13 +88,13 @@ The operator also wants to see how long the test suite takes (2026-11-06). Check
     - `by_surface`: llm surface to usd;
     - `tokens`: `input` and `output` sums of `cost.input_tokens` and `cost.output_tokens` when present;
     - `provider_calls`: provider to `{calls, failures}`, from `provider_call_outcome` signals, where a failure has a non-null `failure_class`.
-- In: `chupa/__main__.py`: a `stats` verb with `--window` (default `7d`) and `--json`. It takes no lock and runs no intake. It reads the journal through the checkout's `Journal` and `now` from the checkout clock.
-  - `kinds` comes from each `tickets/<stem>/ticket.md` frontmatter `kind`, read with `chupa.tickets.split_frontmatter` and `yaml.safe_load`. A file that is missing or does not parse leaves the stem out.
-  - `checks` is read the way `chupa/retro.py` `production_evidence` reads it: for each checks effect completion in the window, `tickets/<stem>/checks.json` at the completion's `result.commit`, parsed with `Invoice.model_validate_json`.
-  - A malformed `--window` is an engine refusal: exit 2, `chupa stats: bad window <value> -- use <N>h, <N>d, or <N>t`.
+- In: `clutch/__main__.py`: a `stats` verb with `--window` (default `7d`) and `--json`. It takes no lock and runs no intake. It reads the journal through the checkout's `Journal` and `now` from the checkout clock.
+  - `kinds` comes from each `tickets/<stem>/ticket.md` frontmatter `kind`, read with `clutch.tickets.split_frontmatter` and `yaml.safe_load`. A file that is missing or does not parse leaves the stem out.
+  - `checks` is read the way `clutch/retro.py` `production_evidence` reads it: for each checks effect completion in the window, `tickets/<stem>/checks.json` at the completion's `result.commit`, parsed with `Invoice.model_validate_json`.
+  - A malformed `--window` is an engine refusal: exit 2, `clutch stats: bad window <value> -- use <N>h, <N>d, or <N>t`.
   - `--json` prints `json.dumps(stats)`; otherwise it prints `render_stats`.
 - In: `dev.py`: `stats` subcommand passing `--window W` and `--json` through, with a docstring line.
-- In: `docs/how-chupa-works.md` section 2.1 verbs table row for `stats`, and section 2.2 table row for `./dev.py stats`. Describe it as a projection, never an authority, like `status`. `docs/host-running.md`'s verb table gets a `stats` row (works while serve runs: Yes), which `tests/test_host_running.py::test_verb_table_matches_parser` requires.
+- In: `docs/how-clutch-works.md` section 2.1 verbs table row for `stats`, and section 2.2 table row for `./dev.py stats`. Describe it as a projection, never an authority, like `status`. `docs/host-running.md`'s verb table gets a `stats` row (works while serve runs: Yes), which `tests/test_host_running.py::test_verb_table_matches_parser` requires.
 - In: `tests/test_stats.py`. Build journals with `Journal.append` and a fake clock, as `tests/test_status.py` does. Cover:
   - stage durations, including `check` and `merge` derived from neighbouring events, with distinct per-stage times so a swapped stage fails;
   - an `h`/`d` window that excludes an older interval, and a `t` window whose start is the N-th most recent settle;
@@ -108,11 +108,11 @@ The operator also wants to see how long the test suite takes (2026-11-06). Check
 - Out: the VS Code extension, `status`, the retro, the scorecard, engine.log parsing, any new journal event, any config key, and timing merge-time host checks.
 
 ## Scope fence
-- chupa/stats.py
-- chupa/stages.py
-- chupa/__main__.py
+- clutch/stats.py
+- clutch/stages.py
+- clutch/__main__.py
 - dev.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 - docs/host-running.md
 - tests/test_stats.py
 - tests/test_stages.py
@@ -121,7 +121,7 @@ The operator also wants to see how long the test suite takes (2026-11-06). Check
 1. `./dev.py test tests/test_stats.py` exits 0, including the tests above.
 2. `--json` output's top-level keys are exactly `window`, `throughput`, `durations`, `verification`, `cycles`, `ladder`, `failures`, `holds`, `spend`, in that order.
 3. `./dev.py test tests/test_stages.py` exits 0 with `test_verification_records_each_command_seconds` passing: each command's `seconds` equals its own clock advance, not the sum or None.
-4. `docs/how-chupa-works.md` sections 2.1 and 2.2 list `stats`, and `docs/host-running.md`'s verb table has a `stats` row.
+4. `docs/how-clutch-works.md` sections 2.1 and 2.2 list `stats`, and `docs/host-running.md`'s verb table has a `stats` row.
 5. `./dev.py test` exits 0.
 
 ## Verification

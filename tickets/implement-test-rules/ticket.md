@@ -13,7 +13,7 @@ state: confirmed
 - review-all-findings
 
 ## Context
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## On-demand
 - specs/implement.md
@@ -30,18 +30,18 @@ The Implement prompt says nothing about how to write tests, so implementers writ
   Bump `version` from "2.0" to "2.1".
 - In: `tests/test_specs.py`: update the implement version pins; assert each of the three rules is in the loaded implement spec body.
 - In: `tests/test_stages.py`: update the `spec: implement 2.0` pin in the run.md assertion to the bumped version.
-- In: `docs/how-chupa-works.md` section 4.2: the Implement prompt carries these test-writing rules.
-- Out: every other spec, the retry block in `chupa/stages.py`, review.
+- In: `docs/how-clutch-works.md` section 4.2: the Implement prompt carries these test-writing rules.
+- Out: every other spec, the retry block in `clutch/stages.py`, review.
 
 ## Scope fence
 - specs/implement.md
 - tests/test_specs.py
 - tests/test_stages.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. The loaded `specs/implement.md` body contains all three rules and the version is one minor step above the prior one (the test fails if any rule is removed or the version is left unchanged), checked by `uv run pytest tests/test_specs.py`.
-2. `docs/how-chupa-works.md` section 4.2 states the rules.
+2. `docs/how-clutch-works.md` section 4.2 states the rules.
 3. `uv run pytest -q` exits 0.
 
 ## Verification

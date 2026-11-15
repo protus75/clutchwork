@@ -12,11 +12,11 @@ state: confirmed
 - core-renderer
 
 ## Context
-- chupa/config.py
-- chupa/__main__.py
+- clutch/config.py
+- clutch/__main__.py
 - tests/test_config.py
 - tests/test_cli.py
-- chupa/seams.py
+- clutch/seams.py
 
 ## Plan contract
 - 19.I
@@ -27,13 +27,13 @@ state: confirmed
 The strict loader's schema-zero repair road runs an explicit lossless, validated migration.
 
 ## Scope in / Scope out
-Implement only the cited migration entry. chupa/config.py owns migration and validates the candidate through its real loader; chupa/__main__.py registers and runs migrate-config before the ordinary config load. Use the existing filesystem seam for the adjacent backup and atomic replacement. Keep current loader signatures and strict version-zero refusal intact; existing CLI seam bindings permit injection without widening main's signature.
+Implement only the cited migration entry. clutch/config.py owns migration and validates the candidate through its real loader; clutch/__main__.py registers and runs migrate-config before the ordinary config load. Use the existing filesystem seam for the adjacent backup and atomic replacement. Keep current loader signatures and strict version-zero refusal intact; existing CLI seam bindings permit injection without widening main's signature.
 
 Preserve all original bytes except the explicit integer version scalar. Publish nothing before validating the entire candidate, and preserve existing backups on refusals or current-version no-ops. The CLI selects --config or invocation-cwd config.yaml. Carry every named entry test below; version, YAML and full-schema errors must identify their cause and a repair action. No absent-version default, alternate loader, new config key, provider call, process spawn, journal append or git mutation belongs here. The activation sibling owns the routed conduct adoption and shared resolver.
 
 ## Scope fence
-- chupa/config.py
-- chupa/__main__.py
+- clutch/config.py
+- clutch/__main__.py
 - tests/test_config.py
 - tests/test_cli.py
 

@@ -10,7 +10,7 @@ Registry record declined-box-000073-6497ff4 already decided this same concern: t
 
 - declined-box-000073-a6497ff4 describes the same fixture-layout mismatch, the same ~195-file estimate and the same request to reconcile before go-grade-machinery
 - go-grade-machinery and go-grade-run are in the merged list, so the set this note wanted to get ahead of has already grown
-- The note's only harm is a mismatch between plan wording and the fixture layout. CHUPA_PLAN.md is frozen and is never edited
+- The note's only harm is a mismatch between plan wording and the fixture layout. CLUTCH_PLAN.md is frozen and is never edited
 - unresolvable link: declined-box-000073-a6497ff4
 
 Message: box-000227-6bbad4ab

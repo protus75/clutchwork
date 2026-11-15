@@ -1,4 +1,4 @@
-$ sed -n 476,481p chupa/drain.py   # over-ceiling ticket parked at dispatch, no journal event
+$ sed -n 476,481p clutch/drain.py   # over-ceiling ticket parked at dispatch, no journal event
             if t.stuck_minutes > self.c.config.drain.max_ticket_minutes:
                 self.over_budget[t.stem] = Parked(
                     t.stem,
@@ -6,4 +6,4 @@ $ sed -n 476,481p chupa/drain.py   # over-ceiling ticket parked at dispatch, no 
                     f"lower `- stuck:` in {ticket_path(t.stem)} to at most {self.c.config.drain.max_ticket_minutes}m (split the ticket if it cannot fit)",
                 )
 
-Observed: retro-request-serve had `stuck: 210m` against the 180m ceiling; chupa lint passed it and the drain parked it as "never dispatched", visible only in the drain report.
+Observed: retro-request-serve had `stuck: 210m` against the 180m ceiling; clutch lint passed it and the drain parked it as "never dispatched", visible only in the drain report.

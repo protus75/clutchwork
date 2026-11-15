@@ -18,7 +18,7 @@ none
 - tests/test_providers.py
 - tests/test_notify.py
 - tests/test_restart_timers.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## On-demand
 - uv.lock
@@ -31,20 +31,20 @@ none
 - In: fix every test that fails or flakes under parallel runs at the root cause, never by retrying, skipping, marking serial, or lengthening a bound. Known cause: wait loops bounded by iteration count while real git or subprocess work runs, starting with `until` in `tests/test_serve.py` (shared by six other test files) and the counted loops in `tests/test_serve.py`, `tests/test_notify.py`, and `tests/test_restart_timers.py`. They wait on the condition itself against a wall-clock deadline of at least 60 seconds, yielding to the event loop between checks, so a fast machine returns as soon as the condition holds and a loaded one still has time.
 - In: remove every fixed `time.sleep` from the tests. The process-group kill tests in `tests/test_git.py` (around lines 251-299) and `tests/test_providers.py` (around lines 829-882) need real child processes; they wait for the observable event (the marker file appearing, the process group being gone) with a wall-clock deadline instead of sleeping a fixed time. Sleeps inside a spawned child's own script that make it hang until killed stay.
 - In: any shared state found under parallel runs (environment variables, working directory, fixed paths, ports, module globals) is made per-test through `tmp_path` or `monkeypatch`.
-- In: update `docs/how-chupa-works.md` section 2.2 to say `./dev.py test` runs the suite in parallel.
-- Out: converting tests to mocks, moving tests into unit and integration directories, and any change to `chupa/` production code. Those are separate tickets.
+- In: update `docs/how-clutch-works.md` section 2.2 to say `./dev.py test` runs the suite in parallel.
+- Out: converting tests to mocks, moving tests into unit and integration directories, and any change to `clutch/` production code. Those are separate tickets.
 
 ## Scope fence
 - pyproject.toml
 - uv.lock
 - tests/
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `pyproject.toml` lists `pytest-xdist` in the `dev` group and `-n auto` in `addopts`.
 2. `uv run pytest -q` exits 0 three times in a row, each run under 120 seconds on this machine.
 3. `tests/` contains no `time.sleep(` call outside a spawned child process's own script text.
-4. `docs/how-chupa-works.md` section 2.2 says `./dev.py test` runs the suite in parallel.
+4. `docs/how-clutch-works.md` section 2.2 says `./dev.py test` runs the suite in parallel.
 
 ## Verification
 ```
@@ -54,7 +54,7 @@ uv run pytest -q
 ```
 
 ## Definition of rejected
-Reject the branch if any test is skipped, retried, marked serial, or given a longer bound to pass; if a fixed sleep remains outside a child's own script; if `chupa/` changes; or if any test is deleted.
+Reject the branch if any test is skipped, retried, marked serial, or given a longer bound to pass; if a fixed sleep remains outside a child's own script; if `clutch/` changes; or if any test is deleted.
 
 ## Time budget
 - expected: 60m

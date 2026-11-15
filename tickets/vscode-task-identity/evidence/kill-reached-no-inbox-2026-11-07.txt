@@ -1,7 +1,7 @@
-Observed 2026-11-07: the operator chose Stop, then Kill, from the vscode-chupa Tickets view `…` menu
+Observed 2026-11-07: the operator chose Stop, then Kill, from the vscode-clutchwork Tickets view `…` menu
 while a drain (started from the same menu) held the lock. Neither request reached the engine.
 
-1. No control request was written. Newest files in .chupa/state/control/inbox before a terminal
+1. No control request was written. Newest files in .clutch/state/control/inbox before a terminal
    `./dev.py kill` at 08:05Z were dated 2026-11-06:
      -rw------- 1 djp djp 128 Nov  6 14:37 c20a52453d93426d8e1c7bd2256fcb13.json
      -rw------- 1 djp djp 128 Nov  6 18:41 cab44447834447da962c341d347d3031.json
@@ -10,18 +10,18 @@ while a drain (started from the same menu) held the lock. Neither request reache
    engine.log shows no stop or kill between the drain's start and the terminal kill:
      {"ts": "2026-11-07T08:00:36.042104+00:00", "event": "engine_start", "verb": "drain", "pid": 42782}
      {"ts": "2026-11-07T08:05:14.999377+00:00", "event": "engine_stop", "verb": "drain", "pid": 42782, "outcome": "killed"}
-   The killed drain's task terminal printed: The terminal process "uv 'run', 'python', '-m', 'chupa', 'drain'" ...
+   The killed drain's task terminal printed: The terminal process "uv 'run', 'python', '-m', 'clutch', 'drain'" ...
    Terminal will be reused by tasks — the drain itself was a VS Code task.
 
 2. Cause, read from VS Code 5264f2156c (the installed build):
-   vscode-chupa/extension.js:36 builds every action as
-     new vscode.Task({ type: 'chupa' }, folder, args.join(' '), 'chupa', new vscode.ProcessExecution(...))
-   so every action carries the identical definition {type: 'chupa'}.
+   vscode-clutchwork/extension.js:36 builds every action as
+     new vscode.Task({ type: 'clutch' }, folder, args.join(' '), 'clutch', new vscode.ProcessExecution(...))
+   so every action carries the identical definition {type: 'clutch'}.
 
    workbench.desktop.main.js, task DTO conversion (oL.to): an extension task's id is
      m = CAe.is(t.execution) && t._id ? t._id : `${t.source.extensionId}.${p._key}`
    where p._key is the KeyedTaskIdentifier serialization of the definition's fields only
-   ("type,chupa," for {type:'chupa'}). The ProcessExecution argv is not part of it.
+   ("type,clutch," for {type:'clutch'}). The ProcessExecution argv is not part of it.
 
    Contributed task key: getKey(){let o={type:"contributed",scope:this._source.scope,id:this._id};...}
    Terminal task system run():

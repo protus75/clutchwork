@@ -28,14 +28,14 @@ state: confirmed
 Admit the terminal Phase 6 exit after its report machinery merges.
 
 ## Scope in / Scope out
-Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML directly from CHUPA_PLAN.md. Position 8 carries admissions[8:]:
+Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML directly from CLUTCH_PLAN.md. Position 8 carries admissions[8:]:
 - [phase6-exit]
 
 Author exactly phase6-exit as the sole terminal payload. Add phase6-continue-08 to its registry depends edges; it consumes exit-receipt-machinery. There is no successor and no seeds authored by phase6-exit. Preserve registry name, order, grain and fence floor. The seeding role cites 19.L, 19.I and 19.P6; the terminal contract is 19.P6's exit reads and RECEIPT together with 19.L's TERMINAL law. Do not invent an exit entry unit or cite an unresolved id.
 
 Before seed writes, resolve role, row and entry ids with resolve_plan_contract. Check required_units and entry_unit_gap for the terminal seed, including every cited non-exit entry and closure through exit-receipt-machinery, fixture-host-scaffold, supervised-merge-hold, go-grade-machinery and go-grade-run. Inspect Owner, Records, Observable and Tests before grammar and review. Missing or contradictory facts return premise_failed, kind: spec_gap naming the owning unit. Cite ids under Plan contract, never copy entry prose. Carry named machinery Tests obligations as unchanged Verification; add named exit tests for each read and transitive dependency coverage.
 
-Read predecessor tickets, owners and merged tests. Scan chupa/, eval/ and tests/ for callers, signatures, composition roots, allowlists and negative assertions. Only 19.L rules 2-5 earn additions; record the exact caller or contradicted assertion in tests/test_seeded_phase6_08.py. Other widening requires plan repair. Existing fenced files default to Context; On-demand requires recorded embedding above 300,000 characters. Exclude creations, prompt specs and delimiter-bearing sources from Context. Unchanged preservation suites occur only in Verification. Keep historical fixtures immutable and use merged tests/test_seeded_phase3_core.py as the idiom.
+Read predecessor tickets, owners and merged tests. Scan clutch/, eval/ and tests/ for callers, signatures, composition roots, allowlists and negative assertions. Only 19.L rules 2-5 earn additions; record the exact caller or contradicted assertion in tests/test_seeded_phase6_08.py. Other widening requires plan repair. Existing fenced files default to Context; On-demand requires recorded embedding above 300,000 characters. Exclude creations, prompt specs and delimiter-bearing sources from Context. Unchanged preservation suites occur only in Verification. Keep historical fixtures immutable and use merged tests/test_seeded_phase3_core.py as the idiom.
 
 The exit is KNOWN-HARD and starts high/high, with citing evidence in 19.L. Ordinary rows and continuations start medium/medium; a deep: true row rides alone high/high. Count the sole seed against seeding.max_seeds_per_admission and cap stuck at drain.max_ticket_minutes. Refuse forward dependencies, splitting or bundling.
 

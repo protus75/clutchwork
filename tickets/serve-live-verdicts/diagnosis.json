@@ -8,7 +8,7 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Bind serve's recovering-confirm shortcut (chupa/serve.py ~358) to this request: accept only a confirm commit made after the effect intent, else call runner.verdict_locked. Test a stem confirmed long ago, now in the Reject queue, crashing mid-keep.",
+    "Bind serve's recovering-confirm shortcut (clutch/serve.py ~358) to this request: accept only a confirm commit made after the effect intent, else call runner.verdict_locked. Test a stem confirmed long ago, now in the Reject queue, crashing mid-keep.",
     "Criterion 1: test a held-lock keep on a Reject-queue stem via settle_admissions with runner.verdict_locked. Run a repeat pass and a restart after the intent; assert exactly one reject_verdict keep actor: operator.",
     "Criterion 2: test held-lock reject on a Reject-queue stem and a committed draft via the real verdict path. Assert the state: rejected stamp and commit, one rejected transition, and the dead-dependent box messages.",
     "Criterion 3: add a tests/test_serve.py test where a held-lock confirm is published to a running serve and the same serve instance dispatches the kept stem on its next pass, with no restart.",

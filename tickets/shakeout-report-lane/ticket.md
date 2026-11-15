@@ -11,13 +11,13 @@ agent_effort: medium
 - invariant-auditor
 
 ## Context
-- chupa/artifacts.py
-- chupa/runner.py
+- clutch/artifacts.py
+- clutch/runner.py
 - tests/test_stages.py
 - tests/test_drain.py
 
 ## On-demand
-- chupa/stages.py
+- clutch/stages.py
 
 ## Plan contract
 - 19.L
@@ -30,14 +30,14 @@ The shakeout battery has its report lane: the closed `shakeout-report.json` sche
 
 Why: the Phase 2 exit reads "battery green including every named member" from a committed report (19.P2 exit reads). A report a model could hand-write, or that one deliverable both registers and commits, is the false-green shape 19.L's EXIT-READ CLOSURE and CUSTODY rules refuse. This deliverable is the MACHINERY (schema, registration, writer, runner). The group runs are the PRODUCERS, strictly after it merges.
 
-Owners (19.P2 NAMES, 19.L EXIT-READ CLOSURE): `chupa/artifacts.py` owns the schema. `chupa/stages.py` / `tests/test_stages.py` own the KNOWN registration and the ONE stage-terminal lift path. `eval/shakeout/bench.py` owns the public bench and its `configure` seam (19.P2 BENCH SEAM). `eval/shakeout/run.py` owns the member registry, the runner, the double gate, and the canonical writer. `tests/test_shakeout.py` is the battery suite. `chupa/audit.py` is called, never changed.
+Owners (19.P2 NAMES, 19.L EXIT-READ CLOSURE): `clutch/artifacts.py` owns the schema. `clutch/stages.py` / `tests/test_stages.py` own the KNOWN registration and the ONE stage-terminal lift path. `eval/shakeout/bench.py` owns the public bench and its `configure` seam (19.P2 BENCH SEAM). `eval/shakeout/run.py` owns the member registry, the runner, the double gate, and the canonical writer. `tests/test_shakeout.py` is the battery suite. `clutch/audit.py` is called, never changed.
 
 ## Scope in / Scope out
-- In: `chupa/artifacts.py`:
+- In: `clutch/artifacts.py`:
   - `SHAKEOUT_REPORT = "shakeout-report.json"`.
   - `ShakeoutEntry`, closed: `member` (snake-case id), `group`, `planted_fault`, `expected`, `observed` (each non-blank), `producing_run` (`<bench stem>/<run seq>`), `auditor` (list of violation lines), `green` (bool). A validator refuses `green` unless `observed == expected` and `auditor` is empty, and refuses `green: false` when both hold.
   - `ShakeoutReport(Artifact)`: `entries`, with member ids unique.
-- In: `chupa/stages.py`:
+- In: `clutch/stages.py`:
   - `KNOWN_ARTIFACTS: Mapping[str, type[BaseModel]] = {SHAKEOUT_REPORT: ShakeoutReport}`.
   - `lift_outbox` validates every outbox file whose basename is registered BEFORE anything is written, and raises `ArtifactInvalid(path, error)` on a schema failure. A registered artifact is lifted ONLY by the Check-stage lift (kind `checks`). Every other lift leaves it out.
   - `check` deletes registered artifacts from the outbox BEFORE running Verification, so a stale or agent-written copy never lifts. An `ArtifactInvalid` at its lift makes the Check `gate_failed` with one finding code `verification` (paved road: produce the report only through `eval.shakeout.run`).
@@ -52,17 +52,17 @@ Owners (19.P2 NAMES, 19.L EXIT-READ CLOSURE): `chupa/artifacts.py` owns the sche
   - `produce(group, prior: ShakeoutReport | None, root) -> ShakeoutReport`, the DOUBLE GATE: the prior report must hold every member of every group before `group` in `GROUPS`; each prior entry's member is re-run and must come back green with the same `observed`; then `group`'s own members run and each must be green. Any failure raises `ShakeoutRefused` naming the member, and no report is produced.
   - `write_report(path, report)`, the ONE writer: atomic, through the filesystem seam, `model_dump_json(indent=2)` plus a newline. `produced_by_spec_version` is the engine constant `SHAKEOUT_SPEC_VERSION = 1` and `produced_at_sha` is the checkout's HEAD.
   - `python -m eval.shakeout.run --group <g> [--prior <path>] --out <path>` runs `produce` in a temp root and writes the report only on success. It exits 0 on success, 1 on `ShakeoutRefused`, and 2 on an unknown group.
-- Out: every battery member (the group seeds), any `chupa/audit.py` change, run-lane admission (Phase 3), and committing any report from this ticket.
+- Out: every battery member (the group seeds), any `clutch/audit.py` change, run-lane admission (Phase 3), and committing any report from this ticket.
 
 ## Scope fence
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 - tests/test_stages.py
 - eval/shakeout/
 - tests/test_shakeout.py
 
 ## Acceptance criteria
-1. `tests/test_stages.py` proves a Check whose Verification writes a valid `shakeout-report.json` into the outbox lifts it in the `chupa(<stem>): checks` commit, a schema-invalid one makes the Check `gate_failed` and commits neither file, and the implement-terminal lift leaves a registered artifact unlifted.
+1. `tests/test_stages.py` proves a Check whose Verification writes a valid `shakeout-report.json` into the outbox lifts it in the `clutch(<stem>): checks` commit, a schema-invalid one makes the Check `gate_failed` and commits neither file, and the implement-terminal lift leaves a registered artifact unlifted.
 2. `tests/test_stages.py` proves a report left in the outbox before Check is deleted before Verification runs, so a Verification that writes nothing lifts no report, and that a Check whose Verification names `tickets/<stem>/shakeout-report.json` but leaves no report fails `verification` even when every command is otherwise excused.
 3. `tests/test_shakeout.py` registers two test-local members through the runner's group loading and proves `produce` refuses a prior report missing an earlier group's member, refuses when a re-run prior member's `observed` differs, and returns the cumulative report otherwise.
 4. `tests/test_shakeout.py` proves a member whose bench journal carries a planted double terminal comes back `green: false` with a `one_terminal_per_run` auditor line, and that `ShakeoutEntry` refuses `green: true` with a non-empty `auditor`.

@@ -1,5 +1,5 @@
-# Journaled model calls vs surviving raw capture directories, repo HEAD 328d07d9, state .chupa/state
-# A capture dir is spools/providers/<stem>/<provider>-NNNN holding events.jsonl; the NNNN counter restarts at 1 per process (chupa/providers.py:294,325)
+# Journaled model calls vs surviving raw capture directories, repo HEAD 328d07d9, state .clutch/state
+# A capture dir is spools/providers/<stem>/<provider>-NNNN holding events.jsonl; the NNNN counter restarts at 1 per process (clutch/providers.py:294,325)
 total journaled llm calls: 3960
 total capture dirs with events.jsonl: 2298
 lost: 1662

@@ -5,9 +5,9 @@
   "stem": "control-inbox-known-required",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/control.py",
-    "chupa/daemon.py",
+    "clutch/__main__.py",
+    "clutch/control.py",
+    "clutch/daemon.py",
     "tests/integration/test_control.py",
     "tests/integration/test_control_cli.py",
     "tests/integration/test_daemon_composition.py",
@@ -82,9 +82,9 @@
       "coverage": {
         "percent": 33.70996857658621,
         "files": {
-          "chupa/__main__.py": 49.56331877729258,
-          "chupa/control.py": 39.6078431372549,
-          "chupa/daemon.py": 23.076923076923077
+          "clutch/__main__.py": 49.56331877729258,
+          "clutch/control.py": 39.6078431372549,
+          "clutch/daemon.py": 23.076923076923077
         }
       }
     },
@@ -163,7 +163,7 @@
           "tests/integration/test_serve_dispatch.py::test_serve_reoffers_merge_failure": 1.5656090219990801,
           "tests/integration/test_scorecard.py::test_scorecard_catches_resolved_and_upheld_findings": 1.5003118869999525,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[review]": 1.498693706001177,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.4821210929994777,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.4821210929994777,
           "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_cleans_up_owned_lifetimes[success]": 1.4763029440000537,
           "tests/integration/test_fixture_host.py::test_fixture_cli_adapter_roundtrip": 1.4723441030000686,
           "tests/integration/test_drain_reentry.py::test_a_reoffer_after_a_review_reject_renders_its_findings_in_criteria_position": 1.4511117119991468,
@@ -224,7 +224,7 @@
         "tests/unit/test_control_known.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_control_known.py\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 2.63s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_control_known.py\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 2.63s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.833636
     },
@@ -234,7 +234,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "....... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n....................................                                     [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/chupa/.chupa/state/worktrees/control-inbox-known-required/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3492 passed, 9 warnings in 64.39s (0:01:04)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "....... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n....................................                                     [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/clutch/.clutch/state/worktrees/control-inbox-known-required/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3492 passed, 9 warnings in 64.39s (0:01:04)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 68.027296
     }

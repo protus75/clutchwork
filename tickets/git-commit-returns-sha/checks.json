@@ -5,15 +5,15 @@
   "stem": "git-commit-returns-sha",
   "passed": true,
   "changed_files": [
-    "chupa/author.py",
-    "chupa/daemon.py",
-    "chupa/git.py",
-    "chupa/merge.py",
-    "chupa/retro.py",
-    "chupa/runner.py",
-    "chupa/serve.py",
-    "chupa/stages.py",
-    "chupa/tickets.py",
+    "clutch/author.py",
+    "clutch/daemon.py",
+    "clutch/git.py",
+    "clutch/merge.py",
+    "clutch/retro.py",
+    "clutch/runner.py",
+    "clutch/serve.py",
+    "clutch/stages.py",
+    "clutch/tickets.py",
     "tests/integration/test_author.py",
     "tests/integration/test_daemon_composition.py",
     "tests/integration/test_git.py",
@@ -88,15 +88,15 @@
       "coverage": {
         "percent": 26.668036717358543,
         "files": {
-          "chupa/author.py": 16.11842105263158,
-          "chupa/daemon.py": 18.016194331983804,
-          "chupa/git.py": 46.540880503144656,
-          "chupa/merge.py": 24.367088607594937,
-          "chupa/retro.py": 39.10891089108911,
-          "chupa/runner.py": 16.782006920415224,
-          "chupa/serve.py": 13.006993006993007,
-          "chupa/stages.py": 14.703557312252965,
-          "chupa/tickets.py": 30.338541666666668
+          "clutch/author.py": 16.11842105263158,
+          "clutch/daemon.py": 18.016194331983804,
+          "clutch/git.py": 46.540880503144656,
+          "clutch/merge.py": 24.367088607594937,
+          "clutch/retro.py": 39.10891089108911,
+          "clutch/runner.py": 16.782006920415224,
+          "clutch/serve.py": 13.006993006993007,
+          "clutch/stages.py": 14.703557312252965,
+          "clutch/tickets.py": 30.338541666666668
         }
       }
     },
@@ -208,7 +208,7 @@
           "tests/integration/test_harvest.py::test_review_snag_commits_closed_harvest_without_code_content_and_wipes": 1.2097535969951423,
           "tests/integration/test_hostfiles.py::test_core_drift_reachable_from_production_gates[inline]": 1.2088787050015526,
           "tests/integration/test_triage.py::test_escape_unattributed_reports": 1.1944203040038701,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.193111347995,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.193111347995,
           "tests/integration/test_storm_hold.py::test_storm_resume_is_identity_bound_and_once": 1.1862537240085658,
           "tests/integration/test_triage.py::test_resolved_bug_escape_attribution": 1.178018480000901
         }
@@ -235,7 +235,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "....................... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n..................................                                       [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/git-commit-returns-sha/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3346 passed, 9 warnings in 53.62s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "....................... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n..................................                                       [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/git-commit-returns-sha/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3346 passed, 9 warnings in 53.62s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 55.859142
     }

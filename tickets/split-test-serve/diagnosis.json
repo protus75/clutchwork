@@ -8,7 +8,7 @@
   "stage": "implement",
   "verdict": "split",
   "lessons": [
-    "Size every child to the diff budget in chupa/stages.py:73-74 (DIFF_BUDGET_INSERTED = 1_500, DIFF_BUDGET_FILES = 30). Moving all 2,180 lines of test_serve.py in one ticket produced about 2,384 inserted lines, and every moved line counts as an insertion.",
+    "Size every child to the diff budget in clutch/stages.py:73-74 (DIFF_BUDGET_INSERTED = 1_500, DIFF_BUDGET_FILES = 30). Moving all 2,180 lines of test_serve.py in one ticket produced about 2,384 inserted lines, and every moved line counts as an insertion.",
     "Don't count on git rename detection to shrink the count. The source file is 99,937 characters and each destination must be under 40,000, so no destination will register as a rename of the source.",
     "Child 1: create serve_rig.py with the module-level helpers, fixtures, and classes unchanged. Delete them from test_serve.py, have test_serve.py import them from serve_rig, and repoint the ten importer files the ticket names to tests.integration.serve_rig.",
     "Next children: move the themed test groups (lifecycle, kill, admission, notify, upgrade, dispatch) out of test_serve.py in batches of under 1,500 inserted lines each. Each child depends on the previous one because it needs that child's merged files. The last child deletes test_serve.py.",

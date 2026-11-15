@@ -11,7 +11,7 @@ agent_effort: medium
 - shakeout-runner
 
 ## Context
-- chupa/drain.py
+- clutch/drain.py
 - tests/test_drain.py
 
 ## Plan contract
@@ -20,11 +20,11 @@ agent_effort: medium
 - section 18
 
 ## Goal / Why
-The fourth shakeout battery group pins the drain (`chupa/drain.py`: the eligibility scan, re-offers, and the premise park, section 18) with three members, run through the production drain on the bench with a FakeLLM and zero human input. Its Check run re-confirms every prior entry and machine-produces the cumulative report into its OUTBOX.
+The fourth shakeout battery group pins the drain (`clutch/drain.py`: the eligibility scan, re-offers, and the premise park, section 18) with three members, run through the production drain on the bench with a FakeLLM and zero human input. Its Check run re-confirms every prior entry and machine-produces the cumulative report into its OUTBOX.
 
 Why: the drain carries the whole self-build unattended (section 19). A drain that dispatches an unparseable ticket, re-asks an unchanged premise, or cannot land a red-then-green stem in one invocation either wastes the run or stalls it.
 
-Owners (19.P2 Emits): this group fences ONLY `chupa/drain.py`, plus `eval/shakeout/` and `tests/test_shakeout.py`. A defect it exposes in the drain is fixed here. A defect anywhere else is filed as a second problem and the ticket replies `premise_failed`, naming it.
+Owners (19.P2 Emits): this group fences ONLY `clutch/drain.py`, plus `eval/shakeout/` and `tests/test_shakeout.py`. A defect it exposes in the drain is fixed here. A defect anywhere else is filed as a second problem and the ticket replies `premise_failed`, naming it.
 
 ## Scope in / Scope out
 - In: `eval/shakeout/drain.py` with `MEMBERS`, in this order:
@@ -33,10 +33,10 @@ Owners (19.P2 Emits): this group fences ONLY `chupa/drain.py`, plus `eval/shakeo
   - `red_then_green`: (1) attempt 1 fails Review, attempt 2 is approved. (2) The stem merges in ONE drain invocation with exactly one `retry` `cap_consumed`. (3) Attempt 1's `review.md` findings.
 - In: `eval/shakeout/run.py`: `GROUPS` gains `"drain"` after `"runner"`.
 - In: `tests/test_shakeout.py`: one test per member asserting its observable through `run_member`.
-- Out: members owned by other modules, any production change outside `chupa/drain.py`, and any runner, bench, or schema edit beyond `GROUPS`.
+- Out: members owned by other modules, any production change outside `clutch/drain.py`, and any runner, bench, or schema edit beyond `GROUPS`.
 
 ## Scope fence
-- chupa/drain.py
+- clutch/drain.py
 - eval/shakeout/
 - tests/test_shakeout.py
 

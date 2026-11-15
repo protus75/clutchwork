@@ -10,8 +10,8 @@
   "lessons": [
     "The stop was a misread: the gap fact's spec-gap stop belongs to phase7-continue. This ticket exists to write that missing fact into 19.P7.host-mechanical-check, so an absent test is the fact to specify, not a reason to stop.",
     "Named tests need not exist before the plan repair: the unit's Tests part already names tests/test_host_mechanical.py tests, and that file is not merged. Add the attribution preservation test to the Tests part as an obligation of the implementing ticket.",
-    "State the merged behavior in the unit: chupa/triage.py::attribute_escape calls Frontmatter.model_validate on the ticket text at its authored commit, with no plan, graph or config input. Its comment says current plan/graph changes cannot invalidate this origin evidence.",
-    "Reconcile this with the unit's validator repair: chupa/tickets.py GateBypass._known_code rejects non-ENGINE_GATE_CODES today. State that the active-config union check must not make attribute_escape fail on historical frontmatter, naming no mechanism merged code or the plan lacks.",
+    "State the merged behavior in the unit: clutch/triage.py::attribute_escape calls Frontmatter.model_validate on the ticket text at its authored commit, with no plan, graph or config input. Its comment says current plan/graph changes cannot invalidate this origin evidence.",
+    "Reconcile this with the unit's validator repair: clutch/tickets.py GateBypass._known_code rejects non-ENGINE_GATE_CODES today. State that the active-config union check must not make attribute_escape fail on historical frontmatter, naming no mechanism merged code or the plan lacks.",
     "Edit only the fenced unit's Owner, Records, Observable and Tests parts, adding no code or tests, then run uv run pytest tests/test_plan_lint.py. Tests in tests/test_triage.py (test_resolved_bug_escape_attribution) stay green and are not a precondition."
   ],
   "mechanical": null,

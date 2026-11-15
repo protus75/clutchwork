@@ -9,20 +9,20 @@ kind: bug
 - none
 
 ## Context
-- chupa/tickets.py::parse_ticket
-- chupa/tickets.py::validate_ticket
-- chupa/tickets.py::evidence_findings
-- chupa/tickets.py::missing_evidence_findings
-- chupa/author.py::AuthorGate.check
-- chupa/drain.py::_Drain._scan
-- chupa/runner.py::_admit
-- docs/how-chupa-works.md#3.2 Intake
-- docs/how-chupa-works.md#5.2 Bug tickets
-- chupa/docs/host-authoring.md#Bug tickets
+- clutch/tickets.py::parse_ticket
+- clutch/tickets.py::validate_ticket
+- clutch/tickets.py::evidence_findings
+- clutch/tickets.py::missing_evidence_findings
+- clutch/author.py::AuthorGate.check
+- clutch/drain.py::_Drain._scan
+- clutch/runner.py::_admit
+- docs/how-clutch-works.md#3.2 Intake
+- docs/how-clutch-works.md#5.2 Bug tickets
+- clutch/docs/host-authoring.md#Bug tickets
 - tests/regress_drain_deadline.py
 
 ## On-demand
-- chupa/__main__.py
+- clutch/__main__.py
 - tests/integration/test_tickets.py
 - tests/integration/test_author.py
 - tests/integration/test_bug_gate.py
@@ -33,16 +33,16 @@ kind: bug
 - tests/integration/test_fixture_host.py
 
 ## Goal / Why
-`chupa/docs/host-authoring.md` (Bug tickets > Evidence) says a `kind: bug` ticket needs at least one evidence file committed with it "before it runs". Only human intake (`intake` in `chupa/tickets.py`) and `lint` enforce that. The Author stage commits its drafts through its own ticket-plane effect, not intake. `AuthorGate.check` writes evidence only for a host report. The confirm verb (`verdict_locked` in `chupa/runner.py`), the drain scan (`_Drain._scan` via `parse_ticket`), the serve watcher, and `run` admission (`_admit`) all validate the ticket without the evidence check.
+`clutch/docs/host-authoring.md` (Bug tickets > Evidence) says a `kind: bug` ticket needs at least one evidence file committed with it "before it runs". Only human intake (`intake` in `clutch/tickets.py`) and `lint` enforce that. The Author stage commits its drafts through its own ticket-plane effect, not intake. `AuthorGate.check` writes evidence only for a host report. The confirm verb (`verdict_locked` in `clutch/runner.py`), the drain scan (`_Drain._scan` via `parse_ticket`), the serve watcher, and `run` admission (`_admit`) all validate the ticket without the evidence check.
 
 On 2026-11-11 the Author stage committed `triage-author-invoked-stale-round-guard`, a `kind: bug` ticket from a plain Suggestion Box message, with no `evidence/` directory. It was confirmed, admitted and fully implemented (all 3420 tests green), and only Check's `bug_evidence` gate refused it. Diagnosis said `reject`, but the drain's machine keep re-offered the unchanged ticket and started a second implement that could not pass either: the evidence path is outside every implement fence. Evidence: `evidence/bug-evidence-incident.txt`.
 
 After this change, a `kind: bug` ticket that is not merged or rejected and has no regular evidence file under `tickets/<stem>/evidence/` fails `parse_ticket` with the existing `missing_evidence_findings` finding. Every reader that validates a committed ticket goes through `parse_ticket`: the drain scan (listed under "invalid committed tickets", never dispatched), the serve watcher, `run`, confirm (through `validate_ticket` in intake) and the Author gate. So such a ticket never reaches Implement, and Author can no longer commit an evidence-less bug draft.
 
 ## Scope in / Scope out
-- In: `chupa/tickets.py`. At the end of `parse_ticket`, once the grammar is valid and the `Ticket` is built, raise `TicketInvalid` with `evidence_findings(ticket, repo)` when it returns findings (filesystem candidates, `paths=None`). Keep `evidence_findings` and `missing_evidence_findings` as the one source of the finding text. Intake and `lint` keep their existing committable-paths check (the `paths=` call), which still catches a gitignored evidence file that the filesystem check accepts. Do not print the same finding twice from `lint`, `new` or intake: if a caller's separate evidence call becomes unreachable or duplicate, delete it rather than guard it.
-- In: `chupa/author.py`, only if the tests show the gate needs it. `AuthorGate.check` already writes host-report evidence before `validate_ticket`, so a host-report bug draft keeps passing. A non-report `kind: bug` draft now fails with the evidence finding. Add no new finding text.
-- In: `tests/unit/test_parse_ticket_evidence.py` (new). The hard `unit` coverage gate measures `chupa/tickets.py` from `tests/unit` only. Tests:
+- In: `clutch/tickets.py`. At the end of `parse_ticket`, once the grammar is valid and the `Ticket` is built, raise `TicketInvalid` with `evidence_findings(ticket, repo)` when it returns findings (filesystem candidates, `paths=None`). Keep `evidence_findings` and `missing_evidence_findings` as the one source of the finding text. Intake and `lint` keep their existing committable-paths check (the `paths=` call), which still catches a gitignored evidence file that the filesystem check accepts. Do not print the same finding twice from `lint`, `new` or intake: if a caller's separate evidence call becomes unreachable or duplicate, delete it rather than guard it.
+- In: `clutch/author.py`, only if the tests show the gate needs it. `AuthorGate.check` already writes host-report evidence before `validate_ticket`, so a host-report bug draft keeps passing. A non-report `kind: bug` draft now fails with the evidence finding. Add no new finding text.
+- In: `tests/unit/test_parse_ticket_evidence.py` (new). The hard `unit` coverage gate measures `clutch/tickets.py` from `tests/unit` only. Tests:
   - `test_bug_without_evidence_is_invalid`: `parse_ticket` on a valid `kind: bug` ticket text in a `tmp_path` repo with no `evidence/` raises `TicketInvalid` whose findings include the "has no evidence file" message.
   - `test_bug_with_evidence_parses`: the same text with `tickets/<stem>/evidence/out.txt` present returns a `Ticket`.
   - `test_feature_without_evidence_parses`: `kind: feature` with no evidence returns a `Ticket`.
@@ -51,15 +51,15 @@ After this change, a `kind: bug` ticket that is not merged or rejected and has n
 - In: existing tests that build a `kind: bug` ticket fixture without an evidence file and then parse, scan, run or author it. Add a real evidence file to the fixture; never weaken an assertion. Candidates are the On-demand test files. Two are known:
   - `tests/integration/test_fixture_host.py::test_fixture_scenario_list_is_closed` calls `validate_ticket` on the `regression` scenario's authored `kind: bug` ticket in a host with no `tickets/regression/evidence/`. Before that call, write a real evidence file under `host / "tickets" / authored["stem"] / "evidence/"` for a `kind: bug` scenario (copy the scenario's `row["evidence"]["replay"]` file). Keep every assertion.
   - `tests/integration/test_serve_dispatch.py::test_refused_uncommitted_bug_does_not_stop_serve` is made obsolete: it waits for an evidence-less bug stem to enter `rig.owner.core.watcher.cache` and dispatches it, which `parse_ticket` now prevents. Rewrite it to assert that the `no-evidence` stem never enters `watcher.cache`, that serve keeps running (`not run.done() and not rig.owner.stopping`), that `calls == []`, and that no `running` transition is journaled. Do not add an evidence file to this fixture.
-- In: documentation. In `docs/how-chupa-works.md` sections 3.2 and 5.2 and in `chupa/docs/host-authoring.md` Bug tickets > Evidence, say that every ticket read (intake, lint, confirm, drain, serve, run, Author) refuses a bug ticket without evidence, not only intake. Keep the settled/rejected exemption.
+- In: documentation. In `docs/how-clutch-works.md` sections 3.2 and 5.2 and in `clutch/docs/host-authoring.md` Bug tickets > Evidence, say that every ticket read (intake, lint, confirm, drain, serve, run, Author) refuses a bug ticket without evidence, not only intake. Keep the settled/rejected exemption.
 - Out: the drain's machine keep re-offering a Reject-queue stem whose finding no implement can clear; the diagnose lesson-length overflow; teaching the Author spec to pick `kind: feature` for non-report messages; changes to Check's `bug_evidence` gate.
 
 ## Scope fence
-- chupa/tickets.py
-- chupa/author.py
-- chupa/__main__.py
-- docs/how-chupa-works.md
-- chupa/docs/host-authoring.md
+- clutch/tickets.py
+- clutch/author.py
+- clutch/__main__.py
+- docs/how-clutch-works.md
+- clutch/docs/host-authoring.md
 - tests/unit/test_parse_ticket_evidence.py
 - tests/regress_bug_evidence_before_dispatch.py
 - tests/integration/test_tickets.py
@@ -76,7 +76,7 @@ After this change, a `kind: bug` ticket that is not merged or rejected and has n
 2. `./dev.py test tests/unit/test_parse_ticket_evidence.py` passes `test_bug_without_evidence_is_invalid`, which asserts `TicketInvalid` with the "has no evidence file" finding, not a returned `Ticket`.
 3. `./dev.py test tests/unit/test_parse_ticket_evidence.py` passes `test_bug_with_evidence_parses`, `test_feature_without_evidence_parses` and `test_rejected_bug_without_evidence_parses`. A check that refuses every bug ticket, every ticket, or settled tickets fails one of them.
 4. `./dev.py test` exits 0.
-5. `docs/how-chupa-works.md` section 5.2 states that a bug ticket without evidence is refused wherever a ticket is read, not only at intake.
+5. `docs/how-clutch-works.md` section 5.2 states that a bug ticket without evidence is refused wherever a ticket is read, not only at intake.
 
 ## Verification
 ```

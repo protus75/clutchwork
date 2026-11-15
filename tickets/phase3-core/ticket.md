@@ -24,7 +24,7 @@ Phase 3 is seeded core-first from the `19.P3` registry under the per-ticket cite
 
 Why: each implementing seed must read only its own entry unit, never the whole phase unit, so it is authored from the plan's facts instead of inventing them (19.L SPEC DEPTH).
 
-Owners: `tests/test_seeded_phase3_core.py` owns this batch's seeding pins. The registry block `BEGIN_REGISTRY_P3` in `19.P3` is the ONE source the seeding reads, parsed straight from CHUPA_PLAN.md, never copied and never edited.
+Owners: `tests/test_seeded_phase3_core.py` owns this batch's seeding pins. The registry block `BEGIN_REGISTRY_P3` in `19.P3` is the ONE source the seeding reads, parsed straight from CLUTCH_PLAN.md, never copied and never edited.
 
 ## Scope in / Scope out
 - In: `tickets/daemon-scheduler/ticket.md` and `tickets/seed-successor-proof/ticket.md`. Each realizes exactly its registry row: `## Plan contract` `19.I`, its own entry unit (`19.P3.daemon-scheduler`, `19.P3.seed-successor-proof`), and each id its row's `cite` names; its row's `fence` as the `## Scope fence` floor; `## Depends on` `phase3-core`; `state: confirmed`, `source: seed`, `medium`/`medium` (neither row is `deep`); a stuck budget at or under `drain.max_ticket_minutes`. Every fact a seed states beyond its row comes from its entry unit; a fact the unit omits is a spec gap the seed path hardens (section 11.4), never invented. When an entry unit is missing or thin, reply `premise_failed` naming each such unit id (for example `19.P3.daemon-scheduler`): the engine files its hardening ticket and re-runs this ticket once it merges.
@@ -38,7 +38,7 @@ Owners: `tests/test_seeded_phase3_core.py` owns this batch's seeding pins. The r
 
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_seeded_phase3_core.py` passes over exactly `daemon-scheduler`, `seed-successor-proof`, and `phase3-continue`.
-2. At this ticket's Check, each of the three seeds receives a `requisition_review` `approve`, recorded in `tickets/phase3-core/checks.json`, and the three reach main in one `chupa(phase3-core): seeds` ticket-plane commit.
+2. At this ticket's Check, each of the three seeds receives a `requisition_review` `approve`, recorded in `tickets/phase3-core/checks.json`, and the three reach main in one `clutch(phase3-core): seeds` ticket-plane commit.
 3. The branch's committed diff carries no `tickets/` path, so every seed reaches main only through the ticket-plane lift.
 4. `uv run pytest -q` exits 0 with no test removed or skipped.
 

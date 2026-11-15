@@ -12,7 +12,7 @@ agent_effort: medium
 - verification-base-attribution
 
 ## Context
-- chupa/stages.py
+- clutch/stages.py
 
 ## Plan contract
 - 19.L
@@ -21,11 +21,11 @@ agent_effort: medium
 - section 11
 
 ## Goal / Why
-The first shakeout battery group pins the stage layer (`chupa/stages.py`) with six members, each run through the production drain on the bench with a FakeLLM and zero human input. This group's own Check run machine-produces the first `shakeout-report.json` into its OUTBOX.
+The first shakeout battery group pins the stage layer (`clutch/stages.py`) with six members, each run through the production drain on the bench with a FakeLLM and zero human input. This group's own Check run machine-produces the first `shakeout-report.json` into its OUTBOX.
 
 Why: the battery is the orchestrator's permanent test suite (section 15), and the Phase 2 exit reads it (19.P2). Each member plants one fault and names the ONE observable a correct engine produces and a faked run cannot. The human-readable detail lives in the harvested finding, never the terminal REASON, which stays a stable code-only value (section 11.4).
 
-Owners (19.P2 Emits: one chained deliverable per owning production module): this group fences ONLY `chupa/stages.py`, the module whose behavior it pins, plus the battery's own home `eval/shakeout/` and `tests/test_shakeout.py`. A member that exposes a defect in `chupa/stages.py` fixes it here. A defect anywhere else is filed as a second problem and the ticket replies `premise_failed`, naming it.
+Owners (19.P2 Emits: one chained deliverable per owning production module): this group fences ONLY `clutch/stages.py`, the module whose behavior it pins, plus the battery's own home `eval/shakeout/` and `tests/test_shakeout.py`. A member that exposes a defect in `clutch/stages.py` fixes it here. A defect anywhere else is filed as a second problem and the ticket replies `premise_failed`, naming it.
 
 ## Scope in / Scope out
 - In: `eval/shakeout/stages.py` with `MEMBERS`, in this order. Each entry names (1) the planted fault, (2) the discriminating observable, and (3) the detail artifact:
@@ -37,10 +37,10 @@ Owners (19.P2 Emits: one chained deliverable per owning production module): this
   - `base_diff_attribution`: (1) a Verification command red at BOTH the merge base and the branch, beside a green one. (2) The stem merges on its first attempt with zero `retry` draws, `checks.json` marks the command `base_red`, and one `failure_report` with `outcome == "base_red"` is in the box. (3) That box message.
 - In: `eval/shakeout/run.py`: `GROUPS` becomes `("stages",)`.
 - In: `tests/test_shakeout.py`: one test per member asserting its observable through `run_member`, plus a test that `produce("stages", None, ...)` returns six green entries.
-- Out: members owned by other modules (later groups), any production change outside `chupa/stages.py`, and any edit to the runner, the bench, or the schema beyond `GROUPS`.
+- Out: members owned by other modules (later groups), any production change outside `clutch/stages.py`, and any edit to the runner, the bench, or the schema beyond `GROUPS`.
 
 ## Scope fence
-- chupa/stages.py
+- clutch/stages.py
 - eval/shakeout/
 - tests/test_shakeout.py
 

@@ -15,13 +15,13 @@ def row(stem: str, section: str, depends: list[str]) -> dict:
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa.graph import layout
+        from clutch.graph import layout
     except ModuleNotFoundError as error:
-        if error.name != "chupa.graph":
+        if error.name != "clutch.graph":
             traceback.print_exc(file=sys.stderr)
             print(json.dumps({"regression_result": "error"}))
             return 2
-        # The base commit computes the layout in vscode-chupa/media JavaScript, which is the defect.
+        # The base commit computes the layout in vscode-clutchwork/media JavaScript, which is the defect.
         print(json.dumps({"regression_result": "defect"}))
         return 1
     try:

@@ -5,7 +5,7 @@
   "stem": "second-problems-filing",
   "passed": true,
   "changed_files": [
-    "chupa/stages.py",
+    "clutch/stages.py",
     "specs/implement.md",
     "tests/test_second_problems.py",
     "tests/test_stages.py"

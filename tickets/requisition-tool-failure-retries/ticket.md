@@ -9,21 +9,21 @@ kind: feature
 - review-reprompt-invalid-reply
 
 ## Context
-- chupa/runner.py
-- chupa/requisition.py
-- chupa/drain.py
-- chupa/caps.py
+- clutch/runner.py
+- clutch/requisition.py
+- clutch/drain.py
+- clutch/caps.py
 - tests/test_requisition_gate.py
 
 ## Goal / Why
 On 2026-11-05, fungo ticket `s9-pa-count-reconcile` was parked `premise_failed` at stage `requisition` with reason "[requisition_review] invalid requisition review reply: 1 schema error(s)". The reviewer's reply failed the schema check. The ticket content was fine. `drain.premise_parked` holds a `premise_failed` stem until its committed `ticket.md` changes, so this tooling failure could only be cleared by a human editing the ticket.
 
-`review-reprompt-invalid-reply` makes `review_ticket` re-ask on an invalid reply, but leaves `chupa/runner.py` unchanged. When every re-ask is invalid, `drive` still turns the mechanical snag into `premise_failed`. The same happens for the `timeout` and `provider error` snags.
+`review-reprompt-invalid-reply` makes `review_ticket` re-ask on an invalid reply, but leaves `clutch/runner.py` unchanged. When every re-ask is invalid, `drive` still turns the mechanical snag into `premise_failed`. The same happens for the `timeout` and `provider error` snags.
 
 After this change, a dispatch requisition review that ends in a tool-failure snag ends the run `infra_error`, not `premise_failed`. The stem is retried under the existing caps and no ticket edit is needed.
 
 ## Scope in / Scope out
-- In: `chupa/runner.py` `drive`, the requisition branch. When `review.mechanical` is `"invalid reply"`, `"timeout"`, or `"provider error"`, build `run` with an `infra_error` `StageResult` carrying `review.findings`, as the `ProviderCallError` branch does. Do not journal a `premise_failed` transition. The run then continues through the existing failure path (`harvest_failure`, caps).
+- In: `clutch/runner.py` `drive`, the requisition branch. When `review.mechanical` is `"invalid reply"`, `"timeout"`, or `"provider error"`, build `run` with an `infra_error` `StageResult` carrying `review.findings`, as the `ProviderCallError` branch does. Do not journal a `premise_failed` transition. The run then continues through the existing failure path (`harvest_failure`, caps).
 - In: the `requisition_verdict` signal is still journaled for these snags, unchanged.
 - In: the `render over headroom` and `review render over bound` snags and every non-mechanical snag or `rma` keep today's behavior: they are about ticket content and park `premise_failed`.
 - In: tests in `tests/test_requisition_gate.py`:
@@ -32,7 +32,7 @@ After this change, a dispatch requisition review that ends in a tool-failure sna
 - Out: changing `review_ticket`, the re-ask loop, the reply schema, `drain.premise_parked`, cap values, and the Author and Rework requisition paths.
 
 ## Scope fence
-- chupa/runner.py
+- clutch/runner.py
 - tests/test_requisition_gate.py
 
 ## Acceptance criteria

@@ -11,13 +11,13 @@ state: confirmed
 - phase3-continue-27
 
 ## Context
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/merge.py
-- chupa/git.py
-- chupa/effects.py
-- chupa/seams.py
-- chupa/serve.py
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/merge.py
+- clutch/git.py
+- clutch/effects.py
+- clutch/seams.py
+- clutch/serve.py
 - tests/test_seeded_phase3_core.py
 - tickets/soak-run/daemon-soak-report.json
 
@@ -45,7 +45,7 @@ Parse the next-phase registry directly from the committed plan. Author only watc
 
 Create tests/test_seeded_phase4_core.py to pin the three identities, birth, grammar, dependency edges, citation roles, earned fences, Context partitions and fixed authoring snapshots for maximum-effort renders within 300,000 characters. Validate only the immediate Phase 4 core's needed non-exit entry units with entry_unit_gap and resolve_plan_contract, including row citations and seeder-role contracts. Missing governing facts return premise_failed, kind: spec_gap, identifying the cited owning unit; never manufacture a contract or copy its text.
 
-Before authoring, read the merged runner and canonical writer in eval/daemon_soak.py from disk (its engine delimiters exclude it from Context), artifacts registration, report purge/validation/lift, merge admission, Git/Effects, forced predecessor tickets and direct callers. Re-grep produce/write_report, KNOWN_ARTIFACTS, Artifact, public surfaces, allowlists and absence assertions across chupa/, eval/ and tests/. For the core notify production flip, inspect tests/test_storm_notification_activation.py::test_storm_activation_does_not_hold_dispatch_or_notify and fence that existing test if contradicted, retaining its unrelated assertions. Earn additions only under 19.L rules 2-5 or cited seam-owner closure, with exact paths and reasons in the new batch test. No signature change is presumed. Existing fenced paths default to Context; On-demand requires measured headroom overflow. Created paths, same-admission siblings, prompt-spec sources and delimiter-bearing files never enter Context. Preserve serve's merged-path partition and historical seeding snapshots.
+Before authoring, read the merged runner and canonical writer in eval/daemon_soak.py from disk (its engine delimiters exclude it from Context), artifacts registration, report purge/validation/lift, merge admission, Git/Effects, forced predecessor tickets and direct callers. Re-grep produce/write_report, KNOWN_ARTIFACTS, Artifact, public surfaces, allowlists and absence assertions across clutch/, eval/ and tests/. For the core notify production flip, inspect tests/test_storm_notification_activation.py::test_storm_activation_does_not_hold_dispatch_or_notify and fence that existing test if contradicted, retaining its unrelated assertions. Earn additions only under 19.L rules 2-5 or cited seam-owner closure, with exact paths and reasons in the new batch test. No signature change is presumed. Existing fenced paths default to Context; On-demand requires measured headroom overflow. Created paths, same-admission siblings, prompt-spec sources and delimiter-bearing files never enter Context. Preserve serve's merged-path partition and historical seeding snapshots.
 
 The following unchanged suites carry the named custody obligations:
 tests/test_daemon_soak.py: test_daemon_soak_command_writes_report_only_on_green, test_daemon_soak_schema_is_closed, test_daemon_soak_green_matches_observation_and_auditor, test_daemon_soak_writer_validates_before_write, test_daemon_soak_uses_registered_checks_lift.

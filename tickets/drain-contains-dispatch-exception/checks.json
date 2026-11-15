@@ -5,8 +5,8 @@
   "stem": "drain-contains-dispatch-exception",
   "passed": true,
   "changed_files": [
-    "chupa/drain.py",
-    "docs/how-chupa-works.md",
+    "clutch/drain.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_daemon_admission.py",
     "tests/integration/test_daemon_composition.py",
     "tests/integration/test_daemon_config.py",
@@ -88,12 +88,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.16s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.16s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "             ^^^^^^^^^^^^^^^\nchupa/drain.py:419: in run\n    await self._run_one(pick, reoffer, shas[pick.stem])\nchupa/drain.py:556: in _run_one\n    terminal = await self._await_controlled(asyncio.create_task(self.dispatch(ticket)), abort, self.c.control.sleep if self.c.control is not None else self.c.sleep)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nchupa/drain.py:631: in _await_controlled\n    await _protected_cleanup(asyncio.create_task(cleanup()))\nchupa/daemon.py:92: in _protected_cleanup\n    cleanup.result()\nchupa/drain.py:629: in cleanup\n    raise result\nchupa/drain.py:605: in _await_controlled\n    return task.result()\n           ^^^^^^^^^^^^^\nchupa/__main__.py:534: in __call__\n    return await dispatch(ticket)\n           ^^^^^^^^^^^^^^^^^^^^^^\ntests/integration/test_drain.py:71: in dispatch\n    hook(checkout)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nc = Checkout(repo=PosixPath('/tmp/pytest-of-djp/pytest-66/popen-gw1/test_dispatch_raises_after_ter0/repo'), config=Config(...7a57d07cbcb0>, sleep=<function sleep at 0x7a57d258e140>, control=<chupa.daemon.PauseConsumer object at 0x7a57d09e9e80>)\n\n    def boom(c):\n        if self.terminal:\n            c.journal.append(EventType.STATE_TRANSITION, {\"to\": \"gate_failed\", \"stage\": \"review\"}, ticket=\"aaa-boom\")\n>       raise IsADirectoryError(\"context directory\")\nE       IsADirectoryError: context directory\n\ntests/integration/test_drain_containment.py:19: IsADirectoryError\n=========================== short test summary info ============================\nFAILED tests/integration/test_drain_containment.py::test_dispatch_raises_is_contained\nFAILED tests/integration/test_drain_containment.py::test_dispatch_raises_every_offer_reaches_reject_queue\nFAILED tests/integration/test_drain_containment.py::test_dispatch_raises_after_terminal_keeps_one_terminal\n3 failed in 1.67s\n"
+          "tail": "             ^^^^^^^^^^^^^^^\nclutch/drain.py:419: in run\n    await self._run_one(pick, reoffer, shas[pick.stem])\nclutch/drain.py:556: in _run_one\n    terminal = await self._await_controlled(asyncio.create_task(self.dispatch(ticket)), abort, self.c.control.sleep if self.c.control is not None else self.c.sleep)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nclutch/drain.py:631: in _await_controlled\n    await _protected_cleanup(asyncio.create_task(cleanup()))\nclutch/daemon.py:92: in _protected_cleanup\n    cleanup.result()\nclutch/drain.py:629: in cleanup\n    raise result\nclutch/drain.py:605: in _await_controlled\n    return task.result()\n           ^^^^^^^^^^^^^\nclutch/__main__.py:534: in __call__\n    return await dispatch(ticket)\n           ^^^^^^^^^^^^^^^^^^^^^^\ntests/integration/test_drain.py:71: in dispatch\n    hook(checkout)\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nc = Checkout(repo=PosixPath('/tmp/pytest-of-djp/pytest-66/popen-gw1/test_dispatch_raises_after_ter0/repo'), config=Config(...7a57d07cbcb0>, sleep=<function sleep at 0x7a57d258e140>, control=<clutch.daemon.PauseConsumer object at 0x7a57d09e9e80>)\n\n    def boom(c):\n        if self.terminal:\n            c.journal.append(EventType.STATE_TRANSITION, {\"to\": \"gate_failed\", \"stage\": \"review\"}, ticket=\"aaa-boom\")\n>       raise IsADirectoryError(\"context directory\")\nE       IsADirectoryError: context directory\n\ntests/integration/test_drain_containment.py:19: IsADirectoryError\n=========================== short test summary info ============================\nFAILED tests/integration/test_drain_containment.py::test_dispatch_raises_is_contained\nFAILED tests/integration/test_drain_containment.py::test_dispatch_raises_every_offer_reaches_reject_queue\nFAILED tests/integration/test_drain_containment.py::test_dispatch_raises_after_terminal_keeps_one_terminal\n3 failed in 1.67s\n"
         }
       }
     },
@@ -112,7 +112,7 @@
       "coverage": {
         "percent": 32.708711129021424,
         "files": {
-          "chupa/drain.py": 25.543478260869566
+          "clutch/drain.py": 25.543478260869566
         }
       }
     },
@@ -252,7 +252,7 @@
         "tests/integration/test_drain_containment.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_drain_containment.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 2.82s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_drain_containment.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 2.82s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.021619
     },
@@ -263,7 +263,7 @@
         "tests/unit/test_drain_containment.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_drain_containment.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_drain_containment.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.244831
     },
@@ -274,7 +274,7 @@
         "tests/integration/test_kill_cli_activation.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_kill_cli_activation.py\nbringing up nodes...\nbringing up nodes...\n\n.........................................                                [100%]\n41 passed in 4.30s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_kill_cli_activation.py\nbringing up nodes...\nbringing up nodes...\n\n.........................................                                [100%]\n41 passed in 4.30s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 4.50387
     },
@@ -285,7 +285,7 @@
         "tests/integration/test_daemon_composition.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_daemon_composition.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 81%]\n................                                                         [100%]\n88 passed in 2.68s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_daemon_composition.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 81%]\n................                                                         [100%]\n88 passed in 2.68s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.865144
     },
@@ -296,7 +296,7 @@
         "tests/integration/test_drain.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_drain.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 88%]\n.........                                                                [100%]\n81 passed in 2.72s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_drain.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 88%]\n.........                                                                [100%]\n81 passed in 2.72s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.913575
     },
@@ -307,7 +307,7 @@
         "tests/integration/test_daemon_admission.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_daemon_admission.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_daemon_admission.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.192656
     },
@@ -318,7 +318,7 @@
         "tests/integration/test_daemon_config.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_daemon_config.py\nbringing up nodes...\nbringing up nodes...\n\n......................                                                   [100%]\n22 passed in 2.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_daemon_config.py\nbringing up nodes...\nbringing up nodes...\n\n......................                                                   [100%]\n22 passed in 2.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.358383
     },
@@ -329,7 +329,7 @@
         "tests/integration/test_heartbeat.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_heartbeat.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.43s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_heartbeat.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.43s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.651997
     },
@@ -340,7 +340,7 @@
         "tests/integration/test_daemon_tasks.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_daemon_tasks.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.47s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_daemon_tasks.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.47s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.680015
     },
@@ -351,7 +351,7 @@
         "tests/integration/test_kill_failure_suppression.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_kill_failure_suppression.py\nbringing up nodes...\nbringing up nodes...\n\n......................                                                   [100%]\n22 passed in 1.47s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_kill_failure_suppression.py\nbringing up nodes...\nbringing up nodes...\n\n......................                                                   [100%]\n22 passed in 1.47s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.661029
     },
@@ -362,7 +362,7 @@
         "tests/integration/test_kill_worker_stop.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_kill_worker_stop.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.31s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_kill_worker_stop.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.31s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.512175
     },
@@ -374,7 +374,7 @@
         "tests/regress_drain_containment.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.11s\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.11s\n",
       "base_red": false,
       "seconds": 1.288035
     },
@@ -384,7 +384,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "............ [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n............                                                             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/drain-contains-dispatch-exception/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3468 passed, 9 warnings in 59.12s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "............ [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n............                                                             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/drain-contains-dispatch-exception/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3468 passed, 9 warnings in 59.12s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 62.382424
     }

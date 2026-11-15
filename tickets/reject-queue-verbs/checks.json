@@ -5,12 +5,12 @@
   "stem": "reject-queue-verbs",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/caps.py",
-    "chupa/drain.py",
-    "chupa/runner.py",
-    "chupa/status.py",
-    "chupa/tickets.py",
+    "clutch/__main__.py",
+    "clutch/caps.py",
+    "clutch/drain.py",
+    "clutch/runner.py",
+    "clutch/status.py",
+    "clutch/tickets.py",
     "tests/test_caps.py",
     "tests/test_drain_upgrade.py",
     "tests/test_reject_queue.py"

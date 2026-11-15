@@ -5,8 +5,8 @@
   "stem": "step-kind-vocabulary",
   "passed": true,
   "changed_files": [
-    "chupa/observe.py",
-    "docs/how-chupa-works.md",
+    "clutch/observe.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_step_icons.py",
     "tests/regress_step_kind_icons.py",
     "tests/vscode_step_icons.js"
@@ -81,12 +81,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/step-kind-vocabulary\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/step-kind-vocabulary\nInstalled 19 packages in 11ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/step-kind-vocabulary\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/step-kind-vocabulary\nInstalled 19 packages in 11ms\n"
         }
       }
     },
@@ -105,7 +105,7 @@
       "coverage": {
         "percent": 31.30469907095732,
         "files": {
-          "chupa/observe.py": 11.22715404699739
+          "clutch/observe.py": 11.22715404699739
         }
       }
     },
@@ -179,7 +179,7 @@
           "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[partial]": 1.524333559005754,
           "tests/integration/test_reliability_battery.py::test_cooling_recovery_after_many_turns": 1.5137831159954658,
           "tests/integration/test_ladder.py::test_rework_escalation_preserves_starting_capability_and_caps[escalate]": 1.5060459240048658,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.498164442993584,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.498164442993584,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-7]": 1.4875590109732002,
           "tests/integration/test_reliability_battery.py::test_all_candidates_cooling_recovery": 1.450259379009367,
           "tests/integration/test_serve_kill.py::test_serve_storm_suspends_stage_and_frees_selection[check]": 1.4402132499963045,
@@ -246,7 +246,7 @@
         "tests/integration/test_watch.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_step_icons.py tests/integration/test_watch.py\nbringing up nodes...\nbringing up nodes...\n\n.............................                                            [100%]\n29 passed in 2.90s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_step_icons.py tests/integration/test_watch.py\nbringing up nodes...\nbringing up nodes...\n\n.............................                                            [100%]\n29 passed in 2.90s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.097916
     },
@@ -258,7 +258,7 @@
         "tests/regress_step_kind_icons.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.226054
     }

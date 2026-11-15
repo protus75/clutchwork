@@ -5,12 +5,12 @@
   "stem": "menu-table-run-review-admission",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/observe.py",
-    "chupa/runner.py",
-    "chupa/status.py",
-    "chupa/tickets.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/observe.py",
+    "clutch/runner.py",
+    "clutch/status.py",
+    "clutch/tickets.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_menu_verb_parity.py",
     "tests/integration/test_stale_running.py",
     "tests/integration/test_watch.py",
@@ -86,11 +86,11 @@
       "coverage": {
         "percent": 38.7777923957374,
         "files": {
-          "chupa/__main__.py": 54.33589462129528,
-          "chupa/observe.py": 41.829268292682926,
-          "chupa/runner.py": 45.023696682464454,
-          "chupa/status.py": 94.17040358744394,
-          "chupa/tickets.py": 75.453446191052
+          "clutch/__main__.py": 54.33589462129528,
+          "clutch/observe.py": 41.829268292682926,
+          "clutch/runner.py": 45.023696682464454,
+          "clutch/status.py": 94.17040358744394,
+          "clutch/tickets.py": 75.453446191052
         }
       }
     },
@@ -229,7 +229,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": ".... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n................................................                         [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/menu-table-run-review-admission/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3576 passed, 9 warnings in 62.29s (0:01:02)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": ".... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n................................................                         [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/menu-table-run-review-admission/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3576 passed, 9 warnings in 62.29s (0:01:02)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 63.797136
     }

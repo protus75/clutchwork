@@ -5,9 +5,9 @@
   "stem": "eval-drop-soak-battery-reports",
   "passed": true,
   "changed_files": [
-    "chupa/artifacts.py",
-    "chupa/stages.py",
-    "docs/how-chupa-works.md",
+    "clutch/artifacts.py",
+    "clutch/stages.py",
+    "docs/how-clutch-works.md",
     "eval/daemon_soak.py",
     "eval/reliability_battery.py",
     "tests/integration/test_closed_sets.py",
@@ -82,8 +82,8 @@
       "coverage": {
         "percent": 21.229088898105903,
         "files": {
-          "chupa/artifacts.py": 43.61702127659574,
-          "chupa/stages.py": 14.680347277032359
+          "clutch/artifacts.py": 43.61702127659574,
+          "clutch/stages.py": 14.680347277032359
         }
       }
     },
@@ -215,10 +215,10 @@
         "run",
         "python",
         "-c",
-        "import chupa.artifacts as a, chupa.stages as s; assert not any(hasattr(a, n) for n in ('DaemonSoakReport','DaemonSoakEntry','ReliabilityBatteryReport','ReliabilityBatteryEntry','DAEMON_SOAK_REPORT','RELIABILITY_BATTERY_REPORT')); assert not {'daemon-soak-report.json','reliability-battery-report.json'} & set(s.KNOWN_ARTIFACTS)"
+        "import clutch.artifacts as a, clutch.stages as s; assert not any(hasattr(a, n) for n in ('DaemonSoakReport','DaemonSoakEntry','ReliabilityBatteryReport','ReliabilityBatteryEntry','DAEMON_SOAK_REPORT','RELIABILITY_BATTERY_REPORT')); assert not {'daemon-soak-report.json','reliability-battery-report.json'} & set(s.KNOWN_ARTIFACTS)"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.345296
     },
@@ -231,7 +231,7 @@
         "import eval.daemon_soak as d, eval.reliability_battery as r; assert not any(hasattr(m, n) for m in (d, r) for n in ('write_report','main','_main')); d.DaemonSoakReport; r.ReliabilityBatteryReport; d.produce; r.produce"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.807039
     },
@@ -244,7 +244,7 @@
         "tests/integration/test_daemon_soak_runner.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_daemon_soak.py tests/integration/test_reliability_battery.py tests/integration/test_daemon_soak_runner.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 79%]\n...................                                                      [100%]\n91 passed in 18.92s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_daemon_soak.py tests/integration/test_reliability_battery.py tests/integration/test_daemon_soak_runner.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 79%]\n...................                                                      [100%]\n91 passed in 18.92s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 19.351441
     },
@@ -256,7 +256,7 @@
         "tests/integration/test_closed_sets.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_artifacts.py tests/integration/test_closed_sets.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 91%]\n.......                                                                  [100%]\n79 passed in 3.01s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_artifacts.py tests/integration/test_closed_sets.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 91%]\n.......                                                                  [100%]\n79 passed in 3.01s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.264143
     },
@@ -266,7 +266,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "............... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n..........................................                               [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/eval-drop-soak-battery-reports/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3282 passed, 9 warnings in 54.66s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "............... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n..........................................                               [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/eval-drop-soak-battery-reports/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3282 passed, 9 warnings in 54.66s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 57.947084
     }

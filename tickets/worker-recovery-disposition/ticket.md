@@ -11,9 +11,9 @@ state: confirmed
 - phase3-continue-22
 
 ## Context
-- chupa/reconcile.py
+- clutch/reconcile.py
 - tests/test_reconcile.py
-- chupa/journal.py
+- clutch/journal.py
 - tests/test_restart_timers.py
 - tests/test_kill_failure_suppression.py
 
@@ -29,7 +29,7 @@ Record the producing orphan run's recovery disposition at the existing reap boun
 ## Scope in / Scope out
 Implement the cited recovery entry in place. Its Owner, Records, Observable and Tests parts govern the exact evidence, custody, ordering, failure behavior and invariant obligations; cite them rather than duplicating their bodies. The registry marks this row deep, earning high/high at birth.
 
-The registry floor is chupa/reconcile.py and tests/test_reconcile.py. The recovery entry earns chupa/journal.py for SIGNAL_NAMES registration at the Journal seam and tests/test_restart_timers.py for the removal assertion in test_restart_reuses_orphan_reconciliation. Authoring-time grep additionally earns tests/test_kill_failure_suppression.py under contradicted-test closure: test_kill_suppression_preserves_run_and_abort_failures asserts that abandonment is reconciliation's final record. Migrate only the assertions invalidated by ordered recovery evidence, preserving each predecessor's other guarantees.
+The registry floor is clutch/reconcile.py and tests/test_reconcile.py. The recovery entry earns clutch/journal.py for SIGNAL_NAMES registration at the Journal seam and tests/test_restart_timers.py for the removal assertion in test_restart_reuses_orphan_reconciliation. Authoring-time grep additionally earns tests/test_kill_failure_suppression.py under contradicted-test closure: test_kill_suppression_preserves_run_and_abort_failures asserts that abandonment is reconciliation's final record. Migrate only the assertions invalidated by ordered recovery evidence, preserving each predecessor's other guarantees.
 
 Named obligations, all governed by 19.P3.worker-recovery-disposition:
 - test_recovery_alert_records_producing_run
@@ -49,9 +49,9 @@ Record custody remains with the cited owners: reconcile.py supplies RECOVERY_ALE
 Read current direct callers and production roots before implementation, including runner, drain, Restart, Timers, CLI run/drain and build_daemon_core, serve and the merged production-composition harness. Production evidence uses the real CLI/async serve entrypoint and merged harness when applicable, with injected seams, scripted callbacks, disposable synthetic repositories and asyncio barriers. Never use a test-only graph, live host work, real-model calls or wall-clock waits. No second recovery implementation, new records or replay subsystem is earned. Unfenced suites in Verification are unchanged preservation suites.
 
 ## Scope fence
-- chupa/reconcile.py
+- clutch/reconcile.py
 - tests/test_reconcile.py
-- chupa/journal.py
+- clutch/journal.py
 - tests/test_restart_timers.py
 - tests/test_kill_failure_suppression.py
 

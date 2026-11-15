@@ -9,13 +9,13 @@ kind: feature
 - lint-requisition-decidable-rules
 
 ## Context
-- chupa/requisition.py::RequisitionReply
-- chupa/requisition.py::review_ticket
-- docs/how-chupa-works.md#8. AI providers and prompts
+- clutch/requisition.py::RequisitionReply
+- clutch/requisition.py::review_ticket
+- docs/how-clutch-works.md#8. AI providers and prompts
 - tests/unit/test_requisition_stage_events.py::test_stage_events
 
 ## On-demand
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 - tests/integration/test_requisition.py
 
 ## Goal / Why
@@ -26,14 +26,14 @@ The coverage map also cannot see a test that reads a fenced data or fixture file
 When this ticket is done, the reviewer must account for every dependent in a structured reply field: `fenced`, or `unaffected` with the assertion it read. The engine checks that none were skipped. Tests that mention a fenced non-Python path are added to the list.
 
 ## Scope in / Scope out
-- In: `chupa/requisition.py`:
+- In: `clutch/requisition.py`:
   - The dependents list also includes each test file under `tests/` outside the fence whose text contains a fenced path that does not end in `.py`, listed as `<test>: reads <path>`. It is a plain substring scan of the files' text, with no model call. `review_ticket` reads the test sources through a module-level `test_sources(repo)` that lists `(repo / "tests").rglob("*.py")` and returns `{path: text}`, keyed by each file's repo-relative POSIX path, with text from `read_text()`, and calls it only when `## Scope fence` holds at least one path not ending in `.py`. Otherwise the scan touches no disk.
   - `RequisitionReply` gains `dependents`: a list of `{path, status, reason}`. `status` is `fenced` or `unaffected`, and `reason` is non-blank. `dependents` defaults to an empty list (`Field(default_factory=list)`), so a reply that omits it validates and accounts for nothing. For `unaffected`, the reason cites the assertion or input read (`file:line`) and why the change leaves it true.
   - After schema validation, the engine checks the reply's `dependents` paths equal the listed dependents exactly: no path missing, none extra, none twice. Every `fenced` entry must be under a `## Scope fence` prefix. A mismatch is a validation failure that goes back to the model as a retry finding naming each missing, extra or wrongly fenced path, the same way as a JSON shape error.
   - When no coverage map is configured and no data-file consumer is found, `dependents` must be empty.
-- In: `chupa/specs/requisition_review.md`: the bullet "Every listed coverage dependent test file must be in the fence or cleared in the summary..." is replaced by the rule above. A dependent the change breaks that is not fenced is still a `snag` finding naming it. The Output format adds `dependents`. A prior review's changed-text limit does not apply to the dependents accounting, which is redone in full on every review. `version` goes one minor step above its value at the base commit.
+- In: `clutch/specs/requisition_review.md`: the bullet "Every listed coverage dependent test file must be in the fence or cleared in the summary..." is replaced by the rule above. A dependent the change breaks that is not fenced is still a `snag` finding naming it. The Output format adds `dependents`. A prior review's changed-text limit does not apply to the dependents accounting, which is redone in full on every review. `version` goes one minor step above its value at the base commit.
 - In: tests that pin the old wording or version: `tests/unit/test_specs.py` (the version) and `tests/integration/test_requisition.py` (the phrases "in the fence or cleared in the summary" and "An unaccounted file is a `snag` finding naming it", plus its fake replies, which gain `dependents` wherever a coverage map is passed).
-- In: `docs/how-chupa-works.md` section 8, the `requisition_review.md` row: dependents are accounted for one by one and include data-file consumers.
+- In: `docs/how-clutch-works.md` section 8, the `requisition_review.md` row: dependents are accounted for one by one and include data-file consumers.
 - In: new `tests/unit/test_requisition_dependents.py`.
 - Out:
   - Engine auto-fencing of a dependent that Implement trips on.
@@ -41,9 +41,9 @@ When this ticket is done, the reviewer must account for every dependent in a str
   - The coverage map builder.
 
 ## Scope fence
-- chupa/requisition.py
-- chupa/specs/requisition_review.md
-- docs/how-chupa-works.md
+- clutch/requisition.py
+- clutch/specs/requisition_review.md
+- docs/how-clutch-works.md
 - tests/unit/test_specs.py
 - tests/unit/test_requisition_dependents.py
 - tests/integration/test_requisition.py

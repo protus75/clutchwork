@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Skipped the coverage gate because it measures chupa code, which this metadata-only diff does not change. The direct metadata entry was the simplest approach; no additional machinery was needed.
+Skipped the coverage gate because it measures clutch code, which this metadata-only diff does not change. The direct metadata entry was the simplest approach; no additional machinery was needed.
 
 ## Dead ends
 

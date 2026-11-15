@@ -9,8 +9,8 @@ state: confirmed
 - spec-gap-unit-detection
 
 ## Context
-- chupa/stages.py
-- chupa/specs.py
+- clutch/stages.py
+- clutch/specs.py
 - tests/test_seed_path.py
 
 ## Plan contract
@@ -22,11 +22,11 @@ A seed authored by a seeding ticket never carries plan-unit text. Beside the SPE
 Why: the plan's 19.L SPEC DEPTH COPY REFUSAL makes the never-copy rule mechanical. A seed that copies unit text goes stale when the unit is hardened, and each hardening then forced a hand regeneration of the seed plus a resync of its seeding test's pins. The rule is prose-only today, so nothing enforces it.
 
 ## Scope in / Scope out
-- In: `chupa/stages.py` `_review_one` gains a mechanical pre-check that runs after the SPEC DEPTH check and before `validate_ticket`. It resolves the seed's raw `## Plan contract` ids through `chupa.specs.resolve_plan_contract` against main's plan, skipping any id that does not resolve, since grammar reports those. It collapses each resolved line's whitespace to single spaces and strips it. It snags the seed with mechanical `unit text copied` when any such line of at least 60 characters appears in the seed's text outside its `## Plan contract` section after the same normalization. The finding's message names the cited id and quotes the first 80 characters of the copied line.
+- In: `clutch/stages.py` `_review_one` gains a mechanical pre-check that runs after the SPEC DEPTH check and before `validate_ticket`. It resolves the seed's raw `## Plan contract` ids through `clutch.specs.resolve_plan_contract` against main's plan, skipping any id that does not resolve, since grammar reports those. It collapses each resolved line's whitespace to single spaces and strips it. It snags the seed with mechanical `unit text copied` when any such line of at least 60 characters appears in the seed's text outside its `## Plan contract` section after the same normalization. The finding's message names the cited id and quotes the first 80 characters of the copied line.
 - Out: engine-composed hardening tickets, which do not pass through `_review_one`; human and box tickets; Plan-contract rendering.
 
 ## Scope fence
-- chupa/stages.py
+- clutch/stages.py
 - tests/test_seed_path.py
 
 ## Acceptance criteria

@@ -5,7 +5,7 @@
   "stem": "reject-survives-invalid-ticket",
   "passed": true,
   "changed_files": [
-    "chupa/runner.py",
+    "clutch/runner.py",
     "tests/integration/test_reject_queue.py",
     "tests/regress_reject_invalid_ticket.py",
     "tests/unit/test_runner_dead_dependents.py"
@@ -79,12 +79,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.07s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.07s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": " one fenced reproducing command plus `- carries: <path-prefix>` bullets\", path))\n    \n        expected = stuck = 0\n        if text_ := sections.get(\"Time budget\"):\n            items, errs = _bullets(text_, \"Time budget\", path)\n            findings += errs\n            budget = {m.group(1): int(m.group(2)) for item in items if (m := _BUDGET.match(item))}\n            if len(items) != 2 or set(budget) != {\"expected\", \"stuck\"} or 0 in budget.values():\n                findings.append(_f(\"`## Time budget` is not an expected/stuck minutes pair\", \"write exactly two bullets, `- expected: <int>m` and `- stuck: <int>m`\", path))\n            else:\n                expected, stuck = budget[\"expected\"], budget[\"stuck\"]\n                if stuck <= expected:\n                    findings.append(_f(f\"`## Time budget` stuck: {stuck}m must exceed expected: {expected}m\", \"set stuck greater than expected (the stage deadline is the stuck budget)\", path))\n    \n        if findings or fm is None:\n>           raise TicketInvalid(findings)\nE           chupa.tickets.TicketInvalid: frontmatter `source`: Field required; frontmatter `priority`: Field required; frontmatter `kind`: Field required; missing or empty body section `## Depends on`; missing or empty body section `## Context`; missing or empty body section `## Goal / Why`; missing or empty body section `## Scope in / Scope out`; missing or empty body section `## Scope fence`; missing or empty body section `## Acceptance criteria`; missing or empty body section `## Verification`; missing or empty body section `## Definition of rejected`; missing or empty body section `## Time budget`\n\nchupa/tickets.py:465: TicketInvalid\n----------------------------- Captured stdout call -----------------------------\nparent: Reject queue: gate_failed -- reason unavailable\n=========================== short test summary info ============================\nFAILED tests/integration/test_reject_queue.py::test_reject_survives_invalid_confirmed_ticket\n1 failed in 1.45s\n"
+          "tail": " one fenced reproducing command plus `- carries: <path-prefix>` bullets\", path))\n    \n        expected = stuck = 0\n        if text_ := sections.get(\"Time budget\"):\n            items, errs = _bullets(text_, \"Time budget\", path)\n            findings += errs\n            budget = {m.group(1): int(m.group(2)) for item in items if (m := _BUDGET.match(item))}\n            if len(items) != 2 or set(budget) != {\"expected\", \"stuck\"} or 0 in budget.values():\n                findings.append(_f(\"`## Time budget` is not an expected/stuck minutes pair\", \"write exactly two bullets, `- expected: <int>m` and `- stuck: <int>m`\", path))\n            else:\n                expected, stuck = budget[\"expected\"], budget[\"stuck\"]\n                if stuck <= expected:\n                    findings.append(_f(f\"`## Time budget` stuck: {stuck}m must exceed expected: {expected}m\", \"set stuck greater than expected (the stage deadline is the stuck budget)\", path))\n    \n        if findings or fm is None:\n>           raise TicketInvalid(findings)\nE           clutch.tickets.TicketInvalid: frontmatter `source`: Field required; frontmatter `priority`: Field required; frontmatter `kind`: Field required; missing or empty body section `## Depends on`; missing or empty body section `## Context`; missing or empty body section `## Goal / Why`; missing or empty body section `## Scope in / Scope out`; missing or empty body section `## Scope fence`; missing or empty body section `## Acceptance criteria`; missing or empty body section `## Verification`; missing or empty body section `## Definition of rejected`; missing or empty body section `## Time budget`\n\nclutch/tickets.py:465: TicketInvalid\n----------------------------- Captured stdout call -----------------------------\nparent: Reject queue: gate_failed -- reason unavailable\n=========================== short test summary info ============================\nFAILED tests/integration/test_reject_queue.py::test_reject_survives_invalid_confirmed_ticket\n1 failed in 1.45s\n"
         }
       }
     },
@@ -103,7 +103,7 @@
       "coverage": {
         "percent": 31.30007405911264,
         "files": {
-          "chupa/runner.py": 23.80952380952381
+          "clutch/runner.py": 23.80952380952381
         }
       }
     },
@@ -158,7 +158,7 @@
           "tests/integration/test_watch.py::test_observe_verbs_take_no_lock_and_write_nothing": 1.9151502559980145,
           "tests/integration/test_scorecard.py::test_scorecard_catches_resolved_and_upheld_findings": 1.8816839960054494,
           "tests/integration/test_serve_kill.py::test_serve_suspended_run_cleanup_and_restart[kill]": 1.8579351600055816,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.8321256969938986,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.8321256969938986,
           "tests/integration/test_shakeout.py::test_invalid_output_exhausted_member_observes_bounded_reprompts_and_harvest": 1.8093301669869106,
           "tests/integration/test_thresh.py::test_thresh_is_active": 1.7843996849987889,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[ok]": 1.7776702249975642,
@@ -244,7 +244,7 @@
         "tests/regress_reject_invalid_ticket.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.08s\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.08s\n",
       "base_red": false,
       "seconds": 1.262654
     },
@@ -255,7 +255,7 @@
         "tests/integration/test_reject_queue.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_reject_queue.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 3.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_reject_queue.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 3.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.298512
     },
@@ -266,7 +266,7 @@
         "tests/unit/test_runner_dead_dependents.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_runner_dead_dependents.py\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_runner_dead_dependents.py\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.193695
     },
@@ -276,7 +276,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "..... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n............................                                             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/reject-survives-invalid-ticket/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3412 passed, 9 warnings in 63.52s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "..... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n............................                                             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/reject-survives-invalid-ticket/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3412 passed, 9 warnings in 63.52s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 63.783831
     }

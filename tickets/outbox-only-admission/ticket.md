@@ -11,8 +11,8 @@ state: confirmed
 - phase3-continue-23
 
 ## Context
-- chupa/stages.py
-- chupa/merge.py
+- clutch/stages.py
+- clutch/merge.py
 - tests/test_stages.py
 - tests/test_merge.py
 
@@ -39,8 +39,8 @@ Production evidence must exercise real stages and real checks lifting via Git/Ef
 The six unfenced test files in Verification are unchanged preservation suites: neither fence nor embed them. Preserve report registration custody with its emitting machinery; this ticket adds no schema, report, module, notification transport or routing change. Out: soak machinery, producer work, plan changes, existing tickets, historical seeding snapshots and new admission lanes.
 
 ## Scope fence
-- chupa/stages.py
-- chupa/merge.py
+- clutch/stages.py
+- clutch/merge.py
 - tests/test_stages.py
 - tests/test_merge.py
 

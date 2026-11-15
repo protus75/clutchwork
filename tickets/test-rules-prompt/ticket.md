@@ -23,10 +23,10 @@ kind: chore
 - specs/review.md
 - tests/test_specs.py
 - tests/test_stages.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
-Chupa now has the tools for its test rules: covgate, testguard, testreport, flaky-test classification and autofix. But nothing tells the implementing agent the rules, and a Python host has no single place showing how to switch the tools on.
+Clutch now has the tools for its test rules: covgate, testguard, testreport, flaky-test classification and autofix. But nothing tells the implementing agent the rules, and a Python host has no single place showing how to switch the tools on.
 
 After this change:
 - The Implement prompt states the test rules for every host:
@@ -54,21 +54,21 @@ After this change:
   - A fenced `yaml python-host` block that a host merges into its `config.yaml`:
     - `review.autofix`: `ruff-fix` `[uv, run, ruff, check, --fix, --exit-zero]` and `ruff-format` `[uv, run, ruff, format]`, each with `files: ["*.py"]`. Ruff parses every file it is given as Python, so it must never receive YAML, lock or ignore files.
     - `review.mechanical`, all `trigger: always`, `severity: hard`:
-      - `unit`: `[uv, run, python, -m, chupa, covgate, --, python, -m, pytest, tests/unit, -p, chupa.testguard, -p, chupa.testreport, --chupa-results, .chupa/results/unit.json, --cov=<package>, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]`, with `results: .chupa/results/unit.json` and `coverage: coverage.json`. covgate runs the unit tests and then gates coverage, so one entry does both and its base rerun measures the base's own coverage;
-      - `integration`: exactly `[uv, run, python, -m, pytest, tests/integration, -p, chupa.testreport, --chupa-results, .chupa/results/integration.json, -n, auto]`, with `results: .chupa/results/integration.json`;
+      - `unit`: `[uv, run, python, -m, clutch, covgate, --, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=<package>, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]`, with `results: .clutch/results/unit.json` and `coverage: coverage.json`. covgate runs the unit tests and then gates coverage, so one entry does both and its base rerun measures the base's own coverage;
+      - `integration`: exactly `[uv, run, python, -m, pytest, tests/integration, -p, clutch.testreport, --clutch-results, .clutch/results/integration.json, -n, auto]`, with `results: .clutch/results/integration.json`;
       - `lint`: `[uv, run, ruff, check, .]`;
       - `format`: `[uv, run, ruff, format, --check, .]`.
     - `engine_plane_safety_inventory` listing `config.yaml` and `test-gate.toml`.
   - A fenced `toml test-gate` block: `[coverage] default = 90`, plus one commented example each of a package and a file entry, and `[unit] budget_seconds = 60`.
   - Prose giving the remaining host setup:
-    - dev dependencies `chupa`, `pytest`, `pytest-cov`, `pytest-xdist`, `ruff`;
+    - dev dependencies `clutch`, `pytest`, `pytest-cov`, `pytest-xdist`, `ruff`;
     - `[tool.coverage.run] core = "ctrace"` and `[tool.coverage.json] show_contexts = true` in `pyproject.toml` (Python 3.14's default `sysmon` core drops per-test contexts);
-    - gitignore `coverage.json` and `.chupa/`.
+    - gitignore `coverage.json` and `.clutch/`.
   - Prose on how drift is caught: the whole-repo `lint` and `format` entries fail at the merge base too when main drifts, and Check files that as `base_red` for a fix ticket.
   - Prose explaining that listing `test-gate.toml` in the inventory sends any ticket that would lower a threshold to a human.
-- In: `tests/test_host_contract.py`: new test. The `python-host` block deep-merged into the `host-example` block loads with `config.load_config`. The `test-gate` block parses with `chupa.covgate.parse_gate` to `default` 90 and `budget_seconds` 60.
-- In: `docs/how-chupa-works.md`: section 4.2 says the Implement prompt carries the test rules. Section 12 points Python hosts to `## Python host test setup`.
-- Out: chupa's own `config.yaml`, `pyproject.toml` and `tests/` layout (ticket for chupa adopting the rules); `CLAUDE.md`, `AGENTS.md` and the core template; every other spec; review finding codes; any engine code.
+- In: `tests/test_host_contract.py`: new test. The `python-host` block deep-merged into the `host-example` block loads with `config.load_config`. The `test-gate` block parses with `clutch.covgate.parse_gate` to `default` 90 and `budget_seconds` 60.
+- In: `docs/how-clutch-works.md`: section 4.2 says the Implement prompt carries the test rules. Section 12 points Python hosts to `## Python host test setup`.
+- Out: clutch's own `config.yaml`, `pyproject.toml` and `tests/` layout (ticket for clutch adopting the rules); `CLAUDE.md`, `AGENTS.md` and the core template; every other spec; review finding codes; any engine code.
 
 ## Scope fence
 - specs/implement.md
@@ -77,22 +77,22 @@ After this change:
 - tests/test_stages.py
 - tests/test_host_contract.py
 - docs/host-contract.md
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. The loaded `specs/implement.md` body contains each of the five test rules. Its version is one minor step above the prior one and its major is unchanged. A test fails if any rule is removed or the version is left unchanged. Checked by `uv run pytest tests/test_specs.py`.
 2. The loaded `specs/review.md` body's `logic` bullet names unit-test disk, network and process use, wall-clock or order dependence, and lowered thresholds or budgets. Its version is one minor step above the prior one. Its finding codes are unchanged. A test fails if the addition is missing or a new code appears. Checked by `uv run pytest tests/test_specs.py`.
 3. The `python-host` YAML block, deep-merged into `host-example`, loads with `config.load_config`, and `test-gate.toml` is in the inventory. The test asserts:
-   - `unit.argv` starts with `[uv, run, python, -m, chupa, covgate, --]` and contains `-p chupa.testguard`, `-p chupa.testreport` and `--cov-context=test`;
-   - the value after `--chupa-results` equals `unit.results`, and the `--cov-report=json:` path equals `unit.coverage`;
-   - `integration.argv` contains `--chupa-results` followed by `integration.results`, and does not contain `chupa.testguard`;
+   - `unit.argv` starts with `[uv, run, python, -m, clutch, covgate, --]` and contains `-p clutch.testguard`, `-p clutch.testreport` and `--cov-context=test`;
+   - the value after `--clutch-results` equals `unit.results`, and the `--cov-report=json:` path equals `unit.coverage`;
+   - `integration.argv` contains `--clutch-results` followed by `integration.results`, and does not contain `clutch.testguard`;
    - no entry has the code `coverage`;
    - the `review.autofix` codes are `ruff-fix` and `ruff-format`, each with `files == ["*.py"]`;
-   - `integration.argv` equals exactly `[uv, run, python, -m, pytest, tests/integration, -p, chupa.testreport, --chupa-results, .chupa/results/integration.json, -n, auto]`.
+   - `integration.argv` equals exactly `[uv, run, python, -m, pytest, tests/integration, -p, clutch.testreport, --clutch-results, .clutch/results/integration.json, -n, auto]`.
 
    The `test-gate` TOML block parses with `parse_gate` to `default` 90 and `budget_seconds` 60. A test fails if either block is missing or refused, or if any of these drift. Checked by `uv run pytest tests/test_host_contract.py`.
 4. `uv run pytest tests/test_stages.py` exits 0 with the bumped version pins.
-5. `docs/how-chupa-works.md` section 4.2 states the test rules.
+5. `docs/how-clutch-works.md` section 4.2 states the test rules.
 6. `uv run pytest -q` exits 0.
 
 ## Verification
@@ -102,7 +102,7 @@ uv run pytest -q
 ```
 
 ## Definition of rejected
-A spec gains a heading outside Role/Task/Inputs/Output format/On-failure; a spec's major version changes; a review finding code is added; chupa's own `config.yaml`, `pyproject.toml` or `tests/` layout changes; engine code changes.
+A spec gains a heading outside Role/Task/Inputs/Output format/On-failure; a spec's major version changes; a review finding code is added; clutch's own `config.yaml`, `pyproject.toml` or `tests/` layout changes; engine code changes.
 
 ## Time budget
 - expected: 45m

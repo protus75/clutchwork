@@ -12,10 +12,10 @@ state: confirmed
 - journal-roll
 
 ## Context
-- chupa/journal.py
-- chupa/box.py
-- chupa/config.py
-- chupa/seams.py
+- clutch/journal.py
+- clutch/box.py
+- clutch/config.py
+- clutch/seams.py
 
 ## Plan contract
 - 19.I
@@ -28,12 +28,12 @@ Direct invocation records and projects stable storm arrivals once across journal
 ## Scope in / Scope out
 19.P3.storm-ledger is the complete governing contract for Owner, Records, Observable and every named Tests obligation: implement all of it, including record custody and its sole writers. The renderer injects those bullets verbatim; never copy unit text into this seed. Source module ownership from the unit's Owner, never invent it inline.
 
-Read the merged real CLI run/drain, build_daemon_core and the merged production-composition harness before editing. Preserve bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits. Do not migrate historical seeding tests. Closure greps across chupa/, eval/ and tests/ under 19.L rules 2-5 earned no fence additions; callable signatures and production composition remain unchanged. Existing fenced paths are Context; created paths (including sibling-created paths) are neither Context nor On-demand. Unfenced tests in the entry-unit Verification are unchanged preservation suites in Verification only, neither fenced nor embedded.
+Read the merged real CLI run/drain, build_daemon_core and the merged production-composition harness before editing. Preserve bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits. Do not migrate historical seeding tests. Closure greps across clutch/, eval/ and tests/ under 19.L rules 2-5 earned no fence additions; callable signatures and production composition remain unchanged. Existing fenced paths are Context; created paths (including sibling-created paths) are neither Context nor On-demand. Unfenced tests in the entry-unit Verification are unchanged preservation suites in Verification only, neither fenced nor embedded.
 
-New chupa/storm.py is owned by the occurrence writer and journal-derived projection specified in 19.P3.storm-ledger; Journal remains the sole durable writer. Keep the occurrence-only ledger dormant under the complete entry-unit observable. Out: trip/report/notification/hold, producer or production hook activation, task graphs, manual HGATE release, verification filtering and unearned records.
+New clutch/storm.py is owned by the occurrence writer and journal-derived projection specified in 19.P3.storm-ledger; Journal remains the sole durable writer. Keep the occurrence-only ledger dormant under the complete entry-unit observable. Out: trip/report/notification/hold, producer or production hook activation, task graphs, manual HGATE release, verification filtering and unearned records.
 
 ## Scope fence
-- chupa/storm.py
+- clutch/storm.py
 - tests/test_storm.py
 
 ## Acceptance criteria

@@ -11,7 +11,7 @@ state: confirmed
 - phase7-core
 
 ## Context
-- chupa/specs.py
+- clutch/specs.py
 - tests/test_specs.py
 - tests/test_stages.py
 
@@ -24,7 +24,7 @@ state: confirmed
 Require the implementer to read downstream consumers before changing a production value's representation, so a literal criterion does not silently break an unfenced caller.
 
 ## Scope in / Scope out
-Apply the cited entry's complete prompt and test contract. Read the fenced implement spec directly from the worktree before editing; prompt specs cannot be embedded as Context. Ownership stays with specs/implement.md and its chupa/specs.py loader; add no module.
+Apply the cited entry's complete prompt and test contract. Read the fenced implement spec directly from the worktree before editing; prompt specs cannot be embedded as Context. Ownership stays with specs/implement.md and its clutch/specs.py loader; add no module.
 
 Move the implement spec to version 1.5 and add the entry-governed Task instruction covering representation changes, repository consumer searches and reads, a plausible reading preserving an unfenced consumer, surprises in the run record, and premise_failed when no such reading exists. Preserve other metadata, placeholders, outcomes and artifacts. Adjust the existing spec lint version assertion and only the contradicted implement version assertion in the stage provenance test. No engine code or run-record schema changes.
 

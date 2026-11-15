@@ -9,26 +9,26 @@ kind: feature
 none
 
 ## Context
-- chupa/__main__.py
-- chupa/tickets.py
+- clutch/__main__.py
+- clutch/tickets.py
 - tests/test_cli.py
 - dev.py
-- vscode-chupa/extension.js
-- vscode-chupa/package.json
-- docs/how-chupa-works.md
-- vscode-chupa/snapshot.py
+- vscode-clutchwork/extension.js
+- vscode-clutchwork/package.json
+- docs/how-clutch-works.md
+- vscode-clutchwork/snapshot.py
 - docs/host-running.md
 
 ## On-demand
 - docs/host-authoring.md
 
 ## Goal / Why
-Reordering a ticket that has not run yet means hand-editing its `priority:` frontmatter or its `## Runs before` section. The operator's VS Code extension (`vscode-chupa`) needs right-click "Set priority…" and "Run before…" on queued and blocked tickets. Editing ticket text in JavaScript would be a second implementation of the ticket format that `chupa/tickets.py` owns, so the edit belongs in a chupa verb that the extension calls (2026-11-06).
+Reordering a ticket that has not run yet means hand-editing its `priority:` frontmatter or its `## Runs before` section. The operator's VS Code extension (`vscode-clutchwork`) needs right-click "Set priority…" and "Run before…" on queued and blocked tickets. Editing ticket text in JavaScript would be a second implementation of the ticket format that `clutch/tickets.py` owns, so the edit belongs in a clutch verb that the extension calls (2026-11-06).
 
-After this change, `chupa order <stem> [--priority P0|P1|P2|P3] [--runs-before [STEM ...]]` rewrites only those two parts of `tickets/<stem>/ticket.md` in the working tree. It validates the result with the intake lint before writing, and intake commits the edit like any other hand edit.
+After this change, `clutch order <stem> [--priority P0|P1|P2|P3] [--runs-before [STEM ...]]` rewrites only those two parts of `tickets/<stem>/ticket.md` in the working tree. It validates the result with the intake lint before writing, and intake commits the edit like any other hand edit.
 
 ## Scope in / Scope out
-- In: `chupa/__main__.py` adds the `order` verb, beside `new`.
+- In: `clutch/__main__.py` adds the `order` verb, beside `new`.
   - It takes no lock, because authorship is outside the lock fence, as with `new`. It writes through `LocalFileSystem`.
   - It requires at least one of `--priority` and `--runs-before`.
 - In: what it does.
@@ -42,48 +42,48 @@ After this change, `chupa order <stem> [--priority P0|P1|P2|P3] [--runs-before [
   - neither option given;
   - a result that fails `validate_ticket`, which covers self-edges, unknown stems, and `Runs before` cycles. The refusal names the first finding.
 - In: on success it prints the changed fields and exits 0.
-- In: the edit helper lives in `chupa/tickets.py` beside `template`: a pure function from ticket text to new text, so the verb only validates and writes.
-- In: `dev.py`: `./dev.py order STEM [--priority P] [--runs-before [STEM ...]]` passes through to `chupa order`.
-- In: `vscode-chupa`. On queued and blocked rows only, the Tickets right-click menu gains:
+- In: the edit helper lives in `clutch/tickets.py` beside `template`: a pure function from ticket text to new text, so the verb only validates and writes.
+- In: `dev.py`: `./dev.py order STEM [--priority P] [--runs-before [STEM ...]]` passes through to `clutch order`.
+- In: `vscode-clutchwork`. On queued and blocked rows only, the Tickets right-click menu gains:
   - "Set priority…": a quick pick of P0–P3 with the current one marked;
   - "Run before…": a multi-select quick pick of the other unmerged stems, with the current `runsBefore` preselected.
 
-  Each runs `./dev.py order` with `execFile` (argv list, repo root as cwd). Each shows the command's refusal text in an error message on a non-zero exit, and refreshes the snapshot on success. Both commands are declared in `package.json` with `webview/context` entries using the existing `chupaSection` context key, and are hidden from the command palette.
+  Each runs `./dev.py order` with `execFile` (argv list, repo root as cwd). Each shows the command's refusal text in an error message on a non-zero exit, and refreshes the snapshot on success. Both commands are declared in `package.json` with `webview/context` entries using the existing `clutchSection` context key, and are hidden from the command palette.
 - In: tests in `tests/test_cli.py`:
   - `test_order_sets_priority`: only the `priority:` line changes;
   - `test_order_sets_and_clears_runs_before`: asserts the exact file text after adding the section, replacing its bullets, and removing it with a bare `--runs-before`; the removal gives back the original bytes;
   - `test_order_refuses_invalid_and_leaves_file`: a cycle, a self-edge, and an unknown stem are each refused and the file is unchanged;
   - `test_order_refuses_running_settled_and_rejected`: running, settled, and rejected last states are each refused and the file is unchanged;
   - `test_order_refuses_bad_stem_and_no_option`: a non-kebab stem, a missing stem, and a call with neither option each exit 2 and write nothing;
-  - `test_order_takes_no_lock`: no `.chupa` dir is created, `HEAD` is unchanged, and the ticket edit is left uncommitted.
+  - `test_order_takes_no_lock`: no `.clutch` dir is created, `HEAD` is unchanged, and the ticket edit is left uncommitted.
 - In: docs.
-  - `docs/how-chupa-works.md` section 2.1: a row for `order`.
+  - `docs/how-clutch-works.md` section 2.1: a row for `order`.
   - Section 2.2: a row for `./dev.py order`.
-  - `docs/host-authoring.md`: one sentence beside `Runs before` naming `chupa order`.
+  - `docs/host-authoring.md`: one sentence beside `Runs before` naming `clutch order`.
   - `docs/host-running.md`: an `order` row in the verb table beside `new`, "Works while serve runs?" = Yes.
 - Out: `Depends on` edits, all other frontmatter fields, intake, and the scheduler.
 
 ## Scope fence
-- chupa/__main__.py
-- chupa/tickets.py
+- clutch/__main__.py
+- clutch/tickets.py
 - tests/test_cli.py
 - dev.py
-- vscode-chupa/extension.js
-- vscode-chupa/package.json
-- docs/how-chupa-works.md
+- vscode-clutchwork/extension.js
+- vscode-clutchwork/package.json
+- docs/how-clutch-works.md
 - docs/host-authoring.md
 - docs/host-running.md
 
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_cli.py` exits 0, including the six tests above.
-2. `node --check vscode-chupa/extension.js` exits 0, and `vscode-chupa/package.json` declares both commands with `webview/context` entries limited to queued and blocked rows.
-3. `docs/how-chupa-works.md` sections 2.1 and 2.2, `docs/host-authoring.md`, and the `docs/host-running.md` verb table describe `order`.
+2. `node --check vscode-clutchwork/extension.js` exits 0, and `vscode-clutchwork/package.json` declares both commands with `webview/context` entries limited to queued and blocked rows.
+3. `docs/how-clutch-works.md` sections 2.1 and 2.2, `docs/host-authoring.md`, and the `docs/host-running.md` verb table describe `order`.
 4. `uv run pytest -q` exits 0.
 
 ## Verification
 ```
 uv run pytest -q tests/test_cli.py
-node --check vscode-chupa/extension.js
+node --check vscode-clutchwork/extension.js
 uv run pytest -q
 ```
 

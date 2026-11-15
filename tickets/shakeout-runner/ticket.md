@@ -11,7 +11,7 @@ agent_effort: medium
 - shakeout-driver
 
 ## Context
-- chupa/runner.py
+- clutch/runner.py
 
 ## Plan contract
 - 19.L
@@ -19,11 +19,11 @@ agent_effort: medium
 - section 11
 
 ## Goal / Why
-The third shakeout battery group pins the terminal handler (`chupa/runner.py`: harvest -> dispatch -> journal -> wipe, section 11.2) with three members, run through the production drain on the bench with a FakeLLM and zero human input. Its Check run re-confirms every prior entry and machine-produces the cumulative report into its OUTBOX.
+The third shakeout battery group pins the terminal handler (`clutch/runner.py`: harvest -> dispatch -> journal -> wipe, section 11.2) with three members, run through the production drain on the bench with a FakeLLM and zero human input. Its Check run re-confirms every prior entry and machine-produces the cumulative report into its OUTBOX.
 
 Why: the runner owns the run's single terminal, the `premise_bounce` draw, the diagnosis dispatch, and the identical-terminal short-circuit (section 11.4). A regression there silently loops a stem or loses the history its next attempt needs.
 
-Owners (19.P2 Emits): this group fences ONLY `chupa/runner.py`, plus `eval/shakeout/` and `tests/test_shakeout.py`. A defect it exposes in the runner is fixed here. A defect anywhere else is filed as a second problem and the ticket replies `premise_failed`, naming it.
+Owners (19.P2 Emits): this group fences ONLY `clutch/runner.py`, plus `eval/shakeout/` and `tests/test_shakeout.py`. A defect it exposes in the runner is fixed here. A defect anywhere else is filed as a second problem and the ticket replies `premise_failed`, naming it.
 
 ## Scope in / Scope out
 - In: `eval/shakeout/runner.py` with `MEMBERS`, in this order:
@@ -32,10 +32,10 @@ Owners (19.P2 Emits): this group fences ONLY `chupa/runner.py`, plus `eval/shake
   - `identical_terminals`: (1) every attempt fails Review with the same finding code, and diagnosis always replies `retry`. (2) Once `IDENTICAL_K` consecutive terminals share one `reason`, the next terminal is dispatched `escalate` (a climb) or routed `reject_queue` at the exhausted ladder, never another same-rung `retry`. (3) The terminal bodies' `reason` and `dispatch` fields.
 - In: `eval/shakeout/run.py`: `GROUPS` gains `"runner"` after `"driver"`.
 - In: `tests/test_shakeout.py`: one test per member asserting its observable through `run_member`.
-- Out: members owned by other modules, any production change outside `chupa/runner.py`, and any runner, bench, or schema edit beyond `GROUPS`.
+- Out: members owned by other modules, any production change outside `clutch/runner.py`, and any runner, bench, or schema edit beyond `GROUPS`.
 
 ## Scope fence
-- chupa/runner.py
+- clutch/runner.py
 - eval/shakeout/
 - tests/test_shakeout.py
 

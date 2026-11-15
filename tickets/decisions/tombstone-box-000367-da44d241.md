@@ -4,7 +4,7 @@ kind: tombstone
 link: implement-spec-run-coverage-gate
 reopen_after_days: 30
 ---
-In review-lock-only-for-intake, Diagnose twice told the next Implement attempt to reshape `reconcile.orphans` so it adds no statement or branch and clears the unit coverage floor. In the same window, other diagnoses forbade squeezing statements out to recover coverage. The finding asks `chupa/specs/diagnose.md` to settle which advice is correct for a coverage-floor miss.
+In review-lock-only-for-intake, Diagnose twice told the next Implement attempt to reshape `reconcile.orphans` so it adds no statement or branch and clears the unit coverage floor. In the same window, other diagnoses forbade squeezing statements out to recover coverage. The finding asks `clutch/specs/diagnose.md` to settle which advice is correct for a coverage-floor miss.
 
 The harmful result would be production code restructured to dodge the unit coverage gate. Open ticket implement-spec-run-coverage-gate already closes that path: Implement must run the hard coverage gate after its last edit, fix a floor miss only by adding a test inside the fence or report `premise_failed`, and never restructure production code to dodge coverage. Once that rule is in force, a diagnose lesson asking for restructuring cannot cause the restructuring. What remains is wording in the diagnose spec with no separate harmful runtime effect. The failure class (coverage-floor misses fixed by gaming the metric) and the repair are the same as that open ticket's, so this finding duplicates it.
 

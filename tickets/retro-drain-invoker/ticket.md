@@ -11,13 +11,13 @@ state: confirmed
 - phase4-exit
 
 ## Context
-- chupa/driver.py
-- chupa/__main__.py
-- chupa/box.py
+- clutch/driver.py
+- clutch/__main__.py
+- clutch/box.py
 - tests/test_driver.py
 - tests/test_box.py
-- chupa/daemon.py
-- chupa/journal.py
+- clutch/daemon.py
+- clutch/journal.py
 - tests/test_vocabularies.py
 - tests/test_cli.py
 - tests/test_drain_upgrade.py
@@ -29,11 +29,11 @@ state: confirmed
 - tests/test_flake.py
 
 ## On-demand
-- chupa/drain.py
-- chupa/stages.py
+- clutch/drain.py
+- clutch/stages.py
 - tests/test_drain.py
 - tests/test_stages.py
-- chupa/runner.py
+- clutch/runner.py
 - tests/test_storm_hold.py
 - tests/test_storm_notification_activation.py
 
@@ -47,7 +47,7 @@ state: confirmed
 The lock-held bootstrap drain produces retro receipts and immutable declared exit inputs from production evidence.
 
 ## Scope in / Scope out
-Implement the invoker and journal-window input governed by the cited entry, including all four entry parts. The new module owner is chupa/retro.py; its prompt source is specs/retro.md. Start high/high: the registry marks this row KNOWN-DEEP, crossing window projection, Driver, stages and lock-held drain composition. Reuse the serving session provider payload and existing watched Driver; preserve public call/constructor signatures, adding only the entry-governed public read-only Stages.driver through Pipeline.stages. The current carrier owners are runner.pipeline/PreparedDispatch and daemon.TicketWriter; fence them for that closure. A missing Driver raises RetroConstructionError with the specified paved road, never private ctx traversal or a global driver.
+Implement the invoker and journal-window input governed by the cited entry, including all four entry parts. The new module owner is clutch/retro.py; its prompt source is specs/retro.md. Start high/high: the registry marks this row KNOWN-DEEP, crossing window projection, Driver, stages and lock-held drain composition. Reuse the serving session provider payload and existing watched Driver; preserve public call/constructor signatures, adding only the entry-governed public read-only Stages.driver through Pipeline.stages. The current carrier owners are runner.pipeline/PreparedDispatch and daemon.TicketWriter; fence them for that closure. A missing Driver raises RetroConstructionError with the specified paved road, never private ctx traversal or a global driver.
 
 Realize the entry's unforced dispatch checks and forced pre-exit/quiescence calls, awaiting the hook under the existing MAIN lock and re-reading the boundary before selection. Default-off direct drain construction and automatic self-upgrade wiring remain covered. Exercise no-merge no-op and selected failure followed by continued dispatch. Keep report commit/replay and unfinished-intent handling in the existing ticket-plane Git/Effects lane; register only retro_failed in the existing signal vocabulary. Counts, spend, tokens, calibration and provenance come from the real ordered event window, with unknown usage preserved. The model supplies proposals, never fabricated measurements. Leave the scorecard, proposal emission/Box activation and CLI verbs to later admissions.
 
@@ -58,21 +58,21 @@ Read all Context and On-demand paths before changing them. The authoring snapsho
 Named entry obligations: test_window_uses_completed_report_boundary, test_retro_trigger_boundaries, test_report_commit_replays_without_advancing_unfinished_window, test_failed_retro_suppresses_window_until_completion, test_retro_hook_is_default_off, test_drain_retro_due_quiescence_and_pre_exit, test_retro_driver_access_is_public_and_read_only, test_exit_read_window_materialization. Include test_plan_lint and keep resolver/depth checks green. Use disposable repositories and injected time, filesystem, process and model seams. Out: new scheduling, serve activation, retro/doctor verbs, scorecard, baseline reader, Box proposal activation, live-model calls, journal debug logs, extra reports, plan/ticket edits, historical snapshot migrations and compatibility paths.
 
 ## Scope fence
-- chupa/retro.py
+- clutch/retro.py
 - specs/retro.md
 - tests/test_retro.py
-- chupa/drain.py
-- chupa/driver.py
-- chupa/stages.py
-- chupa/__main__.py
-- chupa/box.py
+- clutch/drain.py
+- clutch/driver.py
+- clutch/stages.py
+- clutch/__main__.py
+- clutch/box.py
 - tests/test_drain.py
 - tests/test_driver.py
 - tests/test_stages.py
 - tests/test_box.py
-- chupa/runner.py
-- chupa/daemon.py
-- chupa/journal.py
+- clutch/runner.py
+- clutch/daemon.py
+- clutch/journal.py
 - tests/test_vocabularies.py
 - tests/test_cli.py
 - tests/test_drain_upgrade.py

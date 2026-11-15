@@ -11,10 +11,10 @@ state: confirmed
 - phase3-continue-16
 
 ## Context
-- chupa/journal.py
-- chupa/box.py
-- chupa/config.py
-- chupa/seams.py
+- clutch/journal.py
+- clutch/box.py
+- clutch/config.py
+- clutch/seams.py
 
 ## Plan contract
 - 19.I
@@ -29,10 +29,10 @@ Journal append synchronously rotates at the engine size or age boundary while pr
 
 Read merged real CLI run/drain, build_daemon_core and the merged production-composition harness before editing. Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Preserve all entry-unit boundary, replay, corruption, durability and crash obligations. Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits. Do not migrate historical seeding tests.
 
-Closure greps across chupa/, eval/ and tests/ under 19.L rules 2-5 earned no fence additions. In tests/test_journal.py::test_append_goes_to_newest_segment_without_rolling the event timestamps equal the injected clock despite older segment filenames; the age rule preserves that assertion. Existing fenced paths are Context; created paths are neither Context nor On-demand. Unfenced tests in the entry-unit Verification are unchanged preservation suites in Verification only, neither fenced nor embedded. Journal remains the sole durable writer. Out: replacement writers, tasks, config knobs, live-short-write repair, storm implementation or activation, manual HGATE release, verification filtering and unearned records.
+Closure greps across clutch/, eval/ and tests/ under 19.L rules 2-5 earned no fence additions. In tests/test_journal.py::test_append_goes_to_newest_segment_without_rolling the event timestamps equal the injected clock despite older segment filenames; the age rule preserves that assertion. Existing fenced paths are Context; created paths are neither Context nor On-demand. Unfenced tests in the entry-unit Verification are unchanged preservation suites in Verification only, neither fenced nor embedded. Journal remains the sole durable writer. Out: replacement writers, tasks, config knobs, live-short-write repair, storm implementation or activation, manual HGATE release, verification filtering and unearned records.
 
 ## Scope fence
-- chupa/journal.py
+- clutch/journal.py
 - tests/test_journal_roll.py
 
 ## Acceptance criteria

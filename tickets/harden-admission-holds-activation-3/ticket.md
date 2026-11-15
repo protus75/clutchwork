@@ -19,18 +19,18 @@ none
 - 19.P3.admission-holds-activation
 
 ## Goal / Why
-`CHUPA_PLAN.md` entry unit `19.P3.admission-holds-activation` states every fact the `admission-holds-activation` seed needs, so `phase3-continue-09` authors that seed from the plan instead of inventing it.
+`CLUTCH_PLAN.md` entry unit `19.P3.admission-holds-activation` states every fact the `admission-holds-activation` seed needs, so `phase3-continue-09` authors that seed from the plan instead of inventing it.
 
 ## Scope in / Scope out
 - In: the entry unit `### 19.P3.admission-holds-activation` (inserted after its phase's last unit when missing), with its Owner, Records, Observable, and Tests parts.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P3.admission-holds-activation
+- CLUTCH_PLAN.md#19.P3.admission-holds-activation
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P3.admission-holds-activation` states, consistent with merged code: 19.P3.admission-holds-activation requires one CLI-owned inbox supplied to both factories without fallback, but the pipeline is built before drain constructs its consumer and no shared carrier exists. The entry omits that carrier while requiring tests/test_drain.py to remain unchanged despite its direct drain, bind, and positional Checkout callers. These facts were verified against base HEAD 4cd71ddf38e55b5b404bccaaf007264e122d285e.
+2. `CLUTCH_PLAN.md` unit `19.P3.admission-holds-activation` states, consistent with merged code: 19.P3.admission-holds-activation requires one CLI-owned inbox supplied to both factories without fallback, but the pipeline is built before drain constructs its consumer and no shared carrier exists. The entry omits that carrier while requiring tests/test_drain.py to remain unchanged despite its direct drain, bind, and positional Checkout callers. These facts were verified against base HEAD 4cd71ddf38e55b5b404bccaaf007264e122d285e.
 
 ## Verification
 ```

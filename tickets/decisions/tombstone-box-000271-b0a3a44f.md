@@ -10,6 +10,6 @@ This message makes the same request as registry record declined-box-000185-8a46a
 
 - Registry record declined-box-000185-8a46a7b6 describes the identical gap: prompts 14-16 lacked the base-diff attribution deliverable, and prompt 17 authored `verification-base-attribution`.
 - `verification-base-attribution` is in the merged stems list.
-- CLAUDE.md: `CHUPA_PLAN.md` is a frozen bootstrap design record and is never edited.
+- CLAUDE.md: `CLUTCH_PLAN.md` is a frozen bootstrap design record and is never edited.
 
 Message: box-000271-b0a3a44f

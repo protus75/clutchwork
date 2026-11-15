@@ -8,9 +8,9 @@
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Redo the whole ticket from the merge base: lint_findings in chupa/tickets.py, review_target raising TicketInvalid, the review_ticket snag branch, the spec trim and version bump, the fixture fixes, the stubs and docs. Last attempt's unit coverage gate passed and ticket lint passed 4/4.",
+    "Redo the whole ticket from the merge base: lint_findings in clutch/tickets.py, review_target raising TicketInvalid, the review_ticket snag branch, the spec trim and version bump, the fixture fixes, the stubs and docs. Last attempt's unit coverage gate passed and ticket lint passed 4/4.",
     "The only failure was test_kill_aborts_requested_retro timing out in tests/integration/test_serve_dispatch.py:195. It waits through tests/integration/serve_rig.py::until, which has a 60s wall-clock deadline. The candidate's later integration gate passed, so nothing shows the diff caused it.",
-    "If the timeout comes back, run tests/integration/test_serve_dispatch.py::test_kill_aborts_requested_retro alone on the candidate. If it passes alone, it is a load-dependent timing flake outside the fence: file it with chupa suggest and do not report premise_failed.",
+    "If the timeout comes back, run tests/integration/test_serve_dispatch.py::test_kill_aborts_requested_retro alone on the candidate. If it passes alone, it is a load-dependent timing flake outside the fence: file it with clutch suggest and do not report premise_failed.",
     "Report premise_failed only after showing the diff causes the failure. For example, check whether serve_rig.py::retro_scenario fixture tickets go through review_ticket or lint_findings and now get a snag. A timeout that does not reproduce is not a premise failure."
   ],
   "mechanical": null,

@@ -11,11 +11,11 @@ state: confirmed
 - phase3-continue-24
 
 ## Context
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/git.py
-- chupa/seams.py
-- chupa/effects.py
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/git.py
+- clutch/seams.py
+- clutch/effects.py
 - eval/shakeout/run.py
 
 ## Plan contract
@@ -34,14 +34,14 @@ Preserve report-purge before Verification, schema-validation, named-report-requi
 
 Read merged artifacts and stages, the eval/shakeout/run.py report writer precedent, Git/Effects, runner, daemon, CLI run/drain and build_daemon_core, serve composition, Journal, Restart, Timers and the merged production-composition harness before changing their owned boundary. Journal alone writes durable events, Box alone writes queue records and ControlInbox alone writes control decisions. Preserve Journal(state_dir, clock), append/read/close signatures, bootstrap on-entry reconciliation and ordinary DaemonTasks exception propagation and cleanup. The writer uses the supplied filesystem seam; it performs no Git or journal mutation. Provenance follows the governing entry and real Git.rev_parse evidence.
 
-The authoring closure grep across chupa/, eval/ and tests/ found no earned fence additions: the registry floor covers the models, registration and new writer/test. Dynamic report discovery, purge, validation and checks lift already consume KNOWN_ARTIFACTS; existing call signatures and composition wiring stay intact. No allowlist or production absence assertion changes. Existing fenced paths are Context; created paths belong in neither Context nor On-demand. The embedded render fits the 300,000-character headroom.
+The authoring closure grep across clutch/, eval/ and tests/ found no earned fence additions: the registry floor covers the models, registration and new writer/test. Dynamic report discovery, purge, validation and checks lift already consume KNOWN_ARTIFACTS; existing call signatures and composition wiring stay intact. No allowlist or production absence assertion changes. Existing fenced paths are Context; created paths belong in neither Context nor On-demand. The embedded render fits the 300,000-character headroom.
 
 Where production exercise applies, use injected seams, scripted callbacks, disposable synthetic repositories and asyncio barriers through the real CLI/async serve entrypoint and merged production-composition harness. No test-only graph, live host work, real-model calls, wall-clock waits, notify transport or routing changes. Out: runner implementation, report production or publication, tickets/run records, historical seeding snapshots and unrelated fixes.
 
 ## Scope fence
 - eval/daemon_soak.py
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 - tests/test_daemon_soak.py
 
 ## Acceptance criteria

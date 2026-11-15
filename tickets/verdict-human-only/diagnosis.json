@@ -8,7 +8,7 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Review finding at chupa/__main__.py:458: the verdict preview calls runner._ticket_state, whose unguarded yaml.safe_load(...).get(\"state\") lets YAMLError or AttributeError escape main on malformed frontmatter. Make the preview tolerate unparseable frontmatter.",
+    "Review finding at clutch/__main__.py:458: the verdict preview calls runner._ticket_state, whose unguarded yaml.safe_load(...).get(\"state\") lets YAMLError or AttributeError escape main on malformed frontmatter. Make the preview tolerate unparseable frontmatter.",
     "Keep intake's outcome for a bad ticket: exit 2 with the paved road \"fix the ticket and retry the verdict\". The review's paved road suggests _load_frontmatter or validate_ticket semantics, showing an 'invalid ticket' state or raising runner.Refusal.",
     "Add a test running a verdict on a stem with malformed frontmatter, per the review's paved road: assert exit 2, the paved road text, and no state change. Cover both invalid YAML and non-mapping frontmatter, since the finding names both failure types.",
     "Keep the rest of the diff: review found the gating, typed-stem prompt, dev.py and docs meet the ticket. Fix only the preview path, and leave runner.verdict and the control-inbox format unchanged, as the ticket's Definition of rejected requires."

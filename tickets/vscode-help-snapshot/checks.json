@@ -5,8 +5,8 @@
   "stem": "vscode-help-snapshot",
   "passed": true,
   "changed_files": [
-    "chupa/observe.py",
-    "chupa/stats.py",
+    "clutch/observe.py",
+    "clutch/stats.py",
     "tests/integration/test_watch.py",
     "tests/unit/test_help_snapshot.py",
     "tests/unit/test_menu_admission.py",
@@ -78,8 +78,8 @@
       "coverage": {
         "percent": 41.17005580858297,
         "files": {
-          "chupa/observe.py": 42.362768496420045,
-          "chupa/stats.py": 61.36363636363637
+          "clutch/observe.py": 42.362768496420045,
+          "clutch/stats.py": 61.36363636363637
         }
       }
     },
@@ -221,7 +221,7 @@
         "tests/integration/test_stats.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_help_snapshot.py tests/integration/test_watch.py tests/integration/test_stats.py\nbringing up nodes...\nbringing up nodes...\n\n.....................................                                    [100%]\n37 passed in 13.28s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_help_snapshot.py tests/integration/test_watch.py tests/integration/test_stats.py\nbringing up nodes...\nbringing up nodes...\n\n.....................................                                    [100%]\n37 passed in 13.28s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 13.500115
     },
@@ -233,7 +233,7 @@
         "tests/unit/test_verdict_menu_parity.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_menu_admission.py tests/unit/test_verdict_menu_parity.py\nbringing up nodes...\nbringing up nodes...\n\n...............................                                          [100%]\n31 passed in 1.09s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_menu_admission.py tests/unit/test_verdict_menu_parity.py\nbringing up nodes...\nbringing up nodes...\n\n...............................                                          [100%]\n31 passed in 1.09s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.28853
     },
@@ -246,7 +246,7 @@
         "tests/integration/test_vscode_command_not_found.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_menu_verb_parity.py tests/integration/test_step_icons.py tests/integration/test_vscode_command_not_found.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 3.28s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_menu_verb_parity.py tests/integration/test_step_icons.py tests/integration/test_vscode_command_not_found.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 3.28s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.502184
     },
@@ -258,7 +258,7 @@
         "tests/regress_vscode_task_identity.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.081842
     },
@@ -268,7 +268,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "............... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n................................                                         [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/vscode-help-snapshot/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3632 passed, 9 warnings in 62.89s (0:01:02)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "............... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n................................                                         [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/vscode-help-snapshot/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3632 passed, 9 warnings in 62.89s (0:01:02)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 64.297301
     }

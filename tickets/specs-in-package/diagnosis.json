@@ -8,11 +8,11 @@
   "stage": "implement",
   "verdict": "split",
   "lessons": [
-    "The hard diff-budget gate (chupa/stages.py:73) allows 30 changed files. This ticket needs at least 32: 11 moved spec files, 14 named production/config/doc files and 7+ tests. The previous attempt's 43-file diff failed the gate, so do not retry it as one change.",
-    "Child 1: git mv specs chupa/specs, plus the loaders (runner.SPECS_DIR, policy.SPECS, eval/harness.py, eval/diagnose.py, the spec-version read in watch.py or observe.py, ask.py if present) and the tests that read real spec files. Verification: the ticket's first Verification command plus pytest.",
-    "Child 2: depends on child 1. Repath the matchers and stored-path handling: drain.UPGRADE_PREFIXES, serve.engine_trees and the serve_handoff body, the merge.py regex, the tickets.py Context check, author/triage chupa/ prefixing, the retro.md sentence and config.yaml. It owns acceptance criteria 2-6.",
-    "Put the docs/how-chupa-works.md and docs/host-contract.md updates in whichever child has room under 30 files, or in a third child that depends on child 2. Count each renamed spec file toward the budget when sizing each child.",
-    "Keep no dual path in any child. Child 1 must not leave loaders accepting both specs/ and chupa/specs/, and the proposed_spec_paths pattern stays ^specs/[a-z0-9_-]+\\.md$ in every child, as the Definition of rejected requires."
+    "The hard diff-budget gate (clutch/stages.py:73) allows 30 changed files. This ticket needs at least 32: 11 moved spec files, 14 named production/config/doc files and 7+ tests. The previous attempt's 43-file diff failed the gate, so do not retry it as one change.",
+    "Child 1: git mv specs clutch/specs, plus the loaders (runner.SPECS_DIR, policy.SPECS, eval/harness.py, eval/diagnose.py, the spec-version read in watch.py or observe.py, ask.py if present) and the tests that read real spec files. Verification: the ticket's first Verification command plus pytest.",
+    "Child 2: depends on child 1. Repath the matchers and stored-path handling: drain.UPGRADE_PREFIXES, serve.engine_trees and the serve_handoff body, the merge.py regex, the tickets.py Context check, author/triage clutch/ prefixing, the retro.md sentence and config.yaml. It owns acceptance criteria 2-6.",
+    "Put the docs/how-clutch-works.md and docs/host-contract.md updates in whichever child has room under 30 files, or in a third child that depends on child 2. Count each renamed spec file toward the budget when sizing each child.",
+    "Keep no dual path in any child. Child 1 must not leave loaders accepting both specs/ and clutch/specs/, and the proposed_spec_paths pattern stays ^specs/[a-z0-9_-]+\\.md$ in every child, as the Definition of rejected requires."
   ],
   "mechanical": null,
   "spec_version": "1.2",

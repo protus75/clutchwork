@@ -12,7 +12,7 @@
     "Why the reply failed: the requisition reviewer wrote prose before its JSON. requisition.py:129 checks the reply with RequisitionReply.model_validate_json(unwrap_fence(text)), and unwrap_fence only removes one surrounding code fence, so any prose before the JSON breaks the parse.",
     "Re-run only the requisition review and send back exactly one JSON object with nothing before or after it: verdict, summary and findings, no other keys (extra='forbid'). If the verdict is approve, findings must be [] (requisition.py:32).",
     "Preserve approved seeds while their bytes still match ticket_sha. Do not re-author phase3-continue-13 (sha256 184e2b95...) or kill-cli-activation unless a review returns a real snag finding. A schema error says nothing about what the ticket contains.",
-    "Leave tickets/kill-cli-activation/ and tickets/phase3-continue-13/ uncommitted so Check can record both approvals in checks.json and lift them together in one chupa(phase3-continue-12): seeds commit."
+    "Leave tickets/kill-cli-activation/ and tickets/phase3-continue-13/ uncommitted so Check can record both approvals in checks.json and lift them together in one clutch(phase3-continue-12): seeds commit."
   ],
   "mechanical": null,
   "spec_version": "1.1",

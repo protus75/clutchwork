@@ -13,13 +13,13 @@ state: confirmed
 - core-drift-activation
 
 ## Context
-- chupa/config.py
-- chupa/providers.py
-- chupa/seams.py
-- chupa/llm.py
-- chupa/hostfiles.py
-- chupa/artifacts.py
-- chupa/specs.py
+- clutch/config.py
+- clutch/providers.py
+- clutch/seams.py
+- clutch/llm.py
+- clutch/hostfiles.py
+- clutch/artifacts.py
+- clutch/specs.py
 
 ## Plan contract
 - 19.I

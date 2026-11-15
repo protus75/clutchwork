@@ -1,6 +1,6 @@
-Operator report, 2026-11-14, host repo /home/djp/source/fungo (chupa installed as a package, no dev.py):
+Operator report, 2026-11-14, host repo /home/djp/source/fungo (clutch installed as a package, no dev.py):
 
-djp@ProtusGaming:~/source/fungo$ .venv/bin/chupa confirm drop-duckdb-threads-gate
+djp@ProtusGaming:~/source/fungo$ .venv/bin/clutch confirm drop-duckdb-threads-gate
 drop-duckdb-threads-gate: Reject queue: gate_failed -- duckdb-threads
 confirm drop-duckdb-threads-gate? [y/N] y
 confirm submitted: d8cdcd906b374c46bc7b46cc9f9978a3 -- ./dev.py status shows the outcome
@@ -9,5 +9,5 @@ djp@ProtusGaming:~/source/fungo$ ls dev.py
 ls: cannot access 'dev.py': No such file or directory
 
 Two defects in the one trailing clause:
-1. `./dev.py status` names a launcher that exists only in the chupa repo. In this host the verb runs as `chupa status`, so the instruction is unfollowable.
+1. `./dev.py status` names a launcher that exists only in the clutch repo. In this host the verb runs as `clutch status`, so the instruction is unfollowable.
 2. The clause does not separate the command from the prose, so `./dev.py status shows the outcome` reads as one phrase and the operator cannot see where the command ends.

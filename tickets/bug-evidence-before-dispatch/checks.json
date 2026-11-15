@@ -5,10 +5,10 @@
   "stem": "bug-evidence-before-dispatch",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/docs/host-authoring.md",
-    "chupa/tickets.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/docs/host-authoring.md",
+    "clutch/tickets.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_bug_gate.py",
     "tests/integration/test_fixture_host.py",
     "tests/integration/test_serve_dispatch.py",
@@ -85,12 +85,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.89s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.89s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/bug-evidence-before-dispatch\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/bug-evidence-before-dispatch\nInstalled 19 packages in 10ms\nbringing up nodes...\nbringing up nodes...\n\nF                                                                        [100%]\n=================================== FAILURES ===================================\n_____________________ test_bug_without_evidence_is_invalid _____________________\n[gw0] linux -- Python 3.14.6 /home/djp/source/chupa/.chupa/state/worktrees/.regression-base/bug-evidence-before-dispatch/.venv/bin/python\n\nrepo = PosixPath('/tmp/pytest-of-djp/pytest-624/popen-gw0/test_bug_without_evidence_is_i0')\n\n    def test_bug_without_evidence_is_invalid(repo):\n>       with pytest.raises(TicketInvalid) as exc:\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE TicketInvalid\n\ntests/unit/test_parse_ticket_evidence.py:47: Failed\n=========================== short test summary info ============================\nFAILED tests/unit/test_parse_ticket_evidence.py::test_bug_without_evidence_is_invalid\n1 failed in 0.89s\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/bug-evidence-before-dispatch\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/bug-evidence-before-dispatch\nInstalled 19 packages in 10ms\nbringing up nodes...\nbringing up nodes...\n\nF                                                                        [100%]\n=================================== FAILURES ===================================\n_____________________ test_bug_without_evidence_is_invalid _____________________\n[gw0] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/bug-evidence-before-dispatch/.venv/bin/python\n\nrepo = PosixPath('/tmp/pytest-of-djp/pytest-624/popen-gw0/test_bug_without_evidence_is_i0')\n\n    def test_bug_without_evidence_is_invalid(repo):\n>       with pytest.raises(TicketInvalid) as exc:\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE TicketInvalid\n\ntests/unit/test_parse_ticket_evidence.py:47: Failed\n=========================== short test summary info ============================\nFAILED tests/unit/test_parse_ticket_evidence.py::test_bug_without_evidence_is_invalid\n1 failed in 0.89s\n"
         }
       }
     },
@@ -109,8 +109,8 @@
       "coverage": {
         "percent": 31.75211949939443,
         "files": {
-          "chupa/__main__.py": 38.741721854304636,
-          "chupa/tickets.py": 61.29032258064516
+          "clutch/__main__.py": 38.741721854304636,
+          "clutch/tickets.py": 61.29032258064516
         }
       }
     },
@@ -198,7 +198,7 @@
           "tests/integration/test_daemon_composition.py::test_composed_admission_holds_accept_identity_bound_resume[red]": 1.3590583250042982,
           "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[tree-mismatch]": 1.337758813984692,
           "tests/integration/test_shakeout.py::test_review_reject_member_observes_snag_and_no_merge": 1.3344654349784832,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.3222984210005961,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.3222984210005961,
           "tests/integration/test_ladder.py::test_exhausted_ladder_routes_and_auto_keeps": 1.2895579869800713,
           "tests/integration/test_second_problems.py::test_repeated_line_number_dedups_and_absent_key_means_none": 1.2842340390197933,
           "tests/integration/test_reliability_battery.py::test_reliability_battery_requires_member_local_evidence[1]": 1.2748114400019404,
@@ -251,7 +251,7 @@
         "tests/regress_bug_evidence_before_dispatch.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.85s\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.85s\n",
       "base_red": false,
       "seconds": 1.009513
     },
@@ -262,7 +262,7 @@
         "tests/unit/test_parse_ticket_evidence.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_parse_ticket_evidence.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 2.58s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_parse_ticket_evidence.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 2.58s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.770743
     },
@@ -272,7 +272,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "....... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n........................................                                 [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/chupa/.chupa/state/worktrees/bug-evidence-before-dispatch/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3424 passed, 9 warnings in 65.11s (0:01:05)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "....... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n........................................                                 [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/clutch/.clutch/state/worktrees/bug-evidence-before-dispatch/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3424 passed, 9 warnings in 65.11s (0:01:05)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 66.567978
     }

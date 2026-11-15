@@ -20,21 +20,21 @@ none
 - section 13
 
 ## Goal / Why
-`CHUPA_PLAN.md` states every fact `phase6-continue-04` needs from its gapped units.
+`CLUTCH_PLAN.md` states every fact `phase6-continue-04` needs from its gapped units.
 
 ## Scope in / Scope out
 - In: the fenced entry units, with their Owner, Records, Observable, and Tests parts; insert a missing unit after its phase's last unit.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P6.go-grade-machinery
-- CHUPA_PLAN.md#19.P6.go-grade-run
+- CLUTCH_PLAN.md#19.P6.go-grade-machinery
+- CLUTCH_PLAN.md#19.P6.go-grade-run
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P6.go-grade-machinery` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+2. `CLUTCH_PLAN.md` unit `19.P6.go-grade-machinery` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > The registry includes go-grade-machinery in admissions[6:], but its entry unit is absent: resolve_plan_contract matches zero headings and entry_unit_gap reports it missing. The required continuation must arrange its successor without inventing this governing contract.
-3. `CHUPA_PLAN.md` unit `19.P6.go-grade-run` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+3. `CLUTCH_PLAN.md` unit `19.P6.go-grade-run` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > The registry includes go-grade-run in admissions[6:], but its entry unit is absent: resolve_plan_contract matches zero headings and entry_unit_gap reports it missing. Its successor-chain citation cannot resolve before authoring.
 
 ## Verification

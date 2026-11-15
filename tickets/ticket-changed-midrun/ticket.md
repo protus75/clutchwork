@@ -9,13 +9,13 @@ state: confirmed
 none
 
 ## Context
-- chupa/merge.py
-- chupa/mergequeue.py
-- docs/how-chupa-works.md
-- chupa/runner.py
-- chupa/stages.py
-- chupa/drain.py
-- chupa/status.py
+- clutch/merge.py
+- clutch/mergequeue.py
+- docs/how-clutch-works.md
+- clutch/runner.py
+- clutch/stages.py
+- clutch/drain.py
+- clutch/status.py
 - tests/test_drain.py
 
 ## Goal / Why
@@ -27,26 +27,26 @@ A run takes its ticket's content at dispatch, but nothing notices when `tickets/
 - In: an operator keep re-runs the stem from its changed ticket as a fresh attempt; a kill rejects it as any Reject-queue kill does.
 - In: changes the engine itself writes under `tickets/<stem>/` other than `ticket.md` (run record, `checks.json`, `review.md`, attempts) never trigger it; Rework's ticket updates between attempts are not mid-run.
 - In: tests add `test_ticket_edit_mid_run_holds` (an edit committed between Implement and Check stops before Check with `ticket_changed`, makes no further model call, draws no cap, and lands in the Reject queue), `test_uncommitted_ticket_edit_mid_run_holds` (an uncommitted edit in the main checkout does the same), and `test_engine_artifacts_do_not_trigger` (ticket-plane lifts of `run.md` and `checks.json` during the run do not).
-- In: update `docs/how-chupa-works.md` sections 3.2 and 6.7 (a `ticket.md` changed during a run stops it with `ticket_changed` and holds it), so the doc matches the code when this merges.
+- In: update `docs/how-clutch-works.md` sections 3.2 and 6.7 (a `ticket.md` changed during a run stops it with `ticket_changed` and holds it), so the doc matches the code when this merges.
 - In: if `uv run pytest -q` fails only on tests that also fail on the merge base, those failures are pre-existing: Check excuses them (base-red). Commit the work and list them in the run record; never stop with `premise_failed` for them.
 - In: "before merge admission" means at the start of `merge.AdmissionBoundary.__call__` (used by `run`, `drain`, and `serve`) and again in `MergeQueue._admit` before its rebase, since `serve` admits a queued ticket later. A held admission released by `confirm` is checked the same way before it merges.
 - Out: the closed outcome vocabulary, cap values, the verdict verbs, and the plan text.
 
 ## Scope fence
-- docs/how-chupa-works.md
-- chupa/runner.py
-- chupa/stages.py
-- chupa/drain.py
-- chupa/serve.py
-- chupa/gates.py
+- docs/how-clutch-works.md
+- clutch/runner.py
+- clutch/stages.py
+- clutch/drain.py
+- clutch/serve.py
+- clutch/gates.py
 - tests/
-- chupa/merge.py
-- chupa/mergequeue.py
+- clutch/merge.py
+- clutch/mergequeue.py
 
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_drain.py` exits 0, including `test_ticket_edit_mid_run_holds`, `test_uncommitted_ticket_edit_mid_run_holds`, and `test_engine_artifacts_do_not_trigger`.
 2. `uv run pytest -q` exits 0.
-3. `docs/how-chupa-works.md` sections 3.2 and 6.7 describe the `ticket_changed` stop and hold.
+3. `docs/how-clutch-works.md` sections 3.2 and 6.7 describe the `ticket_changed` stop and hold.
 
 ## Verification
 ```

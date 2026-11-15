@@ -5,8 +5,8 @@
   "stem": "base-red-subject-exists-at-base",
   "passed": true,
   "changed_files": [
-    "chupa/stages.py",
-    "docs/how-chupa-works.md",
+    "clutch/stages.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_stages.py",
     "tests/regress_base_red_branch_only_path.py",
     "tests/unit/test_stages_base_red.py"
@@ -80,12 +80,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.14s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.14s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "ession_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/base-red-subject-exists-at-base\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/base-red-subject-exists-at-base\nInstalled 19 packages in 7ms\nbringing up nodes...\nbringing up nodes...\n\nF                                                                        [100%]\n=================================== FAILURES ===================================\n_________ test_red_command_naming_a_branch_added_file_is_not_base_red __________\n[gw0] linux -- Python 3.14.6 /home/djp/source/chupa/.chupa/state/worktrees/.regression-base/base-red-subject-exists-at-base/.venv/bin/python\n\nrepo = PosixPath('/tmp/pytest-of-djp/pytest-853/popen-gw0/test_red_command_naming_a_bran0/repo')\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ebd37f2fa80>\n\n    def test_red_command_naming_a_branch_added_file_is_not_base_red(repo, monkeypatch):\n        _report_ticket(monkeypatch, \"grep -q ok chupa/added.py\")\n        result, _, config = run(repo, [agent({\"chupa/thing.py\": \"ok\\n\", \"chupa/added.py\": \"no\\n\"})])\n    \n        assert outcomes(result)[\"check\"] == \"gate_failed\"\n>       assert any(f.code == \"verification\" and \"grep -q ok chupa/added.py\" in f.message for f in result.last[1].findings)\nE       assert False\nE        +  where False = any(<generator object test_red_command_naming_a_branch_added_file_is_not_base_red.<locals>.<genexpr> at 0x7ebd37123e00>)\n\ntests/integration/test_stages.py:453: AssertionError\n=========================== short test summary info ============================\nFAILED tests/integration/test_stages.py::test_red_command_naming_a_branch_added_file_is_not_base_red\n1 failed in 1.26s\n"
+          "tail": "ession_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/base-red-subject-exists-at-base\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/base-red-subject-exists-at-base\nInstalled 19 packages in 7ms\nbringing up nodes...\nbringing up nodes...\n\nF                                                                        [100%]\n=================================== FAILURES ===================================\n_________ test_red_command_naming_a_branch_added_file_is_not_base_red __________\n[gw0] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/base-red-subject-exists-at-base/.venv/bin/python\n\nrepo = PosixPath('/tmp/pytest-of-djp/pytest-853/popen-gw0/test_red_command_naming_a_bran0/repo')\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ebd37f2fa80>\n\n    def test_red_command_naming_a_branch_added_file_is_not_base_red(repo, monkeypatch):\n        _report_ticket(monkeypatch, \"grep -q ok clutch/added.py\")\n        result, _, config = run(repo, [agent({\"clutch/thing.py\": \"ok\\n\", \"clutch/added.py\": \"no\\n\"})])\n    \n        assert outcomes(result)[\"check\"] == \"gate_failed\"\n>       assert any(f.code == \"verification\" and \"grep -q ok clutch/added.py\" in f.message for f in result.last[1].findings)\nE       assert False\nE        +  where False = any(<generator object test_red_command_naming_a_branch_added_file_is_not_base_red.<locals>.<genexpr> at 0x7ebd37123e00>)\n\ntests/integration/test_stages.py:453: AssertionError\n=========================== short test summary info ============================\nFAILED tests/integration/test_stages.py::test_red_command_naming_a_branch_added_file_is_not_base_red\n1 failed in 1.26s\n"
         }
       }
     },
@@ -104,7 +104,7 @@
       "coverage": {
         "percent": 21.53856730372611,
         "files": {
-          "chupa/stages.py": 14.680347277032359
+          "clutch/stages.py": 14.680347277032359
         }
       }
     },
@@ -191,7 +191,7 @@
           "tests/integration/test_merge.py::test_core_activation_first_adoption_merge[None-queue]": 1.5700954750354867,
           "tests/integration/test_ladder.py::test_rework_escalation_preserves_starting_capability_and_caps[escalate]": 1.559960284997942,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[ok]": 1.558352966007078,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.5123154059401713,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.5123154059401713,
           "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[partial]": 1.4643016789632384,
           "tests/integration/test_storm_hold.py::test_storm_resume_is_identity_bound_and_once": 1.455873138998868,
           "tests/integration/test_drain_reentry.py::test_a_reoffer_after_a_review_reject_renders_its_findings_in_criteria_position": 1.4360608290298842,
@@ -246,7 +246,7 @@
         "test_red_command_naming_a_branch_added_file_is_not_base_red"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_stages.py -k test_red_command_naming_a_branch_added_file_is_not_base_red\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_stages.py -k test_red_command_naming_a_branch_added_file_is_not_base_red\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.521263
     },
@@ -257,7 +257,7 @@
         "tests/unit/test_stages_base_red.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_stages_base_red.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 1.00s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_stages_base_red.py\nbringing up nodes...\nbringing up nodes...\n\n....                                                                     [100%]\n4 passed in 1.00s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.299749
     },
@@ -270,7 +270,7 @@
         "test_base_red_command_is_recorded_and_filed_without_failing_check"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_stages.py -k test_base_red_command_is_recorded_and_filed_without_failing_check\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.25s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_stages.py -k test_base_red_command_is_recorded_and_filed_without_failing_check\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.25s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.641517
     },
@@ -280,7 +280,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "on_soak_writer_validates_before_write\n  /home/djp/source/chupa/.chupa/state/worktrees/base-red-subject-exists-at-base/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/base-red-subject-exists-at-base/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3307 passed, 10 warnings in 53.36s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "on_soak_writer_validates_before_write\n  /home/djp/source/clutch/.clutch/state/worktrees/base-red-subject-exists-at-base/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/base-red-subject-exists-at-base/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3307 passed, 10 warnings in 53.36s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 56.288053
     }

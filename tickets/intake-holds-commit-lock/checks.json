@@ -5,8 +5,8 @@
   "stem": "intake-holds-commit-lock",
   "passed": true,
   "changed_files": [
-    "chupa/tickets.py",
-    "docs/how-chupa-works.md",
+    "clutch/tickets.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_tickets.py",
     "tests/unit/test_git_commit.py"
   ],
@@ -76,7 +76,7 @@
       "coverage": {
         "percent": 32.18228325255789,
         "files": {
-          "chupa/tickets.py": 61.34020618556701
+          "clutch/tickets.py": 61.34020618556701
         }
       }
     },
@@ -133,7 +133,7 @@
           "tests/integration/test_provider_cooldown_failover.py::test_one_provider_payload_and_timers_per_session": 1.9600029370049015,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-0]": 1.9493610990175512,
           "tests/integration/test_drain_reentry.py::test_a_stale_review_md_never_feeds_a_later_check_failure": 1.8447764789743815,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.839742126991041,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.839742126991041,
           "tests/integration/test_serve_admission.py::test_serve_conflict_handoff_runs_after_admission_unwinds[mechanical]": 1.8356860670028254,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[ok]": 1.8282098149647936,
           "tests/integration/test_retro_box.py::test_completed_retro_proposals_reach_prompt_spec_merge": 1.8250924449821468,
@@ -219,7 +219,7 @@
         "tests/unit/test_commit_lock.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_git_commit.py tests/integration/test_tickets.py tests/integration/test_git.py tests/unit/test_commit_lock.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 53%]\n...............................................................          [100%]\n135 passed in 1.46s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_git_commit.py tests/integration/test_tickets.py tests/integration/test_git.py tests/unit/test_commit_lock.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 53%]\n...............................................................          [100%]\n135 passed in 1.46s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.644561
     }

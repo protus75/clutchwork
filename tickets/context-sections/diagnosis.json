@@ -8,9 +8,9 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Acceptance criterion 3 names tests/integration/test_tickets.py::test_context_whole_file_unchanged. Move that test out of test_requisition.py and into test_tickets.py so the node ID exists and passes. Render through chupa.stages.implement_inputs and assert the bare path's whole file under `### path`.",
+    "Acceptance criterion 3 names tests/integration/test_tickets.py::test_context_whole_file_unchanged. Move that test out of test_requisition.py and into test_tickets.py so the node ID exists and passes. Render through clutch.stages.implement_inputs and assert the bare path's whole file under `### path`.",
     "Scope-in says the unit tests cover each finding case, including a file listed both whole and by section. Add a disk-free test in tests/unit/test_tickets_context.py showing that `m.py` plus `m.py::B.run` gives one conflict and two section entries of one file give none.",
-    "To make that conflict unit-testable without disk, move the whole-versus-section check out of parse_ticket into a pure function in chupa/tickets.py that takes the parsed Context entries. Call it from parse_ticket so there is still one code path.",
+    "To make that conflict unit-testable without disk, move the whole-versus-section check out of parse_ticket into a pure function in clutch/tickets.py that takes the parsed Context entries. Call it from parse_ticket so there is still one code path.",
     "Review found the selector parse, the shared excerpt function, the render and the docs correct. Keep them as they are and change only the two test placements, so the diff stays inside the scope fence.",
     "Before finishing, run the exact node IDs from the acceptance criteria and the ticket's ## Verification commands, then ./dev.py test. A node ID that reports 'not found' means the criterion is unmet."
   ],

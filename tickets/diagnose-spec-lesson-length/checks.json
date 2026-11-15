@@ -5,7 +5,7 @@
   "stem": "diagnose-spec-lesson-length",
   "passed": true,
   "changed_files": [
-    "chupa/specs/diagnose.md",
+    "clutch/specs/diagnose.md",
     "tests/unit/test_specs.py"
   ],
   "inserted_lines": 17,
@@ -130,7 +130,7 @@
           "tests/integration/test_ladder.py::test_same_retry_wall_at_top_routes_to_queue": 2.2398106579785235,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-1]": 2.1876146390277427,
           "tests/integration/test_checkpoint.py::test_checkpoint_failure_occurrence_identity": 2.158798538031988,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 2.1570513079932425,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 2.1570513079932425,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-0]": 2.1516585089848377,
           "tests/integration/test_serve_dispatch.py::test_kill_aborts_requested_retro": 2.115907409985084,
           "tests/integration/test_storm_hold.py::test_storm_hold_survives_restart_roll_and_expiry": 2.091697452997323,
@@ -212,7 +212,7 @@
         "tests/unit/test_specs.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n...........................                                              [100%]\n27 passed in 0.89s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n...........................                                              [100%]\n27 passed in 0.89s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.080172
     },
@@ -223,7 +223,7 @@
         "tests/integration/test_closed_sets.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_closed_sets.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 94%]\n....                                                                     [100%]\n76 passed in 1.15s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_closed_sets.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 94%]\n....                                                                     [100%]\n76 passed in 1.15s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.368853
     },
@@ -234,7 +234,7 @@
         "tests/integration/test_diagnose.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_diagnose.py\nbringing up nodes...\nbringing up nodes...\n\n.................                                                        [100%]\n17 passed in 3.30s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_diagnose.py\nbringing up nodes...\nbringing up nodes...\n\n.................                                                        [100%]\n17 passed in 3.30s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.501729
     }

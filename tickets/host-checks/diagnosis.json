@@ -8,7 +8,7 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In `check_hosts` (chupa/stages.py), when the base rerun is red, replace that entry's `reports` item with `_report(entry.code, [])`. `_prior_findings` returns findings from every `fail` report, and the ticket charges base-red to neither Check nor retry.",
+    "In `check_hosts` (clutch/stages.py), when the base rerun is red, replace that entry's `reports` item with `_report(entry.code, [])`. `_prior_findings` returns findings from every `fail` report, and the ticket charges base-red to neither Check nor retry.",
     "Keep exactly one report per triggered entry, the `check/host-<nn>.txt` spool and the existing base_red box message. Change only the base-red report, mirroring how `VerificationGate` excludes `r.base_red` results from its verdict.",
     "Update `test_base_red_entry_is_preexisting` so it expects a `pass` report with no findings. Also make Check fail on another gate while a host entry is red at base, then assert `_prior_findings` or `prior_attempts` omits the base-red finding.",
     "Keep real failures as they are: a hard or soft entry that is green at base keeps its `fail` report and findings. The ticket requires a soft failure to record `fail` while Check proceeds, so scope the report replacement to `baseline.rc != 0` only."

@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The moved guides had no links to how-chupa-works.md to replace. Used direct package-relative paths as the simplest approach.
+The moved guides had no links to how-clutch-works.md to replace. Used direct package-relative paths as the simplest approach.
 
 ## Dead ends
 

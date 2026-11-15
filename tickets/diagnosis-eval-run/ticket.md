@@ -26,7 +26,7 @@ Why: 19.P2 ships the diagnosis eval as two chained deliverables, and this is the
 - In: from the worktree root, run `uv run python -m eval.diagnose run` in the FOREGROUND until it returns. The harness writes the report after every case and stops itself at its deadline. If the command ends with `complete` false (some cases `skipped_deadline`), or the process is killed, run the same command again: it resumes only the unfinished cases and carries the spend toward the same cap. Repeat until `complete` is true.
 - In: commit exactly `eval/diagnose_report.json` as the harness wrote it.
 - Out: editing the report by hand, or deleting and re-running it to obtain a different agreement rate. The recorded rate is the result, whatever it is.
-- Out: any change to `eval/diagnose.py`, `eval/diagnose_fixtures/`, `specs/**`, `chupa/**`, tests, or `config.yaml`. If the harness cannot run (a refusal, a defect, a provider setup error), the outcome is `premise_failed` naming the failing command and its output, never a code fix in this diff.
+- Out: any change to `eval/diagnose.py`, `eval/diagnose_fixtures/`, `specs/**`, `clutch/**`, tests, or `config.yaml`. If the harness cannot run (a refusal, a defect, a provider setup error), the outcome is `premise_failed` naming the failing command and its output, never a code fix in this diff.
 
 ## Scope fence
 - eval/diagnose_report.json

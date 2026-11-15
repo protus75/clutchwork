@@ -13,8 +13,8 @@ state: confirmed
 
 ## Context
 - eval/harness.py
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 
 ## Plan contract
 - 19.I

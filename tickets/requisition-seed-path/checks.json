@@ -5,8 +5,8 @@
   "stem": "requisition-seed-path",
   "passed": true,
   "changed_files": [
-    "chupa/merge.py",
-    "chupa/stages.py",
+    "clutch/merge.py",
+    "clutch/stages.py",
     "tests/test_merge.py",
     "tests/test_seed_path.py",
     "tests/test_stages.py"

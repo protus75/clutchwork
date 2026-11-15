@@ -9,17 +9,17 @@ kind: bug
 - none
 
 ## Context
-- chupa/reconcile.py
-- chupa/runner.py::run_ticket
-- chupa/runner.py::harvest_orphan
-- chupa/runner.py::verdict
-- chupa/runner.py::verdict_locked
-- chupa/status.py::reject_queue
-- chupa/mergequeue.py::regate_receipts
-- chupa/status.py::Status
-- chupa/status.py::project
-- chupa/status.py::render
-- docs/how-chupa-works.md#6.7 Other holds
+- clutch/reconcile.py
+- clutch/runner.py::run_ticket
+- clutch/runner.py::harvest_orphan
+- clutch/runner.py::verdict
+- clutch/runner.py::verdict_locked
+- clutch/status.py::reject_queue
+- clutch/mergequeue.py::regate_receipts
+- clutch/status.py::Status
+- clutch/status.py::project
+- clutch/status.py::render
+- docs/how-clutch-works.md#6.7 Other holds
 - test-gate.toml
 - tests/integration/test_reconcile.py::orphan_worktree
 - tests/integration/test_cli.py::ENV
@@ -35,11 +35,11 @@ kind: bug
 - tests/regress_drain_park_findings.py
 
 ## On-demand
-- chupa/__main__.py
-- chupa/observe.py
+- clutch/__main__.py
+- clutch/observe.py
 
 ## Goal / Why
-After `chupa kill` (or any engine death) stops a ticket mid-run, the journal keeps that stem
+After `clutch kill` (or any engine death) stops a ticket mid-run, the journal keeps that stem
 at `running` with no terminal. Every verb reads state through `status.last_states`, which
 takes the journal's last transition as fact and never asks whether an engine is alive. Only
 `run`, `drain` and `serve` reap such orphans (`reconcile`), and all three then start ticket
@@ -49,7 +49,7 @@ work. So with no engine running:
   `verdict` holds the writer lock and so knows no engine is running;
 - `order` refuses ("is running; editing a ticket during its run stops it");
 - `status` lists the stem under "in flight";
-- the extension offers no Reject for it (`observe` turns `chupaReject` on only for drafts and
+- the extension offers no Reject for it (`observe` turns `clutchReject` on only for drafts and
   held items);
 - the only way to reject it is to start `run` on some other stem, and starting `drain` or
   `serve` reruns the very ticket the operator wants dropped.
@@ -65,38 +65,38 @@ refuses with "is neither a draft nor in the Reject queue": a reaped stem is elig
 needs no confirm.
 
 ## Scope in / Scope out
-- In: `chupa/runner.py`: a new `async def reap(checkout: Checkout) -> list[str]` that runs
+- In: `clutch/runner.py`: a new `async def reap(checkout: Checkout) -> list[str]` that runs
   `reconcile(...)` with `harvest_orphan` exactly as `run_ticket` does today; `run_ticket`
   calls it in place of its inline call; `verdict` calls it right after `lock.acquire()` and
   before `verdict_locked`.
-- In: `chupa/__main__.py`: the verbs that take the writer lock to read or settle ticket state
+- In: `clutch/__main__.py`: the verbs that take the writer lock to read or settle ticket state
   call `await runner.reap(...)` right after `lock.acquire()`: `_review` (which takes the lock
   only when the ticket has uncommitted changes; a clean committed ticket takes no lock and
   does not reap), the `dismiss` and `triage` closures in `main`, and `_retro`. `_control` (pause, resume, kill, stop) is
   unchanged. `_order` takes no lock (it works beside a running serve); it proceeds for a
   `running` stem only when that stem is in `reconcile.orphans(events)` (which leaves out a run held for a merge regate) and
   `observe.lock_holder(checkout.config.state_dir)` is None, and refuses "is running" otherwise.
-- In: `chupa/status.py`: `Status` gains `interrupted: tuple[str, ...] = ()`; `project` gains a
+- In: `clutch/status.py`: `Status` gains `interrupted: tuple[str, ...] = ()`; `project` gains a
   keyword `alive: bool = True`; with `alive` false, stems last at `running` that are in
   `reconcile.orphans(events)` go to `interrupted` instead of `in_flight` (a run held for a
   merge regate stays in `in_flight`). `render` prints them in a block titled `interrupted (the engine stopped mid-run; reject it, or start the engine to rerun it)`,
   placed right after `in flight:` and left out entirely when `interrupted` is empty (as the
   `Verdict refusals` block is), and does not list them under `in flight:`. The `status` verb in `__main__.py` passes
   `alive=observe.lock_holder(state_dir) is not None`. `reject_queue` is unchanged.
-- In: `chupa/observe.py`: with no live engine, a row whose stem is last at `running` and in
-  `reconcile.orphans(events)` has `chupaReject` "on" (the extension reads this flag; no TypeScript change). `chupaConfirm` is
+- In: `clutch/observe.py`: with no live engine, a row whose stem is last at `running` and in
+  `reconcile.orphans(events)` has `clutchReject` "on" (the extension reads this flag; no TypeScript change). `clutchConfirm` is
   unchanged.
 - In: `tests/integration/test_cli.py`: `test_status_projects_the_journal` expects its stem `b`
   (journaled `running`, no lock held) in the interrupted block instead of `in flight:`; and
-  `test_order_refuses_running_settled_and_rejected` monkeypatches `chupa.observe.lock_holder`
+  `test_order_refuses_running_settled_and_rejected` monkeypatches `clutch.observe.lock_holder`
   to a live holder for its `running` case, so that case still refuses. No other assertion in
   the file changes.
 - In: `tests/integration/test_status.py::test_status_preserves_sections_and_is_write_free`:
   for `populated=True`, `legacy` becomes `"merged:\n- done\n\nin flight:\n(none)\n\ninterrupted (the engine stopped mid-run; reject it, or start the engine to rerun it):\n- active\n\nblocked:\n- held: gate_failed\n\n"` followed by the rest of the
   current text unchanged; for `populated=False`, `legacy` is unchanged (no interrupted block).
-- In: `docs/how-chupa-works.md` section 10.3, item 1: "merged, in flight, blocked" becomes
+- In: `docs/how-clutch-works.md` section 10.3, item 1: "merged, in flight, blocked" becomes
   "merged, in flight, interrupted (last `running` with no live engine), blocked".
-- In: `docs/how-chupa-works.md`, the *Reconcile* bullet in section 6.7: replace "at the start of
+- In: `docs/how-clutch-works.md`, the *Reconcile* bullet in section 6.7: replace "at the start of
   `run`, `drain`, and `serve`" with "whenever a verb other than pause, resume, kill or stop
   takes the writer lock", and replace "A `running` stem cannot be confirmed or rejected until it
   is reaped." with "With no engine running, `status` shows such a stem as interrupted, `reject`
@@ -107,24 +107,24 @@ needs no confirm.
   `main(["reject", "--yes", stem])` with stdout redirected, and print `defect` with exit 1 when
   it refuses, `pass` with exit 0 when the stem's last state is `rejected`, `error` with exit 2
   when its own setup raises.
-- In: the `test-gate.toml` unit coverage floors for `chupa/__main__.py`, `chupa/runner.py` and
-  `chupa/status.py` still pass. `runner.reap`, `status.project` and `status.render` get unit
+- In: the `test-gate.toml` unit coverage floors for `clutch/__main__.py`, `clutch/runner.py` and
+  `clutch/status.py` still pass. `runner.reap`, `status.project` and `status.render` get unit
   tests (criteria 7-8); `runner.verdict`'s reap, `__main__._order`'s liveness branch and the
   status verb's `alive` argument get unit tests with fakes as in
-  `tests/unit/test_verdict_extension.py` (criterion 9), and `chupa/__main__.py` stays
+  `tests/unit/test_verdict_extension.py` (criterion 9), and `clutch/__main__.py` stays
   at or above its 13% floor; `tests/unit/test_stale_running.py` covers those lines with fakes
   (criterion 9).
 - In: new `tests/integration/test_stale_running.py` holding the criterion 1-6 integration tests and the integration part of criterion 8, and new `tests/unit/test_stale_running.py` holding the criterion 7-9 unit tests.
 - Out: `drain` and `serve` (they already reconcile on start); `_control`, so `kill` and `stop`
-  still leave the run for reconcile; `reject_queue`; `vscode-chupa/`
+  still leave the run for reconcile; `reject_queue`; `vscode-clutchwork/`
   TypeScript; the logic of `reconcile.orphans` and `reconcile.reconcile`; `test-gate.toml`.
 
 ## Scope fence
-- chupa/runner.py
-- chupa/__main__.py
-- chupa/status.py
-- chupa/observe.py
-- docs/how-chupa-works.md
+- clutch/runner.py
+- clutch/__main__.py
+- clutch/status.py
+- clutch/observe.py
+- docs/how-clutch-works.md
 - tests/integration/test_stale_running.py
 - tests/integration/test_cli.py
 - tests/integration/test_status.py
@@ -165,7 +165,7 @@ needs no confirm.
    `tests/integration/test_watch.py::test_snapshot_menu_availability` is (monkeypatching
    `journal`, `load_tickets`, `lock_holder`, `running_stems`, `uncommitted_tickets`,
    `committed_ticket_shas` and `commits` in `observe`), asserts the row menu for a stem last at
-   `running` has `chupaReject` "on" with no live engine and "off" with one, and `chupaConfirm`
+   `running` has `clutchReject` "on" with no live engine and "off" with one, and `clutchConfirm`
    "off" both times.
 7. `tests/unit/test_stale_running.py::test_reap_reconciles_with_harvest` (a fake journal and
    Git) asserts `runner.reap` returns the reaped stems and calls harvest only for a stem whose
@@ -176,7 +176,7 @@ needs no confirm.
    a HELD merge-regate receipt for its current attempt (the journal shape
    `mergequeue.regate_receipts` reads) stays in `in_flight`, not `interrupted`; and
    `tests/integration/test_stale_running.py::test_menu_offers_reject_for_dead_run` also
-   asserts that such a held stem gets `chupaReject` "off" with no live engine; and
+   asserts that such a held stem gets `clutchReject` "off" with no live engine; and
    `test_order_refuses_only_a_live_running_stem` (criterion 9) also asserts `_order` still
    refuses such a held stem with no live engine; and
    `tests/unit/test_stale_running.py::test_render_interrupted_block` asserts `status.render` of
@@ -184,7 +184,7 @@ needs no confirm.
    `in flight:` block and `x` not under `in flight:`, and with `interrupted=()` prints no such
    block.
 9. `tests/unit/test_stale_running.py` with fakes (a `SimpleNamespace` checkout, a monkeypatched
-   `Lockfile`, `chupa.__main__.Git` monkeypatched so `describe` returns a fixed id and starts no
+   `Lockfile`, `clutch.__main__.Git` monkeypatched so `describe` returns a fixed id and starts no
    process, recorders for `runner.reap` and `runner.verdict_locked`, as in
    `tests/unit/test_verdict_extension.py`): `test_verdict_reaps_before_verdict_locked` asserts
    `runner.verdict` calls reap after acquiring and before `verdict_locked`;
@@ -214,7 +214,7 @@ needs no confirm.
 - a second orphan-detection rule beside `reconcile.orphans`
 - a change to `_control`, `reject_queue`, `reconcile.orphans`, `reconcile.reconcile`, `kill`,
   `drain` or `serve` behavior
-- any edit under `vscode-chupa/` or to `test-gate.toml`
+- any edit under `vscode-clutchwork/` or to `test-gate.toml`
 
 ## Time budget
 - expected: 75m

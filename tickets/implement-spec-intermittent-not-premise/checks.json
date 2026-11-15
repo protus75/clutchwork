@@ -5,7 +5,7 @@
   "stem": "implement-spec-intermittent-not-premise",
   "passed": true,
   "changed_files": [
-    "chupa/specs/implement.md",
+    "clutch/specs/implement.md",
     "tests/integration/test_stages.py",
     "tests/unit/test_specs.py"
   ],
@@ -154,7 +154,7 @@
           "tests/integration/test_serve_kill.py::test_serve_storm_hold_and_resume": 1.7954837450088235,
           "tests/integration/test_daemon_composition.py::test_composed_admission_holds_accept_identity_bound_resume[red]": 1.7847084599925438,
           "tests/integration/test_kill_cli_activation.py::test_kill_activation_keeps_worker_boundaries_dormant[observe]": 1.765616166012478,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.7642682360019535,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.7642682360019535,
           "tests/integration/test_triage.py::test_escape_unattributed_reports": 1.7254822329996387,
           "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck]": 1.7154216449998785,
           "tests/integration/test_shakeout.py::test_unfixable_lint_branch_only_member_observes_check_failure_and_no_merge": 1.6985563159978483,
@@ -214,7 +214,7 @@
         "tests/integration/test_stages.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_specs.py tests/integration/test_stages.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 83%]\n..............                                                           [100%]\n86 passed in 1.95s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_specs.py tests/integration/test_stages.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 83%]\n..............                                                           [100%]\n86 passed in 1.95s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.164768
     }

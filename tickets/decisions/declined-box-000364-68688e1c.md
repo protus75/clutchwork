@@ -6,4 +6,4 @@ reopen_after_days: 30
 ---
 Author could not produce a ticket.
 
-Evidence: - ticket_schema: `## On-demand` path 'chupa/specs/rework.md' is not covered by `## Scope fence` (do instead: fence it, or move a read-only reference to `## Context`)
+Evidence: - ticket_schema: `## On-demand` path 'clutch/specs/rework.md' is not covered by `## Scope fence` (do instead: fence it, or move a read-only reference to `## Context`)

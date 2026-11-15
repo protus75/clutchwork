@@ -10,8 +10,8 @@
   "lessons": [
     "Implement passed: commit a8034dc, 2587 tests green. Review then died with the same AttributeError the ticket fixes. The engine running Review still has the unfixed CallMeter._consume, so the ticket's own review stream (a tool denial in read-only Review, per Goal) crashes it.",
     "A retry at any capability will hit the same crash. The defect blocks the drain's forward progress, so a human applies the CLAUDE.md blocking-defect fast path: determine the plan status first, then hand-apply the minimal CallMeter._consume shape guard to main, then re-run this ticket.",
-    "Do not change the implementation on the next attempt. The a8034dc diff touches only the fenced files (chupa/watchdog.py, tests/test_watchdog.py) and meets acceptance criteria 1-2. Only the engine copy of the watchdog that runs Review needs the fix.",
-    "Before re-running, a human should confirm that the review-stage traceback points at chupa/watchdog.py CallMeter._consume. The harvest gives only the exception text, not the frame, so that is the one fact to check."
+    "Do not change the implementation on the next attempt. The a8034dc diff touches only the fenced files (clutch/watchdog.py, tests/test_watchdog.py) and meets acceptance criteria 1-2. Only the engine copy of the watchdog that runs Review needs the fix.",
+    "Before re-running, a human should confirm that the review-stage traceback points at clutch/watchdog.py CallMeter._consume. The harvest gives only the exception text, not the frame, so that is the one fact to check."
   ],
   "mechanical": null,
   "spec_version": "1.1",

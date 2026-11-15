@@ -8,8 +8,8 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Keep the code as it is: review traced the `ticket_changed` stop and hold as correct on every path, and 3924 tests passed. The only finding is the stale section 6.1 in docs/how-chupa-works.md, so limit this attempt to that doc fix and rerun verification.",
-    "In docs/how-chupa-works.md section 6.1, the sentence \"After any other non-ok terminal, `runner.drive` does, in order\" and steps 3-5 still imply diagnosis. Add a `ticket_changed` exit beside step 2, as the finding's paved road says, and point it to section 6.7.",
+    "Keep the code as it is: review traced the `ticket_changed` stop and hold as correct on every path, and 3924 tests passed. The only finding is the stale section 6.1 in docs/how-clutch-works.md, so limit this attempt to that doc fix and rerun verification.",
+    "In docs/how-clutch-works.md section 6.1, the sentence \"After any other non-ok terminal, `runner.drive` does, in order\" and steps 3-5 still imply diagnosis. Add a `ticket_changed` exit beside step 2, as the finding's paved road says, and point it to section 6.7.",
     "State the exit as the review finding does: after Harvest, `ticket_changed` journals a `gate_failed` terminal routed to the Reject queue, removes the worktree, and skips the cap, Diagnosis and Rework steps. Make sure this wording agrees with the new section 6.7 text.",
     "Before committing, reread sections 3.2, 6.1 and 6.7 together with the `runner.drive` early return so all three describe one order. Acceptance criterion 3 names 3.2 and 6.7, but review also rejects a stale 6.1, which the diff makes false."
   ],

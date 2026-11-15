@@ -5,8 +5,8 @@
   "stem": "reoffer-infra-no-retry-draw",
   "passed": true,
   "changed_files": [
-    "chupa/drain.py",
-    "docs/how-chupa-works.md",
+    "clutch/drain.py",
+    "docs/how-clutch-works.md",
     "eval/shakeout/driver.py",
     "tests/regress_reoffer_infra_retry.py",
     "tests/unit/test_drain_reoffer.py"
@@ -80,12 +80,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.87s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.87s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/reoffer-infra-no-retry-draw\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/reoffer-infra-no-retry-draw\nInstalled 19 packages in 7ms\nbringing up nodes...\nbringing up nodes...\n\nF                                                                        [100%]\n=================================== FAILURES ===================================\n___________________ test_infra_error_reoffer_draws_no_retry ____________________\n[gw0] linux -- Python 3.14.6 /home/djp/source/chupa/.chupa/state/worktrees/.regression-base/reoffer-infra-no-retry-draw/.venv/bin/python\n\n    def test_infra_error_reoffer_draws_no_retry():\n>       assert reoffer({\"to\": \"infra_error\"}) == []  # An unconditional retry draw spends two caps.\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AssertionError: assert [(<EventType....ha'}, 'work')] == []\nE         \nE         Left contains one more item: (<EventType.CAP_CONSUMED: 'cap_consumed'>, {'cap': 'retry', 'ticket_sha': 'new-sha'}, 'work')\nE         Use -v to get more diff\n\ntests/unit/test_drain_reoffer.py:25: AssertionError\n=========================== short test summary info ============================\nFAILED tests/unit/test_drain_reoffer.py::test_infra_error_reoffer_draws_no_retry\n1 failed in 0.94s\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reoffer-infra-no-retry-draw\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reoffer-infra-no-retry-draw\nInstalled 19 packages in 7ms\nbringing up nodes...\nbringing up nodes...\n\nF                                                                        [100%]\n=================================== FAILURES ===================================\n___________________ test_infra_error_reoffer_draws_no_retry ____________________\n[gw0] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reoffer-infra-no-retry-draw/.venv/bin/python\n\n    def test_infra_error_reoffer_draws_no_retry():\n>       assert reoffer({\"to\": \"infra_error\"}) == []  # An unconditional retry draw spends two caps.\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AssertionError: assert [(<EventType....ha'}, 'work')] == []\nE         \nE         Left contains one more item: (<EventType.CAP_CONSUMED: 'cap_consumed'>, {'cap': 'retry', 'ticket_sha': 'new-sha'}, 'work')\nE         Use -v to get more diff\n\ntests/unit/test_drain_reoffer.py:25: AssertionError\n=========================== short test summary info ============================\nFAILED tests/unit/test_drain_reoffer.py::test_infra_error_reoffer_draws_no_retry\n1 failed in 0.94s\n"
         }
       }
     },
@@ -123,7 +123,7 @@
         "tests/unit/test_drain_reoffer.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_drain_reoffer.py\nbringing up nodes...\nbringing up nodes...\n\n........                                                                 [100%]\n8 passed in 0.98s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_drain_reoffer.py\nbringing up nodes...\nbringing up nodes...\n\n........                                                                 [100%]\n8 passed in 0.98s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.16456
     },
@@ -136,7 +136,7 @@
         "reoffer"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_drain.py -k reoffer\nbringing up nodes...\nbringing up nodes...\n\n........                                                                 [100%]\n8 passed in 1.21s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_drain.py -k reoffer\nbringing up nodes...\nbringing up nodes...\n\n........                                                                 [100%]\n8 passed in 1.21s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.589134
     },
@@ -147,7 +147,7 @@
         "tests/integration/test_shakeout.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_shakeout.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 3.53s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_shakeout.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 3.53s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.854779
     }

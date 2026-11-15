@@ -9,13 +9,13 @@ kind: feature
 none
 
 ## Context
-- chupa/__main__.py
-- chupa/specs.py
-- chupa/config.py
-- chupa/runner.py
-- vscode-chupa/extension.js
+- clutch/__main__.py
+- clutch/specs.py
+- clutch/config.py
+- clutch/runner.py
+- vscode-clutchwork/extension.js
 - tests/test_config.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 - docs/host-contract.md
 - tests/test_cli.py
 - docs/host-running.md
@@ -23,16 +23,16 @@ none
 - tests/test_host_contract.py
 
 ## Goal / Why
-The `vscode-chupa` extension's "Ask Claude: diagnose" and "Ask Claude: review" menu items open a Claude Code chat with a prompt. Today that prompt is hard-coded as JavaScript template strings in `askClaude` in `vscode-chupa/extension.js`. This has three problems:
+The `vscode-clutchwork` extension's "Ask Claude: diagnose" and "Ask Claude: review" menu items open a Claude Code chat with a prompt. Today that prompt is hard-coded as JavaScript template strings in `askClaude` in `vscode-clutchwork/extension.js`. This has three problems:
 - prompts are engine content, and that copy is unversioned and outside `specs/`;
-- the text hard-codes `.chupa/state/` and "CLAUDE.md section B", which hold only in this repo;
+- the text hard-codes `.clutch/state/` and "CLAUDE.md section B", which hold only in this repo;
 - a host repo cannot add guidance of its own.
 
 Docs section 8.4 sets the rule: prompts come from the engine's `specs/`, and host material enters only as data.
 
 After this change:
 - the three prompts live in `specs/ask/`;
-- `chupa prompt <diagnose|running|review> <stem>` renders one with the host's real values and prints it;
+- `clutch prompt <diagnose|running|review> <stem>` renders one with the host's real values and prints it;
 - an optional `ask_notes` config value is appended inside a `host_notes` data block;
 - the extension prints what that verb returns and holds no prompt text.
 
@@ -41,35 +41,35 @@ After this change:
   - Each is a plain Markdown template, not a driver spec: no frontmatter, never passed to `load_spec`.
   - Each uses `string.Template` placeholders `${stem}`, `${ticket}` (`tickets/<stem>/ticket.md`), and `${state_dir}` (the config's `state_dir`, relative to the repo root when it lies under the repo root, otherwise absolute).
   - Their text is the extension's current three prompts with four changes:
-    - `.chupa/state` becomes `${state_dir}`;
+    - `.clutch/state` becomes `${state_dir}`;
     - the phrase "following CLAUDE.md section B" is dropped, because Claude Code loads the workspace's conduct file itself;
     - each ends with the current plain-English and "Recommendation" instruction.
     - the diagnose prompt drops the `(<section>)` parenthetical, because `prompt` receives no section.
-- In: `chupa/ask.py`:
+- In: `clutch/ask.py`:
   - `KINDS = ("diagnose", "running", "review")`;
   - `render(kind, stem, config, repo) -> str` substitutes the placeholders with `string.Template.substitute`, so a missing value raises;
   - when `config.ask_notes` is set, it appends a block built with `specs.data_open("host_notes")`, `specs.quote_payload(notes)`, and `specs.data_close("host_notes")`.
-- In: `chupa/config.py`: `Config.ask_notes: str | None = None`.
-- In: the `prompt` verb in `chupa/__main__.py`, beside `core`, after `load_config`:
+- In: `clutch/config.py`: `Config.ask_notes: str | None = None`.
+- In: the `prompt` verb in `clutch/__main__.py`, beside `core`, after `load_config`:
   - `prompt` takes `kind` (argparse `choices=KINDS`) and `stem`;
   - it refuses a bad stem (`stem_findings`) or a missing `tickets/<stem>/ticket.md` with a `runner.Refusal` and paved road;
   - it prints the rendered prompt and exits 0;
   - it takes no lock and writes no journal event or file.
-- In: `vscode-chupa/extension.js`.
-  - `askClaude` runs `uv run python -m chupa prompt <kind> <stem>` with `execFile`: an argv list, the repo root as cwd.
-  - The kind is `running` when the row's `chupaSection` is `running` and the item is diagnose; otherwise it is the item's kind.
+- In: `vscode-clutchwork/extension.js`.
+  - `askClaude` runs `uv run python -m clutch prompt <kind> <stem>` with `execFile`: an argv list, the repo root as cwd.
+  - The kind is `running` when the row's `clutchSection` is `running` and the item is diagnose; otherwise it is the item's kind.
   - It passes stdout to the existing Claude Code `/open?prompt=` URI.
   - On a non-zero exit it shows stderr in an error message.
   - It holds no prompt text.
 - In: tests in a new `tests/test_ask.py`:
-  - `test_each_kind_renders_stem_ticket_and_state_dir`: a config whose `state_dir` is not `.chupa/state` shows up in the output;
+  - `test_each_kind_renders_stem_ticket_and_state_dir`: a config whose `state_dir` is not `.clutch/state` shows up in the output;
   - `test_host_notes_appended_as_data_block_only_when_set`;
   - `test_prompt_verb_refuses_missing_ticket`;
   - `test_state_dir_outside_repo_renders_absolute`: an absolute `state_dir` outside the repo appears as that absolute path;
   - `test_prompt_verb_writes_no_state`: after a successful `prompt` run, `state_dir` does not exist, so no lockfile, journal event, or file was written.
 - In: `tests/test_config.py`: `ask_notes` defaults to `None` and parses from YAML.
 - In: docs.
-  - `docs/how-chupa-works.md` section 2.1: a `prompt` row.
+  - `docs/how-clutch-works.md` section 2.1: a `prompt` row.
   - Section 8.4: one sentence saying that `specs/ask/` holds operator prompt templates rendered by `prompt`, not driver specs.
   - Section 11: `ask_notes`.
   - `docs/host-contract.md`: `ask_notes` as the host's way to add guidance to these prompts, and `ask_notes: unset` under `Config.defaults` in the `config-fields` block.
@@ -78,32 +78,32 @@ After this change:
 
 ## Scope fence
 - specs/ask/
-- chupa/ask.py
-- chupa/config.py
-- chupa/__main__.py
-- vscode-chupa/extension.js
+- clutch/ask.py
+- clutch/config.py
+- clutch/__main__.py
+- vscode-clutchwork/extension.js
 - tests/test_ask.py
 - tests/test_config.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 - docs/host-contract.md
 - docs/host-running.md
 
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_ask.py tests/test_config.py` exits 0, including the tests above.
-2. `node --check vscode-chupa/extension.js` exits 0, and `grep -c "Diagnose chupa ticket" vscode-chupa/extension.js` prints 0.
-3. `docs/how-chupa-works.md` sections 2.1, 8.4 and 11, `docs/host-contract.md`, and the `docs/host-running.md` verb table describe `prompt` and `ask_notes`.
+2. `node --check vscode-clutchwork/extension.js` exits 0, and `grep -c "Diagnose clutch ticket" vscode-clutchwork/extension.js` prints 0.
+3. `docs/how-clutch-works.md` sections 2.1, 8.4 and 11, `docs/host-contract.md`, and the `docs/host-running.md` verb table describe `prompt` and `ask_notes`.
 4. `uv run pytest -q` exits 0.
 
 ## Verification
 ```
 uv run pytest -q tests/test_ask.py tests/test_config.py
-node --check vscode-chupa/extension.js
+node --check vscode-clutchwork/extension.js
 uv run pytest -q
 ```
 
 ## Definition of rejected
 Reject the branch if any of the following holds:
-- prompt text remains in `vscode-chupa/extension.js`;
+- prompt text remains in `vscode-clutchwork/extension.js`;
 - a template is loaded from the host repo;
 - `ask_notes` is inserted outside a `host_notes` data block;
 - `prompt` takes the lock or writes state;

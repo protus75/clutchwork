@@ -11,12 +11,12 @@ state: confirmed
 - hardening-round-closure
 
 ## Context
-- chupa/runner.py
-- chupa/drain.py
-- chupa/specs.py
-- chupa/tickets.py
-- chupa/stages.py
-- chupa/effects.py
+- clutch/runner.py
+- clutch/drain.py
+- clutch/specs.py
+- clutch/tickets.py
+- clutch/stages.py
+- clutch/effects.py
 - tests/test_seed_path.py
 - tests/test_drain.py
 - tests/test_stages.py
@@ -32,24 +32,24 @@ state: confirmed
 ## Goal / Why
 A hardening round's identity is its journaled `hardening_round` record. File names never identify a round. At most one round is open engine-wide. A held terminal carries its `round` and `plan_units`, and the hold reads the round from the terminal. The `spec_gap_hold` signal, the `tickets/harden-*` glob, and `tickets.py` `HARDENING_STEM` are gone.
 
-Why: section 11.4 RECORDS makes the `hardening_round` signal the hardener's identity and puts `round` and `plan_units` on the held terminal. Today `chupa/runner.py` discovers rounds by globbing `tickets/harden-*/ticket.md` and matching `HARDENING_STEM`. Deleting a directory resets a round count, and any stem named `harden-*` passes the hardening cite role (`chupa/tickets.py` `_seed_cites`). Each gapped row files its own ticket, fenced to one unit, so concurrent rounds overlap. A gap spanning two units is unfixable because `ScopeFenceGate._unit_confined` admits a plan diff confined to ANY one anchor, never to all of them together. The filing Effect key `ticket-plane/<seeding>/<attempt>/harden/<row>` is attempt-scoped, so a reaped filer's re-run cannot replay its commit.
+Why: section 11.4 RECORDS makes the `hardening_round` signal the hardener's identity and puts `round` and `plan_units` on the held terminal. Today `clutch/runner.py` discovers rounds by globbing `tickets/harden-*/ticket.md` and matching `HARDENING_STEM`. Deleting a directory resets a round count, and any stem named `harden-*` passes the hardening cite role (`clutch/tickets.py` `_seed_cites`). Each gapped row files its own ticket, fenced to one unit, so concurrent rounds overlap. A gap spanning two units is unfixable because `ScopeFenceGate._unit_confined` admits a plan diff confined to ANY one anchor, never to all of them together. The filing Effect key `ticket-plane/<seeding>/<attempt>/harden/<row>` is attempt-scoped, so a reaped filer's re-run cannot replay its commit.
 
 ## Scope in / Scope out
-- In: `chupa/specs.py` gains `unit_sha(plan, uid) -> str`: the sha256 hex of the unit's single resolved slice (the `_units` slice the `Plan contract` resolver injects), or the literal `absent` when the unit has no heading. It is the one unit-sha helper.
-- In: `chupa/hardening.py` gains `ROUND_SIGNAL = "hardening_round"` and a fold over those records: each round's number, hardener stem (the record's envelope `ticket`), `units`, `filed_by`, `gaps`, and journal position. `round_state(events, round_number)` folds only the hardener terminals journaled after that round's record. `open_round(events)` returns the open round or None, and `hardener_round(events, stem)` returns the round a stem hardens or None.
-- In: `chupa/runner.py`. The existing detectors' row stems map to unit ids `19.P<phase>.<row>`; these are G. A stem that `hardener_round` names is never hardened and routes as an ordinary terminal. Otherwise, after the existing `hardening` cap check and draw, the runner JOINS the open round when one exists. When none is open, it FILES round N = 1 + the count of `hardening_round` records, covering G. Filing commits `tickets/plan-gap-<N>/ticket.md` through `ctx.driver.effects.run` with key `ticket-plane/hardening/<N>`. It then journals the hardener's `ticket_intake` signal and the `hardening_round` signal `{round, units: {uid: unit_sha}, filed_by, gaps}` (envelope `ticket: plan-gap-<N>`), both built from the Effect's completion result. The held terminal is `{to, stage, reason: "spec_gap", dispatch: "spec_gap_hold", round, plan_units}`. The cap-spent terminal adds `plan_units`. No `spec_gap_hold` signal is written.
-- In: `chupa/runner.py` hardening-ticket composition follows section 11.4 THE HARDENING TICKET. `## Plan contract` cites `19.L`, each gapped unit's phase unit, each gapped unit that exists, and each gapped row's `cite`. `## Scope fence` has one `CHUPA_PLAN.md#<unit>` per unit. The filer's `priority` carries over, and the starting capability is `high/high` when any gapped row is `deep` and `medium/medium` otherwise. Each criterion renders one gap fact as data.
-- In: `chupa/drain.py`. A stem is HELD when its latest terminal has `dispatch: spec_gap_hold`, carries `round`, and `round_state` is `open`. A `spec_gap_hold` terminal without `round` reads as released (the versioning policy tolerates older bodies). Its quiescence line names the round number and its hardener stem. The release re-run still draws no `retry` unit.
-- In: `chupa/tickets.py` deletes `HARDENING_STEM` and its `_seed_cites` branch, so a hardening ticket meets the seeding role's floor (`19.L` and a phase unit). `chupa/stages.py` `ScopeFenceGate._unit_confined` admits a plan diff only when removing ALL anchored units leaves main and head identical.
+- In: `clutch/specs.py` gains `unit_sha(plan, uid) -> str`: the sha256 hex of the unit's single resolved slice (the `_units` slice the `Plan contract` resolver injects), or the literal `absent` when the unit has no heading. It is the one unit-sha helper.
+- In: `clutch/hardening.py` gains `ROUND_SIGNAL = "hardening_round"` and a fold over those records: each round's number, hardener stem (the record's envelope `ticket`), `units`, `filed_by`, `gaps`, and journal position. `round_state(events, round_number)` folds only the hardener terminals journaled after that round's record. `open_round(events)` returns the open round or None, and `hardener_round(events, stem)` returns the round a stem hardens or None.
+- In: `clutch/runner.py`. The existing detectors' row stems map to unit ids `19.P<phase>.<row>`; these are G. A stem that `hardener_round` names is never hardened and routes as an ordinary terminal. Otherwise, after the existing `hardening` cap check and draw, the runner JOINS the open round when one exists. When none is open, it FILES round N = 1 + the count of `hardening_round` records, covering G. Filing commits `tickets/plan-gap-<N>/ticket.md` through `ctx.driver.effects.run` with key `ticket-plane/hardening/<N>`. It then journals the hardener's `ticket_intake` signal and the `hardening_round` signal `{round, units: {uid: unit_sha}, filed_by, gaps}` (envelope `ticket: plan-gap-<N>`), both built from the Effect's completion result. The held terminal is `{to, stage, reason: "spec_gap", dispatch: "spec_gap_hold", round, plan_units}`. The cap-spent terminal adds `plan_units`. No `spec_gap_hold` signal is written.
+- In: `clutch/runner.py` hardening-ticket composition follows section 11.4 THE HARDENING TICKET. `## Plan contract` cites `19.L`, each gapped unit's phase unit, each gapped unit that exists, and each gapped row's `cite`. `## Scope fence` has one `CLUTCH_PLAN.md#<unit>` per unit. The filer's `priority` carries over, and the starting capability is `high/high` when any gapped row is `deep` and `medium/medium` otherwise. Each criterion renders one gap fact as data.
+- In: `clutch/drain.py`. A stem is HELD when its latest terminal has `dispatch: spec_gap_hold`, carries `round`, and `round_state` is `open`. A `spec_gap_hold` terminal without `round` reads as released (the versioning policy tolerates older bodies). Its quiescence line names the round number and its hardener stem. The release re-run still draws no `retry` unit.
+- In: `clutch/tickets.py` deletes `HARDENING_STEM` and its `_seed_cites` branch, so a hardening ticket meets the seeding role's floor (`19.L` and a phase unit). `clutch/stages.py` `ScopeFenceGate._unit_confined` admits a plan diff only when removing ALL anchored units leaves main and head identical.
 - Out: how spec gaps are detected (the row-keyed detectors stay as they are); plan-bound release; the auto-keep; the premise park; vocabulary closure.
 
 ## Scope fence
-- chupa/hardening.py
-- chupa/runner.py
-- chupa/drain.py
-- chupa/specs.py
-- chupa/tickets.py
-- chupa/stages.py
+- clutch/hardening.py
+- clutch/runner.py
+- clutch/drain.py
+- clutch/specs.py
+- clutch/tickets.py
+- clutch/stages.py
 - tests/test_hardening.py
 - tests/test_seed_path.py
 - tests/test_drain.py

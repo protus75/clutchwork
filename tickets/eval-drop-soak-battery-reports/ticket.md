@@ -9,12 +9,12 @@ kind: chore
 - none
 
 ## Context
-- chupa/artifacts.py::DaemonSoakEntry
-- chupa/artifacts.py::DaemonSoakReport
-- chupa/artifacts.py::ReliabilityBatteryEntry
-- chupa/artifacts.py::ReliabilityBatteryReport
-- chupa/artifacts.py::_check_ordered_members
-- chupa/stages.py::KNOWN_ARTIFACTS
+- clutch/artifacts.py::DaemonSoakEntry
+- clutch/artifacts.py::DaemonSoakReport
+- clutch/artifacts.py::ReliabilityBatteryEntry
+- clutch/artifacts.py::ReliabilityBatteryReport
+- clutch/artifacts.py::_check_ordered_members
+- clutch/stages.py::KNOWN_ARTIFACTS
 - eval/daemon_soak.py
 - eval/reliability_battery.py
 - tests/integration/test_daemon_soak.py
@@ -28,10 +28,10 @@ After this change the engine no longer registers or defines either report, and t
 Simplest approach: move the observation types and constants each harness still builds into that harness module unchanged, and delete the writers and command entry points. Rejected alternative: rewriting the harnesses to return plain dicts, which would churn the end-to-end tests.
 
 ## Scope in / Scope out
-- In: `chupa/artifacts.py`: remove `DAEMON_SOAK_REPORT`, `DAEMON_SOAK_SPEC_VERSION`, `DAEMON_SOAK_MEMBERS`, `_DAEMON_SOAK_EXPECTED`, `DaemonSoakEntry`, `DaemonSoakReport`, `RELIABILITY_BATTERY_REPORT`, `RELIABILITY_BATTERY_SPEC_VERSION`, `RELIABILITY_BATTERY_MEMBERS`, `_RELIABILITY_BATTERY_EXPECTED`, `ReliabilityBatteryEntry` and `ReliabilityBatteryReport`. Keep `_check_producing_run` and `_check_ordered_members` there, imported by the harnesses.
-- In: `chupa/stages.py`: drop those imports and the two `KNOWN_ARTIFACTS` entries.
+- In: `clutch/artifacts.py`: remove `DAEMON_SOAK_REPORT`, `DAEMON_SOAK_SPEC_VERSION`, `DAEMON_SOAK_MEMBERS`, `_DAEMON_SOAK_EXPECTED`, `DaemonSoakEntry`, `DaemonSoakReport`, `RELIABILITY_BATTERY_REPORT`, `RELIABILITY_BATTERY_SPEC_VERSION`, `RELIABILITY_BATTERY_MEMBERS`, `_RELIABILITY_BATTERY_EXPECTED`, `ReliabilityBatteryEntry` and `ReliabilityBatteryReport`. Keep `_check_producing_run` and `_check_ordered_members` there, imported by the harnesses.
+- In: `clutch/stages.py`: drop those imports and the two `KNOWN_ARTIFACTS` entries.
 - In: `eval/daemon_soak.py`:
-  - define the moved soak constants and types with the same fields and validators. They may import `Artifact`, `_Strict`, `NonBlank`, `_check_producing_run` and `_check_ordered_members` from `chupa.artifacts`.
+  - define the moved soak constants and types with the same fields and validators. They may import `Artifact`, `_Strict`, `NonBlank`, `_check_producing_run` and `_check_ordered_members` from `clutch.artifacts`.
   - delete `write_report`, `_main`, `main` and the `__main__` block.
   - change the `SoakRefused` road from `rerun uv run python -m eval.daemon_soak --out <path>` to `rerun the soak tests`, keeping the `<member>: <detail>` prefix.
   - keep `produce`, `_run_member`, `_observe` and the members.
@@ -45,9 +45,9 @@ Simplest approach: move the observation types and constants each harness still b
   - `tests/integration/test_reliability_battery.py`: import the moved names from `eval.reliability_battery`. Keep the schema, green and member tests, minus the `RELIABILITY_BATTERY_REPORT` constant assertion. Delete `test_reliability_battery_writer_validates_before_write`, `test_reliability_battery_uses_registered_checks_lift` and `test_reliability_battery_command_writes_only_on_green`. Remove the `rglob(RELIABILITY_BATTERY_REPORT)` assertion in `test_classified_quota_exhaustion`.
   - `tests/integration/test_daemon_soak_runner.py`: import `DAEMON_SOAK_MEMBERS` from `eval.daemon_soak`.
   - `tests/integration/test_closed_sets.py`: remove the `DAEMON_SOAK_*` and `RELIABILITY_BATTERY_*` assertions from `test_artifacts_closed_sets_and_constants`. Remove the `daemon-soak-report.json` and `reliability-battery-report.json` rows from the `KNOWN_ARTIFACTS` assertion.
-  - `tests/unit/test_artifacts.py`: `test_ordered_members_check` calls `chupa.artifacts._check_ordered_members` directly with `types.SimpleNamespace(member=...)` entries. Members in the expected order pass. The reversed order raises `ValueError` with the same `entries must contain exactly ..., in order` message. This keeps the test free of any report type.
-- In: `docs/how-chupa-works.md` section 13: remove "soak" and "reliability battery" from the eval report artifacts list.
-- Unaffected: the other coverage-dependent test files of `chupa/artifacts.py` and `chupa/stages.py` reference none of the removed names. A grep for `DaemonSoak`, `ReliabilityBattery`, `DAEMON_SOAK_` and `RELIABILITY_BATTERY_` outside the fenced files finds no code use, so their behavior does not change.
+  - `tests/unit/test_artifacts.py`: `test_ordered_members_check` calls `clutch.artifacts._check_ordered_members` directly with `types.SimpleNamespace(member=...)` entries. Members in the expected order pass. The reversed order raises `ValueError` with the same `entries must contain exactly ..., in order` message. This keeps the test free of any report type.
+- In: `docs/how-clutch-works.md` section 13: remove "soak" and "reliability battery" from the eval report artifacts list.
+- Unaffected: the other coverage-dependent test files of `clutch/artifacts.py` and `clutch/stages.py` reference none of the removed names. A grep for `DaemonSoak`, `ReliabilityBattery`, `DAEMON_SOAK_` and `RELIABILITY_BATTERY_` outside the fenced files finds no code use, so their behavior does not change.
 - Out:
   - the committed report files under `tickets/` (history);
   - moving these harnesses under `tests/` (ticket `eval-move-soak-battery-host-loop`);
@@ -56,8 +56,8 @@ Simplest approach: move the observation types and constants each harness still b
   - the cause of the soak flake (ticket `soak-serve-stops-early-under-load`).
 
 ## Scope fence
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 - eval/daemon_soak.py
 - eval/reliability_battery.py
 - tests/integration/test_daemon_soak.py
@@ -65,10 +65,10 @@ Simplest approach: move the observation types and constants each harness still b
 - tests/integration/test_daemon_soak_runner.py
 - tests/integration/test_closed_sets.py
 - tests/unit/test_artifacts.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
-1. `uv run python -c "import chupa.artifacts as a, chupa.stages as s; assert not any(hasattr(a, n) for n in ('DaemonSoakReport','DaemonSoakEntry','ReliabilityBatteryReport','ReliabilityBatteryEntry','DAEMON_SOAK_REPORT','RELIABILITY_BATTERY_REPORT')); assert not {'daemon-soak-report.json','reliability-battery-report.json'} & set(s.KNOWN_ARTIFACTS)"` exits 0, ruling out a type left in the engine or still registered.
+1. `uv run python -c "import clutch.artifacts as a, clutch.stages as s; assert not any(hasattr(a, n) for n in ('DaemonSoakReport','DaemonSoakEntry','ReliabilityBatteryReport','ReliabilityBatteryEntry','DAEMON_SOAK_REPORT','RELIABILITY_BATTERY_REPORT')); assert not {'daemon-soak-report.json','reliability-battery-report.json'} & set(s.KNOWN_ARTIFACTS)"` exits 0, ruling out a type left in the engine or still registered.
 2. `uv run python -c "import eval.daemon_soak as d, eval.reliability_battery as r; assert not any(hasattr(m, n) for m in (d, r) for n in ('write_report','main','_main')); d.DaemonSoakReport; r.ReliabilityBatteryReport; d.produce; r.produce"` exits 0, ruling out a leftover producer or a deleted harness.
 3. `./dev.py test tests/integration/test_daemon_soak.py tests/integration/test_reliability_battery.py tests/integration/test_daemon_soak_runner.py` exits 0 and still runs `test_daemon_soak_conflict_rungs` and `test_classified_quota_exhaustion`, so the end-to-end harnesses keep working.
 4. `./dev.py test tests/unit/test_artifacts.py tests/integration/test_closed_sets.py` exits 0.
@@ -76,7 +76,7 @@ Simplest approach: move the observation types and constants each harness still b
 
 ## Verification
 ```
-uv run python -c "import chupa.artifacts as a, chupa.stages as s; assert not any(hasattr(a, n) for n in ('DaemonSoakReport','DaemonSoakEntry','ReliabilityBatteryReport','ReliabilityBatteryEntry','DAEMON_SOAK_REPORT','RELIABILITY_BATTERY_REPORT')); assert not {'daemon-soak-report.json','reliability-battery-report.json'} & set(s.KNOWN_ARTIFACTS)"
+uv run python -c "import clutch.artifacts as a, clutch.stages as s; assert not any(hasattr(a, n) for n in ('DaemonSoakReport','DaemonSoakEntry','ReliabilityBatteryReport','ReliabilityBatteryEntry','DAEMON_SOAK_REPORT','RELIABILITY_BATTERY_REPORT')); assert not {'daemon-soak-report.json','reliability-battery-report.json'} & set(s.KNOWN_ARTIFACTS)"
 uv run python -c "import eval.daemon_soak as d, eval.reliability_battery as r; assert not any(hasattr(m, n) for m in (d, r) for n in ('write_report','main','_main')); d.DaemonSoakReport; r.ReliabilityBatteryReport; d.produce; r.produce"
 ./dev.py test tests/integration/test_daemon_soak.py tests/integration/test_reliability_battery.py tests/integration/test_daemon_soak_runner.py
 ./dev.py test tests/unit/test_artifacts.py tests/integration/test_closed_sets.py
@@ -84,7 +84,7 @@ uv run python -c "import eval.daemon_soak as d, eval.reliability_battery as r; a
 ```
 
 ## Definition of rejected
-Either report type is still defined in or registered by `chupa/`; an end-to-end member test is deleted rather than kept; a timeout, retry or skip is added; a committed file under `tickets/` changes; or any file outside the fence changes.
+Either report type is still defined in or registered by `clutch/`; an end-to-end member test is deleted rather than kept; a timeout, retry or skip is added; a committed file under `tickets/` changes; or any file outside the fence changes.
 
 ## Time budget
 - expected: 40m

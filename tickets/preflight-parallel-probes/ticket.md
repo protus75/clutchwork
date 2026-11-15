@@ -9,21 +9,21 @@ kind: feature
 - none
 
 ## Context
-- chupa/providers.py::ProviderLLM.preflight
-- chupa/providers.py::CliAdapter.invoke
-- chupa/providers.py::CliAdapter.abort
+- clutch/providers.py::ProviderLLM.preflight
+- clutch/providers.py::CliAdapter.invoke
+- clutch/providers.py::CliAdapter.abort
 
 ## On-demand
 - tests/integration/test_providers.py
 - tests/integration/test_watchdog.py
 
 ## Goal / Why
-Every drain, serve and run start runs provider preflight before any work, and the drain restarts itself after every merge that changes engine code, so preflight runs again for each such ticket. Preflight runs strictly one step at a time: a `--version` and a `pnpm view` per provider CLI, then one probe call per routed (provider, model) pair. On 2026-11-11 at 10:13 that was two claude probes (8s) and four codex probes (20s), 28s in all, while every probe is independent of the others. The capture files `.chupa/state/spools/providers/preflight/{codex-0001..0004,claude-0001..0002}` show the serial timeline.
+Every drain, serve and run start runs provider preflight before any work, and the drain restarts itself after every merge that changes engine code, so preflight runs again for each such ticket. Preflight runs strictly one step at a time: a `--version` and a `pnpm view` per provider CLI, then one probe call per routed (provider, model) pair. On 2026-11-11 at 10:13 that was two claude probes (8s) and four codex probes (20s), 28s in all, while every probe is independent of the others. The capture files `.clutch/state/spools/providers/preflight/{codex-0001..0004,claude-0001..0002}` show the serial timeline.
 
 When this ticket is done, preflight starts all probes at once. The version lookups (about 2s) stay serial. A start then waits about as long as the slowest single probe plus the version lookups (about 9s that day), not the sum of every probe. Results, problems and notices stay exactly as today.
 
 ## Scope in / Scope out
-- In: `chupa/providers.py::ProviderLLM.preflight`:
+- In: `clutch/providers.py::ProviderLLM.preflight`:
   - The per-provider `--version` and `pnpm view` calls stay serial and unchanged.
   - All probe calls for the routed (provider, model) pairs run concurrently, each still probed once.
   - Calls start in today's order: each adapter's `--version` before its `pnpm view`, adapters in adapter order, every version lookup finished before the first probe starts, and probes started in routing order.
@@ -38,7 +38,7 @@ When this ticket is done, preflight starts all probes at once. The version looku
   - Which pairs are probed.
 
 ## Scope fence
-- chupa/providers.py
+- clutch/providers.py
 - tests/integration/test_providers.py
 - tests/integration/test_watchdog.py
 - tests/integration/test_daemon_composition.py

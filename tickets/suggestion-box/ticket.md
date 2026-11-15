@@ -11,9 +11,9 @@ agent_effort: medium
 - spine-diagnosis
 
 ## Context
-- chupa/git.py
-- chupa/seams.py
-- chupa/config.py
+- clutch/git.py
+- clutch/seams.py
+- clutch/config.py
 - tests/test_git.py
 
 ## Plan contract
@@ -22,14 +22,14 @@ agent_effort: medium
 - section 12
 
 ## Goal / Why
-`chupa/box.py` is the Suggestion Box (section 12): a durable queue of one atomic JSON file per message under `<state_dir>/box/`, signature dedup at enqueue, and the decision-registry record format under `tickets/decisions/`. Its first messages are the lines of `bootstrap/suggestions.md`, the section 0 stand-in, ingested as ONE `suggestion` message per non-empty line. That file is then deleted in this diff.
+`clutch/box.py` is the Suggestion Box (section 12): a durable queue of one atomic JSON file per message under `<state_dir>/box/`, signature dedup at enqueue, and the decision-registry record format under `tickets/decisions/`. Its first messages are the lines of `bootstrap/suggestions.md`, the section 0 stand-in, ingested as ONE `suggestion` message per non-empty line. That file is then deleted in this diff.
 
 Why: every later spine seed files into the box. The run record's second problems, the `reject` verb's dead-dependency reports, and base-red attribution all need it, and the triage consumer drains it. The mailbox must exist before its first letter (19.P2). Until now out-of-scope problems were appended to a markdown file nothing reads. Ingesting it once and deleting it leaves one durable queue, never two.
 
-Owners (section 9 ownership law, 19.P2 NAMES and BOX): `chupa/box.py` owns the message schema, the queue directory, the signature recipe, dedup, the resolution status field, the registry record schema, and the one-time ingest. `chupa/git.py` owns the new `git_common_dir` op. Writing and committing registry records is the triage consumer's (a later seed), never this ticket's.
+Owners (section 9 ownership law, 19.P2 NAMES and BOX): `clutch/box.py` owns the message schema, the queue directory, the signature recipe, dedup, the resolution status field, the registry record schema, and the one-time ingest. `clutch/git.py` owns the new `git_common_dir` op. Writing and committing registry records is the triage consumer's (a later seed), never this ticket's.
 
 ## Scope in / Scope out
-- In: `chupa/box.py` constants:
+- In: `clutch/box.py` constants:
   - `BOX_DIR = "box"` (the queue is `<state_dir>/box/`).
   - `MessageClass = Literal["suggestion", "failure_report", "override_report", "retro_finding", "bug_report"]` and `MESSAGE_CLASSES = get_args(MessageClass)`, the one copy of the class vocabulary.
   - `BOOTSTRAP_ORIGIN = "bootstrap-ingest"`, `BOOTSTRAP_FILE = "bootstrap/suggestions.md"`, `DECISIONS_DIR = "tickets/decisions"`.
@@ -55,20 +55,20 @@ Owners (section 9 ownership law, 19.P2 NAMES and BOX): `chupa/box.py` owns the m
   - `render_record(record, body) -> str` writes YAML frontmatter (via `yaml.safe_dump`) between `---` fences, then the body.
   - `parse_record(text) -> tuple[DecisionRecord, str]` refuses missing frontmatter, unknown keys, and a missing `reopen_after_days` with `BoxError`.
   - `read_registry(repo)` returns every `tickets/decisions/*.md` record, sorted by id.
-- In: `chupa/git.py` gains `git_common_dir(dir) -> Path`, which runs `rev-parse --git-common-dir`. A relative result is resolved against `dir`.
+- In: `clutch/git.py` gains `git_common_dir(dir) -> Path`, which runs `rev-parse --git-common-dir`. A relative result is resolved against `dir`.
 - In: the one-time bootstrap ingest.
   - `ingest_bootstrap(box, text) -> list[str]` enqueues ONE `suggestion` message per non-empty line, origin `bootstrap-ingest`, no stage or outcome. The summary is the line stripped of surrounding whitespace, otherwise verbatim. It returns the ids in line order. A re-ingest creates nothing.
   - `async def ingest_main_checkout(cwd, git, fs) -> int`: the MAIN checkout root is the parent of `git_common_dir(cwd)`, so from a linked worktree it reads and writes the main checkout, never the worktree's own copy. It loads that root's `config.yaml` with `load_config(None, cwd=root)`, reads `<root>/bootstrap/suggestions.md` (absent: ingests nothing), enqueues into `Box(config.state_dir / BOX_DIR, fs)`, and returns the count of newly created messages.
-  - Running `python -m chupa.box` calls it with the real seams (`SubprocessExec`, `LocalFileSystem`, `Git` with `os.environ`) from the process cwd and prints `ingested <n> new suggestion messages`. This is the ticket's first `## Verification` command. It runs at Check while main still carries the file, and again harmlessly at any re-run.
+  - Running `python -m clutch.box` calls it with the real seams (`SubprocessExec`, `LocalFileSystem`, `Git` with `os.environ`) from the process cwd and prints `ingested <n> new suggestion messages`. This is the ticket's first `## Verification` command. It runs at Check while main still carries the file, and again harmlessly at any re-run.
 - In: `bootstrap/suggestions.md` is DELETED in this diff.
 - Out: filing run-record second problems (the next seed, `second-problems-filing`), the triage consumer and every registry write or commit, and the `reject` verb's reports.
 - Out: the storm-control circuit breaker and its occurrence ledger (Phase 3, beside the daemon's continuous producers), and tombstone auto-reopen, re-report counting, and retro itemization (Phase 5, with the retro stage that reads them).
 - Out: the host report inbox (Phase 6), ingesting outbox box-message files at lift, and any `status` projection of the box.
 
 ## Scope fence
-- chupa/box.py
+- clutch/box.py
 - tests/test_box.py
-- chupa/git.py
+- clutch/git.py
 - tests/test_git.py
 - bootstrap/suggestions.md
 
@@ -84,7 +84,7 @@ Owners (section 9 ownership law, 19.P2 NAMES and BOX): `chupa/box.py` owns the m
 
 ## Verification
 ```
-uv run python -m chupa.box
+uv run python -m clutch.box
 uv run python -c "from pathlib import Path; assert not Path('bootstrap/suggestions.md').exists()"
 uv run pytest -q tests/test_box.py tests/test_git.py
 uv run pytest -q
@@ -93,7 +93,7 @@ uv run pytest -q
 ## Definition of rejected
 Reject the branch if any of these hold:
 - A message file is ever deleted, or a duplicate gets a second file.
-- A second signature recipe or dedup path exists outside `chupa/box.py`.
+- A second signature recipe or dedup path exists outside `clutch/box.py`.
 - The ingest writes to a worktree-local state dir, or reads the worktree's copy of the file.
 - `bootstrap/suggestions.md` is edited rather than deleted, or survives on the branch.
 - A storm breaker, reopen counter, triage call, or registry commit is added.

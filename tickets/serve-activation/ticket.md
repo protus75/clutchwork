@@ -11,8 +11,8 @@ state: confirmed
 - phase3-continue-20
 
 ## Context
-- chupa/daemon.py
-- chupa/__main__.py
+- clutch/daemon.py
+- clutch/__main__.py
 - tests/test_daemon_tasks.py
 - tests/test_kill_worker_stop.py
 - tests/test_kill_failure_suppression.py
@@ -20,22 +20,22 @@ state: confirmed
 - tests/test_storm.py
 - tests/test_restart_timers.py
 - tests/test_checkpoint.py
-- chupa/runner.py
-- chupa/merge.py
-- chupa/triage.py
-- chupa/checkpoint.py
-- chupa/control.py
-- chupa/scheduler.py
-- chupa/watcher.py
-- chupa/restart.py
-- chupa/timers.py
-- chupa/scheduler.py
+- clutch/runner.py
+- clutch/merge.py
+- clutch/triage.py
+- clutch/checkpoint.py
+- clutch/control.py
+- clutch/scheduler.py
+- clutch/watcher.py
+- clutch/restart.py
+- clutch/timers.py
+- clutch/scheduler.py
 
 ## On-demand
 - tests/test_daemon_composition.py
-- chupa/driver.py
-- chupa/stages.py
-- chupa/storm.py
+- clutch/driver.py
+- clutch/stages.py
+- clutch/storm.py
 - tests/test_stages.py
 - tests/test_daemon_admission.py
 - tests/test_daemon_config.py
@@ -50,26 +50,26 @@ state: confirmed
 Activate the continuous foreground production serve lifetime governed by 19.P3.serve-activation.
 
 ## Scope in / Scope out
-19.P3.serve-activation is the complete governing contract: implement its entire Owner, Records, Observable and Tests obligations, including every named invariant, record custody and sole writer. The renderer injects those bullets verbatim; never copy unit text into this seed. chupa/serve.py is owned by its cited Owner. Start high/high because the live registry row is deep under 19.L. Preserve the registry fence floor; no row splitting or historical seeding snapshot migration.
+19.P3.serve-activation is the complete governing contract: implement its entire Owner, Records, Observable and Tests obligations, including every named invariant, record custody and sole writer. The renderer injects those bullets verbatim; never copy unit text into this seed. clutch/serve.py is owned by its cited Owner. Start high/high because the live registry row is deep under 19.L. Preserve the registry fence floor; no row splitting or historical seeding snapshot migration.
 
 The two earned additions under 19.L rules 2-3 are tests/test_restart_timers.py for test_restart_construction_is_idle's CLI serve-absence assertion (migrate only that assertion, preserving startup/timer invariants), and tests/test_checkpoint.py for test_checkpoint_boundary_is_dormant's production activation assertion (preserve checkpoint invariants and run/drain dormancy). Both are existing paths in Context. tests/test_storm.py remains the registry floor's existing Context path; retain test_storm_ledger_is_reachable as positive evidence.
 
-Use the real CLI/async serve entrypoint and merged production-composition harness. Read the On-demand harness before writing; its measured embedding breaches 300,000-character headroom. Existing fenced paths otherwise remain Context. Read merged chupa/stages.py, chupa/mergequeue.py, chupa/git.py, chupa/journal.py, chupa/effects.py, chupa/box.py, chupa/storm.py, chupa/config.py, chupa/drain.py and chupa/seams.py as further read-only seam references before touching their callers. Keep existing composition callers valid without a second production path or changed public signatures. Re-grep flipped symbols, old assertion values, public surfaces, production absence assertions and direct callers across chupa/, eval/ and tests/ before any criteria-forced closure claim. No additional production owner is earned by the authoring-head greps.
+Use the real CLI/async serve entrypoint and merged production-composition harness. Read the On-demand harness before writing; its measured embedding breaches 300,000-character headroom. Existing fenced paths otherwise remain Context. Read merged clutch/stages.py, clutch/mergequeue.py, clutch/git.py, clutch/journal.py, clutch/effects.py, clutch/box.py, clutch/storm.py, clutch/config.py, clutch/drain.py and clutch/seams.py as further read-only seam references before touching their callers. Keep existing composition callers valid without a second production path or changed public signatures. Re-grep flipped symbols, old assertion values, public surfaces, production absence assertions and direct callers across clutch/, eval/ and tests/ before any criteria-forced closure claim. No additional production owner is earned by the authoring-head greps.
 
 Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Journal remains the sole durable event writer, Box the sole queue-record writer and ControlInbox the sole control-decision writer, as governed by the cited Records contract. No caller-read records, replacement writers, notify transport or daemon-admission routing are earned here; serve-merge-admission owns later routing activation. All activation evidence uses injected seams, scripted callbacks, disposable synthetic repositories and asyncio barriers; no test-only graph, live host work, real-model calls or wall-clock waits.
 
 Unfenced Verification suites stay unchanged preservation suites, neither fenced nor embedded. Prompt-specs and delimiter-bearing sources are never Context. Out: plan/registry edits, historical tests, new records or config, later payload implementation and manual HGATE release.
 
 ## Scope fence
-- chupa/serve.py
-- chupa/daemon.py
-- chupa/__main__.py
-- chupa/triage.py
-- chupa/driver.py
-- chupa/runner.py
-- chupa/stages.py
-- chupa/scheduler.py
-- chupa/storm.py
+- clutch/serve.py
+- clutch/daemon.py
+- clutch/__main__.py
+- clutch/triage.py
+- clutch/driver.py
+- clutch/runner.py
+- clutch/stages.py
+- clutch/scheduler.py
+- clutch/storm.py
 - tests/test_stages.py
 - tests/test_daemon_admission.py
 - tests/test_daemon_config.py

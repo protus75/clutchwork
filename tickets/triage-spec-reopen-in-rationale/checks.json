@@ -5,7 +5,7 @@
   "stem": "triage-spec-reopen-in-rationale",
   "passed": true,
   "changed_files": [
-    "chupa/specs/triage.md",
+    "clutch/specs/triage.md",
     "tests/integration/test_triage.py"
   ],
   "inserted_lines": 8,
@@ -206,7 +206,7 @@
         "tests/integration/test_triage.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_triage.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 1.62s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_triage.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 1.62s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.904167
     },
@@ -217,7 +217,7 @@
         "tests/unit/test_specs.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 0.91s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 0.91s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.206931
     }

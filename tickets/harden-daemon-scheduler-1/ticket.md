@@ -19,18 +19,18 @@ none
 - section 9
 
 ## Goal / Why
-`CHUPA_PLAN.md` entry unit `19.P3.daemon-scheduler` states every fact the `daemon-scheduler` seed needs, so `phase3-core` authors that seed from the plan instead of inventing it.
+`CLUTCH_PLAN.md` entry unit `19.P3.daemon-scheduler` states every fact the `daemon-scheduler` seed needs, so `phase3-core` authors that seed from the plan instead of inventing it.
 
 ## Scope in / Scope out
 - In: the entry unit `### 19.P3.daemon-scheduler` (inserted after its phase's last unit when missing), with its Owner, Records, Observable, and Tests parts.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P3.daemon-scheduler
+- CLUTCH_PLAN.md#19.P3.daemon-scheduler
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P3.daemon-scheduler` states, consistent with merged code: entry unit 19.P3.daemon-scheduler is missing
+2. `CLUTCH_PLAN.md` unit `19.P3.daemon-scheduler` states, consistent with merged code: entry unit 19.P3.daemon-scheduler is missing
 
 ## Verification
 ```

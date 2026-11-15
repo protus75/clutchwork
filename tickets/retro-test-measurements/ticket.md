@@ -10,14 +10,14 @@ kind: feature
 - check-test-timing
 
 ## Context
-- chupa/config.py
-- chupa/retro.py::production_evidence
-- chupa/retro.py::render_report
-- chupa/gates.py::GateReport
-- chupa/stages.py::Invoice
+- clutch/config.py
+- clutch/retro.py::production_evidence
+- clutch/retro.py::render_report
+- clutch/gates.py::GateReport
+- clutch/stages.py::Invoice
 - tests/integration/test_retro.py::test_retro_trigger_boundaries
 - tests/integration/test_config.py::test_retro_yaml_values
-- docs/how-chupa-works.md#9.5 Retro
+- docs/how-clutch-works.md#9.5 Retro
 
 ## On-demand
 - docs/host-contract.md
@@ -26,8 +26,8 @@ kind: feature
 After `check-test-timing`, every `checks.json` holds per-entry test timing and coverage, but the retro reads only gate codes and verdicts from it. The retro model cannot see slow suites, slow tests or low-coverage files, so it cannot propose test repairs (2026-11-08). After this change the retro measurements carry a test-timing summary and a coverage summary aggregated over the window's Check invoices. Each summary can be switched off in `config.yaml`.
 
 ## Scope in / Scope out
-- In: `chupa/config.py` `Retro` gains `test_timing: bool = True` and `coverage: bool = True`.
-- In: `chupa/retro.py` `production_evidence`, over every completed Check invoice it already loads in the window, in journal order:
+- In: `clutch/config.py` `Retro` gains `test_timing: bool = True` and `coverage: bool = True`.
+- In: `clutch/retro.py` `production_evidence`, over every completed Check invoice it already loads in the window, in journal order:
   - When `checkout.config.retro.test_timing` is true, `evidence["tests"]` maps each gate code that has `timing` to:
     - `runs`: a list of `{ticket, seconds, passed, failed, skipped}`, one per invoice;
     - `slow`: `{nodeid: {max_seconds, runs}}`, where `runs` counts the invoices that listed the test.
@@ -40,7 +40,7 @@ After `check-test-timing`, every `checks.json` holds per-entry test timing and c
   - `test_test_timing_aggregates_invoices`: two invoices list `tests/a.py::t` at 5.0s and then 2.0s, so `slow` reports `max_seconds: 5.0` and `runs: 2`, not the last value (2.0) or a sum (7.0). `runs` has one row per invoice.
   - `test_coverage_aggregates_invoices`: a file at 60.0 and then 80.0 reports `latest: 80.0`, `min: 60.0` and `runs: 2`. The two invoices carry different repository percents, and `percent` equals the later invoice's.
   - `test_measurement_switches`: with `test_timing: false` and `coverage: false`, neither `tests` nor `coverage` is in the evidence.
-- In: a new unit test file `tests/unit/test_retro_measurements.py` that runs the new aggregation branches in `chupa/retro.py` and the new `Retro` fields in `chupa/config.py` with a fake checkout and in-memory `Invoice` objects (no disk or process access):
+- In: a new unit test file `tests/unit/test_retro_measurements.py` that runs the new aggregation branches in `clutch/retro.py` and the new `Retro` fields in `clutch/config.py` with a fake checkout and in-memory `Invoice` objects (no disk or process access):
   - `test_measurements_aggregate_in_memory`: two invoices with timing and coverage produce the `tests` and `coverage` summaries;
   - `test_measurements_switches_off`: with both switches false, neither key is present;
   - `test_measurements_skip_invoice_without_data`: an invoice with no `timing` or `coverage` is skipped without error;
@@ -48,26 +48,26 @@ After `check-test-timing`, every `checks.json` holds per-entry test timing and c
 - In: `tests/integration/test_config.py`: the `retro` defaults include both switches, and a YAML value of `false` for each loads.
 - In: docs.
   - `docs/host-contract.md`: the `Retro` row and the `Config.defaults.retro` object gain both switches.
-  - `docs/how-chupa-works.md` section 9.5 describes both summaries and their switches; section 11's `retro` row names them.
+  - `docs/how-clutch-works.md` section 9.5 describes both summaries and their switches; section 11's `retro` row names them.
 - In: `tests/integration/test_status.py` `test_status_production_provenance`: its expected evidence gains `"tests": {}` and `"coverage": {}`, since its config takes the default switches (both true) and its window has no invoice with timing or coverage.
 - The other coverage-dependent test files (for example `tests/integration/test_scorecard.py`, `test_retro_box.py`, `test_audit.py`, `test_drain.py`, `test_daemon_composition.py`) only round-trip `measurements`, read `check_observations`, or build config with defaults that gain two fields, so this change does not affect them.
 - Out: the retro prompt, proposal shape, Check recording, spike kinds, triggers.
 
 ## Scope fence
-- chupa/config.py
-- chupa/retro.py
+- clutch/config.py
+- clutch/retro.py
 - tests/integration/test_retro.py
 - tests/integration/test_config.py
 - tests/integration/test_status.py
 - tests/unit/test_retro_measurements.py
 - docs/host-contract.md
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_retro.py` exits 0, including `test_test_timing_aggregates_invoices`, `test_coverage_aggregates_invoices` and `test_measurement_switches`. These rule out a last-value or summed `max_seconds`, a `min` that ignores earlier invoices, and an empty key left present when a switch is off.
 2. `./dev.py test tests/integration/test_config.py tests/integration/test_host_contract.py` exits 0.
-3. `./dev.py test tests/unit/test_retro_measurements.py` exits 0, including the four named tests, so the new lines in `chupa/retro.py` and `chupa/config.py` run under a unit test.
-4. `docs/how-chupa-works.md` section 9.5 names `test_timing` and `coverage`.
+3. `./dev.py test tests/unit/test_retro_measurements.py` exits 0, including the four named tests, so the new lines in `clutch/retro.py` and `clutch/config.py` run under a unit test.
+4. `docs/how-clutch-works.md` section 9.5 names `test_timing` and `coverage`.
 5. `./dev.py test` exits 0.
 
 ## Verification

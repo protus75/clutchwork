@@ -14,16 +14,16 @@ kind: bug
 - vscode-help-docs
 
 ## Context
-- chupa/artifacts.py::Outcome
-- chupa/journal.py::TERMINAL_STATES
-- chupa/stages.py::ImplementReply
-- chupa/stages.py::_short
-- chupa/stages.py::implement
-- chupa/caps.py::failed_attempt
-- chupa/runner.py::drive
-- chupa/runner.py::failure_terminal
-- chupa/drain.py::parked_blob
-- chupa/drain.py::record_reoffer
+- clutch/artifacts.py::Outcome
+- clutch/journal.py::TERMINAL_STATES
+- clutch/stages.py::ImplementReply
+- clutch/stages.py::_short
+- clutch/stages.py::implement
+- clutch/caps.py::failed_attempt
+- clutch/runner.py::drive
+- clutch/runner.py::failure_terminal
+- clutch/drain.py::parked_blob
+- clutch/drain.py::record_reoffer
 - tests/unit/test_implement_premise_path.py
 - tests/unit/test_drain_reoffer.py
 - tests/unit/test_caps_requisition_park.py
@@ -39,8 +39,8 @@ kind: bug
 - tests/regress_vscode_task_identity.py
 
 ## On-demand
-- chupa/specs/implement.md
-- docs/how-chupa-works.md
+- clutch/specs/implement.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
 The Implement reply has three outcomes: `ok`, `already_satisfied`, and `premise_failed`. There is
@@ -69,11 +69,11 @@ spec tells the model to reply `incomplete` for unfinished work and never to reca
 
 ## Scope in / Scope out
 Scope in:
-- `chupa/artifacts.py::Outcome` gains the member `"incomplete"`, placed after `"premise_failed"`.
-  `OUTCOMES` and `chupa/journal.py::TERMINAL_STATES` derive from it and change by derivation only;
+- `clutch/artifacts.py::Outcome` gains the member `"incomplete"`, placed after `"premise_failed"`.
+  `OUTCOMES` and `clutch/journal.py::TERMINAL_STATES` derive from it and change by derivation only;
   the Harvest and Diagnosis artifacts' `terminal` validation accepts it through
   `TERMINAL_STATES` with no edit of their own.
-- `chupa/stages.py::ImplementReply`:
+- `clutch/stages.py::ImplementReply`:
   - `outcome` gains `"incomplete"`;
   - the validator treats `incomplete` as it treats `ok`: an `incomplete` reply whose `findings`
     list is not empty raises;
@@ -82,16 +82,16 @@ Scope in:
     "implement the ticket and reply ok, or reply incomplete when you stopped before finishing";
   - the message raised for findings on a non-premise outcome names `incomplete` as the reply for
     unfinished work.
-- `chupa/stages.py::implement`: the existing early return for `premise_failed` widens to both
-  stopping outcomes, with no new statement, so the coverage floor on `chupa/stages.py` needs no
+- `clutch/stages.py::implement`: the existing early return for `premise_failed` widens to both
+  stopping outcomes, with no new statement, so the coverage floor on `clutch/stages.py` needs no
   new unit test:
   `if reply.outcome in ("premise_failed", "incomplete"): return _short(result, reply.outcome, list(reply.findings))`.
   An `incomplete` reply carries an empty findings list by validation, so it returns outcome
   `incomplete` with no findings and no packing slip. `run_record` already prints the reply's
   outcome under `## Outcome`.
-- `chupa/caps.py::failed_attempt` adds `"incomplete"` to its set of failed terminals, so an
-  `incomplete` attempt counts toward `attempts`. Nothing else in `chupa/caps.py` changes.
-- `chupa/specs/implement.md`:
+- `clutch/caps.py::failed_attempt` adds `"incomplete"` to its set of failed terminals, so an
+  `incomplete` attempt counts toward `attempts`. Nothing else in `clutch/caps.py` changes.
+- `clutch/specs/implement.md`:
   - the paragraph that begins "Two first-class outcomes replace grinding out a bad
     implementation" says three outcomes and gains a third bullet: `incomplete` -- you stopped
     before finished work was committed and nothing in the ticket is wrong; say in `summary` what
@@ -106,7 +106,7 @@ Scope in:
     pins in `tests/unit/test_specs.py` follow:
     `test_spec_lint_accepts_the_implement_and_requisition_specs` (the `("implement", ...)` pair)
     and `test_implement_spec_consumer_read` (its `spec.meta.version` assertion).
-- `docs/how-chupa-works.md`: the Implement outcome list in section 6.2 gains an `incomplete`
+- `docs/how-clutch-works.md`: the Implement outcome list in section 6.2 gains an `incomplete`
   bullet; the failure-routing step that names which caps each outcome draws says `incomplete`
   draws none; the sentence "Failed attempts are `gate_failed`, `premise_failed`, `infra_error`, and
   `timeout` terminals" gains `incomplete`; the `retry` cap row's exception list is unchanged
@@ -127,13 +127,13 @@ Scope in:
     `test_a_premise_failure_journals_its_terminal`;
   - new `tests/regress_implement_incomplete.py` is the `## Regression` reproducer. It follows the
     protocol of `tests/regress_vscode_task_identity.py`: it imports `ImplementReply` from
-    `chupa.stages` (an `ImportError` prints `error` and exits 2), validates an `incomplete` reply
+    `clutch.stages` (an `ImportError` prints `error` and exits 2), validates an `incomplete` reply
     with an empty `findings` list, and prints `defect` with exit 1 when validation raises, `pass`
     with exit 0 when it validates and an `incomplete` reply carrying one finding is refused, and
     `defect` otherwise. It prints exactly one JSON object to stdout.
 
 Scope out:
-- `chupa/runner.py` and `chupa/drain.py` stay as they are. `runner.drive` draws `premise_bounce`
+- `clutch/runner.py` and `clutch/drain.py` stay as they are. `runner.drive` draws `premise_bounce`
   only for `premise_failed` and `infra` only for `infra_error` and `timeout`, so an `incomplete`
   attempt draws neither; `failure_terminal` routes it by the Diagnose verdict as it routes
   `gate_failed`; `parked_blob` parks only premise and diff-budget terminals, so an `incomplete`
@@ -141,22 +141,22 @@ Scope out:
   it does not except. A second routing path for `incomplete` is accretion.
 - No escalation on a single `incomplete`. The existing rules move the rung: a Diagnose
   `escalate` verdict, or the same failure reason three times running.
-- `chupa/specs/diagnose.md` stays as it is. Diagnose receives the `incomplete` terminal through
+- `clutch/specs/diagnose.md` stays as it is. Diagnose receives the `incomplete` terminal through
   the harvest and answers with its existing verdicts.
-- `chupa/config.py::SpikeKind`, `chupa/retro.py`, and the scorecard stay as they are; an
+- `clutch/config.py::SpikeKind`, `clutch/retro.py`, and the scorecard stay as they are; an
   `incomplete` terminal is visible in `status`, the drain report, and the journal without a spike
   kind.
 - The engine's invalid-artifact retry text stays as it is; the spec change removes the case that
   produced it.
-- `vscode-chupa/` stays as it is: the extension draws terminal names from the snapshot and
+- `vscode-clutchwork/` stays as it is: the extension draws terminal names from the snapshot and
   enumerates none.
 
 ## Scope fence
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/caps.py
-- chupa/specs/implement.md
-- docs/how-chupa-works.md
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/caps.py
+- clutch/specs/implement.md
+- docs/how-clutch-works.md
 - tests/unit/test_implement_incomplete.py
 - tests/unit/test_drain_reoffer.py
 - tests/unit/test_specs.py
@@ -198,17 +198,17 @@ Scope out:
 7. `tests/unit/test_specs.py::test_spec_lint_accepts_the_implement_and_requisition_specs` and
    `tests/unit/test_specs.py::test_implement_spec_consumer_read` pass with both implement pins at
    the bumped version, so a spec edit without a version bump, or a bump without both pins, fails.
-8. `chupa/specs/implement.md` and `docs/how-chupa-works.md` name `incomplete` as described in
+8. `clutch/specs/implement.md` and `docs/how-clutch-works.md` name `incomplete` as described in
    Scope in; the first `uv run python -c` command in `## Verification` checks that
-   `chupa/specs/implement.md` mentions `incomplete` at least four times and
-   `docs/how-chupa-works.md` at least three times.
+   `clutch/specs/implement.md` mentions `incomplete` at least four times and
+   `docs/how-clutch-works.md` at least three times.
 9. `uv run python tests/regress_implement_incomplete.py` prints `{"regression_result": "pass"}` and
    exits 0 on the branch; Check proves it prints `defect` and exits non-zero on the merge base.
 10. `./dev.py test` exits 0.
 
 ## Verification
 ```
-uv run python -c "import pathlib; s = pathlib.Path('chupa/specs/implement.md').read_text(); d = pathlib.Path('docs/how-chupa-works.md').read_text(); assert s.count('incomplete') >= 4, s.count('incomplete'); assert d.count('incomplete') >= 3, d.count('incomplete')"
+uv run python -c "import pathlib; s = pathlib.Path('clutch/specs/implement.md').read_text(); d = pathlib.Path('docs/how-clutch-works.md').read_text(); assert s.count('incomplete') >= 4, s.count('incomplete'); assert d.count('incomplete') >= 3, d.count('incomplete')"
 ./dev.py test tests/unit/test_implement_incomplete.py tests/unit/test_drain_reoffer.py tests/unit/test_specs.py tests/unit/test_implement_premise_path.py tests/unit/test_caps_requisition_park.py
 ./dev.py test tests/integration/test_closed_sets.py tests/integration/test_gates.py tests/integration/test_stages.py tests/integration/test_terminal.py
 uv run python tests/regress_implement_incomplete.py
@@ -221,10 +221,10 @@ Reject the branch if any of the following holds:
   or routes it to the Reject queue while `retry` has budget;
 - the engine infers `incomplete` from the text of a `premise_failed` reply instead of the reply
   naming the outcome;
-- `chupa/runner.py` or `chupa/drain.py` gains a path that handles `incomplete` by name;
+- `clutch/runner.py` or `clutch/drain.py` gains a path that handles `incomplete` by name;
 - a sentence that `tests/unit/test_specs.py` pins verbatim changes;
-- `chupa/specs/diagnose.md`, `chupa/config.py`, `chupa/retro.py`, or any file under
-  `vscode-chupa/` changes.
+- `clutch/specs/diagnose.md`, `clutch/config.py`, `clutch/retro.py`, or any file under
+  `vscode-clutchwork/` changes.
 
 ## Time budget
 - expected: 60m

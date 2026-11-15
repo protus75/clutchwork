@@ -11,24 +11,24 @@ state: rejected
 - none
 
 ## Context
-- chupa/__main__.py::_verdict
-- chupa/drain.py::reofferable
-- chupa/drain.py::awaiting_operator
+- clutch/__main__.py::_verdict
+- clutch/drain.py::reofferable
+- clutch/drain.py::awaiting_operator
 - tests/integration/test_reject_queue.py
 - tests/unit/test_verdict_extension.py
 
 ## Goal / Why
-`chupa confirm <stem>` on a Reject-queue stem prints `Reject queue: <to> -- <reason>` and asks y/N, whether or not the drain would re-offer that stem anyway. `drain.reofferable` is true for a queued stem that is not awaiting the operator, such as a `premise_failed` stem with `premise_bounce` budget left. The drain re-offers it with no keep. An operator who answers y journals `reject_verdict keep actor: operator`, and `caps.lineage` then restarts every cap count after it. The confirm bypasses the bounded retry and attempt budget the caps exist to enforce, and the prompt gives no hint of this. After this change, when the verb is `confirm`, the stem is in the Reject queue, and `drain.reofferable` is true, the preview adds a second line saying the drain re-offers this stem without a keep and that a keep resets its cap budget. A cap-spent or ticket_changed stem, and the `reject` verb, print no such line.
+`clutch confirm <stem>` on a Reject-queue stem prints `Reject queue: <to> -- <reason>` and asks y/N, whether or not the drain would re-offer that stem anyway. `drain.reofferable` is true for a queued stem that is not awaiting the operator, such as a `premise_failed` stem with `premise_bounce` budget left. The drain re-offers it with no keep. An operator who answers y journals `reject_verdict keep actor: operator`, and `caps.lineage` then restarts every cap count after it. The confirm bypasses the bounded retry and attempt budget the caps exist to enforce, and the prompt gives no hint of this. After this change, when the verb is `confirm`, the stem is in the Reject queue, and `drain.reofferable` is true, the preview adds a second line saying the drain re-offers this stem without a keep and that a keep resets its cap budget. A cap-spent or ticket_changed stem, and the `reject` verb, print no such line.
 
 ## Scope in / Scope out
-- In: `chupa/__main__.py` `_verdict`: one branch that prints the note when `verb == "confirm"`, `queued is not None` and `drain.reofferable(history, stem, checkout.config.caps)`.
+- In: `clutch/__main__.py` `_verdict`: one branch that prints the note when `verb == "confirm"`, `queued is not None` and `drain.reofferable(history, stem, checkout.config.caps)`.
 - In: `tests/integration/test_reject_queue.py`: one test that runs confirm on a queued re-offerable stem and one on a queued cap-spent stem and compares the two prompts.
-- In: `tests/unit/test_verdict_extension.py`: a unit test that drives `entry._verdict` with that file's fake Journal and a SimpleNamespace checkout whose `config.caps` is set, so the new branch is covered by the unit suite that enforces the per-file coverage floor for `chupa/__main__.py`. It asserts the note prints for `confirm` on a queued stem with budget left, and does not print for a cap-spent stem or for the `reject` verb.
+- In: `tests/unit/test_verdict_extension.py`: a unit test that drives `entry._verdict` with that file's fake Journal and a SimpleNamespace checkout whose `config.caps` is set, so the new branch is covered by the unit suite that enforces the per-file coverage floor for `clutch/__main__.py`. It asserts the note prints for `confirm` on a queued stem with budget left, and does not print for a cap-spent stem or for the `reject` verb.
 - Out: the `reject` verb behavior, the extension, `docs/`, the keep semantics, and any change to `drain.py` or `caps.py`.
 - Rejected simpler approach: none. Rewording the existing preview alone cannot tell the two cases apart, so the `reofferable` check is the minimum.
 
 ## Scope fence
-- chupa/__main__.py
+- clutch/__main__.py
 - tests/integration/test_reject_queue.py
 - tests/unit/test_verdict_extension.py
 

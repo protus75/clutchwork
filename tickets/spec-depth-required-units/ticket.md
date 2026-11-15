@@ -9,8 +9,8 @@ state: confirmed
 none
 
 ## Context
-- chupa/specs.py
-- chupa/stages.py
+- clutch/specs.py
+- clutch/stages.py
 - tests/test_specs.py
 - tests/test_seed_path.py
 
@@ -18,17 +18,17 @@ none
 - section 11.4
 
 ## Goal / Why
-The seed path's mechanical SPEC DEPTH check in `chupa/stages.py` runs over each seed's REQUIRED units -- its own non-exit row's entry unit plus every registry entry unit it cites -- never the wider set a phase citation makes hardenable (section 11.4, 19.L). Today it calls `hardenable_units`, so a seed citing a phase unit (an exit seed citing the next phase) is snagged for every missing row of that phase, though only its own and cited units must exist.
+The seed path's mechanical SPEC DEPTH check in `clutch/stages.py` runs over each seed's REQUIRED units -- its own non-exit row's entry unit plus every registry entry unit it cites -- never the wider set a phase citation makes hardenable (section 11.4, 19.L). Today it calls `hardenable_units`, so a seed citing a phase unit (an exit seed citing the next phase) is snagged for every missing row of that phase, though only its own and cited units must exist.
 
 ## Scope in / Scope out
-- In: `chupa/specs.py` gains `required_units(plan, stem, plan_contract)`: the own non-exit row's entry unit plus every cited registry entry unit, present or absent, in that order, deduplicated; `hardenable_units` returns `required_units` followed by its phase-row additions, unchanged in result.
-- In: the mechanical SPEC DEPTH check in `chupa/stages.py` (the seed path, before grammar) iterates `required_units`; every other `hardenable_units` call site stays as it is.
+- In: `clutch/specs.py` gains `required_units(plan, stem, plan_contract)`: the own non-exit row's entry unit plus every cited registry entry unit, present or absent, in that order, deduplicated; `hardenable_units` returns `required_units` followed by its phase-row additions, unchanged in result.
+- In: the mechanical SPEC DEPTH check in `clutch/stages.py` (the seed path, before grammar) iterates `required_units`; every other `hardenable_units` call site stays as it is.
 - In: `tests/test_specs.py` adds `test_required_units_exclude_phase_rows`; `tests/test_seed_path.py` adds `test_phase_citing_seed_is_not_snagged_for_uncited_phase_rows` (a seed citing `19.P4` and two present P4 units, with other P4 rows missing, is not snagged by the mechanical check).
 - Out: reply-schema validation, routing, and `hardenable_units`' result.
 
 ## Scope fence
-- chupa/specs.py
-- chupa/stages.py
+- clutch/specs.py
+- clutch/stages.py
 - tests/test_specs.py
 - tests/test_seed_path.py
 

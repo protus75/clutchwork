@@ -1,6 +1,6 @@
 """Reproducer: a second engine process overwrites the raw capture of a stem's earlier model call.
 
-Usage: uv run python repro_provider_capture_overwrite.py <chupa checkout>
+Usage: uv run python repro_provider_capture_overwrite.py <clutch checkout>
 Prints one JSON line {"regression_result": "pass"|"defect"|"error"} on stdout; diagnostics on stderr.
 """
 

@@ -5,9 +5,9 @@
   "stem": "box-triage",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/driver.py",
-    "chupa/triage.py",
+    "clutch/__main__.py",
+    "clutch/driver.py",
+    "clutch/triage.py",
     "specs/triage.md",
     "tests/test_drain.py",
     "tests/test_triage.py"

@@ -5,15 +5,15 @@
   "stem": "verb-lock-need-single-source",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/docs/host-contract.md",
-    "chupa/docs/host-running.md",
-    "chupa/drain.py",
-    "chupa/lockfile.py",
-    "chupa/observe.py",
-    "chupa/runner.py",
-    "chupa/serve.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-running.md",
+    "clutch/drain.py",
+    "clutch/lockfile.py",
+    "clutch/observe.py",
+    "clutch/runner.py",
+    "clutch/serve.py",
+    "docs/how-clutch-works.md",
     "eval/diagnose.py",
     "eval/harness.py",
     "tests/harness/reliability_battery.py",
@@ -107,12 +107,12 @@
       "coverage": {
         "percent": 32.17771794008751,
         "files": {
-          "chupa/__main__.py": 44.09190371991247,
-          "chupa/drain.py": 22.68326417704011,
-          "chupa/lockfile.py": 65.17857142857143,
-          "chupa/observe.py": 11.78045515394913,
-          "chupa/runner.py": 24.06779661016949,
-          "chupa/serve.py": 15.214384508990317
+          "clutch/__main__.py": 44.09190371991247,
+          "clutch/drain.py": 22.68326417704011,
+          "clutch/lockfile.py": 65.17857142857143,
+          "clutch/observe.py": 11.78045515394913,
+          "clutch/runner.py": 24.06779661016949,
+          "clutch/serve.py": 15.214384508990317
         }
       }
     },
@@ -251,7 +251,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "....... [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n............................................................             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/chupa/.chupa/state/worktrees/verb-lock-need-single-source/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3444 passed, 9 warnings in 69.20s (0:01:09)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "....... [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n............................................................             [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/clutch/.clutch/state/worktrees/verb-lock-need-single-source/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3444 passed, 9 warnings in 69.20s (0:01:09)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 70.835786
     }

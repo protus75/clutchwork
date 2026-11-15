@@ -10,7 +10,7 @@
   "lessons": [
     "Add tests to tests/test_author.py for criterion 3: FakeLLM author replies naming an existing stem and failing validate_ticket must re-prompt with those findings. Exhausting the allowance must give no ticket commit, one decision-<id> record, and a decision resolution.",
     "Add a criterion 4 test: pre-journal author_invoked for a pending message that has a recorded author verdict, run triage, then assert one decision-<id> record and zero requests with surface author.",
-    "Tighten the criterion 2 test. Assert exactly one new commit on main with subject chupa(<stem>): ticket, exactly one ticket_intake signal on the stem (a count, not any()), and the effect key llm/author/0/author/<seq>/1.",
+    "Tighten the criterion 2 test. Assert exactly one new commit on main with subject clutch(<stem>): ticket, exactly one ticket_intake signal on the stem (a count, not any()), and the effect key llm/author/0/author/<seq>/1.",
     "Build open_tickets as '<stem>: <first line of ## Goal / Why>' for each tracked tickets/<stem>/ticket.md, skipping merged stems by journal or ticket state. Do not send raw paths.",
     "Remove the bare except around go_binds/baseline_identity. Call go_binds(events, baseline_identity(config, specs_dir)) directly. Before reporting ok, check every acceptance criterion against a named test."
   ],

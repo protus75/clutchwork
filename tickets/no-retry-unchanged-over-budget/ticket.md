@@ -9,14 +9,14 @@ kind: feature
 none
 
 ## Context
-- chupa/caps.py
+- clutch/caps.py
 
 ## On-demand
-- chupa/drain.py
-- chupa/scheduler.py
+- clutch/drain.py
+- clutch/scheduler.py
 - tests/test_drain.py
 - tests/test_scheduler.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
 `specs-in-package` ended `gate_failed` on `diff_budget` (43 files against 30) and its Rework split failed. The drain then re-offered the same unchanged `ticket.md` with a machine keep, spending a retry cap and a full implement attempt that could only hit the same budget again (2026-11-06).
@@ -24,22 +24,22 @@ none
 A `diff_budget` failure is a property of the ticket, not of the attempt. After this change a stem whose last terminal is `gate_failed` with `diff_budget` in its reason is held until its committed `ticket.md` changes, in both the drain and the daemon scheduler. The release is the same as a premise park's: a `ticket.md` content change (by hand or by Rework); `./dev.py reject <stem>` retires it.
 
 ## Scope in / Scope out
-- In: `chupa/drain.py`: a new predicate `budget_parked(events, stem, ticket_sha)` beside `premise_parked`: true when the stem's last state transition is `gate_failed` with `diff_budget` among its comma-separated `reason` values and its last `running` transition's `ticket_sha` equals `ticket_sha`. `premise_parked` is unchanged.
-- In: the drain's `held` set and the scheduler's `held` set (`chupa/scheduler.py`) each also include stems where `budget_parked` holds, and `Drain._between_tickets` also returns true for a budget-parked last-dispatched stem.
+- In: `clutch/drain.py`: a new predicate `budget_parked(events, stem, ticket_sha)` beside `premise_parked`: true when the stem's last state transition is `gate_failed` with `diff_budget` among its comma-separated `reason` values and its last `running` transition's `ticket_sha` equals `ticket_sha`. `premise_parked` is unchanged.
+- In: the drain's `held` set and the scheduler's `held` set (`clutch/scheduler.py`) each also include stems where `budget_parked` holds, and `Drain._between_tickets` also returns true for a budget-parked last-dispatched stem.
 - In: `_settle` reports a held `diff_budget` stem with the road "split or shrink the ticket under the diff budget and commit the `ticket.md` change, or retire it with `./dev.py reject <stem>`", not the premise road. It takes precedence over the Reject-queue (`awaiting`) road, except the `ticket_changed` case.
 - In: tests:
   - `tests/test_drain.py` new `test_diff_budget_failure_holds_until_ticket_changes`: after a `gate_failed` terminal journaled as the incident was (reason containing `diff_budget`, `routed: reject_queue`), an unchanged ticket is not re-dispatched, journals no machine `reject_verdict`, and its parked road names the diff budget, and `_between_tickets` is true for it; after a committed `ticket.md` edit it is re-dispatched;
   - `tests/test_drain.py` new `test_other_gate_failure_is_still_reoffered`: a `gate_failed` with reason `verification` at the unchanged sha is re-dispatched;
   - `tests/test_scheduler.py` new `test_scheduler_holds_diff_budget_failure`: with a `gate_failed` terminal whose reason is `diff_budget` and that is not routed to the Reject queue, the scheduler does not pick the unchanged stem, and picks it after its `ticket_sha` changes.
-- In: `docs/how-chupa-works.md`: the sentence describing the premise park also covers a `diff_budget` failure.
-- Out: `confirm`/`reject` behavior (`chupa/runner.py`); other gate failures; the diff budget values; Rework.
+- In: `docs/how-clutch-works.md`: the sentence describing the premise park also covers a `diff_budget` failure.
+- Out: `confirm`/`reject` behavior (`clutch/runner.py`); other gate failures; the diff budget values; Rework.
 
 ## Scope fence
-- chupa/drain.py
-- chupa/scheduler.py
+- clutch/drain.py
+- clutch/scheduler.py
 - tests/test_drain.py
 - tests/test_scheduler.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `test_diff_budget_failure_holds_until_ticket_changes` passes: the unchanged ticket's dispatches stay at one, and the edited ticket's reach two.

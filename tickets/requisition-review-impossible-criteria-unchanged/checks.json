@@ -5,8 +5,8 @@
   "stem": "requisition-review-impossible-criteria-unchanged",
   "passed": true,
   "changed_files": [
-    "chupa/specs/requisition_review.md",
-    "docs/how-chupa-works.md",
+    "clutch/specs/requisition_review.md",
+    "docs/how-clutch-works.md",
     "tests/unit/test_specs.py"
   ],
   "inserted_lines": 19,
@@ -165,7 +165,7 @@
           "tests/integration/test_drain.py::test_uncommitted_ticket_edit_mid_run_holds": 1.5016889340040507,
           "tests/integration/test_drain.py::test_ticket_edit_mid_run_holds": 1.4996088309999323,
           "tests/integration/test_reliability_battery.py::test_reliability_battery_requires_member_local_evidence[1]": 1.4874461180152139,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.4795673440239625,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.4795673440239625,
           "tests/integration/test_serve_admission.py::test_serve_conflict_handoff_runs_after_admission_unwinds[mechanical]": 1.4758182150108041,
           "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[kill]": 1.4491497249982785,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-1]": 1.4453761280019535,

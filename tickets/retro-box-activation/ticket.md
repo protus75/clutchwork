@@ -12,30 +12,30 @@ state: confirmed
 - retro-drain-invoker
 
 ## Context
-- chupa/policy.py
-- chupa/status.py
+- clutch/policy.py
+- clutch/status.py
 - tests/test_policy.py
 - tests/test_box.py
 - tests/test_vocabularies.py
 - tests/test_author.py
-- chupa/author.py
+- clutch/author.py
 - tests/test_triage.py
-- chupa/box.py
-- chupa/triage.py
-- chupa/journal.py
-- chupa/retro.py
+- clutch/box.py
+- clutch/triage.py
+- clutch/journal.py
+- clutch/retro.py
 - tests/test_retro.py
-- chupa/__main__.py
-- chupa/merge.py
-- chupa/serve.py
-- chupa/driver.py
-- chupa/daemon.py
+- clutch/__main__.py
+- clutch/merge.py
+- clutch/serve.py
+- clutch/driver.py
+- clutch/daemon.py
 - tests/test_merge.py
 
 ## On-demand
-- chupa/stages.py
-- chupa/runner.py
-- chupa/drain.py
+- clutch/stages.py
+- clutch/runner.py
+- clutch/drain.py
 - tests/test_stages.py
 - tests/test_daemon_composition.py
 - tests/test_drain.py
@@ -50,7 +50,7 @@ state: confirmed
 Completed retro proposals reach the existing Box, triage, Author and successful prompt-spec admission with durable provenance; tombstone re-reports reopen observably.
 
 ## Scope in / Scope out
-This registry row is KNOWN-DEEP: production proposal evidence crosses retro, queue, triage, authoring, policy and admission seams, earning high/high birth. Read every Context and On-demand path before editing. Follow the cited entry's Owner, Records, Observable and Tests; introduce no new module. chupa/retro.py emits completed-report proposals and reads tombstones; chupa/box.py owns queue writes and both dedup layers' shared re-report counter; chupa/triage.py retains the sequential consumer and chupa/author.py the sole ticket author. chupa/policy.py keeps start_state and chupa/merge.py owns successful merge evidence.
+This registry row is KNOWN-DEEP: production proposal evidence crosses retro, queue, triage, authoring, policy and admission seams, earning high/high birth. Read every Context and On-demand path before editing. Follow the cited entry's Owner, Records, Observable and Tests; introduce no new module. clutch/retro.py emits completed-report proposals and reads tombstones; clutch/box.py owns queue writes and both dedup layers' shared re-report counter; clutch/triage.py retains the sequential consumer and clutch/author.py the sole ticket author. clutch/policy.py keeps start_state and clutch/merge.py owns successful merge evidence.
 
 Use the completed retro/<seq> effect identity, canonical sorted compact UTF-8 proposal JSON, ordered proposed_spec_paths, and the first 16 lowercase SHA256 hex characters for proposal identity. Store the exact proposal evidence and stable arrival identity through the Box/storm seam. Completion precedes emission; incomplete reports cannot emit and replay cannot duplicate messages. Retain existing closed Message, Verdict, Resolution and DecisionRecord contracts while adding only the entry's class-specific fields and reports/reopen queue fields.
 
@@ -62,7 +62,7 @@ Propagate the message reopen marker into policy.start_state(reopen=...) at candi
 
 Bind the journal-backed callback in every journal-holding production Box: direct operator triage, bootstrap ingestion, the shared storm_producer wrapper and its driver, stages, runner, daemon, drain, serve, CLI and retro compositions. Preserve storm_producer's public signature so existing callers inherit the binding. Reuse the production composition harness in tests/test_daemon_composition.py; removing any production binding must fail the new constructor test. Bootstrap drain still never scans the Box; daemon scheduling stays sequential and its worker/task counts stay fixed. Preserve the public Stages.driver/Pipeline.stages access; add no Driver access, author, consumer or writer lane.
 
-Earned fence additions: chupa/journal.py and tests/test_vocabularies.py cover the three new closed signal names; tests/test_status.py owns the entry's status visibility obligation; tests/test_retro.py owns tombstone itemization and the predecessor empty-Box assertion invalidated by completed proposal emission; chupa/driver.py covers its journal-backed shared producer caller. Migrate only the last empty-Box assertion in test_receipt_uses_engine_provenance_usage_calibration_and_tombstones to evidenced proposal emission, preserving its report JSON, commit, usage and calibration checks. Keep all non-firing predecessor and scheduling assertions unless this activation actually invalidates one.
+Earned fence additions: clutch/journal.py and tests/test_vocabularies.py cover the three new closed signal names; tests/test_status.py owns the entry's status visibility obligation; tests/test_retro.py owns tombstone itemization and the predecessor empty-Box assertion invalidated by completed proposal emission; clutch/driver.py covers its journal-backed shared producer caller. Migrate only the last empty-Box assertion in test_receipt_uses_engine_provenance_usage_calibration_and_tombstones to evidenced proposal emission, preserving its report JSON, commit, usage and calibration checks. Keep all non-firing predecessor and scheduling assertions unless this activation actually invalidates one.
 
 Create tests/test_retro_box.py for the composed completion-to-prompt-spec-merge proof and test_retro_box_entry_unit: required_units must require 19.P5.retro-box-activation for both the row and its owning continuation; resolve_plan_contract with duplicate citations must resolve it exactly once; entry_unit_gap must return None. Keep tests/test_plan_lint.py green unchanged; its run belongs only in Verification. Named creation/retention obligations:
 - test_completed_retro_proposals_reach_prompt_spec_merge
@@ -80,19 +80,19 @@ Create tests/test_retro_box.py for the composed completion-to-prompt-spec-merge 
 Each named obligation proves the cited entry's complete invariant, including exact signal bodies/keys, successful path/SHA evidence, both dedup layers, class visibility, write-free reads, reopen override and every production constructor. Use disposable repos and injected clock, filesystem, process and scripted model seams. Leave baseline-binding-reader, scorecard reporting, supervised admission, later verbs and new scheduling to their owning rows. Do not edit prompt specs or historical seeding tests.
 
 ## Scope fence
-- chupa/retro.py
-- chupa/box.py
-- chupa/merge.py
-- chupa/author.py
-- chupa/triage.py
-- chupa/policy.py
-- chupa/stages.py
-- chupa/runner.py
-- chupa/daemon.py
-- chupa/drain.py
-- chupa/serve.py
-- chupa/status.py
-- chupa/__main__.py
+- clutch/retro.py
+- clutch/box.py
+- clutch/merge.py
+- clutch/author.py
+- clutch/triage.py
+- clutch/policy.py
+- clutch/stages.py
+- clutch/runner.py
+- clutch/daemon.py
+- clutch/drain.py
+- clutch/serve.py
+- clutch/status.py
+- clutch/__main__.py
 - tests/test_box.py
 - tests/test_merge.py
 - tests/test_author.py
@@ -103,11 +103,11 @@ Each named obligation proves the cited entry's complete invariant, including exa
 - tests/test_drain.py
 - tests/test_serve.py
 - tests/test_retro_box.py
-- chupa/journal.py
+- clutch/journal.py
 - tests/test_vocabularies.py
 - tests/test_status.py
 - tests/test_retro.py
-- chupa/driver.py
+- clutch/driver.py
 
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_retro_box.py` exits 0 proving the real completed report -> Box -> triage -> Author -> prompt-spec merge chain, canonical identity, exact evidence, replay/incomplete refusal, successful squash SHA/path evidence and required_units/resolve_plan_contract/entry_unit_gap depth.

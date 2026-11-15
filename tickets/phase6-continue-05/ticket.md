@@ -26,7 +26,7 @@ state: confirmed
 Admit durable supervised daemon merge decisions after escape accounting merges.
 
 ## Scope in / Scope out
-Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML directly from CHUPA_PLAN.md. Position 5 carries admissions[5:]:
+Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML directly from CLUTCH_PLAN.md. Position 5 carries admissions[5:]:
 - [supervised-merge-hold]
 - [go-grade-machinery, go-grade-run]
 - [exit-receipt-machinery]
@@ -36,7 +36,7 @@ Author exactly supervised-merge-hold and phase6-continue-06. The payload adds ph
 
 Resolve every role, row and entry citation with resolve_plan_contract before seed writes. Check required_units and entry_unit_gap for payload and successor, including next-admission entries. Inspect Owner, Records, Observable and Tests before grammar and review. Missing or contradictory facts return premise_failed, kind: spec_gap naming the owning unit; never invent a successor contract. Cite ids under Plan contract rather than copying entry prose. Carry every named hold Tests obligation into acceptance; implement none of them in this pass.
 
-Read predecessor owners and merged tests; scan chupa/, eval/ and tests/ for signatures, callers, composition roots, allowlists and negative assertions. Preserve registry names, order, grain and fence floors. Only 19.L rules 2-5 earn additions; record each exact caller or contradicted assertion in tests/test_seeded_phase6_05.py. Read the hold entry's closure requirements, including chupa/daemon.py, chupa/reconcile.py, tests/test_control.py and tests/test_reconcile.py. Other widening requires plan repair. Existing fenced files default to Context; On-demand needs recorded embedding above 300,000 characters. Exclude creations, sibling creations, prompt specs and delimiter-bearing sources. Preservation suites occur only in Verification. Keep historical fixtures unchanged and use merged tests/test_seeded_phase3_core.py as the idiom.
+Read predecessor owners and merged tests; scan clutch/, eval/ and tests/ for signatures, callers, composition roots, allowlists and negative assertions. Preserve registry names, order, grain and fence floors. Only 19.L rules 2-5 earn additions; record each exact caller or contradicted assertion in tests/test_seeded_phase6_05.py. Read the hold entry's closure requirements, including clutch/daemon.py, clutch/reconcile.py, tests/test_control.py and tests/test_reconcile.py. Other widening requires plan repair. Existing fenced files default to Context; On-demand needs recorded embedding above 300,000 characters. Exclude creations, sibling creations, prompt specs and delimiter-bearing sources. Preservation suites occur only in Verification. Keep historical fixtures unchanged and use merged tests/test_seeded_phase3_core.py as the idiom.
 
 Ordinary rows and continuations start medium/medium. A deep: true row runs alone high/high; supervised-merge-hold is that row. Exits start KNOWN-HARD high/high. Count the successor in seeding.max_seeds_per_admission and cap every stuck budget at drain.max_ticket_minutes.
 

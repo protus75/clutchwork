@@ -13,16 +13,16 @@ state: confirmed
 - report-inbox-triage
 
 ## Context
-- chupa/scorecard.py
-- chupa/git.py
-- chupa/retro.py
-- chupa/__main__.py
+- clutch/scorecard.py
+- clutch/git.py
+- clutch/retro.py
+- clutch/__main__.py
 - tests/test_scorecard.py
 - tests/test_git.py
 - tests/test_retro.py
 - tests/test_cli.py
 - tests/test_mergequeue.py
-- chupa/triage.py
+- clutch/triage.py
 - tests/test_triage.py
 
 ## Plan contract
@@ -37,19 +37,19 @@ state: confirmed
 Attribute resolved host bugs to reviewed squash candidates and show their passed-surface escapes in the shared scorecard.
 
 ## Scope in / Scope out
-Implement the cited escape entry in its existing owners: Git for the first-parent read, triage for durable attribution, scorecard for the pure fold, and retro/status for shared collection and rendering. The registry fence gains chupa/triage.py and tests/test_triage.py for the entry's sequential-consumer ownership. Preserve existing public call signatures and composition. Keep report custody and bug authoring in their merged owners; add no queue, ticket writer, report schema, event vocabulary, provider call, hold, host-loop report or exit receipt.
+Implement the cited escape entry in its existing owners: Git for the first-parent read, triage for durable attribution, scorecard for the pure fold, and retro/status for shared collection and rendering. The registry fence gains clutch/triage.py and tests/test_triage.py for the entry's sequential-consumer ownership. Preserve existing public call signatures and composition. Keep report custody and bug authoring in their merged owners; add no queue, ticket writer, report schema, event vocabulary, provider call, hold, host-loop report or exit receipt.
 
 ## Scope fence
-- chupa/scorecard.py
-- chupa/git.py
-- chupa/retro.py
-- chupa/__main__.py
+- clutch/scorecard.py
+- clutch/git.py
+- clutch/retro.py
+- clutch/__main__.py
 - tests/test_scorecard.py
 - tests/test_git.py
 - tests/test_retro.py
 - tests/test_cli.py
 - tests/test_mergequeue.py
-- chupa/triage.py
+- clutch/triage.py
 - tests/test_triage.py
 
 ## Acceptance criteria

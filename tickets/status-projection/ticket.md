@@ -13,15 +13,15 @@ state: confirmed
 - retro-box-activation
 
 ## Context
-- chupa/status.py
+- clutch/status.py
 - tests/test_status.py
-- chupa/scorecard.py
+- clutch/scorecard.py
 - tests/test_scorecard.py
-- chupa/box.py
+- clutch/box.py
 - tests/test_box.py
-- chupa/retro.py
+- clutch/retro.py
 - tests/test_retro.py
-- chupa/__main__.py
+- clutch/__main__.py
 - tests/test_cli.py
 
 ## Plan contract
@@ -42,15 +42,15 @@ Create test_status_entry_unit in tests/test_status.py. It proves required_units 
 Keep every tests/test_retro.py assertion unchanged and preserve predecessor scorecard and Box proofs. Reuse their window selection and evidence APIs without changing public signatures or constructors. Module ownership is defined by 19.P5.status-projection; no new module is needed. Entry tests belong in the entry test owner; no future test is Context. Leave baseline reading, retro/doctor verbs and the phase exit to their rows.
 
 ## Scope fence
-- chupa/status.py
+- clutch/status.py
 - tests/test_status.py
-- chupa/scorecard.py
+- clutch/scorecard.py
 - tests/test_scorecard.py
-- chupa/box.py
+- clutch/box.py
 - tests/test_box.py
-- chupa/retro.py
+- clutch/retro.py
 - tests/test_retro.py
-- chupa/__main__.py
+- clutch/__main__.py
 - tests/test_cli.py
 
 ## Acceptance criteria

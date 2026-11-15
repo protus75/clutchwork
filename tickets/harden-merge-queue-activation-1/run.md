@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The future activation seed must add chupa/runner.py to its fence because it owns production pipeline binding; this requirement is documented within the new entry.
+The future activation seed must add clutch/runner.py to its fence because it owns production pipeline binding; this requirement is documented within the new entry.
 
 ## Dead ends
 

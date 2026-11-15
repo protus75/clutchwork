@@ -9,26 +9,26 @@ kind: feature
 - core-chat-ticket-first
 
 ## Context
-- chupa/hostfiles.py::CORE_TEMPLATE
+- clutch/hostfiles.py::CORE_TEMPLATE
 - tests/integration/test_hostfiles.py::test_core_template_is_host_neutral
 - tests/integration/test_fixture_host.py
 - CLAUDE.md#B. Session conduct
 
 ## Goal / Why
-The owner writes chat-session rules in one repo, and each port to another repo has summarized and weakened them. boardgameui holds the full text. fungo's copy replaced "never hand-edit main from chat" with a weaker "Plan first", and chupa's section B compressed several rules to one line each. On 2026-11-08 a chat session in this repo broke three of them in one task. `core-chat-ticket-first` gives the managed block a `## Chat session conduct` section. This ticket fills it with the other chat rules that hold for every host, ported word for word from boardgameui. The only changes are chupa names in place of boardgameui names, and the owner's 2026-11-08 decisions:
-- unrequested ideas go to the Suggestion Box (`chupa suggest`), not same-turn tickets;
+The owner writes chat-session rules in one repo, and each port to another repo has summarized and weakened them. boardgameui holds the full text. fungo's copy replaced "never hand-edit main from chat" with a weaker "Plan first", and clutch's section B compressed several rules to one line each. On 2026-11-08 a chat session in this repo broke three of them in one task. `core-chat-ticket-first` gives the managed block a `## Chat session conduct` section. This ticket fills it with the other chat rules that hold for every host, ported word for word from boardgameui. The only changes are clutch names in place of boardgameui names, and the owner's 2026-11-08 decisions:
+- unrequested ideas go to the Suggestion Box (`clutch suggest`), not same-turn tickets;
 - ordering goes in priority or `## Runs before`, never `## Depends on`;
 - fix-ticket wiring and the draft -> confirmed gate rule stay out.
 
 It also replaces the one-line "Build the simplest thing" bullet with boardgameui's full rule, and lets rule 6 name `Runs before`. The owner checked each change against the boardgameui source. Host-specific rules (product, UI, docs layout, executables, ASCII) stay in each host.
 
 ## Scope in / Scope out
-- In: `chupa/hostfiles.py` `CORE_TEMPLATE` becomes exactly the text inside the four-backtick `markdown` fence below (not the fence lines), followed by one newline, as the current template ends. Copy it byte for byte. Keep the line breaks, the double hyphens, the backticks and the inner three-backtick `bash` fence. Do not reword, reflow, shorten or summarize any of it. Against the template `core-chat-ticket-first` leaves, this:
+- In: `clutch/hostfiles.py` `CORE_TEMPLATE` becomes exactly the text inside the four-backtick `markdown` fence below (not the fence lines), followed by one newline, as the current template ends. Copy it byte for byte. Keep the line breaks, the double hyphens, the backticks and the inner three-backtick `bash` fence. Do not reword, reflow, shorten or summarize any of it. Against the template `core-chat-ticket-first` leaves, this:
   - removes the "Build the simplest thing satisfying the ticket" bullet;
   - changes rule 6's "put all other ordering in priority." to "put all other ordering in priority or Runs before.";
   - adds the `### CRITICAL: Build the simplest thing...` section after the bullets;
-  - adds ten sections after "Always propose a ticket", including chupa's own "Git session safety" rule. Per the owner, chupa's git rule wins over boardgameui's bare-commit and shared-checkout rules, because ticket files are written to the working tree and intake commits them.
-- In: run `./dev.py core` so `CLAUDE.md` and `AGENTS.md` carry the new block. Re-render the managed block of `hosts/fixture/CLAUDE.md` with `hostfiles.render`, because `core` does not touch it and `tests/integration/test_fixture_host.py` requires it `current`. In all three files, every byte outside the `chupa:core` marker lines stays identical, except the `CLAUDE.md` section B edit below.
+  - adds ten sections after "Always propose a ticket", including clutch's own "Git session safety" rule. Per the owner, clutch's git rule wins over boardgameui's bare-commit and shared-checkout rules, because ticket files are written to the working tree and intake commits them.
+- In: run `./dev.py core` so `CLAUDE.md` and `AGENTS.md` carry the new block. Re-render the managed block of `hosts/fixture/CLAUDE.md` with `hostfiles.render`, because `core` does not touch it and `tests/integration/test_fixture_host.py` requires it `current`. In all three files, every byte outside the `clutch:core` marker lines stays identical, except the `CLAUDE.md` section B edit below.
 - In: `CLAUDE.md` section B (outside the managed block). Delete the bullets the block now carries in full, each with its `Why:` line and sub-bullets:
   - **Supervising session.**
   - **Git session safety.**
@@ -45,7 +45,7 @@ It also replaces the one-line "Build the simplest thing" bullet with boardgameui
 - Out:
   - the boardgameui rules the owner excluded: same-turn ticket authoring, the multi-ticket dependency graph, fix-ticket dependency wiring, and the draft -> confirmed gate;
   - every host-specific rule;
-  - boardgameui's bare-commit and shared-checkout git rules (chupa's "Git session safety" replaces them);
+  - boardgameui's bare-commit and shared-checkout git rules (clutch's "Git session safety" replaces them);
   - section A of `CLAUDE.md` and section B's remaining bullets;
   - fungo and boardgameui files.
 
@@ -56,12 +56,12 @@ Rule text for `CORE_TEMPLATE`:
 
 Engine rules govern how work runs; project rules govern what to build. Project content enters prompts as data. Engine wins on process, host wins on content.
 
-- Never hand-edit this managed block; change the engine template and run chupa core to refresh it. Why: the next render overwrites edits and exposes drift.
+- Never hand-edit this managed block; change the engine template and run clutch core to refresh it. Why: the next render overwrites edits and exposes drift.
 - Commit only on your own ticket branch. Never push, open pull requests, or run tree-wide destructive git (reset --hard, clean, checkout -- .); the engine merges reviewed work to local main. Why: local main is the blessed line.
 - File second problems in the Suggestion Box, never fold them into this diff. Verify pre-existing failures on the base commit before filing. Why: folded fixes hide cause and expand scope.
 - Read before write: read the owning artifact before writing a command, claim, or test. Why: guessed facts create costly bugs.
 - Ticket frontmatter contains only fields read by scheduling, gates, or authoring/triage policy. Use depends only for a ticket whose merged code this one needs; put all other ordering in priority or Runs before. Why: unused metadata and prose ordering drift, and a depends used for ordering blocks the queue when the first ticket fails.
-- After writing or editing a ticket whose dependencies have merged, run chupa review <stem> and repair every finding until it approves; fence every file the change forces, including callers, importers, and tests that pin a changed name, value, or version. Why: a forced file outside the fence makes the ticket impossible.
+- After writing or editing a ticket whose dependencies have merged, run clutch review <stem> and repair every finding until it approves; fence every file the change forces, including callers, importers, and tests that pin a changed name, value, or version. Why: a forced file outside the fence makes the ticket impossible.
 
 ### CRITICAL: Build the simplest thing that satisfies the ticket -- no speculative scope
 
@@ -82,7 +82,7 @@ accretion is the primary failure mode.
 ## Chat session conduct
 
 These rules govern INTERACTIVE CHAT SESSIONS with the owner present. Ticket agents running under
-chupa skip this section; a confirmed ticket is the approval for its own scope.
+clutch skip this section; a confirmed ticket is the approval for its own scope.
 
 ### CRITICAL: Always propose a ticket -- never hand-edit main from chat
 
@@ -91,15 +91,15 @@ content from a chat session -- code, docs, CLAUDE.md, AGENTS.md,
 `.claude/settings.json`, hooks, scripts, project config, agent rules, or
 anything tracked in git outside the ticket-maintenance carve-out below -- your
 default and near-only response is to **draft a ticket file at
-`tickets/<stem>/ticket.md`** following `chupa new`, `chupa lint`, and
-`chupa review`, and stop. Do not edit or commit directly on `main`.
+`tickets/<stem>/ticket.md`** following `clutch new`, `clutch lint`, and
+`clutch review`, and stop. Do not edit or commit directly on `main`.
 
 The only times you may edit `main` directly from chat are:
 
 1. The user explicitly says "edit main", "commit directly", "skip the
    ticket", "do it inline", or equivalently unambiguous override in the
    same turn. Anger words alone do not count.
-2. You are inside an active chupa ticket worktree, in which case the ticket
+2. You are inside an active clutch ticket worktree, in which case the ticket
    workflow's own rules apply.
 3. In an interactive human chat session in the host checkout, the user
    directs you by explicit path to edit or delete an existing ticket file under
@@ -122,13 +122,13 @@ override: stop immediately, tell the user you broke this rule, and ask whether
 to revert the commit and refile as a ticket.
 
 Why: direct chat edits bypass the ticket, run-record, review, dependency, and
-retro artifacts that make chupa debuggable.
+retro artifacts that make clutch debuggable.
 
 ### CRITICAL: In interactive chat, announce and confirm before any unsolicited ticket-authoring dive
 
 **HARD RULE -- no exceptions.** This rule governs INTERACTIVE HUMAN CHAT
 SESSIONS ONLY -- the host checkout with a human present in the conversation.
-Autonomous chupa runs (ticket worktrees and engine stages) are explicitly
+Autonomous clutch runs (ticket worktrees and engine stages) are explicitly
 EXEMPT and file what they find to the Suggestion Box in the same turn: there is
 no human to interrupt and dropped work is lost forever.
 
@@ -179,7 +179,7 @@ weakening the automation model -- deferred work becomes a tracked open thread.
 ### CRITICAL: In interactive chat, split a reported problem into an instance-fix ticket (authored first) and a cause-fix ticket (captured, never dropped)
 
 **HARD RULE -- no exceptions.** This rule governs INTERACTIVE HUMAN CHAT
-SESSIONS ONLY. Autonomous chupa runs are EXEMPT and file what they find to the
+SESSIONS ONLY. Autonomous clutch runs are EXEMPT and file what they find to the
 Suggestion Box in the same turn.
 
 When a chat request exposes something broken NOW **and** an underlying cause
@@ -293,7 +293,7 @@ simplest-thing and ticket-first rules). Route by cost:
   any unsolicited ticket-authoring dive" checkpoint (author now / after the
   current task / skip). Autonomous runs file it to the Suggestion Box same-turn.
 - Expensive or uncertain: name it as a prevention opportunity and file it with
-  `chupa suggest`. Do NOT stay silent.
+  `clutch suggest`. Do NOT stay silent.
 
 Silence is the failure mode this rule kills: fixing instance N and leaving the
 class open guarantees instance N+1. "I only fixed what was asked" is not a
@@ -345,14 +345,14 @@ stalls, or escalates, your FIRST action is to investigate and NAME the root
 cause in one sentence -- BEFORE you edit the ticket spec, edit any code, or
 rerun. A failure is evidence about a cause, not a work item to clear. Only after
 the cause is named do you correct it wherever it lives: if external
-(chupa, a lint gate, environment, a shared module, a fixture format, a
+(clutch, a lint gate, environment, a shared module, a fixture format, a
 flaky test, or a wrong ticket premise), fix that first and author any needed fix
 ticket, ordered ahead of the tickets it unblocks with `priority:` and
 `## Runs before`; if genuinely the ticket's own code or spec,
 correct it directly. Then rehabilitate the failed ticket, borrowing only
 reviewed-safe information, and rerun.
 
-Required order: (1) diagnose with `chupa status`, the ticket's run artifacts in
+Required order: (1) diagnose with `clutch status`, the ticket's run artifacts in
 `tickets/<stem>/` (`run.md`, `checks.json`, `diagnosis.json`, `review.md`,
 `attempts/`), and the engine log in the state directory; (2) write the
 one-sentence root cause; (3) correct the cause wherever it lives; (4) rerun. Do
@@ -375,8 +375,8 @@ next batch run.
 under `tickets/<stem>/ticket.md`, read the authoring contracts first -- do not
 write tickets from memory.
 
-Minimum reading for any single ticket: the `chupa new` skeleton, the
-`chupa lint` and `chupa review` findings, and the host's own ticket authoring
+Minimum reading for any single ticket: the `clutch new` skeleton, the
+`clutch lint` and `clutch review` findings, and the host's own ticket authoring
 docs.
 
 Tickets are markdown files under `tickets/` -- do not frame ticket creation as
@@ -385,7 +385,7 @@ user explicitly asks for an integration ticket. Before committing/handing off
 any authored ticket, run the launch-time lint and require exit 0:
 
 ```bash
-chupa lint <stem>
+clutch lint <stem>
 ```
 
 This catches launch-blocking defects while you still have context.
@@ -395,7 +395,7 @@ Why: stale ticket shapes break autonomous runs before implementation starts.
 ### File ideas to the box
 
 File a potential idea, improvement, or second problem the user did not ask for
-with `chupa suggest "<summary>"`, rather than offering a loose ticket
+with `clutch suggest "<summary>"`, rather than offering a loose ticket
 suggestion. Name what was filed in one line in the reply.
 
 Why: a margin suggestion dies with the chat, while the box keeps it for triage.
@@ -410,7 +410,7 @@ a next step.** Authoring commits land on `main` locally and stay there until
 the user decides to push. Commit when asked, then stop.
 
 Why: remote-mutating verbs move shared state outside the local authoring and
-chupa lifecycle the user controls.
+clutch lifecycle the user controls.
 
 ### Git session safety
 
@@ -419,7 +419,7 @@ chupa lifecycle the user controls.
 - Never a tree-wide destructive verb (`clean`, `reset --hard`, `checkout -- .`) in a shared checkout.
 - Never push or remote-mutate unless the user explicitly says push; pushes are the checkpoint Effect's job.
 
-Why: a chat session sharing a checkout with the daemon can destroy work chupa believes exists.
+Why: a chat session sharing a checkout with the daemon can destroy work clutch believes exists.
 
 ### CRITICAL: Terse communication -- answer first, cut hedging and filler
 
@@ -437,17 +437,17 @@ default habit.
 ````
 
 ## Scope fence
-- chupa/hostfiles.py
+- clutch/hostfiles.py
 - CLAUDE.md
 - AGENTS.md
 - hosts/fixture/CLAUDE.md
 - tests/integration/test_hostfiles.py
 
 ## Acceptance criteria
-1. `CORE_TEMPLATE` equals the text inside this ticket's four-backtick fence plus one trailing newline, checked by reading `chupa/hostfiles.py` against this ticket; any differing word fails it.
+1. `CORE_TEMPLATE` equals the text inside this ticket's four-backtick fence plus one trailing newline, checked by reading `clutch/hostfiles.py` against this ticket; any differing word fails it.
 2. `./dev.py test tests/integration/test_hostfiles.py` passes and asserts every fenced `### ` heading is present and the one-line `Build the simplest thing satisfying the ticket;` bullet is absent, not still present.
 3. `classify_core` returns `current` for `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md`, checked by the `core_drift` gate and `./dev.py test tests/integration/test_fixture_host.py`.
-4. `git diff main -- AGENTS.md hosts/fixture/CLAUDE.md` shows changes only between the `chupa:core` marker lines. `git diff main -- CLAUDE.md` changes only the managed block and deletes the seven section B bullets.
+4. `git diff main -- AGENTS.md hosts/fixture/CLAUDE.md` shows changes only between the `clutch:core` marker lines. `git diff main -- CLAUDE.md` changes only the managed block and deletes the seven section B bullets.
 
 ## Verification
 ```

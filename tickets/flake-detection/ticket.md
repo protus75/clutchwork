@@ -11,12 +11,12 @@ state: confirmed
 - phase3-continue-15
 
 ## Context
-- chupa/daemon.py
-- chupa/box.py
-- chupa/journal.py
-- chupa/config.py
-- chupa/seams.py
-- chupa/__main__.py
+- clutch/daemon.py
+- clutch/box.py
+- clutch/journal.py
+- clutch/config.py
+- clutch/seams.py
+- clutch/__main__.py
 
 ## Plan contract
 - 19.I
@@ -27,19 +27,19 @@ state: confirmed
 Section 11.5 detection and quarantine through a dormant daemon composition hook.
 
 ## Scope in / Scope out
-19.P3.flake-detection governs this deliverable. chupa/flake.py owns the component; chupa/daemon.py owns its dormant composition hook, using the existing lock holder’s Journal and Box.
+19.P3.flake-detection governs this deliverable. clutch/flake.py owns the component; clutch/daemon.py owns its dormant composition hook, using the existing lock holder’s Journal and Box.
 
 Read the merged production code and the real CLI run/drain and build_daemon_core before editing. The cited own entry is the complete governing contract for Owner, Records, Observable and every named Tests obligation: implement all of it, including record custody and its sole writers, through the unit's Owner. The renderer injects these bullets verbatim. Never copy unit text into the ticket.
 
 Preserve callable signatures, bootstrap on-entry reconciliation and inline admission. Production dormancy must use calibrated raising hook probes over real CLI run/drain and the merged production-composition harness: deliberate construction and invocation wiring must trip each assertion. Direct injected invocation exercises the component; serve-activation owns production hook activation and dormancy migration. Reuse the merged CoreRig in tests/test_daemon_composition.py and the disposable CLI fixtures on demand as read-only idioms, never edit them. Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits.
 
-Authoring greps across chupa/, eval/ and tests/ covered flake, quarantine, daemon_core, build_daemon_core, Box, Journal, not hasattr, __all__, task counts and serve absence under 19.L rules 2-5. No public signature, constructor arity or composition-root wiring changes, no public-operation allowlist needs migration, and no predecessor production assertion flips: no fence additions are earned. Preserve ordinary DaemonTasks exception propagation and cleanup. Never migrate historical seeding tests. Existing fenced chupa/daemon.py is Context; the flake module and test created in this admission are neither Context nor On-demand, including for the sibling release. All other Context paths are merged read-only references. Keep unfenced suites as unchanged preservation suites in Verification only, neither fenced nor embedded.
+Authoring greps across clutch/, eval/ and tests/ covered flake, quarantine, daemon_core, build_daemon_core, Box, Journal, not hasattr, __all__, task counts and serve absence under 19.L rules 2-5. No public signature, constructor arity or composition-root wiring changes, no public-operation allowlist needs migration, and no predecessor production assertion flips: no fence additions are earned. Preserve ordinary DaemonTasks exception propagation and cleanup. Never migrate historical seeding tests. Existing fenced clutch/daemon.py is Context; the flake module and test created in this admission are neither Context nor On-demand, including for the sibling release. All other Context paths are merged read-only references. Keep unfenced suites as unchanged preservation suites in Verification only, neither fenced nor embedded.
 
 Out: continuous production wiring, replacement writers, task graphs, manual HGATE release, actual verification execution/filtering and unearned records.
 
 ## Scope fence
-- chupa/flake.py
-- chupa/daemon.py
+- clutch/flake.py
+- clutch/daemon.py
 - tests/test_flake.py
 
 ## Acceptance criteria

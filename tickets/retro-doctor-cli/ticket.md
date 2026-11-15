@@ -11,15 +11,15 @@ state: confirmed
 - phase5-continue-04
 
 ## Context
-- chupa/retro.py
-- chupa/__main__.py
+- clutch/retro.py
+- clutch/__main__.py
 - tests/test_retro.py
 - tests/test_cli.py
-- chupa/runner.py
-- chupa/seams.py
-- chupa/lockfile.py
-- chupa/journal.py
-- chupa/config.py
+- clutch/runner.py
+- clutch/seams.py
+- clutch/lockfile.py
+- clutch/journal.py
+- clutch/config.py
 
 ## Plan contract
 - 19.I
@@ -30,7 +30,7 @@ state: confirmed
 Operators can force the existing retro machinery and inspect setup through a read-only doctor verb.
 
 ## Scope in / Scope out
-Implement the registry's VERBS row. New chupa/doctor.py ownership comes from 19.P5.retro-doctor-cli; CLI wiring belongs to chupa/__main__.py. Keep Retro's public signatures and the existing drain composition intact. Use the shared provider session and prepare the pipeline before a selected run needs Pipeline.stages.driver; never dispatch a ticket to obtain a Driver. Invoke Retro(checkout, pipeline) with forced=True under the existing writer lock. Reuse its window projection, commit effect, receipt, recovery, failure suppression and proposals.
+Implement the registry's VERBS row. New clutch/doctor.py ownership comes from 19.P5.retro-doctor-cli; CLI wiring belongs to clutch/__main__.py. Keep Retro's public signatures and the existing drain composition intact. Use the shared provider session and prepare the pipeline before a selected run needs Pipeline.stages.driver; never dispatch a ticket to obtain a Driver. Invoke Retro(checkout, pipeline) with forced=True under the existing writer lock. Reuse its window projection, commit effect, receipt, recovery, failure suppression and proposals.
 
 Doctor inspects venv, git, config, lock and journal in that order through the existing seams and readers. It must remain usable with invalid config, report dependent failures with repair roads, and inspect a lock without creating it or changing its bytes. Do not use Lockfile.acquire for doctor inspection because it publishes a writer identity. Do not initialize state, repair a torn tail, call providers or prepare a pipeline for doctor. Keep all five output rows after any failed prerequisite.
 
@@ -43,10 +43,10 @@ Create test_doctor_check_order, test_doctor_failures and test_doctor_is_read_onl
 Keep every existing tests/test_retro.py assertion unchanged, including recovery, suppression, provenance and proposals. Preserve scorecard, status, baseline and retro-box assertions through unchanged Verification suites. No phase exit, new record schemas, signals, supervision, config knobs or unrelated CLI changes.
 
 ## Scope fence
-- chupa/doctor.py
+- clutch/doctor.py
 - tests/test_doctor.py
-- chupa/retro.py
-- chupa/__main__.py
+- clutch/retro.py
+- clutch/__main__.py
 - tests/test_retro.py
 - tests/test_cli.py
 

@@ -8,9 +8,9 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Remove the blanket `except BoxError` around the verb dispatch in chupa/__main__.py's `main`. Other BoxErrors, such as an invalid box file or conflicting reopen evidence, must keep their old messages and must not get the unknown-id advice (review finding, line 469).",
-    "Raise the unknown-id refusal only where ids are checked: in the triage/dismiss id validation and in the `prompt box` lookup in chupa/ask.py. Turn only the unknown-id case into the exit-2 message `chupa <verb>: unknown box id <id> -- name ids that chupa status lists` (ticket Scope in, __main__.py).",
-    "Add a test showing that a BoxError other than an unknown id, such as a corrupt box file under `chupa status`, does not print `name ids that chupa status lists`. This guards the narrowed handling. Keep the change inside the ticket's scope fence.",
+    "Remove the blanket `except BoxError` around the verb dispatch in clutch/__main__.py's `main`. Other BoxErrors, such as an invalid box file or conflicting reopen evidence, must keep their old messages and must not get the unknown-id advice (review finding, line 469).",
+    "Raise the unknown-id refusal only where ids are checked: in the triage/dismiss id validation and in the `prompt box` lookup in clutch/ask.py. Turn only the unknown-id case into the exit-2 message `clutch <verb>: unknown box id <id> -- name ids that clutch status lists` (ticket Scope in, __main__.py).",
+    "Add a test showing that a BoxError other than an unknown id, such as a corrupt box file under `clutch status`, does not print `name ids that clutch status lists`. This guards the narrowed handling. Keep the change inside the ticket's scope fence.",
     "Keep the rest of the passing diff (the status block, triage ids, dismiss, the box prompt, docs, and the Box.path rename). The review found it met the ticket. Fix only the error handling, then rerun all three Verification commands."
   ],
   "mechanical": null,

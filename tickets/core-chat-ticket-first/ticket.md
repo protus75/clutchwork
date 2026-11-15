@@ -9,26 +9,26 @@ kind: feature
 - none
 
 ## Context
-- chupa/hostfiles.py::CORE_TEMPLATE
+- clutch/hostfiles.py::CORE_TEMPLATE
 - tests/integration/test_hostfiles.py::test_core_template_is_host_neutral
 - dev.py
 - tests/integration/test_dev.py::test_suggest_forwards_summary
-- docs/how-chupa-works.md#2.2
-- docs/how-chupa-works.md#12. Host projects
+- docs/how-clutch-works.md#2.2
+- docs/how-clutch-works.md#12. Host projects
 
 ## Goal / Why
-The managed block that `chupa core` writes into every host's `CLAUDE.md` and `AGENTS.md` carries only rules for ticket agents. It has no rule for interactive chat sessions. The owner wrote the rule "Always propose a ticket -- never hand-edit main from chat" in boardgameui. It never reached chupa or its hosts: fungo has a weaker "Plan first" rule in its own text, and chupa has neither. On 2026-11-08 a chat session in this repo was asked about a review feature and edited engine code, docs and tests while `serve` was running tickets, instead of authoring a ticket.
+The managed block that `clutch core` writes into every host's `CLAUDE.md` and `AGENTS.md` carries only rules for ticket agents. It has no rule for interactive chat sessions. The owner wrote the rule "Always propose a ticket -- never hand-edit main from chat" in boardgameui. It never reached clutch or its hosts: fungo has a weaker "Plan first" rule in its own text, and clutch has neither. On 2026-11-08 a chat session in this repo was asked about a review feature and edited engine code, docs and tests while `serve` was running tickets, instead of authoring a ticket.
 
 After this change, the managed block carries a `## Chat session conduct` section holding that rule, ported word for word from boardgameui with only repo-specific names substituted, plus a fifth exception carrying this repo's "Supervising session" small-fix permission word for word (the owner kept it, 2026-11-08). Every host gets it through `core`. `./dev.py core` exists so the refresh runs from this repo's command surface, and this repo's `CLAUDE.md` and `AGENTS.md` carry the refreshed block.
 
 ## Scope in / Scope out
-- In: `chupa/hostfiles.py` `CORE_TEMPLATE`. Append the text inside the `markdown` code fence below (not the fence lines) after the last existing bullet, separated from it by one blank line. Copy it byte for byte. Keep the line breaks, the double hyphens and the backticks. Do not reword, reflow, shorten or summarize it. The existing heading, intro paragraph and seven bullets are unchanged.
+- In: `clutch/hostfiles.py` `CORE_TEMPLATE`. Append the text inside the `markdown` code fence below (not the fence lines) after the last existing bullet, separated from it by one blank line. Copy it byte for byte. Keep the line breaks, the double hyphens and the backticks. Do not reword, reflow, shorten or summarize it. The existing heading, intro paragraph and seven bullets are unchanged.
 
 ```markdown
 ## Chat session conduct
 
 These rules govern INTERACTIVE CHAT SESSIONS with the owner present. Ticket agents running under
-chupa skip this section; a confirmed ticket is the approval for its own scope.
+clutch skip this section; a confirmed ticket is the approval for its own scope.
 
 ### CRITICAL: Always propose a ticket -- never hand-edit main from chat
 
@@ -37,15 +37,15 @@ content from a chat session -- code, docs, CLAUDE.md, AGENTS.md,
 `.claude/settings.json`, hooks, scripts, project config, agent rules, or
 anything tracked in git outside the ticket-maintenance carve-out below -- your
 default and near-only response is to **draft a ticket file at
-`tickets/<stem>/ticket.md`** following `chupa new`, `chupa lint`, and
-`chupa review`, and stop. Do not edit or commit directly on `main`.
+`tickets/<stem>/ticket.md`** following `clutch new`, `clutch lint`, and
+`clutch review`, and stop. Do not edit or commit directly on `main`.
 
 The only times you may edit `main` directly from chat are:
 
 1. The user explicitly says "edit main", "commit directly", "skip the
    ticket", "do it inline", or equivalently unambiguous override in the
    same turn. Anger words alone do not count.
-2. You are inside an active chupa ticket worktree, in which case the ticket
+2. You are inside an active clutch ticket worktree, in which case the ticket
    workflow's own rules apply.
 3. In an interactive human chat session in the host checkout, the user
    directs you by explicit path to edit or delete an existing ticket file under
@@ -68,35 +68,35 @@ override: stop immediately, tell the user you broke this rule, and ask whether
 to revert the commit and refile as a ticket.
 
 Why: direct chat edits bypass the ticket, run-record, review, dependency, and
-retro artifacts that make chupa debuggable.
+retro artifacts that make clutch debuggable.
 ```
 
-- In: `dev.py`. Add a `core` subcommand, help `refresh the managed conduct block`, forwarding to `chupa core` through the existing fallthrough `chupa(args.task)`.
-- In: run `./dev.py core` after the template change so `CLAUDE.md` and `AGENTS.md` carry the new block. `core` does not touch `hosts/fixture/CLAUDE.md`, so re-render its managed block with `hostfiles.render`; `tests/integration/test_fixture_host.py` requires it `current`. In all three files only the managed block changes; every byte outside the `chupa:core` marker lines stays identical.
+- In: `dev.py`. Add a `core` subcommand, help `refresh the managed conduct block`, forwarding to `clutch core` through the existing fallthrough `clutch(args.task)`.
+- In: run `./dev.py core` after the template change so `CLAUDE.md` and `AGENTS.md` carry the new block. `core` does not touch `hosts/fixture/CLAUDE.md`, so re-render its managed block with `hostfiles.render`; `tests/integration/test_fixture_host.py` requires it `current`. In all three files only the managed block changes; every byte outside the `clutch:core` marker lines stays identical.
 - In: tests.
   - `tests/integration/test_hostfiles.py::test_core_template_is_host_neutral`: also assert `b"## Chat session conduct"`, `b"### CRITICAL: Always propose a ticket -- never hand-edit main from chat"` and `b"Anger words alone do not count."` are in `CORE_TEMPLATE`. The `- ` bullet count stays 7, because the new text has no `- ` lines.
-  - `tests/integration/test_dev.py`: add a test, like `test_suggest_forwards_summary`, that `dev.py core` calls `run` once with `["uv", "run", "python", "-m", "chupa", "core"]`.
+  - `tests/integration/test_dev.py`: add a test, like `test_suggest_forwards_summary`, that `dev.py core` calls `run` once with `["uv", "run", "python", "-m", "clutch", "core"]`.
 - In: docs.
-  - `docs/how-chupa-works.md` 2.2 `./dev.py` table: add a row `core` -> `chupa core`.
-  - `docs/how-chupa-works.md` section 12, after "The block carries only process rules that hold for every host": add one sentence saying that the block has two parts. `Engine conduct` is for ticket agents, and `Chat session conduct` is for interactive chat sessions in a host checkout.
-- Out: every other boardgameui or fungo chat rule (a later ticket ports those), section B of this repo's `CLAUDE.md` and `AGENTS.md`, the text of fungo or boardgameui, and `chupa/__main__.py`'s `core` verb.
+  - `docs/how-clutch-works.md` 2.2 `./dev.py` table: add a row `core` -> `clutch core`.
+  - `docs/how-clutch-works.md` section 12, after "The block carries only process rules that hold for every host": add one sentence saying that the block has two parts. `Engine conduct` is for ticket agents, and `Chat session conduct` is for interactive chat sessions in a host checkout.
+- Out: every other boardgameui or fungo chat rule (a later ticket ports those), section B of this repo's `CLAUDE.md` and `AGENTS.md`, the text of fungo or boardgameui, and `clutch/__main__.py`'s `core` verb.
 
 ## Scope fence
-- chupa/hostfiles.py
+- clutch/hostfiles.py
 - dev.py
 - CLAUDE.md
 - AGENTS.md
 - hosts/fixture/CLAUDE.md
 - tests/integration/test_hostfiles.py
 - tests/integration/test_dev.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_hostfiles.py` passes. It asserts that `CORE_TEMPLATE` contains `### CRITICAL: Always propose a ticket -- never hand-edit main from chat` and `Anger words alone do not count.`, and still has exactly 7 `- ` bullet lines, not 8.
-2. `CORE_TEMPLATE` contains the text inside this ticket's `markdown` code fence byte for byte, checked by reading `chupa/hostfiles.py` against this ticket.
-3. `./dev.py test tests/integration/test_dev.py` passes, including a test that `dev.py core` runs `chupa core` once.
-4. `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md` each contain `## Chat session conduct` between the `chupa:core` marker lines, `classify_core` returns `current` for each (the `core_drift` gate and `./dev.py test tests/integration/test_fixture_host.py`), and `git diff main -- CLAUDE.md AGENTS.md hosts/fixture/CLAUDE.md` shows changes only between the marker lines.
-5. `docs/how-chupa-works.md` has a `core` row in the 2.2 table and the two-part sentence in section 12.
+2. `CORE_TEMPLATE` contains the text inside this ticket's `markdown` code fence byte for byte, checked by reading `clutch/hostfiles.py` against this ticket.
+3. `./dev.py test tests/integration/test_dev.py` passes, including a test that `dev.py core` runs `clutch core` once.
+4. `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md` each contain `## Chat session conduct` between the `clutch:core` marker lines, `classify_core` returns `current` for each (the `core_drift` gate and `./dev.py test tests/integration/test_fixture_host.py`), and `git diff main -- CLAUDE.md AGENTS.md hosts/fixture/CLAUDE.md` shows changes only between the marker lines.
+5. `docs/how-clutch-works.md` has a `core` row in the 2.2 table and the two-part sentence in section 12.
 
 ## Verification
 ```

@@ -40,7 +40,7 @@ Before writing any seed, use resolve_plan_contract to resolve every role, row an
 
 Start ordinary rows and continuations medium/medium; deep: true rows run alone at high/high and exits are KNOWN-HARD high/high. Bound the whole batch including successor by seeding.max_seeds_per_admission, and every stuck budget by drain.max_ticket_minutes. Do not reorder, split, rename, omit or widen a registry row without a plan repair.
 
-Read the merged spec loader and spec tests before authoring. Apply 19.L rules 2-5 across chupa/, eval/ and tests/. Each row fence is the floor; record each earned addition's exact caller or contradicted assertion in tests/test_seeded_phase7_core.py. Existing fenced files default to Context; prompt-spec sources are never Context.
+Read the merged spec loader and spec tests before authoring. Apply 19.L rules 2-5 across clutch/, eval/ and tests/. Each row fence is the floor; record each earned addition's exact caller or contradicted assertion in tests/test_seeded_phase7_core.py. Existing fenced files default to Context; prompt-spec sources are never Context.
 
 In tests/test_seeded_phase7_core.py snapshot authoring head, idiom blob, entry hashes, citation lengths, file/ticket bytes and characters, required-unit depth and missing-part rejection. Pin grammar, confirmed source: seed birth, exact stems, edges, fence closure, tiers, role citations, position and shrinking suffix, and render feasibility at fixed maximum effort from recorded operands only.
 

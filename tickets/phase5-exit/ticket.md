@@ -11,14 +11,14 @@ state: confirmed
 - phase5-continue-05
 
 ## Context
-- chupa/retro.py
-- chupa/scorecard.py
-- chupa/baseline.py
-- chupa/git.py
-- chupa/seams.py
-- chupa/specs.py
-- chupa/stages.py
-- chupa/config.py
+- clutch/retro.py
+- clutch/scorecard.py
+- clutch/baseline.py
+- clutch/git.py
+- clutch/seams.py
+- clutch/specs.py
+- clutch/stages.py
+- clutch/config.py
 - tests/test_seeded_phase3_core.py
 - tickets/retro-box-activation/checks.json
 - tickets/baseline-binding-reader/checks.json
@@ -50,9 +50,9 @@ test_phase5_exit_baseline reads baseline-binding-reader's committed checks.json 
 
 Read committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML without copying it to a source file. Author exactly core-renderer, core-drift-classifier and phase6-continue, never later payloads. Core payloads depend on phase5-exit; core-drift-classifier also depends on core-renderer; phase6-continue depends on both core payloads and carries position 1 with admissions[1:]. Preserve all row consumption and refuse forward edges. Bound the batch including continuation by seeding.max_seeds_per_admission and each stuck budget by drain.max_ticket_minutes. Ordinary rows and continuations start medium/medium; only deep: true rows are KNOWN-DEEP high/high and alone, and exits are KNOWN-HARD high/high.
 
-Before authoring, resolve_plan_contract resolves every role, row and entry citation; required_units and entry_unit_gap validate every needed non-exit entry's Owner, Records, Observable and Tests. Missing or contradictory governing facts return premise_failed with kind: spec_gap naming the owning cited unit. Core-renderer cites 19.I, 19.P6.core-renderer, sections 8 and 15. Core-drift-classifier cites 19.I, 19.P6.core-drift-classifier, 19.P6.core-renderer and section 8. Cite only ids; copy no cited unit prose. New chupa/hostfiles.py ownership and every core test obligation come from those two entry units. The continuation cites its seeding role and the entries governing its next admission, checking their depth before its own authoring; never invent missing contracts.
+Before authoring, resolve_plan_contract resolves every role, row and entry citation; required_units and entry_unit_gap validate every needed non-exit entry's Owner, Records, Observable and Tests. Missing or contradictory governing facts return premise_failed with kind: spec_gap naming the owning cited unit. Core-renderer cites 19.I, 19.P6.core-renderer, sections 8 and 15. Core-drift-classifier cites 19.I, 19.P6.core-drift-classifier, 19.P6.core-renderer and section 8. Cite only ids; copy no cited unit prose. New clutch/hostfiles.py ownership and every core test obligation come from those two entry units. The continuation cites its seeding role and the entries governing its next admission, checking their depth before its own authoring; never invent missing contracts.
 
-In tests/test_seeded_phase6_core.py pin all named renderer and classifier Tests obligations from the cited entries, including entry depth and missing-part rejection, first adoption, exact project-byte preservation, corruption refusal before any write, byte idempotence, branch-template golden, real routed CLI/no git, all four drift states, the full modal/imperative paragraph rules and acceptance boundaries, purity and production-gate dormancy. Preserve the later activation's ownership of core_drift registration and shared provider resolver. Apply 19.L rules 2-5 by scanning signatures, direct callers, compositions, public-operation allowlists and negatives across chupa/, eval/ and tests/. The row fence is the floor; record each earned addition's exact caller or contradicted assertion. An unearned forced edit needs contract repair. Existing fenced files default to Context; On-demand requires recorded overflow of 300,000 characters. Exclude created files, same-admission sibling creations, prompt specs and delimiter-bearing sources; preservation suites belong only in Verification. Use merged tests/test_seeded_phase3_core.py as idiom, never either new test of this admission as a seed's Context.
+In tests/test_seeded_phase6_core.py pin all named renderer and classifier Tests obligations from the cited entries, including entry depth and missing-part rejection, first adoption, exact project-byte preservation, corruption refusal before any write, byte idempotence, branch-template golden, real routed CLI/no git, all four drift states, the full modal/imperative paragraph rules and acceptance boundaries, purity and production-gate dormancy. Preserve the later activation's ownership of core_drift registration and shared provider resolver. Apply 19.L rules 2-5 by scanning signatures, direct callers, compositions, public-operation allowlists and negatives across clutch/, eval/ and tests/. The row fence is the floor; record each earned addition's exact caller or contradicted assertion. An unearned forced edit needs contract repair. Existing fenced files default to Context; On-demand requires recorded overflow of 300,000 characters. Exclude created files, same-admission sibling creations, prompt specs and delimiter-bearing sources; preservation suites belong only in Verification. Use merged tests/test_seeded_phase3_core.py as idiom, never either new test of this admission as a seed's Context.
 
 Renderer obligations to carry by name: test_renderer_entry_unit, test_core_first_adoption_preserves_project_bytes, test_core_refresh_preserves_remainder, test_core_marker_corruption_refuses_without_writes, test_core_render_is_byte_idempotent, test_core_golden_uses_branch_template, test_core_routed_conduct_files and test_core_refusal_and_no_git. Classifier obligations to carry by name: test_classifier_entry_unit, test_core_drift_classification, test_core_drift_refuses_marker_corruption, test_core_remainder_process_refusals, test_core_remainder_accepts_project_rules, test_core_drift_uses_branch_render, test_core_classifier_is_pure and test_core_classifier_unreachable_from_production_gates. These belong to their future payload tests, not assertions that hostfiles already exists.
 

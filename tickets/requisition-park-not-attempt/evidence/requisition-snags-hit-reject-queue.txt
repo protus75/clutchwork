@@ -1,5 +1,5 @@
 # commit-lock: five requisition-stage premise_failed terminals spent the attempts cap and routed it to the Reject queue
-# journal (.chupa/state/journal/*.jsonl), state transitions and reject_arrival for commit-lock
+# journal (.clutch/state/journal/*.jsonl), state transitions and reject_arrival for commit-lock
 2026-11-10T07:42:38.256001+00:00 state_transition {"to": "running"}
 2026-11-10T07:45:34.799713+00:00 state_transition {"to": "premise_failed", "stage": "requisition"}
 2026-11-10T07:46:08.714452+00:00 state_transition {"to": "running"}
@@ -19,5 +19,5 @@
 Reject queue:
 - commit-lock: premise_failed at requisition -- confirm commit-lock after editing, or reject commit-lock
 
-# docs/how-chupa-works.md section 6.7, the documented behavior
+# docs/how-clutch-works.md section 6.7, the documented behavior
 441:- **Premise park:** a requisition-stage `premise_failed` draws no cap, makes no Diagnose call, and is not routed to the Reject queue. Edit the committed ticket to release it; no `confirm` is needed. Other premise failures: with the default `premise_bounce:

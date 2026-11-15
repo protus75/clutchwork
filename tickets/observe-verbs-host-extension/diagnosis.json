@@ -8,10 +8,10 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Drop the module globals that `configure()` sets in chupa/observe.py (ROOT, STATE, CONFIG, EXEC, GIT, ENV). Pass one explicit context (root, state dir, config path, exec, git, env) into `snapshot()`, `text_snapshot()` and their helpers so no call leaves process-wide state behind.",
+    "Drop the module globals that `configure()` sets in clutch/observe.py (ROOT, STATE, CONFIG, EXEC, GIT, ENV). Pass one explicit context (root, state dir, config path, exec, git, env) into `snapshot()`, `text_snapshot()` and their helpers so no call leaves process-wide state behind.",
     "Remove the `ROOT / \"state\"` fallback in `state_dir()`. A state dir must come from the loaded config's `state_dir` (Scope in). Update the existing tests in tests/test_watch.py to pass their state dir explicitly so the `config.yaml` they write is no longer dead.",
     "The suite runs under xdist (`-n auto`). Check that `test_queue_projection_and_fallback` and `test_recent_steps_merges_engine_and_stage_events` pass in any order after the `main([... 'snapshot'])` tests have run on the same worker.",
-    "In dev.py, keep the old `try/except KeyboardInterrupt: pass` around the call that runs `chupa watch`, so Ctrl-C ends `./dev.py watch` cleanly without a traceback.",
+    "In dev.py, keep the old `try/except KeyboardInterrupt: pass` around the call that runs `clutch watch`, so Ctrl-C ends `./dev.py watch` cleanly without a traceback.",
     "Keep everything else from attempt 2. The reviewer found that the verbs, extension and docs match the ticket, and `./dev.py test` passed. Change only the three findings above."
   ],
   "mechanical": null,

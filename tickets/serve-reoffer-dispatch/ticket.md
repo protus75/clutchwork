@@ -12,27 +12,27 @@ kind: bug
 - tests-split
 
 ## Context
-- chupa/drain.py
-- chupa/scheduler.py
-- chupa/serve.py
-- chupa/daemon.py
-- chupa/caps.py
+- clutch/drain.py
+- clutch/scheduler.py
+- clutch/serve.py
+- clutch/daemon.py
+- clutch/caps.py
 - tests/integration/test_scheduler.py
 - tests/integration/test_serve.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
 Serve does not follow the drain's re-offer rule (2026-11-07, `tickets/serve-reoffer-rule/evidence/`). It holds every Reject-queue ticket until an operator verdict, never draws a `retry` cap, and never checks spent caps. It also never re-offers a failed ticket at all: `Scheduler.dispatch_next` drops a dispatched ticket from `pending`, and after a failed terminal nothing puts it back unless the ticket text changes.
 
-`serve-reoffer-rule` moved the rule into `awaiting_operator`, `reofferable`, and `record_reoffer` in `chupa/drain.py`. After this change serve uses them too, so drain and serve re-offer the same tickets and journal the same keep and `retry` events.
+`serve-reoffer-rule` moved the rule into `awaiting_operator`, `reofferable`, and `record_reoffer` in `clutch/drain.py`. After this change serve uses them too, so drain and serve re-offer the same tickets and journal the same keep and `retry` events.
 
 ## Scope in / Scope out
-- In: `chupa/scheduler.py`:
+- In: `clutch/scheduler.py`:
   - `Scheduler` takes a new keyword `caps: Callable[[], Caps]`.
   - `dispatch_next` no longer holds the whole Reject queue. A candidate whose last transition is a terminal is eligible only when `reofferable(events, stem, self.caps())` holds and it is not parked.
   - Quarantine, drought, `max_unmerged`, supersedes, and dependency checks are unchanged.
-- In: `chupa/daemon.py`: `daemon_core` passes `caps=lambda: load().caps` to `Scheduler`.
-- In: `chupa/serve.py`:
+- In: `clutch/daemon.py`: `daemon_core` passes `caps=lambda: load().caps` to `Scheduler`.
+- In: `clutch/serve.py`:
   - The serve dispatch calls `record_reoffer(local.journal, local.journal.read(), stem, sha)` before journaling the `running` transition, when the stem's last transition is a terminal.
   - The dispatch `finally` calls `self.core.scheduler.update(ticket)` when the latest transition is a failed terminal, as it already does for `provider_drought`, so `dispatch_next` decides through `reofferable` whether it runs again.
   - `Serve.merge` calls `self.core.scheduler.update(ticket)` after `owner.consume_result(...)` when the stem's latest transition is a failed terminal. Merge-stage failures (integration red, post-rebase regate, conflict handoff) are journaled there after the dispatch callback has returned, so the dispatch `finally` never sees them.
@@ -57,14 +57,14 @@ Serve does not follow the drain's re-offer rule (2026-11-07, `tickets/serve-reof
   - `:343`: the cooling member's quota terminal now carries `routed: reject_queue` (spent cap, no `dispatch` key); the check expects `routed` equal to `reject_queue` for index 1 and absent otherwise, and still requires no `dispatch` key and no drawn cap.
   - `tests/integration/test_reliability_battery.py` `test_reliability_battery_requires_member_local_evidence`: the `required` set excludes `cap_consumed` events with `ticket_sha: "seed"`.
   - `tests/integration/test_watchdog_activation.py` needs no change: its `caps: {infra: 1}` is spent by its one `timeout`.
-- In: `docs/how-chupa-works.md`:
+- In: `docs/how-clutch-works.md`:
   - section 6.4 cap table: `retry` is drawn by each drain or serve re-offer;
   - section 6.6 "Machine keep": both drain and serve re-offer a Reject-queue stem whose caps have budget;
   - section 7.2 `serve`: serve draws `retry` on a re-offer and puts a failed ticket back for the rule to decide, as the drain does;
   - section 7.2 Dispatch hold list: only Reject-queue stems awaiting an operator are held.
 - Out:
-  - the rule functions in `chupa/drain.py` and the snapshot (`serve-reoffer-rule`);
-  - `chupa run`'s single-ticket dispatch (`chupa/runner.py`);
+  - the rule functions in `clutch/drain.py` and the snapshot (`serve-reoffer-rule`);
+  - `clutch run`'s single-ticket dispatch (`clutch/runner.py`);
   - storm holds, provider droughts, quarantine;
   - changing which caps exist or their defaults.
 - Coverage: Other test files that build serve or the daemon core are unaffected unless they hold a Reject-queue stem with caps left, end a serve run in a failed terminal with caps left, or count journal events around a serve re-dispatch. The ones that do (`test_control_cli`, `test_reject_queue`, `test_storm_notification_activation`, `test_daemon_soak`, `test_daemon_soak_runner`, `test_reliability_battery`, `test_watchdog_activation`) are fenced.
@@ -76,9 +76,9 @@ Serve does not follow the drain's re-offer rule (2026-11-07, `tickets/serve-reof
 - tests/integration/test_daemon_soak.py
 - tests/integration/test_daemon_soak_runner.py
 - tests/integration/test_reliability_battery.py
-- chupa/scheduler.py
-- chupa/serve.py
-- chupa/daemon.py
+- clutch/scheduler.py
+- clutch/serve.py
+- clutch/daemon.py
 - tests/integration/test_scheduler.py
 - tests/integration/test_requisition_gate.py
 - tests/integration/test_daemon_composition.py
@@ -87,11 +87,11 @@ Serve does not follow the drain's re-offer rule (2026-11-07, `tickets/serve-reof
 - tests/integration/test_reject_queue.py
 - tests/integration/test_storm_notification_activation.py
 - tests/regress_serve_reoffer_dispatch.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_scheduler.py tests/integration/test_requisition_gate.py tests/integration/test_daemon_composition.py tests/integration/test_serve.py tests/integration/test_control_cli.py tests/integration/test_reject_queue.py tests/integration/test_storm_notification_activation.py tests/integration/test_daemon_soak.py tests/integration/test_daemon_soak_runner.py tests/integration/test_reliability_battery.py` exits 0, including every test listed in Scope in.
-2. `grep -n -e "reject_queue(" -e "caps.spent" -e "consume(" chupa/scheduler.py chupa/serve.py` prints nothing: they reach the rule only through `reofferable` and `record_reoffer`.
+2. `grep -n -e "reject_queue(" -e "caps.spent" -e "consume(" clutch/scheduler.py clutch/serve.py` prints nothing: they reach the rule only through `reofferable` and `record_reoffer`.
 3. `./dev.py test` exits 0.
 
 ## Verification
@@ -110,7 +110,7 @@ uv run python tests/regress_serve_reoffer_dispatch.py
 Reject the branch if any of the following holds:
 - serve or the scheduler decides a re-offer, or journals a keep or `retry`, other than through `reofferable` and `record_reoffer`;
 - the drain's behavior changes;
-- any file under `vscode-chupa/` or `chupa/drain.py` changes.
+- any file under `vscode-clutchwork/` or `clutch/drain.py` changes.
 
 ## Time budget
 - expected: 60m

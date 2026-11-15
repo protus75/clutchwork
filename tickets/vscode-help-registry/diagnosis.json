@@ -8,11 +8,11 @@
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Attempt 2 read the context for about 16s, then reported incomplete with an empty diff. Redo the whole implementation from the merge base and do not stop after inspecting. Order: chupa/help.py, then chupa/observe.py, then chupa/stats.py, then the tests.",
-    "chupa/help.py builders take read: Callable[[Path], str] and repo_url: str. Call read only on packaged chupa/docs files. Each verb's what is its host-running.md 'What it does' cell with backticks removed. A missing heading or verb row raises. Never write the repo URL as a literal.",
-    "chupa/observe.py: add one module-level function that passes Path.read_text and the importlib.metadata Repository URL to the help builders. snapshot adds help, helpPick, headerHelp, boxHeaderHelp, row help/next/priorityHelp, step help/tooltip, and status.* keys. engineVerbs detail = verb what.",
+    "Attempt 2 read the context for about 16s, then reported incomplete with an empty diff. Redo the whole implementation from the merge base and do not stop after inspecting. Order: clutch/help.py, then clutch/observe.py, then clutch/stats.py, then the tests.",
+    "clutch/help.py builders take read: Callable[[Path], str] and repo_url: str. Call read only on packaged clutch/docs files. Each verb's what is its host-running.md 'What it does' cell with backticks removed. A missing heading or verb row raises. Never write the repo URL as a literal.",
+    "clutch/observe.py: add one module-level function that passes Path.read_text and the importlib.metadata Repository URL to the help builders. snapshot adds help, helpPick, headerHelp, boxHeaderHelp, row help/next/priorityHelp, step help/tooltip, and status.* keys. engineVerbs detail = verb what.",
     "Monkeypatch that observe function in tests/unit/test_menu_admission.py (both read_text fixtures) and in the world fixture of test_verdict_menu_parity.py. In test_watch.py, change the engineVerbs[0] detail expectation. In stats.py, give stats_tree top-level rows only a stat.* tooltip.",
-    "Write tests/unit/test_help.py (fake read, no disk) and tests/integration/test_help.py (real docs, manifest and metadata) to cover criteria 1-9. Run every ## Verification command before reporting. Change no file under vscode-chupa/."
+    "Write tests/unit/test_help.py (fake read, no disk) and tests/integration/test_help.py (real docs, manifest and metadata) to cover criteria 1-9. Run every ## Verification command before reporting. Change no file under vscode-clutchwork/."
   ],
   "mechanical": null,
   "spec_version": "1.5",

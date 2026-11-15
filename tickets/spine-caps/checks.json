@@ -5,9 +5,9 @@
   "stem": "spine-caps",
   "passed": true,
   "changed_files": [
-    "chupa/caps.py",
-    "chupa/drain.py",
-    "chupa/runner.py",
+    "clutch/caps.py",
+    "clutch/drain.py",
+    "clutch/runner.py",
     "tests/test_caps.py",
     "tests/test_drain.py"
   ],

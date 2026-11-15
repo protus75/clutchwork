@@ -12,23 +12,23 @@ state: confirmed
 
 ## Context
 - tests/unit/test_specs.py
-- chupa/stages.py::regression_result
+- clutch/stages.py::regression_result
 
 ## On-demand
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 
 ## Goal / Why
-Requisition review approved `shared-hold-rule` with a `## Regression` command of `./dev.py test ... -k test_snapshot_holds_a_parked_ticket`. That command prints dev.py's `$` line and pytest text. The bug_evidence gate needs stdout to be exactly one `{"regression_result": ...}` JSON object (`stages.regression_result`), from a carried reproducer. Attempt 0 passed all tests but failed bug_evidence. Attempt 1 spent a retry and a `premise_bounce` unit rediscovering the defect, and the ticket reached the Reject queue twice. `chupa/specs/requisition_review.md` says nothing about `## Regression`, so the reviewer cannot snag this before Implement.
+Requisition review approved `shared-hold-rule` with a `## Regression` command of `./dev.py test ... -k test_snapshot_holds_a_parked_ticket`. That command prints dev.py's `$` line and pytest text. The bug_evidence gate needs stdout to be exactly one `{"regression_result": ...}` JSON object (`stages.regression_result`), from a carried reproducer. Attempt 0 passed all tests but failed bug_evidence. Attempt 1 spent a retry and a `premise_bounce` unit rediscovering the defect, and the ticket reached the Reject queue twice. `clutch/specs/requisition_review.md` says nothing about `## Regression`, so the reviewer cannot snag this before Implement.
 
 After this change the requisition review Task has one more snag bullet that applies only to tickets with a `## Regression` section.
 
 ## Scope in / Scope out
-- In: `chupa/specs/requisition_review.md`: add one bullet to the Task snag list. When the ticket has `## Regression`, its command must run a reproducer that sits under a `- carries:` path prefix (which must be a test or fixture path) and under a `## Scope fence` prefix. That reproducer must print only one `{"regression_result": ...}` JSON object and use the exit code that `stages.regression_result` pairs with it: `pass` with exit 0 at head, and `defect` with nonzero exit on the base overlaid with the carried files, using only code that exists at base. A `pass` printed with a nonzero exit, or a `defect` printed with exit 0, decodes to nothing and is a snag. A command that runs a test runner whose own output reaches stdout (`./dev.py test`, pytest) is a snag. Bump the spec `version` to the next minor above its value at the base commit ("3.3" when drafted; sibling spec tickets may have bumped it since).
+- In: `clutch/specs/requisition_review.md`: add one bullet to the Task snag list. When the ticket has `## Regression`, its command must run a reproducer that sits under a `- carries:` path prefix (which must be a test or fixture path) and under a `## Scope fence` prefix. That reproducer must print only one `{"regression_result": ...}` JSON object and use the exit code that `stages.regression_result` pairs with it: `pass` with exit 0 at head, and `defect` with nonzero exit on the base overlaid with the carried files, using only code that exists at base. A `pass` printed with a nonzero exit, or a `defect` printed with exit 0, decodes to nothing and is a snag. A command that runs a test runner whose own output reaches stdout (`./dev.py test`, pytest) is a snag. Bump the spec `version` to the next minor above its value at the base commit ("3.3" when drafted; sibling spec tickets may have bumped it since).
 - In: `tests/unit/test_specs.py`: update the pinned requisition_review version and add one test that the rendered Task holds the new bullet.
-- Out: tickets with no `## Regression` section (the bullet must not apply to them), lint, `chupa/stages.py`, the bug_evidence gate, other specs.
+- Out: tickets with no `## Regression` section (the bullet must not apply to them), lint, `clutch/stages.py`, the bug_evidence gate, other specs.
 
 ## Scope fence
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 - tests/unit/test_specs.py
 
 ## Acceptance criteria

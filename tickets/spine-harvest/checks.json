@@ -5,10 +5,10 @@
   "stem": "spine-harvest",
   "passed": true,
   "changed_files": [
-    "chupa/artifacts.py",
-    "chupa/git.py",
-    "chupa/runner.py",
-    "chupa/stages.py",
+    "clutch/artifacts.py",
+    "clutch/git.py",
+    "clutch/runner.py",
+    "clutch/stages.py",
     "tests/test_git.py",
     "tests/test_harvest.py"
   ],

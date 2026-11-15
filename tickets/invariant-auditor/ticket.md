@@ -11,8 +11,8 @@ agent_effort: medium
 - requisition-seed-path
 
 ## Context
-- chupa/journal.py
-- chupa/artifacts.py
+- clutch/journal.py
+- clutch/artifacts.py
 
 ## Plan contract
 - 19.L
@@ -21,14 +21,14 @@ agent_effort: medium
 - section 15
 
 ## Goal / Why
-`chupa/audit.py` is the invariant auditor (section 15 harness ladder rung 1): a closed set of named invariants folded over a journal, each a pure check over `Journal.read_segments()`, returning every violation with the invariant's name. A green journal yields no violation.
+`clutch/audit.py` is the invariant auditor (section 15 harness ladder rung 1): a closed set of named invariants folded over a journal, each a pure check over `Journal.read_segments()`, returning every violation with the invariant's name. A green journal yields no violation.
 
 Why: the shakeout battery's pass condition is this auditor (19.P2): a member is green only when its terminal is right AND its own journal folds clean. Without it, a battery can pass a run that journaled two terminals, drew an undeclared cap, or merged with an unpaired effect intent.
 
-Owners (19.P2 NAMES): `chupa/audit.py` / `tests/test_audit.py` own the invariant set and the fold. `chupa/journal.py` owns the one parser (`read_segments`) and the run-state vocabulary (`TERMINAL_STATES`), read only. `chupa/caps.py` owns the declared cap vocabulary (`CAPS`), read only.
+Owners (19.P2 NAMES): `clutch/audit.py` / `tests/test_audit.py` own the invariant set and the fold. `clutch/journal.py` owns the one parser (`read_segments`) and the run-state vocabulary (`TERMINAL_STATES`), read only. `clutch/caps.py` owns the declared cap vocabulary (`CAPS`), read only.
 
 ## Scope in / Scope out
-- In: `chupa/audit.py`:
+- In: `clutch/audit.py`:
   - `INVARIANTS`, the closed ordered tuple `("one_terminal_per_run", "declared_cap", "merged_effects_paired", "merged_carries_commit", "closed_run_states", "segment_ts_monotonic")`.
   - `Violation`, a frozen dataclass: `invariant`, `ticket` (nullable), `detail`.
   - `audit(segments: Iterable[tuple[Event, ...]], caps: Collection[str] = CAPS) -> list[Violation]`, in segment then event order:
@@ -39,10 +39,10 @@ Owners (19.P2 NAMES): `chupa/audit.py` / `tests/test_audit.py` own the invariant
     - `closed_run_states`: every `state_transition` `to` is `running` or in `TERMINAL_STATES`.
     - `segment_ts_monotonic`: within each segment, `ts` never decreases (string order, the pinned rendering, section 6).
   - `audit_journal(journal: Journal, caps=CAPS) -> list[Violation]` folds `journal.read_segments()`.
-- Out: running it continuously against a live daemon (Phase 3), any CLI verb, any change to `chupa/journal.py` or `chupa/caps.py`, and the battery members (later seeds).
+- Out: running it continuously against a live daemon (Phase 3), any CLI verb, any change to `clutch/journal.py` or `clutch/caps.py`, and the battery members (later seeds).
 
 ## Scope fence
-- chupa/audit.py
+- clutch/audit.py
 - tests/test_audit.py
 
 ## Acceptance criteria

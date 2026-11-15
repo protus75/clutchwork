@@ -10,8 +10,8 @@
   "lessons": [
     "Rewrite the ticket's ## Regression: './dev.py test ...' prints '$ uv run pytest ...' and uv output before pytest output, but the harvest finding says BugEvidenceGate needs stdout to be exactly one regression-result JSON object.",
     "Point Regression at a carried reproducer that prints exactly one pass/defect JSON object and nothing else, as the finding's paved road says. List that reproducer under 'carries' and in ## Scope fence.",
-    "Missing fact: the ticket and harvest give no exact JSON fields for the pass/defect result. Read BugEvidenceGate's owning code before writing the reproducer, then run 'chupa review shared-hold-rule' until it approves.",
-    "Leave the hold-rule scope unchanged: parked_blob in chupa/drain.py, the scheduler and observe.py callers, and test_snapshot_holds_a_parked_ticket. The attempt found no fault in them; only the Regression protocol blocked Check."
+    "Missing fact: the ticket and harvest give no exact JSON fields for the pass/defect result. Read BugEvidenceGate's owning code before writing the reproducer, then run 'clutch review shared-hold-rule' until it approves.",
+    "Leave the hold-rule scope unchanged: parked_blob in clutch/drain.py, the scheduler and observe.py callers, and test_snapshot_holds_a_parked_ticket. The attempt found no fault in them; only the Regression protocol blocked Check."
   ],
   "mechanical": null,
   "spec_version": "1.2",

@@ -7,7 +7,7 @@ const vm = require('vm');
 
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'vscode-chupa', 'media', 'graph.js'), 'utf8') + ';this.toViewModels = toViewModels;', ctx);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'vscode-clutchwork', 'media', 'graph.js'), 'utf8') + ';this.toViewModels = toViewModels;', ctx);
 const vms = ctx.toViewModels([
 	{ id: 'a', parentIds: ['b', 'd'] },
 	{ id: 'b', parentIds: ['c', 'd'] },

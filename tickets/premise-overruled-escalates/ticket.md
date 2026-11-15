@@ -9,18 +9,18 @@ kind: bug
 - none
 
 ## Context
-- chupa/drain.py::parked_blob
-- chupa/runner.py::drive
-- chupa/drain.py::record_reoffer
-- chupa/caps.py::capability
-- docs/how-chupa-works.md#6. When a run fails
+- clutch/drain.py::parked_blob
+- clutch/runner.py::drive
+- clutch/drain.py::record_reoffer
+- clutch/caps.py::capability
+- docs/how-clutch-works.md#6. When a run fails
 
 ## On-demand
 - tests/integration/test_drain.py
 - tests/integration/test_caps.py
 
 ## Goal / Why
-When Implement returns `premise_failed` (it claims the ticket cannot be done as written), Diagnose reads the attempt. If Diagnose disagrees and returns `retry` (the ticket is buildable and the implementer misread it), routing journals `dispatch: retry`. But `chupa/drain.py::parked_blob` holds every `premise_failed` stem until its committed `ticket.md` changes, whatever the dispatch. So the stem sits parked waiting for an edit nobody knows is needed, and the drain goes quiescent. On 2026-11-11, `journal-incremental-read` attempt 1 did exactly this (see `evidence/premise-retry-parked.txt`).
+When Implement returns `premise_failed` (it claims the ticket cannot be done as written), Diagnose reads the attempt. If Diagnose disagrees and returns `retry` (the ticket is buildable and the implementer misread it), routing journals `dispatch: retry`. But `clutch/drain.py::parked_blob` holds every `premise_failed` stem until its committed `ticket.md` changes, whatever the dispatch. So the stem sits parked waiting for an edit nobody knows is needed, and the drain goes quiescent. On 2026-11-11, `journal-incremental-read` attempt 1 did exactly this (see `evidence/premise-retry-parked.txt`).
 
 Re-running the same model as-is invites the same wrong "impossible" claim. A premise claim that Diagnose overrules is a capability signal, which the existing ladder already answers.
 
@@ -29,10 +29,10 @@ When this ticket is done, a `premise_failed` at Implement whose Diagnose verdict
 This applies only when `premise_bounce` leaves budget after the first bounce (this repo sets `premise_bounce: 2`). Under the default of 1, the first bounce spends the cap and routes to the Reject queue without Diagnose, as today.
 
 ## Scope in / Scope out
-- In: `chupa/runner.py` terminal routing: when the terminal is `premise_failed` at stage `implement` and the Diagnose verdict is `retry`, route it exactly as an `escalate` verdict (`next_rung`, `terminal["rung"]`, Reject queue when there is no rung). Spent caps still route to the Reject queue first, as today.
-- In: `chupa/drain.py::parked_blob`: a `premise_failed` terminal whose `dispatch` is `escalate` holds nothing, so the drain, serve's scheduler and the status view re-offer it at its new rung. Every other `premise_failed`, including requisition-stage parks and ones with no dispatch, is held until `ticket.md` changes, as today.
-- In: `chupa/drain.py::record_reoffer`: for a `premise_failed` terminal whose `dispatch` is `escalate`, draw `retry` with the terminal's `rung`, so `chupa/caps.py::capability` runs the re-offer at the new rung. Every other `premise_failed` still draws nothing.
-- In: `docs/how-chupa-works.md` section 6: the 6.4 retry-cap row, the 6.6 machine-keep text, and the premise-park text describe the overruled-premise escalation and its retry draw.
+- In: `clutch/runner.py` terminal routing: when the terminal is `premise_failed` at stage `implement` and the Diagnose verdict is `retry`, route it exactly as an `escalate` verdict (`next_rung`, `terminal["rung"]`, Reject queue when there is no rung). Spent caps still route to the Reject queue first, as today.
+- In: `clutch/drain.py::parked_blob`: a `premise_failed` terminal whose `dispatch` is `escalate` holds nothing, so the drain, serve's scheduler and the status view re-offer it at its new rung. Every other `premise_failed`, including requisition-stage parks and ones with no dispatch, is held until `ticket.md` changes, as today.
+- In: `clutch/drain.py::record_reoffer`: for a `premise_failed` terminal whose `dispatch` is `escalate`, draw `retry` with the terminal's `rung`, so `clutch/caps.py::capability` runs the re-offer at the new rung. Every other `premise_failed` still draws nothing.
+- In: `docs/how-clutch-works.md` section 6: the 6.4 retry-cap row, the 6.6 machine-keep text, and the premise-park text describe the overruled-premise escalation and its retry draw.
 - In: shakeout members that pin the old park move to the overruled-premise escalation. `tests/harness/shakeout/runner.py::_premise_false` observes the routing: it scripts replies for the in-drain re-offer and asserts one `premise_bounce` draw and the first terminal's `dispatch` `escalate` with `rung` (observation `overruled_premise_routed_escalate`). `tests/harness/shakeout/drain.py::_premise_park_release` observes the re-offer: it scripts the re-offer's implement and review replies, and one drain runs Implement again at the escalated rung with no `ticket.md` change and merges (observation `overruled_premise_reoffered_without_edit`). `tests/integration/test_shakeout.py` updates both observation names. Requisition-stage park-then-release stays covered by `tests/integration/test_requisition_gate.py`.
 - In: new `tests/unit/test_premise_overruled.py` and the carried reproducer `tests/regress_premise_overruled_escalates.py`.
 - Out:
@@ -41,9 +41,9 @@ This applies only when `premise_bounce` leaves budget after the first bounce (th
   - Requisition-stage premise parks, which still release on a ticket edit.
 
 ## Scope fence
-- chupa/runner.py
-- chupa/drain.py
-- docs/how-chupa-works.md
+- clutch/runner.py
+- clutch/drain.py
+- docs/how-clutch-works.md
 - tests/integration/test_drain.py
 - tests/integration/test_caps.py
 - tests/unit/test_premise_overruled.py

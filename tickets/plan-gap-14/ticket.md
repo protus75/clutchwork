@@ -19,18 +19,18 @@ none
 - section 6
 
 ## Goal / Why
-`CHUPA_PLAN.md` states every fact `phase4-continue-02` needs from its gapped units.
+`CLUTCH_PLAN.md` states every fact `phase4-continue-02` needs from its gapped units.
 
 ## Scope in / Scope out
 - In: the fenced entry units, with their Owner, Records, Observable, and Tests parts; insert a missing unit after its phase's last unit.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P4.reliability-battery
+- CLUTCH_PLAN.md#19.P4.reliability-battery
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P4.reliability-battery` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+2. `CLUTCH_PLAN.md` unit `19.P4.reliability-battery` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > The reliability-battery registry row exists, but resolve_plan_contract cannot resolve 19.P4.reliability-battery. The required successor must cite that entry, so authoring it would require inventing governing facts or editing the plan outside the scope fence.
 
 ## Verification

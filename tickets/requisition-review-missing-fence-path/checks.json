@@ -5,7 +5,7 @@
   "stem": "requisition-review-missing-fence-path",
   "passed": true,
   "changed_files": [
-    "chupa/specs/requisition_review.md",
+    "clutch/specs/requisition_review.md",
     "tests/integration/test_requisition.py",
     "tests/unit/test_specs.py"
   ],
@@ -168,7 +168,7 @@
           "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_cleans_up_owned_lifetimes[success]": 1.2788118199969176,
           "tests/integration/test_merge.py::test_core_activation_first_adoption_merge[None-inline]": 1.2786508009885438,
           "tests/integration/test_watch.py::test_snapshot_watch_uses_configured_state": 1.277813672029879,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.2735128340136725,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.2735128340136725,
           "tests/integration/test_shakeout.py::test_review_reject_reentry_member_observes_criteria_position_reentry_and_merge": 1.2708704300166573,
           "tests/integration/test_ladder.py::test_same_retry_wall_at_top_routes_to_queue": 1.2494927280058619,
           "tests/integration/test_ladder.py::test_reject_verdicts_auto_keep_once_and_draw_down[abandon-human]": 1.2393451069656294,
@@ -213,7 +213,7 @@
         "tests/unit/test_specs.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 2.41s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_specs.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 2.41s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.703943
     },
@@ -224,7 +224,7 @@
         "tests/integration/test_requisition.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_requisition.py\nbringing up nodes...\nbringing up nodes...\n\n...................                                                      [100%]\n19 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_requisition.py\nbringing up nodes...\nbringing up nodes...\n\n...................                                                      [100%]\n19 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.217
     }

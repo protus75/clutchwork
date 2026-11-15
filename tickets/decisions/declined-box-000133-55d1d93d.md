@@ -4,7 +4,7 @@ kind: declined
 link: box-000133-55d1d93d
 reopen_after_days: 90
 ---
-`reconcile` in `chupa/reconcile.py` runs `worktree_prune` once more after its reap loop, but `Git.worktree_remove` already prunes after each removal. The suggestion is to prune once per reaped batch or drop one of the two prune calls. The only cost is a redundant git call.
+`reconcile` in `clutch/reconcile.py` runs `worktree_prune` once more after its reap loop, but `Git.worktree_remove` already prunes after each removal. The suggestion is to prune once per reaped batch or drop one of the two prune calls. The only cost is a redundant git call.
 
 This is cleanup, not a fix for a harmful bug. Running `git worktree prune` more than once is idempotent, so the extra call changes no outcome. The note itself says the outer prune only matters when no worktree existed, and then it is a harmless no-op. Nothing shows a wrong runtime result, a failure, or a cost anyone would notice, so there is nothing to measure after a change.
 

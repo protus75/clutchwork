@@ -11,7 +11,7 @@ none
 ## Context
 - eval/daemon_soak.py
 - eval/reliability_battery.py
-- chupa/git.py
+- clutch/git.py
 - tests/test_daemon_soak.py
 - tests/test_daemon_soak_runner.py
 - tests/test_reliability_battery.py
@@ -31,7 +31,7 @@ After this change the tests pass while `main` advances. They still prove that ea
 - In: in each of the three tests, a SHA comparison with a later `HEAD` read becomes a bracket check. Read `before = HEAD` before the report is produced and `after = HEAD` after it is produced. Then require that `before` is an ancestor of or equal to `produced_at_sha`, and that `produced_at_sha` is an ancestor of or equal to `after`. Check ancestry with `Git.merge_base` (`merge_base(dir, a, b) == a` means `a` is an ancestor of or equal to `b`). Add no git verb.
 - In: `test_daemon_soak_command_writes_report_only_on_green` compares the subprocess report with the in-process report with `produced_at_sha` excluded, field for field. Both SHAs must fall inside one bracket that spans both runs, and the in-process SHA must be an ancestor of or equal to the subprocess SHA.
 - In: `test_daemon_soak_is_rederivable` compares the two reports with `produced_at_sha` excluded, and requires that the first report's SHA is an ancestor of or equal to the second's.
-- Out: `eval/daemon_soak.py`, `eval/reliability_battery.py`, `chupa/git.py`, every other assertion in these tests, and other tests.
+- Out: `eval/daemon_soak.py`, `eval/reliability_battery.py`, `clutch/git.py`, every other assertion in these tests, and other tests.
 
 ## Scope fence
 - tests/test_daemon_soak.py
@@ -53,7 +53,7 @@ After this change the tests pass while `main` advances. They still prove that ea
 Reject the branch if any of the following holds:
 - a test stops checking `produced_at_sha` against the producing checkout's history;
 - a test retries, sleeps, or skips to avoid the race;
-- `eval/daemon_soak.py`, `eval/reliability_battery.py`, or `chupa/git.py` changes;
+- `eval/daemon_soak.py`, `eval/reliability_battery.py`, or `clutch/git.py` changes;
 - an entry, spec-version, or report-bytes assertion other than the SHA is weakened or removed.
 
 ## Time budget

@@ -29,7 +29,7 @@ state: confirmed
 Admit the supervised fixture loop and receipt machinery after GO-grade evidence merges.
 
 ## Scope in / Scope out
-Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML directly from CHUPA_PLAN.md. Position 7 carries admissions[7:]:
+Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML directly from CLUTCH_PLAN.md. Position 7 carries admissions[7:]:
 - [exit-receipt-machinery]
 - [phase6-exit]
 
@@ -37,7 +37,7 @@ Author exactly exit-receipt-machinery and phase6-continue-08. Add phase6-continu
 
 Resolve role, row and entry ids with resolve_plan_contract before seed writes. Check required_units and entry_unit_gap for machinery and successor, including next-admission entries and closure through fixture-host-scaffold, supervised-merge-hold, go-grade-machinery and go-grade-run. Inspect Owner, Records, Observable and Tests before grammar and review. Missing or contradictory facts return premise_failed, kind: spec_gap naming the owning unit; never invent a successor contract. Cite ids under Plan contract rather than copying entry prose. Carry every named machinery Tests obligation into acceptance.
 
-Read predecessor owners and merged tests; scan chupa/, eval/ and tests/ for signatures, callers, composition roots, allowlists and negative assertions. Preserve registry names, order, grain and fence floors. Only 19.L rules 2-5 earn additions; record each exact caller or contradicted assertion in tests/test_seeded_phase6_07.py. Other widening requires plan repair. Existing fenced files default to Context; On-demand needs recorded embedding above 300,000 characters. Exclude creations, sibling creations, prompt specs and delimiter-bearing sources from Context. Preservation suites occur only in Verification. Keep historical fixtures unchanged and use merged tests/test_seeded_phase3_core.py as the idiom.
+Read predecessor owners and merged tests; scan clutch/, eval/ and tests/ for signatures, callers, composition roots, allowlists and negative assertions. Preserve registry names, order, grain and fence floors. Only 19.L rules 2-5 earn additions; record each exact caller or contradicted assertion in tests/test_seeded_phase6_07.py. Other widening requires plan repair. Existing fenced files default to Context; On-demand needs recorded embedding above 300,000 characters. Exclude creations, sibling creations, prompt specs and delimiter-bearing sources from Context. Preservation suites occur only in Verification. Keep historical fixtures unchanged and use merged tests/test_seeded_phase3_core.py as the idiom.
 
 Ordinary rows and continuations start medium/medium. A deep: true row runs alone high/high. Exits start KNOWN-HARD high/high. Count the successor in seeding.max_seeds_per_admission and cap every stuck budget at drain.max_ticket_minutes. This admission has two seeds including its successor; do not split or bundle rows.
 

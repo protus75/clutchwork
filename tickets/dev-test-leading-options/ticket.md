@@ -26,7 +26,7 @@ After this change every argument after `test` reaches pytest unchanged and in or
   - Exactly one recorded call with argv `["uv", "run", "pytest", "-q", "-k", "foo"]`: prints `{"regression_result": "pass"}` and exits 0.
   - Anything else, including a failed import of `dev`: the traceback goes to stderr, and it prints `{"regression_result": "error"}` and exits 2.
   - Nothing but the one JSON object goes to stdout. `dev.run` prints its `$ ...` line to stdout, so the reproducer redirects stdout around `dev.main()` and prints the result after.
-- Out: every other subcommand's arguments and behavior, the bare `./dev.py` suite run, and `docs/how-chupa-works.md` (its `test [args]` row already says "pytest with those args").
+- Out: every other subcommand's arguments and behavior, the bare `./dev.py` suite run, and `docs/how-clutch-works.md` (its `test [args]` row already says "pytest with those args").
 
 ## Scope fence
 - dev.py

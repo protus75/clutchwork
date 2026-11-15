@@ -5,8 +5,8 @@
   "stem": "new-skeleton-draft-state",
   "passed": true,
   "changed_files": [
-    "chupa/tickets.py",
-    "docs/how-chupa-works.md",
+    "clutch/tickets.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_cli.py",
     "tests/integration/test_tickets.py",
     "tests/regress_new_skeleton_draft.py"
@@ -80,12 +80,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.07s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.07s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "gw0] linux -- Python 3.14.6 /home/djp/source/chupa/.chupa/state/worktrees/.regression-base/new-skeleton-draft-state/.venv/bin/python\n\nrepo = (PosixPath('/tmp/pytest-of-djp/pytest-510/popen-gw0/test_new_skeleton_is_draft_unt0/repo'), <chupa.git.Git object at 0x72bb29eeb380>, <chupa.journal.Journal object at 0x72bb29eeb620>)\n\n    def test_new_skeleton_is_draft_until_intake(repo):\n        from chupa import __main__ as cli\n    \n        root, g, journal = repo\n        assert cli.main([\"new\", \"aaa-wip\"], cwd=root) == 0\n        path = root / \"tickets/aaa-wip/ticket.md\"\n        text = path.read_text()\n>       assert \"state: draft\\n\" in text.split(\"---\", 2)[1]\nE       AssertionError: assert 'state: draft\\n' in '\\nstate: confirmed\\nsource: human\\npriority: P2\\nkind: feature\\n'\n\ntests/integration/test_tickets.py:537: AssertionError\n----------------------------- Captured stdout call -----------------------------\nauthored tickets/aaa-wip/ticket.md\nread the ticket authoring guide before filling sections: /home/djp/source/chupa/.chupa/state/worktrees/.regression-base/new-skeleton-draft-state/chupa/docs/host-authoring.md\nfill these before `run aaa-wip`:\n- `## Depends on` line '<none or bullets of existing ticket stems>' is not a `- ` bullet (write `## Depends on` as one `- ` bullet per entry)\n- `## Context` path '<existing repo-relative read-first path>' does not exist as a file (Context lists EXISTING read-first files; name a file this ticket creates in `## Scope fence` and `## Verification` only)\n- acceptance criterion '<measurable outcome naming a check in backticks>' names no check (name the `## Verification` command or the observable artifact that checks it, in backticks)\n- `## Time budget` is not an expected/stuck minutes pair (write exactly two bullets, `- expected: <int>m` and `- stuck: <int>m`)\n=========================== short test summary info ============================\nFAILED tests/integration/test_tickets.py::test_new_skeleton_is_draft_until_intake\n1 failed in 1.20s\n"
+          "tail": "gw0] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/new-skeleton-draft-state/.venv/bin/python\n\nrepo = (PosixPath('/tmp/pytest-of-djp/pytest-510/popen-gw0/test_new_skeleton_is_draft_unt0/repo'), <clutch.git.Git object at 0x72bb29eeb380>, <clutch.journal.Journal object at 0x72bb29eeb620>)\n\n    def test_new_skeleton_is_draft_until_intake(repo):\n        from clutch import __main__ as cli\n    \n        root, g, journal = repo\n        assert cli.main([\"new\", \"aaa-wip\"], cwd=root) == 0\n        path = root / \"tickets/aaa-wip/ticket.md\"\n        text = path.read_text()\n>       assert \"state: draft\\n\" in text.split(\"---\", 2)[1]\nE       AssertionError: assert 'state: draft\\n' in '\\nstate: confirmed\\nsource: human\\npriority: P2\\nkind: feature\\n'\n\ntests/integration/test_tickets.py:537: AssertionError\n----------------------------- Captured stdout call -----------------------------\nauthored tickets/aaa-wip/ticket.md\nread the ticket authoring guide before filling sections: /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/new-skeleton-draft-state/clutch/docs/host-authoring.md\nfill these before `run aaa-wip`:\n- `## Depends on` line '<none or bullets of existing ticket stems>' is not a `- ` bullet (write `## Depends on` as one `- ` bullet per entry)\n- `## Context` path '<existing repo-relative read-first path>' does not exist as a file (Context lists EXISTING read-first files; name a file this ticket creates in `## Scope fence` and `## Verification` only)\n- acceptance criterion '<measurable outcome naming a check in backticks>' names no check (name the `## Verification` command or the observable artifact that checks it, in backticks)\n- `## Time budget` is not an expected/stuck minutes pair (write exactly two bullets, `- expected: <int>m` and `- stuck: <int>m`)\n=========================== short test summary info ============================\nFAILED tests/integration/test_tickets.py::test_new_skeleton_is_draft_until_intake\n1 failed in 1.20s\n"
         }
       }
     },
@@ -104,7 +104,7 @@
       "coverage": {
         "percent": 29.737373737373737,
         "files": {
-          "chupa/tickets.py": 30.598958333333332
+          "clutch/tickets.py": 30.598958333333332
         }
       }
     },
@@ -159,7 +159,7 @@
           "tests/integration/test_storm_hold.py::test_storm_hold_survives_restart_roll_and_expiry": 2.1006159340031445,
           "tests/integration/test_daemon_composition.py::test_composed_admission_holds_accept_identity_bound_resume[red]": 2.0966792949911905,
           "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_cleans_up_owned_lifetimes[failure]": 2.0616631619923282,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 2.0604019179882016,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 2.0604019179882016,
           "tests/integration/test_watch.py::test_snapshot_watch_uses_configured_state": 2.0184466630016686,
           "tests/integration/test_watch.py::test_snapshot_verb_reads_config_state_dir": 1.9917371740011731,
           "tests/integration/test_fixture_host.py::test_fixture_cli_adapter_roundtrip": 1.9476981859916123,
@@ -245,7 +245,7 @@
         "tests/regress_new_skeleton_draft.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 2.95s\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 2.95s\n",
       "base_red": false,
       "seconds": 3.141686
     },
@@ -257,7 +257,7 @@
         "tests/integration/test_tickets.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_cli.py tests/integration/test_tickets.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 55%]\n.........................................................                [100%]\n129 passed in 1.79s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_cli.py tests/integration/test_tickets.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 55%]\n.........................................................                [100%]\n129 passed in 1.79s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.997918
     },
@@ -267,7 +267,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "........... [ 92%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n..........................                                               [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\n  /home/djp/source/chupa/.chupa/state/worktrees/new-skeleton-draft-state/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3410 passed, 9 warnings in 63.42s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "........... [ 92%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n..........................                                               [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\n  /home/djp/source/clutch/.clutch/state/worktrees/new-skeleton-draft-state/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3410 passed, 9 warnings in 63.42s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 63.680554
     }

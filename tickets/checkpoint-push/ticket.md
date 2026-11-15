@@ -11,18 +11,18 @@ state: confirmed
 - phase3-continue-19
 
 ## Context
-- chupa/daemon.py
-- chupa/git.py
+- clutch/daemon.py
+- clutch/git.py
 - tests/test_git.py
 - tests/test_mergequeue.py
-- chupa/journal.py
-- chupa/effects.py
-- chupa/timers.py
-- chupa/box.py
-- chupa/storm.py
-- chupa/config.py
-- chupa/seams.py
-- chupa/__main__.py
+- clutch/journal.py
+- clutch/effects.py
+- clutch/timers.py
+- clutch/box.py
+- clutch/storm.py
+- clutch/config.py
+- clutch/seams.py
+- clutch/__main__.py
 
 ## Plan contract
 - 19.I
@@ -33,18 +33,18 @@ state: confirmed
 Local main gains a dormant restart-safe checkpoint push boundary whose failed windows retry without delaying admission.
 
 ## Scope in / Scope out
-19.P3.checkpoint-push is the complete governing contract for every Owner, Records, Observable and Tests obligation. The renderer injects those parts verbatim: implement every named Tests obligation, record custody and sole writer through that citation; never copy unit text into this seed or invent caller-read records. chupa/checkpoint.py is owned by its cited Owner. Production invocation stays dormant until serve-activation.
+19.P3.checkpoint-push is the complete governing contract for every Owner, Records, Observable and Tests obligation. The renderer injects those parts verbatim: implement every named Tests obligation, record custody and sole writer through that citation; never copy unit text into this seed or invent caller-read records. clutch/checkpoint.py is owned by its cited Owner. Production invocation stays dormant until serve-activation.
 
-Keep the registry floor exactly. Add only the public Git operation specified by the entry; migrate only its pinned public-operation enumeration in tests/test_git.py::test_option_shaped_or_empty_refs_are_refused_before_exec and extend test_op_argv as governed there. tests/test_mergequeue.py stays unchanged and embedded solely because the registry floor explicitly includes it. No public signature changes or direct caller migration are earned. Before editing re-grep flipped symbols, old assertion values, public surfaces, production absence assertions and direct callers across chupa/, eval/ and tests/. Do not migrate historical seeding tests.
+Keep the registry floor exactly. Add only the public Git operation specified by the entry; migrate only its pinned public-operation enumeration in tests/test_git.py::test_option_shaped_or_empty_refs_are_refused_before_exec and extend test_op_argv as governed there. tests/test_mergequeue.py stays unchanged and embedded solely because the registry floor explicitly includes it. No public signature changes or direct caller migration are earned. Before editing re-grep flipped symbols, old assertion values, public surfaces, production absence assertions and direct callers across clutch/, eval/ and tests/. Do not migrate historical seeding tests.
 
 Read real CLI run/drain and build_daemon_core and the merged production-composition harness before writing; preservation suites are read as needed and run unchanged in Verification only. Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Journal remains the sole durable event writer, Box the sole queue-record writer and ControlInbox the sole control-decision writer. The cited Records governs failure occurrence identity and crash replay; use the supplied production storm_producer Box and existing arrival_id, never a replacement writer. Exercise through injected seams, scripted callbacks, disposable repositories and asyncio barriers, never live remotes, real-model calls or wall-clock waits.
 
 Out: serve activation, daemon-mode merge routing, notification transport, optional mirror, config flags, task graphs, manual HGATE release, verification filtering, unearned records and unrelated refactors.
 
 ## Scope fence
-- chupa/checkpoint.py
-- chupa/daemon.py
-- chupa/git.py
+- clutch/checkpoint.py
+- clutch/daemon.py
+- clutch/git.py
 - tests/test_checkpoint.py
 - tests/test_git.py
 - tests/test_mergequeue.py

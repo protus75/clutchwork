@@ -5,10 +5,10 @@
   "stem": "vscode-graph-segments",
   "passed": true,
   "changed_files": [
-    "chupa/graph.py",
+    "clutch/graph.py",
     "tests/unit/test_graph.py",
-    "vscode-chupa/media/graph.js",
-    "vscode-chupa/media/view.js"
+    "vscode-clutchwork/media/graph.js",
+    "vscode-clutchwork/media/view.js"
   ],
   "inserted_lines": 119,
   "bypassed": [],
@@ -95,7 +95,7 @@
         "tests/unit/test_graph.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_graph.py\nbringing up nodes...\nbringing up nodes...\n\n............                                                             [100%]\n12 passed in 2.54s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_graph.py\nbringing up nodes...\nbringing up nodes...\n\n............                                                             [100%]\n12 passed in 2.54s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.940553
     }

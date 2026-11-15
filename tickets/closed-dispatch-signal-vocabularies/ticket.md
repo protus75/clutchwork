@@ -9,9 +9,9 @@ state: confirmed
 - plan-bound-reject-release
 
 ## Context
-- chupa/journal.py
-- chupa/runner.py
-- chupa/drain.py
+- clutch/journal.py
+- clutch/runner.py
+- clutch/drain.py
 - tests/test_journal.py
 - tests/test_journal_roll.py
 - tests/test_drain_upgrade.py
@@ -29,24 +29,24 @@ state: confirmed
 ## Goal / Why
 Two journal vocabularies become closed. A terminal's `dispatch` is a closed `Literal` that every consumer matches exhaustively. A `signal` body's name is a closed set that the journal write seam enforces, so an unknown value fails the build or the write and is never silently classified.
 
-Why: section 6.2 promotes `dispatch` to a closed field with exhaustive consumers and closes `signal` names at the write seam. Today `dispatch` values are free strings written in `chupa/runner.py` and compared by string in `chupa/drain.py`. The constant `SPEC_GAP_HOLD` once served as both a dispatch value and a signal name, and two string-compared classifications of the same records diverged into a dispatch loop. `Journal.append` accepts any `signal` body.
+Why: section 6.2 promotes `dispatch` to a closed field with exhaustive consumers and closes `signal` names at the write seam. Today `dispatch` values are free strings written in `clutch/runner.py` and compared by string in `clutch/drain.py`. The constant `SPEC_GAP_HOLD` once served as both a dispatch value and a signal name, and two string-compared classifications of the same records diverged into a dispatch loop. `Journal.append` accepts any `signal` body.
 
 ## Scope in / Scope out
-- In: `chupa/journal.py` defines `Dispatch = Literal["retry", "escalate", "reject_queue", "spec_gap_hold"]` and `dispatch_of(body) -> Dispatch | None`. It returns None when the key is absent and raises `ValueError` on any other value. Every consumer of a terminal's `dispatch` in `chupa/runner.py` and `chupa/drain.py`, and in `chupa/hardening.py` if it reads one, reads it through `dispatch_of` and branches with a `match` ending in `assert_never`. The writer in `chupa/runner.py` types each value it writes as `Dispatch`.
+- In: `clutch/journal.py` defines `Dispatch = Literal["retry", "escalate", "reject_queue", "spec_gap_hold"]` and `dispatch_of(body) -> Dispatch | None`. It returns None when the key is absent and raises `ValueError` on any other value. Every consumer of a terminal's `dispatch` in `clutch/runner.py` and `clutch/drain.py`, and in `clutch/hardening.py` if it reads one, reads it through `dispatch_of` and branches with a `match` ending in `assert_never`. The writer in `clutch/runner.py` types each value it writes as `Dispatch`.
 - In (CONTRADICTED TESTS): every test fixture that appends an `EventType.SIGNAL` body without a name, or with a name outside `SIGNAL_NAMES`, is migrated in the same change; the `tests` fence admits that migration of existing files plus the new `tests/test_vocabularies.py` this ticket creates, verified by grepping every `EventType.SIGNAL` append under `tests/` at the authoring head.
-- In: `chupa/journal.py` defines `SIGNAL_NAMES`, the closed set of every signal name engine code writes. Enumerate it by grepping every `EventType.SIGNAL` and `"signal"` append site in `chupa/` and `eval/` (the eval harnesses write `review_baseline` and `diagnose_eval_start`; string literals and constants such as `INTAKE_SIGNAL`, `VERDICT_SIGNAL`, `HALT_SIGNAL`, `HANDOFF_SIGNAL`, `REWORK_ORDER`, `SUPERSEDES`, `WATCHER_PARSE_FAILURE`, `BASELINE_SIGNAL`, `ROUND_SIGNAL`, the thresh `signal` literals, and the `kind` values of flake, storm, control, kill, checkpoint, and merge-queue signals). `Journal.append` refuses, with a `ValueError` that names `SIGNAL_NAMES`, a `signal` body that does not carry exactly one of the keys `signal` or `kind` naming a member. Read-side tolerance of journals written earlier is unchanged.
+- In: `clutch/journal.py` defines `SIGNAL_NAMES`, the closed set of every signal name engine code writes. Enumerate it by grepping every `EventType.SIGNAL` and `"signal"` append site in `clutch/` and `eval/` (the eval harnesses write `review_baseline` and `diagnose_eval_start`; string literals and constants such as `INTAKE_SIGNAL`, `VERDICT_SIGNAL`, `HALT_SIGNAL`, `HANDOFF_SIGNAL`, `REWORK_ORDER`, `SUPERSEDES`, `WATCHER_PARSE_FAILURE`, `BASELINE_SIGNAL`, `ROUND_SIGNAL`, the thresh `signal` literals, and the `kind` values of flake, storm, control, kill, checkpoint, and merge-queue signals). `Journal.append` refuses, with a `ValueError` that names `SIGNAL_NAMES`, a `signal` body that does not carry exactly one of the keys `signal` or `kind` naming a member. Read-side tolerance of journals written earlier is unchanged.
 - In: test fixtures that journal nameless or unlisted signal bodies (`{}`, `{"n": ...}`, `"unrelated"`, `"late"`, `"confirm"`, `"unknown"`, `"spec_gap_hold"`) are migrated to listed names. Each fixture's assertion stays the same.
 - Out: body schemas beyond the name; read-side validation; any behavior change.
 
 ## Scope fence
-- chupa/journal.py
-- chupa/runner.py
-- chupa/drain.py
-- chupa/hardening.py
+- clutch/journal.py
+- clutch/runner.py
+- clutch/drain.py
+- clutch/hardening.py
 - tests
 
 ## Acceptance criteria
-1. `uv run pytest -q tests/test_vocabularies.py` exits 0. It includes `test_dispatch_vocabulary_is_closed`, which asserts `get_args(Dispatch)` equals the four section 6.2 values and that `dispatch_of` raises on `"other"`. It includes `test_every_engine_signal_name_is_listed`, which scans `chupa/` and `eval/` for literal signal and kind names written to `EventType.SIGNAL` and asserts each is in `SIGNAL_NAMES`. It includes `test_unknown_signal_name_is_refused_at_append`, which asserts that `{"signal": "spec_gap_hold"}`, `{}`, and a body carrying both `signal` and `kind` are each refused and nothing is written.
+1. `uv run pytest -q tests/test_vocabularies.py` exits 0. It includes `test_dispatch_vocabulary_is_closed`, which asserts `get_args(Dispatch)` equals the four section 6.2 values and that `dispatch_of` raises on `"other"`. It includes `test_every_engine_signal_name_is_listed`, which scans `clutch/` and `eval/` for literal signal and kind names written to `EventType.SIGNAL` and asserts each is in `SIGNAL_NAMES`. It includes `test_unknown_signal_name_is_refused_at_append`, which asserts that `{"signal": "spec_gap_hold"}`, `{}`, and a body carrying both `signal` and `kind` are each refused and nothing is written.
 2. `uv run pytest -q tests/test_journal.py tests/test_journal_roll.py tests/test_drain_upgrade.py tests/test_rework.py tests/test_storm.py tests/test_storm_hold.py tests/test_flake.py tests/test_kill_cli_activation.py` exits 0.
 3. `uv run pytest -q tests/test_drain.py tests/test_seed_path.py tests/test_hardening.py tests/test_daemon_composition.py` exits 0; apart from creating the new `tests/test_vocabularies.py`, an edit to an existing file under `tests/` only gives a fixture's `EventType.SIGNAL` body a name from `SIGNAL_NAMES` (or moves an unnamed non-signal body to its proper event type); an assertion changes only where it repeats that fixture's appended name or body literal, and then only to the migrated value.
 4. `uv run pytest -q` exits 0.

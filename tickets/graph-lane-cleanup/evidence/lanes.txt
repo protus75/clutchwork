@@ -29,11 +29,11 @@ rework-split-ticket-rules      P= vscode-stats-view
 vscode-stats-view              P= stats-command 
    in : vscode-stats-view/Q | specs-move/r1 | specs-move/r2 
    out: stats-command/Q | specs-move/r1 | specs-move/r2
-stats-command                  P= chupa-test-gates 
+stats-command                  P= clutch-test-gates 
    in : stats-command/Q | specs-move/r1 | specs-move/r2 
-   out: chupa-test-gates/Q | specs-move/r1 | specs-move/r2
-chupa-test-gates               P= tests-split 
-   in : chupa-test-gates/Q | specs-move/r1 | specs-move/r2 
+   out: clutch-test-gates/Q | specs-move/r1 | specs-move/r2
+clutch-test-gates               P= tests-split 
+   in : clutch-test-gates/Q | specs-move/r1 | specs-move/r2 
    out: tests-split/Q | specs-move/r1 | specs-move/r2
 tests-split                    P= specs-move 
    in : tests-split/Q | specs-move/r1 | specs-move/r2 

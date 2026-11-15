@@ -8,9 +8,9 @@
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Ticket must add tests/integration/test_menu_verb_parity.py to its scope fence: line 185 asserts the extension_only set of observe.MENU is exactly {\"chupaAskDiagnose\", \"chupaAskReview\"}, so adding chupaAskDrafts fails all 19 parametrized cases.",
-    "Redo the work by registering chupaAskDrafts in observe.MENU as a ticket-kind, extension_only entry, like chupaAskReview. Then widen the line-185 set in test_menu_verb_parity.py to include chupaAskDrafts. Line 184 then passes unchanged.",
-    "The ticket's observe.py scope line reads as if chupaAskDrafts is a hand-added row menu key. Restate it so the key comes from an observe.MENU entry, since test_menu_verb_parity.py line 184 checks row menus against MENU's ticket-kind keys.",
+    "Ticket must add tests/integration/test_menu_verb_parity.py to its scope fence: line 185 asserts the extension_only set of observe.MENU is exactly {\"clutchAskDiagnose\", \"clutchAskReview\"}, so adding clutchAskDrafts fails all 19 parametrized cases.",
+    "Redo the work by registering clutchAskDrafts in observe.MENU as a ticket-kind, extension_only entry, like clutchAskReview. Then widen the line-185 set in test_menu_verb_parity.py to include clutchAskDrafts. Line 184 then passes unchanged.",
+    "The ticket's observe.py scope line reads as if clutchAskDrafts is a hand-added row menu key. Restate it so the key comes from an observe.MENU entry, since test_menu_verb_parity.py line 184 checks row menus against MENU's ticket-kind keys.",
     "The base-commit full suite was measured with plain ./dev.py test in a base worktree (3576 passed). The failure comes from the new key, not from the base, so don't treat it as a pre-existing failure."
   ],
   "mechanical": null,

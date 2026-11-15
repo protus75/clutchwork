@@ -13,18 +13,18 @@ state: confirmed
 
 ## Context
 
-- chupa/drain.py::record_reoffer
-- chupa/runner.py
+- clutch/drain.py::record_reoffer
+- clutch/runner.py
 - tests/integration/test_drain.py::test_reoffer_rules_and_recording
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
 
-`record_reoffer` draws a `retry` cap unit for every terminal except `premise_failed` and provider-drought ones. `chupa/runner.py` already draws `infra` when an `infra_error` or `timeout` terminal is reached. Each such failure therefore costs two cap units: one `infra`, then one `retry` at the re-offer. The stem can park under the wrong cap, with the wrong reason and paved road. Infra failures are common (e.g. read-only Review ending `infra_error`), and they spend the retry budget that gate failures need. The premise lane already got this split: `premise_failed` re-offers skip the retry draw because the runner draws `premise_bounce`. After this change an `infra_error` or `timeout` re-offer draws no `retry` unit, in drain and in serve (both call `record_reoffer`).
+`record_reoffer` draws a `retry` cap unit for every terminal except `premise_failed` and provider-drought ones. `clutch/runner.py` already draws `infra` when an `infra_error` or `timeout` terminal is reached. Each such failure therefore costs two cap units: one `infra`, then one `retry` at the re-offer. The stem can park under the wrong cap, with the wrong reason and paved road. Infra failures are common (e.g. read-only Review ending `infra_error`), and they spend the retry budget that gate failures need. The premise lane already got this split: `premise_failed` re-offers skip the retry draw because the runner draws `premise_bounce`. After this change an `infra_error` or `timeout` re-offer draws no `retry` unit, in drain and in serve (both call `record_reoffer`).
 
 ## Scope in / Scope out
 
-In: `record_reoffer` skips the `retry` draw when the last terminal is `infra_error` or `timeout` and its body carries no `rung`. A terminal carrying a `rung` (a diagnose `escalate` verdict or the identical-reason streak) keeps its `retry` draw with that rung, because the `retry` draw is the only place an escalation rung is persisted (`caps.capability` reads it from there). A new unit test file `tests/unit/test_drain_reoffer.py` calls `record_reoffer` with a fake journal (an object whose `append` records its calls) and in-memory `Event` histories, one per terminal, and asserts which `cap_consumed` events each terminal class produces; no disk or process access. `docs/how-chupa-works.md` is updated in four places: the section 6.6 machine-keep exclusion list adds `infra_error` and `timeout` terminals that carry no `rung`; the section 6.4 cap table `retry` row reads "each drain or serve re-offer, except after `premise_failed`, a provider drought, or an `infra_error` or `timeout` that carries no escalation rung"; section 7.1 step 4 ("drawing `retry`") and section 7.2 ("draws `retry` on re-offer as drain does") each point to the section 6.6 exclusions.
+In: `record_reoffer` skips the `retry` draw when the last terminal is `infra_error` or `timeout` and its body carries no `rung`. A terminal carrying a `rung` (a diagnose `escalate` verdict or the identical-reason streak) keeps its `retry` draw with that rung, because the `retry` draw is the only place an escalation rung is persisted (`caps.capability` reads it from there). A new unit test file `tests/unit/test_drain_reoffer.py` calls `record_reoffer` with a fake journal (an object whose `append` records its calls) and in-memory `Event` histories, one per terminal, and asserts which `cap_consumed` events each terminal class produces; no disk or process access. `docs/how-clutch-works.md` is updated in four places: the section 6.6 machine-keep exclusion list adds `infra_error` and `timeout` terminals that carry no `rung`; the section 6.4 cap table `retry` row reads "each drain or serve re-offer, except after `premise_failed`, a provider drought, or an `infra_error` or `timeout` that carries no escalation rung"; section 7.1 step 4 ("drawing `retry`") and section 7.2 ("draws `retry` on re-offer as drain does") each point to the section 6.6 exclusions.
 
 In: `eval/shakeout/driver.py`'s `_stuck_budget_kill` member scripts its LLM replies on the assumption that the `timeout` re-offer draws `retry`; with that draw gone the stuck stem is re-offered, consumes the scripted replies, and `stuck-followup` never merges (`tests/integration/test_shakeout.py::test_stuck_budget_kill_member_observes_abort_harvest_and_followup_merge` fails at driver.py:80). Update that member's script or its bench caps so it still observes the timeout harvest, one `infra` draw, and the follow-up merge; its observation name and the test stay unchanged.
 
@@ -34,12 +34,12 @@ Out: `abandoned` reaps. The runner draws no `infra` unit for them, so skipping t
 
 ## Scope fence
 
-- chupa/drain.py
+- clutch/drain.py
 - tests/integration/test_drain.py
 - tests/unit/test_drain_reoffer.py
 - eval/shakeout/driver.py
 - tests/regress_reoffer_infra_retry.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 
@@ -50,7 +50,7 @@ Out: `abandoned` reaps. The runner draws no `infra` unit for them, so skipping t
 - `record_reoffer` on an `abandoned` terminal still appends the `retry` `cap_consumed`, checked by `./dev.py test tests/unit/test_drain_reoffer.py`. The test fails if the draw is dropped for it.
 - `./dev.py test tests/integration/test_drain.py -k reoffer` exits 0.
 - `./dev.py test tests/integration/test_shakeout.py` exits 0, including `test_stuck_budget_kill_member_observes_abort_harvest_and_followup_merge`.
-- `docs/how-chupa-works.md` names `infra_error` and `timeout` terminals without an escalation rung among those that draw no `retry` on re-offer in the section 6.6 machine-keep line and the section 6.4 `retry` row, and sections 7.1 step 4 and 7.2 point to the section 6.6 exclusions; checked by Review.
+- `docs/how-clutch-works.md` names `infra_error` and `timeout` terminals without an escalation rung among those that draw no `retry` on re-offer in the section 6.6 machine-keep line and the section 6.4 `retry` row, and sections 7.1 step 4 and 7.2 point to the section 6.6 exclusions; checked by Review.
 - `uv run python tests/regress_reoffer_infra_retry.py` prints only `{"regression_result": "pass"}` and exits 0 on the fixed code, and prints only `{"regression_result": "defect"}` with a nonzero exit on the unfixed code, which rules out a reproducer whose stdout carries pytest output or whose verdict ignores the test result.
 
 ## Verification

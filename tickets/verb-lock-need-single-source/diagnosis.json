@@ -8,7 +8,7 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Redo the full ticket from the merge base. Review found the approach sound: verb recorded in the Lockfile JSON, one engine-verb constant (drain, serve) in chupa/lockfile.py, a shared pending-change predicate for _review and chupaReview, and refusals in _control, _verdict and _retro.",
+    "Redo the full ticket from the merge base. Review found the approach sound: verb recorded in the Lockfile JSON, one engine-verb constant (drain, serve) in clutch/lockfile.py, a shared pending-change predicate for _review and clutchReview, and refusals in _control, _verdict and _retro.",
     "tests/unit/test_lock_holder.py must be fake-backed. The confirm route through the real _verdict with journal.read returning [] and repo=Path(\"repo\") stats repo/tickets/candidate/ticket.md against the cwd, so the test reads disk.",
     "Fix for the confirm route: pass a fake repo whose `/` returns an object with is_file() returning False, or have checkout.journal.read return history that puts the stem in reject_queue so _verdict takes the queued preview branch and never touches a path.",
     "Every Lockfile(...) call site and every test that builds one must pass verb=. That covers eval/harness.py (twice), eval/diagnose.py, tests/integration/* and tests/harness/reliability_battery.py. Then run ./dev.py test and confirm it exits 0 with the coverage floors met."

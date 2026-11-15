@@ -5,9 +5,9 @@
   "stem": "provider-capture-overwrite",
   "passed": true,
   "changed_files": [
-    "chupa/providers.py",
-    "chupa/seams.py",
-    "docs/how-chupa-works.md",
+    "clutch/providers.py",
+    "clutch/seams.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_daemon_composition.py",
     "tests/integration/test_effects.py",
     "tests/integration/test_provider_capture_overwrite.py",
@@ -87,12 +87,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 2.75s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 2.75s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "as_posix() for p in root.rglob(\"events.jsonl\")) == [\n            \"t-1/claude-0001/events.jsonl\",\n            \"t-2/claude-0001/events.jsonl\",\n        ]\nE       AssertionError: assert ['t-1/claude-...events.jsonl'] == ['t-1/claude-...events.jsonl']\nE         \nE         At index 1 diff: 't-2/claude-0002/events.jsonl' != 't-2/claude-0001/events.jsonl'\nE         Use -v to get more diff\n\ntests/integration/test_provider_capture_overwrite.py:28: AssertionError\n______________________ test_capture_survives_new_process _______________________\n[gw0] linux -- Python 3.14.6 /home/djp/source/chupa/.chupa/state/worktrees/.regression-base/provider-capture-overwrite/.venv/bin/python\n\ntmp_path = PosixPath('/tmp/pytest-of-djp/pytest-805/popen-gw0/test_capture_survives_new_proc0')\n\n    def test_capture_survives_new_process(tmp_path):\n        cfg = config(tmp_path)\n        first = llm(cfg, FakeExec((0, claude_ok(\"first run\"), \"\")), tmp_path)\n        second = llm(cfg, FakeExec((0, claude_ok(\"second run\"), \"\")), tmp_path)\n        asyncio.run(first.call(req(\"review\")))\n        asyncio.run(second.call(req(\"review\")))\n    \n        root = cfg.state_dir / \"spools/providers/t-1\"\n        captures = sorted(root.rglob(\"events.jsonl\"))\n>       assert captures == [root / \"claude-0001/events.jsonl\", root / \"claude-0002/events.jsonl\"]\nE       AssertionError: assert [PosixPath('/...vents.jsonl')] == [PosixPath('/...vents.jsonl')]\nE         \nE         Right contains one more item: PosixPath('/tmp/pytest-of-djp/pytest-805/popen-gw0/test_capture_survives_new_proc0/state/spools/providers/t-1/claude-0002/events.jsonl')\nE         Use -v to get more diff\n\ntests/integration/test_provider_capture_overwrite.py:16: AssertionError\n=========================== short test summary info ============================\nFAILED tests/integration/test_provider_capture_overwrite.py::test_capture_numbers_are_per_stem\nFAILED tests/integration/test_provider_capture_overwrite.py::test_capture_survives_new_process\n2 failed in 3.39s\n"
+          "tail": "as_posix() for p in root.rglob(\"events.jsonl\")) == [\n            \"t-1/claude-0001/events.jsonl\",\n            \"t-2/claude-0001/events.jsonl\",\n        ]\nE       AssertionError: assert ['t-1/claude-...events.jsonl'] == ['t-1/claude-...events.jsonl']\nE         \nE         At index 1 diff: 't-2/claude-0002/events.jsonl' != 't-2/claude-0001/events.jsonl'\nE         Use -v to get more diff\n\ntests/integration/test_provider_capture_overwrite.py:28: AssertionError\n______________________ test_capture_survives_new_process _______________________\n[gw0] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/provider-capture-overwrite/.venv/bin/python\n\ntmp_path = PosixPath('/tmp/pytest-of-djp/pytest-805/popen-gw0/test_capture_survives_new_proc0')\n\n    def test_capture_survives_new_process(tmp_path):\n        cfg = config(tmp_path)\n        first = llm(cfg, FakeExec((0, claude_ok(\"first run\"), \"\")), tmp_path)\n        second = llm(cfg, FakeExec((0, claude_ok(\"second run\"), \"\")), tmp_path)\n        asyncio.run(first.call(req(\"review\")))\n        asyncio.run(second.call(req(\"review\")))\n    \n        root = cfg.state_dir / \"spools/providers/t-1\"\n        captures = sorted(root.rglob(\"events.jsonl\"))\n>       assert captures == [root / \"claude-0001/events.jsonl\", root / \"claude-0002/events.jsonl\"]\nE       AssertionError: assert [PosixPath('/...vents.jsonl')] == [PosixPath('/...vents.jsonl')]\nE         \nE         Right contains one more item: PosixPath('/tmp/pytest-of-djp/pytest-805/popen-gw0/test_capture_survives_new_proc0/state/spools/providers/t-1/claude-0002/events.jsonl')\nE         Use -v to get more diff\n\ntests/integration/test_provider_capture_overwrite.py:16: AssertionError\n=========================== short test summary info ============================\nFAILED tests/integration/test_provider_capture_overwrite.py::test_capture_numbers_are_per_stem\nFAILED tests/integration/test_provider_capture_overwrite.py::test_capture_survives_new_process\n2 failed in 3.39s\n"
         }
       }
     },
@@ -111,8 +111,8 @@
       "coverage": {
         "percent": 39.07857657775739,
         "files": {
-          "chupa/providers.py": 59.893048128342244,
-          "chupa/seams.py": 0.0
+          "clutch/providers.py": 59.893048128342244,
+          "clutch/seams.py": 0.0
         }
       }
     },
@@ -197,7 +197,7 @@
           "tests/integration/test_fixture_host.py::test_fixture_cli_adapter_roundtrip": 1.7089413490029983,
           "tests/integration/test_daemon_composition.py::test_composed_admission_holds_accept_identity_bound_resume[tree]": 1.7039519929967355,
           "tests/integration/test_serve_kill.py::test_serve_storm_suspends_stage_and_frees_selection[review]": 1.6921395999961533,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.6872891250241082,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.6872891250241082,
           "tests/integration/test_drain.py::test_rework_split_preserves_dispatch_terminal_invariant[False]": 1.6398105050029699,
           "tests/integration/test_retro_box.py::test_completed_retro_proposals_reach_prompt_spec_merge": 1.6390520120039582,
           "tests/integration/test_ladder.py::test_reject_verdicts_auto_keep_once_and_draw_down[abandon-human]": 1.6261726320080925,
@@ -251,7 +251,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "......... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n.....                                                                    [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/provider-capture-overwrite/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3605 passed, 9 warnings in 67.80s (0:01:07)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "......... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n.....                                                                    [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/provider-capture-overwrite/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3605 passed, 9 warnings in 67.80s (0:01:07)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 73.49797
     }

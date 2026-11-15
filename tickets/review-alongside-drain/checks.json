@@ -5,8 +5,8 @@
   "stem": "review-alongside-drain",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_review_command.py"
   ],
   "inserted_lines": 58,
@@ -96,7 +96,7 @@
         "tests/integration/test_requisition_gate.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_review_command.py tests/integration/test_drain.py tests/integration/test_requisition_gate.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 78%]\n....................                                                     [100%]\n92 passed in 2.71s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_review_command.py tests/integration/test_drain.py tests/integration/test_requisition_gate.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 78%]\n....................                                                     [100%]\n92 passed in 2.71s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.015984
     }

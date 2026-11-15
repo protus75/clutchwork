@@ -5,9 +5,9 @@
   "stem": "requisition-review",
   "passed": true,
   "changed_files": [
-    "chupa/driver.py",
-    "chupa/requisition.py",
-    "chupa/stages.py",
+    "clutch/driver.py",
+    "clutch/requisition.py",
+    "clutch/stages.py",
     "specs/requisition_review.md",
     "tests/test_requisition.py"
   ],

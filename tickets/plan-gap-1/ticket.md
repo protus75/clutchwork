@@ -21,19 +21,19 @@ none
 - section 20
 
 ## Goal / Why
-`CHUPA_PLAN.md` states every fact `serve-activation` needs from its gapped units.
+`CLUTCH_PLAN.md` states every fact `serve-activation` needs from its gapped units.
 
 ## Scope in / Scope out
 - In: the fenced entry units, with their Owner, Records, Observable, and Tests parts; insert a missing unit after its phase's last unit.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P3.serve-activation
+- CLUTCH_PLAN.md#19.P3.serve-activation
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P3.serve-activation` states the needed fact, consistent with merged code. Gap fact (untrusted data):
-> The unit requires scheduler-side storm selection governed by section 12, which suppresses the emitting stage and reserves whole-ticket selection for bootstrap. However, Scheduler.dispatch_next holds its slot through the entire ticket callback, DaemonAdmission does likewise, and chupa/stages.py::run_stages directly invokes Implement, Check and Review without a stage-selection or suspension seam. The unit does not specify how a held stage retains its producing run while freeing selection for unrelated work. Adding that seam requires the unfenced chupa/stages.py; filtering entire tickets or copying its orchestration would bypass the governing contract.
+2. `CLUTCH_PLAN.md` unit `19.P3.serve-activation` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+> The unit requires scheduler-side storm selection governed by section 12, which suppresses the emitting stage and reserves whole-ticket selection for bootstrap. However, Scheduler.dispatch_next holds its slot through the entire ticket callback, DaemonAdmission does likewise, and clutch/stages.py::run_stages directly invokes Implement, Check and Review without a stage-selection or suspension seam. The unit does not specify how a held stage retains its producing run while freeing selection for unrelated work. Adding that seam requires the unfenced clutch/stages.py; filtering entire tickets or copying its orchestration would bypass the governing contract.
 
 ## Verification
 ```

@@ -8,10 +8,10 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In docs/how-chupa-works.md section 10.1 'Files' table, add a `journal.lock` row: short-held exclusive flock taken by every Journal.append, covering torn-tail repair, segment roll and the write.",
-    "In the same section 10.1 table, reword the `chupa.lock` row so it no longer says 'The single-writer lock'; say it guards the checkout and git writes to main, not journal appends.",
+    "In docs/how-clutch-works.md section 10.1 'Files' table, add a `journal.lock` row: short-held exclusive flock taken by every Journal.append, covering torn-tail repair, segment roll and the write.",
+    "In the same section 10.1 table, reword the `clutch.lock` row so it no longer says 'The single-writer lock'; say it guards the checkout and git writes to main, not journal appends.",
     "Keep the code, tests and section 2.1 edits from attempt 1: review found they meet the acceptance criteria and all 192 verification tests passed. Change only the docs.",
-    "Before finishing, grep docs/how-chupa-works.md for other passages that call chupa.lock the single-writer lock or say it guards journal writes, and update them to match the new two-lock split."
+    "Before finishing, grep docs/how-clutch-works.md for other passages that call clutch.lock the single-writer lock or say it guards journal writes, and update them to match the new two-lock split."
   ],
   "mechanical": null,
   "spec_version": "1.2",

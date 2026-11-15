@@ -11,40 +11,40 @@ state: confirmed
 - phase4-continue-02
 
 ## Context
-- chupa/providers.py
-- chupa/watchdog.py
-- chupa/timers.py
-- chupa/restart.py
-- chupa/merge.py
-- chupa/serve.py
-- chupa/__main__.py
+- clutch/providers.py
+- clutch/watchdog.py
+- clutch/timers.py
+- clutch/restart.py
+- clutch/merge.py
+- clutch/serve.py
+- clutch/__main__.py
 - eval/shakeout/bench.py
-- chupa/thresh.py
-- chupa/driver.py
-- chupa/llmeffect.py
-- chupa/requisition.py
+- clutch/thresh.py
+- clutch/driver.py
+- clutch/llmeffect.py
+- clutch/requisition.py
 - eval/shakeout/providers.py
 - eval/diagnose.py
 - eval/harness.py
-- chupa/seams.py
-- chupa/effects.py
-- chupa/journal.py
-- chupa/notify.py
-- chupa/audit.py
+- clutch/seams.py
+- clutch/effects.py
+- clutch/journal.py
+- clutch/notify.py
+- clutch/audit.py
 
 ## On-demand
 - eval/daemon_soak.py
 - tests/test_daemon_composition.py
 - tests/test_serve.py
-- chupa/stages.py
+- clutch/stages.py
 - tests/test_mergequeue.py
-- chupa/runner.py
+- clutch/runner.py
 - tests/test_providers.py
 - tests/test_merge.py
 - tests/test_restart_timers.py
 - tests/test_stages.py
-- chupa/drain.py
-- chupa/daemon.py
+- clutch/drain.py
+- clutch/daemon.py
 - tests/test_thresh.py
 - tests/test_audit.py
 - tests/test_journal.py
@@ -60,7 +60,7 @@ state: confirmed
 Activate shared provider admission, quota cooldown and subsequent-call failover over the configured candidates. The registry marks this cross-module admission deep, earning high/high under 19.L.
 
 ## Scope in / Scope out
-Activate the provider admission described by the cited entries. chupa/providers.py owns selection and session cooling state, chupa/thresh.py keeps slot/breaker custody, and chupa/timers.py keeps every durable deadline write. Extend the existing drain/serve production graph and its composition harness. Keep current public Driver.run/from_config, Checkout, build_daemon_core, resolve and LLM request/result signatures; thread the new session state through the existing composition without requiring unrelated caller migrations. Migrate all direct ProviderLLM constructor sites in the fence in one change.
+Activate the provider admission described by the cited entries. clutch/providers.py owns selection and session cooling state, clutch/thresh.py keeps slot/breaker custody, and clutch/timers.py keeps every durable deadline write. Extend the existing drain/serve production graph and its composition harness. Keep current public Driver.run/from_config, Checkout, build_daemon_core, resolve and LLM request/result signatures; thread the new session state through the existing composition without requiring unrelated caller migrations. Migrate all direct ProviderLLM constructor sites in the fence in one change.
 
 Compose one registry/cooldown payload and one Timers owner for each lock-held drain or serve lifetime, including refreshed config snapshots and ticketless surfaces. Route implement, review, rework, diagnosis, requisition review, triage, Author and future retro through that shared state. Eval roots and scripted benches use the same construction. Select once before the LLM effect and carry that choice through adapter events, watchdog metering, result, completion and harvested run identity. Preserve preflight and snapshot-local config/writer redaction. Clean up owned admission/timer waits with cancellation and awaited completion before releasing the lock.
 
@@ -72,20 +72,20 @@ Migrate test_thresh_is_dormant in tests/test_thresh.py and test_cli_failure_clas
 
 Named obligations in tests/test_provider_cooldown_failover.py: test_quota_failure_arms_cooldown_without_infra_draw, test_ordered_failover_preserves_served_identity, test_all_candidates_cooling_recovers_on_timer_fired, test_mid_run_drought_is_harvested_without_spine_draws, test_single_candidate_cooldown_resumes_same_provider, test_cooldown_reconstructs_and_rearms_new_windows, test_one_provider_payload_and_timers_per_session, test_provider_wait_excluded_from_ticket_and_watchdog_budgets, test_executed_failures_preserve_classification_and_infra_accounting. Each proves all cases assigned by the own entry, through injected seams and a multi-candidate fixture registry. The session test must cover real drain and serve lifetimes, repeated dispatches/config refresh, every ticket-owned and ticketless construction site, and awaited wait cleanup. The wait test must discriminate a queued call from a hung executing call. Extend the real production composition harness rather than creating another graph.
 
-Read every Context and On-demand path before writing. On-demand is the measured headroom partition, including delimiter-bearing eval/daemon_soak.py. Use the existing effect and exception mapping owners in chupa/llmeffect.py and chupa/driver.py; no duplicate effect, classifier, routing or Timer implementation. Keep unfenced Verification suites unchanged as preservation evidence. Out: live provider/config alterations, real-model calls, wall-clock waits, new modules, knobs, signals, terminals, reports, provider dependencies, plan/ticket edits and historical seeding snapshots.
+Read every Context and On-demand path before writing. On-demand is the measured headroom partition, including delimiter-bearing eval/daemon_soak.py. Use the existing effect and exception mapping owners in clutch/llmeffect.py and clutch/driver.py; no duplicate effect, classifier, routing or Timer implementation. Keep unfenced Verification suites unchanged as preservation evidence. Out: live provider/config alterations, real-model calls, wall-clock waits, new modules, knobs, signals, terminals, reports, provider dependencies, plan/ticket edits and historical seeding snapshots.
 
 ## Scope fence
-- chupa/providers.py
-- chupa/watchdog.py
-- chupa/timers.py
-- chupa/runner.py
-- chupa/restart.py
-- chupa/daemon.py
-- chupa/stages.py
-- chupa/merge.py
-- chupa/drain.py
-- chupa/serve.py
-- chupa/__main__.py
+- clutch/providers.py
+- clutch/watchdog.py
+- clutch/timers.py
+- clutch/runner.py
+- clutch/restart.py
+- clutch/daemon.py
+- clutch/stages.py
+- clutch/merge.py
+- clutch/drain.py
+- clutch/serve.py
+- clutch/__main__.py
 - eval/shakeout/bench.py
 - eval/daemon_soak.py
 - tests/test_provider_cooldown_failover.py
@@ -96,15 +96,15 @@ Read every Context and On-demand path before writing. On-demand is the measured 
 - tests/test_merge.py
 - tests/test_mergequeue.py
 - tests/test_daemon_composition.py
-- chupa/audit.py
+- clutch/audit.py
 - tests/test_audit.py
-- chupa/journal.py
+- clutch/journal.py
 - tests/test_journal.py
-- chupa/thresh.py
+- clutch/thresh.py
 - tests/test_thresh.py
-- chupa/driver.py
-- chupa/llmeffect.py
-- chupa/requisition.py
+- clutch/driver.py
+- clutch/llmeffect.py
+- clutch/requisition.py
 - eval/shakeout/providers.py
 - eval/diagnose.py
 - eval/harness.py

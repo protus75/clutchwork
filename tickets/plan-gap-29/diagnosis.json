@@ -8,8 +8,8 @@
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "The premise is false as written. The gap needs entry headings for 19.P6.bug-gate-grammar and 19.P6.report-inbox-triage. Both appear only in the P6 manifest (CHUPA_PLAN.md:2575-2576) and have no ### heading, while the only fenced unit is 19.P6.fixture-host-scaffold (line 2621).",
-    "Re-author the ticket so its scope fence covers CHUPA_PLAN.md#19.P6.bug-gate-grammar and CHUPA_PLAN.md#19.P6.report-inbox-triage. Require each to get its Owner, Records, Observable, and Tests parts, inserted after the phase's last unit as the In-scope rule says.",
+    "The premise is false as written. The gap needs entry headings for 19.P6.bug-gate-grammar and 19.P6.report-inbox-triage. Both appear only in the P6 manifest (CLUTCH_PLAN.md:2575-2576) and have no ### heading, while the only fenced unit is 19.P6.fixture-host-scaffold (line 2621).",
+    "Re-author the ticket so its scope fence covers CLUTCH_PLAN.md#19.P6.bug-gate-grammar and CLUTCH_PLAN.md#19.P6.report-inbox-triage. Require each to get its Owner, Records, Observable, and Tests parts, inserted after the phase's last unit as the In-scope rule says.",
     "When writing the new units, use the manifest 'does' text at lines 2575-2576 as the source (kind: bug, mandatory ## Regression, the head-pass/base-fail gate; the report inbox with daemon and serve consumers). Check them against merged code. Do not invent facts the manifest does not state.",
     "Plan lint passes even though entry headings named in the manifest are missing. File that as a separate Suggestion Box item; do not fold a fix into this ticket."
   ],

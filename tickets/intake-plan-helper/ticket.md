@@ -9,30 +9,30 @@ kind: chore
 - none
 
 ## Context
-- chupa/tickets.py::intake
-- chupa/tickets.py::IntakeResult
-- chupa/tickets.py::_porcelain
-- chupa/tickets.py::_pending
-- chupa/tickets.py::_intake_claims
-- chupa/tickets.py::validate_ticket
-- chupa/tickets.py::lint_findings
-- chupa/tickets.py::evidence_findings
+- clutch/tickets.py::intake
+- clutch/tickets.py::IntakeResult
+- clutch/tickets.py::_porcelain
+- clutch/tickets.py::_pending
+- clutch/tickets.py::_intake_claims
+- clutch/tickets.py::validate_ticket
+- clutch/tickets.py::lint_findings
+- clutch/tickets.py::evidence_findings
 - tests/unit/test_git_commit.py
 
 ## Goal / Why
-This is the first of three successors of `menu-mirrors-verb-admission`. The goal is that the VS Code menu mirrors exactly what each chupa verb allows. `run` and `review` decide a pending stem by intake's own decision. Today that decision is inlined in `intake` (`chupa/tickets.py`) together with its commits, so `snapshot` cannot reuse it. It would have to copy it, and copies are the drift the parent ticket removes. This ticket extracts intake's decision into a non-committing helper that `intake` itself uses. A later successor (`menu-table-run-review-admission`) has `snapshot` call the same helper. This ticket changes no behavior.
+This is the first of three successors of `menu-mirrors-verb-admission`. The goal is that the VS Code menu mirrors exactly what each clutch verb allows. `run` and `review` decide a pending stem by intake's own decision. Today that decision is inlined in `intake` (`clutch/tickets.py`) together with its commits, so `snapshot` cannot reuse it. It would have to copy it, and copies are the drift the parent ticket removes. This ticket extracts intake's decision into a non-committing helper that `intake` itself uses. A later successor (`menu-table-run-review-admission`) has `snapshot` call the same helper. This ticket changes no behavior.
 
 ## Scope in / Scope out
 In:
-- Extract from `intake` in `chupa/tickets.py` a non-committing helper that gets the porcelain entries (`_porcelain` output), the per-stem regular evidence path listings (as `intake` builds `evidence` today), the journal's last states, and the `stems` filter. It returns: the stray staged paths (staged outside the pending ticket files and their regular evidence files, intake's `allowed` rule, including staged deletions); and, for each selected pending stem, the claimed text from `_intake_claims` plus either its findings or its validated `Ticket`. A settled or rejected stem (`merged`, `already_satisfied`, `rejected`) validates with `_settled=True` and gets no lint or evidence findings. Every other stem gets `lint_findings` plus `evidence_findings` over its listed evidence paths, exactly as today. The helper reads ticket text from disk but runs no git and writes nothing. It may be one function, or a stray function plus a per-stem function in the same module.
+- Extract from `intake` in `clutch/tickets.py` a non-committing helper that gets the porcelain entries (`_porcelain` output), the per-stem regular evidence path listings (as `intake` builds `evidence` today), the journal's last states, and the `stems` filter. It returns: the stray staged paths (staged outside the pending ticket files and their regular evidence files, intake's `allowed` rule, including staged deletions); and, for each selected pending stem, the claimed text from `_intake_claims` plus either its findings or its validated `Ticket`. A settled or rejected stem (`merged`, `already_satisfied`, `rejected`) validates with `_settled=True` and gets no lint or evidence findings. Every other stem gets `lint_findings` plus `evidence_findings` over its listed evidence paths, exactly as today. The helper reads ticket text from disk but runs no git and writes nothing. It may be one function, or a stray function plus a per-stem function in the same module.
 - `intake` keeps its commit lock and its git calls (`status_porcelain`, then one `ls-files` per pending stem) in today's order. When the stray list is non-empty it raises `IntakeRefused` with today's message and paved road and commits nothing. It writes stamped text and commits each clean stem from the helper's result, journaling the same intake signal. Its committed and refused results are unchanged for every input.
 
 Out:
-- `chupa/observe.py`, every verb, and every menu: later successors.
+- `clutch/observe.py`, every verb, and every menu: later successors.
 - Any change to what intake accepts, refuses, stamps, or commits.
 
 ## Scope fence
-- chupa/tickets.py
+- clutch/tickets.py
 - tests/unit/test_intake_plan.py
 
 ## Acceptance criteria

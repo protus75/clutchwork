@@ -12,17 +12,17 @@ state: confirmed
 - bug-gate-grammar
 
 ## Context
-- chupa/box.py
-- chupa/triage.py
-- chupa/author.py
-- chupa/daemon.py
-- chupa/serve.py
+- clutch/box.py
+- clutch/triage.py
+- clutch/author.py
+- clutch/daemon.py
+- clutch/serve.py
 - tests/test_box.py
 - tests/test_triage.py
 - tests/test_author.py
 - tests/test_serve.py
-- chupa/tickets.py
-- chupa/seams.py
+- clutch/tickets.py
+- clutch/seams.py
 - hosts/fixture/scaffold.py
 - hosts/fixture/replay.py
 
@@ -36,15 +36,15 @@ state: confirmed
 Turn bounded host reports into durable evidence and reviewed regression bug tickets.
 
 ## Scope in / Scope out
-Implement intake and custody solely under the cited entry contracts. The new chupa/inbox.py owns schema/bounds and inbox-to-Box ingestion; the existing Box writes custody and queue identities. Keep existing public signatures and default behavior for non-host messages, extending Box's nullable report descriptor and providing report-specific enqueue under that same owner. Triage remains the sole sequential ingest consumer, Author the sole authored-ticket/evidence writer, and serve the live composition owner. Ingest before the pending check, including an initially empty queue. Read the existing bug grammar and fixture harness; sibling-created tests/test_bug_gate.py is not Context. Preserve existing failure, dedup, decision, tombstone, policy, review and storm behavior. No additional queue/consumer, no prompt-spec edits, no report-supplied command execution, no escape attribution, GO or report producer.
+Implement intake and custody solely under the cited entry contracts. The new clutch/inbox.py owns schema/bounds and inbox-to-Box ingestion; the existing Box writes custody and queue identities. Keep existing public signatures and default behavior for non-host messages, extending Box's nullable report descriptor and providing report-specific enqueue under that same owner. Triage remains the sole sequential ingest consumer, Author the sole authored-ticket/evidence writer, and serve the live composition owner. Ingest before the pending check, including an initially empty queue. Read the existing bug grammar and fixture harness; sibling-created tests/test_bug_gate.py is not Context. Preserve existing failure, dedup, decision, tombstone, policy, review and storm behavior. No additional queue/consumer, no prompt-spec edits, no report-supplied command execution, no escape attribution, GO or report producer.
 
 ## Scope fence
-- chupa/inbox.py
-- chupa/box.py
-- chupa/triage.py
-- chupa/author.py
-- chupa/daemon.py
-- chupa/serve.py
+- clutch/inbox.py
+- clutch/box.py
+- clutch/triage.py
+- clutch/author.py
+- clutch/daemon.py
+- clutch/serve.py
 - tests/test_box.py
 - tests/test_triage.py
 - tests/test_author.py

@@ -8,8 +8,8 @@
   "stage": "implement",
   "verdict": "abandon-human",
   "lessons": [
-    "A human must commit or set aside the uncommitted CHUPA_PLAN.md edit in the main checkout. Section 13 differs outside 19.P3.merge-queue, so ScopeFenceGate._unit_confined is false on untouched base 19cf2ea before any edit. No edit inside the fence can clear it.",
-    "Once main's plan is clean, retry with the same fence, CHUPA_PLAN.md#19.P3.merge-queue. The implement attempt confirmed that `uv run pytest tests/test_plan_lint.py` already passes (28 tests), so the only blocker is the dirty base.",
+    "A human must commit or set aside the uncommitted CLUTCH_PLAN.md edit in the main checkout. Section 13 differs outside 19.P3.merge-queue, so ScopeFenceGate._unit_confined is false on untouched base 19cf2ea before any edit. No edit inside the fence can clear it.",
+    "Once main's plan is clean, retry with the same fence, CLUTCH_PLAN.md#19.P3.merge-queue. The implement attempt confirmed that `uv run pytest tests/test_plan_lint.py` already passes (28 tests), so the only blocker is the dirty base.",
     "On retry, edit only the unit 19.P3.merge-queue. Do not touch section 13 or any other plan text to get past the scope gate; the Definition of rejected forbids stating facts that need plan text outside the unit."
   ],
   "mechanical": null,

@@ -11,10 +11,10 @@ state: confirmed
 - phase3-continue-13
 
 ## Context
-- chupa/daemon.py
-- chupa/config.py
-- chupa/seams.py
-- chupa/__main__.py
+- clutch/daemon.py
+- clutch/config.py
+- clutch/seams.py
+- clutch/__main__.py
 
 ## Plan contract
 - 19.I
@@ -26,17 +26,17 @@ state: confirmed
 Construct the dormant heartbeat component governed by 19.P3.heartbeat so an explicitly invoked cycle and an external freshness check can demonstrate core liveness through injected seams.
 
 ## Scope in / Scope out
-19.P3.heartbeat is the complete governing contract for Owner, Records, Observable and every named Tests obligation, including record custody; implement all of it. The renderer injects those bullets verbatim. Implement the new chupa/heartbeat.py under that unit's Owner, and the explicitly invoked boundary in chupa/daemon.py under the same Owner. Never copy unit text into this seed or invent records or owners.
+19.P3.heartbeat is the complete governing contract for Owner, Records, Observable and every named Tests obligation, including record custody; implement all of it. The renderer injects those bullets verbatim. Implement the new clutch/heartbeat.py under that unit's Owner, and the explicitly invoked boundary in clutch/daemon.py under the same Owner. Never copy unit text into this seed or invent records or owners.
 
-The registry floor needs no additions: preserve DaemonTasks, DaemonAdmission, daemon_core and build_daemon_core signatures and ownership, Config.state_dir, FileSystem.write and Clock. Read their direct callers and the merged production-composition harness before writing. Greps across chupa/, eval/ and tests/ found no heartbeat caller, public-operation allowlist or old assertion this dormant construction must flip. Keep ordinary DaemonTasks exception propagation and cleanup and bootstrap inline admission. Existing chupa/daemon.py is embedded Context; the two new fenced paths are created, never Context or On-demand.
+The registry floor needs no additions: preserve DaemonTasks, DaemonAdmission, daemon_core and build_daemon_core signatures and ownership, Config.state_dir, FileSystem.write and Clock. Read their direct callers and the merged production-composition harness before writing. Greps across clutch/, eval/ and tests/ found no heartbeat caller, public-operation allowlist or old assertion this dormant construction must flip. Keep ordinary DaemonTasks exception propagation and cleanup and bootstrap inline admission. Existing clutch/daemon.py is embedded Context; the two new fenced paths are created, never Context or On-demand.
 
-Prove behavioral dormancy with calibrated raising construction/cycle probes over real CLI run/drain and the merged production-composition harness: deliberate wiring must trip the probe and ordinary composition must leave it untouched. chupa.daemon is already reachable; import absence is not dormancy evidence. Use injected seams, scripted health/metadata callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits. Exercise the actual dormant component directly, including each named invariant and custody obligation in the cited entry unit. serve-activation owns heartbeat production wiring and dormancy migration.
+Prove behavioral dormancy with calibrated raising construction/cycle probes over real CLI run/drain and the merged production-composition harness: deliberate wiring must trip the probe and ordinary composition must leave it untouched. clutch.daemon is already reachable; import absence is not dormancy evidence. Use injected seams, scripted health/metadata callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits. Exercise the actual dormant component directly, including each named invariant and custody obligation in the cited entry unit. serve-activation owns heartbeat production wiring and dormancy migration.
 
 The existing tests/test_daemon_tasks.py, tests/test_daemon_composition.py, tests/test_cli.py and tests/test_drain.py are unchanged preservation suites in Verification only, neither fenced nor embedded. Out: background startup, serve wiring, altered signatures, changed verification results, replacement control/abort paths or task graphs, unearned records, plan/registry changes, existing tickets/run records and historical seeding tests.
 
 ## Scope fence
-- chupa/heartbeat.py
-- chupa/daemon.py
+- clutch/heartbeat.py
+- clutch/daemon.py
 - tests/test_heartbeat.py
 
 ## Acceptance criteria

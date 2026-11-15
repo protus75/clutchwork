@@ -9,7 +9,7 @@ kind: chore
 - core-authoring-first
 
 ## Context
-- chupa/hostfiles.py::CORE_TEMPLATE
+- clutch/hostfiles.py::CORE_TEMPLATE
 - tests/integration/test_hostfiles.py::test_core_template_is_host_neutral
 
 ## Goal / Why
@@ -19,7 +19,7 @@ The managed block grew to 22 KB because rules were ported word for word and noth
 - In: one new test in `tests/integration/test_hostfiles.py` with two assertions on `hostfiles.CORE_TEMPLATE`:
   - it starts with `## Ticket authoring`; the failure message says to keep ticket authoring rules in the first section and add new rules after it;
   - `len(CORE_TEMPLATE) <= 8192`; the failure message says to compress existing rules or move host-specific ones to the project's own rules outside the managed block.
-- Out: `CORE_TEMPLATE` text, `chupa/hostfiles.py`, and every conduct file.
+- Out: `CORE_TEMPLATE` text, `clutch/hostfiles.py`, and every conduct file.
 
 ## Scope fence
 - tests/integration/test_hostfiles.py

@@ -5,8 +5,8 @@
   "stem": "author-triage-shared-helpers",
   "passed": true,
   "changed_files": [
-    "chupa/author.py",
-    "chupa/triage.py",
+    "clutch/author.py",
+    "clutch/triage.py",
     "tests/integration/test_author.py",
     "tests/regress_author_open_tickets_deleted.py",
     "tests/unit/test_author.py"
@@ -77,8 +77,8 @@
       "coverage": {
         "percent": 21.47535332643916,
         "files": {
-          "chupa/author.py": 15.960912052117264,
-          "chupa/triage.py": 10.447761194029852
+          "clutch/author.py": 15.960912052117264,
+          "clutch/triage.py": 10.447761194029852
         }
       }
     },
@@ -220,7 +220,7 @@
         "list_open_tickets"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_author.py -k list_open_tickets\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.98s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_author.py -k list_open_tickets\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 0.98s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.917342
     },
@@ -232,7 +232,7 @@
         "tests/regress_author_open_tickets_deleted.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.330908
     },
@@ -242,10 +242,10 @@
         "run",
         "python",
         "-c",
-        "import chupa.triage as t; assert not any(hasattr(t, n) for n in ('_goal', '_commit_record', '_committed'))"
+        "import clutch.triage as t; assert not any(hasattr(t, n) for n in ('_goal', '_commit_record', '_committed'))"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.370851
     },
@@ -255,10 +255,10 @@
         "run",
         "python",
         "-c",
-        "import chupa.author as a; assert not any(hasattr(a, n) for n in ('_goal', '_commit_record', '_open_tickets'))"
+        "import clutch.author as a; assert not any(hasattr(a, n) for n in ('_goal', '_commit_record', '_open_tickets'))"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.334267
     },
@@ -269,7 +269,7 @@
         "tests/unit/test_author.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_author.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 0.93s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_author.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 0.93s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.212479
     },
@@ -279,7 +279,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "t_daemon_soak_writer_validates_before_write\n  /home/djp/source/chupa/.chupa/state/worktrees/author-triage-shared-helpers/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\n  /home/djp/source/chupa/.chupa/state/worktrees/author-triage-shared-helpers/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3295 passed, 10 warnings in 54.95s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "t_daemon_soak_writer_validates_before_write\n  /home/djp/source/clutch/.clutch/state/worktrees/author-triage-shared-helpers/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\n  /home/djp/source/clutch/.clutch/state/worktrees/author-triage-shared-helpers/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3295 passed, 10 warnings in 54.95s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 58.03934
     }

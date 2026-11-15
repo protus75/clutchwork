@@ -5,7 +5,7 @@
   "stem": "triage-author-invoked-stale-round-guard",
   "passed": true,
   "changed_files": [
-    "chupa/triage.py",
+    "clutch/triage.py",
     "tests/integration/test_triage.py",
     "tests/regress_triage_author_invoked_boundary.py",
     "tests/unit/test_triage_author_boundary.py"
@@ -79,12 +79,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.08s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.08s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "nkeypatch.MonkeyPatch object at 0x7ed1cd9116e0>\n\n    def test_reopened_author_verdict_with_stale_author_invoked_calls_author(tmp_path, monkeypatch):\n        from unittest.mock import AsyncMock\n    \n        from chupa import triage\n    \n        root, box = root_with_box(tmp_path)\n        id = enqueue(box, \"reopened author concern\")\n        box.record_verdict(id, Verdict(verdict=\"author\", produced_by_spec_version=\"1.0\", rationale=\"new evidence\"))\n        journal = Journal(root / \".chupa/state\", Clock())\n        journal.append(EventType.SIGNAL, {\"signal\": \"author_invoked\", \"message\": id})\n        journal.append(EventType.EFFECT_INTENT, {\"reopened\": True}, key=f\"retro-recurrence/{id}/new\")\n        author = AsyncMock(return_value=type(\"Outcome\", (), {\"stem\": \"new-ticket\", \"declined\": None})())\n        monkeypatch.setattr(triage, \"author\", author)\n        assert run(root, monkeypatch, FakeLLM([])) == 0\n>       author.assert_awaited_once()\n\ntests/integration/test_triage.py:699: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = <AsyncMock id='139439571329648'>\n\n    def assert_awaited_once(self):\n        \"\"\"\n        Assert that the mock was awaited exactly once.\n        \"\"\"\n        if not self.await_count == 1:\n            msg = (f\"Expected {self._mock_name or 'mock'} to have been awaited once.\"\n                   f\" Awaited {self.await_count} times.\")\n>           raise AssertionError(msg)\nE           AssertionError: Expected mock to have been awaited once. Awaited 0 times.\n\n/home/djp/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/unittest/mock.py:2376: AssertionError\n----------------------------- Captured stdout call -----------------------------\nbox-000001-6fbafb6d: declined -> declined-box-000001-6fbafb6d\n=========================== short test summary info ============================\nFAILED tests/integration/test_triage.py::test_reopened_author_verdict_with_stale_author_invoked_calls_author\n1 failed in 1.43s\n"
+          "tail": "nkeypatch.MonkeyPatch object at 0x7ed1cd9116e0>\n\n    def test_reopened_author_verdict_with_stale_author_invoked_calls_author(tmp_path, monkeypatch):\n        from unittest.mock import AsyncMock\n    \n        from clutch import triage\n    \n        root, box = root_with_box(tmp_path)\n        id = enqueue(box, \"reopened author concern\")\n        box.record_verdict(id, Verdict(verdict=\"author\", produced_by_spec_version=\"1.0\", rationale=\"new evidence\"))\n        journal = Journal(root / \".clutch/state\", Clock())\n        journal.append(EventType.SIGNAL, {\"signal\": \"author_invoked\", \"message\": id})\n        journal.append(EventType.EFFECT_INTENT, {\"reopened\": True}, key=f\"retro-recurrence/{id}/new\")\n        author = AsyncMock(return_value=type(\"Outcome\", (), {\"stem\": \"new-ticket\", \"declined\": None})())\n        monkeypatch.setattr(triage, \"author\", author)\n        assert run(root, monkeypatch, FakeLLM([])) == 0\n>       author.assert_awaited_once()\n\ntests/integration/test_triage.py:699: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nself = <AsyncMock id='139439571329648'>\n\n    def assert_awaited_once(self):\n        \"\"\"\n        Assert that the mock was awaited exactly once.\n        \"\"\"\n        if not self.await_count == 1:\n            msg = (f\"Expected {self._mock_name or 'mock'} to have been awaited once.\"\n                   f\" Awaited {self.await_count} times.\")\n>           raise AssertionError(msg)\nE           AssertionError: Expected mock to have been awaited once. Awaited 0 times.\n\n/home/djp/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/unittest/mock.py:2376: AssertionError\n----------------------------- Captured stdout call -----------------------------\nbox-000001-6fbafb6d: declined -> declined-box-000001-6fbafb6d\n=========================== short test summary info ============================\nFAILED tests/integration/test_triage.py::test_reopened_author_verdict_with_stale_author_invoked_calls_author\n1 failed in 1.43s\n"
         }
       }
     },
@@ -103,7 +103,7 @@
       "coverage": {
         "percent": 31.49569197630587,
         "files": {
-          "chupa/triage.py": 18.991097922848663
+          "clutch/triage.py": 18.991097922848663
         }
       }
     },
@@ -175,7 +175,7 @@
           "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[host-red]": 1.8209709549846593,
           "tests/integration/test_ladder.py::test_same_retry_wall_climbs_on_second_terminal": 1.8037749959912617,
           "tests/integration/test_ladder.py::test_rework_escalation_preserves_starting_capability_and_caps[escalate]": 1.7659532410325482,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.7420385270088445,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.7420385270088445,
           "tests/integration/test_retro_box.py::test_completed_retro_proposals_reach_prompt_spec_merge": 1.7205234540160745,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[review]": 1.720099823025521,
           "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck]": 1.6452224079985172,
@@ -244,7 +244,7 @@
         "tests/regress_triage_author_invoked_boundary.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 2.76s\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 2.76s\n",
       "base_red": false,
       "seconds": 3.468284
     },
@@ -255,7 +255,7 @@
         "tests/unit/test_triage_author_boundary.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_triage_author_boundary.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_triage_author_boundary.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.247602
     },
@@ -266,7 +266,7 @@
         "tests/integration/test_triage.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_triage.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 3.44s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_triage.py\nbringing up nodes...\nbringing up nodes...\n\n.........................                                                [100%]\n25 passed in 3.44s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.652268
     },
@@ -276,7 +276,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "2%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n....................................                                     [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/triage-author-invoked-stale-round-guard/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3420 passed, 9 warnings in 63.20s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "2%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n....................................                                     [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/triage-author-invoked-stale-round-guard/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3420 passed, 9 warnings in 63.20s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 64.486403
     }

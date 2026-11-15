@@ -11,9 +11,9 @@ state: confirmed
 - phase3-continue-11
 
 ## Context
-- chupa/daemon.py
-- chupa/control.py
-- chupa/driver.py
+- clutch/daemon.py
+- clutch/control.py
+- clutch/driver.py
 
 ## Plan contract
 - 19.I
@@ -24,12 +24,12 @@ state: confirmed
 Build the dormant kill-worker-stop boundary governed by its own entry unit, ready for later serve activation.
 
 ## Scope in / Scope out
-The cited 19.P3.kill-worker-stop is the complete governing contract for Owner, Records, Observable and every named Tests obligation; implement all of them through the real predecessor boundaries. The renderer injects that unit verbatim. Do not copy unit bodies into this ticket. Authoring greps found no earned rule 2-5 addition: preserve the registry floor, existing Driver construction/run signatures, DaemonTasks construction/run and ownership, and ordinary failure routing. Existing fenced chupa/daemon.py is embedded; the new test belongs in neither Context nor On-demand. All predecessor suites in Verification are unchanged preservation suites, neither fenced nor embedded.
+The cited 19.P3.kill-worker-stop is the complete governing contract for Owner, Records, Observable and every named Tests obligation; implement all of them through the real predecessor boundaries. The renderer injects that unit verbatim. Do not copy unit bodies into this ticket. Authoring greps found no earned rule 2-5 addition: preserve the registry floor, existing Driver construction/run signatures, DaemonTasks construction/run and ownership, and ordinary failure routing. Existing fenced clutch/daemon.py is embedded; the new test belongs in neither Context nor On-demand. All predecessor suites in Verification are unchanged preservation suites, neither fenced nor embedded.
 
 Construction remains behaviorally dormant through calibrated raising probes over real CLI run/drain and the merged production-composition harness. Deliberate wiring must trip each probe; ordinary composition leaves it untouched. Use injected seams, disposable directories and asyncio barriers. Out: CLI kill activation, concurrent polling, background startup, serve wiring, replacement control or abort paths, new durable flags or applied records, altered signatures, historical seeding tests and unrelated failure routing.
 
 ## Scope fence
-- chupa/daemon.py
+- clutch/daemon.py
 - tests/test_kill_worker_stop.py
 
 ## Acceptance criteria

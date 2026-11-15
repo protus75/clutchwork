@@ -10,7 +10,7 @@ kind: chore
 
 ## Context
 - pyproject.toml
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 - tests/integration/test_testreport.py
 
 ## Goal / Why
@@ -18,14 +18,14 @@ kind: chore
 
 ## Scope in / Scope out
 - In: add empty `tests/__init__.py`, `tests/unit/__init__.py` and `tests/integration/__init__.py`.
-- In: `docs/how-chupa-works.md` section 2.2 says a unit test file may share its name with an integration test file.
+- In: `docs/how-clutch-works.md` section 2.2 says a unit test file may share its name with an integration test file.
 - Out: pytest import mode or any other `pyproject.toml` setting, renaming existing test files, and any engine or review check for test file names.
 
 ## Scope fence
 - tests/__init__.py
 - tests/unit/__init__.py
 - tests/integration/__init__.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `./dev.py test` exits 0 with the three `__init__.py` files present and empty.

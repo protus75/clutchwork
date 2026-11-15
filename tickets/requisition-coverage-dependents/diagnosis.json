@@ -8,8 +8,8 @@
   "stage": "merge",
   "verdict": "abandon-human",
   "lessons": [
-    "The implementation and review both passed (3064 tests, approve). Merge failed only because the main checkout has uncommitted edits to chupa/specs/requisition_review.md and tests/test_specs.py, and the squash would overwrite them.",
-    "A human must inspect the uncommitted edits to chupa/specs/requisition_review.md and tests/test_specs.py in the main checkout, then commit or revert them. That is the dirty_checkout paved road. After that the ticket re-runs through the normal retry path.",
+    "The implementation and review both passed (3064 tests, approve). Merge failed only because the main checkout has uncommitted edits to clutch/specs/requisition_review.md and tests/test_specs.py, and the squash would overwrite them.",
+    "A human must inspect the uncommitted edits to clutch/specs/requisition_review.md and tests/test_specs.py in the main checkout, then commit or revert them. That is the dirty_checkout paved road. After that the ticket re-runs through the normal retry path.",
     "Do not change the implementation on the next attempt. The diff already meets every Scope-in item: coverage_map is a required keyword with no default, a missing or invalid declared map snags as coverage_map, and the spec is at 3.1 with the fenced-or-cleared rule."
   ],
   "mechanical": null,

@@ -13,8 +13,8 @@ agent_effort: medium
 ## Context
 - eval/harness.py
 - tests/test_eval_harness.py
-- chupa/llm.py
-- chupa/artifacts.py
+- clutch/llm.py
+- clutch/artifacts.py
 
 ## Plan contract
 - 19.L
@@ -22,14 +22,14 @@ agent_effort: medium
 - section 11
 
 ## Goal / Why
-`eval/diagnose.py` scores the PRODUCTION diagnosis call (`diagnose_stage` in `chupa/stages.py` with `specs/diagnose.md`, from `spine-diagnosis`) over a committed 12-case fixture corpus under `eval/diagnose_fixtures/`. It writes the agreement report `eval/diagnose_report.json` under a flat per-run USD cap and a hard run deadline. Under the fake LLM every case's expected verdict is proven reachable, and the budget and deadline enforcement are pinned by tests against the report the harness writes. This ticket spends nothing: the real-model run is the next seed (`diagnosis-eval-run`), which only executes this harness.
+`eval/diagnose.py` scores the PRODUCTION diagnosis call (`diagnose_stage` in `clutch/stages.py` with `specs/diagnose.md`, from `spine-diagnosis`) over a committed 12-case fixture corpus under `eval/diagnose_fixtures/`. It writes the agreement report `eval/diagnose_report.json` under a flat per-run USD cap and a hard run deadline. Under the fake LLM every case's expected verdict is proven reachable, and the budget and deadline enforcement are pinned by tests against the report the harness writes. This ticket spends nothing: the real-model run is the next seed (`diagnosis-eval-run`), which only executes this harness.
 
 Why: the diagnosis verdict drives the ladder and the Reject queue, yet nothing measures whether a real model's verdicts agree with a human's on known cases (19.P2 Emits). A harness that cannot prove its own scoring, budget, and kill paths under the fake would make the paid run unreviewable. Splitting harness from spend keeps the paid run a no-code execution of reviewed, merged machinery.
 
-Owners: `eval/diagnose.py` owns the case envelope schema, corpus loading, scoring, the report schema and its writer, the cost cap, the deadline, and the `run` and `verify` subcommands. It imports the verdict vocabulary (`DIAGNOSIS_VERDICTS`), `Harvest`, `DiagnosisMaterial`, and `diagnose_stage` from `chupa/artifacts.py` and `chupa/stages.py`, and never copies them. `eval/harness.py` (the review baseline) is the idiom: its lock, Driver, and ProviderLLM composition. It is a read-only reference and stays unchanged.
+Owners: `eval/diagnose.py` owns the case envelope schema, corpus loading, scoring, the report schema and its writer, the cost cap, the deadline, and the `run` and `verify` subcommands. It imports the verdict vocabulary (`DIAGNOSIS_VERDICTS`), `Harvest`, `DiagnosisMaterial`, and `diagnose_stage` from `clutch/artifacts.py` and `clutch/stages.py`, and never copies them. `eval/harness.py` (the review baseline) is the idiom: its lock, Driver, and ProviderLLM composition. It is a read-only reference and stays unchanged.
 
 ## Scope in / Scope out
-- In: `eval/diagnose_fixtures/<case>.json`, exactly 12 files. Each is ONE closed JSON envelope (19.P2 FIXTURE CORPORA): `ticket` (ticket.md text), `harvest` (validates as `chupa.artifacts.Harvest`), `run_record` (run.md text or null), `expected` (a member of `DIAGNOSIS_VERDICTS`), and `why` (one sentence naming the evidence that forces the verdict). Every verdict is expected by at least two cases. Files are written with `json.dumps(..., indent=2)` so each string stays one line, keeping the corpus plus harness and tests inside the section 7 diff budget. The cases are hand-authored in this diff and describe failures in a generic small Python project, never this repo's own stems.
+- In: `eval/diagnose_fixtures/<case>.json`, exactly 12 files. Each is ONE closed JSON envelope (19.P2 FIXTURE CORPORA): `ticket` (ticket.md text), `harvest` (validates as `clutch.artifacts.Harvest`), `run_record` (run.md text or null), `expected` (a member of `DIAGNOSIS_VERDICTS`), and `why` (one sentence naming the evidence that forces the verdict). Every verdict is expected by at least two cases. Files are written with `json.dumps(..., indent=2)` so each string stays one line, keeping the corpus plus harness and tests inside the section 7 diff budget. The cases are hand-authored in this diff and describe failures in a generic small Python project, never this repo's own stems.
 - In: `eval/diagnose.py` with:
   - `Case`, the closed pydantic envelope model. `load_cases(root)` returns cases sorted by name and refuses with `CaseError` (naming the file and the fix) on an invalid envelope, a count other than 12, or a verdict expected by fewer than two cases.
   - Engine constants `RUN_USD_CAP = 5.00`, `RUN_DEADLINE_S = 2400.0`, `CALL_STUCK_S = 600.0`, and `REPORT = ROOT / "eval" / "diagnose_report.json"`.
@@ -43,7 +43,7 @@ Owners: `eval/diagnose.py` owns the case envelope schema, corpus loading, scorin
   - CLI `uv run python -m eval.diagnose run | verify`. `run` takes the single-writer lock on the config's state dir and composes ProviderLLM plus `Driver.from_config` exactly as `eval/harness.py` does, then prints the agreement. `verify` prints each failed check and exits 1, else exits 0.
 - In: `tests/test_diagnose_eval.py` covers every invariant above, against the report file the harness writes.
 - Out: running the eval against a real model and committing `eval/diagnose_report.json` (the `diagnosis-eval-run` seed).
-- Out: any change to `chupa/**`, `specs/**`, or `eval/harness.py`, the triage-dedup eval (deferred to daemon-era entry), and Rework or Retro evals.
+- Out: any change to `clutch/**`, `specs/**`, or `eval/harness.py`, the triage-dedup eval (deferred to daemon-era entry), and Rework or Retro evals.
 
 ## Scope fence
 - eval/diagnose.py
@@ -70,7 +70,7 @@ uv run pytest -q
 
 ## Definition of rejected
 Reject the branch if any of these hold:
-- The harness renders diagnosis prompts, or defines the verdict vocabulary, anywhere but through the imports from `chupa/stages.py` and `chupa/artifacts.py`.
+- The harness renders diagnosis prompts, or defines the verdict vocabulary, anywhere but through the imports from `clutch/stages.py` and `clutch/artifacts.py`.
 - A call runs when its projected spend exceeds the cap, or after the deadline.
 - A killed or skipped case is dropped from the report rather than recorded.
 - Any test or command spends real model money.

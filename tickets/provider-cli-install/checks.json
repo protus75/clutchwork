@@ -7,14 +7,14 @@
   "changed_files": [
     ".gitignore",
     "README.md",
-    "chupa/__main__.py",
-    "chupa/docs/host-contract.md",
-    "chupa/docs/host-qwen.md",
-    "chupa/docs/host-running.md",
-    "chupa/providers.py",
+    "clutch/__main__.py",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-qwen.md",
+    "clutch/docs/host-running.md",
+    "clutch/providers.py",
     "dev.py",
     "docs/gemini-graphics-refactor-plan.md",
-    "docs/how-chupa-works.md",
+    "docs/how-clutch-works.md",
     "tests/integration/test_closed_sets.py",
     "tests/integration/test_daemon_composition.py",
     "tests/integration/test_dev.py",
@@ -88,8 +88,8 @@
       "coverage": {
         "percent": 39.33024348847836,
         "files": {
-          "chupa/__main__.py": 58.12053115423902,
-          "chupa/providers.py": 61.34020618556701
+          "clutch/__main__.py": 58.12053115423902,
+          "clutch/providers.py": 61.34020618556701
         }
       }
     },
@@ -169,7 +169,7 @@
           "tests/integration/test_serve_kill.py::test_serve_storm_suspends_stage_and_frees_selection[review]": 1.610768324957462,
           "tests/integration/test_shakeout.py::test_review_reject_member_observes_snag_and_no_merge": 1.5821086620271672,
           "tests/integration/test_serve_kill.py::test_serve_storm_hold_and_resume": 1.5646822539856657,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.5241221940086689,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.5241221940086689,
           "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[review]": 1.517757760011591,
           "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck]": 1.5036202729970682,
           "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[docs/guide.md]": 1.5026347750099376,
@@ -228,10 +228,10 @@
         "run",
         "python",
         "-c",
-        "import pathlib; assert 'pnpm add -g' not in pathlib.Path('chupa/providers.py').read_text(); assert all('chupa install' in pathlib.Path(f).read_text() for f in ('chupa/docs/host-contract.md', 'chupa/docs/host-qwen.md', 'chupa/docs/host-running.md', 'docs/how-chupa-works.md', 'README.md')); assert 'PACKAGE' in pathlib.Path('docs/gemini-graphics-refactor-plan.md').read_text(); assert 'node_modules/' in pathlib.Path('.gitignore').read_text()"
+        "import pathlib; assert 'pnpm add -g' not in pathlib.Path('clutch/providers.py').read_text(); assert all('clutch install' in pathlib.Path(f).read_text() for f in ('clutch/docs/host-contract.md', 'clutch/docs/host-qwen.md', 'clutch/docs/host-running.md', 'docs/how-clutch-works.md', 'README.md')); assert 'PACKAGE' in pathlib.Path('docs/gemini-graphics-refactor-plan.md').read_text(); assert 'node_modules/' in pathlib.Path('.gitignore').read_text()"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.054802
     },
@@ -241,7 +241,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "............... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n...........                                                              [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/provider-cli-install/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3611 passed, 9 warnings in 63.23s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "............... [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n........................................................................ [ 99%]\n...........                                                              [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/provider-cli-install/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3611 passed, 9 warnings in 63.23s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 68.840354
     }

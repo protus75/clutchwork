@@ -11,13 +11,13 @@ state: confirmed
 - phase3-continue-17
 
 ## Context
-- chupa/storm.py
-- chupa/box.py
-- chupa/daemon.py
+- clutch/storm.py
+- clutch/box.py
+- clutch/daemon.py
 - tests/test_storm.py
-- chupa/journal.py
-- chupa/config.py
-- chupa/seams.py
+- clutch/journal.py
+- clutch/config.py
+- clutch/seams.py
 
 ## Plan contract
 - 19.I
@@ -30,16 +30,16 @@ Direct invocation of the dormant Box arrival hook records stable occurrences, in
 ## Scope in / Scope out
 19.P3.storm-producer-wiring is the complete governing contract for Owner, Records, Observable and every named Tests obligation: implement all of it, including record custody and its sole writers. The renderer injects those bullets verbatim; never copy unit text into this seed. Source ownership from the unit's Owner.
 
-Read merged chupa/journal.py, chupa/box.py, chupa/config.py, chupa/daemon.py, chupa/runner.py, chupa/stages.py and chupa/flake.py, real CLI run/drain and build_daemon_core, and the merged production-composition harness before editing. Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Journal remains the sole durable event writer and Box the sole queue-record writer. Preserve occurrence, replay, window, corruption, durability and crash obligations. Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits.
+Read merged clutch/journal.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/runner.py, clutch/stages.py and clutch/flake.py, real CLI run/drain and build_daemon_core, and the merged production-composition harness before editing. Preserve Journal(state_dir, clock) and append/read/close signatures and all direct callers, bootstrap on-entry reconciliation, inline admission and ordinary DaemonTasks exception propagation and cleanup. Journal remains the sole durable event writer and Box the sole queue-record writer. Preserve occurrence, replay, window, corruption, durability and crash obligations. Use injected seams, scripted callbacks, disposable repositories and asyncio barriers, never real-model calls or wall-clock waits.
 
-The registry fence is a floor. Authoring-time greps of Box constructors/enqueue, Journal callers, public surfaces, build_daemon_core and production absence assertions across chupa/, eval/ and tests/ earned only the closure described below under 19.L rules 2-5. Optional keyword-only seams preserve callback-free direct callers; no public-operation allowlist or constructor-arity migration is earned. Existing fenced paths are Context; created paths, including sibling-created paths, are neither Context nor On-demand. Unfenced suites are unchanged preservation suites in Verification only, neither fenced nor embedded. Do not migrate historical seeding tests. Out: replacement writers, task graphs, manual HGATE release, verification filtering and unearned records.
+The registry fence is a floor. Authoring-time greps of Box constructors/enqueue, Journal callers, public surfaces, build_daemon_core and production absence assertions across clutch/, eval/ and tests/ earned only the closure described below under 19.L rules 2-5. Optional keyword-only seams preserve callback-free direct callers; no public-operation allowlist or constructor-arity migration is earned. Existing fenced paths are Context; created paths, including sibling-created paths, are neither Context nor On-demand. Unfenced suites are unchanged preservation suites in Verification only, neither fenced nor embedded. Do not migrate historical seeding tests. Out: replacement writers, task graphs, manual HGATE release, verification filtering and unearned records.
 
 No fence additions are earned. Migrate only tests/test_storm.py::test_storm_ledger_is_dormant's import-absence assertion if importing the hook makes storm reachable; the governing behavioral proof belongs to test_storm_producer_hook_is_dormant. Preserve test_ledger_has_no_trip_side_effects and all predecessor occurrence obligations. Producer wiring stays behaviorally dormant until storm-notification-activation. Out: production caller changes, trip/report/notification/dispatch hold or release.
 
 ## Scope fence
-- chupa/storm.py
-- chupa/box.py
-- chupa/daemon.py
+- clutch/storm.py
+- clutch/box.py
+- clutch/daemon.py
 - tests/test_storm.py
 - tests/test_storm_producer.py
 

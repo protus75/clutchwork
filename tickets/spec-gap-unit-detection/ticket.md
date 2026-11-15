@@ -11,11 +11,11 @@ state: confirmed
 - hardening-round-records
 
 ## Context
-- chupa/artifacts.py
-- chupa/specs.py
-- chupa/requisition.py
-- chupa/stages.py
-- chupa/runner.py
+- clutch/artifacts.py
+- clutch/specs.py
+- clutch/requisition.py
+- clutch/stages.py
+- clutch/runner.py
 - tests/test_seed_path.py
 - tests/test_requisition.py
 - tests/test_hardening.py
@@ -30,25 +30,25 @@ state: confirmed
 ## Goal / Why
 Spec gaps are detected from structured, validated fields and never from prose. A `Finding` carries a nullable `unit`. The seed path's mechanical SPEC DEPTH check runs over every hardenable unit of a seed, before grammar. The runner reads the gapped units from the run's own StageResult findings. The `premise` regex, the `checks.json` re-read, and NON-CONVERGENCE are deleted.
 
-Why: section 11.4 DETECTION reads codes and records only, and section 5 makes `unit` a validated field never parsed from prose. Today `chupa/runner.py` `premise_spec_gaps` regex-matches `19.P<n>.<row>` in a premise's message and paved road. Any premise that mentions a unit id files a hardener, including code/seam contradictions a plan edit cannot fix. `spec_gaps` re-reads `tickets/<stem>/checks.json` from main instead of this run's Check result, files every seed `spec_gap` against the seed's OWN row whichever unit gapped, and treats changing finding wording over three passes as a spec gap. `chupa/stages.py` checks only the seed's own row unit, so a cited unit that is missing fails as an unresolvable `Plan contract` id (an `authoring_error`).
+Why: section 11.4 DETECTION reads codes and records only, and section 5 makes `unit` a validated field never parsed from prose. Today `clutch/runner.py` `premise_spec_gaps` regex-matches `19.P<n>.<row>` in a premise's message and paved road. Any premise that mentions a unit id files a hardener, including code/seam contradictions a plan edit cannot fix. `spec_gaps` re-reads `tickets/<stem>/checks.json` from main instead of this run's Check result, files every seed `spec_gap` against the seed's OWN row whichever unit gapped, and treats changing finding wording over three passes as a spec gap. `clutch/stages.py` checks only the seed's own row unit, so a cited unit that is missing fails as an unresolvable `Plan contract` id (an `authoring_error`).
 
 ## Scope in / Scope out
 - In (CONTRADICTED TESTS): `tests/test_hardening.py::test_a_hardener_is_never_hardened` monkeypatches the deleted `runner.spec_gaps` and `runner.premise_spec_gaps`; migrate it to inject each gap through this run's StageResult findings (`{kind: spec_gap, unit}`), keeping all four cases (gate_failed and premise_failed, hardener and non-hardener) as behavioral coverage.
 - In (CONTRADICTED TESTS, recorded value): `tests/test_stages.py:302` pins the run record's `spec: implement 1.1`; update that recorded value to `implement 1.2` with the spec bump and change nothing else in that file.
-- In: `chupa/artifacts.py` `Finding` gains `unit: str | None = None`. A validator refuses a non-null `unit` unless `kind == "spec_gap"`.
-- In: `chupa/specs.py` gains `hardenable_units(plan, stem, plan_contract) -> tuple[str, ...]`: the stem's own entry unit when it is a non-exit registry row, plus every cited id that names an entry unit of a registry row. `entry_unit_gap` takes a unit id. Every caller is updated in place.
-- In: `chupa/stages.py` `_review_one` runs the SPEC DEPTH check over every hardenable unit before `validate_ticket`. It reads the seed's `## Plan contract` bullets without resolving them. Each missing unit or part yields a snag finding `{code: requisition_review, kind: spec_gap, unit: <uid>}` with mechanical `entry unit gap`. The seed's hardenable units reach `review_ticket`.
-- In: `chupa/requisition.py` validates each reply finding against the judged ticket's hardenable units. A `spec_gap` finding needs a `unit` from that set when the set is non-empty, and null otherwise. A violation takes the surface's existing schema-invalid path (`mechanical: invalid reply`). The implement surface validates `premise` findings the same way: `kind` is optional, and a `spec_gap` `unit` is checked against the ticket's hardenable units. A violation is a schema-invalid reply that takes the driver's existing re-prompt (section 5 invariant 2).
+- In: `clutch/artifacts.py` `Finding` gains `unit: str | None = None`. A validator refuses a non-null `unit` unless `kind == "spec_gap"`.
+- In: `clutch/specs.py` gains `hardenable_units(plan, stem, plan_contract) -> tuple[str, ...]`: the stem's own entry unit when it is a non-exit registry row, plus every cited id that names an entry unit of a registry row. `entry_unit_gap` takes a unit id. Every caller is updated in place.
+- In: `clutch/stages.py` `_review_one` runs the SPEC DEPTH check over every hardenable unit before `validate_ticket`. It reads the seed's `## Plan contract` bullets without resolving them. Each missing unit or part yields a snag finding `{code: requisition_review, kind: spec_gap, unit: <uid>}` with mechanical `entry unit gap`. The seed's hardenable units reach `review_ticket`.
+- In: `clutch/requisition.py` validates each reply finding against the judged ticket's hardenable units. A `spec_gap` finding needs a `unit` from that set when the set is non-empty, and null otherwise. A violation takes the surface's existing schema-invalid path (`mechanical: invalid reply`). The implement surface validates `premise` findings the same way: `kind` is optional, and a `spec_gap` `unit` is checked against the ticket's hardenable units. A violation is a schema-invalid reply that takes the driver's existing re-prompt (section 5 invariant 2).
 - In: `specs/requisition_review.md` (version `2.1`) asks for `unit` on every `spec_gap` finding, naming the ticket's own entry unit or a cited one. `specs/implement.md` (version `1.2`) allows an optional `kind` and `unit` on `premise` findings, and says a missing or under-specified governing unit is `kind: spec_gap` with that `unit`.
-- In: `chupa/runner.py`. A Check `gate_failed` or an Implement `premise_failed` is a spec-gap terminal exactly when this run's StageResult findings hold `kind: spec_gap` with a non-null `unit`. The gapped units G are those units. `spec_gaps`, `premise_spec_gaps`, and the non-convergence fold are deleted. `IDENTICAL_K` stays for the identical-wall rule.
+- In: `clutch/runner.py`. A Check `gate_failed` or an Implement `premise_failed` is a spec-gap terminal exactly when this run's StageResult findings hold `kind: spec_gap` with a non-null `unit`. The gapped units G are those units. `spec_gaps`, `premise_spec_gaps`, and the non-convergence fold are deleted. `IDENTICAL_K` stays for the identical-wall rule.
 - Out: round records, the hold, plan-bound release, vocabulary closure, and the copy refusal.
 
 ## Scope fence
-- chupa/artifacts.py
-- chupa/specs.py
-- chupa/stages.py
-- chupa/requisition.py
-- chupa/runner.py
+- clutch/artifacts.py
+- clutch/specs.py
+- clutch/stages.py
+- clutch/requisition.py
+- clutch/runner.py
 - specs/requisition_review.md
 - specs/implement.md
 - tests/test_seed_path.py

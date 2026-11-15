@@ -8,10 +8,10 @@
   "stage": "merge",
   "verdict": "abandon-human",
   "lessons": [
-    "The implementation passed all checks and review approved it with no findings. Merge failed only on the dirty_checkout gate: the main checkout has uncommitted edits to chupa/observe.py, tests/test_watch.py, vscode-chupa/extension.js and vscode-chupa/package.json, and the squash would overwrite them.",
+    "The implementation passed all checks and review approved it with no findings. Merge failed only on the dirty_checkout gate: the main checkout has uncommitted edits to clutch/observe.py, tests/test_watch.py, vscode-clutchwork/extension.js and vscode-clutchwork/package.json, and the squash would overwrite them.",
     "A human must inspect those four files in the main checkout. Then either commit the edits (if they are wanted) or revert them. Only then can the ticket re-run through the normal retry path, as the gate's paved_road says.",
     "Do not change the implementation on the next attempt. The approved diff (8 files, 326 insertions) meets the ticket. A retry before the main checkout is clean will fail the same merge gate again.",
-    "If the operator commits the main-checkout edits to those fenced files, the next attempt must rebase onto them. Read the new chupa/observe.py, extension.js, package.json and test_watch.py before writing, so the box view does not overwrite those changes."
+    "If the operator commits the main-checkout edits to those fenced files, the next attempt must rebase onto them. Read the new clutch/observe.py, extension.js, package.json and test_watch.py before writing, so the box view does not overwrite those changes."
   ],
   "mechanical": null,
   "spec_version": "1.2",

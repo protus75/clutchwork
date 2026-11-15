@@ -9,7 +9,7 @@ The forced retro for window retro/30 failed with infra_error on 2026-11-07. It c
 No failure needs repair now. The cause was a single malformed decision record, and commit 20073cda ("rename decision records to declined") fixed it. `tickets/decisions/` now holds only `declined-*` and `tombstone-*` files. Retro stages after that commit end ok (engine.log run_seq 33 and 34 on 2026-11-09). A new ticket would repair nothing.
 
 - engine.log:6119 retro_failed window_boundary=retro/30 trigger=forced: invalid decision record decision-box-000027-210a053d.md, kind input_value='decision' not 'declined' or 'tombstone'
-- git log: b02c4e62 created decision-box-000027-210a053d; 20073cda 'chupa(decisions): rename decision records to declined'
+- git log: b02c4e62 created decision-box-000027-210a053d; 20073cda 'clutch(decisions): rename decision records to declined'
 - tickets/decisions/ now holds only declined-* and tombstone-* files
 - engine.log:6622 and 6717: retro stage_end outcome ok at run_seq 33 and 34 on 2026-11-09
 

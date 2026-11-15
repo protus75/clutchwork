@@ -12,7 +12,7 @@ agent_effort: medium
 - author-stage
 
 ## Context
-- chupa/driver.py
+- clutch/driver.py
 - tests/test_driver.py
 
 ## Plan contract
@@ -27,24 +27,24 @@ Every box-authored ticket is feasibility-reviewed before it commits (section 7):
 
 Why: `author-stage` commits on grammar alone. A grammar-valid ticket that cannot be built becomes eligible work that parks at its first Implement. `requisition-review` built the call with no consumer; this is the first.
 
-Owners (19.P2 REQUISITION WIRING, section 9 ownership law): `chupa/driver.py` owns the gate loop and gains the generic hooks. `chupa/author.py` owns the Author stage and wires the review into it. `tests/test_triage.py` is fenced because every triage script that reaches Author now supplies the mandatory review reply. `chupa/requisition.py` is called, never changed.
+Owners (19.P2 REQUISITION WIRING, section 9 ownership law): `clutch/driver.py` owns the gate loop and gains the generic hooks. `clutch/author.py` owns the Author stage and wires the review into it. `tests/test_triage.py` is fenced because every triage script that reaches Author now supplies the mandatory review reply. `clutch/requisition.py` is called, never changed.
 
 ## Scope in / Scope out
-- In: `chupa/driver.py`, `LlmStage` gains two generic fields:
+- In: `clutch/driver.py`, `LlmStage` gains two generic fields:
   - `review: Callable[[BaseModel, int], Awaitable[GateReport]] | None = None`. After the synchronous gates run (whether or not they pass), the driver awaits `review(artifact, call_seq)`, raced against the same stuck deadline. A `fail` report is a hard failure fed back exactly like a hard gate (the review surface is a gate, section 11.1).
   - `terminal_findings: frozenset[str] = frozenset()`. When any hard finding of a call carries a code in this set, the driver returns `gate_failed` at once with EVERY hard finding of that call (the sync gates' and the review's), with no further re-prompt.
   - Every existing stage leaves both unset and behaves byte-identically.
-- In: `chupa/author.py`: the author `LlmStage` sets `review` to a hook calling `review_ticket` on the stamped candidate with `stem_slot="author"`, `run_seq=<pass>`, `attempt=<message seq>`, `call_seq=<the author call_seq>`, at `routing_default_tier`, so the review is keyed `llm/author/<pass>/requisition_review/<seq>/<call_seq>` and never collides with the author call. An `rma` verdict's findings are re-coded `requisition_rma`, and `terminal_findings` is `{"requisition_rma"}`.
+- In: `clutch/author.py`: the author `LlmStage` sets `review` to a hook calling `review_ticket` on the stamped candidate with `stem_slot="author"`, `run_seq=<pass>`, `attempt=<message seq>`, `call_seq=<the author call_seq>`, at `routing_default_tier`, so the review is keyed `llm/author/<pass>/requisition_review/<seq>/<call_seq>` and never collides with the author call. An `rma` verdict's findings are re-coded `requisition_rma`, and `terminal_findings` is `{"requisition_rma"}`.
   - `approve`: commit as today, then journal `{"signal": "requisition_verdict", "verdict": "approve", "ticket_sha": ..., "provider": ..., "model": ..., "spec_version": ...}` on the stem.
   - `snag`: the findings re-prompt Author within its existing allowance.
   - `rma`, or an exhausted allowance: no ticket commits, and the failure decision record carries the review findings as evidence.
 - In: `tests/test_triage.py`: each FakeLLM script that reaches Author gains a requisition reply after each author reply. Assertions on exact request counts, request lists, and LLM effect keys (e.g. `test_three_verdicts_and_second_pass_and_stale_author`) change only to include exactly the added `requisition_review` call and key; no other assertion changes.
-- Out: the seed path (the next seed), any `chupa/requisition.py` or `chupa/triage.py` change, and a review at the human `confirm` flip.
+- Out: the seed path (the next seed), any `clutch/requisition.py` or `clutch/triage.py` change, and a review at the human `confirm` flip.
 
 ## Scope fence
-- chupa/driver.py
+- clutch/driver.py
 - tests/test_driver.py
-- chupa/author.py
+- clutch/author.py
 - tests/test_author.py
 - tests/test_triage.py
 

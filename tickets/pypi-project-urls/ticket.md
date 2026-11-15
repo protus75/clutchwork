@@ -12,10 +12,10 @@ kind: chore
 - pyproject.toml
 
 ## Goal / Why
-The PyPI page for chupa (https://pypi.org/project/chupa/) has no "Project links" sidebar entry for the source repository, because `pyproject.toml` has no `[project.urls]` table. A reader on PyPI cannot find https://github.com/protus75/chupa from package metadata. After this change, the built package's metadata names the repository, and PyPI shows it under Project links on the next publish.
+The PyPI page for clutch (https://pypi.org/project/clutchwork/) has no "Project links" sidebar entry for the source repository, because `pyproject.toml` has no `[project.urls]` table. A reader on PyPI cannot find https://github.com/protus75/clutchwork from package metadata. After this change, the built package's metadata names the repository, and PyPI shows it under Project links on the next publish.
 
 ## Scope in / Scope out
-- In: add a `[project.urls]` table to `pyproject.toml`, directly after the `[project]` table's keys and before `[project.scripts]`, holding exactly one key: `Repository = "https://github.com/protus75/chupa"`.
+- In: add a `[project.urls]` table to `pyproject.toml`, directly after the `[project]` table's keys and before `[project.scripts]`, holding exactly one key: `Repository = "https://github.com/protus75/clutchwork"`.
 - Out:
   - the `version`, `readme`, and every other existing key in `pyproject.toml`;
   - `uv.lock`, `README.md`, docs, and code;
@@ -25,7 +25,7 @@ The PyPI page for chupa (https://pypi.org/project/chupa/) has no "Project links"
 - pyproject.toml
 
 ## Acceptance criteria
-1. `uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['urls'])"` prints `{'Repository': 'https://github.com/protus75/chupa'}`, not a `KeyError` and not a dict with other keys.
+1. `uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['urls'])"` prints `{'Repository': 'https://github.com/protus75/clutchwork'}`, not a `KeyError` and not a dict with other keys.
 2. `git diff main -- pyproject.toml` on the branch adds only the `[project.urls]` header and the `Repository` line, plus at most one blank line.
 3. `./dev.py test` exits 0.
 

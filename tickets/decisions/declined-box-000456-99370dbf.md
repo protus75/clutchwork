@@ -10,7 +10,7 @@ This is a wording mismatch in design documents for features that do not exist ye
 
 - docs/training-data-plan.md:127 lists `./dev.py training-export` and `training-eval` next to the CLI verbs
 - docs/training-data-plan.md:139 names `./dev.py training-export` in the training-export row
-- docs/roadmap-driver-plan.md:79 calls `chupa release` the engine verb behind `release-verb`'s `./dev.py release`
+- docs/roadmap-driver-plan.md:79 calls `clutch release` the engine verb behind `release-verb`'s `./dev.py release`
 - The verbs described are not built, and no engine code or prompt spec reads these plan docs
 - Merged ticket dev-py-dev-tasks-only and the CLAUDE.md command-surface rule already govern any ticket written from these plans
 

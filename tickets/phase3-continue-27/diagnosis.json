@@ -8,7 +8,7 @@
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Do not retry unchanged. The attempt showed on base 4623c27 that AC3 cannot be met: hardenable_units (chupa/specs.py:345) expands the required 19.P4 citation into every non-exit Phase 4 row, so Check snags before it requests review.",
+    "Do not retry unchanged. The attempt showed on base 4623c27 that AC3 cannot be met: hardenable_units (clutch/specs.py:345) expands the required 19.P4 citation into every non-exit Phase 4 row, so Check snags before it requests review.",
     "The ticket contradicts itself. It says to validate only the immediate next-phase core, but it also requires a 19.P4 citation, which shipped Check resolves against all non-exit Phase 4 rows. A plan fix in 19.L/19.P4 (and the matching Check contract selection) must decide which one holds.",
     "The missing units are watchdog-detector, watchdog-activation, provider-cooldown-failover, reliability-battery and reliability-run. Either the plan supplies these units, or it narrows what a terminal's next-phase citation pulls in. Do not invent unit text or narrow the citation by hand.",
     "After the plan fix, regenerate phase3-continue-27 from the owning deliverable. The earlier draft passed lint and all nine batch tests. Re-author the same seed and snapshot test, then confirm that Check's requisition_review reaches approve before the seeds lift."

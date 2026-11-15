@@ -9,9 +9,9 @@ state: confirmed
 none
 
 ## Context
-- chupa/mergequeue.py
-- chupa/stages.py
-- chupa/config.py
+- clutch/mergequeue.py
+- clutch/stages.py
+- clutch/config.py
 - tests/test_mergequeue.py
 
 ## Plan contract
@@ -19,14 +19,14 @@ none
 - section 9.5
 
 ## Goal / Why
-`MergeQueue._command` (`chupa/mergequeue.py`) records every configured safety or integration command as a `CommandResult`, including when the command comes from a production config snapshot. Today it passes `argv` through unchanged; `snapshot_config` (`chupa/config.py`) stores command argv as tuples while `CommandResult.argv` (`chupa/stages.py`) is `list[str]`, so every snapshot-configured command raises a `ValidationError` (`list_type`), even `['true']` exiting 0, and the merge queue cannot admit anything under a real snapshot.
+`MergeQueue._command` (`clutch/mergequeue.py`) records every configured safety or integration command as a `CommandResult`, including when the command comes from a production config snapshot. Today it passes `argv` through unchanged; `snapshot_config` (`clutch/config.py`) stores command argv as tuples while `CommandResult.argv` (`clutch/stages.py`) is `list[str]`, so every snapshot-configured command raises a `ValidationError` (`list_type`), even `['true']` exiting 0, and the merge queue cannot admit anything under a real snapshot.
 
 ## Scope in / Scope out
 - In: `MergeQueue._command` builds its `CommandResult` with `argv=list(argv)`, so tuple and list argv both record as a list; a regression test in `tests/test_mergequeue.py` runs a configured command taken from real `snapshot_config` output through the queue's command path and asserts a `CommandResult` with list argv and the command's exit code.
 - Out: `snapshot_config`, `CommandResult`, and every other caller.
 
 ## Scope fence
-- chupa/mergequeue.py
+- clutch/mergequeue.py
 - tests/test_mergequeue.py
 
 ## Acceptance criteria

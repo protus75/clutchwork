@@ -8,10 +8,10 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "chupaRunsBefore must validate the text after its edit, as _order (chupa/__main__.py) does. Pass order_admission validate_ticket(tickets.order(text, priority=None, runs_before=[])), not validate_ticket of the current disk text (chupa/observe.py ~line 530).",
-    "chupaPriority keeps validate_ticket on the current text. In the runs-before-cycle case of tests/integration/test_menu_verb_parity.py, expect chupaRunsBefore on and chupaPriority off. Do not expect order off for both.",
-    "Review found the rest sound. Redo from the merge base: run and review admission in chupa/status.py, called by runner._admit and __main__._review; and the closed menu table in chupa/observe.py that builds every row menu.",
-    "Any isinstance(ticket, list) check added to order_admission (chupa/status.py) must not hide an edit that _order accepts. A ticket made invalid only by its Runs before entries must still admit chupaRunsBefore."
+    "clutchRunsBefore must validate the text after its edit, as _order (clutch/__main__.py) does. Pass order_admission validate_ticket(tickets.order(text, priority=None, runs_before=[])), not validate_ticket of the current disk text (clutch/observe.py ~line 530).",
+    "clutchPriority keeps validate_ticket on the current text. In the runs-before-cycle case of tests/integration/test_menu_verb_parity.py, expect clutchRunsBefore on and clutchPriority off. Do not expect order off for both.",
+    "Review found the rest sound. Redo from the merge base: run and review admission in clutch/status.py, called by runner._admit and __main__._review; and the closed menu table in clutch/observe.py that builds every row menu.",
+    "Any isinstance(ticket, list) check added to order_admission (clutch/status.py) must not hide an edit that _order accepts. A ticket made invalid only by its Runs before entries must still admit clutchRunsBefore."
   ],
   "mechanical": null,
   "spec_version": "1.5",

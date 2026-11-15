@@ -9,23 +9,23 @@ state: confirmed
 none
 
 ## Context
-- chupa/stages.py
+- clutch/stages.py
 - tests/test_seed_path.py
 
 ## Plan contract
 - section 13.3
 
 ## Goal / Why
-`chupa/stages.py` validates every seed a seeding ticket authors against main, the repo the seed lands in, never the seeding ticket's worktree. A seed whose `## Context` or `## On-demand` names a file that only the seeding branch creates snags at Check with a finding naming that path, instead of passing review and failing the merge regate.
+`clutch/stages.py` validates every seed a seeding ticket authors against main, the repo the seed lands in, never the seeding ticket's worktree. A seed whose `## Context` or `## On-demand` names a file that only the seeding branch creates snags at Check with a finding naming that path, instead of passing review and failing the merge regate.
 
-Why: section 13.3 requires each `Context` path to EXIST, and a lifted seed lives on main. `_review_one` (`chupa/stages.py`) today calls `validate_ticket(seed_stem, ..., worktree)` and `review_ticket(..., repo=worktree, ...)`, so a path present only on the branch passes, and the seed fails only after its lift, when the merge regate validates main.
+Why: section 13.3 requires each `Context` path to EXIST, and a lifted seed lives on main. `_review_one` (`clutch/stages.py`) today calls `validate_ticket(seed_stem, ..., worktree)` and `review_ticket(..., repo=worktree, ...)`, so a path present only on the branch passes, and the seed fails only after its lift, when the merge regate validates main.
 
 ## Scope in / Scope out
-- In: `_review_one` in `chupa/stages.py` validates and reviews each seed with `ctx.repo` (main) as the repo, for ticket lint and for the base Implement render.
+- In: `_review_one` in `clutch/stages.py` validates and reviews each seed with `ctx.repo` (main) as the repo, for ticket lint and for the base Implement render.
 - Out: validation of non-seed tickets, the Author path, intake, and every other stage.
 
 ## Scope fence
-- chupa/stages.py
+- clutch/stages.py
 - tests/test_seed_path.py
 
 ## Acceptance criteria

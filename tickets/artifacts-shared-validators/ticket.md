@@ -9,27 +9,27 @@ kind: chore
 - none
 
 ## Context
-- chupa/artifacts.py::DaemonSoakEntry
-- chupa/artifacts.py::DaemonSoakReport
-- chupa/artifacts.py::ReliabilityBatteryEntry
-- chupa/artifacts.py::ReliabilityBatteryReport
-- chupa/artifacts.py::BaselineSignal
-- chupa/artifacts.py::ReviewBaselineReport
-- chupa/artifacts.py::HostLoopEntry
-- chupa/artifacts.py::HostLoopReport
-- chupa/artifacts.py::ExitReceipt
+- clutch/artifacts.py::DaemonSoakEntry
+- clutch/artifacts.py::DaemonSoakReport
+- clutch/artifacts.py::ReliabilityBatteryEntry
+- clutch/artifacts.py::ReliabilityBatteryReport
+- clutch/artifacts.py::BaselineSignal
+- clutch/artifacts.py::ReviewBaselineReport
+- clutch/artifacts.py::HostLoopEntry
+- clutch/artifacts.py::HostLoopReport
+- clutch/artifacts.py::ExitReceipt
 
 ## Goal / Why
-`chupa/artifacts.py` repeats three validator bodies across its pydantic models, so a fix to one copy can miss the others:
+`clutch/artifacts.py` repeats three validator bodies across its pydantic models, so a fix to one copy can miss the others:
 - the `producing_run` check (`rpartition("/")`, `[0-9]+` sequence, `stem_findings(stem)`, error `producing_run must be <ticket stem>/<nonnegative run sequence>`) in `DaemonSoakEntry._consistent`, `ReliabilityBatteryEntry._consistent` and `HostLoopEntry._consistent`;
 - the `type(value) is not int` check in the four `_integer_version` field validators of `BaselineSignal`, `ReviewBaselineReport`, `HostLoopReport` and `ExitReceipt`;
 - the ordered-members check in `DaemonSoakReport._ordered_members` and `ReliabilityBatteryReport._ordered_members`.
 
-After this change each check's body exists once, as a module-level private function in `chupa/artifacts.py`, and every validator above calls it. Every model accepts and rejects exactly the same inputs as today, with byte-identical error messages.
+After this change each check's body exists once, as a module-level private function in `clutch/artifacts.py`, and every validator above calls it. Every model accepts and rejects exactly the same inputs as today, with byte-identical error messages.
 
 ## Scope in / Scope out
-- In: add three module-level private functions to `chupa/artifacts.py`:
-  - a `producing_run` checker taking the string; it holds the `from chupa.tickets import stem_findings` import (kept function-local, as today) and raises the existing message;
+- In: add three module-level private functions to `clutch/artifacts.py`:
+  - a `producing_run` checker taking the string; it holds the `from clutch.tickets import stem_findings` import (kept function-local, as today) and raises the existing message;
   - an integer checker taking the value and the full error message, returning the value. It takes the whole message, not a field name, because the current messages differ beyond the field name: `signal v must be the integer 1` and `schema_version must be the integer 1` versus `schema_version must be integer 1` (in `HostLoopReport` and `ExitReceipt`), and they stay byte-identical;
   - an ordered-members checker taking the entries and the expected members tuple, raising `entries must contain exactly {expected}, in order`.
 - In: each of the nine validators named in Goal / Why calls its checker in place of the inline body. Each model keeps its own `@model_validator` / `@field_validator` method; the rest of every `_consistent` body (expected/disposition, green) is unchanged.
@@ -38,17 +38,17 @@ After this change each check's body exists once, as a module-level private funct
   - `test_producing_run_check`: `HostLoopEntry` with `producing_run` `member-0/0` validates; `nosep`, `member/x1` and `Upper/0` each raise `ValidationError` whose text contains `producing_run must be <ticket stem>/<nonnegative run sequence>`. Rules out accepting a run with no separator, a non-digit sequence, or an invalid stem.
   - `test_integer_version_check`: `BaselineSignal` `v=True` raises with `signal v must be the integer 1`; `ReviewBaselineReport` `schema_version=True` raises with `schema_version must be the integer 1`; `HostLoopReport` and `ExitReceipt` `schema_version=True` raise with `schema_version must be integer 1`. Rules out accepting `True` as version 1, and any reworded message. Where a full valid model is costly to build, the test may call the integer checker directly with the same value and messages.
   - `test_ordered_members_check`: `DaemonSoakReport` and `ReliabilityBatteryReport` with reversed entries raise with `entries must contain exactly {members}, in order`, and in-order entries validate. Rules out accepting reordered members.
-- Every other coverage dependent of `chupa/artifacts.py` (for example `tests/integration/test_ask.py`, `test_audit.py`, `test_author.py`, `test_shakeout.py`, `test_stages.py`, `tests/unit/test_specs.py`) is unaffected: the refactor keeps every model's fields, accepted inputs and error messages byte-identical and leaves `ShakeoutEntry` and `HostLoopReport._ordered` untouched, so no other test that builds or loads these artifacts sees a change.
-- Out: `ShakeoutEntry._consistent` (a different regex and message, `<bench stem>/<run seq>`); `HostLoopReport._ordered` (a different rule); the `, in order` paved road in `chupa/stages.py`; metaclasses, mixins, base-class validators or decorator factories; any change to a model's fields, accepted inputs or messages; `test-gate.toml`.
+- Every other coverage dependent of `clutch/artifacts.py` (for example `tests/integration/test_ask.py`, `test_audit.py`, `test_author.py`, `test_shakeout.py`, `test_stages.py`, `tests/unit/test_specs.py`) is unaffected: the refactor keeps every model's fields, accepted inputs and error messages byte-identical and leaves `ShakeoutEntry` and `HostLoopReport._ordered` untouched, so no other test that builds or loads these artifacts sees a change.
+- Out: `ShakeoutEntry._consistent` (a different regex and message, `<bench stem>/<run seq>`); `HostLoopReport._ordered` (a different rule); the `, in order` paved road in `clutch/stages.py`; metaclasses, mixins, base-class validators or decorator factories; any change to a model's fields, accepted inputs or messages; `test-gate.toml`.
 
 ## Scope fence
-- chupa/artifacts.py
+- clutch/artifacts.py
 - tests/unit/test_artifacts.py
 
 ## Acceptance criteria
-1. `grep -c 'producing_run must be <ticket stem>/<nonnegative run sequence>' chupa/artifacts.py` prints `1`, not `3`; `grep -c 'rpartition("/")' chupa/artifacts.py` prints `1`.
-2. `grep -c 'type(value) is not int' chupa/artifacts.py` prints `1`, not `4`; `grep -c 'must be the integer 1' chupa/artifacts.py` prints `2` and `grep -c 'must be integer 1' chupa/artifacts.py` prints `2`, so no message was reworded.
-3. `grep -c 'in order' chupa/artifacts.py` prints `1`, not `2`.
+1. `grep -c 'producing_run must be <ticket stem>/<nonnegative run sequence>' clutch/artifacts.py` prints `1`, not `3`; `grep -c 'rpartition("/")' clutch/artifacts.py` prints `1`.
+2. `grep -c 'type(value) is not int' clutch/artifacts.py` prints `1`, not `4`; `grep -c 'must be the integer 1' clutch/artifacts.py` prints `2` and `grep -c 'must be integer 1' clutch/artifacts.py` prints `2`, so no message was reworded.
+3. `grep -c 'in order' clutch/artifacts.py` prints `1`, not `2`.
 4. `./dev.py test tests/unit/test_artifacts.py` exits 0 with the three named tests in Scope in / Scope out passing; they fail if a checker accepts `nosep`, `member/x1`, `Upper/0`, a `True` version or reversed members, or if any message text differs.
 5. `./dev.py test` exits 0, including the existing rejection tests named in Scope in / Scope out, which fail if a model accepts a bad `producing_run`, a `True` version, or reordered entries.
 
@@ -63,7 +63,7 @@ Reject the branch if any of the following holds:
 - any validator error message changes by even one byte;
 - a model accepts or rejects an input it did not before;
 - a validator is removed from a model or replaced by a mixin, metaclass, shared base-class validator, or decorator factory;
-- `ShakeoutEntry`, `HostLoopReport._ordered`, or a file other than `chupa/artifacts.py` and `tests/unit/test_artifacts.py` changes.
+- `ShakeoutEntry`, `HostLoopReport._ordered`, or a file other than `clutch/artifacts.py` and `tests/unit/test_artifacts.py` changes.
 
 ## Time budget
 - expected: 15m

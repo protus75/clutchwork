@@ -5,12 +5,12 @@
   "stem": "hardening-round-records",
   "passed": true,
   "changed_files": [
-    "chupa/drain.py",
-    "chupa/hardening.py",
-    "chupa/runner.py",
-    "chupa/specs.py",
-    "chupa/stages.py",
-    "chupa/tickets.py",
+    "clutch/drain.py",
+    "clutch/hardening.py",
+    "clutch/runner.py",
+    "clutch/specs.py",
+    "clutch/stages.py",
+    "clutch/tickets.py",
     "tests/test_daemon_composition.py",
     "tests/test_drain.py",
     "tests/test_hardening.py",
@@ -57,7 +57,7 @@
         "tests/test_hardening.py"
       ],
       "rc": 0,
-      "tail": ".............................                                            [100%]\n29 passed in 1.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": ".............................                                            [100%]\n29 passed in 1.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -69,7 +69,7 @@
         "tests/test_seed_path.py"
       ],
       "rc": 0,
-      "tail": "........................                                                 [100%]\n24 passed in 4.02s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "........................                                                 [100%]\n24 passed in 4.02s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -82,7 +82,7 @@
         "tests/test_daemon_composition.py"
       ],
       "rc": 0,
-      "tail": "........................................................................ [ 58%]\n...................................................                      [100%]\n123 passed in 13.84s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "........................................................................ [ 58%]\n...................................................                      [100%]\n123 passed in 13.84s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -94,7 +94,7 @@
         "tests/test_specs.py"
       ],
       "rc": 0,
-      "tail": "........................................                                 [100%]\n40 passed in 0.08s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "........................................                                 [100%]\n40 passed in 0.08s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -106,7 +106,7 @@
         "tests/test_stages.py"
       ],
       "rc": 0,
-      "tail": "...............................                                          [100%]\n31 passed in 2.62s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "...............................                                          [100%]\n31 passed in 2.62s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -119,7 +119,7 @@
         "tests/test_kill_cli_activation.py"
       ],
       "rc": 0,
-      "tail": "........................................................................ [ 96%]\n...                                                                      [100%]\n75 passed in 4.77s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "........................................................................ [ 96%]\n...                                                                      [100%]\n75 passed in 4.77s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -130,7 +130,7 @@
         "-q"
       ],
       "rc": 0,
-      "tail": ".................. [ 27%]\n........................................................................ [ 30%]\n........................................................................ [ 33%]\n........................................................................ [ 37%]\n........................................................................ [ 40%]\n........................................................................ [ 44%]\n........................................................................ [ 47%]\n........................................................................ [ 50%]\n........................................................................ [ 54%]\n........................................................................ [ 57%]\n........................................................................ [ 60%]\n........................................................................ [ 64%]\n........................................................................ [ 67%]\n........................................................................ [ 71%]\n........................................................................ [ 74%]\n........................................................................ [ 77%]\n........................................................................ [ 81%]\n........................................................................ [ 84%]\n........................................................................ [ 88%]\n........................................................................ [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 98%]\n.......................................                                  [100%]\n2127 passed in 145.08s (0:02:25)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": ".................. [ 27%]\n........................................................................ [ 30%]\n........................................................................ [ 33%]\n........................................................................ [ 37%]\n........................................................................ [ 40%]\n........................................................................ [ 44%]\n........................................................................ [ 47%]\n........................................................................ [ 50%]\n........................................................................ [ 54%]\n........................................................................ [ 57%]\n........................................................................ [ 60%]\n........................................................................ [ 64%]\n........................................................................ [ 67%]\n........................................................................ [ 71%]\n........................................................................ [ 74%]\n........................................................................ [ 77%]\n........................................................................ [ 81%]\n........................................................................ [ 84%]\n........................................................................ [ 88%]\n........................................................................ [ 91%]\n........................................................................ [ 94%]\n........................................................................ [ 98%]\n.......................................                                  [100%]\n2127 passed in 145.08s (0:02:25)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     }
   ]

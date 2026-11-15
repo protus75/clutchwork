@@ -9,18 +9,18 @@ kind: chore
 - none
 
 ## Context
-- chupa/drain.py
+- clutch/drain.py
 - tests/test_drain.py
-- chupa/scheduler.py
+- clutch/scheduler.py
 
 ## On-demand
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
-Drain's `_select` returns every fresh ticket before any re-offer, whatever their priority or age. An operator-kept ticket that is ready to run therefore waits behind all newer work: `implement-test-rules` and `remove-plan-gap-hardening` (P1, kept 2026-11-05) sat behind newer P1 and P2 tickets. The serve scheduler (`chupa/scheduler.py`) already picks one list by `sort_key`. After this change drain picks the same way: lowest priority value first, then the oldest authored ticket, then stem, whether the pick is fresh or a re-offer.
+Drain's `_select` returns every fresh ticket before any re-offer, whatever their priority or age. An operator-kept ticket that is ready to run therefore waits behind all newer work: `implement-test-rules` and `remove-plan-gap-hardening` (P1, kept 2026-11-05) sat behind newer P1 and P2 tickets. The serve scheduler (`clutch/scheduler.py`) already picks one list by `sort_key`. After this change drain picks the same way: lowest priority value first, then the oldest authored ticket, then stem, whether the pick is fresh or a re-offer.
 
 ## Scope in / Scope out
-- In: `chupa/drain.py` `_select`: one candidate list ordered by `sort_key`. Each entry keeps its re-offer flag, so `_run_one` still draws `retry` for a re-offer exactly as today. Eligibility (held, budget, storm, drought, over-budget, Reject-queue rules) is unchanged. The docstring states the order.
+- In: `clutch/drain.py` `_select`: one candidate list ordered by `sort_key`. Each entry keeps its re-offer flag, so `_run_one` still draws `retry` for a re-offer exactly as today. Eligibility (held, budget, storm, drought, over-budget, Reject-queue rules) is unchanged. The docstring states the order.
 - In: `tests/test_drain.py`: tests for the new order. Update any existing test that asserts fresh-before-re-offer to assert the `sort_key` order instead.
 - In: tests that encode the old order. A full-suite run with only the `_select` change applied fails exactly these:
   - `tests/test_drain.py::test_a_red_independent_ticket_parks_and_the_next_still_runs` and `::test_rework_split_successors_release_original_dependents`;
@@ -28,24 +28,24 @@ Drain's `_select` returns every fresh ticket before any re-offer, whatever their
   - `tests/test_shakeout.py::test_invalid_output_exhausted_member_observes_bounded_reprompts_and_harvest` and `::test_stuck_budget_kill_member_observes_abort_harvest_and_followup_merge`, whose replies are scripted in `eval/shakeout/driver.py`.
 
   Update each to the new order: an older red ticket with `retry` budget now re-runs before younger fresh work at the same priority, bounded by its caps. Keep every other assertion.
-- In: `docs/how-chupa-works.md` section 7.1 step 3: replace "Fresh tickets run before re-offers" with the single order.
+- In: `docs/how-clutch-works.md` section 7.1 step 3: replace "Fresh tickets run before re-offers" with the single order.
 - Out: quiescence re-offers and machine keep; eligibility; `sort_key`; the serve scheduler.
 
 ## Scope fence
-- chupa/drain.py
+- clutch/drain.py
 - tests/test_drain.py
 - tests/test_drain_upgrade.py
 - tests/test_drain_reentry.py
 - tests/test_seed_successor.py
 - tests/test_shakeout.py
 - eval/shakeout/driver.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. Given an eligible P1 re-offer authored before an eligible fresh P1 ticket, `_select` returns the re-offer with its re-offer flag set. A test fails if the fresh ticket goes first. Checked by `uv run pytest tests/test_drain.py`.
 2. Given an eligible P2 re-offer and an eligible fresh P1 ticket, the fresh P1 goes first. Checked by `uv run pytest tests/test_drain.py`.
 3. A re-offer picked this way draws exactly one `retry` cap unit, as today. Checked by `uv run pytest tests/test_drain.py`.
-4. `docs/how-chupa-works.md` section 7.1 states the single order.
+4. `docs/how-clutch-works.md` section 7.1 states the single order.
 5. `uv run pytest -q` exits 0.
 
 ## Verification

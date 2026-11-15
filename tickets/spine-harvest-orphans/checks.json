@@ -5,9 +5,9 @@
   "stem": "spine-harvest-orphans",
   "passed": true,
   "changed_files": [
-    "chupa/drain.py",
-    "chupa/reconcile.py",
-    "chupa/runner.py",
+    "clutch/drain.py",
+    "clutch/reconcile.py",
+    "clutch/runner.py",
     "tests/test_harvest_orphans.py",
     "tests/test_reconcile.py"
   ],

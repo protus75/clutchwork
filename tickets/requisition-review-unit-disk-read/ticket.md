@@ -15,11 +15,11 @@ none
 - tests/unit/test_specs.py::test_spec_lint_accepts_the_implement_and_requisition_specs
 
 ## On-demand
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 - tests/integration/test_requisition.py
 
 ## Goal / Why
-Requisition review has no rule for a ticket that adds a unit test which must read a named repo file. On 2026-11-13, `drain-loop-prompt` (`tests/unit/test_ask_drain_loop.py` renders the real `chupa/specs/ask` templates) and `vscode-help` (`tests/unit/test_help.py` reads `vscode-chupa/package.json` and real docs) both passed requisition review. Implement then returned `premise_failed`, citing the unit-disk rule in `chupa/specs/review.md`. Each failure cost a Diagnose pass and ended in the Reject queue. The earlier preflight in `author.md` was declined because human-path tickets skip it. Requisition review is the one stage every authoring path passes through. After this change the reviewer snags such a ticket before Implement runs, with a paved road to `tests/integration/`.
+Requisition review has no rule for a ticket that adds a unit test which must read a named repo file. On 2026-11-13, `drain-loop-prompt` (`tests/unit/test_ask_drain_loop.py` renders the real `clutch/specs/ask` templates) and `vscode-help` (`tests/unit/test_help.py` reads `vscode-clutchwork/package.json` and real docs) both passed requisition review. Implement then returned `premise_failed`, citing the unit-disk rule in `clutch/specs/review.md`. Each failure cost a Diagnose pass and ended in the Reject queue. The earlier preflight in `author.md` was declined because human-path tickets skip it. Requisition review is the one stage every authoring path passes through. After this change the reviewer snags such a ticket before Implement runs, with a paved road to `tests/integration/`.
 
 The rule fires only when the ticket adds a unit test, or newly requires an existing one, to read a named repo file. Updating a pinned value in an existing unit test that already reads the file is not a hit, so routine spec version bumps are not snagged.
 
@@ -27,18 +27,18 @@ Measure the effect by watching for fewer Implement `premise_failed` findings tha
 
 ## Scope in / Scope out
 Scope in:
-- Add one bullet to the `## Task` list of `chupa/specs/requisition_review.md`, placed after the unit-floor bullet. When a criterion or `## Verification` line names a `tests/unit/` file whose test the ticket adds, or newly requires, to read a named repo file (a spec, doc, `package.json`, or `importlib.metadata` data), the reviewer raises a `snag` finding. The finding's paved road is to place that test under `tests/integration/` and fence that file.
+- Add one bullet to the `## Task` list of `clutch/specs/requisition_review.md`, placed after the unit-floor bullet. When a criterion or `## Verification` line names a `tests/unit/` file whose test the ticket adds, or newly requires, to read a named repo file (a spec, doc, `package.json`, or `importlib.metadata` data), the reviewer raises a `snag` finding. The finding's paved road is to place that test under `tests/integration/` and fence that file.
 - The bullet states three guard clauses. A unit test that reads only `tmp_path` is not a hit. A unit test that reaches a repo file only through an injected seam or fake is not a hit. Updating a pinned value in an existing unit test that already reads the file is not a hit.
 - Bump the spec `version` to the next minor above the version on main.
 - In `tests/integration/test_requisition.py`, add one test named `test_requisition_review_spec_snags_unit_test_disk_read`. It reads `SPECS / "requisition_review.md"` the way the existing test near line 112 does, and pins the bullet's trigger, its paved road and all three guard clauses.
 - In `tests/unit/test_specs.py`, update only the version pin in `test_spec_lint_accepts_the_implement_and_requisition_specs` to the bumped version. Add no new disk-reading unit test.
 
 Scope out:
-- `author.md`, `chupa/docs/host-authoring.md`, any lint check in `chupa/tickets.py`, and `chupa/specs/review.md` stay unchanged.
+- `author.md`, `clutch/docs/host-authoring.md`, any lint check in `clutch/tickets.py`, and `clutch/specs/review.md` stay unchanged.
 - No existing ticket is edited.
 
 ## Scope fence
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 - tests/integration/test_requisition.py
 - tests/unit/test_specs.py
 

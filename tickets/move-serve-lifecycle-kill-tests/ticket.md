@@ -12,7 +12,7 @@ kind: chore
 - tests/integration/test_serve.py
 
 ## Goal / Why
-`tests/integration/test_serve.py` is too large to embed in a ticket's `## Context`: `retro-request-serve` rendered 328,574 characters and `chupa review` refused it (2026-11-08). The split lands in three stages to stay under the 1,500-inserted-line diff budget. After `move-serve-rig`, the shared helpers live in `tests/integration/serve_rig.py`. This second stage moves the lifecycle, kill, and notification tests into themed files.
+`tests/integration/test_serve.py` is too large to embed in a ticket's `## Context`: `retro-request-serve` rendered 328,574 characters and `clutch review` refused it (2026-11-08). The split lands in three stages to stay under the 1,500-inserted-line diff budget. After `move-serve-rig`, the shared helpers live in `tests/integration/serve_rig.py`. This second stage moves the lifecycle, kill, and notification tests into themed files.
 
 This is a pure move. No test's body, parameters, or assertions change.
 
@@ -25,7 +25,7 @@ This is a pure move. No test's body, parameters, or assertions change.
 - Out:
   - the admission, upgrade, and remaining tests, and deleting `test_serve.py` (stage `move-serve-remaining-tests`);
   - any change to a test body, parametrization, or helper behavior;
-  - any change to `serve_rig.py` or a `chupa/` source file.
+  - any change to `serve_rig.py` or a `clutch/` source file.
 
 ## Scope fence
 - tests/integration/test_serve.py

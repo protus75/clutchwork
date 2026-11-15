@@ -4,7 +4,7 @@ kind: tombstone
 link: declined-box-000344-8942f215
 reopen_after_days: 30
 ---
-After box-declined-verdict merged, the rename of `tickets/decisions/decision-*.md` records to the allowed kinds was left to the operator as a manual step and was not done. `read_registry` then raised a traceback on `kind: decision`, and every `chupa triage` crashed (2026-11-07). The note asks for two things: authoring should forbid manual post-merge operator steps, so that a migration covers every persisted record it invalidates, and `read_registry` should refuse with a paved road that names the bad file.
+After box-declined-verdict merged, the rename of `tickets/decisions/decision-*.md` records to the allowed kinds was left to the operator as a manual step and was not done. `read_registry` then raised a traceback on `kind: decision`, and every `clutch triage` crashed (2026-11-07). The note asks for two things: authoring should forbid manual post-merge operator steps, so that a migration covers every persisted record it invalidates, and `read_registry` should refuse with a paved road that names the bad file.
 
 This repeats requests the registry has already decided. Record 000344 declined the same main point: a stored-state change from box-declined-verdict whose manual migration step broke readers until the operator ran it, with a request that pending manual migrations never break readers. Record 000339 covers the same crash on `kind: decision` records. Commit 20073cda has since renamed those records to the allowed kinds, and later runs finish ok, so nothing is broken now. The note brings no new reachable failure beyond what those records already decided.
 

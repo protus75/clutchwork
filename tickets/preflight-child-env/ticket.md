@@ -9,7 +9,7 @@ state: confirmed
 none
 
 ## Context
-- chupa/providers.py
+- clutch/providers.py
 - tests/test_providers.py
 
 ## Plan contract
@@ -19,14 +19,14 @@ none
 ## Goal / Why
 The provider preflight's version children, `<binary> --version` and `pnpm view <package> version`, run with `child_env(env, config)`, which removes every configured provider key. Neither process needs a key.
 
-Why: section 6.8 sets inherit-minus-secrets for every child, and the conduct rules forbid passing a provider key to a process that does not need it. `ProviderLLM.preflight` in `chupa/providers.py` passes the full parent `self._env` to both commands. The probe calls go through the adapters, which already restore only the serving provider's key, and they stay unchanged.
+Why: section 6.8 sets inherit-minus-secrets for every child, and the conduct rules forbid passing a provider key to a process that does not need it. `ProviderLLM.preflight` in `clutch/providers.py` passes the full parent `self._env` to both commands. The probe calls go through the adapters, which already restore only the serving provider's key, and they stay unchanged.
 
 ## Scope in / Scope out
 - In: the two `self._exec.run` calls in `ProviderLLM.preflight` pass `child_env(self._env, self._config)`.
 - Out: probe invocation, adapter environments, and the preflight's notice and refusal behavior.
 
 ## Scope fence
-- chupa/providers.py
+- clutch/providers.py
 - tests/test_providers.py
 
 ## Acceptance criteria

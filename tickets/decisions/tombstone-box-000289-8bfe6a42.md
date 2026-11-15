@@ -10,6 +10,6 @@ This is the same failure and the same implement.md repair as registry record tom
 
 - Decision registry tombstone-box-000288-5620f9e4: core-drift-activation fence omission misreported as spec_gap against 19.P6.core-drift-activation; proposed fix classifies fence/Context/criteria-only repairs as authoring_error; linked to implement-authoring-error-kind
 - Merged stems list includes implement-authoring-error-kind
-- Message proposed_spec_paths is chupa/specs/implement.md, the same surface as the merged ticket
+- Message proposed_spec_paths is clutch/specs/implement.md, the same surface as the merged ticket
 
 Message: box-000289-8bfe6a42

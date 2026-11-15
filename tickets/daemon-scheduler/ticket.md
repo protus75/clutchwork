@@ -11,10 +11,10 @@ state: confirmed
 - phase3-core
 
 ## Context
-- chupa/drain.py
-- chupa/tickets.py
-- chupa/status.py
-- chupa/seams.py
+- clutch/drain.py
+- clutch/tickets.py
+- clutch/status.py
+- clutch/seams.py
 
 ## Plan contract
 - 19.I
@@ -32,8 +32,8 @@ The entry unit owns the complete contract. The scheduler owns the memory-only pe
 - Out: daemon activation, changes to bootstrap dispatch, merge admission, cap draws, quarantine/drought decisions, new frontmatter or config, new event types, new watcher dependencies, seam changes, raw process calls, and notifications.
 
 ## Scope fence
-- chupa/scheduler.py
-- chupa/watcher.py
+- clutch/scheduler.py
+- clutch/watcher.py
 - tests/test_scheduler.py
 
 ## Acceptance criteria
@@ -41,7 +41,7 @@ The entry unit owns the complete contract. The scheduler owns the memory-only pe
 2. `uv run pytest -q tests/test_scheduler.py` passes `test_eligibility_and_hold_release`, `test_priority_age_and_stem_order`, and `test_max_unmerged_backpressure`: confirmed-state eligibility, merged/already_satisfied predecessor settlement, Reject verdict folds, caller-supplied quarantine/drought release, distinct intake timestamps with first-event anchoring, missing age, priority/stem ordering without mtime, and limit hold/release are all discriminated.
 3. `uv run pytest -q tests/test_scheduler.py` passes `test_watcher_debounce`, `test_watcher_reprioritizes_without_preemption`, and `test_watcher_removal_drops_pending`, using injected time to prove restarted debounce waits, partial writes, next-slot priority changes, removal, and absence of preemption.
 4. `uv run pytest -q tests/test_scheduler.py` passes `test_watcher_parse_failure_preserves_last_good`, checking the exact EventType.SIGNAL envelope (ticket stem, null key) and body `{signal: watcher_parse_failure, path: tickets/<stem>/ticket.md, reason: <nonempty diagnostic>}`, owned by WATCHER_PARSE_FAILURE in the watcher, preservation of old sort position, exclusion of a new invalid stem, and valid recovery.
-5. `uv run pytest -q tests/test_scheduler.py` passes `test_scheduler_and_watcher_are_dormant`: the transitive chupa import closure rooted at the CLI cannot reach either component, recognizes both import idioms, and the test demonstrates that reaching either component would fail its assertion. This is component evidence below production grade; activation migrates that assertion separately.
+5. `uv run pytest -q tests/test_scheduler.py` passes `test_scheduler_and_watcher_are_dormant`: the transitive clutch import closure rooted at the CLI cannot reach either component, recognizes both import idioms, and the test demonstrates that reaching either component would fail its assertion. This is component evidence below production grade; activation migrates that assertion separately.
 6. `uv run pytest -q` exits 0 with no test removed or skipped and bootstrap behavior unchanged.
 
 ## Verification

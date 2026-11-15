@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The scratch-host doctor run passed with `PYTHONPATH=/home/djp/source/chupa/.chupa/state/worktrees/serve-command-docs uv run --project /home/djp/source/chupa/.chupa/state/worktrees/serve-command-docs python -m chupa doctor`; this checkout requires PYTHONPATH because it is not installed as a package. All verification commands passed, including 2,997 tests.
+The scratch-host doctor run passed with `PYTHONPATH=/home/djp/source/clutch/.clutch/state/worktrees/serve-command-docs uv run --project /home/djp/source/clutch/.clutch/state/worktrees/serve-command-docs python -m clutch doctor`; this checkout requires PYTHONPATH because it is not installed as a package. All verification commands passed, including 2,997 tests.
 
 ## Dead ends
 
-The initial scratch-host invocation without PYTHONPATH could not import chupa; adding the checkout to PYTHONPATH resolved it.
+The initial scratch-host invocation without PYTHONPATH could not import clutch; adding the checkout to PYTHONPATH resolved it.
 
 ## Second problems filed
 

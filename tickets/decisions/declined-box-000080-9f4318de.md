@@ -10,7 +10,7 @@ This is hardening for a future fixture count. The current run finished and produ
 
 - The message reports one run of about 8 minutes that completed when launched detached; it reports no failure or lost result.
 - The 50+ fixture growth is described as future work in Phase 6, not as the current set.
-- The 10-minute per-command limit belongs to the outside builder's environment, not to chupa's runtime.
+- The 10-minute per-command limit belongs to the outside builder's environment, not to clutch's runtime.
 - Merged tickets diagnosis-eval-run, go-grade-run and eval-wait-deadlines already run the eval harness as it is.
 
 Message: box-000080-9f4318de

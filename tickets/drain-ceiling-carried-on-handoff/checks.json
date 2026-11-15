@@ -5,9 +5,9 @@
   "stem": "drain-ceiling-carried-on-handoff",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/drain.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/drain.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_drain_upgrade.py",
     "tests/regress_drain_deadline.py",
     "tests/unit/test_drain_deadline.py"
@@ -81,12 +81,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.05s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.05s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "/drain-ceiling-carried-on-handoff/.venv/bin/python\n\ntmp_path = PosixPath('/tmp/pytest-of-djp/pytest-603/popen-gw0/test_deadline_is_carried_acros0')\norder = ['handoff journaled', 'journal closed', 'lock released', 'spawn', 'lock released', 'lock released', ...]\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bc539a32b10>\n\n    def test_deadline_is_carried_across_the_upgrade_handoff(tmp_path, order, monkeypatch):\n        root = make_root(tmp_path, caps=\"drain: {max_runtime_hours: 2}\\n\")\n        monkeypatch.setattr(drain_mod, \"ENGINE\", root.resolve())\n        commit_ticket(root, \"upgrade\", confirmed(priority=\"P0\"))\n        commit_ticket(root, \"after\", confirmed(priority=\"P1\"))\n        clock = Clock()\n    \n        class SlowUpgrade(Script):\n            def __call__(self, checkout):\n                dispatch = super().__call__(checkout)\n    \n                async def advance(ticket):\n                    result = await dispatch(ticket)\n                    if ticket.stem == \"upgrade\":\n                        clock.now += timedelta(hours=3)\n                    return result\n    \n                return advance\n    \n        script = SlowUpgrade({\"upgrade\": [\"merged:chupa/thing.py\"]})\n        code, child = drain(root, script, order, clock)\n    \n>       assert code == 1  # A fresh child deadline would allow the queue to finish.\n        ^^^^^^^^^^^^^^^^\nE       assert 0 == 1\n\ntests/integration/test_drain_upgrade.py:192: AssertionError\n----------------------------- Captured stdout call -----------------------------\ndrain quiescent: nothing eligible, unparked, re-offerable, or newly authored.\n\nmerged this invocation:\n- after\n\nparked:\n(none)\n\neligible, not admitted:\n(none)\n\nblocked on unmerged depends:\n(none)\n\ninvalid committed tickets:\n(none)\n\ndrafts awaiting confirm:\n(none)\n=========================== short test summary info ============================\nFAILED tests/integration/test_drain_upgrade.py::test_deadline_is_carried_across_the_upgrade_handoff\n1 failed in 1.31s\n"
+          "tail": "/drain-ceiling-carried-on-handoff/.venv/bin/python\n\ntmp_path = PosixPath('/tmp/pytest-of-djp/pytest-603/popen-gw0/test_deadline_is_carried_acros0')\norder = ['handoff journaled', 'journal closed', 'lock released', 'spawn', 'lock released', 'lock released', ...]\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bc539a32b10>\n\n    def test_deadline_is_carried_across_the_upgrade_handoff(tmp_path, order, monkeypatch):\n        root = make_root(tmp_path, caps=\"drain: {max_runtime_hours: 2}\\n\")\n        monkeypatch.setattr(drain_mod, \"ENGINE\", root.resolve())\n        commit_ticket(root, \"upgrade\", confirmed(priority=\"P0\"))\n        commit_ticket(root, \"after\", confirmed(priority=\"P1\"))\n        clock = Clock()\n    \n        class SlowUpgrade(Script):\n            def __call__(self, checkout):\n                dispatch = super().__call__(checkout)\n    \n                async def advance(ticket):\n                    result = await dispatch(ticket)\n                    if ticket.stem == \"upgrade\":\n                        clock.now += timedelta(hours=3)\n                    return result\n    \n                return advance\n    \n        script = SlowUpgrade({\"upgrade\": [\"merged:clutch/thing.py\"]})\n        code, child = drain(root, script, order, clock)\n    \n>       assert code == 1  # A fresh child deadline would allow the queue to finish.\n        ^^^^^^^^^^^^^^^^\nE       assert 0 == 1\n\ntests/integration/test_drain_upgrade.py:192: AssertionError\n----------------------------- Captured stdout call -----------------------------\ndrain quiescent: nothing eligible, unparked, re-offerable, or newly authored.\n\nmerged this invocation:\n- after\n\nparked:\n(none)\n\neligible, not admitted:\n(none)\n\nblocked on unmerged depends:\n(none)\n\ninvalid committed tickets:\n(none)\n\ndrafts awaiting confirm:\n(none)\n=========================== short test summary info ============================\nFAILED tests/integration/test_drain_upgrade.py::test_deadline_is_carried_across_the_upgrade_handoff\n1 failed in 1.31s\n"
         }
       }
     },
@@ -126,7 +126,7 @@
         "deadline"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_drain_upgrade.py -k deadline\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_drain_upgrade.py -k deadline\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.32621
     },
@@ -137,7 +137,7 @@
         "tests/integration/test_drain_upgrade.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_drain_upgrade.py\nbringing up nodes...\nbringing up nodes...\n\n..........                                                               [100%]\n10 passed in 2.76s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_drain_upgrade.py\nbringing up nodes...\nbringing up nodes...\n\n..........                                                               [100%]\n10 passed in 2.76s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.151543
     },
@@ -148,7 +148,7 @@
         "tests/unit/test_drain_deadline.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_drain_deadline.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 0.92s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_drain_deadline.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 0.92s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 1.146859
     },
@@ -158,7 +158,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "_soak_writer_validates_before_write\n  /home/djp/source/chupa/.chupa/state/worktrees/drain-ceiling-carried-on-handoff/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/drain-ceiling-carried-on-handoff/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3236 passed, 10 warnings in 59.67s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "_soak_writer_validates_before_write\n  /home/djp/source/clutch/.clutch/state/worktrees/drain-ceiling-carried-on-handoff/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:\n    PydanticSerializationUnexpectedValue(Expected `bool` - serialized value may not be as expected [field_name='green', input_value=1, input_type=int])\n    return self.__pydantic_serializer__.to_python(\n\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/drain-ceiling-carried-on-handoff/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3236 passed, 10 warnings in 59.67s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 65.288774
     }

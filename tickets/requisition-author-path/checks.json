@@ -5,8 +5,8 @@
   "stem": "requisition-author-path",
   "passed": true,
   "changed_files": [
-    "chupa/author.py",
-    "chupa/driver.py",
+    "clutch/author.py",
+    "clutch/driver.py",
     "tests/test_author.py",
     "tests/test_driver.py",
     "tests/test_triage.py"

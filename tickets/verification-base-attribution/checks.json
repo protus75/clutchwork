@@ -5,8 +5,8 @@
   "stem": "verification-base-attribution",
   "passed": true,
   "changed_files": [
-    "chupa/git.py",
-    "chupa/stages.py",
+    "clutch/git.py",
+    "clutch/stages.py",
     "tests/test_diagnose.py",
     "tests/test_drain_reentry.py",
     "tests/test_git.py",

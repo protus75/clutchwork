@@ -5,11 +5,11 @@
   "stem": "stale-running-after-kill",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/observe.py",
-    "chupa/runner.py",
-    "chupa/status.py",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/observe.py",
+    "clutch/runner.py",
+    "clutch/status.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_cli.py",
     "tests/integration/test_stale_running.py",
     "tests/integration/test_status.py",
@@ -106,10 +106,10 @@
       "coverage": {
         "percent": 26.012471733022682,
         "files": {
-          "chupa/__main__.py": 38.47850055126791,
-          "chupa/observe.py": 11.155378486055778,
-          "chupa/runner.py": 16.695352839931154,
-          "chupa/status.py": 84.14634146341463
+          "clutch/__main__.py": 38.47850055126791,
+          "clutch/observe.py": 11.155378486055778,
+          "clutch/runner.py": 16.695352839931154,
+          "clutch/status.py": 84.14634146341463
         }
       }
     },
@@ -216,7 +216,7 @@
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-2]": 1.1707534719753312,
           "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-4]": 1.1605232470028568,
           "tests/integration/test_shakeout.py::test_scope_escape_member_observes_check_failure_and_no_merge": 1.1581422369927168,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.1260647490125848,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.1260647490125848,
           "tests/integration/test_shakeout.py::test_conflicted_rebase_member_observes_refusal_with_clean_worktree": 1.121819519001292,
           "tests/integration/test_triage.py::test_escape_attribution_retry": 1.101976369987824,
           "tests/integration/test_storm_producer.py::test_storm_producer_hook_is_active[drain]": 1.0992440489935689,
@@ -254,7 +254,7 @@
         "tests/integration/test_reconcile.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_stale_running.py tests/unit/test_stale_running.py tests/integration/test_cli.py tests/integration/test_status.py tests/integration/test_watch.py tests/integration/test_reconcile.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 62%]\n............................................                             [100%]\n116 passed in 3.88s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_stale_running.py tests/unit/test_stale_running.py tests/integration/test_cli.py tests/integration/test_status.py tests/integration/test_watch.py tests/integration/test_reconcile.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 62%]\n............................................                             [100%]\n116 passed in 3.88s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 4.237771
     }

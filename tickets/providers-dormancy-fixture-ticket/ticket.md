@@ -10,18 +10,18 @@ none
 
 ## Context
 - tests/test_providers.py
-- chupa/daemon.py
-- chupa/tickets.py
+- clutch/daemon.py
+- clutch/tickets.py
 
 ## Plan contract
 - section 6.11
 
 ## Goal / Why
-`uv run pytest -q` is green on main again. `tests/test_providers.py::test_cli_failure_classifier_is_dormant` dispatches a bare `object()` as its ticket; since serve-activation's composition change, the production dispatch callback in `chupa/daemon.py` reads `ticket.stem`, so the fixture raises `AttributeError: 'object' object has no attribute 'stem'` and main's full suite is red, blocking every ticket whose Verification runs it.
+`uv run pytest -q` is green on main again. `tests/test_providers.py::test_cli_failure_classifier_is_dormant` dispatches a bare `object()` as its ticket; since serve-activation's composition change, the production dispatch callback in `clutch/daemon.py` reads `ticket.stem`, so the fixture raises `AttributeError: 'object' object has no attribute 'stem'` and main's full suite is red, blocking every ticket whose Verification runs it.
 
 ## Scope in / Scope out
-- In: the test's `run_ticket` fixture dispatches a real `Ticket` (built through `chupa.tickets.validate_ticket` from a minimal valid ticket text in the test's temporary repo) instead of `object()`; every assertion of `test_cli_failure_classifier_is_dormant` stays as it is.
-- Out: any change to `chupa/` production code, and any other test.
+- In: the test's `run_ticket` fixture dispatches a real `Ticket` (built through `clutch.tickets.validate_ticket` from a minimal valid ticket text in the test's temporary repo) instead of `object()`; every assertion of `test_cli_failure_classifier_is_dormant` stays as it is.
+- Out: any change to `clutch/` production code, and any other test.
 
 ## Scope fence
 - tests/test_providers.py

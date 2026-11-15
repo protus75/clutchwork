@@ -22,21 +22,21 @@ none
 - section 9
 
 ## Goal / Why
-`CHUPA_PLAN.md` states every fact `phase3-continue-27` needs from its gapped units.
+`CLUTCH_PLAN.md` states every fact `phase3-continue-27` needs from its gapped units.
 
 ## Scope in / Scope out
 - In: the fenced entry units, with their Owner, Records, Observable, and Tests parts; insert a missing unit after its phase's last unit.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P4.notify-transport
-- CHUPA_PLAN.md#19.P4.watchdog-event-stream
+- CLUTCH_PLAN.md#19.P4.notify-transport
+- CLUTCH_PLAN.md#19.P4.watchdog-event-stream
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P4.notify-transport` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+2. `CLUTCH_PLAN.md` unit `19.P4.notify-transport` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > 19.P4.notify-transport is absent on committed HEAD c59c6310d16fccb829dea75dad7bf32da5ffd093: entry_unit_gap reports missing and resolve_plan_contract finds zero headings. Adding the required contract is outside this ticket's scope fence.
-3. `CHUPA_PLAN.md` unit `19.P4.watchdog-event-stream` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+3. `CLUTCH_PLAN.md` unit `19.P4.watchdog-event-stream` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > 19.P4.watchdog-event-stream is absent on committed HEAD c59c6310d16fccb829dea75dad7bf32da5ffd093: entry_unit_gap reports missing and resolve_plan_contract finds zero headings. The terminal cannot author its required next-phase core without inventing governing facts.
 
 ## Verification

@@ -1,4 +1,4 @@
-# uv run python repro_provider_capture_overwrite.py . at chupa HEAD 328d07d9, 2026-11-14T12:49Z
+# uv run python repro_provider_capture_overwrite.py . at clutch HEAD 328d07d9, 2026-11-14T12:49Z
 capture files after two runs: ['t-1/claude-0001/events.jsonl']
 first run's transcript survived: False
 second run's transcript present: True

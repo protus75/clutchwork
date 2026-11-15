@@ -8,9 +8,9 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Keep the implementation and tests: review found them correct, and 3961 tests passed. Clear the one finding by editing the `Premise park` bullet in docs/how-chupa-works.md section 6.7; it still says the stem waits for a `ticket.md` change.",
+    "Keep the implementation and tests: review found them correct, and 3961 tests passed. Clear the one finding by editing the `Premise park` bullet in docs/how-clutch-works.md section 6.7; it still says the stem waits for a `ticket.md` change.",
     "Rewrite that bullet as the finding's paved road says: under default `premise_bounce: 1`, the first `premise_failed` routes to the Reject queue via `premise_bounce cap spent`, and only operator `confirm` releases it. The `ticket.md` park and no-retry re-offer apply only when a host sets it above 1.",
-    "The ticket limits the doc scope to section 6.4 but also requires the doc to match the code at merge. So reread all of docs/how-chupa-works.md for other statements the new defaults falsify, and correct only those; do not change any cap behavior to fit the old text."
+    "The ticket limits the doc scope to section 6.4 but also requires the doc to match the code at merge. So reread all of docs/how-clutch-works.md for other statements the new defaults falsify, and correct only those; do not change any cap behavior to fit the old text."
   ],
   "mechanical": null,
   "spec_version": "1.1",

@@ -1,0 +1,53 @@
+Captured 2026-11-14 in /home/djp/source/clutch. Every `./dev.py` the engine emits to an operator.
+`./dev.py` is this repo's own launcher; no other host has it, so each string below is unfollowable
+in a host, exactly as the confirm message was in /home/djp/source/fungo (see
+tickets/verdict-submitted-message-verb/evidence/confirm-submitted.txt).
+
+$ grep -rn "dev\.py" clutch/ --include=*.py
+clutch/tickets.py:573:                "run a reproducer under a `carries:` prefix; a test runner such as `./dev.py test` or pytest does not speak the regression protocol",
+clutch/drain.py:706:                    road = f"split or shrink the ticket under the diff budget and commit the `ticket.md` change, or retire it with `./dev.py reject {stem}`"
+clutch/drain.py:719:                        road = f"review the change to {ticket_path(stem)}, then keep (./dev.py confirm {stem}) or kill (./dev.py reject {stem})"
+clutch/__main__.py:327:                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: ./dev.py confirm|reject <stem>")
+clutch/__main__.py:1011:    print(f"{verb} submitted: {request.request_id} -- ./dev.py status shows the outcome")
+clutch/requisition.py:191:            return snag("missing or invalid coverage map", "invalid coverage map", "coverage_map", "run ./dev.py covmap")
+clutch/stages.py:305:            paved_road=f"review the change to {rel}, then keep (./dev.py confirm {stem}) or kill (./dev.py reject {stem})",
+
+$ grep -noE "[^ `(]*dev[.]py[^ `]*" clutch/specs/ask/*.md   (18 occurrences, 6 of 6 files)
+clutch/specs/ask/box.md:4:./dev.py
+clutch/specs/ask/box.md:4:./dev.py
+clutch/specs/ask/diagnose.md:1:./dev.py
+clutch/specs/ask/drafts.md:8:./dev.py
+clutch/specs/ask/drafts.md:8:./dev.py
+clutch/specs/ask/drain-loop.md:1:./dev.py
+clutch/specs/ask/drain-loop.md:5:./dev.py
+clutch/specs/ask/drain-loop.md:7:./dev.py
+clutch/specs/ask/drain-loop.md:7:./dev.py
+clutch/specs/ask/drain-loop.md:11:./dev.py
+clutch/specs/ask/drain-loop.md:11:./dev.py
+clutch/specs/ask/drain-loop.md:14:./dev.py
+clutch/specs/ask/drain-loop.md:24:./dev.py
+clutch/specs/ask/drain-loop.md:25:./dev.py
+clutch/specs/ask/review.md:1:./dev.py
+clutch/specs/ask/running.md:1:./dev.py
+clutch/specs/ask/running.md:1:./dev.py
+clutch/specs/ask/running.md:1:./dev.py
+
+Out of scope here, listed so the sweep's boundary is on record. Every verb named above exists on the clutch CLI, so each string has a correct host form:
+
+$ grep -n "add_parser(\"status\"\|add_parser(\"covmap\"\|add_parser(\"lint\"\|add_parser(\"suggest\"\|add_parser(\"drain\"\|\"confirm\", \"reject\"" clutch/__main__.py
+253:    sub.add_parser("status", help="project current state from the journal (read-only)")
+258:    sub.add_parser("lint", help="validate tickets without running or writing anything").add_argument("stems", nargs="*")
+276:    sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
+279:    sub.add_parser("covmap", help="build the coverage map")
+294:    for verb in ("confirm", "reject"):
+299:    dr = sub.add_parser("drain", help="run every eligible ticket to quiescence under the lock")
+324:        if args.verb in {"confirm", "reject"}:
+613:        if args.verb in {"confirm", "reject"}:
+
+Nothing stops the next one: no check forbids `./dev.py` in engine-emitted text, and three
+tests pin the wrong Python strings as correct, so the defect reproduces by writing a new message.
+
+$ grep -rn "dev\.py covmap\|dev\.py reject\|dev\.py confirm\|runs this in a terminal" tests/
+tests/integration/test_reject_queue.py:220:    assert "a human runs this in a terminal: ./dev.py confirm|reject <stem>" in capsys.readouterr().err
+tests/integration/test_requisition.py:327:    assert verdict.findings[0].paved_road == "run ./dev.py covmap"
+tests/integration/test_drain.py:1417:    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (./dev.py confirm {STEM}) or kill (./dev.py reject {STEM})")

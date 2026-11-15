@@ -9,20 +9,20 @@ kind: feature
 - none
 
 ## Context
-- chupa/git.py::Git.add
-- chupa/git.py::Git.commit
-- chupa/git.py::Git.merge_squash
-- chupa/git.py::GitError
-- chupa/tickets.py::intake
-- chupa/merge.py::write_squash
-- chupa/daemon.py::apply_rework
+- clutch/git.py::Git.add
+- clutch/git.py::Git.commit
+- clutch/git.py::Git.merge_squash
+- clutch/git.py::GitError
+- clutch/tickets.py::intake
+- clutch/merge.py::write_squash
+- clutch/daemon.py::apply_rework
 
 ## On-demand
-- chupa/stages.py
-- chupa/runner.py
-- chupa/author.py
-- chupa/serve.py
-- chupa/retro.py
+- clutch/stages.py
+- clutch/runner.py
+- clutch/author.py
+- clutch/serve.py
+- clutch/retro.py
 - tests/integration/test_git.py
 - tests/integration/test_tickets.py
 - tests/integration/test_ladder.py
@@ -31,7 +31,7 @@ kind: feature
 - tests/integration/test_daemon_composition.py
 
 ## Goal / Why
-Every place chupa commits to `main` does the same three steps: `git.add(paths)`, `git.commit(..., only=paths)`, then `git.rev_parse(..., "HEAD")` to learn the new commit. `write_squash` does `merge_squash`, then `commit`, then `rev_parse`. Ticket `commit-lock` needs each of these to be one `Git` call, so a lock can be held around the whole write inside `chupa/git.py` with no caller involved. `commit-lock` tried to do this refactor and the lock in one ticket, about 55 files. On 2026-11-11 its Implement attempt gave up after two minutes, and Diagnose said to split it. This ticket is the first half: the `Git` API change with no lock. `commit-lock` then adds the lock on top.
+Every place clutch commits to `main` does the same three steps: `git.add(paths)`, `git.commit(..., only=paths)`, then `git.rev_parse(..., "HEAD")` to learn the new commit. `write_squash` does `merge_squash`, then `commit`, then `rev_parse`. Ticket `commit-lock` needs each of these to be one `Git` call, so a lock can be held around the whole write inside `clutch/git.py` with no caller involved. `commit-lock` tried to do this refactor and the lock in one ticket, about 55 files. On 2026-11-11 its Implement attempt gave up after two minutes, and Diagnose said to split it. This ticket is the first half: the `Git` API change with no lock. `commit-lock` then adds the lock on top.
 
 When this ticket is done:
 - `Git.commit` stages its own paths and returns the new commit's sha.
@@ -39,22 +39,22 @@ When this ticket is done:
 - Callers no longer `add` before `commit` or `rev_parse` after it.
 
 ## Scope in / Scope out
-- In: `chupa/git.py`:
+- In: `clutch/git.py`:
   - `commit(dir, message, *, only=())` returns the new `HEAD` sha.
   - When `only` is given, it first stages those paths with `git update-index --add --remove -- <paths>`, not `git add`. A path that is gone from both the index and the worktree then records its deletion, where `git add` fails with `pathspec did not match any files`.
-  - If the staged `only` paths then match `HEAD`, it makes no commit and raises `NothingToCommit`, a new `GitError` subclass in `chupa/git.py`. Every caller except `tickets.intake` lets it propagate, so each fails as a no-change `commit --only` fails today.
+  - If the staged `only` paths then match `HEAD`, it makes no commit and raises `NothingToCommit`, a new `GitError` subclass in `clutch/git.py`. Every caller except `tickets.intake` lets it propagate, so each fails as a no-change `commit --only` fails today.
   - Without `only`, `commit` stages nothing and behaves as today (a commit with nothing staged still raises `GitError`).
   - `merge_squash(dir, branch, message)` runs `merge --squash` and then the commit, and returns the new sha.
 - In: every caller of `commit` and `merge_squash` drops its own `add` before `commit`, and uses the returned sha instead of a separate `rev_parse(..., "HEAD")` or `rev_parse(..., MAIN)`. The callers are:
-  - `chupa/tickets.py::intake`
-  - `chupa/merge.py::write_squash`
-  - `chupa/stages.py` (the records commit and `check_autofix`)
-  - `chupa/daemon.py::apply_rework`
-  - `chupa/runner.py` (`verdict_locked`, `reject_ticket`)
-  - `chupa/author.py` (both commits)
-  - `chupa/serve.py`
-  - `chupa/retro.py`
-- In: one exception in `chupa/daemon.py::apply_rework`: `restore_publication` keeps its `add` of written successors.
+  - `clutch/tickets.py::intake`
+  - `clutch/merge.py::write_squash`
+  - `clutch/stages.py` (the records commit and `check_autofix`)
+  - `clutch/daemon.py::apply_rework`
+  - `clutch/runner.py` (`verdict_locked`, `reject_ticket`)
+  - `clutch/author.py` (both commits)
+  - `clutch/serve.py`
+  - `clutch/retro.py`
+- In: one exception in `clutch/daemon.py::apply_rework`: `restore_publication` keeps its `add` of written successors.
   - That `add` serves the `restore` that follows it, which can then remove untracked successor files. It does not stage for the undo commit.
   - `publish` in the same function drops its `add`.
   - The undo commit passes `only=` paths that `restore` has already removed from the index and worktree. The `update-index` staging above lets that commit record their deletion.
@@ -68,20 +68,20 @@ When this ticket is done:
   - A test whose `add` failure no longer happens (because a caller dropped its `add`) moves its failure into `commit`.
 - Out:
   - Any lock. `commit-lock` adds it.
-  - `Git` construction, `chupa/lockfile.py`, `chupa/doctor.py`, `chupa/__main__.py`'s error handling.
+  - `Git` construction, `clutch/lockfile.py`, `clutch/doctor.py`, `clutch/__main__.py`'s error handling.
   - `hosts/fixture/bin/claude` and `eval/`, which keep calling `add` then `commit`. `commit(only=)` on already-staged paths still commits them.
-  - `rebase`, worktree and branch methods, and `chupa/mergequeue.py`'s `checkout --ours`.
+  - `rebase`, worktree and branch methods, and `clutch/mergequeue.py`'s `checkout --ours`.
 
 ## Scope fence
-- chupa/git.py
-- chupa/tickets.py
-- chupa/merge.py
-- chupa/stages.py
-- chupa/daemon.py
-- chupa/runner.py
-- chupa/author.py
-- chupa/serve.py
-- chupa/retro.py
+- clutch/git.py
+- clutch/tickets.py
+- clutch/merge.py
+- clutch/stages.py
+- clutch/daemon.py
+- clutch/runner.py
+- clutch/author.py
+- clutch/serve.py
+- clutch/retro.py
 - tests/unit/test_git_commit.py
 - tests/integration/test_git.py
 - tests/integration/test_tickets.py
@@ -95,7 +95,7 @@ When this ticket is done:
 - tests/integration/test_ladder.py
 
 ## Acceptance criteria
-1. New `tests/unit/test_git_commit.py` drives `Git` with a fake exec that records argv and returns scripted output, and never touches disk. It stubs `tickets.intake`'s ticket read, validation and journal through `monkeypatch`. It keeps the `test-gate.toml` unit floors for `chupa/git.py` (27) and `chupa/tickets.py` (11). Cases:
+1. New `tests/unit/test_git_commit.py` drives `Git` with a fake exec that records argv and returns scripted output, and never touches disk. It stubs `tickets.intake`'s ticket read, validation and journal through `monkeypatch`. It keeps the `test-gate.toml` unit floors for `clutch/git.py` (27) and `clutch/tickets.py` (11). Cases:
    - `commit(dir, msg, only=["a"])` runs `update-index --add --remove -- a` before `commit`, and returns the sha the fake reports for `HEAD`.
    - When the fake reports that the staged `only` paths match `HEAD`, `commit` raises `NothingToCommit`, runs no `commit`, and `NothingToCommit` is an instance of `GitError`.
    - `commit(dir, msg)` with no `only` runs no `update-index`.
@@ -115,7 +115,7 @@ When this ticket is done:
 ```
 
 ## Definition of rejected
-- A caller of `commit` or `merge_squash` in `chupa/` still runs `add` before it (other than `restore_publication`) or `rev_parse` after it to learn the new commit.
+- A caller of `commit` or `merge_squash` in `clutch/` still runs `add` before it (other than `restore_publication`) or `rev_parse` after it to learn the new commit.
 - `Git.commit` returns `None` for any case.
 - Any lock is added, or `Git`'s constructor changes.
 

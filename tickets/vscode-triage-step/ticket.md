@@ -9,10 +9,10 @@ kind: feature
 - none
 
 ## Context
-- chupa/driver.py
-- chupa/triage.py
-- chupa/observe.py
-- vscode-chupa/extension.js
+- clutch/driver.py
+- clutch/triage.py
+- clutch/observe.py
+- vscode-clutchwork/extension.js
 - tests/test_watch.py
 - tests/test_driver.py
 
@@ -25,13 +25,13 @@ In the extension's Recent Steps tree, a triage step looks like a generic stage. 
 The data is not in the engine log today. Triage calls `driver.run` with `run_seq=message.seq`, the box number (message `000337-…` has `seq` 337). But the driver's `stage_start` and `stage_end` events log only `stem`, `attempt` and `surface`, and for triage the stem is the pseudo-stem `triage`.
 
 ## Scope in / Scope out
-- In: `chupa/driver.py` `Driver.run`: the `stage_start`/`stage_end` log context gains `"run_seq": seq`. `seq` is the run sequence the method already computes, so a ticketless surface logs the `run_seq` its caller passed. No other log field changes.
-- In: `chupa/observe.py` `recent_steps`:
+- In: `clutch/driver.py` `Driver.run`: the `stage_start`/`stage_end` log context gains `"run_seq": seq`. `seq` is the run sequence the method already computes, so a ticketless surface logs the `run_seq` its caller passed. No other log field changes.
+- In: `clutch/observe.py` `recent_steps`:
   - `triage` joins the surfaces that get their own kind prefix, so its kinds are `triage_start`, `triage_ok` and `triage_failed`.
   - A triage row's text names the box number: `Triage #337 start` and `Triage #337 end (ok)`, using the event's `run_seq`.
   - An event without `run_seq` (log lines written before this change) keeps today's `Triage start` text.
   - Every other surface's text and kind are unchanged.
-- In: `vscode-chupa/extension.js` `StepsTree` icon table:
+- In: `vscode-clutchwork/extension.js` `StepsTree` icon table:
   - `triage_start` is `['inbox']`, with no color.
   - `triage_ok` is `['inbox', 'testing.iconPassed']` (green).
   - `triage_failed` is `['inbox', 'testing.iconFailed']`, matching the other surfaces' failed rows.
@@ -44,19 +44,19 @@ The data is not in the engine log today. Triage calls `driver.run` with `run_seq
 - In: `tests/test_driver.py`: a ticketless `run` with `ticket=None, run_seq=337` writes `stage_start` and `stage_end` log events whose `run_seq` is 337, not the journal-derived sequence.
 - Out:
   - Step `path` resolution. For triage it points at the nonexistent `tickets/triage/ticket.md`; that is a separate problem.
-  - The Suggestion Box view, `media/*.js`, `package.json`, `chupa/triage.py`, and the author, retro, and rework surfaces' kinds.
+  - The Suggestion Box view, `media/*.js`, `package.json`, `clutch/triage.py`, and the author, retro, and rework surfaces' kinds.
 
 ## Scope fence
-- chupa/driver.py
-- chupa/observe.py
-- vscode-chupa/extension.js
+- clutch/driver.py
+- clutch/observe.py
+- vscode-clutchwork/extension.js
 - tests/test_watch.py
 - tests/test_driver.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/test_watch.py` exits 0, including the triage test. That test rules out the generic `stage_start` kind, triage text without the box number, and dropped text for events without `run_seq`.
 2. `./dev.py test tests/test_driver.py` exits 0, including the `run_seq` 337 log test.
-3. `vscode-chupa/extension.js` maps `triage_start`, `triage_ok` and `triage_failed` to the `inbox` icon, with no color, `testing.iconPassed` and `testing.iconFailed` respectively.
+3. `vscode-clutchwork/extension.js` maps `triage_start`, `triage_ok` and `triage_failed` to the `inbox` icon, with no color, `testing.iconPassed` and `testing.iconFailed` respectively.
 4. `./dev.py test` exits 0.
 
 ## Verification

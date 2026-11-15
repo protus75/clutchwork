@@ -8,9 +8,9 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "tests/test_git.py:265 and tests/test_providers.py:850: stop replacing asyncio.timeout with a lambda that drops its argument. Let the real asyncio.timeout(timeout) at chupa/seams.py:141 expire, so the test fails if the seam stops honoring timeout.",
+    "tests/test_git.py:265 and tests/test_providers.py:850: stop replacing asyncio.timeout with a lambda that drops its argument. Let the real asyncio.timeout(timeout) at clutch/seams.py:141 expire, so the test fails if the seam stops honoring timeout.",
     "To keep the kill tests free of fixed sleeps, wait for the child's marker file before the timeout matters: pick a child that hangs until killed, then assert TimeoutError and the group gone via wall-clock wait. Do not lengthen a bound or add a sleep; both are rejection grounds in the ticket.",
-    "tests/test_serve.py:1589: do not let the fake clock advancing 10s stand in for a poll. After the journal append, wait on a counted wrapper around notifications.poll (chupa/notify.py:104) with the clock still inside the retry window, then assert len(intents()) == len(deliveries(root)) == 1.",
+    "tests/test_serve.py:1589: do not let the fake clock advancing 10s stand in for a poll. After the journal append, wait on a counted wrapper around notifications.poll (clutch/notify.py:104) with the clock still inside the retry window, then assert len(intents()) == len(deliveries(root)) == 1.",
     "Before finishing, check every converted wait in tests/test_serve.py for the same weakness: if the old loop forced work, such as owner.maintenance(), the new wait must still prove that work completed after the triggering event. A passing until() on time alone leaves the assertion vacuous.",
     "Keep what already passed: pytest-xdist and -n auto in pyproject.toml, the docs section 2.2 update, and tests/waiting.py. Re-run `uv run pytest -q` three times after the fixes; each run must exit 0 in under 120 seconds. The previous attempt's runs took about 72 seconds."
   ],

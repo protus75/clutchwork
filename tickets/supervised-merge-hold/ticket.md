@@ -12,26 +12,26 @@ state: confirmed
 - escape-column
 
 ## Context
-- chupa/restart.py
-- chupa/reconcile.py
-- chupa/baseline.py
+- clutch/restart.py
+- clutch/reconcile.py
+- clutch/baseline.py
 - tests/test_baseline.py
-- chupa/control.py
+- clutch/control.py
 - tests/test_control_cli.py
 - tests/test_reconcile.py
 - tests/test_daemon_soak_runner.py
-- chupa/mergequeue.py
+- clutch/mergequeue.py
 - tests/test_control.py
-- chupa/__main__.py
-- chupa/merge.py
-- chupa/serve.py
-- chupa/daemon.py
+- clutch/__main__.py
+- clutch/merge.py
+- clutch/serve.py
+- clutch/daemon.py
 - tests/test_cli.py
 
 ## On-demand
-- chupa/stages.py
-- chupa/drain.py
-- chupa/runner.py
+- clutch/stages.py
+- clutch/drain.py
+- clutch/runner.py
 - eval/daemon_soak.py
 - tests/test_merge.py
 - tests/test_mergequeue.py
@@ -64,16 +64,16 @@ No GO-grade harness, host-loop report producer, new modules, config keys, journa
 The reliability battery's serve harness (eval/reliability_battery.py) and the serve-composition tests in tests/test_reliability_battery.py and tests/test_provider_cooldown_failover.py publish identity-bound operator confirmation for their disposable candidates and await admission settlement, as the daemon soak does; their existing assertions remain.
 
 ## Scope fence
-- chupa/merge.py
-- chupa/mergequeue.py
-- chupa/serve.py
-- chupa/restart.py
-- chupa/baseline.py
-- chupa/control.py
-- chupa/__main__.py
-- chupa/stages.py
-- chupa/drain.py
-- chupa/runner.py
+- clutch/merge.py
+- clutch/mergequeue.py
+- clutch/serve.py
+- clutch/restart.py
+- clutch/baseline.py
+- clutch/control.py
+- clutch/__main__.py
+- clutch/stages.py
+- clutch/drain.py
+- clutch/runner.py
 - eval/daemon_soak.py
 - tests/test_merge.py
 - tests/test_mergequeue.py
@@ -85,8 +85,8 @@ The reliability battery's serve harness (eval/reliability_battery.py) and the se
 - tests/test_drain.py
 - tests/test_daemon_soak_runner.py
 - tests/test_supervised_merge_hold.py
-- chupa/daemon.py
-- chupa/reconcile.py
+- clutch/daemon.py
+- clutch/reconcile.py
 - tests/test_control.py
 - tests/test_reconcile.py
 - tests/test_daemon_composition.py

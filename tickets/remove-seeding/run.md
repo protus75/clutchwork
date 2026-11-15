@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Retained the validate_ticket import in chupa.stages because tests outside the scope fence access it there.
+Retained the validate_ticket import in clutch.stages because tests outside the scope fence access it there.
 
 ## Dead ends
 

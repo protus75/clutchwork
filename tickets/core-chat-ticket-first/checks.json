@@ -7,9 +7,9 @@
   "changed_files": [
     "AGENTS.md",
     "CLAUDE.md",
-    "chupa/hostfiles.py",
+    "clutch/hostfiles.py",
     "dev.py",
-    "docs/how-chupa-works.md",
+    "docs/how-clutch-works.md",
     "hosts/fixture/CLAUDE.md",
     "tests/integration/test_dev.py",
     "tests/integration/test_hostfiles.py"
@@ -102,7 +102,7 @@
         "tests/integration/test_fixture_host.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_hostfiles.py tests/integration/test_dev.py tests/integration/test_merge.py tests/integration/test_fixture_host.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 13%]\n........................................................................ [ 27%]\n........................................................................ [ 41%]\n........................................................................ [ 55%]\n........................................................................ [ 68%]\n........................................................................ [ 82%]\n........................................................................ [ 96%]\n..................                                                       [100%]\n522 passed in 3.85s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_hostfiles.py tests/integration/test_dev.py tests/integration/test_merge.py tests/integration/test_fixture_host.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 13%]\n........................................................................ [ 27%]\n........................................................................ [ 41%]\n........................................................................ [ 55%]\n........................................................................ [ 68%]\n........................................................................ [ 82%]\n........................................................................ [ 96%]\n..................                                                       [100%]\n522 passed in 3.85s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 4.109521
     }

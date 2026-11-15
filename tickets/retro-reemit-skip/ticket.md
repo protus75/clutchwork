@@ -9,11 +9,11 @@ kind: bug
 - none
 
 ## Context
-- chupa/retro.py::Retro.__call__
-- chupa/retro.py::Retro.emit_proposals
-- chupa/retro.py::Retro.commit_report
-- chupa/box.py::Box._enqueue
-- chupa/box.py::RereportJournal.record
+- clutch/retro.py::Retro.__call__
+- clutch/retro.py::Retro.emit_proposals
+- clutch/retro.py::Retro.commit_report
+- clutch/box.py::Box._enqueue
+- clutch/box.py::RereportJournal.record
 
 ## On-demand
 - tests/integration/test_retro_box.py
@@ -21,23 +21,23 @@ kind: bug
 ## Goal / Why
 Every drain start runs the retro check (`Retro.__call__(forced=False)`), even when no retro is due. Before deciding, it calls `emit_proposals` for every completed retro report in the journal, and `emit_proposals` re-enqueues each of that report's proposals into the box. On 2026-11-11 that meant 40 reports and 55 proposals on every drain start. Every proposal is already in the box, and the re-enqueue is a no-op: its `occurrence_id` is deterministic, so the storm arrival and the re-report are deduplicated. But each enqueue still folds the full 24k-event journal several times (storm `record`, `_evidence`, `_history`, `recover`, and `RereportJournal.record`), and each `emit_proposals` re-reads the journal to find its own completion event.
 
-Measured on a copy of `.chupa/state`, the not-due retro check took 52.4s and 372 `Journal.read()` calls before returning `None`. It is most of the 85-100s gap between `engine_start` and the first `stage_start` on every drain start (see `evidence/drain-start-journal-rereads.txt`).
+Measured on a copy of `.clutch/state`, the not-due retro check took 52.4s and 372 `Journal.read()` calls before returning `None`. It is most of the 85-100s gap between `engine_start` and the first `stage_start` on every drain start (see `evidence/drain-start-journal-rereads.txt`).
 
 When this ticket is done, a retro check whose reports' proposals are all in the box enqueues nothing. Crash recovery is kept: when a report committed but some of its proposals never reached the box, the next check enqueues only the missing ones.
 
 ## Scope in / Scope out
-- In: `chupa/retro.py`:
+- In: `clutch/retro.py`:
   - `Retro.__call__` reads the journal once for its report scan and hands each completed report's event to `emit_proposals` instead of `emit_proposals` re-reading the journal to find it. `commit_report`'s call keeps working.
   - `emit_proposals` reads the box's messages once and skips every proposal whose `origin` (`retro-proposal/<report_key>/<proposal_id>`) already exists there.
   - The per-report `git show` stays; all 40 took 0.06s together.
-- In: a unit test in `tests/unit/test_retro_proposal.py` (the coverage floor of 12 for `chupa/retro.py` in `test-gate.toml` is measured from the unit suite), a test in `tests/integration/test_retro_box.py`, and the carried reproducer `tests/regress_retro_reemit_skip.py`.
+- In: a unit test in `tests/unit/test_retro_proposal.py` (the coverage floor of 12 for `clutch/retro.py` in `test-gate.toml` is measured from the unit suite), a test in `tests/integration/test_retro_box.py`, and the carried reproducer `tests/regress_retro_reemit_skip.py`.
 - Out:
   - `Journal.read()` performance, which is ticket `journal-incremental-read`.
   - Box, storm and re-report dedupe semantics.
   - Retro trigger selection and report writing.
 
 ## Scope fence
-- chupa/retro.py
+- clutch/retro.py
 - tests/integration/test_retro_box.py
 - tests/unit/test_retro_proposal.py
 - tests/regress_retro_reemit_skip.py

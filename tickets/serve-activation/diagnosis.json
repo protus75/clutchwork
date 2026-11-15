@@ -9,7 +9,7 @@
   "verdict": "retry",
   "lessons": [
     "Serve's own stop/cleanup cancellations must not reach the worker-failure callback. 19.P3.serve-activation requires exactly one ordinary callback without a matching kill. Latch a memory-only stopping flag and check it before notifying.",
-    "Keep WorkerFailureObserver's predecessor contract and the post-kill suppression unchanged. Gate the cleanup-cancel suppression in serve.py only, on the latched stop, and leave chupa/daemon.py's DaemonTasks/_stop_workers semantics alone.",
+    "Keep WorkerFailureObserver's predecessor contract and the post-kill suppression unchanged. Gate the cleanup-cancel suppression in serve.py only, on the latched stop, and leave clutch/daemon.py's DaemonTasks/_stop_workers semantics alone.",
     "In test_serve_worker_failure_and_kill_suppression, assert exactly one callback carrying the scripted error for each ending: consumer error, unexpected return, signal stop. Add a matching-kill case that asserts zero callbacks.",
     "Check the new assertions against the current multi-callback behavior (1 ValueError + 3 CancelledErrors) and confirm they fail there before applying the fix. Then rerun the full Verification command."
   ],

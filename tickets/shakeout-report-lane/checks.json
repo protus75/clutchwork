@@ -5,8 +5,8 @@
   "stem": "shakeout-report-lane",
   "passed": true,
   "changed_files": [
-    "chupa/artifacts.py",
-    "chupa/stages.py",
+    "clutch/artifacts.py",
+    "clutch/stages.py",
     "eval/shakeout/bench.py",
     "eval/shakeout/run.py",
     "tests/test_shakeout.py",

@@ -10,7 +10,7 @@ This asks for a spec definition and a possible hardening of where the attempt nu
 
 - The message is class `suggestion` from `bootstrap-ingest`, with no stage, outcome, or failure report.
 - The note itself says the two slots are redundant for a ticket run, which is a naming or clarity issue, not a fault.
-- declined-box-000040-be7b15fb records that `chupa/llmeffect.py` `llm_call` already builds the key as `llm/<stem>/<run_seq>/<surface>/<attempt>/<call_seq>` and runs through `effects.run`.
-- CLAUDE.md says `CHUPA_PLAN.md` is a frozen bootstrap design record and is never edited.
+- declined-box-000040-be7b15fb records that `clutch/llmeffect.py` `llm_call` already builds the key as `llm/<stem>/<run_seq>/<surface>/<attempt>/<call_seq>` and runs through `effects.run`.
+- CLAUDE.md says `CLUTCH_PLAN.md` is a frozen bootstrap design record and is never edited.
 
 Message: box-000081-60090cff

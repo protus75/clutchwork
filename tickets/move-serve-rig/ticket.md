@@ -24,7 +24,7 @@ kind: chore
 - tests/integration/test_checkpoint.py
 
 ## Goal / Why
-`tests/integration/test_serve.py` is 95,421 characters and holds 50 tests because every serve ticket appends to it. A ticket that embeds it in `## Context` spends a third of the 300,000-character authoring headroom on one file: `retro-request-serve` rendered 328,574 characters and `chupa review` refused it (2026-11-08). Moving the whole split in one diff exceeds the 1,500-inserted-line diff budget, so it lands in three stages. This first stage moves the shared rig into one helper module and points every importer at it.
+`tests/integration/test_serve.py` is 95,421 characters and holds 50 tests because every serve ticket appends to it. A ticket that embeds it in `## Context` spends a third of the 300,000-character authoring headroom on one file: `retro-request-serve` rendered 328,574 characters and `clutch review` refused it (2026-11-08). Moving the whole split in one diff exceeds the 1,500-inserted-line diff budget, so it lands in three stages. This first stage moves the shared rig into one helper module and points every importer at it.
 
 This is a pure move. No helper's name or body changes, and no test changes.
 
@@ -35,7 +35,7 @@ This is a pure move. No helper's name or body changes, and no test changes.
 - Out:
   - moving any test out of `test_serve.py` (later stages `move-serve-lifecycle-kill-tests` and `move-serve-remaining-tests`);
   - any change to a test body, parametrization, or helper behavior;
-  - any `chupa/` source file.
+  - any `clutch/` source file.
 
 ## Scope fence
 - tests/integration/test_serve.py

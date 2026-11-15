@@ -9,17 +9,17 @@ kind: feature
 - none
 
 ## Context
-- chupa/observe.py
-- chupa/box.py
-- chupa/author.py
+- clutch/observe.py
+- clutch/box.py
+- clutch/author.py
 - tests/integration/test_watch.py
-- vscode-chupa/extension.js
+- vscode-clutchwork/extension.js
 
 ## On-demand
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Goal / Why
-Clicking an Author row in the extension's Recent Steps view opens nothing (2026-11-07). The Author stage logs its `stage_start` and `stage_end` events with `stem: "author"` and `attempt: <box message seq>`. `snapshot` in `chupa/observe.py` therefore points each Author row at `tickets/author/ticket.md`, which never exists, so `chupa.openTicket` has nothing to open.
+Clicking an Author row in the extension's Recent Steps view opens nothing (2026-11-07). The Author stage logs its `stage_start` and `stage_end` events with `stem: "author"` and `attempt: <box message seq>`. `snapshot` in `clutch/observe.py` therefore points each Author row at `tickets/author/ticket.md`, which never exists, so `clutch.openTicket` has nothing to open.
 
 After this change, each Author row's snapshot `path` names the file the operator wants:
 - `Author start` opens the Suggestion Box message being authored.
@@ -27,7 +27,7 @@ After this change, each Author row's snapshot `path` names the file the operator
 - `Author end (<failure>)` opens the decision record the failure wrote (`tickets/decisions/declined-box-...md`), or the Suggestion Box message when no record exists.
 
 ## Scope in / Scope out
-- In: `chupa/observe.py`.
+- In: `clutch/observe.py`.
   - `recent_steps` keeps the log event's `attempt` on stage rows. `snapshot` pops it, as it already pops `surface`, so it never reaches the extension.
   - In `snapshot`'s steps loop, an `author` surface row looks up the box message whose `seq` equals that attempt. It reuses the message `path` and resolution `link` that the box rows already compute, moving the box load above the steps loop.
     - start row: the message's `path`.
@@ -35,18 +35,18 @@ After this change, each Author row's snapshot `path` names the file the operator
     - no matching message: `path` is `None`, so the row stays unclickable rather than pointing at a missing file.
   - Rows for other surfaces keep their current paths.
 - In: `tests/integration/test_watch.py` adds `test_snapshot_author_steps_open_box_ticket_or_decision`.
-- In: `docs/how-chupa-works.md`. Where it says Recent Steps opens each step's file, add that an Author row opens its Suggestion Box message, its authored ticket, or its decision record.
+- In: `docs/how-clutch-works.md`. Where it says Recent Steps opens each step's file, add that an Author row opens its Suggestion Box message, its authored ticket, or its decision record.
 - Out:
-  - `vscode-chupa/extension.js` (it already opens `step.path`);
+  - `vscode-clutchwork/extension.js` (it already opens `step.path`);
   - the engine log event shape;
-  - `chupa/author.py`;
+  - `clutch/author.py`;
   - Triage rows;
   - watch's text view.
 
 ## Scope fence
-- chupa/observe.py
+- clutch/observe.py
 - tests/integration/test_watch.py
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_watch.py::test_snapshot_author_steps_open_box_ticket_or_decision` passes. Its fixture has three box messages, each with an Author `stage_start` and `stage_end` pair in `engine.log` whose `attempt` is the message's `seq`:
@@ -70,7 +70,7 @@ After this change, each Author row's snapshot `path` names the file the operator
 
 ## Definition of rejected
 Reject the branch if any of these is true:
-- `vscode-chupa/extension.js` changes;
+- `vscode-clutchwork/extension.js` changes;
 - JavaScript derives the Author path;
 - the engine log event shape changes;
 - an Author row's path names a file that does not exist;

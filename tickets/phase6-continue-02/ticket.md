@@ -32,7 +32,7 @@ state: confirmed
 Admit the host documentation and deterministic host fixture after the activated core and config migration.
 
 ## Scope in / Scope out
-Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML in CHUPA_PLAN.md directly; do not copy it into a source file. Position 2 carries admissions[2:]:
+Read the committed BEGIN_REGISTRY_P6/END_REGISTRY_P6 YAML in CLUTCH_PLAN.md directly; do not copy it into a source file. Position 2 carries admissions[2:]:
 - [host-contract-doc, fixture-host-scaffold]
 - [bug-gate-grammar, report-inbox-triage]
 - [escape-column]
@@ -45,7 +45,7 @@ Author exactly host-contract-doc, fixture-host-scaffold and phase6-continue-03. 
 
 Resolve every role, row and entry citation with resolve_plan_contract before any seed write. Run required_units and entry_unit_gap over all needed non-exit entries, including the successor's next-admission entries. Check Owner, Records, Observable and Tests before grammar or review. A missing or contradictory fact returns premise_failed with kind: spec_gap and the owning unit; never fabricate a successor's governing contract. Cite plan ids under Plan contract rather than copying cited prose. The entry units own the documentation and fixture contracts; carry every named Tests obligation into their acceptance criteria, without implementing either in this admission.
 
-Read the predecessor owners and merged tests first. Scan chupa/, eval/ and tests/ for signatures, direct callers, composition roots, public-operation allowlists and negative assertions under 19.L rules 2-5. Treat each registry fence as its floor and record every earned addition's exact caller or contradicted assertion in tests/test_seeded_phase6_02.py. Any other widening needs plan repair. Existing fenced paths default to Context; use On-demand only when a recorded authoring render exceeds 300,000 characters. Created files, same-admission sibling creations, prompt specs and delimiter-bearing sources are excluded from Context. Preservation suites appear only in Verification. Keep historical seeding fixtures unchanged and use the merged tests/test_seeded_phase3_core.py idiom, never the current admission's test or sibling creation as seed Context.
+Read the predecessor owners and merged tests first. Scan clutch/, eval/ and tests/ for signatures, direct callers, composition roots, public-operation allowlists and negative assertions under 19.L rules 2-5. Treat each registry fence as its floor and record every earned addition's exact caller or contradicted assertion in tests/test_seeded_phase6_02.py. Any other widening needs plan repair. Existing fenced paths default to Context; use On-demand only when a recorded authoring render exceeds 300,000 characters. Created files, same-admission sibling creations, prompt specs and delimiter-bearing sources are excluded from Context. Preservation suites appear only in Verification. Keep historical seeding fixtures unchanged and use the merged tests/test_seeded_phase3_core.py idiom, never the current admission's test or sibling creation as seed Context.
 
 Ordinary rows and continuations start medium/medium. A deep: true row runs alone at high/high; exits start KNOWN-HARD high/high. Include the successor in the seeding.max_seeds_per_admission batch bound, and constrain every stuck budget to drain.max_ticket_minutes. Keep registry order, names, grain and row coverage unchanged.
 

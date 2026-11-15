@@ -12,21 +12,21 @@ state: confirmed
 - core-drift-classifier
 
 ## Context
-- chupa/mergequeue.py
-- chupa/seams.py
-- chupa/stages.py
+- clutch/mergequeue.py
+- clutch/seams.py
+- clutch/stages.py
 - tests/test_drain.py
 - tests/test_mergequeue.py
 - tests/test_merge.py
 - tests/test_gates.py
 
 ## On-demand
-- chupa/hostfiles.py
-- chupa/gates.py
-- chupa/config.py
-- chupa/merge.py
-- chupa/providers.py
-- chupa/__main__.py
+- clutch/hostfiles.py
+- clutch/gates.py
+- clutch/config.py
+- clutch/merge.py
+- clutch/providers.py
+- clutch/__main__.py
 - tests/test_hostfiles.py
 - tests/test_providers.py
 - tests/test_cli.py
@@ -52,24 +52,24 @@ state: confirmed
 - section 8
 
 ## Goal / Why
-Check and both merge paths reject noncurrent routed conduct before main moves, with chupa's own conduct adopted in the activation candidate.
+Check and both merge paths reject noncurrent routed conduct before main moves, with clutch's own conduct adopted in the activation candidate.
 
 ## Scope in / Scope out
-Implement the cited activation contract. chupa/hostfiles.py owns the gate and chupa/providers.py owns the shared resolver; replace core's inline selection using the existing candidate resolution. Activate the existing core_drift code in stages.CHECK_GATES and the merge rerun composition with the shipped hard default and ordinary severity/bypass semantics. No new module, config key, signal or record belongs here. Keep callable signatures intact unless a criteria-forced change has its complete caller closure within this fence.
+Implement the cited activation contract. clutch/hostfiles.py owns the gate and clutch/providers.py owns the shared resolver; replace core's inline selection using the existing candidate resolution. Activate the existing core_drift code in stages.CHECK_GATES and the merge rerun composition with the shipped hard default and ordinary severity/bypass semantics. No new module, config key, signal or record belongs here. Keep callable signatures intact unless a criteria-forced change has its complete caller closure within this fence.
 
 Replace test_core_classifier_unreachable_from_production_gates with the named reachable test through the real production graph. Retain renderer marker refusal, first adoption, exact project-byte retention, branch-template authority and idempotence. Read every On-demand path before edits. Mechanically render both self-host conduct files using this candidate's engine template and their complete original remainder, then commit them with the activation wiring; gate evaluation itself never writes. Do not hand-edit managed blocks or defer adoption to the migration or documentation siblings.
 
 The hard flip also invalidates independently constructed test and eval hosts. Update the fenced repo constructors to commit conduct mechanically rendered with hostfiles.render from their own fixture bytes for their actual routes, before Check/merge. Builders in test_stages, test_seed_path, test_drain, test_merge, test_cli, test_mergequeue, test_terminal, test_seed_successor and the eval harnesses own that repair; test_daemon_soak also changes routes after its imported builder. Follow the import/composition closure without changing downstream preservation assertions. Do not soften core_drift in fake CONFIG, bypass it, or rewrite historical seeding snapshots. No migration implementation, new provider adapter or host-loop machinery belongs here.
 
-Committed conduct bytes come from the candidate worktree read with Path.read_bytes, accepted only when their git blob hash equals the committed blob id at HEAD; a mismatch (a dirty checkout) is a core_drift finding naming the file with paved road `commit or restore <path>, then rerun Check`, never a decoded git blob read, so chupa/git.py and chupa/seams.py stay unchanged. A candidate chupa/hostfiles.py whose CORE_TEMPLATE cannot be extracted (a syntax error or a non-literal assignment) is a core_drift finding naming chupa/hostfiles.py with paved road `define CORE_TEMPLATE as one literal bytes assignment`, never an exception from evidence gathering.
+Committed conduct bytes come from the candidate worktree read with Path.read_bytes, accepted only when their git blob hash equals the committed blob id at HEAD; a mismatch (a dirty checkout) is a core_drift finding naming the file with paved road `commit or restore <path>, then rerun Check`, never a decoded git blob read, so clutch/git.py and clutch/seams.py stay unchanged. A candidate clutch/hostfiles.py whose CORE_TEMPLATE cannot be extracted (a syntax error or a non-literal assignment) is a core_drift finding naming clutch/hostfiles.py with paved road `define CORE_TEMPLATE as one literal bytes assignment`, never an exception from evidence gathering.
 
 ## Scope fence
-- chupa/hostfiles.py
-- chupa/gates.py
-- chupa/config.py
-- chupa/merge.py
-- chupa/providers.py
-- chupa/__main__.py
+- clutch/hostfiles.py
+- clutch/gates.py
+- clutch/config.py
+- clutch/merge.py
+- clutch/providers.py
+- clutch/__main__.py
 - tests/test_hostfiles.py
 - tests/test_gates.py
 - tests/test_merge.py
@@ -77,7 +77,7 @@ Committed conduct bytes come from the candidate worktree read with Path.read_byt
 - tests/test_cli.py
 - CLAUDE.md
 - AGENTS.md
-- chupa/stages.py
+- clutch/stages.py
 - tests/test_stages.py
 - tests/test_seed_path.py
 - tests/test_drain.py
@@ -93,7 +93,7 @@ Committed conduct bytes come from the candidate worktree read with Path.read_byt
 
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_hostfiles.py tests/test_gates.py tests/test_merge.py tests/test_providers.py tests/test_cli.py` exits 0 with test_core_activation_entry_unit proving required_units, unique resolve_plan_contract and all entry_unit_gap parts with missing-part rejection. test_core_drift_reachable_from_production_gates replaces the dormancy assertion through production Check and both merge paths.
-2. `uv run pytest -q tests/test_hostfiles.py tests/test_gates.py tests/test_merge.py tests/test_providers.py tests/test_cli.py` exits 0 with test_core_drift_gate_reports proving every classification, exact report shape, named paths, useful roads, corruption/process refusal and effect-free evaluation; test_core_drift_default_hard pins existing vocabulary and severity/bypass behavior. Missing or stale blocks name chupa core; marker and process refusals give their specific repair actions.
+2. `uv run pytest -q tests/test_hostfiles.py tests/test_gates.py tests/test_merge.py tests/test_providers.py tests/test_cli.py` exits 0 with test_core_drift_gate_reports proving every classification, exact report shape, named paths, useful roads, corruption/process refusal and effect-free evaluation; test_core_drift_default_hard pins existing vocabulary and severity/bypass behavior. Missing or stale blocks name clutch core; marker and process refusals give their specific repair actions.
 3. `uv run pytest -q tests/test_hostfiles.py tests/test_gates.py tests/test_merge.py tests/test_providers.py tests/test_cli.py` exits 0 with test_core_drift_merge_rerun refusing stale committed bytes before main mutation, including after rebase, and admitting current bytes; test_core_drift_candidate_template uses the candidate template rather than the serving instance.
 4. `uv run pytest -q tests/test_hostfiles.py tests/test_gates.py tests/test_merge.py tests/test_providers.py tests/test_cli.py` exits 0 with test_routed_conduct_paths covering claude, other CLI, mixed, duplicate and unrouted candidates. test_core_and_gate_share_routed_paths proves the CLI and gate use one resolver while preserving refusal, project bytes and repeated-render identity.
 5. `uv run pytest -q tests/test_hostfiles.py tests/test_gates.py tests/test_merge.py tests/test_providers.py tests/test_cli.py` exits 0 with test_core_activation_first_adoption proving original marker-free claude/codex bytes are missing, rendered bytes are current, every project byte survives and a repeat render is identical. test_core_activation_committed_conduct reads both committed routed files and validated config and passes the real Check gate against the candidate template.

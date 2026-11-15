@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-All ticket verification commands and applicable host checks passed; the coverage gate was skipped because the diff does not touch its measured chupa files.
+All ticket verification commands and applicable host checks passed; the coverage gate was skipped because the diff does not touch its measured clutch files.
 
 ## Dead ends
 

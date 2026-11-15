@@ -7,11 +7,11 @@
   "changed_files": [
     "AGENTS.md",
     "CLAUDE.md",
-    "chupa/author.py",
-    "chupa/docs/host-authoring.md",
-    "chupa/requisition.py",
-    "chupa/specs/author.md",
-    "docs/how-chupa-works.md",
+    "clutch/author.py",
+    "clutch/docs/host-authoring.md",
+    "clutch/requisition.py",
+    "clutch/specs/author.md",
+    "docs/how-clutch-works.md",
     "tests/integration/test_author.py",
     "tests/unit/test_author.py",
     "tests/unit/test_requisition_prior_review.py"
@@ -82,8 +82,8 @@
       "coverage": {
         "percent": 37.497512107742324,
         "files": {
-          "chupa/author.py": 57.28155339805825,
-          "chupa/requisition.py": 81.36363636363636
+          "clutch/author.py": 57.28155339805825,
+          "clutch/requisition.py": 81.36363636363636
         }
       }
     },
@@ -227,7 +227,7 @@
         "tests/integration/test_baseline.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_author.py tests/unit/test_author.py tests/unit/test_requisition_prior_review.py tests/unit/test_requisition_stage_events.py tests/integration/test_baseline.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 58%]\n...................................................                      [100%]\n123 passed in 4.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_author.py tests/unit/test_author.py tests/unit/test_requisition_prior_review.py tests/unit/test_requisition_stage_events.py tests/integration/test_baseline.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 58%]\n...................................................                      [100%]\n123 passed in 4.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 4.334618
     }

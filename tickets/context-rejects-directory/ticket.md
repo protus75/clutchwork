@@ -11,19 +11,19 @@ state: confirmed
 - none
 
 ## Context
-- chupa/tickets.py
+- clutch/tickets.py
 - tests/integration/test_tickets.py::test_context_section_findings
 - tests/regress_lint_worktree_journal.py
 
 ## Goal / Why
-`validate_ticket` in `chupa/tickets.py` checks each `## Context` path with `(repo / source).exists()`, while `## On-demand` uses `.is_file()`. A Context entry that names a directory (box-declined-verdict listed `tickets/decisions`) therefore passes lint and intake. Implement's input render (`implement_inputs`) later reads that path as a file and raises `IsADirectoryError`, which crashes the drain. After this change a Context path that is not a file is refused at lint with a finding, the same rule On-demand already applies. The observed failure is recorded in `evidence/context-directory-passes-lint.txt`.
+`validate_ticket` in `clutch/tickets.py` checks each `## Context` path with `(repo / source).exists()`, while `## On-demand` uses `.is_file()`. A Context entry that names a directory (box-declined-verdict listed `tickets/decisions`) therefore passes lint and intake. Implement's input render (`implement_inputs`) later reads that path as a file and raises `IsADirectoryError`, which crashes the drain. After this change a Context path that is not a file is refused at lint with a finding, the same rule On-demand already applies. The observed failure is recorded in `evidence/context-directory-passes-lint.txt`.
 
 ## Scope in / Scope out
-- In: in `chupa/tickets.py`, change the Context existence check from `.exists()` to `.is_file()`. Keep the existing "does not exist" finding and its paved road, and make its text say the path must be an existing file. Add a regression test and a carried reproducer.
-- Out: the On-demand check; Context selector (`::`, `#`) handling; any change to `implement_inputs` in `chupa/stages.py`; symlink handling.
+- In: in `clutch/tickets.py`, change the Context existence check from `.exists()` to `.is_file()`. Keep the existing "does not exist" finding and its paved road, and make its text say the path must be an existing file. Add a regression test and a carried reproducer.
+- Out: the On-demand check; Context selector (`::`, `#`) handling; any change to `implement_inputs` in `clutch/stages.py`; symlink handling.
 
 ## Scope fence
-- chupa/tickets.py
+- clutch/tickets.py
 - tests/integration/test_tickets.py
 - tests/regress_context_directory.py
 

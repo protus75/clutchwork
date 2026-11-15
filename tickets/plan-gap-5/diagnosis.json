@@ -9,7 +9,7 @@
   "verdict": "retry",
   "lessons": [
     "Failure was infrastructure, not the work: codex sent a 'Reconnecting... 2/5 (503 Service Unavailable)' error event, raised as ProviderCallError. Retry at the same capability; nothing in the ticket or diff caused it.",
-    "Edit only the fenced unit 19.P3.daemon-soak-runner in CHUPA_PLAN.md. The ticket's Scope fence and 'Out: every other plan byte, code, and tickets' rule out any other change, including the neighboring 19.P3.soak-run unit.",
+    "Edit only the fenced unit 19.P3.daemon-soak-runner in CLUTCH_PLAN.md. The ticket's Scope fence and 'Out: every other plan byte, code, and tickets' rule out any other change, including the neighboring 19.P3.soak-run unit.",
     "The gap says production harvests and terminals unresolved conflicts and semantic integration refusals without enqueueing a Box report. State that the soak runner files both reports. Do not claim production code enqueues them; that would contradict merged code (Definition of rejected).",
     "Before finishing, run `uv run pytest tests/test_plan_lint.py` and confirm it exits 0 (acceptance criterion 1). The prior attempt reported 28 passing; check it again on the fresh worktree base."
   ],

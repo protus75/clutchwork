@@ -8,9 +8,9 @@
   "stage": "merge",
   "verdict": "abandon-human",
   "lessons": [
-    "The implementation passed all checks and three approving reviews. The merge failed only because the main checkout has uncommitted edits to docs/how-chupa-works.md, vscode-chupa/extension.js and vscode-chupa/package.json. A human must commit or revert those edits before the squash can land.",
+    "The implementation passed all checks and three approving reviews. The merge failed only because the main checkout has uncommitted edits to docs/how-clutch-works.md, vscode-clutchwork/extension.js and vscode-clutchwork/package.json. A human must commit or revert those edits before the squash can land.",
     "Do not change the implementation on the next attempt. The diff matched the scope and acceptance criteria. Once the human has cleaned the main checkout, re-run the ticket through the normal retry path, as the dirty_checkout paved road says.",
-    "If the human commits their own edits to those three files first, the next attempt must rebase onto them. It must keep their changes in extension.js, package.json and how-chupa-works.md and add the order commands and doc rows alongside them, not overwrite them."
+    "If the human commits their own edits to those three files first, the next attempt must rebase onto them. It must keep their changes in extension.js, package.json and how-clutch-works.md and add the order commands and doc rows alongside them, not overwrite them."
   ],
   "mechanical": null,
   "spec_version": "1.2",

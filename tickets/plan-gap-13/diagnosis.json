@@ -10,7 +10,7 @@
   "lessons": [
     "Implement succeeded: commit 093322d adds the 19.P4.reliability-battery unit and all 28 tests in tests/test_plan_lint.py pass. The failure is in the engine at review, not in the ticket or the diff.",
     "A human should read the engine log traceback for the review-stage AttributeError ('str' object has no attribute 'get'). The material does not show which code expected a dict but got a string, so the cause cannot be read from here.",
-    "Once the review-stage crash is fixed, rerun review on the existing diff. Do not regenerate the plan unit: the diff touches only CHUPA_PLAN.md (11 insertions) and stays inside the scope fence.",
+    "Once the review-stage crash is fixed, rerun review on the existing diff. Do not regenerate the plan unit: the diff touches only CLUTCH_PLAN.md (11 insertions) and stays inside the scope fence.",
     "The run record says the battery is not built yet. Review should check that the new unit's facts match merged code and do not claim behavior that does not exist, as the Definition of rejected requires."
   ],
   "mechanical": null,

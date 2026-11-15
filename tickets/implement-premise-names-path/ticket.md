@@ -12,24 +12,24 @@ kind: bug
 - commit-lock
 
 ## Context
-- chupa/stages.py::ImplementReply
-- chupa/stages.py::implement
-- chupa/driver.py::Driver.run
+- clutch/stages.py::ImplementReply
+- clutch/stages.py::implement
+- clutch/driver.py::Driver.run
 - tests/regress_requisition_park_not_attempt.py
 
 ## On-demand
 - tests/integration/test_requisition_gate.py
 
 ## Goal / Why
-`chupa/specs/implement.md` allows `premise_failed` only when the ticket cannot be done as written: the bug does not reproduce, the criteria contradict existing behavior or each other, or the change forces an edit outside `## Scope fence`. The engine accepts any `premise_failed` reply whose findings are coded `premise`. With `premise_bounce: 1`, an Implement `premise_failed` routes the ticket straight to the Reject queue.
+`clutch/specs/implement.md` allows `premise_failed` only when the ticket cannot be done as written: the bug does not reproduce, the criteria contradict existing behavior or each other, or the change forces an edit outside `## Scope fence`. The engine accepts any `premise_failed` reply whose findings are coded `premise`. With `premise_bounce: 1`, an Implement `premise_failed` routes the ticket straight to the Reject queue.
 
 On 2026-11-11, codex (gpt-6.1-terra) twice replied `premise_failed` on `commit-lock` without a premise. Each time it made no change, and the run took 118 and 32 seconds of a 3-hour budget. Its findings said "I could not complete the implementation and verification in this attempt; no contradiction or missing scope has been established" and "no ticket premise failure was established". Neither finding named a path. Each sent a ticket that had just passed requisition review back to the Reject queue (see `evidence/implement-premise-giveups.txt`). Across every recorded Implement `premise_failed` in `tickets/*/attempts/*/harvest.json`, 602 of 608 `premise` findings name a `path`. The other 6 are these two give-ups and four that could have named the failing or missing file.
 
 When this ticket is done, every `premise` finding in an Implement reply must name a `path`: the file outside the fence, the file whose behavior the criteria contradict, or the ticket. A reply that does not is schema-invalid. `Driver.run` then re-prompts the same call with the validation message as `retry_findings` (as it does for any invalid artifact). That message tells the agent that unfinished work is not a premise failure and to implement the ticket.
 
 ## Scope in / Scope out
-- In: `chupa/stages.py::ImplementReply._findings_match_outcome`: for `premise_failed`, every finding must also have a non-empty `path`. The `ValueError` message reads: "premise_failed needs at least one finding, every code `premise` and every one naming `path` (the file outside the fence, the file the criteria contradict, or the ticket); unfinished or large work is not a premise failure: implement the ticket and reply ok".
-- In: `chupa/specs/implement.md`:
+- In: `clutch/stages.py::ImplementReply._findings_match_outcome`: for `premise_failed`, every finding must also have a non-empty `path`. The `ValueError` message reads: "premise_failed needs at least one finding, every code `premise` and every one naming `path` (the file outside the fence, the file the criteria contradict, or the ticket); unfinished or large work is not a premise failure: implement the ticket and reply ok".
+- In: `clutch/specs/implement.md`:
   - The Output format sentence "`premise_failed` carries at least one finding, every one coded `premise`." becomes "`premise_failed` carries at least one finding, every one coded `premise` and naming its `path`."
   - The `premise_failed` bullet gains one sentence: running out of time, or a change that is only large, is never `premise_failed`.
   - In the Output format JSON template, the finding's `"path": "<file or null>"` becomes `"path": "<file outside the fence, file the criteria contradict, or tickets/<stem>/ticket.md>"`. `line` stays nullable.
@@ -48,14 +48,14 @@ When this ticket is done, every `premise` finding in an Implement reply must nam
   - `tests/harness/shakeout/runner.py`
 - In: the carried reproducer `tests/regress_implement_premise_path.py` (see Regression). It is self-contained and imports nothing from `tests/`. It validates an `ImplementReply` JSON with outcome `premise_failed` and one `premise` finding with no `path`. It prints `pass` (exit 0) when validation raises `ValidationError`, and `defect` (exit 1) when it is accepted.
 - Out:
-  - Re-prompt mechanics in `chupa/driver.py`, which already re-prompt an invalid artifact.
+  - Re-prompt mechanics in `clutch/driver.py`, which already re-prompt an invalid artifact.
   - Requisition, Review and Diagnose replies.
   - `premise_bounce` and Reject queue routing.
   - Provider routing in `config.yaml`.
 
 ## Scope fence
-- chupa/stages.py
-- chupa/specs/implement.md
+- clutch/stages.py
+- clutch/specs/implement.md
 - tests/unit/test_specs.py
 - tests/unit/test_implement_premise_path.py
 - tests/regress_implement_premise_path.py
@@ -71,7 +71,7 @@ When this ticket is done, every `premise` finding in an Implement reply must nam
 - tests/harness/shakeout/runner.py
 
 ## Acceptance criteria
-1. New `tests/unit/test_implement_premise_path.py` validates `ImplementReply` in memory and keeps the `test-gate.toml` unit floor for `chupa/stages.py`:
+1. New `tests/unit/test_implement_premise_path.py` validates `ImplementReply` in memory and keeps the `test-gate.toml` unit floor for `clutch/stages.py`:
    - A `premise_failed` reply whose `premise` finding has `path: null` raises `ValidationError` whose text contains `naming \`path\`` and `implement the ticket`. Accepting it fails the test.
    - A `premise_failed` reply whose findings all have a `path` validates.
    - An `ok` reply with no findings still validates.
@@ -87,7 +87,7 @@ When this ticket is done, every `premise` finding in an Implement reply must nam
 
 ## Definition of rejected
 - An Implement `premise_failed` reply with a pathless `premise` finding is accepted.
-- `chupa/driver.py`'s re-prompt or retry count changes.
+- `clutch/driver.py`'s re-prompt or retry count changes.
 - A `premise_failed` reply whose findings all name a path is refused.
 
 ## Time budget

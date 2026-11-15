@@ -14,18 +14,18 @@ state: rejected
 - tests/unit/test_specs.py
 
 ## On-demand
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 
 ## Goal / Why
-The `check-test-timing` ticket can never pass Check (2026-11-08, attempts 1 and 2). It changes the format of the testreport results file that the candidate writes. The running engine's `read_results` on main reads that file when it judges the candidate, and it accepts only schema 1. The candidate's schema-2 output is therefore rejected by main's reader. Two paid attempts went to a premise that was already false when requisition review approved the ticket. The `results-schema-2-reader` ticket exists to put the reader first. `chupa/specs/requisition_review.md` says nothing about a file that the candidate writes and the running engine reads. Existing open tickets cover test files that read reshaped data, tests that assert gated outcomes, and enumerated sets. None of them covers a format read across the engine/candidate version boundary. After this change the spec carries one Task bullet: when Scope in changes the format of a file that the candidate writes and the running engine on main reads (for example testreport results), and no prior merged ticket makes the engine reader accept the new format, the reviewer raises a `snag` naming the engine-read file and the missing reader-first ticket. The rule is limited to formats the running engine reads. A file only the candidate's own tests read, a change that stays backward compatible with the reader on main, and a reader that is already merged are not hits.
+The `check-test-timing` ticket can never pass Check (2026-11-08, attempts 1 and 2). It changes the format of the testreport results file that the candidate writes. The running engine's `read_results` on main reads that file when it judges the candidate, and it accepts only schema 1. The candidate's schema-2 output is therefore rejected by main's reader. Two paid attempts went to a premise that was already false when requisition review approved the ticket. The `results-schema-2-reader` ticket exists to put the reader first. `clutch/specs/requisition_review.md` says nothing about a file that the candidate writes and the running engine reads. Existing open tickets cover test files that read reshaped data, tests that assert gated outcomes, and enumerated sets. None of them covers a format read across the engine/candidate version boundary. After this change the spec carries one Task bullet: when Scope in changes the format of a file that the candidate writes and the running engine on main reads (for example testreport results), and no prior merged ticket makes the engine reader accept the new format, the reviewer raises a `snag` naming the engine-read file and the missing reader-first ticket. The rule is limited to formats the running engine reads. A file only the candidate's own tests read, a change that stays backward compatible with the reader on main, and a reader that is already merged are not hits.
 
 ## Scope in / Scope out
-- In: `chupa/specs/requisition_review.md`: add one Task bullet for the engine-read format rule with the stated limit. The `version` stays unchanged, because sibling spec tickets bump it and a second bump would collide.
+- In: `clutch/specs/requisition_review.md`: add one Task bullet for the engine-read format rule with the stated limit. The `version` stays unchanged, because sibling spec tickets bump it and a second bump would collide.
 - In: `tests/unit/test_specs.py`: a new test asserts the rule phrases are in the spec body.
-- Out: every other spec, `chupa/tickets.py` and every lint, and `docs/`.
+- Out: every other spec, `clutch/tickets.py` and every lint, and `docs/`.
 
 ## Scope fence
-- chupa/specs/requisition_review.md
+- clutch/specs/requisition_review.md
 - tests/unit/test_specs.py
 
 ## Acceptance criteria

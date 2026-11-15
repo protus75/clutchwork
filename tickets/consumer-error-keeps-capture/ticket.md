@@ -9,8 +9,8 @@ state: confirmed
 none
 
 ## Context
-- chupa/seams.py
-- chupa/providers.py
+- clutch/seams.py
+- clutch/providers.py
 - tests/test_providers.py
 
 ## Plan contract
@@ -18,7 +18,7 @@ none
 - section 9
 
 ## Goal / Why
-A provider call whose stdout-line consumer raises still leaves the call's full captured stdout and stderr in its `events.jsonl` and `stderr.txt` (section 6: the attempt spool tees each call's full output). Today an exception raised by `on_stdout_line` escapes `_read_pipe` (`chupa/seams.py`) out of `ProcessExec.run`, so `CliAdapter.invoke` (`chupa/providers.py`) never writes the capture: plan-gap-13's crashed review left only `prompt.md`, and the event that crashed it was unrecoverable from the spool.
+A provider call whose stdout-line consumer raises still leaves the call's full captured stdout and stderr in its `events.jsonl` and `stderr.txt` (section 6: the attempt spool tees each call's full output). Today an exception raised by `on_stdout_line` escapes `_read_pipe` (`clutch/seams.py`) out of `ProcessExec.run`, so `CliAdapter.invoke` (`clutch/providers.py`) never writes the capture: plan-gap-13's crashed review left only `prompt.md`, and the event that crashed it was unrecoverable from the spool.
 
 ## Scope in / Scope out
 - In: when the `on_stdout_line` callback raises, `ProcessExec.run` still reads the stream to EOF and waits for the child, then re-raises the callback's first exception carrying the captured stdout and stderr; `CliAdapter.invoke` writes the scrubbed `events.jsonl` and `stderr.txt` before the exception propagates.
@@ -26,8 +26,8 @@ A provider call whose stdout-line consumer raises still leaves the call's full c
 - Out: the watchdog consumer, the event-stream contract, timeouts, and group-kill behavior.
 
 ## Scope fence
-- chupa/seams.py
-- chupa/providers.py
+- clutch/seams.py
+- clutch/providers.py
 - tests/test_providers.py
 
 ## Acceptance criteria

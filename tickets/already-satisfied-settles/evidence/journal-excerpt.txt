@@ -10,4 +10,4 @@ plan-gap-34 state_transition {"to": "running", "ticket_sha": "7e839e1af5ff795a6f
 plan-gap-34 signal {"signal": "diagnosis", "attempt": 0, "verdict": "reject", "mechanical": null}
 plan-gap-34 state_transition {"to": "already_satisfied", "stage": "check", "reason": "already_satisfied", "dispatch": "reject_queue", "routed": "reject_queue"}
 
-`chupa reject <stem>` on each: "<stem> is settled -- leave settled work in place" (exit 2), while `chupa status` lists them under Reject queue.
+`clutch reject <stem>` on each: "<stem> is settled -- leave settled work in place" (exit 2), while `clutch status` lists them under Reject queue.

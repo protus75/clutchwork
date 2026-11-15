@@ -11,7 +11,7 @@ state: confirmed
 - phase7-core
 
 ## Context
-- chupa/specs.py
+- clutch/specs.py
 - tests/test_specs.py
 - tests/test_stages.py
 
@@ -24,7 +24,7 @@ state: confirmed
 Make the correctness review prompt explicitly describe the tools available to its session and the mechanical evidence already decided at Check.
 
 ## Scope in / Scope out
-Apply the cited entry's complete prompt and test contract. Read the fenced review spec from the worktree before editing; prompt specs cannot be embedded as Context. Its owner remains specs/review.md with the existing chupa/specs.py loader; add no module.
+Apply the cited entry's complete prompt and test contract. Read the fenced review spec from the worktree before editing; prompt specs cannot be embedded as Context. Its owner remains specs/review.md with the existing clutch/specs.py loader; add no module.
 
 Change the review spec to version 1.1 and adjust its Role or Task instructions and acceptance snag reason as the entry requires. Preserve the remaining metadata, placeholders, verdicts, artifacts, and other review instructions. Add the named spec tests and update only the contradicted review version assertion in the existing stage provenance test. No loader, driver, gate, routing, or GO machinery changes.
 

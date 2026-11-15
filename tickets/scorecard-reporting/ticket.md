@@ -11,7 +11,7 @@ state: confirmed
 - phase5-continue-02
 
 ## Context
-- chupa/retro.py
+- clutch/retro.py
 - tests/test_retro.py
 
 ## Plan contract
@@ -23,7 +23,7 @@ state: confirmed
 Retro receipts expose journal-derived per-surface catches, bypasses, prune candidates and accounting totals.
 
 ## Scope in / Scope out
-Implement the cited scorecard entry in full. New chupa/scorecard.py is owned by that entry; chupa/retro.py collects production evidence and renders the receipt through its existing seams. This is behavior added inside the reachable retro module, exercised through the real lock-held production composition, not a dormant construction or a new invoker.
+Implement the cited scorecard entry in full. New clutch/scorecard.py is owned by that entry; clutch/retro.py collects production evidence and renders the receipt through its existing seams. This is behavior added inside the reachable retro module, exercised through the real lock-held production composition, not a dormant construction or a new invoker.
 
 Read the entry's Owner, Records, Observable and Tests. Create tests/test_scorecard.py with these named obligations: test_scorecard_entry_unit, test_scorecard_uses_completed_check_evidence, test_scorecard_catches_resolved_and_upheld_findings, test_scorecard_rates_and_prune_threshold, test_scorecard_totals_and_rendering. test_scorecard_entry_unit exercises required_units, resolve_plan_contract and entry_unit_gap for this seed and a continuation citing its entry. Keep test_plan_lint green unchanged.
 
@@ -32,9 +32,9 @@ Read completed Check evidence from the commit carried by each ticket-plane check
 Keep every tests/test_retro.py assertion unchanged, especially test_receipt_uses_engine_provenance_usage_calibration_and_tombstones and the JSON receipt readers. Append the engine-rendered scorecard while retaining the existing JSON evidence and receipt fields. Preserve public signatures and constructor arity for project_window, measurements, production_evidence, render_report and Retro; Window construction is local to fenced project_window, so extend its collected evidence there; extend evidence within the existing seam rather than changing external callers. Existing trigger selection, Stages.driver/Pipeline.stages access, exit-window materialization, proposal-to-Box emission and report commit custody remain unchanged. No status, baseline reader, CLI verbs, escape attribution, prompt-spec edits or report hand-commits.
 
 ## Scope fence
-- chupa/scorecard.py
+- clutch/scorecard.py
 - tests/test_scorecard.py
-- chupa/retro.py
+- clutch/retro.py
 - tests/test_retro.py
 
 ## Acceptance criteria

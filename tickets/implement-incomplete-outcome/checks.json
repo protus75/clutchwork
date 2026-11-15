@@ -5,11 +5,11 @@
   "stem": "implement-incomplete-outcome",
   "passed": true,
   "changed_files": [
-    "chupa/artifacts.py",
-    "chupa/caps.py",
-    "chupa/specs/implement.md",
-    "chupa/stages.py",
-    "docs/how-chupa-works.md",
+    "clutch/artifacts.py",
+    "clutch/caps.py",
+    "clutch/specs/implement.md",
+    "clutch/stages.py",
+    "docs/how-clutch-works.md",
     "tests/integration/test_closed_sets.py",
     "tests/integration/test_gates.py",
     "tests/integration/test_stages.py",
@@ -89,12 +89,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/implement-incomplete-outcome\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/implement-incomplete-outcome\nInstalled 19 packages in 34ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/implement-incomplete-outcome\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/implement-incomplete-outcome\nInstalled 19 packages in 34ms\n"
         }
       }
     },
@@ -113,9 +113,9 @@
       "coverage": {
         "percent": 39.06198753689734,
         "files": {
-          "chupa/artifacts.py": 45.09803921568628,
-          "chupa/caps.py": 64.47368421052632,
-          "chupa/stages.py": 15.847860538827259
+          "clutch/artifacts.py": 45.09803921568628,
+          "clutch/caps.py": 64.47368421052632,
+          "clutch/stages.py": 15.847860538827259
         }
       }
     },
@@ -254,10 +254,10 @@
         "run",
         "python",
         "-c",
-        "import pathlib; s = pathlib.Path('chupa/specs/implement.md').read_text(); d = pathlib.Path('docs/how-chupa-works.md').read_text(); assert s.count('incomplete') >= 4, s.count('incomplete'); assert d.count('incomplete') >= 3, d.count('incomplete')"
+        "import pathlib; s = pathlib.Path('clutch/specs/implement.md').read_text(); d = pathlib.Path('docs/how-clutch-works.md').read_text(); assert s.count('incomplete') >= 4, s.count('incomplete'); assert d.count('incomplete') >= 3, d.count('incomplete')"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.037222
     },
@@ -272,7 +272,7 @@
         "tests/unit/test_caps_requisition_park.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_implement_incomplete.py tests/unit/test_drain_reoffer.py tests/unit/test_specs.py tests/unit/test_implement_premise_path.py tests/unit/test_caps_requisition_park.py\nbringing up nodes...\nbringing up nodes...\n\n............................................                             [100%]\n44 passed in 2.85s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_implement_incomplete.py tests/unit/test_drain_reoffer.py tests/unit/test_specs.py tests/unit/test_implement_premise_path.py tests/unit/test_caps_requisition_park.py\nbringing up nodes...\nbringing up nodes...\n\n............................................                             [100%]\n44 passed in 2.85s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 3.673673
     },
@@ -286,7 +286,7 @@
         "tests/integration/test_terminal.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_closed_sets.py tests/integration/test_gates.py tests/integration/test_stages.py tests/integration/test_terminal.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 42%]\n........................................................................ [ 84%]\n...........................                                              [100%]\n171 passed in 2.17s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_closed_sets.py tests/integration/test_gates.py tests/integration/test_stages.py tests/integration/test_terminal.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 42%]\n........................................................................ [ 84%]\n...........................                                              [100%]\n171 passed in 2.17s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.361247
     },
@@ -298,7 +298,7 @@
         "tests/regress_implement_incomplete.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 0.203115
     },
@@ -308,7 +308,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "....... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n......................................................................   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/chupa/.chupa/state/worktrees/implement-incomplete-outcome/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3598 passed, 9 warnings in 63.66s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "....... [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n......................................................................   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/clutch/.clutch/state/worktrees/implement-incomplete-outcome/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3598 passed, 9 warnings in 63.66s (0:01:03)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 69.270914
     }

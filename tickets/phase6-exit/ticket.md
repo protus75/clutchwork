@@ -13,8 +13,8 @@ state: confirmed
 
 ## Context
 - eval/host_loop.py
-- chupa/artifacts.py
-- chupa/git.py
+- clutch/artifacts.py
+- clutch/git.py
 - tickets/go-grade-run/review-baseline-report.json
 
 ## Plan contract
@@ -33,7 +33,7 @@ Read the terminal Phase 6 evidence and produce its deterministic receipt through
 ## Scope in / Scope out
 Position 8 carries admissions[8:]: [phase6-exit], the sole terminal payload. KNOWN-HARD high/high starts under 19.L's phase-exit tier law. No successor, no seeds, no next phase, no GO recording and no live journal read.
 
-Create only tests/test_phase6_exit.py. Run the merged eval.host_loop harness as producer after exit-receipt-machinery merges. The machinery owns HostLoopReport and ExitReceipt in chupa/artifacts.py, HOST_LOOP_REPORT and EXIT_RECEIPT registrations in chupa/stages.py, and eval.host_loop.write_report/write_receipt as canonical writers. Check purges registered outputs before Verification: run the harness command FIRST. Read the reports at their repo-relative paths, the fresh OUTBOX copies at Check and lifted copies on merged main. Missing files fail closed, never skip. Leave both reports uncommitted for Check's schema-validating ticket-plane lift.
+Create only tests/test_phase6_exit.py. Run the merged eval.host_loop harness as producer after exit-receipt-machinery merges. The machinery owns HostLoopReport and ExitReceipt in clutch/artifacts.py, HOST_LOOP_REPORT and EXIT_RECEIPT registrations in clutch/stages.py, and eval.host_loop.write_report/write_receipt as canonical writers. Check purges registered outputs before Verification: run the harness command FIRST. Read the reports at their repo-relative paths, the fresh OUTBOX copies at Check and lifted copies on merged main. Missing files fail closed, never skip. Leave both reports uncommitted for Check's schema-validating ticket-plane lift.
 
 Read the committed go-grade-run baseline through the existing reader. go-grade-machinery owns ReviewBaselineReport, REVIEW_BASELINE_REPORT registration and eval.harness's canonical writer; go-grade-run is its producer. Complete and measured partial NO_GO are valid evidence. Preserve the actual embedded verdict_signal identity; never fabricate journal identity or approval provenance.
 

@@ -8,7 +8,7 @@
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Premise finding is wrong: gates.run_gates passes each gate the workspace Path. Check and the merge rerun both run CHECK_GATES on the candidate worktree at branch head after rebase. Read the routed conduct with Path.read_bytes() there; chupa/git.py is not needed.",
+    "Premise finding is wrong: gates.run_gates passes each gate the workspace Path. Check and the merge rerun both run CHECK_GATES on the candidate worktree at branch head after rebase. Read the routed conduct with Path.read_bytes() there; clutch/git.py is not needed.",
     "Treat 'committed conduct-file bytes on the candidate branch' (19.P6.core-drift-activation) as the clean candidate worktree's file bytes. Render the template from that same workspace's plan section 17, not from the serving engine's repo.",
     "Do not file a scope-fence premise again for byte-exact retrieval. hostfiles.py already reads with path.read_bytes() (line 119), so a non-UTF-8 committed byte survives a worktree read. Spend this attempt on the wiring, the fixture adoption and the named tests.",
     "Wire core_drift into stages.CHECK_GATES. The merge rerun picks it up through run_gates(CHECK_GATES, evidence, worktree) after the rebase. Rely on the shipped hard default in DEFAULT_GATE_SEVERITY and do not add a severity override.",

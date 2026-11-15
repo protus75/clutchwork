@@ -1,4 +1,4 @@
-# chupa snapshot row for box-view (extension shows it queued, not held)
+# clutch snapshot row for box-view (extension shows it queued, not held)
 {"stem": "box-view", "section": "queued", "status": "retry pending (last: premise_failed)", "held": false}
 
 # committed ticket.md blob

@@ -5,11 +5,11 @@
   "stem": "surface-verdict-decisions",
   "passed": true,
   "changed_files": [
-    "chupa/observe.py",
-    "chupa/status.py",
+    "clutch/observe.py",
+    "clutch/status.py",
     "tests/integration/test_status.py",
     "tests/unit/test_status_verdict_decisions.py",
-    "vscode-chupa/media/view.js"
+    "vscode-clutchwork/media/view.js"
   ],
   "inserted_lines": 70,
   "bypassed": [],
@@ -77,8 +77,8 @@
       "coverage": {
         "percent": 37.76849642004773,
         "files": {
-          "chupa/observe.py": 37.28813559322034,
-          "chupa/status.py": 92.66666666666667
+          "clutch/observe.py": 37.28813559322034,
+          "clutch/status.py": 92.66666666666667
         }
       }
     },
@@ -219,7 +219,7 @@
         "tests/unit/test_status_verdict_decisions.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_status.py tests/unit/test_status_verdict_decisions.py\nbringing up nodes...\nbringing up nodes...\n\n...........                                                              [100%]\n11 passed in 4.26s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_status.py tests/unit/test_status_verdict_decisions.py\nbringing up nodes...\nbringing up nodes...\n\n...........                                                              [100%]\n11 passed in 4.26s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 4.46559
     }

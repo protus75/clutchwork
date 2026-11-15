@@ -9,7 +9,7 @@
   "verdict": "reject",
   "lessons": [
     "Add tests/integration/test_daemon_composition.py to the scope fence. Its test_production_core_uses_real_snapshot_pipeline and test_production_core_awaits_preflight_inside_admission check the exact preparation trace, so the new preflight log is a forced edit there.",
-    "Logging preflight in chupa/runner.py::prepare_pipeline needs an EngineLog, built like runner.py:492 with Redactor.from_config. That adds a 'redactor' entry to observe_preparation's trace, so update the assertions at test_daemon_composition.py lines 769-770 and 796 to match the new order.",
+    "Logging preflight in clutch/runner.py::prepare_pipeline needs an EngineLog, built like runner.py:492 with Redactor.from_config. That adds a 'redactor' entry to observe_preparation's trace, so update the assertions at test_daemon_composition.py lines 769-770 and 796 to match the new order.",
     "Redo the full work from the merge base: the phase_start/phase_end pair around llm.preflight(), the retro_check pairs in _Drain._run_retro and Serve.check_retro, the recent_steps table next to STEP_NAMES, the three icons keys, the docs row and tests/unit/test_phase_events.py.",
     "Before reporting, run the plain ./dev.py test. The previous attempt's focused phase tests passed while the full suite failed in test_daemon_composition.py and one test there timed out."
   ],

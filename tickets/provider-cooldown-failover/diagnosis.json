@@ -8,7 +8,7 @@
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In chupa/drain.py _Drain.run, the pick-is-None provider_deadlines branch must first return self._halt(...) when self.c.clock() >= self.deadline, mirroring the storm_waiting branch right below it.",
+    "In clutch/drain.py _Drain.run, the pick-is-None provider_deadlines branch must first return self._halt(...) when self.c.clock() >= self.deadline, mirroring the storm_waiting branch right below it.",
     "Bound the cooldown wait to min(min(self.provider_deadlines), self.deadline). Never wait the full quota window in one uninterrupted call.",
     "Wait in short slices and loop back so before_dispatch and _stopping() still see a pause or kill during a provider drought. Reuse the storm_waiting brief-sleep pattern instead of adding a new wait mechanism.",
     "Add a test in tests/test_provider_cooldown_failover.py with injected clock and seams: max runtime ends before the cooldown deadline, and the drain halts at its own deadline. Add a second case where a kill request during the drought wait stops the drain.",

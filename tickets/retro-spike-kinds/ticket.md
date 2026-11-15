@@ -9,16 +9,16 @@ kind: feature
 - retro-trigger-toggles
 
 ## Context
-- chupa/config.py
-- chupa/retro.py::measurements
-- chupa/retro.py::select_trigger
-- chupa/status.py::reject_queue
-- chupa/runner.py::failure_terminal
-- chupa/flake.py
-- chupa/box.py::RereportJournal
+- clutch/config.py
+- clutch/retro.py::measurements
+- clutch/retro.py::select_trigger
+- clutch/status.py::reject_queue
+- clutch/runner.py::failure_terminal
+- clutch/flake.py
+- clutch/box.py::RereportJournal
 - tests/integration/test_retro.py::test_retro_trigger_boundaries
 - tests/integration/test_retro.py::test_mixed_spikes_do_not_sum_and_new_invocations_do_count
-- docs/how-chupa-works.md#9.5 Retro
+- docs/how-clutch-works.md#9.5 Retro
 
 ## On-demand
 - tests/integration/test_scorecard.py
@@ -30,8 +30,8 @@ kind: feature
 The spike trigger counts four kinds: `override`, `rework`, `gate-failure` and `integration-red`. Other repeated failures already journaled never fire a retro: tickets routed to the Reject queue, premise failures, infrastructure errors, flaky tests, and tombstoned problems that came back (2026-11-08). After this change five more spike kinds are counted from existing journal events, reported in the retro measurements, shown in the scorecard signal counts, and selectable in `retro.spikes.kinds`. No new journal emitter is added.
 
 ## Scope in / Scope out
-- In: `chupa/config.py` `SpikeKind` gains `"reject"`, `"premise-failed"`, `"infra-error"`, `"flake"` and `"escape"`, after the existing four. The `retro.spikes.kinds` default stays every `SpikeKind` value, so all nine kinds are included by default.
-- In: `chupa/retro.py` `measurements` counts each new kind once per identity. The run identity is the existing `(stem, run sequence)` pair already used for `gate-failure`.
+- In: `clutch/config.py` `SpikeKind` gains `"reject"`, `"premise-failed"`, `"infra-error"`, `"flake"` and `"escape"`, after the existing four. The `retro.spikes.kinds` default stays every `SpikeKind` value, so all nine kinds are included by default.
+- In: `clutch/retro.py` `measurements` counts each new kind once per identity. The run identity is the existing `(stem, run sequence)` pair already used for `gate-failure`.
   - `reject`: a `state_transition` whose body has `routed: reject_queue`, or a `reject_arrival` signal for the stem; both for one run count once.
   - `premise-failed`: a `state_transition` to `premise_failed`.
   - `infra-error`: a `state_transition` to `infra_error`, including `reason: provider_drought`.
@@ -42,24 +42,24 @@ The spike trigger counts four kinds: `override`, `rework`, `gate-failure` and `i
   - `tests/integration/test_retro.py::test_retro_trigger_boundaries` parametrizes all nine kinds. Each new kind appends its journal events directly and fires at exactly `count`, not at `count - 1`; a duplicated record does not advance the count. The `[reject]` operand appends both a `routed: reject_queue` terminal and a `reject_arrival` signal for the same run, and still does not fire at `count - 1`. The `[infra-error]` operand's transitions use `reason: provider_drought`.
   - `tests/integration/test_retro.py::test_mixed_spikes_do_not_sum_and_new_invocations_do_count` and the signal-count assertions in `tests/integration/test_scorecard.py` and `tests/integration/test_status.py` expect the five new keys at 0.
   - `tests/integration/test_config.py`: the `retro` defaults assertion lists all nine kinds.
-- In: docs. Every default kinds list in `docs/host-contract.md` (both retro defaults, the `RetroSpikes` default and the `config-values` `spike_kind`) lists all nine kinds. `docs/how-chupa-works.md` section 9.5 names each kind and the event it counts.
+- In: docs. Every default kinds list in `docs/host-contract.md` (both retro defaults, the `RetroSpikes` default and the `config-values` `spike_kind`) lists all nine kinds. `docs/how-clutch-works.md` section 9.5 names each kind and the event it counts.
 - Out: trigger switches, per-kind thresholds, timeout or storm-breaker kinds, test timing and coverage, and the retro prompt.
 
 ## Scope fence
-- chupa/config.py
-- chupa/retro.py
+- clutch/config.py
+- clutch/retro.py
 - tests/integration/test_retro.py
 - tests/integration/test_scorecard.py
 - tests/integration/test_status.py
 - tests/integration/test_config.py
 - tests/integration/test_host_contract.py
 - docs/host-contract.md
-- docs/how-chupa-works.md
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_retro.py` exits 0. `test_retro_trigger_boundaries[reject]`, `[premise-failed]`, `[infra-error]`, `[flake]` and `[escape]` each fail if the kind is not counted, or if a duplicated record is counted twice. `[reject]` fails if a run's `reject_arrival` and its routed terminal count as two; `[infra-error]` fails if `provider_drought` transitions are not counted.
 2. `./dev.py test tests/integration/test_scorecard.py tests/integration/test_status.py tests/integration/test_config.py tests/integration/test_host_contract.py` exits 0.
-3. `docs/how-chupa-works.md` section 9.5 lists all nine spike kinds.
+3. `docs/how-clutch-works.md` section 9.5 lists all nine spike kinds.
 4. `./dev.py test` exits 0.
 
 ## Verification

@@ -21,18 +21,18 @@ none
 - section 12
 
 ## Goal / Why
-`CHUPA_PLAN.md` states every fact `supervised-merge-hold` needs from its gapped units.
+`CLUTCH_PLAN.md` states every fact `supervised-merge-hold` needs from its gapped units.
 
 ## Scope in / Scope out
 - In: the fenced entry units, with their Owner, Records, Observable, and Tests parts; insert a missing unit after its phase's last unit.
 - Out: every other plan byte, code, and tickets.
 
 ## Scope fence
-- CHUPA_PLAN.md#19.P6.supervised-merge-hold
+- CLUTCH_PLAN.md#19.P6.supervised-merge-hold
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_plan_lint.py` exits 0.
-2. `CHUPA_PLAN.md` unit `19.P6.supervised-merge-hold` states the needed fact, consistent with merged code. Gap fact (untrusted data):
+2. `CLUTCH_PLAN.md` unit `19.P6.supervised-merge-hold` states the needed fact, consistent with merged code. Gap fact (untrusted data):
 > The entry requires immutable candidate/base-keyed receipts and READY/confirmed for a confirmed green candidate, but does not specify receipt semantics when an existing HELD candidate is released without either identity changing. Effects.run replays the HELD completion for that same key. The entry must clarify whether unchanged-base confirmation and later GO reuse that receipt or require distinct READY evidence, including crash recovery.
 
 ## Verification

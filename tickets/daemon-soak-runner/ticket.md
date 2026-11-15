@@ -13,24 +13,24 @@ state: confirmed
 ## Context
 - eval/daemon_soak.py
 - tests/test_daemon_soak.py
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/git.py
-- chupa/effects.py
-- chupa/seams.py
-- chupa/runner.py
-- chupa/daemon.py
-- chupa/__main__.py
-- chupa/serve.py
-- chupa/journal.py
-- chupa/restart.py
-- chupa/timers.py
-- chupa/box.py
-- chupa/audit.py
-- chupa/rework.py
-- chupa/mergequeue.py
-- chupa/reconcile.py
-- chupa/control.py
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/git.py
+- clutch/effects.py
+- clutch/seams.py
+- clutch/runner.py
+- clutch/daemon.py
+- clutch/__main__.py
+- clutch/serve.py
+- clutch/journal.py
+- clutch/restart.py
+- clutch/timers.py
+- clutch/box.py
+- clutch/audit.py
+- clutch/rework.py
+- clutch/mergequeue.py
+- clutch/reconcile.py
+- clutch/control.py
 - eval/shakeout/run.py
 
 ## Plan contract
@@ -43,7 +43,7 @@ A bounded deterministic invocation derives the closed soak report from productio
 ## Scope in / Scope out
 Implement the runner and command governed by 19.P3.daemon-soak-runner; its injected Owner, Records, Observable and Tests supply the contract. Keep the canonical write_report implementation and its schema/registration intact. Public produce returns evidence to that writer; this machinery produces no exit report for its own lift. The later soak-run supplies the separate producing run.
 
-Exercise the real CLI/async serve entrypoint and merged production-composition harness through injected seams, scripted callbacks, disposable synthetic repositories and asyncio barriers. Drive real dispatch and result consumption. Harness fixture setup stays in the runner module, with no imports from tests. Read the production-composition harness on disk before implementation. Preserve the engine algorithms and use their existing operations; there are no earned fence additions or signature changes. Re-grep produce/write_report, KNOWN_ARTIFACTS, Artifact, report purge/lift/validation, public surfaces/allowlists, production absence assertions and direct callers across chupa/, eval/ and tests/ before writing. Read chupa/merge.py, chupa/drain.py, chupa/scheduler.py, chupa/watcher.py and forced predecessor/direct callers on disk as well as Context.
+Exercise the real CLI/async serve entrypoint and merged production-composition harness through injected seams, scripted callbacks, disposable synthetic repositories and asyncio barriers. Drive real dispatch and result consumption. Harness fixture setup stays in the runner module, with no imports from tests. Read the production-composition harness on disk before implementation. Preserve the engine algorithms and use their existing operations; there are no earned fence additions or signature changes. Re-grep produce/write_report, KNOWN_ARTIFACTS, Artifact, report purge/lift/validation, public surfaces/allowlists, production absence assertions and direct callers across clutch/, eval/ and tests/ before writing. Read clutch/merge.py, clutch/drain.py, clutch/scheduler.py, clutch/watcher.py and forced predecessor/direct callers on disk as well as Context.
 
 The entry citation owns strict membership, per-member production evidence, recurring cycles, false-green refusal, cleanup, byte-identical re-derivation and source-HEAD provenance. Read original-run recovery alerts, both conflict rungs and integration-red refusal from member-local evidence. Use audit_journal on the entire member-local history and the existing Box fault-visibility seam. Do not supply success records, auditor verdicts or gate/admission/reconcile answers. The sole command form is uv run python -m eval.daemon_soak --out <path>; no selector or additional mode. Preserve report-purge, schema-validation, named-report-required, checks-only custody and inherited byte-equal exclusion predecessors.
 

@@ -11,7 +11,7 @@ state: confirmed
 - none
 
 ## Context
-- chupa/providers.py::ClaudeAdapter.argv
+- clutch/providers.py::ClaudeAdapter.argv
 - tests/integration/test_providers.py
 - hosts/fixture/bin/claude
 - tests/integration/test_fixture_host.py
@@ -22,12 +22,12 @@ Claude's non-writing surfaces (review, author, triage, requisition review, diagn
 ## Scope in / Scope out
 In: in `ClaudeAdapter.argv`, replace the read-only grant `--allowedTools Read Grep Glob LS` with `--tools Read Grep Glob LS --permission-mode dontAsk`. `--tools` restricts which built-in tools exist; `dontAsk` denies anything not pre-approved instead of consulting ambient defaults. The writes grant is unchanged. Update the tests and the fixture `claude` binary that pin the old grant.
 
-Coverage dependents of `chupa/providers.py` outside the fence are unaffected: grep shows none of them pins the `--allowedTools` grant, and those that drive the fixture claude binary go through `hosts/fixture/bin/claude`, which is fenced and updated here.
+Coverage dependents of `clutch/providers.py` outside the fence are unaffected: grep shows none of them pins the `--allowedTools` grant, and those that drive the fixture claude binary go through `hosts/fixture/bin/claude`, which is fenced and updated here.
 
-Out: the codex adapter, the writes path, prompt specs, docs, and `CHUPA_PLAN.md` (frozen).
+Out: the codex adapter, the writes path, prompt specs, docs, and `CLUTCH_PLAN.md` (frozen).
 
 ## Scope fence
-- chupa/providers.py
+- clutch/providers.py
 - tests/integration/test_providers.py
 - hosts/fixture/bin/claude
 - tests/integration/test_fixture_host.py

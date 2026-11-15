@@ -9,14 +9,14 @@ state: rejected
 none
 
 ## Context
-- chupa/watchdog.py
+- clutch/watchdog.py
 - tests/test_watchdog.py
 
 ## Plan contract
 - section 9
 
 ## Goal / Why
-`CallMeter._consume` (`chupa/watchdog.py`) meters every scrubbed provider event without raising, whatever the shape of its fields (section 9: the watchdog reads the adapter's event stream; a provider event is the CLI's object, not a chupa schema). Today it assumes `message` and `item` are objects: a real Claude event `{"type": "system", "subtype": "permission_denied", "message": "<text>"}` reaches `message.get('usage')` and raises `AttributeError: 'str' object has no attribute 'get'`, so every watched Claude call whose stream carries a tool denial (routinely, read-only Review) ends `infra_error` (seen on plan-gap-13's review).
+`CallMeter._consume` (`clutch/watchdog.py`) meters every scrubbed provider event without raising, whatever the shape of its fields (section 9: the watchdog reads the adapter's event stream; a provider event is the CLI's object, not a clutch schema). Today it assumes `message` and `item` are objects: a real Claude event `{"type": "system", "subtype": "permission_denied", "message": "<text>"}` reaches `message.get('usage')` and raises `AttributeError: 'str' object has no attribute 'get'`, so every watched Claude call whose stream carries a tool denial (routinely, read-only Review) ends `infra_error` (seen on plan-gap-13's review).
 
 ## Scope in / Scope out
 - In: `CallMeter._consume` reads `message`, `item`, `usage`, and `message.content` blocks only when each has the shape it expects (an object, or a list of objects for `content`), treating any other shape as absent; progress observation still happens for every event, and metering of well-shaped events is unchanged.
@@ -24,7 +24,7 @@ none
 - Out: the adapter, the event spool, the detector's thresholds, and every other consumer.
 
 ## Scope fence
-- chupa/watchdog.py
+- clutch/watchdog.py
 - tests/test_watchdog.py
 
 ## Acceptance criteria

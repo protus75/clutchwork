@@ -10,7 +10,7 @@
   "lessons": [
     "Implement passed: 3419 tests green, test commit 109b741, three seeds uncommitted. The only finding is requisition_review's 'invalid requisition review reply: 1 schema error(s)', a malformed reviewer reply rather than a seed or test defect. Do not rewrite the passing work.",
     "Per the ticket ('A retry retains approved bytes while ticket_sha matches and authors only snagged seeds'), keep the two approved seeds byte-identical. Re-author or re-review only the seed whose requisition_review reply failed.",
-    "Follow the finding's paved road and send a schema-valid requisition verdict. This material omits which schema field failed, so read the requisition_review reply schema in merged chupa code before replying rather than guessing its shape.",
+    "Follow the finding's paved road and send a schema-valid requisition verdict. This material omits which schema field failed, so read the requisition_review reply schema in merged clutch code before replying rather than guessing its shape.",
     "Keep tests/test_seeded_phase6_01.py AUTHORED sha256 pins consistent with the seed bytes. If a snagged seed changes, update its pin, rerun all Verification commands, and keep the activation render under the 300,000-character On-demand threshold (currently 297,652)."
   ],
   "mechanical": null,

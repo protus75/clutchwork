@@ -9,7 +9,7 @@ state: confirmed
 none
 
 ## Context
-- chupa/specs.py
+- clutch/specs.py
 - tests/test_specs.py
 - tests/test_stages.py
 
@@ -27,7 +27,7 @@ The Implement and requisition-review prompt specs tell the model which unit a `s
 ## Scope in / Scope out
 - In: the `unit` rule in `specs/implement.md` and `specs/requisition_review.md` states the full HARDENABLE set above and that the unit named is the missing or under-specified one; each spec bumps its minor version.
 - In: `tests/test_specs.py` adds `test_specs_name_every_hardenable_unit_kind` (both specs state the cited-phase-row case and the missing-unit rule) and its version pins in `test_spec_lint_accepts_the_implement_and_requisition_specs` follow the bumps; `tests/test_stages.py`'s run-record assertion follows the implement version.
-- Out: `chupa/specs.py`, reply-schema validation, routing, and every other spec sentence.
+- Out: `clutch/specs.py`, reply-schema validation, routing, and every other spec sentence.
 
 ## Scope fence
 - specs/implement.md

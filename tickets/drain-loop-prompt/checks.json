@@ -5,16 +5,16 @@
   "stem": "drain-loop-prompt",
   "passed": true,
   "changed_files": [
-    "chupa/__main__.py",
-    "chupa/ask.py",
-    "chupa/docs/host-running.md",
-    "chupa/specs/ask/drain-loop.md",
-    "docs/how-chupa-works.md",
+    "clutch/__main__.py",
+    "clutch/ask.py",
+    "clutch/docs/host-running.md",
+    "clutch/specs/ask/drain-loop.md",
+    "docs/how-clutch-works.md",
     "tests/integration/test_ask.py",
     "tests/integration/test_ask_drain_loop.py",
     "tests/unit/test_ask_drain_loop.py",
-    "vscode-chupa/extension.js",
-    "vscode-chupa/package.json"
+    "vscode-clutchwork/extension.js",
+    "vscode-clutchwork/package.json"
   ],
   "inserted_lines": 139,
   "bypassed": [],
@@ -82,8 +82,8 @@
       "coverage": {
         "percent": 39.048868481469334,
         "files": {
-          "chupa/__main__.py": 56.475583864118896,
-          "chupa/ask.py": 65.11627906976744
+          "clutch/__main__.py": 56.475583864118896,
+          "clutch/ask.py": 65.11627906976744
         }
       }
     },
@@ -174,7 +174,7 @@
           "tests/integration/test_serve_kill.py::test_serve_suspended_run_cleanup_and_restart[signal]": 1.6930998479947448,
           "tests/integration/test_scorecard.py::test_scorecard_catches_resolved_and_upheld_findings": 1.633813166001346,
           "tests/integration/test_storm_hold.py::test_storm_release_rearms_on_new_arrivals_only": 1.6189514560101088,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.6179916660039453,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.6179916660039453,
           "tests/integration/test_shakeout.py::test_unfixable_lint_branch_only_member_observes_check_failure_and_no_merge": 1.6148658080055611,
           "tests/integration/test_kill_failure_suppression.py::test_kill_failure_suppression_is_dormant[drain]": 1.6078821900155162,
           "tests/integration/test_ladder.py::test_same_retry_wall_climbs_on_second_terminal": 1.605222287995275,
@@ -233,7 +233,7 @@
       "argv": [
         "node",
         "--check",
-        "vscode-chupa/extension.js"
+        "vscode-clutchwork/extension.js"
       ],
       "rc": 0,
       "tail": "",
@@ -244,7 +244,7 @@
       "argv": [
         "python3",
         "-c",
-        "import json; p = json.load(open('vscode-chupa/package.json')); m = [e for e in p['contributes']['menus']['view/title'] if e['command'] == 'chupa.askDrainLoop']; assert m == [{'command': 'chupa.askDrainLoop', 'when': 'view == chupa.tickets', 'group': 'chupa@7'}], m"
+        "import json; p = json.load(open('vscode-clutchwork/package.json')); m = [e for e in p['contributes']['menus']['view/title'] if e['command'] == 'clutch.askDrainLoop']; assert m == [{'command': 'clutch.askDrainLoop', 'when': 'view == clutch.tickets', 'group': 'clutch@7'}], m"
       ],
       "rc": 0,
       "tail": "",
@@ -257,7 +257,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "...................................... [ 88%]\n........................................................................ [ 90%]\n........................................................................ [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n.................................................................        [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/chupa/.chupa/state/worktrees/drain-loop-prompt/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3593 passed, 9 warnings in 101.26s (0:01:41)\n",
+      "tail": "...................................... [ 88%]\n........................................................................ [ 90%]\n........................................................................ [ 92%]\n........................................................................ [ 94%]\n........................................................................ [ 96%]\n........................................................................ [ 98%]\n.................................................................        [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/drain-loop-prompt/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3593 passed, 9 warnings in 101.26s (0:01:41)\n",
       "base_red": false,
       "seconds": 104.588219
     }

@@ -8,7 +8,7 @@
   "stage": "check",
   "verdict": "reject",
   "lessons": [
-    "The check gate rejected the Regression section's `carries: vscode-chupa/media/graph.js` because implementation paths cannot be carried. Only a ticket edit can fix this; the implementation and every verification command already passed twice.",
+    "The check gate rejected the Regression section's `carries: vscode-clutchwork/media/graph.js` because implementation paths cannot be carried. Only a ticket edit can fix this; the implementation and every verification command already passed twice.",
     "Rewrite the Regression so `carries` names only a new test or fixture file: a carried reproducer that runs the toViewModels lane check. Per the gate's paved road, it must pass at head and report the defect at the overlaid base.",
     "Add that reproducer file to `## Scope fence` so the implementer can create it. The ticket does not state the regression result protocol the reproducer must emit; whoever edits the ticket must find that fact before writing it.",
     "The diff can stay as it is: view.js and graph.js changed, all verification commands passed, and 3029 pytest tests passed. A later attempt should change only the regression evidence."

@@ -9,7 +9,7 @@ state: confirmed
 none
 
 ## Context
-- chupa/tickets.py
+- clutch/tickets.py
 - tests/test_tickets.py
 
 ## Plan contract
@@ -17,14 +17,14 @@ none
 - section 9.7
 
 ## Goal / Why
-Ticket grammar refuses a `## Time budget` whose `stuck` does not exceed its `expected` (section 13.3), with a paved road naming both values. That rule is the plan's guard against an expected==stuck authoring mistake (section 9.7); today `chupa/tickets.py` accepts any two positive integers, so the guard does not exist.
+Ticket grammar refuses a `## Time budget` whose `stuck` does not exceed its `expected` (section 13.3), with a paved road naming both values. That rule is the plan's guard against an expected==stuck authoring mistake (section 9.7); today `clutch/tickets.py` accepts any two positive integers, so the guard does not exist.
 
 ## Scope in / Scope out
-- In: the `## Time budget` grammar check in `chupa/tickets.py` adds a finding when `stuck <= expected`, paved road `set stuck greater than expected (the stage deadline is the stuck budget)`; `tests/test_tickets.py` adds `test_time_budget_stuck_must_exceed_expected` (equal and lower stuck refused, greater accepted).
+- In: the `## Time budget` grammar check in `clutch/tickets.py` adds a finding when `stuck <= expected`, paved road `set stuck greater than expected (the stage deadline is the stuck budget)`; `tests/test_tickets.py` adds `test_time_budget_stuck_must_exceed_expected` (equal and lower stuck refused, greater accepted).
 - Out: the stage deadline, the watchdog, and every other grammar rule.
 
 ## Scope fence
-- chupa/tickets.py
+- clutch/tickets.py
 - tests/test_tickets.py
 
 ## Acceptance criteria

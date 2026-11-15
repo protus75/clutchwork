@@ -10,26 +10,26 @@ none
 
 ## Context
 - docs/host-contract.md
-- docs/how-chupa-works.md
-- chupa/mergequeue.py
-- chupa/merge.py
-- chupa/stages.py
-- chupa/config.py
+- docs/how-clutch-works.md
+- clutch/mergequeue.py
+- clutch/merge.py
+- clutch/stages.py
+- clutch/config.py
 - tests/test_mergequeue.py
 - tests/test_merge.py
 - tests/test_stages.py
 
 ## Goal / Why
-A host declares its own checks under `review.mechanical` (`code`, `argv`, `trigger: always | list[path-prefix]`, `severity: hard | soft`). Config accepts them, but only the daemon merge queue runs any (`MergeQueue.host_checks` in `chupa/mergequeue.py`, `always` + `hard` entries only, at merge). Check never runs them, `drain`/`run` merges (`merge` in `chupa/merge.py`) never run them, and path-triggered or soft entries never run anywhere: a declared check is silently skipped.
+A host declares its own checks under `review.mechanical` (`code`, `argv`, `trigger: always | list[path-prefix]`, `severity: hard | soft`). Config accepts them, but only the daemon merge queue runs any (`MergeQueue.host_checks` in `clutch/mergequeue.py`, `always` + `hard` entries only, at merge). Check never runs them, `drain`/`run` merges (`merge` in `clutch/merge.py`) never run them, and path-triggered or soft entries never run anywhere: a declared check is silently skipped.
 
 ## Scope in / Scope out
-- In: ONE host-check runner. Move the command execution in `MergeQueue._command` into `chupa/stages.py` as the single function that runs one `review.mechanical` entry: `ctx.exec_.run` with `cwd` the ticket worktree, `env=child_env(ctx.env, ctx.config)`, `timeout=ticket.stuck_minutes * 60.0`, spool write, scrubbed `OUTPUT_TAIL_CHARS` tail, and the existing timeout and missing-executable findings. `MergeQueue` calls it in place of its own copy; its selection rules, spool names, and behavior stay as they are.
-- In: Check runs every TRIGGERED entry after the engine gates, in config order. Triggered means `trigger: always`, or any committed changed file matching a listed prefix by the scope-fence path rule (`_in_fence`: equal, or a descendant after `/`; `chupa/x` does not match `chupa/xy.py`). Each run yields one `GateReport` with the entry's `code`, recorded in `checks.json`, and spool `check/host-<nn>.txt` (`nn` = 1-based entry index). A hard failure fails Check `gate_failed`; a soft failure records `fail` and its findings on the stage result, and Check proceeds. A failing entry is re-run at the merge base exactly as Verification's base-diff attribution does; red at base is pre-existing (filed as a second problem, charged to neither Check nor retry).
-- In: inline merge (`merge` in `chupa/merge.py`) runs every triggered HARD entry on the rebased candidate through the same runner, spool `merge/host-<nn>.txt`; any failure refuses admission with main untouched.
+- In: ONE host-check runner. Move the command execution in `MergeQueue._command` into `clutch/stages.py` as the single function that runs one `review.mechanical` entry: `ctx.exec_.run` with `cwd` the ticket worktree, `env=child_env(ctx.env, ctx.config)`, `timeout=ticket.stuck_minutes * 60.0`, spool write, scrubbed `OUTPUT_TAIL_CHARS` tail, and the existing timeout and missing-executable findings. `MergeQueue` calls it in place of its own copy; its selection rules, spool names, and behavior stay as they are.
+- In: Check runs every TRIGGERED entry after the engine gates, in config order. Triggered means `trigger: always`, or any committed changed file matching a listed prefix by the scope-fence path rule (`_in_fence`: equal, or a descendant after `/`; `clutch/x` does not match `clutch/xy.py`). Each run yields one `GateReport` with the entry's `code`, recorded in `checks.json`, and spool `check/host-<nn>.txt` (`nn` = 1-based entry index). A hard failure fails Check `gate_failed`; a soft failure records `fail` and its findings on the stage result, and Check proceeds. A failing entry is re-run at the merge base exactly as Verification's base-diff attribution does; red at base is pre-existing (filed as a second problem, charged to neither Check nor retry).
+- In: inline merge (`merge` in `clutch/merge.py`) runs every triggered HARD entry on the rebased candidate through the same runner, spool `merge/host-<nn>.txt`; any failure refuses admission with main untouched.
 - In: an untriggered entry leaves no command, report, spool, or finding.
-- In: `tests/test_host_mechanical.py` covers, through production Check and inline merge: `test_triggered_entries_run_at_check`, `test_untriggered_entry_never_runs` (including `chupa/x` against `chupa/xy.py`), `test_hard_failure_fails_check`, `test_soft_failure_reported_and_passes`, `test_base_red_entry_is_preexisting`, `test_timeout_and_missing_executable_fail_closed` (provider keys absent from the child env, secrets scrubbed from spool and findings), and `test_inline_merge_reruns_triggered_hard_entries` (soft and untriggered entries excluded; a red hard entry refuses without moving main).
-- In: update `docs/how-chupa-works.md` sections 4.3, 4.5, 5.4, and 7.2.1 (host checks at Check and at every merge, through the one shared runner), and the host-check part of `docs/host-contract.md` `## Checks and injectable seams`, so the doc matches the code when this merges.
-- In: `tests/test_host_contract.py`'s source inspection of `MergeQueue._command` checks the shared runner in `chupa/stages.py` instead; `MergeQueue` keeps only a call into it. Change no other assertion in that file.
+- In: `tests/test_host_mechanical.py` covers, through production Check and inline merge: `test_triggered_entries_run_at_check`, `test_untriggered_entry_never_runs` (including `clutch/x` against `clutch/xy.py`), `test_hard_failure_fails_check`, `test_soft_failure_reported_and_passes`, `test_base_red_entry_is_preexisting`, `test_timeout_and_missing_executable_fail_closed` (provider keys absent from the child env, secrets scrubbed from spool and findings), and `test_inline_merge_reruns_triggered_hard_entries` (soft and untriggered entries excluded; a red hard entry refuses without moving main).
+- In: update `docs/how-clutch-works.md` sections 4.3, 4.5, 5.4, and 7.2.1 (host checks at Check and at every merge, through the one shared runner), and the host-check part of `docs/host-contract.md` `## Checks and injectable seams`, so the doc matches the code when this merges.
+- In: `tests/test_host_contract.py`'s source inspection of `MergeQueue._command` checks the shared runner in `clutch/stages.py` instead; `MergeQueue` keeps only a call into it. Change no other assertion in that file.
 - In: if `uv run pytest -q` fails only on tests that also fail on the merge base, those failures are pre-existing: Check excuses them (base-red). Commit the work and list them in the run record; never stop with `premise_failed` for them.
 - In: `MergeQueue._command` stays as the queue's one command method and delegates to the shared runner: it also runs `regenerate` merge strategies (`mergequeue.py` strategy resolution), and `tests/test_mergequeue.py` replaces `queue._command` to script results.
 - In: `tests/test_serve.py` changes only in the cases whose hard host check now fails at Check instead of at merge admission. `host-red` (an always-failing entry, red on the merge base too) stays base-red at Check and still refused at merge. In `test_serve_admission_holds_and_cleanup[red-streak]` each red branch fails the host check on its own, so it now stops at Check and the merge queue never sees three integration reds; change that case's fixture so each red branch passes the check alone and fails only on the rebased candidate, as the semantic-conflict cases already do, keeping its red-streak assertions unchanged. `eval/daemon_soak.py` and `eval/reliability_battery.py` change only where an expected spool list or stage changes because Check now runs their `always` entries.
@@ -37,10 +37,10 @@ A host declares its own checks under `review.mechanical` (`code`, `argv`, `trigg
 
 ## Scope fence
 - docs/host-contract.md
-- docs/how-chupa-works.md
-- chupa/stages.py
-- chupa/merge.py
-- chupa/mergequeue.py
+- docs/how-clutch-works.md
+- clutch/stages.py
+- clutch/merge.py
+- clutch/mergequeue.py
 - tests/test_host_mechanical.py
 - tests/test_stages.py
 - tests/test_merge.py
@@ -52,9 +52,9 @@ A host declares its own checks under `review.mechanical` (`code`, `argv`, `trigg
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_host_mechanical.py` exits 0 with every test named above.
 2. `uv run pytest -q tests/test_mergequeue.py` exits 0 with that file unchanged, proving the merge queue keeps its behavior on the shared runner.
-3. `chupa/mergequeue.py` no longer calls `ctx.exec_.run` for host checks; the only host-check execution is the shared function in `chupa/stages.py`.
+3. `clutch/mergequeue.py` no longer calls `ctx.exec_.run` for host checks; the only host-check execution is the shared function in `clutch/stages.py`.
 4. `uv run pytest -q` exits 0. `tests/test_stages.py` and `tests/test_merge.py` change only where an existing assertion contradicts host checks now running.
-5. `docs/how-chupa-works.md` sections 4.3, 4.5, 5.4 and 7.2.1, and the checks section of `docs/host-contract.md`, describe host checks running at Check and at every merge through the one shared runner.
+5. `docs/how-clutch-works.md` sections 4.3, 4.5, 5.4 and 7.2.1, and the checks section of `docs/host-contract.md`, describe host checks running at Check and at every merge through the one shared runner.
 
 ## Verification
 ```

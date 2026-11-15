@@ -9,9 +9,9 @@
   "verdict": "retry",
   "lessons": [
     "Review found the lock, Git wiring, composition roots, doctor reorder and tests sound. Redo all of that work from the merge base as the ticket's Scope in describes; only the two doc defects below failed review.",
-    "In chupa/docs/host-contract.md, add the commit.lock sentence inside the existing lockfile paragraph, e.g. right after `...never delete the lockfile. Child descriptors do not pin it.`. Add no blank line, keep the Instance custody paragraph intact, and keep `never delete the lockfile`.",
-    "In docs/how-chupa-works.md, update the doctor row in the verb table to list checks in the new order: venv, config load, git, lock probe, journal readability, core check. Say that git is not probed when the config fails to load (ticket Scope in, doctor bullet).",
-    "In docs/how-chupa-works.md, also add the `commit.lock` row next to `chupa.lock` in the state-files table. Reword the `chupa.lock` row to call it the engine lock, held by run, drain, serve and the verbs that still take it (ticket Scope in, documentation).",
+    "In clutch/docs/host-contract.md, add the commit.lock sentence inside the existing lockfile paragraph, e.g. right after `...never delete the lockfile. Child descriptors do not pin it.`. Add no blank line, keep the Instance custody paragraph intact, and keep `never delete the lockfile`.",
+    "In docs/how-clutch-works.md, update the doctor row in the verb table to list checks in the new order: venv, config load, git, lock probe, journal readability, core check. Say that git is not probed when the config fails to load (ticket Scope in, doctor bullet).",
+    "In docs/how-clutch-works.md, also add the `commit.lock` row next to `clutch.lock` in the state-files table. Reword the `clutch.lock` row to call it the engine lock, held by run, drain, serve and the verbs that still take it (ticket Scope in, documentation).",
     "Before finishing, search both docs for every statement your code change makes stale, such as doctor order, lock behavior and Git constructor wording, and fix each one. Review rejects any doc line left describing the old behavior."
   ],
   "mechanical": null,

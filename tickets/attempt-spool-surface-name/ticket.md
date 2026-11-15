@@ -11,8 +11,8 @@ agent_effort: medium
 none
 
 ## Context
-- chupa/driver.py
-- chupa/requisition.py
+- clutch/driver.py
+- clutch/requisition.py
 - tests/test_driver.py
 - tests/test_echo_stage.py
 - tests/test_triage.py
@@ -23,17 +23,17 @@ none
 ## Goal / Why
 Each model call's attempt-spool capture lives at `<state_dir>/spools/<stem>/<attempt>/<surface>/call-<nn>/`, so the Implement, Review, and diagnose calls of one attempt keep their own `prompt.md`, `output.txt`, and `error.txt`.
 
-Today `Driver.run` (chupa/driver.py, `name = f"call-{call_seq:02d}"`) and the requisition review (chupa/requisition.py, same naming) key the call dir on the call sequence alone. Every stage restarts `call_seq` at 1 under the same `<stem>/<attempt>/`, so a later stage's `call-01` overwrites the earlier stage's. On a failed attempt the diagnose call runs last and destroys the Implement and Review captures, which are the evidence section 6 requires a call to leave on disk.
+Today `Driver.run` (clutch/driver.py, `name = f"call-{call_seq:02d}"`) and the requisition review (clutch/requisition.py, same naming) key the call dir on the call sequence alone. Every stage restarts `call_seq` at 1 under the same `<stem>/<attempt>/`, so a later stage's `call-01` overwrites the earlier stage's. On a failed attempt the diagnose call runs last and destroys the Implement and Review captures, which are the evidence section 6 requires a call to leave on disk.
 
 ## Scope in / Scope out
 - In: `Driver.run` and the requisition review write each call's files under `f"{surface}/call-{call_seq:02d}"`, where `surface` is the stage's surface (`stage.surface` in the driver, `"requisition_review"` in requisition.py).
 - In: every existing test asserting the old `call-NN/` path is updated to the surface-qualified path (tests/test_driver.py, tests/test_echo_stage.py, tests/test_triage.py).
 - In: a new test `test_surfaces_sharing_an_attempt_keep_separate_spools` in tests/test_driver.py runs the existing `run()` helper twice for the same stem and attempt, once with an `implement` stage and once with a `review` stage, each echoing different text, and asserts both `implement/call-01/` and `review/call-01/` hold their own prompt and output.
-- Out: the provider capture under `spools/providers/` (chupa/providers.py), the check and merge verify spools (`<stage>/verify-NN.txt`, chupa/stages.py), harvest's tail cutting (chupa/runner.py, which globs recursively and is unaffected), and journal effect keys.
+- Out: the provider capture under `spools/providers/` (clutch/providers.py), the check and merge verify spools (`<stage>/verify-NN.txt`, clutch/stages.py), harvest's tail cutting (clutch/runner.py, which globs recursively and is unaffected), and journal effect keys.
 
 ## Scope fence
-- chupa/driver.py
-- chupa/requisition.py
+- clutch/driver.py
+- clutch/requisition.py
 - tests/test_driver.py
 - tests/test_echo_stage.py
 - tests/test_triage.py
@@ -47,7 +47,7 @@ Today `Driver.run` (chupa/driver.py, `name = f"call-{call_seq:02d}"`) and the re
 ```
 uv run pytest -q tests/test_driver.py -k surfaces_sharing_an_attempt
 uv run pytest -q tests/test_driver.py tests/test_echo_stage.py tests/test_triage.py
-uv run python -c "import pathlib, re; bad = [str(p) for p in pathlib.Path('chupa').rglob('*.py') if re.search(r'f.call-\{call_seq', p.read_text())]; assert not bad, bad"
+uv run python -c "import pathlib, re; bad = [str(p) for p in pathlib.Path('clutch').rglob('*.py') if re.search(r'f.call-\{call_seq', p.read_text())]; assert not bad, bad"
 uv run pytest -q
 ```
 

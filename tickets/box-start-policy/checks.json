@@ -5,7 +5,7 @@
   "stem": "box-start-policy",
   "passed": true,
   "changed_files": [
-    "chupa/policy.py",
+    "clutch/policy.py",
     "eval/harness.py",
     "tests/test_policy.py"
   ],

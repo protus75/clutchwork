@@ -5,8 +5,8 @@
   "stem": "plan-contract-section-render",
   "passed": true,
   "changed_files": [
-    "chupa/specs.py",
-    "chupa/tickets.py",
+    "clutch/specs.py",
+    "clutch/tickets.py",
     "tests/test_specs.py",
     "tests/test_stages.py"
   ],

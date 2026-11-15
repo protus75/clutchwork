@@ -12,7 +12,7 @@ agent_effort: high
 - diagnosis-eval-run
 
 ## Context
-- chupa/artifacts.py
+- clutch/artifacts.py
 - tests/test_seeded_phase2.py
 
 ## Plan contract
@@ -24,11 +24,11 @@ agent_effort: high
 ## Goal / Why
 The Phase 2 exit is READ, never claimed (19.L): a merged test proves each `19.P2` exit read from committed artifacts, and this ticket's Implement authors Phase 3's `core` admission plus one `phase3-continue` seeding ticket as `confirmed` `ticket.md` files, directly on the ticket plane. Its own Check stage lint-validates and feasibility-reviews each seed (`requisition-seed-path`) before lifting it. The drain's after-every-merge re-scan (section 18) then makes them eligible in the SAME running drain.
 
-Why: one continuous `chupa drain` carries Phases 2-6 only if each phase's final ticket seeds the next (19.L bootstrap contract). Seeds are NEVER filed to the Suggestion Box, which carries filed problems, never a known build-plan ticket (section 12).
+Why: one continuous `clutch drain` carries Phases 2-6 only if each phase's final ticket seeds the next (19.L bootstrap contract). Seeds are NEVER filed to the Suggestion Box, which carries filed problems, never a known build-plan ticket (section 12).
 
 Known-hard: 19.L names the phase-exit seed plan-named KNOWN-HARD, starting `high`/`high`; that `19.L` sentence, cited under `## Plan contract`, is this ticket's citing evidence.
 
-Owners: `tests/test_phase2_exit.py` owns the exit reads. `tests/test_seeded_phase3_core.py` owns this batch's seeding pins. The registry block `BEGIN_REGISTRY_P3` in the `19.P3` unit is the ONE source the seeding reads, parsed straight from CHUPA_PLAN.md, never copied into a repo file and never edited. `chupa/artifacts.py` (`ShakeoutReport`) and `chupa/stages.py` (`Invoice`) are read, never changed.
+Owners: `tests/test_phase2_exit.py` owns the exit reads. `tests/test_seeded_phase3_core.py` owns this batch's seeding pins. The registry block `BEGIN_REGISTRY_P3` in the `19.P3` unit is the ONE source the seeding reads, parsed straight from CLUTCH_PLAN.md, never copied into a repo file and never edited. `clutch/artifacts.py` (`ShakeoutReport`) and `clutch/stages.py` (`Invoice`) are read, never changed.
 
 ## Scope in / Scope out
 - In: the exit reads, each from its emitter's committed artifact, never the live journal (the exit runs on a clean checkout without the state dir):
@@ -51,7 +51,7 @@ Owners: `tests/test_phase2_exit.py` owns the exit reads. `tests/test_seeded_phas
 ## Acceptance criteria
 1. `uv run pytest -q tests/test_phase2_exit.py` passes, reading the battery report and the `checks.json` exactly as stated, and this ticket's transitive `## Depends on` covers every Phase 2 seed (pinned by `tests/test_seeded_phase2.py`).
 2. `uv run pytest -q tests/test_seeded_phase3_core.py` passes over exactly `daemon-scheduler`, `seed-successor-proof`, and `phase3-continue`.
-3. The three seeds are ALREADY on main (lifted by an earlier attempt in one `chupa(phase2-exit): seeds` commit); do not re-author or edit them. At this ticket's Check, all three receive a `requisition_review` `approve` for main's committed blob, recorded in `tickets/phase2-exit/checks.json`. `tickets/phase3-continue/ticket.md` was corrected on main after the first lift; Check reviews main's CURRENT blob, and the seeding test pins its current size.
+3. The three seeds are ALREADY on main (lifted by an earlier attempt in one `clutch(phase2-exit): seeds` commit); do not re-author or edit them. At this ticket's Check, all three receive a `requisition_review` `approve` for main's committed blob, recorded in `tickets/phase2-exit/checks.json`. `tickets/phase3-continue/ticket.md` was corrected on main after the first lift; Check reviews main's CURRENT blob, and the seeding test pins its current size.
 4. The branch's committed diff carries no `tickets/` path, so the `post_rebase_regate` MERGE-SAFETY check passes and every seed reaches main only through the ticket-plane lift.
 5. `uv run pytest -q` exits 0 with no test removed or skipped.
 

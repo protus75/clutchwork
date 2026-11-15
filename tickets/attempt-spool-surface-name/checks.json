@@ -5,8 +5,8 @@
   "stem": "attempt-spool-surface-name",
   "passed": true,
   "changed_files": [
-    "chupa/driver.py",
-    "chupa/requisition.py",
+    "clutch/driver.py",
+    "clutch/requisition.py",
     "tests/test_driver.py",
     "tests/test_echo_stage.py",
     "tests/test_triage.py"
@@ -52,7 +52,7 @@
         "surfaces_sharing_an_attempt"
       ],
       "rc": 0,
-      "tail": ".                                                                        [100%]\n1 passed, 27 deselected in 0.10s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": ".                                                                        [100%]\n1 passed, 27 deselected in 0.10s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -66,7 +66,7 @@
         "tests/test_triage.py"
       ],
       "rc": 0,
-      "tail": "......................................                                   [100%]\n38 passed in 1.70s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "......................................                                   [100%]\n38 passed in 1.70s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -75,10 +75,10 @@
         "run",
         "python",
         "-c",
-        "import pathlib, re; bad = [str(p) for p in pathlib.Path('chupa').rglob('*.py') if re.search(r'f.call-\\{call_seq', p.read_text())]; assert not bad, bad"
+        "import pathlib, re; bad = [str(p) for p in pathlib.Path('clutch').rglob('*.py') if re.search(r'f.call-\\{call_seq', p.read_text())]; assert not bad, bad"
       ],
       "rc": 0,
-      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     },
     {
@@ -89,7 +89,7 @@
         "-q"
       ],
       "rc": 0,
-      "tail": "........................................................................ [ 10%]\n........................................................................ [ 20%]\n........................................................................ [ 31%]\n........................................................................ [ 41%]\n........................................................................ [ 51%]\n........................................................................ [ 62%]\n........................................................................ [ 72%]\n........................................................................ [ 82%]\n........................................................................ [ 93%]\n...............................................                          [100%]\n695 passed in 56.91s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "........................................................................ [ 10%]\n........................................................................ [ 20%]\n........................................................................ [ 31%]\n........................................................................ [ 41%]\n........................................................................ [ 51%]\n........................................................................ [ 62%]\n........................................................................ [ 72%]\n........................................................................ [ 82%]\n........................................................................ [ 93%]\n...............................................                          [100%]\n695 passed in 56.91s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false
     }
   ]

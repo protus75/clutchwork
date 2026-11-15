@@ -8,7 +8,7 @@ dev: `uv run pytest -q tests/integration/test_branch_only_added.py` failed
 [exit 1]
 
 # gather_evidence marks any nonzero base rerun base_red, with no check that the subject exists at the base:
-$ sed -n 901,910p chupa/stages.py
+$ sed -n 901,910p clutch/stages.py
             for n, argv in red:
                 try:
                     rc, out, err = await ctx.exec_.run(argv, cwd=base_worktree, env=env, timeout=timeout)
@@ -21,5 +21,5 @@ $ sed -n 901,910p chupa/stages.py
                     results[n - 1] = results[n - 1].model_copy(update={"base_red": True})
 
 # VerificationGate then skips base_red results, so the red command passes Check:
-$ sed -n 1263p chupa/stages.py
+$ sed -n 1263p clutch/stages.py
                 if r.rc != 0 and not r.base_red

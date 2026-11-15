@@ -7,18 +7,18 @@
   "changed_files": [
     "AGENTS.md",
     "CLAUDE.md",
-    "chupa/__main__.py",
-    "chupa/docs/host-running.md",
-    "chupa/observe.py",
-    "chupa/seams.py",
+    "clutch/__main__.py",
+    "clutch/docs/host-running.md",
+    "clutch/observe.py",
+    "clutch/seams.py",
     "dev.py",
-    "docs/how-chupa-works.md",
+    "docs/how-clutch-works.md",
     "tests/integration/test_dev.py",
     "tests/integration/test_drain_detach.py",
     "tests/integration/test_watch.py",
     "tests/regress_drain_detach.py",
     "tests/unit/test_drain_detach_cli.py",
-    "vscode-chupa/extension.js"
+    "vscode-clutchwork/extension.js"
   ],
   "inserted_lines": 131,
   "bypassed": [],
@@ -93,7 +93,7 @@
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/drain-detach-in-engine\n      Built chupa @ file:///home/djp/source/chupa/.chupa/state/worktrees/.regression-base/drain-detach-in-engine\nInstalled 19 packages in 31ms\nusage: python -m chupa [-h] [--config CONFIG]\n                       {watch,snapshot,status,stats,lint,retro,doctor,core,prompt,docs,probe,migrate-config,pause,resume,kill,stop,review,suggest,triage,dismiss,covmap,covgate,new,order,run,confirm,reject,drain,serve} ...\npython -m chupa: error: unrecognized arguments: --detach\n"
+          "tail": "{\"regression_result\": \"defect\"}\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/drain-detach-in-engine\n      Built clutch @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/drain-detach-in-engine\nInstalled 19 packages in 31ms\nusage: python -m clutch [-h] [--config CONFIG]\n                       {watch,snapshot,status,stats,lint,retro,doctor,core,prompt,docs,probe,migrate-config,pause,resume,kill,stop,review,suggest,triage,dismiss,covmap,covgate,new,order,run,confirm,reject,drain,serve} ...\npython -m clutch: error: unrecognized arguments: --detach\n"
         }
       }
     },
@@ -112,9 +112,9 @@
       "coverage": {
         "percent": 23.74888139326771,
         "files": {
-          "chupa/__main__.py": 24.08675799086758,
-          "chupa/observe.py": 11.18508655126498,
-          "chupa/seams.py": 0.0
+          "clutch/__main__.py": 24.08675799086758,
+          "clutch/observe.py": 11.18508655126498,
+          "clutch/seams.py": 0.0
         }
       }
     },
@@ -279,7 +279,7 @@
         "test"
       ],
       "rc": 0,
-      "tail": "............................................ [ 87%]\n........................................................................ [ 89%]\n........................................................................ [ 91%]\n........................................................................ [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n......................................................................   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\n  /home/djp/source/chupa/.chupa/state/worktrees/drain-detach-in-engine/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3310 passed, 9 warnings in 50.64s\n",
+      "tail": "............................................ [ 87%]\n........................................................................ [ 89%]\n........................................................................ [ 91%]\n........................................................................ [ 93%]\n........................................................................ [ 95%]\n........................................................................ [ 97%]\n......................................................................   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\n  /home/djp/source/clutch/.clutch/state/worktrees/drain-detach-in-engine/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3310 passed, 9 warnings in 50.64s\n",
       "base_red": false,
       "seconds": 52.649289
     }

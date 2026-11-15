@@ -6,8 +6,8 @@
   "passed": true,
   "changed_files": [
     "bootstrap/suggestions.md",
-    "chupa/box.py",
-    "chupa/git.py",
+    "clutch/box.py",
+    "clutch/git.py",
     "tests/test_box.py",
     "tests/test_git.py"
   ],

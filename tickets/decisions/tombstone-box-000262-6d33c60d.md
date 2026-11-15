@@ -9,7 +9,7 @@ The frozen plan doesn't name the closed verdict that diagnosis records when no r
 Registry record declined-box-000165-b98fb360 already covers this exact request: the same 11.3 versus section 5 wording conflict, the same `abandon-human` mechanical record, and the same ask to pin it in 11.3. The plan is also frozen and never edited, and the note reports no wrong runtime behavior.
 
 - declined-box-000165-b98fb360 describes the same 11.3 / section 5 invariant 2 conflict and the `abandon-human` mechanical record from `spine-diagnosis`
-- CHUPA_PLAN.md is a frozen bootstrap record and is never edited (CLAUDE.md section A)
+- CLUTCH_PLAN.md is a frozen bootstrap record and is never edited (CLAUDE.md section A)
 - The message describes only plan wording; it names no reachable incorrect runtime behavior
 
 Message: box-000262-6d33c60d

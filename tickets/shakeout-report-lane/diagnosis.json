@@ -10,7 +10,7 @@
   "lessons": [
     "In `check`, purge registered artifacts with the same rule `lift_outbox` uses: before Verification, unlink every `p in outbox.rglob('*')` where `p.is_file()` and `p.name in KNOWN_ARTIFACTS`, not only `outbox / name`.",
     "Better still, put the registered-artifact matching in one helper that both the pre-Verification purge and `lift_outbox` call. Then the purge and the lift can never disagree again, and there is still only one lift path.",
-    "Add a `tests/test_stages.py` case: Implement writes a schema-valid report at a nested outbox path (e.g. `tickets/<stem>/x/shakeout-report.json`), Verification writes nothing, and the test asserts no report file is in the `chupa(<stem>): checks` commit or on main.",
+    "Add a `tests/test_stages.py` case: Implement writes a schema-valid report at a nested outbox path (e.g. `tickets/<stem>/x/shakeout-report.json`), Verification writes nothing, and the test asserts no report file is in the `clutch(<stem>): checks` commit or on main.",
     "Check that REPORT REQUIRED still reads the top-level `tickets/<stem>/shakeout-report.json` path written after Verification. The broader purge must not delete the report the runner just produced. The purge runs only before Verification."
   ],
   "mechanical": null,

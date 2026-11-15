@@ -5,8 +5,8 @@
   "stem": "author-spec-next-minor-version-bump",
   "passed": true,
   "changed_files": [
-    "chupa/docs/host-authoring.md",
-    "chupa/specs/author.md",
+    "clutch/docs/host-authoring.md",
+    "clutch/specs/author.md",
     "tests/integration/test_author.py"
   ],
   "inserted_lines": 10,
@@ -146,7 +146,7 @@
           "tests/integration/test_daemon_composition.py::test_composed_admission_holds_accept_identity_bound_resume[tree]": 1.5655668720137328,
           "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_requires_member_local_evidence_auditor": 1.5638260790001368,
           "tests/integration/test_serve_dispatch.py::test_requested_retro_waits_for_idle_then_resumes": 1.452306998995482,
-          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[chupa/thing.py]": 1.4182512690022122,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.4182512690022122,
           "tests/integration/test_shakeout.py::test_identical_terminals_member_observes_escalation_at_k": 1.4147161819855683,
           "tests/integration/test_triage.py::test_resolved_bug_escape_attribution": 1.3704375969973626,
           "tests/integration/test_shakeout.py::test_timeout_dead_ends_member_observes_lesson_on_second_attempt": 1.3682053410011576,
@@ -215,7 +215,7 @@
         "tests/unit/test_docs_verb.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_author.py tests/unit/test_specs.py tests/unit/test_docs_verb.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 83%]\n..............                                                           [100%]\n86 passed in 2.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/chupa/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_author.py tests/unit/test_specs.py tests/unit/test_docs_verb.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 83%]\n..............                                                           [100%]\n86 passed in 2.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
       "seconds": 2.364716
     }

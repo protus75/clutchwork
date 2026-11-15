@@ -11,16 +11,16 @@ state: confirmed
 - phase4-continue-03
 
 ## Context
-- chupa/artifacts.py
-- chupa/stages.py
-- chupa/providers.py
-- chupa/timers.py
-- chupa/audit.py
-- chupa/journal.py
-- chupa/seams.py
-- chupa/git.py
-- chupa/runner.py
-- chupa/driver.py
+- clutch/artifacts.py
+- clutch/stages.py
+- clutch/providers.py
+- clutch/timers.py
+- clutch/audit.py
+- clutch/journal.py
+- clutch/seams.py
+- clutch/git.py
+- clutch/runner.py
+- clutch/driver.py
 - tickets/provider-cooldown-failover/ticket.md
 
 ## Plan contract
@@ -33,9 +33,9 @@ state: confirmed
 Closed reliability battery machinery is available to the separate producer.
 
 ## Scope in / Scope out
-Build all machinery governed by the cited battery entry's Owner, Records, Observable and Tests. eval/reliability_battery.py owns produce and write_report; chupa/artifacts.py owns ReliabilityBatteryEntry, ReliabilityBatteryReport and their constants; chupa/stages.py owns registration. Construction returns a report but publishes no exit artifact at import or engine startup. reliability-run is the separate later producer. Implement every entry obligation through its citation, without duplicating the entry's prose.
+Build all machinery governed by the cited battery entry's Owner, Records, Observable and Tests. eval/reliability_battery.py owns produce and write_report; clutch/artifacts.py owns ReliabilityBatteryEntry, ReliabilityBatteryReport and their constants; clutch/stages.py owns registration. Construction returns a report but publishes no exit artifact at import or engine startup. reliability-run is the separate later producer. Implement every entry obligation through its citation, without duplicating the entry's prose.
 
-Exercise the merged production composition with a multi-candidate fixture registry and scripted CLI failures. Read chupa/daemon.py, chupa/drain.py, chupa/serve.py, chupa/__main__.py and the production-composition harness on disk before wiring the fixture; use no tests imports or invented successful evidence. Keep one provider payload and one Timers lifetime, existing Driver/dispatcher/runner harvest, and the journal and auditor owners. No routing or cooldown algorithm is reimplemented. Re-grep signatures, constructors, public allowlists and absence assertions across chupa/, eval/ and tests/; the existing signatures remain intact and there are no earned fence additions.
+Exercise the merged production composition with a multi-candidate fixture registry and scripted CLI failures. Read clutch/daemon.py, clutch/drain.py, clutch/serve.py, clutch/__main__.py and the production-composition harness on disk before wiring the fixture; use no tests imports or invented successful evidence. Keep one provider payload and one Timers lifetime, existing Driver/dispatcher/runner harvest, and the journal and auditor owners. No routing or cooldown algorithm is reimplemented. Re-grep signatures, constructors, public allowlists and absence assertions across clutch/, eval/ and tests/; the existing signatures remain intact and there are no earned fence additions.
 
 The three members are classified_quota_exhaustion, all_candidates_cooling_recovery and unclassified_failure_preservation. Require the quota member's real classification, harvested failed terminal, exact persisted cooldown deadline and absence of infra draw or inline retry. Exhaust the fixture candidates in order, read the cost-free drought hold with no call, cap, diagnosis or Reject arrival, advance injected time to the earliest deadline, read matching timer_fired, then read automatic recovery and matching result/completion/run-record served identity. The unknown failure remains unclassified with normal infra accounting and captured error evidence; never manufacture a successful call or quota class.
 
@@ -49,8 +49,8 @@ Out: production signature changes, new records/signals/frontmatter/config/gates/
 
 ## Scope fence
 - eval/reliability_battery.py
-- chupa/artifacts.py
-- chupa/stages.py
+- clutch/artifacts.py
+- clutch/stages.py
 - tests/test_reliability_battery.py
 
 ## Acceptance criteria

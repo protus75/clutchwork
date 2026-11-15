@@ -7,9 +7,9 @@ $ grep -n 'own icon kind\|loses the step.s icon\|Generic kinds\|Generic stage ki
 439:    assert (rows["Check start"]["kind"], rows["Check start"]["path"]) == ("check_start", "tickets/alpha/checks.json")  # Generic stage kind or ticket path is wrong.
 485:    assert {row["kind"] for row in steps} == {"author_start", "author_ok", "author_failed"}  # Author has its own icon kind.
 
-$ grep -n 'prefix = surface\|kind = "phase_start"' chupa/observe.py
+$ grep -n 'prefix = surface\|kind = "phase_start"' clutch/observe.py
 308:            prefix = surface if surface in STEP_NAMES else "stage"
 318:            kind = "phase_start" if event == "phase_start" else "phase_failed" if outcome == "failed" else "phase_ok"
 
-$ grep -n 'icons\[step.kind\]' vscode-chupa/extension.js
+$ grep -n 'icons\[step.kind\]' vscode-clutchwork/extension.js
 257:		const [icon, color] = icons[step.kind];
