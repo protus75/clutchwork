@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "2c8939066a380278465b2819f8d6e906285b62cc",
+  "stem": "verdict-decisions-retire-on-resolution",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The check failed outside the fence: 3 errors in tests/integration/test_host_loop.py, merge-floor member auditor segment_ts_monotonic (clutch/audit.py), ts 11:31:43.909 after 11:31:45.086. The diff touches only clutch/status.py and tests; the implementer's own run passed 3632.",
+    "A human should find out why the merge-floor fixture journal (tests/harness/host_loop.py) appended an event whose ts is earlier than the one before it. It looks like a clock or ordering race in the producing machinery, so fix it in a P0 ticket that lists this stem in its Runs before.",
+    "Do not rerun this ticket until the host_loop errors pass. Then run ./dev.py test once in a base-commit worktree. If it fails there too, it is a base failure and this ticket's diff is not the cause.",
+    "Review found no fault in the approach. On a retry, redo the same work: a pure retirement rule in status.project that drops a non-accepted control_decision when a later draft_confirmed or reject_verdict signal names its stem, plus cases 1-5 and the regress script."
+  ],
+  "mechanical": null,
+  "spec_version": "1.5",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
