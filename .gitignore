@@ -3,4 +3,5 @@ __pycache__/
 .clutch/
 dist/
 coverage.json
+.coverage
 node_modules/
