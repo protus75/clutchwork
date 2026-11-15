@@ -1,0 +1,56 @@
+Observed 2026-11-15 in the vscode-clutchwork tickets view: 12 dead verdict decisions render above the ticket rows.
+
+--- tickets view header, as the operator sees it (view.js prepends snap.verdictDecisions to rows) ---
+engine - commit - 5 blocked - 5 queued - 0 running - 526 merged
+65dfc78a44d34375bbb7f5e696be6429: reject specs-in-package: stale -- name a journaled stem or an existing ticket.md
+d27c1d6204ef4bf0bfbb7e1bfc4f2e05: confirm drain-upgrade-own-source: stale -- name a journaled stem or an existing ticket.md
+15b965a3883942b2b13cfb035153dac3: confirm core-drift-preflight: stale -- name a journaled stem or an existing ticket.md
+15549c7640d04989ba36d7ccbd768505: reject confirm-note-reofferable-stem: stale -- name a journaled stem or an existing ticket.md
+ae2a6ae7293b41d99da4170c432e0b45: confirm commit-lock: stale -- name a journaled stem or an existing ticket.md
+121e8ea8c5ac479cac299ddf9be4aec2: confirm diagnose-spec-lesson-length: stale -- name a journaled stem or an existing ticket.md
+8827e503fe354ee681f12ddacf13c494: confirm diagnose-spec-lesson-length: stale -- name a journaled stem or an existing ticket.md
+c9ca90e19f164871965fb4e6d2d673d8: confirm watch-folds-whole-journal: stale -- name a journaled stem or an existing ticket.md
+dc3032a11dbe49618175f9ce239c49dc: confirm requisition-review-changed-text-vs-unchanged: stale -- name a journaled stem or an existing ticket.md
+96c14fc9a7f3485c8a4379235000f21d: reject implement-spec-criteria-to-tests: stale -- name a journaled stem or an existing ticket.md
+e51261261cb14712863b8cc2c74cbbd1: confirm watch-folds-whole-journal: stale -- name a journaled stem or an existing ticket.md
+76c00e71d4cb4f99b4f54951c07c6bbf: confirm requisition-review-changed-text-vs-unchanged: stale -- name a journaled stem or an existing ticket.md
+
+--- same rows from `uv run clutch status` (one projection feeds both) ---
+Verdict decisions:
+- 65dfc78a44d34375bbb7f5e696be6429: reject specs-in-package: stale -- name a journaled stem or an existing ticket.md
+- d27c1d6204ef4bf0bfbb7e1bfc4f2e05: confirm drain-upgrade-own-source: stale -- name a journaled stem or an existing ticket.md
+- 15b965a3883942b2b13cfb035153dac3: confirm core-drift-preflight: stale -- name a journaled stem or an existing ticket.md
+- 15549c7640d04989ba36d7ccbd768505: reject confirm-note-reofferable-stem: stale -- name a journaled stem or an existing ticket.md
+- ae2a6ae7293b41d99da4170c432e0b45: confirm commit-lock: stale -- name a journaled stem or an existing ticket.md
+- 121e8ea8c5ac479cac299ddf9be4aec2: confirm diagnose-spec-lesson-length: stale -- name a journaled stem or an existing ticket.md
+- 8827e503fe354ee681f12ddacf13c494: confirm diagnose-spec-lesson-length: stale -- name a journaled stem or an existing ticket.md
+- c9ca90e19f164871965fb4e6d2d673d8: confirm watch-folds-whole-journal: stale -- name a journaled stem or an existing ticket.md
+- dc3032a11dbe49618175f9ce239c49dc: confirm requisition-review-changed-text-vs-unchanged: stale -- name a journaled stem or an existing ticket.md
+- 96c14fc9a7f3485c8a4379235000f21d: reject implement-spec-criteria-to-tests: stale -- name a journaled stem or an existing ticket.md
+- e51261261cb14712863b8cc2c74cbbd1: confirm watch-folds-whole-journal: stale -- name a journaled stem or an existing ticket.md
+- 76c00e71d4cb4f99b4f54951c07c6bbf: confirm requisition-review-changed-text-vs-unchanged: stale -- name a journaled stem or an existing ticket.md
+
+--- journal: every one of the 12 is from 2026-11-06..2026-11-12, none since ---
+2026-11-06T21:45:43.227442+00:00 be6e30f6c27d4b1db1b15baa3115dfc6 reject specs-in-package
+2026-11-07T00:47:20.239869+00:00 7978660baa0242988403fe1df2621c75 confirm drain-upgrade-own-source
+2026-11-08T17:38:20.272558+00:00 f032830fedea4c90904f4a0583190877 confirm core-drift-preflight
+2026-11-09T12:51:20.727274+00:00 b7eb99d588db4fe79b98dd67160e088f reject confirm-note-reofferable-stem
+2026-11-11T09:48:22.944862+00:00 2ae51d315d0d48489820d1b947d3ecf2 confirm commit-lock
+2026-11-11T19:58:58.773600+00:00 1ff9f258b8c64d89a442ec995e2f5007 confirm diagnose-spec-lesson-length
+2026-11-11T19:59:40.232093+00:00 1ff9f258b8c64d89a442ec995e2f5007 confirm diagnose-spec-lesson-length
+2026-11-12T12:27:33.121680+00:00 572bff3ae7dd4feaacbdbd53a13c5395 confirm watch-folds-whole-journal
+2026-11-12T12:28:23.195442+00:00 572bff3ae7dd4feaacbdbd53a13c5395 confirm requisition-review-changed-text-vs-unchanged
+2026-11-12T12:29:11.551724+00:00 572bff3ae7dd4feaacbdbd53a13c5395 reject implement-spec-criteria-to-tests
+2026-11-12T12:30:02.429631+00:00 572bff3ae7dd4feaacbdbd53a13c5395 confirm watch-folds-whole-journal
+2026-11-12T12:31:27.538781+00:00 572bff3ae7dd4feaacbdbd53a13c5395 confirm requisition-review-changed-text-vs-unchanged
+
+--- every stem in the list has since reached a terminal state, so no decision is actionable ---
+specs-in-package                                 specs-in-package: rejected
+drain-upgrade-own-source                         drain-upgrade-own-source: merged
+core-drift-preflight                             core-drift-preflight: merged
+confirm-note-reofferable-stem                    confirm-note-reofferable-stem: rejected
+commit-lock                                      commit-lock: merged
+diagnose-spec-lesson-length                      diagnose-spec-lesson-length: merged
+watch-folds-whole-journal                        watch-folds-whole-journal: merged
+requisition-review-changed-text-vs-unchanged     requisition-review-changed-text-vs-unchanged: merged
+implement-spec-criteria-to-tests                 implement-spec-criteria-to-tests: rejected
