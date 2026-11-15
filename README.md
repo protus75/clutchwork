@@ -90,15 +90,15 @@ The [chupa tickets extension](https://marketplace.visualstudio.com/items?itemNam
 
 ## Developing chupa
 
-This section is for working on chupa itself. In this repo, use `./dev.py`:
+This section is for working on chupa itself. In this repo, run engine verbs with `uv run chupa` and tests with `./dev.py`:
 
-    ./dev.py new STEM [--kind feature|bug|chore] [--evidence FILE...]   # write a ticket skeleton
-    ./dev.py lint [STEM...]                         # check tickets
-    ./dev.py review STEM...                       # review tickets against merged code
-    ./dev.py drain                                  # run every eligible ticket to quiescence
-    ./dev.py status                                 # what ran, what is held, total spend
-    ./dev.py confirm STEM / ./dev.py reject STEM    # keep or kill a held ticket
-    ./dev.py kill                                   # stop a running drain
+    uv run chupa new STEM [--kind feature|bug|chore] [--evidence FILE...]   # write a ticket skeleton
+    uv run chupa lint [STEM...]                         # check tickets
+    uv run chupa review STEM...                       # review tickets against merged code
+    uv run chupa drain                                  # run every eligible ticket to quiescence
+    uv run chupa status                                 # what ran, what is held, total spend
+    uv run chupa confirm STEM / uv run chupa reject STEM    # keep or kill a held ticket
+    uv run chupa kill                                   # stop a running drain
     ./dev.py test [args]                            # run the test suite
 
 `CHUPA_PLAN.md` is the frozen record of how chupa was first built. It is history, not a reference.

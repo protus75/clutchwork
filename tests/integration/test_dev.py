@@ -6,17 +6,6 @@ import pytest
 import dev
 
 
-def test_drain_forwards_detach(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "drain"])
-    run = Mock(return_value=Mock(returncode=0))
-    popen = Mock()
-    monkeypatch.setattr(dev.subprocess, "run", run)
-    monkeypatch.setattr(dev.subprocess, "Popen", popen)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "drain", "--detach"], cwd=dev.ROOT, check=False)
-    popen.assert_not_called()
-
-
 def test_publish_uploads_built_files(tmp_path, monkeypatch):
     monkeypatch.setattr(dev, "ROOT", tmp_path)
     monkeypatch.setattr(dev.sys, "argv", ["dev.py", "publish"])
@@ -53,22 +42,6 @@ def test_publish_refuses_without_token(monkeypatch):
     run.assert_not_called()  # Refusal must happen before the bump or any other subprocess.
 
 
-def test_suggest_forwards_summary(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "suggest", "an idea"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "suggest", "an idea"])
-
-
-def test_core_forwards_once(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "core"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "core"])
-
-
 def test_test_passes_leading_options_to_pytest(monkeypatch):
     monkeypatch.setattr(dev.sys, "argv", ["dev.py", "test", "--durations=25", "-k", "foo"])
     run = Mock(return_value=Mock(returncode=0))
@@ -80,19 +53,13 @@ def test_test_passes_leading_options_to_pytest(monkeypatch):
         check=False,
     )  # Leading options must reach pytest in their original order.
 
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "lint", "--bogus"])
+    run.reset_mock()
+    monkeypatch.delenv("UV_PUBLISH_TOKEN", raising=False)
+    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "publish", "--bogus"])
     with pytest.raises(SystemExit) as error:
         dev.main()
-    assert error.value.code == 2  # Other commands must still reject unknown options.
-
-
-@pytest.mark.parametrize("verb", ["triage", "dismiss"])
-def test_box_verbs_forward_all_ids_once(monkeypatch, verb):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", verb, "box-one", "box-two"])
-    call = Mock()
-    monkeypatch.setattr(dev, "chupa", call)
-    dev.main()
-    call.assert_called_once_with(verb, "box-one", "box-two")  # One pass must receive both IDs.
+    assert error.value.code == 2  # A surviving command must reject unknown options.
+    run.assert_not_called()
 
 
 @pytest.fixture
@@ -178,49 +145,12 @@ def test_vscode_package_stops_without_built_for_line(vscode_package, monkeypatch
     assert readme.read_text() == original  # Do not silently append a marker.
 
 
-def test_docs_forwards(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "docs"])
+@pytest.mark.parametrize("verb", ["status", "lint", "new", "confirm", "drain", "suggest"])
+def test_engine_verbs_are_not_dev_subcommands(monkeypatch, verb):
+    monkeypatch.setattr(dev.sys, "argv", ["dev.py", verb])
     run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "docs"])
-
-
-def test_probe_forwards(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "probe", "qwen"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "probe", "qwen"])
-
-
-def test_prompt_forwards_once(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "prompt", "drafts"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "prompt", "drafts"])  # No extra call or stem.
-
-
-def test_install_forwards_providers(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "install", "qwen"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "install", "qwen"])
-
-
-def test_update_config_forwards(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "update-config"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "update-config"])
-
-
-def test_init_config_forwards_write(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "init-config", "--write"])
-    run = Mock()
-    monkeypatch.setattr(dev, "run", run)
-    dev.main()
-    run.assert_called_once_with(["uv", "run", "python", "-m", "chupa", "init-config", "--write"])
+    monkeypatch.setattr(dev.subprocess, "run", run)
+    with pytest.raises(SystemExit) as error:
+        dev.main()
+    assert error.value.code == 2  # Each engine verb must be rejected by the parser.
+    run.assert_not_called()  # Rejection must not launch a subprocess.

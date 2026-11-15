@@ -26,9 +26,7 @@ chupa develops itself: this repo is both the engine and its own first host.
 
 ## 2. Commands
 
-[Install chupa](../chupa/docs/host-contract.md#install) and run `uv run chupa <verb>`; from a checkout, run
-`uv run python -m chupa <verb>` (global flag `--config PATH`, default `config.yaml`
-at the checkout root). In this repo, use `./dev.py` (section 2.2).
+[Install chupa](../chupa/docs/host-contract.md#install) and run `uv run chupa <verb>`, including in this repo (global flag `--config PATH`, default `config.yaml` at the checkout root). `./dev.py` (section 2.2) covers only this repo's build tasks.
 
 ### 2.1 Verbs
 
@@ -88,26 +86,6 @@ A unit test file may share its name with an integration test file.
 |---|---|
 | (none) | `uv run pytest -q` |
 | `test [args]` | pytest with those args |
-| `triage [ID ...]`, `dismiss ID ...` | One matching chupa call with all supplied IDs |
-| `prompt KIND [STEM ...]` | `chupa prompt` with the supplied kind and stems |
-| `docs` | `chupa docs` |
-| `probe [PROVIDER...]` | `chupa probe` with the supplied providers |
-| `install [PROVIDER...]` | `chupa install` with the supplied providers |
-| `update-config` | `chupa update-config` |
-| `init-config [--write]` | `chupa init-config` with the supplied flag |
-| `suggest SUMMARY` | `chupa suggest <summary>` |
-| `core` | `chupa core` |
-| `covmap` | `chupa covmap` |
-| `stats [--window W] [--json]` | `chupa stats` with the supplied options; a read-only projection |
-| `new STEM [--kind K] [--evidence FILE...]` | `chupa new <stem> --kind feature\|bug\|chore` (default `feature`); bugs require `--evidence` and copy the files into `tickets/<stem>/evidence/` |
-| `order STEM [--priority P] [--runs-before [STEM ...]]` | `chupa order` with the supplied ordering options |
-| `lint [STEM...]` | `chupa lint [stem ...]` (read-only; no writer lock) |
-| `review STEM...` | `chupa review` once per stem, stopping on the first non-zero exit |
-| `run STEM` | `chupa run <stem>`: one ticket through every stage, under the lock |
-| `status`, `serve`, `kill`, `stop` | the matching chupa verb |
-| `drain` | `chupa drain --detach` |
-| `confirm STEM... [--yes]`, `reject STEM... [--yes]` | `chupa confirm` or `chupa reject` once per stem; a person at a terminal answers `y` for each stem unless `--yes` is passed |
-| `watch [--once]` | `chupa watch` through `uv`: a read-only live view of the engine and queue |
 | `publish` | with `UV_PUBLISH_TOKEN` set, bumps the patch version, then builds and uploads; the operator commits `pyproject.toml` and `uv.lock` |
 | `vscode-package` | writes the `pyproject.toml` chupa version into the `Built for` line of `vscode-chupa/README.md`, then packages the current manifest version into `dist/vscode-chupa-<version>.vsix` and prints the Marketplace upload page; under WSL also prints the Windows path to paste into the upload dialog |
 | `vscode` | bumps the patch version in `vscode-chupa/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |
@@ -458,8 +436,8 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 
 - **`ticket_changed`:** a committed or uncommitted change to `ticket.md` during a run ends the
   attempt `gate_failed` and holds it in the Reject queue, with no diagnosis, Rework, or cap draw.
-  Review the change to `tickets/<stem>/ticket.md`, then keep (`./dev.py confirm <stem>`) to run
-  the changed ticket as a fresh attempt, or kill (`./dev.py reject <stem>`). Machine keeps do
+  Review the change to `tickets/<stem>/ticket.md`, then keep (`chupa confirm <stem>`) to run
+  the changed ticket as a fresh attempt, or kill (`chupa reject <stem>`). Machine keeps do
   not release this hold. Stage boundaries, admission, and queued or confirmed merge admissions
   all check the dispatch identity. Rework updates between attempts are fresh ticket inputs.
 

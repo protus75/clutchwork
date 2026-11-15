@@ -46,7 +46,7 @@ Run `ollama pull qwen3-coder:30b`.
 
 ## Install Qwen Code
 
-Run `chupa install qwen` (`./dev.py install qwen` in the chupa repo) to install it into the host project, or `pnpm add -g @qwen-code/qwen-code@latest` for a system-wide install.
+Run `chupa install qwen` to install it into the host project, or `pnpm add -g @qwen-code/qwen-code@latest` for a system-wide install.
 
 ## Declare it in config.yaml
 
@@ -63,7 +63,7 @@ limits: {concurrency: 1, est_cost_per_call_usd: 0}
 
 ## Probe it
 
-Run `chupa probe qwen` (`./dev.py probe qwen` in the chupa repo). `qwen qwen3-coder:30b: ok` means Ollama, Qwen Code, and `base_url` all work; otherwise the error is printed. `error_during_execution` usually means qwen could not reach Ollama at `base_url`: check that Ollama is running, the URL, and on Windows the firewall rule and `OLLAMA_HOST`. The first call loads the model, which takes about a minute.
+Run `chupa probe qwen`. `qwen qwen3-coder:30b: ok` means Ollama, Qwen Code, and `base_url` all work; otherwise the error is printed. `error_during_execution` usually means qwen could not reach Ollama at `base_url`: check that Ollama is running, the URL, and on Windows the firewall rule and `OLLAMA_HOST`. The first call loads the model, which takes about a minute.
 
 ## Route it
 

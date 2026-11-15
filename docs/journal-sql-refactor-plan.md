@@ -14,7 +14,7 @@ Release 0.3.0, conditional (`docs/roadmap.md` §1 and rows 35-41). The release v
 
 1. **Checkpoint.** At the 0.2.0 tag, re-measure (section Problem). If the cost is still there, the owner declares the feature set complete and the window opens.
 2. **Refactor window.** Only refactor tickets and the bugs the refactor surfaces run. No feature tickets run until 0.3.0 ships. The freeze is operator discipline plus the roadmap: no feature row is scheduled in 0.3.0.
-3. **Release.** When the refactor is complete and its surfaced bugs are fixed, tag 0.3.0 with `./dev.py release --minor`.
+3. **Release.** When the refactor is complete and its surfaced bugs are fixed, tag 0.3.0 with `chupa release --minor`.
 
 ## Problem
 
@@ -26,7 +26,7 @@ Measured on 2026-11-11 at `bf121ef9` (evidence: `tickets/journal-incremental-rea
 - `Journal.append()` re-parsed the whole active segment on every write, just to check its first timestamp for the roll-age rule.
 - Callers fold the returned `Event` lists with Python loops. There were 98 `read()` / `read_segments()` call sites across 28 modules (101 at `80b76d5d`; see the table under Ticket breakdown).
 
-**What changed since.** `journal-incremental-read` merged at `f790cf71`. `docs/how-chupa-works.md` §10.2 now says a Journal instance parses each byte once and re-reads only appended lines during normal append-only operation. The 157-second figure predates that fix. The §18.2 trigger ("the first projection measured too slow as a fold") fired once; whether it still holds is the re-measurement at the 0.2.0 tag: profile a drain start and `./dev.py status` on this repo's journal (now 14 segments, about 27k lines) and record the share of wall time in journal reads. If it is under a quarter, the window slides and this plan waits for the next measurement.
+**What changed since.** `journal-incremental-read` merged at `f790cf71`. `docs/how-chupa-works.md` §10.2 now says a Journal instance parses each byte once and re-reads only appended lines during normal append-only operation. The 157-second figure predates that fix. The §18.2 trigger ("the first projection measured too slow as a fold") fired once; whether it still holds is the re-measurement at the 0.2.0 tag: profile a drain start and `chupa status` on this repo's journal (now 14 segments, about 27k lines) and record the share of wall time in journal reads. If it is under a quarter, the window slides and this plan waits for the next measurement.
 
 What the incremental reader did not change: 101 call sites still fold whole event lists in Python; `chupa/observe.py:254-256` has its own raw segment reader that returns dicts and wraps them in `SimpleNamespace` four times to call Event-typed helpers; `chupa/scheduler.py:80` reaches into `journal.dir.parent`, `journal._fs`, and `journal._clock`; and the roadmap's audit found the same "latest state for stem" scan written inline 13 times (`docs/roadmap.md` §2.1 row 5). Those are the costs a query layer removes whether or not the read time still dominates; the 0.2.0 ticket `journal-last-transition-helper` removes the worst of them without the dependency.
 

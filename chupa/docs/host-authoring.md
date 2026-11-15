@@ -9,11 +9,11 @@ what content its tickets carry, never the format. See the [host run guide](host-
 
 1. Start with `chupa new <stem> --kind feature|bug|chore`, choosing one kind (default `feature`).
    For a bug, first save the observed failure to a file and pass it with `--evidence <file>`.
-   In this repo, use `./dev.py new STEM [--kind K] [--evidence FILE...]`. It writes
+   It writes
    `tickets/<stem>/ticket.md` with section placeholders and lints it. Every finding names the fix
    to apply. A bug includes `## Regression` and copies the evidence files into the ticket.
 2. Fill each section with the content below, run `chupa lint <stem>`, and repeat until it is
-   clean. In this repo, use `./dev.py lint [STEM...]`. Omit stems to check all tickets that are
+   clean. Omit stems to check all tickets that are
    not settled or rejected in the journal (all tickets when there is no journal). In a linked
    worktree, lint with no stems uses the main checkout's journal. Lint applies
    intake's claims and evidence checks without taking the lock or writing anything; it prints
@@ -22,7 +22,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
 3. Before review, check that no criterion contradicts merged behavior or an existing test outside
    the fence, and that all criteria can hold together. Check that every invariant the ticket states
    or cites has a criterion whose test fails when the invariant is dropped.
-   Run `chupa review <stem>` (in this repo, `./dev.py review STEM`), repair every finding,
+   Run `chupa review <stem>`, repair every finding,
    and repeat until it prints `approve`. Reviews with unmerged dependencies are provisional and not
    journaled; repair their findings, and the drain reviews again after the dependencies merge.
 4. A running `serve` picks up the new ticket; alternatively run `chupa drain`. Intake commits

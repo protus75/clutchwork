@@ -158,7 +158,7 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
 
 ### 3.5 Dev surface and tests
 
-- Five verbs have no `./dev.py` subcommand: `covgate`, `doctor`, `migrate-config`, `retro`, `snapshot` (`pause`, `resume` also absent). `CLAUDE.md` §B says a missing command becomes a subcommand; `chupa/docs/host-running.md:6` tells operators to run `doctor` and this repo cannot. `retro` is reachable only from the extension's Engine picker.
+- At the audit, five verbs had no `./dev.py` subcommand: `covgate`, `doctor`, `migrate-config`, `retro`, `snapshot` (`pause`, `resume` also absent). `CLAUDE.md` §B now directs missing engine tasks to new `chupa` verbs and missing build tasks to new `dev.py` subcommands.
 - `./dev.py test` runs `uv run pytest -q` with `addopts = "-n auto"`; it never loads `chupa.testguard`, so the unit IO guard and the 60-second budget apply only inside Check. `how-chupa-works.md:79` says otherwise.
 - `tests/regress_*.py` (45 files) run only as bug tickets' `## Regression` argv; 10 have no `__main__` guard and execute at import. `tests/vscode_task_identity.js` is referenced by one of them and no test.
 - `test-gate.toml` lists 57 of 59 modules; `chupa/graph.py` has no floor; eight modules sit at floor 0 (`audit`, `covmap`, `doctor`, `observe` at 856 lines, `seams`, `stats`, `thresh`, `watchdog`).
@@ -183,7 +183,7 @@ Every row is a claim the owning document makes that the code contradicts. `docs-
 | 244 | Check "runs configured autofix commands" | `stages.py:1407` | only when Implement replied `ok` and `review.autofix` is nonempty |
 | 373 | lift kind `harvest` | `runner.py:371` | also `harvest-rework` |
 | 388-389 | worktree gone: `diagnosis.json` is lifted | `runner.py:275-277` | nothing is written or lifted; only the journal signal |
-| 452-453, 485-488 | paved roads say `./dev.py confirm|reject` | `drain.py:182,186,710,721` | drain prints `uv run python -m chupa ...`; code fix in `paved-roads-name-verbs` |
+| 452-453, 485-488 | paved roads say `chupa confirm|reject` | `drain.py:182,186,710,721` | drain prints `uv run python -m chupa ...`; code fix in `paved-roads-name-verbs` |
 | 463-464 | Reconcile reaps any stem still `running` | `reconcile.py:22,38` | stems with a HELD regate receipt at the current attempt and intents under `llm/review-<stem>/` are excluded |
 | 475-477 | drain loop steps omit Box intake | `drain.py:396` | drain calls `triage.report_intake` every iteration |
 | 528-530 | queue skip rule | `mergequeue.py:313` | also requires no HELD receipt |
@@ -293,12 +293,12 @@ Every proposed ticket, grouped by release and in priority order within a release
 |---|---|---|---|---|---|---|---|
 | 1 | `provider-capture-overwrite` | roadmap (decision 4) | bug | P0 | | `evidence-store` | **Authored 2026-11-14, confirmed** (`tickets/provider-capture-overwrite/`). Instance fix: a stem's capture numbering continues from the highest `<provider>-NNNN` already on disk, read through a new `FileSystem.entries` seam method, so a later process never overwrites an earlier capture (`providers.py:294,325`). Evidence at `328d07d9`: 3,960 calls, 2,298 captures with `events.jsonl`. Keying by the journal call key is the cause fix in `evidence-envelope`. |
 | 2 | `provider-failure-single-mapper` | roadmap | chore | P2 | | | **Authored 2026-11-14, confirmed** (`tickets/provider-failure-single-mapper/`). One provider-exception mapper in `runner.py`; delete the copy at `stages.py:1602-1615`. Its hard-coded `surface="requisition_review"` is unreachable: `Driver._run` maps `ProviderCallError` first with the right surface (`driver.py:324`), which a reproduction on 2026-11-14 confirmed (the Box report carried `stage=implement`). Dead duplicated code, not a live defect; demoted from the P0 bug the audit reported. |
-| 3 | `release-verb` | journal plan (a) | feature | P1 | | | `./dev.py release --minor|--patch`: bumps `pyproject.toml`, commits, tags `v<version>`; `publish` keeps bumping only the patch. Needed to tag 0.2.0. |
+| 3 | `release-verb` | journal plan (a) | feature | P1 | | | `chupa release --minor|--patch`: bumps `pyproject.toml`, commits, tags `v<version>`; `publish` keeps bumping only the patch. Needed to tag 0.2.0. |
 | 4 | `docs-truth-sweep` | roadmap | chore | P1 | | | Every row in section 4.1 and 4.2 that is a document fix; the `mergequeue.py` and `heartbeat.py` docstrings; the `redact.py` checklist; the `review` argparse help; `how-chupa-works.md` 10.1 and 10.2 gain the missing paths, the `checkpoint` type, and the signal-kind list. |
 | 5 | `conduct-files-parity` | roadmap | chore | P1 | | `upstream-issue-verb` | `AGENTS.md` gains the four rules it lacks; CORE_TEMPLATE drops "(authoring, running, config contract)"; `chupa core` refreshes both blocks. |
-| 6 | `paved-roads-name-verbs` | roadmap | chore | P1 | | | Drain report roads name `./dev.py` verbs in this repo and `chupa` verbs on a host (`drain.py:182,186,710,721`); `status.py:149` carries a road; `retro.py:458` keeps the stage outcome; the seven `BoxError`s name a repair. |
-| 7 | `dev-surface-completeness` | roadmap | chore | P1 | | | `./dev.py` gains `doctor`, `retro`, `snapshot`, `pause`, `resume`, `migrate-config`, `covgate`; `./dev.py test` loads `chupa.testguard` and `test-gate.toml`'s budget for `tests/unit`. |
-| 8 | `host-prompts-no-dev-py` | roadmap (`box-000440`) | chore | P1 | | | `chupa/specs/ask/*.md`, `host-authoring.md`, `host-qwen.md` render the host's verb prefix; `./dev.py` appears only in `README.md` and `how-chupa-works.md` §2.2. |
+| 6 | `paved-roads-name-verbs` | roadmap | chore | P1 | | | Drain report roads name `./dev.py` verbs in this repo and `chupa` verbs on a host (`drain.py:182,186,710,721`); `status.py:149` carries a road; `retro.py:458` keeps the stage outcome; the seven `BoxError`s name a repair. Superseded by `dev-py-dev-tasks-only`. |
+| 7 | `dev-surface-completeness` | roadmap | chore | P1 | | | The launcher twins are superseded by `dev-py-dev-tasks-only`; `./dev.py test` loads `chupa.testguard` and `test-gate.toml`'s budget for `tests/unit`. |
+| 8 | `host-prompts-no-dev-py` | roadmap (`box-000440`) | chore | P1 | | | `chupa/specs/ask/*.md`, `host-authoring.md`, `host-qwen.md` render the host's verb prefix; `./dev.py` appears only in `README.md` and `how-chupa-works.md` §2.2. Superseded by `dev-py-dev-tasks-only`. |
 | 9 | `unit-criteria-disk-snag` | roadmap (`box-000441`, `box-000442`) | feature | P1 | | | `requisition_review.md` snags a `tests/unit` criterion that needs disk, process, or network, with a road naming an in-fence seam; `diagnose.md` keeps floored lines reachable from `tests/unit`. |
 | 10 | `fence-closure-registries` | roadmap (`box-000324`) | feature | P1 | | | `requisition_review.md:24` traces in-code registries and tables (menu keys, closed sets, adapter maps), not only symbol closure. |
 | 11 | `watch-surface-tier-truth` | roadmap | bug | P1 | | | `watch` shows the tier the code will use per surface (`observe.py:229-231`), or the code honors spec `tier:` for every surface; one truth. |
@@ -377,7 +377,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 |---|---|---|---|---|---|---|---|
 | 57 | `training-config` | training plan 1 | feature | P2 | | | `training_data: {enabled, exclude}` with the fixed exclude list; export refuses when off. |
 | 58 | `training-attempt-manifest` | training plan 2 | feature | P2 | `training-config`, `evidence-envelope` | | Attempt manifest and full diff before worktree removal on every terminal. |
-| 59 | `training-export` | training plan 3 | feature | P2 | `training-attempt-manifest` | | Record kinds, both formats, `--holdout`, scrub with drop count, provider-terms notice, `./dev.py training-export`. The `conflict` kind lands with `merge-model-resolve` merged, else is skipped with a count. |
+| 59 | `training-export` | training plan 3 | feature | P2 | `training-attempt-manifest` | | Record kinds, both formats, `--holdout`, scrub with drop count, provider-terms notice, `chupa training export`. The `conflict` kind lands with `merge-model-resolve` merged, else is skipped with a count. |
 | 60 | `training-eval` | training plan 4 | feature | P3 | `training-export` | | Replay held-out records through a route; agreement scores. Decided to ship (decision 11). |
 | 61 | `training-docs` | training plan 5 | chore | P3 | `training-export` | | Host guide: enabling, exclusions, provider terms, retrieval first. |
 | 62 | `evidence-verbs` | evidence plan 6 | feature | P3 | `evidence-envelope`, rows 30-31 | | `evidence show`, `schema`, `renormalize`, `coverage`. |
