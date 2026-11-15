@@ -285,4 +285,7 @@ def test_stale_verdict_is_visible_in_status_and_snapshot(tmp_path):
     output = render(project(c.journal.read()))
     assert "Verdict decisions:\n- request-1: confirm draft: stale -- hold changed\n" in output
     ctx = observe.Context(c.repo, c.config.state_dir, c.repo / "config.yaml", None, c.git, ENV)
-    assert observe.snapshot(ctx)["verdictDecisions"] == [{"request_id": "request-1", "verb": "confirm", "stem": "draft", "decision": "stale", "reason": "hold changed"}]
+    snap = observe.snapshot(ctx)
+    assert snap["verdictDecisions"] == [{"request_id": "request-1", "verb": "confirm", "stem": "draft", "decision": "stale", "reason": "hold changed"}]
+    assert snap["verdictDecisionsHelp"] == "verdict.decisions"
+    assert snap["verdictDecisionsHelp"] in snap["help"]

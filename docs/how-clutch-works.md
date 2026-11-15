@@ -533,6 +533,10 @@ For each candidate, in pick order:
 
 `confirm` and `reject` publish verdict requests to the running drain or serve, which applies them.
 
+The engine decides each published verdict request later. A verdict decision row marked `stale` or
+`rejected` was not applied; its reason says why. Fix that cause and run `confirm` or `reject` again
+for the stem. The row disappears once the stem is resolved.
+
 `pause`, `resume`, `kill`, `retro`, and `stop` write a request file to `state_dir/control/inbox/`, bound to the
 running engine's lifecycle id. The engine journals a `control_decision` (accepted, stale, or
 rejected) for each request. Pause stops new dispatch; resume must name the advertised hold;

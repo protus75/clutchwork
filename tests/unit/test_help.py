@@ -47,11 +47,16 @@ def test_vocabularies_covered():
         "stat": set(project_stats([], {}, {}, now=datetime(2026, 1, 1, tzinfo=timezone.utc), window="7d")),
         "verb": {"drain", "serve", "stop", "kill", "status", "retro"},
         "lock": {"engine", "commit"},
+        "verdict": {"decisions"},
     }
     for kind, names in expected.items():
         assert {f"{kind}.{name}" for name in names} <= TOPICS.keys()  # New vocabulary values require help.
     assert "priority" in TOPICS
     assert set(COMMANDS.values()) <= TOPICS.keys()
+
+
+def test_verdict_decisions_link():
+    assert build(documents())["verdict.decisions"]["link"]["url"].endswith("/blob/main/docs/how-clutch-works.md#73-control")
 
 
 def test_verb_what_follows_run_guide():

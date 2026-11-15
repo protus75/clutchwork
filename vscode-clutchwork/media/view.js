@@ -78,7 +78,12 @@ function render(snap) {
 		row.addEventListener('dblclick', () => vscode.postMessage({ type: 'open', path: r.path }));
 		return row;
 	});
-	list.replaceChildren(...snap.verdictDecisions.map(d => el('div', 'status', `${d.request_id}: ${d.verb} ${d.stem}: ${d.decision} -- ${d.reason}`)), ...rows);
+	const decisions = snap.verdictDecisions.map(d => {
+		const row = el('div', 'status', `${d.request_id}: ${d.verb} ${d.stem}: ${d.decision} -- ${d.reason}`);
+		row.title = snap.help[snap.verdictDecisionsHelp].text;
+		return row;
+	});
+	list.replaceChildren(...decisions, ...rows);
 	if (pinned && !snap.rows.some(r => r.stem === pinned)) {
 		pinned = undefined;
 	}

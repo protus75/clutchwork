@@ -68,6 +68,13 @@ for _verb in ("drain", "serve", "stop", "kill", "status", "retro", "review", "li
     TOPICS[f"verb.{_verb}"] = dict(before="Choose the action for the current state.", after="Inspect the result.", doc="host-running.md", verb=_verb)
 
 _add(
+    "verdict",
+    {"decisions": "Shows verdict requests that were not applied."},
+    "7.3 Control",
+    "A confirm or reject request is published.",
+    "Fix the reason and run confirm or reject again for the stem.",
+)
+_add(
     "section",
     {
         "blocked": "Tickets in this section cannot currently run.",
