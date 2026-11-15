@@ -311,7 +311,7 @@ def test_status_projects_the_journal(root, capsys):
     assert cli(root, "status") == 0
     out = capsys.readouterr().out
     section = dict(block.split("\n", 1) for block in out.strip().split("\n\n"))
-    assert "a" in section["merged:"] and "b" not in section["merged:"]
+    assert section["merged:"] == "1"
     assert "b" in section["interrupted (the engine stopped mid-run; reject it, or start the engine to rerun it):"]
     assert "c: gate_failed" in section["blocked:"]
     assert "d: source: human" in section["intake:"]
@@ -329,7 +329,7 @@ def test_status_is_deterministic(root, capsys):
     first = capsys.readouterr().out
     cli(root, "status")
     assert capsys.readouterr().out == first
-    assert first.index("- a") < first.index("- m") < first.index("- z")
+    assert "merged:\n3\n" in first
     assert "- merged tickets: 3\n" in first
 
 

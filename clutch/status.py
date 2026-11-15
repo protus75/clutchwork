@@ -189,10 +189,16 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
     from clutch.reconcile import orphans
 
     last = last_states(events)
+    done = SETTLED | {"rejected"}
     interrupted = set(orphans(events)) if not alive else set()
-    intake = tuple((e.ticket, e.body["source"], e.body["state"], e.body["commit"]) for e in events if e.type == EventType.SIGNAL and e.body.get("signal") == INTAKE_SIGNAL and e.ticket is not None)
+    intake = tuple(
+        (e.ticket, e.body["source"], e.body["state"], e.body["commit"])
+        for e in events
+        if e.type == EventType.SIGNAL and e.body.get("signal") == INTAKE_SIGNAL and e.ticket is not None and last.get(e.ticket) not in done
+    )
     spend = sum(e.body["cost"].get("usd", 0.0) for e in events if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict))
     messages = box.messages() if box is not None else []
+    unresolved_ids = {m.id for m in messages if m.resolution is None}
     resolved_stems = set()
     decisions = []
     for e in reversed(events):
@@ -217,7 +223,7 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
         merged=tuple(sorted(s for s, to in last.items() if to == "merged")),
         in_flight=tuple(sorted(s for s, to in last.items() if to == "running" and s not in interrupted)),
         interrupted=tuple(sorted(s for s, to in last.items() if to == "running" and s in interrupted)),
-        blocked=tuple(sorted((s, to) for s, to in last.items() if to not in ("merged", "running"))),
+        blocked=tuple(sorted((s, to) for s, to in last.items() if to != "running" and to not in done)),
         intake=intake,
         spend_usd=spend,
         reject=tuple(sorted(reject_queue(events).items())),
@@ -229,10 +235,11 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
             and isinstance(e.body.get("result"), dict)
             and e.body["result"].get("refusal")
             and e.ticket is not None
+            and last.get(e.ticket) not in done
         ),
         verdict_decisions=tuple(reversed(decisions)),
         tombstones=tuple((m.id, m.message_class, m.reports) for m in box.confirmed_tombstones(policy)) if box is not None else (),
-        reopens=tuple(e.body for e in events if e.type == EventType.SIGNAL and e.body.get("kind") == "tombstone_auto_reopened"),
+        reopens=tuple(e.body for e in events if e.type == EventType.SIGNAL and e.body.get("kind") == "tombstone_auto_reopened" and e.body.get("box_id") in unresolved_ids),
         scorecard=project_scorecard(window if window is not None else project_window(events)),
         provenance=MappingProxyType(dict(provenance or {})),
     )
@@ -261,7 +268,7 @@ def render(status: Status) -> str:
     return (
         "\n\n".join(
             (
-                block("merged", status.merged),
+                f"merged:\n{len(status.merged)}",
                 block("in flight", status.in_flight),
                 *((block("interrupted (the engine stopped mid-run; reject it, or start the engine to rerun it)", status.interrupted),) if status.interrupted else ()),
                 block("blocked", (f"{stem}: {to}" for stem, to in status.blocked)),

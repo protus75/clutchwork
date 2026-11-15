@@ -710,11 +710,8 @@ and notifications are Effects, so a crash never repeats one.
 
 `status` is a write-free projection of the journal:
 
-1. Stems by last state: merged, in flight, interrupted (last `running` with no live engine), blocked (every other state, including
-   `already_satisfied`).
-   `already_satisfied` remains in this state listing as a settled no-op; it is never diagnosed
-   or awaiting a verdict in the Reject queue.
-2. Every intake.
+1. The merged count, and stems in flight, interrupted (last `running` with no live engine), or blocked (last state neither `running`, settled, nor rejected).
+2. Intake and verdict refusals for stems not settled or rejected, and reopens for unresolved messages.
 3. Total spend.
 4. The Reject queue.
 5. Every Suggestion Box message in arrival order, with its state and summary.

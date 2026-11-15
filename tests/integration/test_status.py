@@ -189,7 +189,7 @@ def test_status_preserves_sections_and_is_write_free(tmp_path, monkeypatch, caps
         for n in range(3):
             box.record_rereport(reopened, occurrence_id=f"report/{n}")
         legacy = (
-            "merged:\n- done\n\nin flight:\n(none)\n\ninterrupted (the engine stopped mid-run; reject it, or start the engine to rerun it):\n- active\n\nblocked:\n- held: gate_failed\n\n"
+            "merged:\n1\n\nin flight:\n(none)\n\ninterrupted (the engine stopped mid-run; reject it, or start the engine to rerun it):\n- active\n\nblocked:\n- held: gate_failed\n\n"
             "intake:\n- new: source: human, state: confirmed, commit 123456789abc\n\nspend:\n$2.00\n\n"
             "Reject queue:\n- held: gate_failed at check -- confirm held after editing, or reject held\n\n"
             f"Confirmed-class tombstones:\n- {id}: failure_report, 0 re-reports\n\n"
@@ -197,9 +197,7 @@ def test_status_preserves_sections_and_is_write_free(tmp_path, monkeypatch, caps
         )
     else:
         legacy = (
-            "merged:\n(none)\n\nin flight:\n(none)\n\nblocked:\n(none)\n\nintake:\n(none)\n\n"
-            "spend:\n$0.00\n\nReject queue:\n(none)\n\nConfirmed-class tombstones:\n(none)\n\n"
-            "Tombstone reopens:\n(none)\n"
+            "merged:\n0\n\nin flight:\n(none)\n\nblocked:\n(none)\n\nintake:\n(none)\n\nspend:\n$0.00\n\nReject queue:\n(none)\n\nConfirmed-class tombstones:\n(none)\n\nTombstone reopens:\n(none)\n"
         )
     box_block = (
         f"Suggestion Box (1 pending, 1 resolved):\n- {id}: failure_report: tombstone -> retired: visible\n- {reopened}: failure_report: reopened: reopened"
