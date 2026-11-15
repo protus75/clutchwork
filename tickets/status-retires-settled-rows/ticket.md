@@ -13,6 +13,8 @@ kind: bug
 - tests/unit/test_status_verdict_decisions.py
 - tests/integration/test_status.py::test_status_preserves_sections_and_is_write_free
 - tests/integration/test_cli.py::test_status_projects_the_journal
+- tests/integration/test_cli.py::test_status_is_deterministic
+- docs/how-clutch-works.md#10.3
 
 ## Goal / Why
 `clutch status` prints 2052 lines on this repo, and 1500 of them are finished work (`tickets/status-retires-settled-rows/evidence/status-noise.txt`). `project` folds the whole journal into each list and never drops an entry once its ticket is done, so every list grows for the life of the journal: `merged` is 524 stems, `intake` is 939 rows for 518 stems because it keeps one row per intake event, and `blocked` is 42 rows of which 37 are `rejected` or `already_satisfied` -- work nobody is waiting on, under a heading that says they are blocked. `verdict_refusals` and `reopens` fold the same way and are empty here only because nothing has produced one yet. The live state the output exists to show -- `in flight`, the Reject queue, what needs an operator -- is five lines buried in the middle.
