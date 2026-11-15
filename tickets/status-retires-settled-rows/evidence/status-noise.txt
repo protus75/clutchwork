@@ -1,0 +1,42 @@
+clutch status on /home/djp/source/clutch, 2026-11-15, journal head dd20a9ab
+total output: 2052 lines
+
+section line counts:
+  merged:                          524 rows
+  in flight:                       0 rows
+  blocked:                         42 rows
+  intake:                          939 rows
+  spend:                           0 rows
+  Reject queue:                    0 rows
+  Suggestion Box (0 pending, 469 resolved): 469 rows
+  Confirmed-class tombstones:      18 rows
+  Tombstone reopens:               0 rows
+  current-window scorecard:        15 rows
+  window provenance:               3 rows
+
+blocked: rows by last state. 37 of the 42 are finished work; only premise_failed and
+abandoned (5 rows) need a reader:
+     32     rejected
+      5     already_satisfied
+      3     premise_failed
+      2     abandoned
+      1 
+
+intake: 940 rows for 518 distinct stems; one row per intake event, so a re-committed ticket repeats:
+       12 menu-mirrors-verb-admission
+       11 commit-lock
+        9 serve-reoffer-dispatch
+        9 pypi-readme-user-guide
+        8 soak-serve-stops-early-under-load
+
+sample intake rows (each of these four stems is in the merged list above):
+  - terminal-test-config-import: source: human, state: confirmed, commit fcd8a7080617
+  - suggestion-box: source: seed, state: confirmed, commit 29562f79f433
+  - attempt-spool-surface-name: source: human, state: confirmed, commit 36c27d73ac5a
+  - phase3-core: source: human, state: confirmed, commit 28de9ffc7548
+
+sample merged rows (524 of them, alphabetical, no dates):
+  - admission-holds-activation
+  - already-satisfied-settles
+  - artifacts-shared-validators
+  - ask-prompt-verb
