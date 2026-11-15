@@ -23,16 +23,16 @@ kind: chore
 - config.yaml
 - pyproject.toml
 - .gitignore
-- docs/host-contract.md
+- clutch/docs/host-contract.md
 
 ## Goal / Why
-Clutch's own `config.yaml` declares no host checks: its `review` holds only `coverage_map`. Its tickets are judged only by their own `## Verification` commands, so clutch does not live by the test rules it now ships to hosts. After this change clutch adopts the Python host setup from `docs/host-contract.md` `## Python host test setup`:
+Clutch's own `config.yaml` declares no host checks: its `review` holds only `coverage_map`. Its tickets are judged only by their own `## Verification` commands, so clutch does not live by the test rules it now ships to hosts. After this change clutch adopts the Python host setup from `clutch/docs/host-contract.md` `## Python host test setup`:
 - autofix runs ruff fix and format on changed files;
 - Check runs the unit suite under `clutch.testguard` with coverage, gated by `test-gate.toml`, then the integration suite, whole-repo ruff lint, and the format check;
 - `test-gate.toml` is in the safety inventory, so lowering a threshold goes through a human.
 
 ## Scope in / Scope out
-- In: `config.yaml`, copying the `review.autofix` and `review.mechanical` entries of the `python-host` block in `docs/host-contract.md` verbatim with package `clutch` (on any difference in those entries, the block wins), beside the existing `review.coverage_map`, which stays unchanged; `merge` stays `{}`, and `engine_plane_safety_inventory` keeps its existing entries and appends `test-gate.toml`:
+- In: `config.yaml`, copying the `review.autofix` and `review.mechanical` entries of the `python-host` block in `clutch/docs/host-contract.md` verbatim with package `clutch` (on any difference in those entries, the block wins), beside the existing `review.coverage_map`, which stays unchanged; `merge` stays `{}`, and `engine_plane_safety_inventory` keeps its existing entries and appends `test-gate.toml`:
   - `review.autofix`: `ruff-fix` `[uv, run, ruff, check, --fix, --exit-zero]` and `ruff-format` `[uv, run, ruff, format]`, each with `files: ["*.py"]`.
   - `review.mechanical`, all `trigger: always`, `severity: hard`, in this order:
     - `unit`: `[uv, run, python, -m, clutch, covgate, --, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=clutch, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]`, with `results: .clutch/results/unit.json` and `coverage: coverage.json`;
