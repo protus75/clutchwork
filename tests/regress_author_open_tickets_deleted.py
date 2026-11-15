@@ -12,7 +12,7 @@ from types import SimpleNamespace
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa import author
+        from clutch import author
 
         async def ls_files(repo):
             return ["tickets/gone/ticket.md", "tickets/live/ticket.md"]

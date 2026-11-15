@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from chupa.tickets import Ticket, TicketInvalid, parse_ticket
+from clutch.tickets import Ticket, TicketInvalid, parse_ticket
 
 
 def ticket_text(kind="bug", state="confirmed"):

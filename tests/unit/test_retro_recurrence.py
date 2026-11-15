@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa.box import Box, Message, RereportJournal, Resolution, Verdict
-from chupa.journal import Event, EventType
-from chupa.retro import Retro, RetroArtifact, prior_findings, validate_recurrences
+from clutch.box import Box, Message, RereportJournal, Resolution, Verdict
+from clutch.journal import Event, EventType
+from clutch.retro import Retro, RetroArtifact, prior_findings, validate_recurrences
 from tests.unit.test_retro_proposal import BASE, SPEC
 
 
@@ -99,7 +99,7 @@ def test_intent_recovery(counted, reopened):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("state_name", ["pending", "merged", "running"])
 async def test_emit_recurrence(monkeypatch, state_name):
-    from chupa import daemon
+    from clutch import daemon
 
     initial = message() if state_name == "pending" else message(status="resolved", resolution=Resolution(kind="ticket", link="fix"))
     box, journal, state = setup_box(initial)

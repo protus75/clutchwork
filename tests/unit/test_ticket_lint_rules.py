@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from chupa import tickets
+from clutch import tickets
 
 TEXT = """---
 state: confirmed
@@ -15,13 +15,13 @@ kind: bug
 ## Depends on
 - none
 ## Context
-- chupa/x.py
+- clutch/x.py
 ## Goal / Why
 Reproduce the reported defect.
 ## Scope in / Scope out
 In: x. Out: other modules.
 ## Scope fence
-- chupa/x.py
+- clutch/x.py
 - tests/regress_x.py
 ## Acceptance criteria
 1. `./dev.py test` exits 0.
@@ -45,7 +45,7 @@ The defect remains.
 @pytest.fixture
 def repo(monkeypatch):
     root = Path("/memory/repo")
-    files = {root / "chupa/x.py": "value = 1", root / "tickets/example/evidence/log.txt": "observed defect"}
+    files = {root / "clutch/x.py": "value = 1", root / "tickets/example/evidence/log.txt": "observed defect"}
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "exists", lambda p: p in files)
     monkeypatch.setattr(Path, "is_symlink", lambda p: False)
@@ -82,12 +82,12 @@ def test_positive_file_floor_requires_unit_file(repo, floor):
     # Remove the regression explicitly while preserving the remaining required sections.
     text = TEXT.replace("kind: bug", "kind: feature").replace(TEXT[TEXT.index("## Regression") : TEXT.index("## Definition of rejected")], "")
     text = text.replace("- tests/regress_x.py\n", "")
-    files[root / "test-gate.toml"] = f'[coverage]\ndefault = 90\n[coverage.files]\n"chupa/x.py" = {floor}\n'
+    files[root / "test-gate.toml"] = f'[coverage]\ndefault = 90\n[coverage.files]\n"clutch/x.py" = {floor}\n'
     findings = tickets.lint_findings(tickets.parse_ticket("example", text, root), root)
     assert len(findings) == (1 if floor else 0)
     if floor:
-        assert "chupa/x.py" in findings[0].message and "12" in findings[0].message
-    with_test = text.replace("- chupa/x.py\n## Acceptance", "- chupa/x.py\n- tests/unit/test_x.py\n## Acceptance")
+        assert "clutch/x.py" in findings[0].message and "12" in findings[0].message
+    with_test = text.replace("- clutch/x.py\n## Acceptance", "- clutch/x.py\n- tests/unit/test_x.py\n## Acceptance")
     assert tickets.lint_findings(tickets.parse_ticket("example", with_test, root), root) == []
     del files[root / "test-gate.toml"]
     assert tickets.lint_findings(tickets.parse_ticket("example", text, root), root) == []
@@ -122,7 +122,7 @@ def test_lint_verb_prints_carried_file_finding(repo, monkeypatch, capsys):
     import asyncio
     from types import SimpleNamespace
 
-    from chupa import __main__ as cli
+    from clutch import __main__ as cli
 
     root, files = repo
     files[root / "tickets/example/ticket.md"] = TEXT

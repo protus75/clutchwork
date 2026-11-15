@@ -6,19 +6,19 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import runner
-from chupa.__main__ import _status, main
-from chupa.box import Box, Resolution
-from chupa.daemon import storm_producer
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM, LLMResult
-from chupa.lockfile import Lockfile
-from chupa.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.specs import load_spec
-from chupa.status import project, reject_queue, render
+from clutch import __main__ as cli
+from clutch import runner
+from clutch.__main__ import _status, main
+from clutch.box import Box, Resolution
+from clutch.daemon import storm_producer
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM, LLMResult
+from clutch.lockfile import Lockfile
+from clutch.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.specs import load_spec
+from clutch.status import project, reject_queue, render
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, make_root
 from tests.integration.test_git import commit_lock
@@ -41,9 +41,9 @@ def test_settled_stem_never_awaits_verdict(tmp_path):
 def test_status_surfaces_confirmed_class_tombstones(tmp_path, monkeypatch, capsys):
     root = make_root(tmp_path)
     clock = Clock()
-    journal = Journal(root / ".chupa/state", clock)
+    journal = Journal(root / ".clutch/state", clock)
     fs = LocalFileSystem()
-    box = storm_producer(root=root / ".chupa/state/box", fs=fs, journal=journal, clock=clock)
+    box = storm_producer(root=root / ".clutch/state/box", fs=fs, journal=journal, clock=clock)
     ids = []
     for cls in ("failure_report", "retro_finding", "suggestion"):
         evidence = {**PROPOSAL, "retro_report_key": "retro/1"} if cls == "retro_finding" else {}
@@ -57,7 +57,7 @@ def test_status_surfaces_confirmed_class_tombstones(tmp_path, monkeypatch, capsy
 
     monkeypatch.setattr(LocalFileSystem, "write", forbidden)
     monkeypatch.setattr(Journal, "append", forbidden)
-    git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))
+    git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
     provenance = {"head": asyncio.run(git.rev_parse(root, "HEAD")), "spec_version": load_spec((runner.SPECS_DIR / "retro.md").read_text()).meta.version, "at": clock().isoformat()}
     status = project(journal.read(), box=box, provenance=provenance)
     assert status.tombstones == tuple((m.id, m.message_class, 0) for m in box.messages()[:2])
@@ -169,9 +169,9 @@ def test_status_production_provenance(tmp_path, monkeypatch, capsys):
 
 @pytest.mark.parametrize("populated", [False, True])
 def test_status_preserves_sections_and_is_write_free(tmp_path, monkeypatch, capsys, populated):
-    from chupa.effects import Effects
-    from chupa.providers import ProviderLLM
-    from chupa.seams import CommandNotifications
+    from clutch.effects import Effects
+    from clutch.providers import ProviderLLM
+    from clutch.seams import CommandNotifications
 
     c, writer, _, _ = rig(tmp_path)
     box = storm_producer(root=c.config.state_dir / "box", fs=c.fs, journal=c.journal, clock=c.clock)
@@ -255,19 +255,19 @@ def test_box_status_labels_and_summary(tmp_path):
 
 
 def test_corrupt_box_does_not_receive_unknown_id_advice(tmp_path, capsys):
-    from chupa.box import BoxError
+    from clutch.box import BoxError
 
     root = make_root(tmp_path)
-    folder = root / ".chupa/state/box"
+    folder = root / ".clutch/state/box"
     folder.mkdir(parents=True)
     (folder / "corrupt.json").write_text("{}")
     with pytest.raises(BoxError, match="invalid box file"):
         main(["status"], cwd=root, env=ENV, clock=Clock())
-    assert "name ids that chupa status lists" not in capsys.readouterr().err
+    assert "name ids that clutch status lists" not in capsys.readouterr().err
 
 
 def test_stale_verdict_is_visible_in_status_and_snapshot(tmp_path):
-    from chupa import observe
+    from clutch import observe
 
     c, _, _, _ = rig(tmp_path)
     body = {

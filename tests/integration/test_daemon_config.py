@@ -7,13 +7,13 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from chupa import config as config_module
-from chupa import daemon
-from chupa.__main__ import main
-from chupa.config import ConfigError, ConfigSnapshot, load_config, snapshot_config
-from chupa.daemon import DaemonAdmission, snapshot_dispatch
-from chupa.journal import EventType
-from chupa.seams import LocalFileSystem
+from clutch import config as config_module
+from clutch import daemon
+from clutch.__main__ import main
+from clutch.config import ConfigError, ConfigSnapshot, load_config, snapshot_config
+from clutch.daemon import DaemonAdmission, snapshot_dispatch
+from clutch.journal import EventType
+from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, Clock, root, ticket, with_retro_driver, write
 from tests.integration.test_config import VALID
 from tests.integration.test_daemon_admission import assert_idle, assert_reachable, tickets, turn
@@ -57,7 +57,7 @@ def assert_detached(source, snapshot):
         "",
         """worktree_root: elsewhere
 report_inbox: inbox
-notify: [notify-send, chupa]
+notify: [notify-send, clutch]
 context_files: [docs/first.md, docs/second.md]
 scheduler: {max_unmerged: 5}
 caps: {retry: 2}
@@ -75,14 +75,14 @@ def test_snapshot_preserves_all_validated_config_values(tmp_path, extras):
     snapshot = snapshot_config(source)
     assert python_values(snapshot) == source.model_dump(mode="python")
     assert_detached(source, snapshot)
-    assert snapshot.state_dir == tmp_path / ".chupa"
-    assert snapshot.worktree_root == tmp_path / ("elsewhere" if extras else ".chupa/worktrees")
+    assert snapshot.state_dir == tmp_path / ".clutch"
+    assert snapshot.worktree_root == tmp_path / ("elsewhere" if extras else ".clutch/worktrees")
     assert snapshot.providers[0].auth == ("PROVIDER_TOKEN" if extras else None)
     assert snapshot.providers[0].limits.est_cost_per_call_usd == (None if extras else 0.25)
     assert snapshot.providers[0].limits.quota_window_minutes == 60
     assert snapshot.routing[0].candidates[1].model is None
     assert snapshot.report_inbox == (tmp_path / "inbox" if extras else None)
-    assert snapshot.notify == (("notify-send", "chupa") if extras else None)
+    assert snapshot.notify == (("notify-send", "clutch") if extras else None)
     assert snapshot.context_files == ((Path("docs/first.md"), Path("docs/second.md")) if extras else ())
     assert snapshot.merge.strategies[0].argv == ("uv", "lock")
     with pytest.raises(AttributeError):
@@ -131,7 +131,7 @@ def test_snapshot_is_recursively_immutable_and_detached(tmp_path):
     source.routing[0].candidates[0].model = "changed"
     source.review.mechanical[0].argv.append("changed")
     source.review.mechanical[1].trigger.append("changed/")
-    source.review.trigger_map["chupa/"].append("changed")
+    source.review.trigger_map["clutch/"].append("changed")
     del source.review.gate_severity["scope_fence"]
     source.box_policy["suggestion"] = "confirmed"
     source.merge.strategies.clear()
@@ -180,7 +180,7 @@ async def test_dispatch_captures_once_and_keeps_snapshot_until_completion(tmp_pa
     caller = asyncio.create_task(adapted(tickets[0]))
     await started.wait()
     source.scheduler.max_unmerged = 99
-    source.review.trigger_map["chupa/"].clear()
+    source.review.trigger_map["clutch/"].clear()
     source.routing[0].candidates.clear()
     put_config(tmp_path, VALID + "scheduler: {max_unmerged: 7}\n")
     release.set()
@@ -406,10 +406,10 @@ def test_config_snapshot_is_dormant(root, monkeypatch, verb, operation):
         with pytest.raises(AssertionError, match=f"{operation} wired"):
             main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired)
     else:
-        from chupa.journal import Journal
+        from clutch.journal import Journal
 
         assert main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired) == 0
-        bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
+        bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
         assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == f"AssertionError: {operation} wired into CLI"
         write(root, "fresh", ticket())
     assert calls == []
@@ -417,17 +417,17 @@ def test_config_snapshot_is_dormant(root, monkeypatch, verb, operation):
     assert calls == (["fresh"] if verb == "drain" and operation == "snapshot_config" else ["work"])
 
     repo = Path(__file__).resolve().parents[2]
-    sources = {".".join(path.relative_to(repo).with_suffix("").parts): path.read_text() for path in (repo / "chupa").rglob("*.py")}
-    sources["chupa"] = sources.pop("chupa.__init__")
+    sources = {".".join(path.relative_to(repo).with_suffix("").parts): path.read_text() for path in (repo / "clutch").rglob("*.py")}
+    sources["clutch"] = sources.pop("clutch.__init__")
     from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, without_core_import
 
     assert_reachable(sources)
     removed = without_core_import(sources)
     with pytest.raises(AssertionError):
         assert_reachable(removed)
-    for statement in ("import chupa.daemon", "from chupa import daemon"):
+    for statement in ("import clutch.daemon", "from clutch import daemon"):
         changed = dict(removed)
-        changed["chupa.status"] += f"\n{statement}\n"
+        changed["clutch.status"] += f"\n{statement}\n"
         assert_reachable(changed)
     monkeypatch.undo()
     rig = CoreRig(root)

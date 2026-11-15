@@ -3,8 +3,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from chupa import journal as module
-from chupa.journal import Journal, JournalCorruption
+from clutch import journal as module
+from clutch.journal import Journal, JournalCorruption
 
 NOW = datetime(2026, 8, 4, 12, tzinfo=UTC)
 

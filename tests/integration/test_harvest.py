@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.artifacts import Cost, Harvest, StageResult
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.specs import data_close, data_open
-from chupa.stages import PRIOR_ATTEMPTS, StagesRun
+from clutch import runner
+from clutch.__main__ import main
+from clutch.artifacts import Cost, Harvest, StageResult
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.specs import data_close, data_open
+from clutch.stages import PRIOR_ATTEMPTS, StagesRun
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
@@ -25,7 +25,7 @@ def run(repo: Path, script: list, verb: str = "run") -> tuple[int, FakeLLM]:
 
 
 def events(repo: Path):
-    return [e for e in Journal(repo / ".chupa" / "state", clock).read() if e.ticket == STEM]
+    return [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
 
 
 def harvest(repo: Path, attempt: int = 0) -> Harvest:
@@ -44,17 +44,17 @@ def test_review_snag_commits_closed_harvest_without_code_content_and_wipes(repo)
     long_summary = "x" * (runner.HARVEST_TAIL_CHARS + 100)
 
     def review(req):
-        path = repo / ".chupa" / "state" / "spools" / "providers" / STEM / "fake-0001" / "events.jsonl"
+        path = repo / ".clutch" / "state" / "spools" / "providers" / STEM / "fake-0001" / "events.jsonl"
         path.parent.mkdir(parents=True)
         path.write_text("e" * (runner.HARVEST_TAIL_CHARS + 100))
         return json.dumps({"verdict": "snag", "summary": long_summary, "findings": [SNAG]})
 
-    code, _ = run(repo, [agent({"chupa/thing.py": f"ok # {marker}\n"}), review, diagnosis_reply()])
+    code, _ = run(repo, [agent({"clutch/thing.py": f"ok # {marker}\n"}), review, diagnosis_reply()])
     assert code == 1
     h = harvest(repo)
     assert h.terminal == "gate_failed" and h.stage == "review" and h.attempt == 0
     assert [f.model_dump(exclude_none=True) for f in h.findings] == [SNAG]
-    assert "chupa/thing.py" in h.diff_stat and marker not in h.diff_stat
+    assert "clutch/thing.py" in h.diff_stat and marker not in h.diff_stat
     assert len(h.stage_log_tail) <= runner.HARVEST_TAIL_CHARS
     assert len(h.events_tail) <= runner.HARVEST_TAIL_CHARS
     assert h.run_record == f"tickets/{STEM}/run.md"
@@ -63,8 +63,8 @@ def test_review_snag_commits_closed_harvest_without_code_content_and_wipes(repo)
         if path.is_file():
             assert marker not in path.read_text()
     log = git(repo, "log", "--format=%s", "main").splitlines()
-    assert log[0] == f"chupa({STEM}): diagnosis" and f"chupa({STEM}): harvest" in log
-    assert not (repo / ".chupa" / "state" / "worktrees" / STEM).exists()
+    assert log[0] == f"clutch({STEM}): diagnosis" and f"clutch({STEM}): harvest" in log
+    assert not (repo / ".clutch" / "state" / "worktrees" / STEM).exists()
     assert git(repo, "rev-parse", "--verify", STEM).strip()
 
 
@@ -87,7 +87,7 @@ def test_infra_harvest_precedes_cap_and_terminal_and_carries_spooled_error(repo)
     cap = next(i for i, e in enumerate(history) if e.type == EventType.CAP_CONSUMED and e.body["cap"] == "infra")
     terminal = next(i for i, e in enumerate(history) if e.type == EventType.STATE_TRANSITION and e.body.get("to") == "infra_error")
     assert lift < cap < terminal
-    assert not (repo / ".chupa" / "state" / "worktrees" / STEM).exists()
+    assert not (repo / ".clutch" / "state" / "worktrees" / STEM).exists()
 
 
 def test_harvest_failure_is_soft(repo, monkeypatch):
@@ -102,7 +102,7 @@ def test_harvest_failure_is_soft(repo, monkeypatch):
     history = events(repo)
     assert [e.body for e in history if e.type == EventType.SIGNAL and e.body.get("signal") == "harvest_failed"] == [{"signal": "harvest_failed", "error": "RuntimeError: cannot harvest"}]
     assert any(e.type == EventType.STATE_TRANSITION and e.body.get("to") == "infra_error" for e in history)
-    assert not (repo / ".chupa" / "state" / "worktrees" / STEM).exists()
+    assert not (repo / ".clutch" / "state" / "worktrees" / STEM).exists()
 
 
 def test_missing_worktree_skips_harvest(repo, monkeypatch):
@@ -120,7 +120,7 @@ def test_missing_worktree_skips_harvest(repo, monkeypatch):
 
 def test_merged_run_has_no_attempts_dir(repo):
     author(repo)
-    code, _ = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    code, _ = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert code == 0
     assert not (repo / "tickets" / STEM / "attempts").exists()
 
@@ -129,7 +129,7 @@ def test_drain_reentry_quotes_prior_harvest_and_summarizes_older(repo):
     author(repo)
     first = "first dead end"
     second = "second dead end"
-    code, llm = run(repo, [RuntimeError(first), diagnosis_reply(), RuntimeError(second), diagnosis_reply(), agent({"chupa/thing.py": "ok\n"}), verdict()], verb="drain")
+    code, llm = run(repo, [RuntimeError(first), diagnosis_reply(), RuntimeError(second), diagnosis_reply(), agent({"clutch/thing.py": "ok\n"}), verdict()], verb="drain")
     assert code == 0
     renders = [criteria(r.rendered) for r in llm.requests if r.surface == "implement"]
     assert len(renders) == 3

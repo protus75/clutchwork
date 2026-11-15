@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import control, runner
-from chupa.journal import EventType
-from chupa.serve import Serve
+from clutch import __main__ as entry
+from clutch import control, runner
+from clutch.journal import EventType
+from clutch.serve import Serve
 
 
 class Journal:
@@ -118,8 +118,8 @@ def test_serve_forwards_actor(monkeypatch, actor):
 def test_live_verdict_intakes_before_publication(monkeypatch, refused):
     from pathlib import Path
 
-    from chupa import tickets
-    from chupa.lockfile import LockHeld
+    from clutch import tickets
+    from clutch.lockfile import LockHeld
 
     class MissingPath:
         def __truediv__(self, other):
@@ -129,7 +129,7 @@ def test_live_verdict_intakes_before_publication(monkeypatch, refused):
             return False
 
     async def held(*args, **kwargs):
-        raise LockHeld(Path("chupa.lock"), {"verb": "drain"})
+        raise LockHeld(Path("clutch.lock"), {"verb": "drain"})
 
     findings = {"sample": [SimpleNamespace(message="invalid edit")]} if refused else {}
     intake = AsyncMock(return_value=SimpleNamespace(refused=findings))
@@ -195,7 +195,7 @@ def test_build_control_known_rule(monkeypatch):
 def test_drain_logs_refusal(monkeypatch):
     from pathlib import PurePath
 
-    from chupa import drain
+    from clutch import drain
 
     log = SimpleNamespace(event=Mock())
     monkeypatch.setattr(drain, "EngineLog", lambda *args: log)

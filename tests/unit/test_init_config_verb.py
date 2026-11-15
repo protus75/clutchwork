@@ -4,10 +4,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa.config import ConfigError, load_config_text
-from chupa.providers import CliStatus, ModelListing, suggest_config
-from chupa.seams import ExecutableNotFound
+from clutch import __main__ as cli
+from clutch.config import ConfigError, load_config_text
+from clutch.providers import CliStatus, ModelListing, suggest_config
+from clutch.seams import ExecutableNotFound
 
 
 class Exec:
@@ -126,7 +126,7 @@ def test_verb(monkeypatch, capsys):
     assert "config.yaml already exists" in capsys.readouterr().err
     absent[0] = True
     assert run() == 2
-    assert "run: chupa install claude|codex|qwen" in capsys.readouterr().err
+    assert "run: clutch install claude|codex|qwen" in capsys.readouterr().err
     absent[0] = False
     fs.publish.reset_mock()
     monkeypatch.setattr(cli, "load_config_text", Mock(side_effect=ConfigError(Path("/repo/config.yaml"), None, "bad")))

@@ -12,7 +12,7 @@ from unittest.mock import patch
 def main():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        import chupa.observe as watch
+        import clutch.observe as watch
         from tests.unit.test_menu_admission import fake_snapshot_inputs
 
         with tempfile.TemporaryDirectory() as directory:
@@ -30,7 +30,7 @@ def main():
                 patch.object(watch, "commits", return_value={}),
             ):
                 row = next(row for row in watch.snapshot(ctx)["rows"] if row["stem"] == "ready")
-                defect = row["section"] != "queued" or row["menu"]["chupaReview"] != "on"
+                defect = row["section"] != "queued" or row["menu"]["clutchReview"] != "on"
     except Exception:
         traceback.print_exc(file=sys.stderr)
         print(json.dumps({"regression_result": "error"}))

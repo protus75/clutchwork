@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from chupa import merge, stages
-from chupa.gates import DEFAULT_GATE_SEVERITY
-from chupa.mergequeue import MergeQueue
-from chupa.seams import ExecutableNotFound
-from chupa.tickets import validate_ticket
+from clutch import merge, stages
+from clutch.gates import DEFAULT_GATE_SEVERITY
+from clutch.mergequeue import MergeQueue
+from clutch.seams import ExecutableNotFound
+from clutch.tickets import validate_ticket
 from tests.integration.test_mergequeue import approve, commit, ctx, ready
 from tests.integration.test_stages import SECRET, STEM, TICKET
 
@@ -21,7 +21,7 @@ WRAPPER = """import json
 import sys
 from pathlib import Path
 try:
-    text = Path('chupa/thing.py').read_text()
+    text = Path('clutch/thing.py').read_text()
 except OSError:
     print(json.dumps({'regression_result': 'error'}))
     sys.exit(1)
@@ -38,7 +38,7 @@ async def bug_ready(ctx, *, wrapper=WRAPPER, carries=PRODUCER, custody=True, byp
     text = (
         TICKET.format(bypass=("gate_bypass: [{code: bug_evidence, reason: reviewed exception}]\n" if bypass else ""))
         .replace("kind: feature", "kind: bug")
-        .replace("## Scope fence\n- chupa/thing.py", "## Scope fence\n- chupa/thing.py\n- tests/")
+        .replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n- clutch/thing.py\n- tests/")
         .replace("## Time budget", f"## Regression\n```\npython3 {PRODUCER}\n```\n- carries: {carries}\n\n## Time budget")
     )
     path = ctx.repo / f"tickets/{STEM}"
@@ -51,9 +51,9 @@ async def bug_ready(ctx, *, wrapper=WRAPPER, carries=PRODUCER, custody=True, byp
         evidence.unlink()
     await commit(ctx, ctx.repo, [f"tickets/{STEM}"], "bug intake")
     await ctx.git.worktree_add(ctx.repo, ctx.worktree(STEM), STEM, "main")
-    ctx.fs.write(ctx.worktree(STEM) / "chupa/thing.py", b"ok fixed\n")
+    ctx.fs.write(ctx.worktree(STEM) / "clutch/thing.py", b"ok fixed\n")
     ctx.fs.write(ctx.worktree(STEM) / PRODUCER, wrapper.encode())
-    await commit(ctx, ctx.worktree(STEM), ["chupa/thing.py", PRODUCER], "fix and new regression")
+    await commit(ctx, ctx.worktree(STEM), ["clutch/thing.py", PRODUCER], "fix and new regression")
     await approve(ctx, ticket)
     return ticket
 
@@ -109,9 +109,9 @@ def test_passing_new_test_is_not_bug_evidence(ctx):
 
 def test_missing_base_input_is_not_bug_evidence(ctx):
     async def scenario():
-        ticket = await bug_ready(ctx, wrapper=WRAPPER.replace("chupa/thing.py", "chupa/input.txt"))
-        ctx.fs.write(ctx.worktree(STEM) / "chupa/input.txt", b"fixed\n")
-        await commit(ctx, ctx.worktree(STEM), ["chupa/input.txt"])
+        ticket = await bug_ready(ctx, wrapper=WRAPPER.replace("clutch/thing.py", "clutch/input.txt"))
+        ctx.fs.write(ctx.worktree(STEM) / "clutch/input.txt", b"fixed\n")
+        await commit(ctx, ctx.worktree(STEM), ["clutch/input.txt"])
         _, report = await collect(ctx, ticket)
         assert report.verdict == "fail"
         assert report.bug_evidence.head.regression_result == "pass"
@@ -215,20 +215,20 @@ def test_bug_gate_requires_evidence(ctx):
 def test_bug_gate_rejects_red_head(ctx):
     async def scenario():
         ticket = await bug_ready(ctx)
-        ctx.fs.write(ctx.worktree(STEM) / "chupa/thing.py", b"ok broken\n")
-        await commit(ctx, ctx.worktree(STEM), ["chupa/thing.py"])
+        ctx.fs.write(ctx.worktree(STEM) / "clutch/thing.py", b"ok broken\n")
+        await commit(ctx, ctx.worktree(STEM), ["clutch/thing.py"])
         _, report = await collect(ctx, ticket)
         assert report.verdict == "fail" and report.bug_evidence.head.regression_result == "defect"
 
     run(scenario())
 
 
-@pytest.mark.parametrize("carries", ["tests/absent", "../tests", "/tests", "chupa/", ".", "tests/link.py"])
+@pytest.mark.parametrize("carries", ["tests/absent", "../tests", "/tests", "clutch/", ".", "tests/link.py"])
 def test_bug_gate_refuses_invalid_carries(ctx, carries):
     async def scenario():
         ticket = await bug_ready(ctx)
         if carries == "tests/link.py":
-            (ctx.worktree(STEM) / carries).symlink_to("../chupa/thing.py")
+            (ctx.worktree(STEM) / carries).symlink_to("../clutch/thing.py")
             await commit(ctx, ctx.worktree(STEM), [carries])
         ticket = dataclasses.replace(ticket, carries=(carries,))
         _, report = await collect(ctx, ticket)
@@ -265,8 +265,8 @@ def test_bug_gate_check_wiring(ctx, monkeypatch, case):
         bug = case != "non-bug"
         ticket = await bug_ready(ctx, custody=case != "missing") if bug else await ready(ctx)
         if case == "red-head":
-            ctx.fs.write(ctx.worktree(STEM) / "chupa/thing.py", b"ok broken\n")
-            await commit(ctx, ctx.worktree(STEM), ["chupa/thing.py"])
+            ctx.fs.write(ctx.worktree(STEM) / "clutch/thing.py", b"ok broken\n")
+            await commit(ctx, ctx.worktree(STEM), ["clutch/thing.py"])
         original = ctx.exec_.run
         calls = []
 
@@ -317,7 +317,7 @@ def test_bug_gate_base_cleanup(ctx, monkeypatch, failure):
         assert report.verdict == ("fail" if failure else "pass")
         assert await ctx.git.rev_parse(ctx.repo, STEM) == branch
         assert await ctx.git.status_porcelain(ctx.worktree(STEM)) == before
-        assert (ctx.repo / "chupa/thing.py").read_text() == "ok base\n"
+        assert (ctx.repo / "clutch/thing.py").read_text() == "ok base\n"
         assert not (ctx.repo / PRODUCER).exists()
         assert not (ctx.config.worktree_root / ".regression-base" / STEM).exists()
         operations = [argv[3:] for argv, _ in calls if argv[0] == "git"]
@@ -333,7 +333,7 @@ def test_bug_gate_base_cleanup(ctx, monkeypatch, failure):
 
 
 def test_bug_gate_capture_stays_bounded_after_scrubbing(ctx, monkeypatch):
-    from chupa.redact import Redactor
+    from clutch.redact import Redactor
 
     async def scenario():
         ticket = await bug_ready(ctx)
@@ -374,8 +374,8 @@ def test_bug_gate_merge_wiring(ctx, monkeypatch, mode, case):
             return await original(argv, **kw)
 
         monkeypatch.setattr(ctx.exec_, "run", execute)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         before = await ctx.git.rev_parse(ctx.repo, "main")
         result = await admit(ctx, ticket, mode)
         if case in ("red-head", "green-base"):
@@ -397,8 +397,8 @@ def test_bug_gate_merge_rebase_regates(ctx, monkeypatch, mode):
         _, prior = await collect(ctx, ticket)
         assert prior.verdict == "pass"
         # Main has acquired the fix. A fresh base now passes even though Check had proved a defect.
-        ctx.fs.write(ctx.repo / "chupa/thing.py", b"ok fixed\n")
-        await commit(ctx, ctx.repo, ["chupa/thing.py"], "main independently fixed")
+        ctx.fs.write(ctx.repo / "clutch/thing.py", b"ok fixed\n")
+        await commit(ctx, ctx.repo, ["clutch/thing.py"], "main independently fixed")
         before = await ctx.git.rev_parse(ctx.repo, "main")
         captured = []
         original = stages.BugEvidenceGate.check
@@ -452,8 +452,8 @@ def test_bug_gate_merge_report_custody(ctx, monkeypatch, mode, bypass):
             return read(p, *args, **kw)
 
         monkeypatch.setattr(Path, "read_text", guarded)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         before = await ctx.git.rev_parse(ctx.repo, "main")
         result = await admit(ctx, ticket, mode)
         assert result.outcome == ("ok" if bypass else "gate_failed"), result.findings

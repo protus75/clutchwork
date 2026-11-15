@@ -6,10 +6,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa.config import Limits, ModelsByTier, Provider
-from chupa.providers import CLAUDE_ALIASES, PROBE_PROMPT, ClaudeAdapter, CliAdapter, CodexAdapter, QwenAdapter
-from chupa.seams import ExecutableNotFound
+from clutch import __main__ as cli
+from clutch.config import Limits, ModelsByTier, Provider
+from clutch.providers import CLAUDE_ALIASES, PROBE_PROMPT, ClaudeAdapter, CliAdapter, CodexAdapter, QwenAdapter
+from clutch.seams import ExecutableNotFound
 
 
 class Exec:
@@ -136,4 +136,4 @@ def test_verb(monkeypatch, capsys):
     config.providers = [claude]
     exec_.responses["haiku"] = ExecutableNotFound("claude")
     assert run() == 2
-    assert "run: chupa install claude" in capsys.readouterr().err
+    assert "run: clutch install claude" in capsys.readouterr().err

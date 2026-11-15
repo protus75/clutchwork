@@ -3,19 +3,19 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa.covmap import build, reduce_map
-from chupa.runner import Refusal
+from clutch.covmap import build, reduce_map
+from clutch.runner import Refusal
 
 REPORT = {
     "files": {
-        "chupa/a.py": {"contexts": {"1": ["tests/test_b.py::test_b|run", "tests/test_a.py::test_a|run", "module"], "2": ["tests/test_b.py::test_b|setup"]}},
-        "chupa/b.py": {"contexts": {}},
+        "clutch/a.py": {"contexts": {"1": ["tests/test_b.py::test_b|run", "tests/test_a.py::test_a|run", "module"], "2": ["tests/test_b.py::test_b|setup"]}},
+        "clutch/b.py": {"contexts": {}},
     }
 }
 
 
 def test_reduce_map():
-    assert reduce_map(REPORT) == {"chupa/a.py": ["tests/test_a.py", "tests/test_b.py"], "chupa/b.py": []}
+    assert reduce_map(REPORT) == {"clutch/a.py": ["tests/test_a.py", "tests/test_b.py"], "clutch/b.py": []}
 
 
 @pytest.mark.asyncio
@@ -50,7 +50,7 @@ async def test_build(tmp_path, case):
     fs = FS()
     if case == "success":
         await build(repo=tmp_path, config=config, exec_=Exec(), git=Git(), fs=fs, env={})
-        assert json.loads(fs.files[state / "coverage-map.json"]) == {"sha": "main-sha", "files": {"chupa/a.py": ["tests/test_a.py", "tests/test_b.py"], "chupa/b.py": []}}
+        assert json.loads(fs.files[state / "coverage-map.json"]) == {"sha": "main-sha", "files": {"clutch/a.py": ["tests/test_a.py", "tests/test_b.py"], "clutch/b.py": []}}
     else:
         with pytest.raises(Refusal):
             await build(repo=tmp_path, config=config, exec_=Exec(), git=Git(), fs=fs, env={})

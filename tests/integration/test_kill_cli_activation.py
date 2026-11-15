@@ -8,16 +8,16 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import control, daemon, drain, runner, stages
-from chupa.audit import audit_journal
-from chupa.control import ControlProjection, ControlRequest, publish_request
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.lockfile import Lockfile
-from chupa.reconcile import orphans
-from chupa.seams import LocalFileSystem
-from chupa.status import last_states
+from clutch import __main__ as entry
+from clutch import control, daemon, drain, runner, stages
+from clutch.audit import audit_journal
+from clutch.control import ControlProjection, ControlRequest, publish_request
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.lockfile import Lockfile
+from clutch.reconcile import orphans
+from clutch.seams import LocalFileSystem
+from clutch.status import last_states
 from tests.integration.test_cli import ENV, Clock, Stages, root
 from tests.integration.test_cli import write as write_ticket
 from tests.integration.test_control_cli import acquire, discovery, invoke, requests
@@ -73,12 +73,12 @@ def test_live_kill_publishes_only_bound_request(root, monkeypatch, capsys):
 
 @pytest.mark.parametrize("stale", [False, True])
 def test_idle_kill_refuses_without_state(root, monkeypatch, capsys, stale):
-    state = root / ".chupa/state"
+    state = root / ".clutch/state"
     if stale:
         discovery(root, "old-life", "old-hold")
 
     def contents():
-        return {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file() and p.name != "chupa.lock"}
+        return {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file() and p.name != "clutch.lock"}
 
     before, trace = contents(), []
     acquire_, release = Lockfile.acquire, Lockfile.release
@@ -101,7 +101,7 @@ def test_idle_kill_refuses_without_state(root, monkeypatch, capsys, stale):
         for obj, name in ((entry, "uuid4"), (entry, "build_control"), (Journal, "append"), (control, "read_active"), (control, "publish_request"), (control, "write_active")):
             patch.setattr(obj, name, forbidden)
         assert invoke(root, "kill") == runner.EXIT_REFUSED
-    assert capsys.readouterr().err == ("chupa kill: nothing running to kill -- start a drain before submitting kill\n")
+    assert capsys.readouterr().err == ("clutch kill: nothing running to kill -- start a drain before submitting kill\n")
     assert contents() == before and trace == ["lock", "unlock"]
     lock = acquire(root)
     lock.release()
@@ -113,7 +113,7 @@ def test_idle_kill_refuses_without_state(root, monkeypatch, capsys, stale):
 )
 def test_kill_discovery_and_lifecycle_races_fail_closed(root, monkeypatch, capsys, raw):
     original = Lockfile.acquire
-    owner = Lockfile(root / ".chupa/state", verb="drain", instance_id="racing-owner", clock=Clock())
+    owner = Lockfile(root / ".clutch/state", verb="drain", instance_id="racing-owner", clock=Clock())
 
     def race(lock):
         if not owner.held:
@@ -309,7 +309,7 @@ def test_live_drain_kill_reaches_production_driver(root, monkeypatch, capsys, bi
     exercise_live_cli_kill(root, monkeypatch)
     output = capsys.readouterr().out
     assert "kill submitted: " in output and "drain stopped by kill" in output
-    assert "uv run python -m chupa drain" in output
+    assert "uv run python -m clutch drain" in output
 
 
 @pytest.mark.asyncio
@@ -364,8 +364,8 @@ async def kill_between_calls(root, monkeypatch, kind):
     class Editing(FakeLLM):
         async def call(self, req):
             if req.surface == "implement":
-                c.fs.write(req.worktree / "chupa/thing.py", b"ok\n")
-                await c.git.add(req.worktree, ["chupa/thing.py"])
+                c.fs.write(req.worktree / "clutch/thing.py", b"ok\n")
+                await c.git.add(req.worktree, ["clutch/thing.py"])
                 await c.git.commit(req.worktree, "work")
             return await super().call(req)
 
@@ -546,7 +546,7 @@ async def test_kill_application_is_once_and_identity_bound(root, monkeypatch, po
         assert all(p.exists() for p in (c.config.state_dir / "control/inbox").glob("*.json"))
 
         # Reconstruct from real acceptance/application crash points in a disposable state.
-        state = c.repo / ".chupa/recovery"
+        state = c.repo / ".clutch/recovery"
         journal = Journal(state, c.clock)
         for event in c.journal.read():
             if event.body.get("kind") == control.CONTROL_DECISION:
@@ -836,7 +836,7 @@ def test_kill_activation_keeps_worker_boundaries_dormant(root, tmp_path, monkeyp
                 entry.main(args, cwd=root, env=ENV, clock=Clock(), pipeline=wired)
         else:
             assert entry.main(args, cwd=root, env=ENV, clock=Clock(), pipeline=wired) == 0
-            bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == stem and e.type == EventType.STATE_TRANSITION]
+            bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == stem and e.type == EventType.STATE_TRANSITION]
             assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == "AssertionError: worker boundary activated"
             write(root, "fresh", confirmed().replace("uv run pytest", "true"))
 

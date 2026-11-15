@@ -7,13 +7,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import daemon
-from chupa.box import Box, BoxError, Message, Resolution, signature
-from chupa.config import Caps
-from chupa.flake import Flake, FlakeError, GreenRerunEvidence, RerunEvidence
-from chupa.journal import EventType, Journal
-from chupa.seams import LocalFileSystem
+from clutch import __main__ as cli
+from clutch import daemon
+from clutch.box import Box, BoxError, Message, Resolution, signature
+from clutch.config import Caps
+from clutch.flake import Flake, FlakeError, GreenRerunEvidence, RerunEvidence
+from clutch.journal import EventType, Journal
+from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
 
@@ -512,7 +512,7 @@ def test_release_read_failures_propagate(rig, monkeypatch, fault):
     resolved(rig, identity)
     before = rig.journal.read()
     if fault == "corrupt":
-        from chupa.journal import JournalCorruption
+        from clutch.journal import JournalCorruption
 
         (segment,) = rig.journal.dir.glob("*.jsonl")
         segment.write_bytes(segment.read_bytes() + b"corrupt\n")

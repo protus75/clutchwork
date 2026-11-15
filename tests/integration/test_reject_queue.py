@@ -4,15 +4,15 @@ import asyncio
 
 import pytest
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.artifacts import Cost, Finding, StageResult
-from chupa.caps import CAPS, draws, remaining
-from chupa.config import Caps
-from chupa.journal import EventType
-from chupa.llm import FakeLLM
-from chupa.stages import StagesRun
-from chupa.status import reject_queue
+from clutch import runner
+from clutch.__main__ import main
+from clutch.artifacts import Cost, Finding, StageResult
+from clutch.caps import CAPS, draws, remaining
+from clutch.config import Caps
+from clutch.journal import EventType
+from clutch.llm import FakeLLM
+from clutch.stages import StagesRun
+from clutch.status import reject_queue
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, Script, commit_ticket, confirmed, drain, journal, make_root
 from tests.integration.test_git import commit_lock
@@ -119,17 +119,17 @@ def test_reject_stamps_notifies_dependents_and_is_idempotent(tmp_path, capsys):
     _queued(root, "parent")
     assert main(["reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "state: rejected" in git_out(root, "show", "HEAD:tickets/parent/ticket.md")
-    assert git_out(root, "log", "-1", "--format=%s").strip() == "chupa(parent): rejected"
+    assert git_out(root, "log", "-1", "--format=%s").strip() == "clutch(parent): rejected"
     events = _events(root, "parent")
     assert events[-2].body == {"signal": "reject_verdict", "verdict": "kill", "actor": "operator"}
     assert events[-1].body == {"to": "rejected"}
     assert sum(e.body.get("signal") == "dead_dependency" for e in _events(root, "child")) == 1
-    box = list((root / ".chupa/state/box").glob("*.json"))
+    box = list((root / ".clutch/state/box").glob("*.json"))
     assert len(box) == 1 and "failure_report" in box[0].read_text()
     count = len(journal(root).read())
     assert main(["reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "already rejected" in capsys.readouterr().out
-    assert len(journal(root).read()) == count and len(list((root / ".chupa/state/box").glob("*.json"))) == 1
+    assert len(journal(root).read()) == count and len(list((root / ".clutch/state/box").glob("*.json"))) == 1
     journal(root).append(EventType.STATE_TRANSITION, {"to": "gate_failed"}, ticket="ghost")
     before = git_out(root, "rev-parse", "HEAD")
     assert main(["reject", "ghost"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
@@ -158,7 +158,7 @@ def test_draft_confirm_commits_and_next_drain_dispatches(tmp_path):
     commit_ticket(root, "rough", confirmed().replace("state: confirmed", "state: draft", 1))
     assert main(["confirm", "rough"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "state: confirmed" in git_out(root, "show", "HEAD:tickets/rough/ticket.md")
-    assert git_out(root, "log", "-1", "--format=%s").strip() == "chupa(rough): confirmed"
+    assert git_out(root, "log", "-1", "--format=%s").strip() == "clutch(rough): confirmed"
     assert any(e.body.get("signal") == "draft_confirmed" for e in _events(root, "rough"))
     script = Script()
     assert drain(root, script) == 0
@@ -174,9 +174,9 @@ def test_dirless_ghost_can_be_kept(tmp_path):
 
 @pytest.mark.parametrize("leaf_state", ["rejected", "abandoned"])
 def test_dead_dependencies_resolve_through_supersedes(tmp_path, leaf_state):
-    from chupa.config import load_config
-    from chupa.git import Git
-    from chupa.seams import LocalFileSystem, SubprocessExec
+    from clutch.config import load_config
+    from clutch.git import Git
+    from clutch.seams import LocalFileSystem, SubprocessExec
 
     root = make_root(tmp_path)
     for stem, depends in [("original", "none"), ("one", "none"), ("two", "none"), ("leaf", "none"), ("leaf-other", "none"), ("dependent", "- original")]:
@@ -186,28 +186,28 @@ def test_dead_dependencies_resolve_through_supersedes(tmp_path, leaf_state):
         j.append(EventType.SIGNAL, {"signal": "supersedes", "successors": successors}, ticket=stem)
     assert main(["reject", "original"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert not any(e.body.get("signal") == "dead_dependency" for e in _events(root, "dependent"))
-    assert not list((root / ".chupa/state/box").glob("*.json"))
+    assert not list((root / ".clutch/state/box").glob("*.json"))
     if leaf_state == "rejected":
         assert main(["reject", "leaf"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     else:
         j.append(EventType.STATE_TRANSITION, {"to": "abandoned"}, ticket="leaf")
         checkout = runner.Checkout(
-            root, load_config(None, cwd=root), ENV, SubprocessExec(), Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".chupa/state")), j, LocalFileSystem(), Clock()
+            root, load_config(None, cwd=root), ENV, SubprocessExec(), Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state")), j, LocalFileSystem(), Clock()
         )
         asyncio.run(runner._dead_dependents("leaf", checkout))
     [signal] = [e for e in _events(root, "dependent") if e.body.get("signal") == "dead_dependency"]
     assert signal.body == {"signal": "dead_dependency", "dead": "original"}
-    boxes = list((root / ".chupa/state/box").glob("*.json"))
+    boxes = list((root / ".clutch/state/box").glob("*.json"))
     assert len(boxes) == 1 and "failure_report" in boxes[0].read_text()
     before = len(j.read())
     assert main(["reject", "original"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
-    assert len(j.read()) == before and len(list((root / ".chupa/state/box").glob("*.json"))) == 1
+    assert len(j.read()) == before and len(list((root / ".clutch/state/box").glob("*.json"))) == 1
 
 
 @pytest.mark.parametrize("verb", ["confirm", "reject"])
 def test_verdict_refused_without_terminal(tmp_path, monkeypatch, capsys, verb):
-    from chupa.journal import Journal
-    from chupa.lockfile import Lockfile
+    from clutch.journal import Journal
+    from clutch.lockfile import Lockfile
 
     root = make_root(tmp_path)
 
@@ -217,8 +217,8 @@ def test_verdict_refused_without_terminal(tmp_path, monkeypatch, capsys, verb):
     monkeypatch.setattr(Lockfile, "acquire", forbidden)
     monkeypatch.setattr(Journal, "read", forbidden)
     assert main([verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: False, forbidden)) == 2
-    assert "a human runs this in a terminal: `chupa confirm|reject <stem>`" in capsys.readouterr().err
-    assert not (root / ".chupa/state/control/inbox").exists()
+    assert "a human runs this in a terminal: `clutch confirm|reject <stem>`" in capsys.readouterr().err
+    assert not (root / ".clutch/state/control/inbox").exists()
 
 
 @pytest.mark.parametrize("verb", ["confirm", "reject"])
@@ -238,7 +238,7 @@ def test_verdict_requires_yes(tmp_path, capsys, verb, answer):
     else:
         assert result == 1 and journal(root).read() == before
         assert path.read_bytes() == original and git_out(root, "rev-parse", "HEAD") == head
-        assert not (root / ".chupa/state/control/inbox").exists()
+        assert not (root / ".clutch/state/control/inbox").exists()
 
 
 @pytest.mark.parametrize("verb", ["confirm", "reject"])

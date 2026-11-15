@@ -6,15 +6,15 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from chupa.artifacts import ReviewVerdict
-from chupa.driver import LlmStage
-from chupa.journal import EventType
-from chupa.llm import FakeLLM, LLMResult
-from chupa.lockfile import Lockfile
-from chupa.retro import RetroArtifact, measurements, production_evidence, project_window, render_report
-from chupa.scorecard import project_scorecard
-from chupa.stages import PackingSlip, check, implement
-from chupa.tickets import validate_ticket
+from clutch.artifacts import ReviewVerdict
+from clutch.driver import LlmStage
+from clutch.journal import EventType
+from clutch.llm import FakeLLM, LLMResult
+from clutch.lockfile import Lockfile
+from clutch.retro import RetroArtifact, measurements, production_evidence, project_window, render_report
+from clutch.scorecard import project_scorecard
+from clutch.stages import PackingSlip, check, implement
+from clutch.tickets import validate_ticket
 from tests.integration.test_drain import confirmed
 from tests.integration.test_retro import completed, merged, rig
 from tests.integration.test_stages import implement_reply
@@ -132,8 +132,8 @@ def test_scorecard_catches_resolved_and_upheld_findings(tmp_path):
     async def resolve_gate():
         worktree = writer.ctx.worktree("resolved")
         (worktree / "outside-resolved.py").unlink()
-        c.fs.write(worktree / "chupa/thing.py", b"ok\n")
-        paths = ["outside-resolved.py", "chupa/thing.py"]
+        c.fs.write(worktree / "clutch/thing.py", b"ok\n")
+        paths = ["outside-resolved.py", "clutch/thing.py"]
         await c.git.add(worktree, paths)
         await c.git.commit(worktree, "resolve scope finding", only=paths)
         ticket = validate_ticket("resolved", (c.repo / "tickets/resolved/ticket.md").read_text(), c.repo)

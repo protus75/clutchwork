@@ -1,6 +1,6 @@
 # Document agent: plan
 
-A document agent for chupa that creates, reviews, and transforms documents. Each request picks one value from six dimensions: **Type**, **Audience**, **Format**, **Review**, **Tone**, and **Theme**. Each dimension is a list of files that can be extended. One canonical Markdown document (usually a Plan) is the source, and versions for other audiences and formats are derived from it. When a derived version is edited, the edit is folded back into the canonical document and then passed on to the other derived versions, so the set does not drift apart. Reviews run as isolated agent panels with a synthesis that checks the findings against the document, following the owner's existing review prompts.
+A document agent for clutch that creates, reviews, and transforms documents. Each request picks one value from six dimensions: **Type**, **Audience**, **Format**, **Review**, **Tone**, and **Theme**. Each dimension is a list of files that can be extended. One canonical Markdown document (usually a Plan) is the source, and versions for other audiences and formats are derived from it. When a derived version is edited, the edit is folded back into the canonical document and then passed on to the other derived versions, so the set does not drift apart. Reviews run as isolated agent panels with a synthesis that checks the findings against the document, following the owner's existing review prompts.
 
 ## Status
 
@@ -8,24 +8,24 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.6.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.2.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.4.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.5.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.5.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `chupa/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
+Release 0.6.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.2.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.4.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.5.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.5.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `clutch/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
 
 ## What it is for
 
 1. **From conversation or loose notes to a plan.** Turn a chat or "vibe" session, or several scattered Markdown files, into one canonical Plan with a fixed shape.
 2. **One source, many readers.** Derive an overview for non-technical readers, an API reference for developers, a seed for ticket authoring, or a blog post, all from the same Plan, and render them as Markdown, HTML, or PDF.
 3. **Reviews you can act on.** Run a lens as several isolated reviewers, then verify and merge their findings. A finding that several reviewers reach independently is treated as real. A finding from one reviewer is a lead to check.
-4. **No drift.** Every derived document records which canonical sections it was built from. When the canonical document changes, chupa says which derived documents are stale. When a derived document is edited, the edit is proposed back into the canonical document instead of being lost or contradicting it.
-5. **Plans organize other work.** A Plan's ticket breakdown is the bridge to chupa tickets (through a Seed), and its sections are the anchors that derived works cite.
+4. **No drift.** Every derived document records which canonical sections it was built from. When the canonical document changes, clutch says which derived documents are stale. When a derived document is edited, the edit is proposed back into the canonical document instead of being lost or contradicting it.
+5. **Plans organize other work.** A Plan's ticket breakdown is the bridge to clutch tickets (through a Seed), and its sections are the anchors that derived works cite.
 
 ## Current state
 
-- `chupa/specs/ask/` holds operator prompt templates rendered by `chupa prompt <kind>` (`chupa/ask.py`, closed `KINDS` tuple). The extension opens one in a Claude Code chat ("Ask Claude: drain loop"). That is the existing route for interactive, guided work.
-- Driver specs in `chupa/specs/` run headless through one driver (`chupa/driver.py`), with routing by `(tier, surface)` and a fallback to the `review` row for an unrouted surface (`chupa/providers.py:104`). Every surface except Implement is read-only. The model returns text, and the engine writes the files.
+- `clutch/specs/ask/` holds operator prompt templates rendered by `clutch prompt <kind>` (`clutch/ask.py`, closed `KINDS` tuple). The extension opens one in a Claude Code chat ("Ask Claude: drain loop"). That is the existing route for interactive, guided work.
+- Driver specs in `clutch/specs/` run headless through one driver (`clutch/driver.py`), with routing by `(tier, surface)` and a fallback to the `review` row for an unrouted surface (`clutch/providers.py:104`). Every surface except Implement is read-only. The model returns text, and the engine writes the files.
 - Read-only surfaces are **not isolated**. Claude runs with `--tools Read Grep Glob LS` in the repo (`ClaudeAdapter.argv`). Codex runs `--sandbox read-only` in the repo. A reviewer can browse the repository, which the owner's review prompts forbid ("Your only input is the document").
-- Specs always load from the engine. Host material enters a prompt only inside `<<chupa-data:...>>` blocks (`ask_notes` is the precedent). Config load refuses `review.surfaces` (host review prompts).
+- Specs always load from the engine. Host material enters a prompt only inside `<<clutch-data:...>>` blocks (`ask_notes` is the precedent). Config load refuses `review.surfaces` (host review prompts).
 - The owner's review prompts (`/home/djp/source/*.md`, identical copies in `gizmo/review/`) have been run by hand against seed plans across several sibling repos. Reports sit in `gizmo/review/` (for example, `REVIEW_reports/cut-agent-{A,B,C}.md` with `REVIEW_CutSynthesis.md`).
-- No document tooling exists in chupa: no Markdown-to-HTML renderer, no PDF path, no theme CSS.
+- No document tooling exists in clutch: no Markdown-to-HTML renderer, no PDF path, no theme CSS.
 
 ## Departures from the design record
 
@@ -34,13 +34,13 @@ Release 0.6.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evi
 | §18.1 refuses "metadata taxonomies" and "doc tags" | Facets (six closed dimensions) and `docset.yaml` manifests | The owner asked for the six dimensions on 2026-11-13. Each dimension is a closed allowlist of files, not a free tag space, and the manifest records provenance (which sections a derived document came from), not classification. The refusal's target was taxonomy for its own sake; this is the minimum that makes fold-back and staleness mechanical |
 | D7-style "never act on estimate-vs-estimate" | The Automatable lens compares dry-run ticket fences with `fences_overlap` | It reports an estimate as a finding for the owner, never acts on it |
 
-`CHUPA_PLAN.md` stays frozen. The tickets add a "Documents" section to `docs/how-chupa-works.md` and a config row.
+`CLUTCH_PLAN.md` stays frozen. The tickets add a "Documents" section to `docs/how-clutch-works.md` and a config row.
 
 ## Target design
 
 ### 1. Dimensions and facets
 
-Each dimension value is a **facet**: one Markdown file with frontmatter, kept under `chupa/specs/doc/facets/<dimension>/<value>.md`. The set of files is the closed list (an allowlist). Adding a value means adding a file and its test pin.
+Each dimension value is a **facet**: one Markdown file with frontmatter, kept under `clutch/specs/doc/facets/<dimension>/<value>.md`. The set of files is the closed list (an allowlist). Adding a value means adding a file and its test pin.
 
 | Dimension | Initial values | Kind | Applies at |
 |---|---|---|---|
@@ -66,7 +66,7 @@ requires: []                       # e.g. theme facets: requires format in [html
 
 - **Model facets** (Type, Audience, Tone, Review) change the prompt. **Render facets** (Format, Theme) change only the mechanical output. The model always writes Markdown.
 - A facet that does not apply to an operation is refused with a paved road.
-- **Host extension:** `documents.facets_dir` points at host facet files with the same frontmatter. They enter the prompt as `<<chupa-data:facet>>` blocks inside the engine's surface frame. Whether host *lenses* are allowed is Open decision 2.
+- **Host extension:** `documents.facets_dir` points at host facet files with the same frontmatter. They enter the prompt as `<<clutch-data:facet>>` blocks inside the engine's surface frame. Whether host *lenses* are allowed is Open decision 2.
 
 ### 2. Doc sets: one canonical document and its derived versions
 
@@ -82,10 +82,10 @@ docs/plans/parallel-tickets/
   reviews/2026-11-13-scope.md     # review report
 ```
 
-`docset.yaml` (schema `chupa.docset/1.0`, strict writer and tolerant reader, as in `docs/evidence-trail-plan.md` §5):
+`docset.yaml` (schema `clutch.docset/1.0`, strict writer and tolerant reader, as in `docs/evidence-trail-plan.md` §5):
 
 ```yaml
-schema: chupa.docset/1.0
+schema: clutch.docset/1.0
 canonical:
   path: plan.md
   facets: {type: plan, audience: developer, tone: default}
@@ -95,29 +95,29 @@ derived:
     facets: {type: overview, audience: non-technical, tone: default}
     renders: [{format: html, theme: light, path: overview.non-technical.html}]
     built_from: {commit: 0895b5d4, sections: {target-design: 0d7e..., risks: 77aa...}}
-    hash: 5be1...            # this file's hash when chupa last wrote it
+    hash: 5be1...            # this file's hash when clutch last wrote it
     fidelity: {verdict: LOSSY-MINOR, report: reviews/2026-11-13-fidelity-overview.md}
 ```
 
 - **Section identity** comes from heading slugs. The owner's compression prompt already requires that "section numbers and heading text stay exactly as in the original", so headings are a stable key across derived versions.
-- **`chupa doc status`** is mechanical and reports one state per derived document: `current`, `stale` (a canonical section it used changed), `diverged` (edited after chupa wrote it), or `stale+diverged`.
-- `derive` refuses to overwrite a `diverged` file. The paved road is `chupa doc fold <path>`, or `--discard-edits` to throw the edits away on purpose.
+- **`clutch doc status`** is mechanical and reports one state per derived document: `current`, `stale` (a canonical section it used changed), `diverged` (edited after clutch wrote it), or `stale+diverged`.
+- `derive` refuses to overwrite a `diverged` file. The paved road is `clutch doc fold <path>`, or `--discard-edits` to throw the edits away on purpose.
 
 ### 3. Surfaces and isolation
 
 | Surface | Spec | Purpose |
 |---|---|---|
-| `doc_draft` | `chupa/specs/doc/draft.md` | sources + Type, Audience, and Tone facets → canonical Markdown + open questions |
-| `doc_derive` | `chupa/specs/doc/derive.md` | canonical + target facets → derived Markdown + the sections it used |
-| `doc_review` | `chupa/specs/doc/lens.md` | one generic frame. The lens facet supplies the role prompt (cut agent, synthesis, compressor, fidelity, ...) and the reply schema. Named `lens.md`, not `review.md`, because `chupa/specs/review.md` exists (roadmap decision 6). |
+| `doc_draft` | `clutch/specs/doc/draft.md` | sources + Type, Audience, and Tone facets → canonical Markdown + open questions |
+| `doc_derive` | `clutch/specs/doc/derive.md` | canonical + target facets → derived Markdown + the sections it used |
+| `doc_review` | `clutch/specs/doc/lens.md` | one generic frame. The lens facet supplies the role prompt (cut agent, synthesis, compressor, fidelity, ...) and the reply schema. Named `lens.md`, not `review.md`, because `clutch/specs/review.md` exists (roadmap decision 6). |
 
-Every file under `chupa/specs/doc/` carries the spec frontmatter that `tests/unit/test_specs.py:24` checks on everything under `chupa/specs/`, and loads through `chupa/specs/__init__.py` like the eight driver specs; facets and themes are data files the specs embed, not specs, and live under `chupa/specs/doc/facets/` and `themes/` with the walker told to skip them.
-| `doc_fold` | `chupa/specs/doc/fold.md` | canonical + diverged derived document + its diff → proposed canonical patch, with changes in meaning separated from changes in style |
+Every file under `clutch/specs/doc/` carries the spec frontmatter that `tests/unit/test_specs.py:24` checks on everything under `clutch/specs/`, and loads through `clutch/specs/__init__.py` like the eight driver specs; facets and themes are data files the specs embed, not specs, and live under `clutch/specs/doc/facets/` and `themes/` with the walker told to skip them.
+| `doc_fold` | `clutch/specs/doc/fold.md` | canonical + diverged derived document + its diff → proposed canonical patch, with changes in meaning separated from changes in style |
 
 **Isolation is a property of the call, not of the prompt.** Every lens prompt says the agent's only input is the document, with "no knowledge that other agents exist". Today's read-only surfaces can read the whole repository, so the doc surfaces get a new isolated mode:
 
 - The call runs with its working directory set to a fresh scratch directory under `state_dir/doc-scratch/<call>/`. That directory holds only the files the role is allowed to see: the document for a panelist; the document and the panel reports for a synthesis; the original and the draft for a fidelity auditor.
-- Claude gets `--tools Read Grep Glob LS` scoped to that directory, and Codex gets `--sandbox read-only` with that directory as its working directory. The adapter's `writes` decision (`req.surface in WRITING_SURFACES`, `chupa/providers.py:321`; `WRITING_SURFACES = {"implement"}` at line 29) stays false because no `doc_*` surface is a writing surface. A new `isolated` field on `LLMRequest` (`chupa/llm.py:15`) selects the scratch directory as the working directory, a third source beside the worktree (writing calls) and the repo (`providers.py:338`).
+- Claude gets `--tools Read Grep Glob LS` scoped to that directory, and Codex gets `--sandbox read-only` with that directory as its working directory. The adapter's `writes` decision (`req.surface in WRITING_SURFACES`, `clutch/providers.py:321`; `WRITING_SURFACES = {"implement"}` at line 29) stays false because no `doc_*` surface is a writing surface. A new `isolated` field on `LLMRequest` (`clutch/llm.py:15`) selects the scratch directory as the working directory, a third source beside the worktree (writing calls) and the repo (`providers.py:338`).
 - No conduct file is loaded: the scratch directory has no `CLAUDE.md` or `AGENTS.md`, by design, since a panelist must see only the document. The evidence record says so (`isolated: true`, `conduct_file: null`, `repo: null`; `docs/evidence-trail-plan.md` §2), so a reader can tell these calls from every other call.
 - The prompt names no other agent, no prior run, and no review history. No earlier report from the doc set's `reviews/` directory is ever placed in a panelist's scratch directory. That prevents anchoring, as the owner's prompts require.
 - The scratch directory is removed after the call, and the evidence record (`docs/evidence-trail-plan.md`) keeps what the call saw.
@@ -175,7 +175,7 @@ verdicts: [SELF-CONTAINED, GAPS-FIXABLE, NOT SELF-CONTAINED]
 <ledger entry fields and closed classes: missing / ambiguous / contradictory / deliberate-freedom; BLOCKED list>
 ```
 
-- The prompt text stays the owner's. chupa adds only the output schema, so "output returns as structured data" becomes a gated JSON reply.
+- The prompt text stays the owner's. clutch adds only the output schema, so "output returns as structured data" becomes a gated JSON reply.
 - `<PLAN_PATH>` becomes the document's file name inside the scratch directory. `<SPEC_PATH>` (compression) becomes the draft the engine writes from the compressor's reply, since agents never write files.
 - `count` is configurable per run (`--panel N`, minimum 2). The default stays 3, as the prompts specify.
 - `compression` declares a different shape: `compressor` (count 1, returns the spec text + ledgers + metrics) then `fidelity` (count 1, sees the original, the draft, and the compressor's ledger and duplicate map, but not its reasoning). The fidelity auditor's mechanical checks ("check these mechanically with diff") run in the engine: protected regions (fenced code, commands, extraction-marker blocks) are compared byte for byte, and those results are given to the auditor as facts.
@@ -183,16 +183,16 @@ verdicts: [SELF-CONTAINED, GAPS-FIXABLE, NOT SELF-CONTAINED]
 
 #### 4.3 The AI Automatable lens, and how it compares with BuildIt
 
-**What it tests.** BuildIt asks whether the document *determines* every decision an implementer needs. Automatable asks a different question: once decided, can the work be *carried out and verified by machine*, as a set of chupa tickets that go through Implement, Check, Review, and Merge with no human beyond `confirm`? A document can be fully self-contained and still not be automatable: "the dashboard feels responsive" is fully decided and has no oracle. It can also be automatable while leaving free choices an AI is allowed to make.
+**What it tests.** BuildIt asks whether the document *determines* every decision an implementer needs. Automatable asks a different question: once decided, can the work be *carried out and verified by machine*, as a set of clutch tickets that go through Implement, Check, Review, and Merge with no human beyond `confirm`? A document can be fully self-contained and still not be automatable: "the dashboard feels responsive" is fully decided and has no oracle. It can also be automatable while leaving free choices an AI is allowed to make.
 
-**How it is fully automated.** Its implementer role-plays chupa's *Author*, not a human engineer. It produces artifacts chupa can already check without a model:
+**How it is fully automated.** Its implementer role-plays clutch's *Author*, not a human engineer. It produces artifacts clutch can already check without a model:
 
-1. **3 isolated dry-run authors.** Each sees the document plus the authoring contract the real executor obeys: `chupa/docs/host-authoring.md` and the ticket skeletons. That contract is to Automatable what "the document's implementation language" is to BuildIt. It is the target machine's rules, not project context. No repository, no history, no knowledge of the other agents. For `<PHASE_SCOPE>`, each returns:
-   - a **ticket set** in chupa format (frontmatter, Goal, Scope, Scope fence, Acceptance criteria, Verification, Depends on);
+1. **3 isolated dry-run authors.** Each sees the document plus the authoring contract the real executor obeys: `clutch/docs/host-authoring.md` and the ticket skeletons. That contract is to Automatable what "the document's implementation language" is to BuildIt. It is the target machine's rules, not project context. No repository, no history, no knowledge of the other agents. For `<PHASE_SCOPE>`, each returns:
+   - a **ticket set** in clutch format (frontmatter, Goal, Scope, Scope fence, Acceptance criteria, Verification, Depends on);
    - an **oracle ledger**: for every acceptance criterion, how a machine decides it (`test`, `command`, `path-exists`, `lint`, `none`). `none` means a person has to decide;
    - a **human-gate ledger**: every step the agent could not hand to an agent, in closed classes: `credential` (accounts, keys, payment), `external` (third-party approval, hardware, a service that does not exist yet), `judgment` (taste, UX feel, legal, business priority), `data` (inputs the document assumes but nothing produces), `irreversible` (a production action with no rollback);
    - an **invented-decisions ledger**, with BuildIt's classes, so the two lenses can be compared directly.
-2. **Mechanical stage, with no model.** The engine writes each ticket set into a scratch `tickets/` directory and runs the real ticket checks that `chupa lint` runs (`validate_ticket`, then `lint_findings`, both in `chupa/tickets.py`) on every ticket. The checks cover the grammar, required sections, the fence covering every carried path, `Depends on` naming tickets in the set, and acyclic ordering. When the document belongs to an existing host repo, `## Context` entries are also resolved against that repo. Results per ticket, plus counts (tickets, criteria by oracle class, estimated fence overlap from `docs/parallel-tickets-plan.md` §2), go to the synthesis as facts. `--deep` also runs `requisition_review` on each ticket. It is expensive and opt-in.
+2. **Mechanical stage, with no model.** The engine writes each ticket set into a scratch `tickets/` directory and runs the real ticket checks that `clutch lint` runs (`validate_ticket`, then `lint_findings`, both in `clutch/tickets.py`) on every ticket. The checks cover the grammar, required sections, the fence covering every carried path, `Depends on` naming tickets in the set, and acyclic ordering. When the document belongs to an existing host repo, `## Context` entries are also resolved against that repo. Results per ticket, plus counts (tickets, criteria by oracle class, estimated fence overlap from `docs/parallel-tickets-plan.md` §2), go to the synthesis as facts. `--deep` also runs `requisition_review` on each ticket. It is expensive and opt-in.
 3. **1 synthesis.** It re-reads the document, then ranks:
    - human gates found by 3/3 and then 2/3 agents (verified against the text; a gate the document does settle goes to FINDABILITY);
    - criteria with oracle `none` that several agents reached for the same deliverable;
@@ -214,7 +214,7 @@ verdicts: [SELF-CONTAINED, GAPS-FIXABLE, NOT SELF-CONTAINED]
 | | BuildIt (`buildability`) | AI Automatable (`automatable`) |
 |---|---|---|
 | Question | Does the text determine every decision? | Can a machine carry out and verify the work? |
-| Role-played implementer | A human engineer writing skeletons | chupa's Author writing tickets |
+| Role-played implementer | A human engineer writing skeletons | clutch's Author writing tickets |
 | Input beyond the document | none | the authoring contract (guide + skeletons) |
 | Product | module skeleton, interface stubs, invented-decisions ledger, BLOCKED list | ticket set, oracle ledger, human-gate ledger, invented-decisions ledger |
 | Mechanical check | none: everything is model judgment | real ticket lint on every ticket, plus counts |
@@ -228,14 +228,14 @@ Run BuildIt first. Automatable assumes the decisions are settled, so its finding
 
 #### 4.4 Later: evidence lenses
 
-OutcomeReview's **evidence overlay** stamps each document-review cluster CONFIRMED, UNCONTRADICTED, WEAKENED, or CONTRADICTED against what real runs did. "Convergence ranks attention; evidence decides." For a host that runs its plan through chupa, the run evidence is already in its own journal and tickets: attempts, parks, confirms, conflict facts, plus the evidence trail once it ships. A later `outcome` lens can read those instead of sibling repos. Its trigger is the first plan that has both a review report and a finished chupa run.
+OutcomeReview's **evidence overlay** stamps each document-review cluster CONFIRMED, UNCONTRADICTED, WEAKENED, or CONTRADICTED against what real runs did. "Convergence ranks attention; evidence decides." For a host that runs its plan through clutch, the run evidence is already in its own journal and tickets: attempts, parks, confirms, conflict facts, plus the evidence trail once it ships. A later `outcome` lens can read those instead of sibling repos. Its trigger is the first plan that has both a review report and a finished clutch run.
 
 ### 5. Fold-back, review dispositions, and fidelity
 
-1. `chupa doc status` reports a derived document as `diverged`, or a review report proposes edits.
-2. `chupa doc fold <path>` (or `chupa doc apply <report>`) writes a proposed patch to the canonical document, plus a note on what was not applied and why.
+1. `clutch doc status` reports a derived document as `diverged`, or a review report proposes edits.
+2. `clutch doc fold <path>` (or `clutch doc apply <report>`) writes a proposed patch to the canonical document, plus a note on what was not applied and why.
 3. The owner accepts the patch, edits it, or rejects it. Accepting applies it and updates the section hashes. Refuse-class cuts from the `scope` lens go to the document's refusals list, as `CutReview.md`'s disposition requires, so the cut scope does not come back.
-4. Derived documents built from changed sections become `stale`. `chupa doc derive --stale` rebuilds them.
+4. Derived documents built from changed sections become `stale`. `clutch doc derive --stale` rebuilds them.
 
 **Fidelity as a gate on derivation.** The compression lens's fidelity role is reused to check derived documents:
 
@@ -245,19 +245,19 @@ OutcomeReview's **evidence overlay** stamps each document-review cluster CONFIRM
 
 ### 6. Guided drafting: from chat to a plan
 
-- **Interactive.** `chupa prompt doc-plan [files...]` (template `chupa/specs/ask/doc-plan.md`) opens a Claude Code chat that walks the operator through the Plan Type's sections, one question at a time for what the sources leave open. It ends by writing the doc set through `chupa doc draft`. The extension gets an "Ask Claude: draft a plan" menu item.
-- **Headless.** `chupa doc draft --type plan --audience developer --from a.md b.md notes/*.md --out docs/plans/<name>/`. Anything the sources leave open goes into `## Open decisions`, never into an invented answer.
+- **Interactive.** `clutch prompt doc-plan [files...]` (template `clutch/specs/ask/doc-plan.md`) opens a Claude Code chat that walks the operator through the Plan Type's sections, one question at a time for what the sources leave open. It ends by writing the doc set through `clutch doc draft`. The extension gets an "Ask Claude: draft a plan" menu item.
+- **Headless.** `clutch doc draft --type plan --audience developer --from a.md b.md notes/*.md --out docs/plans/<name>/`. Anything the sources leave open goes into `## Open decisions`, never into an invented answer.
 - The `plan` Type facet requires what the lenses need in order to work at full strength: stated goals and an **optimization metric** (otherwise `scope` leads with NO-METRIC), a refusals list, implementation phases (BuildIt's `<PHASE_SCOPE>` names one), and a ticket breakdown.
 
 ### 7. Plans and Seeds lead to tickets
 
 - The `seed` Type, derived for Audience `ai`, turns each ticket row into what an authoring session needs: fence files, acceptance criteria, and where each rule lives. An `automatable` consensus set can be its starting point.
-- Tickets are still authored the one way chupa allows: `chupa new` + `chupa/docs/host-authoring.md` + `chupa lint` + `chupa review`. The document agent never writes `ticket.md` into `tickets/`.
+- Tickets are still authored the one way clutch allows: `clutch new` + `clutch/docs/host-authoring.md` + `clutch lint` + `clutch review`. The document agent never writes `ticket.md` into `tickets/`.
 
 ### 8. Render
 
 - Markdown to HTML in pure Python with a new dependency (`markdown-it-py`, with tables, footnotes, and heading anchors). The theme's CSS is embedded inline, so the output is a single file.
-- Themes are `chupa/specs/doc/themes/light.css` and `dark.css` (CSS custom-property tokens). Host themes come from `documents.facets_dir/theme/`.
+- Themes are `clutch/specs/doc/themes/light.css` and `dark.css` (CSS custom-property tokens). Host themes come from `documents.facets_dir/theme/`.
 - PDF goes HTML to PDF through a host-declared argv (`documents.render.pdf`), run through the exec seam and the parallel plan's host-command lock when that exists. When none is configured, `--format pdf` is refused with a paved road naming the key.
 - Mermaid stays as code blocks in v1.
 
@@ -273,24 +273,24 @@ documents:
     pdf: null               # argv list
 ```
 
-A new `Documents` model in `chupa/config.py` with a default, so existing configs load unchanged. The block is `documents`, not `docs`, because `docs` is already a verb (`chupa/__main__.py:311`) and the `chupa/docs/` guide directory; `documents.review` sits beside the top-level `review` block and shares nothing with it.
+A new `Documents` model in `clutch/config.py` with a default, so existing configs load unchanged. The block is `documents`, not `docs`, because `docs` is already a verb (`clutch/__main__.py:311`) and the `clutch/docs/` guide directory; `documents.review` sits beside the top-level `review` block and shares nothing with it.
 
 ## Where each piece lives
 
 | Piece | Home |
 |---|---|
-| Facet and lens files (engine-owned; lens prompt text from the owner's review files) | `chupa/specs/doc/facets/<dimension>/<value>.md` |
-| Surface specs | `chupa/specs/doc/{draft,derive,lens,fold}.md` |
-| Config | `chupa/config.py` (`Documents`) |
-| Interactive prompt | `chupa/specs/ask/doc-plan.md`, added to `KINDS` in `chupa/ask.py` |
-| Isolated scratch working directory for a call | `chupa/providers.py` (`isolated` request field), `chupa/llm.py` (`LLMRequest`) |
-| Facet registry, docset schema, section hashing, status | new `chupa/docs_agent/` package (`facets.py`, `docset.py`) |
-| Lens runner (stages, panel, accounting gate, engine-side mechanical checks), fold, apply | `chupa/docs_agent/review.py`, `fold.py` |
-| Dry-run ticket lint for `automatable` | `chupa/docs_agent/review.py` calling `validate_ticket` and `lint_findings` in `chupa/tickets.py` (no copy of the rules) |
-| Render and themes | `chupa/docs_agent/render.py`, `chupa/specs/doc/themes/` |
-| Verbs `doc draft / derive / review / fold / apply / render / status / facets` | `chupa/__main__.py`, plus `./dev.py` subcommands |
-| Extension menu items | `vscode-chupa/` (draws snapshot fields and runs the verbs) |
-| Operator docs | `docs/how-chupa-works.md`, new section "Documents" |
+| Facet and lens files (engine-owned; lens prompt text from the owner's review files) | `clutch/specs/doc/facets/<dimension>/<value>.md` |
+| Surface specs | `clutch/specs/doc/{draft,derive,lens,fold}.md` |
+| Config | `clutch/config.py` (`Documents`) |
+| Interactive prompt | `clutch/specs/ask/doc-plan.md`, added to `KINDS` in `clutch/ask.py` |
+| Isolated scratch working directory for a call | `clutch/providers.py` (`isolated` request field), `clutch/llm.py` (`LLMRequest`) |
+| Facet registry, docset schema, section hashing, status | new `clutch/docs_agent/` package (`facets.py`, `docset.py`) |
+| Lens runner (stages, panel, accounting gate, engine-side mechanical checks), fold, apply | `clutch/docs_agent/review.py`, `fold.py` |
+| Dry-run ticket lint for `automatable` | `clutch/docs_agent/review.py` calling `validate_ticket` and `lint_findings` in `clutch/tickets.py` (no copy of the rules) |
+| Render and themes | `clutch/docs_agent/render.py`, `clutch/specs/doc/themes/` |
+| Verbs `doc draft / derive / review / fold / apply / render / status / facets` | `clutch/__main__.py`, plus `./dev.py` subcommands |
+| Extension menu items | `vscode-clutchwork/` (draws snapshot fields and runs the verbs) |
+| Operator docs | `docs/how-clutch-works.md`, new section "Documents" |
 
 ## Ticket breakdown
 
@@ -298,10 +298,10 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 1 | `doc-facet-registry` | feature | P2 | | Facet format (with `aliases`, `params`, `stages`, `verdicts`), loader, validation, `chupa doc facets`. Type, Audience, Tone, Format, and Theme facet files. |
-| 2 | `docset-manifest` | feature | P2 | | `chupa.docset/1.0`, section hashing, `chupa doc status`. |
+| 1 | `doc-facet-registry` | feature | P2 | | Facet format (with `aliases`, `params`, `stages`, `verdicts`), loader, validation, `clutch doc facets`. Type, Audience, Tone, Format, and Theme facet files. |
+| 2 | `docset-manifest` | feature | P2 | | `clutch.docset/1.0`, section hashing, `clutch doc status`. |
 | 3 | `isolated-readonly-call` | feature | P2 | `evidence-envelope` | `isolated` request mode: scratch working directory with only the declared files, for Claude and Codex; the evidence record carries `isolated`, `conduct_file: null`, `repo: null`. Tests prove a panelist cannot read a repo file. |
-| 4 | `doc-review-runner` | feature | P2 | 1, 3, `panel-combiners` | Generic `doc_review` surface, stage runner on `chupa/panel.py` (the lens's `stages` map onto panel members and combiners; the synthesis role is a model combiner the lens supplies), schema and verdict gates, accounting gate, report. |
+| 4 | `doc-review-runner` | feature | P2 | 1, 3, `panel-combiners` | Generic `doc_review` surface, stage runner on `clutch/panel.py` (the lens's `stages` map onto panel members and combiners; the synthesis role is a model combiner the lens supplies), schema and verdict gates, accounting gate, report. |
 | 5 | `doc-lenses-from-owner-prompts` | feature | P2 | 4 | `scope`, `viability`, `buildability`, and `compression` lens facets from the owner's prompt files, with schemas. Engine-side byte-identity checks of protected regions for `compression`. |
 | 6 | `doc-lens-automatable` | feature | P2 | 4, `fence-overlap` | The Appendix prompt as a lens facet, the mechanical ticket-lint stage, the automation ratio, the fence-overlap estimate, and `--deep`. |
 | 7 | `doc-derive-fidelity` | feature | P2 | 2, 5 | `doc_derive`, fidelity gate by derive class, `fidelity` recorded in `docset.yaml`. |

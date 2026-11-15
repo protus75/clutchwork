@@ -12,10 +12,10 @@ from pathlib import Path
 def main() -> int:
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from chupa import runner
-        from chupa.__main__ import main as chupa_main
-        from chupa.journal import EventType
-        from chupa.llm import FakeLLM
+        from clutch import runner
+        from clutch.__main__ import main as clutch_main
+        from clutch.journal import EventType
+        from clutch.llm import FakeLLM
         from tests.integration.test_cli import ENV
         from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root
         from tests.integration.test_rework import requisition
@@ -26,7 +26,7 @@ def main() -> int:
             llm = FakeLLM([requisition("snag")])
             output = io.StringIO()
             with contextlib.redirect_stdout(output):
-                result = chupa_main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, llm))
+                result = clutch_main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, llm))
             terminal = [e.body for e in journal(root).read() if e.type == EventType.STATE_TRANSITION and e.ticket == "review-park"][-1]
             if result != 0 or terminal.get("stage") != "requisition" or not terminal.get("reason"):
                 raise RuntimeError("requisition park was not produced")

@@ -1,5 +1,5 @@
-from chupa.drain import parked_blob
-from chupa.journal import Event, EventType
+from clutch.drain import parked_blob
+from clutch.journal import Event, EventType
 
 
 def event(kind, body, stem="work"):

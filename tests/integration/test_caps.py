@@ -2,16 +2,16 @@
 
 import pytest
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.artifacts import Cost, Finding, StageResult
-from chupa.caps import CAPS, capability, consume, draws, failed_attempts, remaining, spent, spent_reason
-from chupa.config import Caps
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.stages import StagesRun
-from chupa.status import reject_queue
-from chupa.tickets import validate_ticket
+from clutch import runner
+from clutch.__main__ import main
+from clutch.artifacts import Cost, Finding, StageResult
+from clutch.caps import CAPS, capability, consume, draws, failed_attempts, remaining, spent, spent_reason
+from clutch.config import Caps
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.stages import StagesRun
+from clutch.status import reject_queue
+from clutch.tickets import validate_ticket
 from tests.integration.test_cli import git_out
 from tests.integration.test_daemon_composition import production_writer
 from tests.integration.test_drain import Clock, Script, commit_ticket, confirmed, drain, journal, make_root
@@ -59,7 +59,7 @@ def test_attempts_cap_counts_every_failed_terminal(tmp_path):
 @pytest.mark.parametrize("outcome", ["gate_failed", "premise_failed", "infra_error", "timeout"])
 def test_attempts_cap_routes_to_reject_queue(repo, monkeypatch, capsys, outcome):
     author(repo)
-    j = Journal(repo / ".chupa/state", clock)
+    j = Journal(repo / ".clutch/state", clock)
     for prior in ["gate_failed", "premise_failed", "infra_error", "timeout"]:
         j.append(EventType.STATE_TRANSITION, {"to": prior}, ticket=STEM)
 
@@ -87,7 +87,7 @@ def test_attempts_cap_routes_to_reject_queue(repo, monkeypatch, capsys, outcome)
 @pytest.mark.asyncio
 @pytest.mark.parametrize("delivery", ["drive", "consume_result"])
 async def test_attempts_cap_skips_conflict_rework(admission_context, monkeypatch, delivery):
-    from chupa.mergequeue import ConflictHandoff
+    from clutch.mergequeue import ConflictHandoff
 
     _, writer = production_writer(admission_context, [])
     ctx = writer.ctx
@@ -116,7 +116,7 @@ async def test_attempts_cap_skips_conflict_rework(admission_context, monkeypatch
 @pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["split", "update", "escalate"])
 async def test_attempts_cap_preserves_published_rework(admission_context, action):
-    from chupa.daemon import apply_rework
+    from clutch.daemon import apply_rework
     from tests.integration.test_rework import order, requisition, successors
 
     _, writer = production_writer(admission_context, [])
@@ -185,7 +185,7 @@ def test_invalid_cap_refuses_all_accounting_and_writer(tmp_path):
 def test_retry_rung_is_rejected_on_other_caps_and_operator_keep_resets_it(repo):
     author(repo)
     ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
-    j = Journal(repo / ".chupa" / "state", clock)
+    j = Journal(repo / ".clutch" / "state", clock)
     rung = {"tier": "high", "effort": "max"}
     with pytest.raises(ValueError, match="retry"):
         consume(j, STEM, "infra", "sha", rung=rung)
@@ -205,7 +205,7 @@ def test_crashing_implement_draws_infra_immediately_before_terminal(repo):
     llm = FakeLLM([RuntimeError("provider crashed"), diagnosis_reply()])
     assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == runner.EXIT_TICKET
     assert [request.surface for request in llm.requests if request.surface != "diagnose"] == ["implement"]
-    events = [e for e in Journal(repo / ".chupa" / "state", clock).read() if e.ticket == STEM]
+    events = [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
     terminal = next(i for i, e in enumerate(events) if e.type == EventType.STATE_TRANSITION and e.body.get("to") == "infra_error")
     sha = git_out(repo, "rev-parse", f"HEAD:tickets/{STEM}/ticket.md").strip()
     infra = next(i for i, e in enumerate(events) if e.type == EventType.CAP_CONSUMED and e.body["cap"] == "infra")
@@ -229,7 +229,7 @@ def test_other_terminals_draw_only_when_infra(repo, monkeypatch, outcome, expect
 
     monkeypatch.setattr(runner, "run_stages", stage_seam)
     assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, FakeLLM([]))) == runner.EXIT_TICKET
-    events = [e for e in Journal(repo / ".chupa" / "state", clock).read() if e.ticket == STEM]
+    events = [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
     assert events[-1].body == {"to": outcome, "stage": "implement", "reason": outcome, "dispatch": "reject_queue", "routed": "reject_queue"}
     assert draws(events, STEM, "infra") == expected_draws
     if expected_draws:

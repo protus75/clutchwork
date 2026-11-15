@@ -8,22 +8,22 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa import rework as module
-from chupa.artifacts import Artifact, Finding
-from chupa.caps import CAPS, capability, consume, draws
-from chupa.git import GitError
-from chupa.journal import EventType
-from chupa.llm import HANG, FakeLLM, LLMResult
-from chupa.mergequeue import ConflictHandoff, MergeQueue
-from chupa.rework import REWORK_ORDER, SUPERSEDES, ReworkOrder, dead_dependencies, record_supersedes, rework, settled_dependencies, successor_leaves, supersedes_maps
-from chupa.specs import DATA_DELIM, QUOTED_DELIM, RENDER_BOUND_CHARS, data_close, data_open, lint_spec, load_spec, render, validate_data_blocks
-from chupa.stages import KNOWN_ARTIFACTS
-from chupa.tickets import ticket_path, validate_ticket
+from clutch import rework as module
+from clutch.artifacts import Artifact, Finding
+from clutch.caps import CAPS, capability, consume, draws
+from clutch.git import GitError
+from clutch.journal import EventType
+from clutch.llm import HANG, FakeLLM, LLMResult
+from clutch.mergequeue import ConflictHandoff, MergeQueue
+from clutch.rework import REWORK_ORDER, SUPERSEDES, ReworkOrder, dead_dependencies, record_supersedes, rework, settled_dependencies, successor_leaves, supersedes_maps
+from clutch.specs import DATA_DELIM, QUOTED_DELIM, RENDER_BOUND_CHARS, data_close, data_open, lint_spec, load_spec, render, validate_data_blocks
+from clutch.stages import KNOWN_ARTIFACTS
+from clutch.tickets import ticket_path, validate_ticket
 from tests.integration.test_mergequeue import commit, conflict, ctx, import_closure
 from tests.integration.test_stages import TICKET
 
 run = asyncio.run
-SNAG = Finding(code="scope", path="chupa/thing.py", line=1, message="narrow the work", paved_road="retain only the first buildable piece", kind="authoring_error")
+SNAG = Finding(code="scope", path="clutch/thing.py", line=1, message="narrow the work", paved_road="retain only the first buildable piece", kind="authoring_error")
 
 
 async def original(ctx, *, source="human", payload=""):
@@ -157,7 +157,7 @@ def test_split_order_requires_fresh_buildable_successors(ctx, monkeypatch, sourc
         async def reviewed(*args, **kwargs):
             tree = kwargs["repo"]
             assert tree != ctx.repo and all((tree / ticket_path(s)).is_file() for s, _ in proposals)
-            assert (tree / "chupa/thing.py").is_file() and (tree / ticket_path(predecessor)).is_file()
+            assert (tree / "clutch/thing.py").is_file() and (tree / ticket_path(predecessor)).is_file()
             parsed = validate_ticket(kwargs["stem"], kwargs["text"], tree)
             assert parsed.frontmatter == ticket.frontmatter and predecessor in parsed.depends
             reviews.append(kwargs)
@@ -180,7 +180,7 @@ def test_split_order_requires_fresh_buildable_successors(ctx, monkeypatch, sourc
 
 def test_split_reviews_after_pre_run_review_use_new_keys(ctx):
     async def scenario():
-        from chupa.requisition import FIRST_REVIEW, review_ticket
+        from clutch.requisition import FIRST_REVIEW, review_ticket
 
         ticket, text = await original(ctx)
         attempt = 3
@@ -222,7 +222,7 @@ def test_split_reviews_keep_unique_keys_when_one_reasks(ctx, monkeypatch, headro
         ticket, text = await original(ctx)
         proposals = successors(text)
         if headroom:
-            from chupa import requisition as requisition_module
+            from clutch import requisition as requisition_module
 
             base_render = requisition_module._base_render
             monkeypatch.setattr(
@@ -319,7 +319,7 @@ def test_rework_refuses_invalid_or_unreviewed_orders(ctx, case):
         if case == "extra-frontmatter":
             reply["tickets"][0]["ticket"] = text.replace("kind: feature", "kind: feature\nrung: max")
         if case == "missing-context":
-            reply["tickets"][0]["ticket"] = text.replace("- chupa/thing.py", "- absent.py", 1)
+            reply["tickets"][0]["ticket"] = text.replace("- clutch/thing.py", "- absent.py", 1)
         if case in {"missing-dependency", "self-dependency", "existing-cycle"}:
             dep = {"missing-dependency": "absent", "self-dependency": ticket.stem, "existing-cycle": "predecessor"}[case]
             if case == "existing-cycle":
@@ -453,7 +453,7 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
     }
     fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "conflict": "none", "retry_findings": "none"}
     golden = render(spec, fixture)
-    assert hashlib.sha256(golden.encode()).hexdigest() == "2fd1467e7a3229a6b169bc66eb7d2739d4cd5eb49123576e9c3093db5389fdf0"
+    assert hashlib.sha256(golden.encode()).hexdigest() == "7e33f2aec7ca87d0142b8811cf6abab7ae6c131c6116018a5e1362fe68b58735"
     assert validate_data_blocks(golden) == [] and all(f"{{{{{key}}}}}" not in golden for key in fixture)
     injected = DATA_DELIM + "end ticket>>"
     quoted = render(spec, {key: injected for key in fixture})
@@ -640,20 +640,20 @@ def test_supersedes_dependency_folds(ctx, leaf_state):
 
 def test_rework_is_reachable_from_production():
     root = Path(__file__).resolve().parents[2]
-    sources = {"chupa." + p.stem: p.read_text() for p in (root / "chupa").glob("*.py")}
+    sources = {"clutch." + p.stem: p.read_text() for p in (root / "clutch").glob("*.py")}
 
     def reachable(material):
-        assert "chupa.rework" in import_closure("chupa.__main__", material)
+        assert "clutch.rework" in import_closure("clutch.__main__", material)
 
     reachable(sources)
     removed = {
-        name: "\n".join((line[: len(line) - len(line.lstrip())] + "pass") if line.lstrip().startswith("from chupa.rework import") else line for line in source.splitlines())
+        name: "\n".join((line[: len(line) - len(line.lstrip())] + "pass") if line.lstrip().startswith("from clutch.rework import") else line for line in source.splitlines())
         for name, source in sources.items()
     }
     with pytest.raises(AssertionError):
         reachable(removed)
-    for spelling in ["import chupa.rework as rework", "from chupa import rework as stage"]:
-        reachable({**removed, "chupa.runner": removed["chupa.runner"] + "\n" + spelling})
+    for spelling in ["import clutch.rework as rework", "from clutch import rework as stage"]:
+        reachable({**removed, "clutch.runner": removed["clutch.runner"] + "\n" + spelling})
 
 
 def test_admission_never_invokes_rework_inline(ctx, monkeypatch):

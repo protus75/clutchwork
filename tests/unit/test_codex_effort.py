@@ -1,6 +1,6 @@
 import pytest
 
-from chupa.providers import CodexAdapter
+from clutch.providers import CodexAdapter
 
 
 def test_codex_max_effort():

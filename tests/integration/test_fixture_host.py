@@ -10,21 +10,21 @@ from types import ModuleType, SimpleNamespace
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
-from chupa.artifacts import NonBlank, ReviewVerdict
-from chupa.author import AuthorReply
-from chupa.config import load_config
-from chupa.git import Git
-from chupa.hostfiles import classify_core
-from chupa.llm import LLMRequest
-from chupa.providers import ClaudeAdapter, ProviderCallError, ProviderLLM
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.specs import (
+from clutch.artifacts import NonBlank, ReviewVerdict
+from clutch.author import AuthorReply
+from clutch.config import load_config
+from clutch.git import Git
+from clutch.hostfiles import classify_core
+from clutch.llm import LLMRequest
+from clutch.providers import ClaudeAdapter, ProviderCallError, ProviderLLM
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.specs import (
     load_spec,
     render,
 )
-from chupa.stages import ImplementReply
-from chupa.tickets import stamp, validate_ticket
-from chupa.triage import TriageReply
+from clutch.stages import ImplementReply
+from clutch.tickets import stamp, validate_ticket
+from clutch.triage import TriageReply
 from tests.integration.test_git import commit_lock
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -42,7 +42,7 @@ def snapshot(root):
 
 
 INPUT_BYTES = snapshot(SOURCE)
-ENGINE_BYTES = snapshot(ROOT / "chupa")
+ENGINE_BYTES = snapshot(ROOT / "clutch")
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def host(tmp_path):
 
 
 def environment(host, **extra):
-    return {"PATH": str(host / "bin") + ":" + str(Path(sys.executable).parent) + ":/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1", "CHUPA_FIXTURE_ROOT": str(host), **extra}
+    return {"PATH": str(host / "bin") + ":" + str(Path(sys.executable).parent) + ":/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1", "CLUTCH_FIXTURE_ROOT": str(host), **extra}
 
 
 def run(host, argv):
@@ -69,8 +69,8 @@ def implement(host, name):
 def test_fixture_profile_loads(host):
     cfg = load_config(None, cwd=host)
     assert cfg.schema_version == 1
-    assert cfg.state_dir == host / ".chupa/state"
-    assert cfg.worktree_root == host / ".chupa/worktrees"
+    assert cfg.state_dir == host / ".clutch/state"
+    assert cfg.worktree_root == host / ".clutch/worktrees"
     assert cfg.report_inbox == host / "reports"
     assert cfg.routing_default_tier == "medium"
     assert [(r.tier, r.surface, r.candidates[0].provider) for r in cfg.routing] == [("medium", surface, "claude") for surface in SURFACES]
@@ -149,7 +149,7 @@ def test_fixture_regression_exists_at_base(host):
             SubprocessExec(),
             env={**environment(host), "GIT_AUTHOR_NAME": "Fixture", "GIT_AUTHOR_EMAIL": "fixture@example.invalid", "GIT_COMMITTER_NAME": "Fixture", "GIT_COMMITTER_EMAIL": "fixture@example.invalid"},
             timeout=10,
-            commit_lock=commit_lock(host / ".chupa/state"),
+            commit_lock=commit_lock(host / ".clutch/state"),
         )
         await git.init(host, branch="main")
         await git.add(host, ["app.py", "settings.json", "regression_test.py"])
@@ -316,7 +316,7 @@ class RecordedExec(SubprocessExec):
     async def run(self, argv, **kwargs):
         assert argv[0] in {"claude", "pnpm"}
         assert kwargs["cwd"] == self.host
-        assert set(kwargs["env"]) <= set(environment(self.host)) | {"CHUPA_FIXTURE_SCENARIO", "CHUPA_FIXTURE_SURFACE"}
+        assert set(kwargs["env"]) <= set(environment(self.host)) | {"CLUTCH_FIXTURE_SCENARIO", "CLUTCH_FIXTURE_SURFACE"}
         assert all("secret" not in v.lower() for v in kwargs["env"].values())
         self.calls.append((list(argv), dict(kwargs)))
         return await super().run(argv, **kwargs)
@@ -338,8 +338,8 @@ def test_fixture_cli_adapter_roundtrip(host):
         for name in SCENARIOS:
             (host / "settings.json").write_bytes(base_settings)
             for surface, model in SURFACES.items():
-                env.update(CHUPA_FIXTURE_SCENARIO=name, CHUPA_FIXTURE_SURFACE=surface)
-                spec = load_spec((ROOT / "chupa" / "specs" / f"{surface}.md").read_text())
+                env.update(CLUTCH_FIXTURE_SCENARIO=name, CLUTCH_FIXTURE_SURFACE=surface)
+                spec = load_spec((ROOT / "clutch" / "specs" / f"{surface}.md").read_text())
                 prompt = render(spec, {key: "fixture data " + key for key in spec.inputs})
                 before = (host / "settings.json").read_bytes()
                 result = await llm.call(LLMRequest(surface, prompt, "medium", "medium", name, host if surface == "implement" else None))
@@ -353,10 +353,10 @@ def test_fixture_cli_adapter_roundtrip(host):
                     assert json.loads((host / "settings.json").read_text()) == {**json.loads(base_settings), **scaffold.scenario(host, name)["edits"]["settings.json"]}
                 else:
                     assert "--tools" in argv and (host / "settings.json").read_bytes() == before
-        env.update(CHUPA_FIXTURE_SCENARIO="unknown", CHUPA_FIXTURE_SURFACE="review")
+        env.update(CLUTCH_FIXTURE_SCENARIO="unknown", CLUTCH_FIXTURE_SURFACE="review")
         with pytest.raises(ProviderCallError, match="select a declared scenario"):
             await llm.call(LLMRequest("review", "unknown", "medium", "low", None, None))
-        env["CHUPA_FIXTURE_SCENARIO"] = "escape"
+        env["CLUTCH_FIXTURE_SCENARIO"] = "escape"
         with pytest.raises(ProviderCallError, match="replenish.*declared responses"):
             await llm.call(LLMRequest("review", "exhausted", "medium", "low", None, None))
         assert not (cfg.state_dir / "journal").exists()
@@ -366,7 +366,7 @@ def test_fixture_cli_adapter_roundtrip(host):
 
 
 def test_fixture_scaffold_is_dormant(host):
-    assert snapshot(SOURCE) == INPUT_BYTES and snapshot(ROOT / "chupa") == ENGINE_BYTES
+    assert snapshot(SOURCE) == INPUT_BYTES and snapshot(ROOT / "clutch") == ENGINE_BYTES
     # Missing runtime marker refuses even an otherwise valid script before any write.
     with pytest.raises(ValueError, match="disposable host"):
         scaffold.scripted_reply(SOURCE, "merge-add", "implement", "prompt", True)
@@ -378,7 +378,7 @@ def test_fixture_scaffold_is_dormant(host):
     after = snapshot(host)
     assert {p for p in before if before[p] != after[p]} == {"settings.json"}
     assert {p for p in after if p not in before} <= {".fixture-runtime/cursors.json", ".fixture-runtime/merge-add-implement-0.prompt"}
-    assert not (host / ".chupa").exists()
+    assert not (host / ".clutch").exists()
     # Production code has no edge to these host inputs (either import idiom or path lookup).
     for path, data in ENGINE_BYTES.items():
         if path.endswith(".py"):
@@ -386,4 +386,4 @@ def test_fixture_scaffold_is_dormant(host):
     for path in after:
         assert not any(word in Path(path).parts for word in ("GO", "journal", "host-loop-report.json"))
     assert not any("serve" in call for row in json.loads((host / "scripts.json").read_text()).values() for check in row["checks"] for call in check["argv"])
-    assert snapshot(SOURCE) == INPUT_BYTES and snapshot(ROOT / "chupa") == ENGINE_BYTES
+    assert snapshot(SOURCE) == INPUT_BYTES and snapshot(ROOT / "clutch") == ENGINE_BYTES

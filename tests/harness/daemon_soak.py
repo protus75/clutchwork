@@ -12,19 +12,19 @@ from typing import Literal
 import yaml
 from pydantic import model_validator
 
-from chupa import caps, runner, serve
-from chupa.artifacts import Artifact, Harvest, NonBlank, _check_ordered_members, _check_producing_run, _Strict
-from chupa.audit import audit_journal
-from chupa.config import load_config
-from chupa.git import Git
-from chupa.hostfiles import render
-from chupa.journal import TERMINAL_STATES, EventType, Journal
-from chupa.llm import HANG, FakeLLM
-from chupa.mergequeue import CONFLICT_FACTS, MERGE_REGATE, ConflictHandoff
-from chupa.providers import routed_conduct_paths
-from chupa.reconcile import RECOVERY_ALERT
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.stages import Invoice, read_review
+from clutch import caps, runner, serve
+from clutch.artifacts import Artifact, Harvest, NonBlank, _check_ordered_members, _check_producing_run, _Strict
+from clutch.audit import audit_journal
+from clutch.config import load_config
+from clutch.git import Git
+from clutch.hostfiles import render
+from clutch.journal import TERMINAL_STATES, EventType, Journal
+from clutch.llm import HANG, FakeLLM
+from clutch.mergequeue import CONFLICT_FACTS, MERGE_REGATE, ConflictHandoff
+from clutch.providers import routed_conduct_paths
+from clutch.reconcile import RECOVERY_ALERT
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.stages import Invoice, read_review
 from tests.integration.test_git import commit_lock
 
 DAEMON_SOAK_SPEC_VERSION = 1
@@ -141,7 +141,7 @@ class _Exec:
             prompt = stdin_path.read_text()
             if prompt == "Reply with the single word ok.":
                 return 0, json.dumps(dict(type="result", subtype="success", is_error=False, result="ok", total_cost_usd=0.0)) + "\n", ""
-            if "<<chupa-data:begin message>>" not in prompt:
+            if "<<clutch-data:begin message>>" not in prompt:
                 raise AssertionError("soak transport accepts only triage, never host work")
             reply = json.dumps(
                 dict(verdict="declined", link=None, summary="Observed synthetic fault", rationale="Retain the disposable fixture evidence", evidence=["production fault record"], reopen_after_days=1)
@@ -164,8 +164,8 @@ class _Exec:
             head = await self.member.git.rev_parse(self.member.root, "main")
             main = await self.member.verify(self.member.root)
             self.member.refusals.append((head, main, (cwd / "a.txt").read_bytes(), (cwd / "b.txt").read_bytes()))
-        if argv[0] == "git" and argv[3:5] == ["commit", "-m"] and "\nchupa-ticket: " in argv[5]:
-            stem = argv[5].split("\nchupa-ticket: ")[1].splitlines()[0]
+        if argv[0] == "git" and argv[3:5] == ["commit", "-m"] and "\nclutch-ticket: " in argv[5]:
+            stem = argv[5].split("\nclutch-ticket: ")[1].splitlines()[0]
             self.member.main_checks.append((stem, await self.member.verify(self.member.root)))
         return result
 
@@ -193,7 +193,7 @@ class _Member:
         self.root, self.name = root, name
         self.time = _Time()
         self.fs = _FS(self.time)
-        self.journal = Journal(root / ".chupa/state", self.time)
+        self.journal = Journal(root / ".clutch/state", self.time)
         self.exec = _Exec(self)
         self.env = {
             "PATH": os.defpath,
@@ -207,7 +207,7 @@ class _Member:
             "GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z",
             "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z",
         }
-        self.git = Git(self.exec, env=self.env, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))
+        self.git = Git(self.exec, env=self.env, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
         self.command = [sys.executable, "verify.py"]
         self.owner = self.task = None
         self.lifetimes = []
@@ -230,8 +230,8 @@ class _Member:
         self.root.mkdir(parents=True)
         config = dict(
             schema_version=1,
-            state_dir=".chupa/state",
-            worktree_root=".chupa/worktrees",
+            state_dir=".clutch/state",
+            worktree_root=".clutch/worktrees",
             providers=[
                 dict(name="claude", kind="cli", package="test-cli", models_by_tier=dict.fromkeys(("low", "medium", "high", "max"), "script"), limits=dict(concurrency=1, est_cost_per_call_usd=0.0))
             ],
@@ -248,7 +248,7 @@ class _Member:
         )
         files = {
             "config.yaml": yaml.safe_dump(config),
-            ".gitignore": ".chupa/\n",
+            ".gitignore": ".clutch/\n",
             "verify.py": _CHECK,
             "verify-safety.py": "from pathlib import Path\nassert all(int(Path(p).read_text()) in (0, 1) for p in ('a.txt', 'b.txt'))\n",
             "a.txt": "0\n",
@@ -323,7 +323,7 @@ class _Member:
                         member.inputs.append((stem, before, main, await member.git.rev_parse(member.root, "main")))
                     self.script.append(json.dumps(dict(verdict="approve", summary="Scripted fresh review", findings=[])))
                 elif req.surface == "rework":
-                    raw = req.rendered.split("<<chupa-data:begin conflict>>\n", 1)[1].split("\n<<chupa-data:end conflict>>", 1)[0]
+                    raw = req.rendered.split("<<clutch-data:begin conflict>>\n", 1)[1].split("\n<<clutch-data:end conflict>>", 1)[0]
                     handoff = ConflictHandoff.model_validate_json(raw)
                     queue = member.owner.queue
                     member.handoffs.append((handoff, queue.active, queue._slot.locked()))
@@ -345,7 +345,7 @@ class _Member:
 
     def log_tail(self):
         try:
-            lines = (self.root / ".chupa/state/engine.log").read_text().splitlines()
+            lines = (self.root / ".clutch/state/engine.log").read_text().splitlines()
         except FileNotFoundError:
             return "; engine.log absent"
         return "; engine.log tail:\n" + "\n".join(lines[-20:])
@@ -497,7 +497,7 @@ class _Member:
 
 
 async def _cleanup(cleanup):
-    from chupa.daemon import _protected_cleanup
+    from clutch.daemon import _protected_cleanup
 
     await _protected_cleanup(cleanup)
 
@@ -729,7 +729,7 @@ async def _member_lifetime(member: _Member) -> DaemonSoakEntry:
 
 
 async def produce(root: Path) -> DaemonSoakReport:
-    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))
+    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
     sha = await git.rev_parse(Path.cwd(), "HEAD")
     entries = [await _run_member(root, name) for name in DAEMON_SOAK_MEMBERS]
     return DaemonSoakReport(produced_by_spec_version=DAEMON_SOAK_SPEC_VERSION, produced_at_sha=sha, entries=entries)

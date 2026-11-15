@@ -1,8 +1,8 @@
-# Instance config (host plane; schema in chupa/docs/host-contract.md). Operator-owned: edit between runs.
+# Instance config (host plane; schema in clutch/docs/host-contract.md). Operator-owned: edit between runs.
 # Both providers are kind: cli on ambient CLI login, so no `auth` and no key export. IMPLEMENT/AUTHOR inherit models_by_tier[tier]; REVIEW pins
 # claude's strongest model at every tier (diversity from codex IMPLEMENT is a preference, not a gate).
 schema_version: 1
-state_dir: .chupa/state
+state_dir: .clutch/state
 providers:
   - name: claude
     kind: cli
@@ -33,24 +33,24 @@ review:
     - {code: ruff-format, argv: [uv, run, ruff, format], files: ["*.py"]}
   mechanical:
     - code: unit
-      argv: [uv, run, python, -m, chupa, covgate, --, python, -m, pytest, tests/unit, -p, chupa.testguard, -p, chupa.testreport, --chupa-results, .chupa/results/unit.json, --cov=chupa, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]
+      argv: [uv, run, python, -m, clutch, covgate, --, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=clutch, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]
       trigger: always
       severity: hard
-      results: .chupa/results/unit.json
+      results: .clutch/results/unit.json
       coverage: coverage.json
     - code: integration
-      argv: [uv, run, python, -m, pytest, tests/integration, -p, chupa.testreport, --chupa-results, .chupa/results/integration.json, -n, auto]
+      argv: [uv, run, python, -m, pytest, tests/integration, -p, clutch.testreport, --clutch-results, .clutch/results/integration.json, -n, auto]
       trigger: always
       severity: hard
-      results: .chupa/results/integration.json
+      results: .clutch/results/integration.json
     - {code: lint, argv: [uv, run, ruff, check, .], trigger: always, severity: hard}
     - {code: format, argv: [uv, run, ruff, format, --check, .], trigger: always, severity: hard}
   coverage_map:
-    argv: [uv, run, pytest, -q, --cov=chupa, --cov=eval, --cov-context=test, --cov-report=json:.chupa/coverage.json]
-    report: .chupa/coverage.json
+    argv: [uv, run, pytest, -q, --cov=clutch, --cov=eval, --cov-context=test, --cov-report=json:.clutch/coverage.json]
+    report: .clutch/coverage.json
 merge: {}
 drain:
   max_ticket_minutes: 180  # raised from the shipped 90 to admit the Phase 2 seeds' largest stuck budget (section 18)
 caps:
   premise_bounce: 2  # a fixed ticket.md re-offers a premise park without an operator keep; the second bounce still needs one
-engine_plane_safety_inventory: [chupa/specs/, chupa/gates.py, chupa/config.py, chupa/providers.py, config.yaml, test-gate.toml]
+engine_plane_safety_inventory: [clutch/specs/, clutch/gates.py, clutch/config.py, clutch/providers.py, config.yaml, test-gate.toml]

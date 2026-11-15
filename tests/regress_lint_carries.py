@@ -11,27 +11,27 @@ def main() -> int:
     try:
         root = Path(__file__).resolve().parents[1]
         sys.path.insert(0, str(root))
-        from chupa.tickets import TicketInvalid, template, validate_ticket
+        from clutch.tickets import TicketInvalid, template, validate_ticket
 
         values = {
             "none or bullets of existing ticket stems": "none",
-            "existing repo-relative read-first path": "chupa/tickets.py",
+            "existing repo-relative read-first path": "clutch/tickets.py",
             "observable outcome and why it matters": "Lint rejects implementation paths.",
             "what changes and what stays outside this ticket": "In: lint. Out: other checks.",
-            "repo-relative writable path prefix": "chupa/tickets.py",
+            "repo-relative writable path prefix": "clutch/tickets.py",
             "measurable outcome naming a check in backticks": "`lint` rejects the path.",
             "argv command that exits 0": "true",
             "outcome that rejects the branch": "Lint accepts the path.",
             "estimated integer minutes": "10",
             "larger deadline in integer minutes": "20",
             "one argv command emitting the regression_result JSON protocol": "true",
-            "test or fixture path prefix needed by the command": "vscode-chupa/media/graph.js",
+            "test or fixture path prefix needed by the command": "vscode-clutchwork/media/graph.js",
         }
         text = re.sub(r"<([^<>]+)>", lambda match: values[match[1]], template("bug"))
         try:
             validate_ticket("regress-carries", text, root)
         except TicketInvalid as error:
-            if not any("vscode-chupa/media/graph.js" in finding.message for finding in error.findings):
+            if not any("vscode-clutchwork/media/graph.js" in finding.message for finding in error.findings):
                 raise
             defect = False
         else:

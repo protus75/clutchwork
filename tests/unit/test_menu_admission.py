@@ -5,11 +5,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import observe, runner, status, triage
-from chupa.box import UnknownBoxId
-from chupa.journal import EventType
-from chupa.tickets import TicketInvalid, validate_ticket
+from clutch import __main__ as entry
+from clutch import observe, runner, status, triage
+from clutch.box import UnknownBoxId
+from clutch.journal import EventType
+from clutch.tickets import TicketInvalid, validate_ticket
 
 SNAPSHOT_INPUTS = observe.ticket_menu_inputs
 
@@ -87,7 +87,7 @@ def fake_snapshot_inputs(ctx, history, stems, holder, interrupted):
     from dataclasses import replace
     from unittest.mock import patch
 
-    from chupa.tickets import _f
+    from clutch.tickets import _f
 
     parsed, invalid = observe.load_tickets(ctx, set())
     dirty, new = observe.uncommitted_tickets(ctx)
@@ -119,7 +119,7 @@ def dispatch_ticket(state="confirmed", depends=()):
 
 @pytest.mark.parametrize("verb", ["run", "review"])
 def test_run_review_admission(verb):
-    from chupa.tickets import _f
+    from clutch.tickets import _f
 
     admit = getattr(status, verb + "_admission")
     good = dispatch_ticket()
@@ -150,7 +150,7 @@ def test_run_review_admission(verb):
 @pytest.mark.parametrize("verb", ["run", "review"])
 @pytest.mark.parametrize("failure", ["intake", "invalid", "missing", "settled"])
 def test_dispatch_verbs_use_admission_refusals(monkeypatch, verb, failure):
-    from chupa import tickets
+    from clutch import tickets
 
     finding = tickets._f("specific failure", "specific repair")
     events = [event("merged")] if failure == "settled" else []
@@ -183,8 +183,8 @@ def test_dispatch_verbs_use_admission_refusals(monkeypatch, verb, failure):
 def test_snapshot_reads_one_porcelain_and_shared_graphs(monkeypatch, count, invalid_disk):
     from unittest.mock import Mock
 
-    from chupa import observe, tickets
-    from chupa.box import Box
+    from clutch import observe, tickets
+    from clutch.box import Box
 
     root = Path("/fake")
     parsed = {f"item-{i}": NS(**{**vars(dispatch_ticket()), "stem": f"item-{i}"}) for i in range(count)}
@@ -192,7 +192,7 @@ def test_snapshot_reads_one_porcelain_and_shared_graphs(monkeypatch, count, inva
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "exists", lambda p: p in files)
     monkeypatch.setattr(Path, "read_text", lambda p, **kw: files[p])
-    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("chupa.help", fromlist=["TOPICS"]).TOPICS}, []))
+    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(Box, "messages", lambda self: [])
     monkeypatch.setattr(observe, "journal", lambda *a: [])
     monkeypatch.setattr(observe, "load_tickets", lambda *a: ({}, {s: "bad disk" for s in parsed}) if invalid_disk else (parsed, {}))
@@ -218,15 +218,15 @@ def test_snapshot_reads_one_porcelain_and_shared_graphs(monkeypatch, count, inva
     ctx = observe.Context(root, root / "state", root / "config", None, git, None)
     snap = observe.snapshot(ctx)
     assert len(snap["rows"]) == count  # An empty snapshot would trivially avoid per-stem git calls.
-    assert all(r["menu"]["chupaRun"] == ("off" if invalid_disk else "on") for r in snap["rows"])
-    assert all(r["menu"]["chupaReview"] == "on" for r in snap["rows"])  # Main validation must not reuse load_tickets' invalid disk set.
+    assert all(r["menu"]["clutchRun"] == ("off" if invalid_disk else "on") for r in snap["rows"])
+    assert all(r["menu"]["clutchReview"] == "on" for r in snap["rows"])  # Main validation must not reuse load_tickets' invalid disk set.
     git.status_porcelain.assert_awaited_once_with(root, "--untracked-files=all")
     assert graphs.call_args_list == [((root,),), ((root, "Runs before"),)]  # Two section scans, independent of row count.
 
 
 @pytest.mark.parametrize("settled", [False, True])
 def test_intake_and_snapshot_share_pending_plan(monkeypatch, settled):
-    from chupa import observe, tickets
+    from clutch import observe, tickets
     from tests.unit.test_intake_plan import Lock
 
     root = Path("/fake")
@@ -236,7 +236,7 @@ def test_intake_and_snapshot_share_pending_plan(monkeypatch, settled):
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "is_symlink", lambda p: False)
     monkeypatch.setattr(Path, "read_text", lambda p, **kw: files[p])
-    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("chupa.help", fromlist=["TOPICS"]).TOPICS}, []))
+    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(tickets, "_graph", lambda *a: {})
     monkeypatch.setattr(observe, "_graph", lambda *a: {})
     good = dispatch_ticket()
@@ -264,7 +264,7 @@ def test_intake_and_snapshot_share_pending_plan(monkeypatch, settled):
     result = asyncio.run(tickets.intake(root, git, journal, NS(write=lambda *a: pytest.fail("unchanged text must not be written")), stems={"item"}))
     assert plans == [(text, text, good), (text, text, good)]  # Different settled/evidence paths must still use identical decisions.
     assert (dirty, new) == ({"item"}, set())
-    assert inputs["item"]["chupaRun"]["intake_decision"] is good
-    assert inputs["item"]["chupaRun"]["stray"] == []  # Staged regular evidence cannot be refused as stray.
+    assert inputs["item"]["clutchRun"]["intake_decision"] is good
+    assert inputs["item"]["clutchRun"]["stray"] == []  # Staged regular evidence cannot be refused as stray.
     assert result.committed == ("item",) and result.refused == {}
     assert git._commit.call_args.kwargs["only"] == [rel, "tickets/item/evidence/log"]

@@ -18,7 +18,7 @@ def inner_path(monkeypatch):
 
 
 def run(pytester, *args):
-    return pytester.runpytest("-p", "chupa.testguard", "-o", "addopts=", *args)
+    return pytester.runpytest("-p", "clutch.testguard", "-o", "addopts=", *args)
 
 
 def test_guarded_calls_and_asyncio(pytester):
@@ -45,7 +45,7 @@ def test_guarded_calls_and_asyncio(pytester):
     result.assert_outcomes(failed=9, passed=1)
     for i in range(9):
         section = result.stdout.str().split(f"test_blocked[<lambda>{i}]", 1)[1].splitlines()[1:]
-        assert any("E       chupa.testguard.UnitIOBlocked:" in line for line in section[: next((j for j, line in enumerate(section) if line.startswith("________________")), len(section))])
+        assert any("E       clutch.testguard.UnitIOBlocked:" in line for line in section[: next((j for j, line in enumerate(section) if line.startswith("________________")), len(section))])
     assert "move the test to the integration suite" in result.stdout.str()
 
 
@@ -71,7 +71,10 @@ def test_setup_and_teardown(pytester):
     output = result.stdout.str()
     assert "setup process succeeded" not in output
     assert "teardown process succeeded" not in output
-    result.stdout.fnmatch_lines(["*ERROR *test_before*UnitIOBlocked*", "*ERROR *test_after*UnitIOBlocked*"])
+    # pytest truncates the short-summary line to terminal width, so assert per ERROR section instead.
+    sections = output.split("ERROR at ")[1:]
+    assert len(sections) == 2 and all("clutch.testguard.UnitIOBlocked:" in section for section in sections)
+    assert sections[0].startswith("setup of test_before") and sections[1].startswith("teardown of test_after")
 
 
 def test_guards_are_phase_scoped(pytester):
@@ -93,9 +96,9 @@ def fake_clock(pytester, elapsed, budget=None):
     os.environ["TESTGUARD_ELAPSED"] = str(elapsed)
     pytester.makeconftest("""
         import os
-        import chupa.testguard
+        import clutch.testguard
         values = iter([100, 100 + int(os.environ["TESTGUARD_ELAPSED"])])
-        chupa.testguard.clock = lambda: next(values)
+        clutch.testguard.clock = lambda: next(values)
     """)
 
 

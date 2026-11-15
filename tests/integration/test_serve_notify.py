@@ -5,9 +5,9 @@ import json
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa.journal import EventType
-from chupa.mergequeue import RED_STREAK
+from clutch import __main__ as cli
+from clutch.journal import EventType
+from clutch.mergequeue import RED_STREAK
 from tests.integration.serve_rig import (
     deliveries,
     escalation_batch,
@@ -78,8 +78,8 @@ async def test_serve_reconciles_notifications_at_startup_and_poll(root, monkeypa
 
 @pytest.mark.asyncio
 async def test_serve_unset_notify_warns_once_and_preserves_pending(root, monkeypatch):
-    from chupa.notify import pending_escalations
-    from chupa.status import project
+    from clutch.notify import pending_escalations
+    from clutch.status import project
 
     rig = await graph(root, monkeypatch)
     identities = escalation_batch(rig, "pending")
@@ -109,7 +109,7 @@ async def test_serve_unset_notify_warns_once_and_preserves_pending(root, monkeyp
 
 @pytest.mark.asyncio
 async def test_serve_failed_notify_backoff_and_restart(root, monkeypatch):
-    from chupa.notify import NOTIFY_RETRY_S, pending_escalations
+    from clutch.notify import NOTIFY_RETRY_S, pending_escalations
 
     rig = await graph(root, monkeypatch)
     notify_command(root)

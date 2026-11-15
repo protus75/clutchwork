@@ -5,13 +5,13 @@ import gc
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import triage
-from chupa.artifacts import Cost, StageResult
-from chupa.daemon import DaemonTasks
-from chupa.journal import EventType
-from chupa.mergequeue import ConflictHandoff, MergeQueue
-from chupa.runner import Checkout
+from clutch import __main__ as cli
+from clutch import triage
+from clutch.artifacts import Cost, StageResult
+from clutch.daemon import DaemonTasks
+from clutch.journal import EventType
+from clutch.mergequeue import ConflictHandoff, MergeQueue
+from clutch.runner import Checkout
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_mergequeue import ctx as admission_context
@@ -349,13 +349,13 @@ def test_background_consumers_are_dormant(root, tmp_path, monkeypatch, verb):
             with pytest.raises(AssertionError, match=message):
                 cli.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=pipeline)
         else:
-            from chupa.journal import Journal
+            from clutch.journal import Journal
 
             stem = "work" if index == 0 else "probe-two"
             if index:
                 write(root, stem, ticket())
             assert cli.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == 0
-            bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == stem and e.type == EventType.STATE_TRANSITION]
+            bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == stem and e.type == EventType.STATE_TRANSITION]
             assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == f"AssertionError: {message}"
     if verb == "drain":
         write(root, "fresh", ticket())

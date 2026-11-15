@@ -9,14 +9,14 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from chupa.__main__ import main
-from chupa.config import load_config
-from chupa.hostfiles import render
-from chupa.llm import FakeLLM
-from chupa.providers import routed_conduct_paths
+from clutch.__main__ import main
+from clutch.config import load_config
+from clutch.hostfiles import render
+from clutch.llm import FakeLLM
+from clutch.providers import routed_conduct_paths
 
 CONFIG = """schema_version: 1
-state_dir: .chupa/state
+state_dir: .clutch/state
 providers:
   - name: claude
     kind: cli
@@ -44,7 +44,7 @@ kind: feature
 {depends}
 
 ## Context
-- chupa/thing.py
+- clutch/thing.py
 
 ## Goal / Why
 `thing()` returns ok.
@@ -53,7 +53,7 @@ kind: feature
 In: thing. Out: the rest.
 
 ## Scope fence
-- chupa/thing.py
+- clutch/thing.py
 
 ## Acceptance criteria
 1. `uv run pytest` exits 0.
@@ -74,11 +74,11 @@ Needs a new dependency.
 
 with tempfile.TemporaryDirectory() as directory:
     repo = Path(directory)
-    (repo / "chupa").mkdir()
-    (repo / "chupa/thing.py").write_text("")
+    (repo / "clutch").mkdir()
+    (repo / "clutch/thing.py").write_text("")
     (repo / "config.yaml").write_text(CONFIG)
-    (repo / "CHUPA_PLAN.md").write_text(PLAN)
-    (repo / ".gitignore").write_text(".chupa/\n")
+    (repo / "CLUTCH_PLAN.md").write_text(PLAN)
+    (repo / ".gitignore").write_text(".clutch/\n")
     for path in routed_conduct_paths(load_config(None, cwd=repo), repo):
         path.write_bytes(render(path.read_bytes() if path.exists() else b""))
     env = {**os.environ, "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@example.com", "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@example.com"}
@@ -94,12 +94,12 @@ with tempfile.TemporaryDirectory() as directory:
         path.parent.mkdir(parents=True)
         path.write_text(TICKET.format(depends="none").replace("---\npriority:", "---\nstate: draft\npriority:", 1))
     llm = FakeLLM([json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
-    with patch("chupa.__main__.ProviderLLM", return_value=llm), contextlib.redirect_stdout(io.StringIO()):
+    with patch("clutch.__main__.ProviderLLM", return_value=llm), contextlib.redirect_stdout(io.StringIO()):
         result = main(["review", "alpha"], cwd=repo, env=env)
     subjects = git("log", "--format=%s").splitlines()
-    if "chupa(beta): ticket" in subjects:
+    if "clutch(beta): ticket" in subjects:
         outcome = "defect"
-    elif result == 0 and "chupa(alpha): ticket" in subjects and "state: draft" in (repo / "tickets/beta/ticket.md").read_text():
+    elif result == 0 and "clutch(alpha): ticket" in subjects and "state: draft" in (repo / "tickets/beta/ticket.md").read_text():
         outcome = "pass"
     else:
         outcome = "error"

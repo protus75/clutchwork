@@ -8,12 +8,12 @@ from pathlib import Path
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
-    package = root / "chupa"
+    package = root / "clutch"
     hits = []
     count = 0
     try:
         if not package.is_dir():
-            raise ValueError("chupa directory is missing")
+            raise ValueError("clutch directory is missing")
         for directory, dirs, files in os.walk(package, onerror=lambda error: (_ for _ in ()).throw(error)):
             dirs[:] = [name for name in dirs if name != "__pycache__" and Path(directory, name) != package / "docs"]
             for name in files:
@@ -22,7 +22,7 @@ def main() -> int:
                 count += 1
                 hits.extend(f"{path.relative_to(root)}:{number}" for number, line in enumerate(lines, 1) if "dev.py" in line)
         if not count:
-            raise ValueError("chupa directory has no scannable files")
+            raise ValueError("clutch directory has no scannable files")
     except (OSError, UnicodeError, ValueError) as error:
         print(error, file=sys.stderr)
         print(json.dumps({"regression_result": "error"}))

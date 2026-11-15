@@ -4,7 +4,7 @@ import asyncio
 import time
 from pathlib import Path
 
-from chupa.seams import SubprocessExec
+from clutch.seams import SubprocessExec
 
 
 async def wait_until(predicate):

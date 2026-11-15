@@ -9,17 +9,17 @@ from unittest.mock import Mock
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import daemon, runner, stages
-from chupa import journal as journal_module
-from chupa.artifacts import Cost, Finding, StageResult
-from chupa.box import Box, BoxError, Message, Resolution, Verdict
-from chupa.flake import Flake, RerunEvidence
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.seams import LocalFileSystem
-from chupa.storm import STORM_THRESHOLD, STORM_TRIP, STORM_WINDOW, StormLedger
-from chupa.tickets import validate_ticket
+from clutch import __main__ as cli
+from clutch import daemon, runner, stages
+from clutch import journal as journal_module
+from clutch.artifacts import Cost, Finding, StageResult
+from clutch.box import Box, BoxError, Message, Resolution, Verdict
+from clutch.flake import Flake, RerunEvidence
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.seams import LocalFileSystem
+from clutch.storm import STORM_THRESHOLD, STORM_TRIP, STORM_WINDOW, StormLedger
+from clutch.tickets import validate_ticket
 from tests.integration.test_cli import ENV
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_drain import Script, commit_ticket, confirmed, make_root
@@ -259,14 +259,14 @@ def test_storm_activation_does_not_hold_dispatch_or_notify(tmp_path, monkeypatch
     commit_ticket(root, "unrelated", confirmed())
     script = Script()
     clock = FakeClock(T0)
-    journal = Journal(root / ".chupa/state", clock)
-    box = daemon.storm_producer(root=root / ".chupa/state/box", fs=LocalFileSystem(), journal=journal, clock=clock)
+    journal = Journal(root / ".clutch/state", clock)
+    box = daemon.storm_producer(root=root / ".clutch/state/box", fs=LocalFileSystem(), journal=journal, clock=clock)
     six(box)
 
     def forbidden(*args, **kwargs):
         pytest.fail("storm invoked external notification")
 
-    from chupa.effects import Effects
+    from clutch.effects import Effects
 
     effect = Effects.run
 
@@ -275,8 +275,8 @@ def test_storm_activation_does_not_hold_dispatch_or_notify(tmp_path, monkeypatch
             forbidden()
         return await effect(self, action, **kwargs)
 
-    monkeypatch.setattr("chupa.effects.Effects.run", allowed)
-    monkeypatch.setattr("chupa.triage.triage_pass", forbidden)
+    monkeypatch.setattr("clutch.effects.Effects.run", allowed)
+    monkeypatch.setattr("clutch.triage.triage_pass", forbidden)
     if verb == "drain":
         original = cli.build_control
 
@@ -325,7 +325,7 @@ async def exercise_site(ctx, monkeypatch, site, attempt=2):
         ticket = await ticket_fixture()
 
         def reply(request):
-            raw = json.loads(agent({"chupa/thing.py": "ok\n"})(request).removeprefix("```json\n").removesuffix("\n```"))
+            raw = json.loads(agent({"clutch/thing.py": "ok\n"})(request).removeprefix("```json\n").removesuffix("\n```"))
             raw["second_problems"] = [{"summary": "same issue 1"}, {"summary": "same issue 2"}]
             return json.dumps(raw)
 
@@ -557,7 +557,7 @@ async def test_storm_leaves_daemon_selection_and_accounting_unchanged(admission_
     def forbidden(*args, **kwargs):
         pytest.fail("storm invoked an external notification")
 
-    monkeypatch.setattr("chupa.effects.Effects.run", forbidden)
+    monkeypatch.setattr("clutch.effects.Effects.run", forbidden)
     core = cli.build_daemon_core(checkout, read=lambda _: None, debounce=0, quarantined=lambda: set(), drought_parked=lambda: set(), completed_unmerged=lambda: 0, prepare=prepare)
     box = core.control._recover.__self__
     six(box)
@@ -571,7 +571,7 @@ async def test_storm_leaves_daemon_selection_and_accounting_unchanged(admission_
     (hold,) = core.control.storm_holds()
     assert core.control.storm_holds()[hold] == "one"
     # This activation publishes identities; continuous stage selection lands with serve.
-    from chupa.control import ControlRequest, publish_request
+    from clutch.control import ControlRequest, publish_request
 
     publish_request(ctx.config.state_dir, ControlRequest("daemon-release", core.control.inbox.lifecycle_id, "resume", hold), ctx.fs)
     await core.control.checkpoint()

@@ -6,14 +6,14 @@ from importlib.metadata import metadata
 from pathlib import Path
 from urllib.parse import urlsplit
 
-import chupa
-from chupa.help import COMMANDS, TOPICS, help_map
+import clutch
+from clutch.help import COMMANDS, TOPICS, help_map
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def registry():
-    urls = metadata("chupa").get_all("Project-URL")
+    urls = metadata("clutchwork").get_all("Project-URL")
     repo = next(value.split(",", 1)[1].strip() for value in urls if value.split(",", 1)[0].strip() == "Repository")
     return help_map(Path.read_text, repo), repo
 
@@ -24,7 +24,7 @@ def test_links_resolve():
         link = entry["link"]
         if "path" in link:
             path = Path(link["path"])
-            assert path.is_relative_to(Path(chupa.__file__).parent / "docs")
+            assert path.is_relative_to(Path(clutch.__file__).parent / "docs")
             line = path.read_text().splitlines()[link["line"]]
             if key.startswith("verb."):
                 assert line.startswith(f"| `{key[5:]}` |")
@@ -40,14 +40,14 @@ def test_links_resolve():
 
 
 def test_manifest_covered():
-    package = json.loads((ROOT / "vscode-chupa/package.json").read_text())
+    package = json.loads((ROOT / "vscode-clutchwork/package.json").read_text())
     manifest = package["contributes"]
     assert {row["command"] for row in manifest["commands"]} == COMMANDS.keys()
     assert set(COMMANDS.values()) <= TOPICS.keys()
-    views = {row["id"] for row in manifest["views"]["chupa"]}
+    views = {row["id"] for row in manifest["views"]["clutch"]}
     assert {"view." + view for view in views} <= TOPICS.keys()
     menus = manifest["menus"]["view/title"]
-    assert all(any(item["command"] == "chupa.help" and item["when"] == f"view == {view}" and item.get("group") != "navigation" for item in menus) for view in views)
+    assert all(any(item["command"] == "clutch.help" and item["when"] == f"view == {view}" and item.get("group") != "navigation" for item in menus) for view in views)
     repo = package["repository"]["url"].removesuffix(".git").rstrip("/")
     for setting in manifest["configuration"]["properties"].values():
         assert "description" not in setting
@@ -62,7 +62,7 @@ def test_manifest_covered():
 
 def test_verb_what_from_run_guide():
     result, _ = registry()
-    lines = (Path(chupa.__file__).parent / "docs/host-running.md").read_text().splitlines()
+    lines = (Path(clutch.__file__).parent / "docs/host-running.md").read_text().splitlines()
     for key in TOPICS:
         if key.startswith("verb."):
             row = next(line for line in lines if line.startswith(f"| `{key[5:]}` |"))

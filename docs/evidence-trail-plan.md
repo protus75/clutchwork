@@ -1,6 +1,6 @@
 # Cross-provider evidence trail: plan
 
-Every model call chupa makes leaves one evidence record with the same shape, whichever provider served it. The record keeps the provider's raw output byte for byte, wraps it in an envelope of facts only chupa knows (what was asked, by which route, against which tree, at what time), and adds a normalized event view that a versioned normalizer derives from the raw bytes. The schema is versioned and open for extension. Because the raw bytes are always kept, any field a later schema version needs can be recovered from records written before anyone knew to ask for it.
+Every model call clutch makes leaves one evidence record with the same shape, whichever provider served it. The record keeps the provider's raw output byte for byte, wraps it in an envelope of facts only clutch knows (what was asked, by which route, against which tree, at what time), and adds a normalized event view that a versioned normalizer derives from the raw bytes. The schema is versioned and open for extension. Because the raw bytes are always kept, any field a later schema version needs can be recovered from records written before anyone knew to ask for it.
 
 This is the lower layer of `docs/training-data-plan.md`. That plan's attempt manifest lives in the store defined here; its export reads the records defined here.
 
@@ -16,14 +16,14 @@ Release 0.2.0 for the store, envelope, and the Claude and Codex normalizers (`do
 
 1. **Raw first, everything else derived.** The provider's stdout and stderr are stored verbatim (after redaction) and never rewritten. The normalized view is a projection: it can be deleted and rebuilt by a newer normalizer at any time. Nothing is lost by normalizing badly today.
 2. **Over-record what can only be captured live.** Arrival times, process resource use, the tree state before and after a writing call, the CLI version, and the routing decision all disappear when the call ends. They are cheap to record and impossible to rebuild. Anything that can be derived later from raw bytes or git is *not* stored twice.
-3. **Closed vocabulary, open payload.** Normalized event kinds and tool classes are closed lists (fail closed, as elsewhere in chupa). Anything a normalizer cannot map is kept as an `unknown` event with its native payload, never dropped.
-4. **One identity.** A record's id is the journal effect key of the call, `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`, where `<group>` is the stem for a ticket's call and the surface name for a ticketless call (`chupa/driver.py:274`: "ticketless surfaces spool and key under their surface name"). So `stem` is nullable and `group` never is (roadmap decision 3). Provider-native ids (session id, thread id, message uuid) are recorded alongside so provider-side logs can be joined later.
+3. **Closed vocabulary, open payload.** Normalized event kinds and tool classes are closed lists (fail closed, as elsewhere in clutch). Anything a normalizer cannot map is kept as an `unknown` event with its native payload, never dropped.
+4. **One identity.** A record's id is the journal effect key of the call, `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`, where `<group>` is the stem for a ticket's call and the surface name for a ticketless call (`clutch/driver.py:274`: "ticketless surfaces spool and key under their surface name"). So `stem` is nullable and `group` never is (roadmap decision 3). Provider-native ids (session id, thread id, message uuid) are recorded alongside so provider-side logs can be joined later.
 5. **The journal does not change.** It stays the record of decisions. The evidence store refers to the journal by key. The journal never refers to the evidence store.
 6. **Always on, bounded.** Capture replaces today's always-on `spools/providers/` and serves diagnosis and harvest, so it is not behind the training switch. `evidence.max_gb` bounds it (roadmap decision 2).
 
 ## Current state
 
-How each adapter in `chupa/providers.py` handles its CLI today, and what this repo's captures contained at `0895b5d4` (`.chupa/state/spools/providers/`):
+How each adapter in `clutch/providers.py` handles its CLI today, and what this repo's captures contained at `0895b5d4` (`.clutch/state/spools/providers/`):
 
 | | claude | codex | qwen |
 |---|---|---|---|
@@ -37,13 +37,13 @@ How each adapter in `chupa/providers.py` handles its CLI today, and what this re
 | Served model | `system/init.model`, `result.modelUsage` keys | not in the stream | not yet observed |
 | CLI version | `system/init.claude_code_version` | not in the stream | not yet observed |
 
-What chupa keeps today:
+What clutch keeps today:
 
-- `Parsed` (`chupa/providers.py:250`) keeps only `text`, `input_tokens`, `output_tokens`, and `usd`. For Claude, `input_tokens` is the sum of the three input buckets (`providers.py:472`). For Codex it is the raw `input_tokens`. Whether those two numbers are comparable depends on whether Codex's `input_tokens` already includes `cached_input_tokens`. Nothing in chupa pins that, so the journaled token totals may mix two scales.
-- `watchdog.CallMeter` (`chupa/watchdog.py:64`) has a second set of rules that recognize Claude and Codex tool events for progress tracking, and `observe.live_call` (`chupa/observe.py:189-215`) a third that re-encodes each adapter's argv as a regex over `ps` output (roadmap §2.4).
+- `Parsed` (`clutch/providers.py:250`) keeps only `text`, `input_tokens`, `output_tokens`, and `usd`. For Claude, `input_tokens` is the sum of the three input buckets (`providers.py:472`). For Codex it is the raw `input_tokens`. Whether those two numbers are comparable depends on whether Codex's `input_tokens` already includes `cached_input_tokens`. Nothing in clutch pins that, so the journaled token totals may mix two scales.
+- `watchdog.CallMeter` (`clutch/watchdog.py:64`) has a second set of rules that recognize Claude and Codex tool events for progress tracking, and `observe.live_call` (`clutch/observe.py:189-215`) a third that re-encodes each adapter's argv as a regex over `ps` output (roadmap §2.4).
 - The raw capture (`prompt.md`, `events.jsonl`, `stderr.txt`) is written once the process exits (`providers.py:384-388`). A killed or timed-out call keeps only what `process_capture` returned (`providers.py:346`). No arrival times are recorded, so the time between events is lost.
 - Capture directories are overwritten across processes (`_seq` resets to 0 at `providers.py:294`). 3,944 journaled calls, 2,453 capture directories. Roadmap row 1 is the instance fix.
-- The exec seam already has `on_stdout_line` (`chupa/seams.py:57,112`); it reports no resource usage.
+- The exec seam already has `on_stdout_line` (`clutch/seams.py:57,112`); it reports no resource usage.
 
 ## Departures from the design record
 
@@ -52,7 +52,7 @@ What chupa keeps today:
 | §18.1 and D9 refuse a blob store | A content-addressed blob store under `state_dir/evidence/blobs/` | The owner chose on 2026-11-13 to keep every raw stream for training. Content addressing is what makes that affordable: the 88 KB prompt re-sent on every retry is stored once. The store is a sidecar: nothing in the journal, gates, or dispatch reads it |
 | §18.1 refuses "the AI audit trail layer (trajectories ...)" and names its return "as projections over the journal" | Raw trajectories kept; everything else (normalized events, exports) is a rebuildable projection | Raw bytes are the one thing that cannot be rebuilt; §18.1's forecast holds for every other layer |
 
-`CHUPA_PLAN.md` stays frozen. The tickets update `docs/how-chupa-works.md` §8.5, §10.1, and the config table, and `chupa/docs/host-contract.md`.
+`CLUTCH_PLAN.md` stays frozen. The tickets update `docs/how-clutch-works.md` §8.5, §10.1, and the config table, and `clutch/docs/host-contract.md`.
 
 ## Target design
 
@@ -68,22 +68,22 @@ What chupa keeps today:
   attempts/<stem>/<run_seq>/<attempt>.json   # written by docs/training-data-plan.md §2
 ```
 
-`start.json` is written before the process starts, so a call that crashes, hangs, or is killed still leaves a record. A `start.json` with no `end.json` is itself evidence (the engine died mid-call). This layout replaces `spools/providers/`: there is one capture path, not two, and every reader (harvest's event tail at `chupa/runner.py:463-465`, diagnosis, the watchdog's tail) moves to it in the same change. The per-attempt `spools/<stem>/<attempt>/` (prompt, output, check output) is untouched by this plan.
+`start.json` is written before the process starts, so a call that crashes, hangs, or is killed still leaves a record. A `start.json` with no `end.json` is itself evidence (the engine died mid-call). This layout replaces `spools/providers/`: there is one capture path, not two, and every reader (harvest's event tail at `clutch/runner.py:463-465`, diagnosis, the watchdog's tail) moves to it in the same change. The per-attempt `spools/<stem>/<attempt>/` (prompt, output, check output) is untouched by this plan.
 
 Compression uses the standard library's `compression.zstd` (Python 3.14, the project's floor in `pyproject.toml`); no dependency is added.
 
-**Retention.** `evidence: {max_gb: 20}` in `chupa/config.py` (a new `Evidence` model with a default, so existing configs load unchanged). When the store exceeds it, blobs referenced only by the oldest `end.json` or attempt manifests are pruned first; manifests stay, so the record of what was lost stays. The prune runs after each call's `end.json` write and is logged to the engine log.
+**Retention.** `evidence: {max_gb: 20}` in `clutch/config.py` (a new `Evidence` model with a default, so existing configs load unchanged). When the store exceeds it, blobs referenced only by the oldest `end.json` or attempt manifests are pruned first; manifests stay, so the record of what was lost stays. The prune runs after each call's `end.json` write and is logged to the engine log.
 
-### 2. Envelope schema (`chupa.evidence.call`, version 1.0)
+### 2. Envelope schema (`clutch.evidence.call`, version 1.0)
 
 `start.json`:
 
 ```json
 {
-  "schema": "chupa.evidence.call/1.0",
+  "schema": "clutch.evidence.call/1.0",
   "id": "llm/<group>/<run_seq>/<surface>/<attempt>/<call>",
   "group": "parallel-config", "stem": "parallel-config", "run_seq": 3, "attempt": 0, "surface": "implement", "call": 1,
-  "engine": {"version": "<chupa tree sha>", "spec": "implement.md", "spec_version": "2.12"},
+  "engine": {"version": "<clutch tree sha>", "spec": "implement.md", "spec_version": "2.12"},
   "route": {"tier": "medium", "effort": "high", "candidates": ["codex"], "chosen": "codex",
             "reason": "first|spill|failover", "config_sha": "<sha256 of config snapshot>"},
   "provider": {"name": "codex", "adapter": "CodexAdapter", "kind": "cli",
@@ -101,7 +101,7 @@ Compression uses the standard library's `compression.zstd` (Python 3.14, the pro
 
 ```json
 {
-  "schema": "chupa.evidence.call/1.0",
+  "schema": "clutch.evidence.call/1.0",
   "id": "...",
   "exit": {"status": "ok|nonzero|killed|timeout|spawn_error", "code": 0, "signal": null,
            "failure_class": null},
@@ -118,7 +118,7 @@ Compression uses the standard library's `compression.zstd` (Python 3.14, the pro
 
 Notes on fields:
 
-- `group` is the stem or, for ticketless surfaces (`triage`, `author`, `retro`, `requisition_review` run standalone, and the document agent's `doc_*` surfaces), the surface name; `stem` is then `null`. `run_seq` is the journal's (`chupa/driver.py:277`).
+- `group` is the stem or, for ticketless surfaces (`triage`, `author`, `retro`, `requisition_review` run standalone, and the document agent's `doc_*` surfaces), the surface name; `stem` is then `null`. `run_seq` is the journal's (`clutch/driver.py:277`).
 - `process.isolated` and `conduct_file`: a call made in the document agent's scratch directory (`docs/document-agent-plan.md` §3) has `isolated: true`, `cwd` set to the scratch directory, `conduct_file: null`, and `repo: null` in both files, because there is no repository to hash. Every other call records the conduct file its provider loads (`routed_conduct_paths`, `providers.py:128-132`).
 - `stdout_times` is a blob of arrival offsets (one monotonic nanosecond value per stdout line), captured through the exec seam's existing `on_stdout_line` hook. It is the only source for time-to-first-event, gaps between tool calls, and per-step latency. No provider stream reports those consistently.
 - `tree_before` and `tree_after` are git tree ids from a temporary index (`git add -A` into `GIT_INDEX_FILE`, then `write-tree`, through `git.py`). They do not touch the branch, the real index, or the reflog. Read-only surfaces record `tree_before` only. Together with the blob store, they let a later reader rebuild the exact worktree each writing call saw and left.
@@ -127,7 +127,7 @@ Notes on fields:
 - `cli_version`: Claude reports it in `system/init`. For others, the adapter runs `<binary> --version` once per process and caches it. The probe goes through the exec seam and is recorded in the engine log.
 - `engine.log` stage events gain a `call_key` field with the same id, so a log line leads straight to its record.
 
-### 3. Normalized events (`chupa.evidence.events`, version 1.0)
+### 3. Normalized events (`clutch.evidence.events`, version 1.0)
 
 A normalizer is a pure function from raw stdout bytes (plus `stdout_times`) to a list of events. Its id is `<provider>-stream/<n>`, for example `claude-stream/1`. Its output file records that id, so views from different normalizer versions can sit side by side.
 
@@ -137,7 +137,7 @@ Each event:
 {"seq": 17, "t_ms": 41230, "kind": "tool_call",
  "role": "assistant",
  "tool": {"id": "toolu_...", "class": "edit", "native": "Edit"},
- "args": {"path": "chupa/drain.py"}, "args_blob": "sha256:...",
+ "args": {"path": "clutch/drain.py"}, "args_blob": "sha256:...",
  "status": null, "output_blob": null, "text_blob": null,
  "tokens": null,
  "native_type": "assistant/tool_use", "native": {"...unmapped fields...": "..."}}
@@ -171,13 +171,13 @@ Token counts from different providers are not on the same scale: different token
 
 ### 5. Versioning and extension
 
-- **Schema ids** have the form `chupa.evidence.<record>/<major>.<minor>`. A minor bump only adds optional fields. A major bump renames or removes fields, or changes their meaning.
-- **Writers are strict, readers are tolerant.** The writer validates each record against the current version's strict pydantic model (`extra="forbid"`, as elsewhere in chupa). Readers (export, eval, renormalize) accept any record with a known major version and ignore unknown fields. A reader that meets an unknown major version skips the record and counts it.
-- **Envelopes are never rewritten.** A major bump changes only new records. `normalized/` views are rebuilt by `chupa evidence renormalize`, which runs the current normalizers over stored raw bytes. Old views can stay for comparison.
-- **Adding a provider** takes three things: an adapter (exists today), a normalizer module `chupa/evidence/<provider>.py`, and a golden fixture (one redacted real stream per CLI version under `tests/fixtures/evidence/<provider>/`; `pyproject.toml` collects only `test_*.py`, so fixtures are data, not tests). A provider with no normalizer still gets full envelopes and raw bytes. Its records simply have no normalized view until one is written.
+- **Schema ids** have the form `clutch.evidence.<record>/<major>.<minor>`. A minor bump only adds optional fields. A major bump renames or removes fields, or changes their meaning.
+- **Writers are strict, readers are tolerant.** The writer validates each record against the current version's strict pydantic model (`extra="forbid"`, as elsewhere in clutch). Readers (export, eval, renormalize) accept any record with a known major version and ignore unknown fields. A reader that meets an unknown major version skips the record and counts it.
+- **Envelopes are never rewritten.** A major bump changes only new records. `normalized/` views are rebuilt by `clutch evidence renormalize`, which runs the current normalizers over stored raw bytes. Old views can stay for comparison.
+- **Adding a provider** takes three things: an adapter (exists today), a normalizer module `clutch/evidence/<provider>.py`, and a golden fixture (one redacted real stream per CLI version under `tests/fixtures/evidence/<provider>/`; `pyproject.toml` collects only `test_*.py`, so fixtures are data, not tests). A provider with no normalizer still gets full envelopes and raw bytes. Its records simply have no normalized view until one is written.
 - **CLI version drift:** each normalizer declares the CLI versions its fixtures cover. Renormalizing a stream from an uncovered version still runs, but the result is flagged `unverified`.
-- **Coverage report:** `chupa evidence coverage` prints, for each provider and CLI version, the share of raw events mapped to a known kind and the most common `unknown` native types. It shows where the next normalizer version should start.
-- The JSON Schema for each record version is generated from the pydantic models (`chupa evidence schema`), so tools outside chupa can validate records without importing chupa.
+- **Coverage report:** `clutch evidence coverage` prints, for each provider and CLI version, the share of raw events mapped to a known kind and the most common `unknown` native types. It shows where the next normalizer version should start.
+- The JSON Schema for each record version is generated from the pydantic models (`clutch evidence schema`), so tools outside clutch can validate records without importing clutch.
 
 ### 6. What is deliberately over-recorded
 
@@ -205,16 +205,16 @@ Raw bytes pass through the existing redactor before hashing, as `spools/provider
 
 | Piece | Home |
 |---|---|
-| Record models, schema ids, JSON Schema generation | new `chupa/evidence/schema.py` (the training plan's attempt schema sits beside the call schemas) |
-| Blob store, record writer, prune | new `chupa/evidence/store.py` (`FileSystem` seam, redactor) |
-| `evidence.max_gb` | `chupa/config.py` (`Evidence` model) |
-| Envelope capture at spawn and exit | `chupa/providers.py` (`CliAdapter.invoke`, replacing `_write_capture`) |
-| Arrival times, rusage | `chupa/seams.py` exec seam (`on_stdout_line` exists; add the timing and rusage return) |
-| Temporary-index tree ids | `chupa/git.py` (new argv-list operation) |
-| `call_key` on stage events | `chupa/enginelog.py` callers in `chupa/driver.py` |
-| Normalizers | `chupa/evidence/claude.py` (qwen reuses it until a fixture shows a difference), `chupa/evidence/codex.py`, `chupa/evidence/gemini.py` after `gemini-provider` |
-| `evidence show`, `schema`, `renormalize`, `coverage` verbs | `chupa/__main__.py`, plus `./dev.py` subcommands |
-| Docs | `docs/how-chupa-works.md` §8.5 (redaction), §10.1 (`evidence/` replaces `spools/providers/`), new section on the evidence record; `chupa/docs/host-contract.md` inventory |
+| Record models, schema ids, JSON Schema generation | new `clutch/evidence/schema.py` (the training plan's attempt schema sits beside the call schemas) |
+| Blob store, record writer, prune | new `clutch/evidence/store.py` (`FileSystem` seam, redactor) |
+| `evidence.max_gb` | `clutch/config.py` (`Evidence` model) |
+| Envelope capture at spawn and exit | `clutch/providers.py` (`CliAdapter.invoke`, replacing `_write_capture`) |
+| Arrival times, rusage | `clutch/seams.py` exec seam (`on_stdout_line` exists; add the timing and rusage return) |
+| Temporary-index tree ids | `clutch/git.py` (new argv-list operation) |
+| `call_key` on stage events | `clutch/enginelog.py` callers in `clutch/driver.py` |
+| Normalizers | `clutch/evidence/claude.py` (qwen reuses it until a fixture shows a difference), `clutch/evidence/codex.py`, `clutch/evidence/gemini.py` after `gemini-provider` |
+| `evidence show`, `schema`, `renormalize`, `coverage` verbs | `clutch/__main__.py`, plus `./dev.py` subcommands |
+| Docs | `docs/how-clutch-works.md` §8.5 (redaction), §10.1 (`evidence/` replaces `spools/providers/`), new section on the evidence record; `clutch/docs/host-contract.md` inventory |
 
 ## Ticket breakdown
 
@@ -229,7 +229,7 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 | 5 | `evidence-normalize-gemini` | feature | P3 | `evidence-store`, `gemini-provider` | Gemini normalizer and fixture, from the hand-test capture in `docs/gemini-graphics-refactor-plan.md` A0. Release 0.2.0. |
 | 6 | `evidence-verbs` | feature | P3 | `evidence-envelope`, 3, 4 | `show`, `schema`, `renormalize`, `coverage`. Release 0.5.0. |
 | 7 | `spools-onto-evidence-store` | chore | P3 | `evidence-envelope` | The per-attempt `spools/<stem>/<attempt>/` (prompt, output, check output) move into the store as blobs referenced from the call and attempt records; harvest, diagnosis, and every spool reader follow; `spools/` is deleted. One capture path. Release 0.5.0 (decided 2026-11-14). |
-| 8 | `one-parser-per-provider` | chore | P3 | 3, 4, 5 | `CallMeter` (`chupa/watchdog.py`), `Parsed` (`chupa/providers.py`), and `live_call` (`chupa/observe.py`) read the normalized events and the envelope's `provider` block; the adapter `parse` methods and the watchdog's per-provider branches go. Release 0.5.0, after a release of real traffic and a coverage report that maps nearly every event (decided 2026-11-14). |
+| 8 | `one-parser-per-provider` | chore | P3 | 3, 4, 5 | `CallMeter` (`clutch/watchdog.py`), `Parsed` (`clutch/providers.py`), and `live_call` (`clutch/observe.py`) read the normalized events and the envelope's `provider` block; the adapter `parse` methods and the watchdog's per-provider branches go. Release 0.5.0, after a release of real traffic and a coverage report that maps nearly every event (decided 2026-11-14). |
 
 `Runs before`: `contention-authoring-rules` (roadmap row 13) before every ticket here. Tickets 3 and 4 touch separate files and could run in parallel under `docs/parallel-tickets-plan.md` once it ships.
 
@@ -244,7 +244,7 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 is the record. Nothing here remains open.
 
-1. **Copy the provider's own session log** (Claude and Codex both write transcripts under the user's home directory)? Decided 2026-11-13: no. It is outside chupa's custody, and the stdout stream holds the same events. `native_ids` keeps the join possible later.
+1. **Copy the provider's own session log** (Claude and Codex both write transcripts under the user's home directory)? Decided 2026-11-13: no. It is outside clutch's custody, and the stdout stream holds the same events. `native_ids` keeps the join possible later.
 2. **Store thinking text?** Decided 2026-11-13: yes, as a blob like any other text, `visibility: text`; the export can exclude it per run.
 3. **Move `CallMeter`, `Parsed`, and `live_call` onto normalized events** (one parser per provider)? Decided 2026-11-14: yes, after a release of real traffic; ticket 8 above.
 

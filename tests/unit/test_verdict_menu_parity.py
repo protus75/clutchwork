@@ -5,10 +5,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from chupa import observe, runner
-from chupa.box import Box
-from chupa.journal import EventType
-from chupa.reconcile import orphans
+from clutch import observe, runner
+from clutch.box import Box
+from clutch.journal import EventType
+from clutch.reconcile import orphans
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def world(monkeypatch):
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "exists", lambda p: p in files)
     monkeypatch.setattr(Path, "read_text", lambda p, *a, **kw: files[p])
-    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("chupa.help", fromlist=["TOPICS"]).TOPICS}, []))
+    monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(runner, "intake", AsyncMock(return_value=SimpleNamespace(refused={})))
     monkeypatch.setattr(runner, "_dead_dependents", AsyncMock())
 
@@ -121,9 +121,9 @@ def test_snapshot_matches_verdict(world, stem, expected):
         w.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=stem)
     w.live[0] = stem == "running"
     menu = w.row(stem)["menu"]
-    assert (menu["chupaConfirm"], menu["chupaReject"]) == expected
+    assert (menu["clutchConfirm"], menu["clutchReject"]) == expected
     original = list(w.events)
-    for verb, key in [("confirm", "chupaConfirm"), ("reject", "chupaReject")]:
+    for verb, key in [("confirm", "clutchConfirm"), ("reject", "clutchReject")]:
         w.events[:] = original
         if w.live[0]:
             result = asyncio.run(runner.apply_admission(stem, verb, "request-" + verb, "extension", w.checkout))
@@ -146,9 +146,9 @@ def test_rejected_has_no_row(world):
 
 def test_reject_commits_and_journals(world):
     world.add("queued")
-    assert world.row("queued")["menu"]["chupaReject"] == "on"
+    assert world.row("queued")["menu"]["clutchReject"] == "on"
     asyncio.run(runner.verdict("queued", world.checkout, kill=True, extension=True))
-    assert world.commits == [("chupa(queued): rejected", ["tickets/queued/ticket.md"], "---\nstate: rejected\npriority: P1\n---\n")]
+    assert world.commits == [("clutch(queued): rejected", ["tickets/queued/ticket.md"], "---\nstate: rejected\npriority: P1\n---\n")]
     assert [(e.type, e.body.get("signal"), e.body.get("verdict"), e.body.get("to")) for e in world.events] == [
         (EventType.SIGNAL, "reject_verdict", "kill", None),
         (EventType.STATE_TRANSITION, None, None, "rejected"),

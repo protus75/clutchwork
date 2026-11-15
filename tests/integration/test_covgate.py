@@ -4,8 +4,8 @@ import sys
 
 import pytest
 
-from chupa.__main__ import main
-from chupa.covgate import GateInvalid, evaluate, parse_gate, percentages, run_gate
+from clutch.__main__ import main
+from clutch.covgate import GateInvalid, evaluate, parse_gate, percentages, run_gate
 
 
 def report(**files):

@@ -5,10 +5,10 @@ from unittest.mock import Mock
 
 import pytest
 
-import chupa
-from chupa import providers
-from chupa.config import Limits, ModelsByTier, Provider
-from chupa.providers import ClaudeAdapter, ProviderSetupError, QwenAdapter
+import clutch
+from clutch import providers
+from clutch.config import Limits, ModelsByTier, Provider
+from clutch.providers import ClaudeAdapter, ProviderSetupError, QwenAdapter
 
 
 def provider(name="qwen", base_url="http://h:11434/v1"):
@@ -42,7 +42,7 @@ def test_qwen_argv_and_env():
     expected[expected.index("plan")] = "yolo"
     assert a.argv("qwen3-coder:30b", "low", True) == expected
     path = Path(a.call_env()["QWEN_CODE_SYSTEM_SETTINGS_PATH"])
-    assert path.is_absolute() and path == Path(chupa.__file__).parent / "qwen-settings.json"
+    assert path.is_absolute() and path == Path(clutch.__file__).parent / "qwen-settings.json"
     assert json.loads(path.read_text()) == {"context": {"fileName": "CLAUDE.md"}}
     assert a.call_env()["PATH"] == "/repo/node_modules/.bin:/bin"
 

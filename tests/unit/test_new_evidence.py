@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from chupa.__main__ import _new
-from chupa.runner import Refusal
+from clutch.__main__ import _new
+from clutch.runner import Refusal
 
 
 def test_bug_requires_evidence_before_io():

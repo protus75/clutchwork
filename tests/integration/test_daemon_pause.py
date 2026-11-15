@@ -4,10 +4,10 @@ import asyncio
 
 import pytest
 
-from chupa import control, daemon
-from chupa.__main__ import main
-from chupa.config import load_config
-from chupa.daemon import DaemonAdmission, snapshot_dispatch
+from clutch import control, daemon
+from clutch.__main__ import main
+from clutch.config import load_config
+from clutch.daemon import DaemonAdmission, snapshot_dispatch
 from tests.integration.test_cli import CONFIG, ENV, Clock, root, ticket, write
 from tests.integration.test_control import Rig
 from tests.integration.test_daemon_admission import assert_idle, tickets, turn

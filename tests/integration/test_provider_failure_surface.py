@@ -1,6 +1,6 @@
-from chupa.box import BOX_DIR, Box
-from chupa.providers import ProviderCallError
-from chupa.seams import LocalFileSystem
+from clutch.box import BOX_DIR, Box
+from clutch.providers import ProviderCallError
+from clutch.seams import LocalFileSystem
 from tests.integration.test_stages import repo, run  # noqa: F401
 
 

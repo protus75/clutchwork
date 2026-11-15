@@ -1,6 +1,6 @@
 .venv/
 __pycache__/
-.chupa/
+.clutch/
 dist/
 coverage.json
 node_modules/

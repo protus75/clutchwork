@@ -12,10 +12,10 @@ Release 0.5.0 for the combiners, the routing key, review and diagnosis panels, a
 
 ## Current state
 
-- Every stage is one model call with a re-prompt loop (`chupa/driver.py::Driver._run`; up to `caps.retry` re-prompts on an invalid reply). `resolve()` (`chupa/providers.py:101-108`) picks the first candidate of the `(tier, surface)` row; later candidates serve only on pressure or failover (`chupa/thresh.py`).
-- `Route` (`chupa/config.py:99-102`) is `tier`, `surface`, `candidates`. The graphics plan adds `kinds`.
-- Review replies carry a verdict and findings (`chupa/specs/review.md`); the engine gates the reply shape and journals `review.md`. Requisition review, diagnosis, and triage reply with a verdict each.
-- The scorecard (`chupa/scorecard.py`) counts catches, escapes, and bypasses per gate and surface, for one reviewer.
+- Every stage is one model call with a re-prompt loop (`clutch/driver.py::Driver._run`; up to `caps.retry` re-prompts on an invalid reply). `resolve()` (`clutch/providers.py:101-108`) picks the first candidate of the `(tier, surface)` row; later candidates serve only on pressure or failover (`clutch/thresh.py`).
+- `Route` (`clutch/config.py:99-102`) is `tier`, `surface`, `candidates`. The graphics plan adds `kinds`.
+- Review replies carry a verdict and findings (`clutch/specs/review.md`); the engine gates the reply shape and journals `review.md`. Requisition review, diagnosis, and triage reply with a verdict each.
+- The scorecard (`clutch/scorecard.py`) counts catches, escapes, and bypasses per gate and surface, for one reviewer.
 - `docs/document-agent-plan.md` §4 designs three isolated reviewers and a synthesis with an accounting gate for document lenses; `docs/gemini-graphics-refactor-plan.md` B5-B6 design a per-row majority judge and best-of-N image candidates. Both are panels; neither has an engine mechanism to stand on yet.
 - The owner's review prompts (`CutReview.md` and the others) already run as three isolated agents plus a synthesis, by hand.
 
@@ -44,7 +44,7 @@ routing:
 - Members take distinct candidates in row order when the row has at least `size` candidates; otherwise the first candidate repeats (same model, independent samples). The journal records which, because agreement between two models and agreement between two samples of one model are different signals.
 - `Route` gains the key beside `kinds`; the strict loader refuses it on an older engine, as the host contract already states for a newer config.
 
-### 2. Combiners (`chupa/panel.py`, pure)
+### 2. Combiners (`clutch/panel.py`, pure)
 
 | Combiner | Surfaces | Rule |
 |---|---|---|
@@ -75,14 +75,14 @@ The scorecard attributes each catch to the members that raised it. A finding onl
 
 | Piece | Home |
 |---|---|
-| Combiners | new `chupa/panel.py` (pure; no I/O) |
-| `Route.panel` and the surface-fit refusal | `chupa/config.py`; `chupa/docs/host-contract.md` inventory |
-| Fan-out, member effect keys, `panel_facts` | `chupa/driver.py` |
-| Review and requisition use | `chupa/stages.py` (review), `chupa/requisition.py` |
-| Diagnosis and triage use | `chupa/runner.py` (diagnosis), `chupa/triage.py` |
-| Scorecard attribution | `chupa/scorecard.py`, `chupa/retro.py` (report) |
-| Best-of-N worktrees | `chupa/stages.py` (implement), `chupa/runner.py` |
-| Docs | `docs/how-chupa-works.md` §4.4, §6.3, §8.2, §9.6; the config table |
+| Combiners | new `clutch/panel.py` (pure; no I/O) |
+| `Route.panel` and the surface-fit refusal | `clutch/config.py`; `clutch/docs/host-contract.md` inventory |
+| Fan-out, member effect keys, `panel_facts` | `clutch/driver.py` |
+| Review and requisition use | `clutch/stages.py` (review), `clutch/requisition.py` |
+| Diagnosis and triage use | `clutch/runner.py` (diagnosis), `clutch/triage.py` |
+| Scorecard attribution | `clutch/scorecard.py`, `clutch/retro.py` (report) |
+| Best-of-N worktrees | `clutch/stages.py` (implement), `clutch/runner.py` |
+| Docs | `docs/how-clutch-works.md` §4.4, §6.3, §8.2, §9.6; the config table |
 
 ## Ticket breakdown
 
@@ -90,9 +90,9 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 1 | `panel-combiners` | feature | P2 | | `chupa/panel.py` with the three combiners over the existing artifact models; `panel_facts` body model. Pure, unit-tested. Release 0.5.0. |
+| 1 | `panel-combiners` | feature | P2 | | `clutch/panel.py` with the three combiners over the existing artifact models; `panel_facts` body model. Pure, unit-tested. Release 0.5.0. |
 | 2 | `panel-routing-config` | feature | P2 | `route-kinds-filter` | `Route.panel`, surface-fit refusal, distinct-candidate assignment, `doctor` warning for single-slot providers, host-contract inventory. Release 0.5.0. |
-| 3 | `review-panel` | feature | P2 | 1, 2 | Driver fan-out with member effect keys and records; review, requisition review, diagnosis, and triage use the combined result. how-chupa-works updates. Release 0.5.0. |
+| 3 | `review-panel` | feature | P2 | 1, 2 | Driver fan-out with member effect keys and records; review, requisition review, diagnosis, and triage use the combined result. how-clutch-works updates. Release 0.5.0. |
 | 4 | `panel-scorecard` | feature | P3 | 3 | Per-member catch attribution; unique catches per 100 reviews and the cost multiplier in the retro report. Release 0.5.0. |
 | 5 | `implement-best-of-n` | feature | P3 | 1, `serve-parallel-dispatch` | Per-member worktrees, Check on every candidate, selection, retirement of the rest. Release 0.6.0. |
 

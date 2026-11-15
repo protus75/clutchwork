@@ -2,15 +2,15 @@ from pathlib import Path
 
 import pytest
 
-from chupa import ask, specs
-from chupa.__main__ import main
-from chupa.config import load_config
+from clutch import ask, specs
+from clutch.__main__ import main
+from clutch.config import load_config
 from tests.integration.test_config import VALID
 
 
 @pytest.fixture
 def config(tmp_path):
-    (tmp_path / "config.yaml").write_text(VALID.replace("state_dir: .chupa", "state_dir: custom/state"))
+    (tmp_path / "config.yaml").write_text(VALID.replace("state_dir: .clutch", "state_dir: custom/state"))
     return load_config(None, cwd=tmp_path)
 
 
@@ -30,14 +30,14 @@ def test_host_notes_appended_as_data_block_only_when_set(config, tmp_path):
     config.ask_notes = "host guidance\n" + specs.data_close("host_notes")
     rendered = ask.render("diagnose", "unique-stem", config, tmp_path)
     assert (
-        rendered == plain + "\n" + specs.data_open("host_notes") + "\nhost guidance\n[chupa-data:end host_notes>>\n" + specs.data_close("host_notes") + "\n"
+        rendered == plain + "\n" + specs.data_open("host_notes") + "\nhost guidance\n[clutch-data:end host_notes>>\n" + specs.data_close("host_notes") + "\n"
     )  # Raw delimiters cannot escape the block.
 
 
 def test_prompt_verb_refuses_missing_ticket(config, tmp_path, capsys):
     assert main(["prompt", "review", "missing-stem"], cwd=tmp_path) == 2  # A missing ticket must refuse.
     err = capsys.readouterr().err
-    assert "tickets/missing-stem/ticket.md does not exist" in err and "chupa new missing-stem" in err  # Refusal identifies both cause and remedy.
+    assert "tickets/missing-stem/ticket.md does not exist" in err and "clutch new missing-stem" in err  # Refusal identifies both cause and remedy.
     assert main(["prompt", "review", "Bad_Stem"], cwd=tmp_path) == 2  # Invalid stems must refuse before path access.
     assert "kebab-case" in capsys.readouterr().err
 
@@ -58,8 +58,8 @@ def test_prompt_verb_writes_no_state(config, tmp_path, capsys):
 
 
 def test_box_prompt_names_requested_files(config, tmp_path, capsys):
-    from chupa.box import Box
-    from chupa.seams import LocalFileSystem
+    from clutch.box import Box
+    from clutch.seams import LocalFileSystem
 
     box = Box(config.state_dir / "box", LocalFileSystem())
     ids = [box.enqueue(message_class="suggestion", origin=str(n), summary=f"idea {n}")[0] for n in range(2)]
@@ -72,7 +72,7 @@ def test_box_prompt_names_requested_files(config, tmp_path, capsys):
 
 def test_box_prompt_unknown_id_refuses(config, tmp_path, capsys):
     assert main(["prompt", "box", "missing-id"], cwd=tmp_path) == 2
-    assert "unknown box id missing-id -- name ids that chupa status lists" in capsys.readouterr().err
+    assert "unknown box id missing-id -- name ids that clutch status lists" in capsys.readouterr().err
 
 
 def test_drafts_prompt_selects_committed_drafts(tmp_path, capsys):
@@ -91,4 +91,4 @@ def test_drafts_prompt_selects_committed_drafts(tmp_path, capsys):
     output = capsys.readouterr().out
     assert "committed-draft" in output  # Dropping the committed draft is wrong.
     assert "confirmed-ticket" not in output and "untracked-draft" not in output  # Neither other row is actionable.
-    assert not (root / ".chupa").exists()  # The read-only prompt must not write state.
+    assert not (root / ".clutch").exists()  # The read-only prompt must not write state.

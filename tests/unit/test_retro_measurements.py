@@ -3,13 +3,13 @@
 import asyncio
 from types import SimpleNamespace
 
-from chupa.config import Retro
-from chupa.gates import GateReport
-from chupa.gates import TestCoverage as Coverage
-from chupa.gates import TestTiming as Timing
-from chupa.journal import Event, EventType
-from chupa.retro import production_evidence, project_window
-from chupa.stages import Invoice
+from clutch.config import Retro
+from clutch.gates import GateReport
+from clutch.gates import TestCoverage as Coverage
+from clutch.gates import TestTiming as Timing
+from clutch.journal import Event, EventType
+from clutch.retro import production_evidence, project_window
+from clutch.stages import Invoice
 
 
 def invoice(stem, seconds, percent):

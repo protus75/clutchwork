@@ -2,10 +2,10 @@ import asyncio
 
 import pytest
 
-from chupa import observe, runner
-from chupa.__main__ import main
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile, LockHeld
+from clutch import observe, runner
+from clutch.__main__ import main
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile, LockHeld
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root
 from tests.integration.test_git import commit_lock
@@ -64,13 +64,13 @@ def test_status_shows_interrupted(stopped, monkeypatch, capsys):
 def test_reject_refuses_a_live_run(stopped):
     from types import SimpleNamespace
 
-    from chupa.config import load_config
-    from chupa.git import Git
-    from chupa.seams import LocalFileSystem, SubprocessExec
+    from clutch.config import load_config
+    from clutch.git import Git
+    from clutch.seams import LocalFileSystem, SubprocessExec
 
     config = load_config(None, cwd=stopped)
     checkout = SimpleNamespace(
-        config=config, git=Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(stopped / ".chupa/state")), repo=stopped, clock=Clock(), journal=journal(stopped), fs=LocalFileSystem()
+        config=config, git=Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(stopped / ".clutch/state")), repo=stopped, clock=Clock(), journal=journal(stopped), fs=LocalFileSystem()
     )
     lock = Lockfile(config.state_dir, verb="drain", instance_id="test", clock=checkout.clock)
     lock.acquire()
@@ -102,7 +102,7 @@ def test_menu_offers_reject_for_dead_run(tmp_path, monkeypatch):
     monkeypatch.setattr(observe, "commits", lambda *a: {})
     monkeypatch.setattr(observe, "lock_holder", lambda _, *args: None)
     menu = observe.snapshot(ctx)["rows"][0]["menu"]
-    assert (menu["chupaReject"], menu["chupaConfirm"]) == ("on", "off")
+    assert (menu["clutchReject"], menu["clutchConfirm"]) == ("on", "off")
 
     async def clean(git, repo, stem):
         return False
@@ -110,11 +110,11 @@ def test_menu_offers_reject_for_dead_run(tmp_path, monkeypatch):
     monkeypatch.setattr(runner, "ticket_pending", clean)
     monkeypatch.setattr(observe, "lock_holder", lambda _, *args: object())
     menu = observe.snapshot(ctx)["rows"][0]["menu"]
-    assert (menu["chupaReject"], menu["chupaConfirm"]) == ("off", "off")
+    assert (menu["clutchReject"], menu["clutchConfirm"]) == ("off", "off")
     monkeypatch.setattr(observe, "lock_holder", lambda _, *args: None)
     events[:] = [dict(type=e.type, ticket=e.ticket, body=e.body, ts=e.ts, key=e.key) for e in held_events("stale")]
     menu = observe.snapshot(ctx)["rows"][0]["menu"]
-    assert (menu["chupaReject"], menu["chupaConfirm"]) == ("off", "off")
+    assert (menu["clutchReject"], menu["clutchConfirm"]) == ("off", "off")
 
 
 def test_every_locked_verb_reaps(stopped, monkeypatch):
@@ -139,7 +139,7 @@ def test_every_locked_verb_reaps(stopped, monkeypatch):
     path.write_text(confirmed())
     calls.clear()
     # Clean review can proceed without taking the lock; stop at its first model setup.
-    from chupa import __main__ as entry
+    from clutch import __main__ as entry
 
     monkeypatch.setattr(entry, "build_control", lambda *_: (_ for _ in ()).throw(RuntimeError("review reached model")))
     with pytest.raises(RuntimeError, match="review reached model"):

@@ -5,12 +5,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa.driver import Driver
+from clutch.driver import Driver
 
 
 def test_stage_event_writers_are_confined_to_driver_stage():
     writers = []
-    for path in sorted(Path("chupa").glob("*.py")):
+    for path in sorted(Path("clutch").glob("*.py")):
         tree = ast.parse(path.read_text())
         parents = {}
         for node in ast.walk(tree):
@@ -29,7 +29,7 @@ def test_stage_event_writers_are_confined_to_driver_stage():
                     enclosing.append(current.name)
             writers.append((str(path), enclosing))
     assert len(writers) == 2
-    assert all(path == "chupa/driver.py" and "stage" in names and "Driver" in names for path, names in writers)
+    assert all(path == "clutch/driver.py" and "stage" in names and "Driver" in names for path, names in writers)
 
 
 def make_driver():

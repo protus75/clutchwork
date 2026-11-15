@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-from chupa.journal import EventType
+from clutch.journal import EventType
 from tests.harness.shakeout import run as shakeout
 from tests.harness.shakeout.bench import Bench
 from tests.harness.shakeout.drain import MEMBERS as DRAIN_MEMBERS

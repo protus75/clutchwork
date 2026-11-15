@@ -1,4 +1,4 @@
-"""Phase 0 exit read (CHUPA_PLAN.md 19.P0): a toy echo stage -- consumes a stub artifact,
+"""Phase 0 exit read (CLUTCH_PLAN.md 19.P0): a toy echo stage -- consumes a stub artifact,
 emits one -- runs end to end under the driver with the fake LLM."""
 
 import asyncio
@@ -7,16 +7,16 @@ import textwrap
 from datetime import UTC, datetime
 from pathlib import Path
 
-from chupa.artifacts import Artifact, Finding
-from chupa.config import load_config
-from chupa.driver import Driver, LlmStage
-from chupa.gates import GateReport
-from chupa.llm import FakeLLM
+from clutch.artifacts import Artifact, Finding
+from clutch.config import load_config
+from clutch.driver import Driver, LlmStage
+from clutch.gates import GateReport
+from clutch.llm import FakeLLM
 
 CONFIG = textwrap.dedent(
     """\
     schema_version: 1
-    state_dir: .chupa
+    state_dir: .clutch
     providers:
       - name: fake
         kind: cli

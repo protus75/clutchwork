@@ -1,9 +1,9 @@
 """Dispatch exceptions are isolated to their ticket."""
 
-from chupa import caps
-from chupa.config import Caps
-from chupa.journal import TERMINAL_STATES, EventType
-from chupa.status import reject_queue
+from clutch import caps
+from clutch.config import Caps
+from clutch.journal import TERMINAL_STATES, EventType
+from clutch.status import reject_queue
 from tests.integration.test_drain import Script, commit_ticket, confirmed, drain, journal, make_root
 
 

@@ -9,20 +9,20 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa import control, merge, stages
-from chupa.artifacts import StageResult
-from chupa.box import BOX_DIR, Box
-from chupa.config import MechanicalCheck, RegenerateStrategy, UnionStrategy, load_config, snapshot_config
-from chupa.daemon import PauseConsumer
-from chupa.driver import Driver
-from chupa.git import Git
-from chupa.journal import EventType
-from chupa.llm import FakeLLM
-from chupa.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, ConflictHandoff, MergeQueue, TreeMismatch
-from chupa.providers import child_env
-from chupa.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
-from chupa.stages import ApprovedInvoice, CommandResult, StageContext, render_review
-from chupa.tickets import validate_ticket
+from clutch import control, merge, stages
+from clutch.artifacts import StageResult
+from clutch.box import BOX_DIR, Box
+from clutch.config import MechanicalCheck, RegenerateStrategy, UnionStrategy, load_config, snapshot_config
+from clutch.daemon import PauseConsumer
+from clutch.driver import Driver
+from clutch.git import Git
+from clutch.journal import EventType
+from clutch.llm import FakeLLM
+from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, ConflictHandoff, MergeQueue, TreeMismatch
+from clutch.providers import child_env
+from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
+from clutch.stages import ApprovedInvoice, CommandResult, StageContext, render_review
+from clutch.tickets import validate_ticket
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
 
@@ -32,21 +32,21 @@ run = asyncio.run
 @pytest.fixture
 def ctx(tmp_path):
     repo = tmp_path / "repo"
-    (repo / "chupa").mkdir(parents=True)
-    (repo / "chupa/thing.py").write_text("ok base\n")
-    (repo / "chupa/other.py").write_text("")
-    (repo / "CHUPA_PLAN.md").write_text("# Plan\n")
-    (repo / ".gitignore").write_text(".chupa/\n")
+    (repo / "clutch").mkdir(parents=True)
+    (repo / "clutch/thing.py").write_text("ok base\n")
+    (repo / "clutch/other.py").write_text("")
+    (repo / "CLUTCH_PLAN.md").write_text("# Plan\n")
+    (repo / ".gitignore").write_text(".clutch/\n")
     (repo / "config.yaml").write_text(CONFIG)
     conduct = adopt_conduct(repo)
     config = load_config(None, cwd=repo)
     exec_ = SubprocessExec()
     driver = Driver.from_config(config, llm=FakeLLM([]), env=ENV, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC), sleep=lambda _: asyncio.Event().wait())
-    context = StageContext(repo, config, ENV, exec_, Git(exec_, env=child_env(ENV, config), timeout=30, commit_lock=commit_lock(repo / ".chupa/state")), LocalFileSystem(), driver, SPECS)
+    context = StageContext(repo, config, ENV, exec_, Git(exec_, env=child_env(ENV, config), timeout=30, commit_lock=commit_lock(repo / ".clutch/state")), LocalFileSystem(), driver, SPECS)
 
     async def init():
         await context.git.init(repo, branch="main")
-        await context.git.add(repo, [".gitignore", "config.yaml", "CHUPA_PLAN.md", "chupa", *conduct])
+        await context.git.add(repo, [".gitignore", "config.yaml", "CLUTCH_PLAN.md", "clutch", *conduct])
         await context.git.commit(repo, "base")
 
     run(init())
@@ -68,9 +68,9 @@ async def approve(ctx, ticket, sha=None):
     await commit(ctx, ctx.repo, [path], "review")
 
 
-async def ready(ctx, stem=STEM, *, changes=None, fence=("chupa/thing.py",), verification=(("true",),), priority="P2", lifted=False, commits=None):
+async def ready(ctx, stem=STEM, *, changes=None, fence=("clutch/thing.py",), verification=(("true",),), priority="P2", lifted=False, commits=None):
     text = TICKET.format(bypass="").replace("priority: P2", f"priority: {priority}")
-    text = text.replace("## Scope fence\n- chupa/thing.py", "## Scope fence\n" + "\n".join("- " + f for f in fence))
+    text = text.replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n" + "\n".join("- " + f for f in fence))
     root = ctx.repo / "tickets" / stem
     ctx.fs.write(root / "ticket.md", text.encode())
     record = "".join(f"## {name}\n\n{'ok' if name == 'Outcome' else 'none'}\n\n" for name in stages.RUN_RECORD_SECTIONS)
@@ -81,7 +81,7 @@ async def ready(ctx, stem=STEM, *, changes=None, fence=("chupa/thing.py",), veri
     approve_ticket(ctx.repo, stem, ctx.driver.clock)
     ticket = dataclasses.replace(validate_ticket(stem, text, ctx.repo), verification=verification)
     await ctx.git.worktree_add(ctx.repo, ctx.worktree(stem), stem, "main")
-    for batch in commits or [changes or {"chupa/thing.py": f"ok {stem}\n"}]:
+    for batch in commits or [changes or {"clutch/thing.py": f"ok {stem}\n"}]:
         for path, data in batch.items():
             ctx.fs.write(ctx.worktree(stem) / path, data.encode())
         await commit(ctx, ctx.worktree(stem), list(batch))
@@ -102,7 +102,7 @@ async def admission(ctx, ticket, *, queue=None, attempt=0):
 def test_queue_refuses_dirty_overlap_instead_of_raising(ctx, overlap):
     async def exercise():
         ticket = await ready(ctx)
-        rel = "chupa/thing.py" if overlap else "chupa/other.py"
+        rel = "clutch/thing.py" if overlap else "clutch/other.py"
         edit = b"operator edit\n"
         ctx.fs.write(ctx.repo / rel, edit)
         before = await ctx.git.rev_parse(ctx.repo, "main")
@@ -119,35 +119,35 @@ def test_queue_refuses_dirty_overlap_instead_of_raising(ctx, overlap):
 
 
 def test_queue_refuses_staged_path_outside_diff(ctx):
-    from chupa.mergequeue import regate_receipts
+    from clutch.mergequeue import regate_receipts
 
     async def exercise():
         ticket = await ready(ctx)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"staged operator edit\n")
-        await ctx.git.add(ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"staged operator edit\n")
+        await ctx.git.add(ctx.repo, ["clutch/other.py"])
         before = await ctx.git.rev_parse(ctx.repo, "main")
         result = await admission(ctx, ticket)
         await unchanged(ctx, ticket, before, result, "dirty_checkout")
-        assert any("chupa/other.py" in f.message for f in result.findings)
-        assert "M  chupa/other.py" in (await ctx.git.status_porcelain(ctx.repo)).splitlines()
+        assert any("clutch/other.py" in f.message for f in result.findings)
+        assert "M  clutch/other.py" in (await ctx.git.status_porcelain(ctx.repo)).splitlines()
         assert not regate_receipts(ctx.driver.journal.read())
 
     run(exercise())
 
 
 def test_green_candidate_merges_without_baseline_or_confirm(ctx):
-    from chupa.mergequeue import regate_receipts
+    from clutch.mergequeue import regate_receipts
 
     async def exercise():
         ticket = await ready(ctx)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main changed\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main changed\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         before = await ctx.git.rev_parse(ctx.repo, "main")
         queue = MergeQueue(ctx, escalate=lambda _: pytest.fail("unexpected escalation"), control=admission_control(ctx, known=lambda _: False))
         queue.offer(ticket, attempt=0)
         [result] = await queue.process()
         assert result.outcome == "ok" and result.artifact.commit != before
-        assert (ctx.repo / "chupa/thing.py").read_text() == f"ok {ticket.stem}\n"
+        assert (ctx.repo / "clutch/thing.py").read_text() == f"ok {ticket.stem}\n"
         [receipt] = regate_receipts(ctx.driver.journal.read()).values()
         assert (receipt["admission"], receipt["reason"]) == ("READY", "bootstrap")
         assert receipt["candidate_base_sha"] == before
@@ -217,7 +217,7 @@ def accept_resume(queue, request_id="resume"):
 def test_serial_priority_age_order(ctx, monkeypatch):
     async def scenario():
         offers = [
-            (stem, await ready(ctx, stem, priority=priority, changes={f"chupa/{stem}.py": "ok"}, fence=(f"chupa/{stem}.py",)))
+            (stem, await ready(ctx, stem, priority=priority, changes={f"clutch/{stem}.py": "ok"}, fence=(f"clutch/{stem}.py",)))
             for stem, priority in [("first", "P2"), ("a-new", "P2"), ("z-old", "P2"), ("missing", "P2"), ("tie-b", "P2"), ("tie-a", "P2"), ("urgent", "P0")]
         ]
         for stem, day in [("a-new", 3), ("z-old", 1), ("z-old", 9), ("tie-b", 2), ("tie-a", 2)]:
@@ -257,8 +257,8 @@ def test_serial_priority_age_order(ctx, monkeypatch):
 def test_restore_rebase_safety_integration_order(ctx, monkeypatch):
     async def scenario():
         ticket = await ready(ctx, lifted=True)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         events = []
         for name in ("restore", "rebase_stop_at_conflict", "merge_squash"):
             original = getattr(ctx.git, name)
@@ -277,7 +277,7 @@ def test_restore_rebase_safety_integration_order(ctx, monkeypatch):
 
             async def record(*args, _name=name, _original=original, **kw):
                 events.append(_name)
-                assert (ctx.worktree(ticket.stem) / "chupa/other.py").read_text() == "moved\n"
+                assert (ctx.worktree(ticket.stem) / "clutch/other.py").read_text() == "moved\n"
                 return await _original(*args, **kw)
 
             monkeypatch.setattr(stages, name, record)
@@ -293,9 +293,9 @@ def test_safety_failure_skips_integration(ctx, monkeypatch, failure):
     async def scenario():
         ticket = await ready(ctx, verification=(("no-verification-allowed",),))
         if failure == "rebase":
-            ctx.fs.write(ctx.worktree(ticket.stem) / "chupa/thing.py", b"dirty")
+            ctx.fs.write(ctx.worktree(ticket.stem) / "clutch/thing.py", b"dirty")
         elif failure in {"scope_fence", "post_rebase_regate"}:
-            path = "chupa/other.py" if failure == "scope_fence" else f"tickets/{ticket.stem}/note.md"
+            path = "clutch/other.py" if failure == "scope_fence" else f"tickets/{ticket.stem}/note.md"
             ctx.fs.write(ctx.worktree(ticket.stem) / path, b"change")
             await commit(ctx, ctx.worktree(ticket.stem), [path])
             await approve(ctx, ticket)
@@ -307,8 +307,8 @@ def test_safety_failure_skips_integration(ctx, monkeypatch, failure):
             ctx.fs.write(ctx.repo / "tickets" / ticket.stem / name, b"invalid")
             await commit(ctx, ctx.repo, [f"tickets/{ticket.stem}/{name}"])
         else:
-            ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-            await commit(ctx, ctx.repo, ["chupa/other.py"])
+            ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+            await commit(ctx, ctx.repo, ["clutch/other.py"])
             ctx.config.review.mechanical = [host("fast")]
             ctx.config.merge.safety_checks = ["fast"]
             scripted(ctx, monkeypatch, [(1, "", "red")])
@@ -337,10 +337,10 @@ def test_safety_failure_skips_integration(ctx, monkeypatch, failure):
 @pytest.mark.parametrize("base_red", [False, True])
 def test_verification_uses_rebased_worktree(ctx, base_red):
     async def scenario():
-        argv = ("grep", "-q", "missing", "chupa/thing.py") if base_red else ("grep", "-q", "moved", "chupa/other.py")
+        argv = ("grep", "-q", "missing", "clutch/thing.py") if base_red else ("grep", "-q", "moved", "clutch/other.py")
         ticket = await ready(ctx, verification=(argv,))
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         result = await admission(ctx, ticket)
         assert result.outcome == "ok", result.findings
         spool = ctx.config.state_dir / "spools" / ticket.stem / "0/merge-integration"
@@ -377,8 +377,8 @@ def test_queue_skips_unchanged_code(ctx, monkeypatch, stale):
 def test_always_hard_host_checks_run_before_squash(ctx, monkeypatch):
     async def scenario():
         ticket = await ready(ctx)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         ctx.config.review.mechanical = [host("first"), host("skip", severity="soft"), host("last")]
         ctx.config.merge.safety_checks = ["last", "first"]
         calls = scripted(ctx, monkeypatch, [(0, "", "")] * 4)
@@ -457,8 +457,8 @@ def test_host_check_environment_timeout_and_redaction(ctx, monkeypatch, safety):
 def test_host_check_failure_reports(ctx, monkeypatch, failure, rc, road, safety):
     async def scenario():
         ticket = await ready(ctx)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         ctx.config.review.mechanical = [host("configured-code")]
         ctx.config.merge.safety_checks = ["configured-code"] if safety else []
         scripted(ctx, monkeypatch, [failure])
@@ -495,9 +495,9 @@ def test_host_check_selection_fails_closed(ctx, monkeypatch, designation):
     async def scenario():
         ticket = await ready(ctx)
         entries = {"missing": [], "ambiguous": [host("fast"), host("fast")], "soft": [host("fast", severity="soft")], "path": [host("fast", trigger=["unrelated/"])]}
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
-        ctx.config.review.mechanical = entries[designation] + [host("soft", severity="soft"), host("path", trigger=["chupa/"])]
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
+        ctx.config.review.mechanical = entries[designation] + [host("soft", severity="soft"), host("path", trigger=["clutch/"])]
         ctx.config.merge.safety_checks = ["fast"]
         calls = scripted(ctx, monkeypatch, [(0, "", "")])
         queue = MergeQueue(ctx, escalate=lambda _: None)
@@ -517,9 +517,9 @@ def test_host_check_selection_fails_closed(ctx, monkeypatch, designation):
 
 def test_host_checks_have_no_base_red_exemption(ctx, monkeypatch):
     async def scenario():
-        ticket = await ready(ctx, verification=(("grep", "-q", "absent", "chupa/thing.py"),))
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        ticket = await ready(ctx, verification=(("grep", "-q", "absent", "clutch/thing.py"),))
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         ctx.config.review.mechanical = [host("host-red")]
         calls = scripted(ctx, monkeypatch, [(1, "", "red")])
         before = await ctx.git.rev_parse(ctx.repo, "main")
@@ -534,13 +534,13 @@ def test_host_checks_have_no_base_red_exemption(ctx, monkeypatch):
 
 def test_semantic_conflict_never_moves_main(ctx):
     async def scenario():
-        command = ["python3", "-c", "from pathlib import Path; import sys; sys.exit(int('add-thing' in Path('chupa/thing.py').read_text() and bool(Path('chupa/other.py').read_text())))"]
+        command = ["python3", "-c", "from pathlib import Path; import sys; sys.exit(int('add-thing' in Path('clutch/thing.py').read_text() and bool(Path('clutch/other.py').read_text())))"]
         ctx.config.review.mechanical = [host("combined", argv=command)]
         ticket = await ready(ctx)
-        other = await ready(ctx, "other", priority="P1", changes={"chupa/other.py": "moved\n"}, fence=("chupa/other.py",))
+        other = await ready(ctx, "other", priority="P1", changes={"clutch/other.py": "moved\n"}, fence=("clutch/other.py",))
         for candidate in (ticket, other):
             assert (await ctx.exec_.run(command, cwd=ctx.worktree(candidate.stem), env=child_env(ctx.env, ctx.config), timeout=30))[0] == 0
-        next_ticket = await ready(ctx, "next", changes={"chupa/new.py": "green\n"}, fence=("chupa/new.py",))
+        next_ticket = await ready(ctx, "next", changes={"clutch/new.py": "green\n"}, fence=("clutch/new.py",))
         queue = MergeQueue(ctx, escalate=lambda _: None)
         for candidate in (ticket, other, next_ticket):
             queue.offer(candidate, attempt=0)
@@ -548,10 +548,10 @@ def test_semantic_conflict_never_moves_main(ctx):
         assert [r.outcome for r in results] == ["ok", "gate_failed", "ok"]
         assert results[0].artifact.stem == "other" and results[2].artifact.stem == "next"
         assert ctx.worktree(ticket.stem).exists()
-        assert (ctx.repo / "chupa/thing.py").read_text() == "ok base\n"
-        assert (ctx.repo / "chupa/other.py").read_text() == "moved\n"
-        assert (ctx.repo / "chupa/new.py").is_file()
-        assert facts(ctx)[1].body["integration_red_paths"] == ["chupa/thing.py"]
+        assert (ctx.repo / "clutch/thing.py").read_text() == "ok base\n"
+        assert (ctx.repo / "clutch/other.py").read_text() == "moved\n"
+        assert (ctx.repo / "clutch/new.py").is_file()
+        assert facts(ctx)[1].body["integration_red_paths"] == ["clutch/thing.py"]
 
     run(scenario())
 
@@ -571,8 +571,8 @@ def test_clean_rebase_carries_pinned_approval(ctx, approval):
             text = path.read_text().replace('"verdict": "approve"', '"verdict": "snag"') if approval == "snag" else "bad"
             ctx.fs.write(path, text.encode())
             await commit(ctx, ctx.repo, [str(path.relative_to(ctx.repo))])
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         before = await ctx.git.rev_parse(ctx.repo, "main")
         result = await admission(ctx, ticket)
         if approval == "valid":
@@ -603,10 +603,10 @@ def test_squash_tree_trailers_and_retirement(ctx, monkeypatch):
         assert result.artifact.commit == await original(ctx.repo, "main")
         assert result.artifact.reviewed_sha == reviewed and result.artifact.produced_at_sha == result.artifact.commit
         message = await ctx.git._run(ctx.repo, "log", "-1", "--format=%B", "main")
-        assert message.startswith(f"chupa({ticket.stem}): `thing.py` holds the word ok.")
-        assert f"chupa-ticket: {ticket.stem}" in message and f"chupa-reviewed-sha: {reviewed}" in message
+        assert message.startswith(f"clutch({ticket.stem}): `thing.py` holds the word ok.")
+        assert f"clutch-ticket: {ticket.stem}" in message and f"clutch-reviewed-sha: {reviewed}" in message
         paths = await ctx.git._run(ctx.repo, "show", "--format=", "--name-only", "main")
-        assert paths.splitlines() == ["chupa/thing.py"]
+        assert paths.splitlines() == ["clutch/thing.py"]
         events = ctx.driver.journal.read()
         merged = [e for e in events if e.type == EventType.STATE_TRANSITION]
         assert len(merged) == 1 and merged[0].body == {"to": "merged", "commit": result.artifact.commit, "reviewed_sha": reviewed}
@@ -621,15 +621,15 @@ def test_escape_squash_trailer_identity(ctx):
     async def scenario():
         ticket = await ready(ctx)
         reviewed = await ctx.git.rev_parse(ctx.repo, ticket.stem)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         result = await admission(ctx, ticket)
         assert result.outcome == "ok", result.findings
         assert result.artifact.reviewed_sha == reviewed
         [candidate] = await ctx.git.first_parent_squashes(ctx.repo, result.artifact.commit)
-        assert candidate == {"ticket": ticket.stem, "commit": result.artifact.commit, "reviewed_sha": reviewed, "paths": ["chupa/thing.py"]}
+        assert candidate == {"ticket": ticket.stem, "commit": result.artifact.commit, "reviewed_sha": reviewed, "paths": ["clutch/thing.py"]}
         message = await ctx.git._run(ctx.repo, "show", "-s", "--format=%B", result.artifact.commit)
-        assert message.count("chupa-ticket:") == message.count("chupa-reviewed-sha:") == 1
+        assert message.count("clutch-ticket:") == message.count("clutch-reviewed-sha:") == 1
         (terminal,) = [e for e in ctx.driver.journal.read() if e.type == EventType.STATE_TRANSITION]
         assert terminal.body == {"to": "merged", "commit": candidate["commit"], "reviewed_sha": reviewed}
 
@@ -665,17 +665,17 @@ def test_tree_mismatch_escalates_and_pauses(ctx, monkeypatch):
 
 def test_distinct_red_streak_pause_and_resume(ctx, monkeypatch):
     async def scenario():
-        tickets = [await ready(ctx, stem, changes={f"chupa/{stem}.py": "ok"}, fence=(f"chupa/{stem}.py",)) for stem in ["one", "two", "three", "green"]]
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        tickets = [await ready(ctx, stem, changes={f"clutch/{stem}.py": "ok"}, fence=(f"clutch/{stem}.py",)) for stem in ["one", "two", "three", "green"]]
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         ctx.config.review.mechanical = [host("integration")]
         calls = scripted(ctx, monkeypatch, [(1, "", "red")] * 4 + [(0, "", "")] * 2)
         escalations = []
         queue = MergeQueue(ctx, escalate=escalations.append, control=admission_control(ctx, known=lambda _: False))
         await admission(ctx, tickets[0], queue=queue)
         await approve(ctx, tickets[0])
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved again\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved again\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         await admission(ctx, tickets[0], queue=queue, attempt=1)
         assert queue.red_stems == ["one"]
         # Safety failures neither reset nor increment the integration streak.
@@ -683,8 +683,8 @@ def test_distinct_red_streak_pause_and_resume(ctx, monkeypatch):
         await admission(ctx, bad, queue=queue)
         assert queue.red_stems == ["one"] and len(calls) == 2
         await approve(ctx, tickets[1])
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved third time\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved third time\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         await admission(ctx, tickets[1], queue=queue)
         queue.offer(tickets[2], attempt=0)
         queue.offer(tickets[3], attempt=0)
@@ -701,21 +701,21 @@ def test_distinct_red_streak_pause_and_resume(ctx, monkeypatch):
         assert green.outcome == "ok" and not queue.red_stems
         # Green also resets a sub-limit streak without requiring resume.
         queue.red_stems.append("earlier")
-        again = await ready(ctx, "again", changes={"chupa/again.py": "ok"}, fence=("chupa/again.py",))
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved for green\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        again = await ready(ctx, "again", changes={"clutch/again.py": "ok"}, fence=("clutch/again.py",))
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved for green\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         assert (await admission(ctx, again, queue=queue)).outcome == "ok" and not queue.red_stems
 
     run(scenario())
 
 
-async def conflict(ctx, *, strategy="union", generator=None, fence=("chupa/thing.py",), repeat=False):
-    generated = "chupa/generated.txt"
-    paths = [generated, "chupa/generated-two.txt"] if repeat else [generated]
+async def conflict(ctx, *, strategy="union", generator=None, fence=("clutch/thing.py",), repeat=False):
+    generated = "clutch/generated.txt"
+    paths = [generated, "clutch/generated-two.txt"] if repeat else [generated]
     for path in paths:
         ctx.fs.write(ctx.repo / path, b"base\n")
     await commit(ctx, ctx.repo, paths)
-    ticket = await ready(ctx, fence=fence, commits=[{"chupa/thing.py": "ok work\n", generated: "base\nbranch-one\n"}, *([{paths[1]: "base\nbranch-two\n"}] if repeat else [])])
+    ticket = await ready(ctx, fence=fence, commits=[{"clutch/thing.py": "ok work\n", generated: "base\nbranch-one\n"}, *([{paths[1]: "base\nbranch-two\n"}] if repeat else [])])
     for path in paths:
         ctx.fs.write(ctx.repo / path, b"base\nmain\n")
     await commit(ctx, ctx.repo, paths, "main conflicts")
@@ -723,7 +723,7 @@ async def conflict(ctx, *, strategy="union", generator=None, fence=("chupa/thing
         ctx.config.merge.strategies = [UnionStrategy(paths=paths, strategy="union")]
     elif strategy == "regenerate":
         ctx.config.merge.strategies = [
-            RegenerateStrategy(paths=paths, strategy="regenerate", argv=generator or ["python3", "-c", "from pathlib import Path; Path('chupa/generated.txt').write_text('regenerated\\n')"])
+            RegenerateStrategy(paths=paths, strategy="regenerate", argv=generator or ["python3", "-c", "from pathlib import Path; Path('clutch/generated.txt').write_text('regenerated\\n')"])
         ]
     return ticket, generated
 
@@ -746,7 +746,7 @@ def test_declared_union_and_regenerate_resolve(ctx, monkeypatch, strategy, repea
         assert text == ("regenerated\n" if strategy == "regenerate" else "base\nmain\nbranch-one\n")
         paths = [path]
         if repeat:
-            paths.append("chupa/generated-two.txt")
+            paths.append("clutch/generated-two.txt")
             assert (ctx.repo / paths[1]).read_text() == "base\nmain\nbranch-two\n"
         assert len(continued) == (2 if repeat else 1)
         [event] = facts(ctx)
@@ -758,12 +758,12 @@ def test_declared_union_and_regenerate_resolve(ctx, monkeypatch, strategy, repea
 @pytest.mark.parametrize("failure", ["undeclared", "ambiguous", "owned"])
 def test_strategy_ownership_and_matching_fail_closed(ctx, failure):
     async def scenario():
-        fence = ("chupa",) if failure == "owned" else ("chupa/thing.py",)
+        fence = ("clutch",) if failure == "owned" else ("clutch/thing.py",)
         ticket, path = await conflict(ctx, strategy="regenerate" if failure == "owned" else "union", fence=fence)
         if failure == "undeclared":
             ctx.config.merge.strategies = []
         elif failure == "ambiguous":
-            ctx.config.merge.strategies.append(UnionStrategy(paths=["chupa"], strategy="union"))
+            ctx.config.merge.strategies.append(UnionStrategy(paths=["clutch"], strategy="union"))
         before = await ctx.git.rev_parse(ctx.repo, "main")
         reviewed = await ctx.git.rev_parse(ctx.repo, ticket.stem)
         result = await admission(ctx, ticket)
@@ -790,7 +790,7 @@ def test_strategy_resolution_still_regates(ctx, monkeypatch):
                 return _original(*args)
 
             monkeypatch.setattr(gate, "check", record)
-        ticket = dataclasses.replace(ticket, verification=(("grep", "-q", "ok", "chupa/thing.py"),))
+        ticket = dataclasses.replace(ticket, verification=(("grep", "-q", "ok", "clutch/thing.py"),))
         ctx.config.review.mechanical = [host("combined", argv=["grep", "-q", "forbidden", path])]
         before = await ctx.git.rev_parse(ctx.repo, "main")
         result = await admission(ctx, ticket)
@@ -818,7 +818,7 @@ def test_strategy_resolution_still_regates(ctx, monkeypatch):
             "conflicted_paths": [path],
             "resolving_rung": "mechanical",
             "strategy_paths": [path],
-            "integration_red_paths": ["chupa/generated.txt", "chupa/thing.py"],
+            "integration_red_paths": ["clutch/generated.txt", "clutch/thing.py"],
         }
 
     run(scenario())
@@ -860,8 +860,8 @@ def test_conflict_facts_shapes(ctx, monkeypatch, mode):
         else:
             ticket, path = await ready(ctx), None
         if mode == "red":
-            ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-            await commit(ctx, ctx.repo, ["chupa/other.py"])
+            ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+            await commit(ctx, ctx.repo, ["clutch/other.py"])
             ctx.config.review.mechanical = [host("red")]
             scripted(ctx, monkeypatch, [(1, "", "output must not be journaled")])
         await admission(ctx, ticket)
@@ -872,7 +872,7 @@ def test_conflict_facts_shapes(ctx, monkeypatch, mode):
             "conflicted_paths": [path] if path else [],
             "resolving_rung": {"clean": "none", "mechanical": "mechanical", "handoff": "rework", "red": "none"}[mode],
             "strategy_paths": [path] if mode == "mechanical" else [],
-            "integration_red_paths": ["chupa/thing.py"] if mode == "red" else [],
+            "integration_red_paths": ["clutch/thing.py"] if mode == "red" else [],
         }
 
     run(scenario())
@@ -910,7 +910,7 @@ def test_admission_exception_and_cancellation_abort_and_release(ctx, monkeypatch
         assert await ctx.git.status_porcelain(ctx.worktree(ticket.stem)) == ""
         # Both failure paths release the writer for the next real candidate.
         monkeypatch.setattr(ctx.exec_, "run", original)
-        next_ticket = await ready(ctx, "next", changes={"chupa/new.py": "ok"}, fence=("chupa/new.py",))
+        next_ticket = await ready(ctx, "next", changes={"clutch/new.py": "ok"}, fence=("clutch/new.py",))
         assert (await admission(ctx, next_ticket, queue=queue)).outcome == "ok"
 
     run(scenario())
@@ -926,40 +926,42 @@ def import_closure(root, sources):
         tree = ast.parse(sources.get(module, ""))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
-                pending.extend(a.name for a in node.names if a.name.startswith("chupa."))
+                pending.extend(a.name for a in node.names if a.name.startswith("clutch."))
             elif isinstance(node, ast.ImportFrom):
-                if node.module and node.module.startswith("chupa."):
+                if node.module and node.module.startswith("clutch."):
                     pending.append(node.module)
-                elif node.module == "chupa":
-                    pending.extend("chupa." + a.name for a in node.names if "chupa." + a.name in sources)
+                elif node.module == "clutch":
+                    pending.extend("clutch." + a.name for a in node.names if "clutch." + a.name in sources)
     return reached
 
 
 def assert_reachable(sources):
-    assert "chupa.mergequeue" in import_closure("chupa.__main__", sources)
+    assert "clutch.mergequeue" in import_closure("clutch.__main__", sources)
 
 
 def test_merge_queue_is_reachable_from_production():
     root = Path(__file__).resolve().parents[2]
-    sources = {"chupa." + p.stem: p.read_text() for p in (root / "chupa").glob("*.py")}
+    sources = {"clutch." + p.stem: p.read_text() for p in (root / "clutch").glob("*.py")}
     assert_reachable(sources)
-    closure = import_closure("chupa.__main__", sources)
-    assert "chupa.merge" in closure
-    assert any(isinstance(node, ast.ImportFrom) and node.module == "chupa.mergequeue" and "MergeQueue" in {alias.name for alias in node.names} for node in ast.walk(ast.parse(sources["chupa.merge"])))
+    closure = import_closure("clutch.__main__", sources)
+    assert "clutch.merge" in closure
+    assert any(
+        isinstance(node, ast.ImportFrom) and node.module == "clutch.mergequeue" and "MergeQueue" in {alias.name for alias in node.names} for node in ast.walk(ast.parse(sources["clutch.merge"]))
+    )
 
     class RemoveMergeQueue(ast.NodeTransformer):
         def visit_Import(self, node):
-            return ast.copy_location(ast.Pass(), node) if any(alias.name == "chupa.mergequeue" for alias in node.names) else node
+            return ast.copy_location(ast.Pass(), node) if any(alias.name == "clutch.mergequeue" for alias in node.names) else node
 
         def visit_ImportFrom(self, node):
-            target = node.module == "chupa.mergequeue" or (node.module == "chupa" and any(alias.name == "mergequeue" for alias in node.names))
+            target = node.module == "clutch.mergequeue" or (node.module == "clutch" and any(alias.name == "mergequeue" for alias in node.names))
             return ast.copy_location(ast.Pass(), node) if target else node
 
     removed = {name: ast.unparse(RemoveMergeQueue().visit(ast.parse(source))) for name, source in sources.items()}
     with pytest.raises(AssertionError):
         assert_reachable(removed)
-    for spelling in ["import chupa.mergequeue as queue", "from chupa import mergequeue as queue"]:
-        assert_reachable({**removed, "chupa.merge": removed["chupa.merge"] + "\n" + spelling})
+    for spelling in ["import clutch.mergequeue as queue", "from clutch import mergequeue as queue"]:
+        assert_reachable({**removed, "clutch.merge": removed["clutch.merge"] + "\n" + spelling})
 
 
 def test_inline_admission_does_not_use_merge_queue(ctx, monkeypatch):
@@ -982,9 +984,9 @@ def test_inline_admission_does_not_use_merge_queue(ctx, monkeypatch):
 @pytest.mark.parametrize("cancel", [False, True])
 def test_resume_waits_for_active_admission(ctx, monkeypatch, cancel):
     async def scenario():
-        tickets = [await ready(ctx, stem, changes={f"chupa/{stem}.py": "ok"}, fence=(f"chupa/{stem}.py",)) for stem in ("one", "two", "three")]
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"], "main moves")
+        tickets = [await ready(ctx, stem, changes={f"clutch/{stem}.py": "ok"}, fence=(f"clutch/{stem}.py",)) for stem in ("one", "two", "three")]
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"], "main moves")
         ctx.config.review.mechanical = [host("integration")]
         scripted(ctx, monkeypatch, [(1, "", "red")] * 3)
         queue = MergeQueue(ctx, escalate=lambda _: None, control=admission_control(ctx, known=lambda _: False))
@@ -1067,7 +1069,7 @@ def test_admission_hold_signal_precedes_projection(ctx, monkeypatch, kind):
 def test_admission_resume_matches_lifecycle_and_hold(ctx, monkeypatch):
     from types import SimpleNamespace
 
-    from chupa import mergequeue
+    from clutch import mergequeue
 
     future = "f" * 32
     identities = iter([future, *(mergequeue.uuid4().hex for _ in range(3))])

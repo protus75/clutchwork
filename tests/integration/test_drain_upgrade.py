@@ -1,4 +1,4 @@
-"""The `drain` self-upgrade re-exec and the premise park (CHUPA_PLAN.md sections 11.2, 18, 19.P1), temp checkout.
+"""The `drain` self-upgrade re-exec and the premise park (CLUTCH_PLAN.md sections 11.2, 18, 19.P1), temp checkout.
 
 The stage seam is scripted per stem (a merge commits its admitted paths to main for real); the handoff's process
 seam is faked to run the child drain in-process, so the whole chain shares one journal and one git checkout.
@@ -12,14 +12,14 @@ from pathlib import Path
 
 import pytest
 
-from chupa import drain as drain_mod
-from chupa import journal as journal_mod
-from chupa import lockfile as lockfile_mod
-from chupa.__main__ import main
-from chupa.drain import HANDOFF_SIGNAL, PREMISE, reexec_argv
-from chupa.journal import EventType, Journal
-from chupa.lockfile import Lockfile, LockHeld
-from chupa.seams import SubprocessExec
+from clutch import drain as drain_mod
+from clutch import journal as journal_mod
+from clutch import lockfile as lockfile_mod
+from clutch.__main__ import main
+from clutch.drain import HANDOFF_SIGNAL, PREMISE, reexec_argv
+from clutch.journal import EventType, Journal
+from clutch.lockfile import Lockfile, LockHeld
+from clutch.seams import SubprocessExec
 from tests.integration.test_cli import ENV, git_out, with_retro_driver
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, retry_draws, tos
 
@@ -44,7 +44,7 @@ class Script:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(path.read_text() + "x\n" if path.exists() else "x\n")
             git_out(checkout.repo, "add", str(path))
-            git_out(checkout.repo, "commit", "-m", f"chupa({t.stem}): merge")
+            git_out(checkout.repo, "commit", "-m", f"clutch({t.stem}): merge")
             commit = git_out(checkout.repo, "rev-parse", "HEAD").strip()
             checkout.journal.append(EventType.STATE_TRANSITION, {"to": "merged", "commit": commit}, ticket=t.stem)
             return "merged"
@@ -61,7 +61,7 @@ class Child:
 
     async def run(self, argv, *, cwd, env, timeout, stdin_path=None):
         self.order.append("spawn")
-        contender = Lockfile(self.root / ".chupa" / "state", verb="drain", instance_id="probe", clock=self.clock)
+        contender = Lockfile(self.root / ".clutch" / "state", verb="drain", instance_id="probe", clock=self.clock)
         try:
             contender.acquire()
         except LockHeld:
@@ -73,7 +73,7 @@ class Child:
         self.spawns.append({"argv": list(argv), "cwd": cwd, "env": env, "timeout": timeout, "stdin_path": stdin_path, "lock_free": free, "last_event": last})
         assert list(argv[:8]) == reexec_argv(["drain"])
         self.script.process = f"child{len(self.spawns)}"
-        # `uv run python -m chupa <args>` -> the module entry's own argv; a thread, as asyncio.run cannot nest.
+        # `uv run python -m clutch <args>` -> the module entry's own argv; a thread, as asyncio.run cannot nest.
         rc = await asyncio.to_thread(main, list(argv[7:]), cwd=self.root, env=ENV, clock=self.clock, pipeline=self.script, reexec=self)
         self.order.append(f"exit {rc}")
         return rc, "", ""
@@ -86,7 +86,7 @@ def root(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def order(monkeypatch) -> list[str]:
-    monkeypatch.setattr("chupa.__main__._engine_signals", lambda cb: lambda: None)
+    monkeypatch.setattr("clutch.__main__._engine_signals", lambda cb: lambda: None)
     """The handoff's observable steps, in the order they happen across the whole chain."""
     steps: list[str] = []
     release, close, append = lockfile_mod.Lockfile.release, journal_mod.Journal.close, journal_mod.Journal.append
@@ -126,7 +126,7 @@ def test_a_self_upgrading_admission_hands_off_before_the_next_dispatch(tmp_path,
     commit_ticket(root, "red", confirmed(priority="P0"))
     commit_ticket(root, "upgrade", confirmed(priority="P1"))
     commit_ticket(root, "after", confirmed(priority="P2"))
-    script = Script({"red": ["gate_failed", "gate_failed"], "upgrade": ["merged:chupa/thing.py"]})
+    script = Script({"red": ["gate_failed", "gate_failed"], "upgrade": ["merged:clutch/thing.py"]})
 
     code, child = drain(root, script, order)
 
@@ -134,7 +134,7 @@ def test_a_self_upgrading_admission_hands_off_before_the_next_dispatch(tmp_path,
     # The parent spends the retry before the upgrade; `after` runs in the child.
     assert script.calls == [("parent", "red"), ("parent", "red"), ("parent", "upgrade"), ("child1", "after")]
     (spawn,) = child.spawns
-    assert spawn["argv"] == ["uv", "run", "--project", str(root.resolve()), "python", "-m", "chupa", "drain", "--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]
+    assert spawn["argv"] == ["uv", "run", "--project", str(root.resolve()), "python", "-m", "clutch", "drain", "--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]
     assert spawn["timeout"] is None and spawn["stdin_path"] is None
     assert spawn["cwd"] == root and spawn["env"] == ENV
     assert spawn["lock_free"]
@@ -157,7 +157,7 @@ def test_the_carried_parked_set_rides_every_handoff_in_the_chain(tmp_path, order
     commit_ticket(root, "red", confirmed(priority="P0"))
     commit_ticket(root, "one", confirmed(priority="P1"))
     commit_ticket(root, "two", confirmed(priority="P2"))
-    script = Script({"red": ["gate_failed", "gate_failed"], "one": ["merged:chupa/a.py"], "two": ["merged:chupa/specs/b.md"]})
+    script = Script({"red": ["gate_failed", "gate_failed"], "one": ["merged:clutch/a.py"], "two": ["merged:clutch/specs/b.md"]})
 
     code, child = drain(root, script, order)
 
@@ -187,7 +187,7 @@ def test_deadline_is_carried_across_the_upgrade_handoff(tmp_path, order, monkeyp
 
             return advance
 
-    script = SlowUpgrade({"upgrade": ["merged:chupa/thing.py"]})
+    script = SlowUpgrade({"upgrade": ["merged:clutch/thing.py"]})
     code, child = drain(root, script, order, clock)
 
     assert code == 1  # A fresh child deadline would allow the queue to finish.
@@ -199,7 +199,7 @@ def test_an_admission_outside_the_engine_plane_does_not_re_exec(root, order, mon
     monkeypatch.setattr(drain_mod, "ENGINE", root.resolve())
     commit_ticket(root, "docs", confirmed(priority="P0"))
     commit_ticket(root, "lookalike", confirmed(priority="P1"))
-    script = Script({"docs": ["merged:docs/guide.md"], "lookalike": ["merged:chupa-notes/x.md"]})
+    script = Script({"docs": ["merged:docs/guide.md"], "lookalike": ["merged:clutch-notes/x.md"]})
 
     code, child = drain(root, script, order)
 
@@ -208,10 +208,10 @@ def test_an_admission_outside_the_engine_plane_does_not_re_exec(root, order, mon
     assert script.calls == [("parent", "docs"), ("parent", "lookalike")]
 
 
-def test_a_host_repo_merge_touching_chupa_does_not_re_exec(root, order, monkeypatch, tmp_path):
+def test_a_host_repo_merge_touching_clutch_does_not_re_exec(root, order, monkeypatch, tmp_path):
     monkeypatch.setattr(drain_mod, "ENGINE", tmp_path / "other-engine")
     commit_ticket(root, "upgrade", confirmed())
-    script = Script({"upgrade": ["merged:chupa/a.py"]})
+    script = Script({"upgrade": ["merged:clutch/a.py"]})
 
     code, child = drain(root, script, order)
 
@@ -227,7 +227,7 @@ def test_retry_budget_spent_before_the_re_exec_stays_spent_in_the_child(tmp_path
     commit_ticket(root, "red", confirmed(priority="P0"))
     commit_ticket(root, "gate", confirmed(priority="P1"))
     commit_ticket(root, "upgrade", confirmed(depends="- gate", priority="P2"))
-    script = Script({"red": ["gate_failed", "gate_failed", "merged:docs/never.md"], "gate": ["gate_failed", "merged:docs/gate.md"], "upgrade": ["merged:chupa/thing.py"]})
+    script = Script({"red": ["gate_failed", "gate_failed", "merged:docs/never.md"], "gate": ["gate_failed", "merged:docs/gate.md"], "upgrade": ["merged:clutch/thing.py"]})
 
     code, child = drain(root, script, order)
 

@@ -8,13 +8,13 @@ from pathlib import Path
 
 import pytest
 
-from chupa.artifacts import DIAGNOSIS_VERDICTS, Harvest
-from chupa.config import load_config
-from chupa.driver import Driver
-from chupa.journal import Journal
-from chupa.llm import HANG, FakeLLM, LLMResult
-from chupa.specs import load_spec
-from chupa.stages import DiagnosisMaterial, diagnose_stage
+from clutch.artifacts import DIAGNOSIS_VERDICTS, Harvest
+from clutch.config import load_config
+from clutch.driver import Driver
+from clutch.journal import Journal
+from clutch.llm import HANG, FakeLLM, LLMResult
+from clutch.specs import load_spec
+from clutch.stages import DiagnosisMaterial, diagnose_stage
 from eval import diagnose
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -99,7 +99,7 @@ def test_reachability_uses_production_render_and_writes_valid_report(tmp_path):
     assert report.agreement.agree == report.agreement.scored == 12
     assert [r.outcome for r in report.cases] == ["agree"] * 12
     assert diagnose.verify(state[4], corpus) == []
-    spec = load_spec((ROOT / "chupa" / "specs" / "diagnose.md").read_text())
+    spec = load_spec((ROOT / "clutch" / "specs" / "diagnose.md").read_text())
     for case, req in zip(corpus, state[3].requests, strict=True):
         material = DiagnosisMaterial(ticket=case.ticket, terminal=case.harvest.terminal, stage=case.harvest.stage, harvest=case.harvest, run_record=case.run_record)
         assert req.surface == "diagnose"

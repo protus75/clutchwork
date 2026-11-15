@@ -3,10 +3,10 @@ import json
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa.control import ControlRequest, publish_request
-from chupa.drain import drain
-from chupa.journal import EventType
+from clutch import __main__ as entry
+from clutch.control import ControlRequest, publish_request
+from clutch.drain import drain
+from clutch.journal import EventType
 from tests.integration.test_cli import ENV, ticket
 from tests.integration.test_drain import commit_ticket, confirmed, pause_checkout, root
 from tests.integration.test_drain_reentry import NoChild

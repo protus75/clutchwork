@@ -9,7 +9,7 @@ from pathlib import Path
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa.graph import layout
+        from clutch.graph import layout
 
         rows = [
             {"stem": "check-test-timing", "section": "queued", "depends": []},

@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa.author import committed, goal
-from chupa.git import GitError
+from clutch.author import committed, goal
+from clutch.git import GitError
 
 
 def test_committed_true_when_rev_parse_resolves():
@@ -34,9 +34,9 @@ def test_goal_first_nonblank_line():
 
 def test_retro_ticket_reopen_boundary():
 
-    from chupa.author import record_retro_ticket
-    from chupa.box import BoxError
-    from chupa.journal import EventType
+    from clutch.author import record_retro_ticket
+    from clutch.box import BoxError
+    from clutch.journal import EventType
     from tests.unit.test_retro_recurrence import MemoryJournal, message
 
     journal = MemoryJournal()
@@ -53,8 +53,8 @@ def test_retro_ticket_reopen_boundary():
 async def test_recovery_ignores_completions_before_reopen(monkeypatch):
     import json
 
-    from chupa import author
-    from chupa.journal import EventType
+    from clutch import author
+    from clutch.journal import EventType
     from tests.unit.test_retro_recurrence import MemoryJournal, message
 
     journal = MemoryJournal()
@@ -81,7 +81,7 @@ async def test_recovery_ignores_completions_before_reopen(monkeypatch):
 
 
 def test_gate_admits_own_passed_stem_only(monkeypatch):
-    from chupa import author
+    from clutch import author
 
     events = []
     checkout = SimpleNamespace(repo=Path("/repo"), journal=SimpleNamespace(read=lambda: events))
@@ -98,16 +98,16 @@ def test_gate_admits_own_passed_stem_only(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_author_renders_inputs_and_passes_prior_review(monkeypatch):
-    from chupa import author as module
-    from chupa.artifacts import Finding
-    from chupa.requisition import FIRST_REVIEW
+    from clutch import author as module
+    from clutch.artifacts import Finding
+    from clutch.requisition import FIRST_REVIEW
     from tests.unit.test_retro_recurrence import MemoryJournal, message
 
     class Done(Exception):
         pass
 
     async def ls_files(repo):
-        return ["tracked.py", "chupa/specs/review.md"]
+        return ["tracked.py", "clutch/specs/review.md"]
 
     async def open_tickets(checkout):
         return "none"
@@ -156,11 +156,11 @@ async def test_author_renders_inputs_and_passes_prior_review(monkeypatch):
     ("paths", "tracked"),
     [
         (["specs/implement.md"], ["README.md"]),
-        (["specs/review.md", "specs/implement.md"], ["chupa/specs/review.md"]),
+        (["specs/review.md", "specs/implement.md"], ["clutch/specs/review.md"]),
     ],
 )
 async def test_author_declines_untracked_retro_specs(monkeypatch, paths, tracked):
-    from chupa import author as module
+    from clutch import author as module
     from tests.unit.test_retro_recurrence import message
 
     async def ls_files(repo):
@@ -177,6 +177,6 @@ async def test_author_declines_untracked_retro_specs(monkeypatch, paths, tracked
     checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files))
     item = message(proposed_spec_paths=paths, verdict={"verdict": "author", "produced_by_spec_version": "1.0", "rationale": "repair"})
     assert await module.author(checkout, object(), object(), item, 1) is sentinel
-    assert "chupa/specs/implement.md" in evidence_seen[0]
+    assert "clutch/specs/implement.md" in evidence_seen[0]
     assert item.retro_report_key in evidence_seen[0]
-    assert "chupa/specs/review.md" not in evidence_seen[0]
+    assert "clutch/specs/review.md" not in evidence_seen[0]

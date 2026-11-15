@@ -1,4 +1,4 @@
-"""Closed report and ordinary checks custody (CHUPA_PLAN.md 19.P3.daemon-soak).
+"""Closed report and ordinary checks custody (CLUTCH_PLAN.md 19.P3.daemon-soak).
 
 All observations here are synthetic construction values in disposable repositories,
 never the phase exit artifact.
@@ -10,9 +10,9 @@ from copy import deepcopy
 import pytest
 from pydantic import ValidationError
 
-from chupa.artifacts import ARTIFACT_SCHEMA_VERSION, Artifact
-from chupa.git import Git
-from chupa.seams import SubprocessExec
+from clutch.artifacts import ARTIFACT_SCHEMA_VERSION, Artifact
+from clutch.git import Git
+from clutch.seams import SubprocessExec
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS, DAEMON_SOAK_SPEC_VERSION, DaemonSoakEntry, DaemonSoakReport
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_git import commit_lock
@@ -30,7 +30,7 @@ PAIRS = (
 
 
 async def report(root):
-    git = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".chupa/state"))
+    git = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
     return DaemonSoakReport(
         produced_by_spec_version=DAEMON_SOAK_SPEC_VERSION,
         produced_at_sha=await git.rev_parse(root, "HEAD"),

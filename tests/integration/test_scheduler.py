@@ -9,12 +9,12 @@ from pathlib import Path
 
 import pytest
 
-from chupa import caps
-from chupa.config import Caps
-from chupa.journal import EventType, Journal
-from chupa.scheduler import Scheduler
-from chupa.tickets import INTAKE_SIGNAL, parse_ticket
-from chupa.watcher import WATCHER_PARSE_FAILURE, Watcher
+from clutch import caps
+from clutch.config import Caps
+from clutch.journal import EventType, Journal
+from clutch.scheduler import Scheduler
+from clutch.tickets import INTAKE_SIGNAL, parse_ticket
+from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
 from tests.integration.test_cli import TICKET
 
 
@@ -52,8 +52,8 @@ def text(priority="P2", state="confirmed", depends="none"):
 class Rig:
     def __init__(self, root):
         self.root = root
-        (root / "chupa").mkdir()
-        (root / "chupa/thing.py").write_text("")
+        (root / "clutch").mkdir()
+        (root / "clutch/thing.py").write_text("")
         self.time = Time()
         self.journal = Journal(root / "state", self.time)
         self.quarantine = set()
@@ -388,45 +388,45 @@ async def test_watcher_removal_drops_pending(rig):
 
 
 def import_closure(sources):
-    pending, reached = ["chupa.__main__"], set()
+    pending, reached = ["clutch.__main__"], set()
     while pending:
         module = pending.pop()
         if module in reached or module not in sources:
             continue
         reached.add(module)
-        if module != "chupa":
-            pending.append("chupa")  # Package initialization is also reachable.
+        if module != "clutch":
+            pending.append("clutch")  # Package initialization is also reachable.
         for node in ast.walk(ast.parse(sources[module])):
             if isinstance(node, ast.Import):
-                pending.extend(a.name for a in node.names if a.name.split(".")[0] == "chupa")
+                pending.extend(a.name for a in node.names if a.name.split(".")[0] == "clutch")
             elif isinstance(node, ast.ImportFrom):
                 base = node.module or ""
                 if node.level:
                     package = module.split(".")[: -node.level]
                     base = ".".join([*package, *([base] if base else [])])
-                if base == "chupa" or base.startswith("chupa."):
+                if base == "clutch" or base.startswith("clutch."):
                     pending.append(base)
                     pending.extend(f"{base}.{a.name}" for a in node.names)
     return reached
 
 
 def assert_reachable(sources):
-    assert {"chupa.scheduler", "chupa.watcher"} <= import_closure(sources)
+    assert {"clutch.scheduler", "clutch.watcher"} <= import_closure(sources)
 
 
 def test_scheduler_and_watcher_are_dormant(tmp_path):
     from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, without_core_import
 
     root = Path(__file__).resolve().parents[2]
-    sources = {".".join(p.relative_to(root).with_suffix("").parts): p.read_text() for p in (root / "chupa").rglob("*.py")}
-    sources["chupa"] = sources.pop("chupa.__init__")
+    sources = {".".join(p.relative_to(root).with_suffix("").parts): p.read_text() for p in (root / "clutch").rglob("*.py")}
+    sources["clutch"] = sources.pop("clutch.__init__")
     assert_reachable(sources)
     removed = without_core_import(sources)
     with pytest.raises(AssertionError):
         assert_reachable(removed)
-    for statement in ("import chupa.daemon", "from chupa import daemon"):
+    for statement in ("import clutch.daemon", "from clutch import daemon"):
         changed = dict(removed)
-        changed["chupa.status"] += f"\n{statement}\n"
+        changed["clutch.status"] += f"\n{statement}\n"
         assert_reachable(changed)
     rig = CoreRig(tmp_path)
     assert_core_wiring(rig)

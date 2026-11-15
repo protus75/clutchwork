@@ -3,14 +3,14 @@
 import asyncio
 import json
 
-from chupa import runner
-from chupa.caps import draws
-from chupa.journal import EventType
-from chupa.llm import FakeLLM
-from chupa.requisition import FIRST_REVIEW
-from chupa.scheduler import Scheduler
-from chupa.status import reject_queue
-from chupa.tickets import validate_ticket
+from clutch import runner
+from clutch.caps import draws
+from clutch.journal import EventType
+from clutch.llm import FakeLLM
+from clutch.requisition import FIRST_REVIEW
+from clutch.scheduler import Scheduler
+from clutch.status import reject_queue
+from clutch.tickets import validate_ticket
 from tests.approval import approve
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, pause_checkout
@@ -54,7 +54,7 @@ def test_approved_content_runs_without_review(tmp_path):
 
 
 def test_snag_parks_before_implement(tmp_path):
-    from chupa.drain import parked_blob
+    from clutch.drain import parked_blob
 
     root, checkout, llm, writer = setup(tmp_path, [reply("snag", "missing_file")])
     assert asyncio.run(dispatch(root, checkout, writer)) == "premise_failed"
@@ -67,7 +67,7 @@ def test_snag_parks_before_implement(tmp_path):
     assert all(draws(events, "gate", cap) == 0 for cap in ("retry", "diagnosis", "premise_bounce"))
     sha = git_out(root, "rev-parse", "HEAD:tickets/gate/ticket.md").strip()
     assert parked_blob(events, "gate") == sha
-    from chupa.__main__ import main
+    from clutch.__main__ import main
 
     assert main(["drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     assert [r.surface for r in llm.requests] == ["requisition_review"]
@@ -82,7 +82,7 @@ def test_render_feasibility_snag_proceeds_to_implement(tmp_path):
 
 
 def test_edit_releases_and_reviews_the_new_content(tmp_path):
-    from chupa.drain import parked_blob
+    from clutch.drain import parked_blob
 
     root, checkout, llm, writer = setup(
         tmp_path,
@@ -99,11 +99,11 @@ def test_edit_releases_and_reviews_the_new_content(tmp_path):
     git_out(root, "commit", "-m", "edit ticket")
     sha = git_out(root, "rev-parse", "HEAD:tickets/gate/ticket.md").strip()
     assert parked_blob(checkout.journal.read(), "gate") != sha
-    from chupa.__main__ import main
+    from clutch.__main__ import main
 
     assert main(["drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     assert [r.surface for r in llm.requests] == ["requisition_review", "requisition_review", "implement"]
-    blocks = [r.rendered.split("<<chupa-data:begin prior_review>>\n", 1)[1].split("\n<<chupa-data:end prior_review>>", 1)[0] for r in llm.requests[:2]]
+    blocks = [r.rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0] for r in llm.requests[:2]]
     assert blocks[0] == FIRST_REVIEW
     assert "missing required file" in blocks[1] and "+Edited content." in blocks[1] and blocks[1] != "none"
     verdicts = [e.body for e in checkout.journal.read() if e.body.get("signal") == "requisition_verdict"]

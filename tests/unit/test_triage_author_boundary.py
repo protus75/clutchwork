@@ -2,8 +2,8 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-from chupa import triage
-from chupa.journal import EventType
+from clutch import triage
+from clutch.journal import EventType
 
 
 class Journal:

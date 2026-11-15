@@ -1,6 +1,6 @@
 import pytest
 
-from chupa.tickets import context_conflicts, context_excerpt, render_context
+from clutch.tickets import context_conflicts, context_excerpt, render_context
 
 
 def test_python_definitions_and_decorated_method():

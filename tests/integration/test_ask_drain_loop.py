@@ -1,16 +1,16 @@
-from chupa import ask
-from chupa.__main__ import main
-from chupa.config import load_config
+from clutch import ask
+from clutch.__main__ import main
+from clutch.config import load_config
 from tests.integration.test_config import VALID
 
 
 def test_drain_loop_renders_state_dir_and_loop_prefix(tmp_path):
-    (tmp_path / "config.yaml").write_text(VALID.replace("state_dir: .chupa", "state_dir: custom/state"))
+    (tmp_path / "config.yaml").write_text(VALID.replace("state_dir: .clutch", "state_dir: custom/state"))
     config = load_config(None, cwd=tmp_path)
     text = ask.render("drain-loop", "", config, tmp_path)
     assert text.startswith("/loop ")  # Dropping the loop prefix differs.
     assert "custom/state/drain.out" in text  # A fixed state path differs.
-    assert ".chupa/state" not in text  # A hard-coded default differs.
+    assert ".clutch/state" not in text  # A hard-coded default differs.
 
 
 def test_drain_loop_keeps_owner_verdict_limits(tmp_path):

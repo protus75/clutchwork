@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
-from chupa import __main__ as cli
-from chupa.drain import _Drain
+from clutch import __main__ as cli
+from clutch.drain import _Drain
 
 
 def test_engine_signals_covers_hangup(monkeypatch):

@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
-from chupa.__main__ import _parser
-from chupa.drain import _Drain
+from clutch.__main__ import _parser
+from clutch.drain import _Drain
 
 
 def test_drain_uses_the_carried_deadline():

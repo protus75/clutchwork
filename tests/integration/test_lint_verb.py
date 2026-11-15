@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from chupa.__main__ import main
-from chupa.git import Git
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile
-from chupa.seams import SubprocessExec
+from clutch.__main__ import main
+from clutch.git import Git
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile
+from clutch.seams import SubprocessExec
 from tests.integration.test_cli import ENV, Clock, journal, root, ticket, write
 from tests.integration.test_git import commit_lock
 
@@ -21,7 +21,7 @@ def lint(root, *stems):
 
 
 def git(root, *argv):
-    return asyncio.run(Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))._run(root, *argv))
+    return asyncio.run(Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))._run(root, *argv))
 
 
 def snapshot(root):
@@ -35,7 +35,7 @@ def test_lint_all_valid(root, capsys):
     before = snapshot(root)
     assert lint(root) == 0
     assert capsys.readouterr().out == "lint: 2/2 tickets valid\n"
-    assert not (root / ".chupa").exists()
+    assert not (root / ".clutch").exists()
     assert snapshot(root) == before
 
 
@@ -91,12 +91,12 @@ def test_lint_flags_bug_without_evidence(root, capsys):
     evidence = root / "tickets/fix-thing/evidence/output.txt"
     evidence.parent.mkdir()
     evidence.write_text("observed failure\n")
-    (root / ".gitignore").write_text(".chupa/\noutput.txt\n")
+    (root / ".gitignore").write_text(".clutch/\noutput.txt\n")
     assert lint(root) == 1
     assert "must not be gitignored" in capsys.readouterr().out
-    (root / ".gitignore").write_text(".chupa/\n")
+    (root / ".gitignore").write_text(".clutch/\n")
     evidence.unlink()
-    evidence.symlink_to(root / "chupa/thing.py")
+    evidence.symlink_to(root / "clutch/thing.py")
     assert lint(root) == 1
     evidence.unlink()
     evidence.write_text("observed failure\n")
@@ -128,7 +128,7 @@ def test_lint_in_worktree_skips_main_settled_tickets(root, capsys):
     before = snapshot(root)
     assert lint(worktree) == 0
     assert capsys.readouterr().out == "lint: 1/1 tickets valid\n"
-    assert not (worktree / ".chupa").exists()
+    assert not (worktree / ".clutch").exists()
     assert snapshot(root) == before
 
 
@@ -153,7 +153,7 @@ def test_lint_named_stems_and_missing_stem(root, capsys):
 
 
 def hold_lock(root, connection):
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="other-process", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="other-process", clock=Clock())
     lock.acquire()
     try:
         connection.send("locked")
@@ -172,7 +172,7 @@ def test_lint_is_read_only_and_lock_free(root, capsys):
     try:
         assert parent.poll(10) and parent.recv() == "locked"
         # Force a stale index stat entry, which a normal git status may refresh.
-        (root / "chupa/thing.py").touch()
+        (root / "clutch/thing.py").touch()
         before = snapshot(root)
         assert lint(root) == 0
         assert capsys.readouterr().out == "lint: 1/1 tickets valid\n"

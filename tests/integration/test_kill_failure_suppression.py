@@ -6,12 +6,12 @@ from contextlib import asynccontextmanager
 
 import pytest
 
-from chupa import __main__ as main
-from chupa import daemon, runner, stages
-from chupa.control import ControlProjection
-from chupa.journal import EventType, run_seq
-from chupa.llm import FakeLLM
-from chupa.reconcile import RECOVERY_ALERT, orphans, reconcile
+from clutch import __main__ as main
+from clutch import daemon, runner, stages
+from clutch.control import ControlProjection
+from clutch.journal import EventType, run_seq
+from clutch.llm import FakeLLM
+from clutch.reconcile import RECOVERY_ALERT, orphans, reconcile
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
 from tests.integration.test_driver import ECHO, Stub, build
@@ -344,10 +344,10 @@ def test_kill_failure_suppression_is_dormant(root, tmp_path, monkeypatch, verb):
         with pytest.raises(AssertionError, match="suppression wired"):
             main.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=deliberate)
     else:
-        from chupa.journal import Journal
+        from clutch.journal import Journal
 
         assert main.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=deliberate) == 0
-        bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
+        bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
         assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == "AssertionError: suppression wired"
         write(root, "fresh", ticket())
 

@@ -5,19 +5,19 @@ import json
 import time
 from types import SimpleNamespace
 
-from chupa import __main__ as cli
-from chupa import runner, serve, stages
-from chupa.artifacts import Cost, StageResult
-from chupa.audit import audit_journal
-from chupa.control import ControlRequest, publish_request
-from chupa.daemon import TicketWriter
-from chupa.driver import LlmStage
-from chupa.journal import EventType
-from chupa.llm import HANG, FakeLLM
-from chupa.lockfile import Lockfile
-from chupa.mergequeue import RED_STREAK, TREE_MISMATCH
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.stages import Invoice, PackingSlip
+from clutch import __main__ as cli
+from clutch import runner, serve, stages
+from clutch.artifacts import Cost, StageResult
+from clutch.audit import audit_journal
+from clutch.control import ControlRequest, publish_request
+from clutch.daemon import TicketWriter
+from clutch.driver import LlmStage
+from clutch.journal import EventType
+from clutch.llm import HANG, FakeLLM
+from clutch.lockfile import Lockfile
+from clutch.mergequeue import RED_STREAK, TREE_MISMATCH
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.stages import Invoice, PackingSlip
 from tests.integration.test_cli import write as write_ticket
 from tests.integration.test_restart_timers import repository
 from tests.integration.test_scheduler import text, turn
@@ -260,13 +260,13 @@ async def admission_graph(root, monkeypatch, changes, *, endings=None, settled=N
     return rig
 
 
-def admission_ticket(root, stem, *, paths=("chupa/thing.py",), verification="true", depends="none", priority="P2"):
+def admission_ticket(root, stem, *, paths=("clutch/thing.py",), verification="true", depends="none", priority="P2"):
     from tests.integration.test_stages import TICKET
 
     raw = TICKET.format(bypass="").replace("priority: P2", f"priority: {priority}")
     raw = raw.replace("## Depends on\nnone", f"## Depends on\n{depends}")
-    raw = raw.replace("## Scope fence\n- chupa/thing.py", "## Scope fence\n" + "\n".join(f"- {p}" for p in paths))
-    raw = raw.replace("grep -q ok chupa/thing.py\nenv", verification)
+    raw = raw.replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n" + "\n".join(f"- {p}" for p in paths))
+    raw = raw.replace("grep -q ok clutch/thing.py\nenv", verification)
     write(root, stem, raw)
 
 
@@ -347,9 +347,9 @@ class UpgradeChild:
 
 
 async def enable_upgrade(rig, engine):
-    (engine / "chupa/specs").mkdir(parents=True, exist_ok=True)
-    (engine / "chupa/specs/base.md").write_text("base")
-    await rig.checkout.git.add(engine, ["chupa/specs/base.md"])
+    (engine / "clutch/specs").mkdir(parents=True, exist_ok=True)
+    (engine / "clutch/specs/base.md").write_text("base")
+    await rig.checkout.git.add(engine, ["clutch/specs/base.md"])
     await rig.checkout.git.commit(engine, "engine trees")
     rig.owner.engine = engine
     rig.owner.reexec = UpgradeChild(rig)
@@ -357,7 +357,7 @@ async def enable_upgrade(rig, engine):
 
 
 async def retro_scenario(root, monkeypatch, mode):
-    from chupa import retro
+    from clutch import retro
 
     entered, release, retro_entered, retro_release, checked = (asyncio.Event() for _ in range(5))
 

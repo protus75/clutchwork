@@ -8,11 +8,11 @@ from pathlib import Path
 
 import pytest
 
-from chupa.box import Box, Resolution
-from chupa.daemon import storm_producer
-from chupa.inbox import CAPS, ReportError, bounded, ingest, validate_report
-from chupa.journal import Journal
-from chupa.seams import LocalFileSystem
+from clutch.box import Box, Resolution
+from clutch.daemon import storm_producer
+from clutch.inbox import CAPS, ReportError, bounded, ingest, validate_report
+from clutch.journal import Journal
+from clutch.seams import LocalFileSystem
 from tests.integration.test_drain import Clock
 from tests.integration.test_git import commit_lock
 
@@ -178,12 +178,12 @@ def test_report_retry_ingests_once(tmp_path, monkeypatch, point, after):
 def test_report_replay_to_regression(tmp_path, monkeypatch):
     from dataclasses import replace
 
-    from chupa.__main__ import main
-    from chupa.git import Git
-    from chupa.llm import FakeLLM
-    from chupa.seams import SubprocessExec
-    from chupa.stages import Invoice, check, implement
-    from chupa.tickets import validate_ticket
+    from clutch.__main__ import main
+    from clutch.git import Git
+    from clutch.llm import FakeLLM
+    from clutch.seams import SubprocessExec
+    from clutch.stages import Invoice, check, implement
+    from clutch.tickets import validate_ticket
     from hosts.fixture import scaffold
     from tests.integration.test_cli import ENV
     from tests.integration.test_merge import context
@@ -194,12 +194,12 @@ def test_report_replay_to_regression(tmp_path, monkeypatch):
     env = {**ENV, "PATH": str(Path(sys.executable).parent) + os.pathsep + os.environ["PATH"]}
     config = host / "config.yaml"
     config.write_text(config.read_text().replace("report_inbox: reports", "report_inbox: inbox"))
-    (host / "CHUPA_PLAN.md").write_text("# Disposable host plan\n")
-    (host / ".gitignore").write_text(".chupa/\n.fixture-runtime/\ninbox/\n__pycache__/\n")
+    (host / "CLUTCH_PLAN.md").write_text("# Disposable host plan\n")
+    (host / ".gitignore").write_text(".clutch/\n.fixture-runtime/\ninbox/\n__pycache__/\n")
     source = host / "inbox/regression.json"
     source.parent.mkdir()
     source.write_bytes((host / "reports/regression.json").read_bytes())
-    git = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(host / ".chupa/state"))
+    git = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(host / ".clutch/state"))
 
     async def initialize():
         await git.init(host, branch="main")
@@ -210,9 +210,9 @@ def test_report_replay_to_regression(tmp_path, monkeypatch):
     proposal = dict(scaffold.scenario(host, "regression")["responses"]["author"][0])
     stem = proposal["stem"]
     llm = FakeLLM([reply("author"), json.dumps(proposal), requisition_reply("approve")])
-    monkeypatch.setattr("chupa.__main__.ProviderLLM", lambda *args, **kwargs: llm)
+    monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
     assert main(["triage"], cwd=host, env=env, clock=Clock()) == 0
-    box = Box(host / ".chupa/state/box", LocalFileSystem())
+    box = Box(host / ".clutch/state/box", LocalFileSystem())
     (message,) = box.messages()
     assert message.resolution == Resolution(kind="ticket", link=stem)
     evidence = (host / f"tickets/{stem}/evidence/replay.json").read_bytes()

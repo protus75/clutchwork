@@ -9,16 +9,16 @@ from unittest.mock import Mock
 import pytest
 import pytest_asyncio
 
-from chupa import __main__ as cli
-from chupa import caps, daemon
-from chupa import journal as journal_module
-from chupa.control import CONTROL_DECISION, ControlRequest, publish_request, read_active
-from chupa.drain import HALT_SIGNAL, drain
-from chupa.journal import EventType, Journal, JournalCorruption
-from chupa.lockfile import Lockfile, LockHeld
-from chupa.seams import LocalFileSystem
-from chupa.storm import StormLedger
-from chupa.tickets import INTAKE_SIGNAL, ticket_path
+from clutch import __main__ as cli
+from clutch import caps, daemon
+from clutch import journal as journal_module
+from clutch.control import CONTROL_DECISION, ControlRequest, publish_request, read_active
+from clutch.drain import HALT_SIGNAL, drain
+from clutch.journal import EventType, Journal, JournalCorruption
+from clutch.lockfile import Lockfile, LockHeld
+from clutch.seams import LocalFileSystem
+from clutch.storm import StormLedger
+from clutch.tickets import INTAKE_SIGNAL, ticket_path
 from tests.integration.test_cli import ENV
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_drain import Script, commit_ticket, confirmed, make_root, pause_checkout
@@ -134,11 +134,11 @@ def test_live_drain_holds_only_emitting_stem(tmp_path, monkeypatch, stage):
     for stem, priority, depends in (("one", "P0", "none"), ("urgent", "P0", "none"), ("aaa-new", "P1", "none"), ("zzz-old", "P1", "none"), ("child", "P0", "- one")):
         commit_ticket(root, stem, confirmed(priority=priority, depends=depends))
     clock = FakeClock(T0)
-    journal = Journal(root / ".chupa/state", clock)
+    journal = Journal(root / ".clutch/state", clock)
     journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL}, ticket="zzz-old")
     clock.advance(1)
     journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL}, ticket="aaa-new")
-    box = daemon.storm_producer(root=root / ".chupa/state/box", fs=LocalFileSystem(), journal=journal, clock=clock)
+    box = daemon.storm_producer(root=root / ".clutch/state/box", fs=LocalFileSystem(), journal=journal, clock=clock)
     six(box, stage=stage)
     (trip,) = trips(journal)
     assert len(occurrences(journal, trip.body["signature"])) == 6
@@ -160,7 +160,7 @@ def test_live_drain_holds_only_emitting_stem(tmp_path, monkeypatch, stage):
         return consumer
 
     monkeypatch.setattr(cli, "build_control", build)
-    monkeypatch.setattr("chupa.triage.triage_pass", Mock(side_effect=AssertionError("consumed Box")))
+    monkeypatch.setattr("clutch.triage.triage_pass", Mock(side_effect=AssertionError("consumed Box")))
     assert cli.main(["drain"], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=NoChild()) == 0
     assert script.calls == ["urgent", "zzz-old", "aaa-new", "one", "child"]
     assert script.lock_held == [True] * 5

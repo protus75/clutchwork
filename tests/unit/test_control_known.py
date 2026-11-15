@@ -2,8 +2,8 @@
 
 import pytest
 
-from chupa.control import ControlInbox
-from chupa.daemon import PauseConsumer
+from clutch.control import ControlInbox
+from clutch.daemon import PauseConsumer
 
 
 def test_inbox_requires_known():

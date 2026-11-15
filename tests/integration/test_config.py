@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from chupa.config import SCHEMA_VERSION, ConfigError, load_config
+from clutch.config import SCHEMA_VERSION, ConfigError, load_config
 
 VALID = textwrap.dedent(
     """\
     schema_version: 1
-    state_dir: .chupa
+    state_dir: .clutch
     providers:
       - name: claude
         kind: cli
@@ -20,15 +20,15 @@ VALID = textwrap.dedent(
     review:
       mechanical:
         - {code: pytest, argv: [uv, run, pytest], trigger: always, severity: hard}
-        - {code: ruff, argv: [uv, run, ruff, check], trigger: [chupa/], severity: soft}
-      trigger_map: {chupa/: [scope_fence]}
+        - {code: ruff, argv: [uv, run, ruff, check], trigger: [clutch/], severity: soft}
+      trigger_map: {clutch/: [scope_fence]}
       gate_severity: {scope_fence: hard}
     merge:
       safety_checks: [pytest]
       strategies:
         - {paths: [uv.lock], strategy: regenerate, argv: [uv, lock]}
         - {paths: [CHANGELOG.md], strategy: union}
-    engine_plane_safety_inventory: [specs/, chupa/gates.py, config.yaml]
+    engine_plane_safety_inventory: [specs/, clutch/gates.py, config.yaml]
     """
 )
 
@@ -54,14 +54,14 @@ def refusal(tmp_path: Path, text: str) -> ConfigError:
 def test_valid_config_loads_from_cwd_with_shipped_defaults(tmp_path):
     cfg = load_config(None, cwd=write(tmp_path, VALID).parent)
     assert cfg.schema_version == SCHEMA_VERSION == 1
-    assert cfg.state_dir == tmp_path / ".chupa"
-    assert cfg.worktree_root == tmp_path / ".chupa" / "worktrees"
+    assert cfg.state_dir == tmp_path / ".clutch"
+    assert cfg.worktree_root == tmp_path / ".clutch" / "worktrees"
     assert cfg.providers[0].auth is None
     assert cfg.providers[0].limits.quota_window_minutes == 60
     assert cfg.routing[0].candidates[0].provider == "claude"
     assert cfg.routing_default_tier == "medium"
     assert cfg.review.mechanical[0].trigger == "always"
-    assert cfg.review.mechanical[1].trigger == ["chupa/"]
+    assert cfg.review.mechanical[1].trigger == ["clutch/"]
     assert cfg.merge.strategies[0].argv == ["uv", "lock"]
     assert cfg.scheduler.max_unmerged == 2
     assert cfg.caps.model_dump() == {
@@ -103,9 +103,9 @@ def test_valid_config_loads_from_cwd_with_shipped_defaults(tmp_path):
 def test_config_flag_path_overrides_cwd(tmp_path):
     other = tmp_path / "elsewhere"
     other.mkdir()
-    path = write(other, edit(VALID, "state_dir: .chupa", "state_dir: /var/chupa"), "host.yaml")
+    path = write(other, edit(VALID, "state_dir: .clutch", "state_dir: /var/clutch"), "host.yaml")
     cfg = load_config(path, cwd=tmp_path)
-    assert cfg.state_dir == Path("/var/chupa")
+    assert cfg.state_dir == Path("/var/clutch")
 
 
 def test_review_surfaces_refused(tmp_path):
@@ -123,7 +123,7 @@ def test_explicit_values_override_defaults_and_partial_blocks_keep_the_rest(tmp_
         worktree_root: /tmp/wt
         caps: {retry: 2}
         box_policy: {failure_report: draft}
-        notify: [notify-send, chupa]
+        notify: [notify-send, clutch]
         report_inbox: inbox
         context_files: [docs/arch.md]
         ask_notes: Host guidance
@@ -134,7 +134,7 @@ def test_explicit_values_override_defaults_and_partial_blocks_keep_the_rest(tmp_
     assert cfg.caps.retry == 2 and cfg.caps.diagnosis == 3
     assert cfg.box_policy["failure_report"] == "draft"
     assert cfg.box_policy["suggestion"] == "draft"
-    assert cfg.notify == ["notify-send", "chupa"]
+    assert cfg.notify == ["notify-send", "clutch"]
     assert cfg.report_inbox == tmp_path / "inbox"
     assert cfg.context_files == [Path("docs/arch.md")]
     assert cfg.ask_notes == "Host guidance"
@@ -185,14 +185,14 @@ def test_newer_schema_version_is_refused(tmp_path):
     err = refusal(tmp_path, edit(VALID, "schema_version: 1", "schema_version: 2") + "future_key: x\n")
     assert err.key == "schema_version"
     assert "newer" in str(err)
-    assert "upgrade chupa" in str(err)
+    assert "upgrade clutch" in str(err)
 
 
 def test_older_schema_version_is_refused_naming_migrate_config(tmp_path):
     err = refusal(tmp_path, edit(VALID, "schema_version: 1", "schema_version: 0"))
     assert err.key == "schema_version"
     assert "older" in str(err)
-    assert "chupa migrate-config" in str(err)
+    assert "clutch migrate-config" in str(err)
 
 
 @pytest.mark.parametrize("value", ['"1"', "1.0", "true", "-1"])
@@ -251,7 +251,7 @@ def test_unsafe_yaml_tags_are_refused(tmp_path):
 
 
 def test_provider_backstop_never_undercuts_a_ticket_stuck_budget(tmp_path):
-    from chupa.runner import call_timeout
+    from clutch.runner import call_timeout
 
     write(tmp_path, VALID)
     cfg = load_config(None, cwd=tmp_path)
@@ -265,7 +265,7 @@ def test_notify_refuses_malformed_argv(tmp_path, argv):
 
 class MigrationFS:
     def __init__(self):
-        from chupa.seams import LocalFileSystem
+        from clutch.seams import LocalFileSystem
 
         self.local = LocalFileSystem()
         self.writes = []
@@ -290,7 +290,7 @@ class MigrationFS:
 def test_migrate_config_zero_to_one(tmp_path, monkeypatch, declaration, migrated, ending):
     import os
 
-    from chupa.config import migrate_config
+    from clutch.config import migrate_config
 
     text = "\ufeff# café: schema_version: 0\n" + VALID.replace("schema_version: 1", declaration)
     original = text.rstrip("\n").replace("\n", ending).encode()
@@ -323,7 +323,7 @@ def test_migrate_config_zero_to_one(tmp_path, monkeypatch, declaration, migrated
 
 @pytest.mark.parametrize("invalid", ["caps: {retry: 7}\n", "unknown: true\n", "notify: null\n", 'caps: {retry: "4"}\n'])
 def test_migrate_config_validates_before_write(tmp_path, monkeypatch, invalid):
-    import chupa.config as module
+    import clutch.config as module
 
     path = write(tmp_path, VALID.replace("schema_version: 1", "schema_version: 0") + invalid)
     backup = tmp_path / "config.yaml.bak"
@@ -349,7 +349,7 @@ def test_migrate_config_validates_before_write(tmp_path, monkeypatch, invalid):
 
 @pytest.mark.parametrize("existing_backup", [False, True])
 def test_migrate_config_current_is_noop(tmp_path, existing_backup):
-    from chupa.config import migrate_config
+    from clutch.config import migrate_config
 
     path = write(tmp_path, "# unchanged\n" + VALID)
     backup = tmp_path / "config.yaml.bak"
@@ -369,7 +369,7 @@ def test_migrate_config_current_is_noop(tmp_path, existing_backup):
         (None, "cannot read config file", "--config"),
         (VALID.replace("schema_version: 1\n", ""), "missing required key", "supply"),
         *[(VALID.replace("schema_version: 1", f"schema_version: {v}"), "non-negative integer", "supply") for v in ("null", "true", '"0"', "0.0", "-1")],
-        (VALID.replace("schema_version: 1", "schema_version: 2"), "newer", "upgrade chupa"),
+        (VALID.replace("schema_version: 1", "schema_version: 2"), "newer", "upgrade clutch"),
         ("a: [unclosed\n", "invalid YAML", "repair"),
         ("schema_version: !!int wrong\n", "invalid YAML", "repair"),
         ("!!python/object/apply:os.system [echo hi]", "invalid YAML", "repair"),
@@ -383,7 +383,7 @@ def test_migrate_config_current_is_noop(tmp_path, existing_backup):
 )
 @pytest.mark.parametrize("existing_backup", [False, True])
 def test_migrate_config_refuses_unsupported_inputs(tmp_path, text, cause, road, existing_backup):
-    from chupa.config import migrate_config
+    from clutch.config import migrate_config
 
     path = tmp_path / "config.yaml"
     if text is not None:
@@ -427,10 +427,10 @@ def test_retro_contradictory_settings_refused(tmp_path):
 
 
 def test_coverage_map_config(tmp_path):
-    text = edit(VALID, "review:\n", "review:\n  coverage_map: {argv: [pytest, -q], report: .chupa/cov.json}\n")
+    text = edit(VALID, "review:\n", "review:\n  coverage_map: {argv: [pytest, -q], report: .clutch/cov.json}\n")
     setting = load_config(write(tmp_path, text), cwd=tmp_path).review.coverage_map
     assert setting.argv == ["pytest", "-q"]
-    assert setting.report == ".chupa/cov.json"
+    assert setting.report == ".clutch/cov.json"
 
 
 @pytest.mark.parametrize(

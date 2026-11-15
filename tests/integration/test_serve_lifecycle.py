@@ -6,10 +6,10 @@ from datetime import timedelta
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import runner, serve, stages
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile, LockHeld
+from clutch import __main__ as cli
+from clutch import runner, serve, stages
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile, LockHeld
 from tests.integration.serve_rig import finish, graph, request, script, terminals, until, write
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_daemon_composition import sources
@@ -58,7 +58,7 @@ async def test_empty_box_report_intake(root, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_report_consumer_is_sequential(root, monkeypatch):
-    from chupa.driver import Driver
+    from clutch.driver import Driver
     from tests.integration.test_inbox import arrival, raw_report
 
     rig = await graph(root, monkeypatch)
@@ -109,7 +109,7 @@ def test_serve_cli_uses_production_composition(root, monkeypatch):
     monkeypatch.setattr(cli, "_engine_signals", lambda stop: (stop(), lambda: None)[1])
     assert cli.main(["serve"], cwd=root, env=ENV) == 0
     assert len(built) == 1 and len(built[0].workers) == 4
-    assert "chupa.serve" in import_closure(sources())
+    assert "clutch.serve" in import_closure(sources())
 
 
 @pytest.mark.asyncio
@@ -312,7 +312,7 @@ async def test_serve_heartbeat_requires_responsive_components(root, monkeypatch,
 
 @pytest.mark.asyncio
 async def test_serve_consumers_use_existing_writers(root, monkeypatch):
-    from chupa.driver import Driver
+    from clutch.driver import Driver
     from tests.integration.test_mergequeue import ready
 
     calls, contexts, _ = script(monkeypatch)
@@ -325,7 +325,7 @@ async def test_serve_consumers_use_existing_writers(root, monkeypatch):
             writer = rig.owner.writers["source"]
             assert writer.queue.control is rig.owner.control
             for n in range(5):
-                path = f"chupa/queued{n}.py"
+                path = f"clutch/queued{n}.py"
                 work = await ready(ctx, f"candidate-{n}", changes={path: "ok\n"}, fence=(path,))
                 # The existing ready-candidate fixture represents an earlier producing run.
                 rig.transition(work.stem, "running")

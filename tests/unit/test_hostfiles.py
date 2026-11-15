@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from chupa import hostfiles, providers
-from chupa.git import GitError
+from clutch import hostfiles, providers
+from clutch.git import GitError
 
 
 @pytest.mark.asyncio
@@ -29,5 +29,5 @@ async def test_stale_core(state, monkeypatch):
     else:
         expected = "missing" if state == "absent" else state
         assert len(messages) == 1
-        assert f"CLAUDE.md: chupa core is {expected}" in messages[0]
-        assert "run `chupa core`" in messages[0]
+        assert f"CLAUDE.md: clutch core is {expected}" in messages[0]
+        assert "run `clutch core`" in messages[0]

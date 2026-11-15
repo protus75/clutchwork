@@ -5,8 +5,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from chupa import observe
-from chupa.box import Box
+from clutch import observe
+from clutch.box import Box
 from tests.unit.test_menu_admission import fake_snapshot_inputs
 
 root = Path("/fake")
@@ -28,6 +28,6 @@ with (
     patch.object(Box, "messages", return_value=[]),
 ):
     menu = observe.snapshot(ctx)["rows"][0]["menu"]
-result = "pass" if menu["chupaReject"] == "on" else "defect"
+result = "pass" if menu["clutchReject"] == "on" else "defect"
 print(json.dumps({"regression_result": result}))
 raise SystemExit(0 if result == "pass" else 1)

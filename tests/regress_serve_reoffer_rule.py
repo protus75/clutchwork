@@ -10,7 +10,7 @@ from types import SimpleNamespace
 def main():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        import chupa.drain as drain
+        import clutch.drain as drain
 
         awaiting_operator = drain.awaiting_operator
         reofferable = drain.reofferable
@@ -22,7 +22,7 @@ def main():
         print(json.dumps({"regression_result": "error"}))
         return 2
     try:
-        from chupa.config import Caps
+        from clutch.config import Caps
 
         history = [SimpleNamespace(type="state_transition", ticket="work", body={"to": "gate_failed", "routed": "reject_queue"})]
         spent = history + [SimpleNamespace(type="cap_consumed", ticket="work", body={"cap": "retry"})]

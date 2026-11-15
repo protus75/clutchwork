@@ -13,8 +13,8 @@ from unittest.mock import Mock
 def main() -> int:
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from chupa.__main__ import _parser
-        from chupa.__main__ import main as chupa_main
+        from clutch.__main__ import _parser
+        from clutch.__main__ import main as clutch_main
         from tests.integration.test_cli import ENV
         from tests.integration.test_drain import make_root
 
@@ -24,7 +24,7 @@ def main() -> int:
             try:
                 with contextlib.redirect_stdout(io.StringIO()):
                     _parser().parse_args(["drain", "--detach"])
-                    result = chupa_main(["drain", "--detach"], cwd=root, env=ENV, spawn=spawn)
+                    result = clutch_main(["drain", "--detach"], cwd=root, env=ENV, spawn=spawn)
                 defect = result != 0 or spawn.call_count != 1
             except SystemExit:
                 defect = True

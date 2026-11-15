@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from chupa import drain, runner, serve
+from clutch import drain, runner, serve
 
 
 class RecordingLog:

@@ -4,9 +4,9 @@ import asyncio
 
 import pytest
 
-from chupa import merge, stages
-from chupa.box import BOX_DIR, Box
-from chupa.seams import ExecutableNotFound
+from clutch import merge, stages
+from clutch.box import BOX_DIR, Box
+from clutch.seams import ExecutableNotFound
 from tests.integration.test_mergequeue import approve, commit, ctx, host, ready, scripted
 from tests.integration.test_stages import SECRET
 
@@ -19,7 +19,7 @@ async def checked(ctx, ticket):
 def test_triggered_entries_run_at_check(ctx, monkeypatch):
     async def run():
         ticket = await ready(ctx)
-        ctx.config.review.mechanical = [host("always"), host("path", trigger=["chupa"])]
+        ctx.config.review.mechanical = [host("always"), host("path", trigger=["clutch"])]
         calls = scripted(ctx, monkeypatch, [(0, "", "")] * 2)
         result = await checked(ctx, ticket)
         assert result.outcome == "ok" and [c[0][1] for c in calls] == ["always", "path"]
@@ -31,8 +31,8 @@ def test_triggered_entries_run_at_check(ctx, monkeypatch):
 
 def test_untriggered_entry_never_runs(ctx, monkeypatch):
     async def run():
-        ticket = await ready(ctx, changes={"chupa/xy.py": "ok"}, fence=("chupa/xy.py",))
-        ctx.config.review.mechanical = [host("skip", trigger=["chupa/x"])]
+        ticket = await ready(ctx, changes={"clutch/xy.py": "ok"}, fence=("clutch/xy.py",))
+        ctx.config.review.mechanical = [host("skip", trigger=["clutch/x"])]
         calls = scripted(ctx, monkeypatch, [])
         result = await checked(ctx, ticket)
         assert result.outcome == "ok" and not calls
@@ -65,7 +65,7 @@ def test_soft_failure_reported_and_passes(ctx, monkeypatch):
 
 def test_base_red_entry_is_preexisting(ctx, monkeypatch):
     async def run():
-        ticket = await ready(ctx, changes={"chupa/other.py": "outside"})
+        ticket = await ready(ctx, changes={"clutch/other.py": "outside"})
         ctx.config.review.mechanical = [host("base-red")]
         scripted(ctx, monkeypatch, [(1, "red", ""), (1, "red", "")])
         result = await checked(ctx, ticket)
@@ -95,8 +95,8 @@ def test_timeout_and_missing_executable_fail_closed(ctx, monkeypatch, failure):
 def test_inline_merge_reruns_triggered_hard_entries(ctx, monkeypatch):
     async def run():
         ticket = await ready(ctx)
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await commit(ctx, ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await commit(ctx, ctx.repo, ["clutch/other.py"])
         ctx.config.review.mechanical = [host("red"), host("soft", severity="soft"), host("skip", trigger=["other"])]
         calls = scripted(ctx, monkeypatch, [(1, "red", "")])
         before = await ctx.git.rev_parse(ctx.repo, "main")
@@ -129,7 +129,7 @@ def test_inline_merge_skips_unchanged_code(ctx, monkeypatch, stale):
 def test_autofix_config_loading(ctx, tmp_path):
     import yaml
 
-    from chupa.config import ConfigError, load_config
+    from clutch.config import ConfigError, load_config
 
     raw = yaml.safe_load((ctx.repo / "config.yaml").read_text())
     raw["review"]["autofix"] = [{"code": "fix", "argv": ["fix"], "files": ["*.py"]}]
@@ -155,14 +155,14 @@ def test_autofix_config_loading(ctx, tmp_path):
 
 
 def test_autofix_commits_selected_files_and_evaluates_head(ctx, monkeypatch):
-    from chupa.config import AutofixCommand
+    from clutch.config import AutofixCommand
     from tests.integration.test_mergequeue import commit
 
     async def run():
-        ticket = await ready(ctx, changes={"chupa/thing.py": "before\n", "tickets/extra.txt": "ticket\n"}, fence=("chupa/thing.py", "tickets"))
+        ticket = await ready(ctx, changes={"clutch/thing.py": "before\n", "tickets/extra.txt": "ticket\n"}, fence=("clutch/thing.py", "tickets"))
         root = ctx.worktree(ticket.stem)
-        (root / "chupa/other.py").unlink()
-        await commit(ctx, root, ["chupa/other.py"], "delete")
+        (root / "clutch/other.py").unlink()
+        await commit(ctx, root, ["clutch/other.py"], "delete")
         ctx.config.review.autofix = [AutofixCommand(code="fix", argv=["host", "fix"], files=["*.py"])]
         original = ctx.exec_.run
         calls = []
@@ -170,36 +170,36 @@ def test_autofix_commits_selected_files_and_evaluates_head(ctx, monkeypatch):
         async def execute(argv, **kw):
             if argv[0] == "host":
                 calls.append(argv)
-                (root / "chupa/thing.py").write_text("fixed\n")
+                (root / "clutch/thing.py").write_text("fixed\n")
                 return 0, "", ""
             return await original(argv, **kw)
 
         monkeypatch.setattr(ctx.exec_, "run", execute)
         result = await checked(ctx, ticket)
         head = await ctx.git.rev_parse(ctx.repo, ticket.stem)
-        assert calls == [["host", "fix", "chupa/thing.py"]]
+        assert calls == [["host", "fix", "clutch/thing.py"]]
         assert result.artifact.produced_at_sha == head
-        assert "chupa/thing.py" in await ctx.git.diff_names(ctx.repo, "main", ticket.stem)
-        assert (await ctx.git._run(root, "log", "-1", "--format=%s")).strip() == f"chupa({ticket.stem}): autofix"
-        assert (await ctx.git._run(root, "show", "--format=", "--name-only", "HEAD")).strip() == "chupa/thing.py"
+        assert "clutch/thing.py" in await ctx.git.diff_names(ctx.repo, "main", ticket.stem)
+        assert (await ctx.git._run(root, "log", "-1", "--format=%s")).strip() == f"clutch({ticket.stem}): autofix"
+        assert (await ctx.git._run(root, "show", "--format=", "--name-only", "HEAD")).strip() == "clutch/thing.py"
         assert result.artifact.reports[0].verdict == "pass"
 
     asyncio.run(run())
 
 
 def test_autofix_no_change_and_already_satisfied(ctx, monkeypatch):
-    from chupa.config import AutofixCommand
+    from clutch.config import AutofixCommand
 
     async def run():
         ticket = await ready(ctx)
         root = ctx.worktree(ticket.stem)
         head = await ctx.git.rev_parse(ctx.repo, ticket.stem)
-        (root / "chupa/thing.py").write_text("uncommitted\n")
+        (root / "clutch/thing.py").write_text("uncommitted\n")
         ctx.config.review.autofix = [AutofixCommand(code="fix", argv=["host", "fix"], files=["*.py"])]
         calls = scripted(ctx, monkeypatch, [(0, "", "")])
         await checked(ctx, ticket)
         assert len(calls) == 1 and await ctx.git.rev_parse(ctx.repo, ticket.stem) == head
-        assert (root / "chupa/thing.py").read_text() == "uncommitted\n"
+        assert (root / "clutch/thing.py").read_text() == "uncommitted\n"
         slip = stages.PackingSlip(produced_by_spec_version=1, produced_at_sha=head, stem=ticket.stem, branch=ticket.stem, outcome="already_satisfied", summary="done", run_record="run.md")
         await stages.check(ctx, ticket, slip, attempt=1)
         assert len(calls) == 1
@@ -208,15 +208,15 @@ def test_autofix_no_change_and_already_satisfied(ctx, monkeypatch):
 
 
 def test_autofix_failure_restores_and_blocks_check(ctx, monkeypatch):
-    from chupa.config import AutofixCommand
+    from clutch.config import AutofixCommand
     from tests.integration.test_mergequeue import commit
 
     async def run():
-        ticket = await ready(ctx, fence=("chupa/thing.py", "tickets"))
+        ticket = await ready(ctx, fence=("clutch/thing.py", "tickets"))
         root = ctx.worktree(ticket.stem)
-        path = root / "chupa/thing.py"
+        path = root / "clutch/thing.py"
         path.chmod(0o755)
-        await commit(ctx, root, ["chupa/thing.py"], "executable")
+        await commit(ctx, root, ["clutch/thing.py"], "executable")
         head = await ctx.git.rev_parse(ctx.repo, ticket.stem)
         ctx.config.review.autofix = [AutofixCommand(code="bad", argv=["host", "bad"], files=["*.py"]), AutofixCommand(code="later", argv=["host", "later"], files=["*.py"])]
         original = ctx.exec_.run
@@ -234,21 +234,21 @@ def test_autofix_failure_restores_and_blocks_check(ctx, monkeypatch):
         result = await checked(ctx, ticket)
         assert result.outcome == "gate_failed" and any(f.code == "bad" for f in result.findings)
         assert len(calls) == 1 and await ctx.git.rev_parse(ctx.repo, ticket.stem) == head
-        assert "chupa/thing.py" not in await ctx.git.status_porcelain(root)
+        assert "clutch/thing.py" not in await ctx.git.status_porcelain(root)
         assert path.stat().st_mode & 0o111
 
     asyncio.run(run())
 
 
 def test_autofix_skips_when_no_files(ctx, monkeypatch):
-    from chupa.config import AutofixCommand
+    from clutch.config import AutofixCommand
     from tests.integration.test_mergequeue import commit
 
     async def run():
         ticket = await ready(ctx)
         root = ctx.worktree(ticket.stem)
-        (root / "chupa/thing.py").unlink()
-        await commit(ctx, root, ["chupa/thing.py"], "delete")
+        (root / "clutch/thing.py").unlink()
+        await commit(ctx, root, ["clutch/thing.py"], "delete")
         ctx.config.review.autofix = [AutofixCommand(code="fix", argv=["host", "fix"], files=["*.py"])]
         calls = scripted(ctx, monkeypatch, [])
         await checked(ctx, ticket)
@@ -259,7 +259,7 @@ def test_autofix_skips_when_no_files(ctx, monkeypatch):
 
 @pytest.mark.parametrize("fail", [False, True])
 def test_autofix_selection_and_union(ctx, monkeypatch, fail):
-    from chupa.config import AutofixCommand
+    from clutch.config import AutofixCommand
 
     async def run():
         changes = {"a.py": "python\n", "config.yaml": "yaml\n", ".gitignore": "ignore\n"}
@@ -289,14 +289,14 @@ def test_autofix_selection_and_union(ctx, monkeypatch, fail):
             assert all((root / path).read_text() == data for path, data in changes.items())
         else:
             assert result.outcome == "ok"
-            assert (await ctx.git._run(root, "log", "-1", "--format=%s")).strip() == f"chupa({ticket.stem}): autofix"
+            assert (await ctx.git._run(root, "log", "-1", "--format=%s")).strip() == f"clutch({ticket.stem}): autofix"
             assert set((await ctx.git._run(root, "show", "--format=", "--name-only", "HEAD")).split()) == {"a.py", "config.yaml"}
 
     asyncio.run(run())
 
 
 def test_autofix_skips_unmatched_files(ctx, monkeypatch):
-    from chupa.config import AutofixCommand
+    from clutch.config import AutofixCommand
 
     async def run():
         ticket = await ready(ctx, changes={"config.yaml": "changed\n"}, fence=("config.yaml",))
@@ -347,7 +347,7 @@ def test_results_detection_and_replay(ctx, monkeypatch):
 def test_results_block_edited_flake_and_real_failure(ctx, monkeypatch, edited, second, expected):
     async def run():
         test = "tests/test_a.py::test_x"
-        ticket = await ready(ctx, changes={"tests/test_a.py": "changed"} if edited else None, fence=("tests/test_a.py",) if edited else ("chupa/thing.py",))
+        ticket = await ready(ctx, changes={"tests/test_a.py": "changed"} if edited else None, fence=("tests/test_a.py",) if edited else ("clutch/thing.py",))
         ctx.config.review.mechanical = [host("tests").model_copy(update={"results": "results.json"})]
         results_script(ctx, monkeypatch, [(1, {test: "failed"}), (0 if second == "passed" else 1, {test: second}), (0, {})])
         result = await checked(ctx, ticket)
@@ -358,9 +358,9 @@ def test_results_block_edited_flake_and_real_failure(ctx, monkeypatch, edited, s
 
 
 def test_results_quarantine_release_and_reflake(ctx, monkeypatch):
-    from chupa.box import Resolution
-    from chupa.daemon import flake_detection, storm_producer
-    from chupa.journal import EventType
+    from clutch.box import Resolution
+    from clutch.daemon import flake_detection, storm_producer
+    from clutch.journal import EventType
 
     async def run():
         test = "tests/test_a.py::test_x"
@@ -401,12 +401,12 @@ def test_results_fail_closed(ctx, monkeypatch, runs):
 
 @pytest.mark.parametrize("edited,cap", [(True, False), (False, True)])
 def test_results_edited_quarantine_and_cap(ctx, monkeypatch, edited, cap):
-    from chupa.daemon import flake_detection, storm_producer
-    from chupa.flake import RerunEvidence
+    from clutch.daemon import flake_detection, storm_producer
+    from clutch.flake import RerunEvidence
 
     async def run():
         test = "tests/test_a.py::test_x"
-        ticket = await ready(ctx, changes={"tests/test_a.py": "changed"} if edited else None, fence=("tests/test_a.py",) if edited else ("chupa/thing.py",))
+        ticket = await ready(ctx, changes={"tests/test_a.py": "changed"} if edited else None, fence=("tests/test_a.py",) if edited else ("clutch/thing.py",))
         ctx.config.review.mechanical = [host("tests").model_copy(update={"results": "results.json"})]
         ctx.config.caps.quarantine = 1
         box = storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
@@ -500,7 +500,7 @@ def test_coverage_fail_closed(ctx, monkeypatch, coverage, flaky, expected):
 def test_coverage_requires_results(ctx, tmp_path):
     import yaml
 
-    from chupa.config import ConfigError, load_config
+    from clutch.config import ConfigError, load_config
 
     raw = yaml.safe_load((ctx.repo / "config.yaml").read_text())
     raw["review"]["mechanical"] = [{"code": "tests", "argv": ["pytest"], "trigger": "always", "severity": "hard", "coverage": "coverage.json"}]
@@ -553,7 +553,7 @@ def test_slow_test_bounds_configured(ctx, monkeypatch):
 def test_slow_bounds_require_results(ctx, tmp_path, field, value):
     import yaml
 
-    from chupa.config import ConfigError, load_config
+    from clutch.config import ConfigError, load_config
 
     raw = yaml.safe_load((ctx.repo / "config.yaml").read_text())
     raw["review"]["mechanical"] = [{"code": "tests", "argv": ["pytest"], "trigger": "always", "severity": "hard", field: value}]

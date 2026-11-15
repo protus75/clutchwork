@@ -8,11 +8,11 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from chupa.config import load_config
-from chupa.driver import Driver, LlmStage
-from chupa.gates import GateReport
-from chupa.llm import FakeLLM
-from chupa.requisition import FIRST_REVIEW, review_ticket
+from clutch.config import load_config
+from clutch.driver import Driver, LlmStage
+from clutch.gates import GateReport
+from clutch.llm import FakeLLM
+from clutch.requisition import FIRST_REVIEW, review_ticket
 
 TICKET = """---
 state: confirmed
@@ -89,7 +89,7 @@ with tempfile.TemporaryDirectory() as directory:
             repo=repo,
             stem="candidate",
             text=TICKET,
-            specs_dir=Path(__file__).resolve().parents[1] / "chupa/specs",
+            specs_dir=Path(__file__).resolve().parents[1] / "clutch/specs",
             coverage_map=None,
             tier="high",
             stem_slot="owner",

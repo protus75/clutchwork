@@ -3,8 +3,8 @@
 import pytest
 from pydantic import ValidationError
 
-from chupa.caps import failed_attempt
-from chupa.stages import ImplementReply
+from clutch.caps import failed_attempt
+from clutch.stages import ImplementReply
 
 
 def test_incomplete_reply_shape():

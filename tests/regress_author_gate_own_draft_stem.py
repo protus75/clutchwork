@@ -11,7 +11,7 @@ from types import SimpleNamespace
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa import author
+        from clutch import author
 
         author.validate_ticket = lambda stem, text, repo: None
         with tempfile.TemporaryDirectory() as directory:

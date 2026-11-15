@@ -6,15 +6,15 @@ from unittest.mock import Mock
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import control, daemon, runner
-from chupa import journal as journal_module
-from chupa.box import Box, BoxError, Resolution, Verdict
-from chupa.effects import Effects
-from chupa.journal import EventType, Journal, JournalCorruption
-from chupa.llm import FakeLLM
-from chupa.seams import LocalFileSystem
-from chupa.storm import StormLedger
+from clutch import __main__ as cli
+from clutch import control, daemon, runner
+from clutch import journal as journal_module
+from clutch.box import Box, BoxError, Resolution, Verdict
+from clutch.effects import Effects
+from clutch.journal import EventType, Journal, JournalCorruption
+from clutch.llm import FakeLLM
+from clutch.seams import LocalFileSystem
+from clutch.storm import StormLedger
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_journal import T0, FakeClock
@@ -246,7 +246,7 @@ def test_storm_producer_hook_is_active(tmp_path, monkeypatch, admission_context,
     from tests.approval import approve
 
     approve(source.repo, STEM, source.driver.clock)
-    implement = agent({"chupa/thing.py": "ok\n"})
+    implement = agent({"clutch/thing.py": "ok\n"})
 
     def report(request):
         reply = json.loads(implement(request).removeprefix("```json\n").removesuffix("\n```"))

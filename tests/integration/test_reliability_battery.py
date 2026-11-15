@@ -11,12 +11,12 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa import artifacts, runner, stages
-from chupa.audit import Violation
-from chupa.git import Git
-from chupa.journal import EventType
-from chupa.seams import SubprocessExec
-from chupa.specs import load_spec
+from clutch import artifacts, runner, stages
+from clutch.audit import Violation
+from clutch.git import Git
+from clutch.journal import EventType
+from clutch.seams import SubprocessExec
+from clutch.specs import load_spec
 from tests.harness import reliability_battery as battery
 
 MEMBERS = battery.RELIABILITY_BATTERY_MEMBERS

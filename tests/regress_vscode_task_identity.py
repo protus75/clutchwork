@@ -1,4 +1,4 @@
-"""Carried reproducer for VS Code task identity across chupa actions."""
+"""Carried reproducer for VS Code task identity across clutch actions."""
 
 import json
 import subprocess

@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 import yaml
 
-from chupa.config import load_config
-from chupa.effects import Effects
-from chupa.journal import EventType, Journal
-from chupa.llmeffect import llm_key
-from chupa.providers import ProviderCallError, ProviderSetupError, Served
-from chupa.seams import ExecutableNotFound
-from chupa.thresh import (
+from clutch.config import load_config
+from clutch.effects import Effects
+from clutch.journal import EventType, Journal
+from clutch.llmeffect import llm_key
+from clutch.providers import ProviderCallError, ProviderSetupError, Served
+from clutch.seams import ExecutableNotFound
+from clutch.thresh import (
     PROVIDER_CALL_OUTCOME,
     PROVIDER_CAP_WAIT,
     SPILL_WAIT_SECONDS,
@@ -509,7 +509,7 @@ def test_effect_replay_does_not_record_another_provider_outcome(tmp_path):
 
 
 def cli_import_closure(sources):
-    pending, reached = ["chupa", "chupa.__main__"], set()
+    pending, reached = ["clutch", "clutch.__main__"], set()
     while pending:
         module = pending.pop()
         if module in reached or module not in sources:
@@ -518,11 +518,11 @@ def cli_import_closure(sources):
         pending.extend(".".join(module.split(".")[:i]) for i in range(1, len(module.split("."))))
         for node in ast.walk(ast.parse(sources[module])):
             if isinstance(node, ast.Import):
-                pending.extend(alias.name for alias in node.names if alias.name == "chupa" or alias.name.startswith("chupa."))
+                pending.extend(alias.name for alias in node.names if alias.name == "clutch" or alias.name.startswith("clutch."))
             elif isinstance(node, ast.ImportFrom):
-                if node.module == "chupa":
-                    pending.extend("chupa." + alias.name for alias in node.names)
-                elif node.module and node.module.startswith("chupa."):
+                if node.module == "clutch":
+                    pending.extend("clutch." + alias.name for alias in node.names)
+                elif node.module and node.module.startswith("clutch."):
                     pending.append(node.module)
                     pending.extend(node.module + "." + alias.name for alias in node.names)
     return reached
@@ -530,19 +530,19 @@ def cli_import_closure(sources):
 
 def test_thresh_is_active():
     sources = {}
-    for path in (ROOT / "chupa").rglob("*.py"):
+    for path in (ROOT / "clutch").rglob("*.py"):
         parts = path.relative_to(ROOT).with_suffix("").parts
         sources[".".join(parts[:-1] if parts[-1] == "__init__" else parts)] = path.read_text()
 
     def assert_dormant(graph):
         reached = cli_import_closure(graph)
-        assert "chupa.providers" in reached  # traverse beyond the entry point
-        assert "chupa.thresh" in reached
+        assert "clutch.providers" in reached  # traverse beyond the entry point
+        assert "clutch.thresh" in reached
 
     assert_dormant(sources)
-    for statement in ("import chupa.thresh", "from chupa import thresh", "from chupa.thresh import Thresh"):
-        for owner in ("chupa.providers", "chupa"):
-            wired = {**sources, "chupa.providers": sources["chupa.providers"].replace("from chupa.thresh import Thresh", "").replace("from chupa.thresh import UnavailableRoute", "")}
+    for statement in ("import clutch.thresh", "from clutch import thresh", "from clutch.thresh import Thresh"):
+        for owner in ("clutch.providers", "clutch"):
+            wired = {**sources, "clutch.providers": sources["clutch.providers"].replace("from clutch.thresh import Thresh", "").replace("from clutch.thresh import UnavailableRoute", "")}
             wired[owner] += "\n" + statement
             assert_dormant(wired)
             wired[owner] = wired[owner].removesuffix("\n" + statement)

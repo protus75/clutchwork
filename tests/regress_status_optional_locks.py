@@ -10,7 +10,7 @@ from pathlib import Path
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa.git import Git
+        from clutch.git import Git
         from tests.integration.test_git import commit_lock
 
         class RecordingExec:
@@ -22,7 +22,7 @@ def main() -> int:
                 return 0, "", ""
 
         exec_ = RecordingExec()
-        asyncio.run(Git(exec_, env={}, timeout=30, commit_lock=commit_lock(Path("/repo/.chupa/state"))).status_porcelain(Path("/repo")))
+        asyncio.run(Git(exec_, env={}, timeout=30, commit_lock=commit_lock(Path("/repo/.clutch/state"))).status_porcelain(Path("/repo")))
         argv = exec_.calls[0]
         status = argv.index("status")
         result = "pass" if "--no-optional-locks" in argv[:status] else "defect"

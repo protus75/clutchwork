@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pytest
 from pydantic import ValidationError
 
-from chupa import requisition
+from clutch import requisition
 
 
 def entry(path, status="unaffected", reason="test:7 remains true"):

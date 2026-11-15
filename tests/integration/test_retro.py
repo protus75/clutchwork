@@ -9,19 +9,19 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa import runner
-from chupa.box import Box, DecisionRecord, render_record
-from chupa.config import Retro as RetroSettings
-from chupa.effects import Effects
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM, LLMResult
-from chupa.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report, select_trigger
-from chupa.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
+from clutch import runner
+from clutch.box import Box, DecisionRecord, render_record
+from clutch.config import Retro as RetroSettings
+from clutch.effects import Effects
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM, LLMResult
+from clutch.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report, select_trigger
+from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root, pause_checkout
 
 
 def rig(tmp_path, script=()):
-    from chupa.__main__ import build_control
+    from clutch.__main__ import build_control
 
     c = pause_checkout(make_root(tmp_path))
     c = replace(c, journal=Journal(c.config.state_dir, c.clock), control=None)
@@ -121,15 +121,15 @@ def test_retro_trigger_boundaries(tmp_path, kind):
         if kind == "merges":
             merged(j, stem)
         elif kind == "rework":
-            from chupa.rework import rework
-            from chupa.tickets import validate_ticket
+            from clutch.rework import rework
+            from clutch.tickets import validate_ticket
 
             ticket = validate_ticket(stem, confirmed(), c.repo)
             writer.stages.driver.llm = FakeLLM(['{"action": "escalate", "tickets": []}'])
             result = asyncio.run(rework(writer.ctx, ticket, confirmed(), [], attempt=n, workspace=c.repo, tier="medium", effort="low", stuck_budget=120, handoff=None))
             assert result.outcome == "ok"
         elif kind == "gate-failure":
-            from chupa.tickets import validate_ticket
+            from clutch.tickets import validate_ticket
 
             ticket = validate_ticket(stem, confirmed(), c.repo)
             assert asyncio.run(runner.failure_terminal(writer.ctx, ticket, outcome="gate_failed", stage="check", findings=[], attempt=n)) == "gate_failed"
@@ -145,7 +145,7 @@ def test_retro_trigger_boundaries(tmp_path, kind):
         elif kind == "integration-red":
             writer.queue._facts(stem, set(), set(), red=["work/red.py"])
         elif kind == "override":
-            from chupa.stages import Invoice
+            from clutch.stages import Invoice
 
             path = f"tickets/{stem}/checks.json"
             invoice = Invoice(produced_by_spec_version=1, produced_at_sha="branch", stem=stem, passed=True, changed_files=[], inserted_lines=0, bypassed=["scope_fence"], reports=[])
@@ -318,7 +318,7 @@ def test_artifact_is_closed_and_proposals_pair_the_risks():
 
 
 def test_receipt_uses_engine_provenance_usage_calibration_and_tombstones(tmp_path):
-    from chupa.driver import LlmStage
+    from clutch.driver import LlmStage
 
     proposal = {"fixed_failure": "A witnessed failure", "overcorrection_risk": "Rejecting useful inputs", "proposed_spec_paths": ["specs/review.md"]}
     prior = LLMResult(text='{"proposals": []}', usd=2.3, input_tokens=None, output_tokens=7, provider="measured-provider", model="measured-model")
@@ -353,8 +353,8 @@ def test_receipt_uses_engine_provenance_usage_calibration_and_tombstones(tmp_pat
 
 
 def test_retro_itemizes_confirmed_class_tombstones(tmp_path, monkeypatch):
-    from chupa.box import Resolution, record_path
-    from chupa.daemon import storm_producer
+    from clutch.box import Resolution, record_path
+    from clutch.daemon import storm_producer
 
     c, writer, hook, llm = rig(tmp_path, ['{"proposals": []}'])
     box = storm_producer(root=c.config.state_dir / "box", fs=c.fs, journal=c.journal, clock=c.clock)
@@ -381,14 +381,14 @@ def test_retro_itemizes_confirmed_class_tombstones(tmp_path, monkeypatch):
 
 
 def test_escape_report_projection(tmp_path, monkeypatch):
-    from chupa.scorecard import project_scorecard
-    from chupa.status import project
-    from chupa.status import render as render_status
+    from clutch.scorecard import project_scorecard
+    from clutch.status import project
+    from clutch.status import render as render_status
     from tests.integration.test_triage import escape_report, escape_rig
 
     async def scenario():
         c, writer, box, checked, admitted = await escape_rig(tmp_path)
-        c, message, _ = await escape_report(c, commit=admitted.commit, paths=["chupa/thing.py"])
+        c, message, _ = await escape_report(c, commit=admitted.commit, paths=["clutch/thing.py"])
         window = project_window(c.journal.read())
         evidence = await production_evidence(window, c)
         before = c.journal.read()
@@ -462,7 +462,7 @@ def test_disabled_trigger_never_fires(settings, facts, age):
 def test_excluded_spike_kind_never_fires(tmp_path):
     from datetime import datetime
 
-    from chupa.rework import REWORK_ORDER
+    from clutch.rework import REWORK_ORDER
 
     c, _, _, _ = rig(tmp_path)
     for n in range(5):
@@ -475,8 +475,8 @@ def test_excluded_spike_kind_never_fires(tmp_path):
 
 
 def measurement_invoices(tmp_path, *, switches=True):
-    from chupa.gates import GateReport, TestCoverage, TestTiming
-    from chupa.stages import Invoice
+    from clutch.gates import GateReport, TestCoverage, TestTiming
+    from clutch.stages import Invoice
 
     c, writer, _, _ = rig(tmp_path)
     if not switches:

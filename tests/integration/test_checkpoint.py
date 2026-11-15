@@ -8,17 +8,17 @@ from pathlib import Path
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import daemon
-from chupa.checkpoint import CHECKPOINT_INTERVAL, CHECKPOINT_MERGES, Checkpoint
-from chupa.effects import Effects
-from chupa.enginelog import EngineLog
-from chupa.git import Git
-from chupa.journal import EventType, Journal, JournalCorruption
-from chupa.redact import Redactor
-from chupa.seams import ExecutableNotFound, LocalFileSystem
-from chupa.storm import StormLedger, arrival_id
-from chupa.timers import Timers
+from clutch import __main__ as cli
+from clutch import daemon
+from clutch.checkpoint import CHECKPOINT_INTERVAL, CHECKPOINT_MERGES, Checkpoint
+from clutch.effects import Effects
+from clutch.enginelog import EngineLog
+from clutch.git import Git
+from clutch.journal import EventType, Journal, JournalCorruption
+from clutch.redact import Redactor
+from clutch.seams import ExecutableNotFound, LocalFileSystem
+from clutch.storm import StormLedger, arrival_id
+from clutch.timers import Timers
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
@@ -58,7 +58,7 @@ class Rig:
     def __init__(self, path):
         self.path, self.time, self.exec = path, Time(), Exec()
         self.fs = LocalFileSystem()
-        self.git = Git(self.exec, env={"PATH": "/usr/bin"}, timeout=30, commit_lock=commit_lock(path / ".chupa/state"))
+        self.git = Git(self.exec, env={"PATH": "/usr/bin"}, timeout=30, commit_lock=commit_lock(path / ".clutch/state"))
         self.log = EngineLog(path / "engine.log", Redactor({"KEY": SECRET}), self.time)
         self.slot = asyncio.Lock()
         self.restart()
@@ -177,7 +177,7 @@ async def test_checkpoint_failed_push_refires(tmp_path, failure, code):
 
 @pytest.mark.asyncio
 async def test_checkpoint_failure_occurrence_identity(tmp_path, monkeypatch):
-    import chupa.journal as module
+    import clutch.journal as module
 
     monkeypatch.setattr(module, "ROLL_BYTES", 1)
     rig = Rig(tmp_path)
@@ -428,7 +428,7 @@ async def test_checkpoint_crash_windows(tmp_path, monkeypatch, point):
 
 @pytest.mark.asyncio
 async def test_checkpoint_timer_survives_restart_and_roll(tmp_path, monkeypatch):
-    import chupa.journal as module
+    import clutch.journal as module
 
     monkeypatch.setattr(module, "ROLL_BYTES", 1)
     rig = Rig(tmp_path)
@@ -484,7 +484,7 @@ def test_checkpoint_boundary_is_dormant(root, monkeypatch, verb):
             journal=rig.journal,
             effects=effects,
             timers=timers,
-            git=Git(exec_, env={"PATH": "/usr/bin"}, timeout=30, commit_lock=commit_lock(root / ".chupa/state")),
+            git=Git(exec_, env={"PATH": "/usr/bin"}, timeout=30, commit_lock=commit_lock(root / ".clutch/state")),
             box=box,
             clock=clock,
             log=EngineLog(root / "checkpoint.log", Redactor({}), clock),

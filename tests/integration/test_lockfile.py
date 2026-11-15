@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from chupa.lockfile import Lockfile, LockHeld
+from clutch.lockfile import Lockfile, LockHeld
 
 T0 = datetime(2026, 8, 4, 12, 0, 0, tzinfo=UTC)
 
@@ -16,10 +16,10 @@ def make(state_dir, instance_id="v0.1.0"):
     return Lockfile(state_dir, verb="drain", instance_id=instance_id, clock=lambda: T0)
 
 
-def test_lockfile_lives_at_state_dir_chupa_lock(tmp_path):
+def test_lockfile_lives_at_state_dir_clutch_lock(tmp_path):
     lock = make(tmp_path)
     lock.acquire()
-    assert lock.path == tmp_path / "chupa.lock"
+    assert lock.path == tmp_path / "clutch.lock"
     assert lock.path.exists()
     lock.release()
 
@@ -60,7 +60,7 @@ def test_contention_refused_across_processes(tmp_path):
         "import sys\n"
         "from datetime import UTC, datetime\n"
         "from pathlib import Path\n"
-        "from chupa.lockfile import LockHeld, Lockfile\n"
+        "from clutch.lockfile import LockHeld, Lockfile\n"
         "l = Lockfile(Path(sys.argv[1]), verb='drain', instance_id='child', clock=lambda: datetime.now(UTC))\n"
         "try:\n"
         "    l.acquire()\n"
@@ -104,7 +104,7 @@ def test_crashed_holder_lock_is_free(tmp_path):
         "import os, sys\n"
         "from datetime import UTC, datetime\n"
         "from pathlib import Path\n"
-        "from chupa.lockfile import Lockfile\n"
+        "from clutch.lockfile import Lockfile\n"
         "Lockfile(Path(sys.argv[1]), verb='drain', instance_id='dead', clock=lambda: datetime.now(UTC)).acquire()\n"
         "os._exit(9)\n"
     )
@@ -140,8 +140,8 @@ def test_holder_none_when_identity_unreadable(tmp_path):
     # Contender racing the holder's identity write sees an empty file; refusal still stands.
     import fcntl
 
-    tmp_path.joinpath("chupa.lock").write_text("")
-    fd = os.open(tmp_path / "chupa.lock", os.O_RDWR)
+    tmp_path.joinpath("clutch.lock").write_text("")
+    fd = os.open(tmp_path / "clutch.lock", os.O_RDWR)
     fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
     try:
         with pytest.raises(LockHeld) as exc:

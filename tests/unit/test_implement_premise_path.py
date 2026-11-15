@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from chupa.stages import ImplementReply
+from clutch.stages import ImplementReply
 
 
 def test_premise_findings_need_paths():

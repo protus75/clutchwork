@@ -1,9 +1,9 @@
 import asyncio
 import json
 
-from chupa import runner
-from chupa.stages import run_stages
-from chupa.tickets import validate_ticket
+from clutch import runner
+from clutch.stages import run_stages
+from clutch.tickets import validate_ticket
 from tests.integration.test_merge import context, repo
 from tests.integration.test_stages import STEM, agent, author, verdict
 
@@ -15,7 +15,7 @@ def stage_events(ctx, surface):
 
 def test_check_events_on_scope_violation(repo):
     author(repo)
-    ctx = context(repo, [agent({"chupa/thing.py": "ok\n", "chupa/other.py": "outside\n"})])
+    ctx = context(repo, [agent({"clutch/thing.py": "ok\n", "clutch/other.py": "outside\n"})])
     ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
     run = asyncio.run(run_stages(ctx, ticket))
     assert run.last[1].outcome == "gate_failed"  # A successful Check would not prove the violation.
@@ -28,7 +28,7 @@ def test_check_events_on_scope_violation(repo):
 
 def test_merge_events_on_drive(repo):
     author(repo)
-    ctx = context(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx = context(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
     assert asyncio.run(runner.drive(ctx, ticket)) == "merged"  # A stopped run never reaches admission.
     events = stage_events(ctx, "merge")

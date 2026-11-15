@@ -1,6 +1,6 @@
 import pytest
 
-from chupa.providers import capture_sequence
+from clutch.providers import capture_sequence
 
 
 @pytest.mark.parametrize(

@@ -4,8 +4,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-from chupa import runner, status
-from chupa.journal import EventType
+from clutch import runner, status
+from clutch.journal import EventType
 
 
 def event(kind, body, ticket="x", key=None):
@@ -88,7 +88,7 @@ def held_events(stem="x"):
 def test_order_refuses_only_a_live_running_stem(monkeypatch):
     import pytest
 
-    from chupa import __main__ as entry
+    from clutch import __main__ as entry
 
     class PathFake:
         def __truediv__(self, other):
@@ -119,8 +119,8 @@ def test_order_refuses_only_a_live_running_stem(monkeypatch):
 
 
 def test_status_verb_passes_alive(monkeypatch):
-    from chupa import __main__ as entry
-    from chupa import retro, specs
+    from clutch import __main__ as entry
+    from clutch import retro, specs
 
     calls = []
 
@@ -154,7 +154,7 @@ def test_status_verb_passes_alive(monkeypatch):
 def test_locked_verbs_reap_after_acquire(monkeypatch):
     import pytest
 
-    from chupa import __main__ as entry
+    from clutch import __main__ as entry
 
     class Stop(Exception):
         pass

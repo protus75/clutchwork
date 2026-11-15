@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from chupa.journal import JournalCorruption, _parse_complete_lines
+from clutch.journal import JournalCorruption, _parse_complete_lines
 
 LINE = b'{"v":1,"type":"timer_armed","ts":"2026-08-04T12:00:00+00:00","ticket":null,"key":null,"body":{"n":7}}'
 

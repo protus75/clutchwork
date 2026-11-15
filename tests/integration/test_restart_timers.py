@@ -9,14 +9,14 @@ from pathlib import Path
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import daemon, reconcile, runner, serve
-from chupa.audit import audit_journal
-from chupa.journal import EventType, Journal, JournalCorruption, render_ts, run_seq
-from chupa.lockfile import Lockfile, LockHeld
-from chupa.restart import Restart
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.timers import Timers
+from clutch import __main__ as cli
+from clutch import daemon, reconcile, runner, serve
+from clutch.audit import audit_journal
+from clutch.journal import EventType, Journal, JournalCorruption, render_ts, run_seq
+from clutch.lockfile import Lockfile, LockHeld
+from clutch.restart import Restart
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.timers import Timers
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
 from tests.integration.test_providers import CONFIG
@@ -26,7 +26,7 @@ from tests.waiting import wait_until
 
 @pytest.mark.parametrize("moved", [False, True])
 def test_restart_regates_historical_held_receipt(tmp_path, monkeypatch, moved):
-    from chupa.mergequeue import MERGE_REGATE, regate_receipts
+    from clutch.mergequeue import MERGE_REGATE, regate_receipts
     from tests.integration.test_mergequeue import commit, ready
     from tests.integration.test_mergequeue import ctx as context_fixture
 
@@ -53,10 +53,10 @@ def test_restart_regates_historical_held_receipt(tmp_path, monkeypatch, moved):
         ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=ticket.stem)
         ctx.driver.journal.append(EventType.EFFECT_COMPLETION, {"result": receipt}, ticket=ticket.stem, key=key)
         if moved:
-            ctx.fs.write(ctx.repo / "chupa/other.py", b"new main code\n")
-            await commit(ctx, ctx.repo, ["chupa/other.py"])
+            ctx.fs.write(ctx.repo / "clutch/other.py", b"new main code\n")
+            await commit(ctx, ctx.repo, ["clutch/other.py"])
         calls = []
-        from chupa import stages
+        from clutch import stages
 
         for name in ("gather_safety_evidence", "gather_evidence"):
             original = getattr(stages, name)
@@ -73,7 +73,7 @@ def test_restart_regates_historical_held_receipt(tmp_path, monkeypatch, moved):
         [result] = await owner.queue.process()
         assert result.outcome == "ok" and result.artifact.reviewed_sha == reviewed
         assert calls == ["gather_safety_evidence", "gather_evidence", "gather_safety_evidence"]
-        assert (ctx.repo / "chupa/thing.py").read_text() == f"ok {ticket.stem}\n"
+        assert (ctx.repo / "clutch/thing.py").read_text() == f"ok {ticket.stem}\n"
         assert not ctx.worktree(ticket.stem).exists()
         receipts = regate_receipts(ctx.driver.journal.read())
         assert receipts[key] == receipt
@@ -113,11 +113,11 @@ async def repository(root, monkeypatch, *, prepare=None):
         fs.write(path, data)
 
     monkeypatch.setattr(rig.fs, "write", written)
-    (root / ".gitignore").write_text(".chupa/\nstate/\nrecovery-workspaces/\n")
+    (root / ".gitignore").write_text(".clutch/\nstate/\nrecovery-workspaces/\n")
     from tests.integration.test_stages import adopt_conduct
 
     conduct = adopt_conduct(root)
-    await rig.checkout.git.add(root, ["config.yaml", ".gitignore", "chupa/thing.py", *conduct])
+    await rig.checkout.git.add(root, ["config.yaml", ".gitignore", "clutch/thing.py", *conduct])
     await rig.checkout.git.commit(root, "restart fixture config")
     return rig
 
@@ -339,7 +339,7 @@ async def test_orphan_sweep_preserves_live_ownership(root, monkeypatch, owner):
         ticket = await rig.add("live")
         if owner == "admission":
             # Exercise the real inline admission with its own barrier-held Git child.
-            from chupa.llm import FakeLLM
+            from clutch.llm import FakeLLM
             from tests.integration.test_daemon_composition import capture_pipeline_queue
             from tests.integration.test_mergequeue import ready
 
@@ -463,7 +463,7 @@ def test_timer_records_and_identity(tmp_path):
     assert owner.fire_due()[0].ticket is None
     green(owner.journal)
     # Timer writes have exactly one production owner, including aliases and enum spellings.
-    material = Path(__file__).resolve().parents[2] / "chupa"
+    material = Path(__file__).resolve().parents[2] / "clutch"
     writers = set()
     for path in material.glob("*.py"):
         tree = ast.parse(path.read_text())

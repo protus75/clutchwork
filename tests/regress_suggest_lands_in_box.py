@@ -12,8 +12,8 @@ from pathlib import Path
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa.box import Box
-        from chupa.seams import LocalFileSystem
+        from clutch.box import Box
+        from clutch.seams import LocalFileSystem
         from tests.integration.test_cli import cli, root
 
         with tempfile.TemporaryDirectory() as directory:
@@ -22,7 +22,7 @@ def main() -> int:
                 result = cli(repo, "suggest", "a distinct idea")
             if result != 0:
                 raise RuntimeError(f"suggest exited {result}")
-            messages = Box(repo / ".chupa/state/box", LocalFileSystem()).messages()
+            messages = Box(repo / ".clutch/state/box", LocalFileSystem()).messages()
             if not any(m.message_class == "suggestion" and m.status == "pending" and m.summary == "a distinct idea" for m in messages):
                 print(json.dumps({"regression_result": "defect"}))
                 return 1

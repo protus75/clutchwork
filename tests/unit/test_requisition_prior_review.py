@@ -1,8 +1,8 @@
 import asyncio
 import inspect
 
-from chupa.journal import Event, EventType
-from chupa.requisition import FIRST_REVIEW, prior_review, render_prior_review, review_ticket
+from clutch.journal import Event, EventType
+from clutch.requisition import FIRST_REVIEW, prior_review, render_prior_review, review_ticket
 
 
 class FakeGit:

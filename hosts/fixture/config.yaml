@@ -1,6 +1,6 @@
 schema_version: 1
-state_dir: .chupa/state
-worktree_root: .chupa/worktrees
+state_dir: .clutch/state
+worktree_root: .clutch/worktrees
 providers:
   - name: claude
     kind: cli

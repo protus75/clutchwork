@@ -8,15 +8,15 @@ from pathlib import Path
 
 import pytest
 
-from chupa import hostfiles
-from chupa.seams import LocalFileSystem
+from clutch import hostfiles
+from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo
 from tests.integration.test_stages import agent, verdict
 
 REPO = Path(__file__).resolve().parents[2]
-GOLDEN = b"PCEtLSBjaHVwYTpjb3JlIGJlZ2luIC0tPgojIyBUaWNrZXQgYXV0aG9yaW5nIC0tIHJlYWQgYmVmb3JlIHdyaXRpbmcgYW55IHRpY2tldAoKVGhlc2UgcnVsZXMgY29tZSBmaXJzdCBiZWNhdXNlIHNlc3Npb25zIHRoYXQgc2tpbSBtaXNzIHRoZW0uIEhBUkQgcnVsZXMgaGF2ZSBubyBleGNlcHRpb25zLiBUaGV5IGFyZSBiZWhhdmlvcmFsOiBubyBnYXRlIGNhbiBqdWRnZSB0aGVtLCBzbyBuZXZlciBmaWxlIGFuIGVuZm9yY2VtZW50IHRpY2tldCBmb3Igb25lLgoKLSBIQVJEOiBJbiBhbiBpbnRlcmFjdGl2ZSBjaGF0LCBldmVyeSByZXF1ZXN0ZWQgY2hhbmdlIHRvIHJlcG8gY29udGVudCAoY29kZSwgZG9jcywgQ0xBVURFLm1kLCBBR0VOVFMubWQsIHNldHRpbmdzLCBob29rcywgc2NyaXB0cywgY29uZmlnLCBhZ2VudCBydWxlcykgYmVjb21lcyBhIGRyYWZ0ZWQgdGlja2V0IGF0IGB0aWNrZXRzLzxzdGVtPi90aWNrZXQubWRgLCB0aGVuIHN0b3AuIE5ldmVyIGVkaXQgb3IgY29tbWl0IG9uIG1haW4uIFRoZSBvbmx5IGV4Y2VwdGlvbnM6ICgxKSB0aGUgdXNlciBzYXlzICJlZGl0IG1haW4iLCAiY29tbWl0IGRpcmVjdGx5IiwgInNraXAgdGhlIHRpY2tldCIsICJkbyBpdCBpbmxpbmUiLCBvciBhbiBlcXVhbGx5IGV4cGxpY2l0IG92ZXJyaWRlIHRoaXMgdHVybjsgYW5nZXIgd29yZHMgYWxvbmUgZG8gbm90IGNvdW50OyAoMikgeW91IGFyZSBpbiBhIGNodXBhIHRpY2tldCB3b3JrdHJlZTsgKDMpIHRoZSB1c2VyIG5hbWVzIGJ5IHBhdGggYSBmaWxlIHVuZGVyIGFuIGV4aXN0aW5nIGB0aWNrZXRzLzxzdGVtPi9gIHRvIGVkaXQgb3IgZGVsZXRlOyAoNCkgcmVhZC1vbmx5IGluc3BlY3Rpb247ICg1KSB0aGUgc3VwZXJ2aXNpbmcgZml4ZXMgYmVsb3cuIElmIHlvdSBhbHJlYWR5IGVkaXRlZCBtYWluIHdpdGhvdXQgYW4gb3ZlcnJpZGUsIHN0b3AsIHNheSBzbywgYW5kIGFzayB3aGV0aGVyIHRvIHJldmVydCBhbmQgcmVmaWxlLiBXaHk6IGNoYXQgZWRpdHMgc2tpcCB0aGUgdGlja2V0LCBydW4gcmVjb3JkLCByZXZpZXcsIGFuZCByZXRybyB0aGF0IG1ha2UgY2h1cGEgZGVidWdnYWJsZS4KLSBIQVJEOiBOZXZlciB3cml0ZSBhIHRpY2tldCBmcm9tIG1lbW9yeS4gUnVuIGBjaHVwYSBuZXcgPHN0ZW0+IC0ta2luZCBmZWF0dXJlfGJ1Z3xjaG9yZWA7IGl0IHdyaXRlcyB0aGUgc2tlbGV0b24gYW5kIHByaW50cyB0aGUgcGF0aCBvZiB0aGUgdGlja2V0IGF1dGhvcmluZyBndWlkZSBpbiB5b3VyIGNodXBhIGluc3RhbGwgKGZvciBhbiBleGlzdGluZyB0aWNrZXQsIGl0cyByZWZ1c2FsIHByaW50cyB0aGUgc2FtZSBwYXRoKS4gUmVhZCB0aGF0IGxvY2FsIGZpbGUgaW4gZnVsbC4gYGNodXBhIGRvY3NgIHByaW50cyB0aGUgaW5zdGFsbGVkIHBhdGhzIG9mIGFsbCBob3N0IGd1aWRlcyAoYXV0aG9yaW5nLCBydW5uaW5nLCBjb25maWcgY29udHJhY3QpOyByZWFkIHRoZW0gbG9jYWxseSwgbmV2ZXIgZnJvbSBhIFVSTC4gRmlsbCBldmVyeSBzZWN0aW9uLCBydW4gYGNodXBhIGxpbnQgPHN0ZW0+YCB1bnRpbCBpdCBleGl0cyAwLCB0aGVuIHJ1biBgY2h1cGEgcmV2aWV3IDxzdGVtPmAgYW5kIHJlcGFpciBldmVyeSBmaW5kaW5nIHVudGlsIGl0IHByaW50cyBhcHByb3ZlLiBUaWNrZXRzIGFyZSBtYXJrZG93biBmaWxlcywgbmV2ZXIgaXNzdWUtdHJhY2tlciBpdGVtcy4gV2h5OiBzdGFsZSB0aWNrZXQgc2hhcGVzIGJyZWFrIHJ1bnMgYmVmb3JlIGltcGxlbWVudGF0aW9uIHN0YXJ0cy4KLSBGZW5jZSBldmVyeSBmaWxlIHRoZSBjaGFuZ2UgZm9yY2VzLCBpbmNsdWRpbmcgY2FsbGVycywgaW1wb3J0ZXJzLCBkb2N1bWVudHMgaXQgY2hhbmdlcywgYW5kIHRlc3RzIHRoYXQgcGluIGEgY2hhbmdlZCBuYW1lLCB2YWx1ZSwgb3IgdmVyc2lvbi4gV2h5OiBhIGZvcmNlZCBmaWxlIG91dHNpZGUgdGhlIGZlbmNlIG1ha2VzIHRoZSB0aWNrZXQgaW1wb3NzaWJsZS4KLSBGcm9udG1hdHRlciBob2xkcyBvbmx5IGZpZWxkcyByZWFkIGJ5IHNjaGVkdWxpbmcsIGdhdGVzLCBvciBhdXRob3JpbmcvdHJpYWdlIHBvbGljeS4gYCMjIERlcGVuZHMgb25gIG5hbWVzIG9ubHkgYSB0aWNrZXQgd2hvc2UgbWVyZ2VkIGNvZGUgdGhpcyBvbmUgbmVlZHM7IHB1dCBhbGwgb3RoZXIgb3JkZXJpbmcgaW4gcHJpb3JpdHkgb3IgYCMjIFJ1bnMgYmVmb3JlYCwgbmV2ZXIgaW4gcHJvc2UuIFdoeTogYSBkZXBlbmRzIHVzZWQgZm9yIG9yZGVyaW5nIGJsb2NrcyB0aGUgcXVldWUgd2hlbiB0aGUgZmlyc3QgdGlja2V0IGZhaWxzLgotIEhBUkQ6IFdoZW4gYSByZXBvcnRlZCBwcm9ibGVtIGhhcyBhIGNhdXNlIHRoYXQgd2lsbCByZWN1ciwgd3JpdGUgdHdvIHNlcGFyYXRlIHRpY2tldHMgaW4gdGhlIHNhbWUgdHVybi4gRmlyc3QgdGhlIGluc3RhbmNlIGZpeDogbWluaW1hbCBzY29wZSwgd3JpdHRlbiBiZWZvcmUgYW55IGNhdXNlIGRpYWdub3Npcy4gVGhlbiB0aGUgY2F1c2UgZml4LCBuZXZlciBmb2xkZWQgaW50byB0aGUgaW5zdGFuY2U7IHRoZSB0dXJuIGlzIHVuZmluaXNoZWQgdW50aWwgaXQgZXhpc3RzLiBCb3RoIGFyZSBzb2xpY2l0ZWQsIHNvIG5vIGFzayBpcyBuZWVkZWQuIFJvdXRpbmc6CiAgLSBQcm9kdWN0IGluc3RhbmNlOiBgcHJpb3JpdHk6IFAwYCwgbm8gYmxvY2tpbmcgZGVwZW5kcy4KICAtIFByb2R1Y3QgY2F1c2UgKGluZXJ0OyBkb2VzIG5vdCBzcHJlYWQgb24gaXRzIG93bik6IGBwcmlvcml0eTogUDFgLiBXaGVuIHRoZSB0d28gc2hhcmUgYW4gZWRpdCBzdXJmYWNlLCB0aGUgaW5zdGFuY2UgbGlzdHMgdGhlIGNhdXNlIGluIGAjIyBSdW5zIGJlZm9yZWAuCiAgLSBPcmNoZXN0cmF0aW9uIGNhdXNlIChzY2hlZHVsZXIsIGdhdGUsIGVudmlyb25tZW50LCBzaGFyZWQgbW9kdWxlLCBmaXh0dXJlIGZvcm1hdDsga2VlcHMgYnJlYWtpbmcgcnVucyB3aGlsZSBpdCBzaXRzKTogYHByaW9yaXR5OiBQMGAsIGAjIyBSdW5zIGJlZm9yZWAgZXZlcnkgdGlja2V0IGl0IHVuYmxvY2tzLCBuZXZlciBkZXBlbmRzIG9uIGEgcHJvZHVjdCBpbnN0YW5jZS4KLSBIQVJEOiBGb3IgdGlja2V0LXdvcnRoeSB3b3JrIHRoZSB1c2VyIGRpZCBub3QgYXNrIGZvciAoZm9sbG93LXVwLCBwcmV2ZW50aW9uLCBlbmZvcmNlbWVudCBsaW50LCBzd2VlcCksIHN0b3AgYmVmb3JlIGRpdmluZzogbmFtZSBpdCBpbiAxLTIgc2VudGVuY2VzIGFuZCBhc2sgdGhlIHVzZXIgdG8gY2hvb3NlIGF1dGhvciBub3csIGFmdGVyIHRoZSBjdXJyZW50IHRhc2ssIG9yIHNraXAuICJBZnRlciIgbWFrZXMgaXQgYW4gb3BlbiB0aHJlYWQuIEFubm91bmNlIGluIG9uZSBsaW5lIGFueSB1bnNvbGljaXRlZCBpbnZlc3RpZ2F0aW9uIGxvbmdlciB0aGFuIGEgY291cGxlIG9mIG1pbnV0ZXMuIFRoZSB1c2VyJ3MgcmVxdWVzdGVkIHRhc2sgYWx3YXlzIGdvZXMgZmlyc3QuIEF1dG9ub21vdXMgcnVucyBza2lwIHRoZSBhc2sgYW5kIGZpbGUgdG8gdGhlIFN1Z2dlc3Rpb24gQm94LgotIEZpbGUgYW4gdW5yZXF1ZXN0ZWQgaWRlYSBvciBzZWNvbmQgcHJvYmxlbSB3aXRoIGBjaHVwYSBzdWdnZXN0ICI8c3VtbWFyeT4iYCBhbmQgbmFtZSBpdCBpbiBvbmUgbGluZS4gV2h5OiBhIG1hcmdpbiBzdWdnZXN0aW9uIGRpZXMgd2l0aCB0aGUgY2hhdC4KLSBBIHN1cGVydmlzaW5nIHNlc3Npb24gbWF5LCB1bmFza2VkLCBmaXggYSB0aWNrZXQncyBsaW50IG9yIGZvcm1hdCBlcnJvcnMsIGFkZCBhIGZpbGUgbWlzc2luZyBmcm9tIGAjIyBTY29wZSBmZW5jZWAgb3IgYCMjIENvbnRleHRgLCBjb3JyZWN0IGEgc3RhbGUgcGF0aCwgbWFrZSBhIHNpbXBsZSB3b3JkaW5nIHVwZGF0ZSwgYW5kIHJ1biBvciByZXN0YXJ0IHRoZSBkcmFpbi4gSXQgbWF5IG5vdCBjb25maXJtIG9yIHJlamVjdCwgcmV0cnkgYSBzdGVtIHdob3NlIGNhcHMgYXJlIHNwZW50LCBlZGl0IGEgcnVubmluZyB0aWNrZXQsIGNoYW5nZSBhIHRpY2tldCdzIGdvYWwgb3Igc2NvcGUsIG9yIHJld3JpdGUgYSB0aWNrZXQgdGhlIGVuZ2luZSBhdXRob3JlZDsgdGhvc2UgZ28gdG8gdGhlIHVzZXIuCgojIyBEaWFnbm9zaXMKCi0gSEFSRDogV2hlbiBhIHJ1biBmYWlscywgaXMga2lsbGVkLCB0aW1lcyBvdXQsIHN0YWxscywgb3IgZXNjYWxhdGVzLCBuYW1lIGl0cyByb290IGNhdXNlIGluIG9uZSBzZW50ZW5jZSBiZWZvcmUgZWRpdGluZyBzcGVjIG9yIGNvZGUgb3IgcmVydW5uaW5nLiBSZWFkIGBjaHVwYSBzdGF0dXNgLCBgdGlja2V0cy88c3RlbT4vYCAoYHJ1bi5tZGAsIGBjaGVja3MuanNvbmAsIGBkaWFnbm9zaXMuanNvbmAsIGByZXZpZXcubWRgLCBgYXR0ZW1wdHMvYCksIGFuZCB0aGUgZW5naW5lIGxvZy4gRml4IHRoZSBjYXVzZSB3aGVyZSBpdCBsaXZlcy4gQW4gZXh0ZXJuYWwgY2F1c2UgKGVuZ2luZSwgZ2F0ZSwgZW52aXJvbm1lbnQsIHNoYXJlZCBtb2R1bGUsIGZpeHR1cmUsIGZsYWt5IHRlc3QsIHdyb25nIHByZW1pc2UpIGlzIGZpeGVkIGZpcnN0IGFuZCBvcmRlcmVkIGFoZWFkIHdpdGggcHJpb3JpdHkgYW5kIGAjIyBSdW5zIGJlZm9yZWAuIERvIG5vdCBhc3N1bWUgdGhlIHRpY2tldCBpcyB3cm9uZy4gTmV2ZXIgcmVydW4gYSBmbGFreSBmYWlsdXJlIHVudGlsIGl0IHBhc3NlcyBhbmQgY2FsbCB0aGF0IGZpeGVkLgotIEhBUkQ6IFdoZW4gYSBzeW1wdG9tIHJlY3VycyBvbiBhIHN1cmZhY2UgYWxyZWFkeSBmaXhlZCwgbmFtZSB0aGUgcm9vdCBtb2RlbCBhZ2FpbnN0IHRoZSBjYW5vbmljYWwgc3BlYyAoZGVzaWduIGRvY3MsIGNvbnRyYWN0cykgYW5kIHdyaXRlIGEgcm9vdC1jYXVzZSB0aWNrZXQsIG5vdCBhbm90aGVyIHBhdGNoLiBBIHNjb3BlIGZlbmNlIHRoYXQgZm9yYmlkcyB0b3VjaGluZyB0aGUgc3VzcGVjdGVkIHJvb3QgaXMgYSByZWQgZmxhZzogcmUtc2NvcGUgaXQuIFRlc3RzIHRoYXQgYXNzZXJ0IHRoZSBjdXJyZW50IHdyb25nIGJlaGF2aW9yIHByb3ZlIG5vdGhpbmcuIE5ldmVyIHdyaXRlICJ0aGUgZGVmZWN0IHdhcyBub3QgWCIgd2l0aG91dCBjaGVja2luZyB0aGUgc3BlYy4KLSBIQVJEOiBXaXRoIGV2ZXJ5IGZpeCBvciBkaWFnbm9zaXMsIG5hbWUgdGhlIGNoYW5nZSB0aGF0IHN0b3BzIHRoZSB3aG9sZSBjbGFzcyBmcm9tIHJlY3VycmluZyAocnVsZSwgbGludCwgZ2F0ZSwgdGVtcGxhdGUgZGVmYXVsdCwgZ2VuZXJhdG9yKSBhcyBhIHNlcGFyYXRlIGl0ZW0uIENoZWFwIGFuZCBpbiBzY29wZTogZG8gaXQgdW5kZXIgdGhlIHNhbWUgYXV0aG9yaXphdGlvbi4gQ2hlYXAgYnV0IG91dCBvZiBzY29wZTogbmFtZSBpdCwgdGhlbiBmb2xsb3cgdGhlIGFzayBmb3IgdW5yZXF1ZXN0ZWQgd29yay4gRXhwZW5zaXZlIG9yIHVuY2VydGFpbjogYGNodXBhIHN1Z2dlc3RgLiBTdGF5aW5nIHNpbGVudCBpcyB0aGUgZmFpbHVyZS4KCi0gSEFSRDogQSBmaXggdGhhdCBiZWxvbmdzIGluIGNodXBhIChhIHByb21wdCBzcGVjLCBnYXRlLCB0aWNrZXQgZm9ybWF0LCBob3N0IGd1aWRlLCBvciB0aGlzIGJsb2NrKSBpcyBuZXZlciBjb3BpZWQgb3IgcGF0Y2hlZCBpbnRvIGhvc3QgZmlsZXMuIFJlcG9ydCBpdCBmb3IgdGhlIG93bmVyIHRvIGNhcnJ5IHRvIGNodXBhLCB0aGVuIHN0b3AuIFdoeTogYSBob3N0IGNvcHkgY29tcGV0ZXMgd2l0aCBjaHVwYSdzIHJ1bGUsIHJlYWNoZXMgbm8gb3RoZXIgaG9zdCwgYW5kIGdvZXMgc3RhbGUgb24gdXBncmFkZS4KCiMjIENoYXQgc2Vzc2lvbiBjb25kdWN0CgpUaGVzZSBydWxlcyBnb3Zlcm4gaW50ZXJhY3RpdmUgY2hhdCB3aXRoIHRoZSBvd25lciBwcmVzZW50LiBUaWNrZXQgYWdlbnRzIHNraXAgdGhpcyBzZWN0aW9uLgoKLSBIQVJEOiBXaGVuIGEgcmVwbHkgcmFpc2VzIG1vcmUgdGhhbiBvbmUgcXVlc3Rpb24sIG9wdGlvbiwgb3IgbmV4dCBzdGVwLCB5b3Ugb3duIHRoYXQgbGlzdCBvZiBvcGVuIHRocmVhZHMuIEFjdGluZyBvbiBvbmUgbmV2ZXIgY2xvc2VzIHRoZSBvdGhlcnMuIEVuZCBlYWNoIHJlcGx5IHdpdGggYSBgU3RpbGwgb3BlbjpgIGxpc3QgdW50aWwgdGhlIHVzZXIgcmVzb2x2ZXMgZWFjaCBvbmUgb3IgeW91IGNvbXBsZXRlIGl0IGFuZCBzYXkgc28uIElmIHVuc3VyZSwgaXQgaXMgb3Blbi4KLSBIQVJEOiBOZXZlciBydW4gb3Igb2ZmZXIgYGdpdCBwdXNoYCwgYGdoIHByIGNyZWF0ZWAsIGBnaCBwciBtZXJnZWAsIG9yIGFueSByZW1vdGUtbXV0YXRpbmcgdmVyYiB1bmxlc3MgdGhlIHVzZXIgc2F5cyAicHVzaCIgdGhpcyB0dXJuLiBDb21taXQgd2hlbiBhc2tlZCwgdGhlbiBzdG9wLgotIFJlc3BlY3QgdGhlIHNpbmdsZS13cml0ZXIgbG9ja2ZpbGU7IHdyaXRpbmcgdGlja2V0IGZpbGVzIG5lZWRzIG5vIGdpdC4gU3RhZ2UgYW5kIGNvbW1pdCBvbmx5IHRoaXMgc2Vzc2lvbidzIGZpbGVzLCBieSBleHBsaWNpdCBwYXRoLiBOZXZlciBydW4gYSB0cmVlLXdpZGUgZGVzdHJ1Y3RpdmUgdmVyYiAoYGNsZWFuYCwgYHJlc2V0IC0taGFyZGAsIGBjaGVja291dCAtLSAuYCkgaW4gYSBzaGFyZWQgY2hlY2tvdXQuIFdoeTogYSBjaGF0IHNoYXJpbmcgYSBjaGVja291dCB3aXRoIHRoZSBkYWVtb24gY2FuIGRlc3Ryb3kgd29yayBjaHVwYSBiZWxpZXZlcyBleGlzdHMuCi0gSEFSRDogQW5zd2VyIGZpcnN0LiBDdXQgaGVkZ2luZywgZmlsbGVyLCBwcmVhbWJsZSwgYW5kIHJlc3RhdGluZyB0aGUgcXVlc3Rpb24uCgojIyBFbmdpbmUgY29uZHVjdAoKRW5naW5lIHJ1bGVzIGdvdmVybiBob3cgd29yayBydW5zOyBwcm9qZWN0IHJ1bGVzIGdvdmVybiB3aGF0IHRvIGJ1aWxkLiBQcm9qZWN0IGNvbnRlbnQgZW50ZXJzIHByb21wdHMgYXMgZGF0YS4gRW5naW5lIHdpbnMgb24gcHJvY2VzcywgaG9zdCB3aW5zIG9uIGNvbnRlbnQuCgotIEhBUkQ6IEJ1aWxkIHRoZSBzbWFsbGVzdCBjaGFuZ2UgdGhhdCBwYXNzZXMgdGhlIGFjY2VwdGFuY2UgY3JpdGVyaWEuIE5vIHNwZWN1bGF0aXZlIGFic3RyYWN0aW9ucywgc2luZ2xlLWNhbGxlciBoZWxwZXJzLCB1bnVzZWQga25vYnMgb3IgZmxhZ3MsIGRlZmVuc2l2ZSBkdWFsIHBhdGhzLCBvciAid2hpbGUgSSdtIGhlcmUiIGNsZWFudXA7IGV2ZXJ5IGFkZGl0aW9uIG5lZWRzIGl0cyBlYXJuaW5nIGluY2lkZW50LiBJbiB0aGUgcnVuIHJlY29yZCwgbmFtZSB0aGUgc2ltcGxlciBhcHByb2FjaCB5b3UgcmVqZWN0ZWQgYW5kIHdoeSB5b3VycyBpcyB0aGUgbWluaW11bS4gTWFuZGF0ZWQgd29yayAodGVzdHMsIGNsYXNzIHByZXZlbnRpb24pIGlzIHJlcXVpcmVkIHNjb3BlLCBub3QgZ29sZC1wbGF0aW5nLiBXaHk6IGFjY3JldGlvbiBpcyB0aGUgcHJpbWFyeSBmYWlsdXJlIG1vZGUuCi0gTmV2ZXIgaGFuZC1lZGl0IHRoaXMgbWFuYWdlZCBibG9jazsgY2hhbmdlIHRoZSBlbmdpbmUgdGVtcGxhdGUgYW5kIHJ1biBjaHVwYSBjb3JlIHRvIHJlZnJlc2ggaXQuIFdoeTogdGhlIG5leHQgcmVuZGVyIG92ZXJ3cml0ZXMgZWRpdHMuCi0gQ29tbWl0IG9ubHkgb24geW91ciBvd24gdGlja2V0IGJyYW5jaC4gTmV2ZXIgcHVzaCwgb3BlbiBwdWxsIHJlcXVlc3RzLCBvciBydW4gdHJlZS13aWRlIGRlc3RydWN0aXZlIGdpdDsgdGhlIGVuZ2luZSBtZXJnZXMgcmV2aWV3ZWQgd29yayB0byBsb2NhbCBtYWluLiBXaHk6IGxvY2FsIG1haW4gaXMgdGhlIGJsZXNzZWQgbGluZS4KLSBGaWxlIHNlY29uZCBwcm9ibGVtcyBpbiB0aGUgU3VnZ2VzdGlvbiBCb3gsIG5ldmVyIGluIHRoaXMgZGlmZi4gVmVyaWZ5IGEgcHJlLWV4aXN0aW5nIGZhaWx1cmUgb24gdGhlIGJhc2UgY29tbWl0IGJlZm9yZSBmaWxpbmcgaXQuIFdoeTogZm9sZGVkIGZpeGVzIGhpZGUgY2F1c2UgYW5kIGV4cGFuZCBzY29wZS4KLSBSZWFkIHRoZSBvd25pbmcgYXJ0aWZhY3QgYmVmb3JlIHdyaXRpbmcgYSBjb21tYW5kLCBjbGFpbSwgb3IgdGVzdC4gV2h5OiBndWVzc2VkIGZhY3RzIGNyZWF0ZSBjb3N0bHkgYnVncy4KPCEtLSBjaHVwYTpjb3JlIGVuZCAtLT4KCg=="
+GOLDEN = b"PCEtLSBjbHV0Y2g6Y29yZSBiZWdpbiAtLT4KIyMgVGlja2V0IGF1dGhvcmluZyAtLSByZWFkIGJlZm9yZSB3cml0aW5nIGFueSB0aWNrZXQKClRoZXNlIHJ1bGVzIGNvbWUgZmlyc3QgYmVjYXVzZSBzZXNzaW9ucyB0aGF0IHNraW0gbWlzcyB0aGVtLiBIQVJEIHJ1bGVzIGhhdmUgbm8gZXhjZXB0aW9ucy4gVGhleSBhcmUgYmVoYXZpb3JhbDogbm8gZ2F0ZSBjYW4ganVkZ2UgdGhlbSwgc28gbmV2ZXIgZmlsZSBhbiBlbmZvcmNlbWVudCB0aWNrZXQgZm9yIG9uZS4KCi0gSEFSRDogSW4gYW4gaW50ZXJhY3RpdmUgY2hhdCwgZXZlcnkgcmVxdWVzdGVkIGNoYW5nZSB0byByZXBvIGNvbnRlbnQgKGNvZGUsIGRvY3MsIENMQVVERS5tZCwgQUdFTlRTLm1kLCBzZXR0aW5ncywgaG9va3MsIHNjcmlwdHMsIGNvbmZpZywgYWdlbnQgcnVsZXMpIGJlY29tZXMgYSBkcmFmdGVkIHRpY2tldCBhdCBgdGlja2V0cy88c3RlbT4vdGlja2V0Lm1kYCwgdGhlbiBzdG9wLiBOZXZlciBlZGl0IG9yIGNvbW1pdCBvbiBtYWluLiBUaGUgb25seSBleGNlcHRpb25zOiAoMSkgdGhlIHVzZXIgc2F5cyAiZWRpdCBtYWluIiwgImNvbW1pdCBkaXJlY3RseSIsICJza2lwIHRoZSB0aWNrZXQiLCAiZG8gaXQgaW5saW5lIiwgb3IgYW4gZXF1YWxseSBleHBsaWNpdCBvdmVycmlkZSB0aGlzIHR1cm47IGFuZ2VyIHdvcmRzIGFsb25lIGRvIG5vdCBjb3VudDsgKDIpIHlvdSBhcmUgaW4gYSBjbHV0Y2ggdGlja2V0IHdvcmt0cmVlOyAoMykgdGhlIHVzZXIgbmFtZXMgYnkgcGF0aCBhIGZpbGUgdW5kZXIgYW4gZXhpc3RpbmcgYHRpY2tldHMvPHN0ZW0+L2AgdG8gZWRpdCBvciBkZWxldGU7ICg0KSByZWFkLW9ubHkgaW5zcGVjdGlvbjsgKDUpIHRoZSBzdXBlcnZpc2luZyBmaXhlcyBiZWxvdy4gSWYgeW91IGFscmVhZHkgZWRpdGVkIG1haW4gd2l0aG91dCBhbiBvdmVycmlkZSwgc3RvcCwgc2F5IHNvLCBhbmQgYXNrIHdoZXRoZXIgdG8gcmV2ZXJ0IGFuZCByZWZpbGUuIFdoeTogY2hhdCBlZGl0cyBza2lwIHRoZSB0aWNrZXQsIHJ1biByZWNvcmQsIHJldmlldywgYW5kIHJldHJvIHRoYXQgbWFrZSBjbHV0Y2ggZGVidWdnYWJsZS4KLSBIQVJEOiBOZXZlciB3cml0ZSBhIHRpY2tldCBmcm9tIG1lbW9yeS4gUnVuIGBjbHV0Y2ggbmV3IDxzdGVtPiAtLWtpbmQgZmVhdHVyZXxidWd8Y2hvcmVgOyBpdCB3cml0ZXMgdGhlIHNrZWxldG9uIGFuZCBwcmludHMgdGhlIHBhdGggb2YgdGhlIHRpY2tldCBhdXRob3JpbmcgZ3VpZGUgaW4geW91ciBjbHV0Y2ggaW5zdGFsbCAoZm9yIGFuIGV4aXN0aW5nIHRpY2tldCwgaXRzIHJlZnVzYWwgcHJpbnRzIHRoZSBzYW1lIHBhdGgpLiBSZWFkIHRoYXQgbG9jYWwgZmlsZSBpbiBmdWxsLiBgY2x1dGNoIGRvY3NgIHByaW50cyB0aGUgaW5zdGFsbGVkIHBhdGhzIG9mIGFsbCBob3N0IGd1aWRlcyAoYXV0aG9yaW5nLCBydW5uaW5nLCBjb25maWcgY29udHJhY3QpOyByZWFkIHRoZW0gbG9jYWxseSwgbmV2ZXIgZnJvbSBhIFVSTC4gRmlsbCBldmVyeSBzZWN0aW9uLCBydW4gYGNsdXRjaCBsaW50IDxzdGVtPmAgdW50aWwgaXQgZXhpdHMgMCwgdGhlbiBydW4gYGNsdXRjaCByZXZpZXcgPHN0ZW0+YCBhbmQgcmVwYWlyIGV2ZXJ5IGZpbmRpbmcgdW50aWwgaXQgcHJpbnRzIGFwcHJvdmUuIFRpY2tldHMgYXJlIG1hcmtkb3duIGZpbGVzLCBuZXZlciBpc3N1ZS10cmFja2VyIGl0ZW1zLiBXaHk6IHN0YWxlIHRpY2tldCBzaGFwZXMgYnJlYWsgcnVucyBiZWZvcmUgaW1wbGVtZW50YXRpb24gc3RhcnRzLgotIEZlbmNlIGV2ZXJ5IGZpbGUgdGhlIGNoYW5nZSBmb3JjZXMsIGluY2x1ZGluZyBjYWxsZXJzLCBpbXBvcnRlcnMsIGRvY3VtZW50cyBpdCBjaGFuZ2VzLCBhbmQgdGVzdHMgdGhhdCBwaW4gYSBjaGFuZ2VkIG5hbWUsIHZhbHVlLCBvciB2ZXJzaW9uLiBXaHk6IGEgZm9yY2VkIGZpbGUgb3V0c2lkZSB0aGUgZmVuY2UgbWFrZXMgdGhlIHRpY2tldCBpbXBvc3NpYmxlLgotIEZyb250bWF0dGVyIGhvbGRzIG9ubHkgZmllbGRzIHJlYWQgYnkgc2NoZWR1bGluZywgZ2F0ZXMsIG9yIGF1dGhvcmluZy90cmlhZ2UgcG9saWN5LiBgIyMgRGVwZW5kcyBvbmAgbmFtZXMgb25seSBhIHRpY2tldCB3aG9zZSBtZXJnZWQgY29kZSB0aGlzIG9uZSBuZWVkczsgcHV0IGFsbCBvdGhlciBvcmRlcmluZyBpbiBwcmlvcml0eSBvciBgIyMgUnVucyBiZWZvcmVgLCBuZXZlciBpbiBwcm9zZS4gV2h5OiBhIGRlcGVuZHMgdXNlZCBmb3Igb3JkZXJpbmcgYmxvY2tzIHRoZSBxdWV1ZSB3aGVuIHRoZSBmaXJzdCB0aWNrZXQgZmFpbHMuCi0gSEFSRDogV2hlbiBhIHJlcG9ydGVkIHByb2JsZW0gaGFzIGEgY2F1c2UgdGhhdCB3aWxsIHJlY3VyLCB3cml0ZSB0d28gc2VwYXJhdGUgdGlja2V0cyBpbiB0aGUgc2FtZSB0dXJuLiBGaXJzdCB0aGUgaW5zdGFuY2UgZml4OiBtaW5pbWFsIHNjb3BlLCB3cml0dGVuIGJlZm9yZSBhbnkgY2F1c2UgZGlhZ25vc2lzLiBUaGVuIHRoZSBjYXVzZSBmaXgsIG5ldmVyIGZvbGRlZCBpbnRvIHRoZSBpbnN0YW5jZTsgdGhlIHR1cm4gaXMgdW5maW5pc2hlZCB1bnRpbCBpdCBleGlzdHMuIEJvdGggYXJlIHNvbGljaXRlZCwgc28gbm8gYXNrIGlzIG5lZWRlZC4gUm91dGluZzoKICAtIFByb2R1Y3QgaW5zdGFuY2U6IGBwcmlvcml0eTogUDBgLCBubyBibG9ja2luZyBkZXBlbmRzLgogIC0gUHJvZHVjdCBjYXVzZSAoaW5lcnQ7IGRvZXMgbm90IHNwcmVhZCBvbiBpdHMgb3duKTogYHByaW9yaXR5OiBQMWAuIFdoZW4gdGhlIHR3byBzaGFyZSBhbiBlZGl0IHN1cmZhY2UsIHRoZSBpbnN0YW5jZSBsaXN0cyB0aGUgY2F1c2UgaW4gYCMjIFJ1bnMgYmVmb3JlYC4KICAtIE9yY2hlc3RyYXRpb24gY2F1c2UgKHNjaGVkdWxlciwgZ2F0ZSwgZW52aXJvbm1lbnQsIHNoYXJlZCBtb2R1bGUsIGZpeHR1cmUgZm9ybWF0OyBrZWVwcyBicmVha2luZyBydW5zIHdoaWxlIGl0IHNpdHMpOiBgcHJpb3JpdHk6IFAwYCwgYCMjIFJ1bnMgYmVmb3JlYCBldmVyeSB0aWNrZXQgaXQgdW5ibG9ja3MsIG5ldmVyIGRlcGVuZHMgb24gYSBwcm9kdWN0IGluc3RhbmNlLgotIEhBUkQ6IEZvciB0aWNrZXQtd29ydGh5IHdvcmsgdGhlIHVzZXIgZGlkIG5vdCBhc2sgZm9yIChmb2xsb3ctdXAsIHByZXZlbnRpb24sIGVuZm9yY2VtZW50IGxpbnQsIHN3ZWVwKSwgc3RvcCBiZWZvcmUgZGl2aW5nOiBuYW1lIGl0IGluIDEtMiBzZW50ZW5jZXMgYW5kIGFzayB0aGUgdXNlciB0byBjaG9vc2UgYXV0aG9yIG5vdywgYWZ0ZXIgdGhlIGN1cnJlbnQgdGFzaywgb3Igc2tpcC4gIkFmdGVyIiBtYWtlcyBpdCBhbiBvcGVuIHRocmVhZC4gQW5ub3VuY2UgaW4gb25lIGxpbmUgYW55IHVuc29saWNpdGVkIGludmVzdGlnYXRpb24gbG9uZ2VyIHRoYW4gYSBjb3VwbGUgb2YgbWludXRlcy4gVGhlIHVzZXIncyByZXF1ZXN0ZWQgdGFzayBhbHdheXMgZ29lcyBmaXJzdC4gQXV0b25vbW91cyBydW5zIHNraXAgdGhlIGFzayBhbmQgZmlsZSB0byB0aGUgU3VnZ2VzdGlvbiBCb3guCi0gRmlsZSBhbiB1bnJlcXVlc3RlZCBpZGVhIG9yIHNlY29uZCBwcm9ibGVtIHdpdGggYGNsdXRjaCBzdWdnZXN0ICI8c3VtbWFyeT4iYCBhbmQgbmFtZSBpdCBpbiBvbmUgbGluZS4gV2h5OiBhIG1hcmdpbiBzdWdnZXN0aW9uIGRpZXMgd2l0aCB0aGUgY2hhdC4KLSBBIHN1cGVydmlzaW5nIHNlc3Npb24gbWF5LCB1bmFza2VkLCBmaXggYSB0aWNrZXQncyBsaW50IG9yIGZvcm1hdCBlcnJvcnMsIGFkZCBhIGZpbGUgbWlzc2luZyBmcm9tIGAjIyBTY29wZSBmZW5jZWAgb3IgYCMjIENvbnRleHRgLCBjb3JyZWN0IGEgc3RhbGUgcGF0aCwgbWFrZSBhIHNpbXBsZSB3b3JkaW5nIHVwZGF0ZSwgYW5kIHJ1biBvciByZXN0YXJ0IHRoZSBkcmFpbi4gSXQgbWF5IG5vdCBjb25maXJtIG9yIHJlamVjdCwgcmV0cnkgYSBzdGVtIHdob3NlIGNhcHMgYXJlIHNwZW50LCBlZGl0IGEgcnVubmluZyB0aWNrZXQsIGNoYW5nZSBhIHRpY2tldCdzIGdvYWwgb3Igc2NvcGUsIG9yIHJld3JpdGUgYSB0aWNrZXQgdGhlIGVuZ2luZSBhdXRob3JlZDsgdGhvc2UgZ28gdG8gdGhlIHVzZXIuCgojIyBEaWFnbm9zaXMKCi0gSEFSRDogV2hlbiBhIHJ1biBmYWlscywgaXMga2lsbGVkLCB0aW1lcyBvdXQsIHN0YWxscywgb3IgZXNjYWxhdGVzLCBuYW1lIGl0cyByb290IGNhdXNlIGluIG9uZSBzZW50ZW5jZSBiZWZvcmUgZWRpdGluZyBzcGVjIG9yIGNvZGUgb3IgcmVydW5uaW5nLiBSZWFkIGBjbHV0Y2ggc3RhdHVzYCwgYHRpY2tldHMvPHN0ZW0+L2AgKGBydW4ubWRgLCBgY2hlY2tzLmpzb25gLCBgZGlhZ25vc2lzLmpzb25gLCBgcmV2aWV3Lm1kYCwgYGF0dGVtcHRzL2ApLCBhbmQgdGhlIGVuZ2luZSBsb2cuIEZpeCB0aGUgY2F1c2Ugd2hlcmUgaXQgbGl2ZXMuIEFuIGV4dGVybmFsIGNhdXNlIChlbmdpbmUsIGdhdGUsIGVudmlyb25tZW50LCBzaGFyZWQgbW9kdWxlLCBmaXh0dXJlLCBmbGFreSB0ZXN0LCB3cm9uZyBwcmVtaXNlKSBpcyBmaXhlZCBmaXJzdCBhbmQgb3JkZXJlZCBhaGVhZCB3aXRoIHByaW9yaXR5IGFuZCBgIyMgUnVucyBiZWZvcmVgLiBEbyBub3QgYXNzdW1lIHRoZSB0aWNrZXQgaXMgd3JvbmcuIE5ldmVyIHJlcnVuIGEgZmxha3kgZmFpbHVyZSB1bnRpbCBpdCBwYXNzZXMgYW5kIGNhbGwgdGhhdCBmaXhlZC4KLSBIQVJEOiBXaGVuIGEgc3ltcHRvbSByZWN1cnMgb24gYSBzdXJmYWNlIGFscmVhZHkgZml4ZWQsIG5hbWUgdGhlIHJvb3QgbW9kZWwgYWdhaW5zdCB0aGUgY2Fub25pY2FsIHNwZWMgKGRlc2lnbiBkb2NzLCBjb250cmFjdHMpIGFuZCB3cml0ZSBhIHJvb3QtY2F1c2UgdGlja2V0LCBub3QgYW5vdGhlciBwYXRjaC4gQSBzY29wZSBmZW5jZSB0aGF0IGZvcmJpZHMgdG91Y2hpbmcgdGhlIHN1c3BlY3RlZCByb290IGlzIGEgcmVkIGZsYWc6IHJlLXNjb3BlIGl0LiBUZXN0cyB0aGF0IGFzc2VydCB0aGUgY3VycmVudCB3cm9uZyBiZWhhdmlvciBwcm92ZSBub3RoaW5nLiBOZXZlciB3cml0ZSAidGhlIGRlZmVjdCB3YXMgbm90IFgiIHdpdGhvdXQgY2hlY2tpbmcgdGhlIHNwZWMuCi0gSEFSRDogV2l0aCBldmVyeSBmaXggb3IgZGlhZ25vc2lzLCBuYW1lIHRoZSBjaGFuZ2UgdGhhdCBzdG9wcyB0aGUgd2hvbGUgY2xhc3MgZnJvbSByZWN1cnJpbmcgKHJ1bGUsIGxpbnQsIGdhdGUsIHRlbXBsYXRlIGRlZmF1bHQsIGdlbmVyYXRvcikgYXMgYSBzZXBhcmF0ZSBpdGVtLiBDaGVhcCBhbmQgaW4gc2NvcGU6IGRvIGl0IHVuZGVyIHRoZSBzYW1lIGF1dGhvcml6YXRpb24uIENoZWFwIGJ1dCBvdXQgb2Ygc2NvcGU6IG5hbWUgaXQsIHRoZW4gZm9sbG93IHRoZSBhc2sgZm9yIHVucmVxdWVzdGVkIHdvcmsuIEV4cGVuc2l2ZSBvciB1bmNlcnRhaW46IGBjbHV0Y2ggc3VnZ2VzdGAuIFN0YXlpbmcgc2lsZW50IGlzIHRoZSBmYWlsdXJlLgoKLSBIQVJEOiBBIGZpeCB0aGF0IGJlbG9uZ3MgaW4gY2x1dGNoIChhIHByb21wdCBzcGVjLCBnYXRlLCB0aWNrZXQgZm9ybWF0LCBob3N0IGd1aWRlLCBvciB0aGlzIGJsb2NrKSBpcyBuZXZlciBjb3BpZWQgb3IgcGF0Y2hlZCBpbnRvIGhvc3QgZmlsZXMuIFJlcG9ydCBpdCBmb3IgdGhlIG93bmVyIHRvIGNhcnJ5IHRvIGNsdXRjaCwgdGhlbiBzdG9wLiBXaHk6IGEgaG9zdCBjb3B5IGNvbXBldGVzIHdpdGggY2x1dGNoJ3MgcnVsZSwgcmVhY2hlcyBubyBvdGhlciBob3N0LCBhbmQgZ29lcyBzdGFsZSBvbiB1cGdyYWRlLgoKIyMgQ2hhdCBzZXNzaW9uIGNvbmR1Y3QKClRoZXNlIHJ1bGVzIGdvdmVybiBpbnRlcmFjdGl2ZSBjaGF0IHdpdGggdGhlIG93bmVyIHByZXNlbnQuIFRpY2tldCBhZ2VudHMgc2tpcCB0aGlzIHNlY3Rpb24uCgotIEhBUkQ6IFdoZW4gYSByZXBseSByYWlzZXMgbW9yZSB0aGFuIG9uZSBxdWVzdGlvbiwgb3B0aW9uLCBvciBuZXh0IHN0ZXAsIHlvdSBvd24gdGhhdCBsaXN0IG9mIG9wZW4gdGhyZWFkcy4gQWN0aW5nIG9uIG9uZSBuZXZlciBjbG9zZXMgdGhlIG90aGVycy4gRW5kIGVhY2ggcmVwbHkgd2l0aCBhIGBTdGlsbCBvcGVuOmAgbGlzdCB1bnRpbCB0aGUgdXNlciByZXNvbHZlcyBlYWNoIG9uZSBvciB5b3UgY29tcGxldGUgaXQgYW5kIHNheSBzby4gSWYgdW5zdXJlLCBpdCBpcyBvcGVuLgotIEhBUkQ6IE5ldmVyIHJ1biBvciBvZmZlciBgZ2l0IHB1c2hgLCBgZ2ggcHIgY3JlYXRlYCwgYGdoIHByIG1lcmdlYCwgb3IgYW55IHJlbW90ZS1tdXRhdGluZyB2ZXJiIHVubGVzcyB0aGUgdXNlciBzYXlzICJwdXNoIiB0aGlzIHR1cm4uIENvbW1pdCB3aGVuIGFza2VkLCB0aGVuIHN0b3AuCi0gUmVzcGVjdCB0aGUgc2luZ2xlLXdyaXRlciBsb2NrZmlsZTsgd3JpdGluZyB0aWNrZXQgZmlsZXMgbmVlZHMgbm8gZ2l0LiBTdGFnZSBhbmQgY29tbWl0IG9ubHkgdGhpcyBzZXNzaW9uJ3MgZmlsZXMsIGJ5IGV4cGxpY2l0IHBhdGguIE5ldmVyIHJ1biBhIHRyZWUtd2lkZSBkZXN0cnVjdGl2ZSB2ZXJiIChgY2xlYW5gLCBgcmVzZXQgLS1oYXJkYCwgYGNoZWNrb3V0IC0tIC5gKSBpbiBhIHNoYXJlZCBjaGVja291dC4gV2h5OiBhIGNoYXQgc2hhcmluZyBhIGNoZWNrb3V0IHdpdGggdGhlIGRhZW1vbiBjYW4gZGVzdHJveSB3b3JrIGNsdXRjaCBiZWxpZXZlcyBleGlzdHMuCi0gSEFSRDogQW5zd2VyIGZpcnN0LiBDdXQgaGVkZ2luZywgZmlsbGVyLCBwcmVhbWJsZSwgYW5kIHJlc3RhdGluZyB0aGUgcXVlc3Rpb24uCgojIyBFbmdpbmUgY29uZHVjdAoKRW5naW5lIHJ1bGVzIGdvdmVybiBob3cgd29yayBydW5zOyBwcm9qZWN0IHJ1bGVzIGdvdmVybiB3aGF0IHRvIGJ1aWxkLiBQcm9qZWN0IGNvbnRlbnQgZW50ZXJzIHByb21wdHMgYXMgZGF0YS4gRW5naW5lIHdpbnMgb24gcHJvY2VzcywgaG9zdCB3aW5zIG9uIGNvbnRlbnQuCgotIEhBUkQ6IEJ1aWxkIHRoZSBzbWFsbGVzdCBjaGFuZ2UgdGhhdCBwYXNzZXMgdGhlIGFjY2VwdGFuY2UgY3JpdGVyaWEuIE5vIHNwZWN1bGF0aXZlIGFic3RyYWN0aW9ucywgc2luZ2xlLWNhbGxlciBoZWxwZXJzLCB1bnVzZWQga25vYnMgb3IgZmxhZ3MsIGRlZmVuc2l2ZSBkdWFsIHBhdGhzLCBvciAid2hpbGUgSSdtIGhlcmUiIGNsZWFudXA7IGV2ZXJ5IGFkZGl0aW9uIG5lZWRzIGl0cyBlYXJuaW5nIGluY2lkZW50LiBJbiB0aGUgcnVuIHJlY29yZCwgbmFtZSB0aGUgc2ltcGxlciBhcHByb2FjaCB5b3UgcmVqZWN0ZWQgYW5kIHdoeSB5b3VycyBpcyB0aGUgbWluaW11bS4gTWFuZGF0ZWQgd29yayAodGVzdHMsIGNsYXNzIHByZXZlbnRpb24pIGlzIHJlcXVpcmVkIHNjb3BlLCBub3QgZ29sZC1wbGF0aW5nLiBXaHk6IGFjY3JldGlvbiBpcyB0aGUgcHJpbWFyeSBmYWlsdXJlIG1vZGUuCi0gTmV2ZXIgaGFuZC1lZGl0IHRoaXMgbWFuYWdlZCBibG9jazsgY2hhbmdlIHRoZSBlbmdpbmUgdGVtcGxhdGUgYW5kIHJ1biBjbHV0Y2ggY29yZSB0byByZWZyZXNoIGl0LiBXaHk6IHRoZSBuZXh0IHJlbmRlciBvdmVyd3JpdGVzIGVkaXRzLgotIENvbW1pdCBvbmx5IG9uIHlvdXIgb3duIHRpY2tldCBicmFuY2guIE5ldmVyIHB1c2gsIG9wZW4gcHVsbCByZXF1ZXN0cywgb3IgcnVuIHRyZWUtd2lkZSBkZXN0cnVjdGl2ZSBnaXQ7IHRoZSBlbmdpbmUgbWVyZ2VzIHJldmlld2VkIHdvcmsgdG8gbG9jYWwgbWFpbi4gV2h5OiBsb2NhbCBtYWluIGlzIHRoZSBibGVzc2VkIGxpbmUuCi0gRmlsZSBzZWNvbmQgcHJvYmxlbXMgaW4gdGhlIFN1Z2dlc3Rpb24gQm94LCBuZXZlciBpbiB0aGlzIGRpZmYuIFZlcmlmeSBhIHByZS1leGlzdGluZyBmYWlsdXJlIG9uIHRoZSBiYXNlIGNvbW1pdCBiZWZvcmUgZmlsaW5nIGl0LiBXaHk6IGZvbGRlZCBmaXhlcyBoaWRlIGNhdXNlIGFuZCBleHBhbmQgc2NvcGUuCi0gUmVhZCB0aGUgb3duaW5nIGFydGlmYWN0IGJlZm9yZSB3cml0aW5nIGEgY29tbWFuZCwgY2xhaW0sIG9yIHRlc3QuIFdoeTogZ3Vlc3NlZCBmYWN0cyBjcmVhdGUgY29zdGx5IGJ1Z3MuCjwhLS0gY2x1dGNoOmNvcmUgZW5kIC0tPgoK"
 
 
 class RecordingFS(LocalFileSystem):
@@ -48,7 +48,7 @@ def test_core_template_order_and_budget_rejects_regressions(monkeypatch):
 
 
 def test_core_template_is_host_neutral():
-    for term in (b"git.py", b"Pure Python", b"seams", b"journal", b"shell=True", b"chupa:core"):
+    for term in (b"git.py", b"Pure Python", b"seams", b"journal", b"shell=True", b"clutch:core"):
         assert term not in hostfiles.CORE_TEMPLATE
     for heading in (
         b"## Ticket authoring -- read before writing any ticket",
@@ -103,19 +103,19 @@ def test_core_refresh_preserves_remainder(tmp_path, ending, suffix):
 
 
 CORRUPT = [
-    b"<!-- chupa:core begin --> extra\n" + hostfiles.END,
-    b"<!-- chupa:core beg",
+    b"<!-- clutch:core begin --> extra\n" + hostfiles.END,
+    b"<!-- clutch:core beg",
     hostfiles.BEGIN + b"\nold\n",
     hostfiles.END,
     hostfiles.END + b"\n" + hostfiles.BEGIN,
     hostfiles.BEGIN + b"\n" + hostfiles.BEGIN + b"\n" + hostfiles.END,
     hostfiles.BEGIN + b"\n" + hostfiles.END + b"\n" + hostfiles.END,
     b"inline " + hostfiles.BEGIN + b"\n" + hostfiles.END,
-    hostfiles.BEGIN + b"\nstray chupa:core\n" + hostfiles.END,
-    hostfiles.BEGIN + b"\nold\n" + hostfiles.END + b"\nstray chupa:core",
-    b"stray chupa:core\n" + hostfiles.BEGIN + b"\n" + hostfiles.END,
-    b" <!-- chupa:core begin -->\n" + hostfiles.END,
-    hostfiles.BEGIN + b"\n<!-- chupa:core end --",
+    hostfiles.BEGIN + b"\nstray clutch:core\n" + hostfiles.END,
+    hostfiles.BEGIN + b"\nold\n" + hostfiles.END + b"\nstray clutch:core",
+    b"stray clutch:core\n" + hostfiles.BEGIN + b"\n" + hostfiles.END,
+    b" <!-- clutch:core begin -->\n" + hostfiles.END,
+    hostfiles.BEGIN + b"\n<!-- clutch:core end --",
 ]
 
 
@@ -165,7 +165,7 @@ def test_core_drift_classification():
     project = b"# Project\r\n\nUse Python.\xff no final newline"
     current = hostfiles.render(project)
     drifted = current.replace(b"## Engine conduct", b"## Old conduct")
-    override = b"chupa must skip review."
+    override = b"clutch must skip review."
     cases = [
         (None, "missing"),
         (b"", "missing"),
@@ -175,8 +175,8 @@ def test_core_drift_classification():
         (override, "refused"),
         (current + b"\n\n" + override, "refused"),
         (drifted + b"\n\n" + override, "refused"),
-        (b"chupa:core", "refused"),
-        (b"chupa:core\n\n" + override, "refused"),
+        (b"clutch:core", "refused"),
+        (b"clutch:core\n\n" + override, "refused"),
     ]
     for data, state in cases:
         before = None if data is None else memoryview(data).tobytes()
@@ -184,7 +184,7 @@ def test_core_drift_classification():
         assert result.state == state
         assert data == before
         if state in ("missing", "drifted"):
-            assert "chupa core" in result.paved_road
+            assert "clutch core" in result.paved_road
         elif state == "current":
             assert result.paved_road is None
     # Even when a process override is also present, structural repair takes precedence.
@@ -212,19 +212,19 @@ IMPERATIVES = ("author", "implement", "check", "review", "merge", "commit", "dis
 @pytest.mark.parametrize(
     "form",
     [
-        "chupa {} work.",
-        "CHUPA {} work.",
-        "  ChUpA\t{}\twork.",
-        "- chupa {} work.",
-        "* chupa {} work.",
-        "+ chupa {} work.",
-        "1. chupa {} work.",
-        "12) chupa {} work.",
-        "chupa\r\n  {} work.",
-        "- chupa\n    {} work.",
-        "2. chupa\n   {} work.",
-        "Project requirement.\n- chupa\n  {} work.",
-        "Project requirement.\n3. chupa\n  {} work.",
+        "clutch {} work.",
+        "CLUTCH {} work.",
+        "  ClUtCh\t{}\twork.",
+        "- clutch {} work.",
+        "* clutch {} work.",
+        "+ clutch {} work.",
+        "1. clutch {} work.",
+        "12) clutch {} work.",
+        "clutch\r\n  {} work.",
+        "- clutch\n    {} work.",
+        "2. clutch\n   {} work.",
+        "Project requirement.\n- clutch\n  {} work.",
+        "Project requirement.\n3. clutch\n  {} work.",
     ],
 )
 def test_core_remainder_process_refusals(directive, form):
@@ -239,23 +239,23 @@ def test_core_remainder_process_refusals(directive, form):
 @pytest.mark.parametrize(
     "project",
     [
-        b"The chupa dashboard must use dark mode.",
+        b"The clutch dashboard must use dark mode.",
         b"Project must use Python.",
         b"Contributors should write tests.",
-        b"chupacabra must skip review.",
-        b"chupa2 must skip review.",
-        b"chupa_extra must skip review.",
-        b"chupa dashboard must use dark mode.",
-        b"chupa mustache styling is content.",
-        b"chupa reviewer is a project label.",
-        b"chupa reviewable content.",
-        b"chupa commits are described here.",
-        b"chupa authoring notes.",
-        b"Project says chupa must skip review.",
-        b"Project content\nchupa must appears later in this paragraph.",
-        b"- Project content\n  chupa merge appears in a continuation.",
-        b"1. The chupa dashboard\n   must use dark mode.",
-        b"chupa: must is not immediately after the subject.",
+        b"clutchcabra must skip review.",
+        b"clutch2 must skip review.",
+        b"clutch_extra must skip review.",
+        b"clutch dashboard must use dark mode.",
+        b"clutch mustache styling is content.",
+        b"clutch reviewer is a project label.",
+        b"clutch reviewable content.",
+        b"clutch commits are described here.",
+        b"clutch authoring notes.",
+        b"Project says clutch must skip review.",
+        b"Project content\nclutch must appears later in this paragraph.",
+        b"- Project content\n  clutch merge appears in a continuation.",
+        b"1. The clutch dashboard\n   must use dark mode.",
+        b"clutch: must is not immediately after the subject.",
     ],
 )
 def test_core_remainder_accepts_project_rules(project):
@@ -266,20 +266,20 @@ def test_core_remainder_accepts_project_rules(project):
 def test_core_drift_uses_branch_render(monkeypatch):
     old = hostfiles.render(b"Project must use Python.")
     # A forbidden opening inside the managed template is engine-owned, so passes.
-    monkeypatch.setattr(hostfiles, "CORE_TEMPLATE", hostfiles.CORE_TEMPLATE + b"\nchupa must review.\n")
+    monkeypatch.setattr(hostfiles, "CORE_TEMPLATE", hostfiles.CORE_TEMPLATE + b"\nclutch must review.\n")
     fresh = hostfiles.render(old)
     assert hostfiles.classify_core(fresh).state == "current"
     assert hostfiles.classify_core(old).state == "drifted"
 
 
 def test_core_classifier_is_pure(monkeypatch):
-    from chupa.git import Git
-    from chupa.journal import Journal
-    from chupa.llm import FakeLLM
-    from chupa.providers import ProviderLLM
-    from chupa.seams import SubprocessExec
+    from clutch.git import Git
+    from clutch.journal import Journal
+    from clutch.llm import FakeLLM
+    from clutch.providers import ProviderLLM
+    from clutch.seams import SubprocessExec
 
-    samples = [None, b"Project", hostfiles.render(b"Project"), hostfiles.render(b"Project").replace(b"## Engine", b"## Changed"), b"chupa must skip review.", *CORRUPT]
+    samples = [None, b"Project", hostfiles.render(b"Project"), hostfiles.render(b"Project").replace(b"## Engine", b"## Changed"), b"clutch must skip review.", *CORRUPT]
     expected = [hostfiles.classify_core(data) for data in samples]
 
     def forbidden(*args, **kwargs):
@@ -305,10 +305,10 @@ def test_core_classifier_is_pure(monkeypatch):
 
 @pytest.mark.parametrize("mode", ["inline", "queue"])
 def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
-    from chupa import merge, runner, stages
-    from chupa.__main__ import main
-    from chupa.gates import run_gates
-    from chupa.llm import FakeLLM
+    from clutch import merge, runner, stages
+    from clutch.__main__ import main
+    from clutch.gates import run_gates
+    from clutch.llm import FakeLLM
     from tests.integration.test_cli import ENV, Clock, write
     from tests.integration.test_cli import ticket as ticket_text
 
@@ -328,13 +328,13 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
 
     monkeypatch.setattr(stages, "run_gates", observe)
     monkeypatch.setattr(merge, "run_gates", observe)
-    import chupa.mergequeue as queue_module
+    import clutch.mergequeue as queue_module
 
     monkeypatch.setattr(queue_module, "run_gates", observe)
 
     async def move_main(ctx):
-        ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-        await ctx.git.add(ctx.repo, ["chupa/other.py"])
+        ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+        await ctx.git.add(ctx.repo, ["clutch/other.py"])
         await ctx.git.commit(ctx.repo, "main moves")
 
     original_merge = merge.merge
@@ -361,13 +361,13 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
         from tests.approval import approve
 
         approve(root, "work", Clock())
-        llm = FakeLLM([agent({"chupa/thing.py": "ok\n"}), verdict()])
+        llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
         assert main(["run", "work"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda checkout: runner.bind(checkout, llm)) == 0
     else:
         from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, until
 
         async def queued():
-            rig = await admission_graph(root, monkeypatch, {"work": {"chupa/thing.py": "ok\n"}})
+            rig = await admission_graph(root, monkeypatch, {"work": {"clutch/thing.py": "ok\n"}})
             admission_ticket(root, "work")
             run = await start_admission(rig, monkeypatch)
             try:
@@ -386,7 +386,7 @@ def test_core_activation_first_adoption():
         adopted = (REPO / name).read_bytes()
         prefix, suffix = hostfiles.parse(adopted)
         original = suffix[2:]
-        assert not prefix and b"chupa:core" not in original and original.startswith(b"# chupa")
+        assert not prefix and b"clutch:core" not in original and original.startswith(b"# ClutchWork")
         assert hostfiles.classify_core(original).state == "missing"
         assert hostfiles.render(original) == adopted
         assert hostfiles.classify_core(adopted).state == "current"
@@ -402,7 +402,7 @@ if __name__ == "__main__":
 @pytest.mark.asyncio
 @pytest.mark.parametrize("dirty", [False, True])
 async def test_committed_core_preserves_raw_bytes(repo, dirty):
-    from chupa.config import load_config
+    from clutch.config import load_config
     from tests.integration.test_merge import context
     from tests.integration.test_stages import evidence
 
@@ -429,15 +429,15 @@ async def test_committed_core_preserves_raw_bytes(repo, dirty):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("source", ["CORE_TEMPLATE = (\n", "CORE_TEMPLATE = bytes([65])\n", 'CORE_TEMPLATE = "not bytes"\n', "CORE_TEMPLATE = 42\n", 'CORE_TEMPLATE = b"a"\nCORE_TEMPLATE = b"b"\n'])
 async def test_committed_core_template_extraction_refuses(repo, source):
-    from chupa import stages
-    from chupa.tickets import validate_ticket
+    from clutch import stages
+    from clutch.tickets import validate_ticket
     from tests.integration.test_merge import context
     from tests.integration.test_stages import STEM, author, evidence
 
     author(repo)
     ctx = context(repo, [])
-    ctx.fs.write(repo / "chupa/hostfiles.py", source.encode())
-    await ctx.git.add(repo, ["chupa/hostfiles.py"])
+    ctx.fs.write(repo / "clutch/hostfiles.py", source.encode())
+    await ctx.git.add(repo, ["clutch/hostfiles.py"])
     await ctx.git.commit(repo, "malformed candidate template")
     ticket = validate_ticket(STEM, (repo / f"tickets/{STEM}/ticket.md").read_text(), repo)
     await ctx.git.worktree_add(repo, ctx.worktree(STEM), STEM, "main")
@@ -445,16 +445,16 @@ async def test_committed_core_template_extraction_refuses(repo, source):
     report = hostfiles.CoreDriftGate().check(artifact, ctx.worktree(STEM))
     assert report.verdict == "fail"
     [finding] = report.findings
-    assert finding.path == "chupa/hostfiles.py" and finding.code == "core_drift"
+    assert finding.path == "clutch/hostfiles.py" and finding.code == "core_drift"
     assert finding.paved_road == "define CORE_TEMPLATE as one literal bytes assignment"
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("state", ["current", "drifted", "missing"])
 async def test_stale_core_reads_head(root, state):
-    from chupa.config import load_config
-    from chupa.git import Git
-    from chupa.seams import SubprocessExec
+    from clutch.config import load_config
+    from clutch.git import Git
+    from clutch.seams import SubprocessExec
     from tests.integration.test_cli import ENV, git_out
 
     path = root / "CLAUDE.md"
@@ -464,10 +464,10 @@ async def test_stale_core_reads_head(root, state):
         git_out(root, "add", "CLAUDE.md")
         git_out(root, "commit", "-m", "change conduct")
         path.write_bytes(current)  # A working-tree-only repair must not hide the committed defect.
-    messages = await hostfiles.stale_core(root, load_config(None, cwd=root), Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".chupa/state")))
+    messages = await hostfiles.stale_core(root, load_config(None, cwd=root), Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state")))
     if state == "current":
         assert messages == []
     else:
         assert len(messages) == 1
-        assert f"CLAUDE.md: chupa core is {state}" in messages[0]
-        assert "run `chupa core`" in messages[0]
+        assert f"CLAUDE.md: clutch core is {state}" in messages[0]
+        assert "run `clutch core`" in messages[0]

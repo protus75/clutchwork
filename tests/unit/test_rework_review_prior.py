@@ -1,6 +1,6 @@
 import json
 
-from chupa.rework import TicketProposal, review_prior
+from clutch.rework import TicketProposal, review_prior
 
 
 def test_review_prior_includes_other_proposals_and_preserves_inputs():

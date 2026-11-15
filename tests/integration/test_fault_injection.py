@@ -1,4 +1,4 @@
-"""Crash-point / fault-injection harness on the state layer (CHUPA_PLAN.md 19.P0, section 15 rung 2).
+"""Crash-point / fault-injection harness on the state layer (CLUTCH_PLAN.md 19.P0, section 15 rung 2).
 
 A scenario is run once under a recorder to enumerate its durable write points (every `os.write`
 and `os.fsync` the journal issues). It is then re-run from the same starting state once per
@@ -15,9 +15,9 @@ from pathlib import Path
 
 import pytest
 
-import chupa.journal as journal_mod
-from chupa.effects import Effects
-from chupa.journal import EventType, Journal, JournalCorruption, _parse_segment
+import clutch.journal as journal_mod
+from clutch.effects import Effects
+from clutch.journal import EventType, Journal, JournalCorruption, _parse_segment
 
 T0 = datetime(2026, 10, 5, tzinfo=UTC)
 KEYS = ("a", "b")
@@ -38,7 +38,7 @@ class Clock:
 
 
 class FaultyOS:
-    """Stands in for `os` inside chupa.journal: counts write points, dies at the chosen one."""
+    """Stands in for `os` inside clutch.journal: counts write points, dies at the chosen one."""
 
     def __init__(self, crash_at: int | None = None, landed: int = 0) -> None:
         self.crash_at, self.landed = crash_at, landed

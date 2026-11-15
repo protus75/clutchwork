@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from chupa import stages
-from chupa.providers import ProviderCallError
+from clutch import stages
+from clutch.providers import ProviderCallError
 
 
 @pytest.mark.asyncio

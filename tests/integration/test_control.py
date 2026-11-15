@@ -9,11 +9,11 @@ from threading import Barrier, Event
 
 import pytest
 
-from chupa import __main__ as cli_root
-from chupa import control, daemon
-from chupa.control import ControlProjection, ControlRequest, publish_request, validate_request
-from chupa.journal import EventType, Journal
-from chupa.seams import FileSystem, LocalFileSystem
+from clutch import __main__ as cli_root
+from clutch import control, daemon
+from clutch.control import ControlProjection, ControlRequest, publish_request, validate_request
+from clutch.journal import EventType, Journal
+from clutch.seams import FileSystem, LocalFileSystem
 from tests.integration.test_cli import Stages, cli, journal, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
 from tests.integration.test_effects import Crash, FakeClock
@@ -415,7 +415,7 @@ def test_control_inbox_is_active(root, tmp_path, monkeypatch):
         if verb == "drain":
             assert cli(root, verb, stages=stages) == 0
             assert stages.calls == [stem] and stages.lock_held == [True]
-    assert (root / ".chupa/state/control/active.json").read_bytes() == b"null\n"
+    assert (root / ".clutch/state/control/active.json").read_bytes() == b"null\n"
     assert not any(e.body.get("kind") == control.CONTROL_DECISION for e in journal(root).read())
 
 

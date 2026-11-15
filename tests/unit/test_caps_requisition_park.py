@@ -1,8 +1,8 @@
 """Requisition parks do not consume the failed-attempt budget."""
 
-from chupa.caps import failed_attempt, failed_attempts, spent
-from chupa.config import Caps
-from chupa.journal import Event, EventType
+from clutch.caps import failed_attempt, failed_attempts, spent
+from clutch.config import Caps
+from clutch.journal import Event, EventType
 
 
 def events_for(bodies):

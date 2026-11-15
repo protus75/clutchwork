@@ -3,9 +3,9 @@
 import hashlib
 from datetime import datetime
 
-from chupa.config import load_config
-from chupa.journal import EventType, Journal
-from chupa.tickets import TicketInvalid, _intake_claims, validate_ticket
+from clutch.config import load_config
+from clutch.journal import EventType, Journal
+from clutch.tickets import TicketInvalid, _intake_claims, validate_ticket
 
 
 def approve(repo, stem, clock):

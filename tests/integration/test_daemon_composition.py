@@ -9,21 +9,21 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from chupa import __main__ as cli
-from chupa import caps, daemon, driver, merge, providers, runner, stages
-from chupa.config import ConfigError, ConfigSnapshot, load_config
-from chupa.daemon import DaemonAdmission
-from chupa.driver import Driver, LlmStage
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.mergequeue import CONFLICT_FACTS, MergeQueue
-from chupa.providers import ProviderLLM, child_env
-from chupa.redact import Redactor
-from chupa.scheduler import Scheduler
-from chupa.stages import StageContext
-from chupa.tickets import INTAKE_SIGNAL
-from chupa.watcher import WATCHER_PARSE_FAILURE, Watcher
+from clutch import __main__ as cli
+from clutch import caps, daemon, driver, merge, providers, runner, stages
+from clutch.config import ConfigError, ConfigSnapshot, load_config
+from clutch.daemon import DaemonAdmission
+from clutch.driver import Driver, LlmStage
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.mergequeue import CONFLICT_FACTS, MergeQueue
+from clutch.providers import ProviderLLM, child_env
+from clutch.redact import Redactor
+from clutch.scheduler import Scheduler
+from clutch.stages import StageContext
+from clutch.tickets import INTAKE_SIGNAL
+from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
 from tests.integration.test_cli import root, write
 from tests.integration.test_daemon_admission import assert_idle
 from tests.integration.test_daemon_config import assert_detached, python_values
@@ -89,8 +89,8 @@ class ScriptExec:
 
 @pytest.mark.asyncio
 async def test_production_watchdog_shares_active_executor(root, monkeypatch):
-    from chupa.drain import drain
-    from chupa.seams import SubprocessExec
+    from clutch.drain import drain
+    from clutch.seams import SubprocessExec
     from tests.integration.serve_rig import finish, terminals, until
     from tests.integration.test_restart_timers import repository
 
@@ -135,7 +135,7 @@ async def test_production_watchdog_shares_active_executor(root, monkeypatch):
     report = await drain(checkout, dispatch, reexec=handoff)
     assert report.exit_code == 0 and contexts[0].exec_ is checkout.exec_
     assert handoff is not contexts[0].exec_ and handoff is not contexts[0].driver.detector.notify.notifications.exec_
-    from chupa.seams import LocalFileSystem
+    from clutch.seams import LocalFileSystem
 
     serving = rig
     rig.fs.publish = LocalFileSystem().publish
@@ -154,8 +154,8 @@ async def test_production_watchdog_shares_active_executor(root, monkeypatch):
 class CoreRig:
     def __init__(self, root, *, prepare=None, config=CONFIG, config_path=None):
         self.root = root
-        (root / "chupa").mkdir(exist_ok=True)
-        (root / "chupa/thing.py").write_text("")
+        (root / "clutch").mkdir(exist_ok=True)
+        (root / "clutch/thing.py").write_text("")
         self.config_path = config_path
         self.put_config(config)
         self.time = Time()
@@ -168,7 +168,7 @@ class CoreRig:
             initial,
             ENV,
             self.exec,
-            Git(self.exec, env=child_env(ENV, initial), timeout=30, commit_lock=commit_lock(root / ".chupa/state")),
+            Git(self.exec, env=child_env(ENV, initial), timeout=30, commit_lock=commit_lock(root / ".clutch/state")),
             self.journal,
             self.fs,
             self.time,
@@ -422,7 +422,7 @@ async def test_production_core_preserves_eligibility_order_and_backpressure(tmp_
     rig.transition("retired", "rejected")
     rig.transition("running", "running")
     rig.transition("reject-held", "gate_failed", routed="reject_queue")
-    from chupa import caps
+    from clutch import caps
 
     for _ in range(rig.checkout.config.caps.retry):
         caps.consume(rig.journal, "reject-held", "retry", "old")
@@ -893,7 +893,7 @@ async def test_production_core_unwinds_preflight_refusal_and_cancellation(tmp_pa
         if failure == "refusal":
             message = str(caught.value)
             assert "provider preflight failed" in message and "failed its probe" in message
-            assert "-- run: chupa install " in message
+            assert "-- run: clutch install " in message
             assert "fix each named provider, then run the same command again" in message
         else:
             assert caught.value is error
@@ -1034,10 +1034,10 @@ async def test_composed_merge_queue_admits_reviewed_candidate(admission_context,
     callback = runner.bind(checkout, FakeLLM([]))
     [(ctx, consumer, queue)] = captured
     assert callable(callback) and queue.ctx is ctx and queue.escalate is consumer
-    ticket = await ready(ctx, verification=(("grep", "-q", "ok", "chupa/thing.py"),))
+    ticket = await ready(ctx, verification=(("grep", "-q", "ok", "clutch/thing.py"),))
     reviewed = await ctx.git.rev_parse(ctx.repo, ticket.stem)
-    ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-    await ctx.git.add(ctx.repo, ["chupa/other.py"])
+    ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+    await ctx.git.add(ctx.repo, ["clutch/other.py"])
     await ctx.git.commit(ctx.repo, "main moves")
     queue.offer(ticket, attempt=7)
     assert queue.pending == {ticket.stem: (ticket, 7)}
@@ -1067,21 +1067,23 @@ async def test_composed_merge_queue_admits_reviewed_candidate(admission_context,
 
 def sources():
     root = Path(__file__).resolve().parents[2]
-    material = {".".join(p.relative_to(root).with_suffix("").parts): p.read_text() for p in (root / "chupa").rglob("*.py")}
-    material["chupa"] = material.pop("chupa.__init__")
+    material = {".".join(p.relative_to(root).with_suffix("").parts): p.read_text() for p in (root / "clutch").rglob("*.py")}
+    material["clutch"] = material.pop("clutch.__init__")
     return material
 
 
 def without_core_import(material):
-    main = ast.parse(material["chupa.__main__"])
-    assert any(isinstance(node, ast.ImportFrom) and node.module == "chupa.daemon" and {"DaemonCore", "PauseConsumer", "daemon_core"} <= {alias.name for alias in node.names} for node in ast.walk(main))
+    main = ast.parse(material["clutch.__main__"])
+    assert any(
+        isinstance(node, ast.ImportFrom) and node.module == "clutch.daemon" and {"DaemonCore", "PauseConsumer", "daemon_core"} <= {alias.name for alias in node.names} for node in ast.walk(main)
+    )
 
     class RemoveDaemon(ast.NodeTransformer):
         def visit_Import(self, node):
-            return ast.copy_location(ast.Pass(), node) if any(alias.name == "chupa.daemon" for alias in node.names) else node
+            return ast.copy_location(ast.Pass(), node) if any(alias.name == "clutch.daemon" for alias in node.names) else node
 
         def visit_ImportFrom(self, node):
-            target = node.module == "chupa.daemon" or (node.module == "chupa" and any(alias.name == "daemon" for alias in node.names))
+            target = node.module == "clutch.daemon" or (node.module == "clutch" and any(alias.name == "daemon" for alias in node.names))
             return ast.copy_location(ast.Pass(), node) if target else node
 
     return {name: ast.unparse(RemoveDaemon().visit(ast.parse(source))) for name, source in material.items()}
@@ -1089,18 +1091,18 @@ def without_core_import(material):
 
 def test_without_core_import_handles_multiline_and_nested_imports():
     material = {
-        "chupa.__main__": "from chupa.daemon import (\n    DaemonCore,\n    PauseConsumer,\n    StartupBoundary,\n    daemon_core,\n)\n",
-        "chupa.other": "def nested():\n    import chupa.daemon\n    from chupa import daemon\n    from chupa.daemon import StartupBoundary\n",
+        "clutch.__main__": "from clutch.daemon import (\n    DaemonCore,\n    PauseConsumer,\n    StartupBoundary,\n    daemon_core,\n)\n",
+        "clutch.other": "def nested():\n    import clutch.daemon\n    from clutch import daemon\n    from clutch.daemon import StartupBoundary\n",
     }
     removed = without_core_import(material)
     for source in removed.values():
         tree = ast.parse(source)
         assert not any(isinstance(node, (ast.Import, ast.ImportFrom)) for node in ast.walk(tree))
-    assert len([node for node in ast.walk(ast.parse(removed["chupa.other"])) if isinstance(node, ast.Pass)]) == 3
+    assert len([node for node in ast.walk(ast.parse(removed["clutch.other"])) if isinstance(node, ast.Pass)]) == 3
 
 
 def assert_reachable(material):
-    assert {"chupa.daemon", "chupa.scheduler", "chupa.watcher"} <= import_closure(material)
+    assert {"clutch.daemon", "clutch.scheduler", "clutch.watcher"} <= import_closure(material)
 
 
 def test_daemon_core_is_reachable_from_cli():
@@ -1109,8 +1111,8 @@ def test_daemon_core_is_reachable_from_cli():
     removed = without_core_import(material)
     with pytest.raises(AssertionError):
         assert_reachable(removed)
-    for edge in ("import chupa.daemon", "from chupa import daemon"):
-        restored = {**removed, "chupa.status": removed["chupa.status"] + "\n" + edge}
+    for edge in ("import clutch.daemon", "from clutch import daemon"):
+        restored = {**removed, "clutch.status": removed["clutch.status"] + "\n" + edge}
         assert_reachable(restored)
 
 
@@ -1145,7 +1147,7 @@ async def test_production_composes_rework_without_running_it(tmp_path, monkeypat
 
 @pytest.mark.asyncio
 async def test_production_consumes_conflict_handoff_after_unwind(admission_context, monkeypatch):
-    from chupa.mergequeue import ConflictHandoff
+    from clutch.mergequeue import ConflictHandoff
     from tests.integration.test_mergequeue import conflict
     from tests.integration.test_rework import order, requisition
     from tests.integration.test_stages import agent, verdict
@@ -1187,8 +1189,8 @@ async def test_production_consumes_conflict_handoff_after_unwind(admission_conte
         return order("update", [(ticket.stem, text.replace("holds the word ok", "holds the word ok after fresh review"))])
 
     ctx.driver.llm = FakeLLM([reply, requisition()])
-    from chupa.drain import _Drain
-    from chupa.lockfile import Lockfile, LockHeld
+    from clutch.drain import _Drain
+    from clutch.lockfile import Lockfile, LockHeld
 
     checkout = runner.Checkout(ctx.repo, ctx.config, ctx.env, ctx.exec_, ctx.git, ctx.driver.journal, ctx.fs, ctx.driver.clock, ctx.driver.sleep)
     lock = Lockfile(ctx.config.state_dir, verb="drain", instance_id="production", clock=ctx.driver.clock)
@@ -1213,7 +1215,7 @@ async def test_production_consumes_conflict_handoff_after_unwind(admission_conte
     assert not ctx.worktree(ticket.stem).exists()
     # Re-offer uses the ordinary Implement/Check/Review path, never the invalidated queue approval.
     monkeypatch.undo()
-    ctx.driver.llm = FakeLLM([agent({"chupa/thing.py": "ok fresh\n"}), verdict()])
+    ctx.driver.llm = FakeLLM([agent({"clutch/thing.py": "ok fresh\n"}), verdict()])
     fresh = stages.validate_ticket(ticket.stem, (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text(), ctx.repo)
     await writer(fresh)
     assert [r.surface for r in ctx.driver.llm.requests] == ["implement", "review"]
@@ -1222,8 +1224,8 @@ async def test_production_consumes_conflict_handoff_after_unwind(admission_conte
 @pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["update", "split", "escalate", "exhausted"])
 async def test_production_applies_reviewed_rework_orders(admission_context, action):
-    from chupa.mergequeue import ConflictHandoff
-    from chupa.rework import SUPERSEDES, record_supersedes
+    from clutch.mergequeue import ConflictHandoff
+    from clutch.rework import SUPERSEDES, record_supersedes
     from tests.integration.test_rework import order, requisition, successors
 
     checkout, writer = production_writer(admission_context, [])
@@ -1240,9 +1242,9 @@ async def test_production_applies_reviewed_rework_orders(admission_context, acti
     proposals = successors(text.strip()) if action == "split" else [(ticket.stem, text.strip().replace("holds the word ok", "holds ok after narrowing"))] if action == "update" else []
     ctx.driver.llm = FakeLLM([order("escalate" if action == "exhausted" else action, proposals)] + [requisition() for _ in proposals])
     finding = stages.Finding(code="post_rebase_regate", message="conflict", paved_road="fresh review")
-    handoff = ConflictHandoff(stem=ticket.stem, reviewed_sha=await ctx.git.rev_parse(ctx.repo, ticket.stem), conflicted_paths=["chupa/thing.py"], findings=[finding, finding])
-    from chupa.drain import _Drain
-    from chupa.lockfile import Lockfile
+    handoff = ConflictHandoff(stem=ticket.stem, reviewed_sha=await ctx.git.rev_parse(ctx.repo, ticket.stem), conflicted_paths=["clutch/thing.py"], findings=[finding, finding])
+    from clutch.drain import _Drain
+    from clutch.lockfile import Lockfile
 
     returned = []
 
@@ -1271,7 +1273,7 @@ async def test_production_applies_reviewed_rework_orders(admission_context, acti
         for stem, proposal in proposals:
             assert await ctx.git._run(ctx.repo, "show", f"HEAD:tickets/{stem}/ticket.md") == proposal
         assert "state: rejected" in (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text()
-        from chupa.rework import ReworkOrder
+        from clutch.rework import ReworkOrder
 
         replay = ReworkOrder(action="split", tickets=[{"stem": s, "ticket": t} for s, t in proposals], stem=ticket.stem, attempt=0, produced_by_spec_version=1, produced_at_sha="reviewed")
         count = len(events)
@@ -1295,7 +1297,7 @@ async def test_production_applies_reviewed_rework_orders(admission_context, acti
 @pytest.mark.parametrize("action", ["split", "update"])
 @pytest.mark.parametrize("failure", ["validation", "review", "write", "add", "commit", "partial", "incomplete", "all-commits", "spent"])
 async def test_production_refuses_failed_rework_publication(admission_context, monkeypatch, failure, action):
-    from chupa.mergequeue import ConflictHandoff
+    from clutch.mergequeue import ConflictHandoff
     from tests.integration.test_rework import order, requisition, successors
 
     checkout, writer = production_writer(admission_context, [])
@@ -1356,7 +1358,7 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
     if failure != "all-commits":
         assert await ctx.git.status_porcelain(ctx.repo) == ""
         # A later ordinary drain must not intake a leaked machine proposal as human work.
-        from chupa.drain import drain
+        from clutch.drain import drain
         from tests.integration.test_drain_reentry import NoChild
 
         intake_before = [e for e in events if e.body.get("signal") == INTAKE_SIGNAL]
@@ -1373,8 +1375,8 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
 
 @pytest.mark.asyncio
 async def test_production_composes_one_pause_consumer(tmp_path, monkeypatch):
-    from chupa.control import ControlInbox
-    from chupa.daemon import PauseConsumer
+    from clutch.control import ControlInbox
+    from clutch.daemon import PauseConsumer
 
     constructed = []
     original = daemon.control_inbox
@@ -1411,9 +1413,9 @@ class LiveDrain:
     """The real drain and CLI control factory, with filesystem traces and barrier wakeups."""
 
     def __init__(self, root, monkeypatch, *, pause=True):
-        from chupa.control import ControlRequest, publish_request
-        from chupa.lockfile import Lockfile, LockHeld
-        from chupa.seams import LocalFileSystem, SubprocessExec
+        from clutch.control import ControlRequest, publish_request
+        from clutch.lockfile import Lockfile, LockHeld
+        from clutch.seams import LocalFileSystem, SubprocessExec
         from tests.integration.test_cli import ENV as checkout_env
         from tests.integration.test_drain import Clock, journal
 
@@ -1423,7 +1425,7 @@ class LiveDrain:
             load_config(None, cwd=root),
             checkout_env,
             process,
-            Git(process, env=checkout_env, timeout=30, commit_lock=commit_lock(root / ".chupa/state")),
+            Git(process, env=checkout_env, timeout=30, commit_lock=commit_lock(root / ".clutch/state")),
             journal(root),
             LocalFileSystem(),
             Clock(),
@@ -1501,7 +1503,7 @@ class LiveDrain:
         return self.consumers[-1]
 
     def request(self, id, verb, hold=None, life=None):
-        from chupa.control import ControlRequest, publish_request
+        from clutch.control import ControlRequest, publish_request
 
         publish_request(self.checkout.config.state_dir, ControlRequest(id, life or self.consumer.inbox.lifecycle_id, verb, hold), self.checkout.fs)
         self.wake.put_nowait(None)
@@ -1510,7 +1512,7 @@ class LiveDrain:
         self.request("90-resume", "resume", self.consumer.projection.pause_id)
 
     async def run(self, dispatch=None, reexec=None, before_dispatch=None):
-        from chupa.drain import drain
+        from clutch.drain import drain
         from tests.integration.test_drain_reentry import NoChild
 
         async def callback(ticket):
@@ -1525,7 +1527,7 @@ class LiveDrain:
 @pytest.mark.asyncio
 @pytest.mark.parametrize("kind", ["fresh", "retry", "machine-keep", "empty"])
 async def test_live_drain_pause_blocks_all_offer_accounting(root, monkeypatch, kind):
-    from chupa.control import CONTROL_DECISION
+    from clutch.control import CONTROL_DECISION
     from tests.integration.test_drain import confirmed, offer_events
 
     live = LiveDrain(root, monkeypatch)
@@ -1584,7 +1586,7 @@ async def test_live_drain_resume_rechecks_selection_and_caps(root, monkeypatch, 
 
     async def pause_after_preparation():
         nonlocal checkpoints
-        from chupa.control import ControlRequest, publish_request
+        from clutch.control import ControlRequest, publish_request
 
         checkpoints += 1
         if checkpoints == 2:
@@ -1619,11 +1621,11 @@ async def test_live_drain_resume_rechecks_selection_and_caps(root, monkeypatch, 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("exit", ["normal", "failure", "cancel", "cancel-held", "handoff"])
 async def test_control_lifecycle_cleanup_on_exit_and_handoff(root, monkeypatch, exit):
-    from chupa.lockfile import Lockfile
+    from clutch.lockfile import Lockfile
     from tests.integration.test_drain import confirmed
 
     if exit == "handoff":
-        from chupa import drain as drain_mod
+        from clutch import drain as drain_mod
 
         monkeypatch.setattr(drain_mod, "ENGINE", root.resolve())
     live = LiveDrain(root, monkeypatch)
@@ -1642,8 +1644,8 @@ async def test_control_lifecycle_cleanup_on_exit_and_handoff(root, monkeypatch, 
             await finish.wait()
         body = {"to": "merged"}
         if exit == "handoff":
-            c.fs.write(root / "chupa/thing.py", b"upgrade")
-            await c.git.add(root, ["chupa/thing.py"])
+            c.fs.write(root / "clutch/thing.py", b"upgrade")
+            await c.git.add(root, ["clutch/thing.py"])
             await c.git.commit(root, "upgrade")
             body["commit"] = await c.git.rev_parse(root, "HEAD")
         c.journal.append(EventType.STATE_TRANSITION, body, ticket=ticket.stem)
@@ -1716,8 +1718,8 @@ async def test_control_lifecycle_cleanup_on_exit_and_handoff(root, monkeypatch, 
 
 @pytest.mark.asyncio
 async def test_production_pause_defers_snapshot_and_effects_without_preempting(tmp_path, monkeypatch):
-    from chupa.control import ControlRequest, publish_request
-    from chupa.seams import LocalFileSystem
+    from clutch.control import ControlRequest, publish_request
+    from clutch.seams import LocalFileSystem
 
     started, finish, held, wake = (asyncio.Event() for _ in range(4))
     snapshots, prepared, completed, effects = [], [], [], []
@@ -1777,7 +1779,7 @@ async def test_production_pause_defers_snapshot_and_effects_without_preempting(t
 @pytest.mark.parametrize("binding", ["checkpoint", "publication", "refresh", "retirement", "decision-order"])
 async def test_pause_activation_observables_detect_removed_bindings(root, monkeypatch, binding):
     """Calibrate positive production assertions by breaking their actual binding."""
-    from chupa.control import ControlProjection
+    from clutch.control import ControlProjection
     from tests.integration.test_drain import confirmed
 
     live = LiveDrain(root, monkeypatch)
@@ -1919,9 +1921,9 @@ async def test_production_shares_one_admission_control_consumer(root, tmp_path, 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("trip", ["red", "tree"])
 async def test_composed_admission_holds_accept_identity_bound_resume(admission_context, monkeypatch, trip):
-    from chupa.control import CONTROL_DECISION, ControlRequest, publish_request, read_active
-    from chupa.lockfile import Lockfile
-    from chupa.mergequeue import RED_STREAK, TREE_MISMATCH, TreeMismatch
+    from clutch.control import CONTROL_DECISION, ControlRequest, publish_request, read_active
+    from clutch.lockfile import Lockfile
+    from clutch.mergequeue import RED_STREAK, TREE_MISMATCH, TreeMismatch
     from tests.integration.test_control_cli import invoke
     from tests.integration.test_mergequeue import host, scripted
 
@@ -1946,9 +1948,9 @@ async def test_composed_admission_holds_accept_identity_bound_resume(admission_c
         if trip == "red":
             ctx.config.review.mechanical = [host("integration")]
             scripted(ctx, monkeypatch, [(1, "", "red")] * 3)
-            tickets = [await ready(ctx, stem, changes={f"chupa/{stem}.py": "ok"}, fence=(f"chupa/{stem}.py",)) for stem in ("one", "two", "three")]
-            ctx.fs.write(ctx.repo / "chupa/other.py", b"main moved\n")
-            await ctx.git.add(ctx.repo, ["chupa/other.py"])
+            tickets = [await ready(ctx, stem, changes={f"clutch/{stem}.py": "ok"}, fence=(f"clutch/{stem}.py",)) for stem in ("one", "two", "three")]
+            ctx.fs.write(ctx.repo / "clutch/other.py", b"main moved\n")
+            await ctx.git.add(ctx.repo, ["clutch/other.py"])
             await ctx.git.commit(ctx.repo, "main moves")
             for ticket in tickets:
                 queue.offer(ticket, attempt=0)
@@ -1972,7 +1974,7 @@ async def test_composed_admission_holds_accept_identity_bound_resume(admission_c
         signal = ctx.driver.journal.read()[-1]
         assert signal.body["kind"] == (RED_STREAK if trip == "red" else TREE_MISMATCH)
         assert signal.body["hold_id"] == identity
-        green = await ready(ctx, "green", changes={"chupa/green.py": "ok"}, fence=("chupa/green.py",))
+        green = await ready(ctx, "green", changes={"clutch/green.py": "ok"}, fence=("clutch/green.py",))
         queue.offer(green, attempt=0)
 
         def forbidden(*args, **kwargs):
@@ -2054,7 +2056,7 @@ def test_bootstrap_inline_admission_never_holds(admission_context, monkeypatch, 
     from tests.approval import approve
 
     approve(source.repo, STEM, source.driver.clock)
-    llm = FakeLLM([agent({"chupa/thing.py": "ok\n"}), verdict()])
+    llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
     captured = capture_pipeline_queue(monkeypatch)
 
     def forbidden(*args, **kwargs):
@@ -2093,7 +2095,7 @@ async def test_admission_control_binding_probe(root, tmp_path, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_production_serve_graph_is_reachable(root, monkeypatch):
-    from chupa.serve import Serve
+    from clutch.serve import Serve
     from tests.integration.serve_rig import finish, graph, until
 
     rig = await graph(root, monkeypatch)
@@ -2109,7 +2111,7 @@ async def test_production_serve_graph_is_reachable(root, monkeypatch):
         assert len(owner.tasks.tasks) == 3 and len(owner.workers) == 4
         assert owner.checkpoint.journal is owner.checkpoint.effects._journal is rig.journal
         assert owner.checkpoint.timers is owner.core.restart.timers
-        assert "chupa.serve" in import_closure(sources())
+        assert "clutch.serve" in import_closure(sources())
     finally:
         await finish(rig, run)
 
@@ -2119,11 +2121,11 @@ async def test_production_serve_graph_is_reachable(root, monkeypatch):
 async def test_production_boxes_receive_rereport_callback(admission_context, tmp_path, monkeypatch, site):
     import inspect
 
-    from chupa.box import Box, RereportJournal
-    from chupa.drain import drain
-    from chupa.providers import ProviderCallError
-    from chupa.retro import Retro
-    from chupa.triage import triage_pass
+    from clutch.box import Box, RereportJournal
+    from clutch.drain import drain
+    from clutch.providers import ProviderCallError
+    from clutch.retro import Retro
+    from clutch.triage import triage_pass
     from tests.integration.serve_rig import graph
     from tests.integration.test_drain_reentry import NoChild
     from tests.integration.test_retro_box import PROPOSAL
@@ -2136,7 +2138,7 @@ async def test_production_boxes_receive_rereport_callback(admission_context, tmp
 
     def bound(self, *args, **kwargs):
         caller = inspect.currentframe().f_back.f_globals["__name__"]
-        if caller.startswith("chupa."):
+        if caller.startswith("clutch."):
             callback = kwargs.get("rereport")
             assert isinstance(callback, RereportJournal), f"{caller} omitted journal custody"
             captured.append((caller, callback.journal))

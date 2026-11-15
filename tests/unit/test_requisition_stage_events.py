@@ -4,10 +4,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import requisition
-from chupa.driver import Driver, _StuckBudget
-from chupa.providers import ProviderCallError
-from chupa.requisition import FIRST_REVIEW
+from clutch import requisition
+from clutch.driver import Driver, _StuckBudget
+from clutch.providers import ProviderCallError
+from clutch.requisition import FIRST_REVIEW
 
 
 class MemoryPath:
@@ -88,8 +88,8 @@ def test_stage_events(monkeypatch, case, outcome, active):
 def test_invalid_target_snags_without_llm_call(monkeypatch):
     from unittest.mock import Mock
 
-    from chupa.artifacts import Finding
-    from chupa.tickets import TicketInvalid
+    from clutch.artifacts import Finding
+    from clutch.tickets import TicketInvalid
 
     finding = Finding(code="ticket_schema", message="carried file outside fence", paved_road="fence the carried file")
     monkeypatch.setattr(requisition, "review_target", Mock(side_effect=TicketInvalid([finding])))

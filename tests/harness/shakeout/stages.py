@@ -4,13 +4,13 @@ import json
 import os
 import subprocess
 
-from chupa.artifacts import Finding
-from chupa.box import BOX_DIR, Box
-from chupa.config import Candidate, Route
-from chupa.journal import EventType
-from chupa.llm import LLMRequest
-from chupa.seams import LocalFileSystem
-from chupa.stages import Invoice, read_review
+from clutch.artifacts import Finding
+from clutch.box import BOX_DIR, Box
+from clutch.config import Candidate, Route
+from clutch.journal import EventType
+from clutch.llm import LLMRequest
+from clutch.seams import LocalFileSystem
+from clutch.stages import Invoice, read_review
 from tests.harness.shakeout.bench import Bench
 from tests.harness.shakeout.run import Member, Observation
 

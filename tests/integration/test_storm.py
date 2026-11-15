@@ -4,11 +4,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from chupa import journal as journal_module
-from chupa.box import Box, signature
-from chupa.journal import EventType, Journal, JournalCorruption
-from chupa.seams import LocalFileSystem
-from chupa.storm import STORM_WINDOW, StormLedger
+from clutch import journal as journal_module
+from clutch.box import Box, signature
+from clutch.journal import EventType, Journal, JournalCorruption
+from clutch.seams import LocalFileSystem
+from clutch.storm import STORM_WINDOW, StormLedger
 from tests.integration.test_journal import T0, FakeClock
 
 SIG = signature("failure_report", "one", "implement", "gate_failed", reason="failed path/one 123")
@@ -250,8 +250,8 @@ def test_occurrence_append_failures_and_crash_replay(tmp_path, monkeypatch, when
 
 
 def test_ledger_trip_uses_only_journal_and_box(tmp_path, monkeypatch):
-    from chupa import control, daemon
-    from chupa.effects import Effects
+    from clutch import control, daemon
+    from clutch.effects import Effects
 
     def forbidden(*args, **kwargs):
         pytest.fail("storm invoked an external side effect")

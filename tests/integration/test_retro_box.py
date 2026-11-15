@@ -7,18 +7,18 @@ from dataclasses import replace
 
 import pytest
 
-from chupa import runner, triage
-from chupa.__main__ import build_control
-from chupa.author import record_retro_ticket
-from chupa.box import Box, BoxError, Resolution
-from chupa.config import load_config
-from chupa.effects import Effects
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.merge import write_squash
-from chupa.retro import Retro, project_window
-from chupa.storm import arrival_id
-from chupa.tickets import validate_ticket
+from clutch import runner, triage
+from clutch.__main__ import build_control
+from clutch.author import record_retro_ticket
+from clutch.box import Box, BoxError, Resolution
+from clutch.config import load_config
+from clutch.effects import Effects
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.merge import write_squash
+from clutch.retro import Retro, project_window
+from clutch.storm import arrival_id
+from clutch.tickets import validate_ticket
 from tests.integration.test_drain import pause_checkout
 from tests.integration.test_stages import implement_reply, verdict
 from tests.integration.test_triage import author_reply, reply, requisition_reply, root_with_box
@@ -31,15 +31,15 @@ async def test_completed_retro_proposals_reach_prompt_spec_merge(tmp_path, monke
     root, box = root_with_box(tmp_path)
     c = pause_checkout(root)
     c = replace(c, config=load_config(None, cwd=root), control=build_control(c))
-    repo_paths = [f"chupa/{path}" for path in PROPOSAL["proposed_spec_paths"]]
+    repo_paths = [f"clutch/{path}" for path in PROPOSAL["proposed_spec_paths"]]
     for path in repo_paths:
         c.fs.write(root / path, b"fixture spec before\n")
     await c.git.add(root, repo_paths)
     await c.git.commit(root, "fixture specs")
     other = {**PROPOSAL, "proposed_spec_paths": list(reversed(PROPOSAL["proposed_spec_paths"]))}
     authored = json.loads(author_reply("repair-spec"))
-    authored["ticket"] = authored["ticket"].replace("`chupa/thing.py`", "`chupa/specs/review.md`").replace("## Scope fence\n- chupa/thing.py", "## Scope fence\n- chupa/specs/")
-    authored["ticket"] = authored["ticket"].replace("uv run pytest", "test -f chupa/specs/review.md")
+    authored["ticket"] = authored["ticket"].replace("`clutch/thing.py`", "`clutch/specs/review.md`").replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n- clutch/specs/")
+    authored["ticket"] = authored["ticket"].replace("uv run pytest", "test -f clutch/specs/review.md")
     llm = FakeLLM([json.dumps({"proposals": [PROPOSAL, PROPOSAL, other]}), reply("author"), json.dumps(authored), requisition_reply("approve"), reply("declined")])
     writer = runner.bind(c, llm)
     hook = Retro(c, writer)
@@ -203,7 +203,7 @@ async def test_recurrence_preserves_message_and_reopens_only_when_due(tmp_path, 
     if kind in ("merged", "running"):
         c.journal.append(EventType.STATE_TRANSITION, {"to": kind}, ticket="fix")
     if kind == "tombstone":
-        from chupa.box import RereportJournal
+        from clutch.box import RereportJournal
 
         durable = Box(box.root, c.fs, rereport=RereportJournal(c.journal))
         durable.record_rereport(id, occurrence_id="first")

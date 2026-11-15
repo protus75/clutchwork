@@ -5,12 +5,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import testreport
-from chupa.config import ConfigError, MechanicalCheck, _check_references
-from chupa.gates import GateReport
-from chupa.gates import TestCoverage as Coverage
-from chupa.gates import TestTiming as Timing
-from chupa.stages import run_host_command
+from clutch import testreport
+from clutch.config import ConfigError, MechanicalCheck, _check_references
+from clutch.gates import GateReport
+from clutch.gates import TestCoverage as Coverage
+from clutch.gates import TestTiming as Timing
+from clutch.stages import run_host_command
 
 
 def test_slow_tests():

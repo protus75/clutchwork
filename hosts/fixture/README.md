@@ -6,14 +6,14 @@ merges, an existing add regression and a check-passing spending escape.
 These are inputs, not recorded engine merges. The defective settings and the
 regression test are both present on the base of a fresh host repository.
 
-Use the chupa venv's Python and the existing process-exec seam with argv lists
+Use the clutch venv's Python and the existing process-exec seam with argv lists
 `[python, "check.py"]`, `[python, "regression_test.py"]`, and
 `[python, "replay.py", "evidence/<scenario>.json"]`. Replay returns 0 for healthy
 and 1 for a defect; stdout contains deterministic final state and defect JSON.
 
 For the existing Claude adapter, put the disposable `bin/` first on an explicit
-PATH that also contains the chupa venv's Python. Set `CHUPA_FIXTURE_ROOT` and `CHUPA_FIXTURE_SCENARIO` in the child's environment;
-`CHUPA_FIXTURE_SURFACE` selects a surface for direct scaffold tests, while real
+PATH that also contains the clutch venv's Python. Set `CLUTCH_FIXTURE_ROOT` and `CLUTCH_FIXTURE_SCENARIO` in the child's environment;
+`CLUTCH_FIXTURE_SURFACE` selects a surface for direct scaffold tests, while real
 production prompts select their own surface during the host loop.
 pass no provider keys. Version, pnpm lookup and the stdin preflight probe are
 offline. Each scenario has one reply per surface. Unknown selection refuses

@@ -8,22 +8,22 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Part A (`gemini-provider`) is release 0.2.0 (`docs/roadmap.md` row 32); it needs nothing and waits on its hand test. Part B is release 0.4.0 (rows 49-55): seven tickets, depending on `closed-sets-single-home` (row 19), which gives the kind set one home before this plan adds a member to it. What needs this plan: `evidence-normalize-gemini` (`docs/evidence-trail-plan.md` ticket 5) waits on `gemini-provider` and uses the A0 hand-test capture as its fixture. Shared files: `graphics-render-check` and the parallel plan's `conflict-discard-rerun` both bump `chupa/specs/implement.md`; this plan's ticket runs first (roadmap decision 8). Render commands run through `run_host_command`, under the parallel plan's host-command lock (decision 10). The judge's `graphics.judge_samples` majority is the `majority-verdict` combiner of `docs/stage-panels-plan.md` (decision 14); B5 moves onto it when that plan lands in 0.5.0 and until then carries its own per-row majority. Shared budget: `graphics-kind` adds 9 bytes (`|graphics`) to CORE_TEMPLATE (decision 5). New dependencies ship as optional extras (decision 18), never in core.
+Part A (`gemini-provider`) is release 0.2.0 (`docs/roadmap.md` row 32); it needs nothing and waits on its hand test. Part B is release 0.4.0 (rows 49-55): seven tickets, depending on `closed-sets-single-home` (row 19), which gives the kind set one home before this plan adds a member to it. What needs this plan: `evidence-normalize-gemini` (`docs/evidence-trail-plan.md` ticket 5) waits on `gemini-provider` and uses the A0 hand-test capture as its fixture. Shared files: `graphics-render-check` and the parallel plan's `conflict-discard-rerun` both bump `clutch/specs/implement.md`; this plan's ticket runs first (roadmap decision 8). Render commands run through `run_host_command`, under the parallel plan's host-command lock (decision 10). The judge's `graphics.judge_samples` majority is the `majority-verdict` combiner of `docs/stage-panels-plan.md` (decision 14); B5 moves onto it when that plan lands in 0.5.0 and until then carries its own per-row majority. Shared budget: `graphics-kind` adds 9 bytes (`|graphics`) to CORE_TEMPLATE (decision 5). New dependencies ship as optional extras (decision 18), never in core.
 
-**Risk the hand test must retire first.** Part B's image mode assumes Gemini CLI can call an image model headlessly and write the result to a file. If A0 shows it cannot, image generation needs the `kind: api` provider client that `CHUPA_PLAN.md` §18.2 defers to "the first configured `kind: api` provider". That trigger would then have fired, and an `api-provider-client` ticket (image models only, no new surfaces) joins 0.4.0 ahead of `image-candidates-select`. The plan is written for the CLI case; the api case changes only where the image call is made, not the grading.
+**Risk the hand test must retire first.** Part B's image mode assumes Gemini CLI can call an image model headlessly and write the result to a file. If A0 shows it cannot, image generation needs the `kind: api` provider client that `CLUTCH_PLAN.md` §18.2 defers to "the first configured `kind: api` provider". That trigger would then have fired, and an `api-provider-client` ticket (image models only, no new surfaces) joins 0.4.0 ahead of `image-candidates-select`. The plan is written for the CLI case; the api case changes only where the image call is made, not the grading.
 
 ## Part A: Gemini CLI provider
 
 ### Current state
 
-- `ADAPTERS` in `chupa/providers.py:544` ships `claude`, `codex`, and `qwen`. A provider named `gemini` is refused at setup: `no shipped cli adapter` (`providers.py:579`).
+- `ADAPTERS` in `clutch/providers.py:544` ships `claude`, `codex`, and `qwen`. A provider named `gemini` is refused at setup: `no shipped cli adapter` (`providers.py:579`).
 - `QwenAdapter` subclasses `ClaudeAdapter` (`providers.py:514`) because Qwen Code emits Claude's stream format. Qwen Code is a fork of Gemini CLI, but Gemini CLI's own `stream-json` is a different format, so Gemini cannot reuse `ClaudeAdapter.parse`.
-- `chupa/watchdog.py` reads two event shapes: Claude's (`assistant` `tool_use` blocks, which qwen shares; line 92) and Codex's (`item.*`; line 99). It has no Gemini branch.
-- `chupa/observe.py` `live_call` (189-215) labels claude, codex, and qwen processes only.
+- `clutch/watchdog.py` reads two event shapes: Claude's (`assistant` `tool_use` blocks, which qwen shares; line 92) and Codex's (`item.*`; line 99). It has no Gemini branch.
+- `clutch/observe.py` `live_call` (189-215) labels claude, codex, and qwen processes only.
 
 ### Config: no schema change for the provider
 
-`Provider` in `chupa/config.py:72-84` already carries every field Gemini needs:
+`Provider` in `clutch/config.py:72-84` already carries every field Gemini needs:
 
 | Field | Gemini value |
 |---|---|
@@ -58,10 +58,10 @@ These three facts fix the roles in Part B: an image model generates (Implement),
 
 ### Target design
 
-- **`GeminiAdapter(CliAdapter)`** with its own `argv` and `parse`: it sets `PACKAGE = "@google/gemini-cli"`, required by `chupa install gemini` and the closed-set pin.
+- **`GeminiAdapter(CliAdapter)`** with its own `argv` and `parse`: it sets `PACKAGE = "@google/gemini-cli"`, required by `clutch install gemini` and the closed-set pin.
   - argv: `gemini -m <model> --output-format stream-json` plus the write grant; the prompt arrives on stdin, as for every adapter.
   - parse: read the `stream-json` events (`init`, `message`, `tool_use`, `tool_result`, `error`, `result`). The terminal `result` event carries the outcome and token stats. Raise `ValueError` when there is no successful `result`.
-  - `reports_cost = False`, `AUTH_MARKERS`, and a `LOGIN_ROAD` naming `chupa/docs/host-gemini.md` and `chupa drain`.
+  - `reports_cost = False`, `AUTH_MARKERS`, and a `LOGIN_ROAD` naming `clutch/docs/host-gemini.md` and `clutch drain`.
 - **Write grant, fail closed.** Ship two settings files in the package and select one per call through `GEMINI_CLI_SYSTEM_SETTINGS_PATH`, the same mechanism `qwen-settings.json` uses through `QWEN_CODE_SYSTEM_SETTINGS_PATH` (`providers.py:541`):
   - `gemini-readonly.json`: a `tools.core` allowlist of the read tools only (read file, glob, search, list directory), matching Claude's `--tools Read Grep Glob LS`.
   - `gemini-write.json`: full tools, with `--approval-mode yolo` on the argv.
@@ -69,9 +69,9 @@ These three facts fix the roles in Part B: an image model generates (Implement),
   - System settings are the top-precedence layer, so nothing in `~/.gemini/settings.json` or a workspace `.gemini/settings.json` can widen the grant or move the conduct file. The operator never edits a file in their home directory.
 - **Conduct file.** Gemini reads `AGENTS.md`, the curated subset for non-Claude CLIs. `routed_conduct_paths` (`providers.py:128-132`) already selects `AGENTS.md` for any provider not named `claude` or `qwen`, so no code change; add a test.
 - **Failure classes.** Extend `FAILURE_MARKERS` (`providers.py:37`) with Gemini's quota and rate wording (for example `RESOURCE_EXHAUSTED`, `quota exceeded`, 429). It is a shared allowlist, so the additions must not misclassify claude or codex output; the existing classifier tests cover that.
-- **Watchdog.** A third branch in `chupa/watchdog.py` for Gemini's `tool_use` and `tool_result` ids and `result` stats, so stall detection and token metering work. (`docs/evidence-trail-plan.md` later moves all three branches onto the normalizers; roadmap decision 13.)
+- **Watchdog.** A third branch in `clutch/watchdog.py` for Gemini's `tool_use` and `tool_result` ids and `result` stats, so stall detection and token metering work. (`docs/evidence-trail-plan.md` later moves all three branches onto the normalizers; roadmap decision 13.)
 - **Live view.** A `live_call` branch for the pnpm shim's `node .../@google/gemini-cli/...` process, labelled `gemini <model>`.
-- **Guide.** New `chupa/docs/host-gemini.md`: what it is, install (`pnpm add -g @google/gemini-cli@latest`), log in or export `GEMINI_API_KEY`, declare it, `chupa probe gemini`, route it, limits (free-tier rate limits, `quota_window_minutes`), and which models generate images and which judge them. The `docs` verb lists it as a fifth guide.
+- **Guide.** New `clutch/docs/host-gemini.md`: what it is, install (`pnpm add -g @google/gemini-cli@latest`), log in or export `GEMINI_API_KEY`, declare it, `clutch probe gemini`, route it, limits (free-tier rate limits, `quota_window_minutes`), and which models generate images and which judge them. The `docs` verb lists it as a fifth guide.
 
 ### Prerequisite: hand test (A0)
 
@@ -91,15 +91,15 @@ No argv or parse in this plan is final until that test runs.
 
 ### Fence (ticket `gemini-provider`)
 
-- `chupa/providers.py`
-- `chupa/gemini-readonly.json` (new)
-- `chupa/gemini-write.json` (new)
-- `chupa/watchdog.py`
-- `chupa/observe.py`
-- `chupa/__main__.py` (docs verb tuple)
-- `chupa/docs/host-gemini.md` (new)
-- `chupa/docs/host-contract.md` (shipped adapter list, no-cost rule, conduct-file sentence)
-- `docs/how-chupa-works.md` §8.1
+- `clutch/providers.py`
+- `clutch/gemini-readonly.json` (new)
+- `clutch/gemini-write.json` (new)
+- `clutch/watchdog.py`
+- `clutch/observe.py`
+- `clutch/__main__.py` (docs verb tuple)
+- `clutch/docs/host-gemini.md` (new)
+- `clutch/docs/host-contract.md` (shipped adapter list, no-cost rule, conduct-file sentence)
+- `docs/how-clutch-works.md` §8.1
 - `README.md` (only if it lists the CLIs)
 - `tests/unit/test_gemini_adapter.py` (new)
 - `tests/unit/test_live_call.py`
@@ -112,13 +112,13 @@ No argv or parse in this plan is final until that test runs.
 
 ### Current state
 
-- `kind` is the closed set `feature | bug | chore` (`chupa/tickets.py:59`). It is repeated in:
-  - `chupa/__main__.py`: `--kind` choices (line 269) and the kind check in `_new` (line 791 at `80b76d5d`);
+- `kind` is the closed set `feature | bug | chore` (`clutch/tickets.py:59`). It is repeated in:
+  - `clutch/__main__.py`: `--kind` choices (line 269) and the kind check in `_new` (line 791 at `80b76d5d`);
   - `dev.py:83` (`--kind` choices);
-  - `chupa/stats.py:108`;
-  - `chupa/author.py:245` (skeletons embedded in the Author prompt);
+  - `clutch/stats.py:108`;
+  - `clutch/author.py:245` (skeletons embedded in the Author prompt);
   - `tests/integration/test_closed_sets.py:342`;
-  - the `CORE_TEMPLATE` rule text in `chupa/hostfiles.py` (`chupa new <stem> --kind feature|bug|chore`), and through `chupa core` the managed blocks in `CLAUDE.md` and `AGENTS.md`.
+  - the `CORE_TEMPLATE` rule text in `clutch/hostfiles.py` (`clutch new <stem> --kind feature|bug|chore`), and through `clutch core` the managed blocks in `CLAUDE.md` and `AGENTS.md`.
 
   `closed-sets-single-home` (roadmap row 19, 0.2.0) collapses the code copies to `Frontmatter` in `tickets.py` with argparse and `dev.py` deriving their choices; B1 depends on it so that adding `graphics` is one edit plus the template.
 - `bug` is the precedent for a kind with its own machinery: an extra section (`## Regression`), a stdout protocol (`regression_result`), committed evidence files, and a Check rule that runs the command at head and at base.
@@ -127,7 +127,7 @@ No argv or parse in this plan is final until that test runs.
 - `host-authoring.md` requires every criterion to be "a check someone can run or a path someone can read, never a judgment word". Visual work has criteria that only an image can decide.
 - `review.mechanical` already accepts a path-prefix `trigger` (`config.py:99,105,108`), so a host can run a Markdown or Mermaid check on changed files today.
 - `Route` (`config.py:99-102`) is `tier`, `surface`, `candidates`; `resolve()` (`providers.py:101-108`) picks by `(tier, surface)` with a fallback to the `review` row. Nothing routes by ticket kind.
-- chupa has no image or ML dependency.
+- clutch has no image or ML dependency.
 
 ### Scope of "graphics"
 
@@ -163,7 +163,7 @@ Both modes share the criteria forms, the visual review, and the sign-off rule. T
   uv run python tests/render/home.py
   ```
   - mode: command
-  - artifact: .chupa/renders/home.png
+  - artifact: .clutch/renders/home.png
   - reference: tickets/<stem>/reference/home-mock.png
   - carries: tests/render
   ````
@@ -172,12 +172,12 @@ Both modes share the criteria forms, the visual review, and the sign-off rule. T
   - `input:` names the images the generator receives (`generate` only), committed under `tickets/<stem>/reference/`. Lint caps the count at the routed model's limit once A0 records it; until then at 3, the smallest.
   - `reference:` names optional mockups or baselines, committed under `tickets/<stem>/reference/`.
   - `candidates:` (`generate` only) is the best-of-N count, 1 to 5, default 3.
-- `chupa new <stem> --kind graphics [--reference FILE...] [--input FILE...]` copies the files the way `--evidence` copies bug evidence. Intake commits them with the ticket.
+- `clutch new <stem> --kind graphics [--reference FILE...] [--input FILE...]` copies the files the way `--evidence` copies bug evidence. Intake commits them with the ticket.
 - Acceptance criteria come in two forms:
   - Mechanical criteria, checked by tests or by the layer-1 gate: text present, DOM selector exists, image dimensions, the Mermaid source parses, a contrast ratio, an SSIM floor against a base image, a keypoint-match floor for an input image.
   - Visual criteria, written `- visual: <artifact>: <observable>`. The observable is something you can see and answer yes or no: an element, a label, a position relative to another element, a colour token, "the product from `product.png` sits on the table at the left third". Never "looks clean" or "modern".
   - Lint enforces the structure (each `visual:` criterion names a declared artifact; a graphics ticket has at least one mechanical criterion; `generate` mode names at least one `input:` or a prompt in `Goal / Why`). The LLM requisition review checks that each visual criterion can be decided from the image alone. A lint rule cannot judge that, and a denylist of judgment words breaks the fail-closed rule.
-- `chupa/docs/host-authoring.md` gains a **Graphics tickets** section, beside **Bug tickets**, covering both modes, the render block, artifacts, inputs and references, the two criterion forms, the grading layers and what parks for a person, preferring a mechanical criterion wherever a test can decide it, and the Markdown and flowchart checks hosts declare in config.
+- `clutch/docs/host-authoring.md` gains a **Graphics tickets** section, beside **Bug tickets**, covering both modes, the render block, artifacts, inputs and references, the two criterion forms, the grading layers and what parks for a person, preferring a mechanical criterion wherever a test can decide it, and the Markdown and flowchart checks hosts declare in config.
 
 #### B2. Check for `mode: command` (`graphics-render-check`)
 
@@ -199,7 +199,7 @@ Both modes share the criteria forms, the visual review, and the sign-off rule. T
 Decided 2026-11-14: build it now, not after a failure.
 
 - `Route` gains an optional `kinds: list[Kind]` (absent means every kind). `resolve()` takes the ticket's kind and picks, in order: a `(tier, surface)` row whose `kinds` names the kind; a `(tier, surface)` row with no `kinds`; the `(tier, review)` fallback with the same two steps. A row with `kinds` never serves a kind it does not name.
-- This is a config schema change: the strict loader on an older chupa refuses a config carrying `kinds` as an unknown key, which `chupa/docs/host-contract.md` "Version migration" already describes as the behavior for a newer config ("Newer versions refuse with a road to upgrade chupa"). `schema_version` stays 1 because the key is optional and additive; the contract's inventory gains the field.
+- This is a config schema change: the strict loader on an older clutch refuses a config carrying `kinds` as an unknown key, which `clutch/docs/host-contract.md` "Version migration" already describes as the behavior for a newer config ("Newer versions refuse with a road to upgrade clutch"). `schema_version` stays 1 because the key is optional and additive; the contract's inventory gains the field.
 - Example for this repo once the operator sets models:
 
   ```yaml
@@ -207,11 +207,11 @@ Decided 2026-11-14: build it now, not after a failure.
   - {tier: medium, surface: review_visual, candidates: [{provider: gemini, model: gemini-3-pro}]}
   ```
 
-- **Judge independence.** `doctor` warns, and `chupa lint` on a graphics ticket snags, when the `review_visual` route resolves to the same model family as the graphics `implement` route (same provider and the same model, or an image model for the judge). The owner's note is the rule: the judge must be a general multimodal model, from a different family where possible, never the image model that produced the candidate.
+- **Judge independence.** `doctor` warns, and `clutch lint` on a graphics ticket snags, when the `review_visual` route resolves to the same model family as the graphics `implement` route (same provider and the same model, or an image model for the judge). The owner's note is the rule: the judge must be a general multimodal model, from a different family where possible, never the image model that produced the candidate.
 
 #### B4. Layer 1: deterministic checks (`image-quality-gate`)
 
-A new engine gate code `image_quality`, implemented in `chupa/images.py`, run by Check on every declared artifact in both modes. No model call. Fail closed: a check the ticket enables and the engine cannot run is a hard failure with a paved road, never a skip.
+A new engine gate code `image_quality`, implemented in `clutch/images.py`, run by Check on every declared artifact in both modes. No model call. Fail closed: a check the ticket enables and the engine cannot run is a hard failure with a paved road, never a skip.
 
 | Check | What it decides | Needs |
 |---|---|---|
@@ -223,11 +223,11 @@ A new engine gate code `image_quality`, implemented in `chupa/images.py`, run by
 
 - Thresholds are per-check engine defaults that a ticket may tighten, never loosen, in its mechanical criteria (`- ssim: >= 0.85 outside region (x, y, w, h)`). The defaults are set by the calibration in B7.
 - The gate also writes the operator artifacts the later layers show: a side-by-side of inputs, reference, and candidate, and a diff heatmap against the base image, under `tickets/<stem>/attempts/<n>/render/`.
-- **Dependencies ship as extras** (decision 18): `chupa[images]` = Pillow, numpy, scikit-image, imagehash, opencv-python-headless; `chupa[images-embed]` = open_clip and torch, for the embedding presence check only. `chupa/images.py` imports them lazily. A graphics ticket on a host without the extra fails the gate with the road `uv add --dev "chupa[images]"` (or `images-embed` when the ticket asks for embedding presence). Core chupa gains no dependency.
+- **Dependencies ship as extras** (decision 18): `clutch[images]` = Pillow, numpy, scikit-image, imagehash, opencv-python-headless; `clutch[images-embed]` = open_clip and torch, for the embedding presence check only. `clutch/images.py` imports them lazily. A graphics ticket on a host without the extra fails the gate with the road `uv add --dev "clutch[images]"` (or `images-embed` when the ticket asks for embedding presence). Core clutch gains no dependency.
 
 #### B5. Layer 2: the vision-model judge (`visual-review-surface`)
 
-- New spec `chupa/specs/review_visual.md` and surface `review_visual`. It runs after the correctness review, on `graphics` tickets only, read-only, routed by B3 to a general multimodal model that is not the generator.
+- New spec `clutch/specs/review_visual.md` and surface `review_visual`. It runs after the correctness review, on `graphics` tickets only, read-only, routed by B3 to a general multimodal model that is not the generator.
 - Inputs: the ticket, the prompt the generator received, every `input:` and `reference:` image, each candidate artifact, and the layer-1 scores. The reviewer opens images with its read tool (Claude's Read and Gemini's file reader both take images).
 - Rubric: the ticket's `visual:` criteria, plus for `generate` mode five fixed rows: the input is present and recognisable with the same identity and proportions; it is at the requested position and scale; lighting, shadows, and perspective match the base; everything outside the insert region is unchanged; no artifacts (warped text, extra limbs, seams, duplicated objects).
 - Output: structured JSON under a schema the gate enforces: one `pass` / `fail` / `unsure` per rubric row with the observation that decided it, and an overall verdict `accept` / `reject` / `unsure` with one sentence of reason. A reply that skips a row or names one not in the rubric is refused and re-prompted, as every driver reply is.
@@ -238,13 +238,13 @@ A new engine gate code `image_quality`, implemented in `chupa/images.py`, run by
 
 - For `mode: generate`, Implement produces `candidates:` images into `tickets/<stem>/attempts/<n>/render/cand-<k>.<ext>` (uncommitted) rather than the artifact path. The `implement.md` graphics block says so and forbids committing a candidate directly.
 - Check runs layer 1 on every candidate and drops any that fails a hard check. The judge (B5) scores the survivors. Ranking: judge verdict, then the count of `pass` rows, then the layer-1 presence and preservation scores.
-- **Select commit.** The top candidate with verdict `accept` and a margin (at least one more `pass` row than the runner-up, or the only survivor) is copied to the artifact path and committed as `chupa(<stem>): select`, the way Check already commits autofix changes. Review (correctness) then sees the committed image in the diff; the visual judgment is already on record.
-- **Park for a person.** No `accept`, an `accept` without margin, or any `unsure` overall verdict parks the ticket with reason `visual_undecided` and the side-by-side and heatmap artifacts for each surviving candidate, so the operator can decide in seconds. Release is the existing keep/kill pair (`docs/how-chupa-works.md` §6.6): `confirm <stem> --select <k>` commits candidate `k` as the select commit and continues to merge; `reject <stem>` kills it. A hold ships with its release: both verbs exist, and `--select` is the one addition.
+- **Select commit.** The top candidate with verdict `accept` and a margin (at least one more `pass` row than the runner-up, or the only survivor) is copied to the artifact path and committed as `clutch(<stem>): select`, the way Check already commits autofix changes. Review (correctness) then sees the committed image in the diff; the visual judgment is already on record.
+- **Park for a person.** No `accept`, an `accept` without margin, or any `unsure` overall verdict parks the ticket with reason `visual_undecided` and the side-by-side and heatmap artifacts for each surviving candidate, so the operator can decide in seconds. Release is the existing keep/kill pair (`docs/how-clutch-works.md` §6.6): `confirm <stem> --select <k>` commits candidate `k` as the select commit and continues to merge; `reject <stem>` kills it. A hold ships with its release: both verbs exist, and `--select` is the one addition.
 - Decided 2026-11-14: the judge decides; only the undecidable parks. There is no always-hold.
 
 #### B7. Calibration before trust (`visual-review-baseline`)
 
-The thresholds in B4 and the rubric wording in B5 are guesses until measured. Following the review-baseline precedent (`eval/harness.py`, `docs/how-chupa-works.md` §9.6):
+The thresholds in B4 and the rubric wording in B5 are guesses until measured. Following the review-baseline precedent (`eval/harness.py`, `docs/how-clutch-works.md` §9.6):
 
 - `eval/visual/` holds 20 to 50 hand-labelled outputs (`accept` or `reject`, with the inputs and prompt that produced them), committed as fixtures.
 - `./dev.py visual-baseline` runs layer 1 and the judge over them and reports agreement per rubric row and overall, and the layer-1 score distributions that separate the labels. The report is committed like the review baseline's.
@@ -253,31 +253,31 @@ The thresholds in B4 and the rubric wording in B5 are guesses until measured. Fo
 
 #### B8. Spec updates
 
-- `chupa/specs/implement.md`: a graphics block. For `command` mode: run the render command, open your own artifacts, compare them with the references and the visual criteria before committing; never commit artifacts. For `generate` mode: produce the declared number of candidates from the inputs and prompt; never commit a candidate; name in `run.md` what varied between candidates. The parallel plan's `conflict-discard-rerun` also bumps this spec; B2 runs first, and that ticket takes the next minor above what B2 leaves.
-- `chupa/specs/requisition_review.md`: a graphics block. Each `visual:` criterion can be decided from the named artifact alone. Snag a criterion that needs taste or a reading of intent, a `generate` ticket with no input and no prompt, and a `review_visual` route that resolves to the generator's model.
-- `chupa/specs/review.md`: for graphics tickets, the correctness reviewer judges the code and the committed artifact's provenance (the select commit matches a graded candidate), not the picture; the picture is `review_visual`'s.
-- `chupa/specs/author.md`: no text change. It embeds the skeletons, which gain `graphics` through `author.py`.
+- `clutch/specs/implement.md`: a graphics block. For `command` mode: run the render command, open your own artifacts, compare them with the references and the visual criteria before committing; never commit artifacts. For `generate` mode: produce the declared number of candidates from the inputs and prompt; never commit a candidate; name in `run.md` what varied between candidates. The parallel plan's `conflict-discard-rerun` also bumps this spec; B2 runs first, and that ticket takes the next minor above what B2 leaves.
+- `clutch/specs/requisition_review.md`: a graphics block. Each `visual:` criterion can be decided from the named artifact alone. Snag a criterion that needs taste or a reading of intent, a `generate` ticket with no input and no prompt, and a `review_visual` route that resolves to the generator's model.
+- `clutch/specs/review.md`: for graphics tickets, the correctness reviewer judges the code and the committed artifact's provenance (the select commit matches a graded candidate), not the picture; the picture is `review_visual`'s.
+- `clutch/specs/author.md`: no text change. It embeds the skeletons, which gain `graphics` through `author.py`.
 - Every bumped spec takes the next minor version above its version on main, and its test pin is fenced.
 
 ### Where each rule lives
 
 | Rule | Home |
 |---|---|
-| What a graphics ticket contains, both modes, how criteria are written, what parks | `chupa/docs/host-authoring.md` (the one authoring source) |
-| Ticket format (`## Render`, bullets, kind) | `chupa/tickets.py` |
-| Routing by kind, judge independence | `chupa/config.py` (`Route.kinds`), `chupa/providers.py` (`resolve`), `chupa/doctor.py` |
-| Layer 1 checks, thresholds, operator artifacts | `chupa/images.py` (gate code `image_quality` in `chupa/gates.py`) |
-| Layer 2 rubric and schema | `chupa/specs/review_visual.md` |
-| Layer 3 candidates, select commit, park and release | `chupa/stages.py` (Check), `chupa/runner.py` (`confirm --select`) |
-| Calibration and the GO verdict | `eval/visual/`, `./dev.py visual-baseline`, `chupa/policy.py` (`visual_baseline` beside the review baseline) |
-| How the implementer and reviewers behave | `chupa/specs/implement.md`, `review_visual.md`, `requisition_review.md`, `review.md` |
-| The `--kind` list in agent conduct | `CORE_TEMPLATE` in `chupa/hostfiles.py`, rendered by `chupa core` (+9 bytes against the roadmap's byte ledger) |
+| What a graphics ticket contains, both modes, how criteria are written, what parks | `clutch/docs/host-authoring.md` (the one authoring source) |
+| Ticket format (`## Render`, bullets, kind) | `clutch/tickets.py` |
+| Routing by kind, judge independence | `clutch/config.py` (`Route.kinds`), `clutch/providers.py` (`resolve`), `clutch/doctor.py` |
+| Layer 1 checks, thresholds, operator artifacts | `clutch/images.py` (gate code `image_quality` in `clutch/gates.py`) |
+| Layer 2 rubric and schema | `clutch/specs/review_visual.md` |
+| Layer 3 candidates, select commit, park and release | `clutch/stages.py` (Check), `clutch/runner.py` (`confirm --select`) |
+| Calibration and the GO verdict | `eval/visual/`, `./dev.py visual-baseline`, `clutch/policy.py` (`visual_baseline` beside the review baseline) |
+| How the implementer and reviewers behave | `clutch/specs/implement.md`, `review_visual.md`, `requisition_review.md`, `review.md` |
+| The `--kind` list in agent conduct | `CORE_TEMPLATE` in `clutch/hostfiles.py`, rendered by `clutch core` (+9 bytes against the roadmap's byte ledger) |
 | Dependencies | `pyproject.toml` extras `images` and `images-embed` |
 | Repo-only rules | none needed; `CLAUDE.md` and `AGENTS.md` outside the managed block are unchanged |
 
 ## Ticket breakdown
 
-Future tickets. None are authored yet. Each is written with `chupa new`, then `chupa lint` until clean, then `chupa review` until approved, with its tests in new files (`docs/parallel-tickets-plan.md` §7).
+Future tickets. None are authored yet. Each is written with `clutch new`, then `clutch lint` until clean, then `clutch review` until approved, with its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
@@ -286,12 +286,12 @@ Future tickets. None are authored yet. Each is written with `chupa new`, then `c
 | B1 | `graphics-kind` | feature | P2 | `closed-sets-single-home` (roadmap row 19) | Grammar for both modes, template, `--reference` and `--input`, lint, the kind set's one home, `CORE_TEMPLATE` (+9 bytes), authoring guide, requisition spec block. Release 0.4.0. |
 | B2 | `graphics-render-check` | feature | P2 | `graphics-kind` | `command` mode: render protocol and artifact checks at Check; implement spec block for both modes. Release 0.4.0. |
 | B3 | `route-kinds-filter` | feature | P2 | | `Route.kinds`, kind-aware `resolve()`, judge-independence warning in `doctor` and lint, host-contract inventory. Release 0.4.0. |
-| B4 | `image-quality-gate` | feature | P2 | `graphics-kind` | `chupa/images.py`, the `image_quality` gate, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. Release 0.4.0. |
+| B4 | `image-quality-gate` | feature | P2 | `graphics-kind` | `clutch/images.py`, the `image_quality` gate, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. Release 0.4.0. |
 | B5 | `visual-review-surface` | feature | P2 | `graphics-render-check`, `route-kinds-filter`, `image-quality-gate` | `review_visual` spec with rubric, JSON schema, `graphics.judge_samples` majority, per-row verdicts; `review.md` provenance block. Release 0.4.0. |
 | B6 | `image-candidates-select` | feature | P2 | `visual-review-surface` | Candidates in Implement, ranking, the select commit, `visual_undecided` park, `confirm --select`. Release 0.4.0. |
 | B7 | `visual-review-baseline` | feature | P2 | `visual-review-surface` | `eval/visual/` fixtures, `./dev.py visual-baseline`, the `visual_baseline` GO gate; until GO every graphics ticket parks. Release 0.4.0. |
 
-`Runs before`: B2 before `conflict-discard-rerun` (both bump `chupa/specs/implement.md`). B7 before B6 is not required (B6 parks everything until B7 records GO), but B7 should merge in the same release or B6 only ever parks. `contention-authoring-rules` (roadmap row 13) before every ticket here.
+`Runs before`: B2 before `conflict-discard-rerun` (both bump `clutch/specs/implement.md`). B7 before B6 is not required (B6 parks everything until B7 records GO), but B7 should merge in the same release or B6 only ever parks. `contention-authoring-rules` (roadmap row 13) before every ticket here.
 
 Part A and Part B are independent except through A0's fact 7. Within B, each `Depends on` names merged code the ticket uses. A1 is useful to B5 as the judge's routing target and to `evidence-normalize-gemini` as its prerequisite.
 

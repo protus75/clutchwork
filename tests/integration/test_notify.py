@@ -4,14 +4,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa.config import load_config
-from chupa.effects import Effects
-from chupa.enginelog import EngineLog
-from chupa.journal import EventType, Journal
-from chupa.notify import NOTIFY_RETRY_S, NotificationReconciler, notification_key, send
-from chupa.redact import Redactor
-from chupa.seams import CommandNotifications, NotificationFailed, SubprocessExec
+from clutch import __main__ as cli
+from clutch.config import load_config
+from clutch.effects import Effects
+from clutch.enginelog import EngineLog
+from clutch.journal import EventType, Journal
+from clutch.notify import NOTIFY_RETRY_S, NotificationReconciler, notification_key, send
+from clutch.redact import Redactor
+from clutch.seams import CommandNotifications, NotificationFailed, SubprocessExec
 from tests.integration.test_config import VALID
 from tests.integration.test_scheduler import Time
 from tests.waiting import wait_until
@@ -100,7 +100,7 @@ async def test_notify_seam_uses_argv_and_secret_free_env(tmp_path):
     assert secret not in result["stdout"] + result["stderr"]
     assert "[REDACTED:TEST_KEY]" in result["stdout"] and "[REDACTED:TEST_KEY]" in result["stderr"]
     assert await Effects(journal).run(lambda: seam.notify(argv), key="notify/test/argv/1", ticket=None) == result
-    for command in (["chupa-missing-notification-binary"], [sys.executable, "-c", f"import sys; print({secret!r}); sys.exit(4)"]):
+    for command in (["clutch-missing-notification-binary"], [sys.executable, "-c", f"import sys; print({secret!r}); sys.exit(4)"]):
         with pytest.raises(NotificationFailed) as exc:
             await effects.run(lambda: seam.notify(command), key=f"notify/test/failure/{command[0]}", ticket=None)
         assert secret not in str(exc.value) and "retry" in str(exc.value)

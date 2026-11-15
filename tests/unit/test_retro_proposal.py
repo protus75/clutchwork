@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from chupa.box import Message
-from chupa.retro import RetroProposal
+from clutch.box import Message
+from clutch.retro import RetroProposal
 
 SPEC = {"fixed_failure": "bad result", "overcorrection_risk": "lost coverage", "proposed_spec_paths": ["specs/review.md"]}
 TEST = {"fixed_failure": "slow test", "overcorrection_risk": "lost coverage", "test_issue": "slow", "proposed_paths": ["tests/unit/test_one.py"]}
@@ -60,9 +60,9 @@ async def test_emit_proposals_skips_existing_origin(monkeypatch):
     from pathlib import Path
     from types import SimpleNamespace
 
-    from chupa import daemon
-    from chupa.journal import Event, EventType
-    from chupa.retro import Retro
+    from clutch import daemon
+    from clutch.journal import Event, EventType
+    from clutch.retro import Retro
 
     other = SPEC | {"fixed_failure": "another failure"}
     pid = hashlib.sha256(json.dumps(SPEC, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()[:16]

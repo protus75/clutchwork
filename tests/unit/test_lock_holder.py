@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import runner
-from chupa.lockfile import LockHeld
+from clutch import __main__ as entry
+from clutch import runner
+from clutch.lockfile import LockHeld
 
 
 @pytest.mark.parametrize("holder", [{"verb": "drain"}, {"verb": "serve"}, {"verb": "triage"}, {"verb": "eval"}, {}, None])

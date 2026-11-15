@@ -6,25 +6,25 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
-from chupa.artifacts import Artifact, Finding
-from chupa.config import load_config
-from chupa.driver import Driver, LlmStage
-from chupa.effects import Effects, effect
-from chupa.journal import EventType, Journal, run_seq
-from chupa.llm import FakeLLM, LLMResult
-from chupa.llmeffect import llm_key
+from clutch.artifacts import Artifact, Finding
+from clutch.config import load_config
+from clutch.driver import Driver, LlmStage
+from clutch.effects import Effects, effect
+from clutch.journal import EventType, Journal, run_seq
+from clutch.llm import FakeLLM, LLMResult
+from clutch.llmeffect import llm_key
 
 SECRET = "sk-live-0123456789abcdef"
 
 CONFIG = textwrap.dedent(
     """\
     schema_version: 1
-    state_dir: .chupa
+    state_dir: .clutch
     providers:
       - name: claude
         kind: cli
         package: test-cli
-        auth: CHUPA_TEST_KEY
+        auth: CLUTCH_TEST_KEY
         models_by_tier: {low: haiku, medium: sonnet, high: opus, max: opus}
         limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
     routing:
@@ -70,7 +70,7 @@ def echo_json(echoed: str) -> str:
 def build(tmp_path: Path, llm: FakeLLM) -> tuple[Driver, Path]:
     (tmp_path / "config.yaml").write_text(CONFIG)
     config = load_config(None, cwd=tmp_path)
-    driver = Driver.from_config(config, llm=llm, env={"CHUPA_TEST_KEY": SECRET}, clock=clock, sleep=FakeSleep())
+    driver = Driver.from_config(config, llm=llm, env={"CLUTCH_TEST_KEY": SECRET}, clock=clock, sleep=FakeSleep())
     return driver, config.state_dir
 
 
@@ -186,7 +186,7 @@ def test_recorded_result_is_scrubbed_before_the_completion_and_the_return(tmp_pa
 
     journal_bytes = b"".join(p.read_bytes() for p in (state_dir / "journal").glob("*.jsonl"))
     assert SECRET.encode() not in journal_bytes
-    assert llm_completions(state_dir)[0].body["result"]["text"] == "leak [REDACTED:CHUPA_TEST_KEY]"
+    assert llm_completions(state_dir)[0].body["result"]["text"] == "leak [REDACTED:CLUTCH_TEST_KEY]"
 
 
 def test_failed_call_journals_no_completion_and_no_cost(tmp_path):

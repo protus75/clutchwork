@@ -2,19 +2,19 @@
 
 from pathlib import Path
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.artifacts import Harvest
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.specs import data_close, data_open
-from chupa.stages import PRIOR_ATTEMPTS
+from clutch import runner
+from clutch.__main__ import main
+from clutch.artifacts import Harvest
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.specs import data_close, data_open
+from clutch.stages import PRIOR_ATTEMPTS
 from tests.integration.test_stages import ENV, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
 
 
 def history(repo: Path):
-    return [e for e in Journal(repo / ".chupa" / "state", clock).read() if e.ticket == STEM]
+    return [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
 
 
 def invoke(repo: Path, script: list, stem: str = STEM) -> tuple[int, FakeLLM]:
@@ -27,18 +27,18 @@ def orphan(repo: Path, attempt: int = 0) -> Path:
     author(repo)
     git(repo, "add", f"tickets/{STEM}/ticket.md")
     git(repo, "commit", "-m", "ticket")
-    j = Journal(repo / ".chupa" / "state", clock)
+    j = Journal(repo / ".clutch" / "state", clock)
     if attempt:
         j.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=STEM)
         j.append(EventType.STATE_TRANSITION, {"to": "gate_failed", "stage": "implement"}, ticket=STEM)
     j.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=STEM)
-    path = repo / ".chupa" / "state" / "worktrees" / STEM
+    path = repo / ".clutch" / "state" / "worktrees" / STEM
     path.parent.mkdir(parents=True, exist_ok=True)
     git(repo, "worktree", "add", "-b", STEM, str(path), "main")
-    (path / "chupa" / "thing.py").write_text("orphan edit\n")
-    git(path, "add", "chupa/thing.py")
+    (path / "clutch" / "thing.py").write_text("orphan edit\n")
+    git(path, "add", "clutch/thing.py")
     git(path, "commit", "-m", "interrupted work")
-    spool = repo / ".chupa" / "state" / "spools" / STEM / str(attempt) / "implement"
+    spool = repo / ".clutch" / "state" / "spools" / STEM / str(attempt) / "implement"
     spool.mkdir(parents=True)
     (spool / "error.txt").write_text("provider died with useful detail")
     return path
@@ -46,16 +46,16 @@ def orphan(repo: Path, attempt: int = 0) -> Path:
 
 def test_run_harvests_orphan_before_reap_and_rerenders_its_reason(repo):
     path = orphan(repo, attempt=1)
-    code, llm = invoke(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    code, llm = invoke(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     assert code == 0
     saved = repo / "tickets" / STEM / "attempts" / "1" / "harvest.json"
     harvest = Harvest.model_validate_json(saved.read_text())
     assert harvest.attempt == 1 and harvest.terminal == "abandoned" and harvest.stage is None
     assert harvest.findings == [] and harvest.wall_seconds is None and harvest.usd is None
-    assert "chupa/thing.py" in harvest.diff_stat
+    assert "clutch/thing.py" in harvest.diff_stat
     assert "provider died with useful detail" in harvest.reason
-    assert f"chupa({STEM}): harvest" in git(repo, "log", "--format=%s", "main")
+    assert f"clutch({STEM}): harvest" in git(repo, "log", "--format=%s", "main")
     events = history(repo)
     lift = next(i for i, e in enumerate(events) if e.type == EventType.EFFECT_COMPLETION and e.key == f"ticket-plane/{STEM}/1/harvest")
     abandoned = next(i for i, e in enumerate(events) if e.type == EventType.STATE_TRANSITION and e.body.get("to") == "abandoned")
@@ -68,11 +68,11 @@ def test_run_harvests_orphan_before_reap_and_rerenders_its_reason(repo):
 
 
 def test_missing_worktree_reaps_without_a_harvest_commit(repo):
-    Journal(repo / ".chupa" / "state", clock).append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=STEM)
+    Journal(repo / ".clutch" / "state", clock).append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=STEM)
     code, _ = invoke(repo, [], stem="missing")
     assert code == 2
     assert any(e.type == EventType.STATE_TRANSITION and e.body.get("to") == "abandoned" for e in history(repo))
-    assert f"chupa({STEM}): harvest" not in git(repo, "log", "--format=%s", "main")
+    assert f"clutch({STEM}): harvest" not in git(repo, "log", "--format=%s", "main")
 
 
 def test_harvest_failure_signals_and_still_reaps(repo, monkeypatch):

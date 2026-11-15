@@ -1,0 +1,113 @@
+:root {
+	/* clutch.* theme colors (package.json `colors`) default to the SCM graph's ref colors; the fallbacks cover a
+	   VS Code that does not resolve them. Override per theme in workbench.colorCustomizations. */
+	--clutch-merged: var(--vscode-clutchwork-merged, var(--vscode-scmGraph-historyItemRemoteRefColor, #B180D7));
+	--clutch-queued: var(--vscode-clutchwork-queued, var(--vscode-scmGraph-historyItemRefColor, #3794FF));
+	--clutch-blocked: var(--vscode-clutchwork-blocked, var(--vscode-scmGraph-historyItemBaseRefColor, #EA5C00));
+}
+
+html, body {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	color: var(--vscode-foreground);
+}
+
+#header {
+	padding: 2px 8px 4px;
+	color: var(--vscode-descriptionForeground);
+	font-size: 11px;
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	height: 22px;
+	padding-left: 4px;
+	white-space: nowrap;
+	cursor: default;
+}
+
+.row:hover {
+	background: var(--vscode-list-hoverBackground);
+}
+
+.graph {
+	flex: none;
+	stroke: var(--vscode-sideBar-background, var(--vscode-editor-background));
+}
+
+.stem {
+	margin-left: 4px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: none;
+	max-width: 60%;
+}
+
+.row.merged .stem { color: var(--clutch-merged); }
+.row.queued .stem, .row.running .stem { color: var(--clutch-queued); }
+.row.blocked .stem { color: var(--clutch-blocked); }
+.row.running .stem { font-weight: bold; }
+
+.priority {
+	margin-left: 4px;
+	color: var(--vscode-descriptionForeground);
+	font-size: 0.9em;
+	flex: none;
+}
+
+.status {
+	margin-left: 8px;
+	color: var(--vscode-descriptionForeground);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 0.9em;
+}
+
+#detail {
+	padding: 6px 10px;
+}
+
+#list {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.row.pinned {
+	background: var(--vscode-list-inactiveSelectionBackground);
+}
+
+.detail-title { font-weight: bold; }
+.detail-meta { color: var(--vscode-descriptionForeground); margin-top: 2px; }
+.detail-section { margin-top: 8px; }
+.detail-heading { font-weight: bold; font-size: 0.9em; margin-bottom: 2px; }
+.detail-text { white-space: pre-wrap; }
+.detail-subject { white-space: pre-wrap; }
+.detail-links { margin-top: 8px; border-top: 1px solid var(--vscode-editorHoverWidget-border); padding-top: 6px; }
+.link { color: var(--vscode-textLink-foreground); }
+
+.badge {
+	border-radius: 8px;
+	padding: 0 6px;
+	font-size: 0.85em;
+	color: var(--vscode-editor-background);
+}
+
+.badge.merged { background: var(--clutch-merged); }
+.badge.queued, .badge.running { background: var(--clutch-queued); }
+.badge.blocked { background: var(--clutch-blocked); }
+
+.badge.pending { background: var(--clutch-queued); }
+.badge.resolved { background: var(--clutch-merged); }
+.detail-links .link + .link { margin-left: 8px; }
+
+.help-text { white-space: pre-wrap; color: var(--vscode-descriptionForeground); margin-top: 4px; }

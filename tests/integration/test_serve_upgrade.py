@@ -5,13 +5,13 @@ import json
 
 import pytest
 
-from chupa import daemon, runner, stages
-from chupa.audit import audit_journal
-from chupa.control import publish_request
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile
-from chupa.merge import Admission
-from chupa.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
+from clutch import daemon, runner, stages
+from clutch.audit import audit_journal
+from clutch.control import publish_request
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile
+from clutch.merge import Admission
+from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from tests.integration.serve_rig import (
     UpgradeChild,
     admission_config,
@@ -34,7 +34,7 @@ from tests.integration.test_scheduler import text, turn
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("path", ["chupa/thing.py", "docs/guide.md"])
+@pytest.mark.parametrize("path", ["clutch/thing.py", "docs/guide.md"])
 async def test_upgrade_after_real_merge(root, monkeypatch, path):
     rig = await admission_graph(root, monkeypatch, {"work": {path: "ok\n"}})
     await enable_upgrade(rig, root)
@@ -51,15 +51,15 @@ async def test_upgrade_after_real_merge(root, monkeypatch, path):
     run = asyncio.create_task(rig.owner.run())
     try:
         await until(rig, lambda: bool(terminals(rig, "work")))
-        if path.startswith("chupa/"):
+        if path.startswith("clutch/"):
             await until(rig, run.done)
             assert await run == 7
             assert len(rig.owner.reexec.calls) == 1
             argv, cwd, env, timeout = rig.owner.reexec.calls[0]
-            assert argv == ["uv", "run", "--project", str(rig.owner.engine), "python", "-m", "chupa", "--config", "config.yaml", "serve"]
+            assert argv == ["uv", "run", "--project", str(rig.owner.engine), "python", "-m", "clutch", "--config", "config.yaml", "serve"]
             assert cwd == root and env == rig.checkout.env and timeout is None
             [handoff] = [e for e in rig.journal.read() if e.body.get("signal") == "serve_handoff"]
-            assert handoff.body == {"signal": "serve_handoff", "chupa": await rig.checkout.git.rev_parse(root, "HEAD:chupa")}
+            assert handoff.body == {"signal": "serve_handoff", "clutch": await rig.checkout.git.rev_parse(root, "HEAD:clutch")}
             assert rig.journal.read().index(terminals(rig, "work")[0]) < rig.journal.read().index(handoff)
         else:
             await until(rig, checked_after_merge.is_set)
@@ -73,16 +73,16 @@ async def test_upgrade_after_real_merge(root, monkeypatch, path):
 async def test_external_engine_change_at_admission(root, tmp_path, monkeypatch):
     rig = await graph(root, monkeypatch)
     engine = tmp_path / "engine"
-    (engine / "chupa").mkdir(parents=True)
-    (engine / "chupa/a.py").write_text("old")
+    (engine / "clutch").mkdir(parents=True)
+    (engine / "clutch/a.py").write_text("old")
     await rig.checkout.git.init(engine, branch="main")
-    await rig.checkout.git.add(engine, ["chupa"])
+    await rig.checkout.git.add(engine, ["clutch"])
     await rig.checkout.git.commit(engine, "base")
     await enable_upgrade(rig, engine)
     run = asyncio.create_task(rig.owner.run())
     await until(rig, rig.owner.ready.is_set)
-    (engine / "chupa/a.py").write_text("new")
-    await rig.checkout.git.add(engine, ["chupa/a.py"])
+    (engine / "clutch/a.py").write_text("new")
+    await rig.checkout.git.add(engine, ["clutch/a.py"])
     await rig.checkout.git.commit(engine, "upgrade")
     await until(rig, run.done)
     assert await run == 7 and len(rig.owner.reexec.calls) == 1
@@ -100,8 +100,8 @@ async def test_upgrade_waits_for_continuation(root, monkeypatch):
     await until(rig, lambda: "work" in rig.owner.writers and "work" in rig.owner.writers["work"].continuations)
     await until(rig, lambda: rig.owner.core.scheduler.active is None and rig.owner.core.admission.active is None)
     async with rig.owner.core.admission._slot:
-        (root / "chupa/thing.py").write_text("changed")
-        await rig.checkout.git.add(root, ["chupa/thing.py"])
+        (root / "clutch/thing.py").write_text("changed")
+        await rig.checkout.git.add(root, ["clutch/thing.py"])
         await rig.checkout.git.commit(root, "upgrade")
     await until(rig, lambda: rig.owner.upgrade is not None)
     write(root, "other", text())
@@ -144,8 +144,8 @@ async def test_kill_accepted_during_upgrade_cleanup_prevents_spawn(root, monkeyp
     run = asyncio.create_task(rig.owner.run())
     await until(rig, rig.owner.ready.is_set)
     async with rig.owner.core.admission._slot:
-        (root / "chupa/thing.py").write_text("changed")
-        await rig.checkout.git.add(root, ["chupa/thing.py"])
+        (root / "clutch/thing.py").write_text("changed")
+        await rig.checkout.git.add(root, ["clutch/thing.py"])
         await rig.checkout.git.commit(root, "upgrade")
     await until(rig, run.done)
     assert await run == 0 and not rig.owner.reexec.calls

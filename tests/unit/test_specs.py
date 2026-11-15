@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from chupa.specs import (
+from clutch.specs import (
     DATA_DELIM,
     QUOTED_DELIM,
     RENDER_BOUND_CHARS,
@@ -21,7 +21,7 @@ from chupa.specs import (
 
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
-    specs = Path(__file__).resolve().parents[2] / "chupa" / "specs"
+    specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
     for name, version in (("implement", "2.13"), ("requisition_review", "3.15"), ("diagnose", "1.5")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
@@ -29,7 +29,7 @@ def test_spec_lint_accepts_the_implement_and_requisition_specs():
 
 
 def test_requisition_review_spec_checks_changed_text_against_unchanged():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/requisition_review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/requisition_review.md").read_text()
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
@@ -43,7 +43,7 @@ def test_requisition_review_spec_checks_changed_text_against_unchanged():
 
 
 def test_requisition_review_spec_raises_impossible_criteria_unchanged():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/requisition_review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/requisition_review.md").read_text()
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
@@ -58,7 +58,7 @@ def test_requisition_review_spec_raises_impossible_criteria_unchanged():
 
 
 def test_requisition_review_spec_snags_missing_reproduction_exit():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/requisition_review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/requisition_review.md").read_text()
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
@@ -74,7 +74,7 @@ def test_requisition_review_spec_snags_missing_reproduction_exit():
 
 
 def test_requisition_review_spec_snags_non_protocol_regression():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/requisition_review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/requisition_review.md").read_text()
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
@@ -94,7 +94,7 @@ def test_requisition_review_spec_snags_non_protocol_regression():
 
 
 def test_diagnose_spec_lesson_length_guidance():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/diagnose.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/diagnose.md").read_text()
     task = " ".join(load_spec(text).body.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
     # Output-only caps, unsplit lessons, or brevity without actionable names miss the guidance.
     for rule in (
@@ -106,7 +106,7 @@ def test_diagnose_spec_lesson_length_guidance():
 
 
 def test_diagnose_spec_states_attempt_starting_point():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/diagnose.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/diagnose.md").read_text()
     assert "Every attempt starts from the merge base" in text
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
@@ -120,7 +120,7 @@ def test_diagnose_spec_states_attempt_starting_point():
 
 
 def test_implement_spec_consumer_read():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/implement.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/implement.md").read_text()
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
@@ -227,7 +227,7 @@ def test_implement_spec_consumer_read():
 
 
 def test_review_spec_read_only():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/review.md").read_text()
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
@@ -270,7 +270,7 @@ def test_review_spec_read_only():
 
 
 def test_review_spec_checks_docs():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/review.md").read_text()
     spec = load_spec(text)
     assert spec.meta.version == "1.5"
     assert spec.inputs == ("ticket", "diff", "prior_review", "retry_findings")
@@ -286,7 +286,7 @@ def test_review_spec_checks_docs():
 
 
 def test_review_spec_routes_out_of_fence_breakage():
-    text = (Path(__file__).resolve().parents[2] / "chupa/specs/review.md").read_text()
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/review.md").read_text()
     body = " ".join(load_spec(text).body.split())
     for rule in (
         "Out-of-fence breakage the diff causes: a consumer outside the fence is broken by the diff only when reading it lets you trace a changed line to the break.",
@@ -341,7 +341,7 @@ def test_render_bound_and_headroom_are_the_plan_constants():
 
 def test_engine_source_never_spells_the_raw_delimiter():
     # Section 13: a file carrying the raw delimiter can never be injected as Context.
-    for p in ("chupa/specs/__init__.py", "tests/unit/test_specs.py"):
+    for p in ("clutch/specs/__init__.py", "tests/unit/test_specs.py"):
         assert DATA_DELIM not in (Path(__file__).resolve().parents[2] / p).read_text()
 
 

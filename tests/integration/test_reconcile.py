@@ -4,24 +4,24 @@ from pathlib import Path
 
 import pytest
 
-from chupa import journal as journal_module
-from chupa import runner
-from chupa import stages as stage_module
-from chupa.audit import audit_journal
-from chupa.git import Git
-from chupa.journal import EVENT_VERSIONS, SIGNAL_NAMES, TERMINAL_STATES, EventType, Journal, render_ts, run_seq
-from chupa.llm import FakeLLM
-from chupa.reconcile import RECOVERY_ALERT, orphans, reconcile
-from chupa.seams import SubprocessExec
-from chupa.status import last_states
+from clutch import journal as journal_module
+from clutch import runner
+from clutch import stages as stage_module
+from clutch.audit import audit_journal
+from clutch.git import Git
+from clutch.journal import EVENT_VERSIONS, SIGNAL_NAMES, TERMINAL_STATES, EventType, Journal, render_ts, run_seq
+from clutch.llm import FakeLLM
+from clutch.reconcile import RECOVERY_ALERT, orphans, reconcile
+from clutch.seams import SubprocessExec
+from clutch.status import last_states
 from tests.integration.test_cli import ENV, Clock, Stages, cli, git_out, journal, root, ticket, write  # noqa: F401
 from tests.integration.test_git import commit_lock
 
-STATE = Path(".chupa") / "state"
+STATE = Path(".clutch") / "state"
 
 
 def git(root) -> Git:
-    return Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".chupa/state"))
+    return Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
 
 
 def orphan_worktree(root: Path, stem: str) -> Path:

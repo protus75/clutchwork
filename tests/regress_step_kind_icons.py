@@ -8,7 +8,7 @@ from pathlib import Path
 
 def main() -> int:
     try:
-        import chupa.observe as observe
+        import clutch.observe as observe
 
         if not hasattr(observe, "STEP_KINDS"):
             outcome, code = "defect", 1

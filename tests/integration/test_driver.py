@@ -7,26 +7,26 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel, ConfigDict
 
-from chupa.artifacts import Artifact, Finding
-from chupa.config import load_config
-from chupa.driver import Driver, LlmStage, unwrap_fence
-from chupa.enginelog import EngineLog
-from chupa.gates import GateReport
-from chupa.journal import Journal
-from chupa.llm import HANG, FakeLLM, LLMRequest, LLMResult
-from chupa.redact import Redactor
+from clutch.artifacts import Artifact, Finding
+from clutch.config import load_config
+from clutch.driver import Driver, LlmStage, unwrap_fence
+from clutch.enginelog import EngineLog
+from clutch.gates import GateReport
+from clutch.journal import Journal
+from clutch.llm import HANG, FakeLLM, LLMRequest, LLMResult
+from clutch.redact import Redactor
 
 SECRET = "sk-live-0123456789abcdef"
 
 CONFIG = textwrap.dedent(
     """\
     schema_version: 1
-    state_dir: .chupa
+    state_dir: .clutch
     providers:
       - name: claude
         kind: cli
         package: test-cli
-        auth: CHUPA_TEST_KEY
+        auth: CLUTCH_TEST_KEY
         models_by_tier: {low: haiku, medium: sonnet, high: opus, max: opus}
         limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
     routing:
@@ -98,7 +98,7 @@ def build(tmp_path: Path, llm: FakeLLM, *, fires: bool = False, env=None) -> tup
     driver = Driver.from_config(
         config,
         llm=llm,
-        env={"CHUPA_TEST_KEY": SECRET} if env is None else env,
+        env={"CLUTCH_TEST_KEY": SECRET} if env is None else env,
         clock=clock,
         sleep=FakeSleep(fires=fires),
     )
@@ -375,16 +375,16 @@ def test_configured_secret_value_never_reaches_spool_or_engine_log(tmp_path):
     assert {p.name for p in files} >= {"prompt.md", "output.txt", "error.txt", "engine.log"}
     for p in files:
         assert SECRET not in p.read_text(), p
-    assert "[REDACTED:CHUPA_TEST_KEY]" in (spool(state) / "implement" / "call-01" / "prompt.md").read_text()
-    assert "[REDACTED:CHUPA_TEST_KEY]" in (spool(state) / "implement" / "call-02" / "error.txt").read_text()
+    assert "[REDACTED:CLUTCH_TEST_KEY]" in (spool(state) / "implement" / "call-01" / "prompt.md").read_text()
+    assert "[REDACTED:CLUTCH_TEST_KEY]" in (spool(state) / "implement" / "call-02" / "error.txt").read_text()
 
 
 def test_redactor_from_config_skips_unset_and_empty_values(tmp_path):
     (tmp_path / "config.yaml").write_text(CONFIG)
     config = load_config(None, cwd=tmp_path)
     assert Redactor.from_config(config, {}).scrub("abc") == "abc"
-    assert Redactor.from_config(config, {"CHUPA_TEST_KEY": ""}).scrub("abc") == "abc"
-    assert Redactor.from_config(config, {"CHUPA_TEST_KEY": "b"}).scrub("abc") == "a[REDACTED:CHUPA_TEST_KEY]c"
+    assert Redactor.from_config(config, {"CLUTCH_TEST_KEY": ""}).scrub("abc") == "abc"
+    assert Redactor.from_config(config, {"CLUTCH_TEST_KEY": "b"}).scrub("abc") == "a[REDACTED:CLUTCH_TEST_KEY]c"
 
 
 def test_redactor_replaces_longest_secret_first():

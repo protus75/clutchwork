@@ -11,7 +11,7 @@ from typing import get_args
 
 import pytest
 
-from chupa import (
+from clutch import (
     artifacts,
     audit,
     author,
@@ -134,7 +134,7 @@ def test_drain_closed_sets_and_constants():
     assert drain.reexec_argv(["drain"])[-1] == "drain"
     assert drain.RETIRED == frozenset({"rejected"})
     assert drain.SETTLED == frozenset({"already_satisfied", "merged"})
-    assert drain.UPGRADE_PREFIXES == ("chupa/",)
+    assert drain.UPGRADE_PREFIXES == ("clutch/",)
 
 
 def test_enginelog_closed_sets_and_constants():
@@ -334,9 +334,9 @@ from datetime import UTC, datetime  # noqa: E402
 
 from pydantic import TypeAdapter, ValidationError  # noqa: E402
 
-from chupa.box import Message  # noqa: E402
-from chupa.journal import EventType, Journal  # noqa: E402
-from chupa.tickets import Frontmatter  # noqa: E402
+from clutch.box import Message  # noqa: E402
+from clutch.journal import EventType, Journal  # noqa: E402
+from clutch.tickets import Frontmatter  # noqa: E402
 
 LEVELS = {"low", "medium", "high", "max"}
 FRONTMATTER_VOCABULARIES = {

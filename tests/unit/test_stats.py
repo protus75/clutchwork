@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
-from chupa.journal import Event, EventType
-from chupa.stats import project_stats, window_start
+from clutch.journal import Event, EventType
+from clutch.stats import project_stats, window_start
 
 
 def test_latest_settled_excludes_future_and_replaces_earlier_event():

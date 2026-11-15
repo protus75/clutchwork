@@ -3,13 +3,13 @@
 import json
 from pathlib import Path
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.box import BOX_DIR, Box
-from chupa.config import load_config
-from chupa.llm import FakeLLM
-from chupa.seams import LocalFileSystem
-from chupa.stages import ImplementReply
+from clutch import runner
+from clutch.__main__ import main
+from clutch.box import BOX_DIR, Box
+from clutch.config import load_config
+from clutch.llm import FakeLLM
+from clutch.seams import LocalFileSystem
+from clutch.stages import ImplementReply
 from tests.integration.test_stages import ENV, STEM, agent, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
 
@@ -50,7 +50,7 @@ def test_ok_reply_files_two_problems_and_lifts_ids_in_order(repo):
     summaries = ["First issue at line 42", "Second issue has\na newline"]
 
     def implement(req):
-        agent({"chupa/thing.py": "ok\n"})(req)
+        agent({"clutch/thing.py": "ok\n"})(req)
         return reply("ok", summaries)
 
     assert run(repo, [implement, verdict()]) == 0

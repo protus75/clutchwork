@@ -9,20 +9,20 @@ from pathlib import Path
 
 import yaml
 
-from chupa.__main__ import build_control
-from chupa.config import Config, load_config
-from chupa.drain import Report, drain
-from chupa.git import Git
-from chupa.hostfiles import render
-from chupa.journal import Journal
-from chupa.llm import LLM, FakeLLM, ScriptItem
-from chupa.providers import ProviderLLM, routed_conduct_paths
-from chupa.runner import Checkout, Dispatch, bind, pipeline
-from chupa.seams import LocalFileSystem, SubprocessExec
+from clutch.__main__ import build_control
+from clutch.config import Config, load_config
+from clutch.drain import Report, drain
+from clutch.git import Git
+from clutch.hostfiles import render
+from clutch.journal import Journal
+from clutch.llm import LLM, FakeLLM, ScriptItem
+from clutch.providers import ProviderLLM, routed_conduct_paths
+from clutch.runner import Checkout, Dispatch, bind, pipeline
+from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_git import commit_lock
 
 _CONFIG = """schema_version: 1
-state_dir: .chupa/state
+state_dir: .clutch/state
 providers:
   - name: fake
     kind: cli
@@ -55,7 +55,7 @@ class Bench:
         self.repo.mkdir(parents=True)
         self.fs = LocalFileSystem()
         self.fs.write(self.repo / "config.yaml", _CONFIG.encode())
-        self.fs.write(self.repo / ".gitignore", b".chupa/\n")
+        self.fs.write(self.repo / ".gitignore", b".clutch/\n")
         self.config = load_config(None, cwd=self.repo)
         self.clock = AdvancingClock()
         self._sleep_wake = asyncio.Event()
@@ -69,7 +69,7 @@ class Bench:
             "GIT_COMMITTER_NAME": "shakeout",
             "GIT_COMMITTER_EMAIL": "shakeout@example.invalid",
         }
-        self.git = Git(self.process, env=self.env, timeout=30.0, commit_lock=commit_lock(root / ".chupa/state"))
+        self.git = Git(self.process, env=self.env, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
         self.journal = Journal(self.config.state_dir, self.clock)
         self.llm = llm if llm is not None else FakeLLM([])
         self.report: Report | None = None

@@ -1,0 +1,581 @@
+{
+	"name": "vscode-clutchwork",
+	"displayName": "ClutchWork tickets",
+	"description": "VS Code extension for the ClutchWork ticket system (https://pypi.org/project/clutchwork/): tickets as an SCM-style dependency graph: blocked, queued, running, merged.",
+	"version": "0.0.43",
+	"publisher": "chunkydragon",
+	"icon": "media/marketplace-icon.png",
+	"extensionKind": [
+		"workspace"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/protus75/clutchwork.git"
+	},
+	"files": [
+		"extension.js",
+		"media/**",
+		"README.md",
+		"LICENSE"
+	],
+	"license": "SEE LICENSE IN LICENSE",
+	"engines": {
+		"vscode": "^1.90.0"
+	},
+	"main": "./extension.js",
+	"activationEvents": [
+		"workspaceContains:tickets/*/ticket.md"
+	],
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "clutch",
+					"title": "ClutchWork",
+					"icon": "media/icon.svg"
+				}
+			]
+		},
+		"views": {
+			"clutch": [
+				{
+					"type": "webview",
+					"id": "clutch.details",
+					"name": "Details",
+					"initialSize": 2
+				},
+				{
+					"id": "clutch.steps",
+					"name": "Recent Steps",
+					"initialSize": 2
+				},
+				{
+					"type": "webview",
+					"id": "clutch.tickets",
+					"name": "Tickets",
+					"initialSize": 6
+				},
+				{
+					"type": "webview",
+					"id": "clutch.box",
+					"name": "Suggestion Box"
+				},
+				{
+					"id": "clutch.stats",
+					"name": "Stats",
+					"visibility": "collapsed"
+				}
+			]
+		},
+		"configuration": {
+			"title": "ClutchWork",
+			"properties": {
+				"clutch.command": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"scope": "resource",
+					"default": [
+						".venv/bin/clutch"
+					],
+					"markdownDescription": "The command and arguments used to run clutch in this workspace.\n\nBefore: The default uses the host’s .venv/bin/clutch.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md#vs-code-extension)"
+				},
+				"clutch.statsWindow": {
+					"type": "string",
+					"default": "7d",
+					"pattern": "^[1-9][0-9]*[hdt]$",
+					"markdownDescription": "The window used for Stats, in hours, days, or settled tickets.\n\nBefore: Stats uses 7d by default.\n\nAfter: Set a window such as 24h, 7d, or 10t.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+				},
+				"clutch.refreshSeconds": {
+					"type": "number",
+					"default": 15,
+					"minimum": 0,
+					"markdownDescription": "Seconds between timed view refreshes.\n\nBefore: Views also refresh on watched file changes.\n\nAfter: Set 0 to turn off the timer.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+				},
+				"clutch.unavailableMenuItems": {
+					"type": "string",
+					"enum": [
+						"disable",
+						"hide"
+					],
+					"default": "disable",
+					"enumDescriptions": [
+						"Show every ticket action; grey out the ones that cannot run right now (engine running, unmet dependencies, uncommitted draft).",
+						"Show only the ticket actions that can run right now."
+					],
+					"markdownDescription": "How unavailable ticket actions appear in the menu.\n\nBefore: Unavailable actions are disabled by default.\n\nAfter: Choose hide to omit them.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+				},
+				"clutch.playAction": {
+					"type": "string",
+					"enum": [
+						"drain",
+						"serve"
+					],
+					"default": "drain",
+					"enumDescriptions": [
+						"Run eligible tickets to quiescence, then exit.",
+						"Run the continuous daemon until stopped."
+					],
+					"markdownDescription": "The action started by the Tickets play button.\n\nBefore: The button starts drain by default.\n\nAfter: Choose serve to start the daemon.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "clutch.askDrainLoop",
+				"title": "Ask Claude: drain loop",
+				"category": "clutch"
+			},
+			{
+				"command": "clutch.refresh",
+				"title": "Refresh",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "clutch.ticket.open",
+				"title": "Open ticket.md",
+				"category": "clutch"
+			},
+			{
+				"command": "clutch.ticket.review",
+				"title": "Review",
+				"category": "clutch",
+				"enablement": "clutchReview == 'on'"
+			},
+			{
+				"command": "clutch.ticket.lint",
+				"title": "Lint",
+				"category": "clutch",
+				"enablement": "clutchLint == 'on'"
+			},
+			{
+				"command": "clutch.ticket.run",
+				"title": "Run now",
+				"category": "clutch",
+				"enablement": "clutchRun == 'on'"
+			},
+			{
+				"command": "clutch.ticket.confirm",
+				"title": "Confirm (keep)",
+				"category": "clutch",
+				"enablement": "clutchConfirm == 'on'"
+			},
+			{
+				"command": "clutch.ticket.reject",
+				"title": "Reject (kill)",
+				"category": "clutch",
+				"enablement": "clutchReject == 'on'"
+			},
+			{
+				"command": "clutch.ticket.askDiagnose",
+				"title": "Ask Claude: diagnose",
+				"category": "clutch",
+				"enablement": "clutchAskDiagnose == 'on'"
+			},
+			{
+				"command": "clutch.ticket.askReview",
+				"title": "Ask Claude: review",
+				"category": "clutch",
+				"enablement": "clutchAskReview == 'on'"
+			},
+			{
+				"command": "clutch.openSettings",
+				"title": "clutch Settings",
+				"icon": "$(gear)"
+			},
+			{
+				"command": "clutch.lifecycle",
+				"title": "Ticket lifecycle",
+				"category": "clutch",
+				"icon": "$(question)"
+			},
+			{
+				"command": "clutch.ticket.priority",
+				"title": "Set priority…",
+				"category": "clutch",
+				"enablement": "clutchPriority == 'on'"
+			},
+			{
+				"command": "clutch.ticket.runsBefore",
+				"title": "Run before…",
+				"category": "clutch",
+				"enablement": "clutchRunsBefore == 'on'"
+			},
+			{
+				"command": "clutch.box.open",
+				"title": "Open message file",
+				"category": "clutch"
+			},
+			{
+				"command": "clutch.box.link",
+				"title": "Open ticket/record",
+				"category": "clutch"
+			},
+			{
+				"command": "clutch.box.triage",
+				"title": "Triage",
+				"category": "clutch",
+				"enablement": "clutchTriage == 'on'"
+			},
+			{
+				"command": "clutch.box.dismiss",
+				"title": "Dismiss",
+				"category": "clutch",
+				"enablement": "clutchDismiss == 'on'"
+			},
+			{
+				"command": "clutch.box.discuss",
+				"title": "Ask Claude: discuss",
+				"category": "clutch"
+			},
+			{
+				"command": "clutch.bulkTriage",
+				"title": "Bulk Triage",
+				"category": "clutch"
+			},
+			{
+				"command": "clutch.engine",
+				"title": "Engine…",
+				"icon": "$(server-process)"
+			},
+			{
+				"command": "clutch.playDrain",
+				"title": "Start drain",
+				"icon": "$(play)"
+			},
+			{
+				"command": "clutch.playServe",
+				"title": "Start serve",
+				"icon": "$(play)"
+			},
+			{
+				"command": "clutch.stopRunning",
+				"title": "Stop after the running ticket",
+				"icon": "$(debug-stop)"
+			},
+			{
+				"command": "clutch.openConfig",
+				"title": "Open config.yaml",
+				"icon": "$(file-code)"
+			},
+			{
+				"command": "clutch.ticket.askDrafts",
+				"title": "Ask Claude: assess drafts",
+				"category": "clutch",
+				"enablement": "clutchAskDrafts == 'on'"
+			},
+			{
+				"command": "clutch.help",
+				"title": "Help",
+				"icon": "$(question)"
+			}
+		],
+		"menus": {
+			"webview/context": [
+				{
+					"command": "clutch.ticket.open",
+					"when": "webviewId == 'clutch.tickets' && clutchStem",
+					"group": "1_open"
+				},
+				{
+					"command": "clutch.ticket.review",
+					"when": "webviewId == 'clutch.tickets' && (clutchReview == 'on' || clutchReview == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "2_engine@1"
+				},
+				{
+					"command": "clutch.ticket.lint",
+					"when": "webviewId == 'clutch.tickets' && (clutchLint == 'on' || clutchLint == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "2_engine@2"
+				},
+				{
+					"command": "clutch.ticket.run",
+					"when": "webviewId == 'clutch.tickets' && (clutchRun == 'on' || clutchRun == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "2_engine@3"
+				},
+				{
+					"command": "clutch.ticket.confirm",
+					"when": "webviewId == 'clutch.tickets' && (clutchConfirm == 'on' || clutchConfirm == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "3_verdict@1"
+				},
+				{
+					"command": "clutch.ticket.reject",
+					"when": "webviewId == 'clutch.tickets' && (clutchReject == 'on' || clutchReject == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "3_verdict@2"
+				},
+				{
+					"command": "clutch.ticket.askDiagnose",
+					"when": "webviewId == 'clutch.tickets' && (clutchAskDiagnose == 'on' || clutchAskDiagnose == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "4_claude@1"
+				},
+				{
+					"command": "clutch.ticket.askReview",
+					"when": "webviewId == 'clutch.tickets' && (clutchAskReview == 'on' || clutchAskReview == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "4_claude@2"
+				},
+				{
+					"command": "clutch.ticket.priority",
+					"when": "webviewId == 'clutch.tickets' && (clutchPriority == 'on' || clutchPriority == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "2_engine"
+				},
+				{
+					"command": "clutch.ticket.runsBefore",
+					"when": "webviewId == 'clutch.tickets' && (clutchRunsBefore == 'on' || clutchRunsBefore == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "2_engine"
+				},
+				{
+					"command": "clutch.box.open",
+					"when": "webviewId == 'clutch.box' && clutchPath",
+					"group": "box@10"
+				},
+				{
+					"command": "clutch.box.link",
+					"when": "webviewId == 'clutch.box' && clutchLink",
+					"group": "box@11"
+				},
+				{
+					"command": "clutch.box.triage",
+					"when": "webviewId == 'clutch.box' && (clutchTriage == 'on' || clutchTriage == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "box@12"
+				},
+				{
+					"command": "clutch.box.dismiss",
+					"when": "webviewId == 'clutch.box' && (clutchDismiss == 'on' || clutchDismiss == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "box@13"
+				},
+				{
+					"command": "clutch.box.discuss",
+					"when": "webviewId == 'clutch.box' && clutchIds",
+					"group": "box@14"
+				},
+				{
+					"command": "clutch.ticket.askDrafts",
+					"when": "webviewId == 'clutch.tickets' && (clutchAskDrafts == 'on' || clutchAskDrafts == 'locked' && config.clutch.unavailableMenuItems != 'hide')",
+					"group": "4_claude@3"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "clutch.askDrainLoop",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.open",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.review",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.lint",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.run",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.confirm",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.reject",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.askDiagnose",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.askReview",
+					"when": "false"
+				},
+				{
+					"command": "clutch.openSettings",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.priority",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.runsBefore",
+					"when": "false"
+				},
+				{
+					"command": "clutch.box.open",
+					"when": "false"
+				},
+				{
+					"command": "clutch.box.link",
+					"when": "false"
+				},
+				{
+					"command": "clutch.box.triage",
+					"when": "false"
+				},
+				{
+					"command": "clutch.box.dismiss",
+					"when": "false"
+				},
+				{
+					"command": "clutch.box.discuss",
+					"when": "false"
+				},
+				{
+					"command": "clutch.bulkTriage",
+					"when": "false"
+				},
+				{
+					"command": "clutch.engine",
+					"when": "false"
+				},
+				{
+					"command": "clutch.playDrain",
+					"when": "false"
+				},
+				{
+					"command": "clutch.playServe",
+					"when": "false"
+				},
+				{
+					"command": "clutch.stopRunning",
+					"when": "false"
+				},
+				{
+					"command": "clutch.openConfig",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.askDrafts",
+					"when": "false"
+				}
+			],
+			"view/title": [
+				{
+					"command": "clutch.askDrainLoop",
+					"when": "view == clutch.tickets",
+					"group": "clutch@7"
+				},
+				{
+					"command": "clutch.refresh",
+					"when": "view == clutch.stats",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.refresh",
+					"when": "view == clutch.tickets",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.openSettings",
+					"when": "view == clutch.tickets",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.lifecycle",
+					"when": "view == clutch.tickets",
+					"group": "clutch@6"
+				},
+				{
+					"command": "clutch.bulkTriage",
+					"when": "view == clutch.tickets",
+					"group": "clutch@4"
+				},
+				{
+					"command": "clutch.engine",
+					"when": "view == clutch.tickets",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.playDrain",
+					"when": "view == clutch.tickets && !clutch.engineRunning && config.clutch.playAction == 'drain'",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.playServe",
+					"when": "view == clutch.tickets && !clutch.engineRunning && config.clutch.playAction == 'serve'",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.stopRunning",
+					"when": "view == clutch.tickets && clutch.engineRunning",
+					"group": "navigation"
+				},
+				{
+					"command": "clutch.openConfig",
+					"when": "view == clutch.tickets",
+					"group": "clutch@5"
+				},
+				{
+					"command": "clutch.help",
+					"when": "view == clutch.details",
+					"group": "clutch@9"
+				},
+				{
+					"command": "clutch.help",
+					"when": "view == clutch.steps",
+					"group": "clutch@9"
+				},
+				{
+					"command": "clutch.help",
+					"when": "view == clutch.tickets",
+					"group": "clutch@9"
+				},
+				{
+					"command": "clutch.help",
+					"when": "view == clutch.box",
+					"group": "clutch@9"
+				},
+				{
+					"command": "clutch.help",
+					"when": "view == clutch.stats",
+					"group": "clutch@9"
+				}
+			]
+		},
+		"colors": [
+			{
+				"id": "clutch.merged",
+				"description": "clutch tickets view: merged tickets. Defaults to the SCM graph's historyItemRemoteRefColor color.",
+				"defaults": {
+					"dark": "scmGraph.historyItemRemoteRefColor",
+					"light": "scmGraph.historyItemRemoteRefColor",
+					"highContrast": "scmGraph.historyItemRemoteRefColor",
+					"highContrastLight": "scmGraph.historyItemRemoteRefColor"
+				}
+			},
+			{
+				"id": "clutch.queued",
+				"description": "clutch tickets view: queued and running tickets. Defaults to the SCM graph's historyItemRefColor color.",
+				"defaults": {
+					"dark": "scmGraph.historyItemRefColor",
+					"light": "scmGraph.historyItemRefColor",
+					"highContrast": "scmGraph.historyItemRefColor",
+					"highContrastLight": "scmGraph.historyItemRefColor"
+				}
+			},
+			{
+				"id": "clutch.blocked",
+				"description": "clutch tickets view: blocked tickets. Defaults to the SCM graph's historyItemBaseRefColor color.",
+				"defaults": {
+					"dark": "scmGraph.historyItemBaseRefColor",
+					"light": "scmGraph.historyItemBaseRefColor",
+					"highContrast": "scmGraph.historyItemBaseRefColor",
+					"highContrastLight": "scmGraph.historyItemBaseRefColor"
+				}
+			}
+		],
+		"viewsWelcome": [
+			{
+				"view": "clutch.steps",
+				"contents": "No items to show.\n[Open clutch help](command:clutch.help)"
+			},
+			{
+				"view": "clutch.stats",
+				"contents": "No items to show.\n[Open clutch help](command:clutch.help)"
+			}
+		]
+	}
+}

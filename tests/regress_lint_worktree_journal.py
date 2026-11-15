@@ -12,8 +12,8 @@ from pathlib import Path
 def main() -> int:
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from chupa.__main__ import main as chupa_main
-        from chupa.journal import EventType
+        from clutch.__main__ import main as clutch_main
+        from clutch.journal import EventType
         from tests.integration.test_cli import ENV, Clock, journal, root, ticket, write
         from tests.integration.test_lint_verb import git
 
@@ -28,7 +28,7 @@ def main() -> int:
             git(repo, "worktree", "add", "--detach", str(worktree))
             output = io.StringIO()
             with contextlib.redirect_stdout(output):
-                result = chupa_main(["lint"], cwd=worktree, env=ENV, clock=Clock())
+                result = clutch_main(["lint"], cwd=worktree, env=ENV, clock=Clock())
             text = output.getvalue()
             if result == 0 and text == "lint: 1/1 tickets valid\n":
                 outcome, code = "pass", 0

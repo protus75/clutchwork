@@ -3,8 +3,8 @@
 import json
 import sys
 
-from chupa.drain import parked_blob
-from chupa.journal import Event, EventType
+from clutch.drain import parked_blob
+from clutch.journal import Event, EventType
 
 history = [
     Event(1, EventType.STATE_TRANSITION, "time", "work", None, {"to": "running", "ticket_sha": "ran-sha"}),

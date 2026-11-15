@@ -5,13 +5,13 @@ from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa.config import load_config
-from chupa.daemon import HeartbeatCycle
-from chupa.git import Git
-from chupa.heartbeat import Heartbeat, is_fresh
-from chupa.journal import Journal
-from chupa.seams import LocalFileSystem, SubprocessExec
+from clutch import __main__ as cli
+from clutch.config import load_config
+from clutch.daemon import HeartbeatCycle
+from clutch.git import Git
+from clutch.heartbeat import Heartbeat, is_fresh
+from clutch.journal import Journal
+from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
@@ -88,8 +88,8 @@ def test_healthy_cycle_refreshes_heartbeat(root):
     assert journal.read() == before
 
     async def custody():
-        git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))
-        assert not any(path.startswith(".chupa/") for path in await git.ls_files(root))
+        git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
+        assert not any(path.startswith(".clutch/") for path in await git.ls_files(root))
         assert await git.status_porcelain(root) == ""
 
     asyncio.run(custody())
@@ -226,7 +226,7 @@ def test_external_heartbeat_refuses_invalid_evidence(tmp_path, invalid):
 
 @pytest.mark.parametrize("verb", ["run", "drain"])
 def test_heartbeat_is_dormant(root, tmp_path, monkeypatch, verb):
-    heartbeat = Heartbeat(state_dir=root / ".chupa/state", fs=Evidence())
+    heartbeat = Heartbeat(state_dir=root / ".clutch/state", fs=Evidence())
     dormant = boundary(heartbeat)
 
     def cycle_probe(self):
@@ -249,10 +249,10 @@ def test_heartbeat_is_dormant(root, tmp_path, monkeypatch, verb):
         with pytest.raises(AssertionError, match="heartbeat cycle wired"):
             cli.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired_cycle)
     else:
-        from chupa.journal import EventType, Journal
+        from clutch.journal import EventType, Journal
 
         assert cli.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired_cycle) == 0
-        bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
+        bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
         assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == "AssertionError: heartbeat cycle wired"
         write(root, "fresh", ticket())
     monkeypatch.setattr(HeartbeatCycle, "__init__", construction_probe)

@@ -1,4 +1,4 @@
-"""Review-baseline harness (CHUPA_PLAN.md 19.P1), offline: scripted fake LLM, temp journal."""
+"""Review-baseline harness (CLUTCH_PLAN.md 19.P1), offline: scripted fake LLM, temp journal."""
 
 import asyncio
 import json
@@ -9,12 +9,12 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa.artifacts import ReviewVerdict
-from chupa.config import load_config
-from chupa.driver import Driver
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.specs import lint_spec
+from clutch.artifacts import ReviewVerdict
+from clutch.config import load_config
+from clutch.driver import Driver
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.specs import lint_spec
 from eval import harness
 from eval.harness import Expected, Fixture, FixtureError, Scored
 
@@ -77,12 +77,12 @@ def run(tmp_path: Path, fixtures: list[Fixture], script: list):
     llm = FakeLLM(script)
     driver = Driver.from_config(cfg, llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
     journal = Journal(cfg.state_dir, lambda: NOW)
-    body = asyncio.run(harness.run_baseline(config=cfg, driver=driver, journal=journal, fixtures=fixtures, specs_dir=ROOT / "chupa" / "specs", workspace=tmp_path))
+    body = asyncio.run(harness.run_baseline(config=cfg, driver=driver, journal=journal, fixtures=fixtures, specs_dir=ROOT / "clutch" / "specs", workspace=tmp_path))
     return body, journal, llm
 
 
 def test_review_spec_lints_clean():
-    assert lint_spec((ROOT / "chupa" / "specs" / "review.md").read_text()) == []
+    assert lint_spec((ROOT / "clutch" / "specs" / "review.md").read_text()) == []
 
 
 def test_committed_fixture_set_meets_the_spike_floor_and_differs_from_review():
@@ -188,7 +188,7 @@ def corpus_results(planted=60, clean=20, catches=51, false_snags=3):
 
 
 def report_fixture(tmp_path, results=None, graph=True):
-    from chupa.artifacts import AuthorGraph
+    from clutch.artifacts import AuthorGraph
 
     cfg = config(tmp_path)
     results = corpus_results() if results is None else results
@@ -257,7 +257,7 @@ def test_go_grade_fixture_floors_and_author_separation(tmp_path):
 
 
 def test_go_grade_existing_corpus_is_partial_no_go(tmp_path, monkeypatch):
-    from chupa.artifacts import ReviewBaselineReport
+    from clutch.artifacts import ReviewBaselineReport
 
     before = {p: p.read_bytes() for p in harness.FIXTURES.glob("*/*") if p.is_file()}
     fixtures = harness.load_fixtures()
@@ -330,7 +330,7 @@ def test_go_grade_fixture_author_identity_comes_from_call(tmp_path, monkeypatch)
 
 
 def test_go_grade_scoring_and_partial_report(tmp_path):
-    from chupa.artifacts import ReviewBaselineReport
+    from clutch.artifacts import ReviewBaselineReport
 
     results = corpus_results()
     report, _, _ = report_fixture(tmp_path, results)
@@ -347,8 +347,8 @@ def test_go_grade_scoring_and_partial_report(tmp_path):
 
 
 def test_go_grade_shared_cap_includes_retries_and_author_graph(tmp_path):
-    from chupa.artifacts import ReviewBaselineReport
-    from chupa.llm import LLMResult
+    from clutch.artifacts import ReviewBaselineReport
+    from clutch.llm import LLMResult
 
     cfg = config(tmp_path)
 
@@ -373,7 +373,7 @@ def test_go_grade_shared_cap_includes_retries_and_author_graph(tmp_path):
 
 
 def test_go_grade_author_graph_uses_local_prompt(tmp_path):
-    from chupa.artifacts import AuthorGraph
+    from clutch.artifacts import AuthorGraph
 
     cfg = config(tmp_path)
     graph = graph_reply()

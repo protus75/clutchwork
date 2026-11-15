@@ -1,5 +1,5 @@
-from chupa.artifacts import REVIEW_BASELINE_REPORT
-from chupa.stages import LIFT_MAX_BYTES, _lift_decision
+from clutch.artifacts import REVIEW_BASELINE_REPORT
+from clutch.stages import LIFT_MAX_BYTES, _lift_decision
 
 
 def test_lift_decision_selects_named_artifact_per_kind():

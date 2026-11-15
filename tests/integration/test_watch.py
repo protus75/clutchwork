@@ -5,7 +5,7 @@ import sys
 
 import pytest
 
-import chupa.observe as watch
+import clutch.observe as watch
 
 
 @pytest.fixture(autouse=True)
@@ -67,10 +67,10 @@ def test_drain_processes_only_this_repo(tmp_path, monkeypatch):
     monkeypatch.setattr(watch.os, "readlink", lambda path: str(tmp_path))
     monkeypatch.setattr(watch, "started", lambda ctx, pid: pid)
     rows = [
-        (30, 1, "/v/bin/python3 -m chupa --config config.yaml drain"),
-        (10, 1, "/v/bin/python3 -m chupa drain"),
-        (20, 1, "/v/bin/python3 -m chupa --config /elsewhere/config.yaml drain"),
-        (40, 1, "/v/bin/python3 -m chupa serve"),
+        (30, 1, "/v/bin/python3 -m clutch --config config.yaml drain"),
+        (10, 1, "/v/bin/python3 -m clutch drain"),
+        (20, 1, "/v/bin/python3 -m clutch --config /elsewhere/config.yaml drain"),
+        (40, 1, "/v/bin/python3 -m clutch serve"),
     ]
     assert watch.drain_processes(ctx, rows) == [10, 30]
 
@@ -81,18 +81,18 @@ def test_running_needs_a_live_lock_holder_that_journaled_it(tmp_path):
     last = {"stale": {"to": "running", "ts": "2026-11-06T14:50:00+00:00"}, "live": {"to": "running", "ts": "2026-11-06T15:45:00+00:00"}}
     assert watch.lock_holder(tmp_path) is None
     assert watch.running_stems(tmp_path, last) == []
-    (tmp_path / "chupa.lock").write_text(json.dumps({"pid": os.getpid(), "started_at": started}))
+    (tmp_path / "clutch.lock").write_text(json.dumps({"pid": os.getpid(), "started_at": started}))
     assert watch.running_stems(tmp_path, last) == ["live"]
     dead = subprocess.Popen([sys.executable, "-c", "pass"])
     dead.wait()
-    (tmp_path / "chupa.lock").write_text(json.dumps({"pid": dead.pid, "started_at": started}))
+    (tmp_path / "clutch.lock").write_text(json.dumps({"pid": dead.pid, "started_at": started}))
     assert watch.lock_holder(tmp_path) is None
     assert watch.running_stems(tmp_path, last) == []
 
 
 def test_queue_counts_a_split_dependency_met_by_its_successors(tmp_path, monkeypatch):
     # A rejected parent whose split successors all merged is settled for the drain, so dependents are not waiting on it.
-    from chupa.rework import SUPERSEDES
+    from clutch.rework import SUPERSEDES
 
     ctx = watch.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
     path = tmp_path / "tickets" / "child" / "ticket.md"
@@ -151,10 +151,10 @@ def test_recent_steps_merges_engine_and_stage_events(tmp_path, monkeypatch):
     lines = watch.text_snapshot(ctx).split("Recent steps:\n", 1)[1].splitlines()
     assert lines == [f"  {watch.clock(r['ts'])}  " + (f"{r['stem']}  " if r["stem"] else "") + r["text"] for r in rows]
     monkeypatch.setattr(watch.os, "kill", lambda pid, signal: None)
-    (state / "chupa.lock").write_text(json.dumps({"pid": 42, "started_at": log[-1]["ts"]}))
+    (state / "clutch.lock").write_text(json.dumps({"pid": 42, "started_at": log[-1]["ts"]}))
     matching = watch.recent_steps(state, log, 20)
     assert len(matching) == 6 and all(r["kind"] != "engine_lost" for r in matching)
-    (state / "chupa.lock").write_text(json.dumps({"pid": 43, "started_at": log[-1]["ts"]}))
+    (state / "clutch.lock").write_text(json.dumps({"pid": 43, "started_at": log[-1]["ts"]}))
     different = watch.recent_steps(state, log, 20)
     assert len(different) == 7
     assert [(r["stem"], r["text"]) for r in different if r["kind"] == "engine_lost"] == [(None, "serve ended without a stop record (killed?)")]
@@ -184,10 +184,10 @@ def test_recent_steps_triage_message_number():
 def test_snapshot_verb_reads_config_state_dir(tmp_path, capsys):
     from pathlib import Path
 
-    from chupa.__main__ import main
+    from clutch.__main__ import main
 
     config = tmp_path / "host.yaml"
-    source = Path("config.yaml").read_text().replace("state_dir: .chupa/state", "state_dir: custom-state")
+    source = Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state")
     config.write_text(source)
     state = tmp_path / "custom-state"
     state.mkdir()
@@ -203,11 +203,11 @@ def test_observe_verbs_take_no_lock_and_write_nothing(tmp_path, capsys):
     from datetime import UTC, datetime
     from pathlib import Path
 
-    from chupa.__main__ import main
-    from chupa.lockfile import Lockfile
+    from clutch.__main__ import main
+    from clutch.lockfile import Lockfile
 
     config = tmp_path / "host.yaml"
-    config.write_text(Path("config.yaml").read_text().replace("state_dir: .chupa/state", "state_dir: custom-state"))
+    config.write_text(Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state"))
     state = tmp_path / "custom-state"
     lock = Lockfile(state, verb="drain", instance_id="test", clock=lambda: datetime(2026, 1, 1, tzinfo=UTC))
     lock.acquire()
@@ -228,12 +228,12 @@ def test_snapshot_lock_holder(tmp_path, monkeypatch):
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
     monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: {})
     monkeypatch.setattr(watch, "commits", lambda ctx: {})
-    monkeypatch.setattr(watch, "processes", lambda ctx: [(712, 1, "python -m chupa --config x.yaml review stem")])
+    monkeypatch.setattr(watch, "processes", lambda ctx: [(712, 1, "python -m clutch --config x.yaml review stem")])
     monkeypatch.setattr(watch.os, "kill", lambda pid, signal: None)
     snap = watch.snapshot(ctx)
     assert snap["lock"] == "" and snap["engine"] is False  # A missing lockfile is not a live holder.
     started_at = "2026-11-06T07:19:00+00:00"
-    (tmp_path / "chupa.lock").write_text(json.dumps({"pid": 712, "started_at": started_at}))
+    (tmp_path / "clutch.lock").write_text(json.dumps({"pid": 712, "started_at": started_at}))
 
     def dead(pid, signal):
         raise ProcessLookupError
@@ -243,23 +243,23 @@ def test_snapshot_lock_holder(tmp_path, monkeypatch):
     assert snap["lock"] == "" and snap["engine"] is False  # A stale lockfile is not a live holder.
     monkeypatch.setattr(watch.os, "kill", lambda pid, signal: None)
     for args, verb, engine in [
-        ("python -m chupa triage", "triage", False),
-        ("python -m chupa drain --detach", "drain", True),
-        ("python -m chupa --config c.yaml serve", "serve", True),
-        ("python -m chupa --config x.yaml review stem", "review", False),
+        ("python -m clutch triage", "triage", False),
+        ("python -m clutch drain --detach", "drain", True),
+        ("python -m clutch --config c.yaml serve", "serve", True),
+        ("python -m clutch --config x.yaml review stem", "review", False),
     ]:
-        (tmp_path / "chupa.lock").write_text(json.dumps({"pid": 712, "started_at": started_at, "verb": verb}))
-        monkeypatch.setattr(watch, "processes", lambda ctx: [(712, 1, "python -m chupa drain")])
+        (tmp_path / "clutch.lock").write_text(json.dumps({"pid": 712, "started_at": started_at, "verb": verb}))
+        monkeypatch.setattr(watch, "processes", lambda ctx: [(712, 1, "python -m clutch drain")])
         snap = watch.snapshot(ctx)
         assert snap["lock"] == f"{verb} since {watch.clock(started_at)} (pid 712)"  # The tooltip identifies the actual holder.
         assert snap["engine"] is engine  # Only drain and serve can receive Stop.
-    (tmp_path / "chupa.lock").write_text(json.dumps({"pid": 712, "started_at": started_at}))
-    monkeypatch.setattr(watch, "processes", lambda ctx: [(712, 1, "python -m chupa")])
+    (tmp_path / "clutch.lock").write_text(json.dumps({"pid": 712, "started_at": started_at}))
+    monkeypatch.setattr(watch, "processes", lambda ctx: [(712, 1, "python -m clutch")])
     snap = watch.snapshot(ctx)
-    assert snap["lock"] == f"chupa since {watch.clock(started_at)} (pid 712)" and snap["engine"] is False  # An unknown verb cannot be stopped.
-    monkeypatch.setattr(watch, "processes", lambda ctx: [(713, 1, "python -m chupa drain")])
+    assert snap["lock"] == f"clutch since {watch.clock(started_at)} (pid 712)" and snap["engine"] is False  # An unknown verb cannot be stopped.
+    monkeypatch.setattr(watch, "processes", lambda ctx: [(713, 1, "python -m clutch drain")])
     snap = watch.snapshot(ctx)
-    assert snap["lock"] == f"chupa since {watch.clock(started_at)} (pid 712)" and snap["engine"] is False  # An unknown verb cannot be stopped.
+    assert snap["lock"] == f"clutch since {watch.clock(started_at)} (pid 712)" and snap["engine"] is False  # An unknown verb cannot be stopped.
 
 
 def test_snapshot_display_fields(tmp_path, monkeypatch):
@@ -301,9 +301,9 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
     (tmp_path / "engine.log").write_text(json.dumps({"event": "stage_start", "stem": "live", "surface": "implement", "ts": ts}) + "\n")
     snap = watch.snapshot(ctx)
     rows = {r["stem"]: r for r in snap["rows"]}
-    from chupa.help import COMMANDS
+    from clutch.help import COMMANDS
 
-    declared = {item["command"] for item in json.loads(Path("vscode-chupa/package.json").read_text())["contributes"]["commands"]}
+    declared = {item["command"] for item in json.loads(Path("vscode-clutchwork/package.json").read_text())["contributes"]["commands"]}
     assert all(entry.command in COMMANDS and entry.command in declared for entry in watch.MENU.values())
     assert all(verb["detail"] == snap["help"]["verb." + verb["argv"][0]]["what"] for verb in snap["engineVerbs"])
     assert any("on" in row["menu"].values() and "off" in row["menu"].values() for row in snap["rows"])
@@ -316,14 +316,14 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
             assert row["help"]["status"] in ("status.merged", "status.already_satisfied")
     assert all(step["help"] in snap["help"] and snap["help"][step["help"]]["text"] in step["tooltip"] for step in snap["steps"])
     assert all(key in snap["help"] for key in (*snap["headerHelp"].values(), *snap["boxHeaderHelp"].values()))
-    assert all(item.get("topic") in snap["help"] or item.get("command") == "chupa.openSettings" for item in snap["helpPick"] if item.get("kind") != "separator")
+    assert all(item.get("topic") in snap["help"] or item.get("command") == "clutch.openSettings" for item in snap["helpPick"] if item.get("kind") != "separator")
     assert snap["watch"] == [
         {"base": str(tmp_path.resolve()), "glob": "tickets/*/ticket.md"},
         {"base": str(tmp_path.resolve()), "glob": "{journal/*.jsonl,queue.json,engine.log,box/*.json}"},
     ]  # Both locations must be watched.
     assert len(snap["engineVerbs"]) == 6 and snap["engineVerbs"][0] == {
         "label": "Drain",
-        "detail": next(line.split("|")[3].strip().replace("`", "") for line in Path("chupa/docs/host-running.md").read_text().splitlines() if line.startswith("| `drain` |")),
+        "detail": next(line.split("|")[3].strip().replace("`", "") for line in Path("clutch/docs/host-running.md").read_text().splitlines() if line.startswith("| `drain` |")),
         "argv": ["drain", "--detach"],
     }  # The menu must not be empty or reordered.
     assert snap["drainCommand"] == ["drain", "--detach"]
@@ -353,8 +353,8 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
 def test_snapshot_menu_availability(tmp_path, monkeypatch):
     from types import SimpleNamespace
 
-    from chupa.box import Box, Resolution
-    from chupa.seams import LocalFileSystem
+    from clutch.box import Box, Resolution
+    from clutch.seams import LocalFileSystem
 
     ctx = watch.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
     tickets = {
@@ -378,33 +378,33 @@ def test_snapshot_menu_availability(tmp_path, monkeypatch):
     monkeypatch.setattr(watch, "lock_holder", lambda state, *args: object())
     snap = watch.snapshot(ctx)
     rows = {row["stem"]: row for row in snap["rows"]}
-    assert (rows["held"]["menu"]["chupaConfirm"], rows["held"]["menu"]["chupaRun"]) == ("off", "off")  # A content park alone cannot be confirmed; unmet dependencies block Run.
-    assert (rows["held-ready"]["menu"]["chupaRun"], rows["ready"]["menu"]["chupaRun"], rows["ready"]["menu"]["chupaReview"]) == (
+    assert (rows["held"]["menu"]["clutchConfirm"], rows["held"]["menu"]["clutchRun"]) == ("off", "off")  # A content park alone cannot be confirmed; unmet dependencies block Run.
+    assert (rows["held-ready"]["menu"]["clutchRun"], rows["ready"]["menu"]["clutchRun"], rows["ready"]["menu"]["clutchReview"]) == (
         "locked",
         "locked",
         "on",
     )  # Run needs the lock, while committed review does not.
-    assert (rows["invalid"]["menu"]["chupaReview"], rows["invalid"]["menu"]["chupaPriority"]) == ("off", "off")  # Invalid blocked rows cannot be reviewed or ordered.
-    assert rows["ready"]["menu"]["chupaReject"] == "on"
-    assert rows["done"]["menu"]["chupaLint"] == "off"  # Merged rows cannot be linted.
+    assert (rows["invalid"]["menu"]["clutchReview"], rows["invalid"]["menu"]["clutchPriority"]) == ("off", "off")  # Invalid blocked rows cannot be reviewed or ordered.
+    assert rows["ready"]["menu"]["clutchReject"] == "on"
+    assert rows["done"]["menu"]["clutchLint"] == "off"  # Merged rows cannot be linted.
     box_rows = {row["id"]: row for row in snap["box"]}
-    assert box_rows[pending]["menu"] == {"chupaTriage": "locked", "chupaDismiss": "locked"}  # Pending actions require the lock.
-    assert box_rows[resolved]["menu"] == {"chupaTriage": "off", "chupaDismiss": "off"}  # Resolved actions are unavailable even when locked.
+    assert box_rows[pending]["menu"] == {"clutchTriage": "locked", "clutchDismiss": "locked"}  # Pending actions require the lock.
+    assert box_rows[resolved]["menu"] == {"clutchTriage": "off", "clutchDismiss": "off"}  # Resolved actions are unavailable even when locked.
 
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: ({"held"}, set()))
     dirty = {row["stem"]: row for row in watch.snapshot(ctx)["rows"]}
-    assert (dirty["held"]["menu"]["chupaConfirm"], dirty["held"]["menu"]["chupaReject"]) == ("off", "on")  # Intake does not make a content park confirmable.
-    assert dirty["held"]["menu"]["chupaReview"] == "on"  # Dirty review runs intake without the engine lock.
-    assert dirty["invalid"]["menu"]["chupaReview"] == "off"  # Invalid rows remain unavailable.
+    assert (dirty["held"]["menu"]["clutchConfirm"], dirty["held"]["menu"]["clutchReject"]) == ("off", "on")  # Intake does not make a content park confirmable.
+    assert dirty["held"]["menu"]["clutchReview"] == "on"  # Dirty review runs intake without the engine lock.
+    assert dirty["invalid"]["menu"]["clutchReview"] == "off"  # Invalid rows remain unavailable.
     monkeypatch.setattr(watch, "lock_holder", lambda state, *args: None)
     snap = watch.snapshot(ctx)
     stopped = {row["stem"]: row for row in snap["rows"]}
-    assert (stopped["held"]["menu"]["chupaConfirm"], stopped["held"]["menu"]["chupaReject"]) == ("off", "on")  # A content park is rejectable but not confirmable.
-    assert (stopped["ready"]["menu"]["chupaRun"], stopped["ready"]["menu"]["chupaReview"]) == ("on", "on")  # Runnable and reviewable work is unlocked.
-    assert stopped["held"]["menu"]["chupaReview"] == "on"  # Dirty review can intake when the lock is free.
-    assert stopped["invalid"]["menu"]["chupaReview"] == "off"  # Stopping the engine does not validate a ticket.
-    assert stopped["held-ready"]["menu"]["chupaRun"] == "on"  # A held runnable ticket remains runnable without the lock.
-    assert next(row for row in snap["box"] if row["id"] == pending)["menu"] == {"chupaTriage": "on", "chupaDismiss": "on"}  # Pending actions unlock when the engine stops.
+    assert (stopped["held"]["menu"]["clutchConfirm"], stopped["held"]["menu"]["clutchReject"]) == ("off", "on")  # A content park is rejectable but not confirmable.
+    assert (stopped["ready"]["menu"]["clutchRun"], stopped["ready"]["menu"]["clutchReview"]) == ("on", "on")  # Runnable and reviewable work is unlocked.
+    assert stopped["held"]["menu"]["clutchReview"] == "on"  # Dirty review can intake when the lock is free.
+    assert stopped["invalid"]["menu"]["clutchReview"] == "off"  # Stopping the engine does not validate a ticket.
+    assert stopped["held-ready"]["menu"]["clutchRun"] == "on"  # A held runnable ticket remains runnable without the lock.
+    assert next(row for row in snap["box"] if row["id"] == pending)["menu"] == {"clutchTriage": "on", "clutchDismiss": "on"}  # Pending actions unlock when the engine stops.
 
 
 def test_snapshot_priority_tag_on_running_and_queued(tmp_path, monkeypatch):
@@ -469,7 +469,7 @@ def test_snapshot_badge(tmp_path, monkeypatch):
 
 
 def test_diagnose_prompt_uses_live_running_state(tmp_path, monkeypatch, capsys):
-    from chupa.__main__ import main
+    from clutch.__main__ import main
     from tests.integration.test_config import VALID
 
     (tmp_path / "config.yaml").write_text(VALID)
@@ -510,8 +510,8 @@ def test_snapshot_step_files_and_mechanical_kinds(tmp_path, monkeypatch):
 
 
 def test_snapshot_author_steps_open_box_ticket_or_decision(tmp_path, monkeypatch):
-    from chupa.box import Box, Resolution
-    from chupa.seams import LocalFileSystem
+    from clutch.box import Box, Resolution
+    from clutch.seams import LocalFileSystem
 
     ctx = watch.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
@@ -553,8 +553,8 @@ def test_snapshot_author_steps_open_box_ticket_or_decision(tmp_path, monkeypatch
 
 
 def test_snapshot_triage_and_retro_steps_open_their_files(tmp_path, monkeypatch):
-    from chupa.box import Box, Resolution
-    from chupa.seams import LocalFileSystem
+    from clutch.box import Box, Resolution
+    from clutch.seams import LocalFileSystem
 
     ctx = watch.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
@@ -584,8 +584,8 @@ def test_snapshot_triage_and_retro_steps_open_their_files(tmp_path, monkeypatch)
 
 
 def test_snapshot_box_messages(tmp_path, monkeypatch):
-    from chupa.box import Box, Resolution
-    from chupa.seams import LocalFileSystem
+    from clutch.box import Box, Resolution
+    from clutch.seams import LocalFileSystem
 
     ctx = watch.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
@@ -621,8 +621,8 @@ def test_snapshot_box_messages(tmp_path, monkeypatch):
 
 
 def test_snapshot_box_external_state_and_resolution_counts(tmp_path, monkeypatch):
-    from chupa.box import Box, Resolution, Verdict
-    from chupa.seams import LocalFileSystem
+    from clutch.box import Box, Resolution, Verdict
+    from clutch.seams import LocalFileSystem
 
     root = tmp_path / "workspace"
     root.mkdir()
@@ -715,10 +715,10 @@ def test_snapshot_reject_queue_uses_configured_caps(tmp_path, monkeypatch):
 def test_snapshot_watch_uses_configured_state(tmp_path, capsys):
     from pathlib import Path
 
-    from chupa.__main__ import main
+    from clutch.__main__ import main
 
     config = tmp_path / "host.yaml"
-    config.write_text(Path("config.yaml").read_text().replace("state_dir: .chupa/state", "state_dir: custom-state"))
+    config.write_text(Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state"))
     assert main(["--config", str(config), "snapshot"]) == 0
     snap = json.loads(capsys.readouterr().out)
     assert snap["watch"] == [
@@ -769,9 +769,9 @@ def test_recent_steps_phase_events(tmp_path):
 
 
 def test_snapshot_review_locks_for_changed_evidence(tmp_path):
-    from chupa.git import Git
-    from chupa.lockfile import Lockfile
-    from chupa.seams import SubprocessExec
+    from clutch.git import Git
+    from clutch.lockfile import Lockfile
+    from clutch.seams import SubprocessExec
     from tests.integration.test_cli import ENV
     from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
     from tests.integration.test_git import commit_lock
@@ -784,7 +784,7 @@ def test_snapshot_review_locks_for_changed_evidence(tmp_path):
     subprocess.run(["git", "-C", str(root), "add", str(evidence)], env=ENV, check=True)
     subprocess.run(["git", "-C", str(root), "commit", "-m", "evidence"], env=ENV, check=True, capture_output=True)
     evidence.write_text("changed")
-    state = root / ".chupa/state"
+    state = root / ".clutch/state"
     git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(state))
     ctx = watch.Context(root, state, root / "config.yaml", SubprocessExec(), git, ENV)
     lock = Lockfile(state, verb="drain", instance_id="test", clock=Clock())
@@ -792,7 +792,7 @@ def test_snapshot_review_locks_for_changed_evidence(tmp_path):
     try:
         row = next(row for row in watch.snapshot(ctx)["rows"] if row["stem"] == "candidate")
         assert row["committed"] is True
-        assert row["menu"]["chupaReview"] == "on"
+        assert row["menu"]["clutchReview"] == "on"
     finally:
         lock.release()
 
@@ -813,14 +813,14 @@ def test_snapshot_commit_lock_display(tmp_path, monkeypatch):
     started = "2026-01-01T00:00:00+00:00"
     path.write_text(json.dumps({"pid": os.getpid(), "started_at": started}))
     original = watch.Path.read_bytes
-    monkeypatch.setattr(watch.Path, "read_bytes", lambda self: b"python\0-m\0chupa\0review\0stem\0" if str(self) == f"/proc/{os.getpid()}/cmdline" else original(self))
+    monkeypatch.setattr(watch.Path, "read_bytes", lambda self: b"python\0-m\0clutch\0review\0stem\0" if str(self) == f"/proc/{os.getpid()}/cmdline" else original(self))
     assert watch.snapshot(ctx)["commitLock"] == f"review since {watch.clock(started)} (pid {os.getpid()})"
 
 
 def test_draft_assessment_menu_tracks_snapshot_draft(tmp_path):
-    from chupa import observe
-    from chupa.git import Git
-    from chupa.seams import SubprocessExec
+    from clutch import observe
+    from clutch.git import Git
+    from clutch.seams import SubprocessExec
     from tests.integration.test_cli import ENV, git_out
     from tests.integration.test_drain import confirmed, make_root
     from tests.integration.test_git import commit_lock
@@ -833,11 +833,11 @@ def test_draft_assessment_menu_tracks_snapshot_draft(tmp_path):
         if stem != "untracked-draft":
             git_out(root, "add", str(path.relative_to(root)))
     git_out(root, "commit", "-m", "tickets")
-    state = root / ".chupa/state"
+    state = root / ".clutch/state"
     git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(state))
     ctx = observe.Context(root, state, root / "config.yaml", SubprocessExec(), git, ENV)
     rows = {row["stem"]: row for row in observe.snapshot(ctx)["rows"]}
-    assert {stem: rows[stem]["menu"]["chupaAskDrafts"] for stem in ("committed-draft", "untracked-draft", "confirmed-ticket")} == {
+    assert {stem: rows[stem]["menu"]["clutchAskDrafts"] for stem in ("committed-draft", "untracked-draft", "confirmed-ticket")} == {
         "committed-draft": "on",
         "untracked-draft": "off",
         "confirmed-ticket": "off",

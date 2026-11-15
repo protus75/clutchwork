@@ -12,18 +12,18 @@ from typing import Literal
 import yaml
 from pydantic import model_validator
 
-from chupa import __main__ as cli
-from chupa import caps, runner
-from chupa.artifacts import Artifact, Harvest, NonBlank, _check_ordered_members, _check_producing_run, _Strict
-from chupa.audit import audit_journal
-from chupa.config import load_config
-from chupa.git import Git
-from chupa.hostfiles import render
-from chupa.journal import EventType, Journal, render_ts, run_terminals
-from chupa.lockfile import Lockfile
-from chupa.providers import PROBE_PROMPT, routed_conduct_paths
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.tickets import intake, validate_ticket
+from clutch import __main__ as cli
+from clutch import caps, runner
+from clutch.artifacts import Artifact, Harvest, NonBlank, _check_ordered_members, _check_producing_run, _Strict
+from clutch.audit import audit_journal
+from clutch.config import load_config
+from clutch.git import Git
+from clutch.hostfiles import render
+from clutch.journal import EventType, Journal, render_ts, run_terminals
+from clutch.lockfile import Lockfile
+from clutch.providers import PROBE_PROMPT, routed_conduct_paths
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.tickets import intake, validate_ticket
 from tests.harness.daemon_soak import _Time, _turn
 from tests.integration.test_git import commit_lock
 
@@ -96,7 +96,7 @@ class _Exec:
             self.entered.set()
             if self.block:
                 await asyncio.get_running_loop().create_future()
-            surface = next(s for s in ("review", "diagnose", "implement") if f"<<chupa-data:begin {'diff' if s == 'review' else 'harvest' if s == 'diagnose' else 'ticket'}>>" in prompt)
+            surface = next(s for s in ("review", "diagnose", "implement") if f"<<clutch-data:begin {'diff' if s == 'review' else 'harvest' if s == 'diagnose' else 'ticket'}>>" in prompt)
             model_flag = "-m" if argv[0] == "codex" else "--model"
             model = argv[argv.index(model_flag) + 1]
             if surface == "implement" and self.member.failures:
@@ -138,7 +138,7 @@ class _Member:
         self.fault = ("quota-fault", "cooling-fault", "unknown-fault")[RELIABILITY_BATTERY_MEMBERS.index(name)]
         self.time = _Time()
         self.fs = LocalFileSystem()
-        self.journal = Journal(root / ".chupa/state", self.time)
+        self.journal = Journal(root / ".clutch/state", self.time)
         self.exec = _Exec(self)
         self.env = dict(
             PATH=os.defpath,
@@ -150,7 +150,7 @@ class _Member:
             GIT_COMMITTER_NAME="battery",
             GIT_COMMITTER_EMAIL="battery@example.invalid",
         )
-        self.git = Git(self.exec, env=self.env, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))
+        self.git = Git(self.exec, env=self.env, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
         self.failures = ["alien failure 17"] if name == RELIABILITY_BATTERY_MEMBERS[2] else ["usage limit reached"]
         if name == RELIABILITY_BATTERY_MEMBERS[1]:
             self.failures.append("quota exhausted")
@@ -173,8 +173,8 @@ class _Member:
         ]
         config = dict(
             schema_version=1,
-            state_dir=".chupa/state",
-            worktree_root=".chupa/worktrees",
+            state_dir=".clutch/state",
+            worktree_root=".clutch/worktrees",
             providers=providers,
             routing=[dict(tier="medium", surface=s, candidates=[dict(provider="codex"), dict(provider="claude", model="claude-pinned")]) for s in ("implement", "review")],
             caps=dict(infra=1),
@@ -184,7 +184,7 @@ class _Member:
         )
         files = {
             "config.yaml": yaml.safe_dump(config),
-            ".gitignore": ".chupa/\n",
+            ".gitignore": ".clutch/\n",
             "work.txt": "base\n",
             "verify.py": "from pathlib import Path\nassert Path('work.txt').read_text().strip() in {'base', 'recovered'}\n",
         }
@@ -292,7 +292,7 @@ class _Member:
         await dispatch
 
     async def stop(self):
-        from chupa.daemon import _protected_cleanup
+        from clutch.daemon import _protected_cleanup
 
         async def cleanup():
             try:
@@ -323,7 +323,7 @@ def _observe(m):
             raise BatteryRefused(m.name, detail)
 
     need(m.closed and not m.time.waits and not m.session.waits and all(w.ctx.driver._active is None for w in m.writers), "owned lifetimes still active")
-    need(m.journal.dir == m.root / ".chupa/state/journal", "cross-member journal")
+    need(m.journal.dir == m.root / ".clutch/state/journal", "cross-member journal")
     events = m.journal.read()
     drawn = [e for e in events if e.type == EventType.CAP_CONSUMED and e.body.get("ticket_sha") != "seed"]
     allowed = {m.fault, "cooling-second", "cooling-recovery"} if m.name == RELIABILITY_BATTERY_MEMBERS[1] else {m.fault}
@@ -477,6 +477,6 @@ async def _run_member(root, name):
 
 
 async def produce(root: Path) -> ReliabilityBatteryReport:
-    sha = await Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".chupa/state")).rev_parse(Path.cwd(), "HEAD")
+    sha = await Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state")).rev_parse(Path.cwd(), "HEAD")
     entries = [await _run_member(root, name) for name in RELIABILITY_BATTERY_MEMBERS]
     return ReliabilityBatteryReport(produced_by_spec_version=RELIABILITY_BATTERY_SPEC_VERSION, produced_at_sha=sha, entries=entries)

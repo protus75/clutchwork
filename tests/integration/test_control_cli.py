@@ -6,11 +6,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import control
-from chupa.journal import Journal
-from chupa.lockfile import Lockfile, LockHeld
-from chupa.seams import LocalFileSystem
+from clutch import __main__ as entry
+from clutch import control
+from clutch.journal import Journal
+from clutch.lockfile import Lockfile, LockHeld
+from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 
 
@@ -18,9 +18,9 @@ from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 def test_confirm_held_without_writer_lock(tmp_path, monkeypatch, capsys, dirless):
     import asyncio
 
-    from chupa import runner
-    from chupa.journal import EventType
-    from chupa.tickets import stamp
+    from clutch import runner
+    from clutch.journal import EventType
+    from clutch.tickets import stamp
     from tests.integration.test_mergequeue import admission_control, commit, ready
     from tests.integration.test_mergequeue import ctx as context_fixture
 
@@ -71,17 +71,17 @@ def invoke(root, verb):
 
 
 def acquire(root):
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="diagnostic-not-lifecycle", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="diagnostic-not-lifecycle", clock=Clock())
     lock.acquire()
     return lock
 
 
 def discovery(root, life="restart-unique", hold=None):
-    control.write_active(root / ".chupa/state", control.ControlProjection(life, hold), LocalFileSystem(), hold_id=hold)
+    control.write_active(root / ".clutch/state", control.ControlProjection(life, hold), LocalFileSystem(), hold_id=hold)
 
 
 def requests(root):
-    return [json.loads(p.read_bytes()) for p in sorted((root / ".chupa/state/control/inbox").glob("*.json"))]
+    return [json.loads(p.read_bytes()) for p in sorted((root / ".clutch/state/control/inbox").glob("*.json"))]
 
 
 def test_live_pause_resume_publish_without_journal_write(root, monkeypatch, capsys):
@@ -103,7 +103,7 @@ def test_live_pause_resume_publish_without_journal_write(root, monkeypatch, caps
         assert invoke(root, "resume") == 0
         assert capsys.readouterr().out == "resume submitted: resume-exact\n"
         assert requests(root) == [asdict(control.ControlRequest("pause-exact", "life-exact", "pause", None)), asdict(control.ControlRequest("resume-exact", "life-exact", "resume", "pause-exact"))]
-        assert not (root / ".chupa/state/journal").exists()
+        assert not (root / ".clutch/state/journal").exists()
         contender = Lockfile(lock.state_dir, verb="drain", instance_id="contender", clock=Clock())
         with pytest.raises(LockHeld):
             contender.acquire()
@@ -149,13 +149,13 @@ def test_resume_requires_current_pause_identity(root, raw, capsys):
 @pytest.mark.parametrize("verb", ["pause", "resume"])
 @pytest.mark.parametrize("stale", [False, True])
 def test_pause_resume_apply_directly_under_lock(root, monkeypatch, capsys, verb, stale):
-    state = root / ".chupa/state"
+    state = root / ".clutch/state"
     if stale:
         discovery(root, "old-life", "old-hold")
         control.publish_request(state, control.ControlRequest("old-pause", "old-life", "pause", None), LocalFileSystem())
 
     def contents():
-        return {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file() and p.name != "chupa.lock"}
+        return {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file() and p.name != "clutch.lock"}
 
     before = contents()
     trace = []
@@ -209,8 +209,8 @@ def test_pause_resume_apply_directly_under_lock(root, monkeypatch, capsys, verb,
 
 def test_control_routing_lock_and_restart_races(root, monkeypatch, capsys):
     original = Lockfile.acquire
-    next_owner = Lockfile(root / ".chupa/state", verb="drain", instance_id="next-owner", clock=Clock())
-    replacement = Lockfile(root / ".chupa/state", verb="drain", instance_id="replacement", clock=Clock())
+    next_owner = Lockfile(root / ".clutch/state", verb="drain", instance_id="next-owner", clock=Clock())
+    replacement = Lockfile(root / ".clutch/state", verb="drain", instance_id="replacement", clock=Clock())
 
     # No preflight discovery check: an engine wins the CLI's actual lock acquisition.
     def race(self):
@@ -327,10 +327,10 @@ def test_stop_refuses_when_idle_and_publishes_when_live(root, capsys):
 def test_live_verdict_recovery_and_refusal(tmp_path, monkeypatch, capsys, kind):
     import asyncio
 
-    from chupa import runner
-    from chupa.journal import EventType
-    from chupa.status import project, render
-    from chupa.tickets import stamp
+    from clutch import runner
+    from clutch.journal import EventType
+    from clutch.status import project, render
+    from clutch.tickets import stamp
     from tests.integration.test_mergequeue import admission_control, commit, ready
     from tests.integration.test_mergequeue import ctx as context_fixture
 
@@ -383,7 +383,7 @@ def test_live_verdict_recovery_and_refusal(tmp_path, monkeypatch, capsys, kind):
                 assert len(verdicts) == 1 and verdicts[0]["verdict"] == "kill"
                 assert sum(e.ticket == stem and e.type == EventType.STATE_TRANSITION and e.body.get("to") == "rejected" for e in events) == 1
                 assert "state: rejected" in await ctx.git._run(ctx.repo, "show", f"HEAD:tickets/{stem}/ticket.md")
-                assert (await ctx.git._run(ctx.repo, "log", "-1", "--format=%s")).strip() == f"chupa({stem}): rejected"
+                assert (await ctx.git._run(ctx.repo, "log", "-1", "--format=%s")).strip() == f"clutch({stem}): rejected"
                 assert sum(e.ticket == "child" and e.body.get("signal") == "dead_dependency" and e.body.get("dead") == stem for e in events) == 1
                 assert len(list((ctx.config.state_dir / "box").glob("*.json"))) == 1
         finally:
@@ -395,9 +395,9 @@ def test_live_verdict_recovery_and_refusal(tmp_path, monkeypatch, capsys, kind):
 def test_live_confirm_old_draft_and_unknown_stem(tmp_path):
     import asyncio
 
-    from chupa import runner
-    from chupa.journal import EventType
-    from chupa.tickets import stamp
+    from clutch import runner
+    from clutch.journal import EventType
+    from clutch.tickets import stamp
     from tests.integration.test_mergequeue import admission_control, commit, ready
     from tests.integration.test_mergequeue import ctx as context_fixture
 
@@ -438,7 +438,7 @@ def test_live_confirm_old_draft_and_unknown_stem(tmp_path):
 def test_yes_matches_typed_verdict(tmp_path, capsys, verb, verdict):
     import asyncio
 
-    from chupa.journal import EventType
+    from clutch.journal import EventType
     from tests.integration.test_mergequeue import ctx as context_fixture
     from tests.integration.test_mergequeue import ready
 
@@ -480,9 +480,9 @@ def test_retro_publishes_when_live(root, capsys):
 def test_extension_repeat_keep(tmp_path, capsys, live):
     import asyncio
 
-    from chupa import runner
-    from chupa.journal import EventType
-    from chupa.status import project, render
+    from clutch import runner
+    from clutch.journal import EventType
+    from clutch.status import project, render
     from tests.integration.test_mergequeue import admission_control, ready
     from tests.integration.test_mergequeue import ctx as context_fixture
 
@@ -536,7 +536,7 @@ def test_extension_repeat_keep(tmp_path, capsys, live):
 
 
 def test_non_engine_holder_refuses_stop_and_confirm(root, capsys):
-    lock = Lockfile(root / ".chupa/state", verb="triage", instance_id="other", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="triage", instance_id="other", clock=Clock())
     lock.acquire()
     try:
         discovery(root)
@@ -554,7 +554,7 @@ def test_live_confirm_intakes_before_submission(root, monkeypatch, capsys, kind)
     import fcntl
     from datetime import timedelta
 
-    from chupa.lockfile import CommitLock
+    from clutch.lockfile import CommitLock
     from tests.integration.test_cli import git_out
     from tests.integration.test_drain import Clock as AdvancingClock
     from tests.integration.test_drain import commit_ticket, confirmed
@@ -571,7 +571,7 @@ def test_live_confirm_intakes_before_submission(root, monkeypatch, capsys, kind)
 
     monkeypatch.setattr(entry, "CommitLock", lambda state, **kwargs: CommitLock(state, clock=clock, sleep=sleep))
     try:
-        with (root / ".chupa/state/commit.lock").open("w") as commit_lock:
+        with (root / ".clutch/state/commit.lock").open("w") as commit_lock:
             if kind == "timeout":
                 fcntl.flock(commit_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             result = entry.main(["confirm", "candidate", "--yes"], cwd=root, env=ENV, clock=clock)
@@ -590,7 +590,7 @@ def test_live_confirm_intakes_before_submission(root, monkeypatch, capsys, kind)
 def test_confirm_multiple_stems_stops_on_refusal(tmp_path):
     import asyncio
 
-    from chupa.journal import EventType
+    from clutch.journal import EventType
     from tests.integration.test_mergequeue import ctx as context_fixture
     from tests.integration.test_mergequeue import ready
 

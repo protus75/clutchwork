@@ -14,7 +14,7 @@ const vscode = {
 	},
 	window: {
 		createTreeView: () => ({ ...disposable, onDidChangeVisibility() {} }),
-		registerWebviewViewProvider: (id, provider) => { if (id === 'chupa.tickets') tickets = provider; return disposable; },
+		registerWebviewViewProvider: (id, provider) => { if (id === 'clutch.tickets') tickets = provider; return disposable; },
 	},
 	commands: { registerCommand: () => disposable },
 	EventEmitter: class { constructor() { this.event = () => {}; } },
@@ -24,7 +24,7 @@ Module._load = function (request, parent, isMain) {
 	if (request === 'vscode') return vscode;
 	return load.call(this, request, parent, isMain);
 };
-require('../vscode-chupa/extension.js').activate({ extensionUri: 'extension', subscriptions: [] });
+require('../vscode-clutchwork/extension.js').activate({ extensionUri: 'extension', subscriptions: [] });
 tickets.resolveWebviewView({
 	webview: {
 		cspSource: 'test',

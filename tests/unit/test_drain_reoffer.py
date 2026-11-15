@@ -2,8 +2,8 @@
 
 import pytest
 
-from chupa.drain import record_reoffer
-from chupa.journal import Event, EventType
+from clutch.drain import record_reoffer
+from clutch.journal import Event, EventType
 
 
 class JournalFake:

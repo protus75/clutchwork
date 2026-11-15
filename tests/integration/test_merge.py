@@ -1,4 +1,4 @@
-"""Merge admission against a temp repo (CHUPA_PLAN.md sections 7, 9, 10; 19.P1)."""
+"""Merge admission against a temp repo (CLUTCH_PLAN.md sections 7, 9, 10; 19.P1)."""
 
 import asyncio
 import dataclasses
@@ -7,18 +7,18 @@ from pathlib import Path
 
 import pytest
 
-from chupa import runner, stages
-from chupa.box import BOX_DIR, Box
-from chupa.config import load_config
-from chupa.driver import Driver
-from chupa.git import Git
-from chupa.journal import EventType
-from chupa.llm import FakeLLM
-from chupa.merge import Admission, AdmissionBoundary, Candidate, PostRebaseGate, merge
-from chupa.mergequeue import CONFLICT_FACTS, MergeQueue
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.stages import StageContext, run_stages
-from chupa.tickets import validate_ticket
+from clutch import runner, stages
+from clutch.box import BOX_DIR, Box
+from clutch.config import load_config
+from clutch.driver import Driver
+from clutch.git import Git
+from clutch.journal import EventType
+from clutch.llm import FakeLLM
+from clutch.merge import Admission, AdmissionBoundary, Candidate, PostRebaseGate, merge
+from clutch.mergequeue import CONFLICT_FACTS, MergeQueue
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.stages import StageContext, run_stages
+from clutch.tickets import validate_ticket
 from tests.integration.test_cli import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
@@ -35,12 +35,12 @@ GOAL = "`thing.py` holds the word ok."
 @pytest.fixture
 def repo(tmp_path: Path) -> Path:
     root = tmp_path / "repo"
-    (root / "chupa").mkdir(parents=True)
-    (root / "chupa" / "thing.py").write_text("")
-    (root / "chupa" / "other.py").write_text("")
-    (root / "CHUPA_PLAN.md").write_text("# Plan\n")
+    (root / "clutch").mkdir(parents=True)
+    (root / "clutch" / "thing.py").write_text("")
+    (root / "clutch" / "other.py").write_text("")
+    (root / "CLUTCH_PLAN.md").write_text("# Plan\n")
     (root / "config.yaml").write_text((Path(__file__).parent / "test_stages.py").read_text().split('CONFIG = """')[1].split('"""')[0])
-    (root / ".gitignore").write_text(".chupa/\n")
+    (root / ".gitignore").write_text(".clutch/\n")
     adopt_conduct(root)
     git(root, "init", "-b", "main")
     git(root, "add", ".")
@@ -58,7 +58,7 @@ def context(repo: Path, script: list) -> StageContext:
     exec_ = SubprocessExec()
     driver = Driver.from_config(config, llm=FakeLLM(script), env=ENV, clock=clock, sleep=never)
     return StageContext(
-        repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".chupa/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
+        repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
     )
 
 
@@ -93,8 +93,8 @@ def refused_untouched(ctx, result, main_before: str, code: str) -> None:
 
 @pytest.mark.parametrize("overlap", [True, False])
 def test_merge_refuses_dirty_overlap_instead_of_raising(repo, overlap):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
-    rel = "chupa/thing.py" if overlap else "chupa/other.py"
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
+    rel = "clutch/thing.py" if overlap else "clutch/other.py"
     edit = b"operator edit\n"
     (repo / rel).write_bytes(edit)
     before = git(repo, "rev-parse", "main").strip()
@@ -111,20 +111,20 @@ def test_merge_refuses_dirty_overlap_instead_of_raising(repo, overlap):
 
 
 def test_merge_refuses_staged_path_outside_diff(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
-    (repo / "chupa/other.py").write_text("staged operator edit\n")
-    git(repo, "add", "chupa/other.py")
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
+    (repo / "clutch/other.py").write_text("staged operator edit\n")
+    git(repo, "add", "clutch/other.py")
     before = git(repo, "rev-parse", "main").strip()
 
     result = admit(ctx, ticket, attempt)
 
     refused_untouched(ctx, result, before, "dirty_checkout")
-    assert any("chupa/other.py" in f.message for f in result.findings)
-    assert "M  chupa/other.py" in git(repo, "status", "--porcelain").splitlines()
+    assert any("clutch/other.py" in f.message for f in result.findings)
+    assert "M  clutch/other.py" in git(repo, "status", "--porcelain").splitlines()
 
 
 def test_a_passing_ticket_squash_merges_with_trailers_and_journals_merged(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     head = git(repo, "rev-parse", STEM).strip()
 
     result = admit(ctx, ticket, attempt)
@@ -134,12 +134,12 @@ def test_a_passing_ticket_squash_merges_with_trailers_and_journals_merged(repo):
     assert isinstance(admission, Admission) and admission.reviewed_sha == head
     assert git(repo, "rev-parse", "main").strip() == admission.commit
     message = git(repo, "log", "-1", "--format=%B", "main")
-    assert message.splitlines()[0] == f"chupa({STEM}): {GOAL}"
+    assert message.splitlines()[0] == f"clutch({STEM}): {GOAL}"
     trailers = git(repo, "log", "-1", "--format=%(trailers:only,unfold)", "main").split("\n")
-    assert f"chupa-ticket: {STEM}" in trailers and f"chupa-reviewed-sha: {head}" in trailers
+    assert f"clutch-ticket: {STEM}" in trailers and f"clutch-reviewed-sha: {head}" in trailers
     # One commit per ticket, code only: the ticket plane rode its own lane.
-    assert git(repo, "show", "--name-only", "--format=", "main").split() == ["chupa/thing.py"]
-    assert (repo / "chupa" / "thing.py").read_text() == "ok\n"
+    assert git(repo, "show", "--name-only", "--format=", "main").split() == ["clutch/thing.py"]
+    assert (repo / "clutch" / "thing.py").read_text() == "ok\n"
 
     [event] = merged_events(ctx)
     assert event.ticket == STEM and event.body == {"to": "merged", "commit": admission.commit, "reviewed_sha": head}
@@ -153,10 +153,10 @@ def test_bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb):
     author(repo)
     source = context(repo, [])
     checkout = runner.Checkout(repo, source.config, source.env, source.exec_, source.git, source.driver.journal, source.fs, source.driver.clock, source.driver.sleep)
-    from chupa.__main__ import build_control
+    from clutch.__main__ import build_control
 
     checkout = dataclasses.replace(checkout, control=build_control(checkout))
-    llm = FakeLLM([agent({"chupa/thing.py": "ok\n"}), verdict()])
+    llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     def forbidden(*args, **kwargs):
         pytest.fail("bootstrap dispatch used the composed queue")
@@ -182,7 +182,7 @@ def test_bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb):
     if verb == "bind":
         assert asyncio.run(pipeline(checkout)(ticket)) == "merged"
     else:
-        from chupa.__main__ import main
+        from clutch.__main__ import main
         from tests.integration.test_drain_reentry import NoChild
 
         assert main(["run", STEM] if verb == "run" else ["drain"], cwd=repo, env=ENV, clock=checkout.clock, pipeline=pipeline, reexec=NoChild()) == 0
@@ -190,7 +190,7 @@ def test_bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb):
     assert original_ticket.stem == ticket.stem and attempt == 0
     assert len(merged_events(ctx)) == 1
     assert not any(e.body.get("kind") == CONFLICT_FACTS for e in ctx.driver.journal.read())
-    assert (repo / "chupa/thing.py").read_text() == "ok\n" and not ctx.worktree(STEM).exists()
+    assert (repo / "clutch/thing.py").read_text() == "ok\n" and not ctx.worktree(STEM).exists()
 
 
 def test_foreground_admission_never_supervised_holds(repo, monkeypatch):
@@ -198,7 +198,7 @@ def test_foreground_admission_never_supervised_holds(repo, monkeypatch):
 
 
 def test_daemon_prechecks_precede_offer(repo, monkeypatch):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     async def scenario():
         code = "post_rebase_regate"
@@ -229,13 +229,13 @@ def test_daemon_prechecks_precede_offer(repo, monkeypatch):
         assert ctx.worktree(ticket.stem).exists() and not queue.pending
         assert ctx.driver.journal.read() == journal and not boundary.results
 
-    from chupa import stages
+    from clutch import stages
 
     asyncio.run(scenario())
 
 
 def test_admission_mode_is_explicit(repo, monkeypatch):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     queue = MergeQueue(ctx, escalate=lambda _: None)
 
     def forbidden(*args, **kwargs):
@@ -256,7 +256,7 @@ def test_admission_mode_is_explicit(repo, monkeypatch):
         with pytest.raises(runner.Refusal, match="supply.*MergeQueue.*serve composition"):
             AdmissionBoundary(ctx, **kwargs)
     queue.paused, queue.hold_id = True, "daemon-hold"
-    from chupa.lockfile import Lockfile
+    from clutch.lockfile import Lockfile
 
     lock = Lockfile(ctx.config.state_dir, verb="drain", instance_id="inline-mode", clock=ctx.driver.clock)
     lock.acquire()
@@ -267,17 +267,17 @@ def test_admission_mode_is_explicit(repo, monkeypatch):
 
 
 def test_approval_carries_across_a_clean_rebase_onto_a_moved_main(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     head = git(repo, "rev-parse", STEM).strip()
-    (repo / "chupa" / "other.py").write_text("moved\n")
+    (repo / "clutch" / "other.py").write_text("moved\n")
     git(repo, "commit", "-am", "main moves")
 
     result = admit(ctx, ticket, attempt)
 
     assert result.outcome == "ok", result.findings
-    assert f"chupa-reviewed-sha: {head}" in git(repo, "log", "-1", "--format=%B", "main")
-    assert (repo / "chupa" / "other.py").read_text() == "moved\n"
-    assert git(repo, "show", "--name-only", "--format=", "main").split() == ["chupa/thing.py"]
+    assert f"clutch-reviewed-sha: {head}" in git(repo, "log", "-1", "--format=%B", "main")
+    assert (repo / "clutch" / "other.py").read_text() == "moved\n"
+    assert git(repo, "show", "--name-only", "--format=", "main").split() == ["clutch/thing.py"]
 
 
 def test_a_rerun_worktree_with_lifted_tracked_copies_is_restored_and_merges(repo):
@@ -287,22 +287,22 @@ def test_a_rerun_worktree_with_lifted_tracked_copies_is_restored_and_merges(repo
     for name in ("run.md", "checks.json", "review.md"):
         (repo / "tickets" / STEM / name).write_text("prior run\n")
     git(repo, "add", "tickets")
-    git(repo, "commit", "-m", f"chupa({STEM}): prior run")
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()], authored=True)
+    git(repo, "commit", "-m", f"clutch({STEM}): prior run")
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()], authored=True)
     assert "D tickets/" in git(ctx.worktree(STEM), "status", "--porcelain")
 
     result = admit(ctx, ticket, attempt)
 
     assert result.outcome == "ok", result.findings
-    assert git(repo, "show", "--name-only", "--format=", "main").split() == ["chupa/thing.py"]
+    assert git(repo, "show", "--name-only", "--format=", "main").split() == ["clutch/thing.py"]
     assert "prior run" not in (repo / "tickets" / STEM / "review.md").read_text()
 
 
 def test_a_failing_hard_gate_blocks_admission(repo):
     # Verification goes red on the rebased candidate but stays green on the merge base.
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
-    ticket = dataclasses.replace(ticket, verification=(("test", "!", "-s", "chupa/thing.py"),))
-    (repo / "chupa" / "other.py").write_text("x\n")
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
+    ticket = dataclasses.replace(ticket, verification=(("test", "!", "-s", "clutch/thing.py"),))
+    (repo / "clutch" / "other.py").write_text("x\n")
     git(repo, "commit", "-am", "main moves")
     before = git(repo, "rev-parse", "main").strip()
 
@@ -312,10 +312,10 @@ def test_a_failing_hard_gate_blocks_admission(repo):
 
 
 def test_base_red_verification_does_not_refuse_merge_regating(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
-    ticket = dataclasses.replace(ticket, verification=(("grep", "-q", "absent", "chupa/thing.py"),))
-    (repo / "chupa/other.py").write_text("main moved\n")
-    git(repo, "add", "chupa/other.py")
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
+    ticket = dataclasses.replace(ticket, verification=(("grep", "-q", "absent", "clutch/thing.py"),))
+    (repo / "clutch/other.py").write_text("main moved\n")
+    git(repo, "add", "clutch/other.py")
     git(repo, "commit", "-m", "main moves")
 
     result = admit(ctx, ticket, attempt)
@@ -328,8 +328,8 @@ def test_base_red_verification_does_not_refuse_merge_regating(repo):
 
 
 def test_an_approval_pinned_to_an_older_head_blocks_admission(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
-    (ctx.worktree(STEM) / "chupa" / "thing.py").write_text("ok but changed after review\n")
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
+    (ctx.worktree(STEM) / "clutch" / "thing.py").write_text("ok but changed after review\n")
     git(ctx.worktree(STEM), "commit", "-am", "post-review edit")
     before = git(repo, "rev-parse", "main").strip()
 
@@ -340,7 +340,7 @@ def test_an_approval_pinned_to_an_older_head_blocks_admission(repo):
 
 
 def test_a_snag_verdict_is_no_approval(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG])], approve=False)
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG])], approve=False)
     before = git(repo, "rev-parse", "main").strip()
 
     result = admit(ctx, ticket, attempt)
@@ -350,7 +350,7 @@ def test_a_snag_verdict_is_no_approval(repo):
 
 
 def test_a_branch_committing_ticket_plane_files_is_refused_with_the_outbox_road(tmp_path):
-    candidate = Candidate(stem=STEM, reviewed_sha="abc", ticket_text="", review_text=None, changed_files=["chupa/thing.py", f"tickets/{STEM}/notes.md"])
+    candidate = Candidate(stem=STEM, reviewed_sha="abc", ticket_text="", review_text=None, changed_files=["clutch/thing.py", f"tickets/{STEM}/notes.md"])
 
     report = PostRebaseGate().check(candidate, tmp_path)
 
@@ -360,7 +360,7 @@ def test_a_branch_committing_ticket_plane_files_is_refused_with_the_outbox_road(
 
 
 def test_a_main_ticket_edit_failing_the_schema_blocks_admission(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     path = repo / "tickets" / STEM / "ticket.md"
     path.write_text(path.read_text().replace("## Definition of rejected\nNeeds a new dependency.\n\n", ""))
     git(repo, "commit", "-am", "hand edit")
@@ -372,9 +372,9 @@ def test_a_main_ticket_edit_failing_the_schema_blocks_admission(repo):
 
 
 def test_a_conflicted_rebase_is_aborted_and_refused(repo):
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     head = git(repo, "rev-parse", STEM).strip()
-    (repo / "chupa" / "thing.py").write_text("conflict\n")
+    (repo / "clutch" / "thing.py").write_text("conflict\n")
     git(repo, "commit", "-am", "main conflicts")
     before = git(repo, "rev-parse", "main").strip()
 
@@ -387,8 +387,8 @@ def test_a_conflicted_rebase_is_aborted_and_refused(repo):
 
 
 def test_pipeline_requires_supplied_control(repo):
-    from chupa import merge as owner
-    from chupa.__main__ import build_control
+    from clutch import merge as owner
+    from clutch.__main__ import build_control
 
     ctx = context(repo, [])
     checkout = runner.Checkout(repo, ctx.config, ctx.env, ctx.exec_, ctx.git, ctx.driver.journal, ctx.fs, ctx.driver.clock, ctx.driver.sleep)
@@ -407,13 +407,13 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
     """Inline CLI and real serve composition share the writer, lift and retirement contract."""
     import shlex
 
-    from chupa import merge as owner
-    from chupa.__main__ import main
-    from chupa.audit import audit_journal
-    from chupa.checkpoint import _merged
-    from chupa.effects import Effects
-    from chupa.rework import settled_dependencies
-    from chupa.stages import lift_outbox
+    from clutch import merge as owner
+    from clutch.__main__ import main
+    from clutch.audit import audit_journal
+    from clutch.checkpoint import _merged
+    from clutch.effects import Effects
+    from clutch.rework import settled_dependencies
+    from clutch.stages import lift_outbox
     from tests.integration.serve_rig import admission_graph, admission_ticket, finish, request, start_admission, until
 
     original_writer = owner.write_squash
@@ -469,7 +469,7 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
         assert trace.count((ticket.stem, "remove")) == trace.count((ticket.stem, "delete")) == 1
         assert await ctx.git._run(root, "branch", "--list", ticket.stem) == ""
         assert await ctx.git.rev_parse(root, "main^{tree}") == tree
-        assert "chupa-ticket:" not in await ctx.git._run(root, "log", "--format=%B", "main")
+        assert "clutch-ticket:" not in await ctx.git._run(root, "log", "--format=%B", "main")
         ctx.driver.effects = Effects(ctx.driver.journal)
         before = await ctx.git.rev_parse(root, "main")
         assert await lift_outbox(ctx, ticket.stem, "checks", attempt=attempt) is None
@@ -503,8 +503,8 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
     async def daemon():
         async def moved(rig, local, ticket, attempt):
             rig.pinned = await local.git.rev_parse(root, ticket.stem)
-            rig.fs.write(root / "chupa/other.py", b"moved main\n")
-            await local.git.add(root, ["chupa/other.py"])
+            rig.fs.write(root / "clutch/other.py", b"moved main\n")
+            await local.git.add(root, ["clutch/other.py"])
             await local.git.commit(root, "main advances after report approval")
 
         rig = await admission_graph(root, monkeypatch, {}, settled=moved)
@@ -587,8 +587,8 @@ async def test_outbox_only_merge_regate_requires_lift_custody(repo, monkeypatch,
         await ctx.git.add(repo, ["source.json"])
         await ctx.git.commit(repo, "invalid Verification report fixture")
     elif failure == "invalid-schema":
-        from chupa.artifacts import Finding
-        from chupa.stages import KNOWN_ARTIFACTS
+        from clutch.artifacts import Finding
+        from clutch.stages import KNOWN_ARTIFACTS
 
         monkeypatch.setitem(KNOWN_ARTIFACTS, SAMPLE_REPORT, Finding)
         ticket = dataclasses.replace(ticket, verification=(("true",),))
@@ -610,9 +610,9 @@ async def test_outbox_only_merge_regate_requires_lift_custody(repo, monkeypatch,
 @pytest.mark.parametrize("mode", ["inline", "queue"])
 @pytest.mark.parametrize("case", ["committed-tickets", "dirty-tracked", "dirty-untracked", "code-and-report", "stale-approval", "missing-approval"])
 async def test_outbox_only_exception_preserves_code_lane_safety(repo, mode, case):
-    from chupa.stages import read_review, render_review
+    from clutch.stages import read_review, render_review
 
-    script = [agent({"chupa/thing.py": "ok code\n"}), verdict()] if case == "code-and-report" else None
+    script = [agent({"clutch/thing.py": "ok code\n"}), verdict()] if case == "code-and-report" else None
     ctx, ticket = await report_context(repo, script=script)
     run = await run_stages(ctx, ticket)
     assert run.results["review"].outcome == "ok"
@@ -624,7 +624,7 @@ async def test_outbox_only_exception_preserves_code_lane_safety(repo, mode, case
         await ctx.git.commit(ctx.worktree(STEM), "ticket-plane violation")
         code = "post_rebase_regate"
     elif case.startswith("dirty"):
-        rel = "chupa/thing.py" if case == "dirty-tracked" else "chupa/new file.py"
+        rel = "clutch/thing.py" if case == "dirty-tracked" else "clutch/new file.py"
         ctx.fs.write(ctx.worktree(STEM) / rel, b"uncommitted code")
         if case == "dirty-tracked":
             code = "post_rebase_regate"
@@ -646,8 +646,8 @@ async def test_outbox_only_exception_preserves_code_lane_safety(repo, mode, case
     if case == "code-and-report":
         assert result.outcome == "ok" and result.artifact.commit is not None
         assert result.artifact.commit == await ctx.git.rev_parse(repo, "main")
-        assert (await ctx.git._run(repo, "show", "--name-only", "--format=", "main")).split() == ["chupa/thing.py"]
-        assert f"chupa-ticket: {STEM}" in await ctx.git._run(repo, "log", "-1", "--format=%B")
+        assert (await ctx.git._run(repo, "show", "--name-only", "--format=", "main")).split() == ["clutch/thing.py"]
+        assert f"clutch-ticket: {STEM}" in await ctx.git._run(repo, "log", "-1", "--format=%B")
     else:
         refused_untouched(ctx, result, before, code)
         assert all(f.paved_road for f in result.findings)
@@ -660,28 +660,28 @@ async def test_outbox_only_exception_preserves_code_lane_safety(repo, mode, case
     + [("boundary", case) for case in ("missing", "conflicting", "malformed")],
 )
 async def test_retro_prompt_spec_merge_requires_unique_bridge(repo, monkeypatch, mode, case):
-    from chupa.effects import Effects
-    from chupa.merge import write_squash
-    from chupa.mergequeue import TreeMismatch
+    from clutch.effects import Effects
+    from clutch.merge import write_squash
+    from clutch.mergequeue import TreeMismatch
     from tests.integration.test_stages import implement_reply
 
     author(repo)
     ctx = context(repo, [implement_reply(), verdict()])
     path = repo / f"tickets/{STEM}/ticket.md"
     source = "human" if case == "unrelated" else "box:retro_finding"
-    ctx.fs.write(path, path.read_text().replace("source: human", f"source: {source}").replace("## Scope fence\n- chupa/thing.py", "## Scope fence\n- chupa/thing.py\n- chupa/specs/").encode())
-    for rel in ("chupa/specs/z.md", "chupa/specs/a.md", "chupa/specs/readme.txt"):
+    ctx.fs.write(path, path.read_text().replace("source: human", f"source: {source}").replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n- clutch/thing.py\n- clutch/specs/").encode())
+    for rel in ("clutch/specs/z.md", "clutch/specs/a.md", "clutch/specs/readme.txt"):
         ctx.fs.write(repo / rel, b"before\n")
-    await ctx.git.add(repo, [str(path.relative_to(repo)), "chupa/specs/z.md", "chupa/specs/a.md", "chupa/specs/readme.txt"])
+    await ctx.git.add(repo, [str(path.relative_to(repo)), "clutch/specs/z.md", "clutch/specs/a.md", "clutch/specs/readme.txt"])
     await ctx.git.commit(repo, "retro admission fixture")
     ticket = validate_ticket(STEM, path.read_text(), repo)
     call = ctx.driver.llm.call
 
     async def implement(request):
         if request.surface == "implement":
-            changes = {"chupa/thing.py": "ok\n"}
+            changes = {"clutch/thing.py": "ok\n"}
             if case != "no-spec":
-                changes.update({"chupa/specs/z.md": "fixed\n", "chupa/specs/a.md": "fixed\n", "chupa/specs/readme.txt": "fixed\n"})
+                changes.update({"clutch/specs/z.md": "fixed\n", "clutch/specs/a.md": "fixed\n", "clutch/specs/readme.txt": "fixed\n"})
             for rel, text in changes.items():
                 ctx.fs.write(request.worktree / rel, text.encode())
             await ctx.git.add(request.worktree, list(changes))
@@ -747,10 +747,15 @@ async def test_retro_prompt_spec_merge_requires_unique_bridge(repo, monkeypatch,
             "retro_report_key": "retro/1",
             "ticket_stem": STEM,
             "squash_sha": sha,
-            "changed_spec_paths": ["chupa/specs/a.md", "chupa/specs/z.md"],
+            "changed_spec_paths": ["clutch/specs/a.md", "clutch/specs/z.md"],
         }
         assert sha == await ctx.git.rev_parse(repo, "main")
-        assert (await ctx.git._run(repo, "diff-tree", "--no-commit-id", "--name-only", "-r", sha)).splitlines() == ["chupa/specs/a.md", "chupa/specs/readme.txt", "chupa/specs/z.md", "chupa/thing.py"]
+        assert (await ctx.git._run(repo, "diff-tree", "--no-commit-id", "--name-only", "-r", sha)).splitlines() == [
+            "clutch/specs/a.md",
+            "clutch/specs/readme.txt",
+            "clutch/specs/z.md",
+            "clutch/thing.py",
+        ]
         ctx.driver.effects = Effects(journal)
         before = journal.read()
         assert (await write_squash(ctx, ticket, reviewed_sha, attempt=run.attempt)).commit == sha
@@ -760,10 +765,10 @@ async def test_retro_prompt_spec_merge_requires_unique_bridge(repo, monkeypatch,
 @pytest.mark.parametrize("mode", ["inline", "queue"])
 @pytest.mark.parametrize("change", ["current", "stale", "after-rebase"])
 def test_core_drift_merge_rerun(repo, mode, change):
-    from chupa import hostfiles
+    from clutch import hostfiles
     from tests.integration.test_mergequeue import approve
 
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     async def scenario():
         if change != "current":
@@ -779,8 +784,8 @@ def test_core_drift_merge_rerun(repo, mode, change):
                 ticket_with_fence = ticket
         else:
             ticket_with_fence = ticket
-        ctx.fs.write(repo / "chupa/other.py", b"main moved\n")
-        await ctx.git.add(repo, ["chupa/other.py"])
+        ctx.fs.write(repo / "clutch/other.py", b"main moved\n")
+        await ctx.git.add(repo, ["clutch/other.py"])
         await ctx.git.commit(repo, "main moves")
         before = await ctx.git.rev_parse(repo, "main")
         if mode == "inline":
@@ -794,7 +799,7 @@ def test_core_drift_merge_rerun(repo, mode, change):
         else:
             refused_untouched(ctx, result, before, "core_drift")
             finding = next(f for f in result.findings if f.code == "core_drift")
-            assert finding.path == "AGENTS.md" and "chupa core" in finding.paved_road
+            assert finding.path == "AGENTS.md" and "clutch core" in finding.paved_road
             if change == "after-rebase":
                 assert (ctx.worktree(STEM) / "AGENTS.md").read_bytes() == (repo / "AGENTS.md").read_bytes()
 
@@ -803,20 +808,20 @@ def test_core_drift_merge_rerun(repo, mode, change):
 
 @pytest.mark.parametrize("mode", ["inline", "queue"])
 def test_core_drift_candidate_template(repo, mode):
-    from chupa import hostfiles
+    from clutch import hostfiles
     from tests.integration.test_mergequeue import approve
 
-    ctx, ticket, attempt = reviewed(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     serving = hostfiles.CORE_TEMPLATE
     candidate = b"## Candidate engine conduct\n\nNew branch rules.\n"
 
     async def scenario():
         root = ctx.worktree(STEM)
-        ctx.fs.write(root / "chupa/hostfiles.py", b"CORE_TEMPLATE = " + repr(candidate).encode() + b"\n")
+        ctx.fs.write(root / "clutch/hostfiles.py", b"CORE_TEMPLATE = " + repr(candidate).encode() + b"\n")
         ctx.fs.write(root / "AGENTS.md", hostfiles.render(b"project\xff", template=candidate))
-        await ctx.git.add(root, ["chupa/hostfiles.py", "AGENTS.md"])
+        await ctx.git.add(root, ["clutch/hostfiles.py", "AGENTS.md"])
         await ctx.git.commit(root, "congruent candidate template and block")
-        local = dataclasses.replace(ticket, scope_fence=(*ticket.scope_fence, "chupa/hostfiles.py", "AGENTS.md"))
+        local = dataclasses.replace(ticket, scope_fence=(*ticket.scope_fence, "clutch/hostfiles.py", "AGENTS.md"))
         await approve(ctx, local)
         if mode == "inline":
             result = await merge(ctx, local, attempt=attempt)
@@ -835,7 +840,7 @@ def test_core_drift_candidate_template(repo, mode):
 @pytest.mark.parametrize("mode", ["inline", "queue"])
 @pytest.mark.parametrize("omitted", [None, "CLAUDE.md", "AGENTS.md"])
 def test_core_activation_first_adoption_merge(repo, mode, omitted):
-    from chupa import hostfiles, stages
+    from clutch import hostfiles, stages
     from tests.integration.test_cli import core_config
     from tests.integration.test_mergequeue import approve
 
@@ -847,11 +852,11 @@ def test_core_activation_first_adoption_merge(repo, mode, omitted):
     git(repo, "commit", "-m", "marker-free first adoption base")
     author(repo)
     path = repo / f"tickets/{STEM}/ticket.md"
-    path.write_text(path.read_text().replace("## Scope fence\n- chupa/thing.py", "## Scope fence\n- chupa/thing.py\n- CLAUDE.md\n- AGENTS.md"))
+    path.write_text(path.read_text().replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n- clutch/thing.py\n- CLAUDE.md\n- AGENTS.md"))
     git(repo, "add", str(path.relative_to(repo)))
     git(repo, "commit", "-m", "activation fixture fence")
     changes = {name: hostfiles.render(data).decode() for name, data in original.items() if name != omitted}
-    changes["chupa/thing.py"] = "ok adopted\n"
+    changes["clutch/thing.py"] = "ok adopted\n"
     ctx = context(repo, [agent(changes), verdict()])
     ticket = validate_ticket(STEM, path.read_text(), repo)
 
@@ -861,8 +866,8 @@ def test_core_activation_first_adoption_merge(repo, mode, omitted):
         if omitted is not None:
             assert any(f.path == omitted and f.code == "core_drift" for f in run.results["check"].findings)
             await approve(ctx, ticket)
-        ctx.fs.write(repo / "chupa/other.py", b"main moved\n")
-        await ctx.git.add(repo, ["chupa/other.py"])
+        ctx.fs.write(repo / "clutch/other.py", b"main moved\n")
+        await ctx.git.add(repo, ["clutch/other.py"])
         await ctx.git.commit(repo, "main moves")
         before = await ctx.git.rev_parse(repo, "main")
 
@@ -881,11 +886,11 @@ def test_core_activation_first_adoption_merge(repo, mode, omitted):
         for name, data in original.items():
             assert (repo / name).read_bytes() == hostfiles.render(data)
         # Next ordinary candidate inherits both files and needs no operator repair.
-        local = context(repo, [agent({"chupa/thing.py": "ok ordinary\n"}), verdict()])
+        local = context(repo, [agent({"clutch/thing.py": "ok ordinary\n"}), verdict()])
         next_run = await run_stages(local, ticket)
         assert next_run.results["check"].outcome == "ok"
         result = await admission(local, next_run.attempt)
         assert result.outcome == "ok", result.findings
-        assert (await local.git._run(repo, "show", "--format=", "--name-only", "main")).split() == ["chupa/thing.py"]
+        assert (await local.git._run(repo, "show", "--format=", "--name-only", "main")).split() == ["clutch/thing.py"]
 
     asyncio.run(scenario())

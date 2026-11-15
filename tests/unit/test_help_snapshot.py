@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 
-from chupa.help import TOPICS, topic_text
-from chupa.observe import STATUS_KEYS
-from chupa.stats import project_stats, stats_tree
-from chupa.status import SETTLED
+from clutch.help import TOPICS, topic_text
+from clutch.observe import STATUS_KEYS
+from clutch.stats import project_stats, stats_tree
+from clutch.status import SETTLED
 
 
 def test_status_keys_covered():

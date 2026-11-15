@@ -6,8 +6,8 @@ from dataclasses import asdict
 import pytest
 from pydantic import ValidationError
 
-from chupa.artifacts import ReviewBaselineReport
-from chupa.seams import LocalFileSystem
+from clutch.artifacts import ReviewBaselineReport
+from clutch.seams import LocalFileSystem
 from eval import harness
 from tests.integration.test_eval_harness import corpus_results, report_fixture
 

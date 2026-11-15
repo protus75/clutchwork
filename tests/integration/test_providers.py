@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from chupa.config import ConfigError, load_config
-from chupa.journal import Journal
-from chupa.llm import LLMRequest
-from chupa.providers import (
+from clutch.config import ConfigError, load_config
+from clutch.journal import Journal
+from clutch.llm import LLMRequest
+from clutch.providers import (
     ADAPTERS,
     PLACEHOLDER,
     CliAdapter,
@@ -22,10 +22,10 @@ from chupa.providers import (
     child_env,
     resolve,
 )
-from chupa.redact import Redactor
-from chupa.seams import GroupExec, LocalFileSystem, SubprocessExec
-from chupa.timers import Timers
-from chupa.watchdog import EventConsumer
+from clutch.redact import Redactor
+from clutch.seams import GroupExec, LocalFileSystem, SubprocessExec
+from clutch.timers import Timers
+from clutch.watchdog import EventConsumer
 from tests.waiting import group_exited, ready_before_returning_spawn, wait_until
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -198,7 +198,7 @@ def test_no_cost_stream_without_estimate_is_a_setup_refusal(tmp_path):
 
 def test_instance_config_routes_every_tier_for_review_author_implement():
     cfg = load_config(None, cwd=ROOT)
-    assert cfg.state_dir == ROOT / ".chupa" / "state"
+    assert cfg.state_dir == ROOT / ".clutch" / "state"
     for tier in ("low", "medium", "high", "max"):
         implement = resolve(cfg, tier, "implement")
         assert implement.provider.name == "codex" and implement.provider.kind == "cli"
@@ -470,7 +470,7 @@ def test_preflight_reports_a_stale_cli_without_refusing_the_run(tmp_path):
     llm_ = llm(config(tmp_path), PreflightExec({**CURRENT, "codex": "codex-cli 1.2.0"}, "1.2.3"), tmp_path)
     assert asyncio.run(llm_.preflight()) == []
     [notice] = llm_.preflight_notices
-    assert "codex 1.2.0 is not the latest release 1.2.3" in notice and "-- run: chupa install codex" in notice and "pnpm add" not in notice
+    assert "codex 1.2.0 is not the latest release 1.2.3" in notice and "-- run: clutch install codex" in notice and "pnpm add" not in notice
 
 
 def test_preflight_refuses_a_model_the_login_cannot_serve(tmp_path):
@@ -554,8 +554,8 @@ def test_cli_failure_classifier_handles_exit_zero_error_events(tmp_path, name, m
 def test_classified_error_preserves_scrubbed_evidence_and_login_road(tmp_path, name):
     from pydantic import BaseModel
 
-    from chupa.driver import Driver, LlmStage
-    from chupa.llm import FakeLLM
+    from clutch.driver import Driver, LlmStage
+    from clutch.llm import FakeLLM
 
     cfg = config(tmp_path)
     adapter = classifier_adapter(cfg, name, tmp_path)
@@ -620,9 +620,9 @@ def test_classified_error_preserves_scrubbed_evidence_and_login_road(tmp_path, n
 def test_cli_failure_classifier_is_active(tmp_path, monkeypatch):
     from pydantic import BaseModel
 
-    from chupa import __main__, runner
-    from chupa.driver import LlmStage
-    from chupa.tickets import validate_ticket
+    from clutch import __main__, runner
+    from clutch.driver import LlmStage
+    from clutch.tickets import validate_ticket
 
     async def current(*args):
         return []
@@ -963,7 +963,7 @@ def test_event_callback_unwind_kills_group(tmp_path, monkeypatch, name, unwind):
     ],
 )
 def test_routed_conduct_paths(tmp_path, names, expected):
-    from chupa.providers import routed_conduct_paths
+    from clutch.providers import routed_conduct_paths
     from tests.integration.test_cli import core_config
 
     path = core_config(tmp_path, [("medium", "implement", names), ("high", "review", names)])
@@ -976,7 +976,7 @@ def test_routed_conduct_paths(tmp_path, names, expected):
 def test_eval_budget_ceiling_before_spawn(tmp_path):
     from dataclasses import replace
 
-    from chupa.providers import ProviderBudgetExceeded
+    from clutch.providers import ProviderBudgetExceeded
 
     cfg = config(tmp_path)
     process = FakeExec((0, claude_ok(), ""), (0, codex_ok(), ""), (0, claude_ok(), ""))
@@ -997,9 +997,9 @@ def test_eval_budget_ceiling_before_spawn(tmp_path):
             replace(req("review"), budget_usd=budget)
 
     # Exercise the durable production call boundary, not just the raw adapter.
-    from chupa.effects import Effects
-    from chupa.llmeffect import llm_call
-    from chupa.thresh import fold_breakers
+    from clutch.effects import Effects
+    from clutch.llmeffect import llm_call
+    from clutch.thresh import fold_breakers
 
     journal = client.session.journal
     effects = Effects(journal)

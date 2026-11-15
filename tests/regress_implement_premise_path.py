@@ -4,7 +4,7 @@ import json
 
 from pydantic import ValidationError
 
-from chupa.stages import ImplementReply
+from clutch.stages import ImplementReply
 
 reply = {
     "outcome": "premise_failed",

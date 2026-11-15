@@ -5,8 +5,8 @@ from dataclasses import replace
 
 import pytest
 
-from chupa import daemon
-from chupa.llm import FakeLLM, LLMAborted
+from clutch import daemon
+from clutch.llm import FakeLLM, LLMAborted
 from tests.integration.test_cli import root
 from tests.integration.test_driver import ECHO, Stub, build, echo_json, log_events, spool
 from tests.integration.test_kill_signal_journal import Rig, decision

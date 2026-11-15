@@ -5,17 +5,17 @@ from pathlib import Path
 
 import pytest
 
-from chupa.artifacts import Finding
-from chupa.config import load_config
-from chupa.driver import Driver
-from chupa.gates import lint_gate
-from chupa.llm import FakeLLM
-from chupa.requisition import FIRST_REVIEW, RequisitionGate, RequisitionReply, RequisitionVerdict, base_render_chars, review_target, review_ticket
-from chupa.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, lint_spec, load_spec, render
-from chupa.stages import StageContext, implement_inputs, implement_stage
-from chupa.tickets import TicketInvalid
+from clutch.artifacts import Finding
+from clutch.config import load_config
+from clutch.driver import Driver
+from clutch.gates import lint_gate
+from clutch.llm import FakeLLM
+from clutch.requisition import FIRST_REVIEW, RequisitionGate, RequisitionReply, RequisitionVerdict, base_render_chars, review_target, review_ticket
+from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, lint_spec, load_spec, render
+from clutch.stages import StageContext, implement_inputs, implement_stage
+from clutch.tickets import TicketInvalid
 
-SPECS = Path(__file__).resolve().parents[2] / "chupa" / "specs"
+SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 TICKET = """---
 state: confirmed
 source: human
@@ -258,8 +258,8 @@ def test_implement_reads_context_from_its_worktree(tmp_path):
 
 def test_review_render_over_bound_is_mechanical_snag(tmp_path, monkeypatch):
     repo, driver, llm = setup(tmp_path, [])
-    import chupa.requisition as requisition
-    import chupa.specs as specs
+    import clutch.requisition as requisition
+    import clutch.specs as specs
 
     # The base Implement render fits the bound; the review render, which embeds it, does not.
     base = base_render_chars(repo, review_target(repo, "one-thing", TICKET), TICKET, SPECS)
@@ -300,7 +300,7 @@ def test_coverage_dependents_in_prompt(tmp_path):
     ticket = TICKET.replace("- thing.py\n\n## Acceptance", "- thing.py\n- tests/in_fence\n\n## Acceptance")
     assert run(driver, repo, text=ticket, coverage_map=map_path).verdict == "approve"
     prompt = llm.requests[0].rendered
-    block = prompt.split("<<chupa-data:begin coverage_dependents>>")[1].split("<<chupa-data:end coverage_dependents>>")[0]
+    block = prompt.split("<<clutch-data:begin coverage_dependents>>")[1].split("<<clutch-data:end coverage_dependents>>")[0]
     assert block.strip() == "tests/outside.py: runs thing.py"
 
 
@@ -324,14 +324,14 @@ def test_invalid_coverage_map_snags_before_model(tmp_path, contents):
     verdict = run(driver, repo, coverage_map=map_path)
     assert verdict.verdict == "snag"
     assert verdict.findings[0].code == "coverage_map"
-    assert verdict.findings[0].paved_road == "run `chupa covmap`"
+    assert verdict.findings[0].paved_road == "run `clutch covmap`"
     assert verdict.calls == 0 and llm.requests == []
 
 
 def test_no_coverage_map_renders_notice(tmp_path):
     repo, driver, llm = setup(tmp_path, [reply("approve")])
     assert run(driver, repo).verdict == "approve"
-    block = llm.requests[0].rendered.split("<<chupa-data:begin coverage_dependents>>")[1].split("<<chupa-data:end coverage_dependents>>")[0]
+    block = llm.requests[0].rendered.split("<<clutch-data:begin coverage_dependents>>")[1].split("<<clutch-data:end coverage_dependents>>")[0]
     assert block.strip() == "no coverage map configured"
 
 
@@ -380,8 +380,8 @@ def test_missing_map_has_no_requisition_stage_events(tmp_path):
 
 
 def test_committed_ticket_lint_snags_without_provider(tmp_path):
-    from chupa.git import Git
-    from chupa.seams import SubprocessExec
+    from clutch.git import Git
+    from clutch.seams import SubprocessExec
     from tests.integration.test_git import commit_lock
     from tests.integration.test_tickets import ENV
 

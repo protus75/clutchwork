@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.tickets import (
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.tickets import (
     INTAKE_SIGNAL,
     IntakeRefused,
     TicketInvalid,
@@ -37,21 +37,21 @@ BODY = """
 none
 
 ## Context
-- chupa/thing.py
+- clutch/thing.py
 
 ## Goal / Why
-`chupa thing` prints ok. Operators need it.
+`clutch thing` prints ok. Operators need it.
 
 ## Scope in / Scope out
 In: the verb. Out: everything else.
 
 ## Scope fence
-- chupa/thing.py
+- clutch/thing.py
 - tests/test_thing.py
 
 ## Acceptance criteria
 1. `uv run pytest tests/test_thing.py` exits 0.
-2. `chupa/thing.py` exposes `thing()`.
+2. `clutch/thing.py` exposes `thing()`.
 
 ## Verification
 ```
@@ -80,16 +80,16 @@ class Clock:
 
 @pytest.fixture
 def repo(tmp_path: Path):
-    g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(tmp_path / ".clutch/state"))
     root = tmp_path / "repo"
-    (root / "chupa").mkdir(parents=True)
+    (root / "clutch").mkdir(parents=True)
     (root / "specs").mkdir()
-    (root / "chupa" / "thing.py").write_text("")
+    (root / "clutch" / "thing.py").write_text("")
     (root / "specs" / "review.md").write_text("spec\n")
 
     async def seed():
         await g.init(root, branch="main")
-        await g.add(root, ["chupa", "specs"])
+        await g.add(root, ["clutch", "specs"])
         await g.commit(root, "base")
 
     run(seed())
@@ -142,7 +142,7 @@ def test_valid_ticket_validates_and_commits(repo):
     text = path.read_text()
     assert "source: human" in text and "state: confirmed" in text and text.endswith(BODY)
     subject = run(g._run(root, "log", "-1", "--format=%s%n%b")).strip()
-    assert subject == "chupa(t-one): ticket"
+    assert subject == "clutch(t-one): ticket"
     sha = run(g.rev_parse(root, "HEAD"))
     [event] = [e for e in journal.read() if e.type == EventType.SIGNAL]
     assert event.ticket == "t-one"
@@ -191,9 +191,9 @@ def test_time_budget_stuck_must_exceed_expected(repo, stuck):
 @pytest.mark.parametrize(
     ("old", "new", "needle"),
     [
-        ("- chupa/thing.py\n\n## Goal", "- chupa/specs/review.md\n\n## Goal", "prompt spec"),
-        ("- chupa/thing.py\n\n## Goal", "- chupa/later.py\n\n## Goal", "does not exist"),
-        ("- chupa/thing.py\n\n## Goal", "- ../etc/passwd\n\n## Goal", "repo-relative"),
+        ("- clutch/thing.py\n\n## Goal", "- clutch/specs/review.md\n\n## Goal", "prompt spec"),
+        ("- clutch/thing.py\n\n## Goal", "- clutch/later.py\n\n## Goal", "does not exist"),
+        ("- clutch/thing.py\n\n## Goal", "- ../etc/passwd\n\n## Goal", "repo-relative"),
         ("## Depends on\nnone", "## Depends on\n- ghost", "does not resolve"),
         ("## Depends on\nnone", "## Depends on\n- t-one", "self-edge"),
         ("## Definition of rejected\nThe verb needs a new dependency.\n", "", "Definition of rejected"),
@@ -202,7 +202,7 @@ def test_time_budget_stuck_must_exceed_expected(repo, stuck):
         ("uv run pytest tests/test_thing.py\n", "uv run pytest 'unterminated\n", "argv-parseable"),
         ("```\nuv run pytest tests/test_thing.py\n```", "`uv run pytest`", "fenced command block"),
         ("exits 0.", "exits 0 and the code is cleaner.", "unmeasurable"),
-        ("2. `chupa/thing.py` exposes `thing()`.", "2. The thing works.", "names no check"),
+        ("2. `clutch/thing.py` exposes `thing()`.", "2. The thing works.", "names no check"),
         ("kind: feature", "kind: bug", "no `## Regression`"),
         ("## Time budget", "## Regression\n```\npytest\n```\n- carries: tests/\n\n## Time budget", "non-bug"),
         ("## Time budget", "## Exit-read window\n- nonsense\n\n## Time budget", "unknown body section"),
@@ -242,7 +242,7 @@ def test_bug_carries_test_prefix_validates(repo, prefix):
 
 def test_bug_carries_implementation_prefix_is_refused(repo):
     root, _, _ = repo
-    prefix = "vscode-chupa/media/graph.js"
+    prefix = "vscode-clutchwork/media/graph.js"
     text = bug_text().replace("- carries: tests/", f"- carries: {prefix}")
     [finding] = refusal(root, text, stem="t-bug")
     assert prefix in finding.message
@@ -269,13 +269,13 @@ def test_regression_grammar_is_closed(repo, regression):
 def test_on_demand_must_be_fenced_existing_and_not_context(repo):
     root, _, _ = repo
     base = VALID.replace("## Goal / Why", "## On-demand\n- {}\n\n## Goal / Why")
-    (root / "chupa" / "big.py").write_text("")
-    assert "not covered" in messages(refusal(root, base.format("chupa/big.py")))
-    fenced = base.replace("- tests/test_thing.py", "- tests/test_thing.py\n- chupa/big.py")
-    assert "also in `## Context`" in messages(refusal(root, fenced.format("chupa/thing.py")))
-    ok = fenced.format("chupa/big.py").replace("---\npriority", "---\nstate: draft\nsource: human\npriority")
+    (root / "clutch" / "big.py").write_text("")
+    assert "not covered" in messages(refusal(root, base.format("clutch/big.py")))
+    fenced = base.replace("- tests/test_thing.py", "- tests/test_thing.py\n- clutch/big.py")
+    assert "also in `## Context`" in messages(refusal(root, fenced.format("clutch/thing.py")))
+    ok = fenced.format("clutch/big.py").replace("---\npriority", "---\nstate: draft\nsource: human\npriority")
     write(root, "t-one", ok)
-    assert validate_ticket("t-one", ok, root).on_demand == ("chupa/big.py",)
+    assert validate_ticket("t-one", ok, root).on_demand == ("clutch/big.py",)
 
 
 def test_reserved_and_malformed_stems_are_refused(repo):
@@ -334,20 +334,20 @@ def test_established_seed_keeps_its_source_across_an_edit(repo):
 
 def test_staged_change_outside_ticket_files_refuses_intake(repo):
     root, g, journal = repo
-    (root / "chupa" / "thing.py").write_text("x = 1\n")
-    run(g.add(root, ["chupa/thing.py"]))
+    (root / "clutch" / "thing.py").write_text("x = 1\n")
+    run(g.add(root, ["clutch/thing.py"]))
     write(root, "t-one", VALID)
     with pytest.raises(IntakeRefused) as e:
         do_intake(root, g, journal)
-    assert "chupa/thing.py" in e.value.finding.message and e.value.finding.paved_road
+    assert "clutch/thing.py" in e.value.finding.message and e.value.finding.paved_road
     assert journal.read() == []
 
 
 def test_intake_waits_for_commit_lock_before_reading_status(repo, tmp_path):
     root, git, journal = repo
     write(root, "t-one", VALID)
-    (root / "chupa/thing.py").write_text("x = 1\n")
-    run(git.add(root, ["chupa/thing.py"]))
+    (root / "clutch/thing.py").write_text("x = 1\n")
+    run(git.add(root, ["clutch/thing.py"]))
 
     async def scenario():
         waiting = asyncio.Event()
@@ -358,15 +358,15 @@ def test_intake_waits_for_commit_lock_before_reading_status(repo, tmp_path):
             await release.wait()
 
         git._commit_lock._sleep = sleep
-        async with commit_lock(tmp_path / ".chupa/state"):
+        async with commit_lock(tmp_path / ".clutch/state"):
             task = asyncio.create_task(intake(root, git, journal, LocalFileSystem(), stems=None))
             await asyncio.wait_for(waiting.wait(), 2)
             assert not task.done()
-            await git._run(root, "reset", "-q", "--", "chupa/thing.py")
+            await git._run(root, "reset", "-q", "--", "clutch/thing.py")
         release.set()
         result = await asyncio.wait_for(task, 5)
         assert result.committed == ("t-one",) and result.refused == {}
-        assert (await git._run(root, "log", "-1", "--format=%s", "main")).strip() == "chupa(t-one): ticket"
+        assert (await git._run(root, "log", "-1", "--format=%s", "main")).strip() == "clutch(t-one): ticket"
         assert "state: confirmed" in await git._run(root, "show", "main:tickets/t-one/ticket.md")
 
     run(scenario())
@@ -456,7 +456,7 @@ def test_feature_needs_no_evidence(repo):
 
 @pytest.mark.parametrize("directory_link", [False, True])
 def test_symlink_is_not_evidence(repo, directory_link):
-    from chupa.tickets import evidence_findings
+    from clutch.tickets import evidence_findings
 
     root, g, journal = repo
     write(root, "t-bug", bug_text())
@@ -527,7 +527,7 @@ def test_staged_uncommittable_evidence_refuses_before_any_commit(repo, staged_ki
         evidence.unlink()
     else:
         evidence.unlink()
-        evidence.symlink_to(root / "chupa/thing.py")
+        evidence.symlink_to(root / "clutch/thing.py")
     run(g.add(root, [str(evidence.relative_to(root))]))
     write(root, "t-bug", bug_text())
     write(root, "a-good", VALID)
@@ -570,7 +570,7 @@ def test_template_per_kind(tmp_path, kind):
 
 
 def test_new_skeleton_is_draft_until_intake(repo):
-    from chupa import __main__ as cli
+    from clutch import __main__ as cli
 
     root, g, journal = repo
     assert cli.main(["new", "aaa-wip"], cwd=root) == 0
@@ -579,10 +579,10 @@ def test_new_skeleton_is_draft_until_intake(repo):
     assert "state: draft\n" in text.split("---", 2)[1]
     samples = {
         "none or bullets of existing ticket stems": "none",
-        "existing repo-relative read-first path": "chupa/thing.py",
+        "existing repo-relative read-first path": "clutch/thing.py",
         "observable outcome and why it matters": "The command prints ok for operators.",
         "what changes and what stays outside this ticket": "In: the command. Out: other commands.",
-        "repo-relative writable path prefix": "chupa/thing.py",
+        "repo-relative writable path prefix": "clutch/thing.py",
         "measurable outcome naming a check in backticks": "`uv run pytest` exits 0.",
         "argv command that exits 0": "uv run pytest",
         "outcome that rejects the branch": "The command needs a new dependency.",
@@ -597,7 +597,7 @@ def test_new_skeleton_is_draft_until_intake(repo):
 
 
 def test_new_bug_copies_evidence(repo, capsys):
-    from chupa import __main__ as cli
+    from clutch import __main__ as cli
 
     root, _, _ = repo
     (root / "failure.txt").write_bytes(b"observed failure\x00")
@@ -609,7 +609,7 @@ def test_new_bug_copies_evidence(repo, capsys):
 
 
 def test_new_prints_bug_evidence_finding(repo, monkeypatch, capsys):
-    from chupa import __main__ as cli
+    from clutch import __main__ as cli
 
     root, _, _ = repo
     (root / "failure.txt").write_text("observed failure")
@@ -620,7 +620,7 @@ def test_new_prints_bug_evidence_finding(repo, monkeypatch, capsys):
 
 @pytest.mark.parametrize("case", ["missing", "directory", "symlink", "duplicate", "feature"])
 def test_new_refuses_invalid_evidence(repo, capsys, case):
-    from chupa import __main__ as cli
+    from clutch import __main__ as cli
 
     root, _, _ = repo
     (root / "failure.txt").write_text("failure")
@@ -663,13 +663,13 @@ def test_context_section_findings(repo):
     (root / "m.py").write_text("class B:\n    def run(self):\n        return 7\n")
     (root / "d.md").write_text("## Two\na\n## Two\nb\n")
     for entry in ("m.py::Missing", "m.py#Two", "d.md::B", "d.md#Nope", "d.md#Two", "m.py\n- m.py::B.run"):
-        [finding] = refusal(root, VALID.replace("chupa/thing.py\n\n## Goal", entry + "\n\n## Goal"))
+        [finding] = refusal(root, VALID.replace("clutch/thing.py\n\n## Goal", entry + "\n\n## Goal"))
         assert finding.paved_road and "Context" in finding.message  # each bad entry is refused with a fix
 
 
 def test_context_directory_is_refused(repo):
     root, _, _ = repo
-    text = complete(VALID.replace("chupa/thing.py\n\n## Goal", "chupa\n\n## Goal"))
+    text = complete(VALID.replace("clutch/thing.py\n\n## Goal", "clutch\n\n## Goal"))
     with pytest.raises(TicketInvalid) as exc:
         validate_ticket("t-one", text, root)
     assert any("Context" in finding.message and "file" in finding.message for finding in exc.value.findings)
@@ -678,38 +678,38 @@ def test_context_directory_is_refused(repo):
 def test_context_whole_file_binary_is_refused(repo):
     root, _, _ = repo
     (root / "image.png").write_bytes(b"\x89PNG\r\n\x1a\n")
-    [finding] = refusal(root, VALID.replace("chupa/thing.py\n\n## Goal", "image.png\n\n## Goal"))
+    [finding] = refusal(root, VALID.replace("clutch/thing.py\n\n## Goal", "image.png\n\n## Goal"))
     assert "Context" in finding.message and finding.paved_road  # binary is refused with a remedy
 
 
 def test_context_binary_selector_and_fenced_heading(repo):
     root, _, _ = repo
     (root / "image.png").write_bytes(b"\xff")
-    [finding] = refusal(root, VALID.replace("chupa/thing.py\n\n## Goal", "image.png#x\n\n## Goal"))
+    [finding] = refusal(root, VALID.replace("clutch/thing.py\n\n## Goal", "image.png#x\n\n## Goal"))
     assert ".md" in finding.message  # extension checked before decoding
     (root / "d.md").write_text("## Two\n```\n# Two\n```\ntext\n## Three\n")
-    ticket = validate_ticket("t-one", complete(VALID.replace("chupa/thing.py\n\n## Goal", "d.md#Two\n\n## Goal")), root)
-    from chupa.stages import implement_inputs
+    ticket = validate_ticket("t-one", complete(VALID.replace("clutch/thing.py\n\n## Goal", "d.md#Two\n\n## Goal")), root)
+    from clutch.stages import implement_inputs
 
     assert implement_inputs(root, "", ticket, ())["context"] == "### d.md#Two\n## Two\n```\n# Two\n```\ntext\n"  # fence is not a heading
 
 
 def test_context_whole_file_unchanged(repo):
-    from chupa.stages import implement_inputs
+    from clutch.stages import implement_inputs
 
     root, _, _ = repo
-    (root / "chupa/thing.py").write_text("first = 1\nsecond = 2\n")
+    (root / "clutch/thing.py").write_text("first = 1\nsecond = 2\n")
     ticket = validate_ticket("t-one", complete(VALID), root)
-    assert implement_inputs(root, "", ticket, ())["context"] == "### chupa/thing.py\nfirst = 1\nsecond = 2\n"  # whole file, not an excerpt
+    assert implement_inputs(root, "", ticket, ())["context"] == "### clutch/thing.py\nfirst = 1\nsecond = 2\n"  # whole file, not an excerpt
 
 
 def test_new_names_installed_authoring_guide(repo, capsys):
-    import chupa
-    from chupa import __main__ as cli
-    from chupa.runner import Refusal
+    import clutch
+    from clutch import __main__ as cli
+    from clutch.runner import Refusal
 
     root, _, _ = repo
-    guide = Path(chupa.__file__).parent / "docs" / "host-authoring.md"
+    guide = Path(clutch.__file__).parent / "docs" / "host-authoring.md"
     assert cli._new(root, "new-guide") == 0
     assert f"read the ticket authoring guide before filling sections: {guide}" in capsys.readouterr().out.splitlines()
     with pytest.raises(Refusal) as error:
@@ -720,7 +720,7 @@ def test_new_names_installed_authoring_guide(repo, capsys):
 def test_intake_skips_ticket_committed_after_status(repo, monkeypatch):
     root, git, journal = repo
     write(root, "t-race", complete(VALID))
-    other = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".chupa/state"))
+    other = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
     original = git.status_porcelain
 
     async def status_then_commit(path):
@@ -743,4 +743,4 @@ def test_intake_none_sweeps_both_pending_tickets(repo):
     assert result.committed == ("alpha", "beta")
     assert not result.refused
     subjects = run(git._run(root, "log", "--format=%s")).splitlines()
-    assert "chupa(alpha): ticket" in subjects and "chupa(beta): ticket" in subjects
+    assert "clutch(alpha): ticket" in subjects and "clutch(beta): ticket" in subjects

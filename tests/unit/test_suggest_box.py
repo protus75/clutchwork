@@ -2,8 +2,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
-from chupa import __main__ as cli
-from chupa.box import Box, Message
+from clutch import __main__ as cli
+from clutch.box import Box, Message
 
 
 class MemoryFS:
@@ -51,7 +51,7 @@ def test_competing_claim_advances(monkeypatch):
 
 
 def test_suggest_output(monkeypatch, capsys):
-    import chupa.box as box_module
+    import clutch.box as box_module
 
     box = Mock()
     box.enqueue.side_effect = [("box-000007-abcdef12", True), ("box-000007-abcdef12", False)]

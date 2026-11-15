@@ -2,8 +2,8 @@
 
 from types import SimpleNamespace
 
-from chupa.journal import EventType
-from chupa.status import project, render
+from clutch.journal import EventType
+from clutch.status import project, render
 
 
 def event(request, verb, decision, reason, **extra):

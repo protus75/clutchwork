@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import drain, triage
+from clutch import drain, triage
 
 
 @pytest.mark.asyncio

@@ -20,11 +20,11 @@ def run_snapshot(tmp_path, binary):
 
 
 def test_missing_command_names_setting_and_workspace(tmp_path):
-    message = run_snapshot(tmp_path, ".venv/bin/chupa-missing")
-    assert message == (f"chupa command not found: .venv/bin/chupa-missing (run from {tmp_path}). Set chupa.command in settings.")
+    message = run_snapshot(tmp_path, ".venv/bin/clutch-missing")
+    assert message == (f"clutch command not found: .venv/bin/clutch-missing (run from {tmp_path}). Set clutch.command in settings.")
 
 
 def test_other_command_failure_keeps_its_message(tmp_path):
     message = run_snapshot(tmp_path, "false")
-    assert "chupa command not found" not in message
+    assert "clutch command not found" not in message
     assert "false" in message

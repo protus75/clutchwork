@@ -9,14 +9,14 @@ from typing import Literal
 
 from pydantic import field_validator, model_validator
 
-from chupa.artifacts import NonBlank, _check_integer_version, _check_producing_run, _Strict
-from chupa.audit import audit_journal
-from chupa.box import Box
-from chupa.config import load_config
-from chupa.control import AdmissionRequest, ControlRequest, decisions, publish_request, read_active
-from chupa.git import Git
-from chupa.journal import TERMINAL_STATES, EventType, Journal
-from chupa.stages import Invoice, read_review
+from clutch.artifacts import NonBlank, _check_integer_version, _check_producing_run, _Strict
+from clutch.audit import audit_journal
+from clutch.box import Box
+from clutch.config import load_config
+from clutch.control import AdmissionRequest, ControlRequest, decisions, publish_request, read_active
+from clutch.git import Git
+from clutch.journal import TERMINAL_STATES, EventType, Journal
+from clutch.stages import Invoice, read_review
 from hosts.fixture import scaffold
 from tests.integration.test_git import commit_lock
 
@@ -86,20 +86,20 @@ class FixtureLoop:
             "PATH": str(root / "bin") + ":" + str(Path(sys.executable).parent) + ":/usr/bin:/bin",
             "PYTHONPATH": str(ROOT),
             "PYTHONDONTWRITEBYTECODE": "1",
-            "CHUPA_FIXTURE_ROOT": str(root),
-            "CHUPA_FIXTURE_SCENARIO": name,
+            "CLUTCH_FIXTURE_ROOT": str(root),
+            "CLUTCH_FIXTURE_SCENARIO": name,
             "GIT_AUTHOR_NAME": "Fixture",
             "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
             "GIT_COMMITTER_NAME": "Fixture",
             "GIT_COMMITTER_EMAIL": "fixture@example.invalid",
             "GIT_CONFIG_NOSYSTEM": "1",
         }
-        self.git = Git(exec_, env=self.env, timeout=10, commit_lock=commit_lock(root / ".chupa/state"))
-        self.journal = Journal(root / ".chupa/state", clock)
+        self.git = Git(exec_, env=self.env, timeout=10, commit_lock=commit_lock(root / ".clutch/state"))
+        self.journal = Journal(root / ".clutch/state", clock)
 
     async def initialize(self):
         scaffold.copy_host(self.root)
-        self.fs.write(self.root / ".gitignore", b".chupa/\n.fixture-runtime/\ninbox/\n__pycache__/\n")
+        self.fs.write(self.root / ".gitignore", b".clutch/\n.fixture-runtime/\ninbox/\n__pycache__/\n")
         # Committed report fixtures remain inputs; runtime intake uses an empty disposable inbox.
         cfg = self.root / "config.yaml"
         self.fs.write(cfg, cfg.read_bytes().replace(b"report_inbox: reports", b"report_inbox: inbox"))
@@ -112,12 +112,12 @@ class FixtureLoop:
 
     async def start(self):
         self.task = asyncio.create_task(
-            self.exec.run([sys.executable, "-m", "chupa", "serve"], cwd=self.root, env=self.env, timeout=self.timeout + 10, on_spawn=lambda pgid: setattr(self, "pgid", pgid))
+            self.exec.run([sys.executable, "-m", "clutch", "serve"], cwd=self.root, env=self.env, timeout=self.timeout + 10, on_spawn=lambda pgid: setattr(self, "pgid", pgid))
         )
-        await self.until(lambda: (self.root / ".chupa/state/control/active.json").exists() and json.loads((self.root / ".chupa/state/control/active.json").read_bytes()) is not None)
+        await self.until(lambda: (self.root / ".clutch/state/control/active.json").exists() and json.loads((self.root / ".clutch/state/control/active.json").read_bytes()) is not None)
 
     def confirm(self):
-        state = self.root / ".chupa/state"
+        state = self.root / ".clutch/state"
         lifecycle, _ = read_active(state, Path.read_bytes)
         candidates = []
         for path in (self.root / "tickets").glob("*/ticket.md"):
@@ -155,7 +155,7 @@ class FixtureLoop:
         return self.terminal(stem)[0]
 
     def suggestion(self):
-        Box(self.root / ".chupa/state/box", self.fs).enqueue(
+        Box(self.root / ".clutch/state/box", self.fs).enqueue(
             message_class="suggestion", origin="fixture", summary=scaffold.scenario(self.root, self.name)["responses"]["implement"][0]["summary"], occurrence_id=f"fixture/{self.name}"
         )
 
@@ -170,12 +170,12 @@ class FixtureLoop:
         return rc, json.loads(out)
 
     async def triage_pending(self):
-        await self.until(lambda: bool(Box(self.root / ".chupa/state/box", self.fs).pending()))
+        await self.until(lambda: bool(Box(self.root / ".clutch/state/box", self.fs).pending()))
         await self.stop()
-        code, out, err = await self.exec.run([sys.executable, "-m", "chupa", "triage"], cwd=self.root, env=self.env, timeout=self.timeout + 10)
+        code, out, err = await self.exec.run([sys.executable, "-m", "clutch", "triage"], cwd=self.root, env=self.env, timeout=self.timeout + 10)
         if code != 0:
             raise LoopRefused(self.name, f"triage exited {code}: {out} {err}")
-        self.journal = Journal(self.root / ".chupa/state", self.clock)
+        self.journal = Journal(self.root / ".clutch/state", self.clock)
         await self.start()
 
     async def exercise(self):
@@ -206,7 +206,7 @@ class FixtureLoop:
             return
         try:
             if not self.task.done():
-                state = self.root / ".chupa/state"
+                state = self.root / ".clutch/state"
                 try:
                     lifecycle, _ = read_active(state, Path.read_bytes)
                     publish_request(state, ControlRequest(f"fixture-stop-{lifecycle}", lifecycle, "kill", None), self.fs)

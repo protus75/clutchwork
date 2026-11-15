@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from chupa.effects import Effects
-from chupa.journal import EventType, Journal
-from chupa.seams import FileSystem, ProcessExec
+from clutch.effects import Effects
+from clutch.journal import EventType, Journal
+from clutch.seams import FileSystem, ProcessExec
 
 T0 = datetime(2026, 8, 4, 12, 0, 0, tzinfo=UTC)
 

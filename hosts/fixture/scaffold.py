@@ -37,7 +37,7 @@ def scenario(root, name):
 def scripted_reply(root, name, surface, prompt, writes, *, workspace=None):
     root = require_disposable(root)
     work = root if workspace is None else Path(workspace).resolve()
-    if work != root and work != root / ".chupa/worktrees" / name:
+    if work != root and work != root / ".clutch/worktrees" / name:
         raise ValueError("select this scenario's disposable worktree")
     row = scenario(root, name)
     if surface not in SURFACES:

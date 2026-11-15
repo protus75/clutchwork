@@ -2,24 +2,24 @@
 
 import json
 
-from chupa.__main__ import main
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.lockfile import Lockfile
-from chupa.reconcile import orphans
-from chupa.requisition import FIRST_REVIEW
-from chupa.status import last_states
+from clutch.__main__ import main
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.lockfile import Lockfile
+from clutch.reconcile import orphans
+from clutch.requisition import FIRST_REVIEW
+from clutch.status import last_states
 from tests.integration.test_cli import ENV, git_out, ticket, write
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
 
 
 def run(root, monkeypatch, llm, stem):
-    monkeypatch.setattr("chupa.__main__.ProviderLLM", lambda *args, **kwargs: llm)
+    monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
     return main(["review", stem], cwd=root, env=ENV, clock=Clock())
 
 
 def verdicts(root):
-    return [e for e in Journal(root / ".chupa/state", Clock()).read() if e.type == EventType.SIGNAL and e.body.get("signal") == "requisition_verdict"]
+    return [e for e in Journal(root / ".clutch/state", Clock()).read() if e.type == EventType.SIGNAL and e.body.get("signal") == "requisition_verdict"]
 
 
 def reply(verdict, findings=None):
@@ -33,11 +33,11 @@ def test_review_preflight_failure_refuses(tmp_path, monkeypatch, capsys):
     async def preflight(self):
         return ["probe refused"]
 
-    monkeypatch.setattr("chupa.providers.ProviderLLM.preflight", preflight)
+    monkeypatch.setattr("clutch.providers.ProviderLLM.preflight", preflight)
     assert main(["review", "candidate"], cwd=root, env=ENV, clock=Clock()) == 2
-    assert "chupa review: probe refused" in capsys.readouterr().err
+    assert "clutch review: probe refused" in capsys.readouterr().err
     assert verdicts(root) == []
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="probe", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="probe", clock=Clock())
     lock.acquire()
     lock.release()
 
@@ -64,7 +64,7 @@ def test_review_snag_prints_findings_and_exits_1(tmp_path, monkeypatch, capsys):
 def test_review_refuses_without_a_model_call(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     commit_ticket(root, "merged", confirmed())
-    Journal(root / ".chupa/state", Clock()).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="merged")
+    Journal(root / ".clutch/state", Clock()).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="merged")
     llm = FakeLLM([])
     for stem in ("missing", "merged"):
         assert run(root, monkeypatch, llm, stem) == 2
@@ -87,7 +87,7 @@ def test_review_unmerged_dependency_is_provisional(tmp_path, monkeypatch, capsys
 def test_review_releases_checkout_lock_during_call(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     write(root, "candidate", ticket())
-    state_dir = root / ".chupa/state"
+    state_dir = root / ".clutch/state"
     journal = Journal(state_dir, Clock())
     journal.append(EventType.STATE_TRANSITION, {"to": "confirmed"}, ticket="candidate")
     observed = []
@@ -111,7 +111,7 @@ def test_review_releases_checkout_lock_during_call(tmp_path, monkeypatch):
 def test_review_committed_ticket_while_checkout_locked(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     commit_ticket(root, "candidate", confirmed())
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="engine", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="engine", clock=Clock())
     lock.acquire()
     try:
         llm = FakeLLM([reply("approve")])
@@ -129,7 +129,7 @@ def test_review_changed_ticket_while_checkout_locked(tmp_path, monkeypatch, caps
     commit_ticket(root, "candidate", confirmed())
     path = root / "tickets/candidate/ticket.md"
     path.write_text(path.read_text().replace("## Goal / Why", "## Goal / Why\nPending edit"))
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="engine", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="engine", clock=Clock())
     lock.acquire()
     try:
         llm = FakeLLM([reply("approve")])
@@ -151,7 +151,7 @@ def test_review_uses_previous_findings_after_edit(tmp_path, monkeypatch):
     git_out(root, "add", "tickets/candidate/ticket.md")
     git_out(root, "commit", "-m", "edit ticket")
     assert run(root, monkeypatch, llm, "candidate") == 0
-    blocks = [r.rendered.split("<<chupa-data:begin prior_review>>\n", 1)[1].split("\n<<chupa-data:end prior_review>>", 1)[0] for r in llm.requests]
+    blocks = [r.rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0] for r in llm.requests]
     assert blocks[0] == FIRST_REVIEW
     assert "missing caller" in blocks[1] and "+Changed." in blocks[1]
 
@@ -161,9 +161,9 @@ def test_review_does_not_reap_running_ticket(tmp_path, monkeypatch):
     commit_ticket(root, "candidate", confirmed())
     path = root / "tickets/candidate/ticket.md"
     path.write_text(path.read_text().replace("## Goal / Why", "## Goal / Why\nChanged."))
-    journal = Journal(root / ".chupa/state", Clock())
+    journal = Journal(root / ".clutch/state", Clock())
     journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="other")
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="engine", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="engine", clock=Clock())
     lock.acquire()
     try:
         assert run(root, monkeypatch, FakeLLM([reply("approve")]), "candidate") == 0
@@ -176,8 +176,8 @@ def test_review_commit_lock_timeout(tmp_path, monkeypatch, capsys):
     import fcntl
     from datetime import timedelta
 
-    from chupa import __main__ as entry
-    from chupa.lockfile import CommitLock
+    from clutch import __main__ as entry
+    from clutch.lockfile import CommitLock
 
     root = make_root(tmp_path)
     commit_ticket(root, "candidate", confirmed())
@@ -189,8 +189,8 @@ def test_review_commit_lock_timeout(tmp_path, monkeypatch, capsys):
         clock.now += timedelta(seconds=seconds)
 
     monkeypatch.setattr(entry, "CommitLock", lambda state, **kwargs: CommitLock(state, clock=clock, sleep=sleep))
-    (root / ".chupa/state").mkdir(parents=True, exist_ok=True)
-    with (root / ".chupa/state/commit.lock").open("w") as lock:
+    (root / ".clutch/state").mkdir(parents=True, exist_ok=True)
+    with (root / ".clutch/state/commit.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         assert entry.main(["review", "candidate"], cwd=root, env=ENV, clock=clock) == 2
     assert "commit.lock" in capsys.readouterr().err
@@ -205,9 +205,9 @@ def test_review_intakes_only_named_ticket(tmp_path, monkeypatch):
     beta = (root / "tickets/beta/ticket.md").read_bytes()
     assert run(root, monkeypatch, FakeLLM([reply("approve")]), "alpha") == 0
     subjects = git_out(root, "log", "--format=%s").splitlines()
-    assert "chupa(alpha): ticket" in subjects
-    assert "chupa(beta): ticket" not in subjects
+    assert "clutch(alpha): ticket" in subjects
+    assert "clutch(beta): ticket" not in subjects
     assert git_out(root, "status", "--porcelain", "--", "tickets/beta/").strip()
     assert (root / "tickets/beta/ticket.md").read_bytes() == beta
-    events = Journal(root / ".chupa/state", Clock()).read()
+    events = Journal(root / ".clutch/state", Clock()).read()
     assert not any(e.type == EventType.SIGNAL and e.body.get("signal") == "ticket_intake" and e.ticket == "beta" for e in events)

@@ -2,9 +2,9 @@
 
 import json
 
-from chupa.caps import draws
-from chupa.journal import EventType
-from chupa.stages import read_review
+from clutch.caps import draws
+from clutch.journal import EventType
+from clutch.stages import read_review
 from tests.harness.shakeout.bench import Bench
 from tests.harness.shakeout.run import Member, Observation
 from tests.harness.shakeout.stages import _commit, _configure_diagnosis, _ticket

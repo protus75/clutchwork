@@ -1,9 +1,9 @@
 import asyncio
 import json
 
-from chupa import __main__ as cli
-from chupa import runner
-from chupa.llm import FakeLLM
+from clutch import __main__ as cli
+from clutch import runner
+from clutch.llm import FakeLLM
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, root
 from tests.integration.test_stages import agent
@@ -30,7 +30,7 @@ def test_signal_kills_a_running_drain_like_kill(root, monkeypatch, capsys):
 
     assert cli.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == runner.EXIT_TICKET
     assert "drain stopped by kill -- NOT quiescent" in capsys.readouterr().out
-    events = [json.loads(line) for line in (root / ".chupa/state/engine.log").read_text().splitlines()]
+    events = [json.loads(line) for line in (root / ".clutch/state/engine.log").read_text().splitlines()]
     assert any(e["event"] == "engine_stop" and e["verb"] == "drain" and e["outcome"] == "killed" for e in events)
     assert any(
         e.body.get("kind") == "control_decision" and e.body.get("verb") == "kill" and e.body.get("decision") == "accepted" and e.body.get("lifecycle_id") == life[0] for e in journal(root).read()

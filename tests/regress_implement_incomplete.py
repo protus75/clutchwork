@@ -6,7 +6,7 @@ import sys
 
 def main() -> int:
     try:
-        from chupa.stages import ImplementReply
+        from clutch.stages import ImplementReply
     except ImportError:
         print(json.dumps({"regression_result": "error"}))
         return 2

@@ -5,11 +5,11 @@ import sys
 
 import pytest
 
-from chupa import doctor
-from chupa.__main__ import main
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile
-from chupa.seams import ExecutableNotFound
+from clutch import doctor
+from clutch.__main__ import main
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile
+from clutch.seams import ExecutableNotFound
 from tests.integration.test_cli import ENV, Clock, journal, root
 
 
@@ -78,21 +78,21 @@ def test_doctor_check_order(root, monkeypatch):
     assert [r.passed for r in results] == [False, True, True, True, True, True]
     assert doctor.render(results) == (
         "doctor: failed\n"
-        "FAIL venv: no active Python venv; run `uv run python -m chupa doctor`\n"
+        "FAIL venv: no active Python venv; run `uv run python -m clutch doctor`\n"
         "PASS config: config schema is valid\n"
         "PASS git: git version fixture\n"
         "PASS lock: no writer lock exists\n"
         "PASS journal: readable history (0 events)\n"
         "PASS core: routed conduct files are current\n"
     )
-    assert not (root / ".chupa").exists()
+    assert not (root / ".clutch").exists()
 
 
 @pytest.mark.parametrize("failure", ["venv", "git", "config", "lock", "journal"])
 def test_doctor_failures(root, capsys, monkeypatch, failure):
-    import chupa.__main__ as module
+    import clutch.__main__ as module
 
-    holder = Lockfile(root / ".chupa/state", verb="drain", instance_id="other", clock=Clock())
+    holder = Lockfile(root / ".clutch/state", verb="drain", instance_id="other", clock=Clock())
     if failure == "config":
         (root / "config.yaml").write_text("schema_version: 1\n")
     elif failure == "lock":
@@ -127,9 +127,9 @@ def test_doctor_failures(root, capsys, monkeypatch, failure):
 
 @pytest.mark.parametrize("history", ["absent", "empty", "torn", "corrupt", "held", "idle"])
 def test_doctor_is_read_only(root, monkeypatch, capsys, history):
-    import chupa.__main__ as module
-    from chupa import runner
-    from chupa.providers import ProviderLLM, ProviderSession
+    import clutch.__main__ as module
+    from clutch import runner
+    from clutch.providers import ProviderLLM, ProviderSession
 
     def forbidden(*args, **kwargs):
         pytest.fail("doctor invoked a writer or provider")
@@ -138,7 +138,7 @@ def test_doctor_is_read_only(root, monkeypatch, capsys, history):
     monkeypatch.setattr(ProviderLLM, "__init__", forbidden)
     monkeypatch.setattr(runner, "prepare_pipeline", forbidden)
     monkeypatch.setattr(module, "build_control", forbidden)
-    holder = Lockfile(root / ".chupa/state", verb="drain", instance_id="original", clock=Clock())
+    holder = Lockfile(root / ".clutch/state", verb="drain", instance_id="original", clock=Clock())
     if history in {"held", "idle"}:
         holder.acquire()
         if history == "idle":
@@ -158,7 +158,7 @@ def test_doctor_is_read_only(root, monkeypatch, capsys, history):
         assert main(["doctor"], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden) == (2 if history in {"held", "corrupt"} else 0)
         assert snapshot(root) == before
         if history == "absent":
-            assert not (root / ".chupa").exists()
+            assert not (root / ".clutch").exists()
     finally:
         if holder.held:
             holder.release()
@@ -166,7 +166,7 @@ def test_doctor_is_read_only(root, monkeypatch, capsys, history):
 
 @pytest.mark.parametrize("drifted", [False, True])
 def test_doctor_core_committed(root, drifted):
-    from chupa.seams import SubprocessExec
+    from clutch.seams import SubprocessExec
     from tests.integration.test_cli import git_out
 
     if drifted:
@@ -178,7 +178,7 @@ def test_doctor_core_committed(root, drifted):
     core = results[-1]
     assert core.name == "core"
     assert core.passed is not drifted
-    assert ("chupa core" in core.detail) is drifted
+    assert ("clutch core" in core.detail) is drifted
     if not drifted:
         assert core.detail == "routed conduct files are current"
 

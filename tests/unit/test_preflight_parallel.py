@@ -5,8 +5,8 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-from chupa.llm import LLMRequest
-from chupa.providers import ProviderLLM
+from clutch.llm import LLMRequest
+from clutch.providers import ProviderLLM
 
 
 class MemoryFS:

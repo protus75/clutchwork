@@ -6,8 +6,8 @@ from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
-from chupa import journal as module
-from chupa.journal import Event, Journal, JournalCorruption
+from clutch import journal as module
+from clutch.journal import Event, Journal, JournalCorruption
 from tests.integration.test_journal import T0, FakeClock, line, seed
 
 

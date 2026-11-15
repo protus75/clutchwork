@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from chupa.observe import PHASE_NAMES, STEP_KINDS, STEP_NAMES, recent_steps
+from clutch.observe import PHASE_NAMES, STEP_KINDS, STEP_NAMES, recent_steps
 
 HARNESS = Path(__file__).parents[1] / "vscode_step_icons.js"
 

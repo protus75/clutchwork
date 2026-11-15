@@ -3,7 +3,7 @@ requires = ["uv_build>=0.11.32,<0.12"]
 build-backend = "uv_build"
 
 [project]
-name = "chupa"
+name = "clutchwork"
 version = "0.1.5"
 description = "Continuously running orchestration engine that authors and runs tickets against host repos."
 readme = "README.md"
@@ -16,13 +16,15 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/protus75/chupa"
+Repository = "https://github.com/protus75/clutchwork"
 
 [project.scripts]
-chupa = "chupa.__main__:main"
+clutch = "clutch.__main__:main"
 
 [tool.uv.build-backend]
 module-root = ""
+# The distribution is clutchwork; the importable package and the console script are clutch.
+module-name = "clutch"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -60,5 +62,5 @@ select = ["E", "F", "I"]
 # Shared fixture imports are required by pytest.
 "tests/*" = ["F401", "F811"]
 # The core template and its expected bytes are long by design.
-"chupa/hostfiles.py" = ["E501"]
+"clutch/hostfiles.py" = ["E501"]
 "tests/**/test_hostfiles.py" = ["E501"]

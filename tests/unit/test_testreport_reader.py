@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from chupa.testreport import ResultsInvalid, read_results
+from clutch.testreport import ResultsInvalid, read_results
 
 
 def test_valid_results():

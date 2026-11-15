@@ -9,7 +9,7 @@ from pathlib import Path
 def main() -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        from chupa.observe import recent_steps
+        from clutch.observe import recent_steps
 
         events = [
             {"ts": "2026-01-01T00:00:00+00:00", "event": "phase_end", "phase": "preflight", "outcome": "ok"},

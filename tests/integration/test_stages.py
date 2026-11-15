@@ -1,4 +1,4 @@
-"""Implement -> Check -> Review stage transitions with the scripted fake (CHUPA_PLAN.md sections 4, 5, 19.P1)."""
+"""Implement -> Check -> Review stage transitions with the scripted fake (CLUTCH_PLAN.md sections 4, 5, 19.P1)."""
 
 import asyncio
 import json
@@ -9,15 +9,15 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import stages
-from chupa.artifacts import Artifact, NonBlank
-from chupa.box import BOX_DIR, Box
-from chupa.config import load_config
-from chupa.driver import Driver
-from chupa.git import Git
-from chupa.llm import FakeLLM, LLMRequest
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.stages import (
+from clutch import stages
+from clutch.artifacts import Artifact, NonBlank
+from clutch.box import BOX_DIR, Box
+from clutch.config import load_config
+from clutch.driver import Driver
+from clutch.git import Git
+from clutch.llm import FakeLLM, LLMRequest
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.stages import (
     ApprovedInvoice,
     DiffBudgetGate,
     Evidence,
@@ -31,7 +31,7 @@ from chupa.stages import (
     read_review,
     run_stages,
 )
-from chupa.tickets import TicketInvalid, validate_ticket
+from clutch.tickets import TicketInvalid, validate_ticket
 from tests.integration.test_git import commit_lock
 
 SAMPLE_REPORT = "sample-report.json"
@@ -47,8 +47,8 @@ def register_sample_report(monkeypatch):
 
 
 def test_retro_driver_access_is_public_and_read_only(repo):
-    from chupa import runner
-    from chupa.retro import Retro, RetroConstructionError
+    from clutch import runner
+    from clutch.retro import Retro, RetroConstructionError
     from tests.integration.test_drain import pause_checkout
 
     checkout = pause_checkout(repo)
@@ -63,7 +63,7 @@ def test_retro_driver_access_is_public_and_read_only(repo):
         Retro(checkout, SimpleNamespace()).driver()
 
 
-SPECS = Path(__file__).resolve().parents[2] / "chupa" / "specs"
+SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 SECRET = "sk-test-not-for-children"
 ENV = {
     "PATH": "/usr/bin:/bin",
@@ -77,7 +77,7 @@ ENV = {
 }
 
 CONFIG = """schema_version: 1
-state_dir: .chupa/state
+state_dir: .clutch/state
 providers:
   - name: fake
     kind: cli
@@ -104,7 +104,7 @@ kind: feature
 none
 
 ## Context
-- chupa/thing.py
+- clutch/thing.py
 
 ## Goal / Why
 `thing.py` holds the word ok.
@@ -113,14 +113,14 @@ none
 In: thing. Out: the rest.
 
 ## Scope fence
-- chupa/thing.py
+- clutch/thing.py
 
 ## Acceptance criteria
-1. `grep -q ok chupa/thing.py` exits 0.
+1. `grep -q ok clutch/thing.py` exits 0.
 
 ## Verification
 ```
-grep -q ok chupa/thing.py
+grep -q ok clutch/thing.py
 env
 ```
 
@@ -141,8 +141,8 @@ def git(root: Path, *args: str) -> str:
 
 def adopt_conduct(root: Path) -> list[str]:
     """Render each fixture's actual routes from its own project bytes before committing its base."""
-    from chupa.hostfiles import render
-    from chupa.providers import routed_conduct_paths
+    from clutch.hostfiles import render
+    from clutch.providers import routed_conduct_paths
 
     paths = routed_conduct_paths(load_config(None, cwd=root), root)
     for path in paths:
@@ -153,10 +153,10 @@ def adopt_conduct(root: Path) -> list[str]:
 @pytest.fixture
 def repo(tmp_path: Path) -> Path:
     root = tmp_path / "repo"
-    (root / "chupa").mkdir(parents=True)
-    (root / "chupa" / "thing.py").write_text("")
+    (root / "clutch").mkdir(parents=True)
+    (root / "clutch" / "thing.py").write_text("")
     (root / "config.yaml").write_text(CONFIG)
-    (root / ".gitignore").write_text(".chupa/\n")
+    (root / ".gitignore").write_text(".clutch/\n")
     adopt_conduct(root)
     git(root, "init", "-b", "main")
     git(root, "add", ".")
@@ -169,7 +169,7 @@ def author(repo: Path, bypass: str = "") -> None:
     path.parent.mkdir(parents=True)
     path.write_text(TICKET.format(bypass=bypass))
     git(repo, "add", "tickets")
-    git(repo, "commit", "-m", f"chupa({STEM}): ticket")
+    git(repo, "commit", "-m", f"clutch({STEM}): ticket")
     from tests.approval import approve
 
     approve(repo, STEM, lambda: datetime(2026, 10, 5, tzinfo=UTC))
@@ -212,7 +212,7 @@ def verdict(v: str = "approve", findings: list | None = None) -> str:
     return json.dumps({"verdict": v, "summary": "looked", "findings": findings or []})
 
 
-SNAG = {"code": "logic", "path": "chupa/thing.py", "line": 1, "message": "wrong word", "paved_road": "write ok"}
+SNAG = {"code": "logic", "path": "clutch/thing.py", "line": 1, "message": "wrong word", "paved_road": "write ok"}
 
 
 def run(repo: Path, script: list, bypass: str = ""):
@@ -227,7 +227,7 @@ def run(repo: Path, script: list, bypass: str = ""):
     exec_ = SubprocessExec()
     driver = Driver.from_config(config, llm=llm, env=ENV, clock=clock, sleep=never)
     ctx = StageContext(
-        repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".chupa/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
+        repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
     )
     ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
     return asyncio.run(run_stages(ctx, ticket)), llm, config
@@ -252,8 +252,8 @@ def _report_ticket(monkeypatch, verification: str) -> None:
 def _write_outbox_report(path: str, body: str):
     def act(req: LLMRequest) -> str:
         assert req.worktree is not None
-        (req.worktree / "chupa/thing.py").write_text("ok\n")
-        git(req.worktree, "add", "chupa/thing.py")
+        (req.worktree / "clutch/thing.py").write_text("ok\n")
+        git(req.worktree, "add", "clutch/thing.py")
         git(req.worktree, "commit", "-m", "work")
         target = req.worktree / "tickets" / STEM / path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -268,12 +268,12 @@ def test_verification_report_lifts_only_in_checks_commit(repo, monkeypatch):
     git(repo, "add", "source.json")
     git(repo, "commit", "-m", "source")
     _report_ticket(monkeypatch, f"cp source.json tickets/{STEM}/{SAMPLE_REPORT}")
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert outcomes(result)["check"] == "ok"
     assert (repo / "tickets" / STEM / SAMPLE_REPORT).is_file()
-    run_commit = git(repo, "log", "--format=%H", "--grep", f"chupa({STEM}): run-record").splitlines()[0]
+    run_commit = git(repo, "log", "--format=%H", "--grep", f"clutch({STEM}): run-record").splitlines()[0]
     assert SAMPLE_REPORT not in git(repo, "show", "--format=", "--name-only", run_commit)
-    checks_commit = git(repo, "log", "--format=%H", "--grep", f"chupa({STEM}): checks").splitlines()[0]
+    checks_commit = git(repo, "log", "--format=%H", "--grep", f"clutch({STEM}): checks").splitlines()[0]
     assert SAMPLE_REPORT in git(repo, "show", "--format=", "--name-only", checks_commit)
 
 
@@ -282,12 +282,12 @@ def test_invalid_report_fails_check_without_lifting_checks_or_report(repo, monke
     git(repo, "add", "source.json")
     git(repo, "commit", "-m", "source")
     _report_ticket(monkeypatch, f"cp source.json tickets/{STEM}/{SAMPLE_REPORT}")
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n"})])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n"})])
     assert outcomes(result)["check"] == "gate_failed"
     assert [f.code for f in result.last[1].findings] == ["verification"]
     assert not (repo / "tickets" / STEM / "checks.json").exists()
     assert not (repo / "tickets" / STEM / SAMPLE_REPORT).exists()
-    assert f"chupa({STEM}): checks" not in subjects(repo)
+    assert f"clutch({STEM}): checks" not in subjects(repo)
 
 
 @pytest.mark.parametrize("path", [SAMPLE_REPORT, f"x/{SAMPLE_REPORT}"])
@@ -305,7 +305,7 @@ def test_named_missing_report_fails_even_when_other_commands_pass(repo, monkeypa
     target = f"tickets/{STEM}/{SAMPLE_REPORT}"
     command = f"true {flag} {target}" if flag == "--out" else f"true {flag}{target}"
     _report_ticket(monkeypatch, command)
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n"})])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n"})])
     assert outcomes(result)["check"] == "gate_failed"
     assert [f.code for f in result.last[1].findings] == ["verification"]
 
@@ -314,31 +314,31 @@ def test_named_missing_report_fails_even_when_other_commands_pass(repo, monkeypa
 
 
 def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
-    result, llm, config = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    result, llm, config = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     assert outcomes(result) == {"implement": "ok", "check": "ok", "review": "ok"}
     head = git(repo, "rev-parse", STEM).strip()
     slip, invoice, review = (r.artifact for r in result.results.values())
     assert isinstance(slip, PackingSlip) and slip.produced_at_sha == head and slip.produced_by_spec_version == 2
-    assert isinstance(invoice, Invoice) and invoice.passed and invoice.changed_files == ["chupa/thing.py"]
+    assert isinstance(invoice, Invoice) and invoice.passed and invoice.changed_files == ["clutch/thing.py"]
     assert invoice.produced_at_sha == head
     assert isinstance(review, ApprovedInvoice) and review.reviewed_sha == head and review.spec_version == "1.5"
     assert (review.provider, review.model) == ("fake", "fake")
 
     # One ticket-plane commit per stage terminal, on main, never on the branch.
-    assert subjects(repo)[-3:] == [f"chupa({STEM}): run-record", f"chupa({STEM}): checks", f"chupa({STEM}): review"]
+    assert subjects(repo)[-3:] == [f"clutch({STEM}): run-record", f"clutch({STEM}): checks", f"clutch({STEM}): review"]
     canonical = repo / "tickets" / STEM
     assert read_review((canonical / "review.md").read_text()) == review
     assert Invoice.model_validate_json((canonical / "checks.json").read_text()) == invoice
     run_md = (canonical / "run.md").read_text()
     assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.13" in run_md
-    assert git(repo, "diff", "--name-only", f"main...{STEM}").split() == ["chupa/thing.py"]
+    assert git(repo, "diff", "--name-only", f"main...{STEM}").split() == ["clutch/thing.py"]
     outbox = config.worktree_root / STEM / "tickets" / STEM
     assert sorted(p.name for p in outbox.iterdir()) == ["ticket.md"]  # lifted and unlinked
 
     implement_req, review_req = llm.requests
     assert implement_req.surface == "implement" and implement_req.worktree == config.worktree_root / STEM
-    assert "### chupa/thing.py" in implement_req.rendered
+    assert "### clutch/thing.py" in implement_req.rendered
     assert review_req.surface == "review" and review_req.worktree is None  # read-only surface
     assert "+ok" in review_req.rendered  # the reviewer sees `git diff main...<stem>`
 
@@ -346,8 +346,8 @@ def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
 def test_non_seeding_ticket_ignores_an_untracked_foreign_ticket(repo):
     def act(req: LLMRequest) -> str:
         assert req.worktree is not None
-        (req.worktree / "chupa/thing.py").write_text("ok\n")
-        git(req.worktree, "add", "chupa/thing.py")
+        (req.worktree / "clutch/thing.py").write_text("ok\n")
+        git(req.worktree, "add", "clutch/thing.py")
         git(req.worktree, "commit", "-m", "work")
         foreign = req.worktree / "tickets" / "foreign-seed" / "ticket.md"
         foreign.parent.mkdir(parents=True)
@@ -360,11 +360,11 @@ def test_non_seeding_ticket_ignores_an_untracked_foreign_ticket(repo):
     assert result.results["check"].artifact.seeds == []
     assert all(req.surface != "requisition_review" for req in llm.requests)
     assert not (repo / "tickets" / "foreign-seed" / "ticket.md").exists()
-    assert f"chupa({STEM}): seeds" not in subjects(repo)
+    assert f"clutch({STEM}): seeds" not in subjects(repo)
 
 
 def test_old_checks_json_with_seed_reviews_still_parses(repo):
-    run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     old = json.loads((repo / "tickets" / STEM / "checks.json").read_text())
     old["seeds"] = [{"stem": "phase-seed", "ticket_sha": "abc123", "verdict": "snag", "findings": [], "mechanical": "ticket lint failed"}]
 
@@ -376,7 +376,7 @@ def test_old_checks_json_with_seed_reviews_still_parses(repo):
 
 
 def test_old_checks_json_without_seeds_still_parses(repo):
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     old = json.loads((repo / "tickets" / STEM / "checks.json").read_text())
     del old["seeds"]
 
@@ -386,9 +386,9 @@ def test_old_checks_json_without_seeds_still_parses(repo):
 
 
 def test_old_checks_json_without_verification_still_feeds_prior_findings(repo):
-    (repo / "chupa" / "thing.py").write_text("ok base\n")
+    (repo / "clutch" / "thing.py").write_text("ok base\n")
     git(repo, "commit", "-am", "green base")
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "nope\n"})])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "nope\n"})])
     path = repo / "tickets" / STEM / "checks.json"
     old = json.loads(path.read_text())
     del old["verification"]
@@ -411,19 +411,19 @@ def test_premise_failed_stops_after_implement_with_its_run_record(repo):
 
 def test_pathless_premise_reprompts_implement(repo):
     finding = {"code": "premise", "path": None, "message": "unfinished", "paved_road": "finish"}
-    result, llm, _ = run(repo, [implement_reply("premise_failed", [finding]), agent({"chupa/thing.py": "ok\n"}), verdict()])
+    result, llm, _ = run(repo, [implement_reply("premise_failed", [finding]), agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     requests = [request for request in llm.requests if request.surface == "implement"]
     assert len(requests) == 2
-    assert "implement the ticket" in requests[1].rendered.split("<<chupa-data:begin retry_findings>>", 1)[1].split("<<chupa-data:end retry_findings>>", 1)[0]
+    assert "implement the ticket" in requests[1].rendered.split("<<clutch-data:begin retry_findings>>", 1)[1].split("<<clutch-data:end retry_findings>>", 1)[0]
     assert outcomes(result)["implement"] == "ok"
 
 
 def test_check_fails_closed_on_an_out_of_fence_edit_and_never_reaches_review(repo):
-    result, llm, _ = run(repo, [agent({"chupa/thing.py": "ok\n", "chupa/other.py": "x\n"})])
+    result, llm, _ = run(repo, [agent({"clutch/thing.py": "ok\n", "clutch/other.py": "x\n"})])
 
     assert outcomes(result) == {"implement": "ok", "check": "gate_failed"}
-    assert [(f.code, f.path) for f in result.last[1].findings] == [("scope_fence", "chupa/other.py")]
+    assert [(f.code, f.path) for f in result.last[1].findings] == [("scope_fence", "clutch/other.py")]
     assert not result.last[1].artifact.passed
     assert json.loads((repo / "tickets" / STEM / "checks.json").read_text())["passed"] is False
     assert len(llm.requests) == 1  # review never called
@@ -431,7 +431,7 @@ def test_check_fails_closed_on_an_out_of_fence_edit_and_never_reaches_review(rep
 
 def test_gate_bypass_demotes_its_code_to_soft(repo):
     bypass = "gate_bypass:\n  - {code: scope_fence, reason: generated sibling}\n"
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n", "chupa/other.py": "x\n"}), verdict()], bypass)
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n", "clutch/other.py": "x\n"}), verdict()], bypass)
 
     assert outcomes(result) == {"implement": "ok", "check": "ok", "review": "ok"}
     invoice = result.results["check"].artifact
@@ -440,20 +440,20 @@ def test_gate_bypass_demotes_its_code_to_soft(repo):
 
 
 def test_red_verification_fails_check(repo):
-    (repo / "chupa" / "thing.py").write_text("ok base\n")
+    (repo / "clutch" / "thing.py").write_text("ok base\n")
     git(repo, "commit", "-am", "green base")
-    result, _, config = run(repo, [agent({"chupa/thing.py": "nope\n"})])
+    result, _, config = run(repo, [agent({"clutch/thing.py": "nope\n"})])
 
     assert outcomes(result) == {"implement": "ok", "check": "gate_failed"}
     assert [f.code for f in result.last[1].findings] == ["verification"]
-    assert "grep -q ok chupa/thing.py" in result.last[1].findings[0].message
+    assert "grep -q ok clutch/thing.py" in result.last[1].findings[0].message
     assert Box(config.state_dir / BOX_DIR, LocalFileSystem()).messages() == []
     assert not (config.worktree_root / ".base" / STEM).exists()
 
 
 def test_base_red_command_is_recorded_and_filed_without_failing_check(repo, monkeypatch):
-    _report_ticket(monkeypatch, "test -f chupa/thing.py")
-    result, _, config = run(repo, [agent({"chupa/thing.py": "changed\n"}), verdict()])
+    _report_ticket(monkeypatch, "test -f clutch/thing.py")
+    result, _, config = run(repo, [agent({"clutch/thing.py": "changed\n"}), verdict()])
 
     assert outcomes(result)["check"] == "ok"
     invoice = Invoice.model_validate_json((repo / "tickets" / STEM / "checks.json").read_text())
@@ -463,17 +463,17 @@ def test_base_red_command_is_recorded_and_filed_without_failing_check(repo, monk
     messages = Box(config.state_dir / BOX_DIR, LocalFileSystem()).messages()
     assert len(messages) == 1
     assert (messages[0].message_class, messages[0].outcome, messages[0].origin) == ("failure_report", "base_red", STEM)
-    assert "grep -q ok chupa/thing.py" in messages[0].summary
+    assert "grep -q ok clutch/thing.py" in messages[0].summary
     assert (config.state_dir / "spools" / STEM / str(result.attempt) / "check" / "verify-01-base.txt").is_file()
     assert not (config.worktree_root / ".base" / STEM).exists()
 
 
 def test_red_command_naming_a_branch_added_file_is_not_base_red(repo, monkeypatch):
-    _report_ticket(monkeypatch, "grep -q ok chupa/added.py")
-    result, _, config = run(repo, [agent({"chupa/thing.py": "ok\n", "chupa/added.py": "no\n"})])
+    _report_ticket(monkeypatch, "grep -q ok clutch/added.py")
+    result, _, config = run(repo, [agent({"clutch/thing.py": "ok\n", "clutch/added.py": "no\n"})])
 
     assert outcomes(result)["check"] == "gate_failed"
-    assert any(f.code == "verification" and "grep -q ok chupa/added.py" in f.message for f in result.last[1].findings)
+    assert any(f.code == "verification" and "grep -q ok clutch/added.py" in f.message for f in result.last[1].findings)
     invoice = Invoice.model_validate_json((repo / "tickets" / STEM / "checks.json").read_text())
     assert invoice.verification[1].base_red is False and invoice.verification[1].rc == 1
     assert invoice.verification[0].rc == 0
@@ -481,7 +481,7 @@ def test_red_command_naming_a_branch_added_file_is_not_base_red(repo, monkeypatc
 
 
 def test_empty_diff_claimed_ok_fails_verification(repo):
-    (repo / "chupa" / "thing.py").write_text("ok\n")
+    (repo / "clutch" / "thing.py").write_text("ok\n")
     git(repo, "commit", "-am", "green base")
     result, _, _ = run(repo, [agent({})])
 
@@ -490,7 +490,7 @@ def test_empty_diff_claimed_ok_fails_verification(repo):
 
 
 def test_already_satisfied_is_proven_by_green_verification_and_skips_review(repo):
-    (repo / "chupa" / "thing.py").write_text("ok\n")
+    (repo / "clutch" / "thing.py").write_text("ok\n")
     git(repo, "commit", "-am", "already there")
     result, llm, _ = run(repo, [agent({}, outcome="already_satisfied")])
 
@@ -500,7 +500,7 @@ def test_already_satisfied_is_proven_by_green_verification_and_skips_review(repo
 
 
 def test_review_snag_is_gate_failed_with_a_snag_list(repo):
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG])])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG])])
 
     assert outcomes(result) == {"implement": "ok", "check": "ok", "review": "gate_failed"}
     assert [f.message for f in result.last[1].findings] == ["wrong word"]
@@ -509,14 +509,14 @@ def test_review_snag_is_gate_failed_with_a_snag_list(repo):
 
 
 def test_invalid_review_reply_is_reprompted_with_its_validation_finding(repo):
-    result, llm, _ = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("approve", [SNAG]), verdict()])
+    result, llm, _ = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("approve", [SNAG]), verdict()])
 
     assert outcomes(result)["review"] == "ok"
     assert "approve carries an empty findings list" in llm.requests[2].rendered
 
 
 def test_verification_children_never_inherit_a_provider_key(repo):
-    result, _, config = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    result, _, config = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     spool = (config.state_dir / "spools" / STEM / str(result.attempt) / "check" / "verify-02.txt").read_text()
     assert "PATH=/usr/bin:/bin" in spool and "FAKE_KEY" not in spool and SECRET not in spool
@@ -525,10 +525,10 @@ def test_verification_children_never_inherit_a_provider_key(repo):
 def test_a_fresh_run_tears_down_the_prior_worktree_and_branch(repo):
     stale = load_config(None, cwd=repo).worktree_root / STEM
     git(repo, "worktree", "add", "-b", STEM, str(stale), "main")
-    (stale / "chupa" / "thing.py").write_text("stale\n")
+    (stale / "clutch" / "thing.py").write_text("stale\n")
     git(stale, "commit", "-am", "stale")
 
-    result, _, _ = run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    result, _, _ = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     assert outcomes(result)["review"] == "ok"
     assert "stale" not in git(repo, "log", "--format=%s", STEM)
@@ -538,13 +538,13 @@ def test_a_fresh_run_tears_down_the_prior_worktree_and_branch(repo):
 
 
 def evidence(**kw) -> Evidence:
-    base = dict(stem=STEM, head_sha="abc", claimed="ok", scope_fence=["chupa/"], changed_files=["chupa/a.py"], inserted_lines=1, verification=[], run_record=None)
+    base = dict(stem=STEM, head_sha="abc", claimed="ok", scope_fence=["clutch/"], changed_files=["clutch/a.py"], inserted_lines=1, verification=[], run_record=None)
     return Evidence(**{**base, **kw})
 
 
 def test_diff_budget_caps_inserted_lines(tmp_path):
     gate = DiffBudgetGate()
-    many_files = evidence(changed_files=[f"chupa/{n}.py" for n in range(31)], inserted_lines=10)
+    many_files = evidence(changed_files=[f"clutch/{n}.py" for n in range(31)], inserted_lines=10)
     assert gate.check(many_files, tmp_path).verdict == "pass"
     report = gate.check(evidence(inserted_lines=1_501), tmp_path)
     assert report.verdict == "fail"
@@ -561,7 +561,7 @@ def test_run_record_gate_requires_every_section_and_a_closed_outcome(tmp_path):
 
 
 def test_gather_safety_evidence_runs_no_verification(repo, monkeypatch):
-    from chupa import stages
+    from clutch import stages
     from tests.integration.test_merge import context
 
     author(repo)
@@ -571,8 +571,8 @@ def test_gather_safety_evidence_runs_no_verification(repo, monkeypatch):
     async def scenario():
         ctx.fs.write(repo / "tickets" / STEM / "run.md", b"lifted run record")
         await ctx.git.worktree_add(repo, ctx.worktree(STEM), STEM, "main")
-        (ctx.worktree(STEM) / "chupa/thing.py").write_text("ok\n")
-        await ctx.git.add(ctx.worktree(STEM), ["chupa/thing.py"])
+        (ctx.worktree(STEM) / "clutch/thing.py").write_text("ok\n")
+        await ctx.git.add(ctx.worktree(STEM), ["clutch/thing.py"])
         await ctx.git.commit(ctx.worktree(STEM), "work")
         original = ctx.exec_.run
         calls = []
@@ -594,7 +594,7 @@ def test_gather_safety_evidence_runs_no_verification(repo, monkeypatch):
 
 
 def test_base_worktree_clears_a_stale_worktree(repo):
-    from chupa import stages
+    from clutch import stages
     from tests.integration.test_merge import context
 
     ctx = context(repo, [])
@@ -605,8 +605,8 @@ def test_base_worktree_clears_a_stale_worktree(repo):
         path.parent.mkdir(parents=True, exist_ok=True)
         await ctx.git.worktree_add_detached(repo, path, first_sha)
         (path / "stale.txt").write_text("stale\n")
-        (repo / "chupa/thing.py").write_text("second commit\n")
-        await ctx.git.add(repo, ["chupa/thing.py"])
+        (repo / "clutch/thing.py").write_text("second commit\n")
+        await ctx.git.add(repo, ["clutch/thing.py"])
         await ctx.git.commit(repo, "second commit")
         second_sha = await ctx.git.rev_parse(repo, "HEAD")
         result = await stages._base_worktree(ctx, ".base", STEM, second_sha)
@@ -621,7 +621,7 @@ def test_base_worktree_clears_a_stale_worktree(repo):
 
 
 def test_full_gather_evidence_reuses_safety_gatherer(repo, monkeypatch):
-    from chupa import stages
+    from clutch import stages
     from tests.integration.test_merge import context
 
     author(repo)
@@ -639,8 +639,8 @@ def test_full_gather_evidence_reuses_safety_gatherer(repo, monkeypatch):
 
     async def scenario():
         await ctx.git.worktree_add(repo, ctx.worktree(STEM), STEM, "main")
-        (ctx.worktree(STEM) / "chupa/thing.py").write_text("changed\n")
-        await ctx.git.add(ctx.worktree(STEM), ["chupa/thing.py"])
+        (ctx.worktree(STEM) / "clutch/thing.py").write_text("changed\n")
+        await ctx.git.add(ctx.worktree(STEM), ["clutch/thing.py"])
         await ctx.git.commit(ctx.worktree(STEM), "work")
         result = await stages.gather_evidence(ctx, ticket, "ok", attempt=4)
         assert len(gathered) == 1
@@ -658,12 +658,12 @@ async def report_context(repo, *, verification=None, source=None, script=None):
     from tests.integration.test_merge import context
 
     ctx = context(repo, script if script is not None else [agent({}), verdict()])
-    ctx.fs.write(repo / "chupa/thing.py", b"ok\n")
+    ctx.fs.write(repo / "clutch/thing.py", b"ok\n")
     ctx.fs.write(repo / "source.json", (source if source is not None else _report_bytes()).encode())
     command = verification if verification is not None else f"cp source.json tickets/{STEM}/{SAMPLE_REPORT}"
-    raw = TICKET.format(bypass="").replace("grep -q ok chupa/thing.py\nenv", command)
+    raw = TICKET.format(bypass="").replace("grep -q ok clutch/thing.py\nenv", command)
     ctx.fs.write(repo / f"tickets/{STEM}/ticket.md", raw.encode())
-    await ctx.git.add(repo, ["chupa/thing.py", "source.json", f"tickets/{STEM}/ticket.md"])
+    await ctx.git.add(repo, ["clutch/thing.py", "source.json", f"tickets/{STEM}/ticket.md"])
     await ctx.git.commit(repo, "producer fixture")
     ticket = validate_ticket(STEM, raw, repo)
     return ctx, ticket
@@ -672,7 +672,7 @@ async def report_context(repo, *, verification=None, source=None, script=None):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("nested", [False, True])
 async def test_outbox_only_check_accepts_registered_report(repo, nested):
-    from chupa.journal import EventType
+    from clutch.journal import EventType
 
     name = f"nested/{SAMPLE_REPORT}" if nested else SAMPLE_REPORT
     commands = (f"mkdir -p tickets/{STEM}/nested\n" if nested else "") + f"cp source.json tickets/{STEM}/{name}"
@@ -710,7 +710,7 @@ async def test_outbox_only_check_requires_current_report(repo, case):
         if case == "implement":
             (req.worktree / f"tickets/{STEM}/{SAMPLE_REPORT}").write_text(_report_bytes())
         if case.startswith("dirty"):
-            path = "chupa/thing.py" if case == "dirty-tracked" else "chupa/untracked.py"
+            path = "clutch/thing.py" if case == "dirty-tracked" else "clutch/untracked.py"
             (req.worktree / path).write_text("uncommitted\n")
         return implement_reply()
 
@@ -732,8 +732,8 @@ async def test_outbox_only_check_requires_current_report(repo, case):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["red", "missing", "invalid", "lift"])
 async def test_outbox_only_check_failure_never_admits(repo, monkeypatch, failure):
-    from chupa.git import GitError
-    from chupa.journal import EventType
+    from clutch.git import GitError
+    from clutch.journal import EventType
 
     commands = f"cp source.json tickets/{STEM}/{SAMPLE_REPORT}"
     if failure == "red":
@@ -745,7 +745,7 @@ async def test_outbox_only_check_failure_never_admits(repo, monkeypatch, failure
         commit = ctx.git.commit
 
         async def failing(root, message, **kwargs):
-            if message == f"chupa({STEM}): checks":
+            if message == f"clutch({STEM}): checks":
                 raise GitError(["git", "commit"], 1, "", "injected checks failure")
             return await commit(root, message, **kwargs)
 
@@ -765,9 +765,9 @@ async def test_outbox_only_check_failure_never_admits(repo, monkeypatch, failure
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", ["valid", "purge", "missing", "invalid", "machinery"])
 async def test_review_baseline_report_registered_checks_lift(repo, tmp_path, case):
-    from chupa import stages
-    from chupa.artifacts import REVIEW_BASELINE_REPORT, ReviewBaselineReport
-    from chupa.journal import EventType
+    from clutch import stages
+    from clutch.artifacts import REVIEW_BASELINE_REPORT, ReviewBaselineReport
+    from clutch.journal import EventType
     from eval import harness
     from tests.integration.test_eval_harness import report_fixture
 
@@ -820,25 +820,25 @@ async def test_review_baseline_report_registered_checks_lift(repo, tmp_path, cas
 def test_scope_fence_refuses_a_plan_edit(repo):
     from dataclasses import replace
 
-    from chupa import stages
+    from clutch import stages
     from tests.integration.test_merge import context
 
     author(repo)
     ctx = context(repo, [])
     ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
-    ticket = replace(ticket, scope_fence=("CHUPA_PLAN.md#19.P3.row",))
+    ticket = replace(ticket, scope_fence=("CLUTCH_PLAN.md#19.P3.row",))
 
     async def scenario():
-        ctx.fs.write(repo / "CHUPA_PLAN.md", b"## 19. Plan\n\n### 19.P3.row Row\n\nold\n")
-        await ctx.git.add(repo, ["CHUPA_PLAN.md"])
+        ctx.fs.write(repo / "CLUTCH_PLAN.md", b"## 19. Plan\n\n### 19.P3.row Row\n\nold\n")
+        await ctx.git.add(repo, ["CLUTCH_PLAN.md"])
         await ctx.git.commit(repo, "plan base")
         await ctx.git.worktree_add(repo, ctx.worktree(STEM), STEM, "main")
-        ctx.fs.write(ctx.worktree(STEM) / "CHUPA_PLAN.md", b"## 19. Plan\n\n### 19.P3.row Row\n\nnew\n")
-        await ctx.git.add(ctx.worktree(STEM), ["CHUPA_PLAN.md"])
+        ctx.fs.write(ctx.worktree(STEM) / "CLUTCH_PLAN.md", b"## 19. Plan\n\n### 19.P3.row Row\n\nnew\n")
+        await ctx.git.add(ctx.worktree(STEM), ["CLUTCH_PLAN.md"])
         await ctx.git.commit(ctx.worktree(STEM), "edit plan")
         result = ScopeFenceGate().check(await stages.gather_safety_evidence(ctx, ticket, "ok"), ctx.worktree(STEM))
         assert result.verdict == "fail"
-        assert result.findings[0].path == "CHUPA_PLAN.md"
+        assert result.findings[0].path == "CLUTCH_PLAN.md"
 
     asyncio.run(scenario())
 
@@ -864,14 +864,14 @@ def test_verification_records_each_command_seconds(repo, monkeypatch):
         return original_driver(cls, *args, **kwargs)
 
     monkeypatch.setattr(Driver, "from_config", classmethod(configured))
-    run(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     invoice = Invoice.model_validate_json((repo / "tickets" / STEM / "checks.json").read_text())
     assert [result.seconds for result in invoice.verification] == [13.0, 29.0]
 
 
 @pytest.mark.asyncio
 async def test_outbox_lift_ignores_stray_file(repo):
-    from chupa.stages import lift_outbox
+    from clutch.stages import lift_outbox
     from tests.integration.test_merge import context
 
     author(repo)
@@ -887,7 +887,7 @@ async def test_outbox_lift_ignores_stray_file(repo):
 
 @pytest.mark.asyncio
 async def test_outbox_lift_skips_symlink(repo, tmp_path):
-    from chupa.stages import lift_outbox
+    from clutch.stages import lift_outbox
     from tests.integration.test_merge import context
 
     author(repo)
@@ -905,7 +905,7 @@ async def test_outbox_lift_skips_symlink(repo, tmp_path):
 
 @pytest.mark.asyncio
 async def test_outbox_lift_rejects_oversize(repo):
-    from chupa.stages import LIFT_MAX_BYTES, ArtifactInvalid, lift_outbox
+    from clutch.stages import LIFT_MAX_BYTES, ArtifactInvalid, lift_outbox
     from tests.integration.test_merge import context
 
     author(repo)

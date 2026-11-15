@@ -1,4 +1,4 @@
-from chupa.stages import _names_branch_only_path
+from clutch.stages import _names_branch_only_path
 
 
 def test_dash_prefixed_token_is_skipped():

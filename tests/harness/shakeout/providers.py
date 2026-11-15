@@ -4,10 +4,10 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 
-from chupa.config import Candidate, Limits, ModelsByTier, Provider, Route
-from chupa.journal import EventType
-from chupa.providers import ProviderLLM
-from chupa.seams import SubprocessExec
+from clutch.config import Candidate, Limits, ModelsByTier, Provider, Route
+from clutch.journal import EventType
+from clutch.providers import ProviderLLM
+from clutch.seams import SubprocessExec
 from tests.harness.shakeout.bench import Bench
 from tests.harness.shakeout.run import Member, Observation
 from tests.harness.shakeout.stages import _finding, _terminal, _ticket
@@ -96,7 +96,7 @@ async def _auth_expiry(bench: Bench) -> Observation:
     terminal = _terminal(bench, stem)
     caps = [event for event in bench.journal.read() if event.type == EventType.CAP_CONSUMED and event.ticket == stem and event.body.get("cap") == "infra"]
     finding = _finding(bench, stem, "auth_error")
-    road = "run claude interactively and complete /login, then uv run python -m chupa drain"
+    road = "run claude interactively and complete /login, then uv run python -m clutch drain"
     assert terminal["to"] == "infra_error" and terminal["reason"] == "auth_error"
     assert len(caps) == 1 and finding.paved_road == road
     return Observation("auth_expiry_harvested_with_reauth_road", f"{stem}/0")

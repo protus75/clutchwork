@@ -2,7 +2,7 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-from chupa.merge import dirty_overlap
+from clutch.merge import dirty_overlap
 
 
 def findings(status):

@@ -1,4 +1,4 @@
-from chupa.graph import layout
+from clutch.graph import layout
 
 
 def row(stem, section, *depends):

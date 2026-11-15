@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from chupa import lockfile
-from chupa.git import Git
-from chupa.lockfile import CommitLock, CommitLockTimeout, LockHeld
+from clutch import lockfile
+from clutch.git import Git
+from clutch.lockfile import CommitLock, CommitLockTimeout, LockHeld
 
 
 class Memory:
@@ -174,7 +174,7 @@ def test_git_holds_one_lock_per_write():
 
 
 def test_cli_handles_timeout(monkeypatch, capsys):
-    from chupa import __main__
+    from clutch import __main__
 
     monkeypatch.setattr(__main__, "load_config", lambda *args, **kwargs: (_ for _ in ()).throw(CommitLockTimeout(Path("/state/commit.lock"), {"pid": 729})))
     assert __main__.main(["status"], cwd=Path("/repo"), env={}, clock=lambda: datetime.now(UTC)) == 2

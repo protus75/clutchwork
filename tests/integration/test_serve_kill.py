@@ -7,10 +7,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import __main__ as cli
-from chupa import serve
-from chupa.audit import audit_journal
-from chupa.daemon import TicketWriter
+from clutch import __main__ as cli
+from clutch import serve
+from clutch.audit import audit_journal
+from clutch.daemon import TicketWriter
 from tests.integration.serve_rig import active_graph, finish, graph, request, script, terminals, trip, until, write
 from tests.integration.test_cli import root
 from tests.integration.test_scheduler import text, turn

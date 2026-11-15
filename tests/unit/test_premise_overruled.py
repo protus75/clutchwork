@@ -4,10 +4,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import runner
-from chupa.config import Caps
-from chupa.drain import parked_blob, record_reoffer
-from chupa.journal import Event, EventType
+from clutch import runner
+from clutch.config import Caps
+from clutch.drain import parked_blob, record_reoffer
+from clutch.journal import Event, EventType
 
 
 class MemoryJournal:

@@ -1,7 +1,7 @@
 """Invariant auditor coverage over direct journal fixtures and the production drain."""
 
-from chupa.audit import INVARIANTS, audit, audit_journal
-from chupa.journal import Event, EventType, Journal
+from clutch.audit import INVARIANTS, audit, audit_journal
+from clutch.journal import Event, EventType, Journal
 from tests.integration.test_drain_reentry import drain
 from tests.integration.test_stages import agent, implement_reply, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
@@ -17,10 +17,10 @@ def test_a_production_drain_with_a_merge_and_parked_red_journal_is_green(repo):
     author(repo)
     author(repo, "red")
     premise = {"code": "premise", "path": "tickets/red/ticket.md", "message": "generated", "paved_road": "edit the generator"}
-    code, _ = drain(repo, [agent({"chupa/thing.py": "ok\n"}), verdict(), implement_reply("premise_failed", [premise]), diagnosis_reply()])
+    code, _ = drain(repo, [agent({"clutch/thing.py": "ok\n"}), verdict(), implement_reply("premise_failed", [premise]), diagnosis_reply()])
 
     assert code == 0
-    assert audit_journal(Journal(repo / ".chupa" / "state", clock)) == []
+    assert audit_journal(Journal(repo / ".clutch" / "state", clock)) == []
 
 
 def test_each_invariant_reports_its_own_planted_violation():

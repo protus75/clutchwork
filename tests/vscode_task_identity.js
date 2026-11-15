@@ -33,9 +33,9 @@ Module._load = function (request, parent, isMain) {
 	if (request === 'child_process') return { execFile() {} };
 	return load.call(this, request, parent, isMain);
 };
-require('../vscode-chupa/extension.js').activate({ extensionUri: {}, subscriptions: [] });
-const context = { chupaStem: 'x' };
-handlers['chupa.ticket.review'](context);
-handlers['chupa.ticket.lint'](context);
-handlers['chupa.ticket.review'](context);
+require('../vscode-clutchwork/extension.js').activate({ extensionUri: {}, subscriptions: [] });
+const context = { clutchStem: 'x' };
+handlers['clutch.ticket.review'](context);
+handlers['clutch.ticket.lint'](context);
+handlers['clutch.ticket.review'](context);
 console.log(JSON.stringify(definitions));

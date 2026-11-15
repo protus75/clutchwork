@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import tickets
-from chupa.journal import EventType
+from clutch import tickets
+from clutch.journal import EventType
 
 
 class Lock:
@@ -81,7 +81,7 @@ def setup_plan(tmp_path, monkeypatch):
     monkeypatch.setattr(tickets, "validate_ticket", validate)
     monkeypatch.setattr(tickets, "lint_findings", lint)
     monkeypatch.setattr(tickets, "evidence_findings", check_evidence)
-    monkeypatch.setattr("chupa.status.last_states", lambda events: {"done": "merged"})
+    monkeypatch.setattr("clutch.status.last_states", lambda events: {"done": "merged"})
     return entries, evidence, finding, calls
 
 
@@ -107,7 +107,7 @@ def test_intake_applies_plan_and_refuses_stray(tmp_path, monkeypatch):
     assert result.committed == ("done", "good")
     assert result.refused == {"bad": decisions["bad"][2]} == {"bad": [finding]}
     assert (tmp_path / tickets.ticket_path("good")).read_text() == decisions["good"][1]
-    assert git.commits == [("chupa(done): ticket", [tickets.ticket_path("done")]), ("chupa(good): ticket", [tickets.ticket_path("good"), *evidence["good"]])]
+    assert git.commits == [("clutch(done): ticket", [tickets.ticket_path("done")]), ("clutch(good): ticket", [tickets.ticket_path("good"), *evidence["good"]])]
     assert journal.events[1] == ((EventType.SIGNAL, {"signal": tickets.INTAKE_SIGNAL, "source": "human", "state": "confirmed", "new": True, "commit": "commit-sha"}), {"ticket": "good"})
     stray_entries = entries + [("M ", "outside.py")]
     stray = tickets._intake_stray(tmp_path, stray_entries, evidence)

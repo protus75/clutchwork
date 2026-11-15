@@ -5,13 +5,13 @@ import json
 
 import pytest
 
-from chupa import daemon, runner, stages
-from chupa.audit import audit_journal
-from chupa.control import publish_request
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile
-from chupa.merge import Admission
-from chupa.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
+from clutch import daemon, runner, stages
+from clutch.audit import audit_journal
+from clutch.control import publish_request
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile
+from clutch.merge import Admission
+from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from tests.integration.serve_rig import (
     UpgradeChild,
     admission_config,
@@ -36,7 +36,7 @@ from tests.integration.test_scheduler import text, turn
 @pytest.mark.asyncio
 @pytest.mark.parametrize("ending", ["ok", "noop", "implement", "check", "review"])
 async def test_serve_routes_settled_run_to_composed_queue_once(root, monkeypatch, ending):
-    changes = {} if ending == "noop" else {"chupa/other.py" if ending == "check" else "chupa/thing.py": "ok\n"}
+    changes = {} if ending == "noop" else {"clutch/other.py" if ending == "check" else "clutch/thing.py": "ok\n"}
     rig = await admission_graph(root, monkeypatch, {"work": changes}, endings={"work": ending})
     admission_ticket(root, "work")
     offers, results = [], []
@@ -91,11 +91,11 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
         if ticket.stem == "work":
             rig.pinned = await ctx.git.rev_parse(root, ticket.stem)
             assert "D tickets/" in await ctx.git.status_porcelain(ctx.worktree(ticket.stem))
-            rig.fs.write(root / "chupa/other.py", b"moved\n")
-            await ctx.git.add(root, ["chupa/other.py"])
+            rig.fs.write(root / "clutch/other.py", b"moved\n")
+            await ctx.git.add(root, ["clutch/other.py"])
             await ctx.git.commit(root, "main moves after approval")
 
-    rig = await admission_graph(root, monkeypatch, {"work": {"chupa/thing.py": "ok\n"}, "dependent": {"chupa/dependent.py": "ok\n"}}, endings=endings, settled=moved)
+    rig = await admission_graph(root, monkeypatch, {"work": {"clutch/thing.py": "ok\n"}, "dependent": {"clutch/dependent.py": "ok\n"}}, endings=endings, settled=moved)
     # The tracked ticket-plane copies come from a real failed producing run, never a ready fixture.
     admission_ticket(root, "work")
     first = await start_admission(rig, monkeypatch)
@@ -107,7 +107,7 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
     config.write_text(
         config.read_text().replace("review: {}", "review: {mechanical: [{code: host, argv: ['true'], trigger: always, severity: hard}]}").replace("merge: {}", "merge: {safety_checks: [host]}")
     )
-    admission_ticket(root, "dependent", paths=("chupa/dependent.py",), depends="- work")
+    admission_ticket(root, "dependent", paths=("clutch/dependent.py",), depends="- work")
     trace, trees = [], []
     for name in ("gather_safety_evidence", "gather_evidence"):
         original = getattr(stages, name)
@@ -115,7 +115,7 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
         async def evidence(ctx, ticket, *args, _name=name, _original=original, **kwargs):
             if ticket.stem == "work" and rig.owner.queue.active == "work":
                 trace.append(_name)
-                assert (ctx.worktree(ticket.stem) / "chupa/other.py").read_text() == "moved\n"
+                assert (ctx.worktree(ticket.stem) / "clutch/other.py").read_text() == "moved\n"
             return await _original(ctx, ticket, *args, **kwargs)
 
         monkeypatch.setattr(stages, name, evidence)
@@ -138,8 +138,8 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
         assert merged.body == {"to": "merged", "commit": merged.body["commit"], "reviewed_sha": rig.pinned}
         assert merged.key is None
         message = await rig.checkout.git._run(root, "log", "-1", "--format=%B", merged.body["commit"])
-        assert message.startswith("chupa(work): `thing.py` holds the word ok.")
-        assert "chupa-ticket: work" in message and f"chupa-reviewed-sha: {rig.pinned}" in message
+        assert message.startswith("clutch(work): `thing.py` holds the word ok.")
+        assert "clutch-ticket: work" in message and f"clutch-reviewed-sha: {rig.pinned}" in message
         [effect] = [e for e in rig.journal.read() if e.key == "merge/work/1" and e.type == EventType.EFFECT_COMPLETION]
         assert effect.body == {"result": {"commit": merged.body["commit"]}}
         assert not rig.checkout.config.worktree_root.joinpath("work").exists()
@@ -156,12 +156,12 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
 @pytest.mark.parametrize("case", ["red-streak", "tree-mismatch", "exception", "cancel", "kill"])
 async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
     if case == "red-streak":
-        changes = {stem: {f"chupa/{stem}.py": "red\n" if stem != "green" else "ok\n"} for stem in ("one", "two", "three", "green")}
+        changes = {stem: {f"clutch/{stem}.py": "red\n" if stem != "green" else "ok\n"} for stem in ("one", "two", "three", "green")}
 
         async def moved(rig, ctx, ticket, attempt):
             if ticket.stem != "green":
-                rig.fs.write(root / "chupa/integration-marker", b"moved\n")
-                await ctx.git.add(root, ["chupa/integration-marker"])
+                rig.fs.write(root / "clutch/integration-marker", b"moved\n")
+                await ctx.git.add(root, ["clutch/integration-marker"])
                 await ctx.git.commit(root, "move main after check")
 
         rig = await admission_graph(root, monkeypatch, changes, settled=moved)
@@ -170,16 +170,16 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
             command=[
                 "python3",
                 "-c",
-                "from pathlib import Path; import sys; sys.exit(int(Path('chupa/integration-marker').exists() and any(p.read_text().startswith('red') for p in Path('chupa').glob('*.py'))))",
+                "from pathlib import Path; import sys; sys.exit(int(Path('clutch/integration-marker').exists() and any(p.read_text().startswith('red') for p in Path('clutch').glob('*.py'))))",
             ],
         )
-        from chupa import caps
+        from clutch import caps
 
         for stem in ("one", "two", "three"):
             for _ in range(rig.checkout.config.caps.retry):
                 caps.consume(rig.journal, stem, "retry", "seed")
         for stem, priority in zip(changes, ("P0", "P1", "P2", "P3"), strict=True):
-            admission_ticket(root, stem, paths=(f"chupa/{stem}.py",), priority=priority)
+            admission_ticket(root, stem, paths=(f"clutch/{stem}.py",), priority=priority)
         offers, empty = [], asyncio.Event()
         offer, process = MergeQueue.offer, MergeQueue.process
 
@@ -194,10 +194,10 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
                 empty.set()
                 return []
             result = await process(queue)
-            marker = root / "chupa/integration-marker"
+            marker = root / "clutch/integration-marker"
             if marker.exists():
                 marker.unlink()
-                await rig.checkout.git.add(root, ["chupa/integration-marker"])
+                await rig.checkout.git.add(root, ["clutch/integration-marker"])
                 await rig.checkout.git.commit(root, "reset integration marker")
             return result
 
@@ -233,8 +233,8 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
             assert [stem for _, stem, _ in offers] == ["one", "two", "three", "green"]
             assert all(q is queue and attempt == 0 for q, _, attempt in offers)
             assert queue.red_stems == [] and not queue.pending and not queue.paused
-            assert (root / "chupa/green.py").read_text() == "ok\n"
-            assert all(not (root / f"chupa/{stem}.py").exists() for stem in ("one", "two", "three"))
+            assert (root / "clutch/green.py").read_text() == "ok\n"
+            assert all(not (root / f"clutch/{stem}.py").exists() for stem in ("one", "two", "three"))
         finally:
             await finish(rig, run)
         return
@@ -242,20 +242,20 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
     async def settled(rig, ctx, ticket, attempt):
         rig.pinned = await ctx.git.rev_parse(root, ticket.stem)
         if case != "tree-mismatch":
-            ctx.fs.write(root / "chupa/generated.txt", b"base\nmain\n")
-            await ctx.git.add(root, ["chupa/generated.txt"])
+            ctx.fs.write(root / "clutch/generated.txt", b"base\nmain\n")
+            await ctx.git.add(root, ["clutch/generated.txt"])
             await ctx.git.commit(root, "main conflicts")
         rig.before = await ctx.git.rev_parse(root, "main")
 
-    changes = {"chupa/thing.py": "ok\n"}
+    changes = {"clutch/thing.py": "ok\n"}
     if case != "tree-mismatch":
-        changes["chupa/generated.txt"] = "base\nbranch\n"
+        changes["clutch/generated.txt"] = "base\nbranch\n"
     rig = await admission_graph(root, monkeypatch, {"work": changes}, settled=settled)
     if case != "tree-mismatch":
-        rig.fs.write(root / "chupa/generated.txt", b"base\n")
-        await rig.checkout.git.add(root, ["chupa/generated.txt"])
+        rig.fs.write(root / "clutch/generated.txt", b"base\n")
+        await rig.checkout.git.add(root, ["clutch/generated.txt"])
         await rig.checkout.git.commit(root, "generated base")
-    admission_config(root, strategies=[{"paths": ["chupa/generated.txt"], "strategy": "union"}])
+    admission_config(root, strategies=[{"paths": ["clutch/generated.txt"], "strategy": "union"}])
     admission_ticket(root, "work", paths=tuple(changes))
     entered, release, cleaning, abort_release = (asyncio.Event() for _ in range(4))
     failures, chronology = [], []
@@ -276,8 +276,8 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
 
         async def corrupted(path, stem, message):
             # A real staged-tree defect produces a real mismatching commit, not a fake hash or terminal.
-            rig.fs.write(path / "chupa/engine-defect.py", b"unexpected staged content\n")
-            await rig.checkout.git.add(path, ["chupa/engine-defect.py"])
+            rig.fs.write(path / "clutch/engine-defect.py", b"unexpected staged content\n")
+            await rig.checkout.git.add(path, ["clutch/engine-defect.py"])
             return await squash(path, stem, message)
 
         monkeypatch.setattr(rig.checkout.git, "merge_squash", corrupted)
@@ -365,7 +365,7 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["precheck", "safety", "integration", "host-red"])
 async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failure):
-    command = ["python3", "-c", "from pathlib import Path; import sys; sys.exit(int('red' in Path('chupa/thing.py').read_text() and Path('chupa/other.py').exists()))"]
+    command = ["python3", "-c", "from pathlib import Path; import sys; sys.exit(int('red' in Path('clutch/thing.py').read_text() and Path('clutch/other.py').exists()))"]
 
     async def settled(rig, ctx, ticket, attempt):
         if ticket.stem == "work":
@@ -383,17 +383,17 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
             await ctx.git.add(root, ["main-moved-next.txt"])
             await ctx.git.commit(root, "main moves before next admission")
 
-    rig = await admission_graph(root, monkeypatch, {"work": {"chupa/thing.py": "ok red\n"}, "main-side": {"chupa/other.py": "moved\n"}, "next": {"chupa/next.py": "ok\n"}}, settled=settled)
-    from chupa import caps
+    rig = await admission_graph(root, monkeypatch, {"work": {"clutch/thing.py": "ok red\n"}, "main-side": {"clutch/other.py": "moved\n"}, "next": {"clutch/next.py": "ok\n"}}, settled=settled)
+    from clutch import caps
 
     for _ in range(rig.checkout.config.caps.retry):
         caps.consume(rig.journal, "work", "retry", "seed")
     admission_config(root, command=["false"] if failure == "host-red" else command, safety=failure == "safety")
-    admission_ticket(root, "work", priority="P0", verification="grep -q absent chupa/thing.py" if failure == "host-red" else "true")
+    admission_ticket(root, "work", priority="P0", verification="grep -q absent clutch/thing.py" if failure == "host-red" else "true")
     # Stage selection suspends a genuine producing run while another genuine run moves main.
     hold = trip(rig, stage="review") if failure in {"safety", "integration"} else None
     if hold:
-        admission_ticket(root, "main-side", paths=("chupa/other.py",))
+        admission_ticket(root, "main-side", paths=("clutch/other.py",))
     preserved, offers = [], []
     harvest, offer = runner.harvest_failure, MergeQueue.offer
     admit = MergeQueue._admit
@@ -414,7 +414,7 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
             if failure == "precheck":
                 assert await ctx.git.rev_parse(root, "main") == rig.before
             assert ctx.worktree(ticket.stem).exists() and await ctx.git.rev_parse(root, ticket.stem)
-            assert "red" not in (root / "chupa/thing.py").read_text()
+            assert "red" not in (root / "clutch/thing.py").read_text()
             preserved.append(kwargs)
         await harvest(ctx, ticket, **kwargs)
 
@@ -450,9 +450,9 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
         assert rig.owner.queue.red_stems == (["work"] if failure in {"integration", "host-red"} else [])
         # A fresh producing candidate proceeds; the old refused branch never reaches main.
         admission_config(root)
-        admission_ticket(root, "next", paths=("chupa/next.py",))
+        admission_ticket(root, "next", paths=("clutch/next.py",))
         await until(rig, lambda: ("next", "merged") in rig.returns)
-        assert "red" not in (root / "chupa/thing.py").read_text() and not rig.owner.queue.red_stems
+        assert "red" not in (root / "clutch/thing.py").read_text() and not rig.owner.queue.red_stems
         assert [req.surface for llm in rig.models for req in llm.requests if req.ticket == "work"].count("diagnose") == 0
     finally:
         await finish(rig, run)
@@ -463,17 +463,17 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
 async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeypatch, resolution):
     async def settled(rig, ctx, ticket, attempt):
         rig.pinned = await ctx.git.rev_parse(root, ticket.stem)
-        ctx.fs.write(root / "chupa/generated.txt", b"base\nmain\n")
-        await ctx.git.add(root, ["chupa/generated.txt"])
+        ctx.fs.write(root / "clutch/generated.txt", b"base\nmain\n")
+        await ctx.git.add(root, ["clutch/generated.txt"])
         await ctx.git.commit(root, "main conflicts after review")
         rig.before = await ctx.git.rev_parse(root, "main")
 
-    rig = await admission_graph(root, monkeypatch, {"work": {"chupa/thing.py": "ok\n", "chupa/generated.txt": "base\nbranch\n"}}, settled=settled)
-    rig.fs.write(root / "chupa/generated.txt", b"base\n")
-    await rig.checkout.git.add(root, ["chupa/generated.txt"])
+    rig = await admission_graph(root, monkeypatch, {"work": {"clutch/thing.py": "ok\n", "clutch/generated.txt": "base\nbranch\n"}}, settled=settled)
+    rig.fs.write(root / "clutch/generated.txt", b"base\n")
+    await rig.checkout.git.add(root, ["clutch/generated.txt"])
     await rig.checkout.git.commit(root, "generated base")
-    admission_config(root, safety=True, strategies=[{"paths": ["chupa/generated.txt"], "strategy": "union"}] if resolution == "mechanical" else [])
-    admission_ticket(root, "work", paths=("chupa/thing.py", "chupa/generated.txt"), verification="grep -q ok chupa/thing.py")
+    admission_config(root, safety=True, strategies=[{"paths": ["clutch/generated.txt"], "strategy": "union"}] if resolution == "mechanical" else [])
+    admission_ticket(root, "work", paths=("clutch/thing.py", "clutch/generated.txt"), verification="grep -q ok clutch/thing.py")
     chronology, gates = [], []
     call = rig.checkout.git._call
 
@@ -502,8 +502,8 @@ async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeyp
         assert queue.active is None and not queue._slot.locked()
         assert chronology == ["abort", "unwind"]
         assert handoff.approval_invalidated and handoff.reviewed_sha == rig.pinned
-        assert handoff.conflicted_paths == ["chupa/generated.txt"]
-        assert (root / "chupa/generated.txt").read_text() == "base\nmain\n"
+        assert handoff.conflicted_paths == ["clutch/generated.txt"]
+        assert (root / "clutch/generated.txt").read_text() == "base\nmain\n"
         assert await ctx.git.rev_parse(root, ticket.stem) == rig.pinned
         assert not await ctx.git.conflicted_paths(ctx.worktree(ticket.stem))
         assert await ctx.git.status_porcelain(ctx.worktree(ticket.stem)) == ""
@@ -511,7 +511,7 @@ async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeyp
         return await apply(ctx, ticket, findings, **kwargs)
 
     monkeypatch.setattr(daemon, "apply_rework", reworked)
-    from chupa import merge as merge_owner
+    from clutch import merge as merge_owner
 
     for gate in stages.CHECK_GATES + merge_owner.MERGE_GATES:
         check = gate.check
@@ -529,15 +529,15 @@ async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeyp
         assert facts.ticket == "work" and facts.key is None and facts.type == EventType.SIGNAL
         assert facts.body == {
             "kind": CONFLICT_FACTS,
-            "conflicted_paths": ["chupa/generated.txt"],
+            "conflicted_paths": ["clutch/generated.txt"],
             "resolving_rung": "mechanical" if resolution == "mechanical" else "rework",
-            "strategy_paths": ["chupa/generated.txt"] if resolution == "mechanical" else [],
+            "strategy_paths": ["clutch/generated.txt"] if resolution == "mechanical" else [],
             "integration_red_paths": [],
         }
         [terminal] = terminals(rig, "work")
         if resolution == "mechanical":
             assert rig.returns == [("work", "merged")] and chronology == ["unwind"]
-            assert (root / "chupa/generated.txt").read_text() == "base\nmain\nbranch\n"
+            assert (root / "clutch/generated.txt").read_text() == "base\nmain\nbranch\n"
             assert gates == [
                 "scope_fence",
                 "run_record",

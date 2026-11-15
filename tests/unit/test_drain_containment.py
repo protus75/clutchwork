@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa.drain import _Drain
-from chupa.journal import EventType
+from clutch.drain import _Drain
+from clutch.journal import EventType
 
 
 class Journal:

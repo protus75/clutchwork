@@ -14,7 +14,7 @@ const vscode = {
 	},
 	window: {
 		createTreeView: (id, options) => {
-			if (id === 'chupa.steps') steps = options.treeDataProvider;
+			if (id === 'clutch.steps') steps = options.treeDataProvider;
 			return { ...disposable, onDidChangeVisibility() {} };
 		},
 		registerWebviewViewProvider: () => disposable,
@@ -32,7 +32,7 @@ Module._load = function (request, parent, isMain) {
 	if (request === 'child_process') return { execFile() {} };
 	return load.call(this, request, parent, isMain);
 };
-require('../vscode-chupa/extension.js').activate({ extensionUri: {}, subscriptions: [] });
+require('../vscode-clutchwork/extension.js').activate({ extensionUri: {}, subscriptions: [] });
 const icons = {};
 for (const kind of JSON.parse(process.argv[2])) {
 	try { icons[kind] = steps.getTreeItem({ kind }).iconPath.id; }

@@ -6,9 +6,9 @@ from pathlib import Path
 PYPROJECT = Path(__file__).resolve().parents[2] / "pyproject.toml"
 
 
-def test_chupa_package_imports():
-    chupa = importlib.import_module("chupa")
-    assert Path(chupa.__file__).resolve().parent == PYPROJECT.parent / "chupa"
+def test_clutch_package_imports():
+    clutch = importlib.import_module("clutch")
+    assert Path(clutch.__file__).resolve().parent == PYPROJECT.parent / "clutch"
 
 
 def test_pyproject_pins_python_floor_and_runtime_deps():

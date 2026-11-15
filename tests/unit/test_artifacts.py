@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-from chupa.artifacts import (
+from clutch.artifacts import (
     BaselineSignal,
     ReviewBaselineReport,
     _check_ordered_members,

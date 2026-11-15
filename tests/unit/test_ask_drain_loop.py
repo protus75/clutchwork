@@ -1,8 +1,8 @@
 from pathlib import Path
 from types import SimpleNamespace
 
-from chupa import __main__ as entry
-from chupa import ask
+from clutch import __main__ as entry
+from clutch import ask
 
 
 def setup_prompt(monkeypatch):

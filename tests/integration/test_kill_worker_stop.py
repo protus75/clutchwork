@@ -5,10 +5,10 @@ from functools import partial
 
 import pytest
 
-from chupa import __main__ as main
-from chupa import daemon
-from chupa.control import ControlProjection
-from chupa.llm import FakeLLM
+from clutch import __main__ as main
+from clutch import daemon
+from clutch.control import ControlProjection
+from clutch.llm import FakeLLM
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
 from tests.integration.test_driver import build
@@ -335,10 +335,10 @@ def test_kill_worker_stop_is_dormant(root, tmp_path, monkeypatch, verb):
         with pytest.raises(AssertionError, match="worker stop wired"):
             main.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=deliberate)
     else:
-        from chupa.journal import EventType, Journal
+        from clutch.journal import EventType, Journal
 
         assert main.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=deliberate) == 0
-        bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
+        bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
         assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == "AssertionError: worker stop wired"
         write(root, "fresh", ticket())
 

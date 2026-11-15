@@ -1,8 +1,8 @@
 import asyncio
 from types import SimpleNamespace
 
-from chupa import runner
-from chupa.journal import EventType
+from clutch import runner
+from clutch.journal import EventType
 
 
 class Journal:
@@ -57,7 +57,7 @@ Failure.
     journal = Journal([SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "rejected"}, ticket="parent", key=None)])
     calls = []
     box = SimpleNamespace(enqueue=lambda **kwargs: calls.append(kwargs))
-    monkeypatch.setattr("chupa.daemon.storm_producer", lambda **kwargs: box)
+    monkeypatch.setattr("clutch.daemon.storm_producer", lambda **kwargs: box)
     checkout = SimpleNamespace(repo=tmp_path, config=SimpleNamespace(state_dir=tmp_path / "state"), fs=None, clock=None, journal=journal)
 
     asyncio.run(runner._dead_dependents("parent", checkout))

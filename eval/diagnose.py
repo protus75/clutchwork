@@ -13,23 +13,23 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError
 
-from chupa.artifacts import DIAGNOSIS_VERDICTS, DiagnosisReply, DiagnosisVerdictName, Harvest
-from chupa.config import Config, load_config
-from chupa.driver import Driver
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.llm import AgentEffort, AgentTier
-from chupa.lockfile import CommitLock, Lockfile
-from chupa.providers import ProviderLLM, ProviderSession, resolve
-from chupa.runner import call_timeout
-from chupa.seams import Clock, LocalFileSystem, SubprocessExec
-from chupa.specs import load_spec
-from chupa.stages import DiagnosisMaterial, diagnose_stage
-from chupa.timers import Timers
+from clutch.artifacts import DIAGNOSIS_VERDICTS, DiagnosisReply, DiagnosisVerdictName, Harvest
+from clutch.config import Config, load_config
+from clutch.driver import Driver
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.llm import AgentEffort, AgentTier
+from clutch.lockfile import CommitLock, Lockfile
+from clutch.providers import ProviderLLM, ProviderSession, resolve
+from clutch.runner import call_timeout
+from clutch.seams import Clock, LocalFileSystem, SubprocessExec
+from clutch.specs import load_spec
+from clutch.stages import DiagnosisMaterial, diagnose_stage
+from clutch.timers import Timers
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "eval" / "diagnose_fixtures"
-SPECS = ROOT / "chupa" / "specs"
+SPECS = ROOT / "clutch" / "specs"
 REPORT = ROOT / "eval" / "diagnose_report.json"
 RUN_USD_CAP = 5.00
 RUN_DEADLINE_S = 2400.0

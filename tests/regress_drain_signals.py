@@ -13,9 +13,9 @@ from pathlib import Path
 def main():
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from chupa import __main__ as cli
-        from chupa import runner
-        from chupa.llm import FakeLLM
+        from clutch import __main__ as cli
+        from clutch import runner
+        from clutch.llm import FakeLLM
         from tests.integration.test_cli import ENV
         from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
         from tests.integration.test_stages import agent
@@ -41,7 +41,7 @@ def main():
 
     with contextlib.redirect_stdout(io.StringIO()):
         cli.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, Blocking([agent({}, outcome="already_satisfied")])))
-    events = [json.loads(line) for line in (root / ".chupa/state/engine.log").read_text().splitlines()]
+    events = [json.loads(line) for line in (root / ".clutch/state/engine.log").read_text().splitlines()]
     passed = bool(callbacks) and any(e["event"] == "engine_stop" and e["verb"] == "drain" and e["outcome"] == "killed" for e in events)
     temporary.cleanup()
     print(json.dumps({"regression_result": "pass" if passed else "defect"}))

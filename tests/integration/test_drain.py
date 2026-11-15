@@ -1,4 +1,4 @@
-"""The `drain` scaffold verb (CHUPA_PLAN.md sections 9, 11.2, 18, 19.P1) against a temp checkout.
+"""The `drain` scaffold verb (CLUTCH_PLAN.md sections 9, 11.2, 18, 19.P1) against a temp checkout.
 
 The stage-dispatch seam is scripted per stem; everything else -- lockfile, reconcile, intake, the tickets-dir
 re-scan, the journal cap fold, the ceilings -- is the production path.
@@ -12,15 +12,15 @@ from pathlib import Path
 
 import pytest
 
-from chupa.__main__ import build_control, main
-from chupa.box import Box
-from chupa.caps import draws
-from chupa.drain import CEILING, HALT_SIGNAL
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.lockfile import Lockfile, LockHeld
-from chupa.seams import LocalFileSystem, SubprocessExec
-from chupa.tickets import intake
+from clutch.__main__ import build_control, main
+from clutch.box import Box
+from clutch.caps import draws
+from clutch.drain import CEILING, HALT_SIGNAL
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.lockfile import Lockfile, LockHeld
+from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.tickets import intake
 from tests.integration.test_cli import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo as admission_repo
@@ -79,11 +79,11 @@ class Script:
 
 def make_root(tmp_path: Path, caps: str = "") -> Path:
     root = tmp_path / "repo"
-    (root / "chupa").mkdir(parents=True)
-    (root / "chupa" / "thing.py").write_text("")
-    (root / "CHUPA_PLAN.md").write_text(PLAN)
+    (root / "clutch").mkdir(parents=True)
+    (root / "clutch" / "thing.py").write_text("")
+    (root / "CLUTCH_PLAN.md").write_text(PLAN)
     (root / "config.yaml").write_text(CONFIG + caps)
-    (root / ".gitignore").write_text(".chupa/\n")
+    (root / ".gitignore").write_text(".clutch/\n")
     adopt_conduct(root)
     git_out(root, "init", "-b", "main")
     git_out(root, "add", ".")
@@ -101,7 +101,7 @@ def drain(root: Path, script: Script, clock: Clock | None = None) -> int:
 
 
 def journal(root: Path) -> Journal:
-    return Journal(root / ".chupa" / "state", Clock())
+    return Journal(root / ".clutch" / "state", Clock())
 
 
 def confirmed(depends: str = "none", priority: str = "P2") -> str:
@@ -113,7 +113,7 @@ def commit_ticket(root: Path, stem: str, text: str) -> None:
     """A ticket-plane commit straight to main (a seeding ticket's output): no intake, no authoring event."""
     write(root, stem, text)
     git_out(root, "add", f"tickets/{stem}/ticket.md")
-    git_out(root, "commit", "-m", f"chupa({stem}): ticket", "--only", "--", f"tickets/{stem}/ticket.md")
+    git_out(root, "commit", "-m", f"clutch({stem}): ticket", "--only", "--", f"tickets/{stem}/ticket.md")
 
 
 def intake_at(root: Path, stem: str, at: datetime) -> None:
@@ -121,8 +121,8 @@ def intake_at(root: Path, stem: str, at: datetime) -> None:
     write(root, stem, ticket())
     clock = Clock()
     clock.now = at
-    g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".chupa/state"))
-    asyncio.run(intake(root, g, Journal(root / ".chupa" / "state", clock), LocalFileSystem(), stems=None))
+    g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
+    asyncio.run(intake(root, g, Journal(root / ".clutch" / "state", clock), LocalFileSystem(), stems=None))
 
 
 def retry_draws(root: Path, stem: str) -> int:
@@ -134,19 +134,19 @@ def tos(root: Path, stem: str) -> list[str]:
 
 
 def test_already_satisfied_settles_without_diagnosis(rework_repo):
-    from chupa import runner
-    from chupa.llm import FakeLLM
-    from chupa.status import reject_queue
+    from clutch import runner
+    from clutch.llm import FakeLLM
+    from clutch.status import reject_queue
     from tests.integration.test_stages import STEM, agent
     from tests.integration.test_terminal import author, clock
 
     repo = rework_repo
-    (repo / "chupa/thing.py").write_text("ok base\n")
-    git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(repo / ".chupa/state"))
+    (repo / "clutch/thing.py").write_text("ok base\n")
+    git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(repo / ".clutch/state"))
 
     async def green_base():
-        await git.add(repo, ["chupa/thing.py"])
-        await git.commit(repo, "green base", only=["chupa/thing.py"])
+        await git.add(repo, ["clutch/thing.py"])
+        await git.commit(repo, "green base", only=["clutch/thing.py"])
 
     asyncio.run(green_base())
     author(repo)
@@ -160,7 +160,7 @@ def test_already_satisfied_settles_without_diagnosis(rework_repo):
 
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind) == 0
     assert [r.surface for r in llm.requests] == ["implement"]
-    events = Journal(repo / ".chupa/state", clock).read()
+    events = Journal(repo / ".clutch/state", clock).read()
     history = [e for e in events if e.ticket == STEM]
     assert [e.body for e in history if e.type == EventType.STATE_TRANSITION][-1] == {"to": "already_satisfied", "stage": "check", "reason": "already_satisfied"}
     assert not any(e.type == EventType.CAP_CONSUMED for e in history)
@@ -172,8 +172,8 @@ def test_already_satisfied_settles_without_diagnosis(rework_repo):
 
 
 def test_requisition_park_reports_full_reason_under_park_line(root, capsys):
-    from chupa import runner
-    from chupa.llm import FakeLLM
+    from clutch import runner
+    from clutch.llm import FakeLLM
     from tests.integration.test_rework import SNAG, requisition
 
     commit_ticket(root, "review-park", confirmed())
@@ -348,19 +348,19 @@ def test_drain_ingests_reports_without_triaging(root):
     arrival(root)
     (root / "inbox/b.json").write_text("{invalid json")
     assert drain(root, Script()) == 0
-    messages = Box(root / ".chupa/state/box", LocalFileSystem()).messages()
+    messages = Box(root / ".clutch/state/box", LocalFileSystem()).messages()
     assert [(m.message_class, m.status, m.summary) for m in messages] == [("bug_report", "pending", "Observed scoring defect")]
     assert not any(e.type == EventType.SIGNAL and e.body.get("signal") == "triage_pass" for e in journal(root).read())
-    assert "report_intake_refused" in (root / ".chupa/state/engine.log").read_text()
+    assert "report_intake_refused" in (root / ".clutch/state/engine.log").read_text()
 
 
 def test_drain_merges_without_scanning_the_box(root, monkeypatch):
-    box = Box(root / ".chupa" / "state" / "box", LocalFileSystem())
+    box = Box(root / ".clutch" / "state" / "box", LocalFileSystem())
     id, _ = box.enqueue(message_class="suggestion", origin="test", summary="pending observation")
     write(root, "work", ticket())
     requests = []
-    monkeypatch.setattr("chupa.triage.triage_pass", lambda *args: requests.append(args))
-    from chupa.daemon import storm_producer
+    monkeypatch.setattr("clutch.triage.triage_pass", lambda *args: requests.append(args))
+    from clutch.daemon import storm_producer
 
     def arrival(checkout):
         producer = storm_producer(root=box.root, fs=box.fs, journal=checkout.journal, clock=checkout.clock)
@@ -398,7 +398,7 @@ def test_drain_intakes_ticket_written_mid_drain(root):
     script = Script(hooks={"seeder": author})
     assert drain(root, script) == 0
     assert script.calls == ["seeder", "new-ticket"]  # a startup-only intake misses the new ticket
-    assert "chupa(new-ticket): ticket" in git_out(root, "log", "--format=%s")
+    assert "clutch(new-ticket): ticket" in git_out(root, "log", "--format=%s")
     events = journal(root).read()
     terminal = next(i for i, e in enumerate(events) if e.ticket == "seeder" and e.body.get("to") == "merged")
     intake_event = next(i for i, e in enumerate(events) if e.ticket == "new-ticket" and e.body.get("signal") == "ticket_intake")
@@ -410,13 +410,13 @@ def test_drain_mid_drain_intake_refusal_exits_2(root):
     write(root, "bbb-second", ticket())
 
     def stage_stray(checkout):
-        (checkout.repo / "chupa/stray.py").write_text("stray\n")
-        git_out(checkout.repo, "add", "chupa/stray.py")
+        (checkout.repo / "clutch/stray.py").write_text("stray\n")
+        git_out(checkout.repo, "add", "clutch/stray.py")
 
     script = Script(hooks={"aaa-first": stage_stray})
     assert drain(root, script) == 2  # ignoring intake refusal would continue
     assert script.calls == ["aaa-first"]  # the second ticket must not run
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="probe", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="probe", clock=Clock())
     lock.acquire()  # refusal must release the lock
     lock.release()
 
@@ -453,7 +453,7 @@ def test_the_runtime_ceiling_stops_the_next_dispatch_and_exits_1(root, capsys):
     assert tos(root, "bbb-second") == []
     out = capsys.readouterr().out
     assert CEILING in out and "HALTED" in out and "quiescent:" not in out
-    assert "uv run python -m chupa drain" in out
+    assert "uv run python -m clutch drain" in out
     assert "bbb-second" in out.split("eligible, not admitted:\n", 1)[1].split("\n\n", 1)[0]
     halts = [e.body for e in journal(root).read() if e.type == EventType.SIGNAL and e.body.get("signal") == HALT_SIGNAL]
     assert halts == [{"signal": HALT_SIGNAL, "ceiling": CEILING, "hours": 12, "merged": ["aaa-first"]}]
@@ -502,7 +502,7 @@ def test_drafts_never_run_and_are_listed(root, capsys):
 
 
 def test_drain_report_omits_invalid_settled_and_rejected_tickets(root, capsys):
-    invalid = confirmed().replace("- chupa/thing.py", "- chupa/missing.py", 1)
+    invalid = confirmed().replace("- clutch/thing.py", "- clutch/missing.py", 1)
     for stem in ("merged", "rejected", "unsettled"):
         commit_ticket(root, stem, invalid)
     j = journal(root)
@@ -518,7 +518,7 @@ def test_drain_report_omits_invalid_settled_and_rejected_tickets(root, capsys):
 
 
 def test_drain_scan_skips_finished_tickets(root, capsys, monkeypatch):
-    from chupa import drain as drain_module
+    from clutch import drain as drain_module
 
     for stem in ("merged", "rejected", "unsettled"):
         commit_ticket(root, stem, "unparseable")
@@ -542,7 +542,7 @@ def test_drain_scan_skips_finished_tickets(root, capsys, monkeypatch):
 
 def test_lock_contention_stops_the_drain_with_exit_2(root):
     write(root, "add-thing", ticket())
-    holder = Lockfile(root / ".chupa" / "state", verb="drain", instance_id="other", clock=Clock())
+    holder = Lockfile(root / ".clutch" / "state", verb="drain", instance_id="other", clock=Clock())
     holder.acquire()
     try:
         script = Script()
@@ -563,8 +563,8 @@ def test_drain_reconciles_on_entry(root):
 
 
 def mechanical_first(monkeypatch, stem, *, workspace=True):
-    from chupa import runner, stages
-    from chupa.artifacts import Cost, Finding, StageResult
+    from clutch import runner, stages
+    from clutch.artifacts import Cost, Finding, StageResult
 
     original = runner.run_stages
     called = []
@@ -592,9 +592,9 @@ def mechanical_first(monkeypatch, stem, *, workspace=True):
 def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mechanical):
     import json
 
-    from chupa import runner
-    from chupa.caps import consume
-    from chupa.llm import FakeLLM
+    from clutch import runner
+    from clutch.caps import consume
+    from clutch.llm import FakeLLM
     from tests.integration.test_drain_reentry import NoChild
     from tests.integration.test_rework import order, requisition
     from tests.integration.test_stages import ENV, SNAG, STEM, agent, verdict
@@ -602,7 +602,7 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
 
     repo = rework_repo
     author(repo)
-    consume(Journal(repo / ".chupa/state", clock), STEM, "infra", "prior")
+    consume(Journal(repo / ".clutch/state", clock), STEM, "infra", "prior")
     fresh = []
 
     def update(req):
@@ -615,10 +615,10 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
         mechanical_first(monkeypatch, STEM)
         script = []
     else:
-        script = [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), json.dumps({"verdict": "split", "lessons": ["Narrow the work."]})]
-    llm = FakeLLM([*script, update, requisition(), agent({"chupa/thing.py": "ok\n"}), verdict()])
+        script = [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), json.dumps({"verdict": "split", "lessons": ["Narrow the work."]})]
+    llm = FakeLLM([*script, update, requisition(), agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
-    events = Journal(repo / ".chupa/state", clock).read()
+    events = Journal(repo / ".clutch/state", clock).read()
     history = [e for e in events if e.ticket == STEM]
     terminals = [e for e in history if e.type == EventType.STATE_TRANSITION and e.body.get("to") != "running"]
     producing = terminals[0].body
@@ -660,15 +660,15 @@ def test_rework_split_successors_release_original_dependents(root):
 def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeypatch, mechanical):
     import json
 
-    from chupa import runner
-    from chupa.llm import FakeLLM
+    from clutch import runner
+    from clutch.llm import FakeLLM
     from tests.integration.test_rework import order, requisition, successors
     from tests.integration.test_stages import ENV, SNAG, STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
 
     repo = rework_repo
-    (repo / "chupa/thing.py").write_text("ok base\n")
-    git_out(repo, "add", "chupa/thing.py")
+    (repo / "clutch/thing.py").write_text("ok base\n")
+    git_out(repo, "add", "clutch/thing.py")
     git_out(repo, "commit", "-m", "green base")
     author(repo)
     author(repo, stem="dependent", depends=f"- {STEM}")
@@ -680,7 +680,7 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
         mechanical_first(monkeypatch, STEM)
         first = []
     else:
-        first = [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), json.dumps({"verdict": "split", "lessons": ["Split the work."]})]
+        first = [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), json.dumps({"verdict": "split", "lessons": ["Split the work."]})]
     llm = FakeLLM([*first, split, requisition(), requisition(), agent({}, outcome="already_satisfied"), agent({}, outcome="already_satisfied"), agent({}, outcome="already_satisfied")])
     returns, held = [], []
 
@@ -701,7 +701,7 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
 
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind) == 0
     assert returns == [(STEM, "rejected"), ("piece-one", "already_satisfied"), ("piece-two", "already_satisfied"), ("dependent", "already_satisfied")]
-    events = Journal(repo / ".chupa/state", clock).read()
+    events = Journal(repo / ".clutch/state", clock).read()
     history = [e for e in events if e.ticket == STEM]
     producing = next(e for e in history if e.body.get("to") == ("premise_failed" if mechanical else "gate_failed"))
     assert producing.body == ({"to": "premise_failed", "stage": "implement", "reason": "render_over_bound"} if mechanical else {"to": "gate_failed", "stage": "review", "reason": "logic"})
@@ -711,17 +711,17 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
     assert history[-1] == retirement and draws(events, STEM, "retry") == 0
     assert held == [s for s, _ in returns]
     # The unchanged seam still rejects a producing return after a later retirement.
-    from chupa.config import load_config
-    from chupa.drain import _Drain
-    from chupa.tickets import validate_ticket
+    from clutch.config import load_config
+    from clutch.drain import _Drain
+    from clutch.tickets import validate_ticket
 
     checkout = runner.Checkout(
         repo,
         load_config(None, cwd=repo),
         ENV,
         SubprocessExec(),
-        Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(repo / ".chupa/state")),
-        Journal(repo / ".chupa/state", clock),
+        Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(repo / ".clutch/state")),
+        Journal(repo / ".clutch/state", clock),
         LocalFileSystem(),
         clock,
     )
@@ -739,9 +739,9 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
 def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monkeypatch, action):
     import json
 
-    from chupa import daemon, runner
-    from chupa.llm import FakeLLM
-    from chupa.status import reject_queue
+    from clutch import daemon, runner
+    from clutch.llm import FakeLLM
+    from clutch.status import reject_queue
     from tests.integration.test_rework import order, requisition, successors
     from tests.integration.test_stages import ENV, STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
@@ -785,10 +785,10 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
     if action in {"split", "publication"}:
         script += [requisition(), requisition()]
     if action == "update":
-        script += [requisition(), agent({"chupa/thing.py": "ok\n"}), verdict()]
+        script += [requisition(), agent({"clutch/thing.py": "ok\n"}), verdict()]
     if action == "split":
-        (repo / "chupa/thing.py").write_text("ok base\n")
-        git_out(repo, "add", "chupa/thing.py")
+        (repo / "clutch/thing.py").write_text("ok base\n")
+        git_out(repo, "add", "clutch/thing.py")
         git_out(repo, "commit", "-m", "green base")
         script += [agent({}, outcome="already_satisfied"), agent({}, outcome="already_satisfied")]
     llm = FakeLLM(script)
@@ -808,7 +808,7 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
     from tests.integration.test_drain_reentry import NoChild
 
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind, reexec=NoChild()) == 0
-    events = Journal(repo / ".chupa/state", clock).read()
+    events = Journal(repo / ".clutch/state", clock).read()
     original = [e for e in events if e.ticket == STEM]
     producing = next(e for e in original if e.body.get("to") == "premise_failed")
     assert producing.body == {"to": "premise_failed", "stage": "implement", "reason": "render_over_bound"}
@@ -837,11 +837,11 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
 
 
 def pause_checkout(root):
-    from chupa.config import load_config
-    from chupa.runner import Checkout
+    from clutch.config import load_config
+    from clutch.runner import Checkout
 
     process = SubprocessExec()
-    checkout = Checkout(root, load_config(None, cwd=root), ENV, process, Git(process, env=ENV, timeout=30, commit_lock=commit_lock(root / ".chupa/state")), journal(root), LocalFileSystem(), Clock())
+    checkout = Checkout(root, load_config(None, cwd=root), ENV, process, Git(process, env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state")), journal(root), LocalFileSystem(), Clock())
     return replace(checkout, control=build_control(checkout))
 
 
@@ -859,7 +859,7 @@ class Pause:
 
 
 async def paused_drain(root, script, checkpoint):
-    from chupa.drain import drain as run_drain
+    from clutch.drain import drain as run_drain
     from tests.integration.test_drain_reentry import NoChild
 
     checkout = pause_checkout(root)
@@ -994,7 +994,7 @@ async def test_pause_checkpoint_failure_spends_no_retry(root, cancel):
         with pytest.raises(ValueError, match="checkpoint failed"):
             await task
     assert script.calls == [] and journal(root).read() == before and retry_draws(root, "work") == 0
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="after-cleanup", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="after-cleanup", clock=Clock())
     lock.acquire()
     lock.release()
     assert (await paused_drain(root, script, None)).merged == ["work"]
@@ -1021,9 +1021,9 @@ async def test_pause_preserves_free_premise_reoffer(root):
 
 @pytest.mark.asyncio
 async def test_drain_uses_supplied_control(root, monkeypatch):
-    from chupa import __main__ as cli
-    from chupa.drain import drain as run_drain
-    from chupa.runner import Refusal
+    from clutch import __main__ as cli
+    from clutch.drain import drain as run_drain
+    from clutch.runner import Refusal
     from tests.integration.test_drain_reentry import NoChild
 
     checkout = pause_checkout(root)
@@ -1076,8 +1076,8 @@ async def test_drain_uses_supplied_control(root, monkeypatch):
 
 
 def test_retro_hook_is_default_off(root):
-    from chupa.drain import _Drain
-    from chupa.drain import drain as run_drain
+    from clutch.drain import _Drain
+    from clutch.drain import drain as run_drain
     from tests.integration.test_drain_reentry import NoChild
 
     commit_ticket(root, "work", confirmed())
@@ -1091,8 +1091,8 @@ def test_retro_hook_is_default_off(root):
 
 
 def test_due_retro_waits_for_retry_and_precedes_next_ticket(root):
-    from chupa.drain import drain as run_drain
-    from chupa.retro import measurements, project_window, select_trigger
+    from clutch.drain import drain as run_drain
+    from clutch.retro import measurements, project_window, select_trigger
     from tests.integration.test_drain_reentry import NoChild
 
     commit_ticket(root, "aa", confirmed(priority="P0"))
@@ -1122,11 +1122,11 @@ def test_due_retro_waits_for_retry_and_precedes_next_ticket(root):
 
 @pytest.mark.asyncio
 async def test_selected_retro_remains_killable_through_existing_control(root):
-    from chupa import runner
-    from chupa.control import ControlRequest, publish_request
-    from chupa.drain import drain as run_drain
-    from chupa.llm import HANG, FakeLLM
-    from chupa.retro import Retro
+    from clutch import runner
+    from clutch.control import ControlRequest, publish_request
+    from clutch.drain import drain as run_drain
+    from clutch.llm import HANG, FakeLLM
+    from clutch.retro import Retro
     from tests.integration.test_daemon_admission import turn
     from tests.integration.test_drain_reentry import NoChild
 
@@ -1176,15 +1176,15 @@ def test_phase_exit_stem_gets_no_forced_retro(tmp_path, monkeypatch):
 
 
 def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
-    from chupa import __main__ as cli
-    from chupa import runner
-    from chupa.retro import Retro
+    from clutch import __main__ as cli
+    from clutch import runner
+    from clutch.retro import Retro
     from tests.integration.test_drain_reentry import NoChild
     from tests.integration.test_providers import claude_ok
 
     root = make_root(tmp_path)
     if scenario == "self-upgrade":
-        from chupa import drain as drain_mod
+        from clutch import drain as drain_mod
 
         monkeypatch.setattr(drain_mod, "ENGINE", root.resolve())
     config = (root / "config.yaml").read_text().replace("review: {}", "  - {tier: medium, surface: retro, candidates: [{provider: claude}]}\nreview: {}")
@@ -1239,7 +1239,7 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     async def drive(ctx, ticket, **kwargs):
         dispatches.append(ticket.stem)
         contexts.append(ctx)
-        path = "chupa/thing.py" if scenario == "self-upgrade" else f"work/{ticket.stem}.py"
+        path = "clutch/thing.py" if scenario == "self-upgrade" else f"work/{ticket.stem}.py"
         ctx.fs.write(root / path, b"ok\n")
         await ctx.git.add(root, [path])
         await ctx.git.commit(root, "admitted " + ticket.stem, only=[path])
@@ -1260,7 +1260,7 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
 
     monkeypatch.setattr(runner, "prepare_pipeline", prepare)
     seen = []
-    run_driver = __import__("chupa.driver", fromlist=["Driver"]).Driver.run
+    run_driver = __import__("clutch.driver", fromlist=["Driver"]).Driver.run
 
     async def recorded(self, stage, *args, **kwargs):
         if stage.surface == "retro":
@@ -1269,9 +1269,9 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
             seen.append(self)
         return await run_driver(self, stage, *args, **kwargs)
 
-    monkeypatch.setattr("chupa.driver.Driver.run", recorded)
+    monkeypatch.setattr("clutch.driver.Driver.run", recorded)
 
-    monkeypatch.setattr("chupa.__main__._engine_signals", lambda cb: lambda: None)
+    monkeypatch.setattr("clutch.__main__._engine_signals", lambda cb: lambda: None)
 
     class Child:
         spawns = 0
@@ -1279,7 +1279,7 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
         async def run(self, argv, **kwargs):
             self.spawns += 1
             assert journal(root).read()[-1].body.get("signal") == "drain_handoff"
-            contender = Lockfile(root / ".chupa/state", verb="drain", instance_id="child", clock=clock)
+            contender = Lockfile(root / ".clutch/state", verb="drain", instance_id="child", clock=clock)
             contender.acquire()
             contender.release()
             code = await asyncio.to_thread(main, argv[7:], cwd=root, env=ENV, clock=clock, pipeline=runner.pipeline, reexec=self)
@@ -1309,7 +1309,7 @@ def machine_keeps(root, stem="held"):
 
 
 def test_diff_budget_failure_holds_until_ticket_changes(root, capsys):
-    from chupa.drain import _Drain
+    from clutch.drain import _Drain
 
     commit_ticket(root, "work", confirmed())
     calls = []
@@ -1387,9 +1387,9 @@ async def _edit_after_implement(ctx, ticket, *, committed):
 
 
 def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
-    from chupa import runner, stages
-    from chupa.llm import FakeLLM
-    from chupa.status import reject_queue
+    from clutch import runner, stages
+    from clutch.llm import FakeLLM
+    from clutch.status import reject_queue
     from tests.integration.test_stages import STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
 
@@ -1402,9 +1402,9 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
         return replace(result, outcome="gate_failed") if failed else result
 
     monkeypatch.setattr(stages, "implement", implement)
-    llm = FakeLLM([agent({"chupa/thing.py": "ok\n"})])
+    llm = FakeLLM([agent({"clutch/thing.py": "ok\n"})])
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
-    events = Journal(repo / ".chupa/state", clock).read()
+    events = Journal(repo / ".clutch/state", clock).read()
     assert [r.surface for r in llm.requests] == ["implement"]
     assert not any(e.type == EventType.CAP_CONSUMED for e in events)
     assert not any(e.body.get("signal") == "diagnosis" for e in events)
@@ -1414,7 +1414,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     harvest = json.loads((repo / f"tickets/{STEM}/attempts/0/harvest.json").read_text())
     (finding,) = harvest["findings"]
     assert finding["code"] == "ticket_changed" and STEM in finding["message"]
-    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (`chupa confirm {STEM}`) or kill (`chupa reject {STEM}`)")
+    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (`clutch confirm {STEM}`) or kill (`clutch reject {STEM}`)")
     assert not (repo / f"tickets/{STEM}/checks.json").exists()
     # Even a subsequent intake/daemon lifetime must wait for an explicit keep.
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
@@ -1424,12 +1424,12 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     from tests.approval import approve
 
     approve(repo, STEM, clock)
-    fresh = FakeLLM([agent({"chupa/thing.py": "ok\n"}), verdict()])
+    fresh = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
     from tests.integration.test_drain_reentry import NoChild
 
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, fresh), reexec=NoChild()) == 0
     assert [r.surface for r in fresh.requests] == ["implement", "review"]
-    assert STEM not in reject_queue(Journal(repo / ".chupa/state", clock).read())
+    assert STEM not in reject_queue(Journal(repo / ".clutch/state", clock).read())
 
 
 def test_ticket_edit_mid_run_holds(rework_repo, monkeypatch):
@@ -1441,17 +1441,17 @@ def test_uncommitted_ticket_edit_mid_run_holds(rework_repo, monkeypatch):
 
 
 def test_engine_artifacts_do_not_trigger(rework_repo):
-    from chupa import runner
-    from chupa.llm import FakeLLM
+    from clutch import runner
+    from clutch.llm import FakeLLM
     from tests.integration.test_drain_reentry import NoChild
     from tests.integration.test_stages import STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
 
     repo = rework_repo
     author(repo)
-    llm = FakeLLM([agent({"chupa/thing.py": "ok\n"}), verdict()])
+    llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
-    events = Journal(repo / ".chupa/state", clock).read()
+    events = Journal(repo / ".clutch/state", clock).read()
     assert [r.surface for r in llm.requests] == ["implement", "review"]
     assert [e.body["to"] for e in events if e.type == EventType.STATE_TRANSITION][-1] == "merged"
     lifted = [e.body["result"]["kind"] for e in events if e.type == EventType.EFFECT_COMPLETION and (e.key or "").startswith(f"ticket-plane/{STEM}/")]
@@ -1479,8 +1479,8 @@ def test_runs_before_failed_ticket_does_not_block_named_ticket(tmp_path):
 
 
 def test_historical_spec_gap_hold_terminal_reads_without_release(root):
-    from chupa.drain import parked_blob
-    from chupa.journal import dispatch_of
+    from clutch.drain import parked_blob
+    from clutch.journal import dispatch_of
 
     commit_ticket(root, "work", confirmed())
     blob = prior_failure(root, terminal="premise_failed", extra={"dispatch": "spec_gap_hold", "round": 1, "plan_units": {"19.P3.held": "absent"}})
@@ -1495,8 +1495,8 @@ def test_historical_spec_gap_hold_terminal_reads_without_release(root):
 
 @pytest.mark.asyncio
 async def test_stop_finishes_current_ticket_and_releases_lock(root):
-    from chupa.control import ControlRequest, publish_request
-    from chupa.drain import drain as run_drain
+    from clutch.control import ControlRequest, publish_request
+    from clutch.drain import drain as run_drain
     from tests.integration.test_drain_reentry import NoChild
 
     commit_ticket(root, "aa", confirmed(priority="P0"))
@@ -1533,9 +1533,9 @@ async def test_stop_finishes_current_ticket_and_releases_lock(root):
 
 @pytest.mark.asyncio
 async def test_stop_survives_self_upgrade_handoff(root, monkeypatch):
-    from chupa import drain as drain_mod
-    from chupa.control import ControlRequest, publish_request
-    from chupa.drain import drain as run_drain
+    from clutch import drain as drain_mod
+    from clutch.control import ControlRequest, publish_request
+    from clutch.drain import drain as run_drain
     from tests.integration.test_drain_reentry import NoChild
 
     monkeypatch.setattr(drain_mod, "ENGINE", root.resolve())
@@ -1548,8 +1548,8 @@ async def test_stop_survives_self_upgrade_handoff(root, monkeypatch):
         async def __call__(self, ticket):
             calls.append(ticket.stem)
             publish_request(checkout.config.state_dir, ControlRequest("stop-upgrade", checkout.control.inbox.lifecycle_id, "stop", None), checkout.fs)
-            (root / "chupa/thing.py").write_text("upgraded\n")
-            await checkout.git.add(root, ["chupa/thing.py"])
+            (root / "clutch/thing.py").write_text("upgraded\n")
+            await checkout.git.add(root, ["clutch/thing.py"])
             await checkout.git.commit(root, "upgrade")
             commit = await checkout.git.rev_parse(root, "HEAD")
             checkout.journal.append(EventType.STATE_TRANSITION, {"to": "merged", "commit": commit}, ticket=ticket.stem)
@@ -1573,8 +1573,8 @@ async def test_stop_survives_self_upgrade_handoff(root, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_stop_at_paused_checkpoint_admits_nothing(root):
-    from chupa.control import ControlRequest, publish_request
-    from chupa.drain import drain as run_drain
+    from clutch.control import ControlRequest, publish_request
+    from clutch.drain import drain as run_drain
     from tests.integration.test_drain_reentry import NoChild
 
     commit_ticket(root, "work", confirmed())
@@ -1597,7 +1597,7 @@ def test_lifecycle_log_precedes_lock_release(root, monkeypatch):
     observed = []
 
     def released(lock):
-        rows = [json.loads(line) for line in (root / ".chupa/state/engine.log").read_text().splitlines()]
+        rows = [json.loads(line) for line in (root / ".clutch/state/engine.log").read_text().splitlines()]
         observed.extend(e for e in rows if e["event"] in {"engine_start", "engine_stop"})
         release(lock)
 
@@ -1610,8 +1610,8 @@ def test_lifecycle_log_precedes_lock_release(root, monkeypatch):
 def test_reoffer_rules_and_recording():
     from types import SimpleNamespace
 
-    from chupa.config import Caps
-    from chupa.drain import awaiting_operator, record_reoffer, reofferable
+    from clutch.config import Caps
+    from clutch.drain import awaiting_operator, record_reoffer, reofferable
 
     def event(kind, body, stem="work"):
         return SimpleNamespace(type=kind, ticket=stem, body=body)
@@ -1650,8 +1650,8 @@ def test_reoffer_rules_and_recording():
 
 
 async def requested_retro_scenario(root, *, second=False, stop=False):
-    from chupa.control import ControlRequest, publish_request
-    from chupa.drain import drain as run_drain
+    from clutch.control import ControlRequest, publish_request
+    from clutch.drain import drain as run_drain
     from tests.integration.test_drain_reentry import NoChild
 
     commit_ticket(root, "aa", confirmed(priority="P0"))
@@ -1720,15 +1720,15 @@ def test_drain_refuses_committed_core_drift_before_dispatch(root, capsys):
     git_out(root, "commit", "-m", "drift conduct")
     script = Script()
     assert drain(root, script) == 2
-    assert "CLAUDE.md: chupa core is drifted" in capsys.readouterr().err
+    assert "CLAUDE.md: clutch core is drifted" in capsys.readouterr().err
     assert script.calls == []
-    lock = Lockfile(root / ".chupa/state", verb="drain", instance_id="contender", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="contender", clock=Clock())
     lock.acquire()
     lock.release()
 
 
 def test_operator_keep_releases_unchanged_premise_park(root):
-    from chupa.status import reject_queue
+    from clutch.status import reject_queue
 
     commit_ticket(root, "work", confirmed())
     blob = prior_failure(root, terminal="premise_failed", extra={"stage": "implement", "reason": "premise", "dispatch": "reject_queue", "routed": "reject_queue"})

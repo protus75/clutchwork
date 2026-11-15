@@ -2,9 +2,9 @@ import json
 from datetime import timedelta
 from types import SimpleNamespace
 
-from chupa.__main__ import main
-from chupa.journal import EventType, Journal
-from chupa.stats import project_stats, stats_tree
+from clutch.__main__ import main
+from clutch.journal import EventType, Journal
+from clutch.stats import project_stats, stats_tree
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, make_root
 
@@ -59,14 +59,14 @@ def test_projection_windows_durations_cycles_and_invoices(tmp_path):
 def test_cli_json_refusal_and_no_write(tmp_path, capsys):
     root = make_root(tmp_path)
     clock = Clock()
-    journal = Journal(root / ".chupa/state", clock)
+    journal = Journal(root / ".clutch/state", clock)
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
     before = {p: p.read_bytes() for p in journal.dir.glob("*")}
     assert main(["stats", "--json"], cwd=root, env=ENV, clock=clock) == 0
     assert list(json.loads(capsys.readouterr().out)) == ["window", "throughput", "durations", "verification", "cycles", "ladder", "failures", "holds", "spend"]
     assert {p: p.read_bytes() for p in journal.dir.glob("*")} == before
     assert main(["stats", "--window", "0d"], cwd=root, env=ENV, clock=clock) == 2
-    assert capsys.readouterr().err == "chupa stats: bad window 0d -- use <N>h, <N>d, or <N>t\n"
+    assert capsys.readouterr().err == "clutch stats: bad window 0d -- use <N>h, <N>d, or <N>t\n"
 
 
 def test_stats_tree_generic_rows():
@@ -98,7 +98,7 @@ def test_stats_tree_generic_rows():
 def test_cli_tree_json(tmp_path, capsys):
     root = make_root(tmp_path)
     clock = Clock()
-    journal = Journal(root / ".chupa/state", clock)
+    journal = Journal(root / ".clutch/state", clock)
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
     assert main(["stats", "--tree", "--window", "3h"], cwd=root, env=ENV, clock=clock) == 0
     rows = json.loads(capsys.readouterr().out)

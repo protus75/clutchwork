@@ -10,8 +10,8 @@ from types import SimpleNamespace
 def main():
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     try:
-        import chupa.drain as drain
-        from chupa.observe import held
+        import clutch.drain as drain
+        from clutch.observe import held
 
         if not hasattr(drain, "parked_blob"):
             print(json.dumps({"regression_result": "defect"}))

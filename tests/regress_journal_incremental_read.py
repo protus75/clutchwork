@@ -3,7 +3,7 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
-from chupa import journal as module
+from clutch import journal as module
 
 
 def main():

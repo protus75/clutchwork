@@ -6,17 +6,17 @@ from pathlib import Path
 
 import pytest
 
-from chupa.__main__ import main
-from chupa.daemon import DaemonAdmission
-from chupa.journal import EventType
-from chupa.tickets import parse_ticket
+from clutch.__main__ import main
+from clutch.daemon import DaemonAdmission
+from clutch.journal import EventType
+from clutch.tickets import parse_ticket
 from tests.integration.test_cli import ENV, Clock, root, ticket, with_retro_driver, write
 
 
 @pytest.fixture
 def tickets(tmp_path):
-    (tmp_path / "chupa").mkdir()
-    (tmp_path / "chupa/thing.py").write_text("")
+    (tmp_path / "clutch").mkdir()
+    (tmp_path / "clutch/thing.py").write_text("")
     text = ticket().replace("priority: P2", "state: confirmed\nsource: human\npriority: P2", 1)
     return tuple(parse_ticket(stem, text, tmp_path) for stem in ("first", "second"))
 
@@ -210,7 +210,7 @@ async def test_active_cancellation_awaits_cleanup_before_release(tickets, cancel
 
 
 def import_closure(sources):
-    pending, reached = ["chupa.__main__", "chupa"], set()
+    pending, reached = ["clutch.__main__", "clutch"], set()
     while pending:
         module = pending.pop()
         if module in reached or module not in sources:
@@ -226,7 +226,7 @@ def import_closure(sources):
 
 
 def assert_reachable(sources):
-    assert "chupa.daemon" in import_closure(sources)
+    assert "clutch.daemon" in import_closure(sources)
 
 
 @pytest.mark.parametrize("verb", ["run", "drain"])
@@ -255,10 +255,10 @@ def test_daemon_admission_is_dormant(root, monkeypatch, verb):
         with pytest.raises(AssertionError, match="daemon dispatch wired"):
             main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired)
     else:
-        from chupa.journal import Journal
+        from clutch.journal import Journal
 
         assert main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired) == 0
-        bodies = [e.body for e in Journal(root / ".chupa/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
+        bodies = [e.body for e in Journal(root / ".clutch/state", Clock()).read() if e.ticket == "work" and e.type == EventType.STATE_TRANSITION]
         assert bodies[-1]["to"] == "infra_error" and bodies[-1]["error"] == "AssertionError: daemon dispatch wired into CLI"
         write(root, "fresh", ticket())
     assert calls == []
@@ -271,17 +271,17 @@ def test_daemon_admission_is_dormant(root, monkeypatch, verb):
     assert calls == (["work"] if verb == "run" else ["fresh"])
 
     repo = Path(__file__).resolve().parents[2]
-    sources = {".".join(path.relative_to(repo).with_suffix("").parts): path.read_text() for path in (repo / "chupa").rglob("*.py")}
-    sources["chupa"] = sources.pop("chupa.__init__")
+    sources = {".".join(path.relative_to(repo).with_suffix("").parts): path.read_text() for path in (repo / "clutch").rglob("*.py")}
+    sources["clutch"] = sources.pop("clutch.__init__")
     from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, without_core_import
 
     assert_reachable(sources)
     removed = without_core_import(sources)
     with pytest.raises(AssertionError):
         assert_reachable(removed)
-    for statement in ("import chupa.daemon", "from chupa import daemon"):
+    for statement in ("import clutch.daemon", "from clutch import daemon"):
         changed = dict(removed)
-        changed["chupa.status"] += f"\n{statement}\n"
+        changed["clutch.status"] += f"\n{statement}\n"
         assert_reachable(changed)
     monkeypatch.undo()
     rig = CoreRig(root)

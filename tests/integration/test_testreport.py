@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa.testreport import ResultsInvalid, pytest_sessionfinish, read_results
+from clutch.testreport import ResultsInvalid, pytest_sessionfinish, read_results
 
 pytest_plugins = ["pytester"]
 
@@ -41,7 +41,7 @@ def inner_tests(pytester, monkeypatch):
 
 @pytest.mark.parametrize("workers", ["0", "2"])
 def test_reports_all_phases_and_nodeids(inner_tests, workers):
-    result = inner_tests.runpytest_subprocess("-p", "chupa.testreport", "--chupa-results", "r.json", "-n", workers)
+    result = inner_tests.runpytest_subprocess("-p", "clutch.testreport", "--clutch-results", "r.json", "-n", workers)
     assert result.ret == 1
     data = json.loads((inner_tests.path / "r.json").read_text())
     assert data["schema_version"] == 2
@@ -57,7 +57,7 @@ def test_reports_all_phases_and_nodeids(inner_tests, workers):
 
 
 def test_no_option_writes_no_file(inner_tests):
-    result = inner_tests.runpytest_subprocess("-p", "chupa.testreport", "-n", "0")
+    result = inner_tests.runpytest_subprocess("-p", "clutch.testreport", "-n", "0")
     result.assert_outcomes(passed=2, failed=1, skipped=1, errors=1)
     assert not (inner_tests.path / "r.json").exists()
 

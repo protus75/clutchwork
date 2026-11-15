@@ -1,4 +1,4 @@
-from chupa.__main__ import stuck_ceiling_finding
+from clutch.__main__ import stuck_ceiling_finding
 
 
 def test_stuck_over_ceiling_finding():

@@ -14,16 +14,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 async def check(root):
-    from chupa.config import Retro as RetroSettings
-    from chupa.git import Git
-    from chupa.journal import EventType, Journal
-    from chupa.retro import Retro
-    from chupa.seams import LocalFileSystem, SubprocessExec
+    from clutch.config import Retro as RetroSettings
+    from clutch.git import Git
+    from clutch.journal import EventType, Journal
+    from clutch.retro import Retro
+    from clutch.seams import LocalFileSystem, SubprocessExec
 
     def clock():
         return datetime(2026, 1, 1, tzinfo=UTC)
 
-    state = root / ".chupa/state"
+    state = root / ".clutch/state"
     journal = Journal(state, clock)
     git = Git(
         SubprocessExec(),

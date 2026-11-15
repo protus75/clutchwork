@@ -9,21 +9,21 @@ from datetime import timedelta
 import pytest
 from pydantic import BaseModel
 
-from chupa import __main__ as cli
-from chupa import runner, stages
-from chupa.artifacts import Cost, Harvest, StageResult
-from chupa.audit import audit_journal
-from chupa.box import Box
-from chupa.config import snapshot_config
-from chupa.driver import LlmStage
-from chupa.effects import Effects
-from chupa.journal import EventType, render_ts, run_seq
-from chupa.llmeffect import llm_call
-from chupa.providers import ADAPTERS, CodexAdapter, ProviderLLM, ProviderSession, candidates
-from chupa.redact import Redactor
-from chupa.seams import SubprocessExec
-from chupa.tickets import intake
-from chupa.timers import Timers
+from clutch import __main__ as cli
+from clutch import runner, stages
+from clutch.artifacts import Cost, Harvest, StageResult
+from clutch.audit import audit_journal
+from clutch.box import Box
+from clutch.config import snapshot_config
+from clutch.driver import LlmStage
+from clutch.effects import Effects
+from clutch.journal import EventType, render_ts, run_seq
+from clutch.llmeffect import llm_call
+from clutch.providers import ADAPTERS, CodexAdapter, ProviderLLM, ProviderSession, candidates
+from clutch.redact import Redactor
+from clutch.seams import SubprocessExec
+from clutch.tickets import intake
+from clutch.timers import Timers
 from tests.integration.serve_rig import finish, graph, terminals, until
 from tests.integration.test_cli import root, write
 from tests.integration.test_daemon_composition import CoreRig
@@ -314,7 +314,7 @@ async def test_cooldown_reconstructs_and_rearms_new_windows(tmp_path, monkeypatc
 
 @pytest.mark.asyncio
 async def test_one_provider_payload_and_timers_per_session(root, monkeypatch):
-    from chupa.drain import drain
+    from clutch.drain import drain
 
     seen = []
 
@@ -352,7 +352,7 @@ async def test_one_provider_payload_and_timers_per_session(root, monkeypatch):
     report = await drain(checkout, runner.pipeline(checkout), reexec=SubprocessExec())
     assert report.exit_code == 0 and len(seen) == 2 and seen[0] is seen[1] is checkout.control.providers
     assert not seen[0].waits
-    rig.fs.publish = __import__("chupa.seams", fromlist=["LocalFileSystem"]).LocalFileSystem().publish
+    rig.fs.publish = __import__("clutch.seams", fromlist=["LocalFileSystem"]).LocalFileSystem().publish
     rig.owner = cli.build_serve(rig.checkout)
     write(root, "continuous", text())
     running = asyncio.create_task(rig.owner.run())
@@ -456,7 +456,7 @@ async def test_production_projected_wait_uses_shared_occupancy_and_timeout(tmp_p
 @pytest.mark.asyncio
 @pytest.mark.parametrize("minutes,cap,earlier,spill", [(1, 2, True, False), (1, 1, False, False), (2, 1, False, True)])
 async def test_production_spill_preserves_strict_sixty_second_boundary(tmp_path, minutes, cap, earlier, spill):
-    from chupa.thresh import _Waiter
+    from clutch.thresh import _Waiter
 
     rig = CoreRig(tmp_path, config=CONFIG.replace("concurrency: 1", f"concurrency: {cap}") + f"drain: {{max_ticket_minutes: {minutes}}}\n")
     writer = await prepared(rig)
@@ -659,16 +659,16 @@ async def test_executed_failures_preserve_classification_and_infra_accounting(ro
 @pytest.mark.parametrize("entry", ["drain", "core", "serve", "run"])
 @pytest.mark.parametrize("cooling", ["codex", "claude"])
 async def test_escalated_drought_uses_effective_route(root, monkeypatch, entry, cooling):
-    from chupa import caps
-    from chupa.config import load_config
-    from chupa.drain import drain
+    from clutch import caps
+    from clutch.config import load_config
+    from clutch.drain import drain
 
     rig = await repository(root, monkeypatch)
     config = (root / "config.yaml").read_text().replace("candidates: [{provider: codex}, {provider: claude}]", "candidates: [{provider: codex}]")
     rig.put_config(config)
     rig.checkout = replace(rig.checkout, config=load_config(None, cwd=root))
     if entry == "serve":
-        from chupa.seams import LocalFileSystem
+        from clutch.seams import LocalFileSystem
 
         rig.fs.publish = LocalFileSystem().publish
         rig.owner = cli.build_serve(rig.checkout)
@@ -756,10 +756,10 @@ async def test_escalated_drought_uses_effective_route(root, monkeypatch, entry, 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("ending", ["ceiling", "kill", "pause-then-kill"])
 async def test_drain_drought_wait_observes_runtime_and_control(root, monkeypatch, ending):
-    from chupa.config import load_config
-    from chupa.control import ControlRequest, publish_request
-    from chupa.drain import drain
-    from chupa.seams import LocalFileSystem
+    from clutch.config import load_config
+    from clutch.control import ControlRequest, publish_request
+    from clutch.drain import drain
+    from clutch.seams import LocalFileSystem
 
     rig = await repository(root, monkeypatch)
     rig.put_config((root / "config.yaml").read_text() + "drain: {max_runtime_hours: 1}\n")

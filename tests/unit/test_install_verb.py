@@ -2,9 +2,9 @@ import asyncio
 from pathlib import Path
 from unittest.mock import Mock
 
-from chupa import __main__ as cli
-from chupa.providers import CliStatus, cli_status, installed_version, tool_env
-from chupa.seams import ExecutableNotFound
+from clutch import __main__ as cli
+from clutch.providers import CliStatus, cli_status, installed_version, tool_env
+from clutch.seams import ExecutableNotFound
 
 
 class Exec:
@@ -59,8 +59,8 @@ def test_install(monkeypatch, capsys):
     assert capsys.readouterr().out.splitlines() == [
         "claude: system 2.1.322, package @anthropic-ai/claude-code",
         "codex: system 0.167.1, package @openai/codex",
-        "qwen: absent, package @qwen-code/qwen-code -- run: chupa install qwen",
-        "ollama: not installed by chupa; follow chupa/docs/host-qwen.md",
+        "qwen: absent, package @qwen-code/qwen-code -- run: clutch install qwen",
+        "ollama: not installed by clutch; follow clutch/docs/host-qwen.md",
     ]
     assert all(call[0][0] != "pnpm" for call in exec_.calls)
     exec_.calls.clear()

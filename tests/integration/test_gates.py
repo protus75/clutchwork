@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa.artifacts import ARTIFACT_SCHEMA_VERSION, OUTCOMES, Artifact, Cost, Finding, StageResult
-from chupa.config import load_config
-from chupa.gates import (
+from clutch.artifacts import ARTIFACT_SCHEMA_VERSION, OUTCOMES, Artifact, Cost, Finding, StageResult
+from clutch.config import load_config
+from clutch.gates import (
     DEFAULT_GATE_SEVERITY,
     ENGINE_GATE_CODES,
     GateContractError,
@@ -191,7 +191,7 @@ def test_runner_applies_soft_severity_from_config(tmp_path):
         textwrap.dedent(
             """\
             schema_version: 1
-            state_dir: .chupa
+            state_dir: .clutch
             providers:
               - name: claude
                 kind: cli
@@ -227,16 +227,16 @@ def test_runner_fails_closed_on_paved_road_less_report(tmp_path):
 @pytest.mark.parametrize(
     "state,data,road",
     [
-        ("missing", None, "chupa core"),
-        ("missing", b"project\xff", "chupa core"),
+        ("missing", None, "clutch core"),
+        ("missing", b"project\xff", "clutch core"),
         ("current", "render", None),
-        ("drifted", "stale", "chupa core"),
-        ("refused", b"chupa:core", "retain all project content"),
-        ("refused", b"- Chupa must\n  skip Check.", "engine core template"),
+        ("drifted", "stale", "clutch core"),
+        ("refused", b"clutch:core", "retain all project content"),
+        ("refused", b"- Clutch must\n  skip Check.", "engine core template"),
     ],
 )
 def test_core_drift_gate_reports(tmp_path, monkeypatch, state, data, road):
-    from chupa import hostfiles
+    from clutch import hostfiles
     from tests.integration.test_stages import evidence
 
     if data == "render":
@@ -249,9 +249,9 @@ def test_core_drift_gate_reports(tmp_path, monkeypatch, state, data, road):
     def forbidden(*args, **kwargs):
         pytest.fail("gate evaluation had an effect")
 
-    from chupa.git import Git
-    from chupa.journal import Journal
-    from chupa.seams import LocalFileSystem, SubprocessExec
+    from clutch.git import Git
+    from clutch.journal import Journal
+    from clutch.seams import LocalFileSystem, SubprocessExec
 
     with monkeypatch.context() as pure:
         pure.setattr(Path, "read_bytes", forbidden)
@@ -269,15 +269,15 @@ def test_core_drift_gate_reports(tmp_path, monkeypatch, state, data, road):
     else:
         [finding] = report.findings
         assert finding.code == "core_drift" and finding.path == "CLAUDE.md"
-        assert state in finding.message and "chupa core" in finding.message
+        assert state in finding.message and "clutch core" in finding.message
         assert road in finding.paved_road
     assert artifact.core_files["CLAUDE.md"] == before
 
 
 def test_core_drift_default_hard(repo):
-    from chupa import stages
-    from chupa.hostfiles import CoreDriftGate
-    from chupa.tickets import validate_ticket
+    from clutch import stages
+    from clutch.hostfiles import CoreDriftGate
+    from clutch.tickets import validate_ticket
     from tests.integration.test_merge import context
     from tests.integration.test_stages import STEM, author, evidence
 
@@ -299,14 +299,14 @@ def test_core_drift_default_hard(repo):
 async def test_core_activation_committed_conduct():
     import os
 
-    from chupa import hostfiles, stages
-    from chupa.git import Git
-    from chupa.seams import SubprocessExec
+    from clutch import hostfiles, stages
+    from clutch.git import Git
+    from clutch.seams import SubprocessExec
     from tests.integration.test_stages import evidence
 
     root = Path(__file__).resolve().parents[2]
     config = load_config(None, cwd=root)
-    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))
+    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
     gathered = await hostfiles.committed_core(root, config, git)
     assert set(gathered["core_files"]) == {"CLAUDE.md", "AGENTS.md"}
     assert all(data == (root / path).read_bytes() for path, data in gathered["core_files"].items())
@@ -321,19 +321,19 @@ async def test_host_loop_regression_uses_real_bug_gate(tmp_path, missing_base_te
     import json
     from dataclasses import replace
 
-    from chupa import stages
-    from chupa.git import Git
-    from chupa.seams import SubprocessExec
-    from chupa.tickets import stamp, validate_ticket
+    from clutch import stages
+    from clutch.git import Git
+    from clutch.seams import SubprocessExec
+    from clutch.tickets import stamp, validate_ticket
     from hosts.fixture import scaffold
     from tests.integration.test_fixture_host import environment
     from tests.integration.test_merge import context
 
     host = scaffold.copy_host(tmp_path / "host")
     env = {**environment(host), "GIT_AUTHOR_NAME": "Fixture", "GIT_AUTHOR_EMAIL": "fixture@invalid", "GIT_COMMITTER_NAME": "Fixture", "GIT_COMMITTER_EMAIL": "fixture@invalid"}
-    git = Git(SubprocessExec(), env=env, timeout=10, commit_lock=commit_lock(host / ".chupa/state"))
-    (host / "CHUPA_PLAN.md").write_text("# Disposable plan\n")
-    (host / ".gitignore").write_text(".chupa/\n.fixture-runtime/\n__pycache__/\n")
+    git = Git(SubprocessExec(), env=env, timeout=10, commit_lock=commit_lock(host / ".clutch/state"))
+    (host / "CLUTCH_PLAN.md").write_text("# Disposable plan\n")
+    (host / ".gitignore").write_text(".clutch/\n.fixture-runtime/\n__pycache__/\n")
     existing_test = (host / "regression_test.py").read_bytes()
     if missing_base_test:
         (host / "regression_test.py").unlink()

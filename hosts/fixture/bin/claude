@@ -28,10 +28,10 @@ try:
     if prompt == "Reply with the single word ok.":
         result = "ok"
     else:
-        root = require_disposable(Path(os.environ["CHUPA_FIXTURE_ROOT"]))
+        root = require_disposable(Path(os.environ["CLUTCH_FIXTURE_ROOT"]))
         selection = root / ".fixture-runtime/selection"
-        name = selection.read_text().strip() if selection.exists() else os.environ["CHUPA_FIXTURE_SCENARIO"]
-        surface = os.environ.get("CHUPA_FIXTURE_SURFACE")
+        name = selection.read_text().strip() if selection.exists() else os.environ["CLUTCH_FIXTURE_SCENARIO"]
+        surface = os.environ.get("CLUTCH_FIXTURE_SURFACE")
         if surface is None:
             roles = {
                 "You are the implementer": "implement",
@@ -60,11 +60,11 @@ try:
             async def commit():
                 from datetime import UTC, datetime
 
-                from chupa.git import Git
-                from chupa.lockfile import CommitLock
-                from chupa.seams import SubprocessExec
+                from clutch.git import Git
+                from clutch.lockfile import CommitLock
+                from clutch.seams import SubprocessExec
 
-                git = Git(SubprocessExec(), env=os.environ, timeout=10, commit_lock=CommitLock(root / ".chupa/state", clock=lambda: datetime.now(UTC), sleep=asyncio.sleep))
+                git = Git(SubprocessExec(), env=os.environ, timeout=10, commit_lock=CommitLock(root / ".clutch/state", clock=lambda: datetime.now(UTC), sleep=asyncio.sleep))
                 await git.add(Path.cwd(), list(scenario(root, name)["edits"]))
                 await git.commit(Path.cwd(), "fixture declared host repair")
 

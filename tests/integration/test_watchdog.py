@@ -5,16 +5,16 @@ import os
 import pytest
 from pydantic import BaseModel
 
-from chupa import runner
-from chupa.driver import LlmStage
-from chupa.effects import Effects
-from chupa.enginelog import EngineLog
-from chupa.journal import EventType, Journal
-from chupa.notify import WatchdogNotifications
-from chupa.providers import CliAdapter, ProviderCallError, ProviderLLM, ProviderSetupError, Served, resolve
-from chupa.redact import Redactor
-from chupa.thresh import PROVIDER_CAP_WAIT, Admission
-from chupa.watchdog import Detector, EventConsumer, ScopeObservation
+from clutch import runner
+from clutch.driver import LlmStage
+from clutch.effects import Effects
+from clutch.enginelog import EngineLog
+from clutch.journal import EventType, Journal
+from clutch.notify import WatchdogNotifications
+from clutch.providers import CliAdapter, ProviderCallError, ProviderLLM, ProviderSetupError, Served, resolve
+from clutch.redact import Redactor
+from clutch.thresh import PROVIDER_CAP_WAIT, Admission
+from clutch.watchdog import Detector, EventConsumer, ScopeObservation
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_providers import PythonProviderExec, claude_ok, codex_ok, config, jsonl, provider_request, python_client
 from tests.integration.test_scheduler import Time, turn

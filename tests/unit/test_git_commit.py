@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from chupa import tickets
-from chupa.git import Git, GitError, NothingToCommit
+from clutch import tickets
+from clutch.git import Git, GitError, NothingToCommit
 
 
 class FakeLock:
@@ -105,7 +105,7 @@ def test_intake_skips_concurrent_commit(monkeypatch):
     result = run(tickets.intake(Path("/repo"), git, Journal(), SimpleNamespace(), stems=None))
     assert git._commit_lock.entries == 1 and not git._commit_lock.held
     assert result.committed == () and result.refused == {}
-    assert calls == [("chupa(one): ticket", ["tickets/one/ticket.md"])]
+    assert calls == [("clutch(one): ticket", ["tickets/one/ticket.md"])]
 
 
 @pytest.mark.parametrize("stems,expected", [({"one"}, ("one",)), (None, ("one", "two"))])
@@ -138,6 +138,6 @@ def test_intake_stem_scope(monkeypatch, stems, expected):
     monkeypatch.setattr(tickets, "evidence_findings", lambda *args, **kwargs: [])
     monkeypatch.setattr(tickets, "lint_findings", lambda *args, **kwargs: [])
     result = run(tickets.intake(Path("/repo"), FakeGit(), Journal(), SimpleNamespace(), stems=stems))
-    assert calls == [(f"chupa({stem}): ticket", [f"tickets/{stem}/ticket.md"]) for stem in expected]
+    assert calls == [(f"clutch({stem}): ticket", [f"tickets/{stem}/ticket.md"]) for stem in expected]
     assert result.committed == expected
     assert "two" not in result.refused

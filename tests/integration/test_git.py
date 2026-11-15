@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from chupa.git import Git, GitError, NothingToCommit, RebaseRefused
-from chupa.lockfile import CommitLock
-from chupa.seams import ExecutableNotFound, GroupExec, ProcessExec, SubprocessExec
+from clutch.git import Git, GitError, NothingToCommit, RebaseRefused
+from clutch.lockfile import CommitLock
+from clutch.seams import ExecutableNotFound, GroupExec, ProcessExec, SubprocessExec
 from tests.waiting import group_exited, ready_before_returning_spawn, wait_until
 
 ENV = {"PATH": "/usr/bin"}
@@ -141,7 +141,7 @@ def test_git_common_dir_resolves_main_and_linked_worktree(tmp_path):
         "GIT_COMMITTER_NAME": "t",
         "GIT_COMMITTER_EMAIL": "t@t",
     }
-    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def scenario():
         await g.init(main, branch="main")
@@ -159,7 +159,7 @@ def test_ls_files_lists_committed_files_not_untracked_files(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
-    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def scenario():
         await g.init(repo, branch="main")
@@ -246,8 +246,8 @@ def test_rebase_success_does_not_abort():
 
 
 def test_subprocess_exec_unresolvable_binary_fails_closed():
-    with pytest.raises(ExecutableNotFound, match="no-such-binary-chupa"):
-        run(SubprocessExec().run(["no-such-binary-chupa"], cwd=Path("."), env=dict(os.environ), timeout=5))
+    with pytest.raises(ExecutableNotFound, match="no-such-binary-clutch"):
+        run(SubprocessExec().run(["no-such-binary-clutch"], cwd=Path("."), env=dict(os.environ), timeout=5))
 
 
 def test_subprocess_exec_feeds_stdin_path_and_captures(tmp_path):
@@ -347,7 +347,7 @@ def test_ticket_lifecycle_against_real_repo(tmp_path):
         "GIT_COMMITTER_NAME": "t",
         "GIT_COMMITTER_EMAIL": "t@t",
     }
-    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".clutch/state"))
     repo = tmp_path / "repo"
     repo.mkdir()
     wt = tmp_path / "wt" / "t-1"
@@ -398,7 +398,7 @@ def test_ticket_lifecycle_against_real_repo(tmp_path):
         await g.restore(wt, ["tickets"], source="main")
         assert await g.status_porcelain(wt) == ""
         await g.rebase(wt, "main")
-        sha = await g.merge_squash(repo, "t-1", "chupa(t-1): work\n\nchupa-ticket: t-1")
+        sha = await g.merge_squash(repo, "t-1", "clutch(t-1): work\n\nclutch-ticket: t-1")
         assert sha == await g.rev_parse(repo, "HEAD")
         assert (repo / "b.txt").read_text() == "two\n"
         await g.worktree_remove(repo, wt)
@@ -416,7 +416,7 @@ def test_rebase_stop_at_conflict_preserves_conflicted_state(tmp_path):
     repo, wt = tmp_path / "repo", tmp_path / "wt"
     repo.mkdir()
     env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
-    g = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def scenario():
         await g.init(repo, branch="main")
@@ -468,7 +468,7 @@ def test_rebase_continue_is_noninteractive():
 
 def test_escape_first_parent_trailers(tmp_path):
     env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
-    g = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def scenario():
         await g.init(tmp_path, branch="main")
@@ -481,14 +481,14 @@ def test_escape_first_parent_trailers(tmp_path):
             path = f"{name} space.py"
             (tmp_path / path).write_text(name)
             await g.add(tmp_path, [path])
-            await g.commit(tmp_path, f"code\n\nchupa-ticket: {name}\nchupa-reviewed-sha: {'a' * 40}")
+            await g.commit(tmp_path, f"code\n\nclutch-ticket: {name}\nclutch-reviewed-sha: {'a' * 40}")
             expected.append({"ticket": name, "commit": await g.rev_parse(tmp_path, "HEAD"), "reviewed_sha": "a" * 40, "paths": [path]})
         assert await g.first_parent_squashes(tmp_path, expected[0]["commit"]) == expected[:1]
         assert await g.first_parent_squashes(tmp_path, f"{base}..{expected[1]['commit']}") == expected
         assert await g.first_parent_squashes(tmp_path, f"{expected[0]['commit']}..{expected[1]['commit']}") == expected[1:]
 
     run(scenario())
-    g, seam = git((0, "a" * 40 + "\n", ""), (0, f"code\n\nchupa-ticket: one\nchupa-reviewed-sha: {'b' * 40}\n", ""), (0, "a b\0", ""))
+    g, seam = git((0, "a" * 40 + "\n", ""), (0, f"code\n\nclutch-ticket: one\nclutch-reviewed-sha: {'b' * 40}\n", ""), (0, "a b\0", ""))
     assert run(g.first_parent_squashes(REPO, "a" * 40))[0]["paths"] == ["a b"]
     assert all(call[1:] == (REPO, ENV, 30.0) for call in seam.calls)
     assert seam.argvs[0][3:] == ["rev-list", "--first-parent", "--reverse", "HEAD"]
@@ -504,19 +504,19 @@ def test_escape_refusals(tmp_path):
         g, seam = git((0, a + "\n" + b + "\n", ""))
         assert run(g.first_parent_squashes(REPO, value)) == []
         assert len(seam.calls) == 1
-    valid = f"chupa-ticket: one\nchupa-reviewed-sha: {b}"
+    valid = f"clutch-ticket: one\nclutch-reviewed-sha: {b}"
     for trailers in (
         "",
-        "chupa-ticket: one",
-        valid + "\nchupa-ticket: one",
-        valid + f"\nchupa-reviewed-sha: {b}",
+        "clutch-ticket: one",
+        valid + "\nclutch-ticket: one",
+        valid + f"\nclutch-reviewed-sha: {b}",
         valid.replace(b, "short"),
         valid.replace("one", "../bad"),
         valid.replace("one", ""),
         valid.replace(b, b.upper()),
         valid + " ",
-        valid + "\nChupa-Ticket: one",
-        valid.replace("chupa-ticket", "Chupa-Ticket"),
+        valid + "\nClutch-Ticket: one",
+        valid.replace("clutch-ticket", "Clutch-Ticket"),
     ):
         g, seam = git((0, a + "\n", ""), (0, "process\n\n" + trailers, ""))
         assert run(g.first_parent_squashes(REPO, a)) == []
@@ -526,7 +526,7 @@ def test_escape_refusals(tmp_path):
         run(g.first_parent_squashes(REPO, a))
     # A known commit on a side branch is not a first-parent endpoint.
     env = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
-    g = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def scenario():
         await g.init(tmp_path, branch="main")
@@ -548,7 +548,7 @@ def test_escape_refusals(tmp_path):
 
 def test_commit_restored_deletion_and_unchanged_path(tmp_path):
     env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
-    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def scenario():
         await g.init(tmp_path, branch="main")

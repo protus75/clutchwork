@@ -6,14 +6,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import observe, runner, status, tickets
-from chupa.box import Box, Resolution
-from chupa.config import load_config
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.lockfile import Lockfile
-from chupa.seams import LocalFileSystem, SubprocessExec
+from clutch import __main__ as entry
+from clutch import observe, runner, status, tickets
+from clutch.box import Box, Resolution
+from clutch.config import load_config
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.lockfile import Lockfile
+from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, confirmed, make_root
 from tests.integration.test_git import commit_lock
@@ -22,7 +22,7 @@ from tests.integration.test_git import commit_lock
 @pytest.fixture
 def world(tmp_path):
     root = make_root(tmp_path)
-    state = root / ".chupa/state"
+    state = root / ".clutch/state"
     git = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(state))
     journal = Journal(state, Clock())
     fs = LocalFileSystem()
@@ -62,7 +62,7 @@ def verb_inputs(w, stem, row, live):
     pending_flag = asyncio.run(runner.ticket_pending(w.git, w.root, stem))
     disk = validation(w, stem, plan[1] if plan else path.read_text())
     main = validation(w, stem, plan[1] if plan else asyncio.run(w.git._run(w.root, "show", f"main:{tickets.ticket_path(stem)}")))
-    from chupa.reconcile import orphans
+    from clutch.reconcile import orphans
 
     common = dict(
         stem=stem,
@@ -80,11 +80,11 @@ def verb_inputs(w, stem, row, live):
         key: dict(
             common,
             ticket=main
-            if key == "chupaReview"
+            if key == "clutchReview"
             else validation(w, stem, path.read_text())
-            if key == "chupaPriority"
+            if key == "clutchPriority"
             else validation(w, stem, tickets.order(path.read_text(), priority=None, runs_before=[]))
-            if key == "chupaRunsBefore"
+            if key == "clutchRunsBefore"
             else disk,
         )
         for key, spec in observe.MENU.items()
@@ -137,17 +137,17 @@ def test_menu_matches_verbs(world, capsys, case, run, review, order, lint):
         text = "not a ticket"
     if case == "settled-missing-evidence":
         text = text.replace("kind: feature", "kind: bug") + "\n## Regression\n```\npython tests/repro.py\n```\n- carries: tests/repro.py\n"
-        text = text.replace("- chupa/thing.py\n\n## Acceptance", "- chupa/thing.py\n- tests/repro.py\n\n## Acceptance")
+        text = text.replace("- clutch/thing.py\n\n## Acceptance", "- clutch/thing.py\n- tests/repro.py\n\n## Acceptance")
         (w.root / "tests").mkdir()
         (w.root / "tests/repro.py").write_text("pass\n")
     path = w.write("item", text, commit=case not in {"new", "staged-new"}, stage=case == "staged-new")
     if case in {"dirty", "pending-lint", "staged-evidence", "settled-missing-evidence"}:
         path.write_text(text.replace("returns ok", "returns the changed value"))
     if case == "pending-lint":
-        path.write_text(path.read_text().replace("- chupa/thing.py\n\n## Acceptance", "- chupa/thing.py\n- chupa/status.py\n\n## Acceptance"))
+        path.write_text(path.read_text().replace("- clutch/thing.py\n\n## Acceptance", "- clutch/thing.py\n- clutch/status.py\n\n## Acceptance"))
         # A valid grammar with a unit-coverage fence finding, rather than invalid text.
-        (w.root / "chupa/status.py").write_text("")
-        (w.root / "test-gate.toml").write_text('[coverage]\ndefault = 90\n[coverage.files]\n"chupa/status.py" = 90\n')
+        (w.root / "clutch/status.py").write_text("")
+        (w.root / "test-gate.toml").write_text('[coverage]\ndefault = 90\n[coverage.files]\n"clutch/status.py" = 90\n')
     if case in {"stray-clean", "stray-row-file"}:
         (w.root / "outside.py").write_text("staged\n")
         asyncio.run(w.git.add(w.root, ["outside.py"]))
@@ -182,7 +182,7 @@ def test_menu_matches_verbs(world, capsys, case, run, review, order, lint):
         snap = observe.snapshot(w.ctx)
         row = next(r for r in snap["rows"] if r["stem"] == "item")
         assert set(row["menu"]) == {k for k, spec in observe.MENU.items() if spec.kind == "ticket"}
-        assert {key for key, spec in observe.MENU.items() if spec.extension_only} == {"chupaAskDiagnose", "chupaAskReview", "chupaAskDrafts"}
+        assert {key for key, spec in observe.MENU.items() if spec.extension_only} == {"clutchAskDiagnose", "clutchAskReview", "clutchAskDrafts"}
         inputs = verb_inputs(w, "item", row, live)
         for key, spec in observe.MENU.items():
             if not spec.extension_only:
@@ -190,17 +190,17 @@ def test_menu_matches_verbs(world, capsys, case, run, review, order, lint):
             if spec.kind == "ticket" and not spec.extension_only:
                 admitted = spec.admission(**{name: inputs[key][name] for name in spec.inputs}).outcome == "admit"
                 assert (row["menu"][key] in {"on", "locked"}) == admitted, (case, key)
-        for key, expected in (("chupaRun", run), ("chupaReview", review), ("chupaPriority", order), ("chupaRunsBefore", order or case == "runs-before-cycle"), ("chupaLint", lint)):
+        for key, expected in (("clutchRun", run), ("clutchReview", review), ("clutchPriority", order), ("clutchRunsBefore", order or case == "runs-before-cycle"), ("clutchLint", lint)):
             assert (row["menu"][key] != "off") == expected, (case, key)
         if live:
-            assert row["menu"]["chupaRun"] == "locked"
-            assert row["menu"]["chupaReview"] == "on"  # Running rows remain reviewable.
+            assert row["menu"]["clutchRun"] == "locked"
+            assert row["menu"]["clutchReview"] == "on"  # Running rows remain reviewable.
         for row in snap["box"]:
             assert set(row["menu"]) == {k for k, spec in observe.MENU.items() if spec.kind == "box"}
             for key, value in row["menu"].items():
                 decision = observe.MENU[key].admission(row["id"], box.messages())
                 assert value == ("locked" if live else "on") if decision.outcome == "admit" else value == "off"
-        assert next(r for r in snap["box"] if r["id"] == resolved)["menu"]["chupaDismiss"] == "off"
+        assert next(r for r in snap["box"] if r["id"] == resolved)["menu"]["clutchDismiss"] == "off"
     finally:
         if live:
             lock.release()
@@ -218,11 +218,11 @@ def test_lock_only_gates_writer_actions(world):
     try:
         snap = observe.snapshot(w.ctx)
         rows = {r["stem"]: r for r in snap["rows"]}
-        assert rows["ready"]["menu"]["chupaRun"] == "locked"
-        for key in ("chupaReview", "chupaLint", "chupaPriority", "chupaRunsBefore"):
+        assert rows["ready"]["menu"]["clutchRun"] == "locked"
+        for key in ("clutchReview", "clutchLint", "clutchPriority", "clutchRunsBefore"):
             assert rows["ready"]["menu"][key] == "on", key
-        assert {k: rows["draft"]["menu"][k] for k in ("chupaConfirm", "chupaReject")} == {"chupaConfirm": "on", "chupaReject": "on"}
-        assert snap["box"][0]["menu"] == {"chupaTriage": "locked", "chupaDismiss": "locked"}
+        assert {k: rows["draft"]["menu"][k] for k in ("clutchConfirm", "clutchReject")} == {"clutchConfirm": "on", "clutchReject": "on"}
+        assert snap["box"][0]["menu"] == {"clutchTriage": "locked", "clutchDismiss": "locked"}
     finally:
         lock.release()
 

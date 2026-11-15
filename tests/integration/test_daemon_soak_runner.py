@@ -9,17 +9,17 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from chupa import __main__ as cli
-from chupa.audit import audit_journal
-from chupa.git import Git
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile
-from chupa.mergequeue import CONFLICT_FACTS, MergeQueue
-from chupa.reconcile import RECOVERY_ALERT
-from chupa.seams import SubprocessExec
-from chupa.serve import Serve
-from chupa.stages import read_review
-from chupa.tickets import parse_ticket, ticket_path
+from clutch import __main__ as cli
+from clutch.audit import audit_journal
+from clutch.git import Git
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile
+from clutch.mergequeue import CONFLICT_FACTS, MergeQueue
+from clutch.reconcile import RECOVERY_ALERT
+from clutch.seams import SubprocessExec
+from clutch.serve import Serve
+from clutch.stages import read_review
+from clutch.tickets import parse_ticket, ticket_path
 from tests.harness import daemon_soak as soak
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS
 from tests.integration.test_git import commit_lock
@@ -30,7 +30,7 @@ from tests.integration.test_git import commit_lock
 @pytest.mark.parametrize("has_log", [True, False])
 async def test_soak_refusal_carries_engine_log_tail(tmp_path, operation, has_log):
     member = soak._Member(tmp_path, "member")
-    log = tmp_path / ".chupa/state/engine.log"
+    log = tmp_path / ".clutch/state/engine.log"
     if has_log:
         log.parent.mkdir(parents=True)
         log.write_text("discarded first line\n" + "".join(f"diagnostic {i}\n" for i in range(20)))
@@ -73,7 +73,7 @@ async def evidence(tmp_path_factory):
 async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
     built, offers, consumed, admissions = [], [], [], []
     build, offer, process = cli.build_serve, MergeQueue.offer, MergeQueue.process
-    from chupa.daemon import TicketWriter
+    from clutch.daemon import TicketWriter
 
     consume = TicketWriter.consume_result
     publish = Serve.publish
@@ -207,7 +207,7 @@ def test_daemon_soak_semantic_red_preserves_main(evidence):
 
 @pytest.mark.asyncio(loop_scope="module")
 async def test_soak_uses_candidate_base_regate_receipt(evidence):
-    from chupa.mergequeue import regate_receipts
+    from clutch.mergequeue import regate_receipts
 
     report, members = evidence
     assert all(entry.green for entry in report.entries)
@@ -278,8 +278,8 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
             "main": "a.txt",
             "harvest": f"tickets/{stem}/attempts/0/harvest.json",
             "review": f"tickets/{stem}/review.md",
-            "integration": ".chupa/state/spools/semantic/0/merge-integration/verify-01.txt",
-            "regating": ".chupa/state/spools/mechanical/0/merge-integration/verify-01.txt",
+            "integration": ".clutch/state/spools/semantic/0/merge-integration/verify-01.txt",
+            "regating": ".clutch/state/spools/mechanical/0/merge-integration/verify-01.txt",
         }[field]
         file = member.root / relative
         before = file.read_bytes()
@@ -380,7 +380,7 @@ async def test_daemon_soak_cleans_up_owned_lifetimes(tmp_path, monkeypatch, case
 
 @pytest.mark.asyncio
 async def test_daemon_soak_is_rederivable(tmp_path):
-    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(tmp_path / ".chupa/state"))
+    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(tmp_path / ".clutch/state"))
     before = await git.rev_parse(Path.cwd(), "HEAD")
     first = await soak.produce(tmp_path / "first")
     second = await soak.produce(tmp_path / "second")

@@ -1,6 +1,6 @@
 import pytest
 
-from chupa.covgate import evaluate, parse_gate, percentages
+from clutch.covgate import evaluate, parse_gate, percentages
 
 
 def entry(covered, total):

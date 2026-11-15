@@ -1,6 +1,6 @@
 """Review-baseline eval: the catastrophic-NO-GO spike and GO grade.
 
-`run` drives chupa/specs/review.md over the fixtures with a shared USD 5 cap and journals one NO_GO signal.
+`run` drives clutch/specs/review.md over the fixtures with a shared USD 5 cap and journals one NO_GO signal.
 `--out` adds the harness-local Author graph and writes a validated report. Only operator `--record-go`
 with affirmative Author-graph judgment can record GO from complete, numerically passing evidence.
 
@@ -26,23 +26,23 @@ from typing import Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
-from chupa.artifacts import AuthorGraph, AuthorIdentity, Expected, Finding, NonBlank, ReviewBaselineReport, ReviewVerdict
-from chupa.config import Candidate, Config, Route, load_config
-from chupa.driver import Driver, LlmStage
-from chupa.git import Git
-from chupa.journal import EventType, Journal
-from chupa.llm import AgentTier
-from chupa.lockfile import CommitLock, Lockfile
-from chupa.policy import BASELINE_SIGNAL, TIERS, baseline_identity
-from chupa.providers import ProviderLLM, ProviderSession
-from chupa.runner import call_timeout
-from chupa.seams import Clock, LocalFileSystem, SubprocessExec
-from chupa.specs import Spec, load_spec, render
-from chupa.timers import Timers
+from clutch.artifacts import AuthorGraph, AuthorIdentity, Expected, Finding, NonBlank, ReviewBaselineReport, ReviewVerdict
+from clutch.config import Candidate, Config, Route, load_config
+from clutch.driver import Driver, LlmStage
+from clutch.git import Git
+from clutch.journal import EventType, Journal
+from clutch.llm import AgentTier
+from clutch.lockfile import CommitLock, Lockfile
+from clutch.policy import BASELINE_SIGNAL, TIERS, baseline_identity
+from clutch.providers import ProviderLLM, ProviderSession
+from clutch.runner import call_timeout
+from clutch.seams import Clock, LocalFileSystem, SubprocessExec
+from clutch.specs import Spec, load_spec, render
+from clutch.timers import Timers
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "eval" / "fixtures"
-SPECS = ROOT / "chupa" / "specs"
+SPECS = ROOT / "clutch" / "specs"
 
 DefectClass = Literal["logic", "hidden_info_leak", "acceptance_mismatch", "scope_escape"]
 DEFECT_CLASSES: tuple[str, ...] = get_args(DefectClass)
@@ -516,7 +516,7 @@ async def _run(config: Config, env: Mapping[str, str], clock: Clock, *, out=None
 def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m eval.harness")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    run = sub.add_parser("run", help="score chupa/specs/review.md over eval/fixtures and journal the verdict signal")
+    run = sub.add_parser("run", help="score clutch/specs/review.md over eval/fixtures and journal the verdict signal")
     run.add_argument("--out", type=Path)
     run.add_argument("--record-go", type=Path, metavar="REPORT")
     run.add_argument("--approve-author-graph", action="store_true")

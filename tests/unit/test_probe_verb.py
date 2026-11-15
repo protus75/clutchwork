@@ -3,8 +3,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
-from chupa import __main__ as cli
-from chupa.config import Limits, ModelsByTier, Provider
+from clutch import __main__ as cli
+from clutch.config import Limits, ModelsByTier, Provider
 
 
 def test_probe(monkeypatch, capsys):

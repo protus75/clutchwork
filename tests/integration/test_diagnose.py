@@ -6,16 +6,16 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.artifacts import Cost, Diagnosis, DiagnosisReply, Finding, StageResult
-from chupa.caps import consume, draws
-from chupa.config import load_config
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
-from chupa.providers import ProviderSetupError, resolve
-from chupa.specs import data_close, data_open
-from chupa.stages import StagesRun
+from clutch import runner
+from clutch.__main__ import main
+from clutch.artifacts import Cost, Diagnosis, DiagnosisReply, Finding, StageResult
+from clutch.caps import consume, draws
+from clutch.config import load_config
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
+from clutch.providers import ProviderSetupError, resolve
+from clutch.specs import data_close, data_open
+from clutch.stages import StagesRun
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_providers import CONFIG as ROUTING_CONFIG
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
@@ -23,7 +23,7 @@ from tests.integration.test_terminal import author, clock, diagnosis_reply, repo
 
 
 def history(repo: Path):
-    return [e for e in Journal(repo / ".chupa" / "state", clock).read() if e.ticket == STEM]
+    return [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
 
 
 def invoke(repo: Path, script: list, verb: str = "run"):
@@ -70,7 +70,7 @@ def test_routing_inherits_review_at_asked_tier_and_preserves_own_row(tmp_path):
 def test_review_snag_orders_harvest_draw_effect_signal_and_terminal(repo):
     author(repo)
     lesson = "Read the review finding and change the word to ok."
-    code, llm = invoke(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis_reply(lesson)])
+    code, llm = invoke(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis_reply(lesson)])
     assert code == runner.EXIT_TICKET
     events = history(repo)
     harvest = next(i for i, e in enumerate(events) if e.type == EventType.EFFECT_COMPLETION and e.key == f"ticket-plane/{STEM}/0/harvest")
@@ -88,14 +88,14 @@ def test_review_snag_orders_harvest_draw_effect_signal_and_terminal(repo):
     assert (repo / "tickets" / STEM / "ticket.md").read_text() in requests[0].rendered
     record = diagnosis(repo)
     assert (record.stem, record.attempt, record.verdict, record.lessons, record.mechanical) == (STEM, 0, "retry", [lesson], None)
-    assert f"chupa({STEM}): diagnosis" in git(repo, "log", "--format=%s", "main")
+    assert f"clutch({STEM}): diagnosis" in git(repo, "log", "--format=%s", "main")
 
 
 def test_invalid_verdict_reprompts_then_fails_closed_with_one_draw(repo):
     author(repo)
     cap = load_config(None, cwd=repo).caps.retry
     bad = json.dumps({"verdict": "maybe", "lessons": ["try again"]})
-    code, llm = invoke(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG])] + [bad] * (cap + 1))
+    code, llm = invoke(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG])] + [bad] * (cap + 1))
     assert code == runner.EXIT_TICKET
     requests = [r for r in llm.requests if r.surface == "diagnose"]
     assert len(requests) == cap + 1
@@ -135,10 +135,10 @@ def test_spent_caps_short_circuit_after_infra_draw(repo, cap, expected):
         path = repo / "config.yaml"
         path.write_text(path.read_text() + "\ncaps: {infra: 1}\n")
     else:
-        consume(Journal(repo / ".chupa" / "state", clock), STEM, "diagnosis", "old-ticket-sha")
+        consume(Journal(repo / ".clutch" / "state", clock), STEM, "diagnosis", "old-ticket-sha")
         # Fill the remaining lineage draws up to the configured cap.
         for _ in range(load_config(None, cwd=repo).caps.diagnosis - 1):
-            consume(Journal(repo / ".chupa" / "state", clock), STEM, "diagnosis", "old-ticket-sha")
+            consume(Journal(repo / ".clutch" / "state", clock), STEM, "diagnosis", "old-ticket-sha")
     code, llm = invoke(repo, [RuntimeError("provider failed")])
     assert code == runner.EXIT_TICKET
     assert [r.surface for r in llm.requests if r.surface == "diagnose"] == []
@@ -148,7 +148,7 @@ def test_spent_caps_short_circuit_after_infra_draw(repo, cap, expected):
 
 
 def test_drain_renders_two_attempts_lessons_and_no_spooled_raw_marker(repo):
-    (repo / "chupa" / "thing.py").write_text("ok base\n")
+    (repo / "clutch" / "thing.py").write_text("ok base\n")
     git(repo, "commit", "-am", "green verification base")
     author(repo)
     marker = "PRIVATE_SPOOLED_FIRST_ATTEMPT_MARKER"
@@ -157,9 +157,9 @@ def test_drain_renders_two_attempts_lessons_and_no_spooled_raw_marker(repo):
         [
             RuntimeError(marker),
             diagnosis_reply("Avoid the first dead end."),
-            agent({"chupa/thing.py": "nope\n"}),
+            agent({"clutch/thing.py": "nope\n"}),
             diagnosis_reply("Write ok in thing.py."),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict(),
         ],
         verb="drain",
@@ -181,7 +181,7 @@ def test_no_lessons_keeps_raw_harvest_reason(repo):
     bad = json.dumps({"verdict": "maybe", "lessons": ["not used"]})
     code, _ = invoke(repo, [RuntimeError(marker)] + [bad] * (cap + 1))
     assert code == runner.EXIT_TICKET and diagnosis(repo).lessons == []
-    code, llm = invoke(repo, [agent({"chupa/thing.py": "ok\n"}), verdict()])
+    code, llm = invoke(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert code == 0
     render = next(r.rendered for r in llm.requests if r.surface == "implement")
     assert f"> RuntimeError: {marker}" in render
@@ -189,7 +189,7 @@ def test_no_lessons_keeps_raw_harvest_reason(repo):
 
 @pytest.mark.parametrize("workspace", [True, False])
 def test_render_over_bound_calls_rework_but_not_diagnosis(repo, monkeypatch, workspace):
-    from chupa import daemon
+    from clutch import daemon
     from tests.integration.test_drain import mechanical_first
     from tests.integration.test_rework import order
 
@@ -218,9 +218,9 @@ def test_render_over_bound_calls_rework_but_not_diagnosis(repo, monkeypatch, wor
         record = json.loads((repo / f"tickets/{STEM}/attempts/0/harvest.json").read_text())
         assert "shrink or split" in record["findings"][-1]["paved_road"]
     else:
-        from chupa.box import Box
-        from chupa.seams import LocalFileSystem
+        from clutch.box import Box
+        from clutch.seams import LocalFileSystem
 
-        messages = Box(repo / ".chupa/state/box", LocalFileSystem()).messages()
+        messages = Box(repo / ".clutch/state/box", LocalFileSystem()).messages()
         assert len(messages) == 1 and "no usable workspace" in messages[0].summary
         assert "shrink or split" in messages[0].summary

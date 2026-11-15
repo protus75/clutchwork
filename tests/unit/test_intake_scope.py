@@ -1,6 +1,6 @@
 import inspect
 
-from chupa import tickets
+from clutch import tickets
 
 
 def test_stems_is_a_required_keyword():

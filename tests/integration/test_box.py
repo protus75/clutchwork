@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from chupa.box import (
+from clutch.box import (
     Box,
     BoxError,
     DecisionRecord,
@@ -20,8 +20,8 @@ from chupa.box import (
     render_record,
     signature,
 )
-from chupa.git import Git
-from chupa.seams import LocalFileSystem, SubprocessExec
+from clutch.git import Git
+from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_git import commit_lock
 
 
@@ -44,7 +44,7 @@ def test_signature_recipe():
 
 
 def test_host_report_signature(tmp_path):
-    from chupa.inbox import validate_report
+    from clutch.inbox import validate_report
     from tests.integration.test_inbox import raw_report
 
     box = Box(tmp_path / "box", LocalFileSystem())
@@ -141,16 +141,16 @@ def test_registry_format(tmp_path):
 
 
 def test_tombstone_rereports_reopen_at_threshold(tmp_path, monkeypatch):
-    from chupa.daemon import storm_producer
-    from chupa.journal import EventType, Journal
-    from chupa.llm import FakeLLM
+    from clutch.daemon import storm_producer
+    from clutch.journal import EventType, Journal
+    from clutch.llm import FakeLLM
     from tests.integration.test_drain import Clock, commit_ticket, confirmed
     from tests.integration.test_triage import reply, root_with_box, run
 
     root, _ = root_with_box(tmp_path)
     clock = Clock()
-    journal = Journal(root / ".chupa/state", clock)
-    box = storm_producer(root=root / ".chupa/state/box", fs=LocalFileSystem(), journal=journal, clock=clock)
+    journal = Journal(root / ".clutch/state", clock)
+    box = storm_producer(root=root / ".clutch/state/box", fs=LocalFileSystem(), journal=journal, clock=clock)
     commit_ticket(root, "known", confirmed())
     fields = dict(message_class="failure_report", origin="test", summary="observed failure")
     id, _ = box.enqueue(**fields, occurrence_id="original")
@@ -189,10 +189,10 @@ def test_tombstone_rereports_reopen_at_threshold(tmp_path, monkeypatch):
     assert observed == [signal.body] == [{"kind": "tombstone_auto_reopened", "box_id": id, "signature": message.signature, "reports": 3}]
     assert path.read_bytes() == committed_bytes
     assert (
-        asyncio.run(Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".chupa/state"))._run(root, "show", f"HEAD:{record_path(f'tombstone-{id}')}")).encode()
+        asyncio.run(Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))._run(root, "show", f"HEAD:{record_path(f'tombstone-{id}')}")).encode()
         == committed_bytes
     )
-    restarted = storm_producer(root=box.root, fs=box.fs, journal=Journal(root / ".chupa/state", clock), clock=clock)
+    restarted = storm_producer(root=box.root, fs=box.fs, journal=Journal(root / ".clutch/state", clock), clock=clock)
     before = restarted._rereport.journal.read()
     for _ in range(3):
         restarted.enqueue(**fields, occurrence_id="signature-crossing")
@@ -204,8 +204,8 @@ def test_tombstone_rereports_reopen_at_threshold(tmp_path, monkeypatch):
 
 
 def test_tombstone_reopen_requires_journal_callback(tmp_path, monkeypatch):
-    from chupa.box import RereportCallbackRequired, RereportJournal
-    from chupa.journal import Journal
+    from clutch.box import RereportCallbackRequired, RereportJournal
+    from clutch.journal import Journal
     from tests.integration.test_drain import Clock
 
     box = Box(tmp_path / "box", LocalFileSystem())
@@ -242,8 +242,8 @@ def test_tombstone_reopen_requires_journal_callback(tmp_path, monkeypatch):
 @pytest.mark.parametrize("point", ["intent", "count", "signal", "reopen", "completion"])
 @pytest.mark.parametrize("after", [False, True])
 def test_rereport_crash_replay_counts_and_reopens_once(tmp_path, monkeypatch, point, after):
-    from chupa.daemon import storm_producer
-    from chupa.journal import EventType, Journal
+    from clutch.daemon import storm_producer
+    from clutch.journal import EventType, Journal
     from tests.integration.test_drain import Clock
 
     class Crash(BaseException):
@@ -294,8 +294,8 @@ def test_rereport_crash_replay_counts_and_reopens_once(tmp_path, monkeypatch, po
 
 @pytest.mark.parametrize("after", [False, True])
 def test_late_rereport_replay_preserves_later_arrival_count(tmp_path, monkeypatch, after):
-    from chupa.daemon import storm_producer
-    from chupa.journal import Journal
+    from clutch.daemon import storm_producer
+    from clutch.journal import Journal
     from tests.integration.test_drain import Clock
 
     clock = Clock()

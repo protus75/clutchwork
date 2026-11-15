@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from chupa import control, daemon
-from chupa.control import ControlProjection, ControlRequest, publish_request
-from chupa.journal import EventType, Journal
-from chupa.seams import LocalFileSystem
+from clutch import control, daemon
+from clutch.control import ControlProjection, ControlRequest, publish_request
+from clutch.journal import EventType, Journal
+from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import root
 from tests.integration.test_effects import Crash, FakeClock
 

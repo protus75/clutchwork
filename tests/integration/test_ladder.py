@@ -4,18 +4,18 @@ import json
 
 import pytest
 
-from chupa import runner
-from chupa.__main__ import main
-from chupa.caps import consume, draws, next_rung, remaining
-from chupa.config import load_config
-from chupa.journal import EventType, Journal
-from chupa.llm import FakeLLM
+from clutch import runner
+from clutch.__main__ import main
+from clutch.caps import consume, draws, next_rung, remaining
+from clutch.config import load_config
+from clutch.journal import EventType, Journal
+from clutch.llm import FakeLLM
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
 
 ROUTING = """schema_version: 1
-state_dir: .chupa/state
+state_dir: .clutch/state
 providers:
   - name: fake
     kind: cli
@@ -43,7 +43,7 @@ def diagnosis(verdict_: str) -> str:
 
 
 def events(repo):
-    return [e for e in Journal(repo / ".chupa" / "state", clock).read() if e.ticket == STEM]
+    return [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
 
 
 def terminals(repo):
@@ -74,7 +74,7 @@ def test_escalation_rung_reaches_next_implement_without_editing_ticket(repo):
     author(repo)
     path = repo / "tickets" / STEM / "ticket.md"
     before = path.read_bytes()
-    llm = run_drain(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate"), agent({"chupa/thing.py": "ok\n"}), verdict()])
+    llm = run_drain(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate"), agent({"clutch/thing.py": "ok\n"}), verdict()])
     (first,) = terminals(repo)
     assert first == {"to": "gate_failed", "stage": "review", "reason": "logic", "dispatch": "escalate", "rung": {"tier": "high", "effort": "medium"}}
     (retry,) = [e.body for e in events(repo) if e.type == EventType.CAP_CONSUMED and e.body["cap"] == "retry"]
@@ -89,7 +89,7 @@ def test_escalation_rung_reaches_next_implement_without_editing_ticket(repo):
 @pytest.mark.parametrize("verdict_", ["reject", "abandon-human"])
 def test_reject_verdicts_auto_keep_once_and_draw_down(repo, verdict_):
     author(repo)
-    run_drain(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis(verdict_), agent({"chupa/thing.py": "ok\n"}), verdict()])
+    run_drain(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis(verdict_), agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert terminals(repo)[0] == {"to": "gate_failed", "stage": "review", "reason": "logic", "dispatch": "reject_queue", "routed": "reject_queue"}
     keeps = [e for e in events(repo) if e.type == EventType.SIGNAL and e.body.get("signal") == "reject_verdict"]
     assert [e.body for e in keeps] == [{"signal": "reject_verdict", "verdict": "keep", "actor": "machine"}]
@@ -105,7 +105,7 @@ def test_exhausted_ladder_routes_and_auto_keeps(repo):
     from tests.approval import approve
 
     approve(repo, STEM, clock)
-    run_drain(repo, [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate"), agent({"chupa/thing.py": "ok\n"}), verdict()])
+    run_drain(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate"), agent({"clutch/thing.py": "ok\n"}), verdict()])
     assert terminals(repo)[0]["dispatch"] == "reject_queue"
     assert terminals(repo)[0]["routed"] == "reject_queue"
     assert sum(e.body.get("actor") == "machine" for e in events(repo) if e.type == EventType.SIGNAL) == 1
@@ -118,13 +118,13 @@ def test_same_retry_wall_climbs_on_second_terminal(repo):
     run_drain(
         repo,
         [
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("retry"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("retry"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict(),
         ],
     )
@@ -138,16 +138,16 @@ def test_three_identical_reasons_climb_even_after_different_verdict(repo):
     llm = run_drain(
         repo,
         [
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("retry"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("escalate"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("retry"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict(),
         ],
     )
@@ -169,13 +169,13 @@ def test_same_retry_wall_at_top_routes_to_queue(repo):
     run_drain(
         repo,
         [
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("retry"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict("snag", [SNAG]),
             diagnosis("retry"),
-            agent({"chupa/thing.py": "ok\n"}),
+            agent({"clutch/thing.py": "ok\n"}),
             verdict(),
         ],
     )
@@ -194,14 +194,14 @@ def test_operator_confirm_resets_effective_rung(repo):
         assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
         return llm
 
-    run_one([agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate")])
+    run_one([agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate")])
     rung = terminals(repo)[-1]["rung"]
     sha = git(repo, "rev-parse", f"HEAD:tickets/{STEM}/ticket.md").strip()
-    consume(Journal(repo / ".chupa" / "state", clock), STEM, "retry", sha, rung=rung)
-    second = run_one([agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("reject")])
+    consume(Journal(repo / ".clutch" / "state", clock), STEM, "retry", sha, rung=rung)
+    second = run_one([agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("reject")])
     assert next(r for r in second.requests if r.surface == "implement").tier == "high"
     assert main(["confirm", STEM], cwd=repo, env=ENV, clock=clock, terminal=(lambda: True, lambda _: "y")) == 0
-    third = run_one([agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("reject")])
+    third = run_one([agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("reject")])
     assert (next(r for r in third.requests if r.surface == "implement").tier, next(r for r in third.requests if r.surface == "implement").effort) == ("medium", "medium")
 
 
@@ -217,7 +217,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
         return order("split", successors(text))
 
     if failure in {"commit", "partial"}:
-        from chupa.git import Git
+        from clutch.git import Git
 
         commit = Git.commit
 
@@ -229,7 +229,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
             return await commit(self, root, message, **kwargs)
 
         monkeypatch.setattr(Git, "commit", refuse)
-    script = [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("split"), split, requisition("rma") if failure == "review" else requisition()]
+    script = [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("split"), split, requisition("rma") if failure == "review" else requisition()]
     if failure != "review":
         script.append(requisition())
     llm = FakeLLM(script)
@@ -246,7 +246,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
         assert not (repo / "tickets/piece-one/ticket.md").exists()
         assert not (repo / "tickets/piece-two/ticket.md").exists()
         # Keep the original parked and exercise the next drain's real intake.
-        j = Journal(repo / ".chupa/state", clock)
+        j = Journal(repo / ".clutch/state", clock)
         for _ in range(load_config(None, cwd=repo).caps.retry):
             consume(j, STEM, "retry", "old")
         before = [e for e in j.read() if e.body.get("signal") == "ticket_intake"]
@@ -268,7 +268,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
         assert all((repo / f"tickets/{s}/ticket.md").is_file() for s in ("piece-one", "piece-two"))
     assert producing == expected
     assert draws(history, STEM, "diagnosis") == 1 and draws(history, STEM, "retry") == 0
-    assert not (repo / f".chupa/state/worktrees/{STEM}").exists()
+    assert not (repo / f".clutch/state/worktrees/{STEM}").exists()
 
 
 @pytest.mark.parametrize("action", ["escalate", "exhausted", "update"])
@@ -286,7 +286,7 @@ def test_rework_escalation_preserves_starting_capability_and_caps(repo, action):
 
         approve(repo, STEM, clock)
     else:
-        consume(Journal(repo / ".chupa/state", clock), STEM, "retry", "prior", rung={"tier": "high", "effort": "medium"})
+        consume(Journal(repo / ".clutch/state", clock), STEM, "retry", "prior", rung={"tier": "high", "effort": "medium"})
 
     def reply(req):
         assert req.surface == "rework" and req.tier == "high"
@@ -296,11 +296,11 @@ def test_rework_escalation_preserves_starting_capability_and_caps(repo, action):
             return order("update", [(STEM, current.replace("holds the word ok", "holds ok after narrowing"))])
         return order("escalate")
 
-    script = [agent({"chupa/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("split"), reply]
+    script = [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("split"), reply]
     if action == "update":
         script.append(requisition())
     if action == "escalate":
-        script += [agent({"chupa/thing.py": "ok\n"}), verdict()]
+        script += [agent({"clutch/thing.py": "ok\n"}), verdict()]
         llm = run_drain(repo, script)
     else:
         llm = FakeLLM(script)

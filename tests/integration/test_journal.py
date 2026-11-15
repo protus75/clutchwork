@@ -4,8 +4,8 @@ from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
-from chupa import journal as journal_mod
-from chupa.journal import Event, Journal, JournalCorruption
+from clutch import journal as journal_mod
+from clutch.journal import Event, Journal, JournalCorruption
 
 
 class FakeClock:
@@ -241,7 +241,7 @@ def test_append_fsyncs_before_returning(tmp_path, monkeypatch):
 
 
 def test_run_sequence_counts_mid_run_drought_but_not_runless_parks(tmp_path):
-    from chupa.journal import EventType, run_seq
+    from clutch.journal import EventType, run_seq
 
     journal = Journal(tmp_path, FakeClock(T0))
     park = {"to": "infra_error", "reason": "provider_drought", "provider_drought": {"tier": "high", "surface": "implement", "providers": ["claude"]}}

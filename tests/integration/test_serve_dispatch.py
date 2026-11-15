@@ -5,13 +5,13 @@ import json
 
 import pytest
 
-from chupa import daemon, runner, stages
-from chupa.audit import audit_journal
-from chupa.control import publish_request
-from chupa.journal import EventType
-from chupa.lockfile import Lockfile
-from chupa.merge import Admission
-from chupa.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
+from clutch import daemon, runner, stages
+from clutch.audit import audit_journal
+from clutch.control import publish_request
+from clutch.journal import EventType
+from clutch.lockfile import Lockfile
+from clutch.merge import Admission
+from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from tests.integration.serve_rig import (
     UpgradeChild,
     admission_config,
@@ -61,11 +61,11 @@ async def test_dispatch_republishes_ticket_changed_after_publication(root, monke
     write(root, "work", text())
     await rig.owner.scan()
     original = (root / "tickets/work/ticket.md").read_text()
-    from chupa.tickets import parse_ticket
+    from clutch.tickets import parse_ticket
 
     ticket = parse_ticket("work", original, root)
     rig.owner.publish(ticket, original)
-    revised = original.replace("## Scope fence\n- chupa/", "## Scope fence\n- revised/")
+    revised = original.replace("## Scope fence\n- clutch/", "## Scope fence\n- revised/")
     assert revised != original
     path = "tickets/work/ticket.md"
     rig.fs.write(root / path, revised.encode())
@@ -98,7 +98,7 @@ async def test_invalid_new_ticket_reaches_watcher(root, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_live_keep_dispatches_again_without_restart(root, monkeypatch):
-    from chupa.control import AdmissionRequest
+    from clutch.control import AdmissionRequest
 
     calls, _, _ = script(monkeypatch, terminal="gate_failed")
     rig = await graph(root, monkeypatch)
@@ -172,7 +172,7 @@ async def test_serve_reoffers_merge_failure(root, monkeypatch):
             await ctx.git.add(ctx.worktree(ticket.stem), ["tickets/forbidden.md"])
             await ctx.git.commit(ctx.worktree(ticket.stem), "force post-rebase regate failure")
 
-    rig = await admission_graph(root, monkeypatch, {"work": {"chupa/thing.py": "ok\n"}}, settled=settled)
+    rig = await admission_graph(root, monkeypatch, {"work": {"clutch/thing.py": "ok\n"}}, settled=settled)
     admission_ticket(root, "work")
     run = await start_admission(rig, monkeypatch)
     try:

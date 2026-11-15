@@ -5,11 +5,11 @@ from typing import get_args
 
 import pytest
 
-from chupa.box import MessageClass
-from chupa.help import COMMANDS, TOPICS, help_map, help_pick, topic_text
-from chupa.observe import STEP_KINDS
-from chupa.stats import project_stats
-from chupa.status import SETTLED
+from clutch.box import MessageClass
+from clutch.help import COMMANDS, TOPICS, help_map, help_pick, topic_text
+from clutch.observe import STEP_KINDS
+from clutch.stats import project_stats
+from clutch.status import SETTLED
 
 
 def documents():
@@ -63,7 +63,7 @@ def test_verb_what_follows_run_guide():
 def test_unresolved_link_raises():
     docs = documents()
     docs["host-contract.md"] = docs["host-contract.md"].replace("VS Code extension", "Renamed")
-    with pytest.raises(LookupError, match=r"view.chupa.details.*VS Code extension.*host-contract.md"):
+    with pytest.raises(LookupError, match=r"view.clutch.details.*VS Code extension.*host-contract.md"):
         build(docs)
     docs = documents()
     docs["host-running.md"] = docs["host-running.md"].replace("| `review` |", "| `renamed` |")
@@ -84,4 +84,4 @@ def test_help_pick_list():
             key = item["topic"]
             assert key in result and key.partition(".")[0] == current
             assert item["detail"] == result[key]["what"] and item["description"] == result[key]["link"]["label"]
-    assert items[-1]["command"] == "chupa.openSettings" and "topic" not in items[-1]
+    assert items[-1]["command"] == "clutch.openSettings" and "topic" not in items[-1]

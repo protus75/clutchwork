@@ -16,8 +16,8 @@ def test_publish_uploads_built_files(tmp_path, monkeypatch):
         calls.append((argv, cwd, check))
         if argv[:2] == ["uv", "build"]:
             directory = Path(argv[3])
-            (directory / "chupa-0.1.1.whl").write_bytes(b"wheel")
-            (directory / "chupa-0.1.1.tar.gz").write_bytes(b"sdist")
+            (directory / "clutch-0.1.1.whl").write_bytes(b"wheel")
+            (directory / "clutch-0.1.1.tar.gz").write_bytes(b"sdist")
         return Mock(returncode=0)
 
     monkeypatch.setattr(dev.subprocess, "run", fake_run)
@@ -26,7 +26,7 @@ def test_publish_uploads_built_files(tmp_path, monkeypatch):
     directory = Path(build[0][3])
     assert bump == (["uv", "version", "--bump", "patch"], tmp_path, False)  # The bump must precede the build.
     assert build == (["uv", "build", "-o", str(directory)], tmp_path, False)  # Build into the temporary directory.
-    assert publish == (["uv", "publish", str(directory / "chupa-0.1.1.tar.gz"), str(directory / "chupa-0.1.1.whl")], tmp_path, False)  # Upload both actual artifacts.
+    assert publish == (["uv", "publish", str(directory / "clutch-0.1.1.tar.gz"), str(directory / "clutch-0.1.1.whl")], tmp_path, False)  # Upload both actual artifacts.
 
 
 def test_publish_refuses_without_token(monkeypatch):
@@ -64,19 +64,19 @@ def test_test_passes_leading_options_to_pytest(monkeypatch):
 
 @pytest.fixture
 def vscode_package(tmp_path, monkeypatch):
-    extension = tmp_path / "vscode-chupa"
+    extension = tmp_path / "vscode-clutchwork"
     extension.mkdir()
     (tmp_path / "pyproject.toml").write_text('[project]\nversion = "9.8.7"\n')
-    (extension / "README.md").write_text("# chupa tickets\n\nBuilt for [chupa 0.0.1](https://pypi.org/project/chupa/0.0.1/).\n\ntail\n")
+    (extension / "README.md").write_text("# clutch tickets\n\nBuilt for [clutch 0.0.1](https://pypi.org/project/clutchwork/0.0.1/).\n\ntail\n")
     (extension / "package.json").write_text('{"version": "1.2.3"}')
     monkeypatch.setattr(dev, "ROOT", tmp_path)
     monkeypatch.setattr(dev.sys, "argv", ["dev.py", "vscode-package"])
-    return tmp_path / "dist" / "vscode-chupa-1.2.3.vsix"
+    return tmp_path / "dist" / "vscode-clutchwork-1.2.3.vsix"
 
 
 def test_vscode_package_prints_windows_path_under_wsl(vscode_package, monkeypatch, capsys):
     monkeypatch.setenv("WSL_DISTRO_NAME", "DifferentDistro")
-    windows_path = r"\\wsl.localhost\Distro\repo\dist\vscode-chupa-1.2.3.vsix"
+    windows_path = r"\\wsl.localhost\Distro\repo\dist\vscode-clutchwork-1.2.3.vsix"
     run = Mock(side_effect=[Mock(returncode=0), Mock(returncode=0, stdout=f" {windows_path}\n")])
     monkeypatch.setattr(dev.subprocess, "run", run)
 
@@ -96,7 +96,7 @@ def test_vscode_package_skips_wslpath_outside_wsl(vscode_package, monkeypatch, c
     dev.main()
 
     run.assert_called_once_with(
-        ["npx", "--yes", "@vscode/vsce", "package", "--no-dependencies", "-o", str(vscode_package)], cwd=dev.ROOT / "vscode-chupa", check=False
+        ["npx", "--yes", "@vscode/vsce", "package", "--no-dependencies", "-o", str(vscode_package)], cwd=dev.ROOT / "vscode-clutchwork", check=False
     )  # No translation subprocess outside WSL.
     assert "Windows path" not in capsys.readouterr().out  # Do not print a fabricated path outside WSL.
 
@@ -114,9 +114,9 @@ def test_vscode_package_stops_when_wslpath_fails(vscode_package, monkeypatch, ca
     assert run.call_args.args[0] == ["wslpath", "-w", str(vscode_package)]  # The failure must come from translating the packaged VSIX.
 
 
-def test_vscode_package_stamps_chupa_version(vscode_package, monkeypatch, capsys):
+def test_vscode_package_stamps_clutch_version(vscode_package, monkeypatch, capsys):
     monkeypatch.delenv("WSL_DISTRO_NAME", raising=False)
-    readme = dev.ROOT / "vscode-chupa" / "README.md"
+    readme = dev.ROOT / "vscode-clutchwork" / "README.md"
     packaged = []
 
     def fake_run(argv, *, cwd, check):
@@ -126,15 +126,15 @@ def test_vscode_package_stamps_chupa_version(vscode_package, monkeypatch, capsys
 
     monkeypatch.setattr(dev.subprocess, "run", fake_run)
     dev.main()
-    expected = "# chupa tickets\n\nBuilt for [chupa 9.8.7](https://pypi.org/project/chupa/9.8.7/).\n\ntail\n"
+    expected = "# clutch tickets\n\nBuilt for [clutch 9.8.7](https://pypi.org/project/clutchwork/9.8.7/).\n\ntail\n"
     assert packaged == [expected]  # The package must see the engine version and intact surrounding text.
     assert readme.read_text() == expected  # The stamped README must remain for the operator.
-    assert "dev: built for chupa 9.8.7" in capsys.readouterr().out  # Report the engine version, not the extension version.
+    assert "dev: built for clutch 9.8.7" in capsys.readouterr().out  # Report the engine version, not the extension version.
 
 
 def test_vscode_package_stops_without_built_for_line(vscode_package, monkeypatch):
-    readme = dev.ROOT / "vscode-chupa" / "README.md"
-    original = "# chupa tickets\n\ntail\n"
+    readme = dev.ROOT / "vscode-clutchwork" / "README.md"
+    original = "# clutch tickets\n\ntail\n"
     readme.write_text(original)
     run = Mock()
     monkeypatch.setattr(dev.subprocess, "run", run)

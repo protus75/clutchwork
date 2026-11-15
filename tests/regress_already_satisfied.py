@@ -9,8 +9,8 @@ from pathlib import Path
 def main() -> int:
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from chupa.journal import Event, EventType
-        from chupa.status import reject_queue
+        from clutch.journal import Event, EventType
+        from clutch.status import reject_queue
 
         stem = "harden-serve-activation-3"
         events = [

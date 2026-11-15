@@ -8,8 +8,8 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from chupa.audit import Violation
-from chupa.seams import LocalFileSystem, SubprocessExec
+from clutch.audit import Violation
+from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.harness import host_loop
 from tests.harness.host_loop import HOST_LOOP_EXPECTED, HOST_LOOP_MEMBERS, HostLoopReport
 
@@ -57,7 +57,7 @@ class RecordingExec(SubprocessExec):
 
     async def run(self, argv, **kwargs):
         self.calls.append((list(argv), kwargs))
-        if argv[1:3] == ["-m", "chupa"] and kwargs.get("on_spawn"):
+        if argv[1:3] == ["-m", "clutch"] and kwargs.get("on_spawn"):
             callback = kwargs["on_spawn"]
 
             def spawn(pid):
@@ -97,13 +97,13 @@ def test_host_loop_drives_supervised_fixture_serve(production, tmp_path):
     report, members, exec_ = production
     assert [e.producing_run for e in report.entries[:3]] == [f"{n}/0" for n in ("merge-add", "merge-bonus", "merge-floor")]
     assert all(e.green and not e.engine_plane_edits for e in report.entries)
-    serve_calls = [argv for argv, _ in exec_.calls if argv[1:3] == ["-m", "chupa"]]
+    serve_calls = [argv for argv, _ in exec_.calls if argv[1:3] == ["-m", "clutch"]]
     assert [argv[-1] for argv in serve_calls].count("serve") == 11
     assert [argv[-1] for argv in serve_calls].count("triage") == 6
     assert exec_.spawned == exec_.killed
     for member in members:
         assert member.task.done()
-        assert json.loads((member.root / ".chupa/state/control/active.json").read_bytes()) is None
+        assert json.loads((member.root / ".clutch/state/control/active.json").read_bytes()) is None
         costs = [e.body["cost"]["usd"] for e in member.journal.read() if e.type == "effect_completion" and (e.key or "").startswith("llm/")]
         assert costs and all(c == 0 for c in costs)
         assert any(hold is None for _, hold in member.requests)

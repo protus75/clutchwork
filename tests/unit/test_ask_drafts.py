@@ -4,8 +4,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from chupa import __main__ as entry
-from chupa import ask, observe
+from clutch import __main__ as entry
+from clutch import ask, observe
 
 
 def test_render_drafts_unit(monkeypatch):
@@ -29,8 +29,8 @@ def test_selection(monkeypatch, capsys):
 @pytest.mark.parametrize(
     ("args", "road"),
     [
-        (["prompt", "drafts", "some-stem"], "run chupa prompt drafts with no stems"),
-        (["prompt", "drafts"], "run triage, or author a ticket with chupa new"),
+        (["prompt", "drafts", "some-stem"], "run clutch prompt drafts with no stems"),
+        (["prompt", "drafts"], "run triage, or author a ticket with clutch new"),
         (["prompt", "box"], "name at least one box id"),
     ],
 )

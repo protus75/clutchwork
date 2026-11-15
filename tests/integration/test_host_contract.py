@@ -14,12 +14,12 @@ import pytest
 import yaml
 from pydantic import BaseModel
 
-from chupa import config, covgate, gates, hostfiles, providers, seams, tickets
-from chupa.lockfile import Lockfile, LockHeld
-from chupa.mergequeue import MergeQueue
+from clutch import config, covgate, gates, hostfiles, providers, seams, tickets
+from clutch.lockfile import Lockfile, LockHeld
+from clutch.mergequeue import MergeQueue
 
 ROOT = Path(__file__).resolve().parents[2]
-DOC = (ROOT / "chupa/docs/host-contract.md").read_text()
+DOC = (ROOT / "clutch/docs/host-contract.md").read_text()
 
 
 def block(name):
@@ -54,7 +54,7 @@ def inventory(model, row):
 def test_host_contract_example_loads(tmp_path):
     cfg = load(tmp_path)
     assert cfg.schema_version == 1
-    assert cfg.state_dir == tmp_path / ".chupa"
+    assert cfg.state_dir == tmp_path / ".clutch"
     assert cfg.worktree_root == cfg.state_dir / "worktrees"
     assert cfg.providers[0].package == "@openai/codex"
     assert cfg.review.mechanical[0].argv == ["uv", "run", "pytest", "-q"]
@@ -86,14 +86,14 @@ def test_python_host_setup_loads(tmp_path):
     assert set(checks) == {"unit", "integration", "lint", "format"}
     assert all(entry.trigger == "always" and entry.severity == "hard" for entry in checks.values())
     unit, integration = checks["unit"], checks["integration"]
-    assert unit.argv[:7] == ["uv", "run", "python", "-m", "chupa", "covgate", "--"]
-    assert [unit.argv[i + 1] for i, arg in enumerate(unit.argv[:-1]) if arg == "-p"] == ["chupa.testguard", "chupa.testreport"]
+    assert unit.argv[:7] == ["uv", "run", "python", "-m", "clutch", "covgate", "--"]
+    assert [unit.argv[i + 1] for i, arg in enumerate(unit.argv[:-1]) if arg == "-p"] == ["clutch.testguard", "clutch.testreport"]
     assert "--cov-context=test" in unit.argv
-    assert unit.argv[unit.argv.index("--chupa-results") + 1] == str(unit.results)
+    assert unit.argv[unit.argv.index("--clutch-results") + 1] == str(unit.results)
     assert [arg for arg in unit.argv if arg.startswith("--cov-report=json:")] == [f"--cov-report=json:{unit.coverage}"]
-    assert integration.argv == ["uv", "run", "python", "-m", "pytest", "tests/integration", "-p", "chupa.testreport", "--chupa-results", ".chupa/results/integration.json", "-n", "auto"]
-    assert integration.argv[integration.argv.index("--chupa-results") + 1] == str(integration.results)
-    assert "chupa.testguard" not in integration.argv
+    assert integration.argv == ["uv", "run", "python", "-m", "pytest", "tests/integration", "-p", "clutch.testreport", "--clutch-results", ".clutch/results/integration.json", "-n", "auto"]
+    assert integration.argv[integration.argv.index("--clutch-results") + 1] == str(integration.results)
+    assert "clutch.testguard" not in integration.argv
     assert {entry.code: entry.files for entry in cfg.review.autofix} == {"ruff-fix": ["*.py"], "ruff-format": ["*.py"]}
     matches = re.findall(r"^```toml test-gate\n(.*?)^```$", DOC, re.M | re.S)
     assert len(matches) == 1
@@ -195,7 +195,7 @@ def test_host_contract_migration_and_managed_ownership(tmp_path):
     for route in cfg.routing:
         route.candidates[0].provider = "claude"
     assert providers.routed_conduct_paths(cfg, tmp_path) == (tmp_path / "CLAUDE.md",)
-    assert "chupa core" in hostfiles.classify_core(None).paved_road
+    assert "clutch core" in hostfiles.classify_core(None).paved_road
     inventory(tickets.Frontmatter, yaml.safe_load(block("ticket-fields")))
     mentions(
         "additive-only",
@@ -275,7 +275,7 @@ def test_host_contract_seam_inventory(tmp_path):
         assert captured[-1][2] == "capture.txt"
         if verdict == "fail":
             assert report.findings[0].paved_road and "SECRET" not in report.findings[0].message
-    command = inspect.getsource(__import__("chupa.stages", fromlist=["run_host_command"]).run_host_command)
+    command = inspect.getsource(__import__("clutch.stages", fromlist=["run_host_command"]).run_host_command)
     assert "rc == 0" in command and "spool.write" in command and "redactor.scrub" in command
     mentions(
         "Clock = Callable[[], datetime]",

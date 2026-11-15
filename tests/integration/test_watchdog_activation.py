@@ -8,12 +8,12 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from chupa import __main__ as cli
-from chupa import providers, runner, stages
-from chupa.driver import LlmStage
-from chupa.journal import EventType
-from chupa.requisition import FIRST_REVIEW, review_ticket
-from chupa.watchdog import EventConsumer
+from clutch import __main__ as cli
+from clutch import providers, runner, stages
+from clutch.driver import LlmStage
+from clutch.journal import EventType
+from clutch.requisition import FIRST_REVIEW, review_ticket
+from clutch.watchdog import EventConsumer
 from eval import diagnose, harness
 from tests.integration.serve_rig import finish, graph, terminals, until
 from tests.integration.test_cli import root, write
@@ -22,7 +22,7 @@ from tests.integration.test_providers import CONFIG, PythonProviderExec, claude_
 from tests.integration.test_requisition import TICKET
 from tests.integration.test_scheduler import text, turn
 
-SPECS = Path(__file__).resolve().parents[2] / "chupa" / "specs"
+SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 WATCH_CONFIG = CONFIG.replace(
     "review: {}",
     """  - {tier: high, surface: review, candidates: [{provider: claude, model: c-max}]}
@@ -65,7 +65,7 @@ async def call(rig, driver, ticket, *, surface="implement", attempt=0, expected=
         effort="low",
         stuck_budget=stuck,
         expected_budget=expected,
-        scope_fence=("chupa/thing.py",) if surface == "implement" else (),
+        scope_fence=("clutch/thing.py",) if surface == "implement" else (),
         run_seq=sequence,
     )
 
@@ -90,7 +90,7 @@ async def test_every_production_driver_surface_is_watched(tmp_path, monkeypatch)
         req, detector, meter = seen[-1]
         assert req.surface == surface and req.ticket == ticket.stem
         assert req.worktree == (rig.root if surface == "implement" else None)
-        assert detector.observe.fence == (("chupa/thing.py",) if surface == "implement" else ())
+        assert detector.observe.fence == (("clutch/thing.py",) if surface == "implement" else ())
         assert detector.expected_seconds == ticket.expected_minutes * 60
         assert detector.stuck_seconds == 1200
         assert meter.tools == ({"i1"} if surface == "implement" else set())
@@ -140,7 +140,7 @@ async def test_every_production_driver_surface_is_watched(tmp_path, monkeypatch)
         )
         assert verdict.verdict == "approve" and ctx.driver.detector is d
         calls.append(d)
-        from chupa.gates import GateReport
+        from clutch.gates import GateReport
 
         return GateReport(code="requisition_review", verdict="pass")
 
@@ -181,7 +181,7 @@ async def test_every_production_driver_surface_is_watched(tmp_path, monkeypatch)
         )
         assert verdict.verdict == "approve" and ctx.driver.detector is parent
         assert seen[-1][0].surface == "requisition_review" and seen[-1][1] is parent
-        from chupa.gates import GateReport
+        from clutch.gates import GateReport
 
         return GateReport(code="requisition_review", verdict="pass")
 
@@ -246,7 +246,7 @@ async def test_production_soft_band_notifies_once_without_kill(tmp_path, monkeyp
         if count % 3 == 1:
             rig.time.advance(90)
         if count % 3 == 2:
-            (tmp_path / "chupa/thing.py").write_text(str(count))
+            (tmp_path / "clutch/thing.py").write_text(str(count))
         return await invoke(self, req, model, **kwargs)
 
     monkeypatch.setattr(providers.CliAdapter, "invoke", spinning)

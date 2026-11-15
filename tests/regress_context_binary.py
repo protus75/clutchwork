@@ -10,13 +10,13 @@ from pathlib import Path
 def main() -> int:
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from chupa.tickets import TicketInvalid, validate_ticket
+        from clutch.tickets import TicketInvalid, validate_ticket
         from tests.integration.test_tickets import VALID, complete
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "image.png").write_bytes(b"\x89PNG\r\n\x1a\n")
-            text = complete(VALID.replace("chupa/thing.py\n\n## Goal", "image.png\n\n## Goal"))
+            text = complete(VALID.replace("clutch/thing.py\n\n## Goal", "image.png\n\n## Goal"))
             try:
                 validate_ticket("t-one", text, root)
             except TicketInvalid as exc:
