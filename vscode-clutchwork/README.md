@@ -6,7 +6,7 @@ A VS Code extension for the [clutch](https://pypi.org/project/clutchwork/) ticke
 
 ![clutch ticket lifecycle](https://github.com/protus75/clutchwork/raw/HEAD/vscode-clutchwork/images/Lifecycle.png)
 
-Built for [clutch 0.1.5](https://pypi.org/project/clutchwork/0.1.5/).
+Built for [clutch 0.2.0](https://pypi.org/project/clutchwork/0.2.0/).
 
 ## Prerequisites
 
