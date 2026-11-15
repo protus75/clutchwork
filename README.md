@@ -1,6 +1,6 @@
 # ClutchWork
 
-*CLI Harness for Unattended Pipeline Agents*
+*CLI Lifecycle for Unattended Ticket-Chewing Hatchlings*
 
 ClutchWork is an engine that runs CLI coding agents through the ticket lifecycle against a git repository. Each ticket lives in `tickets/<stem>/`; its markdown and JSON files, including `ticket.md`, `run.md`, `review.md`, `diagnosis.json`, and others, pass work between stages. Reviewed work merges to local `main`. See the [ticket lifecycle diagram](https://github.com/protus75/clutchwork/blob/main/vscode-clutchwork/media/ticket-lifecycle.svg).
 
