@@ -170,13 +170,12 @@ class Journal:
             names = [body[field] for field in ("signal", "kind") if field in body]
             if len(names) != 1 or not isinstance(names[0], str) or names[0] not in SIGNAL_NAMES:
                 raise ValueError("signal body must carry exactly one of signal or kind naming a member of SIGNAL_NAMES; use a listed name or add the name with its consumer")
-        event = Event(EVENT_VERSIONS[type], type, render_ts(self._clock()), ticket, key, body)
-        data = (json.dumps(asdict(event), separators=(",", ":")) + "\n").encode()
-
         self.dir.parent.mkdir(parents=True, exist_ok=True)
         lock_fd = os.open(self.dir.parent / "journal.lock", os.O_RDWR | os.O_CREAT, 0o644)
         try:
             fcntl.flock(lock_fd, fcntl.LOCK_EX)
+            event = Event(EVENT_VERSIONS[type], type, render_ts(self._clock()), ticket, key, body)
+            data = (json.dumps(asdict(event), separators=(",", ":")) + "\n").encode()
             now = datetime.fromisoformat(event.ts)
             segment = self._active_segment(now)
             _truncate_torn_tail(segment)
