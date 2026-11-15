@@ -8,9 +8,6 @@ kind: feature
 ## Depends on
 - none
 
-## Runs before
-- restore-orphan-ticket-stems
-
 ## Context
 - clutch/tickets.py::lint_findings
 - clutch/tickets.py::ticket_path
@@ -53,7 +50,7 @@ Out:
 - Guessing or applying the right stem. The check reports; a person or `restore-orphan-ticket-stems` renames. No automatic rename, no alias table, no stem-history record in the journal.
 - Matching on the old product name. The rule is journal identity, not a substring: one of the ten orphans is `engine-text-names-chupa-verbs`, where the substitution is interior, and a prefix or `chupa` match would both miss it and expire the moment the next rename uses different words.
 - `clutch/status.py`: `lint_admission` keeps deciding refuse, noop, and admit as it does. An orphan has no events, so it is already admitted and reaches the findings.
-- The 526 settled tickets whose directories match their stems, and the ten already-orphaned directories. Fixing those is `restore-orphan-ticket-stems`, which this ticket runs ahead of so the check exists before the repair.
+- The settled tickets whose directories match their stems. The ten directories that commit `b6512ac5` orphaned were renamed back to their journaled stems in commit `001d3baf`, so no orphan remains for this check to find in this repo; it exists to refuse the next one.
 - `clutch doctor`, the snapshot, and the extension. The finding surfaces in `clutch lint` and in the drain's parked report, and nowhere else: `load_tickets` in `clutch/observe.py` builds a row's `invalid:` status from `parse_ticket` errors only, so neither a `lint_findings` finding nor this one reaches the snapshot, and `clutch status` keeps listing an orphan among its queued rows until the drain parks it. Carrying lint findings into the snapshot is a separate change for a separate ticket.
 
 ## Scope fence
