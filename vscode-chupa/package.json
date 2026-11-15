@@ -2,7 +2,7 @@
 	"name": "vscode-chupa",
 	"displayName": "chupa tickets",
 	"description": "VS Code extension for the chupa ticket system (https://pypi.org/project/chupa/): tickets as an SCM-style dependency graph: blocked, queued, running, merged.",
-	"version": "0.0.41",
+	"version": "0.0.43",
 	"publisher": "chunkydragon",
 	"icon": "media/marketplace-icon.png",
 	"extensionKind": [
@@ -79,7 +79,7 @@
 					"default": [
 						".venv/bin/chupa"
 					],
-					"markdownDescription": "The command and arguments used to run chupa in this workspace.\n\nBefore: The default uses the host’s .venv/bin/chupa.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/chupa/docs/host-contract.md#vs-code-extension)"
+					"markdownDescription": "The command and arguments used to run chupa in this workspace.\n\nBefore: The default uses the host\u2019s .venv/bin/chupa.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/chupa/blob/main/chupa/docs/host-contract.md#vs-code-extension)"
 				},
 				"chupa.statsWindow": {
 					"type": "string",
@@ -192,13 +192,13 @@
 			},
 			{
 				"command": "chupa.ticket.priority",
-				"title": "Set priority…",
+				"title": "Set priority\u2026",
 				"category": "chupa",
 				"enablement": "chupaPriority == 'on'"
 			},
 			{
 				"command": "chupa.ticket.runsBefore",
-				"title": "Run before…",
+				"title": "Run before\u2026",
 				"category": "chupa",
 				"enablement": "chupaRunsBefore == 'on'"
 			},
@@ -236,7 +236,7 @@
 			},
 			{
 				"command": "chupa.engine",
-				"title": "Engine…",
+				"title": "Engine\u2026",
 				"icon": "$(server-process)"
 			},
 			{
