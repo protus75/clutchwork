@@ -2,7 +2,7 @@
 	"name": "vscode-clutchwork",
 	"displayName": "ClutchWork tickets",
 	"description": "VS Code extension for the ClutchWork ticket system (https://pypi.org/project/clutchwork/): tickets as an SCM-style dependency graph: blocked, queued, running, merged.",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"publisher": "chunkydragon",
 	"icon": "media/marketplace-icon.png",
 	"extensionKind": [
@@ -79,7 +79,7 @@
 					"default": [
 						".venv/bin/clutch"
 					],
-					"markdownDescription": "The command and arguments used to run clutch in this workspace.\n\nBefore: The default uses the host’s .venv/bin/clutch.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md#vs-code-extension)"
+					"markdownDescription": "The command and arguments used to run clutch in this workspace.\n\nBefore: The default uses the host\u2019s .venv/bin/clutch.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md#vs-code-extension)"
 				},
 				"clutch.statsWindow": {
 					"type": "string",
@@ -192,13 +192,13 @@
 			},
 			{
 				"command": "clutch.ticket.priority",
-				"title": "Set priority…",
+				"title": "Set priority\u2026",
 				"category": "clutch",
 				"enablement": "clutchPriority == 'on'"
 			},
 			{
 				"command": "clutch.ticket.runsBefore",
-				"title": "Run before…",
+				"title": "Run before\u2026",
 				"category": "clutch",
 				"enablement": "clutchRunsBefore == 'on'"
 			},
@@ -236,7 +236,7 @@
 			},
 			{
 				"command": "clutch.engine",
-				"title": "Engine…",
+				"title": "Engine\u2026",
 				"icon": "$(server-process)"
 			},
 			{
