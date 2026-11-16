@@ -93,7 +93,7 @@ def test_box_closed_sets_and_constants():
 
 def test_caps_closed_sets_and_constants():
     assert caps.CAPS == ("diagnosis", "retry", "infra", "premise_bounce")
-    assert caps.DECLARED_CAPS == ("diagnosis", "retry", "infra", "premise_bounce", "hardening")
+    assert caps.DECLARED_CAPS == ("diagnosis", "retry", "infra", "premise_bounce", "hardening", "supervise")
     assert caps.LEVELS == ("low", "medium", "high", "max")
 
 

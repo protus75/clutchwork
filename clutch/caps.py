@@ -8,8 +8,8 @@ from clutch.providers import ProviderSetupError, resolve
 from clutch.tickets import Ticket
 
 CAPS = ("diagnosis", "retry", "infra", "premise_bounce")
-# Audit must recognize 47 historical hardening draws; no new draws are made.
-DECLARED_CAPS = CAPS + ("hardening",)
+# Audit recognizes historical hardening draws; supervise counts supervisor keeps and never routes.
+DECLARED_CAPS = CAPS + ("hardening", "supervise")
 LEVELS = ("low", "medium", "high", "max")
 
 
@@ -18,14 +18,14 @@ def _check(cap: str) -> None:
         raise ValueError(f"cap {cap!r} is not one of DECLARED_CAPS {DECLARED_CAPS}")
 
 
-def lineage(events: Iterable[Event], stem: str) -> tuple[Event, ...]:
+def lineage(events: Iterable[Event], stem: str, *, actors: tuple[str, ...] = ("operator", "supervisor")) -> tuple[Event, ...]:
     """The one lineage window for both cap counts and effective capability."""
     history = tuple(events)
     keep = next(
         (
             i
             for i, e in reversed(list(enumerate(history)))
-            if e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "reject_verdict" and e.body.get("verdict") == "keep" and e.body.get("actor") == "operator"
+            if e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "reject_verdict" and e.body.get("verdict") == "keep" and e.body.get("actor") in actors
         ),
         -1,
     )
@@ -36,6 +36,11 @@ def draws(events: Iterable[Event], stem: str, cap: str) -> int:
     """Count this stem's draws for one cap across all ticket content revisions."""
     _check(cap)
     return sum(e.type == EventType.CAP_CONSUMED and e.ticket == stem and e.body.get("cap") == cap for e in lineage(events, stem))
+
+
+def supervise_draws(events: Iterable[Event], stem: str) -> int:
+    """Count supervisor keeps within the operator lineage."""
+    return sum(e.type == EventType.CAP_CONSUMED and e.ticket == stem and e.body.get("cap") == "supervise" for e in lineage(events, stem, actors=("operator",)))
 
 
 def remaining(caps_config: Caps | ConfigSnapshot, events: Iterable[Event], stem: str, cap: str) -> int:
@@ -52,7 +57,7 @@ def failed_attempt(terminal: Mapping) -> bool:
 
 
 def failed_attempts(events: Iterable[Event], stem: str) -> int:
-    """Failures are terminals, never cap draws; only an operator keep resets them."""
+    """Failures are terminals, never cap draws; operator and supervisor keeps reset them."""
     return sum(e.type == EventType.STATE_TRANSITION and e.ticket == stem and failed_attempt(e.body) for e in lineage(events, stem))
 
 
@@ -75,7 +80,7 @@ def consume(journal: Journal, stem: str, cap: str, ticket_sha: str, *, rung: dic
 
 
 def capability(ticket: Ticket, events: Iterable[Event]) -> tuple[str, str]:
-    """The authored capability or the latest retry rung inside the operator keep fold."""
+    """The authored capability or the latest retry rung inside the lineage fold."""
     rung = next(
         (e.body["rung"] for e in reversed(lineage(events, ticket.stem)) if e.type == EventType.CAP_CONSUMED and e.ticket == ticket.stem and e.body.get("cap") == "retry" and "rung" in e.body), None
     )

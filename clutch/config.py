@@ -182,6 +182,7 @@ class Caps(_Strict):
     attempts: Count = 5
     quarantine: Count = 5
     poison: Count = 2
+    supervise: Count = 2
 
 
 class CircuitBreaker(_Strict):

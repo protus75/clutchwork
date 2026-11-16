@@ -132,7 +132,7 @@ Config:
     worktree_root: unset
     routing_default_tier: medium
     scheduler: {max_unmerged: 2}
-    caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2}
+    caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
     drain: {max_runtime_hours: 12, max_ticket_minutes: 90}
     retro: {enabled: true, test_timing: true, coverage: true, merges: {enabled: true, every: 25}, days: {enabled: true, every: 7}, spikes: {enabled: true, count: 5, kinds: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]}}
@@ -186,7 +186,7 @@ Scheduler:
   defaults: {max_unmerged: 2}
 Caps:
   required: []
-  defaults: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2}
+  defaults: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2, supervise: 2}
 CircuitBreaker:
   required: []
   defaults: {k: 3, cooldown_minutes: 10}

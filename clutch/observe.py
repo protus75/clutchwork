@@ -240,7 +240,7 @@ def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
     window = events
     for i, e in enumerate(events):
         body = e.get("body", {})
-        if e.get("ticket") == stem and body.get("signal") == "reject_verdict" and body.get("verdict") == "keep" and body.get("actor") == "operator":
+        if e.get("ticket") == stem and body.get("signal") == "reject_verdict" and body.get("verdict") == "keep" and body.get("actor") in ("operator", "supervisor"):
             window = events[i + 1 :]
     rung = next((e["body"]["rung"] for e in reversed(window) if e.get("type") == "cap_consumed" and e.get("ticket") == stem and e["body"].get("cap") == "retry" and "rung" in e["body"]), None)
     meta = frontmatter(ctx.root / "tickets" / stem / "ticket.md")

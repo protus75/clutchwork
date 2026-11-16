@@ -382,7 +382,7 @@ with no model call. If the worktree exists, `diagnosis.json` is lifted and a `di
 ### 6.4 Caps and escalation
 
 Caps bound how much one ticket can fail over the stem's **lineage**: every event since the
-last operator keep. Editing `ticket.md` never resets a cap; only an operator `confirm` does.
+last operator keep or supervisor keep (`reject_verdict keep actor: supervisor`). Editing `ticket.md` never resets a cap; only an operator `confirm` or a supervisor keep does.
 Machine keeps never reset counts. Draws are journaled `cap_consumed` events, except `attempts`,
 which counts failed terminal `state_transition` events directly and journals no cap draw.
 
@@ -395,6 +395,7 @@ which counts failed terminal `state_transition` events directly and journals no 
 | `premise_bounce` | 1 | each `premise_failed` (not over-bound renders or `requisition` snags) |
 | `quarantine` | 5 | flake quarantine size |
 | `poison` | 2 | read by nothing |
+| `supervise` | 2 | each supervisor keep; counted since the last operator keep, so supervisor keeps never reset it and it never routes a stem |
 
 Failed attempts are `gate_failed`, `premise_failed`, `incomplete`, `infra_error`, and `timeout` terminals.
 A requisition-stage `premise_failed`, an `infra_error` with reason `provider_drought`, `budget_exceeded`, an `abandoned` reap,

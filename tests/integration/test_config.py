@@ -72,6 +72,7 @@ def test_valid_config_loads_from_cwd_with_shipped_defaults(tmp_path):
         "attempts": 5,
         "quarantine": 5,
         "poison": 2,
+        "supervise": 2,
     }
     assert cfg.circuit_breaker.k == 3
     assert cfg.circuit_breaker.cooldown_minutes == 10
