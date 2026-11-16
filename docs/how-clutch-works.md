@@ -78,7 +78,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 The repo's one dev command; standard library only, every task through `uv`.
 `./dev.py test` runs the suite in parallel on the available cores by default.
 Each test has a 120-second hard limit.
-Tests live in `tests/unit/` (no disk, network or process; run under `clutch.testguard`) and
+Tests live in `tests/unit/` (disk only under `tmp_path`, no network or process; run under `clutch.testguard`) and
 `tests/integration/`. Run one suite with `./dev.py test tests/unit` or
 `./dev.py test tests/integration`.
 A unit test file may share its name with an integration test file.
@@ -213,7 +213,7 @@ Failures reproduced on the base commit are reported as second problems rather th
 Implement updates documentation statements the diff makes false inside the scope fence in the same commit.
 
 The Implement prompt separates unit and integration suites. Unit tests use fakes for clock,
-filesystem, processes and network, avoid disk, network and processes, and run in milliseconds.
+filesystem, processes and network, read and write disk only under `tmp_path`, never read or write a repo file, start a process, or open a network connection, and run in milliseconds.
 Integration tests exercise seams using bounded, parallel-safe fixtures or simulators. Flaky tests
 must have nondeterminism removed, without retries. Coverage thresholds and test time budgets must
 not be lowered unless an acceptance criterion requires it; an unmet gate requires `premise_failed`.

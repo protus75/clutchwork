@@ -5,7 +5,7 @@ emits: packing-slip
 tier: medium
 effort: medium
 gates: []
-version: "2.13"
+version: "2.14"
 ---
 ## Role
 
@@ -59,8 +59,8 @@ Read the ticket and the context files below before writing anything. Then:
 
 Put each test in the suite its kind belongs to, as the host lays them out (for a Python host,
 `tests/unit/` and `tests/integration/`). A unit test checks one unit with fakes for the clock,
-filesystem, processes and network. It never reads or writes disk, opens a network connection or
-starts a process, and it runs in milliseconds. An integration test checks a seam: an API, a
+filesystem, processes and network. It reads and writes disk only under `tmp_path`; it never reads or writes a repo file, starts a process, or
+opens a network connection, and it runs in milliseconds. An integration test checks a seam: an API, a
 command-line interface, a process boundary or real files. It uses fixtures or simulators so it
 finishes in bounded time and can run in parallel with other tests. A test that can both pass and
 fail on the same code is broken. Remove the nondeterminism (fake time, fixed ordering, isolated

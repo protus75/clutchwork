@@ -86,6 +86,12 @@ A file that many tickets fence makes their changes collide. Keep new work out of
   code, otherwise with `Runs before`.
 - A documentation update edits only the section the change makes false.
 
+## Unit and integration tests
+
+A test under `tests/unit/` reads and writes disk only under `tmp_path`; it never reads or writes a repo file, starts a process, or opens a network connection. In the unit suite `clutch.testguard` blocks processes and network connections but not disk, so reviewers check the disk part. Place a test that needs a repo file, a process, or the network under `tests/integration/` and fence that file. A test using only `tmp_path`, in-memory buffers, or fakes stays under `tests/unit/`, as does a test that reaches a repo file only through an injected seam or fake. Updating a pinned value in an existing unit test that already reads a repo file does not move that test.
+
+When Scope in adds lines to a file with a floor above 0 under `[coverage.files]` in `test-gate.toml`, a fenced `tests/unit/` test runs those lines. When running those lines needs a repo file, a process, or the network, Scope in names an in-fence seam, such as an injected reader or a parameter carrying the bytes, through which a fenced `tests/unit` test runs those lines with a fake, and moves only the real disk, process, or network checks to `tests/integration/`. No seam is required for an I/O site where Scope in adds no line.
+
 ## Path matching
 
 A fence entry matches a file when the file IS that path or lives under it as a directory:
