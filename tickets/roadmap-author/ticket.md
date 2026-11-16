@@ -115,9 +115,9 @@ Scope out:
 4. `tests/unit/test_roadmap_author.py::test_full_window_calls_no_model`: with two linked open rows and `ahead=2`, `author_ahead` files no message and never calls `author_messages`. Its last line is `roadmap: 2 of 2 rows open`. Ruled out: a provider preflight or Author call when nothing is due.
 5. `tests/unit/test_roadmap_author.py::test_strikes_and_links_existing`. Given a linked row whose state is `merged`, and an unlinked row whose `tickets/y-row/ticket.md` is in `files`, `author_ahead` makes two commits:
    - `clutch(roadmap): strike x-row`: after it, the written roadmap's `x-row` line parses as struck;
-   - `clutch(roadmap): link y-row`: after it, the `y-row` line parses as linked.
+   - `clutch(roadmap): link y-row`: after it, the `y-row` line parses as linked and the `x-row` line still parses as struck.
 
-   The output holds `roadmap: struck row <n> x-row` and `roadmap: linked row <n> y-row`. Ruled out: a merged row left unstruck, and an authored row left unlinked or re-filed.
+   Both commits pass `only=["docs/roadmap.md"]`. The output holds `roadmap: struck row <n> x-row` and `roadmap: linked row <n> y-row`. Ruled out: a merged row left unstruck, a later edit that undoes an earlier one, and an authored row left unlinked or re-filed.
 6. `tests/unit/test_roadmap_author.py::test_unsettled_and_waiting_rows_are_reported`:
    - when `author_messages` leaves the message pending, `author_ahead` outputs `roadmap: row <n> <stem> pending -- run clutch roadmap author again` and makes no link commit;
    - a hand-test row with no evidence outputs a `waits:` line carrying `choose`'s reason and paved road.
@@ -137,7 +137,7 @@ Scope out:
    Three runs of `main(["roadmap", "author", "--ahead", "1"], ...)`:
    - First run, with a FakeLLM holding `tests/integration/test_triage.py::author_reply("first-row")` and an approving requisition review: it returns 0 and prints `roadmap: authored row 1 first-row` and `roadmap: 1 of 1 rows open`. The last two commit subjects are `clutch(first-row): ticket` then `clutch(roadmap): author first-row`, and the second lists only `docs/roadmap.md`. Row 1's line contains `tickets/first-row/`. `tickets/first-row/ticket.md` has `state: confirmed`. No request has surface `triage`.
    - Second run, with an empty FakeLLM: it returns 0, makes no request and no commit, and prints `roadmap: 1 of 1 rows open`.
-   - Third run, after the test journals a `state_transition` to `merged` for `first-row` and uses a FakeLLM for `second-row`: it commits `clutch(roadmap): strike first-row` before `clutch(second-row): ticket` and `clutch(roadmap): author second-row`.
+   - Third run, after the test journals a `state_transition` to `merged` for `first-row` and uses a FakeLLM for `second-row`: it commits `clutch(roadmap): strike first-row` before `clutch(second-row): ticket` and `clutch(roadmap): author second-row`. Afterwards `docs/roadmap.md`'s `first-row` line parses as struck and its `second-row` line contains `tickets/second-row/`.
 
    Ruled out: a draft under NO_GO, a triage model call, a second authoring inside the window, and a merged row left unstruck.
 9. `tests/integration/test_roadmap_author.py::test_roadmap_author_refusals_change_nothing` runs three cases in repos built as in criterion 8: `docs/roadmap.md` modified, the writer lock held by the test, and `--ahead 0`. Each returns 2, with stderr starting `clutch roadmap:`. In all three, HEAD, the bytes of `docs/roadmap.md`, and the Box directory are unchanged, and no FakeLLM request is made. Ruled out: a refusal reached after a write.
