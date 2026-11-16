@@ -19,7 +19,7 @@ import yaml
 
 from clutch.artifacts import Cost, Finding, Harvest, StageResult
 from clutch.box import BOX_DIR
-from clutch.caps import capability, consume, next_rung, spent, spent_reason
+from clutch.caps import capability, consume, lineage, next_rung, spent, spent_reason, supervise_draws
 from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.driver import Driver
 from clutch.effects import Effects
@@ -241,7 +241,7 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None, consume_ha
     if drought is not None or quota:
         return await failure_terminal(ctx, ticket, outcome=result.outcome, stage=stage, findings=result.findings, attempt=run.attempt, provider_drought=drought)
     if spent(ctx.config.caps, ctx.driver.journal.read(), ticket.stem, pending={"to": result.outcome}) == "attempts":
-        return await failure_terminal(ctx, ticket, outcome=result.outcome, stage=stage, findings=result.findings, attempt=run.attempt)
+        return await failure_terminal(ctx, ticket, outcome=result.outcome, stage=stage, findings=result.findings, attempt=run.attempt, supervised=True)
     if result.outcome in {"infra_error", "timeout"}:
         ticket_sha = await ctx.git.rev_parse(ctx.repo, f"HEAD:{ticket_path(ticket.stem)}")
         consume(ctx.driver.journal, ticket.stem, "infra", ticket_sha)
@@ -314,6 +314,7 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None, consume_ha
         rework_requested=requested,
         mechanical=over_bound,
         verdict=verdict if diagnosed else None,
+        supervised=True,
     )
 
 
@@ -339,10 +340,11 @@ async def failure_terminal(
     mechanical: bool = False,
     verdict: str | None = None,
     provider_drought: dict | None = None,
+    supervised: bool = False,
 ) -> str:
     """Preserve the producing terminal, then retire a published split before wiping and returning."""
     from clutch.daemon import storm_producer
-    from clutch.rework import ReworkOrder
+    from clutch.rework import ReworkOrder, ReworkReply, Supervise
 
     reason = ",".join(sorted({f.code for f in findings})) or outcome
     terminal = {"to": outcome, "stage": stage, "reason": reason}
@@ -431,7 +433,45 @@ async def failure_terminal(
             assert_never(terminal_dispatch)
     if not mechanical and not split and routed and provider_drought is None:
         terminal["routed"] = "reject_queue"
+    supervised_sha = None
+    cap = spent(ctx.config.caps, history, ticket.stem, pending=terminal)
+    if (
+        supervised
+        and not split
+        and not rework_requested
+        and provider_drought is None
+        and terminal.get("routed") == "reject_queue"
+        and not any(f.code == "ticket_changed" for f in findings)
+        and (terminal["to"] == "premise_failed" or (terminal["to"] == "gate_failed" and cap is not None))
+        and ctx.worktree(ticket.stem).exists()
+        and supervise_draws(history, ticket.stem) < ctx.config.caps.supervise
+    ):
+        from clutch.daemon import apply_rework
+
+        lessons = tuple(
+            dict.fromkeys(
+                lesson for e in lineage(history, ticket.stem) if e.type == EventType.SIGNAL and e.ticket == ticket.stem and e.body.get("signal") == "diagnosis" for lesson in e.body.get("lessons", [])
+            )
+        )
+        trigger = spent_reason(cap) if cap is not None else "premise_failed"
+        result = await apply_rework(ctx, ticket, findings, attempt=attempt, supervise=Supervise(trigger, lessons))
+        proposal = result.artifact
+        if result.outcome == "ok" and isinstance(proposal, ReworkOrder) and proposal.action == "update":
+            supervised_sha = await ctx.git.rev_parse(ctx.repo, f"HEAD:{ticket_path(ticket.stem)}")
+        else:
+            action = proposal.action if isinstance(proposal, ReworkReply) else "none"
+            lines = ["# Supervisor Rework escalated", "", f"- trigger: {trigger}", f"- outcome: {result.outcome}", f"- action: {action}", "", "## Findings", ""]
+            lines.extend(f"- `{f.code}`: {f.message} -- {f.paved_road}" for f in result.findings)
+            if not result.findings:
+                lines.append("- none")
+            if isinstance(proposal, ReworkReply) and proposal.tickets:
+                lines.extend(["", "## Proposed ticket", "", "````markdown", proposal.tickets[0].ticket, "````"])
+            ctx.fs.write(ctx.worktree(ticket.stem) / "tickets" / ticket.stem / "rework.md", ctx.driver.redactor.scrub("\n".join(lines) + "\n").encode())
+            await lift_outbox(ctx, ticket.stem, "rework-proposal", attempt=attempt, only="rework.md")
     ctx.driver.journal.append(EventType.STATE_TRANSITION, terminal, ticket=ticket.stem)
+    if supervised_sha is not None:
+        consume(ctx.driver.journal, ticket.stem, "supervise", supervised_sha)
+        ctx.driver.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "supervisor", "ticket_sha": supervised_sha}, ticket=ticket.stem)
     if split:
         checkout = Checkout(ctx.repo, ctx.config, ctx.env, ctx.exec_, ctx.git, ctx.driver.journal, ctx.fs, ctx.driver.clock, ctx.driver.sleep)
         await reject_ticket(ticket.stem, checkout)

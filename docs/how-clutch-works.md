@@ -175,6 +175,7 @@ skips symlinks without error, and refuses a file over 256 KB.
 | `harvest` | `attempts/<n>/harvest.json` |
 | `harvest-rework` | `attempts/<n>/harvest.json` when Rework itself failed |
 | `diagnosis` | `diagnosis.json` |
+| `rework-proposal` | `rework.md` (the supervisor's refused or escalated edit) |
 
 Other engine commits on `main`: `ticket` (intake), `confirmed`, `rejected`, `rework`, `clutch(decisions): <id>` (a triage decision record), `clutch: retro NNNNNN`, `clutch(<stem>): undo refused rework`, and the squash merge itself. Check's `clutch(<stem>): autofix` commit lands on the ticket branch, not on `main`.
 
@@ -352,11 +353,14 @@ After any other non-ok terminal, `runner.drive` does, in order:
    the worktree, and stops (section 6.7), skipping the cap, Diagnosis, and Rework steps.
 3. A provider **drought** or quota result parks the stem with no diagnosis (section 8.3).
 4. A failure reaching `caps.attempts` goes straight to the terminal, routed to the Reject queue
-   with reason `attempts cap spent`, skipping the cap draw, Diagnosis, and Rework.
+   with reason `attempts cap spent`, skipping the cap draw, Diagnosis, and step 7's Rework, then going to the dispatch and supervisor steps.
 5. `infra_error` / `timeout` draw the `infra` cap; `premise_failed` draws `premise_bounce`, except a requisition-stage snag ends before dispatch and draws no cap (section 6.7); `incomplete` draws neither cap.
 6. **Diagnosis** (section 6.3), unless the outcome is `budget_exceeded` or an over-bound render.
 7. **Rework** if diagnosis said `split`, or the render was over bound (section 6.5).
-8. Decide the dispatch (retry, escalate, or the Reject queue) and journal the terminal.
+8. Handle dispatch and supervision:
+   - **8a.** Decide the dispatch (retry, escalate, or the Reject queue).
+   - **8b.** Run the supervisor step (section 6.6) when it applies.
+   - **8c.** Journal the terminal, then any supervisor keep.
 9. Remove the worktree.
 
 ### 6.2 Harvest
@@ -401,7 +405,7 @@ Failed attempts are `gate_failed`, `premise_failed`, `incomplete`, `infra_error`
 A requisition-stage `premise_failed`, an `infra_error` with reason `provider_drought`, `budget_exceeded`, an `abandoned` reap,
 settled terminals, and `rejected` do not count. The failure reaching `caps.attempts` is itself
 routed with reason `attempts cap spent`, without another diagnosis or rework call, including
-merge-conflict handoffs. Terminal routing also counts a pending failure after a published Rework
+merge-conflict handoffs; a `gate_failed` or `premise_failed` that `runner.drive` routes this way still meets the supervisor step (section 6.6), and a conflict handoff never does. Terminal routing also counts a pending failure after a published Rework
 update or escalation and leaves the published ticket text intact. A published split still retires
 its parent. The drain report shows the failed-attempt total, for example `attempts cap spent (5/5)`.
 
@@ -434,6 +438,7 @@ terminal carries a Reject routing marker. `reject` refuses settled stems.
 - **`reject <stem>` (kill)** stamps `state: rejected`, commits it, and files one Suggestion Box
   `failure_report` per confirmed ticket that depended on it ("re-wire, re-scope, or reject it").
   Those dependents stay blocked.
+- **Supervisor keep:** inside `runner.drive`, a `premise_failed` routed to the Reject queue, or a routed `gate_failed` with a spent cap, meets supervisor-mode Rework with the lineage's diagnosis lessons. It needs a worktree and budget below `caps.supervise` (default 2, counted since the last operator keep). It excludes `ticket_changed` and `abandoned` (operator decisions), provider/runtime failures (`infra_error`, `timeout`, `invalid_artifact`, `incomplete`, or provider drought, which ticket edits cannot fix), and attempts that already requested Rework (whose Effect keys would replay). Merge-queue deliveries are outside this drive step. A reviewed update publishes before the terminal; after the terminal, a `supervise` draw and `reject_verdict keep actor: supervisor` with the new ticket blob start a fresh lineage and release the stem for re-offer. Refused, snagged, or escalated edits lift `rework.md` as `rework-proposal` before the terminal and leave the stem queued; missing worktrees or spent supervisor budget make no call or proposal.
 - **Machine keep:** drain and serve use `awaiting_operator` and `reofferable` to hold queued stems with a spent cap or `ticket_changed` and re-offer others with budget. `record_reoffer` journals `keep actor: machine` for a queued stem, then draws `retry` unless the terminal is `premise_failed` without escalation, carries `provider_drought`, or is `infra_error` or `timeout` without an escalation rung. A machine keep never resets caps. The snapshot holds Reject-queue stems only when they await the operator (content parks remain separate).
 - `confirm` on a `draft` ticket promotes it to `confirmed` instead.
 
@@ -450,7 +455,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 
 - **Premise park:** a requisition-stage `premise_failed` draws no cap, makes no Diagnose call, and is not routed to the Reject queue. Edit the committed ticket to release it; no `confirm` is needed. The next review receives the last recorded review’s findings and the diff since, rules on those findings, and raises new findings only against changed text, except that a defect making a criterion or `## Verification` command impossible to satisfy against merged code is raised whether or not its text changed. Other premise failures: with the default `premise_bounce: 1`, the first `premise_failed` spends
   the cap and routes to the Reject queue via `premise_bounce cap spent`; only an operator
-  `confirm` releases it. When a host sets `premise_bounce` above 1 and caps still have budget,
+  `confirm` or a supervisor keep (section 6.6) releases it. When a host sets `premise_bounce` above 1 and caps still have budget,
   an Implement premise overruled by Diagnose with `retry` escalates and is re-offered without an edit, drawing `retry` with the new rung and carrying the lessons. At the top rung it enters the Reject queue. Other premise failures park until their committed `ticket.md` changes; that re-offer draws no retry.
 - **`budget_exceeded`:** not diagnosed, draws nothing. Ticket stages pass no spend budget, so in
   practice only eval runs reach it.

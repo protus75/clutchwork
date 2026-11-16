@@ -40,17 +40,28 @@ async def dispatch(root, checkout, writer):
 
 def test_unreviewed_ticket_is_reviewed_once_then_runs(tmp_path):
     root, checkout, llm, writer = setup(
-        tmp_path, [reply("approve"), implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}])]
+        tmp_path,
+        [
+            reply("approve"),
+            implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}]),
+            json.dumps({"action": "escalate", "tickets": []}),
+        ],
     )
     asyncio.run(dispatch(root, checkout, writer))
-    assert [r.surface for r in llm.requests] == ["requisition_review", "implement"]
+    assert [r.surface for r in llm.requests] == ["requisition_review", "implement", "rework"]
 
 
 def test_approved_content_runs_without_review(tmp_path):
-    root, checkout, llm, writer = setup(tmp_path, [implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}])])
+    root, checkout, llm, writer = setup(
+        tmp_path,
+        [
+            implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}]),
+            json.dumps({"action": "escalate", "tickets": []}),
+        ],
+    )
     approve(root, "gate", checkout.clock)
     asyncio.run(dispatch(root, checkout, writer))
-    assert [r.surface for r in llm.requests] == ["implement"]
+    assert [r.surface for r in llm.requests] == ["implement", "rework"]
 
 
 def test_snag_parks_before_implement(tmp_path):
@@ -75,10 +86,15 @@ def test_snag_parks_before_implement(tmp_path):
 
 def test_render_feasibility_snag_proceeds_to_implement(tmp_path):
     root, checkout, llm, writer = setup(
-        tmp_path, [reply("snag", "render_feasibility"), implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}])]
+        tmp_path,
+        [
+            reply("snag", "render_feasibility"),
+            implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}]),
+            json.dumps({"action": "escalate", "tickets": []}),
+        ],
     )
     asyncio.run(dispatch(root, checkout, writer))
-    assert [r.surface for r in llm.requests] == ["requisition_review", "implement"]
+    assert [r.surface for r in llm.requests] == ["requisition_review", "implement", "rework"]
 
 
 def test_edit_releases_and_reviews_the_new_content(tmp_path):
@@ -90,6 +106,7 @@ def test_edit_releases_and_reviews_the_new_content(tmp_path):
             reply("snag", "missing_file"),
             reply("approve"),
             implement_reply("premise_failed", [{"code": "premise", "path": "tickets/gate/ticket.md", "message": "cannot build", "paved_road": "repair"}]),
+            json.dumps({"action": "escalate", "tickets": []}),
         ],
     )
     assert asyncio.run(dispatch(root, checkout, writer)) == "premise_failed"
@@ -102,7 +119,7 @@ def test_edit_releases_and_reviews_the_new_content(tmp_path):
     from clutch.__main__ import main
 
     assert main(["drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
-    assert [r.surface for r in llm.requests] == ["requisition_review", "requisition_review", "implement"]
+    assert [r.surface for r in llm.requests] == ["requisition_review", "requisition_review", "implement", "rework"]
     blocks = [r.rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0] for r in llm.requests[:2]]
     assert blocks[0] == FIRST_REVIEW
     assert "missing required file" in blocks[1] and "+Edited content." in blocks[1] and blocks[1] != "none"
