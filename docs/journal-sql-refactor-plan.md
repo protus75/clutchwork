@@ -12,8 +12,8 @@ Release 0.4.0, conditional (`docs/roadmap.md` §1 and rows 35-41). The release v
 
 ## Release protocol
 
-1. **Checkpoint.** At the end of 0.3.0, re-measure (section Problem). If the cost is still there, the owner declares the feature set complete and the window opens.
-2. **Refactor window.** `clutch release --minor` opens it with tag `v0.4.0`. Only refactor tickets and the bugs the refactor surfaces run. No feature tickets run until 0.4.0 ships. The freeze is operator discipline plus the roadmap: no feature row is scheduled in 0.4.0.
+1. **Checkpoint.** At the end of 0.3.0, re-measure (section Problem). If the cost is still there, the window opens.
+2. **Refactor window.** `clutch release --minor` opens it with tag `v0.4.0`. Only refactor tickets and the bugs the refactor surfaces run. No feature tickets run until 0.4.0 ships. The freeze is the roadmap's schedule: no feature row is scheduled in 0.4.0.
 3. **Release.** When the refactor is complete and its surfaced bugs are fixed, the window closes, and `clutch release --minor` opens 0.5.0 with tag `v0.5.0`.
 
 ## Problem
@@ -113,7 +113,7 @@ grep -rnE '\.read\(\)|\.read_segments\(\)' clutch/ | grep -E 'journal|\.read_seg
 
 ## Open decisions
 
-Items 1 and 2 were decided on 2026-11-13 (`docs/roadmap.md` §6 is the record). The rest are decided at the checkpoint, before authoring ticket 1.
+Items 1 and 2 were decided on 2026-11-13 (`docs/roadmap.md` §6 is the record). Decided 2026-11-16 (`docs/roadmap.md` §6, decision 19): items 3-7 take their Recommendation.
 
 1. **DuckDB or Polars.** Decided 2026-11-13: DuckDB. It reads multiple JSONL files natively in parallel, and a SQL query is plain text that an agent can read and review.
 2. **Rule and gate.** Decided 2026-11-13: both. The rule "journal queries are SQL, not Python loops" goes in `CLAUDE.md` and `AGENTS.md`; the lint gate lands in ticket 6 with a named allowlist for the folds item 6 keeps in Python.

@@ -69,7 +69,7 @@ Combiners take and return the existing artifact models (`ReviewArtifact`, `Diagn
 
 ### 5. Measurement
 
-The scorecard attributes each catch to the members that raised it. A finding only the second member raised, which review later confirmed (the implementer fixed it, or the merged code was later blamed for it), is a unique catch. The scorecard reports, per panel row, unique catches per 100 reviews and the cost multiplier. The plan sets no threshold; the number is what the owner decides on. The scorecard's existing prune rule (25+ evaluations, no catch, no escape) applies to a member slot the same way.
+The scorecard attributes each catch to the members that raised it. A finding only the second member raised, which review later confirmed (the implementer fixed it, or the merged code was later blamed for it), is a unique catch. The scorecard reports, per panel row, unique catches per 100 reviews and the cost multiplier. The plan sets no threshold; whether a panel row stays on is settled from that number by a recorded AI design panel (`docs/roadmap.md` §6, decision 19). The scorecard's existing prune rule (25+ evaluations, no catch, no escape) applies to a member slot the same way.
 
 ## Where each piece lives
 
@@ -107,6 +107,8 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 ## Open decisions
 
-1. **Tie rule for `majority-verdict` on `diagnose`.** Proposed: the safer verdict (`escalate` over `retry`, `reject` over `escalate` is not safer, so `escalate` wins over both). Decide when ticket 1 is authored.
+Decided 2026-11-16 (`docs/roadmap.md` §6, decision 19): items 1-3 take their Proposed option.
+
+1. **Tie rule for `majority-verdict` on `diagnose`.** Proposed: the safer verdict (`escalate` over `retry`, `reject` over `escalate` is not safer, so `escalate` wins over both).
 2. **Members on one candidate.** Proposed: allowed (independent samples), recorded as such. The alternative, refusing a panel on a single-candidate row, forces hosts to configure a second provider before they can measure whether a second reviewer helps.
 3. **Best-of-N selection.** Proposed: Check pass, then fewest soft findings, then smallest diff. Review could instead judge the candidates side by side; that is a fourth combiner for later.

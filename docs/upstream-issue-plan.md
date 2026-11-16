@@ -10,7 +10,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.3.0 (`docs/roadmap.md` row 34). Needs nothing from other plans; waits on its hand test. Shared budget: CORE_TEMPLATE bytes (roadmap decision 5). The template is 7,840 of 8,192 bytes (`tests/integration/test_hostfiles.py:33`); this plan's sentence adds about 264. `conduct-files-parity` (roadmap row 5) runs before this ticket and frees 36 by dropping the stale guide list from the `clutch docs` rule; `graphics-kind` (0.5.0) adds 9 later. After all three about 115 bytes remain. `graphics-kind` also edits `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, and `README.md`; the release gap keeps the two apart, so no `Runs before` is needed.
+Release 0.3.0 (`docs/roadmap.md` row 34). Needs nothing from other plans; waits on its agent capture. Shared budget: CORE_TEMPLATE bytes (roadmap decision 5). The template is 7,840 of 8,192 bytes (`tests/integration/test_hostfiles.py:33`); this plan's sentence adds about 264. `conduct-files-parity` (roadmap row 5) runs before this ticket and frees 36 by dropping the stale guide list from the `clutch docs` rule; `graphics-kind` (0.5.0) adds 9 later. After all three about 115 bytes remain. `graphics-kind` also edits `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, and `README.md`; the release gap keeps the two apart, so no `Runs before` is needed.
 
 ## Not the Suggestion Box
 
@@ -110,9 +110,9 @@ Recommendation: no extension command for now.
 - Under the thin-wrapper rule, the extension may not parse the verb's printed output. A command would need a machine-readable mode (for example `--json` printing `{"url": ...}`) and then call `vscode.env.openExternal`. That mode is a flag with no incident behind it yet.
 - Revisit when an operator wants to file an issue without a chat session. The road then is: add `--json` to the verb, add a "Report clutch issue…" command that asks for a title (and optionally a body file), runs `clutch issue --json`, and opens the `url` field. A snapshot or contract test pins the shape.
 
-## Prerequisite: hand test
+## Prerequisite: agent capture
 
-Read before write. Before authoring, confirm with a real browser:
+Read before write. Before authoring, an agent commits the output under `tickets/upstream-issue-verb/evidence/`: for facts 1 and 2, open prefilled `issues/new` links of increasing body length in a headless browser and save each response status and rendered title and body fields; for fact 3, build clutch’s wheel, install it non-editable in a scratch venv and save the `importlib.metadata` output. Capture:
 
 1. The link length at which `github.com/<owner>/<repo>/issues/new` rejects or truncates a prefilled body. Use that number, with margin, as the refusal limit.
 2. That `title` and `body` prefill when the repo has no issue templates. The repo has no `.github/` today. If templates are added later, keep `blank_issues_enabled` true or the link may land on the chooser and drop the prefill.
@@ -122,7 +122,7 @@ Read before write. Before authoring, confirm with a real browser:
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 0 | (hand test) | evidence | | | The three facts under "Prerequisite: hand test", captured as the ticket's evidence; not a ticket. |
+| 0 | (agent capture) | evidence | | | The three facts under "Prerequisite: agent capture", captured as the ticket's evidence; not a ticket. |
 | 1 | `upstream-issue-verb` | feature | P2 | | Verb, CORE_TEMPLATE sentence, and docs in one change, so the rule never names an unbuilt verb. Release 0.3.0. |
 
 `Runs before`: `conduct-files-parity` (roadmap row 5) before this ticket, so the template bytes it frees are available.
@@ -145,6 +145,8 @@ Fence notes:
 Before authoring, grep `tests/` for any closed set of verb names and fence each hit.
 
 ## Open decisions
+
+Decided 2026-11-16 (`docs/roadmap.md` §6, decision 19): items 2-4 take the option each item states.
 
 Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record.
 

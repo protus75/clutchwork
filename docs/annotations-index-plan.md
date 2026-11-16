@@ -163,6 +163,8 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 ## Open decisions
 
+Decided 2026-11-16 (`docs/roadmap.md` §6, decision 19): items 1 and 2 take their Proposed option. Item 3 has none; a recorded AI design panel settles it before any row that builds it is authored.
+
 1. **Block placement in Python test files.** Proposed: a comment block after the module docstring. The alternative, inside the docstring, is read by tools that show docstrings.
-2. **Who may run `meta fill`.** Proposed: the operator by hand and Author for files it creates; never Implement, so a ticket's diff carries no model-written metadata it did not ask for.
+2. **Who may run `meta fill`.** Proposed: an agent task and Author for files it creates; never Implement, so a ticket's diff carries no model-written metadata it did not ask for.
 3. **Embedding of past calls.** The `calls` table joins by path; embedding call transcripts for semantic search over "what did an agent do when it last touched this" is a second step, once the evidence store has a release of data.

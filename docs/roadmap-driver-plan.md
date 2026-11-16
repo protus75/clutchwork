@@ -1,6 +1,6 @@
 # Roadmap driver: plan
 
-Run `docs/roadmap.md` unattended. The driver authors the next few roadmap rows when their dependencies have merged, never further ahead than that, so every ticket is written against the source as it is. When a ticket is held for a person, the driver does what the operator does today by hand: reads the diagnosis, edits the ticket within the supervising rules, has the edit reviewed, and keeps the ticket, a bounded number of times. When a release's rows are all merged and its gate passes, the driver tags, bumps the version, and publishes to PyPI and the Marketplace under a standing authorization. What stays with a person is named, short, and the same for every release.
+Run `docs/roadmap.md` unattended. The driver authors the next few roadmap rows when their dependencies have merged, never further ahead than that, so every ticket is written against the source as it is. When a ticket is held for a person, the driver does what the operator does today by hand: reads the diagnosis, edits the ticket within the supervising rules, has the edit reviewed, and keeps the ticket, a bounded number of times. When a release's rows are all merged and its gate passes, the driver tags, bumps the version, and publishes to PyPI and the Marketplace under a standing authorization. Nothing waits on a person; the only outside input is a missing provider credential (section 7).
 
 ## Status
 
@@ -20,7 +20,7 @@ Measured from this repo's journal at `c2d1c2a7`:
 - Authoring from a plan already exists: the Author stage writes a ticket from a Suggestion Box message with a buildability review (`clutch/author.py::author`), and 44 of 442 box messages became tickets that way. A roadmap row is a message with a different shape.
 - A drain of about 30 tickets ran unattended in about 4 hours (`README.md`); the self-upgrade handoff already lets a run continue across engine merges.
 
-What this plan cannot remove: hand tests that need a person at a real CLI or browser (the Gemini image facts, GitHub prefill limits), the GO baseline judgment for a new reviewer model, a ticket whose goal or scope is wrong, and the first publish of a release when no standing authorization is configured.
+What this plan cannot remove is a missing provider credential. A prerequisite once run by a person becomes an agent-run capture; a GO baseline is measured against an AI label panel; a ticket with a wrong goal or scope goes through the diagnose path; and a publish waits on `release.publish` (`docs/roadmap.md` §6, decision 19).
 
 ## Current state
 
@@ -39,7 +39,7 @@ What this plan cannot remove: hand tests that need a person at a real CLI or bro
 |---|---|---|
 | §18.1 refuses "multiple authoring modes" | A second input to the one Author stage: a `roadmap_row` box message | The Author stage, its guide, its skeletons, and its review are unchanged; only the message shape differs. One authoring process, as `CLAUDE.md` requires |
 | `docs/how-clutch-works.md` §6.4: "Editing `ticket.md` never resets a cap; only an operator `confirm` does" | A supervisor keep resets the lineage like an operator keep, at most `caps.supervise` times per lineage, and only after a reviewed Rework-update changed the ticket | The owner asked for it on 2026-11-14 after doing this by hand 78 times. The bound and the review are what make it safe; a supervisor keep on unchanged text is refused |
-| CORE_TEMPLATE: a supervising session may not confirm or reject | Unchanged for sessions. The supervisor is an engine stage under a cap and a review, journaled with its own actor | The rule exists because a chat session has no bound and no review; the stage has both |
+| CORE_TEMPLATE: a supervising session may not confirm or reject | The supervisor is an engine stage under a cap and a review, journaled with its own actor. The supervising agent loop confirms or rejects only by executing a `clutch prompt diagnose` or `clutch prompt drafts` Recommendation (open decision 5) | The owner delegated those verdicts on 2026-11-15 (`docs/roadmap.md` §6, decision 19). CORE_TEMPLATE’s rule still forbids them, and its change waits in the Suggestion Box as box-000508 |
 
 `CLUTCH_PLAN.md` stays frozen. The tickets update `docs/how-clutch-works.md` §6.4-6.7, §7.2, §9.3, and a new "Roadmap driver" section.
 
@@ -53,31 +53,31 @@ Struck: the premise is false (see Current state). A published split already reti
 
 Runs inside `runner.drive`'s terminal handling, after Diagnosis, for a terminal that would be routed to the Reject queue with reason `premise_failed` or a spent cap:
 
-1. **Propose.** Rework-update with the diagnosis lessons and findings as input, exactly as today's Rework. `clutch/specs/rework.md` gains the supervising rules as the allowed-edit list for this trigger: fix lint and format, add a missing fence or Context entry, correct a stale path, reword; never change `Goal / Why`, remove an acceptance criterion, or widen scope. A proposal that touches `Goal / Why` or drops a criterion is refused by a gate before review, with the road "escalate to the operator".
+1. **Propose.** Rework-update with the diagnosis lessons and findings as input, exactly as today's Rework. `clutch/specs/rework.md` gains the supervising rules as the allowed-edit list for this trigger: fix lint and format, add a missing fence or Context entry, correct a stale path, reword; never change `Goal / Why`, remove an acceptance criterion, or widen scope. A proposal that touches `Goal / Why` or drops a criterion is refused by a gate before review, with the road "the proposal escalates (step 4)".
 2. **Review.** `requisition_review` judges the proposal as it judges every Rework proposal, with the prior review's findings and the diff since (how-clutch-works §6.7).
 3. **Keep.** On approve, the engine commits the proposal (`clutch(<stem>): rework`) and journals `reject_verdict keep actor: supervisor`. A supervisor keep starts a new lineage, like an operator keep, when and only when the committed ticket text changed. `caps.supervise` (default 2) bounds supervisor keeps per operator lineage; the draw is a `cap_consumed` event.
-4. **Escalate.** A refused or snagged proposal, a spent `supervise` cap, or a proposal the gate refused leaves the stem in the Reject queue for the operator with the proposal attached (`tickets/<stem>/rework.md`, lifted like a review) so the person starts from the engine's best attempt, not from nothing.
+4. **Escalate.** A refused or snagged proposal, a spent `supervise` cap, or a proposal the gate refused leaves the stem in the Reject queue with the proposal attached (`tickets/<stem>/rework.md`). The supervising agent loop releases or retires it (open decision 5), starting from the engine's best attempt.
 
-`ticket_changed` holds are not supervised: a person edited the ticket mid-run and the person decides. Premise parks at the requisition stage already release on a ticket edit; the supervisor's edit releases them the same way, with the same review.
+`ticket_changed` holds are not supervised by this step; the supervising agent loop releases them (open decision 5). Premise parks at the requisition stage already release on a ticket edit; the supervisor's edit releases them the same way, with the same review.
 
 ### 3. Roadmap authoring (`roadmap-author`)
 
-- A new Suggestion Box message class `roadmap_row` (`clutch/box.py:18`), with a `box_policy` row (`clutch/config.py`) defaulting to `confirmed` when the review baseline is GO and `draft` otherwise, the rule every other row follows (how-clutch-works §9.3).
+- A new Suggestion Box message class `roadmap_row` (`clutch/box.py:18`), with a `box_policy` row (`clutch/config.py`) defaulting to `confirmed` regardless of the review baseline (open decision 5; `roadmap-row-message` builds it). The other draft conditions in `docs/how-clutch-works.md` §9.3 still apply; a draft they make is released like every Author draft (open decision 5).
 - `clutch roadmap author [--ahead N]` reads the master table, finds rows with no linked stem whose `Depends on` stems are all merged (or empty), in release order, and files one `roadmap_row` message per row until `N` (default 2) rows are open beyond the confirmed or running set. Each message carries the row's fields and the owning plan's path.
-- Author handles a `roadmap_row` message with one new data block, `<<clutch-data:roadmap_row>>` (the row) and `<<clutch-data:plan>>` (the owning plan's Target design and Where-each-piece-lives sections, or the whole plan when under 40,000 characters), beside the guide and skeletons it already embeds. The stem is the row's stem; `requisition_review` runs as for every authored ticket; the row's hand-test prerequisites (a row whose content says "after the hand test") are refused until an evidence file the row names exists under `tickets/<stem>/evidence/`.
+- Author handles a `roadmap_row` message with one new data block, `<<clutch-data:roadmap_row>>` (the row) and `<<clutch-data:plan>>` (the owning plan's Target design and Where-each-piece-lives sections, or the whole plan when under 40,000 characters), beside the guide and skeletons it already embeds. The stem is the row's stem; `requisition_review` runs as for every authored ticket; a capture prerequisite refuses a row whose content says "after its agent capture" until the evidence file it names exists under `tickets/<stem>/evidence/`. A row needing a credential this machine lacks is skipped (section 7).
 - On commit, the driver edits the roadmap row to link the stem (`clutch(roadmap): author <stem>`), a ticket-plane commit like a lift. When the ticket merges, the row is struck. The roadmap stays true because the driver, not a person, keeps it so.
 - `--ahead` is the whole point: two rows, not twenty. A row authored against source that later rows change is a row authored too early.
 
 ### 4. Gates as commands (`release-gates-as-commands`)
 
-- Each release section in `docs/roadmap.md` gains a fenced `gate` block: one or more argv commands that exit 0 when the release may ship, or `gate: operator` for a judgment a person makes. The prose gates become commands where a command exists (the suite, a `status` query, a `training export` count) and `operator` where not (a week of parallel runs, a GO verdict).
-- `clutch roadmap status` prints, per release: rows merged, authored, open, blocked on a hand test; the gate's last result; the next rows the driver will author. Read-only; the extension draws it later.
+- Every gate is a command; no gate is a judgment a person makes. Each release section in `docs/roadmap.md` gains a fenced `gate` block with argv commands over recorded facts, including the suite, a `status` query, a `training export` count, the count of tickets merged under parallel serve without a conflict-rerun cap hit, and the recorded `visual_baseline` GO.
+- `clutch roadmap status` reports rows blocked on a capture or a missing credential, rows merged, authored and open, the gate's last result, and the next rows to author. Read-only; the extension draws it later.
 
 ### 5. Release and publish (`release-publish`)
 
 - `clutch release --minor|--patch` exists (`release-verb`; see Current state). This ticket adds its `release` journal signal. Hosts use the same verb for their own versions.
 - `clutch publish`: never bumps the version. It uploads the version in `pyproject.toml` only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480). It builds and uploads to PyPI through the exec seam, with the token's env name in config (`release.pypi_token: UV_PUBLISH_TOKEN`), passed only to that child, like a provider key. `./dev.py vscode-publish`: bumps the extension's patch version, packages, and publishes with `vsce publish` under `release.vsce_token`; this repo only, since no host ships the extension.
-- **Authorization.** Publishing is a remote mutation. `release.publish: true` in config is the owner's standing "push"; with it absent or false, the driver tags and bumps locally and parks the publish for `confirm` with the built artifacts listed. The conduct rule for chat sessions ("never push unless the user says push this turn") is untouched: the engine acts on config, sessions act on words.
+- **Authorization.** Publishing is a remote mutation. `release.publish: true` in config is the owner's standing "push"; with it absent or false, the driver tags and bumps locally and does not publish. The conduct rule for chat sessions ("never push unless the user says push this turn") is untouched: the engine acts on config, sessions act on words.
 
 ### 6. The loop (`driver-loop`)
 
@@ -85,17 +85,14 @@ At serve's idle point after each settle, in this order:
 
 1. If any Reject-queue stem is unsupervised, the supervisor step runs for it (section 2) before new work.
 2. `roadmap author --ahead N` tops up the open rows (section 3).
-3. If the current release's rows are all merged and its gate passes (section 4), `release` runs, then `publish` or the park (section 5); the next release becomes current.
-4. A digest notification through `config.notify` (exists): rows merged since the last digest, stems waiting for the operator and why, the next rows to be authored, spend.
+3. If the current release's rows are all merged and its gate passes (section 4), `release` runs, then `publish` only when `release.publish` is true (section 5); the next release becomes current.
+4. A digest notification through `config.notify` (exists): rows merged since the last digest, held stems and why, the next rows to be authored, spend.
 
-`drain` gets steps 1 and 2 between tickets; `run` gets none. `clutch prompt drain-loop` is rewritten to describe what the driver does by itself and what the chat should still look at: escalations with a `rework.md`, hand tests, and `gate: operator` releases.
+`drain` gets steps 1 and 2 between tickets; `run` gets none. `clutch prompt drain-loop` describes what the driver does by itself and what the supervising agent loop it starts does for a held stem or an Author draft (open decision 5); no step waits on a person.
 
-### 7. What the operator still does
+### 7. What still comes from outside
 
-- Answers escalations: a stem with a spent `supervise` cap or a proposal the supervisor could not make. The engine's best proposal is attached.
-- Runs hand tests and drops their evidence files where a row names them.
-- Judges `gate: operator` releases and records GO baselines for new reviewer models.
-- Says "push" once, in config, or confirms each publish.
+Escalations go through the supervisor (section 2) and the diagnose path (`docs/how-clutch-works.md` §6.3-6.5). A stem the supervisor escalates, a `ticket_changed` hold, a Diagnose `reject` or `abandon-human` stem, and an Author draft are released by the supervising agent loop executing a `clutch prompt diagnose` or `clutch prompt drafts` Recommendation (open decision 5). The only external input is a missing credential. Gemini has none on this machine, so rows needing it are skipped while an agent finds a route through the authenticated providers. Publishing follows `release.publish` and never a per-release person.
 
 ## Where each piece lives
 
@@ -119,9 +116,9 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). R
 |---|---|---|---|---|---|
 | 1 | ~~`superseded-settles`~~ | bug | P1 | | Struck: premise false (Target design section 1). |
 | 2 | `supervisor-rework` | feature | P1 | | Section 2: the trigger, the allowed-edit gate, `caps.supervise`, the supervisor keep and lineage, `rework.md` lift on escalation; `rework.md` spec bump. |
-| 3 | `roadmap-author` | feature | P1 | | Section 3: `roadmap_row` message and policy row, `clutch/roadmap.py` parser, `roadmap author --ahead`, Author data blocks, row linking and striking, hand-test refusal. |
+| 3 | `roadmap-author` | feature | P1 | | Section 3: `roadmap_row` message and policy row, `clutch/roadmap.py` parser, `roadmap author --ahead`, Author data blocks, row linking and striking, capture refusal. |
 | 4 | `release-gates-as-commands` | chore | P2 | | Section 4: gate blocks in `docs/roadmap.md`, `roadmap status`. |
-| 5 | `release-publish` | feature | P2 | `release-verb` | Section 5: the `release` signal, `clutch publish`, `./dev.py vscode-publish`, `release` config, the publish park. |
+| 5 | `release-publish` | feature | P2 | `release-verb` | Section 5: the `release` signal, `clutch publish`, `./dev.py vscode-publish`, `release` config, publish only under `release.publish`. |
 | 6 | `driver-loop` | feature | P1 | 2, 3, 4, 5 | Section 6: the idle-point sequence in serve and drain, the digest, the rewritten `drain-loop` prompt, how-clutch-works "Roadmap driver". |
 
 `Runs before`: `docs-truth-sweep` (roadmap row 4) and `contention-authoring-rules` (row 13) before every ticket here.
@@ -136,7 +133,11 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). R
 
 ## Open decisions
 
+Decided 2026-11-16 (`docs/roadmap.md` §6, decision 19): items 1-4 take their Proposed option and item 5 records the owner’s delegation.
+
 1. **`caps.supervise` default.** Proposed 2. One is the owner's "diagnose, apply, confirm" done once; two allows one retry on a bad proposal.
-2. **Which terminals the supervisor takes.** Proposed: `premise_failed` and spent-cap routes only. `ticket_changed` and `abandoned` stay with the person.
+2. **Which terminals the supervisor takes.** Proposed: `premise_failed` and spent-cap routes only. `ticket_changed` and `abandoned` are not supervised; open decision 5 covers `ticket_changed`, and an `abandoned` stem stays eligible (`docs/how-clutch-works.md` §6.7).
 3. **Row linking as a ticket-plane commit vs a journal-only record.** Proposed: the commit, so the roadmap file is true without running clutch. The alternative keeps `docs/roadmap.md` hand-edited and shows authored rows only in `roadmap status`.
-4. **Digest cadence.** Proposed: after every settle while the operator's last verdict is older than a day, else daily.
+4. **Digest cadence.** Decided: after every settle.
+
+5. **Holds that ended with a person.** Decided 2026-11-16 (owner delegation of 2026-11-15). (a) A stem the supervisor escalates, a `ticket_changed` hold, and a stem a Diagnose `reject` or `abandon-human` verdict routes to the Reject queue are released by the supervising agent loop. It runs `clutch prompt diagnose <stem>` and executes its Recommendation: a ticket edit, then `clutch lint` until it exits 0 and `clutch review` until it approves, then `clutch confirm --yes <stem>`; or `clutch reject --yes <stem>`. A cause fix the diagnosis names goes to `clutch suggest` and is never authored. (b) An Author draft from triage is released the same way, through `clutch prompt drafts` and its Recommendation. (c) A `roadmap_row` ticket starts `confirmed` regardless of the review baseline (`roadmap-row-message`), so no `roadmap_row` draft waits on the baseline. One that another draft condition makes is an Author draft under (b).
