@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The existing roadmap driver plan contains a stale release description already identified in box-000496-017e035f.
+All four Verification commands and all hard mechanical checks passed; release.py unit coverage is 100%. Existing stale roadmap-plan text remains untouched as previously filed.
 
 ## Dead ends
 
-None.
+Rejected tagging HEAD because concurrent intake can move it; the explicit commit SHA is the minimum safe approach. Wrong-implementation checks confirmed the required regressions fail.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.13
 
 ## Predicted vs actual
 
-Expected 60 minutes; the required assertion checks remain unfinished.
+Completed within the expected 60-minute budget.
 
