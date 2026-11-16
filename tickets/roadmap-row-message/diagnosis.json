@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "5e55958e362f6756a68ff596a2dcbda99b33f64d",
+  "stem": "roadmap-row-message",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The last attempt passed every verification command and gate, but it stopped as incomplete because it did not mutation-check each new assertion. Redo the full scope from the merge base and mutation-check each assertion in criteria 1-7 before reporting ok.",
+    "Mutation-check each of these by breaking it in clutch/author.py and confirming a test fails: the stem, kind, and priority gate findings; the ticket.md-only exists check for roadmap_row; plan_excerpt keeping fenced headings; and the untracked-plan decline that fires before driver.run.",
+    "Mutation-check clutch/box.py Message._coherent in both directions and the Box.enqueue roadmap_row round trip. Mutation-check clutch/policy.py start_state so that each of reopen, gate_bypass, a fence touching the inventory, an empty inventory, and box_policy draft still drafts roadmap_row.",
+    "Mutation-check the commit in author(): the evidence listing runs only for roadmap_row (argv has --others and --exclude-standard), and `only` is exactly the ticket path plus tickets/<stem>/evidence/ paths. Unit tests write only under tmp_path.",
+    "Do not edit docs/roadmap-driver-plan.md, which is outside the fence. Box message box-000526 already tracks it."
+  ],
+  "mechanical": null,
+  "spec_version": "1.6",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
