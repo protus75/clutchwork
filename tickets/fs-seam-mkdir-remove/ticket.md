@@ -20,6 +20,7 @@ none
 ## On-demand
 - clutch/stages.py
 - tests/integration/test_daemon_composition.py
+- tests/integration/test_restart_timers.py
 
 ## Goal / Why
 The `FileSystem` seam in `clutch/seams.py` has `entries`, `publish`, `write` and `replace` but no way to create a directory or delete a file. Engine code therefore calls `Path.mkdir` and `Path.unlink` directly, which the repo's seam rule ("Use the injectable seams") forbids and which fake-driven tests cannot observe. After this change the seam has `mkdir` and `remove`, and `enginelog`, `journal` and `stages` use them instead of raw `Path` calls. The planned evidence store needs both methods on the seam.
@@ -31,6 +32,7 @@ In:
 - `clutch/journal.py`: `Journal.append` creates `self.dir.parent` with `self._fs.mkdir`.
 - `clutch/stages.py`: each `path.parent.mkdir(...)` in the worktree helpers and each `.unlink(...)` (lift_outbox, the Check outbox cleanup, the host-check results cleanup, the base-worktree results cleanup, and the invalid-artifact cleanup) becomes `ctx.fs.mkdir` / `ctx.fs.remove`. Every one of these callers already tolerates an absent file or is guarded by the file existing, so the idempotent `remove` is safe.
 - Test doubles that must satisfy the protocol: `FakeFS` in `tests/integration/test_effects.py` gains `mkdir` and `remove` (it is checked with `isinstance(fs, FileSystem)`); `ScriptFS` in `tests/integration/test_daemon_composition.py` gains `mkdir` (no-op) and `remove` (`self.files.pop(path, None)`). These are the only edits in those two files.
+- `tests/integration/test_restart_timers.py`: the `repository` fixture (line 96) already patches `rig.fs.write` so each write calls the `ScriptFS` method and then `LocalFileSystem.write`. It gains the same mirror for `rig.fs.mkdir` and `rig.fs.remove`: call the `ScriptFS` method, then the `LocalFileSystem` one. Without this, stage cleanup through `ctx.fs.remove` leaves real outbox files on disk and the fixture's callers (such as `tests/integration/test_serve_admission.py`) fail. This is the only edit in that file.
 - New tests in new files only (see fence).
 
 Out:
@@ -47,6 +49,7 @@ Simpler approach rejected: threading an `fs` argument through `EngineLog`'s cons
 - clutch/stages.py
 - tests/integration/test_effects.py
 - tests/integration/test_daemon_composition.py
+- tests/integration/test_restart_timers.py
 - tests/unit/test_fs_seam_mkdir_remove.py
 - tests/integration/test_fs_seam_sites.py
 
@@ -57,16 +60,16 @@ Simpler approach rejected: threading an `fs` argument through `EngineLog`'s cons
 4. `tests/unit/test_fs_seam_mkdir_remove.py::test_journal_append_creates_state_dir`: `Journal(tmp_path / "state", clock).append(...)` on a nonexistent state dir succeeds and `journal.read()` returns that one event, not an empty list.
 5. `tests/integration/test_fs_seam_sites.py::test_no_raw_path_mkdir_or_unlink_in_seam_users`: an `ast` scan of `clutch/enginelog.py`, `clutch/journal.py` and `clutch/stages.py` finds zero calls whose attribute name is `unlink`, and every call whose attribute name is `mkdir` has as its receiver an Attribute whose attr is `fs` or `_fs` (the fs seam, such as `self._fs` or `ctx.fs`); the wrong result it rules out is a `mkdir` call on any other receiver or any `unlink` call.
 6. `tests/integration/test_effects.py::test_fakes_satisfy_seam_protocols` still passes, which fails if `FakeFS` lacks `mkdir` or `remove` once the protocol grows them.
-7. `./dev.py test tests/integration/test_stages.py tests/integration/test_daemon_composition.py tests/integration/test_journal.py tests/integration/test_driver.py` passes with no test edited beyond those named in Scope in.
+7. `./dev.py test tests/integration/` passes in full (this includes `test_stages.py`, `test_daemon_composition.py`, `test_journal.py`, `test_driver.py`, `test_restart_timers.py` and the `repository` fixture's callers such as `test_serve_admission.py`), with no test edited beyond those named in Scope in.
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_fs_seam_mkdir_remove.py tests/integration/test_fs_seam_sites.py tests/integration/test_effects.py
-./dev.py test tests/integration/test_stages.py tests/integration/test_daemon_composition.py tests/integration/test_journal.py tests/integration/test_driver.py
+./dev.py test tests/integration/
 ```
 
 ## Definition of rejected
-The branch adds an `fs` parameter or any other knob to `EngineLog`, leaves a `.mkdir(` or `.unlink(` call on a Path rather than the fs seam in `enginelog.py`, `journal.py` or `stages.py`, changes `driver.py` or `drain.py`, changes the behavior of `publish`, `write`, `replace` or `entries`, or adds tests to an existing hot test file.
+The branch adds an `fs` parameter or any other knob to `EngineLog`, leaves a `.mkdir(` or `.unlink(` call on a Path rather than the fs seam in `enginelog.py`, `journal.py` or `stages.py`, changes `driver.py` or `drain.py`, changes the behavior of `publish`, `write`, `replace` or `entries`, edits `test_restart_timers.py` beyond the `repository` fixture's mkdir/remove mirror, or adds tests to an existing hot test file.
 
 ## Time budget
 - expected: 30m
