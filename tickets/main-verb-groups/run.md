@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget is 60 minutes expected and 120 minutes stuck; implementation was not completed.
+The ticket expected 60 minutes; the work stopped during inspection.
 
