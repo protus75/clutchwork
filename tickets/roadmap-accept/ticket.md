@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- evidence-envelope
+
 ## Context
 - clutch/roadmap.py
 - clutch/driver.py::LlmStage
