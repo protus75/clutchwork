@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "19c89f6696c04d6ed2c3fd71c021fb958c7ccf53",
+  "produced_at_sha": "ccd918e987d999d9aa9e9808f3ebd7db20bd2f50",
   "stem": "release-verb",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Redo the work from the merge base: clutch/release.py, Git.tag in clutch/git.py, the release subcommand and main branch in clutch/__main__.py, both doc rows, tests/unit/test_release.py and tests/integration/test_release.py. Last attempt's shape passed every Verification command and ruff.",
-    "Finish the per-assertion check in clutch/specs/implement.md lines 70-74 for every assertion in criteria 1-10. Apply each ruled-out wrong version once, confirm its test fails, then restore. Last attempt checked only the HEAD-target tag case and stopped.",
-    "Wrong versions still to try: bump with no dry run, commit without --only, tag before commit, tag without -a, hard-coded minor, uv call after a dirty status or existing tag, refusal missing uv's stderr line or the two files to restore, lock not released, missing --minor/--patch pair.",
-    "Commit all work on the ticket branch (implement.md step 5) before you reply. Uncommitted edits are thrown away with the worktree, and last attempt left all 7 fenced files uncommitted. Time was not the limit: it used about 5 of the 60 minutes budgeted.",
-    "Leave docs/roadmap.md and docs/roadmap-driver-plan.md alone. They are outside the fence, and their stale release statements are already filed as box-000496-017e035f."
+    "Redo the whole change from the merge base: clutch/release.py, Git.tag in clutch/git.py, the release subparser and main branch in clutch/__main__.py, the two doc rows, tests/unit/test_release.py and tests/integration/test_release.py. Commit all on the ticket branch.",
+    "Attempt 1 stopped incomplete and uncommitted before its wrong-implementation check. For each Ruled out case in criteria 1-10, break the code once, confirm the named test fails, then restore it. Run the four ## Verification commands, then commit.",
+    "Criterion 1: tag the sha that Git.commit returns. Make no exec call between the commit's rev-parse --verify HEAD and git tag -a v<version> -m 'release: <version>' <sha>, and make exactly two uv calls, the dry run first.",
+    "Criterion 8: in main, import release with a function-local `from clutch import release`. Acquire Lockfile(config.state_dir, verb='release') and release it in a finally, so the fake clutch.release.release sees acquire, call, release, even when it raises Refusal.",
+    "Leave docs/roadmap-driver-plan.md alone, even though its release text is stale. It is outside the scope fence and is already filed as box-000496-017e035f."
   ],
   "mechanical": null,
   "spec_version": "1.6",
