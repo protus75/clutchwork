@@ -1,0 +1,58 @@
+A0 fact 10: headless-prompt-delivery
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+The digest's worry is unfounded: -p is NOT required. With stdin and stdout not a TTY the CLI runs
+headless and reads the whole prompt from stdin (t10; source isHeadlessMode: non-TTY stdin OR
+stdout, -p, a positional query, or CI=true). With both, the prompt is `<stdin>\n\n<-p value>` (t11).
+Limits: stdin is read up to 8 MiB (MAX_STDIN_SIZE = 8*1024*1024; the excess is silently truncated
+with only a debug warning). stdin must deliver its first byte within 500 ms of the CLI starting to
+read it, or the CLI treats stdin as empty: a prompt written 5 s late gave exit 42 "No input provided
+via stdin" (t12). A -p argument is capped by Linux MAX_ARG_STRLEN: 131071 bytes exec'd, 131073 bytes
+failed with E2BIG before the CLI ran. So the adapter should write the prompt to stdin immediately
+at spawn and close it, with no -p.
+
+--- run t10-stdin-only ---
+note: no -p
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: <scratch>/prompt-stdin.txt (contents: 'Reply with the single word STDIN-ONLY and nothing else.\n')
+exit code: 0
+elapsed: 2.7s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:05:33.293Z","session_id":"9297e62e-dd42-4518-8631-4d0b38d9d6db","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:05:33.294Z","role":"user","content":"Reply with the single word STDIN-ONLY and nothing else.\n"}
+{"type":"message","timestamp":"2026-11-16T03:05:34.833Z","role":"assistant","content":"STDIN-ONLY","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:05:34.856Z","status":"success","stats":{"total_tokens":8813,"input_tokens":8658,"output_tokens":4,"cached":6103,"input":2555,"duration_ms":1563,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":8813,"input_tokens":8658,"output_tokens":4,"cached":6103,"input":2555}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t11-stdin-plus-p ---
+note: stdin and -p
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Reply with the token from stdin, then the word BETA.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: <scratch>/prompt-stdin2.txt (contents: 'Line A from stdin: remember the token ALPHA.\n')
+exit code: 0
+elapsed: 2.6s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:05:36.020Z","session_id":"81e03a13-a9f7-4120-9aee-5a74bf9f9f13","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:05:36.021Z","role":"user","content":"Line A from stdin: remember the token ALPHA.\n\n\nReply with the token from stdin, then the word BETA."}
+{"type":"message","timestamp":"2026-11-16T03:05:37.495Z","role":"assistant","content":"ALPHA BETA","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:05:37.517Z","status":"success","stats":{"total_tokens":8852,"input_tokens":8667,"output_tokens":2,"cached":6103,"input":2564,"duration_ms":1497,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":8852,"input_tokens":8667,"output_tokens":2,"cached":6103,"input":2564}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+OTHER EVIDENCE
+--- run t12-late-stdin ---
+command: bash -ic "(sleep 5; cat <scratch>/prompt-stdin.txt) | HOME=<scratch>/home gemini --skip-trust -m gemini-3.1-flash-lite -o stream-json"
+cwd: <scratch>/ws1
+exit code: 42   elapsed: 6.4s (includes the 5 s sleep)
+stdout: (empty)
+stderr: No input provided via stdin. Input can be provided by piping data into gemini or using the --prompt option.
+
+--- -p size probe (python subprocess, argv list, GEMINI_API_KEY empty so no API call) ---
+getconf ARG_MAX: 2097152
+131071 bytes: exec ok, exit 41 (auth not configured, as expected with the empty key)
+131073 bytes: exec failed: [Errno 7] Argument list too long: '/home/djp/.nvm/versions/node/v24.15.0/bin/gemini'
+
+Source (bundle/gemini-FSMCKCVD.js ~21555 readStdin): MAX_STDIN_SIZE = 8 * 1024 * 1024; pipedInputShouldBeAvailableInMs = 500.

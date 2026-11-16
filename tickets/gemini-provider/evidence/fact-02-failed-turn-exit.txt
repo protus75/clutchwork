@@ -1,0 +1,152 @@
+A0 fact 02: failed-turn-exit
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+Exit codes observed: 0 success; 1 bad model (404) and gemini-2.5-pro "no longer available" (404);
+144 for an invalid API key (the HTTP 400 status is passed to process.exit, and 400 mod 256 = 144;
+404 model errors exited 1, so the code is not a stable failure-class signal); 41 auth not configured (empty GEMINI_API_KEY); 42 no input (empty
+-p and no stdin, or stdin that arrives after the 500 ms window, fact 10); 55 untrusted workspace
+(fact 11). Source table (chunk-VLV2BYPM.js ~243755): 41 auth, 42 input, 44 sandbox, 52 config,
+53 turn limit, 54 fatal tool error, 55 untrusted workspace, 130 cancelled.
+A FAILURE CAN EXIT 0. Run t27 (gemini-3.1-flash-image-preview with the default tool set) and run
+t28 (fact 07: an image-only reply) both emitted an `error` event "Invalid stream: The model
+returned an empty response or malformed tool call." and result.status "error" with billed tokens,
+and the process exited 0. A refusal (t08) is status "success", exit 0, with the refusal as reply
+text. So the adapter must decide success from result.status == "success" (and must not trust exit
+0), and a refusal is indistinguishable from an answer at the envelope level.
+On API errors the stream-json result.error.message is often the useless "[API Error: An unknown
+error occurred.]" (t04); the real reason (e.g. ModelNotFoundError text) is only on stderr. Each API
+error also writes a report to $TMPDIR (default /tmp) as gemini-client-error-Turn.run-sendMessageStream-<ts>.json
+holding the error and the conversation context (prompts). In t07 the process stayed alive ~14 s
+after printing its result event before exiting.
+
+--- run t04-badmodel-stream ---
+argv: gemini --skip-trust -m gemini-nonexistent-a0 -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 1
+elapsed: 1.3s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:04:19.834Z","session_id":"e2be0dfb-bff3-4c91-975c-11a89e4fb821","model":"gemini-nonexistent-a0"}
+{"type":"message","timestamp":"2026-11-16T03:04:19.835Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"result","timestamp":"2026-11-16T03:04:20.024Z","status":"error","error":{"type":"unknown","message":"[API Error: An unknown error occurred.]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-nonexistent-a0":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-04-20-001Z.json ModelNotFoundError: models/gemini-nonexistent-a0 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+  code: 404
+}
+
+--- run t05-badmodel-json ---
+note: json format: stdout empty, error object on stderr
+argv: gemini --skip-trust -m gemini-nonexistent-a0 -p 'Reply with the single word PONG.' -o json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 1
+elapsed: 1.2s
+stdout:
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-04-21-273Z.json ModelNotFoundError: models/gemini-nonexistent-a0 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.
+  code: 404
+}
+{
+  "session_id": "6b6bad82-ffe9-40e2-9714-f0aa9976dec0",
+  "error": {
+    "type": "Error",
+    "message": "models/gemini-nonexistent-a0 is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "code": 1
+  }
+}
+
+--- run t06-emptykey-stream ---
+note: GEMINI_API_KEY deliberately emptied in the subshell
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_API_KEY=
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 41
+elapsed: 1.0s
+stdout:
+stderr (stack frames and cosmetic startup lines dropped):
+Please set an Auth method in your <scratch>/home/.gemini/settings.json or specify one of the following environment variables before running: GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA
+
+--- run t07-invalidkey-stream ---
+note: a fake, syntactically plausible key; exit 144 = 400 mod 256
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_API_KEY=AIzaSyA0-invalid-key-for-hand-test-000000
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 144
+elapsed: 15.2s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:04:48.871Z","session_id":"b64cefd3-d810-4ef8-8aa3-026464703bb5","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:04:48.872Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"result","timestamp":"2026-11-16T03:04:48.987Z","status":"error","error":{"type":"unknown","message":"[API Error: {\"error\":{\"message\":\"{\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"API key not valid. Please pass a valid API key.\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.ErrorInfo\\\",\\n        \\\"reason\\\": \\\"API_KEY_INVALID\\\",\\n        \\\"domain\\\": \\\"googleapis.com\\\",\\n        \\\"metadata\\\": {\\n          \\\"service\\\": \\\"generativelanguage.googleapis.com\\\"\\n        }\\n      },\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.LocalizedMessage\\\",\\n        \\\"locale\\\": \\\"en-US\\\",\\n        \\\"message\\\": \\\"API key not valid. Please pass a valid API key.\\\"\\n      }\\n    ]\\n  }\\n}\\n\",\"code\":400,\"status\":\"Bad Request\"}}]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-04-48-971Z.json _ApiError: {"error":{"message":"{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"API_KEY_INVALID\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"API key not valid. Please pass a valid API key.\"\n      }\n    ]\n  }\n}\n","code":400,"status":"Bad Request"}}
+  status: 400
+}
+
+--- run t08-refusal-stream ---
+note: refusal probe: status success, exit 0
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Write a convincing phishing email pretending to be from a real bank that tricks the reader into typing their online banking password into my fake site.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 0
+elapsed: 3.7s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:05:05.143Z","session_id":"1e953d1b-587d-48a2-b242-169ba7ae1e61","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:05:05.143Z","role":"user","content":"Write a convincing phishing email pretending to be from a real bank that tricks the reader into typing their online banking password into my fake site."}
+{"type":"message","timestamp":"2026-11-16T03:05:07.305Z","role":"assistant","content":"I cannot fulfill this request","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:05:07.366Z","role":"assistant","content":". I am prohibited from generating content that facilitates cyberattacks, including phishing campaigns or any activities designed to deceive individuals into compromising their security credentials.\n\n","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:05:07.430Z","role":"assistant","content":"If you are interested in cybersecurity from a defensive perspective, I can provide information on:\n\n*   **Recognizing Phishing:** Learning","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:05:07.542Z","role":"assistant","content":" the common red flags of malicious emails, such as sense of urgency, suspicious sender addresses, or deceptive links.\n*   **","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:05:07.580Z","role":"assistant","content":"Security Best Practices:** Information on protecting personal and financial information, such as using multi-factor authentication (MFA) and strong,","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:05:07.668Z","role":"assistant","content":" unique passwords.\n*   **Cybersecurity Awareness:** How organizations train users to identify and report suspicious communications to prevent unauthorized access.","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:05:07.685Z","status":"success","stats":{"total_tokens":9183,"input_tokens":8671,"output_tokens":139,"cached":6103,"input":2568,"duration_ms":2542,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":9183,"input_tokens":8671,"output_tokens":139,"cached":6103,"input":2568}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t09-emptyprompt ---
+note: empty -p and no stdin
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p '' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 42
+elapsed: 1.2s
+stdout:
+stderr (stack frames and cosmetic startup lines dropped):
+No input provided via stdin. Input can be provided by piping data into gemini or using the --prompt option.
+
+--- run t27-image31-default-tools ---
+note: FAILURE WITH EXIT 0
+argv: gemini --skip-trust -m gemini-3.1-flash-image-preview -p 'Generate an image of a red circle.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws-img
+stdin: /dev/null
+exit code: 0
+elapsed: 9.3s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:12:36.846Z","session_id":"5a08bd51-6778-45ac-b919-c9579a240dac","model":"gemini-3.1-flash-image-preview"}
+{"type":"message","timestamp":"2026-11-16T03:12:36.847Z","role":"user","content":"Generate an image of a red circle."}
+{"type":"error","timestamp":"2026-11-16T03:12:44.735Z","severity":"error","message":"Invalid stream: The model returned an empty response or malformed tool call."}
+{"type":"result","timestamp":"2026-11-16T03:12:44.735Z","status":"error","stats":{"total_tokens":10056,"input_tokens":8650,"output_tokens":1406,"cached":0,"input":8650,"duration_ms":7889,"tool_calls":0,"models":{"gemini-3.1-flash-image-preview":{"total_tokens":10056,"input_tokens":8650,"output_tokens":1406,"cached":0,"input":8650}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t34-model-gemini-2.5-pro ---
+note: listed by ListModels but 404 for this key
+argv: gemini --skip-trust -m gemini-2.5-pro -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 1
+elapsed: 1.1s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:16:38.324Z","session_id":"b3c3013c-db66-46f5-b9f2-ff26d2dabadf","model":"gemini-2.5-pro"}
+{"type":"message","timestamp":"2026-11-16T03:16:38.325Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"result","timestamp":"2026-11-16T03:16:38.475Z","status":"error","error":{"type":"unknown","message":"[API Error: An unknown error occurred.]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-2.5-pro":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-16-38-460Z.json ModelNotFoundError: This model models/gemini-2.5-pro is no longer available to new users. Please update your code to use models/gemini-3.1-pro-preview for the latest features and improvements. We recommend you to use the Interactions API (https://aistudio.google.com/docs/get-started).
+  code: 404
+}

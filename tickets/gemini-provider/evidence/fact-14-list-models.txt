@@ -1,0 +1,71 @@
+A0 fact 14: list-models
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+The CLI has no model-listing subcommand or flag (gemini --help lists mcp, extensions, skills, hooks,
+gemma only; /model is an interactive dialog). Its built-in VALID_GEMINI_MODELS table is partial
+(gemini-3-pro-preview, gemini-3.1-pro-preview[-customtools], gemini-3-flash-preview, gemini-2.5-pro,
+gemini-2.5-flash, gemini-3.5-flash, gemini-3-flash, gemini-3.1-flash-lite, two gemma-4 ids) and
+omits every image model. The API's ListModels endpoint (GET
+generativelanguage.googleapis.com/v1beta/models, key in the x-goog-api-key header) listed 64 models
+for this key, but it is not a reliable "served" probe: gemini-2.5-pro is listed yet a call returns
+404 "no longer available to new users" (fact 02). Owner-note names gemini-3-pro and gemini-3-flash
+are not served ids (gemini-3.1-pro-preview and gemini-3-flash-preview are); the three image models
+gemini-2.5-flash-image, gemini-3-pro-image-preview and gemini-3.1-flash-image-preview are listed.
+So GeminiAdapter.list_models has no CLI source: options are ListModels over HTTP (API-key auth only,
+not OAuth) filtered to generateContent models, or a static list, each confirmed by a probe call.
+
+OTHER EVIDENCE
+ListModels, gemini* entries: name, methods (generateContent/countTokens), inputTokenLimit, outputTokenLimit, thinking
+gemini-2.5-computer-use-preview-10-2025 generateContent,countTokens 131072 65536 True
+gemini-2.5-flash generateContent,countTokens 1048576 65536 True
+gemini-2.5-flash-image generateContent,countTokens 32768 32768 None
+gemini-2.5-flash-lite generateContent,countTokens 1048576 65536 True
+gemini-2.5-flash-native-audio-latest countTokens 131072 8192 True
+gemini-2.5-flash-native-audio-preview-09-2025 countTokens 131072 8192 True
+gemini-2.5-flash-native-audio-preview-12-2025 countTokens 131072 8192 True
+gemini-2.5-flash-preview-tts countTokens,generateContent 8192 16384 None
+gemini-2.5-pro generateContent,countTokens 1048576 65536 True
+gemini-2.5-pro-preview-tts countTokens,generateContent 8192 16384 None
+gemini-3-flash-preview generateContent,countTokens 1048576 65536 True
+gemini-3-pro-image generateContent,countTokens 131072 32768 True
+gemini-3-pro-image-preview generateContent,countTokens 131072 32768 True
+gemini-3.1-flash-image generateContent,countTokens 65536 65536 True
+gemini-3.1-flash-image-preview generateContent,countTokens 65536 65536 True
+gemini-3.1-flash-lite generateContent,countTokens 1048576 65536 True
+gemini-3.1-flash-lite-image generateContent,countTokens 65536 65536 True
+gemini-3.1-flash-lite-preview generateContent,countTokens 1048576 65536 True
+gemini-3.1-flash-live-preview  131072 65536 None
+gemini-3.1-flash-tts-preview generateContent,countTokens 8192 16384 None
+gemini-3.1-pro-preview generateContent,countTokens 1048576 65536 True
+gemini-3.1-pro-preview-customtools generateContent,countTokens 1048576 65536 True
+gemini-3.5-flash generateContent,countTokens 1048576 65536 True
+gemini-3.5-flash-lite generateContent,countTokens 1048576 65536 True
+gemini-3.5-live-translate-preview  16384 32768 None
+gemini-3.5-transcribe generateContent,countTokens 98304 32768 None
+gemini-3.5-transcribe-live  131072 65536 None
+gemini-3.6-flash generateContent,countTokens 1048576 65536 True
+gemini-3.7-flash generateContent,countTokens 1048576 65536 True
+gemini-3.8-flash generateContent,countTokens 1048576 65536 True
+gemini-3.8-flash-lite-tts generateContent,countTokens 8192 16384 None
+gemini-3.8-flash-tts generateContent,countTokens 8192 16384 None
+gemini-3.8-live  131072 65536 None
+gemini-3.8-live-extended-thinking  131072 65536 True
+gemini-4-argon generateContent,countTokens 1048576 32768 True
+gemini-4-carbon generateContent,countTokens 1048576 32768 True
+gemini-4-hydrogen generateContent,countTokens 1048576 65536 True
+gemini-decision-1  262144 1 None
+gemini-embedding-001 countTokens 2048 1 None
+gemini-embedding-2 countTokens 8192 1 None
+gemini-embedding-2-preview countTokens 8192 1 None
+gemini-flash-latest generateContent,countTokens 1048576 65536 True
+gemini-flash-lite-latest generateContent,countTokens 1048576 65536 True
+gemini-nano-banana-2.1 generateContent,countTokens 65536 65536 True
+gemini-omni-1.1-flash generateContent,countTokens 131072 65536 True
+gemini-omni-1.2-flash generateContent,countTokens 131072 65536 True
+gemini-omni-flash-preview generateContent,countTokens 131072 65536 True
+gemini-pro-latest generateContent,countTokens 1048576 65536 True
+gemini-robotics-er-2-preview generateContent,countTokens 131072 65536 True
+gemini-robotics-er-2-streaming-preview  131072 65536 None
+
+VALID_GEMINI_MODELS source: bundle/chunk-VLV2BYPM.js ~270225.

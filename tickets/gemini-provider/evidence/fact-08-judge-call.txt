@@ -1,0 +1,175 @@
+A0 fact 08: judge-call
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+POSITIVE. Several images plus a rubric to a general multimodal model, headless, returned
+schema-shaped JSON. Images go in the prompt as @path references (3 images: 2 inputs plus the
+candidate). Temperature and JSON output cannot be set from the argv; they are set in the system
+settings file through modelConfigs.customAliases[<model>].modelConfig.generateContentConfig
+({temperature: 0, responseMimeType: "application/json", responseJsonSchema: {...}}). For a Gemini
+3.x model the alias must "extends": "chat-base-3" to keep its thinking config. Telemetry for t30
+confirms the request carried gen_ai.request.temperature = 0 and gen_ai.output.type = json
+(top_p 0.95 and top_k 64 are inherited from chat-base). JSON mode worked both with the read-only
+tools.core grant present (t29, stream-json) and with no tools (t30, json). Verdicts were correct:
+R1-R3 pass, R4 (text HELLO) fail. Each call also carries the CLI's own ~21 KB system instruction
+and ~8k input tokens of overhead.
+
+--- run t29-judge-readonly-schema ---
+note: read-only tools.core + JSON schema + temperature 0, stream-json
+argv: gemini --skip-trust -m gemini-3.1-pro-preview -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-judge-readonly.json
+cwd: <scratch>/ws-judge
+stdin: <scratch>/prompt-judge.txt (contents: 'You are a visual judge. Inputs: @red-circle.png and @blue-square.png. Candidate output: @candidate.png. Grade the candidate against each rubric row and answer only with JSON.\nR1: the candidate contains a red circle.\nR2: the red circle sits inside a blue square.\nR3: the background is white.\nR4: the candidate contains the text HELLO.\n')
+exit code: 0
+elapsed: 12.8s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:13:46.908Z","session_id":"31d3a9bf-5b26-46bd-b4e7-1d3ef99da86e","model":"gemini-3.1-pro-preview"}
+{"type":"message","timestamp":"2026-11-16T03:13:46.941Z","role":"user","content":"You are a visual judge. Inputs: @red-circle.png and @blue-square.png. Candidate output: @candidate.png. Grade the candidate against each rubric row and answer only with JSON.\nR1: the candidate contains a red circle.\nR2: the red circle sits inside a blue square.\nR3: the background is white.\nR4: the candidate contains the text HELLO.\n"}
+{"type":"message","timestamp":"2026-11-16T03:13:57.951Z","role":"assistant","content":"{\n  \"rows\": [\n    {\n      \"","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:13:58.046Z","role":"assistant","content":"id\": \"R1\",\n      \"verdict\": \"pass\",\n      \"reason\": \"The candidate image","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:13:58.135Z","role":"assistant","content":" contains a red circle.\"\n    },\n    {\n      \"id\": \"R2\",\n      \"ver","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:13:58.285Z","role":"assistant","content":"dict\": \"pass\",\n      \"reason\": \"The red circle is located inside a blue square.\"\n    },\n    {\n      ","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:13:58.367Z","role":"assistant","content":"\"id\": \"R3\",\n      \"verdict\": \"pass\",\n      \"reason\": \"The background","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:13:58.459Z","role":"assistant","content":" of the image is white.\"\n    },\n    {\n      \"id\": \"R4\",\n      \"","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:13:58.621Z","role":"assistant","content":"verdict\": \"fail\",\n      \"reason\": \"The candidate image does not contain the text 'HELLO'.\"\n    }\n  ]\n} ","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:13:58.648Z","status":"success","stats":{"total_tokens":9873,"input_tokens":9703,"output_tokens":170,"cached":0,"input":9703,"duration_ms":11740,"tool_calls":0,"models":{"gemini-3.1-pro-preview":{"total_tokens":9873,"input_tokens":9703,"output_tokens":170,"cached":0,"input":9703}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t30-judge-notools-telemetry ---
+note: tools.core: [] + same alias + telemetry, -o json
+argv: gemini --skip-trust -m gemini-3.1-pro-preview -o json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-judge-notools.json
+cwd: <scratch>/ws-judge
+stdin: <scratch>/prompt-judge.txt (contents: 'You are a visual judge. Inputs: @red-circle.png and @blue-square.png. Candidate output: @candidate.png. Grade the candidate against each rubric row and answer only with JSON.\nR1: the candidate contains a red circle.\nR2: the red circle sits inside a blue square.\nR3: the background is white.\nR4: the candidate contains the text HELLO.\n')
+exit code: 0
+elapsed: 13.3s
+stdout:
+{
+  "session_id": "e5f15c37-1bff-45af-aa0e-25b4963c72d2",
+  "response": "{\n  \"rows\": [\n    {\n      \"id\": \"R1\",\n      \"verdict\": \"pass\",\n      \"reason\": \"The candidate image contains a red circle.\"\n    },\n    {\n      \"id\": \"R2\",\n      \"verdict\": \"pass\",\n      \"reason\": \"The red circle is located inside the blue square.\"\n    },\n    {\n      \"id\": \"R3\",\n      \"verdict\": \"pass\",\n      \"reason\": \"The background of the image is white.\"\n    },\n    {\n      \"id\": \"R4\",\n      \"verdict\": \"fail\",\n      \"reason\": \"The text 'HELLO' is not present in the image.\"\n    }\n  ]\n}",
+  "stats": {
+    "models": {
+      "gemini-3.1-pro-preview": {
+        "api": {
+          "totalRequests": 1,
+          "totalErrors": 0,
+          "totalLatencyMs": 11885
+        },
+        "tokens": {
+          "input": 8297,
+          "prompt": 8297,
+          "candidates": 170,
+          "total": 9047,
+          "cached": 0,
+          "thoughts": 580,
+          "tool": 0
+        },
+        "roles": {
+          "main": {
+            "totalRequests": 1,
+            "totalErrors": 0,
+            "totalLatencyMs": 11885,
+            "tokens": {
+              "input": 8297,
+              "prompt": 8297,
+              "candidates": 170,
+              "total": 9047,
+              "cached": 0,
+              "thoughts": 580,
+              "tool": 0
+            }
+          }
+        }
+      }
+    },
+    "tools": {
+      "totalCalls": 0,
+      "totalSuccess": 0,
+      "totalFail": 0,
+      "totalDurationMs": 0,
+      "totalDecisions": {
+        "accept": 0,
+        "reject": 0,
+        "modify": 0,
+        "auto_accept": 0
+      },
+      "byName": {}
+    },
+    "files": {
+      "totalLinesAdded": 0,
+      "totalLinesRemoved": 0
+    }
+  }
+}
+stderr (stack frames and cosmetic startup lines dropped):
+The 'metricReader' option is deprecated. Please use 'metricReaders' instead.
+
+OTHER EVIDENCE
+<scratch>/settings/gemini-judge-readonly.json:
+{
+  "tools": {
+    "core": [
+      "read_file",
+      "glob",
+      "grep_search",
+      "list_directory"
+    ]
+  },
+  "context": {
+    "fileName": "AGENTS.md"
+  },
+  "modelConfigs": {
+    "customAliases": {
+      "gemini-3.1-pro-preview": {
+        "extends": "chat-base-3",
+        "modelConfig": {
+          "model": "gemini-3.1-pro-preview",
+          "generateContentConfig": {
+            "temperature": 0,
+            "responseMimeType": "application/json",
+            "responseJsonSchema": {
+              "type": "object",
+              "properties": {
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "verdict": {
+                        "type": "string",
+                        "enum": [
+                          "pass",
+                          "fail",
+                          "unsure"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "verdict",
+                      "reason"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "rows"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+telemetry gen_ai.client.inference.operation.details for t30 (selected attributes):
+gen_ai.request.model = gemini-3.1-pro-preview; gen_ai.request.temperature = 0; gen_ai.request.top_p = 0.95;
+gen_ai.request.top_k = 64; gen_ai.output.type = json; gen_ai.system_instructions = <21402 chars>;
+gen_ai.response.model = gemini-3.1-pro-preview; gen_ai.usage.input_tokens = 8297; output_tokens = 170; thoughts_token_count = 580

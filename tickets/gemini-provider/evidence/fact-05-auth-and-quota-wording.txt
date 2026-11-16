@@ -1,0 +1,66 @@
+A0 fact 05: auth-and-quota-wording
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+Observed auth wording:
+- Key missing/empty (exit 41, stderr only, no JSON): "Please set an Auth method in your
+  <HOME>/.gemini/settings.json or specify one of the following environment variables before
+  running: GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA".
+- Invalid key (exit 144): result.error.message and stderr carry the API JSON: "API key not valid.
+  Please pass a valid API key.", status "INVALID_ARGUMENT", reason "API_KEY_INVALID", code 400.
+- Model gone: "ModelNotFoundError: This model models/gemini-2.5-pro is no longer available to new
+  users." (stderr only; result.error.message is "[API Error: An unknown error occurred.]").
+Quota wording (SOURCE ONLY; a 429 cannot be provoked cheaply on a paid key), chunk-VLV2BYPM.js:
+- classifyGoogleError (~297560): HTTP 429/499/503 become RetryableQuotaError or TerminalQuotaError;
+  a daily QuotaFailure becomes TerminalQuotaError "You have exhausted your daily quota on this
+  model."; a message matching /limit:\s*0/ is terminal. Underlying API status: RESOURCE_EXHAUSTED.
+- parseAndFormatApiError (~376150): "[API Error: <message> (Status: <status>)]" and, for 429 with
+  an API key, appends "Please wait and try again later. To increase your limits, request a quota
+  increase through AI Studio, or switch to another /auth method".
+- Other: "Possible quota limitations in place or slow response times detected. Switching to the
+  <model> model for the rest of this session." (fallback notice), "Rate limit exceeded for host:".
+Candidate FAILURE_MARKERS additions: "RESOURCE_EXHAUSTED", "exhausted your daily quota",
+"request a quota increase", "API_KEY_INVALID", "Please set an Auth method".
+
+--- run t06-emptykey-stream ---
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_API_KEY=
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 41
+elapsed: 1.0s
+stdout:
+stderr (stack frames and cosmetic startup lines dropped):
+Please set an Auth method in your <scratch>/home/.gemini/settings.json or specify one of the following environment variables before running: GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA
+
+--- run t07-invalidkey-stream ---
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_API_KEY=AIzaSyA0-invalid-key-for-hand-test-000000
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 144
+elapsed: 15.2s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:04:48.871Z","session_id":"b64cefd3-d810-4ef8-8aa3-026464703bb5","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:04:48.872Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"result","timestamp":"2026-11-16T03:04:48.987Z","status":"error","error":{"type":"unknown","message":"[API Error: {\"error\":{\"message\":\"{\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"API key not valid. Please pass a valid API key.\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.ErrorInfo\\\",\\n        \\\"reason\\\": \\\"API_KEY_INVALID\\\",\\n        \\\"domain\\\": \\\"googleapis.com\\\",\\n        \\\"metadata\\\": {\\n          \\\"service\\\": \\\"generativelanguage.googleapis.com\\\"\\n        }\\n      },\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.LocalizedMessage\\\",\\n        \\\"locale\\\": \\\"en-US\\\",\\n        \\\"message\\\": \\\"API key not valid. Please pass a valid API key.\\\"\\n      }\\n    ]\\n  }\\n}\\n\",\"code\":400,\"status\":\"Bad Request\"}}]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-04-48-971Z.json _ApiError: {"error":{"message":"{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"API_KEY_INVALID\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"API key not valid. Please pass a valid API key.\"\n      }\n    ]\n  }\n}\n","code":400,"status":"Bad Request"}}
+  status: 400
+}
+
+--- run t34-model-gemini-2.5-pro ---
+argv: gemini --skip-trust -m gemini-2.5-pro -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 1
+elapsed: 1.1s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:16:38.324Z","session_id":"b3c3013c-db66-46f5-b9f2-ff26d2dabadf","model":"gemini-2.5-pro"}
+{"type":"message","timestamp":"2026-11-16T03:16:38.325Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"result","timestamp":"2026-11-16T03:16:38.475Z","status":"error","error":{"type":"unknown","message":"[API Error: An unknown error occurred.]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-2.5-pro":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-16-38-460Z.json ModelNotFoundError: This model models/gemini-2.5-pro is no longer available to new users. Please update your code to use models/gemini-3.1-pro-preview for the latest features and improvements. We recommend you to use the Interactions API (https://aistudio.google.com/docs/get-started).
+  code: 404
+}

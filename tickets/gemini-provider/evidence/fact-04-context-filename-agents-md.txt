@@ -1,0 +1,56 @@
+A0 fact 04: context-filename-agents-md
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+context.fileName: "AGENTS.md" in the system settings file does load AGENTS.md from the working
+directory (t19), but it ADDS to the default GEMINI.md instead of replacing it: with both files
+present the model saw both codewords. Without the setting only GEMINI.md loads (t20). Source:
+setGeminiMdFilename() in chunk-VLV2BYPM.js (~244555) unions the configured names with the current
+list, which starts as ["GEMINI.md"]. So the plan's "Both set context.fileName to AGENTS.md"
+selects AGENTS.md but cannot stop a host's GEMINI.md (or ~/.gemini/GEMINI.md) from also loading.
+
+--- run t19-context-agentsmd ---
+note: system settings context.fileName AGENTS.md
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-readonly.json
+cwd: <scratch>/ws-ctx
+stdin: <scratch>/prompt-ctx.txt (contents: 'What is the project codeword from your context files? Reply with only the codeword, or NONE if you have none. Do not use tools.\n')
+exit code: 0
+elapsed: 4.7s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:08:23.810Z","session_id":"7953814c-3d88-45f8-a8b4-1c1c63202a48","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:08:23.811Z","role":"user","content":"What is the project codeword from your context files? Reply with only the codeword, or NONE if you have none. Do not use tools.\n"}
+{"type":"message","timestamp":"2026-11-16T03:08:26.878Z","role":"assistant","content":"ZEPHYR-42, GEMINIMD-","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:08:26.907Z","role":"assistant","content":"77","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:08:26.944Z","status":"success","stats":{"total_tokens":8864,"input_tokens":7689,"output_tokens":14,"cached":0,"input":7689,"duration_ms":3134,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":8864,"input_tokens":7689,"output_tokens":14,"cached":0,"input":7689}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t20-context-default ---
+note: no settings file
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws-ctx
+stdin: <scratch>/prompt-ctx.txt (contents: 'What is the project codeword from your context files? Reply with only the codeword, or NONE if you have none. Do not use tools.\n')
+exit code: 0
+elapsed: 2.7s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:08:28.783Z","session_id":"9fb9099b-1898-46cb-afc4-d996a6ed1706","model":"gemini-3.1-flash-lite"}
+{"type":"message","timestamp":"2026-11-16T03:08:28.785Z","role":"user","content":"What is the project codeword from your context files? Reply with only the codeword, or NONE if you have none. Do not use tools.\n"}
+{"type":"message","timestamp":"2026-11-16T03:08:29.726Z","role":"assistant","content":"GEMINIMD-77","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:08:29.747Z","status":"success","stats":{"total_tokens":9050,"input_tokens":8886,"output_tokens":7,"cached":0,"input":8886,"duration_ms":964,"tool_calls":0,"models":{"gemini-3.1-flash-lite":{"total_tokens":9050,"input_tokens":8886,"output_tokens":7,"cached":0,"input":8886}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+OTHER EVIDENCE
+<scratch>/ws-ctx/AGENTS.md:
+# Agent rules
+
+The project codeword is ZEPHYR-42.
+
+<scratch>/ws-ctx/GEMINI.md:
+# Gemini rules
+
+The project codeword is GEMINIMD-77.
+
+Session record for t19 (home/.gemini/tmp/ws-ctx/chats/session-...-7953814c.jsonl) contains both
+'--- Context from: <scratch>/ws-ctx/AGENTS.md ---' and '--- Context from: <scratch>/ws-ctx/GEMINI.md ---'.
+Session record for t20 contains only the GEMINI.md block.

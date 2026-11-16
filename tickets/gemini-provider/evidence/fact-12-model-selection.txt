@@ -1,0 +1,135 @@
+A0 fact 12: model-selection
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+-m is NOT a literal pin. The CLI resolves the name first (resolveModel / modelIdResolutions in
+chunk-VLV2BYPM.js ~270252 and ~349570): when the account has Gemini 3.5 Flash GA access, any name
+ending in "flash" (gemini-2.5-flash, gemini-3.8-flash, alias "flash") is rewritten to
+gemini-3.5-flash, which the API then served as gemini-3.6-flash. Aliases auto/pro resolve to
+gemini-3.1-pro-preview with API-key auth (source only, not run). Names the CLI does not know pass
+through unchanged: gemini-3.1-flash-lite, gemini-3.1-pro-preview, gemini-2.5-flash-image,
+gemini-3.1-flash-image-preview. A typo passes through and fails at the API (fact 02).
+Three different names describe one call: init.model = the -m string; the session record "model" =
+the resolved request model; result.stats.models key = the API's response modelVersion (the model
+actually billed). t02: gemini-2.5-flash / gemini-3.5-flash / gemini-3.6-flash. The adapter should
+record the stats key as the served model.
+
+--- run t02-success-stream ---
+note: -m gemini-2.5-flash
+argv: gemini --skip-trust -m gemini-2.5-flash -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 0
+elapsed: 3.0s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:03:19.550Z","session_id":"be37ee64-e05b-41dd-aa30-34eb42623e6f","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:03:19.550Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"message","timestamp":"2026-11-16T03:03:21.490Z","role":"assistant","content":"PONG","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:03:21.517Z","status":"success","stats":{"total_tokens":7624,"input_tokens":7318,"output_tokens":2,"cached":0,"input":7318,"duration_ms":1968,"tool_calls":0,"models":{"gemini-3.6-flash":{"total_tokens":7624,"input_tokens":7318,"output_tokens":2,"cached":0,"input":7318}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t34-model-gemini-3.8-flash ---
+note: -m gemini-3.8-flash (served per ListModels)
+argv: gemini --skip-trust -m gemini-3.8-flash -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 0
+elapsed: 2.5s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:16:35.792Z","session_id":"cc3b57de-3550-4472-8dc3-01972d135b20","model":"gemini-3.8-flash"}
+{"type":"message","timestamp":"2026-11-16T03:16:35.793Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"message","timestamp":"2026-11-16T03:16:37.291Z","role":"assistant","content":"PONG","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:16:37.312Z","status":"success","stats":{"total_tokens":8786,"input_tokens":8652,"output_tokens":2,"cached":0,"input":8652,"duration_ms":1520,"tool_calls":0,"models":{"gemini-3.6-flash":{"total_tokens":8786,"input_tokens":8652,"output_tokens":2,"cached":0,"input":8652}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t03-success-json ---
+note: -m gemini-3.1-flash-lite: passes through
+argv: gemini --skip-trust -m gemini-3.1-flash-lite -p 'Reply with the single word PONG.' -o json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 0
+elapsed: 4.1s
+stdout:
+{
+  "session_id": "9cea87ae-2526-470e-80a7-48959f8f2e3f",
+  "response": "PONG",
+  "stats": {
+    "models": {
+      "gemini-3.1-flash-lite": {
+        "api": {
+          "totalRequests": 1,
+          "totalErrors": 0,
+          "totalLatencyMs": 2988
+        },
+        "tokens": {
+          "input": 8652,
+          "prompt": 8652,
+          "candidates": 2,
+          "total": 9335,
+          "cached": 0,
+          "thoughts": 681,
+          "tool": 0
+        },
+        "roles": {
+          "main": {
+            "totalRequests": 1,
+            "totalErrors": 0,
+            "totalLatencyMs": 2988,
+            "tokens": {
+              "input": 8652,
+              "prompt": 8652,
+              "candidates": 2,
+              "total": 9335,
+              "cached": 0,
+              "thoughts": 681,
+              "tool": 0
+            }
+          }
+        }
+      }
+    },
+    "tools": {
+      "totalCalls": 0,
+      "totalSuccess": 0,
+      "totalFail": 0,
+      "totalDurationMs": 0,
+      "totalDecisions": {
+        "accept": 0,
+        "reject": 0,
+        "modify": 0,
+        "auto_accept": 0
+      },
+      "byName": {}
+    },
+    "files": {
+      "totalLinesAdded": 0,
+      "totalLinesRemoved": 0
+    }
+  }
+}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t34-model-gemini-2.5-pro ---
+note: -m gemini-2.5-pro: passes through, 404 for this key
+argv: gemini --skip-trust -m gemini-2.5-pro -p 'Reply with the single word PONG.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws1
+stdin: /dev/null
+exit code: 1
+elapsed: 1.1s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:16:38.324Z","session_id":"b3c3013c-db66-46f5-b9f2-ff26d2dabadf","model":"gemini-2.5-pro"}
+{"type":"message","timestamp":"2026-11-16T03:16:38.325Z","role":"user","content":"Reply with the single word PONG."}
+{"type":"result","timestamp":"2026-11-16T03:16:38.475Z","status":"error","error":{"type":"unknown","message":"[API Error: An unknown error occurred.]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-2.5-pro":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-16-38-460Z.json ModelNotFoundError: This model models/gemini-2.5-pro is no longer available to new users. Please update your code to use models/gemini-3.1-pro-preview for the latest features and improvements. We recommend you to use the Interactions API (https://aistudio.google.com/docs/get-started).
+  code: 404
+}
+
+OTHER EVIDENCE
+Session record for t02: {"type": "gemini", "content": "PONG", ..., "model": "gemini-3.5-flash"}
+Session record for t34 gemini-3.8-flash: model gemini-3.5-flash
+Source rule: if (useGemini3_5Flash && isFlashModel(resolved) && normalizedModel !== "gemini-3-flash-preview") rewrite; isFlashModel(m) includes m.endsWith("flash").

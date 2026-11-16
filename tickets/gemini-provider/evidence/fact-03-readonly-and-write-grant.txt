@@ -1,0 +1,174 @@
+A0 fact 03: readonly-and-write-grant
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+Headless (non-TTY) with no approval flag (mode "default"), write_file, replace and
+run_shell_command are not offered to the model at all; nothing was written and the turn still
+ended status success, exit 0 (t13). The default tool set also exposes invoke_agent (a "generalist"
+subagent) and update_topic; the subagent's own tool calls do NOT appear as stream events but do
+count in stats.tool_calls (t13: 3 visible tool_use events, tool_calls 6).
+--approval-mode plan is read-only for the worktree (t14), but plan mode may still write plan files
+into its plans directory, which defaults to the project temp dir under ~/.gemini/tmp/<project>/
+(source: Config.getPlansDir).
+A tools.core allowlist in the SYSTEM settings file (GEMINI_CLI_SYSTEM_SETTINGS_PATH) of
+read_file, glob, grep_search, list_directory blocks writes and shell even with --approval-mode
+yolo (t15). A workspace .gemini/settings.json that lists write_file and run_shell_command in
+tools.core does not widen it (t16): system settings win. tools.core: [] registers no built-in
+tools at all (used in facts 07/08).
+Write grant for an Implement-style surface: system settings without tools.core plus
+--approval-mode yolo wrote the file and ran the shell command (t17). --approval-mode auto_edit
+allowed write_file but not the shell (t18). Source note: in an untrusted folder a non-default
+approval mode is silently reset to "default", but headless untrusted runs exit 55 first (fact 11).
+Built-in tool names (source constants): read_file, read_many_files, glob, grep_search,
+list_directory, write_file, replace, run_shell_command, web_fetch, google_web_search,
+invoke_agent, update_topic, activate_skill, ask_user, write_todos, enter_plan_mode,
+exit_plan_mode, tracker_*, complete_task, get_internal_docs.
+
+--- run t13-tools-default ---
+note: no approval flag, no settings file
+argv: gemini --skip-trust -m gemini-2.5-flash -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws-default
+stdin: <scratch>/prompt-tools.txt (contents: 'Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n')
+exit code: 0
+elapsed: 26.8s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:06:04.467Z","session_id":"feccf264-8ffc-4328-8c16-96f55ce630b9","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:06:04.468Z","role":"user","content":"Use your tools to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n"}
+{"type":"tool_use","timestamp":"2026-11-16T03:06:11.483Z","tool_name":"update_topic","tool_id":"update_topic__call_12604488156321916905","parameters":{"strategic_intent":"Create out.txt and run shell command to create shell.txt using generalist subagent."}}
+{"type":"tool_use","timestamp":"2026-11-16T03:06:11.909Z","tool_name":"invoke_agent","tool_id":"invoke_agent__call_12604488156321916026","parameters":{"agent_name":"generalist","prompt":"Please perform two tasks in the current directory:\n1. Create a file named out.txt containing the exact text \"WRITTEN\".\n2. Execute the shell command: `echo SHELL > shell.txt` to create shell.txt containing \"SHELL\".\n\nVerify that both files (out.txt and shell.txt) have been created with their expected contents and confirm completion."}}
+{"type":"tool_result","timestamp":"2026-11-16T03:06:24.604Z","tool_id":"update_topic__call_12604488156321916905","status":"success","output":"> [!STRATEGY]\n> **Intent:** Create out.txt and run shell command to create shell.txt using generalist subagent."}
+{"type":"tool_result","timestamp":"2026-11-16T03:06:24.604Z","tool_id":"invoke_agent__call_12604488156321916026","status":"success"}
+{"type":"tool_use","timestamp":"2026-11-16T03:06:28.465Z","tool_name":"update_topic","tool_id":"update_topic__call_7233596566694067992","parameters":{"strategic_intent":"Recap task attempt and report status.","summary":"Attempted to execute file creation and shell command execution via subagent. Neither file writing nor shell execution tools were available in the session context, so both steps could not be completed."}}
+{"type":"tool_result","timestamp":"2026-11-16T03:06:28.494Z","tool_id":"update_topic__call_7233596566694067992","status":"success","output":"> [!STRATEGY]\n> **Intent:** Recap task attempt and report status."}
+{"type":"message","timestamp":"2026-11-16T03:06:29.709Z","role":"assistant","content":"DONE\n\n- Step 1","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:06:29.803Z","role":"assistant","content":" (create out.txt): Failed (file modification tools not available in current environment)\n- Step 2 (run shell command):","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:06:29.823Z","role":"assistant","content":" Failed (shell execution tools not available in current environment)","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:06:29.835Z","status":"success","stats":{"total_tokens":57108,"input_tokens":52664,"output_tokens":555,"cached":13887,"input":38777,"duration_ms":25368,"tool_calls":6,"models":{"gemini-3.6-flash":{"total_tokens":57108,"input_tokens":52664,"output_tokens":555,"cached":13887,"input":38777}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t14-tools-plan ---
+note: --approval-mode plan
+argv: gemini --skip-trust -m gemini-2.5-flash --approval-mode plan -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws-plan
+stdin: <scratch>/prompt-tools.txt (contents: 'Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n')
+exit code: 0
+elapsed: 8.9s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:06:38.191Z","session_id":"c92f5a40-382a-4268-8362-513495482f73","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:06:38.192Z","role":"user","content":"Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n"}
+{"type":"message","timestamp":"2026-11-16T03:06:45.861Z","role":"assistant","content":"I am currently in Plan Mode, which restricts file creation outside the designated plans directory and disables shell command","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:06:45.900Z","role":"assistant","content":" execution. Please approve exiting Plan Mode so I can perform these operations for you.","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:06:45.927Z","status":"success","stats":{"total_tokens":9225,"input_tokens":7661,"output_tokens":36,"cached":0,"input":7661,"duration_ms":7736,"tool_calls":0,"models":{"gemini-3.6-flash":{"total_tokens":9225,"input_tokens":7661,"output_tokens":36,"cached":0,"input":7661}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t15-tools-core-yolo ---
+note: system tools.core read-only allowlist + yolo
+argv: gemini --skip-trust -m gemini-2.5-flash --approval-mode yolo -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-readonly.json
+cwd: <scratch>/ws-core
+stdin: <scratch>/prompt-tools.txt (contents: 'Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n')
+exit code: 0
+elapsed: 16.6s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:06:59.237Z","session_id":"f09f3414-e7e6-4076-b44f-33438ccec768","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:06:59.237Z","role":"user","content":"Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n"}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:07.018Z","tool_name":"list_directory","tool_id":"list_directory__call_4761348202675435860","parameters":{"dir_path":"<scratch>/ws-core"}}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:07.027Z","tool_id":"list_directory__call_4761348202675435860","status":"success"}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:08.003Z","tool_name":"read_file","tool_id":"read_file__call_8599428007851638251","parameters":{"file_path":"<scratch>/ws-core/notes.txt"}}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:08.017Z","tool_id":"read_file__call_8599428007851638251","status":"success","output":""}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:12.222Z","tool_name":"glob","tool_id":"glob__call_10219644611565024320","parameters":{"pattern":"*"}}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:12.253Z","tool_id":"glob__call_10219644611565024320","status":"success","output":"Found 1 matching file(s)"}
+{"type":"message","timestamp":"2026-11-16T03:07:14.644Z","role":"assistant","content":"DONE\n\n- Step 1 (create out.txt): Failed (no write tool available)\n- Step 2 (run echo","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:07:14.712Z","role":"assistant","content":" SHELL > shell.txt): Failed (no shell tool available)\n\nNeither step succeeded.","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:07:14.724Z","status":"success","stats":{"total_tokens":34718,"input_tokens":31801,"output_tokens":234,"cached":5987,"input":25814,"duration_ms":15488,"tool_calls":3,"models":{"gemini-3.6-flash":{"total_tokens":34718,"input_tokens":31801,"output_tokens":234,"cached":5987,"input":25814}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+YOLO mode is enabled. All tool calls will be automatically approved.
+YOLO mode is enabled. All tool calls will be automatically approved.
+
+--- run t16-tools-core-widen-attempt ---
+note: same + workspace .gemini/settings.json trying to widen tools.core
+argv: gemini --skip-trust -m gemini-2.5-flash --approval-mode yolo -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-readonly.json
+cwd: <scratch>/ws-widen
+stdin: <scratch>/prompt-tools.txt (contents: 'Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n')
+exit code: 0
+elapsed: 16.4s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:07:25.284Z","session_id":"dacea2f1-c9e0-47b2-bbe7-ab9f404ca061","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:07:25.285Z","role":"user","content":"Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n"}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:37.627Z","tool_name":"list_directory","tool_id":"list_directory__call_10135371101594507232","parameters":{"dir_path":"<scratch>/ws-widen"}}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:37.645Z","tool_id":"list_directory__call_10135371101594507232","status":"success"}
+{"type":"message","timestamp":"2026-11-16T03:07:40.256Z","role":"assistant","content":"DONE\n\n- **","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:07:40.333Z","role":"assistant","content":"Step 1 (create out.txt):** Failed — file writing tool (`write_file`) is not available in the current environment context","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:07:40.435Z","role":"assistant","content":".\n- **Step 2 (run shell command):** Failed — shell execution tool (`run_shell_command","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:07:40.476Z","role":"assistant","content":"`) is not available in the current environment context.\n\n**Succeeded steps:** None.","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:07:40.490Z","status":"success","stats":{"total_tokens":18154,"input_tokens":15242,"output_tokens":160,"cached":0,"input":15242,"duration_ms":15206,"tool_calls":1,"models":{"gemini-3.6-flash":{"total_tokens":18154,"input_tokens":15242,"output_tokens":160,"cached":0,"input":15242}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+YOLO mode is enabled. All tool calls will be automatically approved.
+YOLO mode is enabled. All tool calls will be automatically approved.
+
+--- run t17-tools-yolo-write ---
+note: system settings without tools.core + yolo
+argv: gemini --skip-trust -m gemini-2.5-flash --approval-mode yolo -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-write.json
+cwd: <scratch>/ws-yolo
+stdin: <scratch>/prompt-tools.txt (contents: 'Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n')
+exit code: 0
+elapsed: 8.7s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:07:46.581Z","session_id":"cd770438-4260-47b8-8c0d-2085fc1b7055","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:07:46.582Z","role":"user","content":"Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n"}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:52.272Z","tool_name":"update_topic","tool_id":"update_topic__call_4935615467816418684","parameters":{"title":"File Creation and Shell Command Execution","strategic_intent":"Creating out.txt and executing shell command to write shell.txt","summary":"I will create out.txt directly with the text 'WRITTEN' and execute the shell command to output 'SHELL' into shell.txt."}}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:52.321Z","tool_name":"write_file","tool_id":"write_file__call_4935615467816417309","parameters":{"file_path":"out.txt","content":"WRITTEN"}}
+{"type":"tool_use","timestamp":"2026-11-16T03:07:52.523Z","tool_name":"run_shell_command","tool_id":"run_shell_command__call_4935615467816415934","parameters":{"command":"echo SHELL > shell.txt","description":"Executes shell command to write SHELL into shell.txt"}}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:52.593Z","tool_id":"update_topic__call_4935615467816418684","status":"success","output":"## 📂 Topic: **File Creation and Shell Command Execution**\n\n**Summary:**\nI will create out.txt directly with the text 'WRITTEN' and execute the shell command to output 'SHELL' into shell.txt.\n\n> [!STRATEGY]\n> **Intent:** Creating out.txt and executing shell command to write shell.txt"}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:52.593Z","tool_id":"write_file__call_4935615467816417309","status":"success"}
+{"type":"tool_result","timestamp":"2026-11-16T03:07:52.593Z","tool_id":"run_shell_command__call_4935615467816415934","status":"success","output":""}
+{"type":"message","timestamp":"2026-11-16T03:07:53.773Z","role":"assistant","content":"DONE\n\n","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:07:53.901Z","role":"assistant","content":"Steps succeeded:\n1. Created `out.txt` containing `WRITTEN`.\n2. Ran `echo SHELL > shell.","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:07:53.972Z","role":"assistant","content":"txt` to create `shell.txt`.","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:07:53.982Z","status":"success","stats":{"total_tokens":23016,"input_tokens":21982,"output_tokens":186,"cached":8344,"input":13638,"duration_ms":7401,"tool_calls":3,"models":{"gemini-3.6-flash":{"total_tokens":23016,"input_tokens":21982,"output_tokens":186,"cached":8344,"input":13638}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+YOLO mode is enabled. All tool calls will be automatically approved.
+YOLO mode is enabled. All tool calls will be automatically approved.
+
+--- run t18-tools-autoedit ---
+note: system settings without tools.core + auto_edit
+argv: gemini --skip-trust -m gemini-2.5-flash --approval-mode auto_edit -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-write.json
+cwd: <scratch>/ws-autoedit
+stdin: <scratch>/prompt-tools.txt (contents: 'Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n')
+exit code: 0
+elapsed: 12.7s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:08:03.096Z","session_id":"aa0edc8e-ca12-42be-9242-40179bfa6b96","model":"gemini-2.5-flash"}
+{"type":"message","timestamp":"2026-11-16T03:08:03.097Z","role":"user","content":"Use your own tools directly (do not delegate to a subagent) to do two things: (1) create a file named out.txt in the current directory containing the word WRITTEN; (2) run the shell command: echo SHELL > shell.txt . Then say DONE and list which steps succeeded.\n"}
+{"type":"tool_use","timestamp":"2026-11-16T03:08:12.598Z","tool_name":"update_topic","tool_id":"update_topic__call_11321418219944232133","parameters":{"title":"File Creation and Execution","summary":"Starting execution of step 1 (writing out.txt) and step 2 (shell command execution).","strategic_intent":"Executing requested file creation and shell command execution directly."}}
+{"type":"tool_use","timestamp":"2026-11-16T03:08:12.641Z","tool_name":"write_file","tool_id":"write_file__call_11321418219944233354","parameters":{"file_path":"out.txt","content":"WRITTEN"}}
+{"type":"tool_result","timestamp":"2026-11-16T03:08:12.687Z","tool_id":"update_topic__call_11321418219944232133","status":"success","output":"## 📂 Topic: **File Creation and Execution**\n\n**Summary:**\nStarting execution of step 1 (writing out.txt) and step 2 (shell command execution).\n\n> [!STRATEGY]\n> **Intent:** Executing requested file creation and shell command execution directly."}
+{"type":"tool_result","timestamp":"2026-11-16T03:08:12.687Z","tool_id":"write_file__call_11321418219944233354","status":"success"}
+{"type":"message","timestamp":"2026-11-16T03:08:14.297Z","role":"assistant","content":"DONE\n\n- Step 1 (Create file `out.txt` containing `WRITTEN`): S","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:08:14.366Z","role":"assistant","content":"ucceeded.\n- Step 2 (Run shell command `echo SHELL > shell.txt`): Failed (shell execution tool","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:08:14.403Z","role":"assistant","content":" is not available in the workspace environment).","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:08:14.424Z","status":"success","stats":{"total_tokens":20528,"input_tokens":18352,"output_tokens":146,"cached":0,"input":18352,"duration_ms":11329,"tool_calls":2,"models":{"gemini-3.6-flash":{"total_tokens":20528,"input_tokens":18352,"output_tokens":146,"cached":0,"input":18352}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+OTHER EVIDENCE
+<scratch>/settings/gemini-readonly.json:
+{
+  "tools": {"core": ["read_file", "glob", "grep_search", "list_directory"]},
+  "context": {"fileName": "AGENTS.md"}
+}
+
+<scratch>/settings/gemini-write.json:
+{
+  "context": {"fileName": "AGENTS.md"}
+}
+
+<scratch>/ws-widen/.gemini/settings.json:
+{"tools": {"core": ["read_file", "write_file", "run_shell_command"]}}
+
+Workspace listings after each run: ws-default, ws-plan, ws-core, ws-widen: notes.txt only.
+ws-yolo: notes.txt, out.txt (WRITTEN), shell.txt (SHELL). ws-autoedit: notes.txt, out.txt.

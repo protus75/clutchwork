@@ -1,0 +1,188 @@
+A0 fact 07: image-generation-headless
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+NEGATIVE as an output contract. The CLI can CALL an image model headlessly only after a settings
+file removes every tool and replaces the model's generation config, and even then it THROWS THE
+IMAGE AWAY: no image on stdout (stream-json or json carry text only), no file written, no image in
+the session record (~/.gemini/tmp/<project>/chats/*.jsonl). Steps observed:
+- t23: -m gemini-2.5-flash-image with tools (any grant) -> HTTP 400 "Function calling is not
+  enabled for this model", exit 144. The image model cannot call write_file, so it can never save
+  a file itself.
+- t24: tools.core: [] -> HTTP 400 "Thinking is not enabled for this model" (an unknown model name
+  inherits the CLI's chat-base alias with thinkingConfig), exit 144.
+- t25: + modelConfigs.customAliases["gemini-2.5-flash-image"] (no extends, responseModalities
+  [TEXT, IMAGE]) -> success, 1302 output tokens (one image is ~1290), reply text "Here it is:", image
+  dropped.
+- t26: same + 2 input images referenced in the prompt as @red-circle.png @blue-square.png (the
+  @path reader inlines images as inlineData, even with no tools registered) + a telemetry outfile
+  with logPrompts: true -> the image bytes appear ONLY base64-encoded inside the telemetry record's
+  response_text attribute (1.27 MB OTel debug log). Extracted: fact-07-generated-fusion.png,
+  1024x1024 PNG, correct fusion.
+- t28: 4 input images (above the "3" in the owner notes) were accepted and fused
+  (fact-07-generated-4-inputs.png), but the reply had no text part, so the CLI reported
+  "Invalid stream: The model returned an empty response or malformed tool call", result.status
+  error, exit 0, although a valid image was returned and billed.
+- t27: gemini-3.1-flash-image-preview accepts tools and thinking, generated an image (1406 output
+  tokens), and the CLI again reported "Invalid stream" with exit 0.
+Input images: @path in the prompt (png/jpg/gif/webp, by mime type; svg is read as text). Input
+limit: no CLI-side cap observed; 4 inputs worked on gemini-2.5-flash-image. Output format when
+recovered: image/png, 1024x1024.
+Conclusion: Part B's assumption ("Gemini CLI can call an image model headlessly and write the
+result to a file") is false. The only CLI route to the bytes is scraping a telemetry debug log,
+which is not an interface, also captures the whole prompt, and fails on image-only replies.
+`api-provider-client` (roadmap row 56) is NEEDED.
+
+--- run t23-image-gen-stream ---
+note: image model, write grant + yolo
+argv: gemini --skip-trust -m gemini-2.5-flash-image --approval-mode yolo -p 'Generate a 64x64 pixel image of a solid red circle on a white background and save it as circle.png in the current directory.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-write.json
+cwd: <scratch>/ws-img
+stdin: /dev/null
+exit code: 144
+elapsed: 1.8s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:09:56.493Z","session_id":"7b0b4a7f-d2d6-489b-ba18-4f2793ad6e6a","model":"gemini-2.5-flash-image"}
+{"type":"message","timestamp":"2026-11-16T03:09:56.494Z","role":"user","content":"Generate a 64x64 pixel image of a solid red circle on a white background and save it as circle.png in the current directory."}
+{"type":"result","timestamp":"2026-11-16T03:09:56.813Z","status":"error","error":{"type":"unknown","message":"[API Error: {\"error\":{\"message\":\"{\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Function calling is not enabled for this model\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\"\\n  }\\n}\\n\",\"code\":400,\"status\":\"Bad Request\"}}]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-2.5-flash-image":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+YOLO mode is enabled. All tool calls will be automatically approved.
+YOLO mode is enabled. All tool calls will be automatically approved.
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-09-56-796Z.json _ApiError: {"error":{"message":"{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Function calling is not enabled for this model\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n","code":400,"status":"Bad Request"}}
+  status: 400
+}
+
+--- run t24-image-gen-notools ---
+note: tools.core: []
+argv: gemini --skip-trust -m gemini-2.5-flash-image -p 'Generate an image: a solid red circle centered on a plain white square background. Simple flat graphic.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-notools.json
+cwd: <scratch>/ws-img
+stdin: /dev/null
+exit code: 144
+elapsed: 1.5s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:10:16.850Z","session_id":"a58d02ce-61f3-45d3-be40-c9718d4453f6","model":"gemini-2.5-flash-image"}
+{"type":"message","timestamp":"2026-11-16T03:10:16.851Z","role":"user","content":"Generate an image: a solid red circle centered on a plain white square background. Simple flat graphic."}
+{"type":"result","timestamp":"2026-11-16T03:10:17.041Z","status":"error","error":{"type":"unknown","message":"[API Error: {\"error\":{\"message\":\"{\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Thinking is not enabled for this model\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\"\\n  }\\n}\\n\",\"code\":400,\"status\":\"Bad Request\"}}]"},"stats":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0,"duration_ms":0,"tool_calls":0,"models":{"gemini-2.5-flash-image":{"total_tokens":0,"input_tokens":0,"output_tokens":0,"cached":0,"input":0}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+Error when talking to Gemini API Full report available at: /tmp/gemini-client-error-Turn.run-sendMessageStream-2026-11-16T03-10-17-024Z.json _ApiError: {"error":{"message":"{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Thinking is not enabled for this model\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n","code":400,"status":"Bad Request"}}
+  status: 400
+}
+
+--- run t25-image-gen-alias ---
+note: tools.core: [] + custom alias without thinking
+argv: gemini --skip-trust -m gemini-2.5-flash-image -p 'Generate an image: a solid red circle centered on a plain white square background. Simple flat graphic.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-image.json
+cwd: <scratch>/ws-img
+stdin: /dev/null
+exit code: 0
+elapsed: 7.1s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:10:43.953Z","session_id":"59cfddd8-0c20-4bba-b89b-d35cfc174df9","model":"gemini-2.5-flash-image"}
+{"type":"message","timestamp":"2026-11-16T03:10:43.953Z","role":"user","content":"Generate an image: a solid red circle centered on a plain white square background. Simple flat graphic."}
+{"type":"message","timestamp":"2026-11-16T03:10:44.625Z","role":"assistant","content":"That sounds like a","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:10:44.720Z","role":"assistant","content":" great idea! Here","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:10:44.766Z","role":"assistant","content":" it is: ","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:10:49.629Z","status":"success","stats":{"total_tokens":6229,"input_tokens":4927,"output_tokens":1302,"cached":0,"input":4927,"duration_ms":5677,"tool_calls":0,"models":{"gemini-2.5-flash-image":{"total_tokens":6229,"input_tokens":4927,"output_tokens":1302,"cached":0,"input":4927}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+--- run t26-image-fuse-telemetry ---
+note: 2 input images + telemetry outfile
+argv: gemini --skip-trust -m gemini-2.5-flash-image -p 'Make one new image: draw the red circle from @red-circle.png inside the blue square from @blue-square.png, on a white background.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-image-telemetry.json
+cwd: <scratch>/ws-img2
+stdin: /dev/null
+exit code: 0
+elapsed: 10.0s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:11:49.744Z","session_id":"eb9e5c0a-e09d-40e6-abbb-6975218d44cc","model":"gemini-2.5-flash-image"}
+{"type":"message","timestamp":"2026-11-16T03:11:49.779Z","role":"user","content":"Make one new image: draw the red circle from @red-circle.png inside the blue square from @blue-square.png, on a white background."}
+{"type":"message","timestamp":"2026-11-16T03:11:50.548Z","role":"assistant","content":"Here's the","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:11:50.569Z","role":"assistant","content":" image you requested:","delta":true}
+{"type":"message","timestamp":"2026-11-16T03:11:50.660Z","role":"assistant","content":" ","delta":true}
+{"type":"result","timestamp":"2026-11-16T03:11:58.362Z","status":"success","stats":{"total_tokens":6788,"input_tokens":5489,"output_tokens":1299,"cached":0,"input":5489,"duration_ms":8618,"tool_calls":0,"models":{"gemini-2.5-flash-image":{"total_tokens":6788,"input_tokens":5489,"output_tokens":1299,"cached":0,"input":5489}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+The 'metricReader' option is deprecated. Please use 'metricReaders' instead.
+
+--- run t28-image-4-inputs ---
+note: 4 input images, image-only reply
+argv: gemini --skip-trust -m gemini-2.5-flash-image -p 'Make one new image: arrange the four shapes from @red-circle.png @blue-square.png @green-square.png @yellow-circle.png in a 2x2 grid on white.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home GEMINI_CLI_SYSTEM_SETTINGS_PATH=<scratch>/settings/gemini-image-telemetry4.json
+cwd: <scratch>/ws-img4
+stdin: /dev/null
+exit code: 0
+elapsed: 14.1s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:13:01.328Z","session_id":"b62ae883-5266-4a96-84d8-e5c4c7bc7638","model":"gemini-2.5-flash-image"}
+{"type":"message","timestamp":"2026-11-16T03:13:01.393Z","role":"user","content":"Make one new image: arrange the four shapes from @red-circle.png @blue-square.png @green-square.png @yellow-circle.png in a 2x2 grid on white."}
+{"type":"error","timestamp":"2026-11-16T03:13:13.892Z","severity":"error","message":"Invalid stream: The model returned an empty response or malformed tool call."}
+{"type":"result","timestamp":"2026-11-16T03:13:13.892Z","status":"error","stats":{"total_tokens":7322,"input_tokens":6032,"output_tokens":1290,"cached":0,"input":6032,"duration_ms":12564,"tool_calls":0,"models":{"gemini-2.5-flash-image":{"total_tokens":7322,"input_tokens":6032,"output_tokens":1290,"cached":0,"input":6032}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+The 'metricReader' option is deprecated. Please use 'metricReaders' instead.
+
+--- run t27-image31-default-tools ---
+note: gemini-3.1-flash-image-preview, default tools
+argv: gemini --skip-trust -m gemini-3.1-flash-image-preview -p 'Generate an image of a red circle.' -o stream-json
+env overrides (applied inside `bash -ic`, after the rc file): HOME=<scratch>/home
+cwd: <scratch>/ws-img
+stdin: /dev/null
+exit code: 0
+elapsed: 9.3s
+stdout:
+{"type":"init","timestamp":"2026-11-16T03:12:36.846Z","session_id":"5a08bd51-6778-45ac-b919-c9579a240dac","model":"gemini-3.1-flash-image-preview"}
+{"type":"message","timestamp":"2026-11-16T03:12:36.847Z","role":"user","content":"Generate an image of a red circle."}
+{"type":"error","timestamp":"2026-11-16T03:12:44.735Z","severity":"error","message":"Invalid stream: The model returned an empty response or malformed tool call."}
+{"type":"result","timestamp":"2026-11-16T03:12:44.735Z","status":"error","stats":{"total_tokens":10056,"input_tokens":8650,"output_tokens":1406,"cached":0,"input":8650,"duration_ms":7889,"tool_calls":0,"models":{"gemini-3.1-flash-image-preview":{"total_tokens":10056,"input_tokens":8650,"output_tokens":1406,"cached":0,"input":8650}}}}
+stderr (stack frames and cosmetic startup lines dropped):
+
+OTHER EVIDENCE
+<scratch>/settings/gemini-notools.json:
+{
+  "tools": {"core": []}
+}
+
+<scratch>/settings/gemini-image.json:
+{
+  "tools": {"core": []},
+  "modelConfigs": {"customAliases": {"gemini-2.5-flash-image": {"modelConfig": {"model": "gemini-2.5-flash-image", "generateContentConfig": {"temperature": 1, "responseModalities": ["TEXT", "IMAGE"]}}}}}
+}
+
+<scratch>/settings/gemini-image-telemetry.json:
+{
+  "tools": {
+    "core": []
+  },
+  "modelConfigs": {
+    "customAliases": {
+      "gemini-2.5-flash-image": {
+        "modelConfig": {
+          "model": "gemini-2.5-flash-image",
+          "generateContentConfig": {
+            "temperature": 1,
+            "responseModalities": [
+              "TEXT",
+              "IMAGE"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "telemetry": {
+    "enabled": true,
+    "target": "local",
+    "outfile": "<scratch>/ws-img2-telemetry.log",
+    "logPrompts": true
+  }
+}
+
+Session record for t25 (the whole model turn; no inlineData anywhere in the file):
+{"id":"a8d729c5-43ce-429f-b2f2-ad01aabd901a","timestamp":"2026-11-16T03:10:49.628Z","type":"gemini","content":"That sounds like a great idea! Here it is:","thoughts":[],"tokens":{"input":4927,"output":1302,"cached":0,"thoughts":0,"tool":0,"total":6229},"model":"gemini-2.5-flash-image"}
+
+extract_images.py on <scratch>/ws-img2-telemetry.log (t26):
+records: 13; record 6 .attributes.request_text: string with inlineData (the 2 input images)
+record 8 text parts: 'Here's the', ' image you requested:', ' '
+record 8 .attributes.response_text: image/png 855075 bytes -> fact-07-generated-fusion.png (PNG 1024x1024 RGB); finishReason STOP
+extract_images.py on <scratch>/ws-img4-telemetry.log (t28):
+record 11 .attributes.response_text: image/png 826346 bytes -> fact-07-generated-4-inputs.png; text part ''; finishReason STOP
+Inputs: fact-07-input-red-circle.png, fact-07-input-blue-square.png (64x64, made with stdlib zlib).

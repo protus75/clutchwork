@@ -1,0 +1,28 @@
+A0 fact 06: process-argv
+gemini-cli 0.49.0, captured 2026-11-15 (UTC 2026-11-16).
+
+FINDING
+Every call runs as TWO node processes: the launcher and a relaunched child that adds
+--max-old-space-size=<n> (source: RELAUNCH in bundle/gemini.js). Both carry the full user argv.
+- npm global install under nvm (this machine's `gemini`): argv is
+  `node <nvm>/bin/gemini <args>` and child `<nvm>/bin/node --max-old-space-size=20054 <nvm>/bin/gemini <args>`.
+  The string "@google/gemini-cli" does NOT appear in the argv (the bin is a symlink to bundle/gemini.js).
+- pnpm global install (pnpm 10.34.5, isolated PNPM_HOME in scratch): the shim execs
+  `node <PNPM_HOME>/global/5/.pnpm/@google+gemini-cli@0.49.0/node_modules/@google/gemini-cli/bundle/gemini.js <args>`,
+  and the child is `<abs node> --max-old-space-size=20054 <same path> <args>`.
+A live_call matcher on "node .../@google/gemini-cli/..." works for pnpm and misses npm/nvm installs;
+matching either argv[1] ending in "/bin/gemini" or containing "@google/gemini-cli/" covers both, and
+the relaunch pair should be labelled once (the child is the one doing the work).
+
+OTHER EVIDENCE
+ps -eo pid,ppid,args sampled every 0.5 s during a call (npm/nvm `gemini` on PATH, run t21):
+ 373259  918469 node /home/djp/.nvm/versions/node/v24.15.0/bin/gemini --skip-trust -m gemini-3.1-flash-lite -p Count from 1 to 40, one number per line. -o stream-json
+ 373446  373259 /home/djp/.nvm/versions/node/v24.15.0/bin/node --max-old-space-size=20054 /home/djp/.nvm/versions/node/v24.15.0/bin/gemini --skip-trust -m gemini-3.1-flash-lite -p Count from 1 to 40, one number per line. -o stream-json
+
+pnpm shim, exec lines (<scratch>/pnpm-home/gemini):
+  exec "$basedir/node"  "$basedir/global/5/.pnpm/@google+gemini-cli@0.49.0/node_modules/@google/gemini-cli/bundle/gemini.js" "$@"
+  exec node  "$basedir/global/5/.pnpm/@google+gemini-cli@0.49.0/node_modules/@google/gemini-cli/bundle/gemini.js" "$@"
+
+ps sampled during a call through the pnpm shim (run t22):
+ 378186  918469 node <scratch>/pnpm-home/global/5/.pnpm/@google+gemini-cli@0.49.0/node_modules/@google/gemini-cli/bundle/gemini.js --skip-trust -m gemini-3.1-flash-lite -p Count from 1 to 40, one number per line. -o stream-json
+ 378354  378186 /home/djp/.nvm/versions/node/v24.15.0/bin/node --max-old-space-size=20054 <scratch>/pnpm-home/global/5/.pnpm/@google+gemini-cli@0.49.0/node_modules/@google/gemini-cli/bundle/gemini.js --skip-trust -m gemini-3.1-flash-lite -p Count from 1 to 40, one number per line. -o stream-json
