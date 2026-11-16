@@ -156,7 +156,7 @@ Scope out:
 - Gates, cadences, operator actions, hand tests, calibration and GO baselines; `roadmap-no-human-gates` owns them. This includes the "Gate to start" and "Gate to ship" conditions, `gate: operator`, "a week", the publish park for `confirm`, roadmap section 8 "Operator actions (not tickets)", driver plan sections 4, 6 and 7, and the journal plan's "the owner declares" step. Release tokens inside them are renamed and nothing else changes, except these edits Scope in names: the clause deleted in `docs/roadmap.md` item 2; roadmap row 35's "at the end of 0.3.0"; the journal plan's Release protocol steps 1-3, its Problem sentence on the re-measurement, and its ticket-table row 0.
 - Audit rows in roadmap sections 2-4 that Scope in does not name, the Status sections, and "Facts the ordering rests on". These are the audit snapshot at `80b76d5d`, which section 9 re-runs before each release.
 - Tickets authored from a section 8 row after this ticket was written (for example row 91's, or a later piece of row 89). The roadmap driver's row linking or the next bookkeeping pass links them; this ticket links only the directories item 11 names.
-- Section 9's text. Plan ticket tables, except the driver plan's rows 1, 5 and 6, the parallel plan's row 2, and the journal plan's row 0. Plan Status lines.
+- Section 9's text. Plan Status lines. Plan ticket tables, except the driver plan's rows 1, 5 and 6, the parallel plan's row 2, and the journal plan's row 0: the rename rule still renames every release token in them (the Gemini, evidence, annotations, stage-panels and upstream tables hold 29 of the counts the seventh `## Verification` command checks), and nothing else in them changes.
 - `docs/how-clutch-works.md`, `README.md`, `CLAUDE.md`, `AGENTS.md`, and all code, specs and tests. No test or code reads a fenced document: a grep for the eleven file names over `tests/`, `clutch/`, `vscode-clutchwork/` and `dev.py` finds nothing. So no test is fenced or added.
 - Fixing `reject_ticket`'s `actor: operator` on an engine retirement (box-000471 stays in the Box), and changing `./dev.py publish` (row 92's ticket does that).
 
@@ -200,7 +200,7 @@ The branch is rejected if it:
 - shifts a release token twice, leaves one unrenamed, or changes a version string that does not name a phase;
 - strikes or links a row Scope in does not name, or deletes a roadmap section 8 row, a numbered decision or a plan section instead of striking it (the driver plan's "Where each piece lives" `superseded` row is the one table row Scope in deletes);
 - renumbers roadmap rows, decisions, or the driver plan's sections;
-- edits an audit row, Status section or plan ticket table that Scope in does not name;
+- edits an audit row, Status section or plan ticket table that Scope in does not name, beyond renaming a release token in it;
 - states a behavior that the cited code or journal does not have.
 
 ## Time budget
