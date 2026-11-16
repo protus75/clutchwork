@@ -4,9 +4,11 @@ Writer-site checklist (extend in the same change that adds a writer of a capture
 - attempt-spool writer: clutch/driver.py `Spool`
 - engine-log writer: clutch/enginelog.py `EngineLog`
 - attempt-spool writer: clutch/providers.py `CliAdapter.invoke` (prompt, cli event stream, stderr)
-- journal writer: clutch/journal.py -- NOT YET WIRED; its one secret-bearing producer, the LLM effect
-  result, is scrubbed before it becomes the completion record (clutch/llmeffect.py `llm_call`)
-- harvest serialization: not built
+- harvest writer: clutch/runner.py `harvest` (attempts/<n>/harvest.json)
+- retro report writer: clutch/retro.py `Retro.commit_report`
+- notification output: clutch/seams.py `CommandNotifications` (stdout and stderr scrubbed before the effect result is journaled)
+- journal writer: clutch/journal.py does not scrub; producers scrub captured text before append,
+  including clutch/llmeffect.py `llm_call` and clutch/runner.py `harvest_failure` (the harvest_failed signal)
 """
 
 from collections.abc import Mapping

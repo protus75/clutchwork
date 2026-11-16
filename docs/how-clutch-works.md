@@ -619,7 +619,7 @@ times; each call is spooled under `state_dir/spools/`.
 - Spend is the sum of each call's journaled cost (the stream's reported USD, else the provider's
   `est_cost_per_call_usd`). `status` prints the total.
 - Configured secret values are replaced with `[REDACTED:NAME]` in spools, the engine log,
-  provider captures, notifications, and retro reports. The journal itself is not scrubbed; model
+  provider captures, notifications, retro reports, and harvests (`attempts/<n>/harvest.json`). The journal itself is not scrubbed; model
   results are scrubbed before they are journaled.
 
 ## 9. Suggestion Box

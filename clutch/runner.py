@@ -478,7 +478,7 @@ async def harvest(
         run_record=record if (ctx.repo / record).is_file() else None,
     )
     path = ctx.worktree(stem) / "tickets" / stem / "attempts" / str(attempt) / "harvest.json"
-    ctx.fs.write(path, (artifact.model_dump_json(indent=2) + "\n").encode())
+    ctx.fs.write(path, (ctx.driver.redactor.scrub(artifact.model_dump_json(indent=2)) + "\n").encode())
     await lift_outbox(ctx, stem, kind, attempt=attempt, only=f"attempts/{attempt}/harvest.json")
 
 
