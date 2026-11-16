@@ -50,12 +50,13 @@ async def test_preflight_events(monkeypatch, result, outcome):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("result,outcome", [(None, "no_report"), (object(), "ran"), (RuntimeError("retro"), "failed")])
-async def test_drain_retro_events(monkeypatch, result, outcome):
+@pytest.mark.parametrize("due,result,outcome", [(False, None, "not_due"), (True, object(), "due"), (True, None, "due"), (False, RuntimeError("retro"), "failed")])
+async def test_drain_retro_events(monkeypatch, due, result, outcome):
     log = install_log(monkeypatch, drain)
     d = object.__new__(drain._Drain)
     d.c = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state")), env={}, clock=None, sleep=None, control=None)
     d.retro = AsyncMock(side_effect=result if isinstance(result, Exception) else None, return_value=result)
+    d.retro.due = due
     d.retro.abort_current = AsyncMock()
     if isinstance(result, Exception):
         with pytest.raises(RuntimeError, match="retro"):

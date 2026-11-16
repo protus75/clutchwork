@@ -1,4 +1,4 @@
-"""Dormant serial admission; production routing remains in merge.py."""
+"""Serial merge admission for serve; run and drain merge inline through merge.merge."""
 
 import asyncio
 import re

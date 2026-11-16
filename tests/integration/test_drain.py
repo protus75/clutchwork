@@ -1105,6 +1105,8 @@ def test_due_retro_waits_for_retry_and_precedes_next_ticket(root):
     dispatch = script(checkout)
 
     class Retro:
+        due = False
+
         async def __call__(self, *, forced=False):
             window = project_window(checkout.journal.read())
             if trigger := select_trigger(window, measurements(window), checkout.clock(), checkout.config.retro, forced=forced):
@@ -1664,6 +1666,8 @@ async def requested_retro_scenario(root, *, second=False, stop=False):
     trace = []
 
     class Retro:
+        due = False
+
         async def __call__(self, *, forced=False):
             if forced:
                 assert tos(root, "aa") == ["running", "merged"]  # A mid-ticket call sees no terminal.

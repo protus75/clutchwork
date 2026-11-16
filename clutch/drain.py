@@ -29,6 +29,7 @@ from clutch.journal import TERMINAL_STATES, Event, EventType, render_ts
 from clutch.lockfile import Lockfile
 from clutch.reconcile import reconcile
 from clutch.redact import Redactor
+from clutch.retro import RetroCheckOutcome
 from clutch.runner import EXIT_MERGED, EXIT_TICKET, Checkout, Dispatch, Refusal, harvest_orphan
 from clutch.seams import ProcessExec
 from clutch.status import SETTLED, last_states, reject_queue
@@ -606,11 +607,12 @@ class _Drain:
         log = EngineLog(self.c.config.state_dir / "engine.log", Redactor.from_config(self.c.config, self.c.env), self.c.clock)
         log.event("phase_start", phase="retro_check")
         try:
-            report = await self._await_controlled(asyncio.create_task(self.retro(forced=forced)), self.retro.abort_current, self.c.sleep)
+            await self._await_controlled(asyncio.create_task(self.retro(forced=forced)), self.retro.abort_current, self.c.sleep)
         except BaseException:
             log.event("phase_end", phase="retro_check", outcome="failed")
             raise
-        log.event("phase_end", phase="retro_check", outcome="no_report" if report is None else "ran")
+        outcome: RetroCheckOutcome = "due" if self.retro.due else "not_due"
+        log.event("phase_end", phase="retro_check", outcome=outcome)
 
     async def _await_controlled(self, task, abort, sleep):
         from clutch.daemon import _protected_cleanup

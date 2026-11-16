@@ -1,4 +1,4 @@
-"""Dormant heartbeat record and external liveness evidence."""
+"""serve refreshes the heartbeat file each healthy loop; is_fresh is a read-only check for an outside watcher."""
 
 from collections.abc import Callable
 from datetime import datetime, timedelta

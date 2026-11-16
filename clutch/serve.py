@@ -23,7 +23,7 @@ from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import ConflictHandoff, regate_receipts
 from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
-from clutch.retro import Retro, production_evidence, project_window, select_trigger, suppressing_failure
+from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.stages import ticket_blob
 from clutch.storm import StormLedger
@@ -350,7 +350,8 @@ class Serve:
         except BaseException:
             self.log.event("phase_end", phase="retro_check", outcome="failed")
             raise
-        self.log.event("phase_end", phase="retro_check", outcome="due" if due else "not_due")
+        outcome: RetroCheckOutcome = "due" if due else "not_due"
+        self.log.event("phase_end", phase="retro_check", outcome=outcome)
 
     async def run_retro(self, request_id):
         async with self.mutations():

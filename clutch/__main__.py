@@ -272,7 +272,7 @@ def _parser() -> argparse.ArgumentParser:
         sub.add_parser(verb, help=f"submit {verb} to the running engine, or do nothing under the idle lock")
     sub.add_parser("kill", help="submit kill to the running engine; refuse when nothing is running")
     sub.add_parser("stop", help="finish the running ticket, admit nothing new, then exit")
-    sub.add_parser("review", help="review a committed ticket under the lock").add_argument("stems", nargs="+")
+    sub.add_parser("review", help="review a committed ticket against merged code and journal its verdict").add_argument("stems", nargs="+")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
     release = sub.add_parser("release", help="bump, commit, and tag a local release without publishing")

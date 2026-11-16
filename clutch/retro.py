@@ -5,7 +5,7 @@ import json
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
-from typing import Annotated, get_args
+from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -20,6 +20,8 @@ from clutch.journal import Event, EventType
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
 
 RETRO_FAILED = "retro_failed"
+# The retro_check phase outcome for drain and serve.
+RetroCheckOutcome = Literal["due", "not_due", "failed"]
 _REPORT = re.compile(r"retro/([0-9]+)\Z")
 
 
@@ -271,6 +273,7 @@ class Retro:
 
     def __init__(self, checkout, pipeline):
         self.checkout, self.pipeline = checkout, pipeline
+        self.due = False
 
     def driver(self):
         stages = getattr(self.pipeline, "stages", None)
@@ -391,6 +394,7 @@ class Retro:
         )
 
     async def __call__(self, *, forced=False):
+        self.due = False
         c = self.checkout
         for event in c.journal.read():
             if event.type == EventType.EFFECT_COMPLETION and _REPORT.fullmatch(event.key or ""):
@@ -405,6 +409,7 @@ class Retro:
         if failure is not None:
             self.failure_report(failure.key)
             return None
+        self.due = True
         driver = self.driver()
         try:
             if any(e.type == EventType.EFFECT_INTENT and e.key == f"retro/{window.sequence}" for e in window.events) and await self.committed_report(window) is not None:
