@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 - none
 
+## Runs before
+- dev-surface-completeness
+
 ## Context
 - docs/how-clutch-works.md
 - README.md
