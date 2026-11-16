@@ -1,7 +1,7 @@
 ---
 state: draft
 source: box:suggestion
-priority: P1
+priority: P0
 kind: chore
 agent_tier: medium
 agent_effort: medium
@@ -9,6 +9,15 @@ agent_effort: medium
 
 ## Depends on
 none
+
+## Runs before
+- release-publish
+- update-config-unverified-empty-listing
+- roadmap-merged-query
+- upstream-issue-verb
+- gemini-provider
+- release-gates-as-commands
+- roadmap-status
 
 ## Context
 - tests/unit/test_specs.py::test_spec_lint_accepts_the_implement_and_requisition_specs
@@ -32,7 +41,8 @@ Scope in:
 - Edit `clutch/specs/implement.md`. Add exactly this one sentence at the end of the mutation-check paragraph: "Finish the check for every assertion before replying, and if time is short, finish it and restore the code rather than stopping partway; unfinished mutation checks are never a reason to reply `incomplete`."
 - In the `incomplete` bullet, add exactly this one sentence: "Never use `incomplete` because mutation checks remain while the Verification commands pass."
 - Bump the spec `version` from "2.14" to the next minor above the version on main.
-- Update two version pins in `tests/unit/test_specs.py` to the bumped version: the `("implement", "2.14")` pin in `test_spec_lint_accepts_the_implement_and_requisition_specs`, and the `spec.meta.version == "2.14"` assertion in `test_implement_spec_consumer_read` (line 127). Those two pins are the only expectations that change in that file.
+- Update two version pins in `tests/unit/test_specs.py` to the bumped version: the `("implement", "2.14")` pin in `test_spec_lint_accepts_the_implement_and_requisition_specs`, and the `spec.meta.version == "2.14"` assertion in `test_implement_spec_consumer_read`. Those two pins are the only expectations that change in that file.
+- Update the `- spec: implement 2.14` run-record pin in `tests/integration/test_stages.py::test_implement_check_review_all_ok_with_artifacts_and_provenance` to the bumped version. It is the only expectation that changes in that file.
 - Add a new test file that pins the new sentences.
 
 Scope out:
@@ -43,6 +53,7 @@ Scope out:
 ## Scope fence
 - clutch/specs/implement.md
 - tests/unit/test_specs.py
+- tests/integration/test_stages.py
 - tests/integration/test_implement_spec_mutation_check.py
 
 ## Acceptance criteria
