@@ -186,7 +186,7 @@ The branch is rejected if any of these holds:
 - `clutch publish` bumps the version, commits, tags, or pushes;
 - it uploads when `release.publish` is absent or false;
 - it uploads a version whose `v<version>` tag is missing or not on HEAD, or builds over uncommitted tracked changes;
-- the token value reaches any child process other than the `uv publish` upload, appears in an argv, or is passed under its configured name;
+- the token value reaches any child process other than the `uv publish` upload, appears in an argv, or reaches the upload under any env var name other than `UV_PUBLISH_TOKEN`;
 - `release.publish` defaults to true;
 - `./dev.py publish` survives, or any `dev.py` subcommand is added;
 - it adds `release.vsce_token`, `vsce publish`, or any Marketplace upload;
