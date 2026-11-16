@@ -331,7 +331,7 @@ Each release's ship gate (section 1) is also a fenced `gate` block under that re
 | 31 | `evidence-normalize-claude` | evidence plan 5 | feature | P2 | `evidence-store` | | Claude normalizer and fixture; qwen reuses it flagged `unverified`. |
 | 32 | ~~`gemini-provider`~~ | gemini plan A1 | feature | P2 | | | **Merged** (`tickets/gemini-provider/`). `GeminiAdapter`, two settings files, watchdog branch, live view, `host-gemini.md`; after its agent capture; skipped while this machine has no Gemini credential (decision 19). |
 | 33 | `evidence-normalize-gemini` | evidence plan | feature | P3 | `evidence-store`, `gemini-provider` | | Gemini normalizer and fixture. |
-| 34 | `upstream-issue-verb` | upstream plan 1 | feature | P2 | | | `clutch issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its agent capture. |
+| 34 | ~~`upstream-issue-verb`~~ | upstream plan 1 | feature | P2 | | | **Merged** (`tickets/upstream-issue-verb/`). `clutch issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its agent capture. |
 
 ```gate
 ./dev.py test
