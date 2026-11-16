@@ -4,7 +4,7 @@
 These rules come first because sessions that skim miss them. HARD rules have no exceptions. They are behavioral: no gate can judge them, so never file an enforcement ticket for one.
 
 - HARD: In an interactive chat, every requested change to repo content (code, docs, CLAUDE.md, AGENTS.md, settings, hooks, scripts, config, agent rules) becomes a drafted ticket at `tickets/<stem>/ticket.md`, then stop. Never edit or commit on main. The only exceptions: (1) the user says "edit main", "commit directly", "skip the ticket", "do it inline", or an equally explicit override this turn; anger words alone do not count; (2) you are in a clutch ticket worktree; (3) the user names by path a file under an existing `tickets/<stem>/` to edit or delete; (4) read-only inspection; (5) the supervising fixes below. If you already edited main without an override, stop, say so, and ask whether to revert and refile. Why: chat edits skip the ticket, run record, review, and retro that make clutch debuggable.
-- HARD: Never write a ticket from memory. Run `clutch new <stem> --kind feature|bug|chore`; it writes the skeleton and prints the path of the ticket authoring guide in your clutch install (for an existing ticket, its refusal prints the same path). Read that local file in full. `clutch docs` prints the installed paths of all host guides (authoring, running, config contract); read them locally, never from a URL. Fill every section, run `clutch lint <stem>` until it exits 0, then run `clutch review <stem>` and repair every finding until it prints approve. Tickets are markdown files, never issue-tracker items. Why: stale ticket shapes break runs before implementation starts.
+- HARD: Never write a ticket from memory. Run `clutch new <stem> --kind feature|bug|chore`; it writes the skeleton and prints the path of the ticket authoring guide in your clutch install (for an existing ticket, its refusal prints the same path). Read that local file in full. `clutch docs` prints the installed paths of all host guides; read them locally, never from a URL. Fill every section, run `clutch lint <stem>` until it exits 0, then run `clutch review <stem>` and repair every finding until it prints approve. Tickets are markdown files, never issue-tracker items. Why: stale ticket shapes break runs before implementation starts.
 - Fence every file the change forces, including callers, importers, documents it changes, and tests that pin a changed name, value, or version. Why: a forced file outside the fence makes the ticket impossible.
 - Frontmatter holds only fields read by scheduling, gates, or authoring/triage policy. `## Depends on` names only a ticket whose merged code this one needs; put all other ordering in priority or `## Runs before`, never in prose. Why: a depends used for ordering blocks the queue when the first ticket fails.
 - HARD: When a reported problem has a cause that will recur, write two separate tickets in the same turn. First the instance fix: minimal scope, written before any cause diagnosis. Then the cause fix, never folded into the instance; the turn is unfinished until it exists. Both are solicited, so no ask is needed. Routing:
@@ -50,7 +50,7 @@ Engine plane (clutch-owned) is HOW work runs; host plane (target-repo-owned) is 
 
 **Read first:** `docs/how-clutch-works.md` describes the code and is maintained by tickets; `CLUTCH_PLAN.md` is the frozen bootstrap design record. This file is the curated subset of `CLAUDE.md` for non-Claude agent CLIs; `CLAUDE.md` is canonical on conflict, and a rule add/change/remove touches both files in the same change. (section 17)
 
-Every rule below is behavioral (no gate checks it yet): the prose is the only enforcement.
+Every rule below is behavioral (no gate checks it yet): the prose is the only enforcement. When a rule gains its gate, compress it to one line in the same change.
 
 ## Engine conduct
 
@@ -81,6 +81,8 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
   Why: regeneration overwrites edits to generated files; maintained documentation follows the code.
 - **A rule has one of two homes.** A rule about working on clutch itself (this repo's code, tests, layout, `./dev.py` verbs) goes in `CLAUDE.md` and `AGENTS.md` outside the managed block. A rule every host should follow goes in `CORE_TEMPLATE` in `clutch/hostfiles.py` and reaches every host, this repo included, through `clutch core`; it is never written only into this repo's files. A change that adds, moves, or edits an agent rule states which home each rule belongs in.
   Why: a host rule written only here never reaches other hosts, and a repo rule in the template is installed where it does not fit (2026-11-11).
+- **The plan is the seed.** `CLUTCH_PLAN.md` is a frozen bootstrap design record and is never edited. A ticket updates the documentation its change affects.
+  Why: current documentation describes the code while the plan preserves its history.
 - **All git through `git.py`.** Argv lists, dir-pinned. Worktree cleanup via `worktree remove` + `prune`, never bare `rm -rf`. No `gh`, no PRs in the loop.
   Why: local main is the blessed line; GitHub is a non-blocking sidecar. (section 10)
 - **File second problems; never fold them in.** A second problem goes to the Suggestion Box, not the current diff. A pre-existing failure is verified on the base commit, then filed.
@@ -98,3 +100,5 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
   Why: gates and review are the trust boundary. (section 16)
 - **The journal is the record, never a debug log.** Diagnostics go to the engine log and attempt spools. Configured secret values are redacted from every captured stream at the write seam.
   Why: the journal is folded for truth; noise and secrets in it are permanent. (section 6)
+- **Phase order.** Do not start a phase until the previous phase's exit is met.
+  Why: later phases build on earlier exits as proven ground. (section 19)
