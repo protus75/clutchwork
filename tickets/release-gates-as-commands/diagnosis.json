@@ -1,16 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "672a76b00ffd04f8132350bda0dd7b687a6d32dd",
+  "produced_at_sha": "a65fc4b77698b5e7a8b06a47813e9a5cb1f36e6e",
   "stem": "release-gates-as-commands",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "review",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Review found the parser, run_gate, main branch, roadmap_gate signal, docs, and gate blocks sound. Redo all of that work from the merge base, using the same design. The only snag is in tests/unit/test_roadmap_gate.py::test_run_gate_refusals.",
-    "In test_run_gate_refusals (criterion 5), give the missing-docs/roadmap.md checkout and the unknown-release 9.9.9 checkout separate names. Do not rebind one variable. After each pytest.raises(Refusal), assert exec_.calls == [] and journal.events == [] on that checkout.",
-    "Before finishing, check each acceptance criterion's 'in both cases' or 'each' clause against its test. Every case the criterion lists needs its own assertions, not only the last case run."
+    "The premise claim is unproven. The host-loop fixture (tests/integration/test_host_loop.py:83) takes timestamps from the real clock datetime.now(UTC) across subprocesses, and adding \"roadmap_gate\" to journal.SIGNAL_NAMES cannot reorder them. Treat it as timing noise, not a scope problem.",
+    "Redo the whole ticket from the merge base: gates() and run_gate in clutch/roadmap.py, SIGNAL_NAMES, the roadmap gate parser and main branch, the four doc edits, the test_closed_sets.py set, and the two new test files. Review found the focused checks sound.",
+    "If ./dev.py test again errors only in the test_host_loop.py production fixture, run tests/integration/test_host_loop.py alone on the candidate. Then run the plain ./dev.py test once in a base-commit worktree, with full history and no env overrides, before calling it a regression.",
+    "If base and candidate both pass in isolation and the host-loop error does not reproduce, file the flaky timestamp ordering with clutch suggest (a second problem) and finish. Do not report premise_failed or widen the fence to host_loop."
   ],
   "mechanical": null,
   "spec_version": "1.7",
