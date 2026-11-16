@@ -56,7 +56,7 @@ Scope in:
   - `_parser`: the `roadmap` subcommand's sub-subcommands gain `gate` with one positional `release`.
   - `main`: a `roadmap gate` invocation calls `clutch.roadmap.run_gate` (looked up on the module at call time) without taking the writer lock, prints the lines, and returns 0 when it passed and 1 when it failed. `Refusal` already maps to exit 2.
 - `docs/roadmap.md` (as `roadmap-plan-corrections` and `roadmap-no-human-gates` leave it), section 8 only:
-  - The section's intro gains one paragraph after its first: each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use.
+  - The section's intro gains one paragraph after its first: each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use. A later release's block checks only the suite and that release's rows: its other ship-gate clauses in section 1 have no command until merged code records their facts. The audit re-run before each minor release (section 9) adds to the next release's block a command for each such clause whose fact merged code now records.
   - One block per release, placed after the table under the release's first `### ` heading. In what follows `<R>` is that release's name (`release_name` of the heading).
     - The first release in document order (the current phase, 0.3.0 at HEAD after the renames) gets exactly these four lines, in this order. Its section 1 ship gate is "every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged ...; the driver has authored and run at least three roadmap rows on this repo with no operator verdict":
       1. `./dev.py test`
@@ -79,7 +79,7 @@ Scope out:
   - for 0.6.0, the `training export` and `training eval` results on this repo, the two-member panel's next 10 reviews, the filled meta blocks, and `context suggest` on a real ticket;
   - for 0.7.0, the doc-set review of the 2026-11-13 plans.
 
-  Their verbs, signals, and caps do not exist at HEAD, so a direct command now would guess an interface no plan fixes. The follow-up that replaces those lines with direct checks as each facility lands is filed to the Suggestion Box. The simpler alternative, a `gate: operator` placeholder, is what the owner forbade.
+  Their verbs, signals, and caps do not exist at HEAD, so a direct command now would guess an interface no plan fixes. The section 8 intro paragraph says that the audit re-run before each minor release adds a direct check for each clause whose facility has landed (box-000511). The simpler alternative, a `gate: operator` placeholder, is what the owner forbade.
 - Section 1's table, the master-table rows, `docs/roadmap-driver-plan.md`, and every other plan document.
 - `clutch/help.py`, `clutch/observe.py`, `vscode-clutchwork/`, `README.md`, `CLAUDE.md`, and `AGENTS.md`.
 
@@ -110,7 +110,7 @@ Scope out:
 
    Ruled out: a release with no gate, a `gate: operator` line or other prose in a block, a flag `roadmap merged` does not accept, and a block keyed to a hard-coded version.
 9. `./dev.py test tests/integration/test_closed_sets.py tests/integration/test_vocabularies.py tests/unit/test_host_running.py` exits 0. `journal.SIGNAL_NAMES` contains `roadmap_gate`, the only expected-set change in `test_closed_sets.py`, and the signal scan finds `roadmap_gate` emitted in `clutch/roadmap.py`.
-10. The docs command in `## Verification` exits 0: `docs/how-clutch-works.md` section 2.1 has a row starting `` | `roadmap gate ``, the `roadmap` row of `clutch/docs/host-running.md` names `roadmap gate`, and `docs/roadmap.md` section 8 names `clutch roadmap gate`.
+10. The docs command in `## Verification` exits 0: `docs/how-clutch-works.md` section 2.1 has a row starting `` | `roadmap gate ``, the `roadmap` row of `clutch/docs/host-running.md` names `roadmap gate`, and `docs/roadmap.md` section 8 names `clutch roadmap gate` and has the phrase `have no command until`.
 11. The unit check (`clutch covgate` over `tests/unit`, the `unit` entry of `config.yaml` `review.mechanical`) passes, with `clutch/roadmap.py` at or above `test-gate.toml`'s `default = 90`, and `clutch/__main__.py` and `clutch/journal.py` at or above their floors.
 12. `./dev.py test` exits 0.
 
@@ -118,7 +118,7 @@ Scope out:
 ```
 ./dev.py test tests/unit/test_roadmap_gate.py tests/unit/test_host_running.py
 ./dev.py test tests/integration/test_roadmap_gate.py tests/integration/test_closed_sets.py tests/integration/test_vocabularies.py
-uv run python -c "import pathlib; q = chr(96); t = pathlib.Path('docs/how-clutch-works.md').read_text(); verbs = t.split('### 2.1 Verbs')[1].split('### 2.2')[0]; assert '| ' + q + 'roadmap gate' in verbs; h = pathlib.Path('clutch/docs/host-running.md').read_text(); row = next(line for line in h.splitlines() if line.startswith('| ' + q + 'roadmap' + q + ' |')); assert 'roadmap gate' in row; r = pathlib.Path('docs/roadmap.md').read_text(); s8 = r.split('## 8. ', 1)[1].split('## 9. ', 1)[0]; assert 'clutch roadmap gate' in s8"
+uv run python -c "import pathlib; q = chr(96); t = pathlib.Path('docs/how-clutch-works.md').read_text(); verbs = t.split('### 2.1 Verbs')[1].split('### 2.2')[0]; assert '| ' + q + 'roadmap gate' in verbs; h = pathlib.Path('clutch/docs/host-running.md').read_text(); row = next(line for line in h.splitlines() if line.startswith('| ' + q + 'roadmap' + q + ' |')); assert 'roadmap gate' in row; r = pathlib.Path('docs/roadmap.md').read_text(); s8 = r.split('## 8. ', 1)[1].split('## 9. ', 1)[0]; assert 'clutch roadmap gate' in s8 and 'have no command until' in s8"
 ./dev.py test
 ```
 
