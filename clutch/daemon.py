@@ -439,7 +439,6 @@ class TicketWriter:
         self.ctx, self.queue = ctx, queue
         self.stages = Stages(ctx)
         self.admission = AdmissionBoundary(ctx)
-        self.active = False
         self.continuations: dict[str, Continuation] = {}
 
     async def __call__(self, ticket: Ticket) -> str:
@@ -447,7 +446,6 @@ class TicketWriter:
         prior = self.continuations.get(ticket.stem)
         if prior is not None:
             ticket, boundary.run = prior.ticket, prior.run
-        self.active = True
         try:
             if self.admission.mode == "inline":
                 result = await runner.drive(self.ctx, ticket)
@@ -460,7 +458,6 @@ class TicketWriter:
                 self.continuations.pop(ticket.stem, None)
             return result
         finally:
-            self.active = False
             boundary.run, boundary.ticket, boundary.next_stage = None, None, None
 
     async def consume_result(self, ticket: Ticket, result: StageResult | ConflictHandoff, *, attempt: int) -> None:
@@ -549,7 +546,20 @@ class DaemonAdmission:
         self._slot = asyncio.Lock()
         self.active: Ticket | None = None
         self.task: asyncio.Task[str] | None = None
+        self.mutating: asyncio.Task | None = None
         self.resume: Callable[[Ticket], Dispatch | None] = lambda _: None
+
+    @asynccontextmanager
+    async def mutations(self):
+        async with self._slot:
+            self.mutating = asyncio.current_task()
+            try:
+                yield
+            finally:
+                self.mutating = None
+
+    def idle(self) -> bool:
+        return self.active is None and self.task is None and self.mutating is None
 
     @asynccontextmanager
     async def waiting_for_merge(self):

@@ -112,7 +112,6 @@ class Serve:
         self.ready = asyncio.Event()
         self.workers: tuple[asyncio.Task, ...] = ()
         self.health_tasks: tuple[asyncio.Task, ...] = ()
-        self.mutating: asyncio.Task | None = None
         self.background: asyncio.Task | None = None
         self.observation: asyncio.Task | None = None
         self.stopper = self.observer = self.checkpoint = None
@@ -271,12 +270,8 @@ class Serve:
 
     @asynccontextmanager
     async def mutations(self):
-        async with self.core.admission._slot:
-            self.mutating = asyncio.current_task()
-            try:
-                yield
-            finally:
-                self.mutating = None
+        async with self.core.admission.mutations():
+            yield
 
     async def scan(self) -> dict[str, str | None]:
         async with self.mutations():
@@ -327,11 +322,9 @@ class Serve:
 
     def upgrade_idle(self):
         return (
-            self.mutating is None
-            and self.core.scheduler.active is None
-            and self.core.admission.active is None
-            and self.core.admission.task is None
-            and not any(w.active or w.continuations for w in self.writers.values())
+            self.core.admission.idle()
+            and not self.core.scheduler._slot.locked()
+            and not any(w.continuations for w in self.writers.values())
             and (self.queue is None or not self.queue.pending and self.queue.active is None)
         )
 
@@ -433,7 +426,7 @@ class Serve:
                         self.queue.contexts.pop(ticket.stem, None)
                 await self.check_upgrade()
                 for stem, writer in tuple(self.writers.items()):
-                    if not writer.active and not writer.continuations and stem not in self.queue.pending:
+                    if (self.core.admission.active is None or self.core.admission.active.stem != stem) and not writer.continuations and stem not in self.queue.pending:
                         del self.writers[stem]
 
         while True:
@@ -455,7 +448,7 @@ class Serve:
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
     async def abort(self) -> None:
-        operations = {task for task in (self.core.admission.task, self.mutating) if task is not None}
+        operations = {task for task in (self.core.admission.task, self.core.admission.mutating) if task is not None}
         aborts = [writer.abort_current for writer in tuple(self.writers.values())]
         if self.retro is not None:
             aborts.append(self.retro.abort_current)

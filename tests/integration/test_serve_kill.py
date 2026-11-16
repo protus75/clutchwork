@@ -77,10 +77,10 @@ async def test_serve_storm_suspends_stage_and_frees_selection(root, monkeypatch,
     run = asyncio.create_task(rig.owner.run())
     try:
         await until(rig, lambda: terminals(rig, "other"))
-        await until(rig, lambda: rig.owner.core.admission.active is None and rig.owner.core.scheduler.active is None)
+        await until(rig, lambda: rig.owner.core.admission.active is None and not rig.owner.core.scheduler._slot.locked())
         assert not terminals(rig, "work")
         assert not rig.owner.core.admission._slot.locked() or rig.owner.core.admission.active is None
-        assert rig.owner.core.scheduler.active is None
+        assert rig.owner.core.admission.active is None
         expected = [] if stage == "implement" else ["implement"] if stage == "check" else ["implement", "check"]
         assert [s for stem, s, _ in calls if stem == "work"] == expected
         prior = rig.owner.resume(SimpleNamespace(stem="work"))

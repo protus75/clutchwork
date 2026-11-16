@@ -412,14 +412,14 @@ class _Member:
 
     async def settled(self, stem, count=1):
         def settled():
-            return len(self.terminals(stem)) >= count and self.owner.core.admission.active is None and self.owner.mutating is None
+            return len(self.terminals(stem)) >= count and self.owner.core.admission.active is None and self.owner.core.admission.mutating is None
 
         await self.until(settled)
 
     async def file_fault(self, stem, sequence, suffix, outcome, summary):
         async with self.owner.mutations():
             self.owner.box.enqueue(message_class="failure_report", origin=stem, stage="merge", outcome=outcome, summary=summary, occurrence_id=f"{stem}/{sequence}/{suffix}")
-        await self.until(lambda: any(m.origin == stem and m.stage == "merge" and m.status == "pending" for m in self.owner.box.messages()) and self.owner.mutating is None)
+        await self.until(lambda: any(m.origin == stem and m.stage == "merge" and m.status == "pending" for m in self.owner.box.messages()) and self.owner.core.admission.mutating is None)
 
     def facts(self, stem):
         return [e for e in self.journal.read() if e.ticket == stem and e.body.get("kind") == CONFLICT_FACTS]
@@ -488,7 +488,7 @@ class _Member:
                     and len(self.fs.heartbeats) > beats
                     and len(self.sweeps) > sweeps
                     and len(self.checkpoints) > checkpoints
-                    and owner.mutating is None
+                    and owner.core.admission.mutating is None
                     and not owner.core.admission._slot.locked()
                 )
             )

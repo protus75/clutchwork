@@ -98,7 +98,7 @@ async def test_upgrade_waits_for_continuation(root, monkeypatch):
     write(root, "work", text(priority="P0"))
     run = asyncio.create_task(rig.owner.run())
     await until(rig, lambda: "work" in rig.owner.writers and "work" in rig.owner.writers["work"].continuations)
-    await until(rig, lambda: rig.owner.core.scheduler.active is None and rig.owner.core.admission.active is None)
+    await until(rig, lambda: rig.owner.core.admission.active is None and not rig.owner.core.scheduler._slot.locked())
     async with rig.owner.core.admission._slot:
         (root / "clutch/thing.py").write_text("changed")
         await rig.checkout.git.add(root, ["clutch/thing.py"])
@@ -184,3 +184,21 @@ async def test_stop_finishes_merge_without_admitting_next_or_spawning(root, monk
         release.set()
         if not run.done():
             await finish(rig, run)
+
+
+@pytest.mark.asyncio
+async def test_upgrade_waits_between_selection_and_admission(root, monkeypatch):
+    rig = await graph(root, monkeypatch)
+    write(root, "selected", text())
+    from clutch.tickets import parse_ticket
+
+    ticket = parse_ticket("selected", (root / "tickets/selected/ticket.md").read_text(), root)
+    rig.owner.core.scheduler.update(ticket)
+    async with rig.owner.core.admission._slot:
+        dispatch = asyncio.create_task(rig.owner.core.scheduler.dispatch_next())
+        await until(rig, lambda: rig.owner.core.scheduler._slot.locked() and "selected" not in rig.owner.core.scheduler.pending)
+        assert rig.owner.core.admission.idle()
+        assert not rig.owner.upgrade_idle()
+        dispatch.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await dispatch

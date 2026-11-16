@@ -60,6 +60,7 @@ class Rig:
         self.drought = set()
         self.unmerged = 0
         self.calls = []
+        self.active = None
         self.scheduler = Scheduler(
             self.journal,
             self.dispatch,
@@ -131,12 +132,14 @@ async def test_single_flight_dispatch(rig):
 
     async def dispatch(ticket):
         nonlocal active
+        rig.active = ticket
         active += 1
         assert active == 1
         rig.calls.append(ticket.stem)
         started.set()
         await release.wait()
         active -= 1
+        rig.active = None
 
     rig.scheduler.dispatch = dispatch
     first = asyncio.create_task(rig.scheduler.dispatch_next())
@@ -144,10 +147,10 @@ async def test_single_flight_dispatch(rig):
     second = asyncio.create_task(rig.scheduler.dispatch_next())
     await turn()
     assert rig.calls == ["aa"] and not first.done() and not second.done()
-    assert rig.scheduler.active.stem == "aa"
+    assert rig.active.stem == "aa"
     release.set()
     assert [t.stem for t in await asyncio.gather(first, second)] == ["aa", "bb"]
-    assert active == 0 and rig.scheduler.active is None
+    assert active == 0 and rig.active is None
 
 
 @pytest.mark.asyncio
@@ -162,12 +165,16 @@ async def test_dispatch_failure_and_cancellation_release_slot(rig):
     rig.scheduler.dispatch = fail
     with pytest.raises(ValueError, match="dispatch failed"):
         await rig.scheduler.dispatch_next()
-    assert rig.scheduler.active is None
+    assert rig.active is None
     started = asyncio.Event()
 
     async def block(ticket):
+        rig.active = ticket
         started.set()
-        await asyncio.Event().wait()
+        try:
+            await asyncio.Event().wait()
+        finally:
+            rig.active = None
 
     rig.scheduler.dispatch = block
     running = asyncio.create_task(rig.scheduler.dispatch_next())
@@ -177,11 +184,11 @@ async def test_dispatch_failure_and_cancellation_release_slot(rig):
     waiter.cancel()
     with pytest.raises(asyncio.CancelledError):
         await waiter
-    assert rig.scheduler.active.stem == "bb"
+    assert rig.active.stem == "bb"
     running.cancel()
     with pytest.raises(asyncio.CancelledError):
         await running
-    assert rig.scheduler.active is None
+    assert rig.active is None
     rig.scheduler.dispatch = rig.dispatch
     assert (await rig.scheduler.dispatch_next()).stem == "cc"
 
@@ -327,6 +334,7 @@ async def test_watcher_reprioritizes_without_preemption(rig, new_ticket):
     async def dispatch(ticket):
         rig.calls.append(ticket.stem)
         if ticket.stem == "active":
+            rig.active = ticket
             started.set()
             await release.wait()
 
@@ -338,7 +346,7 @@ async def test_watcher_reprioritizes_without_preemption(rig, new_ticket):
     rig.files[stem] = text("P0")
     await rig.publish(stem)
     assert rig.calls == ["active"] and not running.done() and not waiting.done()
-    assert rig.scheduler.active.stem == "active"
+    assert rig.active.stem == "active"
     release.set()
     assert (await running).stem == "active"
     assert (await waiting).stem == stem

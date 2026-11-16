@@ -110,7 +110,7 @@ async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
 
     async def processed(queue):
         # Only Serve.merge may drive the admission algorithm; dispatch never substitutes for it.
-        assert any(o.mutating is asyncio.current_task() and o.queue is queue for o in built)
+        assert any(o.core.admission.mutating is asyncio.current_task() and o.queue is queue for o in built)
         result = await process(queue)
         if result:
             admissions.extend(result)

@@ -32,7 +32,6 @@ class Scheduler:
         self.completed_unmerged = completed_unmerged
         self.max_unmerged = max_unmerged
         self.pending: dict[str, Ticket] = {}
-        self.active: Ticket | None = None
         self._slot = asyncio.Lock()
         self.continuations: Callable[[], Iterable[Ticket]] = lambda: ()
         self.next_stage: Callable[[Ticket], str] = lambda _: "implement"
@@ -80,9 +79,5 @@ class Scheduler:
             write_queue(self.journal.dir.parent, self.journal._fs, self.journal._clock, ordered)
             ticket = ordered[0]
             self.remove(ticket.stem)
-            self.active = ticket
-            try:
-                await self.dispatch(ticket)
-            finally:
-                self.active = None
+            await self.dispatch(ticket)
             return ticket

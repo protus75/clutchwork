@@ -287,7 +287,7 @@ async def test_production_root_builds_daemon_core_without_running_work(tmp_path,
     rig = CoreRig(tmp_path, prepare=prepare)
     assert_core_wiring(rig)
     assert_idle(rig.core.admission)
-    assert not rig.core.scheduler.pending and rig.core.scheduler.active is None
+    assert not rig.core.scheduler.pending and rig.core.admission.active is None
     assert not rig.core.watcher.cache and not rig.core.watcher._waits
     assert loads == [] and rig.exec.calls == [] and rig.fs.files == {}
     assert rig.journal.read() == [] and asyncio.all_tasks() == tasks
@@ -362,13 +362,13 @@ async def test_production_core_reprioritizes_without_preemption(tmp_path, new_ti
     release.set()
     await cleaning.wait()
     assert calls == ["active"] and not first.done() and not waiter.done()
-    assert rig.core.scheduler.active is rig.core.admission.active
+    assert rig.core.admission.active.stem == "active"
     assert rig.core.admission.task is owned and not owned.done()
     finish.set()
     assert (await first).stem == "active" and (await waiter).stem == stem
     assert calls == ["active", stem] and owned.done()
     assert_idle(rig.core.admission)
-    assert rig.core.scheduler.active is None
+    assert rig.core.admission.active is None
     await rig.core.watcher.close()
 
 
@@ -595,7 +595,7 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
         await cleaning.wait()
         second = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await turn()
-        assert rig.core.scheduler.active is rig.core.admission.active is first_ticket
+        assert rig.core.admission.active is first_ticket
         assert rig.core.admission.task is owned and not second.done()
         failing = False
         release.set()
@@ -610,7 +610,7 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
         second = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await turn()
         assert calls == [first_ticket] and len(prepared) == 1 and not second.done()
-        assert rig.core.scheduler.active is rig.core.admission.active is first_ticket
+        assert rig.core.admission.active is first_ticket
         assert rig.core.admission.task is owned and not owned.done()
         failing = False
         release.set()
@@ -623,12 +623,12 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
             await rig.core.scheduler.dispatch_next()
         assert caught.value is error
         assert_idle(rig.core.admission)
-        assert rig.core.scheduler.active is None
+        assert rig.core.admission.active is None
         assert prepared == []
         failing = False
         assert await rig.core.scheduler.dispatch_next() is second_ticket
     assert_idle(rig.core.admission)
-    assert rig.core.scheduler.active is None and calls[-1] is second_ticket
+    assert rig.core.admission.active is None and calls[-1] is second_ticket
 
 
 def observe_preparation(monkeypatch):

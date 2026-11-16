@@ -382,7 +382,7 @@ async def retro_scenario(root, monkeypatch, mode):
             calls.append(forced)
             assert terminals(rig, "aa")[-1].body["to"] == "merged"
             assert not any(e.ticket == "bb" and e.body.get("to") == "running" for e in rig.journal.read())
-            assert not any(w.active or w.continuations for w in rig.owner.writers.values())
+            assert rig.owner.core.admission.active is None and not any(w.continuations for w in rig.owner.writers.values())
             retro_entered.set()
             await retro_release.wait()
             if mode == "failed":
