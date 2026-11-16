@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 - none
 
+## Runs before
+- contention-authoring-rules
+
 ## Context
 - CLAUDE.md
 - AGENTS.md
