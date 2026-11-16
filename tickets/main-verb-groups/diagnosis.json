@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "bb1543a3fa611aa570aad50fc79a71053464325e",
+  "stem": "main-verb-groups",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Attempt 0 stopped after ~15s of reading and changed no files. The ticket is sound and in scope. Do the full edit to clutch/__main__.py plus the two new tests before writing any run record.",
+    "Lock wrapper: one async context manager owns the only Lockfile( call and looks up the global Lockfile at call time. Route all 7 sites through it (roadmap, release, publish, dismiss, triage, _retro, _control); _retro and _control keep their LockHeld fallbacks.",
+    "One engine-submit helper holds the only _require_engine, control.read_active (ValueError -> runner.Refusal) and publish_request calls. It replaces the sites in _retro, _control and _verdict. Also add one observe.Context builder and one load_config lambda helper.",
+    "One error printer writes clutch <verb>: <msg> to stderr and returns runner.EXIT_REFUSED. Use it for the covgate x2 and stats prints and the except handlers at the end of main. Leave the probe unknown-providers print and the issue warning unchanged.",
+    "Add tests/unit/test_main_verb_groups.py (printer with capsys; lock wrapper on tmp_path: second entry raises LockHeld, third succeeds) and tests/integration/test_main_verb_groups.py (AST counts, prompt box, dismiss under held lock). Then run every ## Verification command."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
