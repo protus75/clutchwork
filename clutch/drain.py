@@ -180,11 +180,11 @@ class Report:
             return f"{name}:\n" + ("\n".join(f"- {line}" for line in lines) or "(none)")
 
         if self.killed:
-            head = "drain stopped by kill -- NOT quiescent. Continue with `uv run python -m clutch drain`."
+            head = "drain stopped by kill -- NOT quiescent. Continue with `clutch drain`."
         elif self.stopped:
             head = "drain stopped on request; no new ticket was admitted."
         elif self.halted:
-            head = f"drain HALTED by the {CEILING} ceiling ({self.halted}) -- NOT quiescent; no new ticket was admitted. Continue with `uv run python -m clutch drain`."
+            head = f"drain HALTED by the {CEILING} ceiling ({self.halted}) -- NOT quiescent; no new ticket was admitted. Continue with `clutch drain`."
         elif not (self.merged or self.parked or self.blocked):
             head = "drain quiescent: nothing eligible (empty ready set)."
         else:
@@ -709,7 +709,7 @@ class _Drain:
                 elif stem in held and spent_cap is None:
                     why, road = f"{to}{where}; parked until its committed ticket.md changes", self._premise_road(t)
                 elif spent_cap is None:  # only a halt leaves budget unspent: the continuing drain re-offers it
-                    why, road = (f"{to}{where}; {cap_limit - drawn} of {cap_limit} retry units left", "`uv run python -m clutch drain` re-offers it")
+                    why, road = (f"{to}{where}; {cap_limit - drawn} of {cap_limit} retry units left", "`clutch drain` re-offers it")
                 else:
                     why, road = (
                         f"{to}{where}; {caps.spent_reason(spent_cap)} ({drawn}/{cap_limit})",
@@ -720,7 +720,7 @@ class _Drain:
                         why = f"{to}{where}; ticket_changed; held for an operator"
                         road = f"review the change to {ticket_path(stem)}, then keep (`clutch confirm {stem}`) or kill (`clutch reject {stem}`)"
                     elif not (stem in held and to == "gate_failed" and spent_cap is None):
-                        road = f"edit {ticket_path(stem)}, then uv run python -m clutch confirm {stem}; or retire it with uv run python -m clutch reject {stem}"
+                        road = f"edit {ticket_path(stem)}, then `clutch confirm {stem}`; or retire it with `clutch reject {stem}`"
                 findings = self._findings(stem)
                 if to == PREMISE and body.get("stage") == "requisition":
                     findings = (body["reason"], *findings)

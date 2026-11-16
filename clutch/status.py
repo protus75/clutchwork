@@ -79,7 +79,7 @@ def run_admission(stem, events, file_exists, ticket, intake_decision=None, stray
         if isinstance(decision, list) and decision:
             return Admission("refuse", f"{ticket_path(stem)} {label}: " + "; ".join(f"[{f.code}] {f.message} ({f.paved_road})" for f in decision), road)
     if not file_exists:
-        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `python -m clutch new {stem}`, fill it, then `run {stem}`")
+        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `clutch new {stem}`, fill it, then `clutch run {stem}`")
     events = tuple(events)
     if last_states(events).get(stem) == "merged" or ticket.frontmatter.state == "merged":
         return Admission("refuse", f"{stem} is already merged", "author follow-up work as a new stem with `new`")
@@ -146,7 +146,7 @@ def lint_admission(stem, events, file_exists):
 def _box_admission(id, messages):
     message = next((m for m in messages if m.id == id), None)
     if message is None:
-        return Admission("refuse", f"unknown box id {id}")
+        return Admission("refuse", f"unknown box id {id}", "name ids that `clutch status` lists")
     if message.resolution is not None:
         return Admission("noop", f"{id}: already resolved -> {message.resolution.link}")
     return Admission("admit")

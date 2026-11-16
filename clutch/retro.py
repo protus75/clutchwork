@@ -411,6 +411,7 @@ class Retro:
             return None
         self.due = True
         driver = self.driver()
+        error_code = None
         try:
             if any(e.type == EventType.EFFECT_INTENT and e.key == f"retro/{window.sequence}" for e in window.events) and await self.committed_report(window) is not None:
                 return await self.commit_report(driver, window, "")
@@ -460,13 +461,15 @@ class Retro:
                 scope_fence=(),
             )
             if result.outcome != "ok":
+                error_code = result.outcome
                 raise ValueError(result.outcome)
             tombstones = self.tombstones()
             text = render_report(window, evidence, provenance, tombstones, result.artifact)
             return await self.commit_report(driver, window, text)
         except Exception as exc:
             identity = f"retro-failed/{window.boundary}/{trigger}"
-            c.journal.append(EventType.SIGNAL, {"kind": RETRO_FAILED, "window_boundary": window.boundary, "trigger": trigger, "error_code": type(exc).__name__}, ticket=None, key=identity)
+            body = {"kind": RETRO_FAILED, "window_boundary": window.boundary, "trigger": trigger, "error_code": error_code or type(exc).__name__}
+            c.journal.append(EventType.SIGNAL, body, ticket=None, key=identity)
             driver.log.event(RETRO_FAILED, error=str(exc), window_boundary=window.boundary, trigger=trigger)
             self.failure_report(identity)
             return None

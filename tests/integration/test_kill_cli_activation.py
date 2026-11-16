@@ -309,7 +309,7 @@ def test_live_drain_kill_reaches_production_driver(root, monkeypatch, capsys, bi
     exercise_live_cli_kill(root, monkeypatch)
     output = capsys.readouterr().out
     assert "kill submitted: " in output and "drain stopped by kill" in output
-    assert "uv run python -m clutch drain" in output
+    assert "Continue with `clutch drain`." in output
 
 
 @pytest.mark.asyncio

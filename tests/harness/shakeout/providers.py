@@ -96,7 +96,7 @@ async def _auth_expiry(bench: Bench) -> Observation:
     terminal = _terminal(bench, stem)
     caps = [event for event in bench.journal.read() if event.type == EventType.CAP_CONSUMED and event.ticket == stem and event.body.get("cap") == "infra"]
     finding = _finding(bench, stem, "auth_error")
-    road = "run claude interactively and complete /login, then uv run python -m clutch drain"
+    road = "run claude interactively and complete /login, then `clutch drain`"
     assert terminal["to"] == "infra_error" and terminal["reason"] == "auth_error"
     assert len(caps) == 1 and finding.paved_road == road
     return Observation("auth_expiry_harvested_with_reauth_road", f"{stem}/0")

@@ -453,7 +453,7 @@ def test_the_runtime_ceiling_stops_the_next_dispatch_and_exits_1(root, capsys):
     assert tos(root, "bbb-second") == []
     out = capsys.readouterr().out
     assert CEILING in out and "HALTED" in out and "quiescent:" not in out
-    assert "uv run python -m clutch drain" in out
+    assert "Continue with `clutch drain`." in out
     assert "bbb-second" in out.split("eligible, not admitted:\n", 1)[1].split("\n\n", 1)[0]
     halts = [e.body for e in journal(root).read() if e.type == EventType.SIGNAL and e.body.get("signal") == HALT_SIGNAL]
     assert halts == [{"signal": HALT_SIGNAL, "ceiling": CEILING, "hours": 12, "merged": ["aaa-first"]}]

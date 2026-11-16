@@ -38,7 +38,7 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
     def row(name, passed, detail):
         results.append(Check(name, passed, " ".join(str(detail).split())))
 
-    row("venv", in_venv, "active Python venv" if in_venv else "no active Python venv; run `uv run python -m clutch doctor`")
+    row("venv", in_venv, "active Python venv" if in_venv else "no active Python venv; run `uv run clutch doctor`")
     config = None
     try:
         config = load_config(config_path, cwd=repo)

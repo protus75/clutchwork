@@ -78,7 +78,7 @@ def test_doctor_check_order(root, monkeypatch):
     assert [r.passed for r in results] == [False, True, True, True, True, True]
     assert doctor.render(results) == (
         "doctor: failed\n"
-        "FAIL venv: no active Python venv; run `uv run python -m clutch doctor`\n"
+        "FAIL venv: no active Python venv; run `uv run clutch doctor`\n"
         "PASS config: config schema is valid\n"
         "PASS git: git version fixture\n"
         "PASS lock: no writer lock exists\n"

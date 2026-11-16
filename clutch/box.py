@@ -176,7 +176,7 @@ class Box:
             try:
                 result.append(Message.model_validate_json(path.read_text()))
             except (OSError, ValidationError, ValueError) as exc:
-                raise BoxError(f"invalid box file {path}: {exc}") from exc
+                raise BoxError(f"invalid box file {path}: {exc}; move it out of the box directory or restore it from backup") from exc
         return sorted(result, key=lambda message: message.seq)
 
     def pending(self) -> list[Message]:
@@ -216,7 +216,7 @@ class Box:
         if self._arrival is not None and (not isinstance(occurrence_id, str) or not occurrence_id.strip()):
             raise BoxError("occurrence_id must be a nonblank producer-supplied string; supply a fresh id for a distinct arrival and reuse it on retry")
         if (stage is None) != (outcome is None):
-            raise BoxError("stage and outcome must both be set or both be null")
+            raise BoxError("stage and outcome must both be set or both be null; pass both or neither")
         fields = (message_class, origin) if stage is None else (message_class, origin, stage, outcome)
         digest = signature(*fields, reason=summary if reason is None else reason)
         try:
@@ -242,7 +242,7 @@ class Box:
                 proposed_paths=list(proposed_paths),
             )
         except ValidationError as exc:
-            raise BoxError(f"invalid box message: {exc}") from exc
+            raise BoxError(f"invalid box message: {exc}; correct the fields named above and enqueue again") from exc
         return self._enqueue(message, occurrence_id)
 
     def _enqueue(self, message: Message, occurrence_id: str | None) -> tuple[str, bool]:
@@ -394,7 +394,7 @@ class Box:
     def resolve(self, id: str, resolution: Resolution) -> None:
         message = self.get(id)
         if message.status == "resolved":
-            raise BoxError(f"box id {id} is already resolved")
+            raise BoxError(f"box id {id} is already resolved; its resolution stands and `clutch status` shows it")
         self._write(message.model_copy(update={"status": "resolved", "resolution": resolution}))
 
 
@@ -431,5 +431,5 @@ def read_registry(repo: Path) -> list[tuple[DecisionRecord, str]]:
         try:
             records.append(parse_record(path.read_text()))
         except (OSError, BoxError) as exc:
-            raise BoxError(f"invalid decision record {path}: {exc}") from exc
+            raise BoxError(f"invalid decision record {path}: {exc}; restore it from its last commit") from exc
     return sorted(records, key=lambda item: item[0].id)

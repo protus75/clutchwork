@@ -482,7 +482,7 @@ class ClaudeAdapter(CliAdapter):
     binary = "claude"
     reports_cost = True
     AUTH_MARKERS = ("invalid api key", "please run /login", "not logged in", "oauth token has expired")
-    LOGIN_ROAD = "run claude interactively and complete /login, then uv run python -m clutch drain"
+    LOGIN_ROAD = "run claude interactively and complete /login, then `clutch drain`"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
@@ -532,7 +532,7 @@ class CodexAdapter(CliAdapter):
     binary = "codex"
     reports_cost = False
     AUTH_MARKERS = ("not logged in", "401 unauthorized", "token has expired")
-    LOGIN_ROAD = "run codex login, then uv run python -m clutch drain"
+    LOGIN_ROAD = "run codex login, then `clutch drain`"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:

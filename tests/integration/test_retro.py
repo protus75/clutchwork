@@ -263,7 +263,7 @@ def test_failed_retro_suppresses_window_until_completion(tmp_path):
         "ts": failed.ts,
         "ticket": None,
         "key": "retro-failed/initial/forced",
-        "body": {"kind": "retro_failed", "window_boundary": "initial", "trigger": "forced", "error_code": "ValueError"},
+        "body": {"kind": "retro_failed", "window_boundary": "initial", "trigger": "forced", "error_code": "infra_error"},
     }
     [message] = Box(c.config.state_dir / "box", c.fs).messages()
     assert message.origin == failed.key and message.message_class == "failure_report"
