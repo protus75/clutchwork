@@ -44,10 +44,10 @@ Scope in:
 - `clutch/roadmap.py`: `async def status(checkout) -> list[str]`:
   1. Read `checkout.repo / ROADMAP`. A missing file raises `clutch/runner.py::Refusal` naming `docs/roadmap.md`. Then `rows = parse(text)`. `files` is the NUL-split output of `checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")`, the same listing `author_ahead` uses. `events = checkout.journal.read()`, `states = last_states(events)`, and `choice = choose(rows, states=states, files=files)`.
   2. Each row belongs to `release_name(row.release)`, and the releases appear in first-seen document order. Each row is counted in exactly one bucket:
-     - **merged**: the row is struck, or its state is in `clutch/status.py::SETTLED`;
+     - **merged**: the row is struck or in `choice.strike`, so a split row counts as merged only once `choose` strikes it (every ticket it lists has settled);
      - **authored**: otherwise, the row is linked or `tickets/<stem>/ticket.md` is in `files`, and its state is not `rejected` (the rows `choose` counts in `open`);
      - **ready**: otherwise, the row is in `choice.ready`;
-     - **blocked**: every other row (waiting, a dependency not done, or `rejected`).
+     - **blocked**: every other row (waiting, a dependency not done, `rejected`, or a later table's row that `choose` holds back while an earlier table is unfinished).
 
      The label is `ready`, not `open`, because `choose` and `roadmap author`'s output (`roadmap: <n> of <ahead> rows open`) already use "open" for authored rows that have not merged.
   3. A release's gate result comes from the last `roadmap_gate` signal in `events` whose `release` is that release: `gate passed <ts>`, `gate failed <ts>: <failed>`, or `gate not run` when there is none. A signal for a name that has no row adds no line.
@@ -80,17 +80,17 @@ Scope out:
 
 ## Acceptance criteria
 1. `tests/unit/test_roadmap_status.py::test_status_buckets` writes a roadmap under `tmp_path` with these master tables:
-   - `### 1.0.0`: row 1 `m-one`, linked, state `already_satisfied`; row 2 `s-two`, struck, no state; row 3 `a-three`, linked, state `running`; row 4 `t-four`, unlinked, with `tickets/t-four/ticket.md` in the faked listing; row 5 `x-five`, linked, state `rejected`; row 6 `r-six`, no dependency, no state; row 7 `d-seven`, depends on `` `a-three` ``.
+   - `### 1.0.0`: row 1 `m-one`, linked, state `already_satisfied`; row 2 `s-two`, struck, no state; row 3 `a-three`, linked, state `running`; row 4 `t-four`, unlinked, with `tickets/t-four/ticket.md` in the faked listing; row 5 `x-five`, linked, state `rejected`; row 6 `r-six`, no dependency, no state; row 7 `d-seven`, depends on `` `a-three` ``; row 10 `sp-ten`, whose Content starts ``**Authored** (`tickets/sp-ten/`, `tickets/sp-sib/`).``, state `merged`, with `sp-sib` in state `running`.
    - `### 1.0.0, last group`: row 8 `h-eight`, whose Content names `` `tickets/h-eight/evidence/a0.txt` ``, which is absent from the listing.
    - `### 2.0.0`: row 9 `n-nine`, P0, no state.
 
    Every row has a valid kind, priority, and an Owner of `roadmap`, and the faked listing also holds `docs/roadmap.md`. `status(checkout)` returns exactly:
-   - `release 1.0.0: 2 merged, 2 authored, 1 ready, 3 blocked; gate not run`
-   - `release 2.0.0: 0 merged, 0 authored, 1 ready, 0 blocked; gate not run`
-   - `next: r-six, n-nine`
+   - `release 1.0.0: 2 merged, 3 authored, 1 ready, 3 blocked; gate not run`
+   - `release 2.0.0: 0 merged, 0 authored, 0 ready, 1 blocked; gate not run`
+   - `next: r-six`
    - one `waits: row 8 h-eight: ` line that contains `tickets/h-eight/evidence/a0.txt` and ` -- `.
 
-   The test also asserts that the authored counts sum to `choose(...).open` for the same inputs. Ruled out: the last-group heading read as its own release, a struck or `already_satisfied` row read as unmerged, a `rejected` row read as authored, a waiting row read as ready, and a `next:` order other than `choose`'s.
+   The test also asserts that the authored counts sum to `choose(...).open` for the same inputs. `n-nine` is not ready because `choose` holds a later table's rows while the `1.0.0` table has unfinished rows. Ruled out: the last-group heading read as its own release, a struck or `already_satisfied` row read as unmerged, a `rejected` row read as authored, a split row read as merged while a sibling ticket is unmerged, a waiting row read as ready, a later release's row shown as ready or in `next:` while an earlier table is unfinished, and a `next:` order other than `choose`'s.
 2. `tests/unit/test_roadmap_status.py::test_status_gate_results` uses the same roadmap. The journal holds these `roadmap_gate` signals, built as `clutch/journal.py::Event` values with distinct `ts`:
    - `1.0.0` failed at `ts1` with `failed: "./dev.py test"`, then `1.0.0` passed at `ts2`;
    - `2.0.0` failed at `ts3` with `failed: "uv run clutch roadmap merged --release 2.0.0"`;
