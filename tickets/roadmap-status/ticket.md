@@ -80,7 +80,7 @@ Scope out:
 
 ## Acceptance criteria
 1. `tests/unit/test_roadmap_status.py::test_status_buckets` writes a roadmap under `tmp_path` with these master tables:
-   - `### 1.0.0`: row 1 `m-one`, linked, state `merged`; row 2 `s-two`, struck, no state; row 3 `a-three`, linked, state `running`; row 4 `t-four`, unlinked, with `tickets/t-four/ticket.md` in the faked listing; row 5 `x-five`, linked, state `rejected`; row 6 `r-six`, no dependency, no state; row 7 `d-seven`, depends on `` `a-three` ``.
+   - `### 1.0.0`: row 1 `m-one`, linked, state `already_satisfied`; row 2 `s-two`, struck, no state; row 3 `a-three`, linked, state `running`; row 4 `t-four`, unlinked, with `tickets/t-four/ticket.md` in the faked listing; row 5 `x-five`, linked, state `rejected`; row 6 `r-six`, no dependency, no state; row 7 `d-seven`, depends on `` `a-three` ``.
    - `### 1.0.0, last group`: row 8 `h-eight`, whose Content names `` `tickets/h-eight/evidence/a0.txt` ``, which is absent from the listing.
    - `### 2.0.0`: row 9 `n-nine`, P0, no state.
 
