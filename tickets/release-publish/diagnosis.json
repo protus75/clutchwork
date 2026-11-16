@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "9bab29ce151220297f3b546415f60a9610d4cd13",
+  "stem": "release-publish",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The attempt ended incomplete only because the wrong-implementation check was skipped. All Verification commands, ruff, and the full suite (3315 passed) passed. Redo the whole ticket from the merge base, using the Scope in steps 1-9 for clutch/release.py::publish.",
+    "For each new assertion in tests/unit/test_release_publish.py and tests/integration/test_release_publish.py, mutate the code it guards, confirm the test fails, then restore it. Cover: the token in env, the tag check, the dirty-tree check, the .gitignore filter, and the upload gate.",
+    "Commit the CLAUDE.md Command surface edit before you run ./dev.py test. The previous run found that the full suite needs the conduct-file change committed first.",
+    "Do not edit the roadmap documents outside the fence that still mention ./dev.py publish. That problem is already filed as box-000533-3ff8c951."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
