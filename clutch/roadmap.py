@@ -293,6 +293,42 @@ def release_name(heading: str) -> str:
     return re.split(r"[ ,]", heading, maxsplit=1)[0]
 
 
+async def status(checkout) -> list[str]:
+    path = checkout.repo / ROADMAP
+    if not path.is_file():
+        raise Refusal(f"missing {ROADMAP}", "restore docs/roadmap.md")
+    rows = parse(path.read_text())
+    files = set((await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
+    events = checkout.journal.read()
+    states = last_states(events)
+    choice = choose(rows, states=states, files=files)
+    releases = {}
+    for row in rows:
+        counts = releases.setdefault(release_name(row.release), [0, 0, 0, 0])
+        if row.struck or row in choice.strike:
+            counts[0] += 1
+        elif (row.linked or f"tickets/{row.stem}/ticket.md" in files) and states.get(row.stem) != "rejected":
+            counts[1] += 1
+        elif row in choice.ready:
+            counts[2] += 1
+        else:
+            counts[3] += 1
+    gates_by_release = {}
+    for event in events:
+        if event.type == EventType.SIGNAL and event.body.get("signal") == "roadmap_gate":
+            gates_by_release[event.body["release"]] = event
+    lines = []
+    for release, (merged_count, authored, ready, blocked) in releases.items():
+        event = gates_by_release.get(release)
+        gate = "not run"
+        if event is not None:
+            gate = f"passed {event.ts}" if event.body["passed"] else f"failed {event.ts}: {event.body['failed']}"
+        lines.append(f"release {release}: {merged_count} merged, {authored} authored, {ready} ready, {blocked} blocked; gate {gate}")
+    lines.append("next: " + (", ".join(row.stem for row in choice.ready) or "none"))
+    lines.extend(f"waits: row {wait.row.number} {wait.row.stem}: {wait.reason} -- {wait.road}" for wait in choice.waits)
+    return lines
+
+
 def gates(text: str) -> dict[str, tuple[tuple[str, ...], ...]]:
     result = {}
     release = None
