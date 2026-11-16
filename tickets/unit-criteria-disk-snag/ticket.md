@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- fence-closure-registries
+
 ## Context
 - tests/integration/test_requisition.py::test_requisition_review_spec_snags_unit_test_disk_read
 - tests/unit/test_specs.py::test_spec_lint_accepts_the_implement_and_requisition_specs
@@ -74,7 +77,7 @@ Scope out:
    - "Never tell the author to drop unit coverage of those lines."
    Ruled out: today's `diagnose.md`, which has no such rule.
 3. `./dev.py test tests/integration/test_requisition.py -k unit_test_disk_read` passes with `tests/integration/test_requisition.py` unchanged, which shows the existing repo-file bullet and its three guard clauses are intact.
-4. `tests/unit/test_specs.py::test_spec_lint_accepts_the_implement_and_requisition_specs` passes with the `requisition_review` pin set to the bumped version (the next minor above main's `3.15` at authoring time) and the `diagnose` pin set to its bumped version (the next minor above main's `1.5` at authoring time). Each pin fails against the unbumped spec. Both specs still lint clean and stay within `SPEC_MAX_LINES`.
+4. `tests/unit/test_specs.py::test_spec_lint_accepts_the_implement_and_requisition_specs` passes with the `requisition_review` pin set to the bumped version and the `diagnose` pin set to its bumped version, each one minor above its value on main at the base commit (`3.15` and `1.5` when this ticket was drafted), with the same major. Each pin fails against the unbumped spec. Both specs still lint clean and stay within `SPEC_MAX_LINES`.
 5. `./dev.py test tests/unit/test_specs.py tests/integration/test_diagnose_eval.py tests/integration/test_requisition.py` exits 0. Both specs still load and render through the production paths those files exercise.
 
 ## Verification
