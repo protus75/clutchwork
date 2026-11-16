@@ -334,10 +334,10 @@ Each release's ship gate (section 1) is also a fenced `gate` block under that re
 | 34 | ~~`upstream-issue-verb`~~ | upstream plan 1 | feature | P2 | | | **Merged** (`tickets/upstream-issue-verb/`). `clutch issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its agent capture. |
 
 ```gate
-./dev.py test
 uv run clutch roadmap merged --release 0.3.0 --priority P0 P1
 uv run clutch roadmap merged docs-truth-sweep evidence-envelope
 uv run clutch roadmap merged --since v0.3.0 --at-least 3 --source box:roadmap_row --unattended
+./dev.py test
 ```
 
 ### 0.3.0, last group: the roadmap driver
@@ -366,8 +366,8 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
 
 ```gate
-./dev.py test
 uv run clutch roadmap merged --release 0.4.0
+./dev.py test
 ```
 
 ### 0.5.0
@@ -391,8 +391,8 @@ uv run clutch roadmap merged --release 0.4.0
 | (56) | `api-provider-client` | gemini plan (conditional) | feature | P2 | `gemini-provider` | `image-candidates-select` | Only if A0 fact 7 shows the CLI cannot generate images headlessly: the deferred `kind: api` client, scoped to image models. Row number is provisional. |
 
 ```gate
-./dev.py test
 uv run clutch roadmap merged --release 0.5.0
+./dev.py test
 ```
 
 ### 0.6.0
@@ -419,8 +419,8 @@ uv run clutch roadmap merged --release 0.5.0
 | 74 | `index-consumers` | annotations plan 6 | feature | P3 | `context-suggest` | | `index.implement_hint`, `doc draft --from <topic>`, the training export join. |
 
 ```gate
-./dev.py test
 uv run clutch roadmap merged --release 0.6.0
+./dev.py test
 ```
 
 ### 0.7.0
@@ -442,8 +442,8 @@ uv run clutch roadmap merged --release 0.6.0
 | 87 | `implement-best-of-n` | panels plan 5 | feature | P3 | `panel-combiners`, `serve-parallel-dispatch` | | Per-member worktrees, Check on every candidate, selection by Check pass then fewest soft findings then smallest diff, retirement of the rest. |
 
 ```gate
-./dev.py test
 uv run clutch roadmap merged --release 0.7.0
+./dev.py test
 ```
 
 ### Agent tasks (not tickets)
