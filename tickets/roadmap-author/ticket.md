@@ -60,7 +60,7 @@ Scope in:
   3. Each row in `choice.strike`: apply `strike`, write through `checkout.fs.write`, commit with `checkout.git.commit(repo, "clutch(roadmap): strike <stem>", only=[ROADMAP])`, and output `roadmap: struck row <n> <stem>`. Each row in `choice.link` is handled the same way, with `link`, `clutch(roadmap): link <stem>`, and `roadmap: linked row <n> <stem>`. The text is edited cumulatively; each edit uses the row's own line.
   4. `open = choice.open`. Use `Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))`. Walk `choice.ready` while `open` plus the number of filed messages is below `ahead`. For each row, `box.enqueue(message_class="roadmap_row", origin="roadmap/<stem>", summary="Roadmap row <n> `<stem>`: <content>", roadmap_row=RoadmapRow(...))`. The `RoadmapRow` copies the row's fields, uses `depends_on(row, rows)` for `depends`, and takes `plan` from `plan_path(row.owner, files)`. Then read the message back:
      - Resolved `declined`: output `roadmap: row <n> <stem> declined -> <record> -- reword the row's Content in docs/roadmap.md to file it again`, and continue without counting it. This is how an earlier pass's decline stays settled.
-     - Pending without a verdict: record `Verdict(verdict="author", produced_by_spec_version=<clutch/specs/triage.md's version from load_spec>, rationale="Roadmap row <n> is planned work in docs/roadmap.md")`. Then, and also when it is pending with a verdict, count it as filed.
+     - Pending without a verdict: record `Verdict(verdict="author", produced_by_spec_version=load_spec((SPECS_DIR / "triage.md").read_text()).meta.version, rationale="Roadmap row <n> is planned work in docs/roadmap.md")`, with `SPECS_DIR` (from `clutch/runner.py`) and `load_spec` (from `clutch/specs`) imported into `clutch/roadmap.py`'s namespace so a unit test can replace both. Then, and also when it is pending with a verdict, count it as filed.
   5. When at least one message was filed, await `author_messages(ids)` once with all of them. When none was filed, `author_messages` is never called, so no provider is preflighted.
   6. For each filed message, read it back from the Box:
      - Resolved `ticket`: apply `link`, write, commit `clutch(roadmap): author <stem>`, output `roadmap: authored row <n> <stem>`, and increment `open`.
@@ -79,7 +79,7 @@ Scope in:
     `Refusal`, `LockHeld`, and `ProviderSetupError` already map to exit 2 through `main`'s handler. Nothing is added to it.
 - `clutch/docs/host-running.md`: add a `| `roadmap` | No | ... |` verb-table row describing `roadmap author [--ahead N]`. Add `roadmap` to the "Stop serve before ..." sentence's list of verbs that take the writer lock. `tests/unit/test_host_running.py` requires the row and is not edited.
 - `docs/how-clutch-works.md` section 2.1: add a `roadmap author [--ahead N]` row to the verb table (Lock: yes). It describes the steps above: the dirty refusal, strike and link commits, filing until `N` rows are open in release order, settlement through triage's recorded-verdict path with no triage model call, the `clutch(roadmap): author <stem>` link commit, and the hand-test and bug-evidence waits. Nothing else in the file changes.
-- New tests: `tests/unit/test_roadmap_author.py` and `tests/integration/test_roadmap_author.py`. The unit file uses fakes (a fake `Git` with async `status_porcelain`, `_run`, and `commit`; `MemoryJournal`; a `Box` and repo under `tmp_path` with `LocalFileSystem`; `load_spec` faked to report version `9.9`). It reads no repo file, and together with `roadmap-table-parser`'s unit tests it keeps `clutch/roadmap.py` at or above 90. It also drives `main`'s new branch, because `clutch/__main__.py` has a unit floor of 13.
+- New tests: `tests/unit/test_roadmap_author.py` and `tests/integration/test_roadmap_author.py`. The unit file uses fakes (a fake `Git` with async `status_porcelain`, `_run`, and `commit`; `MemoryJournal`; a `Box` and repo under `tmp_path` with `LocalFileSystem`; `clutch.roadmap.SPECS_DIR` monkeypatched to a `tmp_path` directory holding a placeholder `triage.md`, and `clutch.roadmap.load_spec` monkeypatched to report version `9.9`, so the repo's `clutch/specs/triage.md` is never read). It reads no repo file, and together with `roadmap-table-parser`'s unit tests it keeps `clutch/roadmap.py` at or above 90. It also drives `main`'s new branch, because `clutch/__main__.py` has a unit floor of 13.
 
 Scope out:
 - `parse`, `choose`, `link`, `strike`, `plan_path`, and `depends_on` are `roadmap-table-parser`'s. This ticket only calls them.
@@ -98,7 +98,11 @@ Scope out:
 - tests/integration/test_roadmap_author.py
 
 ## Acceptance criteria
-1. `tests/unit/test_roadmap_author.py::test_dirty_roadmap_refuses`: with `status_porcelain` answering ` M docs/roadmap.md`, `author_ahead` raises `Refusal` naming `docs/roadmap.md`. No commit is made, no Box file exists, and `author_messages` is not called. Ruled out: committing a person's roadmap edits along with the driver's.
+1. `tests/unit/test_roadmap_author.py::test_dirty_or_missing_roadmap_refuses`:
+   - with `status_porcelain` answering ` M docs/roadmap.md`, `author_ahead` raises `Refusal` naming `docs/roadmap.md`;
+   - with an empty `status_porcelain` and a `tmp_path` repo that has no `docs/roadmap.md`, `author_ahead` raises `Refusal` whose text contains `master ticket table`.
+
+   In both cases no commit is recorded, no file exists under the Box directory, and `author_messages` is not called. Ruled out: committing a person's roadmap edits along with the driver's, and a missing roadmap that crashes or writes before refusing.
 2. `tests/unit/test_roadmap_author.py::test_files_until_ahead_and_links`. The roadmap holds one linked open row `a-row`, and ready rows `b-row` and `c-row` with plan `docs/sample-plan.md` in `files`. `author_ahead(..., ahead=2, ...)` runs with an `author_messages` fake that resolves each id to `ticket` -> its stem.
    - It files exactly one message, for `b-row`. Its `roadmap_row` equals row `b-row`'s number, release, stem, owner, kind, priority, content, and plan, and its verdict is `author` with `produced_by_spec_version` `9.9`.
    - `author_messages` is called once, with that id.
@@ -120,12 +124,12 @@ Scope out:
 
    Ruled out: linking a row whose ticket was never written, and a silent wait.
 7. `tests/unit/test_roadmap_author.py::test_main_roadmap_author`, faked as `tests/unit/test_release.py::test_main_release_locks_calls_and_prints` does, with `runner.reap` and `build_control` also faked:
-   - `main(["roadmap", "author", "--ahead", "3"], ...)` records the lock verb `roadmap`, records acquire, then `author_ahead` with `ahead=3`, then release, in that order, prints the fake's lines, and returns 0;
+   - `main(["roadmap", "author", "--ahead", "3"], ...)` with a fake `author_ahead` that records `ahead` and awaits `author_messages(["box-1"])`, `cli._preflighted_llm` faked to return a sentinel llm, and `cli.triage.triage_pass` faked to record its arguments: it records the lock verb `roadmap`; records acquire, then `author_ahead` with `ahead=3`, then `triage_pass` with the sentinel llm and `frozenset({"box-1"})`, then the faked session's `close`, then release, in that order; prints the fake's lines; and returns 0;
    - a fake raising `Refusal` returns 2, prints a `clutch roadmap:` line to stderr, and still releases the lock;
    - `--ahead 0` returns 2 without acquiring the lock;
    - `_parser().parse_args(["roadmap"])` raises `SystemExit`, and `["roadmap", "author"]` parses with `ahead == 2`.
 
-   Ruled out: running without the lock, a lock left held, and a zero window.
+   Ruled out: running without the lock, a lock left held, a provider session left open, settling messages other than the filed ids or with an unpreflighted llm, and a zero window.
 8. `tests/integration/test_roadmap_author.py::test_roadmap_author_end_to_end`. Setup:
    - a repo from `tests/integration/test_drain.py::make_root` with `tests/integration/test_author.py::_routes`, `engine_plane_safety_inventory: [config.yaml]`, and one `NO_GO` `review_baseline` signal with the current `baseline_identity`;
    - a committed `docs/sample-plan.md` and a committed `docs/roadmap.md` whose master table (under `### Next`) holds row 1 `first-row` and row 2 `second-row`, both `feature` and `P2` with owner `sample plan 1`, where row 2 depends on `first-row`.
