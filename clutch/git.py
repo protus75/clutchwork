@@ -98,6 +98,9 @@ class Git:
         await self._run(dir, "commit", "-m", message, *(("--only", "--", *only) if only else ()))
         return await self.rev_parse(dir, "HEAD")
 
+    async def tag(self, dir: Path, name: str, message: str, target: str) -> None:
+        await self._run(dir, "tag", "-a", _ref(name), "-m", message, _ref(target))
+
     async def branch(self, dir: Path, name: str, start: str) -> None:
         await self._run(dir, "branch", _ref(name), _ref(start))
 

@@ -275,6 +275,10 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("review", help="review a committed ticket under the lock").add_argument("stems", nargs="+")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
+    release = sub.add_parser("release", help="bump, commit, and tag a local release without publishing")
+    part = release.add_mutually_exclusive_group(required=True)
+    part.add_argument("--minor", dest="part", action="store_const", const="minor")
+    part.add_argument("--patch", dest="part", action="store_const", const="patch")
     sub.add_parser("dismiss", help="dismiss box messages under the lock").add_argument("ids", nargs="+")
     sub.add_parser("covmap", help="build the coverage map")
     covgate = sub.add_parser("covgate", help="check a coverage JSON report against thresholds")
@@ -619,6 +623,20 @@ def main(
             for stem in args.stems:
                 if result := asyncio.run(_review(checkout, stem)):
                     return result
+            return 0
+        if args.verb == "release":
+            from clutch import release
+
+            async def release_version():
+                lock = Lockfile(config.state_dir, verb="release", instance_id=await checkout.git.describe(repo), clock=clock)
+                lock.acquire()
+                try:
+                    return await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
+                finally:
+                    lock.release()
+
+            version, sha = asyncio.run(release_version())
+            print(f"release: tagged v{version} at {sha}")
             return 0
         if args.verb == "dismiss":
 

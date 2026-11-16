@@ -64,6 +64,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
 | `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
 | `triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
+| `release --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml` or `uv.lock`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, commits exactly those two files as `release: <version>`, and creates an annotated tag on the returned commit sha. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
 | `dismiss <id> ...` | yes | Dismiss named messages without a model call. |
 | `prompt box <id> ...` | no | Print a prompt for discussing named box messages. |
 | `prompt drain-loop` | no | Print the supervising drain-loop prompt without writing state. |

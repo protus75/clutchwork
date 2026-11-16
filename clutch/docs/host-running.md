@@ -33,6 +33,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |
 | `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
+| `release` | No | Bump the version with `--minor` or `--patch`, commit `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `dismiss` | No | Dismiss named box IDs without a model call. |
 | `covmap` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `covgate` | Yes | Run a unit command and check its coverage report. |
@@ -44,4 +45,4 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `serve` | No | Run the continuous daemon. |
 
-Stop serve before `triage`, `dismiss`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `triage`, `dismiss`, `release`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
