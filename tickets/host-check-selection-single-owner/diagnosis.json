@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f418b4c6bef982f7984367ab586256d797f251b9",
+  "stem": "host-check-selection-single-owner",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise contradiction confirmed: tests/integration/test_host_mechanical.py:469 test_coverage_fail_closed[None-False-ok] declares coverage.json, writes none, exits 0 and expects outcome ok. The ticket's required missing-coverage failure turns that into gate_failed.",
+    "The ticket's Scope in and criterion 7 say test_coverage_recorded_for_changed_files is the only expectation that may change in test_host_mechanical.py. The (None, False, \"ok\") case therefore cannot pass. Amend the ticket to allow changing it to gate_failed.",
+    "When amending, list test_coverage_fail_closed[None-False-ok] in Scope in and add an acceptance criterion that it expects gate_failed with a 'Missing or invalid coverage report' finding. Then run clutch lint and clutch review again.",
+    "Before re-confirming, grep tests/ for other cases that declare coverage, write no report and exit 0 while expecting ok or pass. Allow each one in the same amendment so the next attempt is not stopped by a second premise failure."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
