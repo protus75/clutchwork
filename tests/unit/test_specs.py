@@ -322,7 +322,7 @@ def spec_text(inputs_section: str | None = None, front: str = FRONT) -> str:
         + "## Role\nYou implement one ticket.\n\n"
         + "## Task\nMake the acceptance criteria pass.\n\n"
         + f"## Inputs\n{inputs_section}\n\n"
-        + "## Output format\nOne JSON object.\n\n"
+        + "## Output format\nOne JSON object. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.\n\n"
         + "## On-failure\nReturn premise_failed naming the gap.\n"
     )
 

@@ -68,7 +68,7 @@ Previous reply:
 
 ## Output format
 
-Reply with ONLY one JSON object: `{"stem": "<new stem>", "ticket": "<the full ticket.md text>"}`.
+Reply with ONLY one JSON object: `{"stem": "<new stem>", "ticket": "<the full ticket.md text>"}`. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.
 
 ## On-failure
 

@@ -90,7 +90,7 @@ Reply with ONLY one JSON object, no prose or extra fields:
  "tickets": [{"stem": "<nonblank stem>", "ticket": "<complete nonblank ticket text>"}]}
 
 `update` carries exactly one proposal for the original stem; `split` at least two distinct fresh
-successors; `escalate` an empty list. Proposal objects allow only `stem` and `ticket`.
+successors; `escalate` an empty list. Proposal objects allow only `stem` and `ticket`. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.
 
 ## On-failure
 

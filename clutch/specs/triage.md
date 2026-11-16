@@ -58,7 +58,7 @@ Findings against the previous reply:
 
 ## Output format
 
-Reply with ONLY one JSON object with fields `verdict` (`author`, `tombstone`, or `declined`), `link` (string for tombstone, null otherwise), `summary` (your own non-blank summary), `rationale` (non-blank), `evidence` (list of strings), and `reopen_after_days` (integer at least 1 for tombstone or declined, null for author). Add no other keys. Nothing may appear before or after the object, including prose and code fences.
+Reply with ONLY one JSON object with fields `verdict` (`author`, `tombstone`, or `declined`), `link` (string for tombstone, null otherwise), `summary` (your own non-blank summary), `rationale` (non-blank), `evidence` (list of strings), and `reopen_after_days` (integer at least 1 for tombstone or declined, null for author). Add no other keys. Nothing may appear before or after the object, including prose and code fences. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.
 
 ## On-failure
 

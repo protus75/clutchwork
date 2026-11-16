@@ -179,6 +179,15 @@ def _parse_spec(text: str, surfaces: Collection[str], gate_codes: Collection[str
     headings = tuple(line[3:].strip() for line in lines if line.startswith("## "))
     if headings != SPEC_SECTIONS:
         out.append(_f("spec_sections", f"sections are {list(headings)}", f"use exactly the sections {list(SPEC_SECTIONS)}, in that order, each once"))
+    output = re.search(r"(?ms)^## Output format\n(.*?)(?=^## |\Z)", body)
+    if output and "JSON object" in output.group(1) and not re.search(r"first (non-whitespace )?character of your reply", output.group(1)):
+        out.append(
+            _f(
+                "spec_json_reply",
+                "JSON output format does not specify the first reply character",
+                "add: The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.",
+            )
+        )
     names, block_findings = _blocks(lines, template=True)
     offset = text[: fm.end()].count("\n")  # report file lines, not body lines
     out += [f.model_copy(update={"line": f.line + offset}) if f.line else f for f in block_findings]

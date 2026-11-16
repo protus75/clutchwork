@@ -129,7 +129,7 @@ When your work is committed, reply with ONLY one JSON object, no prose before or
 `ok`, `already_satisfied`, and `incomplete` carry an empty `findings` list. `premise_failed` carries at least one
 finding, every one coded `premise` and naming its `path`. A ticket that contradicts merged code or is malformed, or whose
 `## Scope fence` lacks a path the criteria force, is a `premise` finding naming that file.
-Use an empty `second_problems` list when there are none.
+Use an empty `second_problems` list when there are none. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.
 
 ## On-failure
 

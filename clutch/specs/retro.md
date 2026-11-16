@@ -57,7 +57,7 @@ Reply with ONLY one JSON object: {"proposals": []} or a list of proposals. Each 
 - `proposed_spec_paths`: a nonempty list of `specs/<name>.md` paths relative to `clutch/`.
 - `test_issue`: one of the issue names above, and `proposed_paths`: a nonempty list of nonblank repo-relative paths without `..` segments.
 
-Each proposal may also include `recurs`, the id of a prior finding. Do not include both path lists. Add no other fields.
+Each proposal may also include `recurs`, the id of a prior finding. Do not include both path lists. Add no other fields. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.
 
 ## On-failure
 
