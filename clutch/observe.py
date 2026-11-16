@@ -236,20 +236,19 @@ def frontmatter(path: Path) -> dict[str, str]:
 
 
 def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
-    """Tier/effort clutch asked for: Implement uses the ticket (or its escalation rung); other steps use their spec."""
-    if surface != "implement":
-        meta = frontmatter(Path(__file__).parent / "specs" / f"{surface}.md")
-        return f"{meta.get('tier', '?')}/{meta.get('effort', '?')}" if meta else ""
+    """Show the effective ticket capability; requisition review uses its spec effort."""
     window = events
     for i, e in enumerate(events):
         body = e.get("body", {})
         if e.get("ticket") == stem and body.get("signal") == "reject_verdict" and body.get("verdict") == "keep" and body.get("actor") == "operator":
             window = events[i + 1 :]
     rung = next((e["body"]["rung"] for e in reversed(window) if e.get("type") == "cap_consumed" and e.get("ticket") == stem and e["body"].get("cap") == "retry" and "rung" in e["body"]), None)
-    if rung:
-        return f"{rung['tier']}/{rung['effort']} (escalated)"
     meta = frontmatter(ctx.root / "tickets" / stem / "ticket.md")
-    return f"{meta.get('agent_tier', 'medium')}/{meta.get('agent_effort', 'medium')}"
+    tier = rung["tier"] if rung else meta.get("agent_tier", "medium")
+    effort = rung["effort"] if rung else meta.get("agent_effort", "medium")
+    if surface == "requisition_review":
+        effort = frontmatter(Path(__file__).parent / "specs" / "requisition_review.md").get("effort", "?")
+    return f"{tier}/{effort}" + (" (escalated)" if rung else "")
 
 
 def read_lines(path: Path, limit: int) -> list[dict]:
