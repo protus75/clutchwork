@@ -11,7 +11,7 @@ ClutchWork is an engine that runs CLI coding agents through the ticket lifecycle
 Add clutch to your host project and sync its environment:
 
 ```sh
-uv add --dev clutch
+uv add --dev clutchwork
 uv sync
 ```
 

@@ -7,8 +7,8 @@ Foreign process-state adoption is excluded.
 
 ## Install
 
-Add clutch to the host project as a dev dependency with `uv add --dev clutch`.
-For a specific release, pin it as `clutch==<version>`. Run `uv sync`; the
+Add clutch to the host project as a dev dependency with `uv add --dev clutchwork`.
+For a specific release, pin it as `clutchwork==<version>`. Run `uv sync`; the
 executable is `.venv/bin/clutch`. Run verbs as `uv run clutch <verb>`. Native
 Windows uses `.venv\Scripts\clutch.exe`; set `clutch.command` explicitly there.
 
@@ -108,7 +108,7 @@ default = 90
 budget_seconds = 60
 ```
 
-Add dev dependencies `clutch`, `pytest`, `pytest-cov`, `pytest-xdist`, and `ruff`.
+Add dev dependencies `clutchwork`, `pytest`, `pytest-cov`, `pytest-xdist`, and `ruff`.
 In `pyproject.toml`, set `[tool.coverage.run]` `core = "ctrace"` and
 `[tool.coverage.json]` `show_contexts = true`: Python 3.14's default `sysmon` core drops
 per-test contexts. Gitignore `coverage.json` and `.clutch/`.
