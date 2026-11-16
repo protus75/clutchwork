@@ -41,7 +41,7 @@ After this change, `clutch/roadmap.py` has:
 1. `parse(text)`: every row of every master table, with its release group, fields, linked flag, and struck flag.
 2. `link(text, row)` and `strike(text, row)`: line-local edits in `roadmap-plan-corrections`' format that the parser reads back as linked or struck.
 3. `plan_path(owner, files)`: maps a row's Owner cell to its plan file.
-4. `choose(rows, states=..., files=...)`: returns the rows to strike, the rows to link, the count of open rows, the ready rows in release order, and the rows that wait with a reason and a paved road. That includes the hand-test refusal.
+4. `choose(rows, states=..., files=...)`: returns the rows to strike, the rows to link, the count of open rows, the ready rows in release order, and the rows that wait with a reason and a paved road. That includes the hand-test refusal. A later master table's rows are not ready while an earlier table has unfinished rows, and a row split into several tickets is struck only when every one of them has settled.
 
 ## Scope in / Scope out
 Scope in:
@@ -63,8 +63,8 @@ Scope in:
   - `strike(text, row) -> str`: in the row's line only, the whole trimmed Stem cell is wrapped in `~~`: a plain cell becomes ``~~`stem`~~`` (`roadmap-plan-corrections`' format) and a cell linked through a Markdown link becomes ``~~[`stem`](../tickets/stem/)~~``. A leading ``**Authored** (`` in Content becomes ``**Merged** (``. Content without that prefix gains ``**Merged** (`tickets/<stem>/`). `` before its existing text. Content is edited as one cell, even when it holds `|`. An already struck row returns `text` unchanged. Every other line is byte-identical.
   - `plan_path(owner, files) -> str | None`: takes the first whitespace-separated word of the Owner cell, lowercased. `roadmap` maps to `docs/roadmap.md`. Any other word maps to the one path in `files` of the form `docs/<name>-plan.md` whose `<name>-plan` hyphen-separated words include it. No match, or more than one, gives `None`.
   - A frozen dataclass `Wait(row, reason, road)` and a frozen dataclass `Choice(strike, link, open, ready, waits)` (tuples, except the `open` int).
-  - `choose(rows, *, states, files) -> Choice`. `states` maps a stem to its last journal state, as `clutch/status.py::last_states` returns. `files` is the set of repo-relative paths present in the checkout. A row is done when its stem's state is in `clutch/status.py::SETTLED` or the row is struck. For each ticket row that is not struck:
-    1. If its state is in `SETTLED`, it goes to `strike`.
+  - `choose(rows, *, states, files) -> Choice`. `states` maps a stem to its last journal state, as `clutch/status.py::last_states` returns. `files` is the set of repo-relative paths present in the checkout. A row's split stems are the `<x>` of every `tickets/<x>/` between a ``**Authored** (`` that starts its Content and that prefix's closing ``).``; a row split into several tickets lists each of them there. A row is done when it is struck or step 1 puts it in `strike`. A dependency stem is done when it is the stem of a done ticket row, or, when no ticket row has that stem, when its state is in `clutch/status.py::SETTLED`. For each ticket row that is not struck:
+    1. If its state is in `SETTLED` and so is the state of every one of its split stems, it goes to `strike`. Reason: when a split row's own stem settles before a sibling's (roadmap row 91: `roadmap-status` depends on `release-gates-as-commands`, the row's stem), the row would otherwise be struck, and a row depending on it (row 93 `driver-loop`) made ready, while the sibling is unmerged.
     2. Otherwise, if it is linked, it counts as `open` unless its state is `rejected`.
     3. Otherwise, if `tickets/<stem>/ticket.md` is in `files`, it goes to `link` and counts as `open` unless its state is `rejected`.
     4. Otherwise, if its stem has any state, it waits: the stem is already in the journal; the paved road is to give the row a new stem.
@@ -79,6 +79,7 @@ Scope in:
     - When it names any, the row waits until every named path is in `files`. The reason names each missing path, and the paved road says to run the capture and save it at that path. Another file in the same directory does not count.
     - When it names none but `Content` contains `hand test` or `agent capture` (any case), the row waits until some path in `files` starts with `tickets/<stem>/evidence/`. The paved road says to run the capture and save it under `tickets/<stem>/evidence/`.
     - When its kind is `bug`, names none, and no path in `files` starts with `tickets/<stem>/evidence/`, the row waits. The paved road says to save the observed failure there. Reason: Author validates a bug ticket against its evidence (`clutch/tickets.py::missing_evidence_findings`), so a bug row without evidence could only be declined.
+  - Release order. After the steps above, the first unfinished table is the first master table, in document order, that holds a row whose state is not `rejected` and that is in `link`, `ready`, or `waits`, or a row counted in `open`. Every ready row from a later master table is removed from `ready` and is in no list, as a row with an undone dependency is. A struck row, a row in `strike`, a row whose state is `rejected` (in whichever list), and a row left out for an undone dependency never make their table unfinished. Reason: `docs/journal-sql-refactor-plan.md` (Release protocol, step 2) keeps the journal window's feature freeze in the roadmap's schedule, and without this rule `roadmap author --ahead` would file a later release's rows, feature rows included, whenever the current table's remaining rows are open, waiting, or blocked on a dependency.
   - `ready` is ordered by the index of the row's master table in the document, then priority `P0` to `P3`, then line.
 - New tests: `tests/unit/test_roadmap_table.py`, which uses only in-memory strings and sets and reads no repo file, and `tests/integration/test_roadmap_table.py`, which reads the real `docs/roadmap.md`. `clutch/roadmap.py` is a new file under `test-gate.toml`'s `default = 90` unit floor. The unit file must cover it at or above 90 on its own, because this ticket adds no other code to the module.
 
@@ -145,13 +146,19 @@ Scope out:
    - `open` counts the linked unmerged rows and the to-be-linked rows, but not a linked row whose state is `rejected`;
    - an unlinked row whose stem's state is `blocked` waits with a reason naming the journal;
    - a row depending on an unmerged stem is in no list;
-   - a row depending through `row N` on a struck row is ready;
+   - the `Next` table's P2 row depends through `row N` on a struck row and is ready;
    - a struck row with no state (as rows 8 and 88 are once `roadmap-plan-corrections` strikes them) is in no list and is not counted in `open`;
    - a row with kind `evidence` waits;
-   - `ready` lists, in this order: the `Next` table's P1 row (which sits below its P2 row in the document), then that P2 row, then the `Later, last group` table's P0 row.
+   - `ready` is exactly, in this order, the `Next` table's P1 row (which sits below the P2 row in the document), then the P2 row. The `Later, last group` table's P0 row is in no list, because the `Next` table holds unfinished rows.
+   - A second `choose` call over the same rows gives every `Next` row's stem the state `merged`, except two: the linked `rejected` row stays `rejected`, and the formerly `blocked` row's state becomes `rejected`. That call returns the `Later, last group` P0 row in `ready`, and the formerly `blocked` row still waits.
 
-   Ruled out: authoring a merged, linked, struck, journaled, or blocked row; counting a rejected row as open; and ordering across tables by priority alone.
-8. `tests/unit/test_roadmap_table.py::test_choose_hand_test_refusal`:
+   Ruled out: authoring a merged, linked, struck, journaled, or blocked row; counting a rejected row as open; ordering across tables by priority alone; offering a later table's row while an earlier table has unfinished rows; and a `rejected` row holding a later table.
+8. `tests/unit/test_roadmap_table.py::test_choose_split_row`, on a text with one master table. Row `s-row`'s Content starts ``**Authored** (`tickets/s-row/`, `tickets/s-two/`).``, and row `t-row` has the Depends on cell `row N` with `s-row`'s number.
+   - With `s-row` `merged` and `s-two` `running`, `s-row` is not in `strike` and is counted in `open`, and `t-row` is in no list.
+   - With `s-two` also `merged`, `s-row` is in `strike` and `t-row` is in `ready`.
+
+   Ruled out: a split row struck when its own stem alone has settled, and a row made ready while a row it depends on has an unmerged split sibling.
+9. `tests/unit/test_roadmap_table.py::test_choose_hand_test_refusal`, on a text with one master table:
    - A row whose Content says `after the hand test` and names `` `tickets/h-row/evidence/a0.txt` `` waits with that path in its reason while the path is absent from `files`. It still waits when only `tickets/h-row/evidence/other.txt` is present, and it is ready once `a0.txt` is present.
    - A row whose Content says `after its agent capture` and names no evidence path waits, with a paved road containing `tickets/g-row/evidence/`, and is ready once `tickets/g-row/evidence/capture.txt` is in `files`.
    - A row whose Content says `after its hand test` and names no evidence path waits the same way.
@@ -159,10 +166,10 @@ Scope out:
    - A row that names `` `tickets/n-row/evidence/x.txt` `` without either phrase also waits for that file.
 
    Ruled out: a row filed before its capture exists under either phrasing, a named capture satisfied by another file, a bug row filed with no evidence, and a refusal that names no paved road.
-9. `tests/unit/test_roadmap_table.py::test_choose_waits_on_plan_and_depends`: a candidate whose Owner resolves to no plan waits with a paved road naming `docs/*-plan.md`, and a candidate whose Depends on cell is `see notes` waits with the `ValueError` text. Ruled out: either row ready.
-10. `tests/integration/test_roadmap_table.py::test_real_roadmap_parses` reads the repo's `docs/roadmap.md`. `parse` returns without raising. Its result holds a row with number `90` and stem `roadmap-author`, with kind `feature` and priority `P1`. `choose(rows, states={}, files=set())` returns without raising. Ruled out: a parser that only reads its own fixtures and refuses the real table.
-11. The unit check (`clutch covgate` over `tests/unit`, the `unit` entry of `config.yaml` `review.mechanical`) passes with `clutch/roadmap.py` at or above `test-gate.toml`'s `default = 90`.
-12. `./dev.py test` exits 0.
+10. `tests/unit/test_roadmap_table.py::test_choose_waits_on_plan_and_depends`: a candidate whose Owner resolves to no plan waits with a paved road naming `docs/*-plan.md`, and a candidate whose Depends on cell is `see notes` waits with the `ValueError` text. Ruled out: either row ready.
+11. `tests/integration/test_roadmap_table.py::test_real_roadmap_parses` reads the repo's `docs/roadmap.md`. `parse` returns without raising. Its result holds a row with number `90` and stem `roadmap-author`, with kind `feature` and priority `P1`. `choose(rows, states={}, files=set())` returns without raising. Ruled out: a parser that only reads its own fixtures and refuses the real table.
+12. The unit check (`clutch covgate` over `tests/unit`, the `unit` entry of `config.yaml` `review.mechanical`) passes with `clutch/roadmap.py` at or above `test-gate.toml`'s `default = 90`.
+13. `./dev.py test` exits 0.
 
 ## Verification
 ```
@@ -175,11 +182,12 @@ Scope out:
 The branch is rejected if:
 - `clutch/roadmap.py` reads or writes a file, runs a process, or reads the journal;
 - `parse` keys anything on a version number or section number in a heading;
-- `choose` makes ready a row that is linked, struck, settled, already in the journal, waiting on an unmerged dependency, or waiting on a missing hand-test or bug evidence file;
+- `choose` makes ready a row that is linked, struck, settled, already in the journal, waiting on an unmerged dependency, waiting on a missing hand-test or bug evidence file, or in a master table after the first unfinished table;
+- `choose` strikes a split row, or counts it done for a row that depends on it, before every stem in its `**Authored**` list has settled;
 - any edit changes a line other than the row's own;
 - it adds a verb, a config field, or a Box message class;
 - it edits `docs/roadmap.md`.
 
 ## Time budget
-- expected: 75m
-- stuck: 150m
+- expected: 90m
+- stuck: 170m
