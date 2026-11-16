@@ -1,0 +1,19 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "672a76b00ffd04f8132350bda0dd7b687a6d32dd",
+  "stem": "release-gates-as-commands",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review found the parser, run_gate, main branch, roadmap_gate signal, docs, and gate blocks sound. Redo all of that work from the merge base, using the same design. The only snag is in tests/unit/test_roadmap_gate.py::test_run_gate_refusals.",
+    "In test_run_gate_refusals (criterion 5), give the missing-docs/roadmap.md checkout and the unknown-release 9.9.9 checkout separate names. Do not rebind one variable. After each pytest.raises(Refusal), assert exec_.calls == [] and journal.events == [] on that checkout.",
+    "Before finishing, check each acceptance criterion's 'in both cases' or 'each' clause against its test. Every case the criterion lists needs its own assertions, not only the last case run."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
