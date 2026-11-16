@@ -1,0 +1,17 @@
+---
+id: declined-box-000506-3b5d733f
+kind: declined
+link: box-000506-3b5d733f
+reopen_after_days: 30
+---
+Requisition review's unit-test I/O rules (`clutch/specs/requisition_review.md` lines 32-33) catch two cases: a `tests/unit/` test that reads a named repo file, and one that writes outside `tmp_path`. They do not catch a unit test that only reads a path that is neither in the repo nor under `tmp_path`, such as the home directory, `/etc`, or a path taken from an environment variable. The open ticket unit-test-io-rule-one-home rewords Review's `logic` snag to cover any disk read or write outside `tmp_path`. Once it merges, such a test could pass requisition review and then be snagged at Review. The message proposes widening the requisition read snag to every read outside `tmp_path`.
+
+Declined: this is speculative hardening that came from reading a ticket. It is not a behavior anyone has seen go wrong. No run, retro, or box report shows a ticket whose `tests/unit/` test read a home, `/etc`, or environment-variable path. None of the approve-then-fail incidents it cites (box-000441, 000442, 000477) involved such a path; all three concerned repo-file reads, and requisition review already snags those. The current unit suite has no such reads either: a search of `tests/unit/` for `Path.home`, `expanduser`, `os.environ[`, `getenv`, and `/etc/` finds nothing. The engine reaches clock, filesystem, and process through injected seams, so a ticket rarely needs a unit test to read a real path outside the repo. The message also describes the harm as arriving only after unit-test-io-rule-one-home merges, and that ticket is still open. Its Scope out keeps `requisition_review.md` unchanged on purpose. Changing that ticket's scope is for the owner to decide, not for a separate ticket. Registry record declined-box-000498-e1a544f2 declined the mechanical version of this disk rule for the same reason: no shown harm. Reopen if, after unit-test-io-rule-one-home merges, a named run shows a ticket whose new `tests/unit/` test reads a non-repo path outside `tmp_path` passing requisition review and then costing an attempt through a Review `logic` snag or an Implement `premise_failed`.
+
+- clutch/specs/requisition_review.md:32 snags only a unit test that reads 'a named repo file (a spec, doc, `package.json`, or `importlib.metadata` data)'; line 33 snags only a write 'outside `tmp_path`', a process, or a network connection. The wording gap the message describes is real.
+- tickets/unit-test-io-rule-one-home/ticket.md is confirmed but not merged. Its Scope in rewrites the review.md `logic` phrase to 'reads or writes disk outside `tmp_path`'. Its Scope out says '`clutch/specs/requisition_review.md` stays unchanged', so the narrowed review rule the message depends on does not exist yet.
+- A search of tests/unit/ for `Path.home|expanduser|os.environ[|getenv|/etc/` returns no matches, so no current unit test reads a non-repo path outside `tmp_path`.
+- box-000441/000442 (tombstoned to requisition-review-unit-disk-read) and box-000477 all concerned unit tests reading repo files (specs, package.json, docs), which line 32 already snags. None involved a home, /etc, or environment-variable path.
+- declined-box-000498-e1a544f2 declined mechanical enforcement of the same unit-test disk rule because no run showed the harm. Its reopen condition is the same kind of post-merge incident this message lacks.
+
+Message: box-000506-3b5d733f
