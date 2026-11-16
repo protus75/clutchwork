@@ -80,14 +80,14 @@ Scope out:
 
 ## Acceptance criteria
 1. `tests/unit/test_roadmap_status.py::test_status_buckets` writes a roadmap under `tmp_path` with these master tables:
-   - `### 1.0.0`: row 1 `m-one`, linked, state `already_satisfied`; row 2 `s-two`, struck, no state; row 3 `a-three`, linked, state `running`; row 4 `t-four`, unlinked, with `tickets/t-four/ticket.md` in the faked listing; row 5 `x-five`, linked, state `rejected`; row 6 `r-six`, no dependency, no state; row 7 `d-seven`, depends on `` `a-three` ``; row 10 `sp-ten`, whose Content starts ``**Authored** (`tickets/sp-ten/`, `tickets/sp-sib/`).``, state `merged`, with `sp-sib` in state `running`.
+   - `### 1.0.0`: row 1 `m-one`, linked, state `already_satisfied`; row 2 `s-two`, struck, no state; row 3 `a-three`, linked, state `running`; row 4 `t-four`, unlinked, with `tickets/t-four/ticket.md` in the faked listing; row 5 `x-five`, linked, state `rejected`; row 6 `r-six`, P2, no dependency, no state; row 7 `d-seven`, depends on `` `a-three` ``; row 10 `sp-ten`, whose Content starts ``**Authored** (`tickets/sp-ten/`, `tickets/sp-sib/`).``, state `merged`, with `sp-sib` in state `running`; row 11 `q-eleven`, P1, no dependency, no state, on a line below `r-six`.
    - `### 1.0.0, last group`: row 8 `h-eight`, whose Content names `` `tickets/h-eight/evidence/a0.txt` ``, which is absent from the listing.
    - `### 2.0.0`: row 9 `n-nine`, P0, no state.
 
    Every row has a valid kind, priority, and an Owner of `roadmap`, and the faked listing also holds `docs/roadmap.md`. `status(checkout)` returns exactly:
-   - `release 1.0.0: 2 merged, 3 authored, 1 ready, 3 blocked; gate not run`
+   - `release 1.0.0: 2 merged, 3 authored, 2 ready, 3 blocked; gate not run`
    - `release 2.0.0: 0 merged, 0 authored, 0 ready, 1 blocked; gate not run`
-   - `next: r-six`
+   - `next: q-eleven, r-six`
    - one `waits: row 8 h-eight: ` line that contains `tickets/h-eight/evidence/a0.txt` and ` -- `.
 
    The test also asserts that the authored counts sum to `choose(...).open` for the same inputs. `n-nine` is not ready because `choose` holds a later table's rows while the `1.0.0` table has unfinished rows. Ruled out: the last-group heading read as its own release, a struck or `already_satisfied` row read as unmerged, a `rejected` row read as authored, a split row read as merged while a sibling ticket is unmerged, a waiting row read as ready, a later release's row shown as ready or in `next:` while an earlier table is unfinished, and a `next:` order other than `choose`'s.
