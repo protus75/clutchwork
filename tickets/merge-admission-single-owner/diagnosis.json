@@ -1,19 +1,14 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "1bd1e186119e8149e1c85b43824b1feeab129206",
+  "produced_at_sha": "b2a9f297ffcf281bfcfd977f45892ee9abc4e141",
   "stem": "merge-admission-single-owner",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
-  "lessons": [
-    "The ticket cannot pass as written: tests/integration/test_hostfiles.py is outside the scope fence but the change forces an edit there. Its _admit wrapper queued_admit(queue, ticket, attempt) at line 350 rejects any new _admit parameter, so merge.merge cannot delegate to it.",
-    "Add tests/integration/test_hostfiles.py to the scope fence. Change queued_admit at line 350 to accept and forward **kwargs to original_admit. Since the inline wrapper at lines 342-344 already moved main, the inline path through _admit must not call move_main again.",
-    "In tests/integration/test_hostfiles.py, line 330 runs monkeypatch.setattr(merge, \"run_gates\", observe). If merge.py stops importing run_gates, that line raises AttributeError. Delete it and keep the patch on queue_module.run_gates at line 333. Fence and list this edit too.",
-    "The rest of the approach worked: the focused verification and the unit coverage gate passed. Run the full ./dev.py test before committing. Only the full suite exposed test_hostfiles, and other tests may monkeypatch merge.* names or _admit's old signature (grep tests/ for _admit and setattr(merge)."
-  ],
-  "mechanical": null,
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "abandon-human",
+  "lessons": [],
+  "mechanical": "no schema-valid verdict (invalid_artifact)",
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5"
