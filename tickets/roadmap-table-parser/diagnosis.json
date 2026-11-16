@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f3c97edae9bb6b19e830ae3e597c2c25087f1105",
+  "produced_at_sha": "2bfa82743cb0af98db5dc536cade4cac4c737fce",
   "stem": "roadmap-table-parser",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "review",
+  "attempt": 1,
+  "terminal": "incomplete",
+  "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Criterion 5: in tests/unit/test_roadmap_table.py add one helper that compares the input's and the result's splitlines(keepends=True) at every index except row.line. Call it for link(text, c), strike(linked, a2), strike(text, d) and strike(text, a).",
-    "Criterion 5: after link on a plain row, assert the parsed row equals dataclasses.replace(a, linked=True, content=<new content>) so number, stem, owner, kind, priority, depends, runs_before and struck are all checked unchanged.",
-    "Criterion 2: assert that no struck row (d-row, e-row, f-row) has ~~ in its number, stem or content. For example, rows[3].stem == 'd-row' and rows[5].content == 'Work.', not just the e-row check.",
-    "Criterion 8: while s-two is running, assert t-row's stem is in none of choice.strike, choice.link, choice.ready, or the rows of choice.waits, not only that ready and strike are empty.",
-    "Review found clutch/roadmap.py correct against every criterion. Redo it the same way (a private table id per master table keeps release order) and spend the effort on making each unit test check everything its criterion lists."
+    "Attempt 1 passed all verification commands and reached 98.7% coverage on clutch/roadmap.py, but stopped as incomplete because it did not mutation-check each assertion. Redo the same three fenced files and finish that step before reporting.",
+    "For each acceptance criterion 1-10 in tests/unit/test_roadmap_table.py, mutate the matching branch in clutch/roadmap.py (e.g. linked regex, struck check, release-order cutoff, hand-test refusal, plan_path exact word match), confirm the test fails, then revert.",
+    "Attempt 1 only confirmed the split-row settlement mutation (criterion 8). Still check the rest: ticket-row filter, inner-| content join, rejected-not-open, later table held, named evidence not met by other.txt, bug-row evidence wait.",
+    "Keep clutch/roadmap.py free of I/O. tests/unit/test_roadmap_table.py must use in-memory strings only and cover the module at or above test-gate.toml default 90 by itself. Only tests/integration/test_roadmap_table.py reads docs/roadmap.md."
   ],
   "mechanical": null,
   "spec_version": "1.6",
