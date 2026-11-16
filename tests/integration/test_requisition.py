@@ -113,7 +113,7 @@ def test_spec_loads_and_names_finding_keys():
     assert lint_spec(source) == []
     spec = load_spec(source)
     assert spec.meta.llm_surface == "requisition_review"
-    assert spec.inputs == ("ticket", "context", "render", "coverage_dependents", "prior_review", "retry_findings")
+    assert spec.inputs == ("ticket", "context", "render", "coverage_dependents", "sibling_tickets", "prior_review", "retry_findings")
     assert all(key in source for key in ("`code`", "`message`", "`paved_road`"))
     assert "Account for every listed dependent exactly once" in source
     assert "named tests must run the new lines in each floored file" in source

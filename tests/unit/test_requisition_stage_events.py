@@ -14,6 +14,9 @@ class MemoryPath:
     def __truediv__(self, name):
         return self
 
+    def glob(self, pattern):
+        return []
+
     def read_text(self):
         return "spec"
 
@@ -44,6 +47,7 @@ def test_stage_events(monkeypatch, case, outcome, active):
         return await fn()
 
     driver = SimpleNamespace(
+        journal=SimpleNamespace(read=lambda: []),
         retry_cap=0,
         spool=SimpleNamespace(write=lambda *args: None),
         _active=True if active else None,

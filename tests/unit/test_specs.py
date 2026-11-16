@@ -22,7 +22,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("implement", "2.14"), ("requisition_review", "3.17"), ("diagnose", "1.6")):
+    for name, version in (("implement", "2.14"), ("requisition_review", "3.18"), ("diagnose", "1.6")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version

@@ -55,6 +55,9 @@ class MemoryPath:
     def as_posix(self):
         return self.name
 
+    def glob(self, pattern):
+        return []
+
     def read_text(self):
         return self.files.get(self.name, "spec")
 
@@ -87,7 +90,15 @@ def test_review_retries_missing_dependent(monkeypatch, data_file):
 
     monkeypatch.setattr(requisition, "llm_call", call)
     driver = SimpleNamespace(
-        retry_cap=1, spool=SimpleNamespace(write=lambda *args: None), _active=True, begin_watch=lambda **kw: None, race=race, effects=None, watched_llm=lambda: None, redactor=None
+        journal=SimpleNamespace(read=lambda: []),
+        retry_cap=1,
+        spool=SimpleNamespace(write=lambda *args: None),
+        _active=True,
+        begin_watch=lambda **kw: None,
+        race=race,
+        effects=None,
+        watched_llm=lambda: None,
+        redactor=None,
     )
     mapping = None if data_file else MemoryPath("map", {"map": json.dumps({"files": {"src/a.py": [test]}})})
     verdict = asyncio.run(

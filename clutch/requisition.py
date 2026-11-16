@@ -16,10 +16,11 @@ from clutch.gates import GateReport
 from clutch.journal import EventType
 from clutch.llm import AgentTier, LLMRequest, LLMResult
 from clutch.llmeffect import llm_call
+from clutch.policy import _path_overlap
 from clutch.providers import ProviderCallError, ProviderDrought
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
 from clutch.stages import _in_fence, implement_inputs
-from clutch.tickets import Ticket, TicketInvalid, lint_findings, validate_ticket
+from clutch.tickets import Ticket, TicketInvalid, lint_findings, parse_ticket, validate_ticket
 
 REQUISITION_STUCK_S = 600.0
 FIRST_REVIEW = "first review: no earlier review recorded"
@@ -64,6 +65,24 @@ class RequisitionVerdict(Artifact):
 
 def test_sources(repo: Path) -> dict[str, str]:
     return {path.relative_to(repo).as_posix(): path.read_text() for path in (repo / "tests").rglob("*.py")}
+
+
+def sibling_tickets_block(own: Ticket, others: list[Ticket], settled: set[str]) -> str:
+    """Describe the most overlapping confirmed, independent tickets."""
+    matches = []
+    for sibling in others:
+        if sibling.frontmatter.state != "confirmed" or sibling.stem == own.stem or sibling.stem in settled or sibling.stem in own.depends or own.stem in sibling.depends:
+            continue
+        shared = sorted({path for path in sibling.scope_fence if any(_path_overlap(path, own_path) for own_path in own.scope_fence)})
+        if shared:
+            matches.append((sibling, shared))
+    matches.sort(key=lambda match: (-len(match[1]), match[0].stem))
+    return (
+        "\n\n".join(
+            f"{ticket.stem}\nShared fence paths: {', '.join(shared)}\n{re.split(r'(?im)^\s*Scope out\s*:', ticket.sections['Scope in / Scope out'])[0][:1500]}" for ticket, shared in matches[:5]
+        )
+        or "none"
+    )
 
 
 def dependent_errors(reply: RequisitionReply, expected: set[str], fence: tuple[str, ...]) -> list[str]:
@@ -206,6 +225,16 @@ async def review_ticket(
         coverage_dependents = "\n".join(lines) or "none"
     expected_dependents = set(dependents) | set(reads)
 
+    from clutch.rework import settled_dependencies
+
+    others = []
+    for path in (repo / "tickets").glob("*/ticket.md"):
+        try:
+            others.append(parse_ticket(path.parent.name, path.read_text(), repo))
+        except TicketInvalid, OSError, UnicodeError:
+            continue
+    siblings = sibling_tickets_block(ticket, others, settled_dependencies(driver.journal.read()))
+
     event_context = dict(stem=stem, attempt=attempt, surface="requisition_review", run_seq=run_seq)
     outcome = "gate_failed"
     owns_watch = False
@@ -215,7 +244,16 @@ async def review_ticket(
             for current_seq in range(call_seq, call_seq + driver.retry_cap + 1):
                 try:
                     prompt = render(
-                        spec, {"ticket": text, "context": "included in render", "render": base, "prior_review": prior, "retry_findings": retry_findings, "coverage_dependents": coverage_dependents}
+                        spec,
+                        {
+                            "ticket": text,
+                            "context": "included in render",
+                            "render": base,
+                            "prior_review": prior,
+                            "retry_findings": retry_findings,
+                            "coverage_dependents": coverage_dependents,
+                            "sibling_tickets": siblings,
+                        },
                     )
                 except RenderOverBound as exc:
                     return snag(str(exc), "review render over bound", road="shrink or split the ticket at authoring")

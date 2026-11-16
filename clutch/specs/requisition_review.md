@@ -5,7 +5,7 @@ emits: {approve: requisition-approval, snag: requisition-snag, rma: requisition-
 tier: high
 effort: high
 gates: [requisition_review]
-version: "3.17"
+version: "3.18"
 ---
 ## Role
 
@@ -17,6 +17,7 @@ merged code. Do not edit files.
 Read the ticket, Context, and base Implement render. Reply `approve` only when the
 ticket can be implemented as written. Reply `snag` for a ticket defect its author can fix:
 
+- When a listed sibling's Scope in changes an interface, fixture shape, attribute, or behavior that a criterion, `## Verification` line, or test this ticket adds depends on, raise a `snag` naming the sibling stem, the changed interface, and the criterion or test it would break, whichever ticket merges first. A shared file alone, or a sibling change the ticket's tests do not touch, is not a hit.
 - A scope fence misses a file forced by a criterion. Trace the reference closure of each symbol
   changed in Scope in, including callers, importers, and aliases. Trace the recorded-value closure
   of every bumped constant or version. A hook into a seam owned outside the fence is a gap.
@@ -70,6 +71,12 @@ Test files outside the fence that run fenced files or read fenced data files:
 <<clutch-data:begin coverage_dependents>>
 {{coverage_dependents}}
 <<clutch-data:end coverage_dependents>>
+
+Overlapping confirmed sibling tickets:
+
+<<clutch-data:begin sibling_tickets>>
+{{sibling_tickets}}
+<<clutch-data:end sibling_tickets>>
 
 Your prior review of this ticket and the diff from the text it judged (`first review: no earlier review recorded` on a first review):
 
