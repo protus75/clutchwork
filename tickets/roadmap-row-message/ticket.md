@@ -133,7 +133,7 @@ Scope out:
    Ruled out: a prompt without the row or plan, a prompt built from an untracked plan, and a render that drops the inputs for other classes (`clutch/specs/__init__.py::render` refuses mismatched inputs).
 6. `tests/unit/test_author_roadmap_row.py::test_author_commit_carries_row_evidence` drives `author.author` to its commit with fakes. `driver.run` calls the stage's review with the reply and returns outcome `ok` with that reply. `driver.effects.run` awaits its action. `git.commit` records `only`. `git._run` answers the evidence listing with `tickets/sample-row/evidence/hand.txt\0`. The review is faked to approve.
    - For the roadmap message, the listing argv contains `--others` and `--exclude-standard`. `only` is exactly `["tickets/sample-row/ticket.md", "tickets/sample-row/evidence/hand.txt"]`, and the box resolution is `ticket` -> `sample-row`.
-   - For a `failure_report` message, no `ls-files` call is made and `only` is the ticket path alone.
+   - For a `failure_report` message, `git._run` makes no evidence listing (no `ls-files --others` call; `author()`'s existing `git.ls_files` tracked-file read still runs for every class) and `only` is the ticket path alone.
 
    Ruled out: a roadmap ticket committed without its evidence, and other classes sweeping extra files into their commit.
 7. `tests/integration/test_roadmap_row_author.py::test_triage_authors_roadmap_row_confirmed_under_no_go`. Setup:
