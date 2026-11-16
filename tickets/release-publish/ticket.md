@@ -80,6 +80,7 @@ Scope in:
   - section 2.1: a `publish` row (Lock: yes) describing the steps above; the `release` row adds that it journals a `release` signal;
   - section 2.2: delete the `publish` row;
   - section 8.1: the bullet on provider `auth` env vars adds that the env var `release.pypi_token` names is removed the same way, except from `clutch publish`'s `uv publish` child, which receives it as `UV_PUBLISH_TOKEN`;
+  - section 10.1: a `dist/` row, because the table lists every path under `state_dir` and `clutch publish` adds this one. It holds the wheel and sdist `clutch publish` built last; `uv build --clear` empties it on each publish;
   - section 11: a `release` row in the config table.
   Nothing else in the file changes.
 - Existing tests, each edited only as stated:
@@ -167,6 +168,7 @@ Scope out:
 14. `./dev.py test tests/unit/test_host_running.py tests/integration/test_closed_sets.py tests/integration/test_vocabularies.py tests/integration/test_host_contract.py tests/integration/test_dev.py` exits 0, with the `publish` verb row, `"release"` in `SIGNAL_NAMES` written by engine code, and the `Release` inventory rows in place. The docs command in `## Verification` also exits 0. It checks these docs:
     - the `publish` row and the "Stop serve before" mention in `clutch/docs/host-running.md`;
     - a `publish` row in `docs/how-clutch-works.md` section 2.1 and none in section 2.2;
+    - a `dist/` row in section 10.1;
     - a `release` row in section 11;
     - no `publish` in the `CLAUDE.md` Command surface bullet;
     - no `"publish"` in `dev.py`.
@@ -177,7 +179,7 @@ Scope out:
 ```
 ./dev.py test tests/unit/test_release_publish.py tests/unit/test_release.py tests/unit/test_host_running.py tests/unit/test_preflight_parallel.py tests/unit/test_probe_verb.py tests/unit/test_qwen_adapter.py tests/unit/test_update_config_verb.py
 ./dev.py test tests/integration/test_release_publish.py tests/integration/test_release.py tests/integration/test_dev.py tests/integration/test_closed_sets.py tests/integration/test_vocabularies.py tests/integration/test_host_contract.py
-uv run python -c "import pathlib; q = chr(96); h = pathlib.Path('clutch/docs/host-running.md').read_text(); assert '| ' + q + 'publish' + q + ' | No |' in h; stop = next(line for line in h.splitlines() if line.startswith('Stop serve before')); assert q + 'publish' + q in stop; w = pathlib.Path('docs/how-clutch-works.md').read_text(); verbs = w.split('### 2.1 Verbs')[1].split('### 2.2')[0]; dev = w.split('### 2.2')[1].split('## 3. Tickets')[0]; config = w.split('## 11. Config')[1].split('## 12.')[0]; assert '| ' + q + 'publish' + q + ' |' in verbs; assert '| ' + q + 'publish' + q + ' |' not in dev; assert '| ' + q + 'release' + q + ' |' in config; rule = next(line for line in pathlib.Path('CLAUDE.md').read_text().splitlines() if line.startswith('- **Command surface.**')); assert q + 'publish' + q not in rule; assert chr(34) + 'publish' + chr(34) not in pathlib.Path('dev.py').read_text()"
+uv run python -c "import pathlib; q = chr(96); h = pathlib.Path('clutch/docs/host-running.md').read_text(); assert '| ' + q + 'publish' + q + ' | No |' in h; stop = next(line for line in h.splitlines() if line.startswith('Stop serve before')); assert q + 'publish' + q in stop; w = pathlib.Path('docs/how-clutch-works.md').read_text(); verbs = w.split('### 2.1 Verbs')[1].split('### 2.2')[0]; dev = w.split('### 2.2')[1].split('## 3. Tickets')[0]; config = w.split('## 11. Config')[1].split('## 12.')[0]; files = w.split('### 10.1 Files')[1].split('### 10.2')[0]; assert '| ' + q + 'dist/' + q + ' |' in files; assert '| ' + q + 'publish' + q + ' |' in verbs; assert '| ' + q + 'publish' + q + ' |' not in dev; assert '| ' + q + 'release' + q + ' |' in config; rule = next(line for line in pathlib.Path('CLAUDE.md').read_text().splitlines() if line.startswith('- **Command surface.**')); assert q + 'publish' + q not in rule; assert chr(34) + 'publish' + chr(34) not in pathlib.Path('dev.py').read_text()"
 ./dev.py test
 ```
 
