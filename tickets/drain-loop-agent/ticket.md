@@ -104,7 +104,7 @@ Scope in:
 Scope out:
 - `CORE_TEMPLATE` in `clutch/hostfiles.py`, `CLAUDE.md`, and `AGENTS.md`: box-000508 was declined; this prompt carries the delegation.
 - The journal actor of `confirm` and `reject`: box-000514 was declined; the verdicts stay `actor: operator`.
-- Triaging or dismissing Suggestion Box messages: decision 19 does not delegate it.
+- Engine bounds on triage: the pending-at-tick-start, once-per-tick, and final-verdict bounds are prompt text; `clutch triage`, `clutch dismiss`, and the Author stage run unchanged.
 - `clutch/ask.py`, the `prompt` verb, the other `clutch/specs/ask/` prompts, `clutch/help.py`, `clutch/docs/host-running.md`, and the extension: their text about the drain-loop prompt stays true.
 - Any engine code: the prompt describes the engine; it changes nothing the engine does.
 
@@ -123,24 +123,25 @@ Scope out:
    - `actor: operator`, `--unattended`, `release.publish`, `rework.md`, `standing delegation`, `## Goal / Why`.
 
    It does not contain `Never run \`confirm\` or \`reject\``, `Needs a human`, or `never pass \`--yes\``. `standing delegation` comes before the first `clutch confirm --yes`. Ruled out: a prompt that still forbids the delegated verdicts, omits one of the three prompts whose Recommendations it executes, or leaves the operator actor unstated.
-2. `tests/integration/test_ask_drain_loop_agent.py::test_prompt_keeps_hard_limits` asserts the same rendered text contains `Confirm or reject only by executing a Recommendation`, `never pass \`--extension\``, `Never push`, `ticket_changed`, `docs/roadmap.md`, `Still open:`, `never triage or dismiss`, `merged nothing and authored nothing`, and `no \`docs/roadmap.md\``, and has no `${` left. It does not contain `clutch prompt box`, `clutch triage`, or `clutch dismiss`. Rendered with `VALID`'s `state_dir: .clutch` replaced by `state_dir: custom/state` (as `tests/integration/test_ask_drain_loop.py` does), it contains `custom/state/drain.out` and `custom/state/engine.log`. Ruled out: a dropped push, extension, or running-ticket limit; a loop that triages or dismisses box messages, which decision 19 does not delegate; a loop that restarts drains forever while its open roadmap rows are held; a done check that waits on `clutch roadmap status` on a host without a roadmap; and a placeholder left unrendered.
-3. `./dev.py test tests/integration/test_ask_drain_loop.py tests/unit/test_ask_drain_loop.py tests/integration/test_ask.py` exits 0, with `test_drain_loop_keeps_owner_verdict_limits` changed only as `## Scope in / Scope out` names.
-4. The docs command in `## Verification` exits 0: `docs/how-clutch-works.md` section 7.5 names `clutch prompt drain-loop`, `actor: operator`, and `--unattended`.
-5. `./dev.py test` exits 0.
+2. `tests/integration/test_ask_drain_loop_agent.py::test_prompt_keeps_hard_limits` asserts the same rendered text contains `Confirm or reject only by executing a Recommendation`, `never pass \`--extension\``, `Never push`, `ticket_changed`, `docs/roadmap.md`, `Still open:`, `merged nothing and authored nothing`, and `no \`docs/roadmap.md\``, and has no `${` left. Rendered with `VALID`'s `state_dir: .clutch` replaced by `state_dir: custom/state` (as `tests/integration/test_ask_drain_loop.py` does), it contains `custom/state/drain.out` and `custom/state/engine.log`. Ruled out: a dropped push, extension, or running-ticket limit; a loop that restarts drains forever while its open roadmap rows are held; a done check that waits on `clutch roadmap status` on a host without a roadmap; and a placeholder left unrendered.
+3. `tests/integration/test_ask_drain_loop_agent.py::test_prompt_bounds_box_triage` asserts the text rendered against `VALID` contains `clutch prompt box`, `clutch triage`, `clutch dismiss`, `only between drains`, `pending when the tick starts`, `at most once per tick`, and `never re-file`, and does not contain `never triage or dismiss` or `left for the owner`. Ruled out: a loop that never triages, so the cause fixes it files wait in the box forever with no human to triage them; a loop that triages while a drain holds the writer lock; and a loop that feeds itself without end by triaging a suggestion it filed in the same tick, triaging a message twice in one tick, or re-filing a message triage declined.
+4. `./dev.py test tests/integration/test_ask_drain_loop.py tests/unit/test_ask_drain_loop.py tests/integration/test_ask.py` exits 0, with `test_drain_loop_keeps_owner_verdict_limits` changed only as `## Scope in / Scope out` names.
+5. The docs command in `## Verification` exits 0: `docs/how-clutch-works.md` section 7.5 names `clutch prompt drain-loop`, `clutch prompt box`, `actor: operator`, and `--unattended`.
+6. `./dev.py test` exits 0.
 
 ## Verification
 ```
 ./dev.py test tests/integration/test_ask_drain_loop_agent.py
 ./dev.py test tests/integration/test_ask_drain_loop.py tests/unit/test_ask_drain_loop.py tests/integration/test_ask.py
-uv run python -c "import pathlib; t = pathlib.Path('docs/how-clutch-works.md').read_text(); s = t.split('### 7.5 Roadmap driver')[1].split('## 8.')[0]; assert all(w in s for w in ('clutch prompt drain-loop', 'actor: operator', '--unattended'))"
+uv run python -c "import pathlib; t = pathlib.Path('docs/how-clutch-works.md').read_text(); s = t.split('### 7.5 Roadmap driver')[1].split('## 8.')[0]; assert all(w in s for w in ('clutch prompt drain-loop', 'clutch prompt box', 'actor: operator', '--unattended'))"
 ./dev.py test
 ```
 
 ## Definition of rejected
 The branch is rejected if:
 - the prompt lets the loop confirm or reject anything but a Recommendation's verdict, or without `--yes`, or with `--extension`;
-- the prompt lets the loop triage or dismiss a Suggestion Box message, or start another drain for `next:` rows after a drain that merged and authored nothing;
-- the prompt lets the loop push, edit a running ticket, author a ticket, or edit code, docs, specs, config, or conduct files;
+- the prompt lets the loop triage or dismiss a Suggestion Box message other than by executing a `clutch prompt box` Recommendation between drains for a message pending when the tick starts, lets it triage a message more than once per tick or re-file a message triage declined, or lets it start another drain for `next:` rows after a drain that merged and authored nothing;
+- the prompt lets the loop push, edit a running ticket, author a ticket itself instead of through `clutch triage`, or edit code, docs, specs, config, or conduct files;
 - it edits `CORE_TEMPLATE`, `CLAUDE.md`, `AGENTS.md`, `clutch/ask.py`, another ask prompt, or engine code;
 - an existing test other than the one assertion named in `## Scope in / Scope out` changes;
 - a file outside `## Scope fence` changes.
