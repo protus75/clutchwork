@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Kept the inline and serve differences as explicit admission parameters; the final verification commands and all configured hard checks passed.
+The previous implementation was restored from its prior commit; inline and serve differences remain explicit admission parameters.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-none
+- box-000549-af4faf2c: docs/parallel-tickets-plan.md describes the merge queue as inactive in drain, although inline admission now calls its admission body.
 
 ## Resolved engine/model
 
