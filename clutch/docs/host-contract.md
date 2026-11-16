@@ -154,6 +154,7 @@ Config:
     worktree_root: unset
     routing_default_tier: medium
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN}
+    evidence: {max_gb: 20}
     scheduler: {max_unmerged: 2}
     caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
@@ -164,6 +165,9 @@ Config:
     report_inbox: unset
     context_files: []
     ask_notes: unset
+Evidence:
+  required: []
+  defaults: {max_gb: 20}
 Release:
   required: []
   defaults: {publish: false, pypi_token: UV_PUBLISH_TOKEN}

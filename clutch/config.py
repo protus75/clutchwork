@@ -225,6 +225,10 @@ class Release(_Strict):
     pypi_token: str = "UV_PUBLISH_TOKEN"
 
 
+class Evidence(_Strict):
+    max_gb: Count = 20
+
+
 class Config(_Strict):
     schema_version: int
     state_dir: PathField
@@ -235,6 +239,7 @@ class Config(_Strict):
     review: Review
     merge: Merge
     release: Release = Release()
+    evidence: Evidence = Evidence()
     scheduler: Scheduler = Scheduler()
     caps: Caps = Caps()
     circuit_breaker: CircuitBreaker = CircuitBreaker()

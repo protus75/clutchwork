@@ -763,6 +763,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 |---|---|
 | `schema_version`, `state_dir`, `worktree_root` | config version; where state and worktrees live |
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
+| `evidence.max_gb` | Evidence blob retention bound in GB; defaults to 20. |
 | `release` | Upload authorization and PyPI token environment variable name; uploads default to off. |
 | `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks; declared `surfaces` entries are refused at config load; `trigger_map` is accepted, unused |
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
