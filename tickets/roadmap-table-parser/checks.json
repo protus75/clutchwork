@@ -1,0 +1,244 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f3c97edae9bb6b19e830ae3e597c2c25087f1105",
+  "stem": "roadmap-table-parser",
+  "passed": true,
+  "changed_files": [
+    "clutch/roadmap.py",
+    "tests/integration/test_roadmap_table.py",
+    "tests/unit/test_roadmap_table.py"
+  ],
+  "inserted_lines": 389,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 7.811249,
+        "passed": 425,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {}
+      },
+      "coverage": {
+        "percent": 44.67792370231395,
+        "files": {
+          "clutch/roadmap.py": 99.12663755458516
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 73.156086,
+        "passed": 3293,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_is_rederivable": 20.738284068997018,
+          "tests/integration/test_host_loop.py::test_host_loop_drives_supervised_fixture_serve": 19.859052504005376,
+          "tests/integration/test_watch.py::test_snapshot_verb_reads_config_state_dir": 12.950108370976523,
+          "tests/integration/test_watch.py::test_snapshot_watch_uses_configured_state": 12.92886293400079,
+          "tests/integration/test_watch.py::test_observe_verbs_take_no_lock_and_write_nothing": 12.61448142590234,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-3]": 8.359714114980306,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-4]": 7.900931499025319,
+          "tests/integration/test_status.py::test_status_current_window_scorecard": 7.707415806071367,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-2]": 7.082850016071461,
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_requires_member_local_evidence[0-rotation]": 7.048531635955442,
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_advances_each_member_24_hours": 6.9966674339957535,
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_requires_member_local_evidence[1-unresolved-box]": 6.858229901001323,
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_runs_production_serve": 6.671348066069186,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-1]": 5.491611019009724,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-0]": 5.406587365025189,
+          "tests/integration/test_shakeout.py::test_produce_stages_returns_six_green_entries": 5.161009851959534,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-5]": 4.885147028020583,
+          "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[safety]": 4.859761357016396,
+          "tests/integration/test_serve_lifecycle.py::test_serve_consumers_use_existing_writers": 4.803326451976318,
+          "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[red-streak]": 4.153380743053276,
+          "tests/integration/test_serve_admission.py::test_serve_admission_rebases_regates_and_retires": 4.140440615010448,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-7]": 3.840855418005958,
+          "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck]": 3.506069184979424,
+          "tests/integration/test_reliability_battery.py::test_cooling_recovery_after_many_turns": 3.2918849359848537,
+          "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[integration]": 3.194497804972343,
+          "tests/integration/test_serve_dispatch.py::test_serve_reoffers_merge_failure": 3.161657491058577,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-6]": 3.1454755529994145,
+          "tests/integration/test_kill_cli_activation.py::test_kill_activation_keeps_worker_boundaries_dormant[observe]": 3.0993353810044937,
+          "tests/integration/test_shakeout.py::test_identical_terminals_member_observes_escalation_at_k": 2.95193661400117,
+          "tests/integration/test_reliability_battery.py::test_all_candidates_cooling_recovery": 2.832680193998385,
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.830176752002444,
+          "tests/integration/test_reliability_battery.py::test_reliability_battery_requires_member_local_evidence[1]": 2.7199253489961848,
+          "tests/integration/test_serve_dispatch.py::test_requested_retro_waits_for_idle_then_resumes": 2.6066958049777895,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-4]": 2.3942663440247998,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-5]": 2.3188370530260727,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-1]": 2.314841240993701,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-2]": 2.3042223019874655,
+          "tests/integration/test_fixture_host.py::test_fixture_cli_adapter_roundtrip": 2.2883384010056034,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-0]": 2.2777388190152124,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-6]": 2.2647607590188272,
+          "tests/integration/test_serve_dispatch.py::test_automatic_retro_runs_at_idle_when_due": 2.230980911059305,
+          "tests/integration/test_checkpoint.py::test_checkpoint_failure_occurrence_identity": 2.218965725041926,
+          "tests/integration/test_storm_hold.py::test_multiple_storm_holds_release_independently": 2.203712198068388,
+          "tests/integration/test_serve_kill.py::test_serve_storm_resume_retains_producing_run": 2.192748256959021,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[rolled-history-3]": 2.1889360550558195,
+          "tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[host-red]": 2.0510628830525093,
+          "tests/integration/test_thresh.py::test_thresh_is_active": 2.050500213052146,
+          "tests/integration/test_serve_upgrade.py::test_stop_finishes_merge_without_admitting_next_or_spawning": 2.0424874760210514,
+          "tests/integration/test_serve_notify.py::test_serve_reconciles_notifications_at_startup_and_poll": 2.0354538999381475,
+          "tests/integration/test_provider_cooldown_failover.py::test_one_provider_payload_and_timers_per_session": 1.9955494590103626,
+          "tests/integration/test_serve_kill.py::test_serve_suspended_run_cleanup_and_restart[kill]": 1.9698306739446707,
+          "tests/integration/test_serve_dispatch.py::test_kill_aborts_requested_retro": 1.9000697300652973,
+          "tests/integration/test_ladder.py::test_operator_confirm_resets_effective_rung": 1.8591660280362703,
+          "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[ok]": 1.80233448400395,
+          "tests/integration/test_retro.py::test_escape_report_projection": 1.7988920010393485,
+          "tests/integration/test_merge.py::test_outbox_only_admission_records_null_commit_and_retires": 1.7896057379548438,
+          "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[kill]": 1.7705705679836683,
+          "tests/integration/test_serve_kill.py::test_serve_suspended_run_cleanup_and_restart[signal]": 1.7252855930128135,
+          "tests/integration/test_storm_hold.py::test_storm_hold_survives_restart_roll_and_expiry": 1.7178649990237318,
+          "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[partial]": 1.7123203319497406,
+          "tests/integration/test_retro_box.py::test_completed_retro_proposals_reach_prompt_spec_merge": 1.7116036930237897,
+          "tests/integration/test_serve_kill.py::test_serve_suspended_run_cleanup_and_restart[cancel]": 1.6928227749885991,
+          "tests/integration/test_serve_kill.py::test_serve_storm_suspends_stage_and_frees_selection[check]": 1.6837300330516882,
+          "tests/integration/test_merge.py::test_core_activation_first_adoption_merge[None-queue]": 1.682769680977799,
+          "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[exception]": 1.6798102299799211,
+          "tests/integration/test_scorecard.py::test_scorecard_catches_resolved_and_upheld_findings": 1.6759101589559577,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[clutch/thing.py]": 1.6706848199828528,
+          "tests/integration/test_serve_kill.py::test_serve_storm_suspends_stage_and_frees_selection[review]": 1.6702342640492134,
+          "tests/integration/test_ladder.py::test_rework_escalation_preserves_starting_capability_and_caps[escalate]": 1.6452782329870388,
+          "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[commit]": 1.641082942020148,
+          "tests/integration/test_fault_injection.py::test_crash_at_every_write_point_tolerates_torn_tail_and_keeps_once_semantics[fresh-7]": 1.6211408899980597,
+          "tests/integration/test_merge.py::test_core_activation_first_adoption_merge[None-inline]": 1.6124043440213427,
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_requires_member_local_evidence_auditor": 1.5975234509678558,
+          "tests/integration/test_serve_upgrade.py::test_upgrade_after_real_merge[docs/guide.md]": 1.590924967022147,
+          "tests/integration/test_serve_kill.py::test_serve_storm_hold_and_resume": 1.5836961359600537,
+          "tests/integration/test_shakeout.py::test_review_reject_member_observes_snag_and_no_merge": 1.5787655769381672,
+          "tests/integration/test_second_problems.py::test_repeated_line_number_dedups_and_absent_key_means_none": 1.5747254100278951,
+          "tests/integration/test_kill_cli_activation.py::test_kill_activation_keeps_worker_boundaries_dormant[stop]": 1.5675151530303992,
+          "tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[cancel]": 1.557808295066934,
+          "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[None]": 1.545890004024841,
+          "tests/integration/test_shakeout.py::test_red_then_green_member_observes_one_retry_and_attempt_one_review_findings": 1.537304909026716,
+          "tests/integration/test_shakeout.py::test_unfixable_lint_branch_only_member_observes_check_failure_and_no_merge": 1.5314702989999205,
+          "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[review]": 1.5259697039728053,
+          "tests/integration/test_mergequeue.py::test_serial_priority_age_order": 1.510596678010188,
+          "tests/integration/test_shakeout.py::test_review_reject_reentry_member_observes_criteria_position_reentry_and_merge": 1.5005640509771183,
+          "tests/integration/test_storm_hold.py::test_storm_resume_is_identity_bound_and_once": 1.4737203050754033,
+          "tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework[review]": 1.4587180709932,
+          "tests/integration/test_shakeout.py::test_scope_escape_member_observes_check_failure_and_no_merge": 1.4435638730064966,
+          "tests/integration/test_ladder.py::test_three_identical_reasons_climb_even_after_different_verdict": 1.4357389830402099,
+          "tests/integration/test_serve_kill.py::test_serve_storm_suspends_stage_and_frees_selection[implement]": 1.4293967499979772,
+          "tests/integration/test_daemon_soak_runner.py::test_daemon_soak_cleans_up_owned_lifetimes[success]": 1.424685800971929,
+          "tests/integration/test_restart_timers.py::test_timers_rearm_from_journal": 1.3722800089162774,
+          "tests/integration/test_daemon_config.py::test_config_snapshot_is_dormant[snapshot_config-drain]": 1.3684135279618204,
+          "tests/integration/test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[check]": 1.3632734169950709,
+          "tests/integration/test_daemon_admission.py::test_daemon_admission_is_dormant[drain]": 1.3501876369700767,
+          "tests/integration/test_shakeout.py::test_timeout_dead_ends_member_observes_lesson_on_second_attempt": 1.3468517879373394,
+          "tests/integration/test_shakeout.py::test_premise_park_release_member_observes_unchanged_park_then_content_release": 1.3334123030654155,
+          "tests/integration/test_serve_dispatch.py::test_failed_retro_does_not_reblock": 1.3330029830685817,
+          "tests/integration/test_daemon_composition.py::test_composed_admission_holds_accept_identity_bound_resume[red]": 1.3237967140739784,
+          "tests/integration/test_serve_dispatch.py::test_automatic_retro_off_when_disabled": 1.3118282040231861
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_roadmap_table.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_roadmap_table.py\nbringing up nodes...\nbringing up nodes...\n\n...........                                                              [100%]\n11 passed in 2.80s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.014517
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_roadmap_table.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_roadmap_table.py\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.03s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 1.222986
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test"
+      ],
+      "rc": 0,
+      "tail": "...................................................................... [ 98%]\n.....................................................                    [100%]\n=============================== warnings summary ===============================\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/roadmap-table-parser/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n3293 passed, 9 warnings in 65.16s (0:01:05)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 72.257698
+    }
+  ]
+}
