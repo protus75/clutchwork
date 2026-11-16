@@ -4,15 +4,15 @@ incomplete
 
 ## Surprises / judgment calls
 
-The SHA-target assertion was checked against a deliberate HEAD-target mutation and failed as intended. The remaining assertions have not received the required mutation checks.
+The existing roadmap driver plan contains a stale release description already identified in box-000496-017e035f.
 
 ## Dead ends
 
-none
+None.
 
 ## Second problems filed
 
-- box-000496-017e035f: docs/roadmap.md and docs/roadmap-driver-plan.md contain release-tooling statements that become stale after this change and are outside the scope fence.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 60 minutes; the required assertion checks remain unfinished.
 
