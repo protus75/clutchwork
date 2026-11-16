@@ -1,10 +1,7 @@
 ---
 llm_surface: review
-consumes: invoice
-emits: {approve: approved-invoice, snag: snag-list, rma: rma}
 tier: high
 effort: high
-gates: [correctness_review]
 version: "1.6"
 ---
 ## Role

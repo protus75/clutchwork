@@ -247,7 +247,6 @@ async def review_ticket(
                         spec,
                         {
                             "ticket": text,
-                            "context": "included in render",
                             "render": base,
                             "prior_review": prior,
                             "retry_findings": retry_findings,

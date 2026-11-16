@@ -15,8 +15,6 @@ routing:
 review:
   mechanical:
     - {code: fixture-smoke, argv: [python, check.py], trigger: always, severity: hard}
-  surfaces: []
-  trigger_map: {}
   gate_severity: {}
 merge:
   safety_checks: [fixture-smoke]

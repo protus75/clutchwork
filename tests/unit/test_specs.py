@@ -22,7 +22,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("implement", "2.15"), ("requisition_review", "3.18"), ("diagnose", "1.7")):
+    for name, version in (("implement", "2.15"), ("requisition_review", "3.19"), ("diagnose", "1.7")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -127,11 +127,8 @@ def test_implement_spec_consumer_read():
     assert spec.meta.version == "2.15"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
-        "consumes": "ticket",
-        "emits": "packing-slip",
         "tier": "medium",
         "effort": "medium",
-        "gates": [],
     }
     assert spec.inputs == ("ticket", "context", "retry_findings")
     assert tuple(line[3:] for line in spec.body.splitlines() if line.startswith("## ")) == SPEC_SECTIONS
@@ -234,11 +231,8 @@ def test_review_spec_read_only():
     assert spec.meta.version == "1.6"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "review",
-        "consumes": "invoice",
-        "emits": {"approve": "approved-invoice", "snag": "snag-list", "rma": "rma"},
         "tier": "high",
         "effort": "high",
-        "gates": ["correctness_review"],
     }
     assert spec.inputs == ("ticket", "diff", "prior_review", "retry_findings")
     assert tuple(line[3:] for line in spec.body.splitlines() if line.startswith("## ")) == SPEC_SECTIONS
@@ -304,11 +298,8 @@ def test_review_spec_routes_out_of_fence_breakage():
 
 FRONT = """---
 llm_surface: implement
-consumes: Ticket
-emits: PackingSlip
 tier: medium
 effort: medium
-gates: [scope_fence, verification]
 version: "1.0"
 ---
 """
@@ -391,8 +382,13 @@ def test_lint_frontmatter_schema_and_vocab():
     assert "spec_frontmatter" in codes(lint_spec(spec_text(front=FRONT.replace("tier: medium", "tier: huge"))))
     assert "spec_frontmatter" in codes(lint_spec(spec_text(front=FRONT.replace("---\n", "---\nextra: 1\n", 1))))
     assert "spec_vocab" in codes(lint_spec(spec_text(front=FRONT.replace("implement", "dance"))))
-    assert "spec_vocab" in codes(lint_spec(spec_text(front=FRONT.replace("scope_fence", "vibes"))))
     assert lint_spec(spec_text(front=FRONT.replace("implement", "ui_review")), surfaces={"ui_review"}) == []
+    # Each formerly accepted field must now be rejected independently.
+    for field in ("consumes: Ticket", "emits: PackingSlip", "gates: []"):
+        with pytest.raises(SpecError) as exc:
+            load_spec(spec_text(front=FRONT.replace("llm_surface: implement", f"llm_surface: implement\n{field}")))
+        assert any(f.code == "spec_frontmatter" for f in exc.value.findings)
+    assert load_spec(spec_text()).meta.llm_surface == "implement"
 
 
 def test_lint_section_presence_and_order():

@@ -444,11 +444,8 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
     assert lint_spec(spec_text) == []
     assert spec.meta.model_dump() == {
         "llm_surface": "rework",
-        "consumes": "snag-list",
-        "emits": "rework-order",
         "tier": "high",
         "effort": "high",
-        "gates": ["ticket_schema", "requisition_review"],
         "version": "1.2",
     }
     fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "supervise": "none", "conflict": "none", "retry_findings": "none"}

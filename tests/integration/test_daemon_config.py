@@ -131,7 +131,6 @@ def test_snapshot_is_recursively_immutable_and_detached(tmp_path):
     source.routing[0].candidates[0].model = "changed"
     source.review.mechanical[0].argv.append("changed")
     source.review.mechanical[1].trigger.append("changed/")
-    source.review.trigger_map["clutch/"].append("changed")
     del source.review.gate_severity["scope_fence"]
     source.box_policy["suggestion"] = "confirmed"
     source.merge.strategies.clear()
@@ -180,7 +179,6 @@ async def test_dispatch_captures_once_and_keeps_snapshot_until_completion(tmp_pa
     caller = asyncio.create_task(adapted(tickets[0]))
     await started.wait()
     source.scheduler.max_unmerged = 99
-    source.review.trigger_map["clutch/"].clear()
     source.routing[0].candidates.clear()
     put_config(tmp_path, VALID + "scheduler: {max_unmerged: 7}\n")
     release.set()

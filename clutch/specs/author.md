@@ -1,10 +1,7 @@
 ---
 llm_surface: author
-consumes: triage-verdict
-emits: ticket
 tier: medium
 effort: medium
-gates: [ticket_schema]
 version: "1.7"
 ---
 ## Role

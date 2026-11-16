@@ -128,13 +128,6 @@ class AutofixCommand(_Strict):
     files: Annotated[list[str], Field(min_length=1)]
 
 
-class ReviewSurface(_Strict):
-    name: str
-    trigger: Trigger
-    rules_doc: PathField
-    severity: Severity
-
-
 class CoverageMap(_Strict):
     argv: Argv
     report: str
@@ -149,8 +142,6 @@ class Review(_Strict):
     coverage_map: CoverageMap | None = None
     autofix: list[AutofixCommand] = []
     mechanical: list[MechanicalCheck] = []
-    surfaces: list[ReviewSurface] = []
-    trigger_map: dict[str, list[str]] = {}
     gate_severity: dict[str, Severity] = {}
 
 
@@ -181,7 +172,6 @@ class Caps(_Strict):
     infra: Count = 3
     attempts: Count = 5
     quarantine: Count = 5
-    poison: Count = 2
     supervise: Count = 2
 
 
@@ -318,9 +308,6 @@ def load_config(config_path: Path | None, *, cwd: Path) -> Config:
     _check_schema_version(path, raw)
     if (null_key := _find_null(raw, "")) is not None:
         raise ConfigError(path, null_key, "explicit null is refused; omit the key to take its shipped default, or set a value")
-    review = raw.get("review")
-    if isinstance(review, dict) and isinstance(review.get("surfaces"), list) and review["surfaces"]:
-        raise ConfigError(path, "review.surfaces", "remove review.surfaces entries; host review surfaces are not supported yet")
     try:
         cfg = Config.model_validate(raw, context={"base": path.parent})
     except ValidationError as e:

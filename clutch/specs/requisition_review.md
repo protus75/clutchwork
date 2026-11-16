@@ -1,11 +1,8 @@
 ---
 llm_surface: requisition_review
-consumes: ticket
-emits: {approve: requisition-approval, snag: requisition-snag, rma: requisition-rma}
 tier: high
 effort: high
-gates: [requisition_review]
-version: "3.18"
+version: "3.19"
 ---
 ## Role
 
@@ -56,9 +53,6 @@ The authored ticket:
 
 The Context is included in the base Implement render below:
 
-<<clutch-data:begin context>>
-{{context}}
-<<clutch-data:end context>>
 
 The base Implement render at max effort:
 

@@ -1,10 +1,7 @@
 ---
 llm_surface: retro
-consumes: current-retro-window
-emits: retro-artifact
 tier: medium
 effort: high
-gates: []
 version: "1.5"
 ---
 ## Role

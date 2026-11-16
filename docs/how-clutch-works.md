@@ -338,9 +338,6 @@ block; unedited flakes are quarantined unless the cap is full. Quarantined unedi
 do not block, and a passing quarantined test is released when its resolved fix has merged.
 Missing or invalid results after a successful run or rerun fail the entry. Check records command wall time, outcome counts and slow tests from the first run, bounded by `slow_test_seconds` (default 1.0) and `slow_test_limit` (default 100). Readable coverage records the repository percentage and percentages for changed files. With a declared coverage.py JSON report, a flake also counts as edited when its test context covers a changed line or a line adjacent to a pure deletion. The host must run with `--cov-context=test`, `[tool.coverage.json] show_contexts = true` and `[tool.coverage.run] core = "ctrace"`; missing or invalid contexts fail classification.
 
-Config load refuses a declared `review.surfaces` entry (host review prompts); remove
-the entries because host review surfaces are not supported yet.
-`review.trigger_map` is accepted by config and read by nothing.
 
 ## 6. When a run fails
 
@@ -404,7 +401,6 @@ which counts failed terminal `state_transition` events directly and journals no 
 | `infra` | 3 | each `infra_error` or `timeout` (not droughts) |
 | `premise_bounce` | 1 | each `premise_failed` (not over-bound renders or `requisition` snags) |
 | `quarantine` | 5 | flake quarantine size |
-| `poison` | 2 | read by nothing |
 | `supervise` | 2 | each supervisor keep; counted since the last operator keep, so supervisor keeps never reset it and it never routes a stem |
 
 Failed attempts are `gate_failed`, `premise_failed`, `incomplete`, `infra_error`, and `timeout` terminals.
@@ -765,7 +761,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `evidence.max_gb` | Evidence blob retention bound in GB; defaults to 20. |
 | `release` | Upload authorization and PyPI token environment variable name; uploads default to off. |
-| `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks; declared `surfaces` entries are refused at config load; `trigger_map` is accepted, unused |
+| `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks |
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |
 | `retro` | `enabled`, `merges`, `days`, `spikes` control automatic reports; `test_timing` and `coverage` control measurement summaries (section 9.5) |

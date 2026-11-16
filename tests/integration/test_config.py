@@ -21,7 +21,6 @@ VALID = textwrap.dedent(
       mechanical:
         - {code: pytest, argv: [uv, run, pytest], trigger: always, severity: hard}
         - {code: ruff, argv: [uv, run, ruff, check], trigger: [clutch/], severity: soft}
-      trigger_map: {clutch/: [scope_fence]}
       gate_severity: {scope_fence: hard}
     merge:
       safety_checks: [pytest]
@@ -71,7 +70,6 @@ def test_valid_config_loads_from_cwd_with_shipped_defaults(tmp_path):
         "infra": 3,
         "attempts": 5,
         "quarantine": 5,
-        "poison": 2,
         "supervise": 2,
     }
     assert cfg.circuit_breaker.k == 3
@@ -110,13 +108,13 @@ def test_config_flag_path_overrides_cwd(tmp_path):
     assert cfg.state_dir == Path("/var/clutch")
 
 
-def test_review_surfaces_refused(tmp_path):
-    entry = "  surfaces: [{name: correctness, trigger: always, rules_doc: docs/review.md, severity: hard}]\n"
-    err = refusal(tmp_path, edit(VALID, "review:\n", "review:\n" + entry))
-    assert err.key == "review.surfaces"
-    assert "remove review.surfaces entries; host review surfaces are not supported yet" in str(err)
-    cfg = load_config(write(tmp_path, edit(VALID, "review:\n", "review:\n  surfaces: []\n")), cwd=tmp_path)
-    assert cfg.review.surfaces == []
+@pytest.mark.parametrize(("section", "entry", "key"), [("review", "trigger_map: {}", "review.trigger_map"), ("review", "surfaces: []", "review.surfaces"), ("caps", "poison: 2", "caps.poison")])
+def test_removed_config_keys_are_refused(tmp_path, section, entry, key):
+    # Accepting any former inert key must fail this check.
+    text = edit(VALID, "review:\n", f"review:\n  {entry}\n") if section == "review" else VALID + f"caps: {{{entry}}}\n"
+    err = refusal(tmp_path, text)
+    assert err.key == key
+    assert "unknown key" in str(err)
 
 
 def test_explicit_values_override_defaults_and_partial_blocks_keep_the_rest(tmp_path):

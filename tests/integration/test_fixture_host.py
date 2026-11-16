@@ -86,7 +86,7 @@ def test_fixture_profile_loads(host):
         "slow_test_seconds": 1.0,
         "slow_test_limit": 100,
     }
-    assert cfg.review.surfaces == [] and cfg.review.gate_severity == {} and cfg.review.trigger_map == {}
+    assert cfg.review.gate_severity == {}
     assert cfg.merge.safety_checks == ["fixture-smoke"] and cfg.merge.strategies == []
     assert cfg.engine_plane_safety_inventory == ["config.yaml", "CLAUDE.md", "bin/", "scripts.json", "scaffold.py", "check.py", "regression_test.py"]
     assert not any(p.startswith("fixtures/") for p in cfg.engine_plane_safety_inventory)

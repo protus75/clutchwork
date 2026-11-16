@@ -1,10 +1,7 @@
 ---
 llm_surface: triage
-consumes: box-message
-emits: triage-verdict
 tier: medium
 effort: medium
-gates: []
 version: "1.0"
 ---
 ## Role

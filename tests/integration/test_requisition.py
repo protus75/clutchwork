@@ -112,8 +112,11 @@ def test_spec_loads_and_names_finding_keys():
     source = (SPECS / "requisition_review.md").read_text()
     assert lint_spec(source) == []
     spec = load_spec(source)
+    # All shipped templates must use the reduced schema.
+    for path in SPECS.glob("*.md"):
+        load_spec(path.read_text())
     assert spec.meta.llm_surface == "requisition_review"
-    assert spec.inputs == ("ticket", "context", "render", "coverage_dependents", "sibling_tickets", "prior_review", "retry_findings")
+    assert spec.inputs == ("ticket", "render", "coverage_dependents", "sibling_tickets", "prior_review", "retry_findings")
     assert all(key in source for key in ("`code`", "`message`", "`paved_road`"))
     assert "Account for every listed dependent exactly once" in source
     assert "named tests must run the new lines in each floored file" in source
@@ -160,6 +163,7 @@ def test_approve_and_effect_key(tmp_path):
     assert verdict.verdict == "approve" and verdict.findings == []
     assert verdict.mechanical is None
     assert len(llm.requests) == 1
+    assert "<<clutch-data:begin context>>" not in llm.requests[0].rendered
     assert llm.requests[0].surface == "requisition_review"
     assert any(e.key == "llm/s/0/requisition_review/1/1" for e in driver.journal.read())
 

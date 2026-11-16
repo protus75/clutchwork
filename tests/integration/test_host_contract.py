@@ -59,14 +59,12 @@ def test_host_contract_example_loads(tmp_path):
     assert cfg.providers[0].package == "@openai/codex"
     assert cfg.review.mechanical[0].argv == ["uv", "run", "pytest", "-q"]
     assert cfg.review.mechanical[1].trigger == ["src/"]
-    assert cfg.review.surfaces == []
-    assert cfg.review.trigger_map == {"src/": ["scope_fence"]}
     assert cfg.review.gate_severity == {"scope_fence": "hard"}
     assert cfg.merge.safety_checks == ["host-test"]
     assert [s.strategy for s in cfg.merge.strategies] == ["regenerate", "union"]
     assert cfg.merge.strategies[0].argv == ["uv", "lock"]
     assert not hasattr(cfg.merge.strategies[1], "argv")
-    for name in ("mechanical", "surfaces", "trigger_map", "gate_severity", "safety_checks", "strategies"):
+    for name in ("mechanical", "gate_severity", "safety_checks", "strategies"):
         assert re.search(rf"^  {name}:.*#", block("host-example"), re.M)
 
 

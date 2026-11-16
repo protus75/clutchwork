@@ -44,8 +44,6 @@ review:
   mechanical: # argv lists, never shell commands; choose your host's checks
     - {code: host-test, argv: [uv, run, pytest, -q], trigger: always, severity: hard}
     - {code: host-style, argv: [uv, run, ruff, check], trigger: [src/], severity: soft}
-  surfaces: [] # host review surfaces are not supported yet
-  trigger_map: {src/: [scope_fence]} # accepted and read by nothing
   gate_severity: {scope_fence: hard} # merge overrides; engine defaults are all hard
 merge:
   safety_checks: [host-test] # each code must resolve to exactly one hard mechanical entry
@@ -156,7 +154,7 @@ Config:
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN}
     evidence: {max_gb: 20}
     scheduler: {max_unmerged: 2}
-    caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2, supervise: 2}
+    caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
     drain: {max_runtime_hours: 12, max_ticket_minutes: 90}
     retro: {enabled: true, test_timing: true, coverage: true, merges: {enabled: true, every: 25}, days: {enabled: true, every: 7}, spikes: {enabled: true, count: 5, kinds: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]}}
@@ -188,7 +186,7 @@ Candidate:
   defaults: {model: unset}
 Review:
   required: []
-  defaults: {coverage_map: unset, autofix: [], mechanical: [], surfaces: [], trigger_map: {}, gate_severity: {}}
+  defaults: {coverage_map: unset, autofix: [], mechanical: [], gate_severity: {}}
 CoverageMap:
   required: [argv, report]
   defaults: {}
@@ -199,9 +197,6 @@ AutofixCommand:
 MechanicalCheck:
   required: [code, argv, trigger, severity]
   defaults: {results: unset, coverage: unset, slow_test_seconds: 1.0, slow_test_limit: 100}
-ReviewSurface:
-  required: [name, trigger, rules_doc, severity]
-  defaults: {}
 Merge:
   required: []
   defaults: {safety_checks: [], strategies: []}
@@ -216,7 +211,7 @@ Scheduler:
   defaults: {max_unmerged: 2}
 Caps:
   required: []
-  defaults: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2, supervise: 2}
+  defaults: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}
 CircuitBreaker:
   required: []
   defaults: {k: 3, cooldown_minutes: 10}
@@ -266,8 +261,6 @@ Candidates name declared providers and are ordered primary-until-pressure;
 absent `model` selects `models_by_tier[tier]`. Non-review surfaces fall back to
 the review routing row. Surface names and host check codes are strings; engine
 gate overrides use engine codes. `trigger` is `always` or a path-prefix list.
-Config load refuses a declared `review.surfaces` entry; remove the entries because
-host review surfaces are not supported yet.
 Regenerate requires argv; union accepts no argv and only resolves append-only
 conflicts. A conflict path must match exactly one strategy, and regenerated
 paths must be outside the ticket fence; otherwise resolve through Rework with a
@@ -277,7 +270,7 @@ Set `ask_notes` to add host guidance to `prompt` operator prompts; it is appende
 
 Relative `state_dir`, explicit `worktree_root` and `report_inbox` resolve against
 the selected config file's parent; absolute paths remain absolute. Absent
-worktree_root becomes `<state_dir>/worktrees`. `context_files` and `rules_doc`
+worktree_root becomes `<state_dir>/worktrees`. `context_files`
 remain Path values as written at load time; use host-relative content paths.
 An absent `box_policy` row takes its table default. Every explicit null,
 including nested values and list items, is refused with its dotted key: omit
@@ -364,7 +357,7 @@ is spooled to `check/host-NN.txt`, `merge/host-NN.txt`,
 returned tails are redacted and captured output is scrubbed at the spool seam.
 Every safety_checks code must resolve to exactly one hard mechanical entry;
 invalid designations fail before commands. Integration selects only always/hard
-entries. `review.trigger_map` is accepted and read by nothing.
+entries.
 
 An entry may set `results` to a worktree-relative file written with `-p clutch.testreport
 --clutch-results <path>`. The plugin writes schema 2, with a matching `seconds` map of finite nonnegative floats; the reader refuses schema 1. Check records first-run command time, outcome counts and slow tests using `slow_test_seconds` (default 1.0) and `slow_test_limit` (default 100), plus repository and changed-file percentages when coverage is readable. Check removes it before each run and reads fresh results. A failed

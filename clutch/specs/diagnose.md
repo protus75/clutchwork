@@ -1,10 +1,7 @@
 ---
 llm_surface: diagnose
-consumes: harvest
-emits: diagnosis
 tier: high
 effort: medium
-gates: []
 version: "1.7"
 ---
 ## Role

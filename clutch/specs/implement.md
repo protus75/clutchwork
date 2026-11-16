@@ -1,10 +1,7 @@
 ---
 llm_surface: implement
-consumes: ticket
-emits: packing-slip
 tier: medium
 effort: medium
-gates: []
 version: "2.15"
 ---
 ## Role

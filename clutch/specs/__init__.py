@@ -14,7 +14,6 @@ import yaml
 from pydantic import BaseModel, ConfigDict, StringConstraints, ValidationError
 
 from clutch.artifacts import Finding
-from clutch.gates import ENGINE_GATE_CODES
 from clutch.llm import AgentEffort, AgentTier
 
 # One bound at every tier and effort, so climbing the ladder never shrinks it.
@@ -73,11 +72,8 @@ class SpecMeta(BaseModel):
     model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
 
     llm_surface: str
-    consumes: Annotated[str, StringConstraints(min_length=1)]
-    emits: Annotated[str, StringConstraints(min_length=1)] | dict[str, str]
     tier: AgentTier
     effort: AgentEffort
-    gates: list[str]
     version: Annotated[str, StringConstraints(pattern=r"^\d+\.\d+$")]
 
 
@@ -132,27 +128,25 @@ def lint_spec(
     text: str,
     *,
     surfaces: Collection[str] = ENGINE_LLM_SURFACES,
-    gate_codes: Collection[str] = ENGINE_GATE_CODES,
     max_lines: int = SPEC_MAX_LINES,
 ) -> list[Finding]:
     """Every spec defect, each with a paved road (empty = the spec passes)."""
-    return _parse_spec(text, surfaces, gate_codes, max_lines)[1]
+    return _parse_spec(text, surfaces, max_lines)[1]
 
 
 def load_spec(
     text: str,
     *,
     surfaces: Collection[str] = ENGINE_LLM_SURFACES,
-    gate_codes: Collection[str] = ENGINE_GATE_CODES,
     max_lines: int = SPEC_MAX_LINES,
 ) -> Spec:
-    spec, findings = _parse_spec(text, surfaces, gate_codes, max_lines)
+    spec, findings = _parse_spec(text, surfaces, max_lines)
     if findings or spec is None:
         raise SpecError(findings)
     return spec
 
 
-def _parse_spec(text: str, surfaces: Collection[str], gate_codes: Collection[str], max_lines: int) -> tuple[Spec | None, list[Finding]]:
+def _parse_spec(text: str, surfaces: Collection[str], max_lines: int) -> tuple[Spec | None, list[Finding]]:
     out: list[Finding] = []
     if (n := len(text.splitlines())) > max_lines:
         out.append(_f("spec_size", f"spec is {n} lines, over the {max_lines}-line budget", "cut prose or move host detail into host docs rendered as data"))
@@ -167,13 +161,10 @@ def _parse_spec(text: str, surfaces: Collection[str], gate_codes: Collection[str
         out.append(_f("spec_frontmatter", f"frontmatter is not YAML: {e}", "fix the YAML syntax"))
     except ValidationError as e:
         for err in e.errors():
-            out.append(_f("spec_frontmatter", f"{'.'.join(map(str, err['loc'])) or '<root>'}: {err['msg']}", "use exactly the fields llm_surface, consumes, emits, tier, effort, gates, version"))
+            out.append(_f("spec_frontmatter", f"{'.'.join(map(str, err['loc'])) or '<root>'}: {err['msg']}", "use exactly the fields llm_surface, tier, effort, version"))
     if meta is not None:
         if meta.llm_surface not in surfaces:
             out.append(_f("spec_vocab", f"llm_surface {meta.llm_surface!r} is not in the closed vocabulary", f"use one of {sorted(surfaces)}"))
-        for g in meta.gates:
-            if g not in gate_codes:
-                out.append(_f("spec_vocab", f"gate {g!r} is not in the closed vocabulary", f"use codes from {sorted(gate_codes)}"))
     body = text[fm.end() :]
     lines = body.splitlines()
     headings = tuple(line[3:].strip() for line in lines if line.startswith("## "))

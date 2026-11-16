@@ -1,10 +1,7 @@
 ---
 llm_surface: rework
-consumes: snag-list
-emits: rework-order
 tier: high
 effort: high
-gates: [ticket_schema, requisition_review]
 version: "1.2"
 ---
 ## Role
