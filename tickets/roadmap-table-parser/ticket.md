@@ -15,6 +15,7 @@ kind: feature
 - clutch/status.py::SETTLED
 - clutch/status.py::last_states
 - clutch/runner.py::Refusal
+- clutch/tickets.py::Frontmatter
 - clutch/release.py
 - tests/unit/test_release.py
 - docs/roadmap.md#8. Master ticket table
@@ -31,7 +32,8 @@ The table changes shape while it is used, so the parser must not depend on any o
 - section numbers;
 - how a row is linked: `roadmap-plan-corrections` writes `tickets/<stem>/` into a Content prefix ``**Authored** (`tickets/<stem>/`).`` or ``**Merged** (`tickets/<stem>/`).``, listing every ticket directory authored from the row, and a person may link the Stem cell instead;
 - how a row is struck: `roadmap-plan-corrections` wraps only the Stem cell, as ``~~`release-verb`~~``;
-- why a row is struck: a merged row, or a skipped one such as row 88 `superseded-settles`.
+- why a row is struck: a merged row, or a skipped one such as row 88 `superseded-settles`;
+- the fenced `gate` block that `release-gates-as-commands` adds after each release's first table.
 
 It must also read the content cells that hold a bare `|` inside a code span (rows 3 and 49 at HEAD). It must skip rows that are not tickets: `(re-measure)` has no backticked stem, and the conditional row `(56)` has no bare row number.
 
@@ -69,7 +71,7 @@ Scope in:
     5. Otherwise it is a candidate. Its checks run in this order, and the first that applies decides:
        - an unreadable Depends on cell waits with the `ValueError` text;
        - a dependency that is not done leaves the row out of every list;
-       - a kind other than `feature`, `chore`, or `bug`, or a priority other than `P0`-`P3`, waits;
+       - a kind or priority outside the values of `clutch/tickets.py::Frontmatter`'s `kind` and `priority` annotations (read with `typing.get_args`, not restated) waits;
        - `plan_path` returning `None` waits, with a paved road saying to start the Owner cell with `roadmap` or a word from exactly one `docs/*-plan.md` name;
        - the hand-test refusal waits (below);
        - otherwise the row is ready.
@@ -92,13 +94,13 @@ Scope out:
 - tests/integration/test_roadmap_table.py
 
 ## Acceptance criteria
-1. `tests/unit/test_roadmap_table.py::test_parse_reads_master_tables` parses a text with: a non-master table (`| Release | Theme |`) that is ignored; a `### Next` table; and a `### Later, last group` table. Expected results:
-   - ticket rows come back in document order, each with its `release` (`Next` or `Later, last group`) and its number, stem, owner, kind, priority, `runs_before`, and content;
+1. `tests/unit/test_roadmap_table.py::test_parse_reads_master_tables` parses a text with: a non-master table (`| Release | Theme |`) that is ignored; a `### Next` table; a fenced `gate` block after that table, as `release-gates-as-commands` writes it (an opening line of three backticks and `gate`, the line `./dev.py test`, and a closing line of three backticks); and a `### Later, last group` table. Expected results:
+   - ticket rows of both tables come back in document order, each with its `release` (`Next` or `Later, last group`) and its number, stem, owner, kind, priority, `runs_before`, and content;
    - a Content cell holding `` `cmd --a|--b` `` comes back whole;
    - the rows `| (56) | `cond-row` | ...` and `| 35 | (re-measure) | ...` are absent;
    - a Runs before cell `every feature ticket below` gives `()`.
 
-   Ruled out: a row from a non-master table, a Content cell cut at an inner `|`, a conditional row read as a ticket, and a release name tied to a version number.
+   Ruled out: a row from a non-master table, a Content cell cut at an inner `|`, a conditional row read as a ticket, a gate block that ends parsing or moves a row to another release, and a release name tied to a version number.
 2. `tests/unit/test_roadmap_table.py::test_parse_linked_and_struck` covers these rows:
    - `a-row`, linked through `` [`a-row`](../tickets/a-row/) `` in the Stem cell;
    - `b-row`, whose Content starts ``**Authored** (`tickets/b-row/`).``: linked;
@@ -125,9 +127,9 @@ Scope out:
    - `strike` on a linked row whose Content is ``**Authored** (`tickets/a-row/`). Run `cmd --a|--b` here.`` gives Stem cell ``~~`a-row`~~`` and Content ``**Merged** (`tickets/a-row/`). Run `cmd --a|--b` here.``. `parse` reports it struck and linked, and its empty cells are still empty.
    - `strike` on an unlinked row gives Content starting ``**Merged** (`tickets/<stem>/`).``. `strike` on a struck row returns the text unchanged.
    - `strike` on `a-row` linked through its Stem cell (`` [`a-row`](../tickets/a-row/) ``) gives Stem cell ``~~[`a-row`](../tickets/a-row/)~~``. `parse` reports it struck and linked, and a second `strike` returns the text unchanged.
-   - Every other line is byte-identical after each edit.
+   - After each edit, the input's and the result's `splitlines(keepends=True)` lists differ only at index `row.line`, for an input that ends with a newline: every other line, every line ending, and the final newline are unchanged.
 
-   Ruled out: an edit that touches another row, a strike that splits Content's code span, a second link or `Merged` prefix, and a format other than `roadmap-plan-corrections`' one.
+   Ruled out: an edit that touches another row, a dropped final newline, a strike that splits Content's code span, a second link or `Merged` prefix, and a format other than `roadmap-plan-corrections`' one.
 6. `tests/unit/test_roadmap_table.py::test_plan_path`, with files `docs/roadmap-driver-plan.md`, `docs/stage-panels-plan.md`, `docs/how-clutch-works.md`, and `docs/roadmap.md`:
    - `driver plan 3` gives `docs/roadmap-driver-plan.md`;
    - `panels plan 5` gives `docs/stage-panels-plan.md`;
@@ -144,10 +146,11 @@ Scope out:
    - an unlinked row whose stem's state is `blocked` waits with a reason naming the journal;
    - a row depending on an unmerged stem is in no list;
    - a row depending through `row N` on a struck row is ready;
+   - a struck row with no state (as rows 8 and 88 are once `roadmap-plan-corrections` strikes them) is in no list and is not counted in `open`;
    - a row with kind `evidence` waits;
    - `ready` lists, in this order: the `Next` table's P1 row (which sits below its P2 row in the document), then that P2 row, then the `Later, last group` table's P0 row.
 
-   Ruled out: authoring a merged, linked, journaled, or blocked row; counting a rejected row as open; and ordering across tables by priority alone.
+   Ruled out: authoring a merged, linked, struck, journaled, or blocked row; counting a rejected row as open; and ordering across tables by priority alone.
 8. `tests/unit/test_roadmap_table.py::test_choose_hand_test_refusal`:
    - A row whose Content says `after the hand test` and names `` `tickets/h-row/evidence/a0.txt` `` waits with that path in its reason while the path is absent from `files`. It still waits when only `tickets/h-row/evidence/other.txt` is present, and it is ready once `a0.txt` is present.
    - A row whose Content says `after its agent capture` and names no evidence path waits, with a paved road containing `tickets/g-row/evidence/`, and is ready once `tickets/g-row/evidence/capture.txt` is in `files`.
