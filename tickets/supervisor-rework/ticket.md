@@ -64,11 +64,15 @@ Scope in:
   - `failure_terminal` still returns the producing outcome, and journals exactly one terminal transition per run. With a spent `supervise` budget or a missing worktree there is no Rework call, no `rework.md`, no draw, and no keep.
 - `tests/integration/test_requisition_gate.py`: in each of `test_unreviewed_ticket_is_reviewed_once_then_runs`, `test_approved_content_runs_without_review`, `test_render_feasibility_snag_proceeds_to_implement` and `test_edit_releases_and_reviews_the_new_content`, the Implement `premise_failed` now spends `premise_bounce` (default 1) and meets the supervisor. Each test's FakeLLM script gains one last reply, `json.dumps({"action": "escalate", "tickets": []})`, and its expected surface list gains a last `"rework"`. Nothing else in the file changes.
 - `clutch/specs/ask/diagnose.md`: after the sentence that names what to read, add "If tickets/${stem}/rework.md exists, read it too: it is the supervisor's last ticket edit that was refused or escalated, with the findings that stopped it." Nothing else changes.
-- `docs/how-clutch-works.md`, three edits:
+- `docs/how-clutch-works.md`, six edits:
   - Section 3.3's lift-kind table gains the row `` `rework-proposal` | `rework.md` (the supervisor's refused or escalated edit) ``.
+  - Section 6.1 step 4: "skipping the cap draw, Diagnosis, and Rework" becomes "skipping the cap draw, Diagnosis, and step 7's Rework, then going to the dispatch and supervisor steps".
   - Section 6.1's step 8 becomes three steps: decide the dispatch; the supervisor step (section 6.6) when it applies; journal the terminal, then any supervisor keep. Step 9 is renumbered.
+  - Section 6.4: "without another diagnosis or rework call" becomes "without another diagnosis or rework call, except the supervisor step (section 6.6) for a `gate_failed` or `premise_failed`".
   - Section 6.6 gains a **Supervisor keep** bullet stating the trigger, the exclusions and their reasons, the keep and draw, `caps.supervise`, and the `rework.md` escalation.
-  No other section changes.
+  - Section 6.7's Premise park bullet: "only an operator `confirm` releases it" becomes "only an operator `confirm` or a supervisor keep (section 6.6) releases it".
+  No other sentence in the file changes.
+- `README.md`: in step 6, the sentence "An attempt-cap exhaustion puts the run in the Reject queue and wait for `confirm` or `reject`." becomes "An attempt-cap exhaustion puts the run in the Reject queue, where the supervisor may edit and keep a `gate_failed` or `premise_failed` ticket (`docs/how-clutch-works.md` section 6.6); otherwise it waits for `confirm` or `reject`." Nothing else in `README.md` changes.
 - New tests in two new files: `tests/unit/test_supervisor_trigger.py`, which drives `runner.failure_terminal` against fakes as `tests/unit/test_premise_overruled.py` does (`clutch/runner.py` has a positive unit floor in `test-gate.toml`), and may import `MemoryJournal` from that file unchanged; and `tests/integration/test_supervisor_rework.py`, which may import `setup`, `dispatch` and `reply` from `tests/integration/test_requisition_gate.py`, `implement_reply` from `tests/integration/test_stages.py`, and `approve` from `tests/approval.py`, as other modules do.
 
 Scope out:
@@ -80,6 +84,7 @@ Scope out:
 - clutch/runner.py
 - clutch/specs/ask/diagnose.md
 - docs/how-clutch-works.md
+- README.md
 - tests/integration/test_requisition_gate.py
 - tests/unit/test_supervisor_trigger.py
 - tests/integration/test_supervisor_rework.py
