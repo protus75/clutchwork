@@ -196,27 +196,21 @@ class MergeQueue:
         return await stages.run_host_command(self.ctx, ticket, attempt, argv, code, name)
 
     async def host_checks(self, ticket: Ticket, *, attempt: int, safety: bool) -> tuple[list[CommandResult], list[GateReport]]:
-        entries = list(enumerate(self.ctx.config.review.mechanical, 1))
         reports = []
+        tier = "safety" if safety else "integration"
         if safety:
-            selected = set()
             for code in self.ctx.config.merge.safety_checks:
-                matches = [(n, entry) for n, entry in entries if entry.code == code]
-                if len(matches) != 1 or matches[0][1].severity != "hard":
+                matches = [entry for entry in self.ctx.config.review.mechanical if entry.code == code]
+                if len(matches) != 1 or matches[0].severity != "hard":
                     finding = self._finding(
                         f"merge.safety_checks designation {code!r} does not resolve to exactly one hard entry",
                         "declare exactly one hard review.mechanical entry for this code, or remove it from merge.safety_checks",
                     )
                     reports.append(GateReport(code=finding.code, verdict="fail", findings=[finding]))
-                else:
-                    selected.add(matches[0][0])
             if reports:
                 return [], reports
-            entries = [(n, entry) for n, entry in entries if n in selected]
-        else:
-            entries = [(n, entry) for n, entry in entries if entry.trigger == "always" and entry.severity == "hard"]
+        entries = stages.triggered_hosts(self.ctx, [], tier=tier)
         results = []
-        tier = "safety" if safety else "integration"
         for n, entry in entries:
             result, report = await self._command(ticket, attempt, entry.argv, entry.code, f"merge-{tier}/host-{n:02d}.txt")
             results.append(result)
@@ -356,7 +350,7 @@ class MergeQueue:
                 integration = [run_gates(stages.CHECK_GATES, scoped, worktree, severity=severity), run_gates(merge.MERGE_GATES, candidate, ctx.repo, severity=severity)]
                 if inline_hosts:
                     host = []
-                    for n, entry in stages.triggered_hosts(ctx, evidence.changed_files, hard_only=True):
+                    for n, entry in stages.triggered_hosts(ctx, evidence.changed_files, tier="merge"):
                         _, report = await self._command(ticket, attempt, entry.argv, entry.code, f"merge/host-{n:02d}.txt")
                         host.append(report)
                 else:

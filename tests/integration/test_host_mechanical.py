@@ -466,7 +466,7 @@ def test_coverage_changed_lines(ctx, monkeypatch, deletion, covered, expected):
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("coverage,flaky,expected", [(None, True, "gate_failed"), ({"files": {"x": {"contexts": {"1": [""]}}}}, True, "gate_failed"), (None, False, "ok")])
+@pytest.mark.parametrize("coverage,flaky,expected", [(None, True, "gate_failed"), ({"files": {"x": {"contexts": {"1": [""]}}}}, True, "gate_failed"), (None, False, "gate_failed")])
 def test_coverage_fail_closed(ctx, monkeypatch, coverage, flaky, expected):
     import json
 
@@ -493,6 +493,8 @@ def test_coverage_fail_closed(ctx, monkeypatch, coverage, flaky, expected):
         assert not any(e.body.get("kind") == "flake_detected" for e in ctx.driver.journal.read())
         if flaky:
             assert any("coverage.json" in f.message for f in result.findings)
+        else:
+            assert any("Missing or invalid coverage report" in f.message for f in result.findings)
 
     asyncio.run(run())
 
@@ -586,7 +588,11 @@ def test_coverage_recorded_for_changed_files(ctx, monkeypatch, valid):
 
         monkeypatch.setattr(ctx.exec_, "run", execute)
         report = (await checked(ctx, ticket)).artifact.reports[-1]
-        assert report.verdict == "pass"
-        assert (report.coverage.model_dump() if report.coverage else None) == ({"percent": 75.0, "files": {"changed.py": 50.0}} if valid else None)
+        if valid:
+            assert report.verdict == "pass"
+            assert report.coverage.model_dump() == {"percent": 75.0, "files": {"changed.py": 50.0}}
+        else:
+            assert report.verdict == "fail"
+            assert any("Missing or invalid coverage report" in f.message for f in report.findings)
 
     asyncio.run(run())

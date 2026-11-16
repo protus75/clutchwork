@@ -330,7 +330,7 @@ outside `tickets/` since the reviewed merge base, or the branch diff is empty, i
 triggered hard entries on the rebased candidate. The `serve` merge queue runs the hard entries
 named in `merge.safety_checks` at safety and every always/hard entry at integration under the
 same conditions. Otherwise only the Merge gates run, alongside the queue safety gates; see
-sections 4.5 and 7.2.1. All use one shared command runner.
+sections 4.5 and 7.2.1. All use one shared command runner, and `triggered_hosts(tier=...)` selects entries for Check and both merge tiers.
 
 An entry may declare a worktree-relative `results` file written by `clutch.testreport`. Check
 clears it before each run and reruns a failing command with failed tests once. Edited flakes

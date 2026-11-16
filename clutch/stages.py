@@ -864,23 +864,12 @@ async def gather_evidence(
     outbox = worktree / TICKETS_DIR / stem
     for path in _registered_files(outbox):
         ctx.fs.remove(path)
-    env = child_env(ctx.env, ctx.config)  # verification never inherits a provider key
     results = []
     red: list[tuple[int, list[str]]] = []
-    timeout = ticket.stuck_minutes * 60.0
     for n, argv in enumerate(ticket.verification, 1):
-        started = ctx.driver.clock()
-        try:
-            rc, out, err = await ctx.exec_.run(list(argv), cwd=worktree, env=env, timeout=timeout)
-        except TimeoutError:
-            rc, out, err = None, "", f"timed out after the ticket's stuck budget ({ticket.stuck_minutes}m)"
-        except ExecutableNotFound as e:
-            rc, out, err = None, "", str(e)
-        seconds = (ctx.driver.clock() - started).total_seconds()
-        ctx.driver.spool.write(stem, attempt, f"{stage}/verify-{n:02d}.txt", f"$ {' '.join(argv)}\n[exit {rc}]\n--- stdout\n{out}\n--- stderr\n{err}")
-        tail = ctx.driver.redactor.scrub((out + err)[-OUTPUT_TAIL_CHARS:])
-        results.append(CommandResult(argv=list(argv), rc=rc, tail=tail, seconds=seconds))
-        if rc != 0:
+        result, _ = await run_host_command(ctx, ticket, attempt, list(argv), "verification", f"{stage}/verify-{n:02d}.txt")
+        results.append(result)
+        if result.rc != 0:
             red.append((n, list(argv)))
     if red:
         base = await ctx.git.merge_base(ctx.repo, MAIN, stem)
@@ -890,14 +879,8 @@ async def gather_evidence(
 
             box = storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
             for n, argv in red:
-                try:
-                    rc, out, err = await ctx.exec_.run(argv, cwd=base_worktree, env=env, timeout=timeout)
-                except TimeoutError:
-                    rc, out, err = None, "", f"timed out after the ticket's stuck budget ({ticket.stuck_minutes}m)"
-                except ExecutableNotFound as e:
-                    rc, out, err = None, "", str(e)
-                ctx.driver.spool.write(stem, attempt, f"{stage}/verify-{n:02d}-base.txt", f"$ {' '.join(argv)}\n[exit {rc}]\n--- stdout\n{out}\n--- stderr\n{err}")
-                if rc != 0 and not _names_branch_only_path(argv, lambda p: (worktree / p).exists(), lambda p: (base_worktree / p).exists()):
+                baseline, _ = await run_host_command(ctx, ticket, attempt, argv, "verification", f"{stage}/verify-{n:02d}-base.txt", cwd=base_worktree)
+                if baseline.rc != 0 and not _names_branch_only_path(argv, lambda p: (worktree / p).exists(), lambda p: (base_worktree / p).exists()):
                     results[n - 1] = results[n - 1].model_copy(update={"base_red": True})
                     summary = f"`{' '.join(argv)}` fails on the merge base {base[:8]} too; fix main, not this ticket"
                     if not any(
@@ -978,12 +961,16 @@ def _in_fence(path: str, prefixes: Sequence[str]) -> bool:
     return any(path == p or path.startswith(p if p.endswith("/") else p + "/") for p in prefixes)
 
 
-def triggered_hosts(ctx, changed_files, *, hard_only=False):
-    return [
-        (n, entry)
-        for n, entry in enumerate(ctx.config.review.mechanical, 1)
-        if (not hard_only or entry.severity == "hard") and (entry.trigger == "always" or any(_in_fence(path, entry.trigger) for path in changed_files))
-    ]
+def triggered_hosts(ctx, changed_files, *, tier):
+    if tier not in {"check", "merge", "integration", "safety"}:
+        raise ValueError(f"unknown host check tier: {tier}")
+    entries = list(enumerate(ctx.config.review.mechanical, 1))
+    if tier == "safety":
+        codes = ctx.config.merge.safety_checks
+        return [(n, entry) for n, entry in entries if entry.severity == "hard" and entry.code in codes and sum(e.code == entry.code for _, e in entries) == 1]
+    if tier == "integration":
+        return [(n, entry) for n, entry in entries if entry.trigger == "always" and entry.severity == "hard"]
+    return [(n, entry) for n, entry in entries if (tier == "check" or entry.severity == "hard") and (entry.trigger == "always" or any(_in_fence(path, entry.trigger) for path in changed_files))]
 
 
 def _detection_letters(number):
@@ -1101,7 +1088,18 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
             percent, files = percentages(json.loads((root / entry.coverage).read_text()))
             coverage = TestCoverage(percent=percent, files={path: value for path, value in files.items() if path in changed_files})
         except OSError, UnicodeError, ValueError:
-            pass
+            if result.rc == 0:
+                return _report(
+                    entry.code,
+                    [
+                        Finding(
+                            code=entry.code,
+                            path=entry.coverage,
+                            message=f"Missing or invalid coverage report: {entry.coverage}",
+                            paved_road=f"write the report with --cov-report=json:{entry.coverage}",
+                        )
+                    ],
+                )
 
     def recorded(report):
         return report.model_copy(update={"timing": timing, "coverage": coverage})
@@ -1172,7 +1170,7 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
 
 async def check_hosts(ctx, ticket, changed_files, attempt):
     reports, hard = [], []
-    for n, entry in triggered_hosts(ctx, changed_files):
+    for n, entry in triggered_hosts(ctx, changed_files, tier="check"):
         if entry.results is None:
             _, report = await run_host_command(ctx, ticket, attempt, entry.argv, entry.code, f"check/host-{n:02d}.txt")
         else:
@@ -1181,16 +1179,7 @@ async def check_hosts(ctx, ticket, changed_files, attempt):
             base = await ctx.git.merge_base(ctx.repo, MAIN, ticket.stem)
             base_worktree = await _base_worktree(ctx, ".base", ticket.stem, base)
             try:
-                if entry.results is not None:
-                    ctx.fs.remove(base_worktree / entry.results)
                 baseline, _ = await run_host_command(ctx, ticket, attempt, entry.argv, entry.code, f"check/host-{n:02d}-base.txt", cwd=base_worktree)
-                if entry.results is not None:
-                    from clutch.testreport import ResultsInvalid, read_results
-
-                    try:
-                        read_results((base_worktree / entry.results).read_text())
-                    except OSError, UnicodeError, ResultsInvalid:
-                        pass
             finally:
                 await ctx.git.worktree_remove(ctx.repo, base_worktree)
             if baseline.rc != 0:
