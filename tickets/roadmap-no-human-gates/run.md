@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Decision 19 was the next available roadmap section 6 entry. All five verification commands and the hard host checks passed.
+The new roadmap entry is decision 19 because decision 18 was the highest in section 6 on the base branch. Restored the status-view and baseline-report details identified in the prior review. Rejected replacing whole sections because targeted edits preserve the existing design requirements.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 75 minutes; completed in less than the expected budget.
+The ticket budget was 75 minutes; the work completed within that budget.
 
