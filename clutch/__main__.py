@@ -711,7 +711,7 @@ def main(
                 lock.acquire()
                 try:
                     version, sha = await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
-                    checkout.journal.append(EventType.SIGNAL, {"signal": "release", "version": version, "tag": f"v{version}", "commit": sha})
+                    release.journal_release(checkout.journal, version, sha)
                     return version, sha
                 finally:
                     lock.release()

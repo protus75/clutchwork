@@ -2,9 +2,12 @@
 
 import re
 import shlex
+import tomllib
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import get_args
 
+from clutch import release as release_module
 from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict
 from clutch.git import GitError
 from clutch.journal import EventType
@@ -161,7 +164,27 @@ def plan_path(owner: str, files: set[str]) -> str | None:
     return matches[0] if len(matches) == 1 else None
 
 
-def choose(rows: list[Row], *, states: dict[str, str], files: set[str]) -> Choice:
+def current_release(repo: Path) -> str | None:
+    try:
+        with (repo / "pyproject.toml").open("rb") as stream:
+            version = tomllib.load(stream).get("project", {}).get("version")
+    except OSError, tomllib.TOMLDecodeError, AttributeError:
+        return None
+    if not isinstance(version, str):
+        return None
+    parts = version.split(".")
+    if len(parts) < 2 or not all(re.fullmatch(r"[0-9]+", part) for part in parts[:2]):
+        return None
+    return f"{parts[0]}.{parts[1]}.0"
+
+
+def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None) -> Choice:
+    tables = [row._table for row in rows if release_name(row.release) == current] if current is not None else []
+    c = min(tables) if tables else None
+
+    def rank(row):
+        return (0 if c is None or release_name(row.release) == current else 1 if row._table < c else 2, row._table)
+
     strikes, links, ready, waits = [], [], [], []
     open_rows = []
     for row in rows:
@@ -213,11 +236,11 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str]) -> Choic
                 waits.append(Wait(row, "observed failure evidence missing", f"save the observed failure under {directory}"))
             else:
                 ready.append(row)
-    unfinished = [r._table for r in links + open_rows + ready + [w.row for w in waits] if states.get(r.stem) != "rejected"]
+    unfinished = [rank(r) for r in links + open_rows + ready + [w.row for w in waits] if states.get(r.stem) != "rejected"]
     if unfinished:
         first = min(unfinished)
-        ready = [row for row in ready if row._table == first]
-    ready.sort(key=lambda r: (r._table, r.priority, r.line))
+        ready = [row for row in ready if rank(row) == first]
+    ready.sort(key=lambda r: (rank(r), r.priority, r.line))
     return Choice(tuple(strikes), tuple(links), len(open_rows), tuple(ready), tuple(waits))
 
 
@@ -231,7 +254,7 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     text = path.read_text()
     rows = parse(text)
     files = set((await checkout.git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
-    choice = choose(rows, states=last_states(checkout.journal.read()), files=files)
+    choice = choose(rows, states=last_states(checkout.journal.read()), files=files, current=current_release(repo))
     lines = []
     for action, selected, edit in (("strike", choice.strike, strike), ("link", choice.link, link)):
         for row in selected:
@@ -301,7 +324,7 @@ async def status(checkout) -> list[str]:
     files = set((await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
     events = checkout.journal.read()
     states = last_states(events)
-    choice = choose(rows, states=states, files=files)
+    choice = choose(rows, states=states, files=files, current=current_release(checkout.repo))
     releases = {}
     for row in rows:
         counts = releases.setdefault(release_name(row.release), [0, 0, 0, 0])
@@ -461,3 +484,21 @@ async def merged(checkout, stems, *, release=None, priorities=(), since=None, at
         if count < at_least:
             lines.append(f"roadmap merged: {count} of {at_least} tickets merged since {since} match")
     return (False, lines) if lines else (True, ["roadmap merged: ok"])
+
+
+async def ship(checkout) -> list[str]:
+    current = current_release(checkout.repo)
+    if current is None:
+        return []
+    passed, lines = await run_gate(checkout, current)
+    if not passed:
+        return lines
+    if checkout.config.release.publish:
+        await release_module.publishable(checkout.repo, checkout.git, checkout.env, checkout.config)
+    version, sha = await release_module.release(checkout.repo, checkout.git, checkout.exec_, child_env(checkout.env, checkout.config), "minor")
+    release_module.journal_release(checkout.journal, version, sha)
+    lines.append(f"release: tagged v{version} at {sha}")
+    if checkout.config.release.publish:
+        version, _, _ = await release_module.publish(checkout.repo, checkout.git, checkout.exec_, checkout.fs, checkout.env, checkout.config)
+        lines.append(f"publish: uploaded {version} to PyPI")
+    return lines

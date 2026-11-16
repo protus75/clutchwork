@@ -5,6 +5,7 @@ from pathlib import Path
 
 from clutch.config import Config
 from clutch.git import Git, GitError
+from clutch.journal import EventType
 from clutch.providers import child_env
 from clutch.runner import Refusal
 from clutch.seams import FileSystem, ProcessExec
@@ -40,14 +41,23 @@ async def release(repo: Path, git: Git, exec_: ProcessExec, env: Mapping[str, st
     return version, sha
 
 
-async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], config: Config) -> tuple[str, list[Path], bool]:
+async def publishable(repo: Path, git: Git, env: Mapping[str, str], config: Config) -> None:
     token_name = config.release.pypi_token
     if config.release.publish and not env.get(token_name):
         raise Refusal(f"{token_name} is unset or empty", f"export {token_name} with a PyPI token or set release.publish: false to build without uploading")
-    child = child_env(env, config)
     dirty = await git.status_porcelain(repo, "--untracked-files=no")
     if dirty.strip():
         raise Refusal(f"uncommitted tracked files: {dirty.strip()}", "commit or restore them, then retry clutch publish")
+
+
+def journal_release(journal, version, sha) -> None:
+    journal.append(EventType.SIGNAL, {"signal": "release", "version": version, "tag": f"v{version}", "commit": sha})
+
+
+async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], config: Config) -> tuple[str, list[Path], bool]:
+    await publishable(repo, git, env, config)
+    token_name = config.release.pypi_token
+    child = child_env(env, config)
     rc, out, err = await exec_.run(["uv", "version", "--short"], cwd=repo, env=child, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
