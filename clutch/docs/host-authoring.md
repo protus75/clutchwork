@@ -35,6 +35,8 @@ what content its tickets carry, never the format. See the [host run guide](host-
   data set, or check rule another ticket creates. A ticket that uses one depends on the ticket that creates it.
 - `Runs before`: stems this ticket runs ahead of when both are eligible. This soft order never
   blocks; use it, not `Depends on`, for any other ordering. Use `clutch order` to change it or priority.
+  `Depends on` and `Runs before` stems name existing tickets, never the ticket itself, and never close a cycle.
+  In `Depends on`, a stem with no `tickets/<stem>/ticket.md` is refused.
 - `Context`: files the implementing agent reads before starting; they are embedded in its prompt.
   They must be existing UTF-8 text files; lint renders each entry exactly as Implement does.
   A file the ticket creates belongs in `Scope fence` only; name binary files by path in
@@ -42,13 +44,16 @@ what content its tickets carry, never the format. See the [host run guide](host-
   top-level definition, assignment, or class method with `path.py::Name` or `path.py::Class.method`;
   select a Markdown heading with `path.md#Heading` (a heading beginning with that text and a space
   also matches). A selection must resolve uniquely; list a file whole or by sections, not both.
+  Authors must never list a prompt spec in `Context`; list it under `On-demand` and fence it.
 - `On-demand`: existing files the agent may need but that are too large to embed; it reads them
   from its worktree.
+  Lint requires that an `On-demand` path is fenced and never also in `Context`.
 - `Goal / Why`: what is true when the ticket is done that is not true now, and why it matters.
 - `Scope in / Scope out`: what the agent changes, and what it must leave alone. When Scope in
   limits changes in a fenced file with "only" or "nothing else changes", it names every edit the change forces there.
   Include an import a new name needs and the expected set or skip list of every test that loops
   over a registry the ticket extends.
+  Lint requires that a document named in `Scope in` is fenced; say which part to update or drop the mention.
 - `Scope fence`: every path the agent may write. Fence every file the acceptance criteria force
   it to change, including existing tests whose assertions flip; a forced file outside the fence
   makes the ticket impossible. Before replying, grep the repo for each changed name or value.
@@ -56,6 +61,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   document and says in `Scope in / Scope out` which part to update, so docs and code land
   together. A ticket that bumps a prompt spec's `version` states it as the next minor above the version on main,
   never a literal target such as `3.4 -> 3.5`, and fences a test pin for the bumped file.
+  Lint requires that a bumped prompt spec needs a fenced test pin.
   Lint requires every carried prefix to be fenced. When a fenced file has a positive
   `[coverage.files]` floor in `test-gate.toml`, lint requires a fenced path under `tests/unit/`.
   When a `Depends on` ticket is not merged yet, the author reads its fence and criteria. Fence
@@ -66,9 +72,12 @@ what content its tickets carry, never the format. See the [host run guide](host-
   checks nothing. Before writing a criterion, check any case that must come from real code, such
   as a loader, builder, or test helper, in that code. A case the code filters out or cannot build
   is marked hand-built with its reason, and the Goal does not promise it.
+  The words `improved`, `better` and `cleaner` are refused as unmeasurable.
+  Lint requires that every criterion names a check in backticks.
 - `Verification`: the commands Check runs; every one must exit 0.
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.
+  `stuck` must exceed `expected`.
 
 ## Keeping tickets apart
 
@@ -112,6 +121,8 @@ and Author) refuses a bug without evidence. Intake and lint also require evidenc
 gitignored; intake commits new or changed evidence with the ticket. Settled and rejected tickets
 are exempt, including at intake when the journal records settlement. Supply real evidence, never a placeholder.
 Save the evidence before any change that destroys it, such as deleting a file, reloading data, or a manual fix.
+
+`## Regression` appears only in a `kind: bug` ticket.
 
 ### The regression command
 

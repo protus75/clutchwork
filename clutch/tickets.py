@@ -577,6 +577,25 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
     for prefix in ticket.carries:
         if not any(prefix.rstrip("/") == fence.rstrip("/") or prefix.startswith(fence.rstrip("/") + "/") for fence in ticket.scope_fence):
             findings.append(_f(f"`## Regression` carries prefix {prefix!r} is outside `## Scope fence`", "add the carried prefix to `## Scope fence`", path))
+    scope = ticket.sections["Scope in / Scope out"]
+    if (
+        any((f == "clutch/specs" or f.startswith("clutch/specs/")) and f.endswith(".md") for f in ticket.scope_fence)
+        and re.search(r"\bversion\b", scope, re.IGNORECASE)
+        and not any(f.rstrip("/") == "tests" or f.startswith("tests/") for f in ticket.scope_fence)
+    ):
+        findings.append(_f("a bumped prompt spec needs a fenced test pin", "fence the test that pins the spec file", path))
+    documents = set(re.findall(r"[\w./-]+\.md\b", scope.split("Out:", 1)[0]))
+    unfenced = sorted(
+        doc
+        for doc in documents
+        if not Path(doc).is_absolute()
+        and ".." not in Path(doc).parts
+        and not (doc == "tickets" or doc.startswith("tickets/"))
+        and (repo / doc).is_file()
+        and not any(doc == f.rstrip("/") or doc.startswith(f.rstrip("/") + "/") for f in ticket.scope_fence)
+    )
+    if unfenced:
+        findings.append(_f(f"documents named in Scope in are not fenced: {', '.join(unfenced)}", "fence the document and say which part to update, or drop the mention", path))
     gate_path = repo / "test-gate.toml"
     if gate_path.exists():
         try:
