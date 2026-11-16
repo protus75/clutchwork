@@ -1,0 +1,50 @@
+Captured 2026-11-16T03:13Z at HEAD e66ee0be
+
+$ grep -n "^name" pyproject.toml
+6:name = "clutchwork"
+
+$ grep -nE "uv add --dev clutch|clutch==|Add dev dependencies .clutch." README.md clutch/docs/host-contract.md
+clutch/docs/host-contract.md:10:Add clutch to the host project as a dev dependency with `uv add --dev clutch`.
+clutch/docs/host-contract.md:11:For a specific release, pin it as `clutch==<version>`. Run `uv sync`; the
+clutch/docs/host-contract.md:111:Add dev dependencies `clutch`, `pytest`, `pytest-cov`, `pytest-xdist`, and `ruff`.
+README.md:14:uv add --dev clutch
+
+$ printf "clutch\n" > req_clutch.in && uv pip compile req_clutch.in --python-version 3.14 --no-header
+Resolved 6 packages in 36ms
+clutch==0.1a2
+    # via -r req_clutch.in
+mako==1.4.3
+    # via clutch
+markupsafe==3.0.4
+    # via mako
+repoze-lru==0.8
+    # via routes
+routes==2.5.1
+    # via clutch
+six==1.17.0
+    # via routes
+
+$ printf "clutchwork\n" > req_clutchwork.in && uv pip compile req_clutchwork.in --python-version 3.14 --no-header
+Resolved 7 packages in 426ms
+annotated-types==0.8.0
+    # via pydantic
+clutchwork==0.2.4
+    # via -r req_clutchwork.in
+pydantic==2.14.3
+    # via clutchwork
+pydantic-core==2.50.4
+    # via pydantic
+pyyaml==6.0.3
+    # via clutchwork
+typing-extensions==4.16.0
+    # via
+    #   pydantic
+    #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.5
+    # via pydantic
+
+$ curl -sS -o pypi/clutch.json -w "%{http_code}\n" https://pypi.org/pypi/clutch/json
+200
+$ python3 -I -c "<print info name, version, summary, home_page>" pypi/clutch.json
+info: name=Clutch version=0.1a2 summary='A Python Web Framework for GAE' home_page='http://getclutch.appspot.com'
