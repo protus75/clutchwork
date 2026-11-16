@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-All ticket verification commands and hard host checks passed; disabling the supervisor trigger made the positive unit tests fail as expected.
+Several targeted mutation checks passed, but they do not establish the required assertion-by-assertion coverage.
 
 ## Dead ends
 
