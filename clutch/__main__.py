@@ -284,6 +284,7 @@ def _parser() -> argparse.ArgumentParser:
     roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
     roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=2)
+    roadmap_sub.add_parser("gate", help="run a release's ship gate").add_argument("release")
     merged = roadmap_sub.add_parser("merged", help="check merged roadmap conditions")
     merged.add_argument("stems", nargs="*")
     merged.add_argument("--release")
@@ -659,6 +660,10 @@ def main(
         if args.verb == "roadmap":
             from clutch import roadmap
 
+            if args.roadmap_verb == "gate":
+                ok, lines = asyncio.run(roadmap.run_gate(checkout, args.release))
+                print("\n".join(lines))
+                return 0 if ok else 1
             if args.roadmap_verb == "merged":
                 ok, lines = asyncio.run(
                     roadmap.merged(checkout, args.stems, release=args.release, priorities=args.priority or (), since=args.since, at_least=args.at_least, source=args.source, unattended=args.unattended)

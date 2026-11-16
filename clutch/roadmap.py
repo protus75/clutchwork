@@ -1,13 +1,16 @@
 """Pure parsing and selection of roadmap ticket rows."""
 
 import re
+import shlex
 from dataclasses import dataclass, field
 from typing import get_args
 
 from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict
 from clutch.git import GitError
 from clutch.journal import EventType
+from clutch.providers import child_env
 from clutch.runner import SPECS_DIR, Refusal
+from clutch.seams import ExecutableNotFound
 from clutch.specs import load_spec
 from clutch.status import SETTLED, last_states
 from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings
@@ -288,6 +291,74 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
 
 def release_name(heading: str) -> str:
     return re.split(r"[ ,]", heading, maxsplit=1)[0]
+
+
+def gates(text: str) -> dict[str, tuple[tuple[str, ...], ...]]:
+    result = {}
+    release = None
+    commands = None
+    road = "add a ```gate block under the release's heading in docs/roadmap.md section 8"
+    for line in text.splitlines():
+        if commands is not None:
+            if line.strip() == "```":
+                if not commands:
+                    raise Refusal(f"empty gate for {release}", "add at least one argv command to the gate block")
+                result[release] = tuple(commands)
+                commands = None
+            elif line.strip():
+                try:
+                    argv = shlex.split(line, posix=True)
+                except ValueError as exc:
+                    raise Refusal(f"invalid gate command for {release}: {exc}", "fix the command's quoting so shlex.split can parse it") from None
+                if not argv or not argv[0].strip():
+                    raise Refusal(f"gate command for {release} has no executable", "start each gate command with a non-empty executable")
+                commands.append(tuple(argv))
+        elif line.startswith("### "):
+            release = release_name(line[4:].strip())
+        elif line.strip() == "```gate":
+            if release is None:
+                raise Refusal("gate has no release heading", road)
+            if release in result:
+                raise Refusal(f"duplicate gate for {release}", "keep exactly one gate block per release in docs/roadmap.md section 8")
+            commands = []
+    if commands is not None:
+        raise Refusal(f"unclosed gate for {release}", "close the gate block with a ``` line")
+    return result
+
+
+async def run_gate(checkout, release) -> tuple[bool, list[str]]:
+    path = checkout.repo / ROADMAP
+    if not path.is_file():
+        raise Refusal(f"missing {ROADMAP}", "restore docs/roadmap.md")
+    blocks = gates(path.read_text())
+    if release not in blocks:
+        raise Refusal(f"no gate for {release}", "add a ```gate block under the release's heading in docs/roadmap.md section 8")
+    lines = []
+    failed = None
+    for argv in blocks[release]:
+        command = shlex.join(argv)
+        why = None
+        detail = ""
+        try:
+            rc, out, err = await checkout.exec_.run(list(argv), cwd=checkout.repo, env=child_env(checkout.env, checkout.config), timeout=checkout.config.drain.max_ticket_minutes * 60.0)
+            if rc:
+                why = f"exit {rc}"
+                tail = [line for line in err.splitlines() if line.strip()] or [line for line in out.splitlines() if line.strip()]
+                if tail:
+                    detail = f" -- {tail[-1]}"
+        except TimeoutError:
+            why = "timeout"
+        except ExecutableNotFound:
+            why = "not found"
+        if why is not None:
+            lines.append(f"gate {release}: failed ({why}): {command}{detail}")
+            failed = command
+            break
+        lines.append(f"gate {release}: ok: {command}")
+    passed = failed is None
+    lines.append(f"gate {release}: {'passed' if passed else 'failed'}")
+    checkout.journal.append(EventType.SIGNAL, {"signal": "roadmap_gate", "release": release, "passed": passed, "failed": failed})
+    return passed, lines
 
 
 async def merged(checkout, stems, *, release=None, priorities=(), since=None, at_least=None, source=None, unattended=False) -> tuple[bool, list[str]]:

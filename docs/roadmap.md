@@ -292,6 +292,8 @@ Every plan under `docs/` has these sections in this order, so the next audit can
 
 Every proposed ticket, grouped by release and in priority order within a release. Row numbers are stable identifiers assigned in the order rows were added, not an ordering: the release sections and the `P` column order the work. "Owner" is the plan whose design the ticket implements; "roadmap" means the ticket comes from the audit above. `Depends on` lists only tickets whose merged code is needed; ordering that is not a dependency is in the `Runs before` column. Authoring follows `clutch new` and the authoring guide, and a row gains its link when it is authored (by the authoring agent today; by `roadmap author` once `docs/roadmap-driver-plan.md` lands).
 
+Each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use. A later release's block checks only the suite and that release's rows: its other ship-gate clauses in section 1 have no command until merged code records their facts. The audit re-run before each minor release (section 9) adds to the next release's block a command for each such clause whose fact merged code now records.
+
 ### 0.3.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -331,6 +333,13 @@ Every proposed ticket, grouped by release and in priority order within a release
 | 33 | `evidence-normalize-gemini` | evidence plan | feature | P3 | `evidence-store`, `gemini-provider` | | Gemini normalizer and fixture. |
 | 34 | `upstream-issue-verb` | upstream plan 1 | feature | P2 | | | `clutch issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its agent capture. |
 
+```gate
+./dev.py test
+uv run clutch roadmap merged --release 0.3.0 --priority P0 P1
+uv run clutch roadmap merged docs-truth-sweep evidence-envelope
+uv run clutch roadmap merged --since v0.3.0 --at-least 3 --source box:roadmap_row --unattended
+```
+
 ### 0.3.0, last group: the roadmap driver
 
 Runs after the rows above; it is what runs every later release (`docs/roadmap-driver-plan.md`).
@@ -356,6 +365,11 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 40 | `journal-ports-cli-authoring` | journal plan (c) | chore | P2 | `journal-query-layer` | | `__main__`, `author`, `tickets`, `observe` (its raw reader goes). |
 | 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
 
+```gate
+./dev.py test
+uv run clutch roadmap merged --release 0.4.0
+```
+
 ### 0.5.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -375,6 +389,11 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 54 | `image-candidates-select` | gemini plan B6 | feature | P2 | `visual-review-surface` | | Layer 3: candidates in Implement, ranking, the select commit, `visual_undecided` park, its release (Gemini plan open decision 4). |
 | 55 | `visual-review-baseline` | gemini plan B7 | feature | P2 | `visual-review-surface` | | `eval/visual/` fixtures labelled by an AI label panel of a model family other than the judge’s (§5, decision 13), `./dev.py visual-baseline`, the `visual_baseline` GO gate at 0.85 or above agreement with the panel’s labels. |
 | (56) | `api-provider-client` | gemini plan (conditional) | feature | P2 | `gemini-provider` | `image-candidates-select` | Only if A0 fact 7 shows the CLI cannot generate images headlessly: the deferred `kind: api` client, scoped to image models. Row number is provisional. |
+
+```gate
+./dev.py test
+uv run clutch roadmap merged --release 0.5.0
+```
 
 ### 0.6.0
 
@@ -399,6 +418,11 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 73 | `context-suggest` | annotations plan 5 | feature | P2 | `index-build` | | `clutch context suggest <stem>` and the Author data block. |
 | 74 | `index-consumers` | annotations plan 6 | feature | P3 | `context-suggest` | | `index.implement_hint`, `doc draft --from <topic>`, the training export join. |
 
+```gate
+./dev.py test
+uv run clutch roadmap merged --release 0.6.0
+```
+
 ### 0.7.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
@@ -416,6 +440,11 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 85 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
 | 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten `docs/*.md` plans into doc sets and run `scope` and `buildability` on each; 0.7.0's ship gate. |
 | 87 | `implement-best-of-n` | panels plan 5 | feature | P3 | `panel-combiners`, `serve-parallel-dispatch` | | Per-member worktrees, Check on every candidate, selection by Check pass then fewest soft findings then smallest diff, retirement of the rest. |
+
+```gate
+./dev.py test
+uv run clutch roadmap merged --release 0.7.0
+```
 
 ### Agent tasks (not tickets)
 

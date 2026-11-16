@@ -33,7 +33,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |
 | `issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
-| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. |
+| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. |
 | `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
 | `publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release` | No | Bump the version with `--minor` or `--patch`, commit `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |

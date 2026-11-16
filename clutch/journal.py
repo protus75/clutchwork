@@ -62,6 +62,7 @@ SIGNAL_NAMES: frozenset[str] = frozenset(
         "reject_verdict",
         "requisition_verdict",
         "release",
+        "roadmap_gate",
         "review_baseline",
         "retro_failed",
         "retro_ticket_authored",
