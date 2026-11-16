@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The reader preserves known-major minor schema versions while ignoring unknown fields; the store remains unconnected to engine callers as required.
+Normalized event-file persistence is deferred to the normalizer work; the event schema is available now. Non-UTF-8 blobs are stored unchanged.
 
 ## Dead ends
 
-none
+The first coverage run exposed missing store test coverage; additional tests brought the gate above its floor.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 60 minutes; implementation and verification completed within it.
+Expected 60 minutes; completed within the ticket budget.
 
