@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 - none
 
+## Runs before
+- paved-roads-name-verbs
+
 ## Context
 - clutch/retro.py::Retro
 - clutch/retro.py::RETRO_FAILED
