@@ -70,6 +70,22 @@ what content its tickets carry, never the format. See the [host run guide](host-
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.
 
+## Keeping tickets apart
+
+A file that many tickets fence makes their changes collide. Keep new work out of shared files:
+
+- Put a ticket's new tests in a new test file named for the behavior it covers. Fence an
+  existing test file only when the change forces an edit there (see `Scope fence`) or the file
+  covers the edited unit and nothing else. Never add tests to a file just because it is the
+  closest match.
+- Put a new fixture, helper, rig, or data set in a new module next to its tests. Change a shared
+  fixture, `conftest.py`, harness, or rig only when that fixture is the ticket's subject: do that
+  in its own ticket, and the tickets that use it list it in `Depends on`.
+- A ticket fences only the files its change forces. A fence that spans more than one subsystem
+  is usually two tickets: link them with `Depends on` when the second needs the first's merged
+  code, otherwise with `Runs before`.
+- A documentation update edits only the section the change makes false.
+
 ## Path matching
 
 A fence entry matches a file when the file IS that path or lives under it as a directory:
