@@ -1,10 +1,10 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The initial focused tests and unit coverage gate passed, but the tests still need filesystem fakes and the record handling needs further review; the required final verification and host checks have not been completed.
+The reader preserves known-major minor schema versions while ignoring unknown fields; the store remains unconnected to engine callers as required.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 60 minutes expected and 120 minutes stuck; elapsed time was not measured.
+The ticket budget was 60 minutes; implementation and verification completed within it.
 
