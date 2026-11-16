@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from collections.abc import Awaitable, Callable, Mapping, Sequence, Set
+from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -75,6 +76,29 @@ from clutch.timers import Timers
 GIT_TIMEOUT_S = 30.0
 
 
+def _config_reloader(path, repo):
+    return lambda: load_config(path, cwd=repo)
+
+
+def _observe_context(repo, config, config_path, exec_, git, env):
+    return observe.Context(repo.resolve(), config.state_dir.resolve(), (config_path or repo / "config.yaml").resolve(), exec_, git, child_env(env, config))
+
+
+def _fail(verb, message):
+    print(f"clutch {verb}: {message}", file=sys.stderr)
+    return runner.EXIT_REFUSED
+
+
+@asynccontextmanager
+async def _locked(state_dir, verb, *, instance_id, clock):
+    lock = Lockfile(state_dir, verb=verb, instance_id=instance_id, clock=clock)
+    lock.acquire()
+    try:
+        yield
+    finally:
+        lock.release()
+
+
 def _clock() -> datetime:
     return datetime.now(UTC)
 
@@ -108,7 +132,7 @@ def build_control(checkout: runner.Checkout) -> PauseConsumer:
     )
     timers = Timers(journal=checkout.journal, clock=checkout.clock, sleep=checkout.sleep)
     consumer.providers = ProviderSession(checkout.config, journal=checkout.journal, clock=checkout.clock, sleep=checkout.sleep, timers=timers)
-    consumer.load_config = lambda: load_config(None, cwd=checkout.repo)
+    consumer.load_config = _config_reloader(None, checkout.repo)
     return consumer
 
 
@@ -125,7 +149,7 @@ def build_daemon_core(
 ) -> DaemonCore:
     """Compose the production core without starting consumers or preparing a dispatch."""
     consumer = checkout.control or build_control(checkout)
-    consumer.load_config = lambda: load_config(config_path, cwd=checkout.repo)
+    consumer.load_config = _config_reloader(config_path, checkout.repo)
     checkout = replace(checkout, control=consumer)
 
     def bind(snapshot: ConfigSnapshot) -> runner.Dispatch:
@@ -151,7 +175,7 @@ def build_daemon_core(
     core = daemon_core(
         checkout.repo,
         journal=checkout.journal,
-        load=lambda: load_config(config_path, cwd=checkout.repo),
+        load=_config_reloader(config_path, checkout.repo),
         bind=bind,
         read=read,
         ticket_sha=lambda stem: checkout.git.rev_parse(checkout.repo, f"HEAD:tickets/{stem}/ticket.md"),
@@ -214,7 +238,7 @@ def build_notifications(checkout: runner.Checkout, *, config_path: Path | None, 
         return CommandNotifications(executor, cwd=checkout.repo, env=child_env(checkout.env, config, serving=None), timeout=NOTIFY_TIMEOUT_S, scrub=Redactor.from_config(config, checkout.env).scrub)
 
     return NotificationReconciler(
-        journal=checkout.journal, clock=checkout.clock, config_path=config_path or checkout.repo / "config.yaml", load=lambda: load_config(config_path, cwd=checkout.repo), compose=compose, log=log
+        journal=checkout.journal, clock=checkout.clock, config_path=config_path or checkout.repo / "config.yaml", load=_config_reloader(config_path, checkout.repo), compose=compose, log=log
     )
 
 
@@ -362,436 +386,420 @@ def main(
     args = _parser().parse_args(invocation)
     repo = Path(cwd) if cwd is not None else Path.cwd()
     env = dict(os.environ) if env is None else env
-    try:
-        if args.verb in {"confirm", "reject"}:
-            isatty, read_input = terminal if terminal is not None else (sys.stdin.isatty, input)
-            if not (args.yes or args.extension) and not isatty():
-                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch confirm|reject <stem>`")
-        if args.verb == "docs":
-            for name, purpose in (
-                ("authoring", "ticket authoring"),
-                ("running", "host operation"),
-                ("contract", "host contract"),
-                ("qwen", "local qwen provider setup"),
-                ("gemini", "gemini provider setup"),
-            ):
-                print(f"{Path(clutch.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
-            return 0
-        if args.verb == "init-config":
 
-            async def init_config():
-                exec_ = SubprocessExec()
-                statuses = [await cli_status(name, exec_=exec_, env=env, cwd=repo) for name in ADAPTERS]
-                listings = {status.name: await ADAPTERS[status.name].list_models(exec_=exec_, env=env, cwd=repo) for status in statuses if status.where != "absent"}
-                try:
-                    return suggest_config(statuses, listings)
-                except ValueError:
-                    raise runner.Refusal("no provider CLI found", f"run: clutch install {'|'.join(sorted(ADAPTERS))}") from None
+    # Utilities
+    def handle_docs():
+        for name, purpose in (
+            ("authoring", "ticket authoring"),
+            ("running", "host operation"),
+            ("contract", "host contract"),
+            ("qwen", "local qwen provider setup"),
+            ("gemini", "gemini provider setup"),
+        ):
+            print(f"{Path(clutch.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
+        return 0
 
-            text = asyncio.run(init_config())
-            load_config_text(text, path=repo / "config.yaml", cwd=repo)
-            print(text, end="")
-            if args.write:
-                try:
-                    LocalFileSystem().publish(repo / "config.yaml", text.encode())
-                except FileExistsError:
-                    raise runner.Refusal("config.yaml already exists", "remove it, or omit --write and merge the printed suggestion by hand") from None
-            return 0
-        if args.verb == "install":
-            for name in args.providers:
-                if name not in ADAPTERS:
-                    raise runner.Refusal(f"unknown provider {name!r}", f"name one of {', '.join(sorted(ADAPTERS))}")
-
-            async def install():
-                exec_ = SubprocessExec()
-                for name in args.providers or ADAPTERS:
-                    if args.providers:
-                        package = ADAPTERS[name].PACKAGE
-                        try:
-                            rc, _, err = await exec_.run(["pnpm", "add", "-D", f"{package}@latest"], cwd=repo, env=tool_env(env, repo), timeout=INSTALL_TIMEOUT_S)
-                        except ExecutableNotFound:
-                            raise runner.Refusal("pnpm is not on PATH", "install pnpm (https://pnpm.io/installation), then rerun clutch install") from None
-                        if rc:
-                            lines = [line for line in err.splitlines() if line.strip()]
-                            raise runner.Refusal(f"pnpm add {package}@latest failed (rc {rc}): {lines[-1] if lines else ''}", "fix the pnpm error, then rerun clutch install")
-                    status = await cli_status(name, exec_=exec_, env=env, cwd=repo)
-                    print(
-                        f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}"
-                        + (f" -- run: clutch install {name}" if status.where == "absent" else "")
-                    )
-                    if name == "qwen":
-                        print("ollama: not installed by clutch; follow clutch/docs/host-qwen.md")
-
-            asyncio.run(install())
-            return 0
-        if args.verb == "migrate-config":
-            migrate_config(args.config, cwd=repo, fs=LocalFileSystem())
-            return 0
-        if args.verb == "covgate":
-            from clutch.covgate import run_gate
-
-            if len(args.command) < 2 or args.command[0] != "--":
-                print("clutch covgate: name the unit-test command after --", file=sys.stderr)
-                return 2
-            command = args.command[1:]
-            # ProcessExec starts a new session, orphaning the test run when Check kills
-            # covgate's group on timeout; inheriting the group carries the kill to it.
+    def handle_init_config():
+        async def init_config():
+            exec_ = SubprocessExec()
+            statuses = [await cli_status(name, exec_=exec_, env=env, cwd=repo) for name in ADAPTERS]
+            listings = {status.name: await ADAPTERS[status.name].list_models(exec_=exec_, env=env, cwd=repo) for status in statuses if status.where != "absent"}
             try:
-                return run_gate(command, gate_path=repo / args.gate, report_path=repo / args.report, run=lambda argv: subprocess.run(argv, cwd=repo, env=env).returncode)
-            except FileNotFoundError:
-                print(f"clutch covgate: {command[0]} not found -- install it or correct the command after --", file=sys.stderr)
-                return 2
-        if args.verb == "new":
-            return _new(repo, args.stem, args.kind, args.evidence or ())
-        if args.verb == "doctor":
-            from clutch import doctor
+                return suggest_config(statuses, listings)
+            except ValueError:
+                raise runner.Refusal("no provider CLI found", f"run: clutch install {'|'.join(sorted(ADAPTERS))}") from None
 
-            results = asyncio.run(doctor.check(repo=repo, config_path=args.config, env=env, exec_=SubprocessExec(), clock=clock, sleep=asyncio.sleep, in_venv=sys.prefix != sys.base_prefix))
-            print(doctor.render(results), end="")
-            return 0 if all(r.passed for r in results) else 2
-        if args.verb == "issue":
+        text = asyncio.run(init_config())
+        load_config_text(text, path=repo / "config.yaml", cwd=repo)
+        print(text, end="")
+        if args.write:
             try:
-                body = (repo / args.body).read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError) as exc:
-                raise runner.Refusal(f"cannot read --body file {args.body}: {exc}", "pass the path of a UTF-8 Markdown file") from None
-            try:
-                redactor = Redactor.from_config(load_config(args.config, cwd=repo), env)
-            except ConfigError as exc:
-                print(f"issue: config did not load, so no secrets were scrubbed: {exc}", file=sys.stderr)
-                redactor = Redactor({})
-            print(issue.link(args.issue_class, args.title, body, redactor.scrub))
-            return 0
-        config = load_config(args.config, cwd=repo)
-        if args.verb == "drain" and args.detach:
-            output = config.state_dir / "drain.out"
-            pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "drain"], cwd=repo, env=env, output=output)
-            print(f"drain: pid {pid}, output {output}")
-            return 0
-        if args.verb == "update-config":
+                LocalFileSystem().publish(repo / "config.yaml", text.encode())
+            except FileExistsError:
+                raise runner.Refusal("config.yaml already exists", "remove it, or omit --write and merge the printed suggestion by hand") from None
+        return 0
 
-            async def update_config():
-                suggested = False
-                exec_ = SubprocessExec()
-                for provider in config.providers:
-                    name = provider.name
-                    if name not in ADAPTERS:
-                        print(f"{name}: no shipped cli adapter; name one of {', '.join(sorted(ADAPTERS))}")
-                        suggested = True
-                        continue
+    def handle_install():
+        for name in args.providers:
+            if name not in ADAPTERS:
+                raise runner.Refusal(f"unknown provider {name!r}", f"name one of {', '.join(sorted(ADAPTERS))}")
+
+        async def install():
+            exec_ = SubprocessExec()
+            for name in args.providers or ADAPTERS:
+                if args.providers:
+                    package = ADAPTERS[name].PACKAGE
                     try:
-                        listing = await ADAPTERS[name].list_models(exec_=exec_, env=child_env(env, config, provider), cwd=repo)
-                    except ExecutableNotFound as exc:
-                        raise runner.Refusal(str(exc), f"run: clutch install {name}") from None
-                    print(name)
-                    served = " ".join(f"{label}={model}" if label != model else model for label, model in listing.models.items())
-                    print(f"  serves: {served or 'nothing listed'}")
-                    for problem in listing.problems:
-                        print(f"  problem: {problem}")
-                    configured = [(f"models_by_tier.{tier}", getattr(provider.models_by_tier, tier)) for tier in ("low", "medium", "high", "max")]
-                    configured += [
-                        (f"routing[{i}].candidates[{j}].model", candidate.model)
-                        for i, route in enumerate(config.routing)
-                        for j, candidate in enumerate(route.candidates)
-                        if candidate.provider == name and candidate.model is not None
-                    ]
-                    for where, model in configured:
-                        alias = next((label for label, value in listing.models.items() if label != value and label in model), None)
-                        if model in listing.models.values():
-                            status = "current"
-                        elif alias:
-                            status = f"-> {listing.models[alias]} (latest {alias})"
-                        elif model == PLACEHOLDER:
-                            status = "is the placeholder; pick a served name"
-                        elif not listing.models and listing.problems:
-                            status = "unverified; no models listed (see problem above)"
-                        else:
-                            status = "not served; pick a served name"
-                        print(f"  {where}: {model} {status}")
-                        suggested |= status != "current"
-                return int(suggested)
-
-            return asyncio.run(update_config())
-        if args.verb == "probe":
-            declared = {p.name: p for p in config.providers}
-            unknown = set(args.providers) - declared.keys()
-            if unknown:
-                print(f"unknown providers: {', '.join(sorted(unknown))}; declared providers: {', '.join(declared)}", file=sys.stderr)
-                return 2
-
-            async def probe():
-                failed = False
-                exec_ = SubprocessExec()
-                redactor = Redactor.from_config(config, env)
-                for name in args.providers or declared:
-                    provider = declared[name]
-                    try:
-                        if name not in ADAPTERS:
-                            raise ProviderSetupError(f"provider {name!r} has no shipped cli adapter; name a provider one of {sorted(ADAPTERS)}")
-                        adapter = ADAPTERS[name](
-                            provider,
-                            config=config,
-                            exec_=exec_,
-                            fs=LocalFileSystem(),
-                            redactor=redactor,
-                            env=env,
-                            cwd=repo,
-                            capture_dir=config.state_dir / "spools" / "probe",
-                            timeout=PREFLIGHT_TIMEOUT_S,
-                        )
-                    except Exception as exc:
-                        print(f"{name}: {exc}")
-                        failed = True
-                        continue
-                    seen = set()
-                    for tier in ("low", "medium", "high", "max"):
-                        model = getattr(provider.models_by_tier, tier)
-                        if model in seen:
-                            continue
-                        seen.add(model)
-                        req = LLMRequest(surface="preflight", rendered=PROBE_PROMPT, tier=tier, effort="low", ticket=None, worktree=None)
-                        try:
-                            await adapter.invoke(req, model)
-                            print(f"{name} {model}: ok")
-                        except Exception as exc:
-                            road = getattr(exc, "paved_road", None)
-                            print(f"{name} {model}: {exc}" + (f" -- {road}" if road else ""))
-                            failed = True
-                return 1 if failed else 0
-
-            return asyncio.run(probe())
-        if args.verb == "core":
-            hostfiles.refresh(routed_conduct_paths(config, repo), LocalFileSystem())
-            return 0
-        if args.verb == "prompt":
-            if args.kind == "drain-loop":
-                if args.stems:
-                    raise runner.Refusal("drain-loop takes no stem", "run clutch prompt drain-loop with no stems")
-                print(ask.render("drain-loop", "", config, repo), end="")
-                return 0
-            if args.kind == "drafts":
-                if args.stems:
-                    raise runner.Refusal("drafts prompt takes no stems", "run clutch prompt drafts with no stems")
-                from clutch import observe
-
-                exec_ = SubprocessExec()
-                git = Git(exec_, env={**child_env(env, config), "GIT_OPTIONAL_LOCKS": "0"}, timeout=GIT_TIMEOUT_S, commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep))
-                context = observe.Context(repo.resolve(), config.state_dir.resolve(), (args.config or repo / "config.yaml").resolve(), exec_, git, child_env(env, config))
-                stems = [row["stem"] for row in observe.snapshot(context)["rows"] if row["draft"]]
-                if not stems:
-                    raise runner.Refusal("no draft tickets await confirm or reject", "run triage, or author a ticket with clutch new")
-                print(ask.render("drafts", stems, config, repo), end="")
-                return 0
-            if args.kind == "box":
-                if not args.stems:
-                    raise runner.Refusal("box prompt requires ids", "name at least one box id")
-                print(ask.render("box", args.stems, config, repo), end="")
-                return 0
-            if len(args.stems) != 1:
-                raise runner.Refusal("ticket prompt requires exactly one stem", "name one ticket stem")
-            args.stem = args.stems[0]
-            if findings := stem_findings(args.stem):
-                raise runner.Refusal(findings[0].message, findings[0].paved_road)
-            if not (repo / ticket_path(args.stem)).is_file():
-                raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch new {args.stem}")
-            from clutch import observe
-
-            events = observe.journal(config.state_dir)
-            last = {e["ticket"]: {**e["body"], "ts": e["ts"]} for e in events if e.get("type") == "state_transition" and e.get("ticket")}
-            kind = "running" if args.kind == "diagnose" and args.stem in observe.running_stems(config.state_dir, last) else args.kind
-            print(ask.render(kind, args.stem, config, repo), end="")
-            return 0
-        exec_ = SubprocessExec()
-        checkout = runner.Checkout(
-            repo=repo,
-            config=config,
-            env=env,
-            exec_=exec_,
-            git=Git(
-                exec_,
-                env={**child_env(env, config), **({"GIT_OPTIONAL_LOCKS": "0"} if args.verb in {"lint", "watch", "snapshot"} else {})},
-                timeout=GIT_TIMEOUT_S,
-                commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep),
-            ),
-            journal=Journal(config.state_dir, clock),
-            fs=LocalFileSystem(),
-            clock=clock,
-        )
-        if args.verb in {"serve", "drain", "run"}:
-            messages = asyncio.run(hostfiles.stale_core(repo, config, checkout.git))
-            if messages:
-                raise runner.Refusal("; ".join(messages), f"run clutch core, then commit the conduct files and retry {args.verb}")
-        if args.verb == "suggest":
-            if not args.summary.strip():
-                raise runner.Refusal("blank summary", "pass the idea as one quoted argument")
-            from clutch.box import Box, RereportJournal
-
-            box = Box(config.state_dir / "box", checkout.fs, rereport=RereportJournal(checkout.journal))
-            id, created = box.enqueue(message_class="suggestion", origin="session", summary=args.summary, occurrence_id=uuid4().hex)
-            print(f"suggest: filed {id}" if created else f"suggest: already in the box as {id}")
-            return 0
-        if args.verb == "covmap":
-            from clutch.covmap import build
-
-            asyncio.run(build(repo=repo, config=config, exec_=exec_, git=checkout.git, fs=checkout.fs, env=child_env(env, config)))
-            return 0
-        if args.verb in {"watch", "snapshot"}:
-            from clutch import observe
-
-            context = observe.Context(repo.resolve(), config.state_dir.resolve(), (args.config or repo / "config.yaml").resolve(), exec_, checkout.git, child_env(env, config))
-            if args.verb == "snapshot":
-                print(json.dumps(observe.snapshot(context)))
-            elif args.once:
-                print(observe.text_snapshot(context))
-            else:
-                try:
-                    while True:
-                        print("\033[2J\033[H" + observe.text_snapshot(context), flush=True)
-                        time.sleep(3)
-                except KeyboardInterrupt:
-                    pass
-            return 0
-        if args.verb == "stats":
-            from clutch.stats import render_stats, stats_tree, window_start
-
-            events = checkout.journal.read()
-            now = checkout.clock()
-            try:
-                window_start(events, now, args.window)
-            except ValueError as exc:
-                print(f"clutch stats: {exc}", file=sys.stderr)
-                return 2
-            result = asyncio.run(_stats(checkout, events, now, args.window))
-            print(json.dumps(stats_tree(result) if args.tree else result) if args.tree or args.json else render_stats(result), end="\n" if args.tree or args.json else "")
-            return 0
-        if args.verb == "lint":
-            return asyncio.run(_lint(checkout, args.stems))
-        if args.verb == "order":
-            return _order(checkout, args.stem, args.priority, args.runs_before)
-        if args.verb == "status":
-            print(render(asyncio.run(_status(checkout))), end="")
-            return 0
-        if args.verb in {"pause", "resume", "kill", "stop"}:
-            return asyncio.run(_control(checkout, args.verb))
-        if args.verb in {"confirm", "reject"}:
-            for stem in args.stems:
-                if result := asyncio.run(_verdict(checkout, stem, args.verb, read_input, args.yes, args.extension)):
-                    return result
-            return 0
-        if args.verb == "review":
-            for stem in args.stems:
-                if result := asyncio.run(_review(checkout, stem)):
-                    return result
-            return 0
-        if args.verb == "roadmap":
-            from clutch import roadmap
-
-            if args.roadmap_verb == "status":
-                print("\n".join(asyncio.run(roadmap.status(checkout))))
-                return 0
-            if args.roadmap_verb == "gate":
-                ok, lines = asyncio.run(roadmap.run_gate(checkout, args.release))
-                print("\n".join(lines))
-                return 0 if ok else 1
-            if args.roadmap_verb == "merged":
-                ok, lines = asyncio.run(
-                    roadmap.merged(checkout, args.stems, release=args.release, priorities=args.priority or (), since=args.since, at_least=args.at_least, source=args.source, unattended=args.unattended)
+                        rc, _, err = await exec_.run(["pnpm", "add", "-D", f"{package}@latest"], cwd=repo, env=tool_env(env, repo), timeout=INSTALL_TIMEOUT_S)
+                    except ExecutableNotFound:
+                        raise runner.Refusal("pnpm is not on PATH", "install pnpm (https://pnpm.io/installation), then rerun clutch install") from None
+                    if rc:
+                        lines = [line for line in err.splitlines() if line.strip()]
+                        raise runner.Refusal(f"pnpm add {package}@latest failed (rc {rc}): {lines[-1] if lines else ''}", "fix the pnpm error, then rerun clutch install")
+                status = await cli_status(name, exec_=exec_, env=env, cwd=repo)
+                print(
+                    f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}" + (f" -- run: clutch install {name}" if status.where == "absent" else "")
                 )
-                print("\n".join(lines))
-                return 0 if ok else 1
-            if args.ahead < 1:
-                raise runner.Refusal("--ahead must be at least 1", "choose a positive window")
+                if name == "qwen":
+                    print("ollama: not installed by clutch; follow clutch/docs/host-qwen.md")
 
-            async def roadmap_pass():
-                lock = Lockfile(config.state_dir, verb="roadmap", instance_id=await checkout.git.describe(repo), clock=clock)
-                lock.acquire()
+        asyncio.run(install())
+        return 0
+
+    def handle_migrate_config():
+        migrate_config(args.config, cwd=repo, fs=LocalFileSystem())
+        return 0
+
+    def handle_covgate():
+        from clutch.covgate import run_gate
+
+        if len(args.command) < 2 or args.command[0] != "--":
+            return _fail("covgate", "name the unit-test command after --")
+        command = args.command[1:]
+        # ProcessExec starts a new session, orphaning the test run when Check kills
+        # covgate's group on timeout; inheriting the group carries the kill to it.
+        try:
+            return run_gate(command, gate_path=repo / args.gate, report_path=repo / args.report, run=lambda argv: subprocess.run(argv, cwd=repo, env=env).returncode)
+        except FileNotFoundError:
+            return _fail("covgate", f"{command[0]} not found -- install it or correct the command after --")
+
+    def handle_doctor():
+        from clutch import doctor
+
+        results = asyncio.run(doctor.check(repo=repo, config_path=args.config, env=env, exec_=SubprocessExec(), clock=clock, sleep=asyncio.sleep, in_venv=sys.prefix != sys.base_prefix))
+        print(doctor.render(results), end="")
+        return 0 if all(r.passed for r in results) else 2
+
+    def handle_issue():
+        try:
+            body = (repo / args.body).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise runner.Refusal(f"cannot read --body file {args.body}: {exc}", "pass the path of a UTF-8 Markdown file") from None
+        try:
+            redactor = Redactor.from_config(load_config(args.config, cwd=repo), env)
+        except ConfigError as exc:
+            print(f"issue: config did not load, so no secrets were scrubbed: {exc}", file=sys.stderr)
+            redactor = Redactor({})
+        print(issue.link(args.issue_class, args.title, body, redactor.scrub))
+        return 0
+
+    def handle_update_config():
+        async def update_config():
+            suggested = False
+            exec_ = SubprocessExec()
+            for provider in config.providers:
+                name = provider.name
+                if name not in ADAPTERS:
+                    print(f"{name}: no shipped cli adapter; name one of {', '.join(sorted(ADAPTERS))}")
+                    suggested = True
+                    continue
                 try:
-                    await runner.reap(checkout)
-                    session = build_control(checkout).providers
+                    listing = await ADAPTERS[name].list_models(exec_=exec_, env=child_env(env, config, provider), cwd=repo)
+                except ExecutableNotFound as exc:
+                    raise runner.Refusal(str(exc), f"run: clutch install {name}") from None
+                print(name)
+                served = " ".join(f"{label}={model}" if label != model else model for label, model in listing.models.items())
+                print(f"  serves: {served or 'nothing listed'}")
+                for problem in listing.problems:
+                    print(f"  problem: {problem}")
+                configured = [(f"models_by_tier.{tier}", getattr(provider.models_by_tier, tier)) for tier in ("low", "medium", "high", "max")]
+                configured += [
+                    (f"routing[{i}].candidates[{j}].model", candidate.model)
+                    for i, route in enumerate(config.routing)
+                    for j, candidate in enumerate(route.candidates)
+                    if candidate.provider == name and candidate.model is not None
+                ]
+                for where, model in configured:
+                    alias = next((label for label, value in listing.models.items() if label != value and label in model), None)
+                    if model in listing.models.values():
+                        status = "current"
+                    elif alias:
+                        status = f"-> {listing.models[alias]} (latest {alias})"
+                    elif model == PLACEHOLDER:
+                        status = "is the placeholder; pick a served name"
+                    elif not listing.models and listing.problems:
+                        status = "unverified; no models listed (see problem above)"
+                    else:
+                        status = "not served; pick a served name"
+                    print(f"  {where}: {model} {status}")
+                    suggested |= status != "current"
+            return int(suggested)
+
+        return asyncio.run(update_config())
+
+    def handle_probe():
+        declared = {p.name: p for p in config.providers}
+        unknown = set(args.providers) - declared.keys()
+        if unknown:
+            print(f"unknown providers: {', '.join(sorted(unknown))}; declared providers: {', '.join(declared)}", file=sys.stderr)
+            return 2
+
+        async def probe():
+            failed = False
+            exec_ = SubprocessExec()
+            redactor = Redactor.from_config(config, env)
+            for name in args.providers or declared:
+                provider = declared[name]
+                try:
+                    if name not in ADAPTERS:
+                        raise ProviderSetupError(f"provider {name!r} has no shipped cli adapter; name a provider one of {sorted(ADAPTERS)}")
+                    adapter = ADAPTERS[name](
+                        provider,
+                        config=config,
+                        exec_=exec_,
+                        fs=LocalFileSystem(),
+                        redactor=redactor,
+                        env=env,
+                        cwd=repo,
+                        capture_dir=config.state_dir / "spools" / "probe",
+                        timeout=PREFLIGHT_TIMEOUT_S,
+                    )
+                except Exception as exc:
+                    print(f"{name}: {exc}")
+                    failed = True
+                    continue
+                seen = set()
+                for tier in ("low", "medium", "high", "max"):
+                    model = getattr(provider.models_by_tier, tier)
+                    if model in seen:
+                        continue
+                    seen.add(model)
+                    req = LLMRequest(surface="preflight", rendered=PROBE_PROMPT, tier=tier, effort="low", ticket=None, worktree=None)
                     try:
+                        await adapter.invoke(req, model)
+                        print(f"{name} {model}: ok")
+                    except Exception as exc:
+                        road = getattr(exc, "paved_road", None)
+                        print(f"{name} {model}: {exc}" + (f" -- {road}" if road else ""))
+                        failed = True
+            return 1 if failed else 0
 
-                        async def author_messages(ids):
-                            llm = await _preflighted_llm(checkout, session)
-                            await triage.triage_pass(checkout, llm, frozenset(ids))
+        return asyncio.run(probe())
 
-                        return await roadmap.author_ahead(checkout, args.ahead, author_messages)
-                    finally:
-                        await session.close()
-                finally:
-                    lock.release()
+    def handle_core():
+        hostfiles.refresh(routed_conduct_paths(config, repo), LocalFileSystem())
+        return 0
 
-            print("\n".join(asyncio.run(roadmap_pass())))
+    def handle_covmap():
+        from clutch.covmap import build
+
+        asyncio.run(build(repo=repo, config=config, exec_=exec_, git=checkout.git, fs=checkout.fs, env=child_env(env, config)))
+        return 0
+
+    # Projections
+    def handle_watch():
+        from clutch import observe
+
+        context = _observe_context(repo, config, args.config, exec_, checkout.git, env)
+        if args.verb == "snapshot":
+            print(json.dumps(observe.snapshot(context)))
+        elif args.once:
+            print(observe.text_snapshot(context))
+        else:
+            try:
+                while True:
+                    print("\033[2J\033[H" + observe.text_snapshot(context), flush=True)
+                    time.sleep(3)
+            except KeyboardInterrupt:
+                pass
+        return 0
+
+    def handle_stats():
+        from clutch.stats import render_stats, stats_tree, window_start
+
+        events = checkout.journal.read()
+        now = checkout.clock()
+        try:
+            window_start(events, now, args.window)
+        except ValueError as exc:
+            return _fail("stats", str(exc))
+        result = asyncio.run(_stats(checkout, events, now, args.window))
+        print(json.dumps(stats_tree(result) if args.tree else result) if args.tree or args.json else render_stats(result), end="\n" if args.tree or args.json else "")
+        return 0
+
+    def handle_status():
+        print(render(asyncio.run(_status(checkout))), end="")
+        return 0
+
+    # Authoring
+    def handle_new():
+        return _new(repo, args.stem, args.kind, args.evidence or ())
+
+    def handle_prompt():
+        if args.kind == "drain-loop":
+            if args.stems:
+                raise runner.Refusal("drain-loop takes no stem", "run clutch prompt drain-loop with no stems")
+            print(ask.render("drain-loop", "", config, repo), end="")
             return 0
-        if args.verb == "release":
-            from clutch import release
+        if args.kind == "drafts":
+            if args.stems:
+                raise runner.Refusal("drafts prompt takes no stems", "run clutch prompt drafts with no stems")
+            from clutch import observe
 
-            async def release_version():
-                lock = Lockfile(config.state_dir, verb="release", instance_id=await checkout.git.describe(repo), clock=clock)
-                lock.acquire()
-                try:
-                    version, sha = await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
-                    release.journal_release(checkout.journal, version, sha)
-                    return version, sha
-                finally:
-                    lock.release()
-
-            version, sha = asyncio.run(release_version())
-            print(f"release: tagged v{version} at {sha}")
+            exec_ = SubprocessExec()
+            git = Git(exec_, env={**child_env(env, config), "GIT_OPTIONAL_LOCKS": "0"}, timeout=GIT_TIMEOUT_S, commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep))
+            context = _observe_context(repo, config, args.config, exec_, git, env)
+            stems = [row["stem"] for row in observe.snapshot(context)["rows"] if row["draft"]]
+            if not stems:
+                raise runner.Refusal("no draft tickets await confirm or reject", "run triage, or author a ticket with clutch new")
+            print(ask.render("drafts", stems, config, repo), end="")
             return 0
-        if args.verb == "publish":
-            from clutch import release
-
-            async def publish_version():
-                lock = Lockfile(config.state_dir, verb="publish", instance_id=await checkout.git.describe(repo), clock=clock)
-                lock.acquire()
-                try:
-                    return await release.publish(repo, checkout.git, checkout.exec_, checkout.fs, env, config)
-                finally:
-                    lock.release()
-
-            version, artifacts, uploaded = asyncio.run(publish_version())
-            for artifact in artifacts:
-                print(f"publish: built {artifact}")
-            print(f"publish: uploaded {version} to PyPI" if uploaded else "publish: release.publish is false; uploaded nothing -- set release.publish: true in config.yaml to upload")
+        if args.kind == "box":
+            if not args.stems:
+                raise runner.Refusal("box prompt requires ids", "name at least one box id")
+            print(ask.render("box", args.stems, config, repo), end="")
             return 0
-        if args.verb == "dismiss":
+        if len(args.stems) != 1:
+            raise runner.Refusal("ticket prompt requires exactly one stem", "name one ticket stem")
+        args.stem = args.stems[0]
+        if findings := stem_findings(args.stem):
+            raise runner.Refusal(findings[0].message, findings[0].paved_road)
+        if not (repo / ticket_path(args.stem)).is_file():
+            raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch new {args.stem}")
+        from clutch import observe
 
-            async def dismiss_messages():
-                lock = Lockfile(config.state_dir, verb="dismiss", instance_id=await checkout.git.describe(repo), clock=clock)
-                lock.acquire()
-                try:
-                    await runner.reap(checkout)
-                    return await triage.dismiss(checkout, args.ids)
-                finally:
-                    lock.release()
+        events = observe.journal(config.state_dir)
+        last = {e["ticket"]: {**e["body"], "ts": e["ts"]} for e in events if e.get("type") == "state_transition" and e.get("ticket")}
+        kind = "running" if args.kind == "diagnose" and args.stem in observe.running_stems(config.state_dir, last) else args.kind
+        print(ask.render(kind, args.stem, config, repo), end="")
+        return 0
 
-            print("\n".join(asyncio.run(dismiss_messages())))
+    def handle_suggest():
+        if not args.summary.strip():
+            raise runner.Refusal("blank summary", "pass the idea as one quoted argument")
+        from clutch.box import Box, RereportJournal
+
+        box = Box(config.state_dir / "box", checkout.fs, rereport=RereportJournal(checkout.journal))
+        id, created = box.enqueue(message_class="suggestion", origin="session", summary=args.summary, occurrence_id=uuid4().hex)
+        print(f"suggest: filed {id}" if created else f"suggest: already in the box as {id}")
+        return 0
+
+    def handle_lint():
+        return asyncio.run(_lint(checkout, args.stems))
+
+    def handle_order():
+        return _order(checkout, args.stem, args.priority, args.runs_before)
+
+    def handle_review():
+        for stem in args.stems:
+            if result := asyncio.run(_review(checkout, stem)):
+                return result
+        return 0
+
+    # Control
+    def handle_control():
+        return asyncio.run(_control(checkout, args.verb))
+
+    def handle_verdict():
+        for stem in args.stems:
+            if result := asyncio.run(_verdict(checkout, stem, args.verb, read_input, args.yes, args.extension)):
+                return result
+        return 0
+
+    # Lock holders
+    def handle_roadmap():
+        from clutch import roadmap
+
+        if args.roadmap_verb == "status":
+            print("\n".join(asyncio.run(roadmap.status(checkout))))
             return 0
-        if args.verb == "triage":
+        if args.roadmap_verb == "gate":
+            ok, lines = asyncio.run(roadmap.run_gate(checkout, args.release))
+            print("\n".join(lines))
+            return 0 if ok else 1
+        if args.roadmap_verb == "merged":
+            ok, lines = asyncio.run(
+                roadmap.merged(checkout, args.stems, release=args.release, priorities=args.priority or (), since=args.since, at_least=args.at_least, source=args.source, unattended=args.unattended)
+            )
+            print("\n".join(lines))
+            return 0 if ok else 1
+        if args.ahead < 1:
+            raise runner.Refusal("--ahead must be at least 1", "choose a positive window")
 
-            async def one_pass() -> list[tuple[str, str]]:
-                lock = Lockfile(config.state_dir, verb="triage", instance_id=await checkout.git.describe(repo), clock=clock)
-                lock.acquire()
+        async def roadmap_pass():
+            async with _locked(config.state_dir, "roadmap", instance_id=await checkout.git.describe(repo), clock=clock):
+                await runner.reap(checkout)
+                session = build_control(checkout).providers
                 try:
-                    await runner.reap(checkout)
-                    session = build_control(checkout).providers
-                    try:
-                        triage.validate_ids(checkout, args.ids)
+
+                    async def author_messages(ids):
                         llm = await _preflighted_llm(checkout, session)
-                        return await triage.triage_pass(checkout, llm, frozenset(args.ids))
-                    finally:
-                        await session.close()
-                finally:
-                    lock.release()
+                        await triage.triage_pass(checkout, llm, frozenset(ids))
 
-            lines = asyncio.run(one_pass())
-            print("\n".join(line for _, line in lines) if lines else "no pending suggestions")
-            return 0
-        if args.verb == "serve":
-            return asyncio.run(serve.serve(checkout, config_path=args.config, signals=_engine_signals, argv=invocation, reexec=reexec or SubprocessExec()))
-        if args.verb == "retro":
-            return asyncio.run(_retro(checkout, pipeline, config_path=args.config))
+                    return await roadmap.author_ahead(checkout, args.ahead, author_messages)
+                finally:
+                    await session.close()
+
+        print("\n".join(asyncio.run(roadmap_pass())))
+        return 0
+
+    def handle_release():
+        from clutch import release
+
+        async def release_version():
+            async with _locked(config.state_dir, "release", instance_id=await checkout.git.describe(repo), clock=clock):
+                version, sha = await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
+                release.journal_release(checkout.journal, version, sha)
+                return version, sha
+
+        version, sha = asyncio.run(release_version())
+        print(f"release: tagged v{version} at {sha}")
+        return 0
+
+    def handle_publish():
+        from clutch import release
+
+        async def publish_version():
+            async with _locked(config.state_dir, "publish", instance_id=await checkout.git.describe(repo), clock=clock):
+                return await release.publish(repo, checkout.git, checkout.exec_, checkout.fs, env, config)
+
+        version, artifacts, uploaded = asyncio.run(publish_version())
+        for artifact in artifacts:
+            print(f"publish: built {artifact}")
+        print(f"publish: uploaded {version} to PyPI" if uploaded else "publish: release.publish is false; uploaded nothing -- set release.publish: true in config.yaml to upload")
+        return 0
+
+    def handle_dismiss():
+        async def dismiss_messages():
+            async with _locked(config.state_dir, "dismiss", instance_id=await checkout.git.describe(repo), clock=clock):
+                await runner.reap(checkout)
+                return await triage.dismiss(checkout, args.ids)
+
+        print("\n".join(asyncio.run(dismiss_messages())))
+        return 0
+
+    def handle_triage():
+        async def one_pass() -> list[tuple[str, str]]:
+            async with _locked(config.state_dir, "triage", instance_id=await checkout.git.describe(repo), clock=clock):
+                await runner.reap(checkout)
+                session = build_control(checkout).providers
+                try:
+                    triage.validate_ids(checkout, args.ids)
+                    llm = await _preflighted_llm(checkout, session)
+                    return await triage.triage_pass(checkout, llm, frozenset(args.ids))
+                finally:
+                    await session.close()
+
+        lines = asyncio.run(one_pass())
+        print("\n".join(line for _, line in lines) if lines else "no pending suggestions")
+        return 0
+
+    def handle_serve():
+        return asyncio.run(serve.serve(checkout, config_path=args.config, signals=_engine_signals, argv=invocation, reexec=reexec or SubprocessExec()))
+
+    def handle_retro():
+        return asyncio.run(_retro(checkout, pipeline, config_path=args.config))
+
+    def handle_detach():
+        output = config.state_dir / "drain.out"
+        pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "drain"], cwd=repo, env=env, output=output)
+        print(f"drain: pid {pid}, output {output}")
+        return 0
+
+    def handle_pipeline():
+        nonlocal checkout
         checkout = replace(checkout, control=build_control(checkout))
-        checkout.control.load_config = lambda: load_config(args.config, cwd=repo)
+        checkout.control.load_config = _config_reloader(args.config, repo)
         dispatch = pipeline(checkout)
         if args.verb == "drain":
             from clutch.retro import Retro
@@ -823,13 +831,84 @@ def main(
                 print(report.render(), end="")
             return report.exit_code
         return asyncio.run(runner.run_ticket(args.stem, checkout, dispatch))
+
+    handlers = {
+        "docs": handle_docs,
+        "init-config": handle_init_config,
+        "install": handle_install,
+        "migrate-config": handle_migrate_config,
+        "covgate": handle_covgate,
+        "new": handle_new,
+        "doctor": handle_doctor,
+        "issue": handle_issue,
+        "update-config": handle_update_config,
+        "probe": handle_probe,
+        "core": handle_core,
+        "prompt": handle_prompt,
+        "suggest": handle_suggest,
+        "covmap": handle_covmap,
+        "snapshot": handle_watch,
+        "watch": handle_watch,
+        "stats": handle_stats,
+        "lint": handle_lint,
+        "order": handle_order,
+        "status": handle_status,
+        "kill": handle_control,
+        "pause": handle_control,
+        "resume": handle_control,
+        "stop": handle_control,
+        "reject": handle_verdict,
+        "confirm": handle_verdict,
+        "review": handle_review,
+        "roadmap": handle_roadmap,
+        "release": handle_release,
+        "publish": handle_publish,
+        "dismiss": handle_dismiss,
+        "triage": handle_triage,
+        "serve": handle_serve,
+        "retro": handle_retro,
+        "run": handle_pipeline,
+        "drain": handle_pipeline,
+    }
+
+    try:
+        if args.verb in {"confirm", "reject"}:
+            isatty, read_input = terminal if terminal is not None else (sys.stdin.isatty, input)
+            if not (args.yes or args.extension) and not isatty():
+                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch confirm|reject <stem>`")
+        if args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "new", "doctor", "issue"}:
+            return handlers[args.verb]()
+        config = load_config(args.config, cwd=repo)
+        if args.verb == "drain" and args.detach:
+            return handle_detach()
+        if args.verb in {"update-config", "probe", "core", "prompt"}:
+            return handlers[args.verb]()
+        exec_ = SubprocessExec()
+        checkout = runner.Checkout(
+            repo=repo,
+            config=config,
+            env=env,
+            exec_=exec_,
+            git=Git(
+                exec_,
+                env={**child_env(env, config), **({"GIT_OPTIONAL_LOCKS": "0"} if args.verb in {"lint", "watch", "snapshot"} else {})},
+                timeout=GIT_TIMEOUT_S,
+                commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep),
+            ),
+            journal=Journal(config.state_dir, clock),
+            fs=LocalFileSystem(),
+            clock=clock,
+        )
+        if args.verb in {"serve", "drain", "run"}:
+            messages = asyncio.run(hostfiles.stale_core(repo, config, checkout.git))
+            if messages:
+                raise runner.Refusal("; ".join(messages), f"run clutch core, then commit the conduct files and retry {args.verb}")
+        return handlers[args.verb]()
     except UnknownBoxId as e:
-        print(f"clutch {args.verb}: {e} -- name ids that clutch status lists", file=sys.stderr)
-        return runner.EXIT_REFUSED
+        return _fail(args.verb, f"{e} -- name ids that clutch status lists")
     except (ConfigError, runner.Refusal, LockHeld, CommitLockTimeout, IntakeRefused, JournalCorruption, ProviderSetupError, ExecutableNotFound, hostfiles.MarkerCorruption) as e:
         road = f" -- repair the selected config and retry {args.verb}" if args.verb in {"retro", "covmap"} and isinstance(e, ConfigError) else ""
-        print(f"clutch {args.verb}: {e}{road}", file=sys.stderr)
-        return runner.EXIT_REFUSED
+        return _fail(args.verb, f"{e}{road}")
 
 
 async def _review(checkout: runner.Checkout, stem: str) -> int:
@@ -912,53 +991,66 @@ def _require_engine(exc: LockHeld) -> None:
         raise runner.Refusal(f"writer lock held by {verb}", f"wait for {verb} to finish, then retry") from None
 
 
+async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False):
+    _require_engine(exc)
+    if stem is not None and await runner.ticket_pending(checkout.git, checkout.repo, stem):
+        from clutch.tickets import intake
+
+        result = await intake(checkout.repo, checkout.git, checkout.journal, checkout.fs, stems={stem})
+        if refused := result.refused.get(stem):
+            raise runner.Refusal(f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in refused), "fix the ticket and retry the verdict")
+    try:
+        lifecycle, hold = control.read_active(checkout.config.state_dir, Path.read_bytes)
+    except ValueError as exc:
+        raise runner.Refusal("current control identity unavailable", str(exc)) from exc
+    if stem is not None:
+        request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator")
+    else:
+        if verb == "resume" and hold is None:
+            raise runner.Refusal("no current hold identity", "read the running engine's current control identity and submit a new request")
+        request = control.ControlRequest(uuid4().hex, lifecycle, verb, hold if verb == "resume" else None)
+    control.publish_request(checkout.config.state_dir, request, checkout.fs)
+    return request
+
+
 async def _retro(checkout, pipeline, *, config_path=None):
     from clutch.retro import Retro, RetroConstructionError, measurements, project_window, suppressing_failure
 
-    lock = Lockfile(checkout.config.state_dir, verb="retro", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock)
-    try:
-        lock.acquire()
-    except LockHeld as exc:
-        _require_engine(exc)
+    async with AsyncExitStack() as stack:
         try:
-            lifecycle, _ = control.read_active(checkout.config.state_dir, Path.read_bytes)
-        except ValueError as exc:
-            raise runner.Refusal("current control identity unavailable", str(exc)) from exc
-        request = control.ControlRequest(uuid4().hex, lifecycle, "retro", None)
-        control.publish_request(checkout.config.state_dir, request, checkout.fs)
-        print(f"retro submitted: {request.request_id}; the running engine runs it between tickets")
-        return 0
-    try:
-        await runner.reap(checkout)
-        checkout = replace(checkout, control=build_control(checkout))
-        checkout.control.load_config = lambda: load_config(config_path, cwd=checkout.repo)
-        dispatch = pipeline(checkout)
-        try:
-            window = project_window(checkout.journal.read())
-        except JournalCorruption as exc:
-            raise runner.Refusal(str(exc), "restore journal readability from backup and retry retro") from None
-        selected = bool(measurements(window)["merged_count"])
-        suppressed = suppressing_failure(window) is not None
-        if selected and not suppressed and hasattr(dispatch, "prepare"):
-            await dispatch.prepare()
-        try:
-            result = await Retro(checkout, dispatch)(forced=True)
-        except RetroConstructionError as exc:
-            raise runner.Refusal("retro Driver unavailable", str(exc)) from None
-        if not selected:
-            print("retro: no merge since the latest completed report")
+            await stack.enter_async_context(_locked(checkout.config.state_dir, "retro", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock))
+        except LockHeld as exc:
+            request = await _submit_engine(checkout, exc, "retro")
+            print(f"retro submitted: {request.request_id}; the running engine runs it between tickets")
             return 0
-        if result is not None:
-            print(f"retro: committed tickets/retro/{window.sequence:06d}.md")
-            return 0
-        print("retro: no report committed; inspect status and the Suggestion Box")
-        return 1
-    finally:
         try:
+            await runner.reap(checkout)
+            checkout = replace(checkout, control=build_control(checkout))
+            checkout.control.load_config = _config_reloader(config_path, checkout.repo)
+            dispatch = pipeline(checkout)
+            try:
+                window = project_window(checkout.journal.read())
+            except JournalCorruption as exc:
+                raise runner.Refusal(str(exc), "restore journal readability from backup and retry retro") from None
+            selected = bool(measurements(window)["merged_count"])
+            suppressed = suppressing_failure(window) is not None
+            if selected and not suppressed and hasattr(dispatch, "prepare"):
+                await dispatch.prepare()
+            try:
+                result = await Retro(checkout, dispatch)(forced=True)
+            except RetroConstructionError as exc:
+                raise runner.Refusal("retro Driver unavailable", str(exc)) from None
+            if not selected:
+                print("retro: no merge since the latest completed report")
+                return 0
+            if result is not None:
+                print(f"retro: committed tickets/retro/{window.sequence:06d}.md")
+                return 0
+            print("retro: no report committed; inspect status and the Suggestion Box")
+            return 1
+        finally:
             if checkout.control is not None:
                 await checkout.control.providers.close()
-        finally:
-            lock.release()
 
 
 def stuck_ceiling_finding(stuck_minutes: int, ceiling: int) -> str | None:
@@ -1082,29 +1174,18 @@ def _engine_signals(stop: Callable[[], None]) -> Callable[[], None]:
 
 
 async def _control(checkout: runner.Checkout, verb: str) -> int:
-    lock = Lockfile(checkout.config.state_dir, verb=verb, instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock)
-    try:
-        lock.acquire()
-    except LockHeld as exc:
-        _require_engine(exc)
+    async with AsyncExitStack() as stack:
         try:
-            lifecycle, hold = control.read_active(checkout.config.state_dir, Path.read_bytes)
-        except ValueError as exc:
-            raise runner.Refusal("current control identity unavailable", str(exc)) from exc
-        if verb == "resume" and hold is None:
-            raise runner.Refusal("no current hold identity", "read the running engine's current control identity and submit a new request")
-        request = control.ControlRequest(uuid4().hex, lifecycle, verb, hold if verb == "resume" else None)
-        control.publish_request(checkout.config.state_dir, request, checkout.fs)
-        print(f"{verb} submitted: {request.request_id}")
-    else:
-        try:
+            await stack.enter_async_context(_locked(checkout.config.state_dir, verb, instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock))
+        except LockHeld as exc:
+            request = await _submit_engine(checkout, exc, verb)
+            print(f"{verb} submitted: {request.request_id}")
+        else:
             if verb == "kill":
                 raise runner.Refusal("nothing running to kill", "start a drain before submitting kill")
             if verb == "stop":
                 raise runner.Refusal("nothing running to stop", "start a drain or serve before submitting stop")
             print(f"nothing running to {verb}")
-        finally:
-            lock.release()
     return 0
 
 
@@ -1135,19 +1216,7 @@ async def _verdict(checkout, stem, verb, read_input, yes, extension):
     try:
         return await runner.verdict(stem, checkout, kill=verb == "reject", extension=extension)
     except LockHeld as exc:
-        _require_engine(exc)
-    if await runner.ticket_pending(checkout.git, checkout.repo, stem):
-        from clutch.tickets import intake
-
-        result = await intake(checkout.repo, checkout.git, checkout.journal, checkout.fs, stems={stem})
-        if refused := result.refused.get(stem):
-            raise runner.Refusal(f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in refused), "fix the ticket and retry the verdict")
-    try:
-        lifecycle, _ = control.read_active(checkout.config.state_dir, Path.read_bytes)
-    except ValueError as exc:
-        raise runner.Refusal("current control identity unavailable", str(exc)) from exc
-    request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator")
-    control.publish_request(checkout.config.state_dir, request, checkout.fs)
+        request = await _submit_engine(checkout, exc, verb, stem=stem, extension=extension)
     print(f"{verb} submitted: {request.request_id} -- `clutch status` shows the outcome")
     return 0
 
