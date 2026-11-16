@@ -32,7 +32,7 @@ The owner decided on 2026-11-16 how the roadmap runs, and those decisions overri
 
 - (a) Gates and cadences count runs, never wall-clock time.
 - (b) No person is in the loop. Every gate is a command. A prerequisite that a person used to run at a CLI or browser (a "hand test") becomes an agent-run capture, committed as the dependent ticket's evidence. Escalations go through the supervisor and the diagnose path. The only external input is a missing credential. Gemini has none on this machine, so the rows that need it are skipped while an agent looks for a route through the authenticated providers.
-- (c) The visual judge is calibrated against labels from an AI label panel of a different model family than the judge (roadmap decision 13), not against 20-50 hand labels.
+- (c) The visual judge is calibrated against labels from an AI label panel of a different model family than the judge (`docs/roadmap.md` §5, decision 13), not against 20-50 hand labels.
 - (d) A plan's open decision takes the plan's Proposed option. Where there is none, a recorded AI design panel settles it: three independent proposals and one judge, before the dependent row is authored.
 
 `docs/roadmap.md` and its plans still say the opposite in many places:
@@ -59,12 +59,12 @@ Scope in. "Decision N" below means the new roadmap section 6 entry. Its number i
 1. Section 6: add the line `Decided 2026-11-16:` after decision 18. If a `Decided 2026-11-16` line already exists, reuse it. Under that line, add decision N, titled `**No human in the loop.**`. It must cover all four of these:
    - (a) every gate and cadence counts runs or merged tickets, never wall-clock time.
    - (b) every gate is a command, and no gate is a judgment a person makes. A prerequisite a person once ran is an agent-run capture, committed under the dependent row's `tickets/<stem>/evidence/`, and its plan says which agent action captures which facts. Escalations go through the supervisor and the diagnose path. The only external input is a missing credential: a row that needs one is skipped while an agent finds a route through the authenticated providers, and Gemini has no credential on this machine.
-   - (c) calibration and GO baselines use labels from an AI label panel of a different model family than the judge (decision 13), never labels a person made. The `visual_baseline` GO gate is the judge's agreement with the panel's labels at 0.85 or above.
+   - (c) calibration and GO baselines use labels from an AI label panel of a different model family than the judge (§5, decision 13), never labels a person made. The `visual_baseline` GO gate is the judge's agreement with the panel's labels at 0.85 or above.
    - (d) a plan's open decision takes the plan's Proposed option. The journal and upstream plans write that option as "Recommendation", and it counts as Proposed. Where no option is proposed, a recorded AI design panel settles the decision before the dependent row is authored: three independent proposals and one judge, with the record committed as that row's evidence.
 2. Section 6, decision 14: "this week's plans" becomes "the plans written 2026-11-13".
 3. Section 6, decision 15: journal plan items 3-7 take that plan's recommendations (decision N). The words "stay open until" leave.
 4. Section 6, decision 17: an undecidable result parks, and Gemini plan open decision 4 settles its release. The words "for a person" leave.
-5. Section 6, decision 18: the third layer is best-of-N where only unsure cases park, and no person is named. Calibration is against labels from an AI label panel of a model family other than the judge's (decision 13), with GO at 0.85 agreement. Mark the entry "amended 2026-11-16 by decision N".
+5. Section 6, decision 18: the third layer is best-of-N where only unsure cases park, and no person is named. Calibration is against labels from an AI label panel of a model family other than the judge's (§5, decision 13), with GO at 0.85 agreement. Mark the entry "amended 2026-11-16 by decision N".
 6. Section 5, decision 16: "or an operator confirm" leaves. The driver publishes only under `release.publish: true`.
 7. Section 1, release table:
    - The parallel-runs release's ship gate replaces the one-week clause with "parallel serve has merged the next 10 tickets with no conflict-rerun cap hit".
@@ -75,7 +75,7 @@ Scope in. "Decision N" below means the new roadmap section 6 entry. Its number i
    - Intro: "(by hand today; ...)" becomes "(by the authoring agent today; ...)".
    - Rows 32 (`gemini-provider`) and 34 (`upstream-issue-verb`): "after the hand test A0" and "after its hand test" become "after its agent capture". Row 32 also says it is skipped while this machine has no Gemini credential (decision N).
    - Row 54: "`confirm --select`" becomes "its release (Gemini plan open decision 4)".
-   - Row 55: the fixtures are labelled by an AI label panel of a model family other than the judge's (decision 13), and the `visual_baseline` GO gate is the judge's agreement with the panel's labels at 0.85 or above.
+   - Row 55: the fixtures are labelled by an AI label panel of a model family other than the judge's (§5, decision 13), and the `visual_baseline` GO gate is the judge's agreement with the panel's labels at 0.85 or above.
    - Row 90: "hand-test refusal" becomes "capture refusal".
    - Row 91: "(`operator` where no command exists)" leaves, and the row says every gate is a command.
    - Row 92: "else a park for `confirm`" becomes "else nothing publishes".
@@ -85,7 +85,7 @@ Scope in. "Decision N" below means the new roadmap section 6 entry. Its number i
      - The Gemini A0 capture, nine facts, goes to `tickets/gemini-provider/evidence/`. Name the two agent actions given in Gemini plan item 1 below. It is skipped while the credential is missing.
      - The GitHub prefill capture, three facts, goes to `tickets/upstream-issue-verb/evidence/`.
      - The parallel plan's A0 is an agent reading the 13 `merge_conflict_facts` events from the journal. It goes to `tickets/merge-model-resolve/evidence/`.
-     - The row 35 re-measurement is an agent profiling a drain start and `clutch status` at the truth-release tag and recording the share of wall time spent in journal reads. It goes to `tickets/journal-query-layer/evidence/`.
+     - The row 35 re-measurement is an agent profiling a drain start and `clutch status` at the end of the truth release and recording the share of wall time spent in journal reads. It goes to `tickets/journal-query-layer/evidence/`.
 10. Section 9: "until then a person does" becomes "until then the agent that authors the row does".
 
 `docs/roadmap-driver-plan.md`:
@@ -144,7 +144,7 @@ Scope in. "Decision N" below means the new roadmap section 6 entry. Its number i
    - In the "Where each rule lives" table, the Layer 3 row's `confirm --select` becomes "release: open decision 4".
    - In the ticket table, row B6's `confirm --select` becomes "its release (open decision 4)".
 5. B7:
-   - The fixtures are 20 to 50 outputs, each labelled `accept` or `reject` by an AI label panel whose members are all from a model family other than the judge's (roadmap decision 13).
+   - The fixtures are 20 to 50 outputs, each labelled `accept` or `reject` by an AI label panel whose members are all from a model family other than the judge's (`docs/roadmap.md` §5, decision 13).
    - `./dev.py visual-baseline` reports the judge's agreement with the panel's labels.
    - The `visual_baseline` verdict is GO at 0.85 or above overall agreement, the review baseline's catch floor (`eval/harness.py`, `MIN_CATCH_RATE`), and NO_GO below. No person approves it.
    - Until GO, every graphics ticket parks at B6, and the label panel's verdicts on the parked candidates grow the fixture set.
