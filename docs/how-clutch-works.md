@@ -85,8 +85,8 @@ A unit test file may share its name with an integration test file.
 
 | Subcommand | Runs |
 |---|---|
-| (none) | `uv run pytest -q` |
-| `test [args]` | pytest with those args |
+| (none) | `uv run pytest -q -p clutch.testguard tests/unit`, then `uv run pytest -q tests/integration`; a unit failure stops before integration |
+| `test [args]` | With no args, the same as (none); otherwise pytest with those args, adding `-p clutch.testguard` when at least one test path is named and every test path is under `tests/unit` |
 | `publish` | with `UV_PUBLISH_TOKEN` set, bumps the patch version, then builds and uploads; the operator commits `pyproject.toml` and `uv.lock` |
 | `vscode-package` | writes the `pyproject.toml` clutch version into the `Built for` line of `vscode-clutchwork/README.md`, then packages the current manifest version into `dist/vscode-clutchwork-<version>.vsix` and prints the Marketplace upload page; under WSL also prints the Windows path to paste into the upload dialog |
 | `vscode` | bumps the patch version in `vscode-clutchwork/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |

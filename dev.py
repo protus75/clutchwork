@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build and release tasks for this repo.
 
-    ./dev.py                  the full suite
-    ./dev.py test [args]      the suite, or the named tests (args go to pytest)
+    ./dev.py                  the full suite (unit under clutch.testguard)
+    ./dev.py test [args]      the suite, or named tests (unit under clutch.testguard)
     ./dev.py publish          bump the patch version, build and upload the release
     ./dev.py vscode           package and install the vscode-clutchwork extension
     ./dev.py vscode-package   build a VSIX for Marketplace upload
@@ -30,8 +30,16 @@ def run(argv: list[str]) -> None:
 
 
 def main() -> None:
-    if sys.argv[1:2] == ["test"]:
-        run(["uv", "run", "pytest", "-q", *sys.argv[2:]])
+    if sys.argv[1:2] == ["test"] and sys.argv[2:]:
+        test_args = sys.argv[2:]
+        paths = [arg for arg in test_args if arg == "tests" or arg.startswith("tests/")]
+        guard = ["-p", "clutch.testguard"] if paths and all(path == "tests/unit" or path.startswith("tests/unit/") for path in paths) else []
+        run(["uv", "run", "pytest", "-q", *guard, *test_args])
+        return
+
+    if sys.argv[1:] in ([], ["test"]):
+        run(["uv", "run", "pytest", "-q", "-p", "clutch.testguard", "tests/unit"])
+        run(["uv", "run", "pytest", "-q", "tests/integration"])
         return
 
     parser = argparse.ArgumentParser(prog="./dev.py", description=__doc__.split("\n\n")[0])
@@ -41,9 +49,7 @@ def main() -> None:
     sub.add_parser("vscode", help="package and install the vscode-clutchwork extension")
     sub.add_parser("vscode-package", help="build a VSIX for Marketplace upload")
     args = parser.parse_args()
-    if args.task is None:
-        run(["uv", "run", "pytest", "-q"])
-    elif args.task == "publish":
+    if args.task == "publish":
         if not os.environ.get("UV_PUBLISH_TOKEN"):
             sys.exit("dev: set UV_PUBLISH_TOKEN to publish")
         run(["uv", "version", "--bump", "patch"])
