@@ -65,7 +65,7 @@ After this change:
 3. Section 1 "Independent of release", section 1.1, section 3.3, section 3.4, section 5 decisions 5, 7 and 8, section 6 decisions 1, 11, 12, 13 and 15, row 86, and every section 8 heading: rename only. The section 8 headings become `### 0.3.0`, `### 0.3.0, last group: the roadmap driver`, `### 0.4.0 (conditional)`, `### 0.5.0`, `### 0.6.0` and `### 0.7.0`.
 4. Section 2.1 row 14: the Ticket cell becomes `` `docs-truth-sweep-code-strings` (done) ``.
 5. Section 2.6: replace the last bullet with:
-   ``- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five in `docs/parallel-tickets-plan.md` §7, which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`.``
+   ``- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`.``
    Under it, the Tickets line becomes ``Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).``.
 6. Section 3.1:
    - Paved-roads row: the Defect cell's opening clause, up to the first `;`, becomes `` Operator paved roads print `uv run python -m clutch drain|confirm|reject` and other argv instead of a verb, in the drain report and in `status.py`, `doctor.py`, and `providers.py` ``. The rest of the cell stays. The Ticket cell becomes `` `paved-roads-name-verbs` (done, `tickets/paved-roads-name-verbs/`) ``.
@@ -141,7 +141,7 @@ After this change:
 3. Section 7:
    - "Rules for this repo only (`CLAUDE.md` and `AGENTS.md`, outside the managed block):" becomes ``Rules for this repo only (`CLAUDE.md` section A and `AGENTS.md` `## Engine conduct`, outside the managed block):``.
    - In its bullet, "No new tests go into these files:" becomes "No new test, fixture, or helper goes into these files:". The list becomes the seven merged paths, in this order: `tests/integration/test_daemon_composition.py`, `tests/integration/test_drain.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_stages.py`, `tests/integration/test_cli.py`, `tests/integration/test_watch.py`, `tests/integration/serve_rig.py`.
-   - The parenthesis starts ``(Measured: the first five took 53 commits in the 13 days to 2026-11-13; at `c761b213` `test_cli.py` is imported by 60 test modules and `test_watch.py` is in 38 ticket fences, so `contention-authoring-rules` added both;``. It continues with the existing "37 test modules double as fixture libraries ..." text.
+   - The parenthesis starts ``(Measured: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`) took 53 commits in the 13 days to 2026-11-13; at `c761b213` `test_cli.py` is imported by 60 test modules and `test_watch.py` is in 38 ticket fences, so `contention-authoring-rules` added both;``. It continues with the existing "37 test modules double as fixture libraries ..." text.
 4. "Where each rule lives": the do-not-grow row becomes ``| Do-not-grow list of this repo's large test files | `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct`, outside the managed block |``.
 5. Ticket row 2: "both 0.3.0 chores" is renamed. Its last sentence becomes ``The docstring fix that was here merged as `docs-truth-sweep-code-strings`.``
 6. Open decision 4: ``section 7's do-not-grow rule lands in 0.3.0 (`contention-authoring-rules`, merged); splitting `test_daemon_composition.py` and the other six is one chore ticket per file during the 0.4.0 window if it runs, else in 0.5.0 before parallel runs start.`` The rest stays.
@@ -152,9 +152,9 @@ After this change:
 3. Everything else: rename only.
 
 Scope out:
-- Gates, cadences, operator actions, hand tests, calibration and GO baselines; `roadmap-no-human-gates` owns them. This includes the "Gate to start" and "Gate to ship" conditions, `gate: operator`, "a week", the publish park for `confirm`, roadmap section 8 "Operator actions (not tickets)", driver plan sections 4, 6 and 7, and the journal plan's "the owner declares" step. Release tokens inside them are renamed and nothing else changes; the one exception is the deleted clause in item 2 of `docs/roadmap.md`.
+- Gates, cadences, operator actions, hand tests, calibration and GO baselines; `roadmap-no-human-gates` owns them. This includes the "Gate to start" and "Gate to ship" conditions, `gate: operator`, "a week", the publish park for `confirm`, roadmap section 8 "Operator actions (not tickets)", driver plan sections 4, 6 and 7, and the journal plan's "the owner declares" step. Release tokens inside them are renamed and nothing else changes, except these edits Scope in names: the clause deleted in `docs/roadmap.md` item 2; roadmap row 35's "at the end of 0.3.0"; the journal plan's Release protocol steps 1-3, its Problem sentence on the re-measurement, and its ticket-table row 0.
 - Audit rows in roadmap sections 2-4 that Scope in does not name, the Status sections, and "Facts the ordering rests on". These are the audit snapshot at `80b76d5d`, which section 9 re-runs before each release.
-- Section 9's text. Plan ticket tables other than the driver plan's rows 1, 5 and 6. Plan Status lines.
+- Section 9's text. Plan ticket tables, except the driver plan's rows 1, 5 and 6, the parallel plan's row 2, and the journal plan's row 0. Plan Status lines.
 - `docs/how-clutch-works.md`, `README.md`, `CLAUDE.md`, `AGENTS.md`, and all code, specs and tests. No test or code reads a fenced document: a grep for the eleven file names over `tests/`, `clutch/`, `vscode-clutchwork/` and `dev.py` finds nothing. So no test is fenced or added.
 - Fixing `reject_ticket`'s `actor: operator` on an engine retirement (box-000471 stays in the Box), and changing `./dev.py publish` (row 92's ticket does that).
 
@@ -194,9 +194,9 @@ uv run python -c "import re, pathlib, collections; count = lambda f: dict(collec
 ## Definition of rejected
 The branch is rejected if it:
 - changes any file outside the fence, or any code, spec, test, `CLAUDE.md` or `AGENTS.md`;
-- changes a gate, cadence, operator action, hand test or calibration text beyond renaming a release token inside it, except the one clause item 2 of `docs/roadmap.md` deletes;
+- changes a gate, cadence, operator action, hand test or calibration text beyond renaming a release token inside it, except the edits Scope out bullet 1 lists;
 - shifts a release token twice, leaves one unrenamed, or changes a version string that does not name a phase;
-- strikes or links a row Scope in does not name, or deletes a row, a decision or a plan section instead of striking it;
+- strikes or links a row Scope in does not name, or deletes a roadmap section 8 row, a numbered decision or a plan section instead of striking it (the driver plan's "Where each piece lives" `superseded` row is the one table row Scope in deletes);
 - renumbers roadmap rows, decisions, or the driver plan's sections;
 - edits an audit row, Status section or plan ticket table that Scope in does not name;
 - states a behavior that the cited code or journal does not have.
