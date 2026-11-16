@@ -5,7 +5,7 @@ emits: diagnosis
 tier: high
 effort: medium
 gates: []
-version: "1.6"
+version: "1.7"
 ---
 ## Role
 
@@ -67,6 +67,8 @@ Reply with ONLY one JSON object:
 
 {"verdict": "retry" | "escalate" | "split" | "reject" | "abandon-human",
  "lessons": ["<one concrete next-attempt instruction>"]}
+
+The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object, and reasoning goes in the lessons.
 
 Give 1 to 5 non-blank lessons, each no more than 300 characters. Add no other keys.
 
