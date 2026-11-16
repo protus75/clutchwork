@@ -1,10 +1,10 @@
 ## Outcome
 
-ok
+incomplete
 
 ## Surprises / judgment calls
 
-Rows retain a private table identifier so separate master tables under the same heading preserve release order.
+The ticket verification commands and all hard host checks passed; roadmap.py reached 98.7% combined line and branch coverage. The split-ticket settlement mutation was confirmed to fail its test, but the remaining assertions were not individually mutation-checked.
 
 ## Dead ends
 
