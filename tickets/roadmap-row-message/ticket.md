@@ -40,14 +40,14 @@ kind: feature
 - clutch/docs/host-contract.md
 
 ## Goal / Why
-`docs/roadmap-driver-plan.md` section 3 (roadmap row 90) has the roadmap driver author `docs/roadmap.md` rows through the one Author stage that already writes tickets from Suggestion Box messages (`clutch/author.py::author`), with "a different shape" of message. That shape does not exist: `clutch/box.py::MessageClass` has five classes, none of which carries a roadmap row or its owning plan, and the Author prompt (`clutch/specs/author.md`) has no block for either. This ticket adds the message and the Author side. The sibling ticket `roadmap-author` adds the table parser and the `clutch roadmap author` verb that files these messages, and it depends on this one.
+`docs/roadmap-driver-plan.md` section 3 (roadmap row 90) has the roadmap driver author `docs/roadmap.md` rows through the one Author stage that already writes tickets from Suggestion Box messages (`clutch/author.py::author`), with "a different shape" of message. That shape does not exist: `clutch/box.py::MessageClass` has five classes, none of which carries a roadmap row or its owning plan, and the Author prompt (`clutch/specs/author.md`) has no block for either. This ticket adds the message and the Author side. The sibling `roadmap-table-parser` adds the table parser, the row choice, and the hand-test refusal; `roadmap-author` adds the `clutch roadmap author` verb that files these messages, and it depends on both.
 
 Starting state: `clutch/policy.py::start_state` makes every Author ticket a draft while the review baseline is not GO, and this repo's journal holds one `review_baseline` signal, `NO_GO`, so every Author ticket here starts as a draft awaiting `confirm`. Release 0.2.0's ship gate (`docs/roadmap.md` section 1) requires the driver to author and run at least three rows with no operator verdict. The owner decided (2026-11-16) that a roadmap row is approved by being in the roadmap, and `requisition_review` still gates every authored ticket. So the `roadmap_row` policy row defaults to `confirmed`, and the baseline condition alone does not apply to it. The other draft conditions still apply: a reopened message, an empty safety inventory, a fence that touches the inventory, and a `gate_bypass`.
 
 After this change:
 1. `roadmap_row` is a sixth message class. Its messages carry a `RoadmapRow`: the row's number, release group heading, stem, owner, kind, priority, depends, runs-before, content, and the repo-relative path of its owning plan.
 2. For a `roadmap_row` message, Author embeds the row and the plan in two new prompt data blocks. Author declines the message before any model call when the plan is not a tracked file.
-3. Author's gate requires the ticket's stem, kind, and priority to equal the row's. It also accepts a `tickets/<stem>/` directory that holds evidence but no `ticket.md`, because a roadmap row's hand-test evidence is dropped there before the row is authored (the roadmap-author refusal). That evidence is committed with the ticket.
+3. Author's gate requires the ticket's stem, kind, and priority to equal the row's. It also accepts a `tickets/<stem>/` directory that holds evidence but no `ticket.md`, because a roadmap row's hand-test evidence is dropped there before the row is authored (the hand-test refusal in `roadmap-table-parser`). That evidence is committed with the ticket.
 4. The ticket starts `confirmed` under a NO_GO or absent baseline, unless another draft condition holds or the operator set `box_policy.roadmap_row: draft`.
 
 ## Scope in / Scope out
@@ -69,14 +69,14 @@ Scope in:
 - `clutch/docs/host-contract.md`, section "Complete field inventory": append `roadmap_row: confirmed` to the `Config` `box_policy` default in the `config-fields` block, and append `roadmap_row` as the last `box_row` value in the `config-values` block. `tests/integration/test_host_contract.py` compares both with the code and is not edited.
 - `docs/how-clutch-works.md`: in section 9.1, add `roadmap_row` to the class list with one sentence on what it carries. In section 9.3, say three things: for a `roadmap_row` message, Author embeds the row and its plan (whole under 40,000 characters, otherwise the two sections); the ticket uses the row's stem, kind, and priority, and evidence already under `tickets/<stem>/evidence/` is committed with it; the review-baseline condition does not apply to `roadmap_row`, while every other draft condition does. Nothing else in the file changes.
 - Existing tests whose assertions flip:
-  - `tests/integration/test_closed_sets.py::test_box_closed_sets_and_constants` and `::test_config_closed_sets_and_constants` gain `roadmap_row` in the class tuple, the class set, `BOX_POLICY_DEFAULTS` (`confirmed`), and the `BoxRow` set.
+  - `tests/integration/test_closed_sets.py::test_box_closed_sets_and_constants` and `::test_config_closed_sets_and_constants` gain `roadmap_row` in the class tuple, the class set, `BOX_POLICY_DEFAULTS` (`confirmed`), and the `BoxRow` set. `::test_author_closed_sets_and_constants` gains `author.PLAN_WHOLE_CHARS == 40_000`, because that file pins every shipped constant.
   - `tests/integration/test_config.py::test_valid_config_loads_from_cwd_with_shipped_defaults` gains `"roadmap_row": "confirmed"` in its `box_policy` dict.
   - `tests/integration/test_policy.py::test_bootstrap_without_a_go_or_with_phase_one_no_go_drafts_every_row` skips `roadmap_row` in its loop. Nothing else in that file changes.
   - `tests/integration/test_author.py::test_author_spec_requires_criteria_to_name_wrong_results` pins the new spec version. Nothing else in that file changes.
 - New tests: `tests/unit/test_author_roadmap_row.py` and `tests/integration/test_roadmap_row_author.py`. The unit file builds its fakes in the file (or imports `MemoryJournal` and `message` from `tests/unit/test_retro_recurrence.py`). It reads and writes disk only under `tmp_path`, and it runs every new line in `clutch/box.py`, `clutch/policy.py`, and `clutch/author.py`, which have unit floors in `test-gate.toml`.
 
 Scope out:
-- Parsing `docs/roadmap.md`, choosing rows, filing `roadmap_row` messages, the `clutch roadmap author` verb, linking or striking rows, and the hand-test refusal: all in `roadmap-author`. No code in this ticket enqueues a `roadmap_row` message outside tests.
+- Parsing `docs/roadmap.md`, choosing rows, the row link and strike edits, and the hand-test refusal (`roadmap-table-parser`); filing `roadmap_row` messages and the `clutch roadmap author` verb (`roadmap-author`). No code in this ticket enqueues a `roadmap_row` message outside tests.
 - `clutch/triage.py` and `clutch/specs/triage.md`. A roadmap message reaches Author through triage's existing recorded-`author`-verdict path, with no triage model call.
 - Any other change to `start_state`'s conditions, to other policy rows, or to `box_policy` loading.
 - `docs/roadmap.md`, `docs/roadmap-driver-plan.md`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `vscode-clutchwork/`, and `clutch/observe.py`. The box view already draws any class through its help entry.
@@ -104,7 +104,7 @@ Scope out:
    - A message JSON written without the `roadmap_row` key still loads, with `roadmap_row is None`.
 
    Ruled out: a roadmap message without its row, a row on another class, a row lost on the round trip, and old box files refused.
-2. `tests/unit/test_author_roadmap_row.py::test_roadmap_row_ignores_only_the_baseline` calls `policy.start_state` with a config fake whose inventory is `["config.yaml"]` and whose `box_policy` is `BOX_POLICY_DEFAULTS`.
+2. `tests/unit/test_author_roadmap_row.py::test_roadmap_row_ignores_only_the_baseline` calls `policy.start_state` with a config fake whose inventory is `["config.yaml"]` and whose `box_policy` is `dict(BOX_POLICY_DEFAULTS)`, a copy, so no test changes the module's table.
    - Row `roadmap_row`, `go=False`, fence `["clutch/author.py"]` returns `confirmed`. The same call with row `failure_report` returns `draft`.
    - Row `roadmap_row` with `go=False` returns `draft` for each of: `reopen=True`; `gate_bypass=["scope_fence"]`; fence `["config.yaml"]`; an empty inventory.
    - Row `roadmap_row` with `box_policy["roadmap_row"] = "draft"` and `go=True` returns `draft`.
@@ -151,6 +151,7 @@ Scope out:
 8. `./dev.py test tests/integration/test_closed_sets.py tests/integration/test_config.py tests/integration/test_policy.py tests/integration/test_host_contract.py tests/integration/test_author.py tests/integration/test_help.py tests/unit/test_help.py` exits 0 with these values:
    - `box.MESSAGE_CLASSES` ends with `roadmap_row`;
    - `config.BOX_POLICY_DEFAULTS["roadmap_row"] == "confirmed"`, and `BoxRow` lists `roadmap_row` last;
+   - `author.PLAN_WHOLE_CHARS == 40_000`;
    - `clutch/docs/host-contract.md`'s `config-fields` default and `config-values` `box_row` list carry `roadmap_row`;
    - `clutch/help.py`'s `box` vocabulary has a `roadmap_row` entry;
    - `clutch/specs/author.md`'s version is the next minor above its value on main.
