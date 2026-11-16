@@ -12,8 +12,9 @@ kind: feature
 - clutch/specs/ask/drain-loop.md
 - clutch/specs/ask/diagnose.md
 - clutch/specs/ask/drafts.md
-- clutch/specs/ask/box.md
 - clutch/specs/ask/running.md
+- clutch/drain.py::Report.render
+- clutch/roadmap.py::status
 - clutch/ask.py
 - tests/integration/test_ask_drain_loop.py
 - tests/unit/test_ask_drain_loop.py
@@ -45,29 +46,30 @@ After this change `clutch prompt drain-loop` prints a `/loop` prompt that tells 
   - inside a run, the supervisor edits and keeps a `premise_failed` or cap-spent ticket at most twice per lineage, leaving `tickets/<stem>/rework.md` when it escalates;
 - each tick, to observe with `clutch status` and `clutch roadmap status`;
 - to handle a stall through `clutch prompt running <stem>`;
-- to release each Reject-queue stem, draft, and pending box message through `clutch prompt diagnose`, `clutch prompt drafts`, or `clutch prompt box`, executing the Recommendation itself;
+- to release each Reject-queue stem and draft through `clutch prompt diagnose` or `clutch prompt drafts`, executing the Recommendation itself;
+- to leave Suggestion Box messages for the owner. Decision 19 delegates only diagnose and drafts Recommendations, and a cause fix the loop files with `clutch suggest` must never be authored. Triaging the loop's own suggestions would author them and feed it work without end;
 - to keep the supervising fixes it allows today;
 - to file cause fixes with `clutch suggest`;
-- to start the engine with `clutch drain --detach`.
+- to start the engine with `clutch drain --detach`, but not again for roadmap rows alone after a drain that merged and authored nothing. With both open roadmap rows held, every such drain authors nothing, so restarting it would loop forever;
+- to skip `clutch roadmap status` on a host with no `docs/roadmap.md`, where it refuses. The prompt reaches every host, so its done check must not wait on that verb.
 
 It keeps the limits that still hold: never push, never edit a running ticket, never edit code, docs, specs, config, or conduct files, never author a ticket, and never rerun a flake until it passes.
 
 ## Scope in / Scope out
 Scope in:
-- `clutch/specs/ask/drain-loop.md`: rewrite the whole prompt. It keeps the `/loop ` prefix, the `${state_dir}` placeholder (in `${state_dir}/drain.out` and `${state_dir}/engine.log`), and no other `$`. These phrases appear verbatim: `standing delegation`, `Confirm or reject only by executing a Recommendation`, `never pass \`--extension\``, `actor: operator`, `Never push`. It says, in this order:
+- `clutch/specs/ask/drain-loop.md`: rewrite the whole prompt. It keeps the `/loop ` prefix, the `${state_dir}` placeholder (in `${state_dir}/drain.out` and `${state_dir}/engine.log`), and no other `$`. These phrases appear verbatim: `standing delegation`, `Confirm or reject only by executing a Recommendation`, `never pass \`--extension\``, `actor: operator`, `Never push`, `merged nothing and authored nothing`, `no \`docs/roadmap.md\``, `never triage or dismiss`. It does not contain `clutch prompt box`, `clutch triage`, or `clutch dismiss`. It says, in this order:
   1. The role: the supervising agent loop for the clutch engine. Running this prompt is the owner's standing delegation of the verdicts that a `clutch prompt diagnose` or `clutch prompt drafts` Recommendation names. For those Recommendations it overrides the conduct file's rule that a supervising session may not confirm or reject, retry a stem whose caps are spent, or rewrite a ticket the engine authored. Use only clutch verbs.
   2. What the engine does by itself, as in `## Goal / Why`.
   3. Each tick:
-     - Observe: `clutch status`, `clutch roadmap status`, the tail of `${state_dir}/drain.out`. A held writer lock or a running stem means an engine is running.
+     - Observe: `clutch status`, `clutch roadmap status`, the tail of `${state_dir}/drain.out`. On a host with no `docs/roadmap.md`, skip `clutch roadmap status` (it refuses there) and treat the host as having no `next:` rows. A held writer lock or a running stem means an engine is running.
      - A running engine that is making progress is left alone. A stalled one (no new journal or `drain.out` output for 30+ minutes while a stem runs): name the root cause in one sentence, run `clutch prompt running <stem>`, carry out the prompt it prints, and execute its Recommendation (wait, `clutch stop`, or `clutch kill`).
      - With no engine running:
        - each Reject-queue stem goes through `clutch prompt diagnose <stem>`. The agent carries out the prompt it prints, then executes the Recommendation itself, being the person that prompt says to wait for. A ticket edit touches only `tickets/<stem>/ticket.md` and never changes `## Goal / Why` or removes an acceptance criterion (the engine supervisor's allowed-edit limit); a Recommendation that needs either is executed as `clutch reject --yes <stem>` plus `clutch suggest` for the replacement. After the edit, `clutch lint <stem>` runs until it exits 0, `clutch review <stem>` until it prints approve (repairing each finding), then `clutch confirm --yes <stem>`. A retirement is `clutch reject --yes <stem>`;
        - drafts go through `clutch prompt drafts` and its `clutch confirm --yes` and `clutch reject --yes` steps;
-       - pending Suggestion Box messages go through `clutch prompt box <id> ...` and its `clutch triage` or `clutch dismiss` steps, never a hand-authored ticket;
        - a fix needing no verdict (lint or format errors, a file missing from `## Scope fence` or `## Context`, a stale path, a wording fix) keeps today's rule: name the root cause, edit only that `ticket.md`, run `clutch lint <stem>` until it exits 0, and commit that one file by explicit path. A requisition-stage premise park is released by the committed edit with no confirm;
        - a cause fix a diagnosis or Recommendation names goes to `clutch suggest "<summary>"`.
-     - Start the engine with `clutch drain --detach` when a stem is eligible or `clutch roadmap status` shows a `next:` row. Never start one while the lock is held.
-     - Done check: no engine is running, nothing is eligible, no Reject-queue stem, draft, or pending box message is left that a Recommendation releases, `clutch roadmap status` shows `next: none`, and this tick changed nothing.
+     - Start the engine with `clutch drain --detach` when a stem is eligible. Also start it when `clutch roadmap status` shows a `next:` row, unless the last drain this loop started merged nothing and authored nothing: the `merged:` count in `clutch status` did not grow while it ran, and its `roadmap_drive` events in `${state_dir}/engine.log` hold no `roadmap: authored` line. Such a drain found its open roadmap rows held, and another would author nothing either. Never start one while the lock is held.
+     - Done check: no engine is running, the start rule above starts none, no Reject-queue stem or draft is left that a Recommendation releases, and this tick changed nothing.
   4. Verdicts this loop gives are journaled with `actor: operator`, like a person's, so `clutch roadmap merged --unattended` does not count a stem it confirmed or kept.
   5. Hard limits:
      - confirm or reject only by executing a Recommendation, always with `--yes`; never pass `--extension`;
@@ -75,6 +77,7 @@ Scope in:
      - never edit `ticket.md` while that stem is running (a mid-run edit causes a `ticket_changed` hold);
      - never change a ticket's `## Goal / Why` or remove an acceptance criterion;
      - never edit code, docs, `docs/roadmap.md`, conduct files, specs, or config, and never author a ticket;
+     - never triage or dismiss a Suggestion Box message; those wait for the owner, because the delegation names only diagnose and drafts Recommendations and a cause fix this loop files is never authored;
      - never push, run a tree-wide destructive git verb, delete `clutch.lock`, or rerun a flaky failure until it passes;
      - do not fix an engine, gate, environment, or fixture cause; `clutch suggest` it;
      - for each fix, name the class-prevention change and `clutch suggest` it without building it.
@@ -86,12 +89,13 @@ Scope in:
      - suggestions filed;
      - a `Still open:` list.
 - `tests/integration/test_ask_drain_loop.py::test_drain_loop_keeps_owner_verdict_limits`: its first assertion, `assert "Never run \`confirm\` or \`reject\`" in text`, becomes `assert "only by executing a Recommendation" in text`. Its `ticket_changed` assertion stays. Nothing else in the file changes.
-- `docs/how-clutch-works.md` section 7.5 (written by `driver-loop`): add one paragraph on the supervising agent loop. `clutch prompt drain-loop` prints its prompt. It releases Reject-queue stems, drafts, and box messages by executing `clutch prompt diagnose`, `drafts`, or `box` Recommendations, with `clutch confirm --yes` or `clutch reject --yes`. It files cause fixes with `clutch suggest`. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems. Nothing else in the file changes.
+- `docs/how-clutch-works.md` section 7.5 (written by `driver-loop`): add one paragraph on the supervising agent loop. `clutch prompt drain-loop` prints its prompt. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `drafts` Recommendations, with `clutch confirm --yes` or `clutch reject --yes`. It files cause fixes with `clutch suggest` and leaves Suggestion Box messages for the owner. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems. Nothing else in the file changes.
 - A new test file, `tests/integration/test_ask_drain_loop_agent.py`.
 
 Scope out:
 - `CORE_TEMPLATE` in `clutch/hostfiles.py`, `CLAUDE.md`, and `AGENTS.md`: box-000508 was declined; this prompt carries the delegation.
 - The journal actor of `confirm` and `reject`: box-000514 was declined; the verdicts stay `actor: operator`.
+- Triaging or dismissing Suggestion Box messages: decision 19 does not delegate it.
 - `clutch/ask.py`, the `prompt` verb, the other `clutch/specs/ask/` prompts, `clutch/help.py`, `clutch/docs/host-running.md`, and the extension: their text about the drain-loop prompt stays true.
 - Any engine code: the prompt describes the engine; it changes nothing the engine does.
 
@@ -103,14 +107,14 @@ Scope out:
 
 ## Acceptance criteria
 1. `tests/integration/test_ask_drain_loop_agent.py::test_prompt_delegates_recommendations` renders `ask.render("drain-loop", "", config, tmp_path)` against `tests/integration/test_config.py::VALID`. The text contains each of these:
-   - `clutch prompt diagnose`, `clutch prompt drafts`, `clutch prompt box`, `clutch prompt running`;
+   - `clutch prompt diagnose`, `clutch prompt drafts`, `clutch prompt running`;
    - `clutch confirm --yes`, `clutch reject --yes`;
    - `clutch lint`, `clutch review`, `clutch suggest`;
    - `clutch roadmap status`, `clutch drain --detach`;
    - `actor: operator`, `--unattended`, `release.publish`, `rework.md`, `standing delegation`, `## Goal / Why`.
 
-   It does not contain `Never run \`confirm\` or \`reject\``, `Needs a human`, or `never pass \`--yes\``. `standing delegation` comes before the first `clutch confirm --yes`. Ruled out: a prompt that still forbids the delegated verdicts, omits one of the four Recommendation sources, or leaves the operator actor unstated.
-2. `tests/integration/test_ask_drain_loop_agent.py::test_prompt_keeps_hard_limits` asserts the same rendered text contains `Confirm or reject only by executing a Recommendation`, `never pass \`--extension\``, `Never push`, `ticket_changed`, `docs/roadmap.md`, and `Still open:`, and has no `${` left. Rendered with `VALID`'s `state_dir: .clutch` replaced by `state_dir: custom/state` (as `tests/integration/test_ask_drain_loop.py` does), it contains `custom/state/drain.out` and `custom/state/engine.log`. Ruled out: a dropped push, extension, or running-ticket limit, and a placeholder left unrendered.
+   It does not contain `Never run \`confirm\` or \`reject\``, `Needs a human`, or `never pass \`--yes\``. `standing delegation` comes before the first `clutch confirm --yes`. Ruled out: a prompt that still forbids the delegated verdicts, omits one of the three prompts whose Recommendations it executes, or leaves the operator actor unstated.
+2. `tests/integration/test_ask_drain_loop_agent.py::test_prompt_keeps_hard_limits` asserts the same rendered text contains `Confirm or reject only by executing a Recommendation`, `never pass \`--extension\``, `Never push`, `ticket_changed`, `docs/roadmap.md`, `Still open:`, `never triage or dismiss`, `merged nothing and authored nothing`, and `no \`docs/roadmap.md\``, and has no `${` left. It does not contain `clutch prompt box`, `clutch triage`, or `clutch dismiss`. Rendered with `VALID`'s `state_dir: .clutch` replaced by `state_dir: custom/state` (as `tests/integration/test_ask_drain_loop.py` does), it contains `custom/state/drain.out` and `custom/state/engine.log`. Ruled out: a dropped push, extension, or running-ticket limit; a loop that triages or dismisses box messages, which decision 19 does not delegate; a loop that restarts drains forever while its open roadmap rows are held; a done check that waits on `clutch roadmap status` on a host without a roadmap; and a placeholder left unrendered.
 3. `./dev.py test tests/integration/test_ask_drain_loop.py tests/unit/test_ask_drain_loop.py tests/integration/test_ask.py` exits 0, with `test_drain_loop_keeps_owner_verdict_limits` changed only as `## Scope in / Scope out` names.
 4. The docs command in `## Verification` exits 0: `docs/how-clutch-works.md` section 7.5 names `clutch prompt drain-loop`, `actor: operator`, and `--unattended`.
 5. `./dev.py test` exits 0.
@@ -126,6 +130,7 @@ uv run python -c "import pathlib; t = pathlib.Path('docs/how-clutch-works.md').r
 ## Definition of rejected
 The branch is rejected if:
 - the prompt lets the loop confirm or reject anything but a Recommendation's verdict, or without `--yes`, or with `--extension`;
+- the prompt lets the loop triage or dismiss a Suggestion Box message, or start another drain for `next:` rows after a drain that merged and authored nothing;
 - the prompt lets the loop push, edit a running ticket, author a ticket, or edit code, docs, specs, config, or conduct files;
 - it edits `CORE_TEMPLATE`, `CLAUDE.md`, `AGENTS.md`, `clutch/ask.py`, another ask prompt, or engine code;
 - an existing test other than the one assertion named in `## Scope in / Scope out` changes;
