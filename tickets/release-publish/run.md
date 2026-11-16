@@ -1,26 +1,26 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-All ticket verification commands and configured hard mechanical checks passed; the full suite required the conduct-file change to be committed first.
+The new tests caught mutations of the main refusal, authorization, artifact, credential, and journaling paths, but not every assertion was individually mutation-checked.
 
 ## Dead ends
 
-A deliberate tag-check mutation failed the corresponding tests and was restored; the remaining assertion mutations were not performed.
+A mutation that passed the parent environment to the upload was not caught by the integration test alone; the unit test caught it.
 
 ## Second problems filed
 
-- box-000533-3ff8c951: Out-of-fence roadmap documents retain statements that ./dev.py publish still exists and bumps the version.
+- box-000534-1ea26c52: Out-of-scope roadmap documents still describe the removed ./dev.py publish path; this is already recorded as box-000533-3ff8c951.
 
 ## Resolved engine/model
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.14
+- spec: implement 2.15
 
 ## Predicted vs actual
 
-Ticket budget: 90 minutes expected, 180 minutes stuck; actual duration not measured.
+The ticket estimated 90 minutes; elapsed time was not measured.
 
