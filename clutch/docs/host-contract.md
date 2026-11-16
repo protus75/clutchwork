@@ -3,8 +3,7 @@
 The installed engine owns process; the host owns project content, tickets and
 configuration. See the [host run guide](host-running.md) for invocation and operation.
 This document describes the merged configuration and interfaces.
-Report intake and cutover below are pending Phase 6 consumer contracts, not an
-activation instruction. Foreign process-state adoption is excluded.
+Foreign process-state adoption is excluded.
 
 ## Install
 
@@ -46,7 +45,7 @@ review:
     - {code: host-test, argv: [uv, run, pytest, -q], trigger: always, severity: hard}
     - {code: host-style, argv: [uv, run, ruff, check], trigger: [src/], severity: soft}
   surfaces: [] # host review surfaces are not supported yet
-  trigger_map: {src/: [scope_fence]} # engine gate codes only; host entries use their own triggers
+  trigger_map: {src/: [scope_fence]} # accepted and read by nothing
   gate_severity: {scope_fence: hard} # merge overrides; engine defaults are all hard
 merge:
   safety_checks: [host-test] # each code must resolve to exactly one hard mechanical entry
@@ -302,7 +301,7 @@ State is `draft | confirmed | rejected | merged`; priority `P0 | P1 | P2 | P3`;
 kind `bug | feature | chore`; tier and effort `low | medium | high | max`.
 Source is `human`, historical `seed` or `box:<class>` matching `box:[a-z][a-z0-9_]*`.
 Each gate_bypass has only nonblank `code` (an engine gate code) and `reason`.
-Put ordering in Depends on and priority, not extra metadata. New human intake
+`Depends on` names only tickets whose merged code this ticket needs; other ordering goes in priority and `## Runs before`, not extra metadata. New human intake
 stamps source human and confirms; machine sources belong to engine authoring.
 
 ## Checks and injectable seams
@@ -333,7 +332,7 @@ is spooled to `check/host-NN.txt`, `merge/host-NN.txt`,
 returned tails are redacted and captured output is scrubbed at the spool seam.
 Every safety_checks code must resolve to exactly one hard mechanical entry;
 invalid designations fail before commands. Integration selects only always/hard
-entries. Host surfaces use their own triggers; trigger_map concerns engine gates.
+entries. `review.trigger_map` is accepted and read by nothing.
 
 An entry may set `results` to a worktree-relative file written with `-p clutch.testreport
 --clutch-results <path>`. The plugin writes schema 2, with a matching `seconds` map of finite nonnegative floats; the reader refuses schema 1. Check records first-run command time, outcome counts and slow tests using `slow_test_seconds` (default 1.0) and `slow_test_limit` (default 100), plus repository and changed-file percentages when coverage is readable. Check removes it before each run and reads fresh results. A failed
@@ -386,7 +385,7 @@ log and heartbeat. Decisions and tombstones are committed under
 each dispatch cycle: watcher/debounce in daemon, re-parsing in scaffold verbs;
 routing, severity and ceiling edits take effect without restart.
 
-## Pending report-inbox contract
+## Report-inbox contract
 
 The optional report_inbox is a directory for small host JSON reports, consumed
 by sequential triage into the same durable Suggestion Box. Version-1 reports
@@ -425,7 +424,7 @@ ticket prose and later prompts see only delimited data. Evidence is quoted,
 never executed outside the deterministic replay harness. app_commit attribution
 is a later consumer's judgment, not proof of an introducing commit.
 
-## Pending cutover contract
+## Cutover contract
 
 1. Unattended bootstrap self-build continues through Phase 6 under drain's safety
    envelope; serve and drain both merge green candidates without operator confirm.
@@ -444,5 +443,3 @@ is a later consumer's judgment, not proof of an introducing commit.
 5. NO_GO or no declared host waits at cutover. A declared live host is onboarded
    only after GO and operator judgment; start serve on host work and perform
    live-host acceptance separately. A fixture report cannot substitute for it.
-
-This document adds no report consumer, GO writer or runtime activation.

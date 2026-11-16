@@ -49,7 +49,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `doctor` | no | Checks venv, config load, git, lock probe, journal readability, and core check. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket. |
 | `core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
-| `probe [PROVIDER...]` | no | Probe declared providers and models. |
+| `probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
 | `install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
 | `update-config` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
 | `init-config [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
@@ -59,7 +59,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `order <stem> [--priority P0\|P1\|P2\|P3] [--runs-before [stem ...]]` | no | Validates and edits priority and/or runs-before ordering in the working tree; a bare `--runs-before` removes the section. Refuses a running ticket while an engine is live, and settled, rejected, missing or invalid tickets. An interrupted run with no live engine is editable. Intake commits the edit. |
 | `review <stem>` | commit only | Only the named ticket's pending changes are committed through intake first; other pending tickets are left untouched. Reviews the committed ticket against merged code and journals its verdict and ticket blob SHA. A ticket with an unmerged dependency gets a provisional review that is printed but not journaled, so the drain reviews it again before its first run. Refuses missing, intake-failed, settled, or rejected tickets without a model call. Prints findings and exits 0 on approve, 1 on snag or rma. |
 | `run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
-| `drain [--detach]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. |
+| `drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
 | `serve` | yes | Runs the continuous daemon until `kill`, `stop`, or a signal (section 7.2). |
 | `retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
 | `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
@@ -71,7 +71,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `prompt drafts` | no | Print an assessment prompt for all committed drafts awaiting a verdict. |
 | `pause` / `resume` / `kill` / `stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `kill` and `stop` refuse (exit 2); `pause`/`resume` print "nothing running". |
 | `confirm <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to keep (or uses `--yes` to skip the prompt): promotes a draft to confirmed, keeps a Reject-queue item (section 6.6). Same-content repeat keeps are refused for command-line confirms; the extension uses `--extension` to allow them. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
-| `reject <stem> [--yes]` | try | A person at a terminal answers `y` to kill (or uses `--yes` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
+| `reject <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to kill (or uses `--yes` or `--extension` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 
 ### 2.2 `./dev.py`
 
@@ -103,6 +103,8 @@ menu holds Ticket lifecycle, which opens `vscode-clutchwork/media/ticket-lifecyc
 Every verb-backed menu item is on exactly when its verb’s admission function admits the row, through the closed table in `clutch/observe.py`; an admitted action that needs the writer lock is locked while a holder is alive. Confirm and Reject use the shared verdict predicate without lock gating. The Ask items are extension-only.
 The Tickets view’s play button and Engine… picker start drain detached. The picker also runs serve, stop, kill, status, or retro. Its start/stop icon follows the snapshot engine flag, which is true only while a drain or serve holds the lock; `clutch.playAction` selects drain or serve for starting. Open config.yaml, also in More Actions, opens the snapshot’s `configPath`. Recent Steps row kinds are the closed vocabulary `STEP_KINDS` in `clutch/observe.py`, and a test fails until each step in it has its own icon. Recent Steps opens a step’s file when it exists; an Author row opens its Suggestion Box message, authored ticket, or decision record. The collapsed Stats view shows health figures for the window configured by `clutch.statsWindow` (default `7d`). The Suggestion Box view lists messages, supports multi-selection and manual triage or dismissal, and shows message details alongside tickets. `clutch snapshot` builds its data read-only from the configured host state and `order_tickets`, holding tickets awaiting an operator and those held by the drain's `parked_blob` rule; `clutch/graph.py` computes the graph layout for the extension to draw. The engine never runs the extension.
 
+The `clutch.command` setting supplies the command and arguments the extension runs the engine with; its default is `.venv/bin/clutch`, resolved from the workspace folder.
+
 Extension help comes from `clutch/help.py` through the snapshot; each surface shows what it is, `Before:` and `After:` lines, and a link to its documentation, and `clutch.help` lists every topic. `clutch.refreshSeconds` sets the timed refresh interval (default 15 seconds); 0 disables the timer while file-change refreshes continue. `clutch.unavailableMenuItems` controls whether unavailable ticket actions are disabled (the default) or hidden.
 
 ## 3. Tickets
@@ -115,7 +117,7 @@ says what goes in each section.
 
 Frontmatter fields that drive behavior:
 
-- `state`: `draft` (awaits `confirm`), `confirmed` (dispatchable), `rejected`, `merged`.
+- `state`: `draft` (an Author-written ticket awaiting `confirm`; intake stamps a new hand-written ticket `confirmed`), `confirmed` (dispatchable), `rejected`, `merged`.
 - `source`: `human` (hand-written), `box:<class>` (written by the Author stage), `seed`
   (historical bootstrap tickets; nothing writes it now).
 - `kind`: `feature`, `chore`, or `bug` (a bug must carry `## Regression` and evidence,
@@ -162,7 +164,7 @@ Stages write into an outbox in the ticket's worktree (`tickets/<stem>/` inside i
 copies each selected new or changed artifact to the main checkout's `tickets/<stem>/` and commits it on `main`
 as `clutch(<stem>): <kind>`, once per attempt (an Effect, section 10.2). `ticket.md` is never
 lifted from a worktree: the agent cannot edit its own ticket. Each lift takes only its named artifact,
-refuses symlinks, and refuses a file over 256 KB.
+skips symlinks without error, and refuses a file over 256 KB.
 
 | Lift kind | File |
 |---|---|
@@ -170,10 +172,10 @@ refuses symlinks, and refuses a file over 256 KB.
 | `checks` | `checks.json` (Check's report), plus registered report artifacts |
 | `review` | `review.md` |
 | `harvest` | `attempts/<n>/harvest.json` |
+| `harvest-rework` | `attempts/<n>/harvest.json` when Rework itself failed |
 | `diagnosis` | `diagnosis.json` |
 
-Other engine commits on `main`: `ticket` (intake), `confirmed`, `rejected`, `rework`, and the
-squash merge itself.
+Other engine commits on `main`: `ticket` (intake), `confirmed`, `rejected`, `rework`, `clutch(decisions): <id>` (a triage decision record), `clutch: retro NNNNNN`, `clutch(<stem>): undo refused rework`, and the squash merge itself. Check's `clutch(<stem>): autofix` commit lands on the ticket branch, not on `main`.
 
 ## 4. A ticket's run
 
@@ -229,7 +231,7 @@ the Suggestion Box as a `suggestion`.
 
 ### 4.3 Check
 
-1. Runs configured autofix commands on existing changed files outside `tickets/` matching each entry's `files` patterns and commits changes.
+1. When Implement replied `ok` and `review.autofix` is nonempty, runs configured autofix commands on existing changed files outside `tickets/` matching each entry's `files` patterns and commits changes.
 2. Runs each `## Verification` command in the worktree (provider keys removed from the
    environment, timeout = the ticket's stuck budget, output spooled to `check/verify-NN.txt`).
 3. A failing command is rerun at the merge base. If it also fails there and names no path present in the branch but absent at the merge base, it is **base-red**: a
@@ -374,7 +376,7 @@ and replies with a verdict and 1-5 lessons:
 - `reject`, `abandon-human`: send it to the Reject queue.
 
 If a cap is already spent or the worktree is gone, the verdict is a mechanical `abandon-human`
-with no model call. `diagnosis.json` is lifted and a `diagnosis` signal is journaled.
+with no model call. If the worktree exists, `diagnosis.json` is lifted and a `diagnosis` signal is journaled; if it is gone, no `diagnosis.json` is written or lifted and only the journaled `diagnosis` signal records the mechanical verdict.
 
 ### 6.4 Caps and escalation
 
@@ -450,7 +452,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
   practice only eval runs reach it.
 - **Reconcile:** whenever a verb other than pause, resume, kill or stop takes the writer lock, any stem still marked `running`
   (or with an unfinished effect) is reaped: harvested, journaled `abandoned`, worktree removed.
-  `abandoned` stems stay eligible. With no engine running, `status` shows such a stem as interrupted, `reject`
+  A stem with a `HELD` merge-queue receipt for its current attempt is not reaped, nor is a stem whose only unfinished effects are standalone review `llm/review-<stem>/` calls. `abandoned` stems stay eligible. With no engine running, `status` shows such a stem as interrupted, `reject`
   reaps and rejects it, and `order` treats it as open.
 - **Flaky tests:** Check quarantines unedited fail-then-pass tests and releases them after a merged fix and a passing observation. Edited flakes and cap-blocked flakes fail Check.
 
@@ -461,7 +463,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 A dispatch exception is journaled as an `infra_error` terminal, re-offered, and held in the Reject queue at the attempts cap.
 
 1. Takes the lock, reconciles, fires due timers, runs the provider preflight, runs intake once.
-2. Loops: reload config, honor pause/kill/stop, run intake between tickets, maybe run a retro, scan committed tickets (skipping stems settled or rejected in the journal), pick the
+2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, scan committed tickets (skipping stems settled or rejected in the journal), pick the
    next ticket, review its committed content if it lacks an approval, run it, merge it inline. Serve applies the same review before Implement and holds a premise-parked ticket until its committed content changes.
 3. **Pick order:** confirmed, unsettled, not rejected, every dependency settled (through split
    successors); among eligible fresh tickets and re-offers, `## Runs before` orders named stems
@@ -513,7 +515,7 @@ releases the lock, and spawns the new serve. A pending kill wins. An accepted st
 
 #### 7.2.1 Merge queue (serve only)
 
-For a nonempty branch with only `tickets/` changes on main since the reviewed merge
+For a nonempty branch with no `HELD` receipt and only `tickets/` changes on main since the reviewed merge
 base, the safety host checks and integration tier are skipped; safety and Merge
 gates still run. Empty branches take the full path for report custody.
 
@@ -572,7 +574,7 @@ Three CLI adapters ship: `claude`, `codex`, and `qwen` (Qwen Code against a loca
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
   calls; git, checks, and notifications get no provider key.
-- **Preflight** (start of `run`/`drain`/`serve`/`triage`): checks each CLI's version against its
+- **Preflight** (start of `run`/`drain`/`serve`/`triage`/`review`, and standalone `retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch install <provider>`.
 
@@ -584,11 +586,10 @@ falls back to the `(tier, review)` row. The model is the candidate's `model` or 
 
 ### 8.3 Admission, breakers, droughts
 
-- Each provider has `limits.concurrency` call slots. A call waiting over 60s spills to the next
-  candidate.
+- Each provider has `limits.concurrency` call slots. When the first candidate has no free slot and its projected wait is over 60 seconds, the call goes to the next candidate with a free slot before waiting.
 - `circuit_breaker.k` (default 3) consecutive outages open a provider for `cooldown_minutes`
   (default 10).
-- A quota error cools the provider for `limits.quota_window_minutes`. An auth error drops it for
+- A quota error cools the provider for `limits.quota_window_minutes` (default 60). An auth error drops it for
   the session and notifies.
 - When no candidate is available the stem is **drought-parked**: journaled
   `infra_error / provider_drought`, no cap drawn, re-offered when a route frees up.
@@ -672,7 +673,7 @@ scorecard, proposals) and files new proposals as `retro_finding` messages. It su
 ### 9.6 Scorecard and baseline
 
 - The **scorecard** counts, per gate and review surface, catches, escapes, and bypasses, and flags
-  a surface with 25+ evaluations and no catch as a prune candidate.
+  a surface with 25+ evaluations and no catch and no escape as a prune candidate.
 - The **review baseline** is a GO / NO_GO verdict recorded by the eval harness
   (`eval/harness.py`). GO counts only while the recorded review and author models and spec
   versions still match the config. It gates Author starting state only.
@@ -685,14 +686,18 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 
 | Path | Holds |
 |---|---|
-| `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2). |
-| `engine.log` | Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated, and never authoritative. |
+| `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
+| `engine.log` | Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
+| `drain.out` | Output appended by `drain --detach`. |
+| `coverage-map.json` | Written by `covmap` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
-| `spools/` | Per-attempt prompts, outputs, and command output; `spools/providers/` holds raw CLI captures. A stem’s capture numbers continue from the highest already on disk, so a later process does not overwrite an earlier capture. |
+| `spools/` | Per-attempt prompts, outputs, and command output; `spools/providers/` holds raw CLI captures and `spools/probe/` holds probe captures. A stem’s capture numbers continue from the highest already on disk, so a later process does not overwrite an earlier capture. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |
-| `worktrees/` | Ticket worktrees. |
+| `worktrees/` | Ticket worktrees; `.base/` and `.regression-base/` hold scratch merge-base worktrees for base-red reruns and the bug gate. |
+| `rework/<stem>/<attempt>/<call>/` | Scratch worktree where Rework validates a proposal. |
+| `box.seq/` | Suggestion Box id reservations. |
 | `box/` | Suggestion Box messages and report custody. |
 | `control/` | `active.json` and the control request inbox. |
 | `heartbeat` | Touched by `serve` while all its loops are healthy. |
@@ -701,7 +706,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 
 The journal is the record of truth: append-only JSON lines, fsynced per event. A Journal instance parses each byte once and re-reads only appended lines during normal append-only operation. Event types:
 `state_transition` (run states), `cap_consumed`, `signal` (a closed list of named signals),
-`effect_intent` / `effect_completion`, `timer_armed` / `timer_fired`.
+`effect_intent` / `effect_completion`, `timer_armed` / `timer_fired`, and `checkpoint` (reserved: readers accept it but `Journal.append` refuses it). A `signal` body names exactly one member of `SIGNAL_NAMES` in `clutch/journal.py` under the key `signal` or `kind`; append refuses any other name.
 
 An **Effect** is an action keyed so it happens once: a key with a recorded completion replays
 the recorded result instead of acting again. Model calls, ticket-plane commits, merges, pushes,
@@ -730,7 +735,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | Area | Controls |
 |---|---|
 | `schema_version`, `state_dir`, `worktree_root` | config version; where state and worktrees live |
-| `providers`, `routing`, `routing_default_tier` | models and which serves what (section 8) |
+| `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks; declared `surfaces` entries are refused at config load; `trigger_map` is accepted, unused |
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |

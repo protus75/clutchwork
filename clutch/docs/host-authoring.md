@@ -16,7 +16,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
    clean. Omit stems to check all tickets that are
    not settled or rejected in the journal (all tickets when there is no journal). In a linked
    worktree, lint with no stems uses the main checkout's journal. Lint applies
-   intake's claims and evidence checks without taking the lock or writing anything; it prints
+   intake's claims and evidence checks and the `drain.max_ticket_minutes` stuck ceiling without taking the lock or writing anything; it prints
    findings with fixes and a valid/total summary. Exit 0 means all valid, 1 means findings, and
    2 means a named ticket is missing or the tickets directory is unreadable.
 3. Before review, check that no criterion contradicts merged behavior or an existing test outside
