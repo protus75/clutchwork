@@ -1,10 +1,10 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-All ticket verification commands and the configured coverage, integration, lint, and format gates passed; the baseline-policy mutation was verified, but the remaining assertions were not individually mutation-checked.
+The existing Author stage handles roadmap rows with a smaller change than introducing another authoring stage.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000526-6842d927: docs/roadmap-driver-plan.md still describes roadmap rows as requiring a GO baseline, and is outside the scope fence.
+- box-000527-7bb929bb: docs/roadmap-driver-plan.md still says roadmap rows require a GO baseline and is outside the scope fence.
 
 ## Resolved engine/model
 
