@@ -8,6 +8,10 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- docs-truth-sweep
+- docs-truth-sweep-code-strings
+
 ## Context
 - clutch/git.py
 - clutch/__main__.py::_parser
