@@ -34,7 +34,7 @@ These rules come first because sessions that skim miss them. HARD rules have no 
 - HARD: When a symptom recurs on a surface already fixed, name the root model against the canonical spec (design docs, contracts) and write a root-cause ticket, not another patch. A scope fence that forbids touching the suspected root is a red flag: re-scope it. Tests that assert the current wrong behavior prove nothing. Never write "the defect was not X" without checking the spec.
 - HARD: With every fix or diagnosis, name the change that stops the whole class from recurring (rule, lint, gate, template default, generator) as a separate item. Cheap and in scope: do it under the same authorization. Cheap but out of scope: name it, then follow the ask for unrequested work. Expensive or uncertain: `clutch suggest`. Staying silent is the failure.
 
-- HARD: A fix that belongs in clutch (a prompt spec, gate, ticket format, host guide, or this block) is never copied or patched into host files. Report it for the owner to carry to clutch, then stop. Why: a host copy competes with clutch's rule, reaches no other host, and goes stale on upgrade.
+- HARD: Outside clutch's own repo, a fix that belongs in clutch (a prompt spec, gate, ticket format, host guide, or this block) is never copied or patched into host files nor filed to the Suggestion Box; name it to the user in one line. Only a bug in a `clutch issue` critical class goes upstream: draft a body file (clutch file, defect, minimal evidence, no host-private code or data), and with the user's agreement run `clutch issue` and give them the link to review and submit; then stop. Why: a host copy competes with clutch's rule, reaches no other host, and goes stale on upgrade.
 
 ## Chat session conduct
 

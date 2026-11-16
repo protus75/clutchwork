@@ -32,6 +32,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `stop` | Yes | Finish active work and exit. |
 | `review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |
+| `issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. |
 | `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
 | `publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
@@ -48,3 +49,27 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `serve` | No | Run the continuous daemon. |
 
 Stop serve before `roadmap author`, `triage`, `dismiss`, `release`, `publish`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+
+## Reporting a critical clutch bug
+
+| Channel | Carries | Ends as |
+|---|---|---|
+| Suggestion Box (`clutch suggest`) | The host's own work | A host ticket |
+| Host bug reports (`report_inbox`) | The host application's bug reports | A `bug_report` box message, then a host bug ticket |
+| Upstream issue (`clutch issue`) | A critical clutch bug confirmed by the person | A GitHub issue on the clutch repository |
+
+Critical classes:
+
+- `state-loss`: clutch loses or corrupts committed work, tickets, the journal, or git state.
+- `secret-leak`: a configured secret reaches a log, journal, prompt, commit, or a process that should not have it.
+- `bad-merge`: clutch merges work that failed a hard gate or review, or changed files outside the fence.
+- `engine-stuck`: serve or drain cannot run any ticket on a setup `doctor` passes, and no documented verb releases it.
+- `wrong-refusal`: clutch refuses valid config, ticket, or intake with a paved road that cannot be followed.
+
+Name a clutch problem outside these classes to the user in chat; it goes nowhere else. A session never files a clutch defect to the host's Suggestion Box.
+
+The body contains the clutch file and line, gate or spec text or refusal message, and minimum host detail needed to reproduce. Leave out host-private code or data, ticket files, run records, `doctor` output, and host paths. The verb appends a version footer and scrubs configured provider secrets only when config loads.
+
+With the user's agreement, a chat session runs `clutch issue --class <class> "<title>" --body <file>`. The person opens the printed link, reviews and edits the prefilled form, and submits it. clutch submits nothing. Ticket agents, triage, retro, Author, and harvest never prepare an upstream issue.
+
+The link opens the form only for a GitHub account with access to the repository named in the installed package's Repository URL. Any other account gets GitHub's 404 page.

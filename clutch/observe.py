@@ -56,9 +56,12 @@ STEP_KINDS: dict[str, str] = {
 STATUS_KEYS = ("invalid", "new", "draft", "held_change", "held_operator", "waits_on", "not_eligible", "interrupted", "retry_pending", "after", "ready", "running", "merged", "already_satisfied")
 
 
+def repository_url() -> str:
+    return next(value.split(", ", 1)[1] for value in metadata("clutchwork").get_all("Project-URL") if value.startswith("Repository, "))
+
+
 def help_payload():
-    repo_url = next(value.split(", ", 1)[1] for value in metadata("clutchwork").get_all("Project-URL") if value.startswith("Repository, "))
-    help = help_map(Path.read_text, repo_url)
+    help = help_map(Path.read_text, repository_url())
     return help, help_pick(help)
 
 

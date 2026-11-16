@@ -22,7 +22,7 @@ from uuid import uuid4
 import yaml
 
 import clutch
-from clutch import ask, control, drain, hostfiles, observe, reconcile, requisition, runner, seams, serve, triage
+from clutch import ask, control, drain, hostfiles, issue, observe, reconcile, requisition, runner, seams, serve, triage
 from clutch.box import UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
@@ -276,6 +276,10 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("stop", help="finish the running ticket, admit nothing new, then exit")
     sub.add_parser("review", help="review a committed ticket against merged code and journal its verdict").add_argument("stems", nargs="+")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
+    issue_parser = sub.add_parser("issue", help="print a prefilled GitHub new-issue link for a critical clutch bug")
+    issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
+    issue_parser.add_argument("title")
+    issue_parser.add_argument("--body", type=Path, required=True)
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
     roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
@@ -419,6 +423,18 @@ def main(
             results = asyncio.run(doctor.check(repo=repo, config_path=args.config, env=env, exec_=SubprocessExec(), clock=clock, sleep=asyncio.sleep, in_venv=sys.prefix != sys.base_prefix))
             print(doctor.render(results), end="")
             return 0 if all(r.passed for r in results) else 2
+        if args.verb == "issue":
+            try:
+                body = (repo / args.body).read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as exc:
+                raise runner.Refusal(f"cannot read --body file {args.body}: {exc}", "pass the path of a UTF-8 Markdown file") from None
+            try:
+                redactor = Redactor.from_config(load_config(args.config, cwd=repo), env)
+            except ConfigError as exc:
+                print(f"issue: config did not load, so no secrets were scrubbed: {exc}", file=sys.stderr)
+                redactor = Redactor({})
+            print(issue.link(args.issue_class, args.title, body, redactor.scrub))
+            return 0
         config = load_config(args.config, cwd=repo)
         if args.verb == "drain" and args.detach:
             output = config.state_dir / "drain.out"

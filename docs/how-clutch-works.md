@@ -63,6 +63,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `serve` | yes | Runs the continuous daemon until `kill`, `stop`, or a signal (section 7.2). |
 | `retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
 | `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
+| `issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
 | `roadmap merged [stem ...] [--release R [--priority P ...]] [--since TAG --at-least N [--source S] [--unattended]]` | no | Checks named roadmap rows and release rows for settlement, and counts distinct first-parent ticket merges since a tag with optional source and unattended filters. Prints unmet conditions or success; exits 0 when all hold, 1 otherwise, and 2 on refusal. Writes nothing. |
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
 | `triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
@@ -780,6 +781,8 @@ The block carries only process rules that hold for every host; codebase rules be
   and enforces the `test-gate.toml` unit time budget (60 seconds by default).
 - A host provides `config.yaml`, its conduct files, and its tickets. `clutch/docs/host-contract.md` is
   the full host-facing contract; Python hosts can use its `## Python host test setup`.
+- A clutch defect found in a host is named to the user in chat, never filed to the host Suggestion Box. Only a bug in a `clutch issue` critical class goes upstream, as a link the verb prints for a person to review and submit; see [Reporting a critical clutch bug](../clutch/docs/host-running.md#reporting-a-critical-clutch-bug).
+
 
 ## 13. Eval report artifacts
 
