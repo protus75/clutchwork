@@ -9,16 +9,19 @@ from typing import get_args
 
 from clutch import release as release_module
 from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict
+from clutch.effects import Effects
 from clutch.git import GitError
-from clutch.journal import EventType
+from clutch.journal import TERMINAL_STATES, EventType
+from clutch.notify import notification_key, send
 from clutch.providers import child_env
 from clutch.runner import SPECS_DIR, Refusal
-from clutch.seams import ExecutableNotFound
+from clutch.seams import ExecutableNotFound, NotificationFailed
 from clutch.specs import load_spec
-from clutch.status import SETTLED, last_states
+from clutch.status import SETTLED, last_states, project, reject_queue
 from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings
 
 ROADMAP = "docs/roadmap.md"
+AHEAD = 2
 COLUMNS = ("#", "Stem", "Owner", "Kind", "P", "Depends on", "Runs before", "Content")
 TOKEN = re.compile(r"`([^`]+)`")
 
@@ -502,3 +505,39 @@ async def ship(checkout) -> list[str]:
         version, _, _ = await release_module.publish(checkout.repo, checkout.git, checkout.exec_, checkout.fs, checkout.env, checkout.config)
         lines.append(f"publish: uploaded {version} to PyPI")
     return lines
+
+
+def settles(events) -> int:
+    return sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in events)
+
+
+async def drive(checkout, *, author_messages, notifications, log) -> list[str]:
+    if not (checkout.repo / ROADMAP).is_file():
+        return []
+    lines = []
+    for action in (lambda: author_ahead(checkout, AHEAD, author_messages), lambda: ship(checkout)):
+        try:
+            lines.extend(await action())
+        except Refusal as exc:
+            lines.append(f"roadmap: {exc}")
+    events = checkout.journal.read()
+    terminals = [e for e in events if e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES]
+    n = len(terminals)
+    prefix = "notify/roadmap/digest/"
+    prior = max((int(e.key[len(prefix) :]) for e in events if e.type == EventType.EFFECT_INTENT and e.key and e.key.startswith(prefix) and e.key[len(prefix) :].isdigit()), default=n - 1)
+    merged = [e.ticket for e in terminals[prior:n] if e.body.get("to") == "merged"]
+    held = reject_queue(events)
+    digest = [f"roadmap digest {n}", "merged: " + (", ".join(merged) or "none"), "held: " + ("; ".join(f"{stem} ({held[stem].get('reason', '')})" for stem in sorted(held)) or "none")]
+    try:
+        digest.extend(await status(checkout))
+    except Refusal as exc:
+        digest.append(f"roadmap: {exc}")
+    digest.extend(lines)
+    digest.append(f"spend: ${project(events).spend_usd:.2f}")
+    if checkout.config.notify is not None:
+        try:
+            await send(Effects(checkout.journal), notifications, checkout.config.notify, owner="roadmap", escalation="digest", identity=str(n), message="\n".join(digest), ticket=None)
+        except NotificationFailed as exc:
+            log.event("notify_failed", key=notification_key("roadmap", "digest", str(n)), error=str(exc))
+    log.event("roadmap_drive", lines=digest)
+    return digest

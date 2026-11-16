@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from dataclasses import replace
 from pathlib import Path
 
-from clutch import runner, triage
+from clutch import roadmap, runner, triage
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import SETTLED, record_reoffer, reexec_argv
@@ -89,7 +89,7 @@ class Serve:
         argv=("serve",),
         reexec=None,
     ) -> None:
-        from clutch.__main__ import build_daemon_core, build_notifications
+        from clutch.__main__ import build_daemon_core, build_driver, build_notifications
 
         self.argv, self.reexec = tuple(argv), reexec or SubprocessExec()
         self.engine = Path(__file__).resolve().parent.parent
@@ -105,6 +105,9 @@ class Serve:
         self.retro_due = False
         self.retro = None
         self.retro_task = None
+        self.driver = build_driver()
+        self.driven = None
+        self.driver_task = None
         self.wake = asyncio.Event()
         self.ready = asyncio.Event()
         self.workers: tuple[asyncio.Task, ...] = ()
@@ -251,7 +254,7 @@ class Serve:
                 return False
         return (
             not self.stopping
-            and (self.upgrade is None and not projection.stop_requested and not self.retro_pending() or ticket.stem in self.writers)
+            and (self.upgrade is None and not projection.stop_requested and not self.retro_pending() and not self.driver_pending() or ticket.stem in self.writers)
             and projection.pause_id is None
             and (self.control.admission is None or self.control.admission in projection.released_hold_ids)
             and not any(target["emitting_origin"] == ticket.stem and target["emitting_stage"] == stage for target in self.storm.held_stages().values())
@@ -352,6 +355,18 @@ class Serve:
             raise
         outcome: RetroCheckOutcome = "due" if due else "not_due"
         self.log.event("phase_end", phase="retro_check", outcome=outcome)
+
+    def driver_pending(self):
+        return (self.checkout.repo / roadmap.ROADMAP).is_file() and roadmap.settles(self.checkout.journal.read()) != self.driven
+
+    async def run_driver(self):
+        async with self.mutations():
+            self.control.poll()
+            if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested:
+                return
+            c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
+            self.driven = roadmap.settles(c.journal.read())
+            await self.driver(c, self.log)
 
     async def run_retro(self, request_id):
         async with self.mutations():
@@ -583,6 +598,19 @@ class Serve:
                         if request_id == self.served_retro_id:
                             request_id = None
                         self.retro_task = asyncio.create_task(self.run_retro(request_id))
+                    if self.driver_task is not None and self.driver_task.done():
+                        self.driver_task.result()
+                        self.driver_task = None
+                    if (
+                        self.driver_task is None
+                        and self.retro_task is None
+                        and not self.retro_pending()
+                        and self.driver_pending()
+                        and self.upgrade is None
+                        and not self.control.projection.stop_requested
+                        and self.upgrade_idle()
+                    ):
+                        self.driver_task = asyncio.create_task(self.run_driver())
                     for response in self.responses:
                         response.ask()
                     done = [task for task in self.workers if task.done()]

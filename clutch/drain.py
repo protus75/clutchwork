@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
-from clutch import caps, control, runner, triage
+from clutch import caps, control, roadmap, runner, triage
 from clutch.control import ControlRequest
 from clutch.enginelog import EngineLog
 from clutch.journal import TERMINAL_STATES, Event, EventType, render_ts
@@ -298,6 +298,7 @@ async def drain(
         if signals is not None:
             restore = signals(run._signal_kill)
         run.retro = getattr(dispatch, "_retro", None)
+        run.driver = getattr(dispatch, "_driver", None)
         report = await run.run()
         # A pending self-upgrade is still an offer boundary, never permission to
         # launch a child after a kill accepted during the final preparation.
@@ -363,6 +364,9 @@ async def settle_admissions(checkout):
 
 
 class _Drain:
+    driver = None
+    driven = None
+
     def _signal_kill(self) -> None:
         control.publish_request(self.c.config.state_dir, ControlRequest(uuid4().hex, self.c.control.inbox.lifecycle_id, "kill", None), self.c.fs)
 
@@ -405,6 +409,11 @@ class _Drain:
                     self.served_retro_id = request_id
                 else:
                     await self._run_retro(forced=False)
+            if self.driver is not None and (self.c.repo / roadmap.ROADMAP).is_file() and await self._between_tickets():
+                count = roadmap.settles(self.c.journal.read())
+                if count != self.driven:
+                    self.driven = count
+                    await self._run_driver()
             material = self._offer_material()
             scan = await self._scan()
             shas = {s: await self._sha(s) for s in scan.tickets}
@@ -602,6 +611,14 @@ class _Drain:
                 changed = await self.c.git.diff_names(self.c.repo, f"{commit}^", commit)
                 if self.c.repo.resolve() == ENGINE and any(p.startswith(UPGRADE_PREFIXES) for p in changed):
                     self.upgrade = (stem, commit)
+
+    async def _run_driver(self):
+        log = EngineLog(self.c.config.state_dir / "engine.log", Redactor.from_config(self.c.config, self.c.env), self.c.clock)
+
+        async def abort():
+            pass
+
+        await self._await_controlled(asyncio.create_task(self.driver(self.c, log)), abort, self.c.sleep)
 
     async def _run_retro(self, *, forced):
         log = EngineLog(self.c.config.state_dir / "engine.log", Redactor.from_config(self.c.config, self.c.env), self.c.clock)

@@ -218,6 +218,22 @@ def build_notifications(checkout: runner.Checkout, *, config_path: Path | None, 
     )
 
 
+def build_driver():
+    async def step(checkout, log):
+        from clutch import roadmap
+
+        async def author_messages(ids):
+            llm = await _preflighted_llm(checkout, checkout.control.providers)
+            await triage.triage_pass(checkout, llm, frozenset(ids))
+
+        notifications = CommandNotifications(
+            SubprocessExec(), cwd=checkout.repo, env=child_env(checkout.env, checkout.config, serving=None), timeout=NOTIFY_TIMEOUT_S, scrub=Redactor.from_config(checkout.config, checkout.env).scrub
+        )
+        return await roadmap.drive(checkout, author_messages=author_messages, notifications=notifications, log=log)
+
+    return step
+
+
 def watchdog_observation(workspace: Path, fence):
     from clutch.watchdog import ScopeObservation
 
@@ -283,7 +299,9 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
     roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
-    roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=2)
+    from clutch.roadmap import AHEAD
+
+    roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=AHEAD)
     roadmap_sub.add_parser("status", help="show read-only roadmap progress")
     roadmap_sub.add_parser("gate", help="run a release's ship gate").add_argument("release")
     merged = roadmap_sub.add_parser("merged", help="check merged roadmap conditions")
@@ -780,6 +798,7 @@ def main(
 
             class DrainDispatch:
                 _retro = Retro(checkout, dispatch)
+                _driver = staticmethod(build_driver())
 
                 async def __call__(self, ticket):
                     return await dispatch(ticket)

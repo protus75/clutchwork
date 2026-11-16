@@ -476,7 +476,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 A dispatch exception is journaled as an `infra_error` terminal, re-offered, and held in the Reject queue at the attempts cap.
 
 1. Takes the lock, reconciles, fires due timers, runs the provider preflight, runs intake once.
-2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, scan committed tickets (skipping stems settled or rejected in the journal), pick the
+2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, run the roadmap driver after a settle (section 7.5), scan committed tickets (skipping stems settled or rejected in the journal), pick the
    next ticket, review its committed content if it lacks an approval, run it, merge it inline. Serve applies the same review before Implement and holds a premise-parked ticket until its committed content changes.
 3. **Pick order:** confirmed, unsettled, not rejected, every dependency settled (through split
    successors); among eligible fresh tickets and re-offers, `## Runs before` orders named stems
@@ -520,6 +520,7 @@ Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
 
 Requested retros and automatic retros due after a ticket settles stop new admission, wait for
 the next idle point, run, and then resume admission. A pending stop takes precedence.
+With `docs/roadmap.md` present, the roadmap driver (section 7.5) holds new admission at start and after each settle, runs at the next idle point after any retro, then resumes admission.
 
 A git-checkout engine records its `clutch` tree at startup and checks it before
 admission and after merge passes. A change stops new admissions; after running tickets and
@@ -567,9 +568,15 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
   cost). It notifies on both.
 - **Notifications:** sent by running `config.notify` (an argv) with the message. `serve` replays
   undelivered escalations (storm trips, red streaks, tree mismatches) from the journal. Unset
-  `notify` only logs.
+  `notify` only logs. The roadmap driver sends a digest after every settle (section 7.5).
 - **Checkpoint push:** in `serve`, idle, after 5 merges or 24 hours: `git push origin main`. A
   failed push is journaled and filed to the Suggestion Box.
+
+### 7.5 Roadmap driver
+
+With `docs/roadmap.md` present, drain and serve run the driver at start and after every settle; `run` never does. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, and publishes only with `release.publish: true`.
+
+Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` (section 6.6), not here.
 
 ## 8. AI providers and prompts
 
