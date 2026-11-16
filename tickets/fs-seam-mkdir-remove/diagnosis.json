@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "1bba6d64dccd3647ee15d7e13a7a75b584dce3f8",
+  "stem": "fs-seam-mkdir-remove",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: the fence omits tests/integration/test_restart_timers.py. Its `repository` fixture (line 96) patches rig.fs.write to also call LocalFileSystem.write, but not mkdir or remove, so stage cleanup through ctx.fs.remove leaves real outbox files behind.",
+    "Effect: the full integration run failed 17 tests on the candidate, for example test_serve_admission.py::test_serve_routes_settled_run_to_composed_queue_once[ok] returned gate_failed instead of merged. All 3,337 passed on base. The targeted Verification commands passed.",
+    "Re-scope: add tests/integration/test_restart_timers.py to Scope fence and Scope in. In `repository`, patch rig.fs.mkdir and rig.fs.remove the way `written` mirrors write: call the ScriptFS method, then LocalFileSystem's.",
+    "Add a criterion that `./dev.py test tests/integration/` passes. The listed files missed the callers of the `repository` fixture (test_serve_admission.py and others), so the fenced checks were green while the full suite failed.",
+    "Redo the rest from the merge base as the ticket says: seams.py mkdir/remove, EngineLog keeps a LocalFileSystem on the instance, Journal.append uses self._fs.mkdir, stages.py uses ctx.fs.mkdir/remove, and FakeFS and ScriptFS get the two methods."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
