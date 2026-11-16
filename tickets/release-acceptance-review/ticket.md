@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - roadmap-accept
 
+## Runs before
+- evidence-envelope
+
 ## Context
 - tests/integration/test_roadmap_gate.py::test_real_roadmap_gate_blocks
 - clutch/roadmap.py::gates
