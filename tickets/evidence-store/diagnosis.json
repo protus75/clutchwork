@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ee182698bc3398496450f27f3511ca07f5414794",
+  "produced_at_sha": "4a36c959e9d755824b65794af7cf907610d558ad",
   "stem": "evidence-store",
-  "attempt": 0,
-  "terminal": "incomplete",
-  "stage": "implement",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "The attempt stopped at 157s without committing anything. Work until the full Verification passes: run all three listed ./dev.py test commands, including tests/integration/test_config.py and test_host_contract.py, then commit on the ticket branch before reporting.",
-    "Unit tests in tests/unit/test_evidence_store.py need FileSystem fakes or LocalFileSystem rooted at tmp_path, plus injected read_bytes/size callables (ticket Scope in), so AC9 holds: disk only under tmp_path, no process.",
-    "Rename the pydantic field `schema` in Start/End/Event in clutch/evidence/schema.py. It shadows the BaseModel attribute and warns on import. Store the schema id under a field alias, for example schema_: str = Field(alias='schema'), keeping the record key 'schema'.",
-    "Redo clutch/config.py Evidence(_Strict) max_gb: int = 20 with a positive check and Config.evidence default. Add the Evidence row and evidence default to the config-fields block in clutch/docs/host-contract.md, and the evidence.max_gb row in docs/how-clutch-works.md."
+    "clutch/evidence/store.py put_blob: decode with errors='strict'. On success, redact the text and hash/store the re-encoded bytes. On UnicodeDecodeError, hash and store the raw bytes unchanged. Add a test that non-UTF-8 bytes round-trip exactly through get_blob.",
+    "prune: protect refs found in every file under calls/<key>/ (start.json prompt blob, end.json, normalized/*), including calls that have start.json but no end.json. Delete only oldest-end.json refs that no newer or in-flight call uses. Never delete a record file.",
+    "prune must not rebuild the union of newer records' refs for each record (O(n^2)). Count references per blob once, walk records oldest to newest by end.json timestamp, decrement counts, delete a blob at zero, and stop once total blob bytes <= max_bytes.",
+    "write_record('event') must not publish a single Event as normalized/<normalizer>.json, because FileSystem.publish refuses an existing file. Either validate a list of Events and write it as one file, or drop the event case from write_record/read_record. Keep the AC4 Event model in schema.py.",
+    "Review found the schema, config, host-contract and doc changes sound; redo them as before. Add tests in tests/unit/test_evidence_store.py for a blob shared with a newer start.json and for an in-flight call, using tmp_path and injected fakes only."
   ],
   "mechanical": null,
   "spec_version": "1.7",
