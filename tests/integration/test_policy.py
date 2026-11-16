@@ -47,6 +47,8 @@ def test_bootstrap_without_a_go_or_with_phase_one_no_go_drafts_every_row(tmp_pat
     cfg = config(tmp_path)
     identity = baseline_identity(cfg, ROOT / "clutch" / "specs")
     for row in BOX_POLICY_DEFAULTS:
+        if row == "roadmap_row":
+            continue
         assert state(cfg, row, go=resolve_baseline(cfg, [], specs_dir=ROOT / "clutch" / "specs").binds) == "draft"
         assert state(cfg, row, go=resolve_baseline(cfg, [signal("NO_GO", identity)], specs_dir=ROOT / "clutch" / "specs").binds) == "draft"
 

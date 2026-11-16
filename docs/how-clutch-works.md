@@ -629,7 +629,7 @@ times; each call is spooled under `state_dir/spools/`.
 ### 9.1 Messages
 
 Problems found while working are filed, not fixed in the current diff. Classes: `suggestion`,
-`failure_report`, `override_report`, `retro_finding`, `bug_report`. Each message is a file in
+`failure_report`, `override_report`, `retro_finding`, `bug_report`, `roadmap_row`. A `roadmap_row` carries a roadmap row and its owning plan path. Each message is a file in
 `state_dir/box/`. A repeat of the same signature is folded into the existing message. Sessions file `suggestion` messages with `suggest` directly into the box.
 
 ### 9.2 Triage
@@ -647,9 +647,11 @@ Problems found while working are filed, not fixed in the current diff. Classes: 
 
 A `retro_finding` naming a spec path the repository does not track is declined before the Author call, with a decision record naming the untracked paths and retro report for the owner to carry to clutch.
 
+For a `roadmap_row` message, Author embeds the row and its plan, whole under 40,000 characters and otherwise the Target design and Where each piece lives sections. The ticket uses the row’s stem, kind, and priority; existing evidence under `tickets/<stem>/evidence/` is committed with it.
+
 The Author prompt embeds the authoring guide and skeletons, and each re-prompt carries the last parsed ticket in `previous_reply`. Each later review receives the previous review and the diff from the text it judged. The Author stage writes `tickets/<stem>/ticket.md` with `source: box:<class>`, has
 `requisition_review` check it, and commits it. Its state is `draft` (needs `confirm`) if the
-message was reopened, the review baseline is not GO, `engine_plane_safety_inventory` is empty or
+message was reopened, the review baseline is not GO (except for `roadmap_row`), `engine_plane_safety_inventory` is empty or
 touched by the ticket's fence, or the ticket carries a `gate_bypass`. Otherwise `box_policy`
 decides per message class.
 

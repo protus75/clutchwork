@@ -79,6 +79,7 @@ def test_audit_closed_sets_and_constants():
 
 def test_author_closed_sets_and_constants():
     assert author.AUTHOR_STUCK_S == 900.0
+    assert author.PLAN_WHOLE_CHARS == 40_000
 
 
 def test_baseline_closed_sets_and_constants():
@@ -86,8 +87,8 @@ def test_baseline_closed_sets_and_constants():
 
 
 def test_box_closed_sets_and_constants():
-    assert box.MESSAGE_CLASSES == ("suggestion", "failure_report", "override_report", "retro_finding", "bug_report")
-    assert set(get_args_deep(box.MessageClass)) == {"bug_report", "failure_report", "override_report", "retro_finding", "suggestion"}
+    assert box.MESSAGE_CLASSES == ("suggestion", "failure_report", "override_report", "retro_finding", "bug_report", "roadmap_row")
+    assert set(get_args_deep(box.MessageClass)) == {"bug_report", "failure_report", "override_report", "retro_finding", "suggestion", "roadmap_row"}
 
 
 def test_caps_closed_sets_and_constants():
@@ -109,6 +110,7 @@ def test_config_closed_sets_and_constants():
         "override_report": "draft",
         "retro_finding": "confirmed",
         "suggestion": "draft",
+        "roadmap_row": "confirmed",
     }
     assert set(get_args_deep(config.BoxRow)) == {
         "bug_report_player_no_repro",
@@ -118,6 +120,7 @@ def test_config_closed_sets_and_constants():
         "override_report",
         "retro_finding",
         "suggestion",
+        "roadmap_row",
     }
     assert config.SCHEMA_VERSION == 1
     assert set(get_args_deep(config.Severity)) == {"hard", "soft"}

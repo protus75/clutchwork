@@ -142,6 +142,7 @@ _add(
         "failure_report": "A failure report records a failed dependency or run.",
         "override_report": "An override report records an override.",
         "retro_finding": "A retro finding proposes a follow-up from a retro.",
+        "roadmap_row": "A roadmap row asks Author for the ticket one docs/roadmap.md row describes.",
         "bug_report": "A bug report records a host-reported problem.",
     },
     "9.1 Messages",

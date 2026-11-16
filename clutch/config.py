@@ -30,6 +30,7 @@ BoxRow = Literal[
     "bug_report_self_diagnosed",
     "bug_report_player_repro",
     "bug_report_player_no_repro",
+    "roadmap_row",
 ]
 StartState = Literal["draft", "confirmed"]
 # Strict mode would refuse a YAML string for a Path; paths are the one sanctioned coercion.
@@ -46,6 +47,7 @@ BOX_POLICY_DEFAULTS: dict[str, StartState] = {
     "bug_report_self_diagnosed": "confirmed",
     "bug_report_player_repro": "confirmed",
     "bug_report_player_no_repro": "draft",
+    "roadmap_row": "confirmed",
 }
 
 

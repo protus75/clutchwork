@@ -93,6 +93,7 @@ def test_valid_config_loads_from_cwd_with_shipped_defaults(tmp_path):
         "bug_report_self_diagnosed": "confirmed",
         "bug_report_player_repro": "confirmed",
         "bug_report_player_no_repro": "draft",
+        "roadmap_row": "confirmed",
     }
     assert cfg.notify is None
     assert cfg.report_inbox is None

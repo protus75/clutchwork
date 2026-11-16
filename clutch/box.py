@@ -13,9 +13,10 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationErr
 from clutch.inbox import CAPS, EvidencePaths, ReportDescriptor, SelfReport, bounded
 from clutch.journal import EventType, Journal
 from clutch.seams import FileSystem
+from clutch.tickets import Frontmatter
 
 BOX_DIR = "box"
-MessageClass = Literal["suggestion", "failure_report", "override_report", "retro_finding", "bug_report"]
+MessageClass = Literal["suggestion", "failure_report", "override_report", "retro_finding", "bug_report", "roadmap_row"]
 TestIssue = Literal["unit-io", "slow", "drift", "flaky", "coverage-hard", "over-mocking", "weak-assertion", "shared-state", "duplicate", "skip-rot"]
 
 
@@ -59,6 +60,23 @@ class _Strict(BaseModel):
     model_config = ConfigDict(strict=True, extra="forbid")
 
 
+RoadmapKind = Frontmatter.model_fields["kind"].annotation
+RoadmapPriority = Frontmatter.model_fields["priority"].annotation
+
+
+class RoadmapRow(_Strict):
+    number: Annotated[int, Field(ge=1)]
+    release: NonBlank
+    stem: NonBlank
+    owner: NonBlank
+    kind: RoadmapKind
+    priority: RoadmapPriority
+    depends: list[NonBlank] = Field(default_factory=list)
+    runs_before: list[NonBlank] = Field(default_factory=list)
+    content: NonBlank
+    plan: RepoPath
+
+
 class Verdict(_Strict):
     verdict: Literal["author", "tombstone", "declined"]
     produced_by_spec_version: NonBlank
@@ -95,9 +113,12 @@ class Message(_Strict):
     reopen: bool = False
     report: ReportDescriptor | None = None
     report_arrivals: list[NonBlank] = []
+    roadmap_row: RoadmapRow | None = None
 
     @model_validator(mode="after")
     def _coherent(self) -> "Message":
+        if (self.roadmap_row is not None) != (self.message_class == "roadmap_row"):
+            raise ValueError("roadmap_row is required exactly for roadmap_row messages")
         if self.report is not None and (self.message_class != "bug_report" or self.bug_origin != self.report.report.origin or self.has_repro != (self.report.custody.replay is not None)):
             raise ValueError("host report descriptor must agree with bug origin and copied replay")
         if self.report_arrivals and self.report is None:
@@ -212,6 +233,7 @@ class Box:
         proposed_spec_paths: Sequence[str] = (),
         test_issue: TestIssue | None = None,
         proposed_paths: Sequence[str] = (),
+        roadmap_row: RoadmapRow | None = None,
     ) -> tuple[str, bool]:
         if self._arrival is not None and (not isinstance(occurrence_id, str) or not occurrence_id.strip()):
             raise BoxError("occurrence_id must be a nonblank producer-supplied string; supply a fresh id for a distinct arrival and reuse it on retry")
@@ -240,6 +262,7 @@ class Box:
                 proposed_spec_paths=list(proposed_spec_paths),
                 test_issue=test_issue,
                 proposed_paths=list(proposed_paths),
+                roadmap_row=roadmap_row,
             )
         except ValidationError as exc:
             raise BoxError(f"invalid box message: {exc}; correct the fields named above and enqueue again") from exc

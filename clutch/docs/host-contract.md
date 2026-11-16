@@ -136,7 +136,7 @@ Config:
     circuit_breaker: {k: 3, cooldown_minutes: 10}
     drain: {max_runtime_hours: 12, max_ticket_minutes: 90}
     retro: {enabled: true, test_timing: true, coverage: true, merges: {enabled: true, every: 25}, days: {enabled: true, every: 7}, spikes: {enabled: true, count: 5, kinds: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]}}
-    box_policy: {failure_report: confirmed, retro_finding: confirmed, override_report: draft, suggestion: draft, bug_report_self_diagnosed: confirmed, bug_report_player_repro: confirmed, bug_report_player_no_repro: draft}
+    box_policy: {failure_report: confirmed, retro_finding: confirmed, override_report: draft, suggestion: draft, bug_report_self_diagnosed: confirmed, bug_report_player_repro: confirmed, bug_report_player_no_repro: draft, roadmap_row: confirmed}
     notify: unset
     report_inbox: unset
     context_files: []
@@ -215,7 +215,7 @@ kind: [api, cli]
 trigger: [always, path-prefix-list]
 strategy: [regenerate, union]
 start_state: [draft, confirmed]
-box_row: [failure_report, retro_finding, override_report, suggestion, bug_report_self_diagnosed, bug_report_player_repro, bug_report_player_no_repro]
+box_row: [failure_report, retro_finding, override_report, suggestion, bug_report_self_diagnosed, bug_report_player_repro, bug_report_player_no_repro, roadmap_row]
 ```
 
 `schema_version` must be the integer 1, not a boolean or string. `kind: api`

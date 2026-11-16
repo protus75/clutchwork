@@ -25,7 +25,29 @@ from clutch.status import last_states
 from clutch.tickets import TicketInvalid, split_frontmatter, stamp, stem_findings, template, ticket_path, validate_ticket
 
 AUTHOR_STUCK_S = 900.0
+PLAN_WHOLE_CHARS = 40_000
 NonBlank = Annotated[str, Field(min_length=1, pattern=r"\S")]
+
+
+def plan_excerpt(text: str) -> str:
+    if len(text) < PLAN_WHOLE_CHARS:
+        return text
+    sections = []
+    current = None
+    fenced = False
+    for line in text.splitlines(keepends=True):
+        if line.startswith("```"):
+            fenced = not fenced
+        elif not fenced and line.startswith("## "):
+            if current is not None:
+                sections.append("".join(current).rstrip("\n"))
+            current = [line] if line.rstrip("\r\n") in {"## Target design", "## Where each piece lives"} else None
+            continue
+        if current is not None:
+            current.append(line)
+    if current is not None:
+        sections.append("".join(current).rstrip("\n"))
+    return "\n\n".join(sections) if sections else "Plan exceeds the 40,000-character bound and has neither Target design nor Where each piece lives; read the plan file at the row's plan path."
 
 
 class AuthorReply(BaseModel):
@@ -60,7 +82,11 @@ class AuthorGate:
             self.cleanup()
         findings = list(stem_findings(artifact.stem))
         path = ticket_path(artifact.stem)
-        if (self.checkout.repo / "tickets" / artifact.stem).exists() and artifact.stem not in self.copied:
+        roadmap = self.message.roadmap_row if self.message is not None else None
+        if roadmap is not None and artifact.stem != roadmap.stem:
+            findings.append(Finding(code=self.code, path=path, message=f"roadmap row requires stem {roadmap.stem}", paved_road=f"use the row's stem {roadmap.stem}"))
+        existing = self.checkout.repo / path if roadmap is not None else self.checkout.repo / "tickets" / artifact.stem
+        if existing.exists() and artifact.stem not in self.copied:
             findings.append(Finding(code=self.code, path=path, message=f"stem {artifact.stem!r} already exists", paved_road="choose a new, never-before-used ticket stem"))
         if artifact.stem not in self.passed_stems and any(event.ticket == artifact.stem for event in self.checkout.journal.read()):
             findings.append(Finding(code=self.code, path=path, message=f"stem {artifact.stem!r} is already named in the journal", paved_road="choose a new, never-before-used ticket stem"))
@@ -84,6 +110,11 @@ class AuthorGate:
             if split_frontmatter(candidate) is not None:
                 candidate = stamp(stamp(candidate, "source", f"box:{self.message_class}"), "state", "draft")
             parsed = validate_ticket(artifact.stem, candidate, self.checkout.repo)
+            if roadmap is not None:
+                for field in ("kind", "priority"):
+                    expected = getattr(roadmap, field)
+                    if getattr(parsed.frontmatter, field) != expected:
+                        findings.append(Finding(code=self.code, path=path, message=f"roadmap row requires {field}: {expected}", paved_road=f"write {field}: {expected}"))
             if message is not None and message.report is not None:
                 if parsed.frontmatter.kind != "bug":
                     findings.append(Finding(code=self.code, path=path, message="host report requires kind: bug", paved_road="author a bug ticket with one regression command and carries prefixes"))
@@ -217,6 +248,12 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
         if untracked:
             evidence = f"Untracked spec paths: {', '.join(untracked)}; retro report: {message.retro_report_key}. The clutch install owns these specs; the owner should carry the proposal to clutch."
             return await failure_declined(checkout, driver, box, message, evidence)
+    roadmap = message.roadmap_row
+    plan = "none"
+    if roadmap is not None:
+        if roadmap.plan not in tracked:
+            return await failure_declined(checkout, driver, box, message, f"Untracked plan {roadmap.plan} for roadmap row {roadmap.number} ({roadmap.stem})")
+        plan = plan_excerpt((checkout.repo / roadmap.plan).read_text())
     files = "\n".join(tracked)
     spec: Spec = load_spec((SPECS_DIR / "author.md").read_text())
     try:
@@ -244,6 +281,8 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
             "guide": (Path(__file__).parent / "docs" / "host-authoring.md").read_text(),
             "skeletons": "\n".join(f"{kind}:\n{template(kind)}" for kind in ("feature", "chore", "bug")),
             "request": request,
+            "roadmap_row": roadmap.model_dump_json() if roadmap is not None else "none",
+            "plan": plan,
             "files": files,
             "open_tickets": open_tickets,
             "retry_findings": findings_text(findings),
@@ -332,6 +371,9 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
 
     async def commit() -> str:
         paths = [path, *author_gate.copied.get(reply.stem, [])]
+        if roadmap is not None:
+            evidence = await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"tickets/{reply.stem}/evidence/")
+            paths.extend(p for p in evidence.split("\0") if p)
         return await checkout.git.commit(checkout.repo, f"clutch({reply.stem}): ticket", only=paths)
 
     try:
