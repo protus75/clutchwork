@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "2147a688712183942a231da02bf1b41531b11e06",
+  "stem": "supervisor-rework",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Start again from the merge base and redo all of it: runner.py failure_terminal(supervised=False) with supervised=True on drive's attempts-cap and final calls, the diagnose.md sentence, the six docs/how-clutch-works.md edits, the README step-6 sentence, and the eight test_requisition_gate.py edits.",
+    "The last attempt ended incomplete only because it skipped the wrong-implementation check. For each assertion in criteria 1-6, break the matching runner.py behavior (keep before terminal, missing draw, lift after terminal, lost lessons) and confirm that a test fails.",
+    "runner.py has a positive floor under [coverage.files] in test-gate.toml. Cover every new line from tests/unit/test_supervisor_trigger.py using fakes for clutch.daemon.apply_rework, git.rev_parse, lift_outbox and ctx.fs.write, as tests/unit/test_premise_overruled.py does.",
+    "Run the Rework call, its publication, and the scrubbed rework.md write plus lift_outbox(ctx, stem, 'rework-proposal', attempt=attempt, only='rework.md') before journaling the terminal. Only caps.consume 'supervise' and then the reject_verdict keep actor: supervisor go after it.",
+    "Run all five ## Verification commands, including criterion 8's list unedited and the full ./dev.py test. Report outcome complete only after every command and every wrong-implementation probe has passed."
+  ],
+  "mechanical": null,
+  "spec_version": "1.6",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
