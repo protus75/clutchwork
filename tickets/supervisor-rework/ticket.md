@@ -68,7 +68,7 @@ Scope in:
   - Section 3.3's lift-kind table gains the row `` `rework-proposal` | `rework.md` (the supervisor's refused or escalated edit) ``.
   - Section 6.1 step 4: "skipping the cap draw, Diagnosis, and Rework" becomes "skipping the cap draw, Diagnosis, and step 7's Rework, then going to the dispatch and supervisor steps".
   - Section 6.1's step 8 becomes three steps: decide the dispatch; the supervisor step (section 6.6) when it applies; journal the terminal, then any supervisor keep. Step 9 is renumbered.
-  - Section 6.4: "without another diagnosis or rework call" becomes "without another diagnosis or rework call, except the supervisor step (section 6.6) for a `gate_failed` or `premise_failed`".
+  - Section 6.4: the sentence "The failure reaching `caps.attempts` is itself routed with reason `attempts cap spent`, without another diagnosis or rework call, including merge-conflict handoffs." becomes "The failure reaching `caps.attempts` is itself routed with reason `attempts cap spent`, without another diagnosis or rework call, including merge-conflict handoffs; a `gate_failed` or `premise_failed` that `runner.drive` routes this way still meets the supervisor step (section 6.6), and a conflict handoff never does."
   - Section 6.6 gains a **Supervisor keep** bullet stating the trigger, the exclusions and their reasons, the keep and draw, `caps.supervise`, and the `rework.md` escalation.
   - Section 6.7's Premise park bullet: "only an operator `confirm` releases it" becomes "only an operator `confirm` or a supervisor keep (section 6.6) releases it".
   No other sentence in the file changes.
