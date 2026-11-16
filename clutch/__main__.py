@@ -16,6 +16,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence, Set
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import get_args
 from uuid import uuid4
 
 import yaml
@@ -51,6 +52,7 @@ from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalF
 from clutch.status import last_states, lint_admission, order_admission, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
+    Frontmatter,
     IntakeRefused,
     Ticket,
     TicketInvalid,
@@ -278,6 +280,14 @@ def _parser() -> argparse.ArgumentParser:
     roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
     roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=2)
+    merged = roadmap_sub.add_parser("merged", help="check merged roadmap conditions")
+    merged.add_argument("stems", nargs="*")
+    merged.add_argument("--release")
+    merged.add_argument("--priority", nargs="+", choices=get_args(Frontmatter.model_fields["priority"].annotation))
+    merged.add_argument("--since")
+    merged.add_argument("--at-least", type=int)
+    merged.add_argument("--source")
+    merged.add_argument("--unattended", action="store_true")
     sub.add_parser("publish", help="build the tagged release and upload it when release.publish is true")
     release = sub.add_parser("release", help="bump, commit, and tag a local release without publishing")
     part = release.add_mutually_exclusive_group(required=True)
@@ -633,6 +643,12 @@ def main(
         if args.verb == "roadmap":
             from clutch import roadmap
 
+            if args.roadmap_verb == "merged":
+                ok, lines = asyncio.run(
+                    roadmap.merged(checkout, args.stems, release=args.release, priorities=args.priority or (), since=args.since, at_least=args.at_least, source=args.source, unattended=args.unattended)
+                )
+                print("\n".join(lines))
+                return 0 if ok else 1
             if args.ahead < 1:
                 raise runner.Refusal("--ahead must be at least 1", "choose a positive window")
 

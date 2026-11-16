@@ -32,7 +32,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `stop` | Yes | Finish active work and exit. |
 | `review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |
-| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. |
+| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. |
 | `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
 | `publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release` | No | Bump the version with `--minor` or `--patch`, commit `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
@@ -47,4 +47,4 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `serve` | No | Run the continuous daemon. |
 
-Stop serve before `roadmap`, `triage`, `dismiss`, `release`, `publish`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `roadmap author`, `triage`, `dismiss`, `release`, `publish`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.

@@ -5,10 +5,12 @@ from dataclasses import dataclass, field
 from typing import get_args
 
 from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict
+from clutch.git import GitError
+from clutch.journal import EventType
 from clutch.runner import SPECS_DIR, Refusal
 from clutch.specs import load_spec
 from clutch.status import SETTLED, last_states
-from clutch.tickets import Frontmatter
+from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings
 
 ROADMAP = "docs/roadmap.md"
 COLUMNS = ("#", "Stem", "Owner", "Kind", "P", "Depends on", "Runs before", "Content")
@@ -282,3 +284,73 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     lines.extend(f"roadmap: row {wait.row.number} {wait.row.stem} waits: {wait.reason} -- {wait.road}" for wait in choice.waits)
     lines.append(f"roadmap: {opened} of {ahead} rows open")
     return lines
+
+
+def release_name(heading: str) -> str:
+    return re.split(r"[ ,]", heading, maxsplit=1)[0]
+
+
+async def merged(checkout, stems, *, release=None, priorities=(), since=None, at_least=None, source=None, unattended=False) -> tuple[bool, list[str]]:
+    if not stems and release is None and at_least is None:
+        raise Refusal("no condition", "add a stem, --release, or --since and --at-least")
+    if priorities and release is None:
+        raise Refusal("--priority needs --release", "add --release or drop --priority")
+    if (since is None) != (at_least is None):
+        raise Refusal("--since and --at-least must be paired", "add the missing flag or drop the other")
+    if (source is not None or unattended) and at_least is None:
+        raise Refusal("count filter needs --at-least", "add --since and --at-least or drop --source and --unattended")
+    if at_least is not None and at_least < 1:
+        raise Refusal("--at-least must be positive", "set --at-least to at least 1")
+    for stem in stems:
+        if findings := stem_findings(stem):
+            raise Refusal(findings[0].message, findings[0].paved_road)
+    events = checkout.journal.read()
+    states = last_states(events)
+    lines = []
+    if stems or release is not None:
+        path = checkout.repo / ROADMAP
+        if not path.is_file():
+            raise Refusal(f"missing {ROADMAP}", "restore docs/roadmap.md")
+        rows = parse(path.read_text())
+        choice = choose(rows, states=states, files=frozenset())
+
+        def report(row, label):
+            if not row.struck and row not in choice.strike:
+                state = states.get(row.stem)
+                reason = (f"is {state}" if state else "is not in the journal") if state not in SETTLED else "has a split ticket that has not settled"
+                lines.append(f"roadmap merged: {label}row {row.number} {row.stem} {reason}")
+
+        for stem in stems:
+            row = next((row for row in rows if row.stem == stem), None)
+            if row is None:
+                raise Refusal(f"no row for {stem}", "name a row's stem from docs/roadmap.md section 8")
+            report(row, "")
+        if release is not None:
+            selected = [row for row in rows if release_name(row.release) == release]
+            if not selected:
+                raise Refusal(f"no release {release}", "name a release heading of docs/roadmap.md section 8")
+            for row in selected:
+                if not priorities or row.priority in priorities:
+                    report(row, f"release {release} ")
+    if since is not None:
+        tag = f"refs/tags/{since}"
+        try:
+            await checkout.git.rev_parse(checkout.repo, tag)
+        except GitError:
+            raise Refusal(f"missing tag {since}", "a phase's tag is made at its start by `clutch release --minor`") from None
+        log = await checkout.git._run(checkout.repo, "log", "--first-parent", "--format=%(trailers:key=clutch-ticket,valueonly)", f"{tag}..HEAD")
+        found = {line.strip() for line in log.splitlines() if line.strip()}
+        sources = {}
+        verdicts = set()
+        for event in events:
+            if event.type != EventType.SIGNAL:
+                continue
+            signal = event.body.get("signal")
+            if signal == INTAKE_SIGNAL:
+                sources[event.ticket] = event.body.get("source")
+            if signal == "draft_confirmed" or (signal == "reject_verdict" and event.body.get("actor") == "operator"):
+                verdicts.add(event.ticket)
+        count = sum(1 for stem in found if (source is None or sources.get(stem) == source) and (not unattended or stem not in verdicts))
+        if count < at_least:
+            lines.append(f"roadmap merged: {count} of {at_least} tickets merged since {since} match")
+    return (False, lines) if lines else (True, ["roadmap merged: ok"])
