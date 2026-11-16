@@ -1,0 +1,6 @@
+sample chars 2265 utf8 bytes 2265
+quote(safe="")   3237 1.43
+quote_plus(safe="") 2547 1.12
+base len 50
+urlencode full url 2664
+login detour url 3709 1.39

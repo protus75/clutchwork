@@ -1,0 +1,10 @@
+{"url_len": 6000, "cookie_value_len": 0, "status": "200", "curl_err": ""}
+{"url_len": 6500, "cookie_value_len": 0, "status": "500", "curl_err": ""}
+{"url_len": 6000, "cookie_value_len": 1000, "status": "500", "curl_err": ""}
+{"url_len": 6000, "cookie_value_len": 3000, "status": "500", "curl_err": ""}
+{"url_len": 5000, "cookie_value_len": 3000, "status": "500", "curl_err": ""}
+{"url_len": 4000, "cookie_value_len": 3000, "status": "500", "curl_err": ""}
+{"url_len": 4000, "cookie_value_len": 6000, "status": "500", "curl_err": ""}
+{"url_len": 2000, "cookie_value_len": 6000, "status": "500", "curl_err": ""}
+{"url_len": 6500, "cookie_value_len": 3000, "status": "500", "curl_err": ""}
+{"url_len": 6500, "cookie_value_len": 6000, "status": "500", "curl_err": ""}
