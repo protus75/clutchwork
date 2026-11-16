@@ -1,5 +1,5 @@
 ---
-state: draft
+state: confirmed
 source: box:roadmap_row
 priority: P2
 kind: chore
