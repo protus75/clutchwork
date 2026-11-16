@@ -384,6 +384,8 @@ and replies with a verdict and 1-5 lessons:
 - `split`: Rework the ticket into smaller ones.
 - `reject`, `abandon-human`: send it to the Reject queue.
 
+An over-long lesson is trimmed at a word boundary and its index recorded in `diagnosis.json` `trimmed_lessons` rather than refused.
+
 If a cap is already spent or the worktree is gone, the verdict is a mechanical `abandon-human`
 with no model call. If the worktree exists, `diagnosis.json` is lifted and a `diagnosis` signal is journaled; if it is gone, no `diagnosis.json` is written or lifted and only the journaled `diagnosis` signal records the mechanical verdict.
 

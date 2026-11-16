@@ -43,7 +43,6 @@ def diagnosis(repo: Path) -> Diagnosis:
         {"verdict": "maybe", "lessons": ["do this"]},
         {"verdict": "retry", "lessons": []},
         {"verdict": "retry", "lessons": ["   "]},
-        {"verdict": "retry", "lessons": ["x" * 301]},
         {"verdict": "retry", "lessons": ["x"] * 6},
         {"verdict": "retry", "lessons": ["x"], "extra": "forbidden"},
     ],
@@ -224,3 +223,16 @@ def test_render_over_bound_calls_rework_but_not_diagnosis(repo, monkeypatch, wor
         messages = Box(repo / ".clutch/state/box", LocalFileSystem()).messages()
         assert len(messages) == 1 and "no usable workspace" in messages[0].summary
         assert "shrink or split" in messages[0].summary
+
+
+def test_overlong_lesson_is_trimmed_in_one_diagnosis_call(repo):
+    author(repo)
+    lesson = ("words  " + "words " * 60)[:324]
+    code, llm = invoke(repo, [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis_reply(lesson)])
+    assert code == runner.EXIT_TICKET
+    assert len([request for request in llm.requests if request.surface == "diagnose"]) == 1
+    record = json.loads((repo / "tickets" / STEM / "diagnosis.json").read_text())
+    assert record["verdict"] == "retry"
+    assert record["mechanical"] is None
+    assert record["lessons"] == ["words  " + " ".join(["words"] * 48)]
+    assert record["trimmed_lessons"] == [0]

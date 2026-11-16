@@ -148,6 +148,27 @@ DIAGNOSIS_LESSON_CHARS = 300
 class DiagnosisReply(_Strict):
     verdict: DiagnosisVerdictName
     lessons: Annotated[list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=DIAGNOSIS_LESSON_CHARS)]], Field(min_length=1, max_length=DIAGNOSIS_MAX_LESSONS)]
+    trimmed_lessons: list[int] = []
+
+    @model_validator(mode="before")
+    @classmethod
+    def _trim_lessons(cls, value):
+        if not isinstance(value, dict):
+            return value
+        value = value.copy()
+        trimmed = []
+        lessons = value.get("lessons")
+        if isinstance(lessons, list):
+            lessons = lessons.copy()
+            for index, lesson in enumerate(lessons):
+                if isinstance(lesson, str) and len(text := lesson.strip()) > DIAGNOSIS_LESSON_CHARS:
+                    prefix = text[:DIAGNOSIS_LESSON_CHARS]
+                    boundary = next((i for i in range(len(prefix) - 1, -1, -1) if prefix[i].isspace()), None)
+                    lessons[index] = (prefix if boundary is None else prefix[:boundary]).rstrip()
+                    trimmed.append(index)
+            value["lessons"] = lessons
+        value["trimmed_lessons"] = trimmed
+        return value
 
 
 class Diagnosis(Artifact):
@@ -158,6 +179,7 @@ class Diagnosis(Artifact):
     verdict: DiagnosisVerdictName
     lessons: list[str]
     mechanical: str | None
+    trimmed_lessons: list[int] = []
     spec_version: NonBlank
     provider: str | None
     model: str | None

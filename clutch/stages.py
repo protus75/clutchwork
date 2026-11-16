@@ -418,7 +418,17 @@ def diagnose_stage(spec: Spec, material: DiagnosisMaterial) -> LlmStage:
 
 
 async def write_diagnosis(
-    ctx: StageContext, ticket: Ticket, *, attempt: int, terminal: str, stage: str | None, verdict: str, lessons: list[str], mechanical: str | None, cost: Cost = Cost()
+    ctx: StageContext,
+    ticket: Ticket,
+    *,
+    attempt: int,
+    terminal: str,
+    stage: str | None,
+    verdict: str,
+    lessons: list[str],
+    mechanical: str | None,
+    cost: Cost = Cost(),
+    trimmed_lessons: list[int] | None = None,
 ) -> Diagnosis:
     spec = _spec(ctx, "diagnose")
     record = Diagnosis(
@@ -431,6 +441,7 @@ async def write_diagnosis(
         verdict=verdict,
         lessons=lessons,
         mechanical=mechanical,
+        trimmed_lessons=trimmed_lessons if trimmed_lessons is not None else [],
         spec_version=spec.meta.version,
         provider=cost.provider,
         model=cost.model,
@@ -457,7 +468,16 @@ async def diagnose(ctx: StageContext, ticket: Ticket, material: DiagnosisMateria
     reply = result.artifact
     if result.outcome == "ok" and isinstance(reply, DiagnosisReply):
         return await write_diagnosis(
-            ctx, ticket, attempt=attempt, terminal=material.terminal, stage=material.stage, verdict=reply.verdict, lessons=list(reply.lessons), mechanical=None, cost=result.cost
+            ctx,
+            ticket,
+            attempt=attempt,
+            terminal=material.terminal,
+            stage=material.stage,
+            verdict=reply.verdict,
+            lessons=list(reply.lessons),
+            mechanical=None,
+            cost=result.cost,
+            trimmed_lessons=reply.trimmed_lessons,
         )
     return await write_diagnosis(
         ctx, ticket, attempt=attempt, terminal=material.terminal, stage=material.stage, verdict="abandon-human", lessons=[], mechanical=f"no schema-valid verdict ({result.outcome})", cost=result.cost
