@@ -440,7 +440,6 @@ def test_bug_gate_merge_report_custody(ctx, monkeypatch, mode, bypass):
                     file.write_bytes(data)
 
         monkeypatch.setattr(stages, "gather_evidence", without_custody)
-        monkeypatch.setattr(merge, "gather_evidence", without_custody)
         path = ctx.repo / f"tickets/{STEM}/checks.json"
         ctx.fs.write(path, b"CHECK REPORT MUST NOT BE READ OR REWRITTEN")
         await commit(ctx, ctx.repo, [f"tickets/{STEM}/checks.json"])

@@ -283,7 +283,7 @@ def test_restore_rebase_safety_integration_order(ctx, monkeypatch):
             monkeypatch.setattr(stages, name, record)
         result = await admission(ctx, ticket)
         assert result.outcome == "ok", result.findings
-        assert events == ["restore", "rebase_stop_at_conflict", "gather_safety_evidence", "gather_evidence", "gather_safety_evidence", "merge_squash"]
+        assert events == ["restore", "rebase_stop_at_conflict", "gather_safety_evidence", "gather_evidence", "merge_squash"]
 
     run(scenario())
 

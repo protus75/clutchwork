@@ -26,24 +26,18 @@ if TYPE_CHECKING:
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from clutch.artifacts import Artifact, Cost, Finding, NonBlank, StageResult
+from clutch.artifacts import Artifact, Cost, Finding, NonBlank, StageResult, refused
 from clutch.gates import GateReport, run_gates
-from clutch.git import GitError, RebaseRefused
+from clutch.git import GitError
 from clutch.journal import Event, EventType
 from clutch.stages import (
-    CHECK_GATES,
     KNOWN_ARTIFACTS,
     MAIN,
     ApprovedInvoice,
     StageContext,
-    check_severity,
     dirty_code,
-    gather_evidence,
-    gather_safety_evidence,
     read_review,
-    run_host_command,
     ticket_change_findings,
-    triggered_hosts,
 )
 from clutch.tickets import TICKETS_DIR, Ticket, TicketInvalid, ticket_path, validate_ticket
 
@@ -154,18 +148,18 @@ class AdmissionBoundary:
     async def __call__(self, ticket: Ticket, *, attempt: int) -> "StageResult | ConflictHandoff":
         ctx = self.ctx
         if findings := await ticket_change_findings(ctx, ticket.stem):
-            return _refused(findings, Cost())
+            return refused(findings, Cost())
         if self.mode == "inline":
             return await merge(ctx, ticket, attempt=attempt)
         started = ctx.driver.clock()
         if findings := retro_bridge_findings(ctx, ticket):
-            return _refused(findings, Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
+            return refused(findings, Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
         reviewed = await ctx.git.rev_parse(ctx.repo, ticket.stem)
         paths = await ctx.git.diff_names(ctx.repo, MAIN, ticket.stem)
         candidate = read_candidate(ctx, ticket, reviewed, paths)
         reports = run_gates((PostRebaseGate(),), candidate, ctx.repo, severity={"post_rebase_regate": "hard"})
         if reports.hard_failures:
-            return _refused([f for r in reports.hard_failures for f in r.findings], Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
+            return refused([f for r in reports.hard_failures for f in r.findings], Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
         assert self.queue is not None
         key = ticket.stem, attempt
         result = asyncio.get_running_loop().create_future()
@@ -192,10 +186,6 @@ def squash_message(ticket: Ticket, reviewed_sha: str) -> str:
     """Subject `clutch(<stem>): <Goal line>` plus the trailers reconcile maps a commit back by."""
     goal = next(line.strip() for line in ticket.sections["Goal / Why"].splitlines() if line.strip())
     return f"clutch({ticket.stem}): {goal}\n\nclutch-ticket: {ticket.stem}\nclutch-reviewed-sha: {reviewed_sha}\n"
-
-
-def _refused(findings: list[Finding], cost: Cost) -> StageResult:
-    return StageResult(outcome="gate_failed", artifact=None, findings=findings, cost=cost)
 
 
 def read_candidate(ctx: StageContext, ticket: Ticket, reviewed: str, changed_files: list[str]) -> Candidate:
@@ -284,48 +274,22 @@ async def dirty_overlap(ctx: StageContext, stem: str) -> list[Finding]:
 
 async def merge(ctx: StageContext, ticket: Ticket, *, attempt: int) -> StageResult:
     """Admit one reviewed branch to main, or refuse it with findings and main untouched."""
-    stem = ticket.stem
-    started = ctx.driver.clock()
-    worktree = ctx.worktree(stem)
-    if findings := await ticket_change_findings(ctx, stem):
-        return _refused(findings, Cost())
-    reviewed = await ctx.git.rev_parse(ctx.repo, stem)
+    from clutch.mergequeue import MergeQueue
 
-    unchanged = await main_code_unchanged(ctx, reviewed)
-
-    # Lifted outbox copies show as tracked deletions in a worktree born from a main that already held
-    # them, and a dirty tree refuses the rebase. Restoring to the branch's committed ticket plane (which
-    # the branch never changes) makes the rebase land it on main's content; restoring main's content
-    # BEFORE the rebase would itself dirty the index against the older branch head.
-    await ctx.git.restore(worktree, [TICKETS_DIR], source=stem)
-    try:
-        await ctx.git.rebase(worktree, MAIN)
-    except RebaseRefused as e:
-        cost = Cost(seconds=(ctx.driver.clock() - started).total_seconds())
-        return _refused([Finding(code="post_rebase_regate", message=f"rebase onto main refused: {e.err.strip()}", paved_road=f"re-run `run {stem}` so Implement re-branches from current main")], cost)
-
-    evidence = await gather_safety_evidence(ctx, ticket, "ok")
-    skip = unchanged and bool(evidence.changed_files)
-    if not skip:
-        evidence = await gather_evidence(ctx, ticket, "ok", attempt=attempt, stage="merge")
-    candidate = read_candidate(ctx, ticket, reviewed, evidence.changed_files)
-    severity = check_severity(ctx, ticket)
-    gated = [run_gates(MERGE_GATES, candidate, ctx.repo, severity=severity)]
-    if not skip:
-        gated.insert(0, run_gates(CHECK_GATES, evidence, worktree, severity=severity))
-    host = []
-    for n, entry in [] if skip else triggered_hosts(ctx, evidence.changed_files, hard_only=True):
-        _, report = await run_host_command(ctx, ticket, attempt, entry.argv, entry.code, f"merge/host-{n:02d}.txt")
-        host.extend(report.findings)
-    if hard := [f for g in gated for r in g.hard_failures for f in r.findings] + host:
-        return _refused(hard, Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
-
-    if findings := await dirty_overlap(ctx, stem):
-        return _refused(findings, Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
-    admission = await write_squash(ctx, ticket, reviewed, attempt=attempt)
-    await retire(ctx, stem)
-    soft = [f for g in gated for f in g.findings]
-    return StageResult(outcome="ok", artifact=admission, findings=soft, cost=Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
+    return await MergeQueue(ctx, escalate=lambda _: None)._admit(
+        ticket,
+        attempt,
+        conflict_ladder=False,
+        safety_tier=False,
+        receipt=False,
+        tree_check=False,
+        red_streak=False,
+        conflict_facts=False,
+        inline_hosts=True,
+        gather_stage="merge",
+        strategy_scope=False,
+        receipt_lookup=False,
+    )
 
 
 async def write_squash(ctx: StageContext, ticket: Ticket, reviewed: str, *, attempt: int) -> Admission:

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 import yaml
 
-from clutch.artifacts import Cost, Finding, Harvest, StageResult
+from clutch.artifacts import Cost, Finding, Harvest, StageResult, refused
 from clutch.box import BOX_DIR
 from clutch.caps import capability, consume, lineage, next_rung, spent, spent_reason, supervise_draws
 from clutch.config import Config, ConfigSnapshot, snapshot_config
@@ -216,7 +216,7 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None, consume_ha
         return "running"
     stage, result = run.last
     if findings := await ticket_change_findings(ctx, ticket.stem, expected=run.ticket_sha):
-        result = StageResult(outcome="gate_failed", artifact=None, findings=findings, cost=result.cost)
+        result = refused(findings, result.cost)
     if stage == "review" and result.outcome == "ok":
         from clutch.mergequeue import ConflictHandoff
 

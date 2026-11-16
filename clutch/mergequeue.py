@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from clutch import merge, stages
-from clutch.artifacts import Cost, Finding, StageResult
+from clutch.artifacts import Cost, Finding, StageResult, refused
 from clutch.drain import authored_at, sort_key
 from clutch.effects import Effects
 from clutch.gates import GateReport, run_gates
@@ -268,27 +268,46 @@ class MergeQueue:
                 return [self._finding(f"cannot resolve {path}: {exc}", "resolve the conflict through Rework and obtain a new approval", path=path)]
         return []
 
-    async def _admit(self, ticket: Ticket, attempt: int) -> StageResult | ConflictHandoff:
+    async def _admit(
+        self,
+        ticket: Ticket,
+        attempt: int,
+        *,
+        conflict_ladder: bool = True,
+        safety_tier: bool = True,
+        receipt: bool = True,
+        tree_check: bool = True,
+        red_streak: bool = True,
+        conflict_facts: bool = True,
+        inline_hosts: bool = False,
+        gather_stage: str = "merge-integration",
+        strategy_scope: bool = True,
+        receipt_lookup: bool = True,
+    ) -> StageResult | ConflictHandoff:
         ctx, stem = self.ctx, ticket.stem
         worktree = ctx.worktree(stem)
         started = ctx.driver.clock()
         conflicts, hits = set(), set()
         rebasing = False
 
-        def refused(findings: list[Finding]) -> StageResult:
-            return merge._refused(findings, Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
+        def elapsed() -> Cost:
+            return Cost(seconds=(ctx.driver.clock() - started).total_seconds())
+
+        def facts(*args, **kwargs):
+            if conflict_facts:
+                self._facts(*args, **kwargs)
 
         if findings := await stages.ticket_change_findings(ctx, stem):
-            return refused(findings)
+            return refused(findings, elapsed() if conflict_ladder else Cost())
 
         try:
-            receipts = [r for r in regate_receipts(ctx.driver.journal.read()).values() if r["stem"] == stem and r["attempt"] == attempt and r["admission"] == "HELD"]
+            receipts = [r for r in regate_receipts(ctx.driver.journal.read()).values() if r["stem"] == stem and r["attempt"] == attempt and r["admission"] == "HELD"] if receipt_lookup else []
             reviewed = receipts[-1]["reviewed_sha"] if receipts else await ctx.git.rev_parse(ctx.repo, stem)
             unchanged = await merge.main_code_unchanged(ctx, reviewed)
-            candidate_base = await ctx.git.rev_parse(ctx.repo, "main")
+            candidate_base = await ctx.git.rev_parse(ctx.repo, "main") if receipt else None
             await ctx.git.restore(worktree, [TICKETS_DIR], source=stem)
             rebasing = True
-            step = ctx.git.rebase_stop_at_conflict(worktree, stages.MAIN)
+            step = ctx.git.rebase_stop_at_conflict(worktree, stages.MAIN) if conflict_ladder else ctx.git.rebase(worktree, stages.MAIN)
             while True:
                 try:
                     await step
@@ -296,8 +315,11 @@ class MergeQueue:
                     break
                 except RebaseRefused as exc:
                     rebasing = False
-                    self._facts(stem, conflicts, hits)
-                    return refused([self._finding(f"rebase onto main refused: {exc.err.strip()}", f"re-run `run {stem}` so Implement re-branches from current main")])
+                    facts(stem, conflicts, hits)
+                    message = f"rebase onto main refused: {exc.err.strip()}"
+                    road = f"re-run `run {stem}` so Implement re-branches from current main"
+                    finding = self._finding(message, road) if conflict_ladder else Finding(code="post_rebase_regate", message=message, paved_road=road)
+                    return refused([finding], elapsed())
                 except GitError:
                     paths = await ctx.git.conflicted_paths(worktree)
                     conflicts.update(paths)
@@ -305,7 +327,7 @@ class MergeQueue:
                     if findings:
                         await ctx.git._call(worktree, "rebase", "--abort")
                         rebasing = False
-                        self._facts(stem, conflicts, hits, handoff=True)
+                        facts(stem, conflicts, hits, handoff=True)
                         return ConflictHandoff(stem=stem, reviewed_sha=reviewed, conflicted_paths=sorted(conflicts), findings=findings)
                     step = ctx.git.rebase_continue(worktree)
 
@@ -313,37 +335,51 @@ class MergeQueue:
             skip = unchanged and bool(evidence.changed_files) and not receipts
             candidate = merge.read_candidate(ctx, ticket, reviewed, evidence.changed_files)
             severity = stages.check_severity(ctx, ticket)
-            scoped, strategy_findings = self._scoped(evidence, ticket)
-            safety = [
-                run_gates((g for g in stages.CHECK_GATES if g.code in {"scope_fence", "run_record"}), scoped, worktree, severity=severity),
-                run_gates(merge.MERGE_GATES, candidate, ctx.repo, severity=severity),
-            ]
-            _, host = ([], []) if skip else await self.host_checks(ticket, attempt=attempt, safety=True)
+            scoped, strategy_findings = self._scoped(evidence, ticket) if strategy_scope else (evidence, [])
+            safety = []
+            if safety_tier:
+                safety.append(run_gates((g for g in stages.CHECK_GATES if g.code in {"scope_fence", "run_record"}), scoped, worktree, severity=severity))
+            if safety_tier or skip:
+                safety.append(run_gates(merge.MERGE_GATES, candidate, ctx.repo, severity=severity))
+            _, host = ([], []) if skip or not safety_tier else await self.host_checks(ticket, attempt=attempt, safety=True)
             hard = strategy_findings + [f for g in safety for r in g.hard_failures for f in r.findings]
             hard += [f for r in host if r.verdict == "fail" for f in r.findings]
             if hard:
-                self._facts(stem, conflicts, hits)
-                return refused(hard)
+                facts(stem, conflicts, hits)
+                return refused(hard, elapsed())
 
             integration = []
             if not skip:
-                evidence = await stages.gather_evidence(ctx, ticket, "ok", attempt=attempt, stage="merge-integration")
-                scoped, strategy_findings = self._scoped(evidence, ticket)
+                evidence = await stages.gather_evidence(ctx, ticket, "ok", attempt=attempt, stage=gather_stage, safety=evidence)
+                scoped, strategy_findings = self._scoped(evidence, ticket) if strategy_scope else (evidence, [])
                 candidate = merge.read_candidate(ctx, ticket, reviewed, evidence.changed_files)
                 integration = [run_gates(stages.CHECK_GATES, scoped, worktree, severity=severity), run_gates(merge.MERGE_GATES, candidate, ctx.repo, severity=severity)]
-                _, host = await self.host_checks(ticket, attempt=attempt, safety=False)
+                if inline_hosts:
+                    host = []
+                    for n, entry in stages.triggered_hosts(ctx, evidence.changed_files, hard_only=True):
+                        _, report = await self._command(ticket, attempt, entry.argv, entry.code, f"merge/host-{n:02d}.txt")
+                        host.append(report)
+                else:
+                    _, host = await self.host_checks(ticket, attempt=attempt, safety=False)
                 hard = strategy_findings + [f for g in integration for r in g.hard_failures for f in r.findings]
-                hard += [f for r in host if r.verdict == "fail" for f in r.findings]
-                self._facts(stem, conflicts, hits, red=evidence.changed_files if hard else [])
+                hard += [f for r in host if inline_hosts or r.verdict == "fail" for f in r.findings]
+                facts(stem, conflicts, hits, red=evidence.changed_files if hard else [])
                 if hard:
-                    if stem not in self.red_stems:
+                    if red_streak and stem not in self.red_stems:
                         self.red_stems.append(stem)
-                    if len(self.red_stems) == RED_STREAK_LIMIT:
+                    if red_streak and len(self.red_stems) == RED_STREAK_LIMIT:
                         self._hold(stem, {"kind": RED_STREAK, "stems": list(self.red_stems), "limit": RED_STREAK_LIMIT})
-                    return refused(hard)
-                self.red_stems.clear()
+                    return refused(hard, elapsed())
+                if red_streak:
+                    self.red_stems.clear()
             else:
-                self._facts(stem, conflicts, hits)
+                facts(stem, conflicts, hits)
+            if not receipt and not tree_check:
+                if findings := await merge.dirty_overlap(ctx, stem):
+                    return refused(findings, elapsed())
+                admission = await merge.write_squash(ctx, ticket, reviewed, attempt=attempt)
+                await merge.retire(ctx, stem)
+                return StageResult(outcome="ok", artifact=admission, findings=[f for g in integration + safety for f in g.findings], cost=Cost(seconds=(ctx.driver.clock() - started).total_seconds()))
             checked_tree = await ctx.git.rev_parse(worktree, "HEAD^{tree}")
             candidate_sha = await ctx.git.rev_parse(worktree, "HEAD")
             key = f"{MERGE_REGATE}/{stem}/{attempt}/{candidate_base}/{candidate_sha}"
@@ -365,7 +401,7 @@ class MergeQueue:
                 )
 
             if findings := await merge.dirty_overlap(ctx, stem):
-                return refused(findings)
+                return refused(findings, elapsed())
             await Effects(ctx.driver.journal).run(receipt_action, key=key, ticket=stem)
             return await self._finish(ticket, attempt, reviewed, checked_tree, started, [f for g in safety + integration for f in g.findings])
         finally:

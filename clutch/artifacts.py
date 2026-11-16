@@ -134,6 +134,10 @@ class StageResult:
             raise ValueError(f"outcome {self.outcome!r} is not one of {sorted(OUTCOMES)}")
 
 
+def refused(findings: list[Finding], cost: Cost, artifact: Artifact | None = None) -> StageResult:
+    return StageResult(outcome="gate_failed", artifact=artifact, findings=findings, cost=cost)
+
+
 ReviewVerdictName = Literal["approve", "snag", "rma"]
 DiagnosisVerdictName = Literal["retry", "escalate", "split", "reject", "abandon-human"]
 DIAGNOSIS_VERDICTS = get_args(DiagnosisVerdictName)

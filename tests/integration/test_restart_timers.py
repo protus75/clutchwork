@@ -72,7 +72,7 @@ def test_restart_regates_historical_held_receipt(tmp_path, monkeypatch, moved):
         assert ticket.stem in owner.queue.pending and ctx.worktree(ticket.stem).exists()
         [result] = await owner.queue.process()
         assert result.outcome == "ok" and result.artifact.reviewed_sha == reviewed
-        assert calls == ["gather_safety_evidence", "gather_evidence", "gather_safety_evidence"]
+        assert calls == ["gather_safety_evidence", "gather_evidence"]
         assert (ctx.repo / "clutch/thing.py").read_text() == f"ok {ticket.stem}\n"
         assert not ctx.worktree(ticket.stem).exists()
         receipts = regate_receipts(ctx.driver.journal.read())

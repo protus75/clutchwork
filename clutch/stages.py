@@ -36,6 +36,7 @@ from clutch.artifacts import (
     ReviewBaselineReport,
     ReviewVerdict,
     StageResult,
+    refused,
 )
 from clutch.box import BOX_DIR
 from clutch.config import Config, ConfigSnapshot, Severity
@@ -192,40 +193,37 @@ async def served_review(ctx, stem: str, attempt: int, reviewed: str) -> tuple[st
     """Only the approving call and its committed lift can attest to the served pair."""
     from clutch.driver import unwrap_fence
 
-    try:
-        events = ctx.driver.journal.read()
-        path = f"tickets/{stem}/review.md"
-        lifts = [e.body["result"] for e in events if e.type == EventType.EFFECT_COMPLETION and e.ticket == stem and e.key == f"ticket-plane/{stem}/{attempt}/review"]
-        if len(lifts) != 1 or lifts[0]["kind"] != "review" or path not in lifts[0]["paths"]:
-            return None, None
-        commit = lifts[0]["commit"]
-        pinned = await ctx.git._run(ctx.repo, "show", f"{MAIN}:{path}")
-        if await ctx.git.merge_base(ctx.repo, MAIN, commit) != commit or pinned != await ctx.git._run(ctx.repo, "show", f"{commit}:{path}"):
-            return None, None
-        review = read_review(pinned)
-        if not isinstance(review, ApprovedInvoice) or review.stem != stem or review.reviewed_sha != reviewed:
-            return None, None
-        calls = [e for e in events if e.type == EventType.EFFECT_COMPLETION and e.ticket == stem and e.key and re.fullmatch(rf"llm/{re.escape(stem)}/{attempt}/review/{attempt}/[1-9][0-9]*", e.key)]
-        if not calls:
-            return None, None
-        call = calls[-1]
-        if any(e.key == call.key and e.body != call.body for e in calls):
-            return None, None
-        result = call.body["result"]
-        verdict = ReviewVerdict.model_validate_json(unwrap_fence(result["text"]))
-        pair = result["provider"], result["model"]
-        if (
-            verdict.verdict != "approve"
-            or verdict.summary != review.summary
-            or verdict.findings != review.findings
-            or pair != (review.provider, review.model)
-            or any(not isinstance(n, str) or not n.strip() for n in pair)
-            or any(call.body["cost"].get(k) != result[k] for k in ("provider", "model"))
-        ):
-            return None, None
-        return pair
-    except ValueError, KeyError, TypeError, AttributeError, GitError:
+    events = ctx.driver.journal.read()
+    path = f"tickets/{stem}/review.md"
+    lifts = [e.body["result"] for e in events if e.type == EventType.EFFECT_COMPLETION and e.ticket == stem and e.key == f"ticket-plane/{stem}/{attempt}/review"]
+    if len(lifts) != 1 or lifts[0]["kind"] != "review" or path not in lifts[0]["paths"]:
         return None, None
+    commit = lifts[0]["commit"]
+    pinned = await ctx.git._run(ctx.repo, "show", f"{MAIN}:{path}")
+    if await ctx.git.merge_base(ctx.repo, MAIN, commit) != commit or pinned != await ctx.git._run(ctx.repo, "show", f"{commit}:{path}"):
+        return None, None
+    review = read_review(pinned)
+    if not isinstance(review, ApprovedInvoice) or review.stem != stem or review.reviewed_sha != reviewed:
+        return None, None
+    calls = [e for e in events if e.type == EventType.EFFECT_COMPLETION and e.ticket == stem and e.key and re.fullmatch(rf"llm/{re.escape(stem)}/{attempt}/review/{attempt}/[1-9][0-9]*", e.key)]
+    if not calls:
+        return None, None
+    call = calls[-1]
+    if any(e.key == call.key and e.body != call.body for e in calls):
+        return None, None
+    result = call.body["result"]
+    verdict = ReviewVerdict.model_validate_json(unwrap_fence(result["text"]))
+    pair = result["provider"], result["model"]
+    if (
+        verdict.verdict != "approve"
+        or verdict.summary != review.summary
+        or verdict.findings != review.findings
+        or pair != (review.provider, review.model)
+        or any(not isinstance(n, str) or not n.strip() for n in pair)
+        or any(call.body["cost"].get(k) != result[k] for k in ("provider", "model"))
+    ):
+        return None, None
+    return pair
 
 
 # --- context ------------------------------------------------------------------------------------
@@ -859,6 +857,7 @@ async def gather_evidence(
     *,
     attempt: int,
     stage: str = "check",
+    safety: Evidence | None = None,
 ) -> Evidence:
     stem = ticket.stem
     worktree = ctx.worktree(stem)
@@ -908,7 +907,7 @@ async def gather_evidence(
                         box.enqueue(message_class="failure_report", origin=stem, stage=stage, outcome="base_red", summary=summary, occurrence_id=arrival_id("base-red", stem, attempt, stage, n))
         finally:
             await ctx.git.worktree_remove(ctx.repo, base_worktree)
-    evidence = await gather_safety_evidence(ctx, ticket, claimed)
+    evidence = safety if safety is not None else await gather_safety_evidence(ctx, ticket, claimed)
     reports, findings = [], []
     try:
         _validate_reports(_registered_files(outbox))
@@ -1451,10 +1450,10 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
             message=f"invalid registered artifact: {error.error}",
             paved_road="produce the report through its named Verification command",
         )
-        return StageResult(outcome="gate_failed", artifact=invoice.model_copy(update={"passed": False}), findings=[finding], cost=Cost(seconds=active_seconds()))
+        return refused([finding], Cost(seconds=active_seconds()), artifact=invoice.model_copy(update={"passed": False}))
     except GitError as error:
         finding = Finding(code="verification", message=f"checks lift failed: {error}", paved_road="repair the ticket-plane Git failure and rerun Check")
-        return StageResult(outcome="gate_failed", artifact=invoice.model_copy(update={"passed": False}), findings=[finding], cost=Cost(seconds=active_seconds()))
+        return refused([finding], Cost(seconds=active_seconds()), artifact=invoice.model_copy(update={"passed": False}))
     cost = Cost(seconds=active_seconds())
     if not passed:
         hard = [f for r in gated.hard_failures for f in r.findings]
@@ -1462,7 +1461,7 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
         hard.extend(f for r in host_reports for f in r.findings)
         if required_report is not None:
             hard.extend(required_report.findings)
-        return StageResult(outcome="gate_failed", artifact=invoice, findings=hard, cost=cost)
+        return refused(hard, cost, artifact=invoice)
     outcome = "already_satisfied" if slip.outcome == "already_satisfied" else "ok"
     return StageResult(outcome=outcome, artifact=invoice, findings=[*gated.findings, *(f for r in host_reports for f in r.findings)], cost=cost)
 
@@ -1574,7 +1573,7 @@ async def run_stages(ctx: StageContext, ticket: Ticket) -> StagesRun:
             boundary.run, boundary.next_stage = run, stage
             return run
         if findings := await ticket_change_findings(ctx, ticket.stem, expected=run.ticket_sha):
-            run.results[stage] = StageResult(outcome="gate_failed", artifact=None, findings=findings, cost=Cost())
+            run.results[stage] = refused(findings, Cost())
             return run
         if stage == "implement":
             operation = implement(ctx, ticket, attempt=run.attempt)

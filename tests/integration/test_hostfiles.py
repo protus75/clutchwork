@@ -327,7 +327,6 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
         return run_gates(gates, *args, **kwargs)
 
     monkeypatch.setattr(stages, "run_gates", observe)
-    monkeypatch.setattr(merge, "run_gates", observe)
     import clutch.mergequeue as queue_module
 
     monkeypatch.setattr(queue_module, "run_gates", observe)
@@ -340,19 +339,21 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
     original_merge = merge.merge
 
     async def inline(ctx, ticket, **kwargs):
+        nonlocal moved
         await move_main(ctx)
+        moved = True
         return await original_merge(ctx, ticket, **kwargs)
 
     original_admit = queue_module.MergeQueue._admit
 
     moved = False
 
-    async def queued_admit(queue, ticket, attempt):
+    async def queued_admit(queue, ticket, attempt, **kwargs):
         nonlocal moved
         if not moved:
             await move_main(queue.ctx)
             moved = True
-        return await original_admit(queue, ticket, attempt)
+        return await original_admit(queue, ticket, attempt, **kwargs)
 
     monkeypatch.setattr(runner, "merge", inline)
     monkeypatch.setattr(queue_module.MergeQueue, "_admit", queued_admit)

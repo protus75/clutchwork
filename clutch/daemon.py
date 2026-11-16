@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clutch import runner
-from clutch.artifacts import Cost, Finding, StageResult
+from clutch.artifacts import Cost, Finding, StageResult, refused
 from clutch.box import Box, RereportJournal
 from clutch.caps import spent
 from clutch.checkpoint import Checkpoint
@@ -357,7 +357,7 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
     road = "shrink or split the committed ticket text and rerun drain"
     workspace = ctx.worktree(ticket.stem)
     if not workspace.exists():
-        return StageResult(outcome="gate_failed", artifact=None, cost=Cost(), findings=[Finding(code="ticket_schema", message="Rework has no usable workspace", paved_road=road)])
+        return refused([Finding(code="ticket_schema", message="Rework has no usable workspace", paved_road=road)], Cost())
     try:
         text = await ctx.git._run(ctx.repo, "show", f"HEAD:{ticket_path(ticket.stem)}")
         original = parse_ticket(ticket.stem, text, ctx.repo)
@@ -403,7 +403,7 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
             await ctx.driver.effects.run(publish, key=f"ticket-plane/{ticket.stem}/{attempt}/rework", ticket=ticket.stem)
             if errors := await record_supersedes(ctx, order):
                 await restore_publication()
-                return StageResult(outcome="gate_failed", artifact=None, cost=result.cost, findings=errors)
+                return refused(errors, result.cost)
         except BaseException:
             cleanup = asyncio.create_task(restore_publication())
             try:
@@ -414,13 +414,11 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
             raise
         return result
     except Exception as exc:
-        return StageResult(
-            outcome="gate_failed",
-            artifact=None,
-            cost=Cost(),
+        return refused(
             findings=[
                 Finding(code="ticket_schema", message=ctx.driver.redactor.scrub(f"Rework publication refused: {exc}"), paved_road="commit every exact reviewed proposal before supersession; " + road)
             ],
+            cost=Cost(),
         )
 
 

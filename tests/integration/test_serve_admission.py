@@ -132,7 +132,7 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
     try:
         await until(rig, lambda: ("dependent", "merged") in rig.returns)
         assert rig.returns == [("work", "gate_failed"), ("work", "merged"), ("dependent", "merged")]
-        assert trace == ["gather_safety_evidence", "gather_evidence", "gather_safety_evidence"]
+        assert trace == ["gather_safety_evidence", "gather_evidence"]
         assert trees[:2] == [("HEAD^{tree}", trees[0][1]), ("main^{tree}", trees[0][1])]
         [merged] = [e for e in terminals(rig, "work") if e.body.get("to") == "merged"]
         assert merged.body == {"to": "merged", "commit": merged.body["commit"], "reviewed_sha": rig.pinned}

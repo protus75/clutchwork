@@ -260,7 +260,7 @@ instance of a repeated flaw separately and marking findings that remain open. Ve
 
 ### 4.5 Merge
 
-`run` and `drain` merge inline (`merge.merge`); `serve` uses the merge queue (section 7.2).
+`run` and `drain` merge inline through `merge.merge`, a thin call into the queue’s admission; `serve` uses the merge queue (section 7.2).
 For a nonempty branch, if main changed only paths under `tickets/` since the reviewed
 merge base, the Check reruns and host checks are skipped; Merge gates still run.
 Inline merge:
