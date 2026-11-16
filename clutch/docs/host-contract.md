@@ -118,6 +118,28 @@ coverage. Whole-repo `lint` and `format` also fail at the merge base when main d
 Check files that as `base_red` for a fix ticket. Listing `test-gate.toml` in the safety
 inventory sends a ticket that would lower a threshold to a human.
 
+## Onboarding a host
+
+1. Follow [Install](#install) to install clutch in the host.
+2. Use `clutch install` for the routed CLIs; see the [run guide](host-running.md).
+3. Use `clutch init-config` to generate a starting configuration; see the [run guide](host-running.md).
+4. Copy or edit `config.yaml` using [Copyable configuration](#copyable-configuration).
+5. Run `clutch doctor` and `clutch probe` to check the setup and providers; see the [run guide](host-running.md).
+6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
+7. Author the first ticket with `clutch new`, then run `clutch lint` and `clutch review`; see the [run guide](host-running.md).
+8. Run the ticket with `clutch drain` or `clutch serve`; see the [run guide](host-running.md).
+9. Confirm the ticket merged on main with `clutch status`; see the [run guide](host-running.md).
+
+## Operating facts
+
+The configured `state_dir` holds the journal, box queue, quarantine ledgers,
+attempt spools, engine log and heartbeat. Relative paths resolve from the selected
+config file's directory. `<state_dir>/clutch.lock` uses an advisory flock for
+engine writes; `<state_dir>/commit.lock` serializes git writes. If a lock is held,
+wait for or stop its holder; never delete the lockfile. To upgrade or rollback,
+change the dependency pin, run `uv sync` and restart. See [Instance custody](#instance-custody)
+for instance ownership and further details.
+
 ## Complete field inventory
 
 Each row names a model and every accepted field. `required` means no shipped
