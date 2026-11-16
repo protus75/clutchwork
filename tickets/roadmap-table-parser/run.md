@@ -1,10 +1,10 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification commands and all hard host checks passed; roadmap.py reached 98.7% combined line and branch coverage. The split-ticket settlement mutation was confirmed to fail its test, but the remaining assertions were not individually mutation-checked.
+Ticket verification passed and roadmap.py reached 98.7% unit coverage. The separate integration host check timed out once; the base verification passed and the affected test passed on its single isolated candidate rerun.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-none
+- box-000529-fc244696: The unrelated test_kill_aborts_requested_retro intermittently timed out during the integration host check.
 
 ## Resolved engine/model
 
