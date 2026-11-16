@@ -22,7 +22,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("implement", "2.14"), ("requisition_review", "3.18"), ("diagnose", "1.7")):
+    for name, version in (("implement", "2.15"), ("requisition_review", "3.18"), ("diagnose", "1.7")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -124,7 +124,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.14"
+    assert spec.meta.version == "2.15"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "consumes": "ticket",
