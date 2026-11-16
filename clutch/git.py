@@ -59,6 +59,17 @@ class Git:
     async def ls_files(self, dir: Path) -> list[str]:
         return (await self._run(dir, "ls-files")).splitlines()
 
+    async def tree_id(self, dir: Path, index: Path) -> str:
+        env = {**self._env, "GIT_INDEX_FILE": str(index)}
+        for args in (("add", "-A"), ("write-tree",)):
+            argv, rc, out, err = await self._call(dir, *args, env=env)
+            if rc != 0:
+                raise GitError(argv, rc, out, err)
+        return out.strip()
+
+    async def tree_changes(self, dir: Path, before: str, after: str) -> list[str]:
+        return (await self._run(dir, "diff", "--name-only", _ref(before), _ref(after))).splitlines()
+
     async def rev_parse(self, dir: Path, rev: str) -> str:
         return (await self._run(dir, "rev-parse", "--verify", _ref(rev))).strip()
 
