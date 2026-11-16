@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "bb1543a3fa611aa570aad50fc79a71053464325e",
+  "produced_at_sha": "aa3054e34c06564b63a4ffe5b22530201968c087",
   "stem": "main-verb-groups",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Attempt 0 stopped after ~15s of reading and changed no files. The ticket is sound and in scope. Do the full edit to clutch/__main__.py plus the two new tests before writing any run record.",
-    "Lock wrapper: one async context manager owns the only Lockfile( call and looks up the global Lockfile at call time. Route all 7 sites through it (roadmap, release, publish, dismiss, triage, _retro, _control); _retro and _control keep their LockHeld fallbacks.",
-    "One engine-submit helper holds the only _require_engine, control.read_active (ValueError -> runner.Refusal) and publish_request calls. It replaces the sites in _retro, _control and _verdict. Also add one observe.Context builder and one load_config lambda helper.",
-    "One error printer writes clutch <verb>: <msg> to stderr and returns runner.EXIT_REFUSED. Use it for the covgate x2 and stats prints and the except handlers at the end of main. Leave the probe unknown-providers print and the issue warning unchanged.",
-    "Add tests/unit/test_main_verb_groups.py (printer with capsys; lock wrapper on tmp_path: second entry raises LockHeld, third succeeds) and tests/integration/test_main_verb_groups.py (AST counts, prompt box, dismiss under held lock). Then run every ## Verification command."
+    "Attempt 1 changed no files and stopped after about 20s of inspection. Redo the whole refactor of clutch/__main__.py and finish it in one run. Do not return incomplete before the edits and the ## Verification commands have run.",
+    "Add one async lock wrapper (e.g. _locked) that looks up Lockfile in module globals at call time, then route all seven Lockfile( sites through it, _control included. _retro and _control keep their LockHeld fallbacks. tests/unit/test_lock_holder.py swaps entry.Lockfile.",
+    "Add one engine-submit helper that calls _require_engine, then control.read_active (ValueError becomes Refusal 'current control identity unavailable'), then control.publish_request. Also add one observe.Context builder and one load_config reloader lambda.",
+    "Add one error printer, _fail(verb, msg), that writes 'clutch <verb>: <msg>' to stderr and returns runner.EXIT_REFUSED. Use it in main's except clauses and in the covgate (x2) and stats prints. Leave the probe unknown-providers print and the issue config warning as they are.",
+    "Split main's verb branches into handlers grouped as utilities/projections/authoring/control/lock holders, dispatched from a table. Keep every name in the preserved list. Write tests/unit/test_main_verb_groups.py (printer, lock wrapper on tmp_path) and the integration file for ACs 1-6."
   ],
   "mechanical": null,
   "spec_version": "1.7",
