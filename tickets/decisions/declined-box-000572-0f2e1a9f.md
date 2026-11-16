@@ -1,0 +1,9 @@
+---
+id: declined-box-000572-0f2e1a9f
+kind: declined
+link: box-000572-0f2e1a9f
+reopen_after_days: 30
+---
+Author could not produce a ticket.
+
+Evidence: - carrier-contradiction: The Store carrier bullet has clutch/runner.py and clutch/__main__.py pass real file readers. Both build ProviderLLM with fs=checkout.fs (runner.py:122, __main__.py:107), and in CoreRig that fs is the in-memory ScriptFS (test_daemon_composition.py:168-179). EvidenceStore.prune enumerates blobs with fs.entries and then calls size(path) on each, which becomes a real stat on a path that exists only in ScriptFS. The result is FileNotFoundError on the first end.json write. That breaks every CoreRig drive in test_daemon_composition.py and test_watchdog_activation.py, including the new criterion 12 check that test_eval_owned_budgets_preserve_synthetic_identities finds end.json through rig.fs. It also contradicts the bullet's own promise that no real Path.read_bytes or stat runs on paths a fake holds only in memory. (do instead: Pin a carrier that follows checkout.fs. For example, runner.Checkout gains read_bytes and size fields that default to real file readers. runner.py:122 and __main__.py:107 pass checkout.read_bytes and checkout.size. CoreRig in the fenced test_daemon_composition.py sets them to readers over ScriptFS.files. Then grep every Checkout( construction whose fs is in-memory and whose run reaches the adapter (tests/integration/test_restart_timers.py repository, which test_daemon_composition.py:101 imports, tests/harness/shakeout/bench.py, tests/harness/daemon_soak.py, tests/harness/reliability_battery.py), fence any site not yet fenced, and make it pass in-memory readers. In the same bullet, require ScriptExec, which is also CoreRig's Git exec (test_daemon_composition.py:177), to answer the git tree-id argv before its claude/codex assert at :80.)
