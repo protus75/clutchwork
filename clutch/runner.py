@@ -717,7 +717,7 @@ async def apply_admission(stem, verb, key, actor, c):
     since = events[intents[0] + 1 :] if intents else []
     # A request-specific baseline is journaled before any ticket mutation.
     baseline_key = key + "/baseline"
-    baselines = [e.body["result"] for e in events if e.type == EventType.EFFECT_COMPLETION and e.key == baseline_key]
+    baselines = Effects(c.journal).recorded(baseline_key)
 
     async def baseline():
         return await c.git.rev_parse(c.repo, "HEAD")

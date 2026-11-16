@@ -44,7 +44,7 @@ from clutch.driver import Driver, LlmStage
 from clutch.gates import BugEvidence, GateReport, RegressionRun, run_gates
 from clutch.git import Git, GitError
 from clutch.hostfiles import CORE_TEMPLATE, CoreDriftGate, committed_core
-from clutch.journal import EventType, run_seq
+from clutch.journal import EventType, last_transition, run_seq
 from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
@@ -195,7 +195,7 @@ async def served_review(ctx, stem: str, attempt: int, reviewed: str) -> tuple[st
 
     events = ctx.driver.journal.read()
     path = f"tickets/{stem}/review.md"
-    lifts = [e.body["result"] for e in events if e.type == EventType.EFFECT_COMPLETION and e.ticket == stem and e.key == f"ticket-plane/{stem}/{attempt}/review"]
+    lifts = ctx.driver.effects.recorded(f"ticket-plane/{stem}/{attempt}/review", ticket=stem)
     if len(lifts) != 1 or lifts[0]["kind"] != "review" or path not in lifts[0]["paths"]:
         return None, None
     commit = lifts[0]["commit"]
@@ -282,7 +282,7 @@ def ticket_blob(data: bytes) -> str:
 async def ticket_change_findings(ctx: StageContext, stem: str, *, expected: str | None = None) -> list[Finding]:
     """Only ticket.md belongs to the dispatch identity; lifts may freely move main."""
     if expected is None:
-        latest = next((e.body for e in reversed(ctx.driver.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == stem), {})
+        latest = last_transition(ctx.driver.journal.read(), stem) or {}
         if latest.get("to") == "running":
             expected = latest.get("ticket_sha")
     if expected is None:
@@ -1547,7 +1547,7 @@ async def run_stages(ctx: StageContext, ticket: Ticket) -> StagesRun:
     there is no diff to review and the ticket settles as a no-op.
     """
     boundary = ctx.boundary
-    dispatched = next((e.body for e in reversed(ctx.driver.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == ticket.stem), {})
+    dispatched = last_transition(ctx.driver.journal.read(), ticket.stem) or {}
     run = boundary.run or StagesRun(
         attempt=run_seq(ctx.driver.journal.read(), ticket.stem),
         ticket_sha=(dispatched.get("ticket_sha") if dispatched.get("to") == "running" else None) or await ctx.git.rev_parse(ctx.repo, f"{MAIN}:{ticket_path(ticket.stem)}"),

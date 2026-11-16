@@ -17,7 +17,7 @@ from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.git import GitError
 from clutch.heartbeat import Heartbeat
-from clutch.journal import TERMINAL_STATES, EventType, JournalCorruption, run_seq
+from clutch.journal import TERMINAL_STATES, EventType, JournalCorruption, last_transition, run_seq
 from clutch.lockfile import Lockfile
 from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import ConflictHandoff, regate_receipts
@@ -150,14 +150,14 @@ class Serve:
                     return "running"
                 self.writers[ticket.stem] = callback
                 events = local.journal.read()
-                latest = next((e.body.get("to") for e in reversed(events) if e.type == EventType.STATE_TRANSITION and e.ticket == ticket.stem), None)
+                latest = (last_transition(events, ticket.stem) or {}).get("to")
                 if latest in TERMINAL_STATES:
                     record_reoffer(local.journal, events, ticket.stem, sha)
                 local.journal.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": sha}, ticket=ticket.stem, key=None)
                 try:
                     return await callback(ticket)
                 finally:
-                    latest = next((e.body for e in reversed(local.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == ticket.stem), {})
+                    latest = last_transition(local.journal.read(), ticket.stem) or {}
                     if latest.get("to") in TERMINAL_STATES:
                         await self.check_retro()
                     if latest.get("to") in TERMINAL_STATES - SETTLED - {"rejected"}:
@@ -417,7 +417,7 @@ class Serve:
                         owner.admission = AdmissionBoundary(owner.ctx, mode="daemon", queue=self.queue)
                     self.writers[ticket.stem] = owner
                     await owner.consume_result(ticket, result, attempt=attempt)
-                    latest = next((e.body.get("to") for e in reversed(self.checkout.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == ticket.stem), None)
+                    latest = (last_transition(self.checkout.journal.read(), ticket.stem) or {}).get("to")
                     if latest in TERMINAL_STATES:
                         await self.check_retro()
                     if latest in TERMINAL_STATES - SETTLED - {"rejected"}:

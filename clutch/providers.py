@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from clutch.config import Config, ConfigSnapshot, Provider
-from clutch.journal import EventType, render_ts
+from clutch.journal import EventType, last_transition, render_ts
 from clutch.llm import AgentEffort, AgentTier, LLMRequest, LLMResult
 from clutch.redact import Redactor, secret_names
 from clutch.seams import ExecutableNotFound, FileSystem, GroupExec, ProcessExec
@@ -243,7 +243,7 @@ class ProviderSession:
 
     def park(self, stem, drought):
         history = self.journal.read()
-        previous = next((e.body for e in reversed(history) if e.type == EventType.STATE_TRANSITION and e.ticket == stem), {})
+        previous = last_transition(history, stem) or {}
         if previous.get("provider_drought") != drought.record:
             self.journal.append(EventType.STATE_TRANSITION, {"to": "infra_error", "reason": "provider_drought", "provider_drought": drought.record}, ticket=stem, key=None)
 

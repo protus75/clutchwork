@@ -135,7 +135,7 @@ class MergeQueue:
         ctx = self.ctx
         road = "restore the retained committed ticket, reviewed evidence and candidate; then restart serve"
         try:
-            lifts = [e.body["result"] for e in ctx.driver.journal.read() if e.type == EventType.EFFECT_COMPLETION and e.key == f"ticket-plane/{stem}/{receipt['attempt']}/review"]
+            lifts = ctx.driver.effects.recorded(f"ticket-plane/{stem}/{receipt['attempt']}/review")
             source = lifts[-1]["commit"] if lifts else "main"
             text = await ctx.git._run(ctx.repo, "show", f"{source}:{ticket_path(stem)}")
             ticket = validate_ticket(stem, text, ctx.repo)
@@ -161,7 +161,7 @@ class MergeQueue:
             raise ValueError(f"retained admission {stem} is unavailable: {exc}; {road}") from exc
 
     async def _finish(self, ticket, attempt, reviewed, checked_tree, started, findings=()):
-        completed = any(e.type == EventType.EFFECT_COMPLETION and e.key == f"merge/{ticket.stem}/{attempt}" for e in self.ctx.driver.journal.read())
+        completed = bool(self.ctx.driver.effects.recorded(f"merge/{ticket.stem}/{attempt}"))
         admission = await merge.write_squash(self.ctx, ticket, reviewed, attempt=attempt)
         # Recovery proves the completed squash; later ticket commits may already have moved main.
         source = admission.commit if completed and admission.commit is not None else "main"

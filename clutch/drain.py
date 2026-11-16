@@ -25,7 +25,7 @@ from uuid import uuid4
 from clutch import caps, control, roadmap, runner, triage
 from clutch.control import ControlRequest
 from clutch.enginelog import EngineLog
-from clutch.journal import TERMINAL_STATES, Event, EventType, render_ts
+from clutch.journal import TERMINAL_STATES, Event, EventType, last_transition, render_ts, require_transition
 from clutch.lockfile import Lockfile
 from clutch.reconcile import reconcile
 from clutch.redact import Redactor
@@ -463,7 +463,7 @@ class _Drain:
         if stem is None:
             return True
         events = self.c.journal.read()
-        body = next((e.body for e in reversed(events) if e.type == EventType.STATE_TRANSITION and e.ticket == stem), {})
+        body = last_transition(events, stem) or {}
         if body.get("to") in SETTLED | RETIRED or stem in reject_queue(events) or "provider_drought" in body:
             return True
         if self.c.control is not None and stem in self.c.control.storm_holds().values():
@@ -554,7 +554,7 @@ class _Drain:
             session = self.c.control.providers
             if session.active and budget and t.stem not in held:
                 tier, _ = caps.capability(t, events)
-                latest = next((e.body for e in reversed(events) if e.type == EventType.STATE_TRANSITION and e.ticket == t.stem), {})
+                latest = last_transition(events, t.stem) or {}
                 route = latest.get("provider_drought", {"tier": tier, "surface": "implement"})
                 drought = session.drought(self.c.config, route["tier"], route["surface"])
                 if drought:
@@ -593,7 +593,7 @@ class _Drain:
         except Exception as exc:
             if self._stopping() or not task.done() or task.cancelled() or task.exception() is not exc:
                 raise
-            body = next(e.body for e in reversed(self.c.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == stem)
+            body = require_transition(self.c.journal.read(), stem)
             if body.get("to") not in TERMINAL_STATES:
                 self.c.journal.append(EventType.STATE_TRANSITION, {"to": "infra_error", "stage": "dispatch", "reason": "dispatch_exception", "error": f"{type(exc).__name__}: {exc}"}, ticket=stem)
             return
@@ -601,7 +601,7 @@ class _Drain:
             return
         if terminal not in TERMINAL_STATES:
             raise ValueError(f"stage seam returned {terminal!r}, not a terminal state {sorted(TERMINAL_STATES)}")
-        body = next(e.body for e in reversed(self.c.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == stem)
+        body = require_transition(self.c.journal.read(), stem)
         if body["to"] != terminal:
             raise ValueError(f"stage seam returned {terminal!r} for {stem} but journaled {body['to']!r}; the seam must journal the run's single terminal transition")
         if terminal == "merged":
@@ -697,7 +697,7 @@ class _Drain:
         awaiting = reject_queue(events)
         for stem in sorted(scan.tickets):
             if last.get(stem) not in SETTLED | RETIRED | {None, "running"} and caps.spent(self.c.config.caps, events, stem) is not None and stem not in awaiting:
-                body = next(e.body for e in reversed(events) if e.type == EventType.STATE_TRANSITION and e.ticket == stem)
+                body = require_transition(events, stem)
                 if body.get("to") == PREMISE and "render_over_bound" in body.get("reason", "").split(","):
                     continue
                 if "provider_drought" in body:
@@ -715,7 +715,7 @@ class _Drain:
             elif (to := last.get(stem)) is None:
                 self.report.unadmitted.append(stem)
             else:
-                body = next(e.body for e in reversed(events) if e.type == EventType.STATE_TRANSITION and e.ticket == stem)
+                body = require_transition(events, stem)
                 where = f" at {body['stage']}" if "stage" in body else ""
                 spent_cap = caps.spent(self.c.config.caps, events, stem)
                 drawn = caps.failed_attempts(events, stem) if spent_cap == "attempts" else caps.draws(events, stem, spent_cap or "retry")
@@ -747,7 +747,7 @@ class _Drain:
 
     def _premise_road(self, t: Ticket) -> str:
         """Name the ticket edit that releases a premise park."""
-        body = next(e.body for e in reversed(self.c.journal.read()) if e.type == EventType.STATE_TRANSITION and e.ticket == t.stem)
+        body = require_transition(self.c.journal.read(), t.stem)
         if "render_over_bound" in body.get("reason", "").split(","):
             return "shrink or split the committed ticket text and rerun drain"
         rel = ticket_path(t.stem)

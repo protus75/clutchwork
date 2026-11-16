@@ -332,10 +332,10 @@ async def write_squash(ctx: StageContext, ticket: Ticket, reviewed: str, *, atte
 async def lifted_report_paths(ctx: StageContext, stem: str, attempt: int) -> list[str]:
     """Read this run's checks completion and matching committed blobs, never checkout copies."""
     key = f"ticket-plane/{stem}/{attempt}/checks"
-    completed = [e for e in ctx.driver.journal.read() if e.type == EventType.EFFECT_COMPLETION and e.key == key and e.ticket == stem]
+    completed = ctx.driver.effects.recorded(key, ticket=stem)
     if not completed:
         return []
-    result = completed[-1].body.get("result")
+    result = completed[-1]
     if not isinstance(result, dict) or result.get("kind") != "checks" or not isinstance(result.get("commit"), str) or not result["commit"].strip() or not isinstance(result.get("paths"), list):
         return []
     paths = []

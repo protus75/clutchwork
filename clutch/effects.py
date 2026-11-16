@@ -31,7 +31,7 @@ class Effects:
         if not isinstance(key, str) or not key:
             raise ValueError(f"effect key must be a non-empty string, got {key!r}; join components with '/'")
         if key in self._completed:
-            return self._recorded(key)
+            return self.recorded(key)[0]
 
         self._journal.append(EventType.EFFECT_INTENT, {}, ticket=ticket, key=key)
         result = await action()
@@ -46,11 +46,8 @@ class Effects:
         self._completed.add(key)
         return recorded
 
-    def _recorded(self, key: str) -> Any:
-        for e in self._journal.read():
-            if e.type == EventType.EFFECT_COMPLETION and e.key == key:
-                return e.body["result"]
-        raise AssertionError(f"completed key {key!r} has no completion event in the journal")
+    def recorded(self, key: str, ticket: str | None = None) -> list[Any]:
+        return [e.body.get("result") for e in self._journal.read() if e.type == EventType.EFFECT_COMPLETION and e.key == key and (ticket is None or e.ticket == ticket)]
 
 
 def effect(key: str | Callable[..., str], *, cost: Callable[[Any], dict[str, Any]] | None = None) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]:

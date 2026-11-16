@@ -27,7 +27,7 @@ from clutch.box import UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
 from clutch.git import Git, GitError
-from clutch.journal import EventType, Journal, JournalCorruption
+from clutch.journal import EventType, Journal, JournalCorruption, last_transition
 from clutch.llm import LLMRequest
 from clutch.lockfile import ENGINE_VERBS, CommitLock, CommitLockTimeout, Lockfile, LockHeld
 from clutch.notify import NOTIFY_TIMEOUT_S, NotificationReconciler
@@ -141,7 +141,7 @@ def build_daemon_core(
                 return "infra_error"
             result = await callback(ticket)
             history = checkout.journal.read()
-            body = next((e.body for e in reversed(history) if e.type == "state_transition" and e.ticket == ticket.stem), {})
+            body = last_transition(history, ticket.stem) or {}
             if "provider_drought" in body:
                 core.scheduler.update(ticket)
             return result

@@ -108,6 +108,18 @@ def run_seq(events: Iterable[Any], stem: str) -> int:
     return len(run_terminals(events, stem))
 
 
+def last_transition(events: Iterable[Any], stem: str) -> dict[str, Any] | None:
+    """Return the latest transition body for a ticket, if one exists."""
+    return next((e.body for e in reversed(list(events)) if e.type == EventType.STATE_TRANSITION and e.ticket == stem), None)
+
+
+def require_transition(events: Iterable[Any], stem: str) -> dict[str, Any]:
+    body = last_transition(events, stem)
+    if body is None:
+        raise RuntimeError(f"no state transition for {stem}")
+    return body
+
+
 def run_terminals(events: Iterable[Any], stem: str) -> list[Any]:
     terminals, running = [], False
     for event in events:

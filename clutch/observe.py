@@ -23,6 +23,7 @@ from clutch.status import (
     Admission,
     confirm_admission,
     dismiss_admission,
+    last_states,
     lint_admission,
     order_admission,
     reject_admission,
@@ -566,7 +567,7 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
     """Read porcelain once and share graph reads across all row validations."""
     entries = _porcelain(asyncio.run(ctx.git.status_porcelain(ctx.root, "--untracked-files=all")))
     pending, evidence, stray = asyncio.run(intake_pending(ctx.root, ctx.git, entries))
-    states = {e.ticket: e.body["to"] for e in history if e.type == "state_transition" and "to" in e.body}
+    states = last_states(history)
     graphs = (_graph(ctx.root), _graph(ctx.root, "Runs before"))
     result = {}
 
