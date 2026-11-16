@@ -24,7 +24,7 @@ Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor 
 |---|---|---|---|
 | **0.3.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
 | **0.4.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.6.0 | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.5.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`); decision 19’s credential rule applies while this machine has no Gemini credential | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
+| **0.5.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`); decision 19’s credential rule applies while this machine has no Gemini credential | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
 | **0.6.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a two-member review panel has reviewed the next 10 tickets with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
 | **0.7.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call`; the owner's lens prompts adapted | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
@@ -65,9 +65,9 @@ Ranked by how many later tickets it blocks. Every item names the single owner th
 
 | Set | Homes | Owner |
 |---|---|---|
-| Tiers `low|medium|high|max` | `config.py:21`, `llm.py:10-11`, `tickets.py:33`, `caps.py:13`, `policy.py:15`, `__main__.py:378` | `llm.py` |
-| Priorities `P0..P3` | `tickets.py:58`, `__main__.py:273`, `dev.py:87` (`observe.py:716` already derives from `Frontmatter`) | `tickets.py` |
-| Kinds `feature|bug|chore` | `tickets.py:59`, `tickets.py:810`, `__main__.py:269,791`, `dev.py:83`, `author.py:245` (different order), `hostfiles.py` CORE_TEMPLATE | `tickets.py`; the template names the verb, not the list |
+| Tiers `low|medium|high|max` | `config.py:21`, `llm.py:10-11`, `tickets.py:33`, `caps.py:13`, `policy.py:15`, `__main__.py:378`, `providers.py:688` | `llm.py` |
+| Priorities `P0..P3` | `tickets.py:58`, `__main__.py:273` (`observe.py:716` already derives from `Frontmatter`) | `tickets.py` |
+| Kinds `feature|bug|chore` | `tickets.py:59`, `tickets.py:810`, `__main__.py:269,791`, `stats.py:109`, `author.py:245` (different order), `hostfiles.py` CORE_TEMPLATE | `tickets.py`; CORE_TEMPLATE keeps its `--kind` list (section 5, decision 5) |
 | Settled and retired states | `status.py:17` `SETTLED`, `drain.py:53` `RETIRED`, `stats.py:11` `SETTLED` (same name, different set), `tickets.py:711` literal; `SETTLED | {"rejected"}` spelled out 15 times, `SETTLED | RETIRED` 8 times | `status.CLOSED = SETTLED | RETIRED`; `stats.SETTLED` deleted |
 | Failed-attempt terminals | `caps.py:48`, `scorecard.py:85`, `journal.py:101`, `stats.py:122` | `journal.py` |
 | Surfaces | `specs/__init__.py:32` (8), `observe.py:33-44` (10), `stats.py:12` (6), `observe.py:274,814`, `providers.py:29`, `policy.py:14` | `specs/__init__.py`; observe and stats derive |
@@ -79,13 +79,13 @@ Ranked by how many later tickets it blocks. Every item names the single owner th
 | Finding codes | `ticket_schema` at `tickets.py:30`, `author.py:39`, `rework.py:66`; `requisition_review`/`requisition_rma` at nine sites; `core_drift` at `hostfiles.py:192,205,214` | `gates.ENGINE_GATE_CODES` plus one registry for stage finding codes |
 | Conduct-file routing `{claude, qwen}` -> `CLAUDE.md` | `providers.py:131`, `host-contract.md:274`, `how-clutch-works.md:756` | `providers.py`; docs cite it |
 
-Ticket: `closed-sets-single-home`.
+Ticket: `closed-sets-single-owner`.
 
 ### 2.3 Repeated helpers and projections
 
 - `NonBlank` redefined in `author.py:28`, `triage.py:27`, `box.py:55`, `inbox.py:15` while `artifacts.py:25` exists. `_Strict` bases in `config.py:61`, `box.py:58`, `inbox.py:29`, `artifacts.py:47`, `stages.py:79`.
 - Repo-relative path validators: `tickets.py:210`, `box.py:22`, `inbox.py:22`, `config.py:118`, `covgate.py:54`.
-- Spec-major extraction `int(version.split(".")[0])`: `requisition.py:141,161`, `rework.py:212`, `policy.py:28`, `baseline.py:45`; `stages.py:391` is already a helper nobody calls.
+- Spec-major extraction `int(version.split(".")[0])`: `requisition.py:141,161`, `rework.py:212`, `policy.py:28`, `baseline.py:45`; `stages._major` is called three times in `stages.py` and is the one helper the other spec-major sites will use.
 - Hand-rolled git blob SHA: `requisition.py:136`, `hostfiles.py:203`, `stages.py:281`.
 - Retro-recurrence reopen boundary: `author.py:159-161,179-181`, `triage.py:263-270`.
 - `requisition_verdict` signal body built by hand: `__main__.py:643-655`, `author.py:360-364`, `rework.py:169-180`, `runner.py:199`. `ticket_intake` body: `tickets.py:768` uses `INTAKE_SIGNAL`, `author.py:359` a literal.
@@ -97,7 +97,7 @@ Ticket: `closed-sets-single-home`.
 - `"cap spent"` produced by `caps.py:108` and parsed back by `observe.py:315`. `provider_drought` body probed at 14 sites.
 - `__main__.py`: lock acquire/try/release written four times (514-520, 527-539, 672-715, 839-861); `_require_engine` + `read_active` + `ValueError -> Refusal` three times; `observe.Context(...)` twice; `lambda: load_config(...)` six times; four ad-hoc `print(..., file=sys.stderr); return 2` beside the shared handler at 580-586; `checkout` built for every verb past line 435.
 
-Tickets: `main-verb-groups` (the `__main__.py` items and constructors), `closed-sets-single-home` (helpers that guard a closed set), `journal-last-transition-helper` (projection folds).
+Tickets: `main-verb-groups` (the `__main__.py` items and constructors), `closed-sets-single-owner` (helpers that guard a closed set), `journal-last-transition-helper` (projection folds).
 
 ### 2.4 Provider stream parsing
 
@@ -316,7 +316,7 @@ Each release's ship gate (section 1) is also a fenced `gate` block under that re
 | 16 | ~~`merge-admission-single-owner`~~ | roadmap | chore | P2 | | `merge-model-resolve` | **Merged** (`tickets/merge-admission-single-owner/`). `merge.merge` becomes a thin call into `MergeQueue._admit` with the ladder, safety tier, receipt, tree check, and red streak as parameters; `gather_safety_evidence` runs once; one `refused` constructor; `served_review` stops swallowing. |
 | 17 | ~~`host-check-selection-single-owner`~~ | roadmap | chore | P2 | | | **Merged** (`tickets/host-check-selection-single-owner/`). `triggered_hosts(tier=...)` is the one filter; `run_host_command` the one runner; the coverage parse and base `results` read stop swallowing. |
 | 18 | ~~`journal-last-transition-helper`~~ | roadmap | chore | P2 | | | **Merged** (`tickets/journal-last-transition-helper/`). `journal.last_transition(events, stem)` replaces 13 scans; `Effects.recorded(key)` replaces six hand scans; `status.last_states` is the one fold observe and `__main__` use. |
-| 19 | `closed-sets-single-home` | roadmap | chore | P2 | | `graphics-kind` | **Authored** (`tickets/closed-sets-single-home/`). Section 2.2 table: each set has one owner; argparse and `dev.py` derive choices; `NonBlank`, `_Strict`, path validators, spec-major, blob SHA become single helpers. |
+| 19 | `closed-sets-single-owner` | roadmap | chore | P2 | | `graphics-kind` | Section 2.2: tiers, priorities and kinds have one owner, including tier copies in `__main__.py` and `providers.py` and kind copies in `__main__.py` and `stats.py`; name a follow-up row for the remaining sets. `NonBlank`, `_Strict`, path validators and blob SHA become single helpers; preserve the final newline in `AuthorReply.ticket` despite `NonBlank` stripping whitespace. Use `stages._major`, called three times, as the one helper for the other spec-major sites; fence `serve.py`, which imports `stages.ticket_blob`. Leave the CORE_TEMPLATE `--kind` list as it is (decision 5). |
 | 20 | ~~`main-verb-groups`~~ | roadmap | chore | P2 | | | **Merged** (`tickets/main-verb-groups/`). `__main__.py` verb handlers grouped (utilities, projections, authoring, control, lock holders); one lock wrapper, one `_require_engine`, one `Context`, one error printer; `Checkout`/`StageContext` carry `log` and `box`; `Driver.from_config` takes the journal. |
 | 21 | `test-fakes-and-conftest` | roadmap | chore | P2 | | | `tests/conftest.py` and `tests/fakes.py` with one clock, exec, filesystem, journal, and git fake and one `until`; `serve_rig.py` and the ten largest providers migrate; `test_merge.py:43` stops parsing another test's source. |
 | 22 | `test-gate-floors` | roadmap | chore | P2 | | | **Authored** (`tickets/test-gate-floors/`). `clutch/graph.py` gains a floor; the eight floor-0 modules take their measured coverage as a ratchet. |
@@ -381,7 +381,7 @@ uv run clutch roadmap merged --release 0.4.0
 | 46 | `merge-model-resolve` | parallel plan 7 | feature | P2 | `merge-admission-single-owner` | | after its agent capture `tickets/merge-model-resolve/evidence/merge-conflict-facts.md`: `specs/resolve.md`, bounds, re-review of the resolution delta, `model` step value. |
 | 47 | `conflict-discard-rerun` | parallel plan 8 | feature | P2 | `merge-model-resolve` | | Delete the Rework handoff; retire and re-offer; `prior-diff` lift; `implement.md` and `rework.md` bumps; rerun cap. |
 | 48 | `status-hot-paths` | parallel plan 9 | feature | P3 | | | Hot-paths table in the snapshot and extension. |
-| 49 | `graphics-kind` | gemini plan B1 | feature | P2 | `closed-sets-single-home` | | `kind: graphics` with `mode: command|generate`, `## Render`, `--reference` and `--input`, lint, authoring guide, CORE_TEMPLATE `|graphics` (9 bytes). |
+| 49 | `graphics-kind` | gemini plan B1 | feature | P2 | `closed-sets-single-owner` | | `kind: graphics` with `mode: command|generate`, `## Render`, `--reference` and `--input`, lint, authoring guide, CORE_TEMPLATE `|graphics` (9 bytes). |
 | 50 | `graphics-render-check` | gemini plan B2 | feature | P2 | `graphics-kind` | `conflict-discard-rerun` | `command` mode render protocol at Check; `implement.md` block for both modes. |
 | 51 | `route-kinds-filter` | gemini plan B3 | feature | P2 | | | `Route.kinds`, kind-aware `resolve()`, judge-independence warning in `doctor` and lint. |
 | 52 | `image-quality-gate` | gemini plan B4 | feature | P2 | `graphics-kind` | | Layer 1: `clutch/images.py`, gate `image_quality`, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. |

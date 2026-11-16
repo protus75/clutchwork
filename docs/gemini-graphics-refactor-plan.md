@@ -8,7 +8,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Part A (`gemini-provider`) is release 0.3.0 (`docs/roadmap.md` row 32); it needs nothing and waits on its agent capture. Part B is release 0.5.0 (rows 49-55): seven tickets, depending on `closed-sets-single-home` (row 19), which gives the kind set one home before this plan adds a member to it. What needs this plan: `evidence-normalize-gemini` (`docs/evidence-trail-plan.md` ticket 5) waits on `gemini-provider` and uses the A0 agent capture as its fixture. Shared files: `graphics-render-check` and the parallel plan's `conflict-discard-rerun` both bump `clutch/specs/implement.md`; this plan's ticket runs first (roadmap decision 8). Render commands run through `run_host_command`, under the parallel plan's host-command lock (decision 10). The judge's `graphics.judge_samples` majority is the `majority-verdict` combiner of `docs/stage-panels-plan.md` (decision 14); B5 moves onto it when that plan lands in 0.6.0 and until then carries its own per-row majority. Shared budget: `graphics-kind` adds 9 bytes (`|graphics`) to CORE_TEMPLATE (decision 5). New dependencies ship as optional extras (decision 18), never in core.
+Part A (`gemini-provider`) is release 0.3.0 (`docs/roadmap.md` row 32); it needs nothing and waits on its agent capture. Part B is release 0.5.0 (rows 49-55): seven tickets, depending on `closed-sets-single-owner` (row 19), which gives the kind set one home before this plan adds a member to it. What needs this plan: `evidence-normalize-gemini` (`docs/evidence-trail-plan.md` ticket 5) waits on `gemini-provider` and uses the A0 agent capture as its fixture. Shared files: `graphics-render-check` and the parallel plan's `conflict-discard-rerun` both bump `clutch/specs/implement.md`; this plan's ticket runs first (roadmap decision 8). Render commands run through `run_host_command`, under the parallel plan's host-command lock (decision 10). The judge's `graphics.judge_samples` majority is the `majority-verdict` combiner of `docs/stage-panels-plan.md` (decision 14); B5 moves onto it when that plan lands in 0.6.0 and until then carries its own per-row majority. Shared budget: `graphics-kind` adds 9 bytes (`|graphics`) to CORE_TEMPLATE (decision 5). New dependencies ship as optional extras (decision 18), never in core.
 
 **Risk the agent capture must retire first.** Part B's image mode assumes Gemini CLI can call an image model headlessly and write the result to a file. If A0 shows it cannot, image generation needs the `kind: api` provider client that `CLUTCH_PLAN.md` §18.2 defers to "the first configured `kind: api` provider". That trigger would then have fired, and an `api-provider-client` ticket (image models only, no new surfaces) joins 0.5.0 ahead of `image-candidates-select`. The plan is written for the CLI case; the api case changes only where the image call is made, not the grading.
 
@@ -114,13 +114,12 @@ No argv or parse in this plan is final until that capture is committed.
 
 - `kind` is the closed set `feature | bug | chore` (`clutch/tickets.py:59`). It is repeated in:
   - `clutch/__main__.py`: `--kind` choices (line 269) and the kind check in `_new` (line 791 at `80b76d5d`);
-  - `dev.py:83` (`--kind` choices);
   - `clutch/stats.py:108`;
   - `clutch/author.py:245` (skeletons embedded in the Author prompt);
   - `tests/integration/test_closed_sets.py:342`;
   - the `CORE_TEMPLATE` rule text in `clutch/hostfiles.py` (`clutch new <stem> --kind feature|bug|chore`), and through `clutch core` the managed blocks in `CLAUDE.md` and `AGENTS.md`.
 
-  `closed-sets-single-home` (roadmap row 19, 0.3.0) collapses the code copies to `Frontmatter` in `tickets.py` with argparse and `dev.py` deriving their choices; B1 depends on it so that adding `graphics` is one edit plus the template.
+  `closed-sets-single-owner` (roadmap row 19, 0.3.0) collapses the code copies to `Frontmatter` in `tickets.py` with argparse deriving its choices; B1 depends on it so that adding `graphics` is one edit plus the template.
 - `bug` is the precedent for a kind with its own machinery: an extra section (`## Regression`), a stdout protocol (`regression_result`), committed evidence files, and a Check rule that runs the command at head and at base.
 - `## Context` accepts only UTF-8 text (`tickets.py:396`), so mockups, reference images, and input images have no place in a ticket today.
 - Review is text-only: it sees `git diff main...<stem>`, where an image is `Binary files differ`. Nothing renders the output or looks at it.
@@ -283,7 +282,7 @@ Future tickets. None are authored yet. Each is written with `clutch new`, then `
 |---|---|---|---|---|---|
 | A0 | (agent capture) | evidence | | | The nine facts under "Prerequisite: agent capture", captured as A1's evidence and as the Gemini normalizer's fixture; not a ticket. Fact 7 decides whether `api-provider-client` joins 0.5.0. |
 | A1 | `gemini-provider` | feature | P2 | | Part A. Release 0.3.0. |
-| B1 | `graphics-kind` | feature | P2 | `closed-sets-single-home` (roadmap row 19) | Grammar for both modes, template, `--reference` and `--input`, lint, the kind set's one home, `CORE_TEMPLATE` (+9 bytes), authoring guide, requisition spec block. Release 0.5.0. |
+| B1 | `graphics-kind` | feature | P2 | `closed-sets-single-owner` (roadmap row 19) | Grammar for both modes, template, `--reference` and `--input`, lint, the kind set's one home, `CORE_TEMPLATE` (+9 bytes), authoring guide, requisition spec block. Release 0.5.0. |
 | B2 | `graphics-render-check` | feature | P2 | `graphics-kind` | `command` mode: render protocol and artifact checks at Check; implement spec block for both modes. Release 0.5.0. |
 | B3 | `route-kinds-filter` | feature | P2 | | `Route.kinds`, kind-aware `resolve()`, judge-independence warning in `doctor` and lint, host-contract inventory. Release 0.5.0. |
 | B4 | `image-quality-gate` | feature | P2 | `graphics-kind` | `clutch/images.py`, the `image_quality` gate, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. Release 0.5.0. |
