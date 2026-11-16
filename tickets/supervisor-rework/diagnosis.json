@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "2147a688712183942a231da02bf1b41531b11e06",
+  "produced_at_sha": "1f587cd4d0023cde9a3c96a891c755db718de210",
   "stem": "supervisor-rework",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Start again from the merge base and redo all of it: runner.py failure_terminal(supervised=False) with supervised=True on drive's attempts-cap and final calls, the diagnose.md sentence, the six docs/how-clutch-works.md edits, the README step-6 sentence, and the eight test_requisition_gate.py edits.",
-    "The last attempt ended incomplete only because it skipped the wrong-implementation check. For each assertion in criteria 1-6, break the matching runner.py behavior (keep before terminal, missing draw, lift after terminal, lost lessons) and confirm that a test fails.",
-    "runner.py has a positive floor under [coverage.files] in test-gate.toml. Cover every new line from tests/unit/test_supervisor_trigger.py using fakes for clutch.daemon.apply_rework, git.rev_parse, lift_outbox and ctx.fs.write, as tests/unit/test_premise_overruled.py does.",
-    "Run the Rework call, its publication, and the scrubbed rework.md write plus lift_outbox(ctx, stem, 'rework-proposal', attempt=attempt, only='rework.md') before journaling the terminal. Only caps.consume 'supervise' and then the reject_verdict keep actor: supervisor go after it.",
-    "Run all five ## Verification commands, including criterion 8's list unedited and the full ./dev.py test. Report outcome complete only after every command and every wrong-implementation probe has passed."
+    "Last attempt passed every ## Verification command and host check, then reported incomplete and never committed. Redo the work from the merge base and commit once all five Verification commands exit 0.",
+    "Do the wrong-implementation check for criteria 1-6 using each one's 'Ruled out:' line in the ticket: a keep before the terminal, a missing draw, lost lessons, a supervisor effect after the terminal, a keep on a refused edit, a third supervise draw. Confirm each makes its test fail.",
+    "Budget the time: one quick mutation of clutch/runner.py::failure_terminal per 'Ruled out' item, each reverted right away. Don't try to cover every assertion one by one. Expected time is 100m and the last attempt used about 19m of wall time.",
+    "Criteria 7 and 8 are regression guards, not new assertions. They need no mutation work: tests/integration/test_requisition_gate.py takes only its eight named edits, and the criterion 8 files stay unedited."
   ],
   "mechanical": null,
   "spec_version": "1.6",
