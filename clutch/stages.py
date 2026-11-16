@@ -483,7 +483,7 @@ async def prepare_worktree(ctx: StageContext, stem: str) -> Path:
         pass  # no leftover branch
     else:
         await ctx.git.branch_delete(ctx.repo, stem)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ctx.fs.mkdir(path.parent)
     await ctx.git.worktree_add(ctx.repo, path, stem, MAIN)
     return path
 
@@ -493,7 +493,7 @@ async def _base_worktree(ctx: StageContext, kind: str, stem: str, base: str) -> 
     path = ctx.config.worktree_root / kind / stem
     if path.exists():
         await ctx.git.worktree_remove(ctx.repo, path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ctx.fs.mkdir(path.parent)
     await ctx.git.worktree_add_detached(ctx.repo, path, base)
     return path
 
@@ -516,7 +516,7 @@ async def lift_outbox(ctx: StageContext, stem: str, kind: str, *, attempt: int, 
         for src in files:
             rel = f"{TICKETS_DIR}/{stem}/{src.relative_to(outbox).as_posix()}"
             ctx.fs.write(ctx.repo / rel, src.read_bytes())
-            src.unlink()
+            ctx.fs.remove(src)
             rels.append(rel)
         sha = await ctx.git.commit(ctx.repo, f"clutch({stem}): {kind}", only=rels)
         return {"kind": kind, "paths": rels, "commit": sha}
@@ -864,7 +864,7 @@ async def gather_evidence(
     worktree = ctx.worktree(stem)
     outbox = worktree / TICKETS_DIR / stem
     for path in _registered_files(outbox):
-        path.unlink()
+        ctx.fs.remove(path)
     env = child_env(ctx.env, ctx.config)  # verification never inherits a provider key
     results = []
     red: list[tuple[int, list[str]]] = []
@@ -1065,7 +1065,7 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
     flake = flake_detection(journal=ctx.driver.journal, box=box, config=ctx.config, escalate=escalations.append)
 
     async def run(name):
-        path.unlink(missing_ok=True)
+        ctx.fs.remove(path)
         result, report = await run_host_command(ctx, ticket, attempt, entry.argv, entry.code, name)
         try:
             results = read_results(path.read_text())
@@ -1183,7 +1183,7 @@ async def check_hosts(ctx, ticket, changed_files, attempt):
             base_worktree = await _base_worktree(ctx, ".base", ticket.stem, base)
             try:
                 if entry.results is not None:
-                    (base_worktree / entry.results).unlink(missing_ok=True)
+                    ctx.fs.remove(base_worktree / entry.results)
                 baseline, _ = await run_host_command(ctx, ticket, attempt, entry.argv, entry.code, f"check/host-{n:02d}-base.txt", cwd=base_worktree)
                 if entry.results is not None:
                     from clutch.testreport import ResultsInvalid, read_results
@@ -1443,8 +1443,8 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
     try:
         await lift_outbox(ctx, stem, "checks", attempt=attempt)
     except ArtifactInvalid as error:
-        error.path.unlink()
-        (outbox / "checks.json").unlink(missing_ok=True)
+        ctx.fs.remove(error.path)
+        ctx.fs.remove(outbox / "checks.json")
         finding = Finding(
             code="verification",
             path=str(error.path.relative_to(ctx.worktree(stem))),

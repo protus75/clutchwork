@@ -33,6 +33,12 @@ class FakeExec:
 
 
 class FakeFS:
+    def mkdir(self, path):
+        pass
+
+    def remove(self, path):
+        pass
+
     def entries(self, path):
         return []
 

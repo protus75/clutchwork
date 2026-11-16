@@ -113,6 +113,18 @@ async def repository(root, monkeypatch, *, prepare=None):
         fs.write(path, data)
 
     monkeypatch.setattr(rig.fs, "write", written)
+    mkdir, remove = rig.fs.mkdir, rig.fs.remove
+
+    def made(path):
+        mkdir(path)
+        fs.mkdir(path)
+
+    def removed(path):
+        remove(path)
+        fs.remove(path)
+
+    monkeypatch.setattr(rig.fs, "mkdir", made)
+    monkeypatch.setattr(rig.fs, "remove", removed)
     (root / ".gitignore").write_text(".clutch/\nstate/\nrecovery-workspaces/\n")
     from tests.integration.test_stages import adopt_conduct
 

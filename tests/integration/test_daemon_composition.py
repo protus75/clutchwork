@@ -35,6 +35,12 @@ from tests.integration.test_scheduler import Time, import_closure, text, turn
 
 
 class ScriptFS:
+    def mkdir(self, path):
+        pass
+
+    def remove(self, path):
+        self.files.pop(path, None)
+
     def __init__(self):
         self.files = {}
 

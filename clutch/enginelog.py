@@ -9,7 +9,7 @@ from typing import Any
 
 from clutch.journal import render_ts
 from clutch.redact import Redactor
-from clutch.seams import Clock
+from clutch.seams import Clock, LocalFileSystem
 
 MAX_BYTES = 16 * 1024 * 1024
 BACKUPS = 3  # 4 files with the active one
@@ -18,6 +18,7 @@ BACKUPS = 3  # 4 files with the active one
 class EngineLog:
     def __init__(self, path: Path, redactor: Redactor, clock: Clock, *, max_bytes: int = MAX_BYTES, backups: int = BACKUPS) -> None:
         self.path = path
+        self._fs = LocalFileSystem()
         self._redactor = redactor
         self._clock = clock
         self._max_bytes = max_bytes
@@ -26,7 +27,7 @@ class EngineLog:
     def event(self, event: str, **fields: Any) -> None:
         record = {"ts": render_ts(self._clock()), "event": event, **fields}
         line = (self._redactor.scrub(json.dumps(record, default=str)) + "\n").encode()
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._fs.mkdir(self.path.parent)
         if self.path.exists() and self.path.stat().st_size + len(line) > self._max_bytes:
             self._rotate()
         with open(self.path, "ab") as f:

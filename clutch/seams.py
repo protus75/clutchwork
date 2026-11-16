@@ -205,6 +205,10 @@ async def _read_pipe(
 
 @runtime_checkable
 class FileSystem(Protocol):
+    def mkdir(self, path: Path) -> None: ...
+
+    def remove(self, path: Path) -> None: ...
+
     def entries(self, path: Path) -> list[str]:
         """Sorted names directly inside a directory, or an empty list if absent."""
         ...
@@ -221,6 +225,12 @@ class FileSystem(Protocol):
 
 
 class LocalFileSystem:
+    def mkdir(self, path: Path) -> None:
+        path.mkdir(parents=True, exist_ok=True)
+
+    def remove(self, path: Path) -> None:
+        path.unlink(missing_ok=True)
+
     def entries(self, path: Path) -> list[str]:
         try:
             return sorted(os.listdir(path))
