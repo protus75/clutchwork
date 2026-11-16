@@ -1,0 +1,57 @@
+# watch 'asked for tier/effort' vs the tier/effort the engine passes, at HEAD 34b1dd36 (2026-11-16)
+
+## 1. Reproduction: clutch/observe.py::text_snapshot on a sandbox host (repro.py, run with uv run python -I)
+Sandbox: one ticket 'alpha' with Frontmatter defaults (agent_tier/agent_effort medium/medium), journaled running under a live lock holder, engine.log stage_start on each surface.
+
+ticket alpha: agent_tier/agent_effort = medium/medium (Frontmatter defaults), no escalation rung
+
+surface=requisition_review  watch: Now: alpha  attempt 1  step: Requisition for 847m14s (since 5:02 AM) | asked for tier/effort high/high
+                           engine passes tier/effort medium/high   -> MISMATCH
+surface=implement           watch: Now: alpha  attempt 1  step: Implement for 847m14s (since 5:02 AM) | asked for tier/effort medium/medium
+                           engine passes tier/effort medium/medium   -> MATCH
+surface=review              watch: Now: alpha  attempt 1  step: Review for 847m14s (since 5:02 AM) | asked for tier/effort high/high
+                           engine passes tier/effort medium/medium   -> MISMATCH
+surface=diagnose            watch: Now: alpha  attempt 1  step: Diagnose for 847m14s (since 5:02 AM) | asked for tier/effort high/medium
+                           engine passes tier/effort medium/medium   -> MISMATCH
+surface=rework              watch: Now: alpha  attempt 1  step: Rework for 847m14s (since 5:02 AM) | asked for tier/effort high/high
+                           engine passes tier/effort medium/medium   -> MISMATCH
+
+## 2. What observe.capability reads for non-implement surfaces: the spec frontmatter
+238:def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
+239-    """Tier/effort clutch asked for: Implement uses the ticket (or its escalation rung); other steps use their spec."""
+240-    if surface != "implement":
+241-        meta = frontmatter(Path(__file__).parent / "specs" / f"{surface}.md")
+242-        return f"{meta.get('tier', '?')}/{meta.get('effort', '?')}" if meta else ""
+
+clutch/specs/requisition_review.md: tier: high effort: high 
+clutch/specs/review.md: tier: high effort: high 
+clutch/specs/diagnose.md: tier: high effort: medium 
+clutch/specs/rework.md: tier: high effort: high 
+
+## 3. What the engine passes (call sites at HEAD)
+158:        tier, effort = capability(ticket, ctx.driver.journal.read())
+159-        ticket = replace(ticket, frontmatter=ticket.frontmatter.model_copy(update={"agent_tier": tier, "agent_effort": effort}))
+180:                    tier=tier,
+226:                req = LLMRequest(surface="requisition_review", rendered=prompt, tier=tier, effort=spec.meta.effort, ticket=None, worktree=None)
+453:        tier=ticket.frontmatter.agent_tier,
+454:        effort=ticket.frontmatter.agent_effort,
+660:            tier=ticket.frontmatter.agent_tier,
+661:            effort=ticket.frontmatter.agent_effort,
+1508:            tier=ticket.frontmatter.agent_tier,
+1509:            effort=ticket.frontmatter.agent_effort,
+364:        tier, effort = runner.capability(original, ctx.driver.journal.read())
+365-        result = await rework(ctx, original, text, findings, attempt=attempt, workspace=workspace, tier=tier, effort=effort, stuck_budget=original.stuck_minutes * 60, handoff=handoff)
+
+## 4. Engine-side tests that pin those call tiers (pass at HEAD; uv run python -m pytest)
+tests/integration/test_ladder.py:85   reviews follow the ticket/rung: [(medium, medium), (high, medium)]
+tests/integration/test_diagnose.py:86 diagnose request tier == medium (ticket default)
+tests/integration/test_rework.py:394  rework request (tier, effort) == (max, medium) from ticket capability
+3 passed in 6.09s
+
+## 5. Live view now (uv run clutch watch --once): nothing running, so the reproduction above uses a sandbox
+clutch watch  7:09:14 PM
+
+Drain: not running
+
+Now: nothing running
+
