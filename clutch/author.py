@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from clutch.artifacts import Finding
@@ -21,7 +22,7 @@ from clutch.requisition import FIRST_REVIEW, RequisitionVerdict, render_prior_re
 from clutch.runner import SPECS_DIR, Checkout
 from clutch.specs import Spec, load_spec, render
 from clutch.stages import findings_text
-from clutch.status import last_states
+from clutch.status import SETTLED, last_states
 from clutch.tickets import TicketInvalid, split_frontmatter, stamp, stem_findings, template, ticket_path, validate_ticket
 
 AUTHOR_STUCK_S = 900.0
@@ -152,12 +153,35 @@ async def committed(checkout: Checkout, path: Path) -> bool:
     return True
 
 
+def ticket_state(text: str) -> str | None:
+    front = split_frontmatter(text)
+    if front is None:
+        return None
+    try:
+        data = yaml.safe_load(front[0])
+    except yaml.YAMLError:
+        return None
+    state = data.get("state") if isinstance(data, dict) else None
+    return state if isinstance(state, str) else None
+
+
+async def is_rejected(checkout: Checkout, stem: str) -> bool:
+    if last_states(checkout.journal.read()).get(stem) == "rejected":
+        return True
+    path = Path("tickets") / stem / "ticket.md"
+    try:
+        text = await checkout.git._run(checkout.repo, "show", f"HEAD:{path}")
+    except GitError:
+        return False
+    return ticket_state(text) == "rejected"
+
+
 async def list_open_tickets(checkout: Checkout) -> str:
     states = last_states(checkout.journal.read())
     lines = []
     for path in sorted((checkout.repo / "tickets").glob("*/ticket.md")):
         stem = path.parent.name
-        if states.get(stem) != "merged" and await committed(checkout, path.relative_to(checkout.repo)):
+        if states.get(stem) not in SETTLED and await committed(checkout, path.relative_to(checkout.repo)) and not await is_rejected(checkout, stem):
             lines.append(f"{stem}: {goal(path.read_text())}")
     return "\n".join(lines)
 

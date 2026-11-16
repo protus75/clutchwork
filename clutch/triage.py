@@ -8,7 +8,7 @@ from typing import Annotated, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from clutch.author import author, commit_record, committed, failure_declined, list_open_tickets, recover_retro_ticket
+from clutch.author import author, commit_record, committed, failure_declined, is_rejected, list_open_tickets, recover_retro_ticket
 from clutch.box import BOX_DIR, Box, DecisionRecord, RereportJournal, Resolution, UnknownBoxId, Verdict, read_registry, record_path, render_record
 from clutch.driver import Driver, LlmStage
 from clutch.effects import Effects
@@ -331,7 +331,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
                 kind = reply.verdict
                 if kind == "tombstone":
                     assert reply.link is not None
-                    target = reply.link in merged or await committed(checkout, Path("tickets") / reply.link / "ticket.md")
+                    target = reply.link in merged or (await committed(checkout, Path("tickets") / reply.link / "ticket.md") and not await is_rejected(checkout, reply.link))
                     if not target:
                         for record, _ in registry:
                             if record.id == reply.link and await committed(checkout, record_path(record.id)):
