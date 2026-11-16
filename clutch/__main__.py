@@ -450,6 +450,8 @@ def main(
                             status = f"-> {listing.models[alias]} (latest {alias})"
                         elif model == PLACEHOLDER:
                             status = "is the placeholder; pick a served name"
+                        elif not listing.models and listing.problems:
+                            status = "unverified; no models listed (see problem above)"
                         else:
                             status = "not served; pick a served name"
                         print(f"  {where}: {model} {status}")

@@ -8,7 +8,7 @@ import pytest
 
 from clutch import __main__ as cli
 from clutch.config import Limits, ModelsByTier, Provider
-from clutch.providers import CLAUDE_ALIASES, PROBE_PROMPT, ClaudeAdapter, CliAdapter, CodexAdapter, QwenAdapter
+from clutch.providers import CLAUDE_ALIASES, PROBE_PROMPT, ClaudeAdapter, CliAdapter, CodexAdapter, ModelListing, QwenAdapter
 from clutch.seams import ExecutableNotFound
 
 
@@ -134,8 +134,40 @@ def test_verb(monkeypatch, capsys):
     config.providers = [codex]
     exec_.responses["codex"] = (1, "", "error: not logged in\n")
     assert run() == 1
-    assert "serves: nothing listed\n  problem: codex debug models: error: not logged in\n  models_by_tier.low: gpt-4.1 not served" in capsys.readouterr().out
+    assert "serves: nothing listed\n  problem: codex debug models: error: not logged in\n  models_by_tier.low: gpt-4.1 unverified; no models listed (see problem above)" in capsys.readouterr().out
     config.providers = [claude]
     exec_.responses["haiku"] = ExecutableNotFound("claude")
     assert run() == 2
     assert "run: clutch install claude" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("models", "problems", "name", "expected"),
+    [
+        ({}, ("listing failed",), "missing", "unverified; no models listed (see problem above)"),
+        ({"served": "served"}, ("listing failed",), "missing", "not served; pick a served name"),
+        ({}, ("listing failed",), "OPERATOR-SETS-THIS", "is the placeholder; pick a served name"),
+        ({}, (), "missing", "not served; pick a served name"),
+    ],
+)
+def test_verb_listing_status(monkeypatch, capsys, models, problems, name, expected):
+    provider = Provider(
+        name="codex",
+        kind="cli",
+        package="pkg",
+        models_by_tier=ModelsByTier(low=name, medium=name, high=name, max=name),
+        limits=Limits(concurrency=1, est_cost_per_call_usd=1),
+    )
+    config = SimpleNamespace(release=SimpleNamespace(pypi_token="TOKEN"), providers=[provider], routing=[])
+
+    async def list_models(**kwargs):
+        return ModelListing(models=models, problems=problems)
+
+    monkeypatch.setattr(cli, "load_config", lambda *a, **k: config)
+    monkeypatch.setattr(CodexAdapter, "list_models", list_models)
+    assert cli.main(["update-config"], cwd=Path("/repo"), env={"PATH": "/bin"}) == 1
+    out = capsys.readouterr().out
+    for tier in ("low", "medium", "high", "max"):
+        assert f"models_by_tier.{tier}: {name} {expected}" in out
+    if not models and problems:
+        assert "not served" not in out
