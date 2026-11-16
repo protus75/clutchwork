@@ -40,7 +40,7 @@ Scope in:
 - `_check_host_results`: when `entry.coverage` is declared and the report is missing or invalid (`OSError`, `UnicodeError`, `ValueError`) and the command exited 0, return a failing report with one `Finding` (code `entry.code`, path `entry.coverage`, message `Missing or invalid coverage report: <path>`, paved road naming `--cov-report=json:<path>`). A nonzero exit still records no coverage and adds no finding, because the failing command already fails the report.
 - `check_hosts`: delete the base `results` read (`read_results` call, its import, and its `except`) and the `ctx.fs.remove(base_worktree / entry.results)` that only prepared it.
 - `docs/how-clutch-works.md`: edit only the sentence "All use one shared command runner" in the host-check paragraph so it also says one filter, `triggered_hosts(tier=...)`, selects the entries for Check and both merge tiers.
-- `tests/integration/test_host_mechanical.py::test_coverage_recorded_for_changed_files`: the invalid-coverage case now expects verdict `fail` with the finding above instead of `pass` with `coverage` None. That is the one expectation that may change there.
+- `tests/integration/test_host_mechanical.py`: exactly two expectations change there, both because a declared coverage report that is missing or invalid on an exit-0 run now fails. (a) `test_coverage_recorded_for_changed_files`: the invalid-coverage case (`valid=False`) now expects verdict `fail` with the finding above instead of `pass` with `coverage` None. (b) `test_coverage_fail_closed`: the `(None, False, "ok")` parametrize case (coverage declared, no report written, exit 0) now expects outcome `gate_failed` with a `Missing or invalid coverage report` finding instead of `ok`. A grep of `tests/` for entries that declare `coverage`, write no or an invalid report and exit 0 while expecting a pass found only these two; every other test there stays unchanged.
 - `tests/unit/test_host_check_selection.py` (new) runs the new lines with fakes and `tmp_path` only: `triggered_hosts` per tier; `_check_host_results` with a fake ctx whose `worktree()` returns `tmp_path` and fake exec, spool, clock, redactor and journal; and `MergeQueue.host_checks` with a fake ctx and a patched `_command`.
 
 Scope out:
@@ -64,9 +64,9 @@ Scope out:
 4. `tests/unit/test_host_check_selection.py` calls `_check_host_results` with a fake ctx, an exit-0 result and an invalid coverage file under `tmp_path`, and asserts a failing report with a `Missing or invalid coverage report` finding, not a passing report with `coverage` None; with a nonzero exit it asserts no such finding is added.
 5. `tests/unit/test_host_check_selection.py` calls `MergeQueue.host_checks` with a fake ctx and patched `_command`, and asserts which entries run for `safety` and for `integration`, and that a `merge.safety_checks` code resolving to no hard entry yields the failure report rather than a run.
 6. `tests/integration/test_mergequeue.py` and `tests/integration/test_host_contract.py` pass unchanged: the safety/integration spool names and the unresolved-designation failure report are as before.
-7. `test_coverage_recorded_for_changed_files[False]` asserts `report.verdict == "fail"` and a finding whose message contains `Missing or invalid coverage report`, not `pass` with `coverage` None; the `[True]` case still records `{"percent": 75.0, "files": {"changed.py": 50.0}}`.
+7. `test_coverage_recorded_for_changed_files[False]` asserts `report.verdict == "fail"` and a finding whose message contains `Missing or invalid coverage report`, not `pass` with `coverage` None; the `[True]` case still records `{"percent": 75.0, "files": {"changed.py": 50.0}}`. `test_coverage_fail_closed` with the `(None, False, ...)` case (coverage declared, no report, exit 0) asserts `result.outcome == "gate_failed"` and a finding whose message contains `Missing or invalid coverage report`, not `ok`; its two `flaky=True` cases still expect `gate_failed` with a `coverage.json` finding.
 8. `grep -n "read_results" clutch/stages.py` shows no use inside `check_hosts`, and `gather_evidence` contains no direct `ctx.exec_.run` call (`grep -c` of that string inside the function is 0).
-9. The Verification spool files `check/verify-01.txt` and `check/verify-01-base.txt` are still written with the same `$ argv`/`[exit]` layout (covered by the existing `tests/integration/test_host_mechanical.py` tests passing unchanged apart from criterion 7).
+9. The Verification spool files `check/verify-01.txt` and `check/verify-01-base.txt` are still written with the same `$ argv`/`[exit]` layout (covered by the existing `tests/integration/test_host_mechanical.py` tests passing unchanged apart from the two expectations in criterion 7).
 
 ## Verification
 ```
@@ -74,7 +74,7 @@ Scope out:
 ```
 
 ## Definition of rejected
-A second filter or a second argv runner survives for Check, Verification or either merge tier; any spool name changes; the invalid-coverage case still passes with coverage silently None on a zero exit; or the change adds a lock, a knob or a compatibility path for `hard_only`.
+A second filter or a second argv runner survives for Check, Verification or either merge tier; any spool name changes; a declared coverage report that is missing or invalid on a zero exit still passes with coverage silently None; or the change adds a lock, a knob or a compatibility path for `hard_only`.
 
 ## Time budget
 - expected: 55m
