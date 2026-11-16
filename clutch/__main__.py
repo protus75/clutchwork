@@ -275,6 +275,9 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("review", help="review a committed ticket against merged code and journal its verdict").add_argument("stems", nargs="+")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
+    roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
+    roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
+    roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=2)
     release = sub.add_parser("release", help="bump, commit, and tag a local release without publishing")
     part = release.add_mutually_exclusive_group(required=True)
     part.add_argument("--minor", dest="part", action="store_const", const="minor")
@@ -623,6 +626,32 @@ def main(
             for stem in args.stems:
                 if result := asyncio.run(_review(checkout, stem)):
                     return result
+            return 0
+        if args.verb == "roadmap":
+            from clutch import roadmap
+
+            if args.ahead < 1:
+                raise runner.Refusal("--ahead must be at least 1", "choose a positive window")
+
+            async def roadmap_pass():
+                lock = Lockfile(config.state_dir, verb="roadmap", instance_id=await checkout.git.describe(repo), clock=clock)
+                lock.acquire()
+                try:
+                    await runner.reap(checkout)
+                    session = build_control(checkout).providers
+                    try:
+
+                        async def author_messages(ids):
+                            llm = await _preflighted_llm(checkout, session)
+                            await triage.triage_pass(checkout, llm, frozenset(ids))
+
+                        return await roadmap.author_ahead(checkout, args.ahead, author_messages)
+                    finally:
+                        await session.close()
+                finally:
+                    lock.release()
+
+            print("\n".join(asyncio.run(roadmap_pass())))
             return 0
         if args.verb == "release":
             from clutch import release

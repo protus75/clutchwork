@@ -4,8 +4,10 @@ import re
 from dataclasses import dataclass, field
 from typing import get_args
 
-from clutch.runner import Refusal
-from clutch.status import SETTLED
+from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict
+from clutch.runner import SPECS_DIR, Refusal
+from clutch.specs import load_spec
+from clutch.status import SETTLED, last_states
 from clutch.tickets import Frontmatter
 
 ROADMAP = "docs/roadmap.md"
@@ -212,3 +214,71 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str]) -> Choic
         ready = [row for row in ready if row._table == first]
     ready.sort(key=lambda r: (r._table, r.priority, r.line))
     return Choice(tuple(strikes), tuple(links), len(open_rows), tuple(ready), tuple(waits))
+
+
+async def author_ahead(checkout, ahead, author_messages) -> list[str]:
+    repo = checkout.repo
+    if await checkout.git.status_porcelain(repo, "--", ROADMAP):
+        raise Refusal(f"uncommitted {ROADMAP}", f"commit or restore {ROADMAP}, then run `clutch roadmap author` again")
+    path = repo / ROADMAP
+    if not path.is_file():
+        raise Refusal(f"missing {ROADMAP}", "restore the master ticket table in docs/roadmap.md")
+    text = path.read_text()
+    rows = parse(text)
+    files = set((await checkout.git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
+    choice = choose(rows, states=last_states(checkout.journal.read()), files=files)
+    lines = []
+    for action, selected, edit in (("strike", choice.strike, strike), ("link", choice.link, link)):
+        for row in selected:
+            text = edit(text, row)
+            checkout.fs.write(path, text.encode())
+            await checkout.git.commit(repo, f"clutch(roadmap): {action} {row.stem}", only=[ROADMAP])
+            lines.append(f"roadmap: {'struck' if action == 'strike' else 'linked'} row {row.number} {row.stem}")
+    opened = choice.open
+    box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
+    filed = []
+
+    def declined(row, message):
+        return f"roadmap: row {row.number} {row.stem} declined -> {message.resolution.link} -- reword the row's Content in docs/roadmap.md to file it again"
+
+    for row in choice.ready:
+        if opened + len(filed) >= ahead:
+            break
+        payload = RoadmapRow(
+            number=row.number,
+            release=row.release,
+            stem=row.stem,
+            owner=row.owner,
+            kind=row.kind,
+            priority=row.priority,
+            depends=list(depends_on(row, rows)),
+            runs_before=list(row.runs_before),
+            content=row.content,
+            plan=plan_path(row.owner, files),
+        )
+        id, _ = box.enqueue(message_class="roadmap_row", origin=f"roadmap/{row.stem}", summary=f"Roadmap row {row.number} `{row.stem}`: {row.content}", roadmap_row=payload)
+        message = box.get(id)
+        if message.resolution is not None and message.resolution.kind == "declined":
+            lines.append(declined(row, message))
+            continue
+        if message.status == "pending" and message.verdict is None:
+            version = load_spec((SPECS_DIR / "triage.md").read_text()).meta.version
+            box.record_verdict(id, Verdict(verdict="author", produced_by_spec_version=version, rationale=f"Roadmap row {row.number} is planned work in docs/roadmap.md"))
+        filed.append((row, id))
+    if filed:
+        await author_messages([id for _, id in filed])
+    for row, id in filed:
+        message = box.get(id)
+        if message.resolution is not None and message.resolution.kind == "ticket":
+            text = link(text, row)
+            checkout.fs.write(path, text.encode())
+            await checkout.git.commit(repo, f"clutch(roadmap): author {row.stem}", only=[ROADMAP])
+            lines.append(f"roadmap: authored row {row.number} {row.stem}")
+            opened += 1
+        elif message.resolution is not None and message.resolution.kind == "declined":
+            lines.append(declined(row, message))
+        else:
+            lines.append(f"roadmap: row {row.number} {row.stem} pending -- run clutch roadmap author again")
+    lines.extend(f"roadmap: row {wait.row.number} {wait.row.stem} waits: {wait.reason} -- {wait.road}" for wait in choice.waits)
+    lines.append(f"roadmap: {opened} of {ahead} rows open")
+    return lines
