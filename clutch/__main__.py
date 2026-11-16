@@ -350,7 +350,13 @@ def main(
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch confirm|reject <stem>`")
         if args.verb == "docs":
-            for name, purpose in (("authoring", "ticket authoring"), ("running", "host operation"), ("contract", "host contract"), ("qwen", "local qwen provider setup")):
+            for name, purpose in (
+                ("authoring", "ticket authoring"),
+                ("running", "host operation"),
+                ("contract", "host contract"),
+                ("qwen", "local qwen provider setup"),
+                ("gemini", "gemini provider setup"),
+            ):
                 print(f"{Path(clutch.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
             return 0
         if args.verb == "init-config":

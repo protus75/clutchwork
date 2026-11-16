@@ -20,7 +20,7 @@ class Exec:
             return self.pnpm
         if argv[0] == "qwen":
             raise ExecutableNotFound("qwen")
-        return 0, {"claude": "2.1.322 (Claude Code)\n", "codex": "codex-cli 0.167.1\n"}[argv[0]], ""
+        return 0, {"claude": "2.1.322 (Claude Code)\n", "codex": "codex-cli 0.167.1\n", "gemini": "0.49.0\n"}[argv[0]], ""
 
 
 def test_tool_env_and_version():
@@ -61,6 +61,7 @@ def test_install(monkeypatch, capsys):
         "codex: system 0.167.1, package @openai/codex",
         "qwen: absent, package @qwen-code/qwen-code -- run: clutch install qwen",
         "ollama: not installed by clutch; follow clutch/docs/host-qwen.md",
+        "gemini: system 0.49.0, package @google/gemini-cli",
     ]
     assert all(call[0][0] != "pnpm" for call in exec_.calls)
     exec_.calls.clear()
@@ -70,8 +71,8 @@ def test_install(monkeypatch, capsys):
     assert argv == ["pnpm", "add", "-D", "@openai/codex@latest"]
     assert kwargs == {"cwd": Path("/repo"), "env": {"PATH": "/repo/node_modules/.bin:/bin"}, "timeout": 600.0}
     exec_.calls.clear()
-    assert main("codex", "gemini") == 2
-    assert "claude, codex, qwen" in capsys.readouterr().err
+    assert main("codex", "llama") == 2
+    assert "claude, codex, gemini, qwen" in capsys.readouterr().err
     assert not exec_.calls
     exec_.pnpm = None
     assert main("codex") == 2

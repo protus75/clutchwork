@@ -98,7 +98,11 @@ class CallMeter(EventConsumer):
             item = {}
         if kind in {"item.started", "item.updated", "item.completed"} and item.get("type") in {"command_execution", "file_change", "mcp_tool_call", "web_search"} and "id" in item:
             self.tools.add(item["id"])
+        if kind == "tool_use" and "tool_id" in event:
+            self.tools.add(event["tool_id"])
         usage = event.get("usage") if kind in {"result", "turn.completed"} else message.get("usage")
+        if kind == "result" and usage is None:
+            usage = event.get("stats")
         if isinstance(usage, dict):
             key = "terminal" if kind in {"result", "turn.completed"} else message.get("id")
             if key is not None:

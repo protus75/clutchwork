@@ -244,15 +244,15 @@ def test_policy_closed_sets_and_constants():
 
 
 def test_providers_closed_sets_and_constants():
-    assert {k: ident(x) for k, x in providers.ADAPTERS.items()} == {"claude": "ClaudeAdapter", "codex": "CodexAdapter", "qwen": "QwenAdapter"}
+    assert {k: ident(x) for k, x in providers.ADAPTERS.items()} == {"claude": "ClaudeAdapter", "codex": "CodexAdapter", "qwen": "QwenAdapter", "gemini": "GeminiAdapter"}
     assert providers.FAILURE_MARKERS == (
-        ("quota_exhausted", ("quota exhausted", "usage limit reached", "out of extra usage")),
-        ("rate_limited", ("rate limit", "too many requests")),
+        ("quota_exhausted", ("quota exhausted", "usage limit reached", "out of extra usage", "exhausted your daily quota")),
+        ("rate_limited", ("rate limit", "too many requests", "resource_exhausted")),
         ("outage", ("service unavailable", "internal server error", "stream disconnected", "at capacity")),
-        ("model_error", ("model unavailable", "model not found", "model is not supported")),
+        ("model_error", ("model unavailable", "model not found", "model is not supported", "modelnotfounderror")),
     )
     assert set(get_args_deep(providers.FailureClass)) == {"auth_error", "model_error", "outage", "quota_exhausted", "rate_limited", "unclassified"}
-    assert {k: a.PACKAGE for k, a in providers.ADAPTERS.items()} == {"claude": "@anthropic-ai/claude-code", "codex": "@openai/codex", "qwen": "@qwen-code/qwen-code"}
+    assert {k: a.PACKAGE for k, a in providers.ADAPTERS.items()} == {"claude": "@anthropic-ai/claude-code", "codex": "@openai/codex", "qwen": "@qwen-code/qwen-code", "gemini": "@google/gemini-cli"}
     assert providers.CLAUDE_ALIASES == ("haiku", "sonnet", "opus", "fable")
     assert providers.INSTALL_TIMEOUT_S == 600.0
     assert providers.PREFLIGHT_TIMEOUT_S == 120.0

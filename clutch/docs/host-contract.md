@@ -225,9 +225,9 @@ box_row: [failure_report, retro_finding, override_report, suggestion, bug_report
 `schema_version` must be the integer 1, not a boolean or string. `kind: api`
 is currently refused: use `cli`; Implement requires a CLI even when API support
 eventually ships. Every CLI requires a nonempty `package` despite its unset model
-default. Shipped runtime adapters are `claude`, `codex`, and `qwen` (see [qwen setup](host-qwen.md)); the loader accepts
+default. Shipped runtime adapters are `claude`, `codex`, `qwen` (see [qwen setup](host-qwen.md)), and `gemini` (see [gemini setup](host-gemini.md)); the loader accepts
 other names but provider setup refuses names without an adapter. `auth` names an
-environment variable, never a literal secret. Codex and qwen report no cost and require
+environment variable, never a literal secret. Codex, qwen, and gemini report no cost and require
 `est_cost_per_call_usd` at adapter setup; Claude can report actual cost. `base_url` is required for qwen and refused for the other adapters. Estimates
 are nonnegative, count fields are integers at least 1, and retry must not exceed
 diagnosis. Providers, routing, route candidates, argv and strategy paths are

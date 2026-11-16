@@ -14,7 +14,7 @@ def test_docs_without_config_or_lock(monkeypatch, capsys):
     assert cli.main(["docs"], cwd=Path("/absent-host")) == 0
     lines = capsys.readouterr().out.splitlines()
     directory = Path(clutch.__file__).parent / "docs"
-    assert [line.split("  ")[0] for line in lines] == [str(directory / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen")]
+    assert [line.split("  ")[0] for line in lines] == [str(directory / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "gemini")]
     assert all(line.split("  ")[1] for line in lines)
 
 

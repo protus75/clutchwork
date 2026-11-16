@@ -128,9 +128,9 @@ def test_verb(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "gpt-4.1 not served; pick a served name" in out
     assert "OPERATOR-SETS-THIS is the placeholder; pick a served name" in out
-    config.providers = [provider("gemini", ["x"] * 4)]
+    config.providers = [provider("llama", ["x"] * 4)]
     assert run() == 1
-    assert "gemini: no shipped cli adapter; name one of claude, codex, qwen" in capsys.readouterr().out
+    assert "llama: no shipped cli adapter; name one of claude, codex, gemini, qwen" in capsys.readouterr().out
     config.providers = [codex]
     exec_.responses["codex"] = (1, "", "error: not logged in\n")
     assert run() == 1

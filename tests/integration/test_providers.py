@@ -185,7 +185,7 @@ def test_implement_routed_to_api_provider_fails_config_load(tmp_path):
 
 
 def test_unknown_cli_provider_has_no_adapter(tmp_path):
-    cfg = config(tmp_path, CONFIG.replace("name: codex", "name: gemini").replace("provider: codex", "provider: gemini"))
+    cfg = config(tmp_path, CONFIG.replace("name: codex", "name: llama").replace("provider: codex", "provider: llama"))
     with pytest.raises(ProviderSetupError, match="no shipped cli adapter"):
         llm(cfg, FakeExec(), tmp_path)
 

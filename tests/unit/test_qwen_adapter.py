@@ -51,10 +51,10 @@ def test_qwen_argv_and_env():
     assert a.argv("qwen3-coder:30b", "low", False) == expected
     expected[expected.index("plan")] = "yolo"
     assert a.argv("qwen3-coder:30b", "low", True) == expected
-    path = Path(a.call_env()["QWEN_CODE_SYSTEM_SETTINGS_PATH"])
+    path = Path(a.call_env(False)["QWEN_CODE_SYSTEM_SETTINGS_PATH"])
     assert path.is_absolute() and path == Path(clutch.__file__).parent / "qwen-settings.json"
     assert json.loads(path.read_text()) == {"context": {"fileName": "CLAUDE.md"}}
-    assert a.call_env()["PATH"] == "/repo/node_modules/.bin:/bin"
+    assert a.call_env(False)["PATH"] == "/repo/node_modules/.bin:/bin"
 
 
 def test_parse_recorded_stream():

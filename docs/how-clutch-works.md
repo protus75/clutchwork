@@ -575,14 +575,14 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 
 ### 8.1 Providers
 
-Three CLI adapters ship: `claude`, `codex`, and `qwen` (Qwen Code against a local Ollama model at the provider’s `base_url`). Only `kind: cli` providers are accepted.
+Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Ollama model at the provider’s `base_url`), and `gemini` (Google's Gemini CLI with an API key). Only `kind: cli` providers are accepted.
 
 - Implement is the only surface with write access (`claude --permission-mode
-  bypassPermissions`, `codex --dangerously-bypass-approvals-and-sandbox`, `qwen --approval-mode yolo`) and runs in the
-  ticket's worktree. Every other surface is read-only.
-`claude` and `qwen` read `CLAUDE.md`, and `codex` reads `AGENTS.md`. clutch points qwen at `CLAUDE.md` through its packaged `qwen-settings.json`.
+  bypassPermissions`, `codex --dangerously-bypass-approvals-and-sandbox`, `qwen --approval-mode yolo`, `gemini --approval-mode yolo`) and runs in the
+  ticket's worktree. Every other surface is read-only. Gemini's grant is also a packaged system settings file chosen per call: `gemini-readonly.json` allows only read tools and `gemini-write.json` allows every tool.
+`claude` and `qwen` read `CLAUDE.md`, and `codex` reads `AGENTS.md`. clutch points qwen at `CLAUDE.md` through its packaged `qwen-settings.json`. `gemini` reads `AGENTS.md` through the packaged settings files' `context.fileName`, and also loads any `GEMINI.md`, which that setting cannot exclude.
 
-**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `clutch update-config` prints them beside the configured names.
+**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `gemini` lists none because the CLI has no listing command; a gemini call records the model its stream's `stats.models` names, because `-m` does not pin flash-family names. `clutch update-config` prints listings beside the configured names.
 
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own

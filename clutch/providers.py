@@ -36,10 +36,10 @@ PLACEHOLDER = "OPERATOR-SETS-THIS"
 FailureClass = Literal["rate_limited", "quota_exhausted", "outage", "auth_error", "model_error", "unclassified"]
 
 FAILURE_MARKERS: tuple[tuple[FailureClass, tuple[str, ...]], ...] = (
-    ("quota_exhausted", ("quota exhausted", "usage limit reached", "out of extra usage")),
-    ("rate_limited", ("rate limit", "too many requests")),
+    ("quota_exhausted", ("quota exhausted", "usage limit reached", "out of extra usage", "exhausted your daily quota")),
+    ("rate_limited", ("rate limit", "too many requests", "resource_exhausted")),
     ("outage", ("service unavailable", "internal server error", "stream disconnected", "at capacity")),
-    ("model_error", ("model unavailable", "model not found", "model is not supported")),
+    ("model_error", ("model unavailable", "model not found", "model is not supported", "modelnotfounderror")),
 )
 
 
@@ -254,6 +254,7 @@ class Parsed:
     input_tokens: int | None
     output_tokens: int | None
     usd: float | None  # None: the stream reports no cost, so the declared estimate charges
+    model: str | None = None
 
 
 CLAUDE_ALIASES = ("haiku", "sonnet", "opus", "fable")
@@ -272,6 +273,7 @@ class CliAdapter:
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
         raise NotImplementedError
 
+    AUTH_ENV: str | None = None
     TIER_LABELS: dict[str, str] | None = None
     uses_base_url = False
     binary: str
@@ -311,7 +313,7 @@ class CliAdapter:
         self._seq: dict[str, int] = {}
         self._pgids: set[int] = set()
 
-    def call_env(self) -> dict[str, str]:
+    def call_env(self, writes: bool) -> dict[str, str]:
         return tool_env(child_env(self._env, self._config, self.provider), self._cwd)
 
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
@@ -357,7 +359,7 @@ class CliAdapter:
             rc, out, err = await self._exec.run(
                 argv,
                 cwd=req.worktree if writes else self._cwd,
-                env=self.call_env(),
+                env=self.call_env(writes),
                 timeout=self._timeout,
                 stdin_path=prompt,
                 on_spawn=spawned,
@@ -398,7 +400,7 @@ class CliAdapter:
             input_tokens=parsed.input_tokens,
             output_tokens=parsed.output_tokens,
             provider=self.provider.name,
-            model=model,
+            model=parsed.model if parsed.model is not None else model,
             usd=usd,
         )
 
@@ -609,11 +611,50 @@ class QwenAdapter(ClaudeAdapter):
             "false",
         ]
 
-    def call_env(self) -> dict[str, str]:
-        return {**super().call_env(), "QWEN_CODE_SYSTEM_SETTINGS_PATH": str((Path(__file__).parent / "qwen-settings.json").resolve())}
+    def call_env(self, writes: bool) -> dict[str, str]:
+        return {**super().call_env(writes), "QWEN_CODE_SYSTEM_SETTINGS_PATH": str((Path(__file__).parent / "qwen-settings.json").resolve())}
 
 
-ADAPTERS: dict[str, type[CliAdapter]] = {"claude": ClaudeAdapter, "codex": CodexAdapter, "qwen": QwenAdapter}
+class GeminiAdapter(CliAdapter):
+    PACKAGE = "@google/gemini-cli"
+    binary = "gemini"
+    reports_cost = False
+    AUTH_MARKERS = ("please set an auth method", "api key not valid")
+    AUTH_ENV = "GEMINI_API_KEY"
+    LOGIN_ROAD = "export GEMINI_API_KEY as clutch/docs/host-gemini.md describes, then `clutch drain`"
+
+    @classmethod
+    async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
+        return ModelListing({}, ("gemini has no model-listing command; see clutch/docs/host-gemini.md and run clutch probe gemini",))
+
+    def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
+        return ["gemini", "--skip-trust", "-m", model, "-o", "stream-json", "--approval-mode", "yolo" if writes else "default"]
+
+    def call_env(self, writes: bool) -> dict[str, str]:
+        name = "gemini-write.json" if writes else "gemini-readonly.json"
+        return {**super().call_env(writes), "GEMINI_CLI_SYSTEM_SETTINGS_PATH": str((Path(__file__).parent / name).resolve())}
+
+    def parse(self, out: str) -> Parsed:
+        events = _events(out)
+        result = next((e for e in reversed(events) if e.get("type") == "result"), None)
+        if result is None:
+            raise ValueError("no terminal result event in the stream")
+        if result.get("status") != "success":
+            error = result.get("error") or {}
+            last_error = next((e for e in reversed(events) if e.get("type") == "error"), {})
+            raise ValueError(f"result event reports failure: {error.get('message') or last_error.get('message') or result.get('status')}")
+        stats = result.get("stats") or {}
+        models = stats.get("models") or {}
+        return Parsed(
+            text="".join(e.get("content", "") for e in events if e.get("type") == "message" and e.get("role") == "assistant"),
+            input_tokens=stats.get("input_tokens"),
+            output_tokens=stats.get("output_tokens"),
+            usd=None,
+            model=next(iter(models)) if len(models) == 1 else None,
+        )
+
+
+ADAPTERS: dict[str, type[CliAdapter]] = {"claude": ClaudeAdapter, "codex": CodexAdapter, "qwen": QwenAdapter, "gemini": GeminiAdapter}
 
 
 PROBE_PROMPT = "Reply with the single word ok."
@@ -655,6 +696,8 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
         adapter = ADAPTERS[status.name]
         listing = listings[status.name]
         lines.extend([f"  - name: {status.name}", "    kind: cli", f"    package: '{adapter.PACKAGE}'"])
+        if adapter.AUTH_ENV:
+            lines.append(f"    auth: {adapter.AUTH_ENV}")
         if adapter.uses_base_url:
             lines.append("    base_url: http://localhost:11434/v1  # clutch/docs/host-qwen.md")
         first = next(iter(listing.models.values()), PLACEHOLDER)
