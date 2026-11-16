@@ -92,9 +92,10 @@ Scope out:
    - `release="1.0.0", priorities=("P0", "P1")` returns `(True, ["roadmap merged: ok"])`;
    - `release="1.0.0"` returns `False` with the one line `roadmap merged: release 1.0.0 row 2 p-two is not in the journal`;
    - `release="2.0.0"` returns `False` with the line `roadmap merged: release 2.0.0 row 5 p-five is running`;
-   - `release="9.9.9"` raises `Refusal` naming `9.9.9`.
+   - `release="9.9.9"` raises `Refusal` naming `9.9.9`;
+   - after the test journals `running` for `p-four`, `release="1.0.0", priorities=("P0", "P1")` returns `False` with exactly the one line `roadmap merged: release 1.0.0 row 4 p-four is running`, so the `### 1.0.0, last group` table's rows belong to release `1.0.0`.
 
-   Ruled out: another release's row counted, the last-group heading read as a separate release, a struck row reported as open, and the priority filter ignored.
+   Ruled out: another release's row counted, the last-group heading read as a separate release (filtering on `row.release == release` instead of `release_name(row.release) == release`, which this last bullet fails), a struck row reported as open, and the priority filter ignored.
 4. `tests/unit/test_roadmap_merged.py::test_release_split_row` writes a roadmap under `tmp_path` whose one master table, `### 1.0.0`, holds row 1 `s-row` P1, unstruck, whose Content starts ``**Authored** (`tickets/s-row/`, `tickets/s-two/`).``. The journal holds `merged` for `s-row` and `running` for `s-two`.
    - `merged(checkout, [], release="1.0.0")` returns `False` with exactly the one line `roadmap merged: release 1.0.0 row 1 s-row has a split ticket that has not settled`.
    - After the test journals `merged` for `s-two`, the same call returns `(True, ["roadmap merged: ok"])`.
