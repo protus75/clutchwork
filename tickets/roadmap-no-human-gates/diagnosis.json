@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "8343b0c17b328716f7db44877352f6806ee878e7",
+  "stem": "roadmap-no-human-gates",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Redo every Scope in edit from the merge base. All five Verification commands passed last time. Review flagged only over-deletion, so for each item change only the clause it names and keep the surrounding sentences word for word.",
+    "docs/roadmap-driver-plan.md section 4: keep \"Read-only; the extension draws it later.\" and the examples of prose gates that become commands (the suite, a `status` query, a `training export` count). Change only the clauses that say operator or person, and still add `every gate is a command`.",
+    "docs/gemini-graphics-refactor-plan.md B7, the `./dev.py visual-baseline` bullet: keep \"The report is committed like the review baseline's.\" and \"the layer-1 score distributions that separate the labels\". Change only where the labels come from (the AI label panel) and add the 0.85 GO gate.",
+    "Before committing, diff each fenced doc against the merge base. Any deleted sentence must map to a Scope in item that removes it. If none does, restore that sentence word for word and edit only the banned phrase in it."
+  ],
+  "mechanical": null,
+  "spec_version": "1.6",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
