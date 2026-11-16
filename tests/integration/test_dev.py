@@ -6,42 +6,6 @@ import pytest
 import dev
 
 
-def test_publish_uploads_built_files(tmp_path, monkeypatch):
-    monkeypatch.setattr(dev, "ROOT", tmp_path)
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "publish"])
-    monkeypatch.setenv("UV_PUBLISH_TOKEN", "test-token")
-    calls = []
-
-    def fake_run(argv, *, cwd, check):
-        calls.append((argv, cwd, check))
-        if argv[:2] == ["uv", "build"]:
-            directory = Path(argv[3])
-            (directory / "clutch-0.1.1.whl").write_bytes(b"wheel")
-            (directory / "clutch-0.1.1.tar.gz").write_bytes(b"sdist")
-        return Mock(returncode=0)
-
-    monkeypatch.setattr(dev.subprocess, "run", fake_run)
-    dev.main()
-    bump, build, publish = calls  # Extra calls, including git or a second bump, must fail.
-    directory = Path(build[0][3])
-    assert bump == (["uv", "version", "--bump", "patch"], tmp_path, False)  # The bump must precede the build.
-    assert build == (["uv", "build", "-o", str(directory)], tmp_path, False)  # Build into the temporary directory.
-    assert publish == (["uv", "publish", str(directory / "clutch-0.1.1.tar.gz"), str(directory / "clutch-0.1.1.whl")], tmp_path, False)  # Upload both actual artifacts.
-
-
-def test_publish_refuses_without_token(monkeypatch):
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "publish"])
-    monkeypatch.delenv("UV_PUBLISH_TOKEN", raising=False)
-    run = Mock()
-    monkeypatch.setattr(dev.subprocess, "run", run)
-
-    with pytest.raises(SystemExit) as error:
-        dev.main()
-    assert "UV_PUBLISH_TOKEN" in str(error.value.code)  # A generic failure would not identify the missing credential.
-    assert error.value.code != 0  # Refusal must not report success.
-    run.assert_not_called()  # Refusal must happen before the bump or any other subprocess.
-
-
 def test_test_passes_leading_options_to_pytest(monkeypatch):
     monkeypatch.setattr(dev.sys, "argv", ["dev.py", "test", "--durations=25", "-k", "foo"])
     run = Mock(return_value=Mock(returncode=0))
@@ -54,8 +18,7 @@ def test_test_passes_leading_options_to_pytest(monkeypatch):
     )  # Leading options must reach pytest in their original order.
 
     run.reset_mock()
-    monkeypatch.delenv("UV_PUBLISH_TOKEN", raising=False)
-    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "publish", "--bogus"])
+    monkeypatch.setattr(dev.sys, "argv", ["dev.py", "vscode-package", "--bogus"])
     with pytest.raises(SystemExit) as error:
         dev.main()
     assert error.value.code == 2  # A surviving command must reject unknown options.

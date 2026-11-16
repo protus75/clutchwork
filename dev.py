@@ -3,7 +3,6 @@
 
     ./dev.py                  the full suite (unit under clutch.testguard)
     ./dev.py test [args]      the suite, or named tests (unit under clutch.testguard)
-    ./dev.py publish          bump the patch version, build and upload the release
     ./dev.py vscode           package and install the vscode-clutchwork extension
     ./dev.py vscode-package   build a VSIX for Marketplace upload
 
@@ -45,18 +44,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="./dev.py", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="task")
     sub.add_parser("test", help="the suite, or the named tests")
-    sub.add_parser("publish", help="bump the patch version, build and upload the release")
     sub.add_parser("vscode", help="package and install the vscode-clutchwork extension")
     sub.add_parser("vscode-package", help="build a VSIX for Marketplace upload")
     args = parser.parse_args()
-    if args.task == "publish":
-        if not os.environ.get("UV_PUBLISH_TOKEN"):
-            sys.exit("dev: set UV_PUBLISH_TOKEN to publish")
-        run(["uv", "version", "--bump", "patch"])
-        with tempfile.TemporaryDirectory() as tmp:
-            run(["uv", "build", "-o", tmp])
-            run(["uv", "publish", *(str(path) for path in sorted(Path(tmp).iterdir()))])
-    elif args.task == "vscode-package":
+    if args.task == "vscode-package":
         with (ROOT / "pyproject.toml").open("rb") as stream:
             version = tomllib.load(stream)["project"]["version"]
         readme = ROOT / "vscode-clutchwork" / "README.md"

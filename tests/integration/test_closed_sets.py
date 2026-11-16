@@ -198,6 +198,7 @@ def test_journal_closed_sets_and_constants():
             "reject_arrival",
             "reject_verdict",
             "requisition_verdict",
+            "release",
             "retro_failed",
             "retro_prompt_spec_change_merged",
             "retro_ticket_authored",

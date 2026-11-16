@@ -131,6 +131,7 @@ Config:
   defaults:
     worktree_root: unset
     routing_default_tier: medium
+    release: {publish: false, pypi_token: UV_PUBLISH_TOKEN}
     scheduler: {max_unmerged: 2}
     caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, poison: 2, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
@@ -141,6 +142,9 @@ Config:
     report_inbox: unset
     context_files: []
     ask_notes: unset
+Release:
+  required: []
+  defaults: {publish: false, pypi_token: UV_PUBLISH_TOKEN}
 Provider:
   required: [name, kind, models_by_tier, limits]
   defaults: {auth: unset, package: unset, base_url: unset}
@@ -229,6 +233,8 @@ are nonnegative, count fields are integers at least 1, and retry must not exceed
 diagnosis. Providers, routing, route candidates, argv and strategy paths are
 nonempty lists where declared. Retro uses nested `merges`, `days`, and `spikes` blocks, each with an `enabled` switch; their thresholds are `every`, `every`, and `count`. `spikes.kinds` is a nonempty allowlist with each kind listed once. If all triggers are disabled, set `retro.enabled: false` or enable a trigger. The master switch disables automatic retros without blocking a forced retro. Notify requires a nonblank executable and
 NUL-free strings.
+
+`release.pypi_token` names an environment variable, never a literal token; it is removed from every child and redacted like provider `auth`, and only the `clutch publish` upload receives its value. `release.publish: true` is the owner's standing authorization to upload.
 
 Candidates name declared providers and are ordered primary-until-pressure;
 absent `model` selects `models_by_tier[tier]`. Non-review surfaces fall back to

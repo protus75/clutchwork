@@ -3,11 +3,15 @@
 from collections.abc import Mapping
 from pathlib import Path
 
+from clutch.config import Config
 from clutch.git import Git, GitError
+from clutch.providers import child_env
 from clutch.runner import Refusal
-from clutch.seams import ProcessExec
+from clutch.seams import FileSystem, ProcessExec
 
 UV_TIMEOUT_S = 60.0
+BUILD_TIMEOUT_S = 600.0
+PUBLISH_TIMEOUT_S = 600.0
 
 
 async def release(repo: Path, git: Git, exec_: ProcessExec, env: Mapping[str, str], part: str) -> tuple[str, str]:
@@ -34,3 +38,41 @@ async def release(repo: Path, git: Git, exec_: ProcessExec, env: Mapping[str, st
     sha = await git.commit(repo, message, only=["pyproject.toml", "uv.lock"])
     await git.tag(repo, tag, message, sha)
     return version, sha
+
+
+async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], config: Config) -> tuple[str, list[Path], bool]:
+    token_name = config.release.pypi_token
+    if config.release.publish and not env.get(token_name):
+        raise Refusal(f"{token_name} is unset or empty", f"export {token_name} with a PyPI token or set release.publish: false to build without uploading")
+    child = child_env(env, config)
+    dirty = await git.status_porcelain(repo, "--untracked-files=no")
+    if dirty.strip():
+        raise Refusal(f"uncommitted tracked files: {dirty.strip()}", "commit or restore them, then retry clutch publish")
+    rc, out, err = await exec_.run(["uv", "version", "--short"], cwd=repo, env=child, timeout=UV_TIMEOUT_S)
+    if rc:
+        lines = [line for line in err.splitlines() if line.strip()]
+        raise Refusal(f"uv version failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
+    version = out.strip()
+    tag = f"v{version}"
+    head = await git.rev_parse(repo, "HEAD")
+    try:
+        tagged = await git.rev_parse(repo, f"refs/tags/{tag}^{{commit}}")
+    except GitError:
+        tagged = None
+    if tagged != head:
+        raise Refusal(f"tag {tag} is missing or not on HEAD", "run clutch release --minor or clutch release --patch to tag the version at HEAD, then retry clutch publish")
+    dist = config.state_dir / "dist"
+    rc, _, err = await exec_.run(["uv", "build", "--clear", "-o", str(dist)], cwd=repo, env=child, timeout=BUILD_TIMEOUT_S)
+    if rc:
+        lines = [line for line in err.splitlines() if line.strip()]
+        raise Refusal(f"uv build failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
+    artifacts = [dist / name for name in sorted(fs.entries(dist)) if name.endswith((".whl", ".tar.gz"))]
+    if not artifacts:
+        raise Refusal("uv build produced no artifacts", "fix the build, then retry clutch publish")
+    if not config.release.publish:
+        return version, artifacts, False
+    rc, _, err = await exec_.run(["uv", "publish", *map(str, artifacts)], cwd=repo, env={**child, "UV_PUBLISH_TOKEN": env[token_name]}, timeout=PUBLISH_TIMEOUT_S)
+    if rc:
+        lines = [line for line in err.splitlines() if line.strip()]
+        raise Refusal(f"uv publish failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
+    return version, artifacts, True

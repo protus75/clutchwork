@@ -34,6 +34,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `suggest` | Yes | File an idea into the Suggestion Box. |
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. |
 | `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
+| `publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release` | No | Bump the version with `--minor` or `--patch`, commit `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `dismiss` | No | Dismiss named box IDs without a model call. |
 | `covmap` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
@@ -46,4 +47,4 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `serve` | No | Run the continuous daemon. |
 
-Stop serve before `roadmap`, `triage`, `dismiss`, `release`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `roadmap`, `triage`, `dismiss`, `release`, `publish`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.

@@ -153,6 +153,7 @@ def test_main_release_locks_calls_and_prints(monkeypatch, capsys, refuse):
             raise Refusal("blocked", "repair")
         return "0.2.0", SHA
 
+    monkeypatch.setattr(cli, "Journal", lambda *a: SimpleNamespace(append=lambda *a, **kw: None))
     monkeypatch.setattr(cli, "Lockfile", Lock)
     monkeypatch.setattr(Git, "describe", describe)
     monkeypatch.setattr(release, "release", fake_release)

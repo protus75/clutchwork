@@ -65,7 +65,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
 | `triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
-| `release --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml` or `uv.lock`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, commits exactly those two files as `release: <version>`, and creates an annotated tag on the returned commit sha. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
+| `release --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml` or `uv.lock`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, commits exactly those two files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
+| `publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `dismiss <id> ...` | yes | Dismiss named messages without a model call. |
 | `prompt box <id> ...` | no | Print a prompt for discussing named box messages. |
 | `prompt drain-loop` | no | Print the supervising drain-loop prompt without writing state. |
@@ -88,7 +89,6 @@ A unit test file may share its name with an integration test file.
 |---|---|
 | (none) | `uv run pytest -q -p clutch.testguard tests/unit`, then `uv run pytest -q tests/integration`; a unit failure stops before integration |
 | `test [args]` | With no args, the same as (none); otherwise pytest with those args, adding `-p clutch.testguard` when at least one test path is named and every test path is under `tests/unit` |
-| `publish` | with `UV_PUBLISH_TOKEN` set, bumps the patch version, then builds and uploads; the operator commits `pyproject.toml` and `uv.lock` |
 | `vscode-package` | writes the `pyproject.toml` clutch version into the `Built for` line of `vscode-clutchwork/README.md`, then packages the current manifest version into `dist/vscode-clutchwork-<version>.vsix` and prints the Marketplace upload page; under WSL also prints the Windows path to paste into the upload dialog |
 | `vscode` | bumps the patch version in `vscode-clutchwork/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |
 
@@ -582,7 +582,7 @@ Three CLI adapters ship: `claude`, `codex`, and `qwen` (Qwen Code against a loca
 
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
-  calls; git, checks, and notifications get no provider key.
+  calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch publish` upload receives it as `UV_PUBLISH_TOKEN`.
 - **Preflight** (start of `run`/`drain`/`serve`/`triage`/`review`, and standalone `retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch install <provider>`.
@@ -699,6 +699,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 |---|---|
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
 | `engine.log` | Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
+| `dist/` | Wheel and sdist last built by `clutch publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `drain --detach`. |
 | `coverage-map.json` | Written by `covmap` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
@@ -747,6 +748,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 |---|---|
 | `schema_version`, `state_dir`, `worktree_root` | config version; where state and worktrees live |
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
+| `release` | Upload authorization and PyPI token environment variable name; uploads default to off. |
 | `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks; declared `surfaces` entries are refused at config load; `trigger_map` is accepted, unused |
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |

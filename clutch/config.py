@@ -220,6 +220,11 @@ class Retro(_Strict):
     spikes: RetroSpikes = RetroSpikes()
 
 
+class Release(_Strict):
+    publish: bool = False
+    pypi_token: str = "UV_PUBLISH_TOKEN"
+
+
 class Config(_Strict):
     schema_version: int
     state_dir: PathField
@@ -229,6 +234,7 @@ class Config(_Strict):
     routing_default_tier: Tier = "medium"
     review: Review
     merge: Merge
+    release: Release = Release()
     scheduler: Scheduler = Scheduler()
     caps: Caps = Caps()
     circuit_breaker: CircuitBreaker = CircuitBreaker()

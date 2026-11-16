@@ -278,6 +278,7 @@ def _parser() -> argparse.ArgumentParser:
     roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
     roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=2)
+    sub.add_parser("publish", help="build the tagged release and upload it when release.publish is true")
     release = sub.add_parser("release", help="bump, commit, and tag a local release without publishing")
     part = release.add_mutually_exclusive_group(required=True)
     part.add_argument("--minor", dest="part", action="store_const", const="minor")
@@ -660,12 +661,30 @@ def main(
                 lock = Lockfile(config.state_dir, verb="release", instance_id=await checkout.git.describe(repo), clock=clock)
                 lock.acquire()
                 try:
-                    return await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
+                    version, sha = await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
+                    checkout.journal.append(EventType.SIGNAL, {"signal": "release", "version": version, "tag": f"v{version}", "commit": sha})
+                    return version, sha
                 finally:
                     lock.release()
 
             version, sha = asyncio.run(release_version())
             print(f"release: tagged v{version} at {sha}")
+            return 0
+        if args.verb == "publish":
+            from clutch import release
+
+            async def publish_version():
+                lock = Lockfile(config.state_dir, verb="publish", instance_id=await checkout.git.describe(repo), clock=clock)
+                lock.acquire()
+                try:
+                    return await release.publish(repo, checkout.git, checkout.exec_, checkout.fs, env, config)
+                finally:
+                    lock.release()
+
+            version, artifacts, uploaded = asyncio.run(publish_version())
+            for artifact in artifacts:
+                print(f"publish: built {artifact}")
+            print(f"publish: uploaded {version} to PyPI" if uploaded else "publish: release.publish is false; uploaded nothing -- set release.publish: true in config.yaml to upload")
             return 0
         if args.verb == "dismiss":
 

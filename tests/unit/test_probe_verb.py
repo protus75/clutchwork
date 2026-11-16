@@ -11,7 +11,7 @@ def test_probe(monkeypatch, capsys):
     def provider(name, model):
         return Provider(name=name, kind="cli", package="pkg", models_by_tier=ModelsByTier(low=model, medium=model, high=model, max=model), limits=Limits(concurrency=1, est_cost_per_call_usd=1))
 
-    config = SimpleNamespace(providers=[provider("claude", "opus"), provider("codex", "gpt")], state_dir=Path("/state"))
+    config = SimpleNamespace(release=SimpleNamespace(pypi_token="UV_PUBLISH_TOKEN"), providers=[provider("claude", "opus"), provider("codex", "gpt")], state_dir=Path("/state"))
     monkeypatch.setattr(cli, "load_config", lambda *a, **k: config)
     monkeypatch.setattr(cli, "Lockfile", Mock(side_effect=AssertionError("lock")))
     monkeypatch.setattr(cli, "Journal", Mock(side_effect=AssertionError("journal")))

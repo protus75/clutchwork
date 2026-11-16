@@ -16,6 +16,10 @@ from collections.abc import Mapping
 from clutch.config import Config, ConfigSnapshot
 
 
+def secret_names(config: Config | ConfigSnapshot) -> frozenset[str]:
+    return frozenset({p.auth for p in config.providers if p.auth} | {config.release.pypi_token})
+
+
 class Redactor:
     def __init__(self, secrets: Mapping[str, str]) -> None:
         # An empty value would match everywhere; longest first so an embedded shorter secret cannot split a longer one.
@@ -23,8 +27,8 @@ class Redactor:
 
     @classmethod
     def from_config(cls, config: Config | ConfigSnapshot, env: Mapping[str, str]) -> "Redactor":
-        """Resolve each provider's `auth` env-var NAME to its value; unset names have nothing to leak."""
-        return cls({p.auth: env[p.auth] for p in config.providers if p.auth and p.auth in env})
+        """Resolve configured secret names that are set in the environment."""
+        return cls({name: env[name] for name in secret_names(config) if name in env})
 
     def scrub(self, text: str) -> str:
         for name, value in self._secrets:

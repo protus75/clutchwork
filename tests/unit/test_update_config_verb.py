@@ -94,7 +94,9 @@ def test_verb(monkeypatch, capsys):
 
     claude = provider("claude", ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-4", "claude-opus-5-4"])
     codex = provider("codex", ["gpt-6-astra"] * 4)
-    config = SimpleNamespace(providers=[claude, codex], routing=[SimpleNamespace(candidates=[SimpleNamespace(provider="claude", model="claude-opus-5-4")])])
+    config = SimpleNamespace(
+        release=SimpleNamespace(pypi_token="UV_PUBLISH_TOKEN"), providers=[claude, codex], routing=[SimpleNamespace(candidates=[SimpleNamespace(provider="claude", model="claude-opus-5-4")])]
+    )
     exec_ = Exec()
     monkeypatch.setattr(cli, "load_config", lambda *a, **k: config)
     monkeypatch.setattr(cli, "Lockfile", Mock(side_effect=AssertionError("lock")))

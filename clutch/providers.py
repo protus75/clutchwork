@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Literal
 from clutch.config import Config, ConfigSnapshot, Provider
 from clutch.journal import EventType, render_ts
 from clutch.llm import AgentEffort, AgentTier, LLMRequest, LLMResult
-from clutch.redact import Redactor
+from clutch.redact import Redactor, secret_names
 from clutch.seams import ExecutableNotFound, FileSystem, GroupExec, ProcessExec
 
 if TYPE_CHECKING:
@@ -77,16 +77,12 @@ class ProviderCallError(Exception):
         self.paved_road = paved_road
 
 
-def secret_names(config: Config | ConfigSnapshot) -> frozenset[str]:
-    return frozenset(p.auth for p in config.providers if p.auth)
-
-
 def child_env(
     env: Mapping[str, str],
     config: Config | ConfigSnapshot,
     serving: Provider | ConfigSnapshot | None = None,
 ) -> dict[str, str]:
-    """INHERIT-MINUS-SECRETS: the full parent env minus every provider key, plus only the serving call's own.
+    """INHERIT-MINUS-SECRETS: the full parent env minus every configured secret, plus only the serving call's own key.
 
     Every non-LLM child (checks, verification, replay) passes `serving=None` and gets no key at all.
     """

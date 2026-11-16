@@ -35,7 +35,7 @@ def make_client(exec_):
 
     providers = [provider("claude"), provider("codex")]
     candidates = [NS(provider="codex", model="one"), NS(provider="claude", model="two"), NS(provider="codex", model="three")]
-    config = NS(providers=providers, routing=[NS(tier="low", candidates=candidates)], state_dir=Path("/state"))
+    config = NS(release=NS(pypi_token="UV_PUBLISH_TOKEN"), providers=providers, routing=[NS(tier="low", candidates=candidates)], state_dir=Path("/state"))
     session = Session()
     return ProviderLLM(config, exec_=exec_, fs=MemoryFS(), env={}, cwd=Path("/repo"), timeout=10, session=session)
 

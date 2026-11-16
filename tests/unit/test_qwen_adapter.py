@@ -16,7 +16,17 @@ def provider(name="qwen", base_url="http://h:11434/v1"):
 
 
 def adapter(p):
-    return QwenAdapter(p, config=SimpleNamespace(providers=[p]), exec_=Mock(), fs=Mock(), redactor=Mock(), env={"PATH": "/bin"}, cwd=Path("/repo"), capture_dir=Path("/capture"), timeout=120)
+    return QwenAdapter(
+        p,
+        config=SimpleNamespace(providers=[p], release=SimpleNamespace(pypi_token="UV_PUBLISH_TOKEN")),
+        exec_=Mock(),
+        fs=Mock(),
+        redactor=Mock(),
+        env={"PATH": "/bin"},
+        cwd=Path("/repo"),
+        capture_dir=Path("/capture"),
+        timeout=120,
+    )
 
 
 def test_qwen_argv_and_env():
