@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - release-verb
 
+## Runs before
+- update-config-unverified-empty-listing
+
 ## Context
 - clutch/release.py
 - clutch/git.py::Git.rev_parse
