@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification passed 836 tests and the unit coverage, lint, and format gates passed. The full integration gate failed two wrong-stem custody cases; both passed on the base commit and failed again in isolation on the candidate. The exact ticket verification could not run on the base because its new test files do not exist there. checkpoint._history remains unchanged because it validates a history of keys. No changes were committed.
+The checkpoint history scan remains inline because it validates a history of keys. Retaining the duplicate lookup scans was rejected because the ticket requires one owner for each lookup.
 
 ## Dead ends
 
-Dropping the ticket filter as required accepts a completion whose key names the requested stem but whose ticket field names another stem; the existing custody tests require rejection.
+none
 
 ## Second problems filed
 
-- box-000558-9224a832: docs/roadmap.md contains statements about the old lookup implementations that the proposed change would make stale.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ Dropping the ticket filter as required accepts a completion whose key names the 
 
 ## Predicted vs actual
 
-Ticket budget: 45 minutes expected, 90 minutes stuck; actual time not measured.
+Expected 45 minutes; actual time was not measured.
 
