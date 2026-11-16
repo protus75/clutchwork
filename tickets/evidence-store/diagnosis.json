@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ee182698bc3398496450f27f3511ca07f5414794",
+  "stem": "evidence-store",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The attempt stopped at 157s without committing anything. Work until the full Verification passes: run all three listed ./dev.py test commands, including tests/integration/test_config.py and test_host_contract.py, then commit on the ticket branch before reporting.",
+    "Unit tests in tests/unit/test_evidence_store.py need FileSystem fakes or LocalFileSystem rooted at tmp_path, plus injected read_bytes/size callables (ticket Scope in), so AC9 holds: disk only under tmp_path, no process.",
+    "Rename the pydantic field `schema` in Start/End/Event in clutch/evidence/schema.py. It shadows the BaseModel attribute and warns on import. Store the schema id under a field alias, for example schema_: str = Field(alias='schema'), keeping the record key 'schema'.",
+    "Redo clutch/config.py Evidence(_Strict) max_gb: int = 20 with a positive check and Config.evidence default. Add the Evidence row and evidence default to the config-fields block in clutch/docs/host-contract.md, and the evidence.max_gb row in docs/how-clutch-works.md."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
