@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The full integration check failed 17 tests on the candidate; the same check passed all 3,337 tests on the base commit. The targeted ticket verification commands passed on the candidate. The base copy of the first command could not run because its two new test files do not exist there.
+The roadmap statement at docs/roadmap.md:140 is stale and lies outside the scope fence; the simpler rejected approach was adding an EngineLog constructor parameter, which would force unnecessary call-site changes.
 
 ## Dead ends
 
-An isolated rerun of a failing admission test reproduced the failure; the shared fixture mirrors writes to disk but does not mirror the new seam operations.
+none
 
 ## Second problems filed
 
-- box-000543-68ed2a6a: docs/roadmap.md describes the filesystem seam as lacking mkdir and remove and will be stale after this change.
+- box-000544-ce7a7e07: docs/roadmap.md:140 still says the filesystem seam lacks mkdir and remove.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ An isolated rerun of a failing admission test reproduced the failure; the shared
 
 ## Predicted vs actual
 
-The ticket budget was 30 minutes expected and 60 minutes stuck; the work stopped after identifying the scope conflict.
+The ticket allowed 30 minutes expected; the work completed within that budget.
 
