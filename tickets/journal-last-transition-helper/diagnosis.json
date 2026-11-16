@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d98c956b0cc8f51d0c43007d68094045bc2e4018",
+  "stem": "journal-last-transition-helper",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: the ticket says served_review and lifted_report_paths can drop their e.ticket == stem filter, but tests/integration/test_merge.py:531 wrong-stem-inline and wrong-stem-queue require rejecting a completion whose key names the stem but whose ticket names another stem.",
+    "Both wrong-stem cases pass on the base commit and fail on the candidate, run in isolation. A completion written by stages.lift_outbox with ticket=stem does not make the filter redundant, because the custody tests journal a forged completion directly.",
+    "Revise the Scope in so lifted_report_paths and served_review keep checking completion ownership, e.g. filter Effects.recorded results by ticket or add a ticket argument. Then add tests/integration/test_merge.py to Scope fence and Verification, or keep its assertions unchanged.",
+    "Rework criterion 3 and the drop-filter rationale in Scope in. test_lift_outbox_ticket.py pins only the honest writer, not custody against forged completions. Leave checkpoint._history inline; the attempt confirmed it validates a whole history of keys."
+  ],
+  "mechanical": null,
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
