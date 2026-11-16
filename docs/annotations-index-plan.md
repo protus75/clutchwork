@@ -8,7 +8,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.5.0 (`docs/roadmap.md` rows 69-74), beside the training flywheel, because the index and the training export read the same stores. Needs from other plans: `evidence-envelope` (0.2.0) for the call records the index joins; `duckdb` arrives with `journal-query-layer` (0.3.0) when that window runs, else `index-build` adds it with the same D3 justification. What needs this plan: the document agent's `doc-draft` uses `context-suggest` to find sources; the training plan's "retrieval first" advice becomes a clutch feature. Shared budgets: none in CORE_TEMPLATE; one new config block `index` and one `meta`.
+Release 0.6.0 (`docs/roadmap.md` rows 69-74), beside the training flywheel, because the index and the training export read the same stores. Needs from other plans: `evidence-envelope` (0.3.0) for the call records the index joins; `duckdb` arrives with `journal-query-layer` (0.4.0) when that window runs, else `index-build` adds it with the same D3 justification. What needs this plan: the document agent's `doc-draft` uses `context-suggest` to find sources; the training plan's "retrieval first" advice becomes a clutch feature. Shared budgets: none in CORE_TEMPLATE; one new config block `index` and one `meta`.
 
 ## Current state
 
@@ -144,12 +144,12 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 1 | `meta-schema-and-refresh` | feature | P2 | | Block format for Markdown and Python, parser, hash, generated fields, `meta refresh` and `meta check`, `meta` config. Release 0.5.0. |
-| 2 | `meta-fill-surface` | feature | P2 | 1 | `clutch/specs/meta.md`, `meta fill` in batches, path validation, `verified` stamping. Release 0.5.0. |
-| 3 | `meta-drift-lint` | feature | P3 | 1 | Soft `meta_drift` gate; Check runs `refresh` on changed files and commits `clutch(<stem>): meta`. Release 0.5.0. |
-| 4 | `index-build` | feature | P2 | 1, `evidence-envelope` | `clutch/index.py`: tables, host embed command, VSS, incremental build, post-merge build; adds `duckdb` if `journal-query-layer` has not. Release 0.5.0. |
-| 5 | `context-suggest` | feature | P2 | 4 | The verb, and the data block in the Author prompt. Release 0.5.0. |
-| 6 | `index-consumers` | feature | P3 | 5 | `index.implement_hint`, `doc draft --from <topic>`, the training export join. Release 0.5.0. |
+| 1 | `meta-schema-and-refresh` | feature | P2 | | Block format for Markdown and Python, parser, hash, generated fields, `meta refresh` and `meta check`, `meta` config. Release 0.6.0. |
+| 2 | `meta-fill-surface` | feature | P2 | 1 | `clutch/specs/meta.md`, `meta fill` in batches, path validation, `verified` stamping. Release 0.6.0. |
+| 3 | `meta-drift-lint` | feature | P3 | 1 | Soft `meta_drift` gate; Check runs `refresh` on changed files and commits `clutch(<stem>): meta`. Release 0.6.0. |
+| 4 | `index-build` | feature | P2 | 1, `evidence-envelope` | `clutch/index.py`: tables, host embed command, VSS, incremental build, post-merge build; adds `duckdb` if `journal-query-layer` has not. Release 0.6.0. |
+| 5 | `context-suggest` | feature | P2 | 4 | The verb, and the data block in the Author prompt. Release 0.6.0. |
+| 6 | `index-consumers` | feature | P3 | 5 | `index.implement_hint`, `doc draft --from <topic>`, the training export join. Release 0.6.0. |
 
 `Runs before`: `contention-authoring-rules` (roadmap row 13) before every ticket here. Ticket 1 fills blocks for this repo's `docs/`, `clutch/docs/`, `clutch/specs/`, and `tests/` as part of its own change, so the repo ships annotated.
 

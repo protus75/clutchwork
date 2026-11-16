@@ -10,7 +10,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.2.0 (`docs/roadmap.md` row 34). Needs nothing from other plans; waits on its hand test. Shared budget: CORE_TEMPLATE bytes (roadmap decision 5). The template is 7,840 of 8,192 bytes (`tests/integration/test_hostfiles.py:33`); this plan's sentence adds about 264. `conduct-files-parity` (roadmap row 5) runs before this ticket and frees 36 by dropping the stale guide list from the `clutch docs` rule; `graphics-kind` (0.4.0) adds 9 later. After all three about 115 bytes remain. `graphics-kind` also edits `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, and `README.md`; the release gap keeps the two apart, so no `Runs before` is needed.
+Release 0.3.0 (`docs/roadmap.md` row 34). Needs nothing from other plans; waits on its hand test. Shared budget: CORE_TEMPLATE bytes (roadmap decision 5). The template is 7,840 of 8,192 bytes (`tests/integration/test_hostfiles.py:33`); this plan's sentence adds about 264. `conduct-files-parity` (roadmap row 5) runs before this ticket and frees 36 by dropping the stale guide list from the `clutch docs` rule; `graphics-kind` (0.5.0) adds 9 later. After all three about 115 bytes remain. `graphics-kind` also edits `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, and `README.md`; the release gap keeps the two apart, so no `Runs before` is needed.
 
 ## Not the Suggestion Box
 
@@ -123,7 +123,7 @@ Read before write. Before authoring, confirm with a real browser:
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
 | 0 | (hand test) | evidence | | | The three facts under "Prerequisite: hand test", captured as the ticket's evidence; not a ticket. |
-| 1 | `upstream-issue-verb` | feature | P2 | | Verb, CORE_TEMPLATE sentence, and docs in one change, so the rule never names an unbuilt verb. Release 0.2.0. |
+| 1 | `upstream-issue-verb` | feature | P2 | | Verb, CORE_TEMPLATE sentence, and docs in one change, so the rule never names an unbuilt verb. Release 0.3.0. |
 
 `Runs before`: `conduct-files-parity` (roadmap row 5) before this ticket, so the template bytes it frees are available.
 

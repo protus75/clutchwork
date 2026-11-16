@@ -10,7 +10,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.5.0 (`docs/roadmap.md` rows 57-61). Needs from other plans: the evidence store and envelope (`evidence-store`, `evidence-envelope`, 0.2.0), which own the call record this plan builds on; `merge-model-resolve` (0.4.0) for the `conflict` record kind, which export skips with a count until it exists. Nothing depends on this plan except the document agent's later `outcome` lens (`docs/document-agent-plan.md` §4.4). Shared budgets: none (no CORE_TEMPLATE text; one new config block `training_data`). The P0 capture bug (`provider-capture-overwrite`) is the roadmap's row 1, not this plan's; its cause fix is `evidence-envelope` (roadmap decision 4).
+Release 0.6.0 (`docs/roadmap.md` rows 57-61). Needs from other plans: the evidence store and envelope (`evidence-store`, `evidence-envelope`, 0.3.0), which own the call record this plan builds on; `merge-model-resolve` (0.5.0) for the `conflict` record kind, which export skips with a count until it exists. Nothing depends on this plan except the document agent's later `outcome` lens (`docs/document-agent-plan.md` §4.4). Shared budgets: none (no CORE_TEMPLATE text; one new config block `training_data`). The P0 capture bug (`provider-capture-overwrite`) is the roadmap's row 1, not this plan's; its cause fix is `evidence-envelope` (roadmap decision 4).
 
 ## Why clutch data is unusually good training data
 
@@ -32,7 +32,7 @@ What exists today, under `state_dir` (this repo: `.clutch/state`) and in git:
 | `tickets/<stem>/` on `main` | `ticket.md`, `run.md`, `checks.json`, `review.md`, `attempts/<n>/harvest.json`, `diagnosis.json` | Yes, in git |
 | Squash commits on `main` | The merged code, with `clutch-ticket` and `clutch-reviewed-sha` trailers | Yes, in git |
 | `spools/<stem>/<attempt>/` | Each call's `prompt.md` and `output.txt` (`clutch/driver.py:345,374`), and command output (`check/verify-NN.txt`) | No retention policy (1.2 GB here) |
-| `spools/providers/<stem>/<provider>-<seq>/` | Raw CLI capture: `prompt.md`, `events.jsonl` (the full tool-call stream), `stderr.txt` | **Partly lost** (gap 2); replaced by the evidence store in 0.2.0 |
+| `spools/providers/<stem>/<provider>-<seq>/` | Raw CLI capture: `prompt.md`, `events.jsonl` (the full tool-call stream), `stderr.txt` | **Partly lost** (gap 2); replaced by the evidence store in 0.3.0 |
 | `engine.log` | Stage start and end, and other diagnostics | Rotated at 4 x 16 MiB (`clutch/enginelog.py:14-15`), so it is lost over time |
 
 Gaps that matter for training data:
@@ -40,7 +40,7 @@ Gaps that matter for training data:
 1. **Rejected code is discarded.** Before each attempt, the old worktree and branch of that stem are removed (`docs/how-clutch-works.md` §4.1). `harvest.json` keeps only a diff stat and the last 4,000 characters of the logs. The code that review snagged, which is the negative half of every preference pair, is gone.
 2. **Raw provider captures get overwritten.** The capture counter `_seq` starts at 0 in each process (`clutch/providers.py:294`), so a second run of a stem in a new process writes over `claude-0001` and the rest (`providers.py:325`). At `0895b5d4` this repo's journal held 3,944 model-call completions and 2,453 capture directories with an `events.jsonl`. The worst cases are `triage` (467 calls, 282 directories) and `author` (336 calls, 157 directories). Roadmap row 1 fixes the instance; `evidence-envelope` fixes the cause.
 3. **Nothing links a journal record to its capture.** The journal key is `llm/<stem>/<run_seq>/<surface>/<attempt>/<call>`; the capture path is `providers/<stem>/<provider>-<seq>`. They match only by timestamp. The evidence store keys every record by the journal effect key (roadmap decision 3).
-4. **Only configured secrets are redacted.** The redactor scrubs configured secret values. An agent that reads a `.env` file or a customer data file puts that content into `events.jsonl` unscrubbed. `harvest.json` is written without the redactor at all (`clutch/runner.py:443-483`; roadmap row 12 `redaction-harvest-seam`).
+4. **Only configured secrets are redacted.** The redactor scrubs configured secret values. An agent that reads a `.env` file or a customer data file puts that content into `events.jsonl` unscrubbed. `harvest.json` gets the same configured-secret redaction at its write (`clutch/runner.py::harvest`, since `redaction-harvest-seam`).
 
 ## Departures from the design record
 
@@ -105,7 +105,7 @@ The evidence store holds one record per model call (`evidence/calls/`). This pla
 
 clutch never trains a model and never sends data anywhere. It provides three things:
 
-1. **Retrieval first (no training).** Past tickets, decisions from `run.md`, and review findings are the cheapest win. That retrieval is the project index of `docs/annotations-index-plan.md` (0.5.0): `clutch context suggest` ranks past tickets, documents, and sections for a new ticket, and the export joins the index's file purposes onto its records. This plan adds no retrieval of its own.
+1. **Retrieval first (no training).** Past tickets, decisions from `run.md`, and review findings are the cheapest win. That retrieval is the project index of `docs/annotations-index-plan.md` (0.6.0): `clutch context suggest` ranks past tickets, documents, and sections for a new ticket, and the export joins the index's file purposes onto its records. This plan adds no retrieval of its own.
 2. **A local provider on narrow surfaces.** clutch already routes by `(tier, surface)` to providers such as a local `qwen` through Ollama. A host tunes a small model on its `triage`, `review`, or `ticket` records and routes only that surface to it. The existing GO baseline (`docs/how-clutch-works.md` §9.6) decides whether that model's output is trusted for auto-confirm.
 3. **Measured, not assumed.** `clutch training eval --route <tier>/<surface> --holdout FILE` replays held-out records through the given route and scores agreement with the recorded outcome (verdict match for review, triage, and requisition; check pass rate for implement). It is the evidence a host needs before routing a surface to its own model, and it is also the triage-dedup eval that `CLUTCH_PLAN.md` §18.2 deferred to the daemon era (roadmap §3.3). The report goes to stdout and the engine log, never to the journal.
 
@@ -130,7 +130,7 @@ clutch never trains a model and never sends data anywhere. It provides three thi
 
 ## Ticket breakdown
 
-Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). Release 0.5.0.
+Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). Release 0.6.0.
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
@@ -148,7 +148,6 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). R
 - **Small data.** Hundreds of tickets per host. The plan says so up front and points hosts at retrieval and narrow-surface tuning, where small data is enough.
 - **Label noise.** A snag can come from a bad ticket, not bad code. Section 3 labels only `logic`, `acceptance`, `scope`, and `leak` snags negative.
 - **Training on the engine's own prompts.** Records include clutch's spec text, so a tuned model learns that spec version. Every record carries spec `version`, so records from older specs can be filtered out.
-- **Unscrubbed harvest today.** Until `redaction-harvest-seam` (0.2.0) lands, `harvest.json` may hold unredacted finding text; export runs its own scrub, but the file on disk is the roadmap's problem, not this plan's.
 
 ## Open decisions
 
@@ -157,4 +156,4 @@ Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 i
 1. **Store the full tool-call stream in the export, or only prompts, outputs, and diffs?** Decided 2026-11-13: the export includes the full normalized trajectory; a per-run flag (`--no-trajectory`) trims it for review- and triage-only tuning.
 2. **Build `training eval` in clutch, or leave evaluation to hosts?** Decided 2026-11-14: build it (`training-eval`). Without an in-clutch measure, "the local model is good enough" is a guess, and the GO baseline already sets the precedent.
 3. **Should export include tickets from Author (engine-written), or only ones a person confirmed?** Decided 2026-11-13: both, with an `authored_by: human|author` field so hosts can filter.
-4. **Move `spools/<stem>/<attempt>/` onto the evidence store?** Decided 2026-11-14: later, once the store has run for a release; `spools-onto-evidence-store` (roadmap row 63, 0.5.0, owned by the evidence plan). Until then two capture paths exist, which roadmap decision 1 accepts.
+4. **Move `spools/<stem>/<attempt>/` onto the evidence store?** Decided 2026-11-14: later, once the store has run for a release; `spools-onto-evidence-store` (roadmap row 63, 0.6.0, owned by the evidence plan). Until then two capture paths exist, which roadmap decision 1 accepts.

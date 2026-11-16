@@ -1,6 +1,6 @@
 # Roadmap driver: plan
 
-Run `docs/roadmap.md` unattended. The driver authors the next few roadmap rows when their dependencies have merged, never further ahead than that, so every ticket is written against the source as it is. When a ticket is held for a person, the driver does what the operator does today by hand: reads the diagnosis, edits the ticket within the supervising rules, has the edit reviewed, and keeps the ticket, a bounded number of times. When a split lands, the parent settles by itself. When a release's rows are all merged and its gate passes, the driver tags, bumps the version, and publishes to PyPI and the Marketplace under a standing authorization. What stays with a person is named, short, and the same for every release.
+Run `docs/roadmap.md` unattended. The driver authors the next few roadmap rows when their dependencies have merged, never further ahead than that, so every ticket is written against the source as it is. When a ticket is held for a person, the driver does what the operator does today by hand: reads the diagnosis, edits the ticket within the supervising rules, has the edit reviewed, and keeps the ticket, a bounded number of times. When a release's rows are all merged and its gate passes, the driver tags, bumps the version, and publishes to PyPI and the Marketplace under a standing authorization. What stays with a person is named, short, and the same for every release.
 
 ## Status
 
@@ -8,15 +8,15 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.2.0, as its last group (`docs/roadmap.md` rows 88-93), after the truth-and-hygiene rows, because the driver is what runs 0.3.0 onward. Needs from the roadmap: `release-verb` (row 3) for tags and version bumps; `docs-truth-sweep` (row 4) so the documents the driver reads are true; `contention-authoring-rules` (row 13) in effect before it authors anything. What needs this plan: every later release, since the driver is how they run. Shared budgets: one new config block `release`, one new cap `caps.supervise`, one new Suggestion Box message class `roadmap_row` with its `box_policy` row. No CORE_TEMPLATE text: the chat-session rules do not change; the driver is an engine process bounded by caps and reviews, not a session.
+Release 0.3.0, as its last group (`docs/roadmap.md` rows 89-93), after the truth-and-hygiene rows, because the driver is what runs 0.4.0 onward. Needs from the roadmap: `release-verb` (row 3) for tags and version bumps; `docs-truth-sweep` (row 4) so the documents the driver reads are true; `contention-authoring-rules` (row 13) in effect before it authors anything. What needs this plan: every later release, since the driver is how they run. Shared budgets: one new config block `release`, one new cap `caps.supervise`, one new Suggestion Box message class `roadmap_row` with its `box_policy` row. No CORE_TEMPLATE text: the chat-session rules do not change; the driver is an engine process bounded by caps and reviews, not a session.
 
 ## Why this is viable
 
 Measured from this repo's journal at `c2d1c2a7`:
 
-- 506 tickets merged. The operator issued 142 verdicts along the way: 78 keeps on held tickets, 28 kills, 36 draft confirms. About one touch per 3.6 merged tickets. The engine made 94 machine keeps on its own.
+- 506 tickets merged. The operator issued 142 verdicts along the way: 78 keeps on held tickets, 28 kills (3 of them the engine's own split retirements, which `clutch/runner.py::reject_ticket` journals as `actor: operator`; box-000471), 36 draft confirms. About one touch per 3.6 merged tickets. The engine made 94 machine keeps on its own.
 - The owner reports that nearly every keep was the same sequence: read the diagnosis, apply its suggested ticket edit, lint, review, confirm. That sequence is three existing engine pieces (Diagnose, Rework-update, machine keep) that are not wired together for this case.
-- Every one of the 28 kills the owner remembers as necessary was a split's parent. The journal agrees: the three stems that were ever split (`clutch-ruff-config`, `split-test-serve`, `menu-mirrors-verb-admission`) all ended `rejected` by hand, because a `supersedes` signal neither settles the parent nor removes it from the Reject queue (`clutch/status.py::reject_queue`).
+- The kills the owner remembers as necessary were split parents, and the journal shows two kinds. The three stems whose split published (`chupa-ruff-config`, `split-test-serve`, `menu-mirrors-verb-admission`) were retired by the engine, not by a person: `clutch/runner.py::failure_terminal` journals the parent's terminal without `routed`, so `clutch/status.py::reject_queue` never holds it, and retires it through `reject_ticket` within half a second of the `supersedes` signal (box-000471). The parents a person killed (`specs-in-package`, `vscode-help`, `vscode-help-registry`) were Rework splits that did not publish: the diagnosis said `split`, Rework failed, and the parent was routed to the Reject queue with no `supersedes` signal (box-000473). A Rework split that publishes, or the supervisor's reviewed retry (section 2), is what would have released them.
 - Authoring from a plan already exists: the Author stage writes a ticket from a Suggestion Box message with a buildability review (`clutch/author.py::author`), and 44 of 442 box messages became tickets that way. A roadmap row is a message with a different shape.
 - A drain of about 30 tickets ran unattended in about 4 hours (`README.md`); the self-upgrade handoff already lets a run continue across engine merges.
 
@@ -26,9 +26,9 @@ What this plan cannot remove: hand tests that need a person at a real CLI or bro
 
 - **Rework-update exists but fires only on `split`.** `runner.drive` requests Rework when the diagnosis verdict is `split` or the render was over bound (`clutch/runner.py:301-305`). Rework's `update` action rewrites a ticket, has `requisition_review` judge it, and commits it as `clutch(<stem>): rework` (`docs/how-clutch-works.md` §6.5). Nothing runs it for `premise_failed` or a spent cap, which are the terminals that reach the Reject queue.
 - **A machine keep never resets caps.** The lineage a cap counts over starts at the last `reject_verdict keep actor: operator` (`clutch/caps.py:28`). `record_reoffer` journals `actor: machine` keeps (`clutch/drain.py:106`), which re-offer a stem with budget left but cannot release one whose cap is spent. `awaiting_operator` (`drain.py:92-95`) holds any stem with a spent cap or a `ticket_changed` reason for a person.
-- **A split's parent lingers.** `record_supersedes` journals the map (`clutch/rework.py:260`); dispatch skips superseded stems (`clutch/scheduler.py:58`) and dependents wait on the successors, but `reject_queue()` (`clutch/status.py:38-55`) pops a stem only on a `reject_verdict`, and `SETTLED` is `{merged, already_satisfied}` (`status.py:17`). The parent sits in the Reject queue until a person rejects it.
+- **A published split retires its parent.** `record_supersedes` journals the map (`clutch/rework.py::record_supersedes`); dispatch skips superseded stems and dependents wait on the successors. `clutch/runner.py::failure_terminal` journals the parent's terminal without `routed`, so `clutch/status.py::reject_queue` never holds it, then retires it through `clutch/runner.py::reject_ticket`: `state: rejected`, a `clutch(<stem>): rejected` commit, and a `reject_verdict kill` journaled with `actor: operator` although no person acted (box-000471). `tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework` pins that order. A Rework split that does not publish turns the verdict into `reject`, and the parent is routed to the Reject queue like any other reject.
 - **Author takes a box message.** `author(checkout, driver, box, message, pass_no)` chooses its policy row from the message class (`clutch/author.py:210`), embeds the authoring guide and skeletons, and runs the requisition review. Triage invokes it (`clutch/triage.py:272,328`). There is no other way in.
-- **Release tooling is partial and manual.** `./dev.py publish` bumps only the patch version and uploads to PyPI with `UV_PUBLISH_TOKEN` (`dev.py:121-127`); nothing tags; `./dev.py vscode-package` builds a `.vsix` and prints the Marketplace upload page for a hand upload (`dev.py:128-152`). `release-verb` (roadmap row 3) adds the minor bump and tag.
+- **Release tooling is half built.** `clutch release --minor|--patch` (`clutch/release.py::release`, merged in `release-verb`) bumps the version with `uv version`, commits `pyproject.toml` and `uv.lock` as `release: <version>`, and tags `v<version>` at that commit; it journals nothing. `./dev.py publish` bumps the patch version again before it uploads to PyPI with `UV_PUBLISH_TOKEN` (`dev.py::main`), so the tagged version is never the one uploaded (box-000480). `./dev.py vscode-package` builds a `.vsix` and prints the Marketplace upload page for a hand upload.
 - **The supervising prompt is a chat.** `clutch prompt drain-loop` renders the babysitting instructions for a Claude Code chat (`clutch/specs/ask/drain-loop.md`), whose allowed edits are the CORE_TEMPLATE supervising list: lint and format fixes, a missing fence or Context entry, a stale path, a wording update; never a goal or scope change, never a confirm or reject.
 - **serve has idle hooks.** Retros run at the next idle point after a settle (`clutch/serve.py::check_retro`, `run_retro`), and `upgrade_idle` gates the self-upgrade. The driver's steps attach at the same points.
 - **The roadmap is readable by machine.** Its master table rows carry stem, owner, kind, priority, depends, runs-before, and content; the release sections give the order; §9 says a row links its stem when authored and is struck when merged.
@@ -45,10 +45,9 @@ What this plan cannot remove: hand tests that need a person at a real CLI or bro
 
 ## Target design
 
-### 1. Superseded is settled (`superseded-settles`)
+### 1. ~~Superseded is settled (`superseded-settles`)~~
 
-- A stem with a `supersedes` signal is in a new settled state `superseded`: `record_supersedes` journals a `state_transition` to `superseded` for the parent after the map; `SETTLED` gains it; `reject_queue()` pops it; `reject` refuses it as settled; `status` lists it beside `already_satisfied`; the extension's lifecycle diagram gains the state.
-- The three historical parents are already `rejected`; the fold treats a `supersedes` on a `rejected` stem as the same thing and leaves history alone.
+Struck: the premise is false (see Current state). A published split already retires its parent, which never enters the Reject queue, and the split parents a person killed carry no `supersedes` signal, so a `superseded` state would release none of them (box-000471, box-000473).
 
 ### 2. The supervisor step (`supervisor-rework`)
 
@@ -76,8 +75,8 @@ Runs inside `runner.drive`'s terminal handling, after Diagnosis, for a terminal 
 
 ### 5. Release and publish (`release-publish`)
 
-- `clutch release --minor|--patch` (the engine verb behind `release-verb`'s `./dev.py release`): bumps `pyproject.toml`, commits, tags `v<version>`, journals a `release` signal. Hosts use the same verb for their own versions.
-- `clutch publish`: builds and uploads to PyPI through the exec seam, with the token's env name in config (`release.pypi_token: UV_PUBLISH_TOKEN`), passed only to that child, like a provider key. `./dev.py vscode-publish`: bumps the extension's patch version, packages, and publishes with `vsce publish` under `release.vsce_token`; this repo only, since no host ships the extension.
+- `clutch release --minor|--patch` exists (`release-verb`; see Current state). This ticket adds its `release` journal signal. Hosts use the same verb for their own versions.
+- `clutch publish`: never bumps the version. It uploads the version in `pyproject.toml` only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480). It builds and uploads to PyPI through the exec seam, with the token's env name in config (`release.pypi_token: UV_PUBLISH_TOKEN`), passed only to that child, like a provider key. `./dev.py vscode-publish`: bumps the extension's patch version, packages, and publishes with `vsce publish` under `release.vsce_token`; this repo only, since no host ships the extension.
 - **Authorization.** Publishing is a remote mutation. `release.publish: true` in config is the owner's standing "push"; with it absent or false, the driver tags and bumps locally and parks the publish for `confirm` with the built artifacts listed. The conduct rule for chat sessions ("never push unless the user says push this turn") is untouched: the engine acts on config, sessions act on words.
 
 ### 6. The loop (`driver-loop`)
@@ -102,36 +101,35 @@ At serve's idle point after each settle, in this order:
 
 | Piece | Home |
 |---|---|
-| `superseded` state, projection, verdict refusal | `clutch/journal.py` (state), `clutch/status.py`, `clutch/rework.py` (`record_supersedes`), `clutch/observe.py`, `vscode-clutchwork/media/ticket-lifecycle.svg` |
 | Supervisor trigger, keep, cap | `clutch/runner.py` (terminal handling), `clutch/caps.py` (`supervise`, lineage), `clutch/config.py` |
 | Allowed-edit list and gate | `clutch/specs/rework.md`, `clutch/rework.py` |
 | `roadmap_row` message and policy row | `clutch/box.py`, `clutch/config.py`, `clutch/policy.py` |
 | Roadmap table parser, `roadmap author`, `roadmap status`, row linking | new `clutch/roadmap.py`, `clutch/__main__.py` |
 | Author data blocks | `clutch/author.py`, `clutch/specs/author.md` |
 | Gate blocks | `docs/roadmap.md` (format), `clutch/roadmap.py` (runner) |
-| `release`, `publish`, `release` config | `clutch/__main__.py`, new `clutch/release.py`, `clutch/config.py`; `dev.py` (`release`, `vscode-publish`) |
+| `publish`, `release` config, `release` signal | `clutch/__main__.py`, `clutch/release.py`, `clutch/config.py`; `dev.py` (`vscode-publish`) |
 | Loop | `clutch/serve.py` (idle hooks), `clutch/drain.py` (between tickets), `clutch/notify.py` (digest) |
 | Docs | `docs/how-clutch-works.md` §6.4-6.7, §7.1-7.2, §9.3, new "Roadmap driver"; `clutch/docs/host-running.md`; `clutch/specs/ask/drain-loop.md` |
 
 ## Ticket breakdown
 
-Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). Release 0.2.0, last group.
+Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). Release 0.3.0, last group.
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 1 | `superseded-settles` | bug | P1 | | Section 1. Evidence: the three split parents' journal histories ending `rejected` by hand. |
+| 1 | ~~`superseded-settles`~~ | bug | P1 | | Struck: premise false (Target design section 1). |
 | 2 | `supervisor-rework` | feature | P1 | | Section 2: the trigger, the allowed-edit gate, `caps.supervise`, the supervisor keep and lineage, `rework.md` lift on escalation; `rework.md` spec bump. |
 | 3 | `roadmap-author` | feature | P1 | | Section 3: `roadmap_row` message and policy row, `clutch/roadmap.py` parser, `roadmap author --ahead`, Author data blocks, row linking and striking, hand-test refusal. |
 | 4 | `release-gates-as-commands` | chore | P2 | | Section 4: gate blocks in `docs/roadmap.md`, `roadmap status`. |
-| 5 | `release-publish` | feature | P2 | `release-verb` | Section 5: `clutch release`, `clutch publish`, `./dev.py vscode-publish`, `release` config, the publish park. |
-| 6 | `driver-loop` | feature | P1 | 1, 2, 3, 4, 5 | Section 6: the idle-point sequence in serve and drain, the digest, the rewritten `drain-loop` prompt, how-clutch-works "Roadmap driver". |
+| 5 | `release-publish` | feature | P2 | `release-verb` | Section 5: the `release` signal, `clutch publish`, `./dev.py vscode-publish`, `release` config, the publish park. |
+| 6 | `driver-loop` | feature | P1 | 2, 3, 4, 5 | Section 6: the idle-point sequence in serve and drain, the digest, the rewritten `drain-loop` prompt, how-clutch-works "Roadmap driver". |
 
-`Runs before`: `docs-truth-sweep` (roadmap row 4) and `contention-authoring-rules` (row 13) before every ticket here. Ticket 1 before 2 (the supervisor must not supervise a superseded parent).
+`Runs before`: `docs-truth-sweep` (roadmap row 4) and `contention-authoring-rules` (row 13) before every ticket here.
 
 ## Risks
 
 - **Ticket text oscillation.** A supervisor edit that the next run undoes, twice. `caps.supervise` (2) ends it and escalates with both proposals on record.
-- **Authoring from a stale design.** A plan section written before 0.2.0's dedup can describe code that no longer exists. `--ahead 2` keeps the window short; the requisition review reads merged code; a row whose plan section is stale snags and escalates, which is the right outcome.
+- **Authoring from a stale design.** A plan section written before 0.3.0's dedup can describe code that no longer exists. `--ahead 2` keeps the window short; the requisition review reads merged code; a row whose plan section is stale snags and escalates, which is the right outcome.
 - **Publishing by mistake.** Only on `release.publish: true` and only after a gate passes; tags and bumps are local until then, and `git revert` plus a tag delete recovers a bad local release.
 - **The driver edits `docs/roadmap.md`.** A ticket-plane commit on `main`, like lifts; a chat editing the same file at the same time trips `commit.lock`, which is what it is for.
 - **A wrong ticket runs to its cap.** Nothing new: caps, Check, Review, and the requisition review stand. The driver adds attempts to fix the ticket, never a way around a gate.

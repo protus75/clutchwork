@@ -8,13 +8,13 @@ Deferred. The refactor starts only at the feature checkpoint described below, an
 
 ## Roadmap
 
-Release 0.3.0, conditional (`docs/roadmap.md` §1 and rows 35-41). The release verb this plan's step (a) asked for is the roadmap's row 3 (`release-verb`, 0.2.0), because tagging 0.2.0 needs it first. The window's port tickets touch the same files as the parallel plan's `serve-parallel-dispatch` and `conflict-discard-rerun` (`runner`, `stages`, `merge`, `mergequeue`, `drain`, `serve`, `daemon`, `scheduler`), so those land after the window, or before it if the window slides behind 0.5.0 (roadmap decision 7). Shared budgets: one new dependency (`duckdb`), which is the `CLUTCH_PLAN.md` D3 and §18.2 "DuckDB analytics engine" return, earned by the measurement below. If this window slides, `index-build` (`docs/annotations-index-plan.md`, 0.5.0) adds the dependency first under the same trigger (roadmap decision 15).
+Release 0.4.0, conditional (`docs/roadmap.md` §1 and rows 35-41). The release verb this plan's step (a) asked for is the roadmap's row 3 (`release-verb`), merged in 0.3.0. The window's port tickets touch the same files as the parallel plan's `serve-parallel-dispatch` and `conflict-discard-rerun` (`runner`, `stages`, `merge`, `mergequeue`, `drain`, `serve`, `daemon`, `scheduler`), so those land after the window, or before it if the window slides behind 0.6.0 (roadmap decision 7). Shared budgets: one new dependency (`duckdb`), which is the `CLUTCH_PLAN.md` D3 and §18.2 "DuckDB analytics engine" return, earned by the measurement below. If this window slides, `index-build` (`docs/annotations-index-plan.md`, 0.6.0) adds the dependency first under the same trigger (roadmap decision 15).
 
 ## Release protocol
 
-1. **Checkpoint.** At the 0.2.0 tag, re-measure (section Problem). If the cost is still there, the owner declares the feature set complete and the window opens.
-2. **Refactor window.** Only refactor tickets and the bugs the refactor surfaces run. No feature tickets run until 0.3.0 ships. The freeze is operator discipline plus the roadmap: no feature row is scheduled in 0.3.0.
-3. **Release.** When the refactor is complete and its surfaced bugs are fixed, tag 0.3.0 with `clutch release --minor`.
+1. **Checkpoint.** At the end of 0.3.0, re-measure (section Problem). If the cost is still there, the owner declares the feature set complete and the window opens.
+2. **Refactor window.** `clutch release --minor` opens it with tag `v0.4.0`. Only refactor tickets and the bugs the refactor surfaces run. No feature tickets run until 0.4.0 ships. The freeze is operator discipline plus the roadmap: no feature row is scheduled in 0.4.0.
+3. **Release.** When the refactor is complete and its surfaced bugs are fixed, the window closes, and `clutch release --minor` opens 0.5.0 with tag `v0.5.0`.
 
 ## Problem
 
@@ -26,9 +26,9 @@ Measured on 2026-11-11 at `bf121ef9` (evidence: `tickets/journal-incremental-rea
 - `Journal.append()` re-parsed the whole active segment on every write, just to check its first timestamp for the roll-age rule.
 - Callers fold the returned `Event` lists with Python loops. There were 98 `read()` / `read_segments()` call sites across 28 modules (101 at `80b76d5d`; see the table under Ticket breakdown).
 
-**What changed since.** `journal-incremental-read` merged at `f790cf71`. `docs/how-clutch-works.md` §10.2 now says a Journal instance parses each byte once and re-reads only appended lines during normal append-only operation. The 157-second figure predates that fix. The §18.2 trigger ("the first projection measured too slow as a fold") fired once; whether it still holds is the re-measurement at the 0.2.0 tag: profile a drain start and `clutch status` on this repo's journal (now 14 segments, about 27k lines) and record the share of wall time in journal reads. If it is under a quarter, the window slides and this plan waits for the next measurement.
+**What changed since.** `journal-incremental-read` merged at `f790cf71`. `docs/how-clutch-works.md` §10.2 now says a Journal instance parses each byte once and re-reads only appended lines during normal append-only operation. The 157-second figure predates that fix. The §18.2 trigger ("the first projection measured too slow as a fold") fired once; whether it still holds is the re-measurement at the end of 0.3.0: profile a drain start and `clutch status` on this repo's journal (now 14 segments, about 27k lines) and record the share of wall time in journal reads. If it is under a quarter, the window slides and this plan waits for the next measurement.
 
-What the incremental reader did not change: 101 call sites still fold whole event lists in Python; `clutch/observe.py:254-256` has its own raw segment reader that returns dicts and wraps them in `SimpleNamespace` four times to call Event-typed helpers; `clutch/scheduler.py:80` reaches into `journal.dir.parent`, `journal._fs`, and `journal._clock`; and the roadmap's audit found the same "latest state for stem" scan written inline 13 times (`docs/roadmap.md` §2.1 row 5). Those are the costs a query layer removes whether or not the read time still dominates; the 0.2.0 ticket `journal-last-transition-helper` removes the worst of them without the dependency.
+What the incremental reader did not change: 101 call sites still fold whole event lists in Python; `clutch/observe.py:254-256` has its own raw segment reader that returns dicts and wraps them in `SimpleNamespace` four times to call Event-typed helpers; `clutch/scheduler.py:80` reaches into `journal.dir.parent`, `journal._fs`, and `journal._clock`; and the roadmap's audit found the same "latest state for stem" scan written inline 13 times (`docs/roadmap.md` §2.1 row 5). Those are the costs a query layer removes whether or not the read time still dominates; the 0.3.0 ticket `journal-last-transition-helper` removes the worst of them without the dependency.
 
 ## Target design
 
@@ -57,7 +57,7 @@ Future tickets, in order. None are authored yet; author them at the checkpoint. 
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| 0 | (re-measure) | evidence | | | Profile a drain start and `status` at the 0.2.0 tag; attach the output as evidence to ticket 1. Not a ticket. |
+| 0 | (re-measure) | evidence | | | Profile a drain start and `status` at the end of 0.3.0; attach the output as evidence to ticket 1. Not a ticket. |
 | 1 | `journal-query-layer` | feature | P2 | `release-verb` (roadmap row 3) | The DuckDB connection, bulk load, and incremental insert in `clutch/journal.py`; the `duckdb` dependency; unit tests for the offset logic and integration tests for rolls, torn tails, and other writers. |
 | 2 | `journal-ports-run-path` | chore | P2 | `journal-query-layer` | `runner`, `stages`, `merge`, `mergequeue`, `rework`, `effects`, `driver`. |
 | 3 | `journal-ports-loop` | chore | P2 | `journal-query-layer` | `drain`, `serve`, `daemon`, `scheduler`, `timers`, `watcher`, `control`, `checkpoint`, `reconcile`. |
@@ -65,7 +65,7 @@ Future tickets, in order. None are authored yet; author them at the checkpoint. 
 | 5 | `journal-ports-cli-authoring` | chore | P2 | `journal-query-layer` | `__main__`, `author`, `tickets`, `observe` (its raw reader goes), `scheduler.write_queue`'s journal access. |
 | 6 | `journal-query-rule-gate` | chore | P2 | 2, 3, 4, 5 | The rule "journal queries are SQL, not Python loops" in `CLAUDE.md` and `AGENTS.md`, and the lint that refuses `journal.read()` outside `clutch/journal.py`. Lands last so it never fails on unported code. |
 
-Each port deletes the Python fold it replaces in the same change (repo rule: no dual-path code). Tickets 2-5 touch disjoint module sets and could run in parallel under `docs/parallel-tickets-plan.md` if that has shipped by then; it has not under the default order (0.4.0), so they run in sequence.
+Each port deletes the Python fold it replaces in the same change (repo rule: no dual-path code). Tickets 2-5 touch disjoint module sets and could run in parallel under `docs/parallel-tickets-plan.md` if that has shipped by then; it has not under the default order (0.5.0), so they run in sequence.
 
 Call sites: lines in `clutch/` that call `.read()` on a journal or call `.read_segments()`, excluding `clutch/journal.py` itself. Counts at `bf121ef9`; re-run at the checkpoint:
 
@@ -123,6 +123,6 @@ Items 1 and 2 were decided on 2026-11-13 (`docs/roadmap.md` §6 is the record). 
 6. **Python-only folds.** Some folds may be state machines that read badly as SQL (candidates: `reconcile`, `checkpoint`, `audit`). Should they stay Python over query results, and what test keeps that exception from spreading? Recommendation: allowed, each named in the gate's allowlist.
 7. **Equivalence testing.** Should each port be checked by comparing old and new results on a recorded journal fixture before the old fold is deleted? The comparison lives in the test only, and no second code path ships. Recommendation: yes, on this repo's journal as the fixture.
 8. **Saved snapshots.** Rejected for now. Revisit only if the start-up bulk load measurably hurts.
-9. **Release version.** 0.3.0 is a minor version by the roadmap's rule (one minor per release theme); the question whether a refactor release should be a patch is closed by that rule.
+9. **Release version.** 0.4.0 is a minor version by the roadmap's rule (one minor per release theme); the question whether a refactor release should be a patch is closed by that rule.
 
 Settled since the first draft: `journal-incremental-read` merged (its review snag about same-size rewrites of rolled segments is answered by the immutability contract above); `observe.py` ports in ticket 5; the freeze is enforced by the roadmap's schedule, not an engine hold.

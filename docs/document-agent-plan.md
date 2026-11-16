@@ -8,7 +8,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.6.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.2.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.4.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.5.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.5.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `clutch/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
+Release 0.7.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evidence-envelope` (0.3.0), so an isolated call leaves a record with `repo: null` and `conduct_file: null` (roadmap decision 3); `fence-overlap` (0.5.0) for the Automatable lens's overlap estimate; `panel-combiners` (0.6.0, `docs/stage-panels-plan.md`), which is the one fan-out-and-combine mechanism the review runner stands on (roadmap decision 14); `context-suggest` (0.6.0, `docs/annotations-index-plan.md`) for `doc draft --from <topic>`. Nothing depends on this plan. Shared budgets: one new config block, named `documents` (not `docs`: that is a verb and the `clutch/docs/` directory; roadmap decision 6); no CORE_TEMPLATE text. Its first real use is reviewing the other plans, which is why it is last: by then they have tickets and run history behind them.
 
 ## What it is for
 
@@ -329,7 +329,7 @@ Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 i
 3. **Verbs only, or a `doc` ticket kind too?** Decided 2026-11-13: verbs only for v1; a `doc` kind is the follow-up if doc sets start being changed by the drain.
 4. **Where doc sets live.** Decided 2026-11-14: any `docs/<name>/` with a `docset.yaml`, found by search; no registry file.
 5. **Panel size.** Decided 2026-11-14: default 3, minimum 2; `--panel 1` is refused because a single reviewer has nothing to converge with. Promoting an `automatable` consensus ticket set into a Seed stays an explicit owner step, never automatic.
-6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Decided 2026-11-14: yes; `plans-into-docsets` (roadmap row 76) runs `scope` and `buildability` on each as the first real use and is 0.6.0's ship gate.
+6. **Move today's plans into doc sets** once tickets 1 and 2 merge? Decided 2026-11-14: yes; `plans-into-docsets` (roadmap row 76) runs `scope` and `buildability` on each as the first real use and is 0.7.0's ship gate.
 
 ## Appendix: draft `AutomatableReview` prompt
 

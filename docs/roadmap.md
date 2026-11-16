@@ -18,23 +18,23 @@ Facts the ordering rests on:
 
 ## 1. Release plan
 
-Versions follow `pyproject.toml` (`0.1.5` today). Each release below is a minor version and gets a git tag. `./dev.py publish` bumps only the patch version and nothing creates a tag today, so the first ticket in 0.2.0 is the release verb that makes the rest of this table executable.
+Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor version, named for the version `clutch release --minor` gives it: a phase is bumped and tagged at its start, so tag `v0.3.0` (`c761b213`) opened 0.3.0. These names were once one minor lower (0.3.0 was `0.2.0`), and older commits, tickets, and Suggestion Box messages use the old names. Each phase takes the next minor when it starts, so if the conditional 0.4.0 window slides, the phases after 0.3.0 are renamed to the versions they start at. `clutch release --minor|--patch` (`release-verb`, merged) bumps, commits, and tags; `./dev.py publish` still bumps the patch again before it uploads, which `release-publish` (row 92) replaces with a publish that never bumps.
 
 | Release | Theme | Gate to start | Gate to ship |
 |---|---|---|---|
-| **0.2.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
-| **0.3.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.5.0 and its slot is skipped | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.4.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.2.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`); Gemini hand test A0 fact 7 answered (headless image generation, else `api-provider-client` joins this release) | `scheduler.parallel.enabled: true` has run this repo's own queue for one week with no conflict rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
-| **0.5.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a review panel of two has run this repo's queue for a week with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
-| **0.6.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call`; the owner's lens prompts adapted | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
+| **0.3.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
+| **0.4.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.6.0 | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
+| **0.5.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-home`); Gemini hand test A0 fact 7 answered (headless image generation, else `api-provider-client` joins this release) | `scheduler.parallel.enabled: true` has run this repo's own queue for one week with no conflict rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
+| **0.6.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a review panel of two has run this repo's queue for a week with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
+| **0.7.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call`; the owner's lens prompts adapted | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
-Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.2.0 because they touch nothing the later releases reshape, and both wait on a hand test (their plans say which facts).
+Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.3.0 because they touch nothing the later releases reshape, and both wait on a hand test (their plans say which facts).
 
 ### 1.1 Why this order
 
 - **Truth first.** The audit found 16 places where the maintained documents say something the code does not do, and a capture bug that has lost 1,662 of 3,960 raw model-call records (counted at `328d07d9`). None of the feature plans can be authored against documents that are wrong, and the training plan cannot capture data that is being overwritten.
 - **Dedup before parallel.** Parallel runs change the one-run assumption in six separate trackers and the merge path in two separate implementations. Making each of those a single owner first turns the parallel tickets from a rewrite into an edit.
-- **Capture early, export late.** The evidence store (0.2.0) only has value once it holds data. Export and eval (0.5.0) are useful on day one if capture started three releases earlier.
+- **Capture early, export late.** The evidence store (0.3.0) only has value once it holds data. Export and eval (0.6.0) are useful on day one if capture started three releases earlier.
 - **Journal window is conditional.** Its measured trigger (157 of 164 seconds in journal reads) predates `journal-incremental-read`. The refactor freezes features for a release; it earns that only if re-measurement shows the cost is still there.
 - **Document agent last.** It is the largest new surface, depends on the isolated-call mode and the evidence record, and its first real use is reviewing the other plans, which is more useful once those plans have tickets behind them.
 
@@ -59,7 +59,7 @@ Ranked by how many later tickets it blocks. Every item names the single owner th
 | 11 | `gather_safety_evidence` runs twice per admission: `merge.py:307` then inside `gather_evidence` (`stages.py:911`); same at `mergequeue.py:312` + 330 | as listed | `gather_evidence` reuses the safety result | `merge-admission-single-owner` |
 | 12 | "Refused" constructors: `merge._refused`, the `refused` closure in `_admit`, `stages._short`, and inline `StageResult(outcome="gate_failed", ...)` at `runner.py:219`, `stages.py:1454,1457,1465,1577`, `daemon.py:360,404,415-422` | as listed | `artifacts.refused(findings, cost)` | `merge-admission-single-owner` |
 | 13 | Fence matching: owner `stages._in_fence` (978-979); re-implemented at `watchdog.py:60`, `drain.py:484` (different semantics: trailing-slash dirs only), raw `startswith(f"{TICKETS_DIR}/")` at `merge.py:108,248,385`, `stages.py:1224` | as listed | `_in_fence`, moved to `clutch/tickets.py` (the fence grammar's home) | `fence-overlap` (it adds the pure overlap function beside it) |
-| 14 | `retro_check` phase logging with two outcome vocabularies: `drain.py:605-613` ("ran"/"no_report") vs `serve.py:339-353` ("due"/"not_due") | as listed | one vocabulary in `retro.py` | `docs-truth-sweep` |
+| 14 | `retro_check` phase logging with two outcome vocabularies: `drain.py:605-613` ("ran"/"no_report") vs `serve.py:339-353` ("due"/"not_due") | as listed | one vocabulary in `retro.py` | `docs-truth-sweep-code-strings` (done) |
 
 ### 2.2 Closed sets with more than one home
 
@@ -115,9 +115,9 @@ The `CLAUDE.md` rule "a rule has one of two homes" is the fix; `docs-truth-sweep
 - Fakes: 9 clock fakes, 18 exec fakes, 11 filesystem fakes, 10 journal fakes, 8 git fakes defined across tests; `clutch/seams.py` ships none (only `FakeLLM` in `clutch/llm.py:58`).
 - `until`/wait has three implementations with three semantics (`serve_rig.py:27`, `test_drain_admissions.py:15`, `tests/waiting.py:10`); `repo()` fixtures six times building the same shape; `git()` four times with four meanings; `reply()` seven times.
 - `CONFIG` literal at 12 sites (three byte-identical groups), `TICKET` at 7, `config.yaml` written in 63 files, git-init sequences in 22.
-- The five do-not-grow files named in `docs/parallel-tickets-plan.md` §7 took 53 commits in the 13 days to 2026-11-13; the list is in no rule file yet.
+- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`.
 
-Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
+Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 
 ## 3. Analysis: gaps
 
@@ -130,10 +130,10 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
 | `served_review` swallows `ValueError, KeyError, TypeError, AttributeError, GitError` to `(None, None)`, nulling the receipt's provider and model on any defect | `stages.py:227-228` | `docs-truth-sweep` names it; fix in `merge-admission-single-owner` |
 | Coverage parse `except: pass`, so coverage is silently absent although §5.4 says it is recorded; base `results` read then discarded | `stages.py:1104-1105,1191-1194` | `host-check-selection-single-owner` |
 | `diagnosis.json` is not written when the worktree is gone, although §6.3 promises it | `runner.py:275-277` | `docs-truth-sweep` (document the truth) |
-| Drain report paved roads print `uv run python -m clutch drain|confirm|reject`, the one operator surface that names argv instead of a verb; `Admission("refuse", "unknown box id")` carries `paved_road=""`; `retro.py:458` collapses the stage outcome into `ValueError`; seven `BoxError`s name the fault without a repair | `drain.py:182,186,710,721`; `status.py:149`; `retro.py:458`; `box.py:179-434` | `paved-roads-name-verbs` |
+| Operator paved roads print `uv run python -m clutch drain|confirm|reject` and other argv instead of a verb, in the drain report and in `status.py`, `doctor.py`, and `providers.py`; `Admission("refuse", "unknown box id")` carries `paved_road=""`; `retro.py:458` collapses the stage outcome into `ValueError`; seven `BoxError`s name the fault without a repair | `drain.py:182,186,710,721`; `status.py:149`; `retro.py:458`; `box.py:179-434` | `paved-roads-name-verbs` (done, `tickets/paved-roads-name-verbs/`) |
 | `watch` shows spec-frontmatter tier and effort for review, diagnose, author, triage, and requisition_review, but the code never passes spec tier for those surfaces | `observe.py:229-231`; `author.py:316`, `triage.py:311`, `stages.py:453,660,1508` | `watch-surface-tier-truth` |
-| `harvest.json` is written without the redactor; `diff_stat` and finding messages are not pre-scrubbed. `redact.py:7-9` checklist says "journal writer NOT YET WIRED" and "harvest serialization: not built" | `runner.py:443-483`; `redact.py:7-9` | `redaction-harvest-seam` |
-| `argparse` help for `review` says "under the lock"; the verb takes no `Lockfile` | `__main__.py:258` vs 589-660 | `docs-truth-sweep` |
+| `harvest.json` is written without the redactor; `diff_stat` and finding messages are not pre-scrubbed. `redact.py:7-9` checklist says "journal writer NOT YET WIRED" and "harvest serialization: not built" | `runner.py:443-483`; `redact.py:7-9` | `redaction-harvest-seam` (done) |
+| `argparse` help for `review` says "under the lock"; the verb takes no `Lockfile` | `__main__.py:258` vs 589-660 | `docs-truth-sweep-code-strings` (done) |
 
 ### 3.2 Seams bypassed
 
@@ -143,16 +143,16 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules`.
 
 | §18.2 item | Trigger | Fired | Decision |
 |---|---|---|---|
-| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.2.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.3.0 |
-| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.3.0 is conditional on it |
-| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.5.0) covers triage records and makes this the first lens to score |
-| Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.4.0, declared in `docs/parallel-tickets-plan.md` |
+| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.3.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.4.0 |
+| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.4.0 is conditional on it |
+| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.6.0) covers triage records and makes this the first lens to score |
+| Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.5.0, declared in `docs/parallel-tickets-plan.md` |
 | Conflict-only micro-rework | first chronically re-resolved conflict in `merge_conflict_facts` | 13 events exist; nobody has read them | `merge-model-resolve` starts by reading them (its plan's A0) |
 
 ### 3.4 Never built, no ticket
 
 - P8 `rules-render`: `clutch core --check` and a start-command file. `doctor` has a `core` drift row (`doctor.py:67-73`); `serve`, `drain`, `run` refuse on stale blocks. Decided 2026-11-13: dropped (section 6, decision 2).
-- `clutch/docs/host-contract.md` "Onboarding a host" and "Operating facts" sections (P8). Its two sections still titled "Pending report-inbox contract" and "Pending cutover contract" describe shipped code. `docs-truth-sweep` retitles them; the onboarding checklist is `training-docs`' sibling, `host-onboarding-doc`, scheduled in 0.2.0.
+- `clutch/docs/host-contract.md` "Onboarding a host" and "Operating facts" sections (P8). Its two sections still titled "Pending report-inbox contract" and "Pending cutover contract" describe shipped code. `docs-truth-sweep` retitles them; the onboarding checklist is `training-docs`' sibling, `host-onboarding-doc`, scheduled in 0.3.0.
 - `review.surfaces`: refused at config load "until a host that uses them onboards". Stays refused. `docs/document-agent-plan.md` Open decision 2 is the first proposal that would need host-defined prompts and it routes them as data instead.
 - `kind: api` provider: refused at `config.py:460-465`; stays deferred.
 
@@ -183,14 +183,14 @@ Every row is a claim the owning document makes that the code contradicts. `docs-
 | 244 | Check "runs configured autofix commands" | `stages.py:1407` | only when Implement replied `ok` and `review.autofix` is nonempty |
 | 373 | lift kind `harvest` | `runner.py:371` | also `harvest-rework` |
 | 388-389 | worktree gone: `diagnosis.json` is lifted | `runner.py:275-277` | nothing is written or lifted; only the journal signal |
-| 452-453, 485-488 | paved roads say `clutch confirm|reject` | `drain.py:182,186,710,721` | drain prints `uv run python -m clutch ...`; code fix in `paved-roads-name-verbs` |
+| 452-453, 485-488 | paved roads say `clutch confirm|reject` | `drain.py:182,186,710,721` | drain prints `uv run python -m clutch ...`; code fix in `paved-roads-name-verbs` (done, `tickets/paved-roads-name-verbs/`) |
 | 463-464 | Reconcile reaps any stem still `running` | `reconcile.py:22,38` | stems with a HELD regate receipt at the current attempt and intents under `llm/review-<stem>/` are excluded |
 | 475-477 | drain loop steps omit Box intake | `drain.py:396` | drain calls `triage.report_intake` every iteration |
 | 528-530 | queue skip rule | `mergequeue.py:313` | also requires no HELD receipt |
 | 581 | preflight at run/drain/serve/triage | `__main__.py:618,696-697` | also `review` and `retro` with a report |
 | 592-593 | "a call waiting over 60s spills" | `thresh.py:167,177` | spill is decided up front from the projected wait |
 | 679-680 | prune candidate: 25+ evaluations and no catch | `scorecard.py:94` | also requires zero escapes |
-| 694 | one `retro_check` phase | `serve.py:353`, `drain.py:613` | two outcome vocabularies |
+| 694 | one `retro_check` phase | `serve.py:353`, `drain.py:613` | two outcome vocabularies; one (`clutch/retro.py::RetroCheckOutcome`) since `docs-truth-sweep-code-strings` (done) |
 | 708 | `signal` is "a closed list" | `journal.py:94` | no registry; writers use `signal` or `kind` as the body key |
 | 72 | `reject <stem> [--yes]` | `__main__.py:277-281` | also `--extension` |
 | 10.1 table | state_dir files | `__main__.py:342,370`, `covmap.py:32`, `rework.py:122`, `box.py:268` | omits `drain.out`, `coverage-map.json`, `rework/<stem>/<attempt>/<call>/`, `spools/probe/`, `box.seq/`, `worktrees/.base/`, `.regression-base/`; rotation bounds 16 MiB x 3 and 64 MiB / 24 h unstated |
@@ -213,8 +213,8 @@ Every row is a claim the owning document makes that the code contradicts. `docs-
 | CORE_TEMPLATE (`hostfiles.py:20`) | `clutch docs` prints "(authoring, running, config contract)" | four guides including qwen (`__main__.py:312`); dropping the parenthetical frees 36 of the template's 352 spare bytes |
 | `CLAUDE.md` vs `AGENTS.md` | "a rule add/change/remove touches both files" | `AGENTS.md` lacks "Lean ticket frontmatter" (`CLAUDE.md:94-95`), "The plan is the seed" (86-87), "Phase order" (107-108), and the "compress it to one line" sentence (57) |
 | `clutch/docs/host-authoring.md:12,16,25`, `host-qwen.md:66`, `clutch/specs/ask/*.md` | name `./dev.py` | engine-owned files carry this repo's dev surface, which no host has (`box-000440`) |
-| `clutch/mergequeue.py:1`, `clutch/heartbeat.py:1` | "Dormant" | serve routes every merge through the queue (`serve.py:129`); serve refreshes the heartbeat every loop (`serve.py:203-209`) |
-| `clutch/redact.py:7-9` | "journal writer NOT YET WIRED", "harvest serialization: not built" | harvest exists (`runner.py:443-483`); the checklist is stale and harvest is unscrubbed |
+| `clutch/mergequeue.py:1`, `clutch/heartbeat.py:1` | "Dormant" | serve routes every merge through the queue (`serve.py:129`); serve refreshes the heartbeat every loop (`serve.py:203-209`); both docstrings fixed by `docs-truth-sweep-code-strings` (done) |
+| `clutch/redact.py:7-9` | "journal writer NOT YET WIRED", "harvest serialization: not built" | fixed by `redaction-harvest-seam` (done): `clutch/runner.py::harvest` scrubs `harvest.json` at the write, and the checklist names every writer |
 | `vscode-clutchwork` settings | `how-clutch-works.md:116-119` names `clutch.playAction`, `clutch.statsWindow` | `clutch.command` (`package.json:73-83`) is named only in `README.md:77` |
 
 ### 4.3 Plan documents (fixed in this revision)
@@ -239,28 +239,28 @@ Each decision settles a place where two plans overlapped or contradicted. The pl
 2. **Capture always on, training gated.** The envelope and raw stdout/stderr are captured for every call, as `spools/providers/` is today, because diagnosis and harvest read them. Retention is `evidence.max_gb` (default 20; evidence plan). Attempt manifests with full diffs, export, and eval are behind `training_data.enabled` (default false; training plan). `training_data.dir` is dropped: the store location is fixed.
 3. **Record identity.** A record's id is the journal effect key. Ticketless calls key under their surface name (`driver.py:274`), so `stem` is nullable and `group` is the stem or, for triage, author, retro, and document lenses, the surface. Isolated calls (document agent) record `repo: null` and `process.cwd` as the scratch directory; no conduct file is loaded and the record says so.
 4. **One P0 for the capture bug.** `provider-capture-overwrite` is a single bug ticket owned by this roadmap. Its cause fix, under the CORE two-ticket rule, is `evidence-envelope` (every capture path keyed by the journal identity of what it captures). Both plans cite the stems; neither owns them.
-5. **CORE_TEMPLATE byte ledger.** 7,840 of 8,192 bytes used (`tests/integration/test_hostfiles.py:33`). Spend: `conduct-files-parity` frees 36; `upstream-issue-verb` adds about 264; `graphics-kind` adds 9. Order in 0.2.0 and 0.4.0 keeps them from colliding; after both, about 115 bytes remain. Any further template text first compresses a rule that has gained its gate (`CLAUDE.md:57`).
+5. **CORE_TEMPLATE byte ledger.** 7,840 of 8,192 bytes used (`tests/integration/test_hostfiles.py:33`). Spend: `conduct-files-parity` frees 36; `upstream-issue-verb` adds about 264; `graphics-kind` adds 9. Order in 0.3.0 and 0.5.0 keeps them from colliding; after both, about 115 bytes remain. Any further template text first compresses a rule that has gained its gate (`CLAUDE.md:57`).
 6. **Names.** The document agent's config block is `documents:` (not `docs:`, which is a verb and a directory). Its lens spec is `clutch/specs/doc/lens.md` (not `review.md`, which exists at `clutch/specs/`). Its specs carry the spec frontmatter that `tests/unit/test_specs.py:24` checks on everything under `clutch/specs/`.
-7. **Journal window.** 0.3.0 runs only on re-measurement. Its port tickets touch the same files as `serve-parallel-dispatch` and `conflict-discard-rerun`, so the parallel tickets land after the window, or before it if the window slides. Several runs in one process appending to the journal is compatible with the query layer's per-process offset because `journal.lock` serializes appends; the journal plan states this.
-8. **Shared files between plans.** `graphics-render-check` and `conflict-discard-rerun` both bump `clutch/specs/implement.md`; `graphics-render-check` runs first (it heads the longer chain). `upstream-issue-verb` (0.2.0) and `graphics-kind` (0.4.0) both edit `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, `README.md`; releases separate them. `gemini-provider`, `evidence-envelope`, `isolated-readonly-call`, and the journal ports all fence `clutch/providers.py`; under the parallel plan's own overlap rule they serialize, which the release slots already arrange.
+7. **Journal window.** 0.4.0 runs only on re-measurement. Its port tickets touch the same files as `serve-parallel-dispatch` and `conflict-discard-rerun`, so the parallel tickets land after the window, or before it if the window slides. Several runs in one process appending to the journal is compatible with the query layer's per-process offset because `journal.lock` serializes appends; the journal plan states this.
+8. **Shared files between plans.** `graphics-render-check` and `conflict-discard-rerun` both bump `clutch/specs/implement.md`; `graphics-render-check` runs first (it heads the longer chain). `upstream-issue-verb` (0.3.0) and `graphics-kind` (0.5.0) both edit `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, `README.md`; releases separate them. `gemini-provider`, `evidence-envelope`, `isolated-readonly-call`, and the journal ports all fence `clutch/providers.py`; under the parallel plan's own overlap rule they serialize, which the release slots already arrange.
 9. **Design-record departures are declared.** A plan that re-opens a `CLUTCH_PLAN.md` §18 item names the item, the trigger, and the owner decision in a "Departures from the design record" table. The parallel plan already did; the training, evidence, and document plans now do (audit trail and blob store, §18.1; metadata taxonomies, §18.1). The owner's decision of 2026-11-13 is the cited incident.
 10. **Host-command lock.** The parallel plan's engine-wide semaphore around `run_host_command` also serializes the graphics plan's render command and the merge queue's host checks. One lock, stated in both plans.
-11. **The mergequeue docstring** is fixed by `docs-truth-sweep`, not by a parallel-plan ticket; that plan's row 2 now points at the roadmap's `active-slot-single-owner` and `merge-admission-single-owner`, the two 0.2.0 chores its dispatch and merge tickets depend on.
+11. **The mergequeue docstring** was fixed by `docs-truth-sweep-code-strings` (done), not by a parallel-plan ticket; that plan's row 2 now points at the roadmap's `active-slot-single-owner` and `merge-admission-single-owner`, the two 0.3.0 chores its dispatch and merge tickets depend on.
 12. **Optional dependencies.** The graphics plan's image libraries ship as the extras `clutch[images]` and `clutch[images-embed]`, imported lazily by `clutch/images.py`; core clutch gains no dependency. A later plan that needs a heavy library follows the same shape. The journal plan's `duckdb` is the one core dependency a plan adds, earned by D3's named trigger.
 13. **Generator and judge are different models.** Any surface that judges a model's output (`review_visual` now; a future image or audio judge) routes to a different model family than the surface that produced it; `doctor` warns and lint snags when a config breaks that. The owner's 2026-11-14 note on the Gemini models is the incident: image models answer with pictures, and a model grading its own family grades kindly.
 14. **One panel mechanism.** Running a stage as several independent calls and combining them is `docs/stage-panels-plan.md`'s `clutch/panel.py`, declared per routing row. The document agent's `doc-review-runner` depends on `panel-combiners` instead of building its own; the graphics judge's `judge_samples` majority is the `majority-verdict` combiner. No plan adds a second fan-out.
 15. **The index is a cache.** `<state_dir>/index.duckdb` (`docs/annotations-index-plan.md`) is derived and rebuildable, read by no gate and no dispatch. `duckdb` enters `pyproject.toml` once, with whichever of `journal-query-layer` or `index-build` lands first, under D3's named trigger. clutch ships no embedding model; vectors come from a host-declared command.
 16. **The driver's authority.** The roadmap driver (`docs/roadmap-driver-plan.md`) may edit a held ticket only through a reviewed Rework-update within the supervising rules, may keep it at most `caps.supervise` times per operator lineage, authors at most `--ahead` rows past the running set, and publishes only under `release.publish: true` or an operator confirm. The chat-session rules in CORE_TEMPLATE do not change: sessions still never confirm, reject, or push on their own.
-17. **Superseded is settled.** A split's parent enters a settled state `superseded` and leaves the Reject queue by itself; the three historical parents rejected by hand are the incident.
+17. ~~**Superseded is settled.** A split's parent enters a settled state `superseded` and leaves the Reject queue by itself; the three historical parents rejected by hand are the incident.~~ Struck: the premise is false. A published Rework split never reaches the Reject queue: `clutch/runner.py::failure_terminal` journals the parent's terminal without `routed` and retires it through `reject_ticket` in the same second (box-000471). The split parents a person killed were Rework splits that did not publish, and they carry no `supersedes` signal (box-000473).
 
 ## 6. Owner decisions (decided 2026-11-13)
 
 Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section marks its decided items and keeps the rest open.
 
-1. **Mechanical fence-closure analyzer** (§18.2; trigger fired twice). Decided: instructions first. `fence-closure-registries` (0.2.0) widens the reviewer prompt to in-code registries and tables. A third escape schedules a bounded spike for the mechanical checker in 0.3.0.
+1. **Mechanical fence-closure analyzer** (§18.2; trigger fired twice). Decided: instructions first. `fence-closure-registries` (0.3.0) widens the reviewer prompt to in-code registries and tables. A third escape schedules a bounded spike for the mechanical checker in 0.4.0.
 2. **P8 `core --check` and start-command file.** Decided: dropped. `doctor`'s `core` row and the start refusal cover drift detection; no host has asked for a start-command file. Both are recorded here as not built on purpose and are tracked nowhere else.
 3. **Settled-ticket archive.** 537 directories under `tickets/`. Decided: nothing until a scan (lint with no stems, intake, the snapshot) is timed and found slow; the timing is filed as evidence when it happens.
-4. **Split the five large test files.** Decided: the do-not-grow rule lands in 0.2.0 (`contention-authoring-rules`); splitting is chore tickets, one per file, during the 0.3.0 window if it runs, else in 0.4.0 before parallel runs start.
+4. **Split the do-not-grow test files.** Decided: the do-not-grow rule lands in 0.3.0 (`contention-authoring-rules`, done; it names seven files, the five measured at `80b76d5d` plus `tests/integration/test_cli.py` and `tests/integration/test_watch.py` measured at `c761b213`); splitting is chore tickets, one per file, during the 0.4.0 window if it runs, else in 0.5.0 before parallel runs start.
 5. **Parallel plan.** Decided: `serve` only; longest-chain ordering below P0 only (P0 keeps the emergency lane); conflict reruns have their own cap `CONFLICT_RERUN_LIMIT = 2` and never draw `retry`.
 6. **Training plan.** Decided: the export includes the full normalized tool-call trajectory (a per-run flag can trim it); Author-written tickets are included, tagged `authored_by: author`.
 7. **Evidence plan.** Decided: providers' own session transcripts are not copied, only their ids are recorded; Claude thinking text is stored as a blob with `visibility: text`.
@@ -270,11 +270,11 @@ Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section
 
 Decided 2026-11-14, from the plans' remaining open items:
 
-11. **Training eval.** Ships in clutch (`training-eval`, 0.5.0); it doubles as the deferred triage-dedup eval.
-12. **Per-attempt spools.** Move onto the evidence store later: `spools-onto-evidence-store` (0.5.0), after the store has run a release.
-13. **One parser per provider.** `CallMeter`, `Parsed`, and `live_call` move onto the evidence normalizers after a release of real traffic: `one-parser-per-provider` (0.5.0).
+11. **Training eval.** Ships in clutch (`training-eval`, 0.6.0); it doubles as the deferred triage-dedup eval.
+12. **Per-attempt spools.** Move onto the evidence store later: `spools-onto-evidence-store` (0.6.0), after the store has run a release.
+13. **One parser per provider.** `CallMeter`, `Parsed`, and `live_call` move onto the evidence normalizers after a release of real traffic: `one-parser-per-provider` (0.6.0).
 14. **Document agent.** Doc sets are any `docs/<name>/` with a `docset.yaml`, found by search; panels default 3, minimum 2; this week's plans become the first doc sets once `doc-facet-registry` and `docset-manifest` merge, reviewed with `scope` and `buildability`.
-15. **Journal plan items 3-7** stay open until the 0.2.0 checkpoint, as that plan says.
+15. **Journal plan items 3-7** stay open until the 0.3.0 checkpoint, as that plan says.
 16. **Graphics scope.** AI-generated and AI-edited images are in v1 (`mode: generate`); they are the reason for the Gemini provider. Code-rendered output stays (`mode: command`).
 17. **Graphics routing and sign-off.** `Route.kinds` is built now (`route-kinds-filter`); the visual judge decides and only an undecidable result parks for a person; until the `visual_baseline` GO is recorded, every graphics ticket parks.
 18. **Graphics grading and libraries.** Three layers: deterministic checks (`image-quality-gate`), a vision-model judge on a rubric with structured output and majority sampling (`visual-review-surface`), best-of-N with a person only for unsure cases (`image-candidates-select`), calibrated on 20-50 hand labels (`visual-review-baseline`). Libraries ship as `clutch[images]` (Pillow, numpy, scikit-image, imagehash, opencv-python-headless) and `clutch[images-embed]` (open_clip, torch).
@@ -287,23 +287,23 @@ Every plan under `docs/` has these sections in this order, so the next audit can
 
 Every proposed ticket, grouped by release and in priority order within a release. Row numbers are stable identifiers assigned in the order rows were added, not an ordering: the release sections and the `P` column order the work. "Owner" is the plan whose design the ticket implements; "roadmap" means the ticket comes from the audit above. `Depends on` lists only tickets whose merged code is needed; ordering that is not a dependency is in the `Runs before` column. Authoring follows `clutch new` and the authoring guide, and a row gains its link when it is authored (by hand today; by `roadmap author` once `docs/roadmap-driver-plan.md` lands).
 
-### 0.2.0
+### 0.3.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 1 | `provider-capture-overwrite` | roadmap (decision 4) | bug | P0 | | `evidence-store` | **Authored 2026-11-14, confirmed** (`tickets/provider-capture-overwrite/`). Instance fix: a stem's capture numbering continues from the highest `<provider>-NNNN` already on disk, read through a new `FileSystem.entries` seam method, so a later process never overwrites an earlier capture (`providers.py:294,325`). Evidence at `328d07d9`: 3,960 calls, 2,298 captures with `events.jsonl`. Keying by the journal call key is the cause fix in `evidence-envelope`. |
-| 2 | `provider-failure-single-mapper` | roadmap | chore | P2 | | | **Authored 2026-11-14, confirmed** (`tickets/provider-failure-single-mapper/`). One provider-exception mapper in `runner.py`; delete the copy at `stages.py:1602-1615`. Its hard-coded `surface="requisition_review"` is unreachable: `Driver._run` maps `ProviderCallError` first with the right surface (`driver.py:324`), which a reproduction on 2026-11-14 confirmed (the Box report carried `stage=implement`). Dead duplicated code, not a live defect; demoted from the P0 bug the audit reported. |
-| 3 | `release-verb` | journal plan (a) | feature | P1 | | | `clutch release --minor|--patch`: bumps `pyproject.toml`, commits, tags `v<version>`; `publish` keeps bumping only the patch. Needed to tag 0.2.0. |
-| 4 | `docs-truth-sweep` | roadmap | chore | P1 | | | Every row in section 4.1 and 4.2 that is a document fix; the `mergequeue.py` and `heartbeat.py` docstrings; the `redact.py` checklist; the `review` argparse help; `how-clutch-works.md` 10.1 and 10.2 gain the missing paths, the `checkpoint` type, and the signal-kind list. |
-| 5 | `conduct-files-parity` | roadmap | chore | P1 | | `upstream-issue-verb` | `AGENTS.md` gains the four rules it lacks; CORE_TEMPLATE drops "(authoring, running, config contract)"; `clutch core` refreshes both blocks. |
-| 6 | `paved-roads-name-verbs` | roadmap | chore | P1 | | | Drain report roads name `./dev.py` verbs in this repo and `clutch` verbs on a host (`drain.py:182,186,710,721`); `status.py:149` carries a road; `retro.py:458` keeps the stage outcome; the seven `BoxError`s name a repair. Superseded by `dev-py-dev-tasks-only`. |
-| 7 | `dev-surface-completeness` | roadmap | chore | P1 | | | The launcher twins are superseded by `dev-py-dev-tasks-only`; `./dev.py test` loads `clutch.testguard` and `test-gate.toml`'s budget for `tests/unit`. |
-| 8 | `host-prompts-no-dev-py` | roadmap (`box-000440`) | chore | P1 | | | `clutch/specs/ask/*.md`, `host-authoring.md`, `host-qwen.md` render the host's verb prefix; `./dev.py` appears only in `README.md` and `how-clutch-works.md` §2.2. Superseded by `dev-py-dev-tasks-only`. |
-| 9 | `unit-criteria-disk-snag` | roadmap (`box-000441`, `box-000442`) | feature | P1 | | | `requisition_review.md` snags a `tests/unit` criterion that needs disk, process, or network, with a road naming an in-fence seam; `diagnose.md` keeps floored lines reachable from `tests/unit`. |
-| 10 | `fence-closure-registries` | roadmap (`box-000324`) | feature | P1 | | | `requisition_review.md:24` traces in-code registries and tables (menu keys, closed sets, adapter maps), not only symbol closure. |
-| 11 | `watch-surface-tier-truth` | roadmap | bug | P1 | | | `watch` shows the tier the code will use per surface (`observe.py:229-231`), or the code honors spec `tier:` for every surface; one truth. |
-| 12 | `redaction-harvest-seam` | roadmap | chore | P1 | | | `harvest.json` passes the redactor; `redact.py` checklist matches the writers. |
-| 13 | `contention-authoring-rules` | parallel plan 1 | chore | P1 | | every feature ticket below | Section 7 of the parallel plan: new tests in new files, new fixtures in new modules, fence only what is forced, the do-not-grow list in `CLAUDE.md` and `AGENTS.md`. |
+| 1 | ~~`provider-capture-overwrite`~~ | roadmap (decision 4) | bug | P0 | | `evidence-store` | **Merged** (`tickets/provider-capture-overwrite/`). Instance fix: a stem's capture numbering continues from the highest `<provider>-NNNN` already on disk, read through a new `FileSystem.entries` seam method, so a later process never overwrites an earlier capture (`providers.py:294,325`). Evidence at `328d07d9`: 3,960 calls, 2,298 captures with `events.jsonl`. Keying by the journal call key is the cause fix in `evidence-envelope`. |
+| 2 | ~~`provider-failure-single-mapper`~~ | roadmap | chore | P2 | | | **Merged** (`tickets/provider-failure-single-mapper/`). One provider-exception mapper in `runner.py`; delete the copy at `stages.py:1602-1615`. Its hard-coded `surface="requisition_review"` is unreachable: `Driver._run` maps `ProviderCallError` first with the right surface (`driver.py:324`), which a reproduction on 2026-11-14 confirmed (the Box report carried `stage=implement`). Dead duplicated code, not a live defect; demoted from the P0 bug the audit reported. |
+| 3 | ~~`release-verb`~~ | journal plan (a) | feature | P1 | | | **Merged** (`tickets/release-verb/`). `clutch release --minor|--patch`: bumps `pyproject.toml`, commits, tags `v<version>`. |
+| 4 | ~~`docs-truth-sweep`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/docs-truth-sweep/`). Split in two: `docs-truth-sweep` (documents) and `docs-truth-sweep-code-strings` (code strings; `tickets/docs-truth-sweep-code-strings/`). Every row in section 4.1 and 4.2 that is a document fix; the `mergequeue.py` and `heartbeat.py` docstrings; the `redact.py` checklist; the `review` argparse help; `how-clutch-works.md` 10.1 and 10.2 gain the missing paths, the `checkpoint` type, and the signal-kind list. |
+| 5 | ~~`conduct-files-parity`~~ | roadmap | chore | P1 | | `upstream-issue-verb` | **Merged** (`tickets/conduct-files-parity/`). `AGENTS.md` gains the four rules it lacks; CORE_TEMPLATE drops "(authoring, running, config contract)"; `clutch core` refreshes both blocks. |
+| 6 | ~~`paved-roads-name-verbs`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/paved-roads-name-verbs/`). Operator roads in `clutch/drain.py`, `clutch/status.py`, `clutch/doctor.py`, and `clutch/providers.py` name `clutch` verbs instead of `uv run python -m clutch` argv; the unknown-box-id refusal in `clutch/status.py` carries a road; a failed retro's `error_code` keeps the stage outcome; five `BoxError` sites name a repair. |
+| 7 | ~~`dev-surface-completeness`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/dev-surface-completeness/`). The launcher twins are superseded by `dev-py-dev-tasks-only`; `./dev.py test` loads `clutch.testguard` and `test-gate.toml`'s budget for `tests/unit`. |
+| 8 | ~~`host-prompts-no-dev-py`~~ | roadmap (`box-000440`) | chore | P1 | | | **Not authored: already done at `73a41696`.** `clutch/specs/ask/*.md`, `host-authoring.md`, `host-qwen.md` render the host's verb prefix; `./dev.py` appears only in `README.md` and `how-clutch-works.md` §2.2. Superseded by `dev-py-dev-tasks-only`. |
+| 9 | ~~`unit-criteria-disk-snag`~~ | roadmap (`box-000441`, `box-000442`) | feature | P1 | | | **Merged** (`tickets/unit-criteria-disk-snag/`). `requisition_review.md` snags a `tests/unit` criterion that needs disk, process, or network, with a road naming an in-fence seam; `diagnose.md` keeps floored lines reachable from `tests/unit`. |
+| 10 | ~~`fence-closure-registries`~~ | roadmap (`box-000324`) | feature | P1 | | | **Merged** (`tickets/fence-closure-registries/`). `requisition_review.md:24` traces in-code registries and tables (menu keys, closed sets, adapter maps), not only symbol closure. |
+| 11 | ~~`watch-surface-tier-truth`~~ | roadmap | bug | P1 | | | **Merged** (`tickets/watch-surface-tier-truth/`). `watch` shows the tier the code will use per surface (`observe.py:229-231`), or the code honors spec `tier:` for every surface; one truth. |
+| 12 | ~~`redaction-harvest-seam`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/redaction-harvest-seam/`). `harvest.json` passes the redactor; `redact.py` checklist matches the writers. |
+| 13 | ~~`contention-authoring-rules`~~ | parallel plan 1 | chore | P1 | | every feature ticket below | **Merged** (`tickets/contention-authoring-rules/`). Section 7 of the parallel plan: new tests in new files, new fixtures in new modules, fence only what is forced, the do-not-grow list in `CLAUDE.md` and `AGENTS.md`. |
 | 14 | `fs-seam-mkdir-remove` | roadmap | chore | P2 | | `evidence-store` | `FileSystem` gains `mkdir` and `remove`; `enginelog`, `journal`, `stages`, `driver`, `scheduler.write_queue` use the seam. |
 | 15 | `active-slot-single-owner` | roadmap | chore | P2 | | `serve-parallel-dispatch` | `DaemonAdmission` owns the running set; `Scheduler._slot`, `TicketWriter.active`, `restart.mutating` read it; `serve.upgrade_idle` reads one thing. |
 | 16 | `merge-admission-single-owner` | roadmap | chore | P2 | | `merge-model-resolve` | `merge.merge` becomes a thin call into `MergeQueue._admit` with the ladder, safety tier, receipt, tree check, and red streak as parameters; `gather_safety_evidence` runs once; one `refused` constructor; `served_review` stops swallowing. |
@@ -326,24 +326,24 @@ Every proposed ticket, grouped by release and in priority order within a release
 | 33 | `evidence-normalize-gemini` | evidence plan | feature | P3 | `evidence-store`, `gemini-provider` | | Gemini normalizer and fixture. |
 | 34 | `upstream-issue-verb` | upstream plan 1 | feature | P2 | | | `clutch issue` with five critical classes (decision 10), the CORE_TEMPLATE sentence (about 264 bytes), docs; after its hand test. |
 
-### 0.2.0, last group: the roadmap driver
+### 0.3.0, last group: the roadmap driver
 
 Runs after the rows above; it is what runs every later release (`docs/roadmap-driver-plan.md`).
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 88 | `superseded-settles` | driver plan 1 | bug | P1 | | `supervisor-rework` | A split's parent enters the settled state `superseded` and leaves the Reject queue; `reject` refuses it as settled. Evidence: the three historical parents rejected by hand. |
-| 89 | `supervisor-rework` | driver plan 2 | feature | P1 | | | Rework-update on `premise_failed` and spent-cap terminals with the diagnosis lessons; allowed-edit gate (no goal or scope change); `caps.supervise`; supervisor keep that starts a new lineage; `rework.md` lifted on escalation. |
-| 90 | `roadmap-author` | driver plan 3 | feature | P1 | | | `roadmap_row` box message and policy row; `clutch/roadmap.py` table parser; `roadmap author --ahead N`; Author data blocks for the row and its plan; row linking and striking; hand-test refusal. |
+| 88 | ~~`superseded-settles`~~ | driver plan 1 | bug | P1 | | | **Struck: premise false.** A published Rework split never reaches the Reject queue: `clutch/runner.py::failure_terminal` retires the parent through `reject_ticket` in the same second, so a `superseded` state would release nothing (box-000471, box-000472). The split parents a person killed by hand (`specs-in-package`, `vscode-help`, `vscode-help-registry`) were Rework splits that did not publish; they carry no `supersedes` signal (box-000473). |
+| 89 | `supervisor-rework` | driver plan 2 | feature | P1 | | | **Authored** (`tickets/rework-supervise-gate/`, `tickets/supervise-cap-lineage/`). Rework-update on `premise_failed` and spent-cap terminals with the diagnosis lessons; allowed-edit gate (no goal or scope change); `caps.supervise`; supervisor keep that starts a new lineage; `rework.md` lifted on escalation. |
+| 90 | `roadmap-author` | driver plan 3 | feature | P1 | | | **Authored** (`tickets/roadmap-row-message/`, `tickets/roadmap-table-parser/`, `tickets/roadmap-author/`). `roadmap_row` box message and policy row; `clutch/roadmap.py` table parser; `roadmap author --ahead N`; Author data blocks for the row and its plan; row linking and striking; hand-test refusal. |
 | 91 | `release-gates-as-commands` | driver plan 4 | chore | P2 | | | Fenced `gate` blocks per release in this document (`operator` where no command exists); `clutch roadmap status`. |
-| 92 | `release-publish` | driver plan 5 | feature | P2 | `release-verb` | | `clutch release`, `clutch publish` (PyPI, token env name in config), `./dev.py vscode-publish` (Marketplace); publish only on `release.publish: true`, else a park for `confirm`. |
-| 93 | `driver-loop` | driver plan 6 | feature | P1 | rows 88-92 | | The idle-point sequence in serve and drain (supervise, author ahead, release when the gate passes, digest); the rewritten `drain-loop` prompt; how-clutch-works "Roadmap driver". |
+| 92 | `release-publish` | driver plan 5 | feature | P2 | `release-verb` | | **Authored** (`tickets/release-publish/`). Publishing never bumps the version: `clutch publish` (PyPI, token env name in config) uploads the `pyproject.toml` version only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480; `./dev.py publish` bumps the patch first today, so a tagged release never reaches PyPI). `clutch release` (merged in `release-verb`) gains the `release` journal signal. `./dev.py vscode-publish` (Marketplace); publish only on `release.publish: true`, else a park for `confirm`. |
+| 93 | `driver-loop` | driver plan 6 | feature | P1 | rows 89-92 | | The idle-point sequence in serve and drain (supervise, author ahead, release when the gate passes, digest); the rewritten `drain-loop` prompt; how-clutch-works "Roadmap driver". |
 
-### 0.3.0 (conditional)
+### 0.4.0 (conditional)
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
-| 35 | (re-measure) | journal plan | evidence | | | | Profile a drain start and `status` at the 0.2.0 tag; the window runs only if journal reads still dominate. |
+| 35 | (re-measure) | journal plan | evidence | | | | Profile a drain start and `status` at the end of 0.3.0; the window runs only if journal reads still dominate. |
 | 36 | `journal-query-layer` | journal plan (b) | feature | P2 | `release-verb` | | DuckDB connection, bulk load, incremental insert, `duckdb` dependency. |
 | 37 | `journal-ports-run-path` | journal plan (c) | chore | P2 | `journal-query-layer` | | `runner`, `stages`, `merge`, `mergequeue`, `rework`, `effects`, `driver`. |
 | 38 | `journal-ports-loop` | journal plan (c) | chore | P2 | `journal-query-layer` | | `drain`, `serve`, `daemon`, `scheduler`, `timers`, `watcher`, `control`, `checkpoint`, `reconcile`. |
@@ -351,7 +351,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 40 | `journal-ports-cli-authoring` | journal plan (c) | chore | P2 | `journal-query-layer` | | `__main__`, `author`, `tickets`, `observe` (its raw reader goes). |
 | 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
 
-### 0.4.0
+### 0.5.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
@@ -371,7 +371,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 55 | `visual-review-baseline` | gemini plan B7 | feature | P2 | `visual-review-surface` | | `eval/visual/` fixtures, `./dev.py visual-baseline`, the `visual_baseline` GO gate. |
 | (56) | `api-provider-client` | gemini plan (conditional) | feature | P2 | `gemini-provider` | `image-candidates-select` | Only if A0 fact 7 shows the CLI cannot generate images headlessly: the deferred `kind: api` client, scoped to image models. Row number is provisional. |
 
-### 0.5.0
+### 0.6.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
@@ -394,7 +394,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 73 | `context-suggest` | annotations plan 5 | feature | P2 | `index-build` | | `clutch context suggest <stem>` and the Author data block. |
 | 74 | `index-consumers` | annotations plan 6 | feature | P3 | `context-suggest` | | `index.implement_hint`, `doc draft --from <topic>`, the training export join. |
 
-### 0.6.0
+### 0.7.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
@@ -409,7 +409,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 83 | `doc-render` | document plan 9 | feature | P2 | `doc-facet-registry` | | Markdown to HTML with themes; PDF through host argv; `documents` config. |
 | 84 | `doc-draft` | document plan 10 | feature | P2 | `doc-facet-registry`, `docset-manifest`, `context-suggest` | | Headless draft (with `--from <topic>` through the index) and the `doc-plan` ask prompt. |
 | 85 | `doc-extension-menu` | document plan 11 | feature | P3 | `doc-fold-apply`, `doc-draft` | | Snapshot fields and menu items. |
-| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten `docs/*.md` plans into doc sets and run `scope` and `buildability` on each; 0.6.0's ship gate. |
+| 86 | `plans-into-docsets` | document plan (decision 14) | chore | P3 | `doc-facet-registry`, `docset-manifest` | | Move the ten `docs/*.md` plans into doc sets and run `scope` and `buildability` on each; 0.7.0's ship gate. |
 | 87 | `implement-best-of-n` | panels plan 5 | feature | P3 | `panel-combiners`, `serve-parallel-dispatch` | | Per-member worktrees, Check on every candidate, selection by Check pass then fewest soft findings then smallest diff, retirement of the rest. |
 
 ### Operator actions (not tickets)
