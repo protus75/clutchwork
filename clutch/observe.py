@@ -614,6 +614,29 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
     return result, set(pending), {s for s, new in pending.items() if new}
 
 
+def extension_fields(root: Path) -> dict:
+    return {
+        "root": str(root.resolve()),
+        "commands": {
+            "review": ["review"],
+            "lint": ["lint"],
+            "run": ["run"],
+            "triage": ["triage"],
+            "dismiss": ["dismiss"],
+            "serve": ["serve"],
+            "stop": ["stop"],
+            "order": ["order"],
+            "stats": ["stats", "--tree"],
+            "askDiagnose": ["prompt", "diagnose"],
+            "askReview": ["prompt", "review"],
+            "askDrafts": ["prompt", "drafts"],
+            "askDrainLoop": ["prompt", "drain-loop"],
+            "askBox": ["prompt", "box"],
+        },
+        "orderFlags": {"priority": "--priority", "runsBefore": "--runs-before"},
+    }
+
+
 def snapshot(ctx) -> dict:
     state = ctx.state
     help, help_pick_items = help_payload()
@@ -856,6 +879,7 @@ def snapshot(ctx) -> dict:
     tooltip = f"{counts['running']} running, {counts['queued']} queued" if alive else f"engine stopped: {counts['blocked']} blocked, {counts['queued']} queued"
     badge = {"value": total, "tooltip": tooltip} if total else None
     return {
+        **extension_fields(ctx.root),
         "help": help,
         "helpPick": help_pick_items,
         "headerHelp": {**{section: f"section.{section}" for section in counts}, "engine": "lock.engine", "commit": "lock.commit"},

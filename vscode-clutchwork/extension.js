@@ -5,8 +5,11 @@ const fs = require('fs');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 
+let known;
+
 // The first workspace folder containing tickets.
 function clutchRoot() {
+	if (known) return known;
 	return (vscode.workspace.workspaceFolders ?? [])
 		.map(f => f.uri.fsPath)
 		.find(p => fs.existsSync(path.join(p, 'tickets')) && fs.statSync(path.join(p, 'tickets')).isDirectory());
@@ -49,13 +52,13 @@ async function orderTicket(ctx, snapshot, field) {
 	if (field === 'priority') {
 		const choice = await vscode.window.showQuickPick(row.priorityChoices, { placeHolder: 'Set priority' });
 		if (!choice) return;
-		args = ['--priority', choice.label];
+		args = [snapshot.snap.orderFlags.priority, choice.label];
 	} else {
 		const selected = await vscode.window.showQuickPick(row.runsBeforeChoices, { canPickMany: true, placeHolder: 'Run before' });
 		if (!selected) return;
-		args = ['--runs-before', ...selected.map(item => item.label)];
+		args = [snapshot.snap.orderFlags.runsBefore, ...selected.map(item => item.label)];
 	}
-	runData(root, ['order', row.stem, ...args], {}, (err, stdout, stderr) => {
+	runData(root, [...snapshot.snap.commands.order, row.stem, ...args], {}, (err, stdout, stderr) => {
 		if (err) vscode.window.showErrorMessage((stderr || err.message).trim());
 		else snapshot.refresh();
 	});
@@ -69,11 +72,11 @@ function openClaude(root, args) {
 	});
 }
 
-function askClaude(ctx, task) {
+function askClaude(ctx, args) {
 	const root = clutchRoot();
 	const stem = ctx?.clutchStem;
 	if (!root || !stem) return;
-	openClaude(root, ['prompt', task, stem]);
+	openClaude(root, [...args, stem]);
 }
 
 // One snapshot run feeds every view and the Activity Bar badge.
@@ -114,7 +117,10 @@ class Snapshot {
 	publish(snap, error) {
 		this.snap = snap;
 		this.error = error;
-		if (snap) vscode.commands.executeCommand('setContext', 'clutch.engineRunning', snap.engine);
+		if (snap) {
+			known = snap.root;
+			vscode.commands.executeCommand('setContext', 'clutch.engineRunning', snap.engine);
+		}
 		this.listeners.forEach(f => f());
 	}
 }
@@ -277,6 +283,7 @@ class StepsTree {
 
 class StatsTree {
 	constructor(snapshot) {
+		this.snapshot = snapshot;
 		this.rows = [];
 		this.running = false;
 		this.again = false;
@@ -286,7 +293,7 @@ class StatsTree {
 	}
 
 	refresh() {
-		if (!this.view?.visible) return;
+		if (!this.view?.visible || !this.snapshot.snap) return;
 		if (this.running) {
 			this.again = true;
 			return;
@@ -299,7 +306,7 @@ class StatsTree {
 		}
 		this.running = true;
 		const window = vscode.workspace.getConfiguration('clutch', vscode.Uri.file(root)).get('statsWindow');
-		runData(root, ['stats', '--tree', '--window', window], { timeout: 30000 }, (err, stdout, stderr) => {
+		runData(root, [...this.snapshot.snap.commands.stats, '--window', window], { timeout: 30000 }, (err, stdout, stderr) => {
 			this.running = false;
 			this.rows = err ? [{ label: (stderr || err.message).trim(), description: '', children: [] }] : JSON.parse(stdout);
 			this.changed.fire();
@@ -341,14 +348,14 @@ function activate(context) {
 		vscode.window.registerWebviewViewProvider('clutch.box', box),
 		vscode.commands.registerCommand('clutch.box.open', ctx => openTicket(ctx.clutchPath)),
 		vscode.commands.registerCommand('clutch.box.link', ctx => openTicket(ctx.clutchLink)),
-		vscode.commands.registerCommand('clutch.box.triage', ctx => devCommand('triage', ...ctx.clutchIds)),
-		vscode.commands.registerCommand('clutch.box.dismiss', ctx => devCommand('dismiss', ...ctx.clutchIds)),
+		vscode.commands.registerCommand('clutch.box.triage', ctx => devCommand(...snapshot.snap.commands.triage, ...ctx.clutchIds)),
+		vscode.commands.registerCommand('clutch.box.dismiss', ctx => devCommand(...snapshot.snap.commands.dismiss, ...ctx.clutchIds)),
 		vscode.commands.registerCommand('clutch.box.discuss', ctx => {
 			const root = clutchRoot();
 			if (!root) return;
-			openClaude(root, ['prompt', 'box', ...ctx.clutchIds]);
+			openClaude(root, [...snapshot.snap.commands.askBox, ...ctx.clutchIds]);
 		}),
-		vscode.commands.registerCommand('clutch.bulkTriage', () => devCommand('triage')),
+		vscode.commands.registerCommand('clutch.bulkTriage', () => devCommand(...snapshot.snap.commands.triage)),
 		vscode.commands.registerCommand('clutch.refresh', () => { snapshot.refresh(); stats.refresh(); }),
 		vscode.commands.registerCommand('clutch.openTicket', openTicket),
 		vscode.commands.registerCommand('clutch.help', async () => {
@@ -368,31 +375,31 @@ function activate(context) {
 		vscode.commands.registerCommand('clutch.lifecycle', () => showLifecycle(context.extensionUri)),
 		vscode.commands.registerCommand('clutch.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:chunkydragon.vscode-clutchwork')),
 		vscode.commands.registerCommand('clutch.ticket.open', ctx => openTicket(`tickets/${ctx.clutchStem}/ticket.md`)),
-		vscode.commands.registerCommand('clutch.ticket.review', ctx => devCommand('review', ctx.clutchStem)),
-		vscode.commands.registerCommand('clutch.ticket.lint', ctx => devCommand('lint', ctx.clutchStem)),
+		vscode.commands.registerCommand('clutch.ticket.review', ctx => devCommand(...snapshot.snap.commands.review, ctx.clutchStem)),
+		vscode.commands.registerCommand('clutch.ticket.lint', ctx => devCommand(...snapshot.snap.commands.lint, ctx.clutchStem)),
 		vscode.commands.registerCommand('clutch.ticket.priority', ctx => orderTicket(ctx, snapshot, 'priority')),
 		vscode.commands.registerCommand('clutch.ticket.runsBefore', ctx => orderTicket(ctx, snapshot, 'runsBefore')),
-		vscode.commands.registerCommand('clutch.ticket.run', ctx => devCommand('run', ctx.clutchStem)),
+		vscode.commands.registerCommand('clutch.ticket.run', ctx => devCommand(...snapshot.snap.commands.run, ctx.clutchStem)),
 		vscode.commands.registerCommand('clutch.ticket.confirm', ctx => devCommand(...snapshot.snap.verdictCommands.confirm, ctx.clutchStem)),
 		vscode.commands.registerCommand('clutch.ticket.reject', ctx => devCommand(...snapshot.snap.verdictCommands.reject, ctx.clutchStem)),
-		vscode.commands.registerCommand('clutch.ticket.askDiagnose', ctx => askClaude(ctx, 'diagnose')),
-		vscode.commands.registerCommand('clutch.ticket.askReview', ctx => askClaude(ctx, 'review')),
+		vscode.commands.registerCommand('clutch.ticket.askDiagnose', ctx => askClaude(ctx, snapshot.snap.commands.askDiagnose)),
+		vscode.commands.registerCommand('clutch.ticket.askReview', ctx => askClaude(ctx, snapshot.snap.commands.askReview)),
 		vscode.commands.registerCommand('clutch.ticket.askDrafts', () => {
 			const root = clutchRoot();
 			if (!root) return;
-			openClaude(root, ['prompt', 'drafts']);
+			openClaude(root, snapshot.snap.commands.askDrafts);
 		}),
 		vscode.commands.registerCommand('clutch.askDrainLoop', () => {
 			const root = clutchRoot();
-			if (root) openClaude(root, ['prompt', 'drain-loop']);
+			if (root) openClaude(root, snapshot.snap.commands.askDrainLoop);
 		}),
 		vscode.commands.registerCommand('clutch.engine', async () => {
 			const choice = await vscode.window.showQuickPick(snapshot.snap?.engineVerbs ?? []);
 			if (choice) devCommand(...choice.argv);
 		}),
 		vscode.commands.registerCommand('clutch.playDrain', () => devCommand(...snapshot.snap.drainCommand)),
-		vscode.commands.registerCommand('clutch.playServe', () => devCommand('serve')),
-		vscode.commands.registerCommand('clutch.stopRunning', () => devCommand('stop')),
+		vscode.commands.registerCommand('clutch.playServe', () => devCommand(...snapshot.snap.commands.serve)),
+		vscode.commands.registerCommand('clutch.stopRunning', () => devCommand(...snapshot.snap.commands.stop)),
 		vscode.commands.registerCommand('clutch.openConfig', () => {
 			if (snapshot.snap) vscode.window.showTextDocument(vscode.Uri.file(snapshot.snap.configPath), { preview: true });
 		}),

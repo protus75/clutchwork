@@ -20,8 +20,8 @@ const vscode = {
 		createTreeView: () => ({ ...disposable, onDidChangeVisibility() {} }),
 		registerWebviewViewProvider: () => disposable,
 	},
-	commands: { registerCommand: (name, handler) => { handlers[name] = handler; return disposable; } },
-	EventEmitter: class { constructor() { this.event = () => {}; } },
+	commands: { executeCommand() {}, registerCommand: (name, handler) => { handlers[name] = handler; return disposable; } },
+	EventEmitter: class { constructor() { this.event = () => {}; } fire() {} },
 	RelativePattern: class {},
 	Task: class { constructor(definition) { definitions.push(definition); } },
 	ProcessExecution: class {},
@@ -30,7 +30,9 @@ const vscode = {
 const load = Module._load;
 Module._load = function (request, parent, isMain) {
 	if (request === 'vscode') return vscode;
-	if (request === 'child_process') return { execFile() {} };
+	if (request === 'child_process') return { execFile(binary, args, options, callback) {
+		if (args[0] === 'snapshot') callback(null, JSON.stringify({ root, commands: { review: ['review'], lint: ['lint'] }, orderFlags: {} }), '');
+	} };
 	return load.call(this, request, parent, isMain);
 };
 require('../vscode-clutchwork/extension.js').activate({ extensionUri: {}, subscriptions: [] });
