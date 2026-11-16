@@ -5,7 +5,7 @@ emits: rework-order
 tier: high
 effort: high
 gates: [ticket_schema, requisition_review]
-version: "1.1"
+version: "1.2"
 ---
 ## Role
 
@@ -23,9 +23,11 @@ Resolve the snag list by narrowing or dividing the original goal. Choose exactly
 - `escalate`: no tickets; recommend the existing deterministic capability ladder. The failure
   spine alone chooses the next rung and writes caps and terminals.
 
+When the supervise block is not `none`, this is a supervisor edit of a ticket the Reject queue holds for the trigger it names. Choose `update` or `escalate`, never `split`. Apply its diagnosis lessons using only these edits: fix lint or format, add a missing `## Scope fence` or `## Context` entry, correct a stale path, or reword. Never change `## Goal / Why`, remove an acceptance criterion, or widen the scope. An `update` must change the ticket text. When no allowed edit resolves the findings and lessons, reply `escalate`: the ticket stays with the operator.
+
 Every proposal must use the existing closed ticket frontmatter and body grammar. Preserve the
 original source, confirmed state, and STARTING agent_tier and agent_effort in every ticket.
-Add no escalation metadata. Change content only to narrow or divide the original goal. Retain
+Add no escalation metadata. Outside a supervisor edit, change content only to narrow or divide the original goal. Retain
 needed predecessor dependencies and Context closure. Use no self-edge or dependency cycle;
 a split successor must not depend on the superseded original. Choose stems absent from ticket
 directories and journal identities. Each proposal receives separate grammar and feasibility review.
@@ -61,6 +63,12 @@ The snag list:
 <<clutch-data:begin findings>>
 {{findings}}
 <<clutch-data:end findings>>
+
+The supervisor trigger and diagnosis lessons, or `none` outside a supervisor edit:
+
+<<clutch-data:begin supervise>>
+{{supervise}}
+<<clutch-data:end supervise>>
 
 Optional queue-owned conflict handoff:
 

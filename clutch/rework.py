@@ -3,7 +3,7 @@
 import asyncio
 import json
 from collections.abc import Iterable, Mapping
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -20,7 +20,7 @@ from clutch.requisition import review_ticket
 from clutch.specs import RenderOverBound, load_spec, render
 from clutch.stages import StageContext
 from clutch.status import last_states
-from clutch.tickets import Ticket, TicketInvalid, stem_findings, ticket_path, validate_ticket
+from clutch.tickets import Ticket, TicketInvalid, _criteria, _sections, split_frontmatter, stem_findings, ticket_path, validate_ticket
 
 REWORK_ORDER = "rework_order"
 SUPERSEDES = "supersedes"
@@ -66,6 +66,37 @@ def _finding(message: str, road: str, *, path: str | None = None) -> Finding:
     return Finding(code="ticket_schema", path=path, message=message, paved_road=road)
 
 
+@dataclass(frozen=True)
+class Supervise:
+    trigger: str
+    lessons: tuple[str, ...]
+
+
+def supervise_findings(stem: str, original: str, reply: ReworkReply) -> list[Finding]:
+    path = ticket_path(stem)
+    road = f"escalate to the operator: the stem stays in the Reject queue; edit {path}, then `clutch confirm {stem}`, or retire it with `clutch reject {stem}`"
+    messages = []
+    if reply.action == "split":
+        messages.append("a supervisor edit cannot split the ticket")
+    elif reply.action == "update":
+        proposal = reply.tickets[0].ticket
+
+        def sections(text: str) -> dict[str, str]:
+            parts = split_frontmatter(text)
+            return _sections(parts[1], path)[0] if parts else {}
+
+        old, new = sections(original), sections(proposal)
+        if proposal == original:
+            messages.append("the proposal does not change the ticket text")
+        if old.get("Goal / Why", "").strip() != new.get("Goal / Why", "").strip():
+            messages.append("the proposal changes `## Goal / Why`")
+        old_count = len(_criteria(old.get("Acceptance criteria", "")))
+        new_count = len(_criteria(new.get("Acceptance criteria", "")))
+        if new_count < old_count:
+            messages.append(f"the proposal drops acceptance criteria ({new_count} of {old_count} remain)")
+    return [Finding(code="supervise_edit", path=path, message=message, paved_road=road) for message in messages]
+
+
 def review_prior(action, original_stem, original_ticket, snag_list, retry_findings, proposals, current_stem) -> str:
     return json.dumps(
         {
@@ -92,6 +123,7 @@ async def rework(
     effort: AgentEffort,
     stuck_budget: float,
     handoff: ConflictHandoff | None = None,
+    supervise: Supervise | None = None,
 ) -> StageResult:
     """Call only after admission unwinds; return proposals, never publish or retire tickets."""
     if handoff is not None and handoff.stem != ticket.stem:
@@ -106,6 +138,7 @@ async def rework(
     review_seq = max((int(e.key.rsplit("/", 1)[-1]) for e in history if e.key is not None and e.key.startswith(prefix)), default=0)
 
     retry_findings: list[Finding] = []
+    last_reply: ReworkReply | None = None
 
     def render_attempt(_: object, retry: list[Finding]) -> str:
         nonlocal retry_findings
@@ -116,13 +149,17 @@ async def rework(
                 "ticket": f"Original stem: {ticket.stem}\n\n{text}",
                 "findings": json.dumps([f.model_dump() for f in findings], sort_keys=True),
                 "conflict": handoff.model_dump_json() if handoff else "none",
+                "supervise": json.dumps({"trigger": supervise.trigger, "lessons": list(supervise.lessons)}, sort_keys=True) if supervise else "none",
                 "retry_findings": json.dumps([f.model_dump() for f in retry], sort_keys=True),
             },
         )
 
     async def review(artifact: BaseModel, call_seq: int) -> GateReport:
-        nonlocal review_seq
+        nonlocal review_seq, last_reply
         assert isinstance(artifact, ReworkReply)
+        last_reply = artifact
+        if supervise is not None and (refusals := supervise_findings(ticket.stem, text, artifact)):
+            return GateReport(code="ticket_schema", verdict="fail", findings=refusals)
         errors = []
         for proposal in artifact.tickets:
             errors.extend(stem_findings(proposal.stem))
@@ -206,7 +243,7 @@ async def rework(
 
     try:
         result = await ctx.driver.run(
-            LlmStage(surface="rework", emits=ReworkReply, gates=[], render=render_attempt, review=review, terminal_findings=frozenset({"requisition_rma"})),
+            LlmStage(surface="rework", emits=ReworkReply, gates=[], render=render_attempt, review=review, terminal_findings=frozenset({"requisition_rma", "supervise_edit"})),
             ticket,
             ticket=ticket.stem,
             attempt=attempt,
@@ -220,7 +257,7 @@ async def rework(
     except RenderOverBound as exc:
         return StageResult(outcome="premise_failed", artifact=None, findings=[exc.finding], cost=Cost())
     if result.outcome != "ok":
-        return result
+        return replace(result, artifact=last_reply) if supervise is not None and result.outcome == "gate_failed" else result
     reply = result.artifact
     assert isinstance(reply, ReworkReply)
     order = ReworkOrder(**reply.model_dump(), stem=ticket.stem, attempt=attempt, produced_by_spec_version=int(spec.meta.version.split(".")[0]), produced_at_sha=head)

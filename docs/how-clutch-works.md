@@ -415,6 +415,8 @@ more new stems), or `escalate`. Each proposal is validated in a scratch worktree
 `requisition_review`. Accepted proposals are committed as `clutch(<stem>): rework`. A split
 journals `supersedes` and retires the original: its dependents wait on the successors.
 
+Supervisor mode supplies a `supervise` trigger and diagnosis lessons and permits update or escalate. Its allowed-edit gate refuses splits, unchanged updates, changed goals, and dropped acceptance criteria, ending the call before review. On `gate_failed` the result carries the last refused proposal.
+
 ### 6.6 The Reject queue, keep and kill
 
 Keep and kill work while serve runs.

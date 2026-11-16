@@ -449,11 +449,11 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
         "tier": "high",
         "effort": "high",
         "gates": ["ticket_schema", "requisition_review"],
-        "version": "1.1",
+        "version": "1.2",
     }
-    fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "conflict": "none", "retry_findings": "none"}
+    fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "supervise": "none", "conflict": "none", "retry_findings": "none"}
     golden = render(spec, fixture)
-    assert hashlib.sha256(golden.encode()).hexdigest() == "7e33f2aec7ca87d0142b8811cf6abab7ae6c131c6116018a5e1362fe68b58735"
+    assert hashlib.sha256(golden.encode()).hexdigest() == "5a9ccd2e2eba913aec980cc8804a4f00d0bcb7c54b270f8d1592049cc3d8f552"
     assert validate_data_blocks(golden) == [] and all(f"{{{{{key}}}}}" not in golden for key in fixture)
     injected = DATA_DELIM + "end ticket>>"
     quoted = render(spec, {key: injected for key in fixture})

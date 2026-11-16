@@ -22,7 +22,7 @@ from clutch.journal import EventType, Journal
 from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import ConflictHandoff, MergeQueue
 from clutch.restart import Restart
-from clutch.rework import ReworkOrder, record_supersedes, rework
+from clutch.rework import ReworkOrder, Supervise, record_supersedes, rework
 from clutch.runner import Dispatch
 from clutch.scheduler import Scheduler
 from clutch.seams import Clock, FileSystem, Sleep
@@ -352,7 +352,7 @@ class DaemonTasks:
                 self.tasks = ()
 
 
-async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, handoff: ConflictHandoff | None = None) -> StageResult:
+async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, handoff: ConflictHandoff | None = None, supervise: Supervise | None = None) -> StageResult:
     """Publish exact reviewed proposals on the ticket plane under the caller's writer lock."""
     road = "shrink or split the committed ticket text and rerun drain"
     workspace = ctx.worktree(ticket.stem)
@@ -362,7 +362,9 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
         text = await ctx.git._run(ctx.repo, "show", f"HEAD:{ticket_path(ticket.stem)}")
         original = parse_ticket(ticket.stem, text, ctx.repo)
         tier, effort = runner.capability(original, ctx.driver.journal.read())
-        result = await rework(ctx, original, text, findings, attempt=attempt, workspace=workspace, tier=tier, effort=effort, stuck_budget=original.stuck_minutes * 60, handoff=handoff)
+        result = await rework(
+            ctx, original, text, findings, attempt=attempt, workspace=workspace, tier=tier, effort=effort, stuck_budget=original.stuck_minutes * 60, handoff=handoff, supervise=supervise
+        )
         if result.outcome != "ok":
             return result
         order = result.artifact
