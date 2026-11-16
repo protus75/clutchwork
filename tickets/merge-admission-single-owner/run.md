@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The focused verification passed, but the full candidate suite failed in the inline hostfiles test; the full base suite passed, and the candidate failure reproduced in isolation. The unit coverage gate passed.
+Kept the inline and serve differences as explicit admission parameters; the final verification commands and all configured hard checks passed.
 
 ## Dead ends
 
-Passing the inline parameter to _admit exposes an existing test wrapper that accepts only the old signature.
+none
 
 ## Second problems filed
 
