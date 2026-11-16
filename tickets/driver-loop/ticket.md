@@ -166,7 +166,7 @@ Scope out:
    - its `author_messages(["box-1"])` calls `_preflighted_llm(checkout, checkout.control.providers)` and then `triage_pass(checkout, llm, frozenset({"box-1"}))`.
 
    `cli._parser().parse_args(["roadmap", "author"]).ahead == roadmap.AHEAD == 2`. Ruled out: a second LLM composition, and an `--ahead` default that drifts from the driver's.
-5. `tests/unit/test_driver_hooks.py::test_serve_driver_pending_and_run` uses `object.__new__(serve.Serve)`, as `tests/unit/test_phase_events.py` does. It asserts:
+5. `tests/unit/test_driver_hooks.py::test_serve_driver_pending_and_run` uses `object.__new__(serve.Serve)`, as `tests/unit/test_phase_events.py` does. It replaces `s.mutations` on the instance with a fake `asynccontextmanager` that only yields, and supplies `s.control` (with `load_config` and `projection`), `s.checkout`, `s.log`, `s.stopping`, and `s.driver`, so it does not depend on how `Serve.mutations` is implemented (the confirmed `active-slot-single-owner` moves it onto `DaemonAdmission`) and never names `mutating`. It asserts:
    - `driver_pending()` is false without `docs/roadmap.md`; with it, true while `driven` differs from `settles(...)` and false once they match;
    - `run_driver()` calls the fake `driver` once with a checkout whose `config` is the `load_config` snapshot and with `s.log`, sets `driven` to the settle count before the call, and makes no call when `stopping` is true.
 
