@@ -5,7 +5,7 @@ emits: {approve: requisition-approval, snag: requisition-snag, rma: requisition-
 tier: high
 effort: high
 gates: [requisition_review]
-version: "3.15"
+version: "3.16"
 ---
 ## Role
 
@@ -30,6 +30,7 @@ ticket can be implemented as written. Reply `snag` for a ticket defect its autho
 - Account for every listed dependent exactly once in `dependents`, using its test path. Mark it `fenced` only if it is under the fence, or `unaffected` with a reason citing the assertion or input read (`file:line`) and why the change leaves it true. A dependent the change breaks outside the fence is a `snag` finding naming it.
 - When Scope in adds statements or branches to a file listed with a floor above 0 under `[coverage.files]` in the repo's `test-gate.toml`, the fenced `tests/unit` file's named tests must run the new lines in each floored file.
 - When a criterion or `## Verification` line names a `tests/unit/` file whose test the ticket adds or newly requires to read a named repo file (a spec, doc, `package.json`, or `importlib.metadata` data), raise a `snag` finding: place that test under `tests/integration/` and fence that file. A test reading only `tmp_path` is not a hit. A test reaching a repo file only through an injected seam or fake is not a hit. Updating a pinned value in an existing unit test that already reads the file is not a hit.
+- When a criterion, a test Scope in adds, or a `## Verification` line makes a `tests/unit/` test write disk outside `tmp_path`, start a process, or open a network connection, raise a `snag` finding: place that test under `tests/integration/` and fence that file. When this snag or the repo-file snag above hits a test that must run new lines in a file with a floor above 0 under `[coverage.files]`, its paved road also names an in-fence seam, such as an injected reader or a parameter carrying the bytes, through which a fenced `tests/unit` test runs those lines with a fake, and moves only the real disk, process, or network checks to `tests/integration/`. A test using only in-memory buffers or fakes is not a hit. No seam is required for an I/O site where Scope in adds no line.
 
 Report every finding in this one reply; never stop at the first.
 
