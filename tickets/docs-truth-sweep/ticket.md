@@ -29,7 +29,7 @@ The maintained documents say things the code does not do. `docs/how-clutch-works
 After this change every sentence listed in Scope in states what the code does, and no code changes.
 
 ## Scope in / Scope out
-Scope in. Each item names the section, the false claim, and the code that owns the truth. Change only the sentence or table row named; keep every heading's text exactly as it is, because `clutch/help.py` and the `vscode-clutchwork/package.json` setting descriptions link to these headings and `tests/integration/test_help.py` resolves the links.
+Scope in. Each item names the section, the false claim, and the code that owns the truth. Change only the sentence or table row named; keep every heading's text exactly as it is, except the two `host-contract.md` retitles below, because `clutch/help.py` and the `vscode-clutchwork/package.json` setting descriptions link to these headings and `tests/integration/test_help.py` resolves the links.
 
 `docs/how-clutch-works.md`:
 1. Section 2.1, `probe` row: add that it exits 1 when any probe fails and 2 for a provider name that is not declared (`clutch/__main__.py::main`, the `probe` branch). The row must contain the words `exits 1 when any probe fails`.
@@ -37,7 +37,7 @@ Scope in. Each item names the section, the false claim, and the code that owns t
 3. Section 2.1, `reject` row: the signature becomes `reject <stem> [--yes|--extension]`, and the text says `--yes` or `--extension` skips the prompt (`clutch/__main__.py::_verdict`).
 4. Section 2.2, the extension paragraphs: add one sentence naming `clutch.command`, the command and arguments the extension runs the engine with (default `.venv/bin/clutch`, resolved from the workspace folder; `vscode-clutchwork/package.json`).
 5. Section 3.1, the `state` bullet: replace `` `draft` (awaits `confirm`) `` with wording saying a `draft` is an Author-written ticket awaiting `confirm`, and that intake stamps a new hand-written ticket `confirmed` (`clutch/tickets.py` line 695, the intake stamp).
-6. Section 3.3: the lift skips symlinks without error and refuses only a file over 256 KB (`clutch/stages.py::_lift_decision` returns `"skip"` for a symlink). The words `refuses symlinks` leave the section.
+6. Section 3.3: the lift skips symlinks without error (`clutch/stages.py::_lift_decision` returns `"skip"` for a symlink); it still refuses a file over 256 KB. The words `refuses symlinks` leave the section, and no wording says the size limit is the lift's only refusal (`clutch/stages.py::lift_outbox` also refuses an invalid registered report through `_validate_reports`).
 7. Section 3.3 lift table: add a `harvest-rework` row, `attempts/<n>/harvest.json` written when Rework itself failed (`clutch/runner.py::drive`, the `kind="harvest-rework"` call).
 8. Section 3.3, "Other engine commits on `main`": add `clutch(decisions): <id>` (a triage decision record, `clutch/author.py`), `clutch: retro NNNNNN` (`clutch/retro.py::Retro.commit_report`) and `clutch(<stem>): undo refused rework` (`clutch/daemon.py::apply_rework`). Also say that Check's `clutch(<stem>): autofix` commit lands on the ticket branch, not on `main` (`clutch/stages.py::check_autofix`).
 9. Section 4.3, step 1: autofix runs only when Implement replied `ok` and `review.autofix` is nonempty (`clutch/stages.py::check`). The step must name `` `review.autofix` ``.
@@ -58,7 +58,7 @@ Scope in. Each item names the section, the false claim, and the code that owns t
 
 `clutch/docs/host-contract.md` (roadmap section 3.4 and the section 4.2 rows):
 - Opening paragraph: delete the sentence "Report intake and cutover below are pending Phase 6 consumer contracts, not an activation instruction." Keep "Foreign process-state adoption is excluded." because `tests/integration/test_host_contract.py` requires it.
-- Retitle `## Pending report-inbox contract` to `## Report-inbox contract` and `## Pending cutover contract` to `## Cutover contract`. The bodies stay. `clutch/triage.py::report_intake` and `clutch/inbox.py` ship the report consumer, and serve, drain and triage run it.
+- Retitle `## Pending report-inbox contract` to `## Report-inbox contract` and `## Pending cutover contract` to `## Cutover contract`. The bodies stay. Nothing links to the old anchors: no `#pending-report-inbox-contract` or `#pending-cutover-contract` appears in `clutch/help.py`, `vscode-clutchwork/package.json` or `docs/`. `clutch/triage.py::report_intake` and `clutch/inbox.py` ship the report consumer, and serve, drain and triage run it.
 - Delete the last line, "This document adds no report consumer, GO writer or runtime activation."
 - In the `host-example` block, the `trigger_map` comment becomes `# accepted and read by nothing`. Keep the value `{src/: [scope_fence]}` and keep a comment on that line, because `tests/integration/test_host_contract.py::test_host_contract_example_loads` asserts both. In the prose under "Checks and injectable seams", replace "Host surfaces use their own triggers; trigger_map concerns engine gates." with a sentence saying `review.trigger_map` is accepted and read by nothing (`clutch/config.py::Review` declares it, and no module reads it).
 - Ticket fields paragraph: replace "Put ordering in Depends on and priority, not extra metadata." with wording that says `Depends on` names only tickets whose merged code this ticket needs, and other ordering goes in priority and `## Runs before`, not extra metadata (`clutch/docs/host-authoring.md`, "What each section is for").
@@ -106,7 +106,7 @@ uv run python -c "import pathlib; r = pathlib.Path('README.md').read_text(); ass
 ## Definition of rejected
 The branch is rejected if it:
 - changes any file outside the fence, or any code, docstring or test;
-- renames or renumbers a heading in any of the five documents;
+- renames or renumbers a heading in any of the five documents, other than the two `host-contract.md` retitles Scope in names;
 - copies the members of `SIGNAL_NAMES`, or any other closed set, into a document instead of citing its owner;
 - rewrites a sentence that Scope in does not name, including the `clutch.testguard` sentence in section 2.2 and the `clutch confirm` and `clutch reject` paved roads in sections 6.7 and 7.1;
 - states a behavior that the cited code does not have;
