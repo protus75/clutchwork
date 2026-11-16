@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "7645fbef6f64638daa19319961434b8420f5f7b8",
+  "stem": "roadmap-accept",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The premise held. The candidate passed the full `./dev.py test` twice (3362 passed), and the one red test passed alone and on base. Redo the whole ticket from the merge base: acceptance.py, specs/acceptance.md, roadmap.append_row, the __main__ `roadmap accept` verb, the docs and the tests.",
+    "tests/integration/test_kill_cli_activation.py:808 `test_killed_run_is_terminal_or_restart_reconcilable[True]` asserts the worktree is removed after a kill that runner.bind/LiveDrain raises mid-transition. That is a timing race. The `roadmap accept` sub-parser and handler in clutch/__main__.py are",
+    "If that kill test fails again in the final full run, rerun the full `./dev.py test` once. If it passes, commit and record the single failure in the run record as a second problem. File it to the Suggestion Box as an intermittent kill-cleanup race, citing that it passed on base and alone. Do not",
+    "Reaching premise_failed needs a failure that is reproducible and caused by the diff, such as a test that fails on the candidate every time and passes on base. One intermittent failure in a test whose code path the fenced change never runs does not count, even if the test imports clutch/__main__.py."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    2
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
