@@ -5,7 +5,7 @@ emits: {approve: requisition-approval, snag: requisition-snag, rma: requisition-
 tier: high
 effort: high
 gates: [requisition_review]
-version: "3.16"
+version: "3.17"
 ---
 ## Role
 
@@ -21,7 +21,7 @@ ticket can be implemented as written. Reply `snag` for a ticket defect its autho
   changed in Scope in, including callers, importers, and aliases. Trace the recorded-value closure
   of every bumped constant or version. A hook into a seam owned outside the fence is a gap.
 - A path in `## Scope fence` or a `## Verification` command does not exist at the review commit and Scope in does not say the ticket creates it: report a `snag` finding naming the path; a path the ticket creates is not a hit, and a path that is only an output of a command is not a hit.
-- When Scope in adds, removes, renames, or moves a member of a set (CLI subcommand, file or directory path, spec name), grep `tests/` and `docs/` for files that list that set or hardcode the old path, and fence every hit that asserts against the changed set or hardcodes the moved path. A mere textual mention, a path built under `tmp_path`, or a historical form the ticket keeps valid is not a hit.
+- When Scope in adds, removes, renames, or moves a member of a set (CLI subcommand, file or directory path, spec name, or an entry of an in-code registry, table, mapping, or closed vocabulary such as a menu, verb, kind, or adapter table), grep `tests/` and `docs/` for files that list that set or hardcode the old path, and fence every hit that asserts against the changed set or hardcodes the moved path. For an in-code entry, also grep `tests/` for the collection's name, and fence every test that compares that collection or a filtered subset of it for exact equality or lists it in full, and every file holding a table that a test requires to match the collection entry for entry. A mere textual mention, a path built under `tmp_path`, or a historical form the ticket keeps valid is not a hit. A test that only imports or iterates the collection, or reads one entry the change leaves alone, is not a hit.
 - A criterion or a Definition-of-rejected clause contradicts merged behavior, or two criteria cannot both be satisfied.
 - Two statements anywhere in the ticket cannot both hold, for example a declared signature and a call to it, or a named fixture and the result a criterion expects from it.
 - A stated or cited invariant has no named test obligation.
