@@ -578,6 +578,8 @@ With `docs/roadmap.md` present, drain and serve run the driver at start and afte
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` (section 6.6), not here.
 
+The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch confirm --yes` or `clutch reject --yes`. It files cause fixes with `clutch suggest` and never authors a ticket itself. Between drains it triages or dismisses Suggestion Box messages pending when its tick starts, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
+
 ## 8. AI providers and prompts
 
 ### 8.1 Providers

@@ -16,7 +16,7 @@ def test_drain_loop_renders_state_dir_and_loop_prefix(tmp_path):
 def test_drain_loop_keeps_owner_verdict_limits(tmp_path):
     (tmp_path / "config.yaml").write_text(VALID)
     text = ask.render("drain-loop", "", load_config(None, cwd=tmp_path), tmp_path)
-    assert "Never run `confirm` or `reject`" in text  # Omitting owner verdict limits differs.
+    assert "only by executing a Recommendation" in text  # Omitting owner verdict limits differs.
     assert "ticket_changed" in text  # Omitting the running-ticket hold differs.
 
 
