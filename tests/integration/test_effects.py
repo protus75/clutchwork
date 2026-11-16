@@ -54,6 +54,12 @@ class FakeFS:
     def publish(self, path: Path, data: bytes) -> None:
         raise AssertionError("not used")
 
+    def read_bytes(self, path: Path) -> bytes:
+        raise AssertionError("not used")
+
+    def size(self, path: Path) -> int:
+        raise AssertionError("not used")
+
 
 class Crash(BaseException):
     """Stands in for the process dying at a chosen point."""

@@ -223,6 +223,10 @@ class FileSystem(Protocol):
 
     def replace(self, src: Path, dst: Path) -> None: ...
 
+    def read_bytes(self, path: Path) -> bytes: ...
+
+    def size(self, path: Path) -> int: ...
+
 
 class LocalFileSystem:
     def mkdir(self, path: Path) -> None:
@@ -275,3 +279,9 @@ class LocalFileSystem:
 
     def replace(self, src: Path, dst: Path) -> None:
         os.replace(src, dst)
+
+    def read_bytes(self, path: Path) -> bytes:
+        return path.read_bytes()
+
+    def size(self, path: Path) -> int:
+        return path.stat().st_size
