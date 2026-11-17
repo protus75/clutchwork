@@ -129,7 +129,7 @@ class _Exec:
         self.calls = []
         self.removals = []
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None, on_rusage=None):
         argv = list(argv)
         if argv == ["claude", "--version"] or argv[0] == "pnpm":
             return 0, "1.2.3", ""
@@ -153,7 +153,7 @@ class _Exec:
             if argv[0] == "git" and argv[3:4] == ["push"]:
                 result = (0, "disposable checkpoint transport accepted\n", "")
             else:
-                result = await self.real.run(argv, cwd=cwd, env=env, timeout=timeout, stdin_path=stdin_path, on_spawn=on_spawn, on_stdout_line=on_stdout_line)
+                result = await self.real.run(argv, cwd=cwd, env=env, timeout=timeout, stdin_path=stdin_path, on_spawn=on_spawn, on_stdout_line=on_stdout_line, on_rusage=on_rusage)
         else:
             raise AssertionError(f"unconfigured soak executable: {argv[0]}")
         if argv[0] == "claude" and on_stdout_line is not None:

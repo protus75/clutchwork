@@ -83,10 +83,10 @@ class _Exec:
         self.entered = asyncio.Event()
         self.block = False
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None, on_rusage=None):
         argv = list(argv)
         if argv[0] not in {"codex", "claude", "pnpm"}:
-            return await self.real.run(argv, cwd=cwd, env=env, timeout=timeout, stdin_path=stdin_path, on_spawn=on_spawn, on_stdout_line=on_stdout_line)
+            return await self.real.run(argv, cwd=cwd, env=env, timeout=timeout, stdin_path=stdin_path, on_spawn=on_spawn, on_stdout_line=on_stdout_line, on_rusage=on_rusage)
         if argv[0] == "pnpm" or argv[1:] == ["--version"]:
             return 0, "1.2.3", ""
         prompt = stdin_path.read_text()

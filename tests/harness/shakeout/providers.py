@@ -20,13 +20,13 @@ class _ScriptedProcess:
         self._actions = iter(actions)
         self._delegate = SubprocessExec()
 
-    async def run(self, argv, *, cwd: Path, env: Mapping[str, str], timeout: float | None, stdin_path: Path | None = None, on_spawn=None, on_stdout_line=None) -> tuple[int, str, str]:
+    async def run(self, argv, *, cwd: Path, env: Mapping[str, str], timeout: float | None, stdin_path: Path | None = None, on_spawn=None, on_stdout_line=None, on_rusage=None) -> tuple[int, str, str]:
         if argv[1:] == ["--version"] or argv[0] == "pnpm":
             return 0, "1.2.3", ""
         if stdin_path is not None and stdin_path.read_text() == "Reply with the single word ok.":
             return _claude_result("ok")
         if argv[0] != "claude":
-            return await self._delegate.run(argv, cwd=cwd, env=env, timeout=timeout, stdin_path=stdin_path, on_spawn=on_spawn, on_stdout_line=on_stdout_line)
+            return await self._delegate.run(argv, cwd=cwd, env=env, timeout=timeout, stdin_path=stdin_path, on_spawn=on_spawn, on_stdout_line=on_stdout_line, on_rusage=on_rusage)
         if on_spawn is not None:
             on_spawn(1)
         action = next(self._actions)

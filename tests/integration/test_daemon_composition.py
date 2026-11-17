@@ -76,7 +76,7 @@ class ScriptExec:
         self.reply = "ok"
         self.refuse_probe = False
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None, on_rusage=None):
         if argv[0] == "git":
             return 0, "a" * 40 + "\n", ""
         prompt = self.fs.files[stdin_path].decode() if stdin_path else None

@@ -75,7 +75,7 @@ class FakeExec:
         self.killed: list[int] = []
         self.hang: asyncio.Event | None = None
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None, on_rusage=None):
         if argv[0] == "git":
             return 0, "a" * 40 + "\n", ""
         self.calls.append({"argv": list(argv), "cwd": cwd, "env": dict(env), "stdin": Path(stdin_path).read_text(), "timeout": timeout})
@@ -427,7 +427,7 @@ class PreflightExec:
         self.probed: list[str] = []
         self.version_envs: list[dict[str, str]] = []
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None, on_rusage=None):
         if argv[0] == "git":
             return 0, "a" * 40 + "\n", ""
         if argv[1:] == ["--version"]:

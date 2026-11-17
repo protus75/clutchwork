@@ -376,6 +376,11 @@ class CliAdapter:
         returned = False
         start_written = False
         times = []
+        rusage = None
+
+        def record_rusage(value):
+            nonlocal rusage
+            rusage = value
 
         def spawned(pgid: int) -> None:
             pgids.add(pgid)
@@ -455,6 +460,7 @@ class CliAdapter:
                 stdin_path=prompt,
                 on_spawn=spawned,
                 **({"on_stdout_line": stdout_line} if capture is not None or consumer is not None else {}),
+                **({"on_rusage": record_rusage} if capture is not None else {}),
             )
             returned = True
             out, err = self._redactor.scrub(out), self._redactor.scrub(err)
@@ -531,7 +537,7 @@ class CliAdapter:
                                 "failure_class": failure.failure_class if isinstance(failure, ProviderCallError) else None,
                             },
                             "clock": {"wall_end": render_ts(ended), "mono_end_ns": int(ended.timestamp() * 10**9), "wall_ms": int((ended - started).total_seconds() * 1000)},
-                            "rusage": None,
+                            "rusage": rusage,
                             "raw": {
                                 "stdout": store.put_blob(out.encode()),
                                 "stderr": store.put_blob(err.encode()),
