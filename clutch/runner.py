@@ -36,7 +36,7 @@ from clutch.reconcile import reconcile
 from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, GroupExec, Sleep
 from clutch.stages import DiagnosisMaterial, StageContext, StagesRun, diagnose, lift_outbox, run_stages, ticket_change_findings, write_diagnosis
-from clutch.status import SETTLED, last_states, run_admission, verdict_refusal
+from clutch.status import CLOSED, last_states, run_admission, verdict_refusal
 from clutch.storm import arrival_id
 from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, split_frontmatter, stamp, stem_findings, ticket_path, validate_ticket
 
@@ -684,7 +684,7 @@ async def _dead_dependents(dead: str, checkout: Checkout) -> None:
     box = storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
     for path in sorted((checkout.repo / "tickets").glob("*/ticket.md")):
         stem = path.parent.name
-        if stem == dead or _ticket_state(path) != "confirmed" or last.get(stem) in SETTLED | {"rejected"}:
+        if stem == dead or _ticket_state(path) != "confirmed" or last.get(stem) in CLOSED:
             continue
         try:
             ticket = parse_ticket(stem, path.read_text(), checkout.repo)

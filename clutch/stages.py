@@ -37,6 +37,7 @@ from clutch.artifacts import (
     ReviewBaselineReport,
     ReviewVerdict,
     StageResult,
+    major,
     refused,
 )
 from clutch.box import BOX_DIR
@@ -380,7 +381,7 @@ def _spec(ctx: StageContext, surface: str) -> Spec:
 
 
 def _major(spec: Spec) -> int:
-    return int(spec.meta.version.split(".")[0])
+    return major(spec.meta.version)
 
 
 def findings_text(findings: Sequence[Finding]) -> str:

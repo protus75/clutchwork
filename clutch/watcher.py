@@ -7,7 +7,7 @@ from pathlib import Path
 
 from clutch.journal import EventType, Journal
 from clutch.seams import Clock, Sleep
-from clutch.status import SETTLED, last_states
+from clutch.status import CLOSED, last_states
 from clutch.tickets import Ticket, TicketInvalid, parse_ticket, ticket_path
 
 WATCHER_PARSE_FAILURE = "watcher_parse_failure"
@@ -46,7 +46,7 @@ class Watcher:
         async def consume() -> None:
             while (remaining := (deadline - self.clock()).total_seconds()) > 0:
                 await self.sleep(remaining)
-            if last_states(self.journal.read()).get(stem) in SETTLED | {"rejected"}:
+            if last_states(self.journal.read()).get(stem) in CLOSED:
                 self.cache.pop(stem, None)
                 self.remove(stem)
                 return

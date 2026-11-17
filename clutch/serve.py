@@ -12,7 +12,7 @@ from pathlib import Path
 from clutch import git, roadmap, runner, triage
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
-from clutch.drain import SETTLED, record_reoffer, reexec_argv
+from clutch.drain import record_reoffer, reexec_argv
 from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.git import GitError
@@ -25,6 +25,7 @@ from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
+from clutch.status import CLOSED
 from clutch.storm import StormLedger
 from clutch.supervise_idle import supervise_idle
 from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, ticket_path
@@ -160,7 +161,7 @@ class Serve:
                     latest = last_transition(local.journal.read(), ticket.stem) or {}
                     if latest.get("to") in TERMINAL_STATES:
                         await self.check_retro()
-                    if latest.get("to") in TERMINAL_STATES - SETTLED - {"rejected"}:
+                    if latest.get("to") in TERMINAL_STATES - CLOSED:
                         self.core.scheduler.update(ticket)
                     if not callback.continuations and not any(context is callback.ctx and stem in callback.queue.pending.keys() for stem, context in callback.queue.contexts.items()):
                         self.writers.pop(ticket.stem, None)
@@ -434,7 +435,7 @@ class Serve:
                     latest = (last_transition(self.checkout.journal.read(), ticket.stem) or {}).get("to")
                     if latest in TERMINAL_STATES:
                         await self.check_retro()
-                    if latest in TERMINAL_STATES - SETTLED - {"rejected"}:
+                    if latest in TERMINAL_STATES - CLOSED:
                         self.core.scheduler.update(ticket)
                     if ticket.stem not in self.queue.pending:
                         self.queue.contexts.pop(ticket.stem, None)

@@ -18,7 +18,6 @@ from clutch.gates import GateReport
 from clutch.git import GitError
 from clutch.journal import Event, EventType
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
-from clutch.stats import SETTLED
 
 RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
@@ -169,13 +168,15 @@ def measurements(window: Window) -> dict:
 
 
 def select_trigger(window: Window, evidence: dict, settings: RetroSettings, *, forced: bool) -> str | None:
+    from clutch.status import CLOSED
+
     if forced:
         return "forced" if evidence["merged_count"] else None
     if not settings.enabled:
         return None
     if settings.merges.enabled and evidence["merged_count"] >= settings.merges.every:
         return "merges"
-    if settings.settled.enabled and len({e.ticket for e in window.events if e.ticket is not None and e.type == EventType.STATE_TRANSITION and e.body.get("to") in SETTLED}) >= settings.settled.every:
+    if settings.settled.enabled and len({e.ticket for e in window.events if e.ticket is not None and e.type == EventType.STATE_TRANSITION and e.body.get("to") in CLOSED}) >= settings.settled.every:
         return "settled"
     return next((kind for kind, count in evidence["spikes"].items() if settings.spikes.enabled and kind in settings.spikes.kinds and count >= settings.spikes.count), None)
 

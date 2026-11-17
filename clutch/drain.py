@@ -32,7 +32,7 @@ from clutch.redact import Redactor
 from clutch.retro import RetroCheckOutcome
 from clutch.runner import EXIT_MERGED, EXIT_TICKET, Checkout, Dispatch, Refusal, harvest_orphan
 from clutch.seams import ReplaceExec
-from clutch.status import SETTLED, last_states, reject_queue
+from clutch.status import CLOSED, SETTLED, last_states, reject_queue  # noqa: F401 (rework imports SETTLED here)
 from clutch.supervise_idle import supervise_idle
 from clutch.tickets import (
     INTAKE_SIGNAL,
@@ -52,7 +52,6 @@ ENGINE = Path(__file__).resolve().parent.parent
 HALT_SIGNAL = "drain_halted"
 CEILING = "drain.max_runtime_hours"
 # A `rejected` stem is retired: never dispatched again.
-RETIRED = frozenset({"rejected"})
 PRIORITY = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
 
 PREMISE = "premise_failed"
@@ -473,7 +472,7 @@ class _Drain:
             return True
         events = self.c.journal.read()
         body = last_transition(events, stem) or {}
-        if body.get("to") in SETTLED | RETIRED or stem in reject_queue(events) or "provider_drought" in body:
+        if body.get("to") in CLOSED or stem in reject_queue(events) or "provider_drought" in body:
             return True
         if self.c.control is not None and stem in self.c.control.storm_holds().values():
             return True
@@ -497,7 +496,7 @@ class _Drain:
         states = last_states(self.c.journal.read())
         for path in sorted((repo / TICKETS_DIR).glob(f"*/{TICKET_FILE}")):
             stem = path.parent.name
-            if states.get(stem) in SETTLED | {"rejected"}:
+            if states.get(stem) in CLOSED:
                 continue
             rel = ticket_path(stem)
             if any(p == rel or (p.endswith("/") and rel.startswith(p)) for p in dirty):
@@ -526,7 +525,7 @@ class _Drain:
         """The next eligible dispatch in soft-edge and sort-key order, fresh or re-offered."""
         if self.c.control.projection.stop_requested:
             return None, False
-        open_ = {s: t for s, t in scan.tickets.items() if t.frontmatter.state == "confirmed" and last.get(s) not in SETTLED | RETIRED}
+        open_ = {s: t for s, t in scan.tickets.items() if t.frontmatter.state == "confirmed" and last.get(s) not in CLOSED}
         edges = {s: list(t.depends) for s, t in open_.items()}
         for stem in sorted(open_):
             if cycle := depends_cycle(stem, edges):
@@ -695,8 +694,8 @@ class _Drain:
     def parked_stems(self) -> tuple[str, ...]:
         """The invocation's parked set, carried across the handoff chain: every unsettled red plus the carried."""
         last = last_states(self.c.journal.read())
-        red = {s for s, to in last.items() if to in TERMINAL_STATES - SETTLED - RETIRED}
-        carried = {s for s in self.carried if last.get(s) not in SETTLED | RETIRED}
+        red = {s for s, to in last.items() if to in TERMINAL_STATES - CLOSED}
+        carried = {s for s in self.carried if last.get(s) not in CLOSED}
         return tuple(sorted(red | carried | set(self.over_budget)))
 
     def _settle(self, scan: _Scan, events: list[Event], last: Mapping[str, str], held: set[str]) -> None:
@@ -705,7 +704,7 @@ class _Drain:
         settled = settled_dependencies(events)
         awaiting = reject_queue(events)
         for stem in sorted(scan.tickets):
-            if last.get(stem) not in SETTLED | RETIRED | {None, "running"} and caps.spent(self.c.config.caps, events, stem) is not None and stem not in awaiting:
+            if last.get(stem) not in CLOSED | {None, "running"} and caps.spent(self.c.config.caps, events, stem) is not None and stem not in awaiting:
                 body = require_transition(events, stem)
                 if body.get("to") == PREMISE and "render_over_bound" in body.get("reason", "").split(","):
                     continue
@@ -715,7 +714,7 @@ class _Drain:
                     self.c.journal.append(EventType.SIGNAL, {"signal": "reject_arrival"}, ticket=stem)
                     awaiting[stem] = body
         for stem, t in sorted(scan.tickets.items()):
-            if t.frontmatter.state != "confirmed" or last.get(stem) in SETTLED | RETIRED:
+            if t.frontmatter.state != "confirmed" or last.get(stem) in CLOSED:
                 continue
             if stem in self.over_budget:
                 self.report.parked.append(self.over_budget[stem])

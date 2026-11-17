@@ -13,12 +13,13 @@ from types import SimpleNamespace
 from typing import Literal, get_args
 
 from clutch.config import load_config
-from clutch.drain import RETIRED, authored_at, awaiting_operator, order_tickets, parked_blob
+from clutch.drain import authored_at, awaiting_operator, order_tickets, parked_blob
 from clutch.graph import layout
 from clutch.help import COMMANDS, help_map, help_pick
 from clutch.lockfile import ENGINE_VERBS
 from clutch.rework import settled_dependencies
 from clutch.status import (
+    CLOSED,
     SETTLED,
     Admission,
     confirm_admission,
@@ -314,7 +315,7 @@ def operator_holds(ctx, history) -> set[str]:
 
 def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str], held_stems: set[str]) -> list[tuple[str, str, str]]:
     """Every confirmed ticket not yet settled, rejected, or running: (priority, stem, why it is waiting)."""
-    done = SETTLED | {"rejected"}
+    done = CLOSED
     history = [SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts")) for e in events]
     waiting_on_person = operator_holds(ctx, history)
     held_stems = held_stems | waiting_on_person
@@ -588,7 +589,7 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
         disk = validated(stem, claimed) if exists and states.get(stem) != "merged" else None
         review_ticket = None
         ticket_pending = any(p.startswith(f"tickets/{stem}/") for _, p in entries)
-        if exists and states.get(stem) not in SETTLED | {"rejected"} and not (ticket_pending and stray) and not isinstance(decision, list):
+        if exists and states.get(stem) not in CLOSED and not (ticket_pending and stray) and not isinstance(decision, list):
             main_text = claimed if plan else git_output(ctx, "show", f"main:{ticket_path(stem)}")
             review_ticket = disk if main_text == claimed else validated(stem, main_text)
         common = dict(
@@ -604,8 +605,8 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
             section="",
             lock_holder=holder,
         )
-        order_ticket = validated(stem, text) if exists and text != claimed and states.get(stem) not in SETTLED | {"rejected"} else disk
-        runs_before_ticket = validated(stem, order(text, priority=None, runs_before=[])) if exists and states.get(stem) not in SETTLED | {"rejected"} else order_ticket
+        order_ticket = validated(stem, text) if exists and text != claimed and states.get(stem) not in CLOSED else disk
+        runs_before_ticket = validated(stem, order(text, priority=None, runs_before=[])) if exists and states.get(stem) not in CLOSED else order_ticket
         result[stem] = {
             key: dict(common, ticket=review_ticket if key == "clutchReview" else order_ticket if key == "clutchPriority" else runs_before_ticket if key == "clutchRunsBefore" else disk)
             for key, entry in MENU.items()
@@ -647,7 +648,7 @@ def snapshot(ctx) -> dict:
     for e in events:
         if e.get("type") == "state_transition" and e.get("ticket"):
             last[e["ticket"]] = {**e["body"], "ts": e["ts"]}
-    tickets, invalid = load_tickets(ctx, {s for s, b in last.items() if b.get("to") in SETTLED | RETIRED})
+    tickets, invalid = load_tickets(ctx, {s for s, b in last.items() if b.get("to") in CLOSED})
     history = [SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts"), key=e.get("key")) for e in events]
     from clutch.reconcile import orphans
 
@@ -667,7 +668,7 @@ def snapshot(ctx) -> dict:
     lock, verb = lock_display(state, "clutch.lock")
     commit_lock, _ = lock_display(state, "commit.lock")
     running = running_stems(state, last)
-    open_ = {s: t for s, t in tickets.items() if to(s) not in SETTLED | RETIRED and s not in running and t.frontmatter.state not in ("rejected", "merged")}
+    open_ = {s: t for s, t in tickets.items() if to(s) not in CLOSED and s not in running and t.frontmatter.state not in ("rejected", "merged")}
     runnable = {s: t for s, t in open_.items() if t.frontmatter.state == "confirmed" and s not in held_stems}
     queued = simulate(runnable, settled | set(running), authored, strict=True)
     queued_stems = {t.stem for t in queued}
@@ -737,7 +738,7 @@ def snapshot(ctx) -> dict:
         }
 
     # Invalid rows lead the blocked section: they usually depend on valid ones, and graph edges only point down.
-    rows = [{**base(stem, "blocked", "invalid: " + why, "invalid"), "goal": ""} for stem, why in sorted(invalid.items()) if to(stem) not in SETTLED | RETIRED and stem not in running]
+    rows = [{**base(stem, "blocked", "invalid: " + why, "invalid"), "goal": ""} for stem, why in sorted(invalid.items()) if to(stem) not in CLOSED and stem not in running]
     rows += [base(t.stem, "blocked", *why_blocked(t)) for t in reversed(blocked)]
     rows += [base(t.stem, "queued", *why_queued(t)) for t in reversed(queued)]
     for stem in running:

@@ -22,7 +22,7 @@ from clutch.runner import SPECS_DIR, Checkout
 from clutch.specs import Spec, load_spec, render
 from clutch.stages import findings_text
 from clutch.status import SETTLED, last_states
-from clutch.tickets import TicketInvalid, split_frontmatter, stamp, stem_findings, template, ticket_path, validate_ticket
+from clutch.tickets import KINDS, TicketInvalid, split_frontmatter, stamp, stem_findings, template, ticket_path, validate_ticket
 
 AUTHOR_STUCK_S = 900.0
 PLAN_WHOLE_CHARS = 40_000
@@ -308,7 +308,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
     def render_author(_: object, findings: list) -> str:
         inputs = {
             "guide": (Path(__file__).parent / "docs" / "host-authoring.md").read_text(),
-            "skeletons": "\n".join(f"{kind}:\n{template(kind)}" for kind in ("feature", "chore", "bug")),
+            "skeletons": "\n".join(f"{kind}:\n{template(kind)}" for kind in KINDS),
             "request": request,
             "roadmap_row": roadmap.model_dump_json() if roadmap is not None else "none",
             "plan": plan,

@@ -8,7 +8,7 @@ from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.git import Git, GitError
 from clutch.journal import Event, EventType, Journal, JournalCorruption
-from clutch.stats import SETTLED
+from clutch.status import CLOSED
 from clutch.storm import arrival_id
 
 CHECKPOINT_MERGES = 5
@@ -31,7 +31,7 @@ def settled_since_last_push(events: list[Event]) -> int:
     for index, event in enumerate(events):
         if event.type == EventType.EFFECT_COMPLETION and (event.key or "").startswith(_PUSH):
             start = index + 1
-    return len({event.ticket for event in events[start:] if event.type == EventType.STATE_TRANSITION and event.ticket is not None and event.body.get("to") in SETTLED})
+    return len({event.ticket for event in events[start:] if event.type == EventType.STATE_TRANSITION and event.ticket is not None and event.body.get("to") in CLOSED})
 
 
 def _history(events: list[Event]) -> tuple[list[Event], list[Event]]:

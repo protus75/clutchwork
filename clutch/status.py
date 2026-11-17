@@ -15,6 +15,8 @@ from clutch.tickets import INTAKE_SIGNAL
 
 # A no-op proof settles a stem just as a merge does.
 SETTLED = frozenset({"merged", "already_satisfied"})
+RETIRED = frozenset({"rejected"})
+CLOSED = SETTLED | RETIRED
 
 
 @dataclass(frozen=True)
@@ -111,7 +113,7 @@ def review_admission(stem, events, file_exists, ticket, intake_decision=None, st
         return Admission("refuse", f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in intake_decision), road)
     if not file_exists:
         return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author the ticket before `review {stem}`")
-    if last_states(events).get(stem) in SETTLED | {"rejected"}:
+    if last_states(events).get(stem) in CLOSED:
         return Admission("refuse", f"{stem} is settled or rejected", "author follow-up work as a new ticket")
     if isinstance(ticket, list) and ticket:
         return Admission("refuse", f"{ticket_path(stem)} is invalid: " + "; ".join(f.message for f in ticket), road)
@@ -128,7 +130,7 @@ def order_admission(stem, events, file_exists, lock_holder, ticket=None):
     state = last_states(events).get(stem)
     if state == "running" and (stem not in orphans(events) or lock_holder is not None):
         return Admission("refuse", f"{stem} is running; editing a ticket during its run stops it with ticket_changed", "reorder it after the run ends")
-    if state in SETTLED | {"rejected"}:
+    if state in CLOSED:
         return Admission("refuse", f"{stem} is {state}", "author follow-up work as a new ticket")
     if isinstance(ticket, list) and ticket:
         return Admission("refuse", ticket[0].message, ticket[0].paved_road)
@@ -138,7 +140,7 @@ def order_admission(stem, events, file_exists, lock_holder, ticket=None):
 def lint_admission(stem, events, file_exists):
     if not file_exists:
         return Admission("refuse", "no ticket file", "create tickets/<stem>/ticket.md with clutch new <stem>")
-    if last_states(events).get(stem) in SETTLED | {"rejected"}:
+    if last_states(events).get(stem) in CLOSED:
         return Admission("noop")
     return Admission("admit")
 
@@ -189,7 +191,7 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
     from clutch.reconcile import orphans
 
     last = last_states(events)
-    done = SETTLED | {"rejected"}
+    done = CLOSED
     interrupted = set(orphans(events)) if not alive else set()
     intake = tuple(
         (e.ticket, e.body["source"], e.body["state"], e.body["commit"])

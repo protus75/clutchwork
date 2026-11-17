@@ -26,6 +26,10 @@ OUTCOMES: frozenset[str] = frozenset(get_args(Outcome))
 NonBlank = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
+def major(version: str) -> int:
+    return int(version.split(".")[0])
+
+
 def _check_producing_run(value: str) -> None:
     from clutch.tickets import stem_findings
 
@@ -431,7 +435,7 @@ class ReviewBaselineReport(FrozenModel):
         authors = sorted({r.expected.author for r in self.results}, key=lambda a: (a.provider, a.model, a.tier))
         if body.fixture_authors != authors:
             raise ValueError("signal fixture authors must match the results")
-        if int(body.exercised.spec_version.split(".")[0]) != body.identity.review.spec_major:
+        if major(body.exercised.spec_version) != body.identity.review.spec_major:
             raise ValueError("exercised review spec major must match identity")
         reviewer = body.identity.review.rows[body.exercised.tier]
         if any((a.provider, a.model) == (reviewer.provider, reviewer.model) for a in authors):

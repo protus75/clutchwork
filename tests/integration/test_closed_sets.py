@@ -37,6 +37,7 @@ from clutch import (
     serve,
     specs,
     stages,
+    status,
     storm,
     thresh,
     tickets,
@@ -135,7 +136,8 @@ def test_control_closed_sets_and_constants():
 def test_drain_closed_sets_and_constants():
     assert dict(drain.PRIORITY) == {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
     assert drain.reexec_argv(["drain"])[-1] == "drain"
-    assert drain.RETIRED == frozenset({"rejected"})
+    assert status.RETIRED == frozenset({"rejected"})
+    assert status.CLOSED == frozenset({"already_satisfied", "merged", "rejected"})
     assert drain.SETTLED == frozenset({"already_satisfied", "merged"})
     assert drain.UPGRADE_PREFIXES == ("clutch/",)
 

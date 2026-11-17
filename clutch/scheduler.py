@@ -5,10 +5,10 @@ from collections.abc import Awaitable, Callable, Iterable, Set
 from pathlib import Path
 
 from clutch.config import Caps
-from clutch.drain import SETTLED, authored_at, order_tickets, parked_blob, reofferable, write_queue
+from clutch.drain import authored_at, order_tickets, parked_blob, reofferable, write_queue
 from clutch.journal import TERMINAL_STATES, Journal
 from clutch.seams import Clock, FileSystem
-from clutch.status import last_states
+from clutch.status import CLOSED, last_states
 from clutch.tickets import Ticket
 
 
@@ -71,7 +71,7 @@ class Scheduler:
                 t
                 for t in candidates.values()
                 if t.frontmatter.state == "confirmed"
-                and last.get(t.stem) not in SETTLED | {"rejected"}
+                and last.get(t.stem) not in CLOSED
                 and (last.get(t.stem) != "running" or t.stem in retained)
                 and (last.get(t.stem) not in TERMINAL_STATES or reofferable(events, t.stem, self.caps()))
                 and t.stem not in held

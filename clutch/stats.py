@@ -8,16 +8,16 @@ from datetime import datetime, timedelta
 
 from clutch.help import TOPICS, topic_text
 from clutch.journal import EventType
+from clutch.status import CLOSED
 from clutch.tickets import KINDS
 
-SETTLED = {"merged", "already_satisfied", "rejected"}
 SURFACES = {"requisition_review", "implement", "review", "diagnose", "rework", "retro"}
 
 
 def _latest_settled(events, now):
     latest = {}
     for event in events:
-        if event.type == EventType.STATE_TRANSITION and event.ticket and event.body.get("to") in SETTLED and datetime.fromisoformat(event.ts) <= now:
+        if event.type == EventType.STATE_TRANSITION and event.ticket and event.body.get("to") in CLOSED and datetime.fromisoformat(event.ts) <= now:
             latest[event.ticket] = event
     return latest
 
