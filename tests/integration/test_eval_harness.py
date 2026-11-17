@@ -75,7 +75,7 @@ async def _no_sleep(_: float) -> None:
 def run(tmp_path: Path, fixtures: list[Fixture], script: list):
     cfg = config(tmp_path)
     llm = FakeLLM(script)
-    driver = Driver.from_config(cfg, llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
+    driver = Driver.from_config(cfg, journal=Journal((cfg).state_dir, lambda: NOW), llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
     journal = Journal(cfg.state_dir, lambda: NOW)
     body = asyncio.run(harness.run_baseline(config=cfg, driver=driver, journal=journal, fixtures=fixtures, specs_dir=ROOT / "clutch" / "specs", workspace=tmp_path))
     return body, journal, llm
@@ -357,14 +357,14 @@ def test_go_grade_shared_cap_includes_retries_and_author_graph(tmp_path):
 
     fixtures = [fixture("retry", "logic"), fixture("next", "none")]
     llm = FakeLLM([paid("bad json", 1.0), paid(reply("snag"), 1.0), paid(reply("approve"), 1.0), paid("bad graph", 1.0), paid(json.dumps(graph_reply()), 1.0)])
-    driver = Driver.from_config(cfg, llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
+    driver = Driver.from_config(cfg, journal=Journal((cfg).state_dir, lambda: NOW), llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
     out = tmp_path / "report.json"
     asyncio.run(harness.run_baseline(config=cfg, driver=driver, journal=driver.journal, fixtures=fixtures, out=out, workspace=tmp_path))
     assert [r.budget_usd for r in llm.requests] == [5.0, 4.0, 3.0, 2.0, 1.0]
     assert [r.surface for r in llm.requests] == ["review"] * 3 + ["author"] * 2
     assert ReviewBaselineReport.model_validate_json(out.read_bytes()).spent_usd == 5.0
     llm = FakeLLM([paid("invalid", 5.0)])
-    driver = Driver.from_config(cfg, llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
+    driver = Driver.from_config(cfg, journal=Journal((cfg).state_dir, lambda: NOW), llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
     asyncio.run(harness.run_baseline(config=cfg, driver=driver, journal=driver.journal, fixtures=fixtures, out=out, workspace=tmp_path))
     assert len(llm.requests) == 1 and llm.requests[0].budget_usd == 5.0
     partial = ReviewBaselineReport.model_validate_json(out.read_bytes())
@@ -378,7 +378,7 @@ def test_go_grade_author_graph_uses_local_prompt(tmp_path):
     cfg = config(tmp_path)
     graph = graph_reply()
     llm = FakeLLM([json.dumps(graph)])
-    driver = Driver.from_config(cfg, llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
+    driver = Driver.from_config(cfg, journal=Journal((cfg).state_dir, lambda: NOW), llm=llm, env={}, clock=lambda: NOW, sleep=_no_sleep)
     artifact, cost = asyncio.run(harness.run_author_graph(driver, attempt=1, workspace=tmp_path, budget_usd=5.0, tier="high", effort="high"))
     assert artifact.model_dump() == graph and cost == 0.0
     [request] = llm.requests

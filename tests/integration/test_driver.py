@@ -97,6 +97,7 @@ def build(tmp_path: Path, llm: FakeLLM, *, fires: bool = False, env=None) -> tup
     clock = FakeClock()
     driver = Driver.from_config(
         config,
+        journal=Journal((config).state_dir, clock),
         llm=llm,
         env={"CLUTCH_TEST_KEY": SECRET} if env is None else env,
         clock=clock,
@@ -305,7 +306,7 @@ def test_soft_gate_failure_passes_with_findings(tmp_path):
     config = load_config(None, cwd=tmp_path)
     clock = FakeClock()
     llm = FakeLLM([echo_json("hi")])
-    driver = Driver.from_config(config, llm=llm, env={}, clock=clock, sleep=FakeSleep(fires=False))
+    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env={}, clock=clock, sleep=FakeSleep(fires=False))
     stage = LlmStage(surface="implement", emits=Echo, gates=[MustSayHello()], render=render)
     result = run(driver, stage)
     assert result.outcome == "ok"

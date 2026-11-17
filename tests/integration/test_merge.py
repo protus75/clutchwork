@@ -12,7 +12,7 @@ from clutch.box import BOX_DIR, Box
 from clutch.config import load_config
 from clutch.driver import Driver
 from clutch.git import Git
-from clutch.journal import EventType
+from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.merge import Admission, AdmissionBoundary, Candidate, PostRebaseGate, merge
 from clutch.mergequeue import CONFLICT_FACTS, MergeQueue
@@ -56,7 +56,7 @@ def context(repo: Path, script: list) -> StageContext:
         await asyncio.Event().wait()
 
     exec_ = SubprocessExec()
-    driver = Driver.from_config(config, llm=FakeLLM(script), env=ENV, clock=clock, sleep=never)
+    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=FakeLLM(script), env=ENV, clock=clock, sleep=never)
     return StageContext(
         repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
     )

@@ -324,7 +324,7 @@ def test_llm_call_log_events_carry_call_key(tmp_path):
     class Reply(BaseModel):
         text: str
 
-    driver = Driver.from_config(cfg, llm=FakeLLM(["invalid", '{"text":"valid"}']), env=ENV, clock=clock, sleep=clock.sleep)
+    driver = Driver.from_config(cfg, journal=Journal((cfg).state_dir, clock), llm=FakeLLM(["invalid", '{"text":"valid"}']), env=ENV, clock=clock, sleep=clock.sleep)
     stage = LlmStage("review", Reply, [], lambda *_: "prompt")
     asyncio.run(driver.run(stage, None, ticket="ticket", attempt=2, workspace=tmp_path, tier="medium", effort="high", stuck_budget=100, expected_budget=50, scope_fence=()))
     events = [json.loads(line) for line in (cfg.state_dir / "engine.log").read_text().splitlines()]

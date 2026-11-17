@@ -137,9 +137,7 @@ async def prepare_pipeline(checkout: Checkout) -> Dispatch:
 
 
 def bind(checkout: Checkout, llm: LLM) -> Dispatch:
-    driver = Driver.from_config(checkout.config, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
-    driver.journal = checkout.journal
-    driver.effects = Effects(checkout.journal)
+    driver = Driver.from_config(checkout.config, journal=checkout.journal, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
     ctx = StageContext(repo=checkout.repo, config=checkout.config, env=checkout.env, exec_=checkout.exec_, git=checkout.git, fs=checkout.fs, driver=driver, specs_dir=SPECS_DIR)
 
     def escalate(event: Event) -> None:
@@ -528,9 +526,7 @@ async def harvest(
 
 async def harvest_orphan(checkout: Checkout, stem: str, attempt: int) -> None:
     """Use the run-terminal harvest with an effects context; an orphan makes no model call."""
-    driver = Driver.from_config(checkout.config, llm=cast(LLM, None), env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
-    driver.journal = checkout.journal
-    driver.effects = Effects(checkout.journal)
+    driver = Driver.from_config(checkout.config, journal=checkout.journal, llm=cast(LLM, None), env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
     ctx = StageContext(repo=checkout.repo, config=checkout.config, env=checkout.env, exec_=checkout.exec_, git=checkout.git, fs=checkout.fs, driver=driver, specs_dir=SPECS_DIR)
     await harvest(ctx, stem, attempt=attempt, stage=None, terminal="abandoned", findings=[], results=())
 

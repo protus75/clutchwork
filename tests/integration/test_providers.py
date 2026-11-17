@@ -594,7 +594,9 @@ def test_classified_error_preserves_scrubbed_evidence_and_login_road(tmp_path, n
         await asyncio.Event().wait()
 
     for index, error in enumerate(errors):
-        driver = Driver.from_config(cfg, llm=FakeLLM([error]), env=ENV, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC), sleep=sleep)
+        driver = Driver.from_config(
+            cfg, journal=Journal((cfg).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)), llm=FakeLLM([error]), env=ENV, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC), sleep=sleep
+        )
         result = asyncio.run(
             driver.run(
                 LlmStage(surface="review", emits=Reply, gates=[], render=lambda *_: "probe"),

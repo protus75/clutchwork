@@ -16,7 +16,7 @@ from clutch.config import MechanicalCheck, RegenerateStrategy, UnionStrategy, lo
 from clutch.daemon import PauseConsumer
 from clutch.driver import Driver
 from clutch.git import Git
-from clutch.journal import EventType
+from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, ConflictHandoff, MergeQueue, TreeMismatch
 from clutch.providers import child_env
@@ -41,7 +41,14 @@ def ctx(tmp_path):
     conduct = adopt_conduct(repo)
     config = load_config(None, cwd=repo)
     exec_ = SubprocessExec()
-    driver = Driver.from_config(config, llm=FakeLLM([]), env=ENV, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC), sleep=lambda _: asyncio.Event().wait())
+    driver = Driver.from_config(
+        config,
+        journal=Journal((config).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)),
+        llm=FakeLLM([]),
+        env=ENV,
+        clock=lambda: datetime(2026, 10, 6, tzinfo=UTC),
+        sleep=lambda _: asyncio.Event().wait(),
+    )
     context = StageContext(repo, config, ENV, exec_, Git(exec_, env=child_env(ENV, config), timeout=30, commit_lock=commit_lock(repo / ".clutch/state")), LocalFileSystem(), driver, SPECS)
 
     async def init():

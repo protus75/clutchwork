@@ -432,7 +432,7 @@ async def _author_fixtures(config, *, provider, tier, only, force, env, root, se
     # The explicit eval Author choice remains pinned; the registry and admission owner stay shared.
     chosen = config.model_copy(update={"routing": [Route(tier=tier, surface="author", candidates=[Candidate(provider=provider, model=model)])]})
     llm = ProviderLLM(chosen, exec_=exec_, fs=LocalFileSystem(), env=env, cwd=ROOT, timeout=call_timeout(config), session=session)
-    driver = Driver.from_config(chosen, llm=llm, env=env, clock=_clock, sleep=asyncio.sleep)
+    driver = Driver.from_config(chosen, journal=Journal((chosen).state_dir, _clock), llm=llm, env=env, clock=_clock, sleep=asyncio.sleep)
     attempt = 1 + sum(e.body.get("signal") == "author_invoked" for e in session.journal.read())
     session.journal.append(EventType.SIGNAL, {"signal": "author_invoked", "message": f"eval-fixture-pass/{attempt}"})
     briefs = [b for b in BRIEFS if not only or b[0] in only]
@@ -503,7 +503,7 @@ async def _run(config: Config, env: Mapping[str, str], clock: Clock, *, out=None
         llm = ProviderLLM(config, exec_=exec_, fs=LocalFileSystem(), env=env, cwd=ROOT, timeout=call_timeout(config), session=session)
         if problems := await llm.preflight():
             raise FixtureError("; ".join(problems))
-        driver = Driver.from_config(config, llm=llm, env=env, clock=clock, sleep=asyncio.sleep)
+        driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env=env, clock=clock, sleep=asyncio.sleep)
         return await run_baseline(config=config, driver=driver, journal=Journal(config.state_dir, clock), fixtures=load_fixtures(), progress=print, out=out)
     finally:
         try:

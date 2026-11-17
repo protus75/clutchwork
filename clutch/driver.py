@@ -178,13 +178,14 @@ class Driver:
         env: Mapping[str, str],
         clock: Clock,
         sleep: Sleep,
+        journal: Journal,
         fs: FileSystem | None = None,
     ) -> "Driver":
         """The production wiring: the redactor is built from config BEFORE any writer exists."""
         redactor = Redactor.from_config(config, env)
         driver = cls(
             llm=llm,
-            journal=Journal(config.state_dir, clock),
+            journal=journal,
             redactor=redactor,
             spool=Spool(config.state_dir / "spools", redactor, fs or LocalFileSystem()),
             log=EngineLog(config.state_dir / "engine.log", redactor, clock),

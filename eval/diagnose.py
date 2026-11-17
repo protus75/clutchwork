@@ -246,7 +246,7 @@ async def _run(config: Config) -> Report:
         llm = ProviderLLM(config, exec_=exec_, fs=LocalFileSystem(), env=env, cwd=ROOT, timeout=call_timeout(config), session=session)
         if problems := await llm.preflight():
             raise CaseError("; ".join(problems))
-        driver = Driver.from_config(config, llm=llm, env=env, clock=_clock, sleep=asyncio.sleep)
+        driver = Driver.from_config(config, journal=Journal((config).state_dir, _clock), llm=llm, env=env, clock=_clock, sleep=asyncio.sleep)
         return await run_eval(config=config, driver=driver, journal=driver.journal, cases=load_cases(), clock=_clock, progress=print)
     finally:
         try:

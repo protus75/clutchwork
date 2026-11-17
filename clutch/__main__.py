@@ -712,15 +712,12 @@ def main(
         if args.roadmap_verb == "accept":
             from clutch import acceptance
             from clutch.driver import Driver
-            from clutch.effects import Effects
 
             async def accept_release():
                 session = build_control(checkout).providers
                 try:
                     llm = await _preflighted_llm(checkout, session)
-                    driver = Driver.from_config(config, llm=llm, env=env, clock=clock, sleep=checkout.sleep, fs=checkout.fs)
-                    driver.journal = checkout.journal
-                    driver.effects = Effects(checkout.journal)
+                    driver = Driver.from_config(config, journal=checkout.journal, llm=llm, env=env, clock=clock, sleep=checkout.sleep, fs=checkout.fs)
                     return await acceptance.accept(checkout, driver, args.release)
                 finally:
                     await session.close()
@@ -934,7 +931,6 @@ def main(
 
 async def _review(checkout: runner.Checkout, stem: str) -> int:
     from clutch.driver import Driver
-    from clutch.effects import Effects
     from clutch.tickets import intake
 
     # Preserve stem, intake, existence and settled refusal precedence before reading main.
@@ -962,9 +958,7 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
     session = build_control(checkout).providers
     try:
         llm = await _preflighted_llm(checkout, session)
-        driver = Driver.from_config(checkout.config, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
-        driver.journal = checkout.journal
-        driver.effects = Effects(checkout.journal)
+        driver = Driver.from_config(checkout.config, journal=checkout.journal, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
         verdict = await requisition.review_ticket(
             driver,
             repo=checkout.repo,

@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from clutch.config import load_config
 from clutch.driver import Driver, LlmStage
 from clutch.gates import GateReport
+from clutch.journal import Journal
 from clutch.llm import FakeLLM
 from clutch.requisition import FIRST_REVIEW, review_ticket
 
@@ -81,7 +82,14 @@ with tempfile.TemporaryDirectory() as directory:
     (repo / "context.txt").write_text("context")
     (repo / "config.yaml").write_text(CONFIG)
     llm = FakeLLM([json.dumps({"value": "proposal"}), json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
-    driver = Driver.from_config(load_config(None, cwd=repo), llm=llm, env={"FAKE_KEY": "secret"}, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC), sleep=never)
+    driver = Driver.from_config(
+        load_config(None, cwd=repo),
+        journal=Journal((load_config(None, cwd=repo)).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)),
+        llm=llm,
+        env={"FAKE_KEY": "secret"},
+        clock=lambda: datetime(2026, 10, 6, tzinfo=UTC),
+        sleep=never,
+    )
 
     async def review(artifact, call_seq):
         verdict = await review_ticket(

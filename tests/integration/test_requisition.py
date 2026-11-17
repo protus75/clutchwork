@@ -9,6 +9,7 @@ from clutch.artifacts import Finding
 from clutch.config import load_config
 from clutch.driver import Driver
 from clutch.gates import lint_gate
+from clutch.journal import Journal
 from clutch.llm import FakeLLM
 from clutch.requisition import FIRST_REVIEW, RequisitionGate, RequisitionReply, RequisitionVerdict, base_render_chars, review_target, review_ticket
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, lint_spec, load_spec, render
@@ -77,7 +78,14 @@ engine_plane_safety_inventory: [context.txt]
     async def never(seconds: float) -> None:
         await asyncio.Event().wait()
 
-    driver = Driver.from_config(load_config(None, cwd=tmp_path), llm=llm, env={"FAKE_KEY": "secret"}, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC), sleep=never)
+    driver = Driver.from_config(
+        load_config(None, cwd=tmp_path),
+        journal=Journal((load_config(None, cwd=tmp_path)).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)),
+        llm=llm,
+        env={"FAKE_KEY": "secret"},
+        clock=lambda: datetime(2026, 10, 6, tzinfo=UTC),
+        sleep=never,
+    )
     return tmp_path, driver, llm
 
 

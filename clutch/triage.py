@@ -12,7 +12,6 @@ from clutch.artifacts import NonBlank
 from clutch.author import author, commit_record, committed, failure_declined, is_rejected, list_open_tickets, recover_retro_ticket
 from clutch.box import BOX_DIR, Box, DecisionRecord, RereportJournal, Resolution, UnknownBoxId, Verdict, read_registry, record_path, render_record
 from clutch.driver import Driver, LlmStage
-from clutch.effects import Effects
 from clutch.git import GitError
 from clutch.inbox import ingest, report_data
 from clutch.journal import EventType
@@ -82,9 +81,7 @@ async def triage_pass(checkout: Checkout, llm: LLM, ids=frozenset()) -> list[tup
     checkout.journal.append(EventType.SIGNAL, {"signal": "triage_pass", "pass": pass_no})
     box = report_intake(checkout)
     spec = load_spec((SPECS_DIR / "triage.md").read_text())
-    driver = Driver.from_config(checkout.config, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
-    driver.journal = checkout.journal
-    driver.effects = Effects(checkout.journal)
+    driver = Driver.from_config(checkout.config, journal=checkout.journal, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
     lines = await _settle_pass(checkout, driver, box, spec, history, pass_no, ids)
     for message in box.messages():
         if message.message_class == "bug_report" and message.resolution is not None and message.resolution.kind == "ticket":
@@ -107,9 +104,7 @@ def validate_ids(checkout: Checkout, ids, admission=triage_admission):
 
 async def dismiss(checkout: Checkout, ids) -> list[str]:
     box = validate_ids(checkout, ids, dismiss_admission)
-    driver = Driver.from_config(checkout.config, llm=None, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
-    driver.journal = checkout.journal
-    driver.effects = Effects(checkout.journal)
+    driver = Driver.from_config(checkout.config, journal=checkout.journal, llm=None, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
     lines = []
     for id in ids:
         message = box.get(id)

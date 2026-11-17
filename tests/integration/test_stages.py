@@ -15,6 +15,7 @@ from clutch.box import BOX_DIR, Box
 from clutch.config import load_config
 from clutch.driver import Driver
 from clutch.git import Git
+from clutch.journal import Journal
 from clutch.llm import FakeLLM, LLMRequest
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import (
@@ -225,7 +226,7 @@ def run(repo: Path, script: list, bypass: str = ""):
         await asyncio.Event().wait()
 
     exec_ = SubprocessExec()
-    driver = Driver.from_config(config, llm=llm, env=ENV, clock=clock, sleep=never)
+    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env=ENV, clock=clock, sleep=never)
     ctx = StageContext(
         repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
     )

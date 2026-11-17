@@ -70,7 +70,7 @@ def echo_json(echoed: str) -> str:
 def build(tmp_path: Path, llm: FakeLLM) -> tuple[Driver, Path]:
     (tmp_path / "config.yaml").write_text(CONFIG)
     config = load_config(None, cwd=tmp_path)
-    driver = Driver.from_config(config, llm=llm, env={"CLUTCH_TEST_KEY": SECRET}, clock=clock, sleep=FakeSleep())
+    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env={"CLUTCH_TEST_KEY": SECRET}, clock=clock, sleep=FakeSleep())
     return driver, config.state_dir
 
 

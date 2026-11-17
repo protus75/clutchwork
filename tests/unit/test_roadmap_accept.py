@@ -13,6 +13,7 @@ from clutch.artifacts import Cost, StageResult
 from clutch.box import BOX_DIR, Box, Resolution, RoadmapRow
 from clutch.config import load_config_text
 from clutch.driver import Driver
+from clutch.effects import Effects
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
@@ -317,6 +318,8 @@ def test_main_roadmap_accept(tmp_path, monkeypatch, capsys, result, code, output
 
     def from_config(config, **kw):
         events.append((config, kw["llm"]))
+        driver.journal = kw["journal"]
+        driver.effects = Effects(kw["journal"])
         return driver
 
     async def accept(c, d, release):

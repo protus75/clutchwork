@@ -53,7 +53,7 @@ def setup(tmp_path, script, *, clock=None, sleep=None):
     async def never(_):
         await asyncio.Event().wait()
 
-    driver = Driver.from_config(config, llm=llm, env={}, clock=clock, sleep=sleep or never)
+    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env={}, clock=clock, sleep=sleep or never)
     return config, driver, Journal(config.state_dir, clock), llm, tmp_path / "report.json", clock
 
 
