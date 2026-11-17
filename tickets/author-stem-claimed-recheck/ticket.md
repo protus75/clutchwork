@@ -29,10 +29,10 @@ Out: intake behavior, the gate's own check, spec text, docs, and any other stem-
 - tests/unit/test_author_roadmap_row.py
 
 ## Acceptance criteria
-1. A test creates `tickets/<stem>/ticket.md` with known bytes after the gate check passes and before the write, then runs `author()`. `pytest tests/unit/test_author_stem_claimed.py` asserts the file bytes are unchanged, not replaced by the reply text.
+1. A test creates `tickets/<stem>/ticket.md` with known bytes after the gate check passes and before the write, then runs `author()`. `./dev.py test tests/unit/test_author_stem_claimed.py` asserts the file bytes are unchanged, not replaced by the reply text.
 2. The same test asserts `checkout.git.commit` was never called for that stem, not called once.
 3. The same test asserts the outcome is a decline (the `failure_declined` result), not a success outcome.
-4. A second test in that file runs `author()` with no pre-existing file and asserts the ticket is written and committed, so the new check does not refuse the normal path. `pytest tests/unit/test_author_stem_claimed.py` covers it.
+4. A second test in that file runs `author()` with no pre-existing file and asserts the ticket is written and committed, so the new check does not refuse the normal path. `./dev.py test tests/unit/test_author_stem_claimed.py` covers it.
 5. `./dev.py test tests/unit/test_author.py tests/unit/test_author_roadmap_row.py` exits 0, so existing flows, including a stem copied in by the gate and the two-call roadmap row test, still succeed.
 
 ## Verification
