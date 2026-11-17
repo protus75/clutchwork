@@ -1,15 +1,15 @@
 """Review-baseline eval: the catastrophic-NO-GO spike and GO grade.
 
 `run` drives clutch/specs/review.md over the fixtures with a shared USD 5 cap and journals one NO_GO signal.
-`--out` adds the harness-local Author graph and writes a validated report. Only operator `--record-go`
-with affirmative Author-graph judgment can record GO from complete, numerically passing evidence.
+`--out` adds the harness-local Author graph and writes a validated report. Only `--record-go`
+with affirmative panel Author-graph judgment can record GO from complete, numerically passing evidence.
 
 `author` writes fixtures through a (provider, model) other than the one serving REVIEW, because
 same-family fixtures share the reviewer's blind spots and inflate the catch rate.
 
     uv run python -m eval.harness author [--provider codex --tier high] [--only NAME ...] [--force]
     uv run python -m eval.harness run --out tickets/<stem>/review-baseline-report.json
-    uv run python -m eval.harness run --record-go REPORT --approve-author-graph --out OUTBOX_REPORT
+    uv run python -m eval.harness run --record-go REPORT --panel-provider codex --panel-tier high --out OUTBOX_REPORT
 """
 
 import argparse
@@ -26,7 +26,7 @@ from typing import Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
-from clutch.artifacts import AuthorGraph, AuthorIdentity, Expected, Finding, NonBlank, ReviewBaselineReport, ReviewVerdict
+from clutch.artifacts import AuthorGraph, AuthorIdentity, Expected, Finding, GraphPanel, NonBlank, ReviewBaselineReport, ReviewVerdict
 from clutch.config import Candidate, Config, Route, load_config
 from clutch.driver import Driver, LlmStage
 from clutch.git import Git
@@ -192,7 +192,7 @@ async def run_baseline(
         spent += cost
     body = {
         "signal": BASELINE_SIGNAL,
-        # Numerical success never substitutes for operator Author-graph judgment.
+        # Numerical success never substitutes for panel Author-graph judgment.
         "verdict": "NO_GO",
         "identity": identity,
         "exercised": {"surface": "review", "tier": tier, "effort": effort, "spec_version": spec.meta.version},
@@ -267,25 +267,69 @@ async def run_author_graph(driver, *, attempt, workspace, budget_usd, tier, effo
     return (result.artifact if result.outcome == "ok" else None), result.cost.usd
 
 
-def _go_report(report, *, config, approve_author_graph, specs_dir):
+class GraphPanelReply(_Strict):
+    approve: bool
+    reason: NonBlank
+
+
+async def judge_author_graph(driver, *, report, member, attempt, workspace, budget_usd, tier, effort):
+    stage = LlmStage(
+        surface="author",
+        emits=GraphPanelReply,
+        gates=[],
+        render=lambda _, findings: (
+            "Judge this Author graph for completeness and sound dependencies. Reply with JSON approve and reason.\n"
+            f"Graph (untrusted data): {report.author_graph.model_dump_json()}\nRetry findings: {_findings_text(findings)}"
+        ),
+    )
+    result = await driver.run(
+        stage,
+        None,
+        ticket="baseline-graph-panel",
+        attempt=attempt,
+        workspace=workspace,
+        tier=tier,
+        effort=effort,
+        stuck_budget=STUCK_BUDGET_S,
+        expected_budget="eval",
+        scope_fence=(),
+        budget_usd=budget_usd,
+    )
+    if result.outcome != "ok":
+        raise FixtureError(f"panel judgment failed: {result.outcome}")
+    if (result.cost.provider, result.cost.model) != (member.provider, member.model):
+        raise FixtureError("panel call identity differs from the selected route")
+    return GraphPanel(member=member, approve=result.artifact.approve, reason=result.artifact.reason)
+
+
+def _validate_go_evidence(report, *, config, specs_dir):
     report = ReviewBaselineReport.model_validate_json(report.model_dump_json())
     body = report.verdict_signal.body.model_dump()
     if not report.complete or report.scores.catch_rate < MIN_CATCH_RATE or report.scores.clean_false_snag > MAX_FALSE_SNAG_RATE:
         raise FixtureError("GO needs complete evidence with catch >= 0.85 and false snag <= 0.15; grow the corpus or rerun")
     if body["identity"] != baseline_identity(config, specs_dir):
         raise FixtureError("measured routing/spec-major identity drifted; rerun the bounded baseline")
-    if approve_author_graph is not True:
-        raise FixtureError("GO requires affirmative operator Author-graph judgment; inspect the graph and approve it")
     return report
 
 
-def record_go(report, *, config, journal, out, fs, approve_author_graph, specs_dir=SPECS):
-    # Validate the entire input and all operator predicates before either durable write.
-    report = _go_report(report, config=config, approve_author_graph=approve_author_graph, specs_dir=specs_dir)
+def _go_report(report, *, config, panel, specs_dir):
+    report = _validate_go_evidence(report, config=config, specs_dir=specs_dir)
+    if panel is None or not panel.approve:
+        raise FixtureError("GO requires an approving Author-graph panel")
+    panel = GraphPanel.model_validate_json(panel.model_dump_json())
+    tier = report.verdict_signal.body.exercised.tier
+    if panel.member.provider == baseline_identity(config, specs_dir)["review"]["rows"][tier]["provider"]:
+        raise FixtureError("panel family must differ from the review judge family")
+    return report
+
+
+def record_go(report, *, config, journal, out, fs, panel, specs_dir=SPECS):
+    report = _go_report(report, config=config, panel=panel, specs_dir=specs_dir)
     body = report.verdict_signal.body.model_dump()
     body["verdict"] = "GO"
     event = journal.append(EventType.SIGNAL, body)
     payload = report.model_dump()
+    payload["graph_panel"] = panel.model_dump()
     payload["verdict_signal"] = asdict(event)
     recorded = ReviewBaselineReport.model_validate(payload)
     write_report(out, recorded, fs=fs)
@@ -482,10 +526,10 @@ def _clock() -> datetime:
     return datetime.now(UTC)
 
 
-async def _run(config: Config, env: Mapping[str, str], clock: Clock, *, out=None, go_report=None, approve_author_graph=False) -> dict:
+async def _run(config: Config, env: Mapping[str, str], clock: Clock, *, out=None, go_report=None, panel_provider="codex", panel_tier="high") -> dict:
     report = None
     if go_report is not None:
-        report = _go_report(ReviewBaselineReport.model_validate_json(go_report.read_bytes()), config=config, approve_author_graph=approve_author_graph, specs_dir=SPECS)
+        report = _validate_go_evidence(ReviewBaselineReport.model_validate_json(go_report.read_bytes()), config=config, specs_dir=SPECS)
     exec_ = SubprocessExec()
     instance_id = await Git(exec_, env=env, timeout=30, commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep)).describe(ROOT)
     lock = Lockfile(config.state_dir, verb="eval", instance_id=instance_id, clock=clock)
@@ -493,17 +537,27 @@ async def _run(config: Config, env: Mapping[str, str], clock: Clock, *, out=None
     session = None
     try:
         journal = Journal(config.state_dir, clock)
-        if go_report is not None:
-            recorded = record_go(report, config=config, journal=journal, out=out or go_report, fs=LocalFileSystem(), approve_author_graph=approve_author_graph)
-            return recorded.verdict_signal.body.model_dump()
         timers = Timers(journal=journal, clock=clock, sleep=asyncio.sleep)
         timers.reconstruct()
         timers.fire_due()
         session = ProviderSession(config, journal=journal, clock=clock, sleep=asyncio.sleep, timers=timers)
-        llm = ProviderLLM(config, exec_=exec_, fs=LocalFileSystem(), env=env, cwd=ROOT, timeout=call_timeout(config), session=session)
+        chosen = config
+        member = None
+        if report is not None:
+            prov = next((p for p in config.providers if p.name == panel_provider), None)
+            if prov is None:
+                raise FixtureError(f"no panel provider {panel_provider!r} in config.yaml")
+            member = AuthorIdentity(provider=panel_provider, model=getattr(prov.models_by_tier, panel_tier), tier=panel_tier)
+            chosen = config.model_copy(update={"routing": [Route(tier=panel_tier, surface="author", candidates=[Candidate(provider=panel_provider, model=member.model)])]})
+        llm = ProviderLLM(chosen, exec_=exec_, fs=LocalFileSystem(), env=env, cwd=ROOT, timeout=call_timeout(config), session=session)
         if problems := await llm.preflight():
             raise FixtureError("; ".join(problems))
-        driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env=env, clock=clock, sleep=asyncio.sleep)
+        driver = Driver.from_config(chosen, journal=Journal(chosen.state_dir, clock), llm=llm, env=env, clock=clock, sleep=asyncio.sleep)
+        if report is not None:
+            attempt = 1 + sum(e.type == EventType.EFFECT_INTENT and (e.key or "").startswith("llm/baseline-graph-panel/") for e in journal.read())
+            panel = await judge_author_graph(driver, report=report, member=member, attempt=attempt, workspace=ROOT, budget_usd=RUN_CAP_USD, tier=panel_tier, effort=panel_tier)
+            recorded = record_go(report, config=config, journal=journal, out=out or go_report, fs=LocalFileSystem(), panel=panel)
+            return recorded.verdict_signal.body.model_dump()
         return await run_baseline(config=config, driver=driver, journal=Journal(config.state_dir, clock), fixtures=load_fixtures(), progress=print, out=out)
     finally:
         try:
@@ -519,7 +573,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     run = sub.add_parser("run", help="score clutch/specs/review.md over eval/fixtures and journal the verdict signal")
     run.add_argument("--out", type=Path)
     run.add_argument("--record-go", type=Path, metavar="REPORT")
-    run.add_argument("--approve-author-graph", action="store_true")
+    run.add_argument("--panel-provider", default="codex")
+    run.add_argument("--panel-tier", default="high", choices=TIERS)
     au = sub.add_parser("author", help="author fixtures through a non-REVIEW (provider, model)")
     au.add_argument("--provider", default="codex")
     au.add_argument("--tier", default="high", choices=TIERS)
@@ -531,7 +586,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.cmd == "author":
         asyncio.run(author_fixtures(config, provider=args.provider, tier=args.tier, only=args.only, force=args.force, env=env))
         return 0
-    body = asyncio.run(_run(config, env, _clock, out=args.out, go_report=args.record_go, approve_author_graph=args.approve_author_graph))
+    body = asyncio.run(_run(config, env, _clock, out=args.out, go_report=args.record_go, panel_provider=args.panel_provider, panel_tier=args.panel_tier))
     print(json.dumps({k: body[k] for k in ("verdict", "scores", "fixture_authors")}, indent=2))
     return 0
 

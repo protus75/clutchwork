@@ -222,6 +222,12 @@ class AuthorIdentity(FrozenModel):
     tier: AgentTier
 
 
+class GraphPanel(FrozenModel):
+    member: AuthorIdentity
+    approve: bool
+    reason: NonBlank
+
+
 class Expected(FrozenModel):
     expected_verdict: Literal["approve", "snag"]
     defect_class: Literal["logic", "hidden_info_leak", "acceptance_mismatch", "scope_escape", "none"]
@@ -400,6 +406,7 @@ class ReviewBaselineReport(FrozenModel):
     results: list[BaselineResult]
     scores: BaselineScores
     author_graph: AuthorGraph | None
+    graph_panel: GraphPanel | None = None
     verdict_signal: BaselineSignal
 
     @field_validator("schema_version", mode="before")

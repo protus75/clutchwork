@@ -1,24 +1,29 @@
 """GO-grade entry contract, closed reports and operator-only verdict production."""
 
 import asyncio
+import json
 from dataclasses import asdict
 
 import pytest
 from pydantic import ValidationError
 
-from clutch.artifacts import ReviewBaselineReport
+from clutch.artifacts import GraphPanel, ReviewBaselineReport
+from clutch.journal import EventType
+from clutch.llm import FakeLLM, LLMResult
 from clutch.seams import LocalFileSystem
 from eval import harness
-from tests.integration.test_eval_harness import corpus_results, report_fixture
+from tests.integration.test_eval_harness import CODEX, NOW, corpus_results, report_fixture
 
 
-def test_record_go_requires_complete_floors_identity_and_operator_judgment(tmp_path):
+def test_record_go_requires_complete_floors_identity_and_operator_judgment(tmp_path, monkeypatch):
     report, cfg, journal = report_fixture(tmp_path)
     out = tmp_path / "operator-report.json"
     fs = LocalFileSystem()
 
-    def record(candidate=report, config=cfg, approve=True):
-        return harness.record_go(candidate, config=config, journal=journal, out=out, fs=fs, approve_author_graph=approve)
+    panel = GraphPanel(member=CODEX, approve=True, reason="sound graph")
+
+    def record(candidate=report, config=cfg):
+        return harness.record_go(candidate, config=config, journal=journal, out=out, fs=fs, panel=panel)
 
     assert report.scores.catch_rate == 0.85 and report.scores.clean_false_snag == 0.15
     candidates = [
@@ -46,18 +51,26 @@ def test_record_go_requires_complete_floors_identity_and_operator_judgment(tmp_p
     before = journal.read()
     with pytest.raises(harness.FixtureError, match="drifted"):
         record(ReviewBaselineReport.model_validate(raw))
-    with pytest.raises(harness.FixtureError, match="judgment"):
-        record(approve=False)
     # Revalidation defeats unvalidated model_copy updates before any append/write.
     with pytest.raises(ValidationError):
         record(report.model_copy(update={"complete": False}))
     assert journal.read() == before and not out.exists()
     measured = tmp_path / "measured.json"
     harness.write_report(measured, report, fs=fs)
-    files = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
-    with pytest.raises(harness.FixtureError, match="judgment"):
-        asyncio.run(harness._run(cfg, {}, lambda: None, out=out, go_report=measured))
-    assert files == {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    before = measured.read_bytes()
+    fixtures = {p: p.read_bytes() for p in harness.FIXTURES.glob("*/*") if p.is_file()}
+
+    class ReadyLLM(FakeLLM):
+        async def preflight(self):
+            return []
+
+    llm = ReadyLLM([LLMResult(json.dumps({"approve": False, "reason": "bad graph"}), None, None, "codex", "x-high", 0.0)])
+    monkeypatch.setattr(harness, "ProviderLLM", lambda *args, **kwargs: llm)
+    with pytest.raises(harness.FixtureError, match="panel"):
+        asyncio.run(harness._run(cfg, {"PATH": "/usr/bin:/bin"}, lambda: NOW, out=out, go_report=measured))
+    assert not any(e.type == EventType.SIGNAL and e.body.get("verdict") == "GO" for e in journal.read())
+    assert not out.exists() and measured.read_bytes() == before
+    assert fixtures == {p: p.read_bytes() for p in fixtures}
     recorded = record()
     assert recorded.verdict_signal.body.verdict == "GO"
     assert recorded.verdict_signal.model_dump() == asdict(journal.read()[-1])
@@ -67,7 +80,7 @@ def test_record_go_requires_complete_floors_identity_and_operator_judgment(tmp_p
 
 def test_review_baseline_report_closed_schema(tmp_path):
     report, _, _ = report_fixture(tmp_path)
-    assert set(report.model_dump()) == {"schema_version", "complete", "cap_usd", "spent_usd", "results", "scores", "author_graph", "verdict_signal"}
+    assert set(report.model_dump()) == {"schema_version", "complete", "cap_usd", "spent_usd", "results", "scores", "author_graph", "graph_panel", "verdict_signal"}
     mutations = [
         lambda r: r.update(extra=True),
         lambda r: r.update(schema_version=2),
