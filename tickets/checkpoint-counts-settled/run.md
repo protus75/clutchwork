@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Journal segments rotate only on append. Removing checkpoint timer events leaves the quiet soak with no append after the 24-hour boundary, so its required journal-rotation evidence is missing. The exact verification command could not establish a base comparison because the new unit test file does not exist on the base commit.
+The roadmap retains an out-of-scope reference to the removed checkpoint interval. The final ticket verification passed all 220 tests; the hard unit coverage, integration, lint, and format checks also passed.
 
 ## Dead ends
 
-The checkpoint, lifecycle, and daemon composition tests passed, but the soak tests failed on missing journal age rotation.
+A clock-based deadline was removed in favor of counting journal events after the last completed push, the smallest approach that satisfies the ticket.
 
 ## Second problems filed
 
-none
+- box-000622-dfa19f13: docs/roadmap.md row 100 still describes CHECKPOINT_INTERVAL as an existing checkpoint trigger.
 
 ## Resolved engine/model
 
