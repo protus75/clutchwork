@@ -26,10 +26,10 @@ def test_probe(monkeypatch, capsys):
             return 0, json.dumps({"type": "result", "subtype": "success", "result": "ok", "total_cost_usd": 0.5}), ""
 
     monkeypatch.setattr(cli, "SubprocessExec", Exec)
-    assert cli.main(["probe", "claude"], cwd=Path("/repo"), env={}) == 0
+    assert cli.main(["provider", "probe", "claude"], cwd=Path("/repo"), env={}) == 0
     assert "claude opus: ok" in capsys.readouterr().out
-    assert cli.main(["probe"], cwd=Path("/repo"), env={}) == 1
+    assert cli.main(["provider", "probe"], cwd=Path("/repo"), env={}) == 1
     out = capsys.readouterr().out
     assert "claude opus: ok" in out and "codex gpt:" in out and "fix provider 'codex'" in out
-    assert cli.main(["probe", "missing"], cwd=Path("/repo"), env={}) == 2
+    assert cli.main(["provider", "probe", "missing"], cwd=Path("/repo"), env={}) == 2
     assert "claude" in capsys.readouterr().err

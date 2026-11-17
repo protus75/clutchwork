@@ -358,8 +358,38 @@ def _parser() -> argparse.ArgumentParser:
     )
     help_parser.add_argument("command", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
-    sub.add_parser("install", help="install provider CLIs into the host project as pnpm dev dependencies").add_argument("providers", nargs="*")
-    sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
+    provider = sub.add_parser(
+        "provider",
+        help="install and probe provider CLIs",
+        description="Install or report provider CLIs and probe declared providers' models.",
+        epilog="Examples:\nclutch provider install\n  Report provider CLIs.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    provider_sub = provider.add_subparsers(dest="provider_verb", required=True)
+    install = _command(
+        provider_sub,
+        "install",
+        summary="install provider CLIs into the host project as pnpm dev dependencies",
+        does="Install named provider CLIs as pnpm dev dependencies, then report their package, location and version; with no names, report every adapter.",
+        reads="Provider CLI --version output from node_modules/.bin or PATH; no config.",
+        writes="With names, package.json, pnpm-lock.yaml and node_modules/ through pnpm; otherwise nothing.",
+        lock="None.",
+        exits="0 when installed or reported; 2 on refusal (unknown provider, pnpm missing, or pnpm add failed).",
+        examples=["clutch provider install", "clutch provider install claude codex"],
+    )
+    install.add_argument("providers", nargs="*")
+    probe = _command(
+        provider_sub,
+        "probe",
+        summary="probe declared providers",
+        does="Probe each distinct model of named declared providers, or every declared provider, and print each result.",
+        reads="Config and declared provider CLIs.",
+        writes="Nothing kept; scratch prompts under <state_dir>/evidence/scratch/ are removed after each call.",
+        lock="None.",
+        exits="0 when every probe answers; 1 on probe or provider setup failure; 2 for an undeclared provider or refusal.",
+        examples=["clutch provider probe", "clutch provider probe claude"],
+    )
+    probe.add_argument("providers", nargs="*")
     config_parser = sub.add_parser(
         "config",
         help="create, check and migrate config.yaml",
@@ -798,7 +828,7 @@ def main(
             try:
                 return suggest_config(statuses, listings)
             except ValueError:
-                raise runner.Refusal("no provider CLI found", f"run: clutch install {'|'.join(sorted(ADAPTERS))}") from None
+                raise runner.Refusal("no provider CLI found", f"run: clutch provider install {'|'.join(sorted(ADAPTERS))}") from None
 
         text = asyncio.run(init_config())
         load_config_text(text, path=repo / "config.yaml", cwd=repo)
@@ -823,13 +853,14 @@ def main(
                     try:
                         rc, _, err = await exec_.run(["pnpm", "add", "-D", f"{package}@latest"], cwd=repo, env=tool_env(env, repo), timeout=INSTALL_TIMEOUT_S)
                     except ExecutableNotFound:
-                        raise runner.Refusal("pnpm is not on PATH", "install pnpm (https://pnpm.io/installation), then rerun clutch install") from None
+                        raise runner.Refusal("pnpm is not on PATH", "install pnpm (https://pnpm.io/installation), then rerun clutch provider install") from None
                     if rc:
                         lines = [line for line in err.splitlines() if line.strip()]
-                        raise runner.Refusal(f"pnpm add {package}@latest failed (rc {rc}): {lines[-1] if lines else ''}", "fix the pnpm error, then rerun clutch install")
+                        raise runner.Refusal(f"pnpm add {package}@latest failed (rc {rc}): {lines[-1] if lines else ''}", "fix the pnpm error, then rerun clutch provider install")
                 status = await cli_status(name, exec_=exec_, env=env, cwd=repo)
                 print(
-                    f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}" + (f" -- run: clutch install {name}" if status.where == "absent" else "")
+                    f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}"
+                    + (f" -- run: clutch provider install {name}" if status.where == "absent" else "")
                 )
                 if name == "qwen":
                     print("ollama: not installed by clutch; follow clutch/docs/host-qwen.md")
@@ -887,7 +918,7 @@ def main(
                 try:
                     listing = await ADAPTERS[name].list_models(exec_=exec_, env=child_env(env, config, provider), cwd=repo)
                 except ExecutableNotFound as exc:
-                    raise runner.Refusal(str(exc), f"run: clutch install {name}") from None
+                    raise runner.Refusal(str(exc), f"run: clutch provider install {name}") from None
                 print(name)
                 served = " ".join(f"{label}={model}" if label != model else model for label, model in listing.models.items())
                 print(f"  serves: {served or 'nothing listed'}")
@@ -1239,13 +1270,12 @@ def main(
 
     handlers = {
         "docs": handle_docs,
-        "install": handle_install,
         "covgate": handle_covgate,
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
         "box": lambda: {"suggest": handle_suggest, "triage": handle_triage, "dismiss": handle_dismiss, "issue": handle_issue}[args.box_verb](),
         "doctor": handle_doctor,
         "config": lambda: {"init": handle_init_config, "update": handle_update_config, "migrate": handle_migrate_config}[args.config_verb](),
-        "probe": handle_probe,
+        "provider": lambda: {"install": handle_install, "probe": handle_probe}[args.provider_verb](),
         "core": handle_core,
         "prompt": handle_prompt,
         "covmap": handle_covmap,
@@ -1274,7 +1304,8 @@ def main(
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
         if (
-            args.verb in {"docs", "install", "covgate", "doctor"}
+            args.verb in {"docs", "covgate", "doctor"}
+            or (args.verb == "provider" and args.provider_verb == "install")
             or (args.verb == "config" and args.config_verb in {"init", "migrate"})
             or (args.verb == "box" and args.box_verb == "issue")
             or (args.verb == "ticket" and args.ticket_verb == "new")
@@ -1283,7 +1314,7 @@ def main(
         config = load_config(args.config, cwd=repo)
         if args.verb == "engine" and args.engine_verb == "drain" and args.detach:
             return handle_detach()
-        if args.verb in {"config", "probe", "core", "prompt"}:
+        if args.verb in {"config", "provider", "core", "prompt"}:
             return handlers[args.verb]()
         exec_ = SubprocessExec()
         checkout = runner.Checkout(

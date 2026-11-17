@@ -53,13 +53,13 @@ def test_install(monkeypatch, capsys):
     monkeypatch.setattr(Path, "is_file", lambda self: False)
 
     def main(*args):
-        return cli.main(["install", *args], cwd=Path("/repo"), env={"PATH": "/bin"})
+        return cli.main(["provider", "install", *args], cwd=Path("/repo"), env={"PATH": "/bin"})
 
     assert main() == 0
     assert capsys.readouterr().out.splitlines() == [
         "claude: system 2.1.322, package @anthropic-ai/claude-code",
         "codex: system 0.167.1, package @openai/codex",
-        "qwen: absent, package @qwen-code/qwen-code -- run: clutch install qwen",
+        "qwen: absent, package @qwen-code/qwen-code -- run: clutch provider install qwen",
         "ollama: not installed by clutch; follow clutch/docs/host-qwen.md",
         "gemini: system 0.49.0, package @google/gemini-cli",
     ]

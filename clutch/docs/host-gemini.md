@@ -6,7 +6,7 @@ Google's Gemini CLI (`gemini`) is a clutch provider for text work. clutch passes
 
 ## Install
 
-Run `clutch install gemini` to install a pnpm dev dependency in the host, or `pnpm add -g @google/gemini-cli@latest` for a global install.
+Run `clutch provider install gemini` to install a pnpm dev dependency in the host, or `pnpm add -g @google/gemini-cli@latest` for a global install.
 
 ## Authenticate
 
@@ -14,7 +14,7 @@ Create an API key in Google AI Studio, export `GEMINI_API_KEY` in the environmen
 
 ## Pick models
 
-The CLI has no listing command, so `clutch config update` lists no gemini models and prints a problem line. The hand test called `gemini-3.1-pro-preview` and `gemini-3.1-flash-lite`, and the API lists `gemini-3-flash-preview`. A name ending in `flash` is rewritten by the CLI: `gemini-2.5-flash` was served as `gemini-3.6-flash`. clutch records the served name as the call's model. `gemini-2.5-pro` is listed but returns 404 for new keys. Confirm every choice with `clutch probe gemini`.
+The CLI has no listing command, so `clutch config update` lists no gemini models and prints a problem line. The hand test called `gemini-3.1-pro-preview` and `gemini-3.1-flash-lite`, and the API lists `gemini-3-flash-preview`. A name ending in `flash` is rewritten by the CLI: `gemini-2.5-flash` was served as `gemini-3.6-flash`. clutch records the served name as the call's model. `gemini-2.5-pro` is listed but returns 404 for new keys. Confirm every choice with `clutch provider probe gemini`.
 
 ## Declare it in config.yaml
 
@@ -29,7 +29,7 @@ limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
 
 ## Probe it
 
-Run `clutch probe gemini`; it prints `gemini <model>: ok`. `Please set an Auth method` means the key is not exported in clutch's environment; `API key not valid` means the key is wrong; a model error means the id is not served.
+Run `clutch provider probe gemini`; it prints `gemini <model>: ok`. `Please set an Auth method` means the key is not exported in clutch's environment; `API key not valid` means the key is wrong; a model error means the id is not served.
 
 ## Route it
 

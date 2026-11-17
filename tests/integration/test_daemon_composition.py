@@ -909,7 +909,7 @@ async def test_production_core_unwinds_preflight_refusal_and_cancellation(tmp_pa
         if failure == "refusal":
             message = str(caught.value)
             assert "provider preflight failed" in message and "failed its probe" in message
-            assert "-- run: clutch install " in message
+            assert "-- run: clutch provider install " in message
             assert "fix each named provider, then run the same command again" in message
         else:
             assert caught.value is error

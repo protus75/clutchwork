@@ -15,21 +15,21 @@ uv add --dev clutchwork
 uv sync
 ```
 
-Install the provider CLIs you route with `uv run clutch install claude codex` (pnpm dev dependencies under `node_modules/.bin`; a CLI already on `PATH` works without it).
+Install the provider CLIs you route with `uv run clutch provider install claude codex` (pnpm dev dependencies under `node_modules/.bin`; a CLI already on `PATH` works without it).
 
 Run its verbs as `uv run clutch <verb>`. Your host also needs `config.yaml`; start with the [copyable configuration](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md), or create one with `uv run clutch config init --write` from the CLIs you installed.
 
 ## Set up a host
 
-Run `uv run clutch doctor` and `uv run clutch probe`, then `uv run clutch core` to write the managed conduct block into `CLAUDE.md` for Claude and Qwen Code or `AGENTS.md` for other CLIs. Commit the files. The block gives a chat agent rules for authoring and editing tickets with `clutch ticket new`, `clutch ticket lint`, and `clutch ticket review`, and for supervising a drain. Re-run `core` after upgrading clutch: `engine drain`, `engine serve`, and `engine run` refuse to start while the block is stale.
+Run `uv run clutch doctor` and `uv run clutch provider probe`, then `uv run clutch core` to write the managed conduct block into `CLAUDE.md` for Claude and Qwen Code or `AGENTS.md` for other CLIs. Commit the files. The block gives a chat agent rules for authoring and editing tickets with `clutch ticket new`, `clutch ticket lint`, and `clutch ticket review`, and for supervising a drain. Re-run `core` after upgrading clutch: `engine drain`, `engine serve`, and `engine run` refuse to start while the block is stale.
 
 ```sh
 # Setup
 uv run clutch config init  # print a suggested config.yaml
-uv run clutch install  # install provider CLIs into the host
+uv run clutch provider install  # install provider CLIs into the host
 uv run clutch config update  # list current model names per provider
 uv run clutch doctor   # inspect host setup
-uv run clutch probe   # probe declared providers and models
+uv run clutch provider probe   # probe declared providers and models
 uv run clutch core     # refresh managed conduct files
 ```
 

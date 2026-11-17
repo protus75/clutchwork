@@ -28,7 +28,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "explicit override",
         "the engine authored",
         "clutch doctor",
-        "clutch probe",
+        "clutch provider probe",
         "clutch release --minor",
         "never twice",
         "clutch prompt drain-loop",
@@ -65,7 +65,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "Still open:",
     ):
         assert phrase in text, phrase
-    assert text.index("conduct files") < text.index("clutch doctor") < text.index("clutch probe") < text.index("clutch prompt drain-loop")
+    assert text.index("conduct files") < text.index("clutch doctor") < text.index("clutch provider probe") < text.index("clutch prompt drain-loop")
     assert text.index("standing delegation") < text.index("clutch ticket confirm --yes")
     assert "Let the driver author" not in text
     assert "Hand-author only when the driver cannot" not in text

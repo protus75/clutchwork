@@ -138,7 +138,7 @@ def test_verb(monkeypatch, capsys):
     config.providers = [claude]
     exec_.responses["haiku"] = ExecutableNotFound("claude")
     assert run() == 2
-    assert "run: clutch install claude" in capsys.readouterr().err
+    assert "run: clutch provider install claude" in capsys.readouterr().err
 
 
 @pytest.mark.parametrize(

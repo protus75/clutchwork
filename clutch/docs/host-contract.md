@@ -12,9 +12,9 @@ For a specific release, pin it as `clutchwork==<version>`. Run `uv sync`; the
 executable is `.venv/bin/clutch`. Run verbs as `uv run clutch <verb>`. Native
 Windows uses `.venv\Scripts\clutch.exe`; set `clutch.command` explicitly there.
 
-`uv run clutch install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run clutch install` with no names reports each adapter's package, location, and version.
+`uv run clutch provider install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run clutch provider install` with no names reports each adapter's package, location, and version.
 
-`uv run clutch config init --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch doctor` and `clutch probe` check.
+`uv run clutch config init --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch doctor` and `clutch provider probe` check.
 
 ## Copyable configuration
 
@@ -119,10 +119,10 @@ inventory sends a ticket that would lower a threshold to a human.
 ## Onboarding a host
 
 1. Follow [Install](#install) to install clutch in the host.
-2. Use `clutch install` for the routed CLIs; see the [run guide](host-running.md).
+2. Use `clutch provider install` for the routed CLIs; see the [run guide](host-running.md).
 3. Use `clutch config init` to generate a starting configuration; see the [run guide](host-running.md).
 4. Copy or edit `config.yaml` using [Copyable configuration](#copyable-configuration).
-5. Run `clutch doctor` and `clutch probe` to check the setup and providers; see the [run guide](host-running.md).
+5. Run `clutch doctor` and `clutch provider probe` to check the setup and providers; see the [run guide](host-running.md).
 6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
 7. Author the first ticket with `clutch ticket new`, then run `clutch ticket lint` and `clutch ticket review`; see the [run guide](host-running.md).
 8. Run the ticket with `clutch engine drain` or `clutch engine serve`; see the [run guide](host-running.md).

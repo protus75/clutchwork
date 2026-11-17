@@ -110,7 +110,7 @@ def test_registry_listing_and_conduct():
     assert (GeminiAdapter.PACKAGE, GeminiAdapter.binary, GeminiAdapter.reports_cost) == ("@google/gemini-cli", "gemini", False)
     listing = asyncio.run(GeminiAdapter.list_models(exec_=Mock(run=Mock(side_effect=AssertionError)), env={}, cwd=Path("/repo")))
     assert listing.models == {} and len(listing.problems) == 1
-    assert "host-gemini.md" in listing.problems[0] and "clutch probe gemini" in listing.problems[0]
+    assert "host-gemini.md" in listing.problems[0] and "clutch provider probe gemini" in listing.problems[0]
     status = CliStatus("gemini", "@google/gemini-cli", "gemini", "system", "0.49.0")
     text = providers.suggest_config([status], {"gemini": listing})
     assert "    package: '@google/gemini-cli'\n    auth: GEMINI_API_KEY\n" in text

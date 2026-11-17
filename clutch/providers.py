@@ -776,7 +776,7 @@ class GeminiAdapter(CliAdapter):
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
-        return ModelListing({}, ("gemini has no model-listing command; see clutch/docs/host-gemini.md and run clutch probe gemini",))
+        return ModelListing({}, ("gemini has no model-listing command; see clutch/docs/host-gemini.md and run clutch provider probe gemini",))
 
     def argv(self, model: str, effort: AgentEffort, writes: bool) -> list[str]:
         return ["gemini", "--skip-trust", "-m", model, "-o", "stream-json", "--approval-mode", "yolo" if writes else "default"]
@@ -837,7 +837,7 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
     if not present:
         raise ValueError("no provider CLI found")
     lines = [
-        "# Suggested by clutch config init from the provider CLIs found; edit models, checks and routing, then run clutch doctor and clutch probe.",
+        "# Suggested by clutch config init from the provider CLIs found; edit models, checks and routing, then run clutch doctor and clutch provider probe.",
         "schema_version: 1",
         "state_dir: .clutch",
         "providers:",
@@ -941,7 +941,7 @@ class ProviderLLM:
             except TimeoutError, ExecutableNotFound:
                 continue
             if not latest.strip() or installed is None or installed != latest.strip():
-                notices.append(f"{adapter.binary} {installed or '(unknown)'} is not the latest release {latest.strip() or '(unreadable)'} -- run: clutch install {adapter.provider.name}")
+                notices.append(f"{adapter.binary} {installed or '(unknown)'} is not the latest release {latest.strip() or '(unreadable)'} -- run: clutch provider install {adapter.provider.name}")
         probed: set[tuple[str, str]] = set()
         probes = []
         for route in self._config.routing:
@@ -965,7 +965,7 @@ class ProviderLLM:
             await asyncio.gather(*tasks, return_exceptions=True)
         for (provider, model, adapter, _), result in zip(probes, results, strict=True):
             if isinstance(result, Exception):
-                problems.append(f"{provider} model {model!r} failed its probe: {result} -- run: clutch install {provider}, or route a model this login serves in config.yaml")
+                problems.append(f"{provider} model {model!r} failed its probe: {result} -- run: clutch provider install {provider}, or route a model this login serves in config.yaml")
             elif isinstance(result, BaseException):
                 raise result
         if not problems:

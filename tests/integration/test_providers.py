@@ -471,7 +471,7 @@ def test_preflight_reports_a_stale_cli_without_refusing_the_run(tmp_path):
     llm_ = llm(config(tmp_path), PreflightExec({**CURRENT, "codex": "codex-cli 1.2.0"}, "1.2.3"), tmp_path)
     assert asyncio.run(llm_.preflight()) == []
     [notice] = llm_.preflight_notices
-    assert "codex 1.2.0 is not the latest release 1.2.3" in notice and "-- run: clutch install codex" in notice and "pnpm add" not in notice
+    assert "codex 1.2.0 is not the latest release 1.2.3" in notice and "-- run: clutch provider install codex" in notice and "pnpm add" not in notice
 
 
 def test_preflight_refuses_a_model_the_login_cannot_serve(tmp_path):

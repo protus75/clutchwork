@@ -38,7 +38,7 @@ In administrator PowerShell add a firewall rule admitting only WSL's NAT interfa
 New-NetFirewallRule -DisplayName "Ollama from WSL" -Direction Inbound -Protocol TCP -LocalPort 11434 -InterfaceAlias "vEthernet (WSL*)" -Action Allow
 ```
 
-Set `base_url` to `http://<host-ip>:11434/v1`, using the Windows host address as seen from WSL. This can change on restart; update it if `clutch probe qwen` cannot connect.
+Set `base_url` to `http://<host-ip>:11434/v1`, using the Windows host address as seen from WSL. This can change on restart; update it if `clutch provider probe qwen` cannot connect.
 
 ## Pull the model
 
@@ -46,7 +46,7 @@ Run `ollama pull qwen3-coder:30b`.
 
 ## Install Qwen Code
 
-Run `clutch install qwen` to install it into the host project, or `pnpm add -g @qwen-code/qwen-code@latest` for a system-wide install.
+Run `clutch provider install qwen` to install it into the host project, or `pnpm add -g @qwen-code/qwen-code@latest` for a system-wide install.
 
 ## Declare it in config.yaml
 
@@ -63,7 +63,7 @@ limits: {concurrency: 1, est_cost_per_call_usd: 0}
 
 ## Probe it
 
-Run `clutch probe qwen`. `qwen qwen3-coder:30b: ok` means Ollama, Qwen Code, and `base_url` all work; otherwise the error is printed. `error_during_execution` usually means qwen could not reach Ollama at `base_url`: check that Ollama is running, the URL, and on Windows the firewall rule and `OLLAMA_HOST`. The first call loads the model, which takes about a minute.
+Run `clutch provider probe qwen`. `qwen qwen3-coder:30b: ok` means Ollama, Qwen Code, and `base_url` all work; otherwise the error is printed. `error_during_execution` usually means qwen could not reach Ollama at `base_url`: check that Ollama is running, the URL, and on Windows the firewall rule and `OLLAMA_HOST`. The first call loads the model, which takes about a minute.
 
 ## Route it
 

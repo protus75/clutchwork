@@ -7,7 +7,7 @@ uv run clutch doctor
 uv run clutch engine serve
 ```
 
-Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `ticket confirm`.
+Use the same prefix for the other verbs below; for example, `clutch provider install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `ticket confirm`.
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
@@ -20,8 +20,8 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `doctor` | No | Inspect setup; its lock probe reports a held lock as a failure. |
 | `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, or the plan-ticket-drain kickoff without writing state. |
 | `core` | Yes | Refresh managed conduct files. |
-| `probe` | Yes | Probe declared providers and models. |
-| `install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |
+| `provider probe` | Yes | Probe declared providers and models. |
+| `provider install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |
 | `config init` | Yes | Print a suggested `config.yaml` from the provider CLIs found and the models they serve; `--write` creates `config.yaml` when none exists. |
 | `config update` | Yes | List the model names each declared provider serves and say which configured names are current, replaced, or not served; reports names as unverified when the listing is empty with a problem; writes nothing. |
 | `help` | Yes | Print a command's help and examples; `clutch --help <command>` does the same. |

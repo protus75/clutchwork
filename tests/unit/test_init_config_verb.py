@@ -126,7 +126,7 @@ def test_verb(monkeypatch, capsys):
     assert "config.yaml already exists" in capsys.readouterr().err
     absent[0] = True
     assert run() == 2
-    assert "run: clutch install claude|codex|gemini|qwen" in capsys.readouterr().err
+    assert "run: clutch provider install claude|codex|gemini|qwen" in capsys.readouterr().err
     absent[0] = False
     fs.publish.reset_mock()
     monkeypatch.setattr(cli, "load_config_text", Mock(side_effect=ConfigError(Path("/repo/config.yaml"), None, "bad")))
