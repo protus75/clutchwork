@@ -40,7 +40,7 @@ When this ticket is done:
 
 Why: the owner's row 129 rules require every command under a group, and rows 131-140 move the rest. Row 131 (`cli-group-engine-control`) adds `pause`, `resume`, `kill` and `retro` to this group later.
 
-Transition, once: a drain or serve started before this merges re-execs at its next self-upgrade with the argv it was started with (`drain` or `serve`), which the new parser refuses with exit 2 and a usage line in `<state_dir>/drain.out`. Restart it with `clutch engine drain --detach` or `clutch engine serve`. A supervising loop that still holds the old `clutch prompt drain-loop` text must use the new form too.
+Transition, once: a drain or serve started before this merges re-execs at its next self-upgrade with the argv it was started with (`drain` or `serve`), which the new parser refuses with exit 2 (a detached drain writes the usage error to `<state_dir>/drain.out`). Restart it with `clutch engine drain --detach` or `clutch engine serve`. A supervising loop that still holds the old `clutch prompt drain-loop` text must use the new form too.
 
 ## Scope in / Scope out
 In, `clutch/__main__.py`:
@@ -87,7 +87,7 @@ Out:
 - Lock and journal vocabulary: `Lockfile` verbs, `lockfile.ENGINE_VERBS`, engine.log `verb`, control request `verb`, `observe.lock_verb`.
 - Mode names in prose and headings: `### 7.1 \`drain\`` and `### 7.2 \`serve\`` (`clutch/help.py` links them by heading), "rerun drain", "restart serve", "start a drain or serve before submitting stop", "Every ticket read (intake, lint, confirm, drain, serve, run, and Author)", and the rest of `docs/how-clutch-works.md`. Module docstrings.
 - `clutch/hostfiles.py` CORE_TEMPLATE, the managed blocks, `CLAUDE.md` and `AGENTS.md`: none names these commands (`grep -nE 'clutch (drain|serve|run|stop)' clutch/hostfiles.py CLAUDE.md AGENTS.md` prints nothing at HEAD), so `clutch core` is not run.
-- `dev.py` (no engine verb), `vscode-clutchwork/`, `CLUTCH_PLAN.md`, `docs/roadmap.md` and the plans under `docs/`.
+- `dev.py` (no engine verb), `vscode-clutchwork/` (its `clutch.playAction` values `drain` and `serve` pick which play command shows, not argv), `CLUTCH_PLAN.md`, `docs/roadmap.md` and the plans under `docs/`.
 - Textual mentions a test does not parse or compare with code: `tests/unit/test_issue_link.py`'s issue body, the `"clutch drain"` process rows of `tests/unit/test_live_call.py` and `tests/unit/test_live_call_gemini.py`, the lock-holder process strings of `tests/integration/test_watch.py::test_engine_flag_follows_lock_holder` (its holder verb comes from the lockfile), and `tests/integration/serve_rig.py`'s opaque `("--config", "config.yaml", "serve")` re-exec argv with its pass-through check in `tests/integration/test_serve_upgrade.py`.
 - `tests/unit/test_main_help.py`: unedited; its parser walk picks up the group.
 
@@ -181,17 +181,16 @@ Out:
 10. `git grep -nE 'clutch (drain|serve|run|stop)([^a-z-]|$)' -- README.md clutch docs/how-clutch-works.md` prints nothing; at HEAD `60608fe6` it prints 22 lines. ``git grep -nE '`(drain|serve|run|stop)( [^`]*)?`' -- README.md 'clutch/docs/host-*.md'`` prints nothing; at HEAD it prints 11 lines. ``git grep -nE '`(run \{|drain` again)' -- clutch`` prints nothing; at HEAD it prints 6 lines. ``git grep -nE '\("(serve|drain)",\)' -- clutch`` prints nothing (at HEAD, the four default `argv`s). `grep -c 'conduct files and retry engine ' clutch/__main__.py` prints `1`. Ruled out: a reference left in a doc, prompt, default argv or engine road.
 11. In `docs/how-clutch-works.md` section 2.1, `grep -nE '^\| .(run|drain|serve|stop)( [^|]*)?. \|' docs/how-clutch-works.md` prints nothing (at HEAD it prints the `run <stem>`, `drain [...]` and `serve` rows), `grep -cE '^\| .engine (run|drain|serve)( [^|]*)?. \|' docs/how-clutch-works.md` prints `3`, and `grep -cE '^\| .pause. / .resume. / .kill. / .engine stop. \|' docs/how-clutch-works.md` prints `1`.
 12. `./dev.py test tests/unit/test_paved_roads.py tests/integration/test_paved_roads.py` exits 0, asserting `` Continue with `clutch engine drain`. ``, `` `clutch engine drain` re-offers it ``, the `run_admission` missing-file road ending `` then `clutch engine run item` `` and the two login roads ending `` then `clutch engine drain` ``.
-13. `./dev.py test` exits 0. In the test files of Scope in only the argv lists, the slices, phrases, roads, process rows, help-row lookups and the table rule named there change; no assertion is dropped. A failure of `tests/integration/test_exec_seam_reap.py::test_usage_and_independent_peak_memory` alone is the known base flake (box-000706-10233120) and is verified on the base commit, not chased.
+13. `./dev.py test` exits 0; Check's `unit` and `integration` mechanical checks in `config.yaml` run both full suites. In the test files of Scope in only the edits named there and in criteria 6, 7 and 9 change, and no assertion is dropped. A failure of `tests/integration/test_exec_seam_reap.py::test_usage_and_independent_peak_memory` alone is the known base flake (box-000706-10233120) and is verified on the base commit, not chased.
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_main_engine_group.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_help.py tests/unit/test_observe_extension_fields.py tests/unit/test_paved_roads.py tests/unit/test_drain_detach_cli.py tests/unit/test_drain_deadline.py
 ./dev.py test tests/integration/test_help.py tests/integration/test_watch.py tests/integration/test_drain_detach.py tests/integration/test_drain_upgrade.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_drain_loop_agent.py tests/integration/test_paved_roads.py tests/integration/test_host_onboarding_doc.py tests/integration/test_main_verb_groups.py
-./dev.py test
 ```
 
 ## Definition of rejected
-The branch is rejected, even if it passes, when any old name still parses (a top-level parser, a hidden or suppressed subparser, or an argv rewrite in `main`); an argument, default, output line other than the named roads, exit code, lock, commit or journal event of the four commands changes; a lock verb, `ENGINE_VERBS`, an engine.log `verb` or a control request verb changes; `pause`, `resume`, `kill` or `retro` moves; a help field gets a default, or command help is copied into `clutch/help.py`; `clutch/hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, `vscode-clutchwork/`, `tests/integration/serve_rig.py`, `tests/integration/test_mergequeue.py` or `tests/integration/test_stages.py` changes; or a test is added to a do-not-grow file, or an existing assertion is dropped or loosened beyond the argv, pin, phrase, road and table updates named in Scope in.
+The branch is rejected, even if it passes, when any old name still parses (a top-level parser, a hidden or suppressed subparser, or an argv rewrite in `main`); an argument, default, output line other than the named roads, exit code, lock, commit or journal event of the four commands changes; a lock verb, `ENGINE_VERBS`, an engine.log `verb` or a control request verb changes; `pause`, `resume`, `kill` or `retro` moves; a help field gets a default, or command help is copied into `clutch/help.py`; `clutch/hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, `vscode-clutchwork/`, `tests/integration/serve_rig.py`, `tests/integration/test_mergequeue.py` or `tests/integration/test_stages.py` changes; or a test is added to a do-not-grow file, or an existing assertion is dropped or loosened beyond the edits named in Scope in and the criteria.
 
 ## Time budget
 - expected: 40m
