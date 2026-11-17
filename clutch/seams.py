@@ -10,7 +10,10 @@ import tempfile
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
+
+if TYPE_CHECKING:
+    from clutch.evidence.schema import Rusage
 
 Clock = Callable[[], datetime]
 # Every timed wait races its work against this to a clock-derived deadline, so tests wait zero wall-clock.
@@ -61,6 +64,7 @@ class GroupExec(ProcessExec, Protocol):
         stdin_path: Path | None = None,
         on_spawn: Callable[[int], None] | None = None,
         on_stdout_line: Callable[[str], None] | None = None,
+        on_rusage: Callable[["Rusage"], None] | None = None,
     ) -> tuple[int, str, str]: ...
 
     def kill_group(self, pgid: int) -> None:
@@ -116,14 +120,15 @@ class SubprocessExec:
         stdin_path: Path | None = None,
         on_spawn: Callable[[int], None] | None = None,
         on_stdout_line: Callable[[str], None] | None = None,
+        on_rusage: Callable[["Rusage"], None] | None = None,
     ) -> tuple[int, str, str]:
         if shutil.which(argv[0], path=env.get("PATH", "")) is None:
             raise ExecutableNotFound(argv[0])
         # Unbounded callers stream through inherited stdio; their out/err come back empty.
         stream = None if timeout is None else subprocess.PIPE
         with open(stdin_path, "rb") if stdin_path else open(os.devnull, "rb") as stdin:
-            proc = await asyncio.create_subprocess_exec(
-                *argv,
+            proc = await _spawn(
+                argv,
                 cwd=cwd,
                 env=dict(env),
                 stdin=stdin,
@@ -131,6 +136,8 @@ class SubprocessExec:
                 stderr=stream,
                 start_new_session=True,
             )
+            proc._clutch_wait = asyncio.create_task(_reap(proc, on_rusage))
+            proc._clutch_pipes = []
             readers: list[asyncio.Task] = []
             stdout, stderr = bytearray(), bytearray()
             consumer_error: BaseException | None = None
@@ -144,16 +151,28 @@ class SubprocessExec:
                         consumer_error = exc
 
             try:
+                if stream is not None:
+                    for pipe in (proc.stdout, proc.stderr):
+                        reader = asyncio.StreamReader()
+                        connecting = asyncio.create_task(asyncio.get_running_loop().connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), pipe))
+                        try:
+                            await asyncio.shield(connecting)
+                        except BaseException:
+                            await connecting
+                            proc._clutch_pipes.append(reader)
+                            raise
+                        proc._clutch_pipes.append(reader)
                 if on_spawn is not None:
                     on_spawn(proc.pid)  # start_new_session: the child's pid IS its pgid
                 async with asyncio.timeout(timeout):
                     if stream is None:
-                        out, err = await proc.communicate()
+                        await asyncio.shield(proc._clutch_wait)
+                        out, err = b"", b""
                     else:
                         readers = [
-                            asyncio.create_task(_read_pipe(proc.stdout, stdout, deliver if on_stdout_line is not None else None)),
-                            asyncio.create_task(_read_pipe(proc.stderr, stderr)),
-                            asyncio.create_task(proc.wait()),
+                            asyncio.create_task(_read_pipe(proc._clutch_pipes[0], stdout, deliver if on_stdout_line is not None else None)),
+                            asyncio.create_task(_read_pipe(proc._clutch_pipes[1], stderr)),
+                            asyncio.ensure_future(asyncio.shield(proc._clutch_wait)),
                         ]
                         out, err, _ = await asyncio.gather(*readers)
             except BaseException as exc:
@@ -191,10 +210,49 @@ class SubprocessExec:
             pass
 
 
-async def _kill_and_wait(proc: asyncio.subprocess.Process) -> tuple[bytes | None, bytes | None]:
+def rusage_figures(ru) -> "Rusage":
+    from clutch.evidence.schema import Rusage
+
+    return Rusage(user_s=ru.ru_utime, sys_s=ru.ru_stime, max_rss_kb=ru.ru_maxrss)
+
+
+def reap_outcome(status, ru, on_rusage) -> int:
+    code = os.waitstatus_to_exitcode(status)
+    if on_rusage is not None:
+        on_rusage(rusage_figures(ru))
+    return code
+
+
+async def _spawn(argv, **kwargs):
+    return subprocess.Popen(argv, **kwargs)
+
+
+async def _reap(proc, on_rusage):
+    loop = asyncio.get_running_loop()
+    ready = loop.create_future()
+    fd = os.pidfd_open(proc.pid)
+    try:
+        loop.add_reader(fd, lambda: not ready.done() and ready.set_result(None))
+        await ready
+        _, status, ru = os.wait4(proc.pid, 0)
+        proc.returncode = os.waitstatus_to_exitcode(status)
+        return reap_outcome(status, ru, on_rusage)
+    finally:
+        loop.remove_reader(fd)
+        os.close(fd)
+
+
+async def _kill_and_wait(proc) -> tuple[bytes | None, bytes | None]:
     SubprocessExec().kill_group(proc.pid)
-    # Drain after failed/cancelled readers: wait alone can hang on a full pipe transport.
-    return await proc.communicate()
+    # Drain after failed/cancelled readers while the child is reaped.
+    for pipe in (proc.stdout, proc.stderr)[len(proc._clutch_pipes) :]:
+        if pipe is not None:
+            reader = asyncio.StreamReader()
+            await asyncio.get_running_loop().connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), pipe)
+            proc._clutch_pipes.append(reader)
+    drained = await asyncio.gather(*(_read_pipe(pipe, bytearray()) for pipe in proc._clutch_pipes))
+    await asyncio.shield(proc._clutch_wait)
+    return tuple(drained) if drained else (None, None)
 
 
 async def _read_pipe(

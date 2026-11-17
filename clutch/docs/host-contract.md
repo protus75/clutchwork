@@ -385,7 +385,8 @@ The minimal seams in `clutch/seams.py` are:
   owns reaping. `on_spawn` publishes the pgid, provider call return clears it.
   `on_stdout_line` includes the EOF tail; consumer failure stops delivery but
   drains capture, attaches process_capture and raises after reap. Unwind retains
-  timeout/cancellation type. ExecutableNotFound names the missing binary: install
+  timeout/cancellation type. `on_rusage` receives the reaped child's CPU seconds
+  and peak RSS. ExecutableNotFound names the missing binary: install
   it or fix child PATH. Prompts are spooled files connected by stdin_path, never
   argv elements. No stdin_path means devnull.
 - `write(path, data)` fsyncs a temporary file and atomically replaces the target;

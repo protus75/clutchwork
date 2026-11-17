@@ -1,9 +1,11 @@
 """Condition waits for tests that share the machine with other pytest workers."""
 
 import asyncio
+import os
 import time
 from pathlib import Path
 
+import clutch.seams as seams
 from clutch.seams import SubprocessExec
 
 
@@ -28,7 +30,7 @@ def group_exited(pgid):
 
 def ready_before_returning_spawn(monkeypatch, ready):
     """Keep interpreter startup outside the seam's real timeout window."""
-    spawn = asyncio.create_subprocess_exec
+    spawn = seams._spawn
 
     async def started(*args, **kwargs):
         proc = await spawn(*args, **kwargs)
@@ -36,8 +38,12 @@ def ready_before_returning_spawn(monkeypatch, ready):
             await wait_until(ready)
         except BaseException:
             SubprocessExec().kill_group(proc.pid)
-            await proc.communicate()
+            os.wait4(proc.pid, 0)
+            proc.returncode = -9
+            for pipe in (proc.stdout, proc.stderr):
+                if pipe is not None:
+                    pipe.close()
             raise
         return proc
 
-    monkeypatch.setattr(asyncio, "create_subprocess_exec", started)
+    monkeypatch.setattr(seams, "_spawn", started)
