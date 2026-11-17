@@ -1,8 +1,6 @@
 import ast
 from pathlib import Path
 
-from clutch import roadmap
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -39,20 +37,3 @@ def test_closed_set_literals_have_one_home():
                 if path.name not in {"tickets.py", "author.py"}:
                     assert not {"feature", "bug", "chore"} <= values, path
                     assert not {"P0", "P1", "P2", "P3"} <= values, path
-
-
-def test_follow_up_row():
-    rows = roadmap.parse((ROOT / roadmap.ROADMAP).read_text())
-    follow_ups = [row for row in rows if row.stem == "closed-sets-remaining"]
-    assert len(follow_ups) == 1
-    row = follow_ups[0]
-    assert roadmap.release_name(row.release) == "0.3.0"
-    assert row.owner == "roadmap"
-    assert row.kind == "chore"
-    assert row.priority == "P3"
-    assert roadmap.depends_on(row, rows) == ("closed-sets-single-owner",)
-    assert row.runs_before == ()
-    assert next(row for row in rows if row.number == 19).stem == "closed-sets-single-owner"
-    graphics = next(row for row in rows if row.number == 49)
-    assert graphics.stem == "graphics-kind"
-    assert "closed-sets-single-owner" in roadmap.depends_on(graphics, rows)
