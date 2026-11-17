@@ -36,6 +36,7 @@ Scope in:
 - Update the fakes that stand in for the handoff child so they implement `replace` and not `run`: the handoff fakes in `tests/integration/test_drain_upgrade.py`, `tests/integration/test_serve_upgrade.py`, `tests/integration/serve_rig.py` (`UpgradeChild`), and the `Child` and `handoff` fakes in `tests/integration/test_drain.py` and `tests/integration/test_daemon_composition.py`. Change only those fakes and the assertions that read their recorded call. A fake `NoChild` that never expects a handoff stays untouched.
 - In `tests/integration/test_drain_upgrade.py`, rename `test_the_unbounded_handoff_spawn_streams_through_inherited_stdio` to a name that describes unbounded `run` callers without naming the handoff; its behavior is unchanged.
 - In `docs/how-clutch-works.md`, update the sentence about the drain self-upgrade re-exec to say the process is replaced in place, and reword the serve handoff sentence in section 7.2 (the one saying serve releases the lock and spawns the new serve) to say serve replaces its process in place. Do not touch other sections.
+- In `clutch/docs/host-contract.md`, the `async run(...)` bullet's parenthetical stops naming the self-upgrade handoff: `None` is only for unbounded callers, which inherit stdio and return empty out/err.
 - Drop `timeout is None` from the `test_serve_upgrade.py` assertion that unpacks `(argv, cwd, env, timeout)`.
 
 Scope out:
@@ -45,6 +46,7 @@ Scope out:
 
 ## Scope fence
 - clutch/seams.py
+- clutch/docs/host-contract.md
 - clutch/drain.py
 - clutch/serve.py
 - docs/how-clutch-works.md
