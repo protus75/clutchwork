@@ -52,4 +52,4 @@ Any existing floor lowered or removed, any floor above measured coverage (so unc
 
 ## Time budget
 - expected: 25m
-- stuck: 60m
+- stuck: 50m
