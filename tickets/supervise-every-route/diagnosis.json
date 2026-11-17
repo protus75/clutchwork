@@ -1,23 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c11f761bd488e2dd10380694f2e549fc398a8332",
+  "produced_at_sha": "8defc422a46f370d8b5610b4b3f0aa81df47ceec",
   "stem": "supervise-every-route",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "retry",
+  "verdict": "split",
   "lessons": [
-    "The attempt read code for 38s, then stopped with no diff. Redo all of it: the journal.py SIGNAL_NAMES entry, the test_closed_sets.py set, the failure_terminal gating, the daemon.py consume_result call site, the drain.py/serve.py idle hooks, the docs, and both test_supervise_every_route.py files.",
-    "In clutch/runner.py::failure_terminal the step runs only when `supervised` is set and ctx.worktree(stem) exists. Pass supervised=True from TicketWriter.consume_result (daemon.py:461). Journal the supervisor_attempt signal before the apply_rework call and before the terminal append (line 477). Do",
-    "Idle point: create a worktree from ctx.git.rev_parse(ctx.repo, MAIN), then call failure_terminal so its exists() gate passes. Remove it at line 484 via git.py worktree remove plus prune on both approve and escalate. A stem is unsupervised if no supervisor_attempt follows its last operator keep.",
-    "Effect keys: llm_key in clutch/llmeffect.py is llm/<stem>/<run_seq>/<surface>/<attempt>/<call_seq>, and attempt is an int. llmeffect.py is outside the fence, so keep attempt an int. Get disjoint keys from a run_seq or attempt the original run never used, and assert disjointness in the effect_keys",
-    "Run the full ## Verification command before reporting. Acceptance 8 needs tests/unit/test_supervisor_trigger.py to stay green: the last three events stay terminal, draw, keep, so supervisor_attempt must come before the terminal and must not be appended after the keep."
+    "Attempt 1 ended incomplete after 41s and about $1.0 with no diff. The agent read runner, daemon, drain, serve, journal and docs, then stopped. The ticket spans 5 source modules, a worktree helper, 2 docs and 9 criteria, which is too many boundaries for one attempt.",
+    "Split part 1, the merge route: add supervisor_attempt to journal.SIGNAL_NAMES and tests/integration/test_closed_sets.py. Journal it in runner.py::failure_terminal before apply_rework and the routed terminal. Have daemon.py::TicketWriter.consume_result call failure_terminal supervised. Covers",
+    "Split part 2 (Depends on part 1): the idle-point step in drain.py after _settle and in serve.py beside the retro hook. Supervise Reject-queue stems with no supervisor_attempt after their last 'reject_verdict keep actor: operator'. Reuse failure_terminal; never copy the step. Covers criteria 2 and 6.",
+    "Part 2 also builds the fresh worktree from ctx.git.rev_parse(ctx.repo, MAIN) at the idle point. Remove it through git.py worktree remove plus prune on both approve and escalate. Effect keys get their own name, disjoint from the original run's keys. Covers criteria 3, 4 and 7.",
+    "Each part updates only its own slice of docs/how-clutch-works.md (6.4-6.7, last sentence of 7.5) and docs/roadmap-driver-plan.md (sections 2 and 6). Each part must leave tests/unit/test_supervisor_trigger.py order assertions green: last three events are terminal, draw, keep."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    1,
-    3
+    1
   ],
   "spec_version": "1.7",
   "provider": "claude",
