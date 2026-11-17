@@ -94,7 +94,7 @@ def test_box_closed_sets_and_constants():
 def test_caps_closed_sets_and_constants():
     assert caps.CAPS == ("diagnosis", "retry", "infra", "premise_bounce")
     assert caps.DECLARED_CAPS == ("diagnosis", "retry", "infra", "premise_bounce", "hardening", "supervise")
-    assert caps.LEVELS == ("low", "medium", "high", "max")
+    assert llm.TIERS == ("low", "medium", "high", "max")
 
 
 def test_checkpoint_closed_sets_and_constants():
@@ -125,7 +125,7 @@ def test_config_closed_sets_and_constants():
     assert config.SCHEMA_VERSION == 1
     assert set(get_args_deep(config.Severity)) == {"hard", "soft"}
     assert set(get_args_deep(config.StartState)) == {"confirmed", "draft"}
-    assert set(get_args_deep(config.Tier)) == {"high", "low", "max", "medium"}
+    assert set(get_args_deep(llm.AgentTier)) == {"high", "low", "max", "medium"}
 
 
 def test_control_closed_sets_and_constants():
@@ -306,7 +306,7 @@ def test_thresh_closed_sets_and_constants():
 
 
 def test_tickets_closed_sets_and_constants():
-    assert set(get_args_deep(tickets.Level)) == {"high", "low", "max", "medium"}
+    assert set(get_args_deep(llm.AgentEffort)) == {"high", "low", "max", "medium"}
     assert tickets.OPTIONAL_SECTIONS == ("Runs before", "On-demand", "Regression")
     assert tickets.REQUIRED_SECTIONS == ("Depends on", "Context", "Goal / Why", "Scope in / Scope out", "Scope fence", "Acceptance criteria", "Verification", "Definition of rejected", "Time budget")
     assert tickets.RESERVED_STEMS == frozenset({"decisions", "retro"})

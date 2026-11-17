@@ -8,6 +8,7 @@ from typing import Annotated, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from clutch.artifacts import NonBlank
 from clutch.author import author, commit_record, committed, failure_declined, is_rejected, list_open_tickets, recover_retro_ticket
 from clutch.box import BOX_DIR, Box, DecisionRecord, RereportJournal, Resolution, UnknownBoxId, Verdict, read_registry, record_path, render_record
 from clutch.driver import Driver, LlmStage
@@ -24,7 +25,6 @@ from clutch.status import dismiss_admission, last_states, triage_admission
 
 TRIAGE_STUCK_S = 600.0
 ESCAPE_ATTRIBUTION = "escape-attribution"
-NonBlank = Annotated[str, Field(min_length=1, pattern=r"\S")]
 
 
 class TriageReply(BaseModel):

@@ -7,12 +7,12 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
+from pydantic import Field, TypeAdapter, field_validator
 
+from clutch.artifacts import NonBlank, StrictModel, is_repo_relative
 from clutch.specs import RENDER_BOUND_CHARS
 
 CAPS = {"replay": 1024 * 1024, "log": 64 * 1024}
-NonBlank = Annotated[str, Field(min_length=1, pattern=r"\S")]
 
 
 class ReportError(ValueError):
@@ -20,17 +20,12 @@ class ReportError(ValueError):
 
 
 def relative(value: str) -> str:
-    path = Path(value)
-    if not value.strip() or path.is_absolute() or ".." in path.parts or "\\" in value or "\0" in value:
+    if not is_repo_relative(value):
         raise ValueError("use a repo-relative path without traversal")
     return value
 
 
-class Strict(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid")
-
-
-class EvidencePaths(Strict):
+class EvidencePaths(StrictModel):
     replay: str | None = None
     log: str | None = None
 
@@ -40,7 +35,7 @@ class EvidencePaths(Strict):
         return relative(value) if value is not None else None
 
 
-class PlayerReport(Strict):
+class PlayerReport(StrictModel):
     schema_version: Annotated[int, Field(ge=0, le=1)]
     origin: Literal["player"]
     summary: NonBlank
@@ -66,7 +61,7 @@ Report = Annotated[PlayerReport | SelfReport, Field(discriminator="origin")]
 REPORT = TypeAdapter(Report)
 
 
-class ReportDescriptor(Strict):
+class ReportDescriptor(StrictModel):
     report: Report
     custody: EvidencePaths
 

@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from dataclasses import replace
 from pathlib import Path
 
-from clutch import roadmap, runner, triage
+from clutch import git, roadmap, runner, triage
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import SETTLED, record_reoffer, reexec_argv
@@ -25,7 +25,6 @@ from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
-from clutch.stages import ticket_blob
 from clutch.storm import StormLedger
 from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, ticket_path
 
@@ -211,7 +210,7 @@ class Serve:
         )
 
     def publish(self, ticket: Ticket, text: str) -> None:
-        self.published[ticket.stem] = ticket, ticket_blob(text.encode())
+        self.published[ticket.stem] = ticket, git.blob_sha(text.encode())
         self.core.scheduler.update(ticket)
 
     async def reconstruct_admissions(self):

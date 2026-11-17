@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import field_validator, model_validator
 
-from clutch.artifacts import NonBlank, _check_integer_version, _check_producing_run, _Strict
+from clutch.artifacts import FrozenModel, NonBlank, _check_integer_version, _check_producing_run
 from clutch.audit import audit_journal
 from clutch.box import Box
 from clutch.config import load_config
@@ -28,7 +28,7 @@ HOST_LOOP_MEMBERS = ("machine_ticket_merge", "report_to_regression_bug_loop", "e
 HOST_LOOP_EXPECTED = dict(zip(HOST_LOOP_MEMBERS, ("machine_ticket_merged", "report_replayed_regression_bug_merged", "escape_attributed_by_squash_trailers")))
 
 
-class HostLoopEntry(_Strict):
+class HostLoopEntry(FrozenModel):
     member: Literal["machine_ticket_merge", "report_to_regression_bug_loop", "escape_attribution"]
     producing_run: NonBlank
     expected: NonBlank
@@ -47,7 +47,7 @@ class HostLoopEntry(_Strict):
         return self
 
 
-class HostLoopReport(_Strict):
+class HostLoopReport(FrozenModel):
     schema_version: Literal[1]
     entries: list[HostLoopEntry]
 

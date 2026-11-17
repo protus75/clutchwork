@@ -45,11 +45,19 @@ def _check_ordered_members(entries, expected):
         raise ValueError(f"entries must contain exactly {expected}, in order")
 
 
-class _Strict(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
+class StrictModel(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
 
 
-class Finding(_Strict):
+class FrozenModel(StrictModel):
+    model_config = ConfigDict(frozen=True)
+
+
+def is_repo_relative(value: str) -> bool:
+    return bool(value.strip()) and not value.startswith("/") and ".." not in value.split("/") and "\\" not in value and "\0" not in value
+
+
+class Finding(FrozenModel):
     code: NonBlank
     path: str | None = None
     line: Annotated[int, Field(ge=1)] | None = None
@@ -66,7 +74,7 @@ class Finding(_Strict):
         return self
 
 
-class Harvest(_Strict):
+class Harvest(FrozenModel):
     """The closed, ticket-plane record extracted from one failed run."""
 
     attempt: Annotated[int, Field(ge=0)]
@@ -97,7 +105,7 @@ class Harvest(_Strict):
         return self
 
 
-class Artifact(_Strict):
+class Artifact(FrozenModel):
     """Base of every stage-emitted artifact except the ticket."""
 
     artifact_schema_version: Annotated[int, Field(ge=0)] = ARTIFACT_SCHEMA_VERSION
@@ -145,7 +153,7 @@ DIAGNOSIS_MAX_LESSONS = 5
 DIAGNOSIS_LESSON_CHARS = 300
 
 
-class DiagnosisReply(_Strict):
+class DiagnosisReply(FrozenModel):
     verdict: DiagnosisVerdictName
     lessons: Annotated[list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=DIAGNOSIS_LESSON_CHARS)]], Field(min_length=1, max_length=DIAGNOSIS_MAX_LESSONS)]
     trimmed_lessons: list[int] = []
@@ -189,7 +197,7 @@ class Diagnosis(Artifact):
 REVIEW_SNAG_CODES = frozenset({"logic", "acceptance", "scope", "leak"})
 
 
-class ReviewVerdict(_Strict):
+class ReviewVerdict(FrozenModel):
     """The review surface's model-facing reply (clutch/specs/review.md); the stage stamps provenance around it."""
 
     verdict: ReviewVerdictName
@@ -208,13 +216,13 @@ class ReviewVerdict(_Strict):
         return self
 
 
-class AuthorIdentity(_Strict):
+class AuthorIdentity(FrozenModel):
     provider: NonBlank
     model: NonBlank
     tier: AgentTier
 
 
-class Expected(_Strict):
+class Expected(FrozenModel):
     expected_verdict: Literal["approve", "snag"]
     defect_class: Literal["logic", "hidden_info_leak", "acceptance_mismatch", "scope_escape", "none"]
     defect: str  # the planted defect in one sentence; empty for a clean fixture
@@ -232,7 +240,7 @@ REVIEW_BASELINE_REPORT = "review-baseline-report.json"
 FiniteUSD = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 
 
-class BaselineResult(_Strict):
+class BaselineResult(FrozenModel):
     name: NonBlank
     expected: Expected
     outcome: Outcome
@@ -245,19 +253,19 @@ class BaselineResult(_Strict):
         return self
 
 
-class GraphProblem(_Strict):
+class GraphProblem(FrozenModel):
     id: NonBlank
     summary: NonBlank
 
 
-class GraphTicket(_Strict):
+class GraphTicket(FrozenModel):
     stem: NonBlank
     problem_id: NonBlank
     depends: list[NonBlank]
     goal: NonBlank
 
 
-class AuthorGraph(_Strict):
+class AuthorGraph(FrozenModel):
     problems: Annotated[list[GraphProblem], Field(min_length=1)]
     tickets: Annotated[list[GraphTicket], Field(min_length=1)]
 
@@ -293,12 +301,12 @@ class AuthorGraph(_Strict):
         return self
 
 
-class BaselineRoute(_Strict):
+class BaselineRoute(FrozenModel):
     provider: NonBlank
     model: NonBlank
 
 
-class BaselineSurface(_Strict):
+class BaselineSurface(FrozenModel):
     spec_major: Annotated[int, Field(ge=1)]
     rows: dict[AgentTier, BaselineRoute]
 
@@ -309,12 +317,12 @@ class BaselineSurface(_Strict):
         return self
 
 
-class BaselineIdentity(_Strict):
+class BaselineIdentity(FrozenModel):
     review: BaselineSurface
     author: BaselineSurface
 
 
-class BaselineExercised(_Strict):
+class BaselineExercised(FrozenModel):
     surface: Literal["review"]
     tier: AgentTier
     effort: AgentEffort
@@ -328,17 +336,17 @@ class BaselineExercised(_Strict):
         return value
 
 
-class ClassScore(_Strict):
+class ClassScore(FrozenModel):
     planted: Annotated[int, Field(ge=0)]
     caught: Annotated[int, Field(ge=0)]
 
 
-class Unscored(_Strict):
+class Unscored(FrozenModel):
     fixture: NonBlank
     outcome: Outcome
 
 
-class BaselineScores(_Strict):
+class BaselineScores(FrozenModel):
     planted: Annotated[int, Field(ge=0)]
     clean: Annotated[int, Field(ge=0)]
     catch_rate: Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)] | None
@@ -350,7 +358,7 @@ class BaselineScores(_Strict):
     unscored: list[Unscored]
 
 
-class BaselineSignalBody(_Strict):
+class BaselineSignalBody(FrozenModel):
     signal: Literal["review_baseline"]
     verdict: Literal["GO", "NO_GO"]
     identity: BaselineIdentity
@@ -359,7 +367,7 @@ class BaselineSignalBody(_Strict):
     scores: BaselineScores
 
 
-class BaselineSignal(_Strict):
+class BaselineSignal(FrozenModel):
     v: Literal[1]
     type: Literal["signal"]
     ts: NonBlank
@@ -384,7 +392,7 @@ class BaselineSignal(_Strict):
         return value
 
 
-class ReviewBaselineReport(_Strict):
+class ReviewBaselineReport(FrozenModel):
     schema_version: Literal[1]
     complete: bool
     cap_usd: Literal[5.0]

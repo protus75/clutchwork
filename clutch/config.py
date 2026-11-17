@@ -12,13 +12,14 @@ from types import MappingProxyType
 from typing import Annotated, Any, Literal, get_args
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, ValidationInfo, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
+from clutch.artifacts import StrictModel, is_repo_relative
+from clutch.llm import AgentTier
 from clutch.seams import FileSystem
 
 SCHEMA_VERSION = 1
 
-Tier = Literal["low", "medium", "high", "max"]
 Severity = Literal["hard", "soft"]
 SpikeKind = Literal["override", "rework", "gate-failure", "integration-red", "reject", "premise-failed", "infra-error", "flake", "escape"]
 Trigger = Literal["always"] | list[str]
@@ -60,24 +61,20 @@ class ConfigError(Exception):
         self.key = key
 
 
-class _Strict(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid")
-
-
-class ModelsByTier(_Strict):
+class ModelsByTier(StrictModel):
     low: str
     medium: str
     high: str
     max: str
 
 
-class Limits(_Strict):
+class Limits(StrictModel):
     concurrency: Count
     est_cost_per_call_usd: Annotated[float, Field(ge=0)] | None = None
     quota_window_minutes: Count = 60
 
 
-class Provider(_Strict):
+class Provider(StrictModel):
     name: str
     kind: Literal["api", "cli"]
     auth: str | None = None
@@ -93,18 +90,18 @@ class Provider(_Strict):
         return self
 
 
-class Candidate(_Strict):
+class Candidate(StrictModel):
     provider: str
     model: str | None = None  # absent: the provider's models_by_tier[tier] serves
 
 
-class Route(_Strict):
-    tier: Tier
+class Route(StrictModel):
+    tier: AgentTier
     surface: str
     candidates: Annotated[list[Candidate], Field(min_length=1)]
 
 
-class MechanicalCheck(_Strict):
+class MechanicalCheck(StrictModel):
     code: str
     argv: Argv
     trigger: Trigger
@@ -117,18 +114,18 @@ class MechanicalCheck(_Strict):
     @field_validator("results", "coverage")
     @classmethod
     def _results_path(cls, value: str | None, info: ValidationInfo) -> str | None:
-        if value is not None and (not value.strip() or Path(value).is_absolute() or ".." in Path(value).parts):
+        if value is not None and (not is_repo_relative(value)):
             raise ValueError(f"{info.field_name} must be a worktree-relative file path")
         return value
 
 
-class AutofixCommand(_Strict):
+class AutofixCommand(StrictModel):
     code: str
     argv: Argv
     files: Annotated[list[str], Field(min_length=1)]
 
 
-class CoverageMap(_Strict):
+class CoverageMap(StrictModel):
     argv: Argv
     report: str
 
@@ -138,34 +135,34 @@ class CoverageMap(_Strict):
         return MechanicalCheck._results_path(value, info)
 
 
-class Review(_Strict):
+class Review(StrictModel):
     coverage_map: CoverageMap | None = None
     autofix: list[AutofixCommand] = []
     mechanical: list[MechanicalCheck] = []
     gate_severity: dict[str, Severity] = {}
 
 
-class RegenerateStrategy(_Strict):
+class RegenerateStrategy(StrictModel):
     paths: Annotated[list[str], Field(min_length=1)]
     strategy: Literal["regenerate"]
     argv: Argv
 
 
-class UnionStrategy(_Strict):
+class UnionStrategy(StrictModel):
     paths: Annotated[list[str], Field(min_length=1)]
     strategy: Literal["union"]
 
 
-class Merge(_Strict):
+class Merge(StrictModel):
     safety_checks: list[str] = []
     strategies: list[Annotated[RegenerateStrategy | UnionStrategy, Field(discriminator="strategy")]] = []
 
 
-class Scheduler(_Strict):
+class Scheduler(StrictModel):
     max_unmerged: Count = 2
 
 
-class Caps(_Strict):
+class Caps(StrictModel):
     diagnosis: Count = 3
     retry: Count = 3
     premise_bounce: Count = 1
@@ -175,33 +172,33 @@ class Caps(_Strict):
     supervise: Count = 2
 
 
-class CircuitBreaker(_Strict):
+class CircuitBreaker(StrictModel):
     k: Count = 3
     cooldown_minutes: Count = 10
 
 
-class Drain(_Strict):
+class Drain(StrictModel):
     max_runtime_hours: Count = 12
     max_ticket_minutes: Count = 90
 
 
-class RetroMerges(_Strict):
+class RetroMerges(StrictModel):
     enabled: bool = True
     every: Count = 25
 
 
-class RetroDays(_Strict):
+class RetroDays(StrictModel):
     enabled: bool = True
     every: Count = 7
 
 
-class RetroSpikes(_Strict):
+class RetroSpikes(StrictModel):
     enabled: bool = True
     count: Count = 5
     kinds: Annotated[list[SpikeKind], Field(min_length=1)] = Field(default_factory=lambda: list(get_args(SpikeKind)))
 
 
-class Retro(_Strict):
+class Retro(StrictModel):
     enabled: bool = True
     test_timing: bool = True
     coverage: bool = True
@@ -210,22 +207,22 @@ class Retro(_Strict):
     spikes: RetroSpikes = RetroSpikes()
 
 
-class Release(_Strict):
+class Release(StrictModel):
     publish: bool = False
     pypi_token: str = "UV_PUBLISH_TOKEN"
 
 
-class Evidence(_Strict):
+class Evidence(StrictModel):
     max_gb: Count = 20
 
 
-class Config(_Strict):
+class Config(StrictModel):
     schema_version: int
     state_dir: PathField
     worktree_root: PathField | None = None
     providers: Annotated[list[Provider], Field(min_length=1)]
     routing: Annotated[list[Route], Field(min_length=1)]
-    routing_default_tier: Tier = "medium"
+    routing_default_tier: AgentTier = "medium"
     review: Review
     merge: Merge
     release: Release = Release()

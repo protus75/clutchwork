@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from clutch.help import TOPICS, topic_text
 from clutch.journal import EventType
+from clutch.tickets import KINDS
 
 SETTLED = {"merged", "already_satisfied", "rejected"}
 SURFACES = {"requisition_review", "implement", "review", "diagnose", "rework", "retro"}
@@ -106,7 +107,7 @@ def project_stats(events, kinds, checks, *, now, window):
                 if result.seconds is not None:
                     commands[" ".join(result.argv)].append(result.seconds / 60)
     cycles = {}
-    for kind in ("feature", "bug", "chore", "unknown", "all"):
+    for kind in (*KINDS, "unknown", "all"):
         stems = [s for s in settled if kind == "all" or kinds.get(s, "unknown") == kind]
         if not stems and kind != "all":
             continue

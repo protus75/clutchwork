@@ -18,7 +18,7 @@ from clutch.llm import AgentEffort, AgentTier
 from clutch.mergequeue import ConflictHandoff
 from clutch.requisition import review_ticket
 from clutch.specs import RenderOverBound, load_spec, render
-from clutch.stages import StageContext
+from clutch.stages import StageContext, _major
 from clutch.status import last_states
 from clutch.tickets import Ticket, TicketInvalid, _criteria, _sections, split_frontmatter, stem_findings, ticket_path, validate_ticket
 
@@ -260,7 +260,7 @@ async def rework(
         return replace(result, artifact=last_reply) if supervise is not None and result.outcome == "gate_failed" else result
     reply = result.artifact
     assert isinstance(reply, ReworkReply)
-    order = ReworkOrder(**reply.model_dump(), stem=ticket.stem, attempt=attempt, produced_by_spec_version=int(spec.meta.version.split(".")[0]), produced_at_sha=head)
+    order = ReworkOrder(**reply.model_dump(), stem=ticket.stem, attempt=attempt, produced_by_spec_version=_major(spec), produced_at_sha=head)
     ctx.driver.journal.append(EventType.SIGNAL, {"signal": REWORK_ORDER, "attempt": attempt, "action": order.action}, ticket=ticket.stem, key=None)
     return replace(result, artifact=order)
 

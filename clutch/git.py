@@ -1,11 +1,16 @@
 """All git access: argv lists, dir-pinned, through the process-exec seam."""
 
+import hashlib
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from clutch.lockfile import CommitLock
 from clutch.seams import ProcessExec
+
+
+def blob_sha(data: bytes) -> str:
+    return hashlib.sha1(f"blob {len(data)}\0".encode() + data).hexdigest()
 
 
 class GitError(Exception):

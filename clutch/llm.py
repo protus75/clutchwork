@@ -5,10 +5,11 @@ import math
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import Literal, Protocol, get_args
 
 AgentTier = Literal["low", "medium", "high", "max"]
 AgentEffort = Literal["low", "medium", "high", "max"]
+TIERS = get_args(AgentTier)
 
 
 @dataclass(frozen=True)

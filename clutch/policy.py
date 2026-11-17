@@ -18,6 +18,8 @@ SPECS = Path(__file__).resolve().parent / "specs"
 
 def baseline_identity(config: Config, specs_dir: Path = SPECS) -> dict:
     """Return the current review and author routing rows and spec-major versions."""
+    from clutch.stages import _major
+
     out = {}
     for surface in BASELINED_SURFACES:
         rows = {}
@@ -25,7 +27,7 @@ def baseline_identity(config: Config, specs_dir: Path = SPECS) -> dict:
             served = resolve(config, tier, surface)
             rows[tier] = {"provider": served.provider.name, "model": served.model}
         path = specs_dir / f"{surface}.md"
-        major = int(load_spec(path.read_text()).meta.version.split(".")[0]) if path.exists() else None
+        major = _major(load_spec(path.read_text())) if path.exists() else None
         out[surface] = {"spec_major": major, "rows": rows}
     return out
 

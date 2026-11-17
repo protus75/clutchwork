@@ -4,12 +4,11 @@ import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, field_validator
 
-from clutch.artifacts import Finding
+from clutch.artifacts import Finding, NonBlank
 from clutch.baseline import resolve_baseline
 from clutch.box import Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
 from clutch.driver import Driver, LlmStage, unwrap_fence
@@ -27,7 +26,6 @@ from clutch.tickets import TicketInvalid, split_frontmatter, stamp, stem_finding
 
 AUTHOR_STUCK_S = 900.0
 PLAN_WHOLE_CHARS = 40_000
-NonBlank = Annotated[str, Field(min_length=1, pattern=r"\S")]
 
 
 def plan_excerpt(text: str) -> str:
@@ -55,7 +53,14 @@ class AuthorReply(BaseModel):
     model_config = ConfigDict(strict=True, extra="forbid")
 
     stem: NonBlank
-    ticket: NonBlank
+    ticket: str
+
+    @field_validator("ticket")
+    @classmethod
+    def ticket_nonblank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("ticket must be nonblank")
+        return value
 
 
 class AuthorGate:

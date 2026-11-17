@@ -14,7 +14,7 @@ import pytest
 import yaml
 from pydantic import BaseModel
 
-from clutch import config, covgate, gates, hostfiles, providers, seams, tickets
+from clutch import artifacts, config, covgate, gates, hostfiles, llm, providers, seams, tickets
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.mergequeue import MergeQueue
 
@@ -102,12 +102,12 @@ def test_python_host_setup_loads(tmp_path):
 
 def test_host_contract_schema_coverage(tmp_path):
     rows = yaml.safe_load(block("config-fields"))
-    owners = {name: cls for name, cls in vars(config).items() if isinstance(cls, type) and issubclass(cls, config._Strict) and cls is not config._Strict}
+    owners = {name: cls for name, cls in vars(config).items() if isinstance(cls, type) and issubclass(cls, artifacts.StrictModel) and cls is not artifacts.StrictModel}
     assert set(rows) == set(owners)
     for name, cls in owners.items():
         inventory(cls, rows[name])
     values = yaml.safe_load(block("config-values"))
-    for name, annotation in (("tier", config.Tier), ("severity", config.Severity), ("start_state", config.StartState), ("box_row", config.BoxRow)):
+    for name, annotation in (("tier", llm.AgentTier), ("severity", config.Severity), ("start_state", config.StartState), ("box_row", config.BoxRow)):
         assert values[name] == list(get_args(annotation))
     assert values["spike_kind"] == list(get_args(config.SpikeKind))
     assert values["kind"] == list(get_args(config.Provider.model_fields["kind"].annotation))

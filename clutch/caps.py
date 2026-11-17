@@ -4,13 +4,13 @@ from collections.abc import Iterable, Mapping
 
 from clutch.config import Caps, Config, ConfigSnapshot
 from clutch.journal import Event, EventType, Journal
+from clutch.llm import TIERS
 from clutch.providers import ProviderSetupError, resolve
 from clutch.tickets import Ticket
 
 CAPS = ("diagnosis", "retry", "infra", "premise_bounce")
 # Audit recognizes historical hardening draws; supervise counts supervisor keeps and never routes.
 DECLARED_CAPS = CAPS + ("hardening", "supervise")
-LEVELS = ("low", "medium", "high", "max")
 
 
 def _check(cap: str) -> None:
@@ -100,12 +100,12 @@ def next_rung(config: Config | ConfigSnapshot, tier: str, effort: str) -> dict[s
         return served.provider.name, served.model
 
     current = model(tier)
-    for higher in LEVELS[LEVELS.index(tier) + 1 :]:
+    for higher in TIERS[TIERS.index(tier) + 1 :]:
         candidate = model(higher)
         if candidate is not None and candidate != current:
             return {"tier": higher, "effort": effort}
     if effort != "max":
-        return {"tier": tier, "effort": LEVELS[LEVELS.index(effort) + 1]}
+        return {"tier": tier, "effort": TIERS[TIERS.index(effort) + 1]}
     return None
 
 

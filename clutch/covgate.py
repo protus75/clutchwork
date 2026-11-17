@@ -45,13 +45,15 @@ def parse_gate(text: str) -> Gate:
         return value
 
     def paths(value, key):
+        from clutch.artifacts import is_repo_relative
+
         if not isinstance(value, dict):
             raise GateInvalid(key, "expected a table")
         result = {}
         for path, threshold in value.items():
             dotted = f"{key}.{path}"
             p = PurePosixPath(path)
-            if not path or p.is_absolute() or str(p) != path or any(part in (".", "..") for part in path.split("/")) or "\\" in path:
+            if not is_repo_relative(path) or str(p) != path or "." in path.split("/"):
                 raise GateInvalid(dotted, "expected a repo-relative POSIX path")
             result[path] = number(threshold, dotted)
         return result

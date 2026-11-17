@@ -13,7 +13,7 @@ import yaml
 from pydantic import model_validator
 
 from clutch import caps, runner, serve
-from clutch.artifacts import Artifact, Harvest, NonBlank, _check_ordered_members, _check_producing_run, _Strict
+from clutch.artifacts import Artifact, FrozenModel, Harvest, NonBlank, _check_ordered_members, _check_producing_run
 from clutch.audit import audit_journal
 from clutch.config import load_config
 from clutch.git import Git
@@ -40,7 +40,7 @@ _DAEMON_SOAK_EXPECTED = {
 }
 
 
-class DaemonSoakEntry(_Strict):
+class DaemonSoakEntry(FrozenModel):
     """One closed member's observation."""
 
     member: Literal["worker_killed_mid_run", "conflict_resolution_rungs", "semantic_conflict_integration_red"]

@@ -10,16 +10,17 @@ import shlex
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, field_validator
 
-from clutch.artifacts import Finding, NonBlank
+from clutch.artifacts import Finding, NonBlank, is_repo_relative
 from clutch.covgate import GateInvalid, parse_gate
 from clutch.gates import ENGINE_GATE_CODES
 from clutch.git import Git, NothingToCommit
 from clutch.journal import EventType, Journal
+from clutch.llm import AgentEffort, AgentTier
 from clutch.seams import FileSystem
 
 TICKETS_DIR = "tickets"
@@ -30,7 +31,10 @@ INTAKE_SIGNAL = "ticket_intake"
 CODE = "ticket_schema"
 TEST_FIXTURE_DIRS = frozenset({"tests", "test", "fixtures", "fixture"})
 
-Level = Literal["low", "medium", "high", "max"]
+Priority = Literal["P0", "P1", "P2", "P3"]
+PRIORITIES = get_args(Priority)
+Kind = Literal["feature", "bug", "chore"]
+KINDS = get_args(Kind)
 Source = Annotated[str, StringConstraints(pattern=r"^(human|seed|box:[a-z][a-z0-9_]*)$")]
 
 
@@ -55,10 +59,10 @@ class Frontmatter(BaseModel):
 
     state: Literal["draft", "confirmed", "rejected", "merged"]
     source: Source
-    priority: Literal["P0", "P1", "P2", "P3"]
-    kind: Literal["bug", "feature", "chore"]
-    agent_tier: Level = "medium"
-    agent_effort: Level = "medium"
+    priority: Priority
+    kind: Kind
+    agent_tier: AgentTier = "medium"
+    agent_effort: AgentEffort = "medium"
     gate_bypass: list[GateBypass] = Field(default_factory=list)
 
 
@@ -208,8 +212,7 @@ def _fenced_commands(text: str, name: str, path: str) -> tuple[list[tuple[str, .
 
 
 def _repo_path(value: str, name: str, path: str) -> list[Finding]:
-    p = Path(value)
-    if not value or p.is_absolute() or ".." in p.parts:
+    if not is_repo_relative(value):
         return [_f(f"`## {name}` entry {value!r} is not a repo-relative path", "write a path relative to the repo root, without `..`", path)]
     return []
 
@@ -824,9 +827,9 @@ def order(text: str, *, priority: str | None, runs_before: Sequence[str] | None)
     return text
 
 
-def template(kind: Literal["feature", "bug", "chore"]) -> str:
+def template(kind: Kind) -> str:
     """Authoring placeholders beside the grammar, with a regression proof only for bugs."""
-    if kind not in {"feature", "bug", "chore"}:
+    if kind not in KINDS:
         raise ValueError("kind must be feature, bug, or chore")
     sections = {
         "Depends on": "<none or bullets of existing ticket stems>",

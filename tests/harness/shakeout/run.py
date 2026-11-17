@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pydantic import model_validator
 
-from clutch.artifacts import Artifact, NonBlank, _Strict
+from clutch.artifacts import Artifact, FrozenModel, NonBlank
 from clutch.audit import audit
 from clutch.git import Git
 from clutch.seams import SubprocessExec
@@ -18,7 +18,7 @@ from tests.integration.test_git import commit_lock
 SHAKEOUT_SPEC_VERSION = 1
 
 
-class ShakeoutEntry(_Strict):
+class ShakeoutEntry(FrozenModel):
     member: NonBlank
     group: NonBlank
     planted_fault: NonBlank

@@ -30,6 +30,8 @@ def _name(value: Any) -> bool:
 
 
 def _matches(config, identity, specs_dir: Path) -> bool:
+    from clutch.stages import _major
+
     if not isinstance(identity, Mapping) or set(identity) != set(BASELINED_SURFACES):
         return False
     if not config.routing or any(route.tier not in TIERS or not route.candidates for route in config.routing):
@@ -42,7 +44,7 @@ def _matches(config, identity, specs_dir: Path) -> bool:
         if type(major) is not int or major < 0 or not isinstance(rows, Mapping) or not rows:
             return False
         spec = load_spec((specs_dir / f"{surface}.md").read_text())
-        if spec.meta.llm_surface != surface or major != int(spec.meta.version.split(".")[0]):
+        if spec.meta.llm_surface != surface or major != _major(spec):
             return False
         for tier, row in rows.items():
             if tier not in TIERS or not isinstance(row, Mapping) or set(row) != {"provider", "model"}:

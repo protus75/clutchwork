@@ -1,13 +1,13 @@
 """Managed conduct bytes and atomic refresh."""
 
 import ast
-import hashlib
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+from clutch import git as git_module
 from clutch.seams import FileSystem
 
 BEGIN = b"<!-- clutch:core begin -->"
@@ -200,7 +200,7 @@ async def committed_core(workspace, config, git):
             data = path.read_bytes()
         except FileNotFoundError:
             data = None
-        digest = None if data is None else hashlib.sha1(f"blob {len(data)}\0".encode() + data).hexdigest()
+        digest = None if data is None else git_module.blob_sha(data)
         if digest != blob:
             findings.append(Finding(code="core_drift", path=rel, message=f"{rel} differs from its committed candidate bytes", paved_road=f"commit or restore {rel}, then rerun Check"))
         else:

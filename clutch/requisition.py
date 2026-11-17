@@ -1,7 +1,6 @@
 """Read-only authored-ticket feasibility review."""
 
 import difflib
-import hashlib
 import json
 import re
 from contextlib import ExitStack
@@ -10,6 +9,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from clutch import git
 from clutch.artifacts import Artifact, Finding, NonBlank
 from clutch.driver import Driver, _StuckBudget, unwrap_fence
 from clutch.gates import GateReport
@@ -152,12 +152,14 @@ async def review_ticket(
 ) -> RequisitionVerdict:
     spec = load_spec((specs_dir / "requisition_review.md").read_text())
     ticket_bytes = text.encode()
-    sha = hashlib.sha1(f"blob {len(ticket_bytes)}\0".encode() + ticket_bytes).hexdigest()
+    from clutch.stages import _major
+
+    sha = git.blob_sha(ticket_bytes)
     try:
         ticket = review_target(repo, stem, text)
     except TicketInvalid as exc:
         return RequisitionVerdict(
-            produced_by_spec_version=int(spec.meta.version.split(".")[0]),
+            produced_by_spec_version=_major(spec),
             produced_at_sha=sha,
             stem=stem,
             ticket_sha=sha,
@@ -177,7 +179,7 @@ async def review_ticket(
     except RenderOverBound as exc:
         base = None
         chars = int(re.search(r"rendered prompt is (\d+) characters", exc.finding.message).group(1))
-    common = dict(produced_by_spec_version=int(spec.meta.version.split(".")[0]), produced_at_sha=sha, stem=stem, ticket_sha=sha, render_chars=chars, spec_version=spec.meta.version)
+    common = dict(produced_by_spec_version=_major(spec), produced_at_sha=sha, stem=stem, ticket_sha=sha, render_chars=chars, spec_version=spec.meta.version)
 
     calls = 0
 

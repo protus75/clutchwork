@@ -8,8 +8,9 @@ from pathlib import Path
 from typing import Annotated, Literal, get_args
 
 import yaml
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import AfterValidator, Field, ValidationError, model_validator
 
+from clutch.artifacts import NonBlank, StrictModel, is_repo_relative
 from clutch.inbox import CAPS, EvidencePaths, ReportDescriptor, SelfReport, bounded
 from clutch.journal import EventType, Journal
 from clutch.seams import FileSystem
@@ -21,7 +22,7 @@ TestIssue = Literal["unit-io", "slow", "drift", "flaky", "coverage-hard", "over-
 
 
 def _repo_path(value: str) -> str:
-    if not value.strip() or value.startswith("/") or ".." in value.split("/"):
+    if not is_repo_relative(value):
         raise ValueError("path must be nonblank and repository-relative without .. segments")
     return value
 
@@ -53,18 +54,11 @@ def signature(*fields: str, reason: str) -> str:
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
-NonBlank = Annotated[str, Field(min_length=1, pattern=r"\S")]
-
-
-class _Strict(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid")
-
-
 RoadmapKind = Frontmatter.model_fields["kind"].annotation
 RoadmapPriority = Frontmatter.model_fields["priority"].annotation
 
 
-class RoadmapRow(_Strict):
+class RoadmapRow(StrictModel):
     number: Annotated[int, Field(ge=1)]
     release: NonBlank
     stem: NonBlank
@@ -77,18 +71,18 @@ class RoadmapRow(_Strict):
     plan: RepoPath
 
 
-class Verdict(_Strict):
+class Verdict(StrictModel):
     verdict: Literal["author", "tombstone", "declined"]
     produced_by_spec_version: NonBlank
     rationale: NonBlank
 
 
-class Resolution(_Strict):
+class Resolution(StrictModel):
     kind: Literal["ticket", "tombstone", "declined"]
     link: NonBlank
 
 
-class Message(_Strict):
+class Message(StrictModel):
     id: NonBlank
     seq: Annotated[int, Field(ge=1)]
     signature: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
@@ -421,7 +415,7 @@ class Box:
         self._write(message.model_copy(update={"status": "resolved", "resolution": resolution}))
 
 
-class DecisionRecord(_Strict):
+class DecisionRecord(StrictModel):
     id: NonBlank
     kind: Literal["declined", "tombstone"]
     link: NonBlank

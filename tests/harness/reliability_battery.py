@@ -14,7 +14,7 @@ from pydantic import model_validator
 
 from clutch import __main__ as cli
 from clutch import caps, runner
-from clutch.artifacts import Artifact, Harvest, NonBlank, _check_ordered_members, _check_producing_run, _Strict
+from clutch.artifacts import Artifact, FrozenModel, Harvest, NonBlank, _check_ordered_members, _check_producing_run
 from clutch.audit import audit_journal
 from clutch.config import load_config
 from clutch.git import Git
@@ -40,7 +40,7 @@ _RELIABILITY_BATTERY_EXPECTED = (
 )
 
 
-class ReliabilityBatteryEntry(_Strict):
+class ReliabilityBatteryEntry(FrozenModel):
     member: Literal["classified_quota_exhaustion", "all_candidates_cooling_recovery", "unclassified_failure_preservation"]
     planted_fault: NonBlank
     expected: NonBlank

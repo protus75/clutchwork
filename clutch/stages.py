@@ -11,7 +11,6 @@ The run's terminal `state_transition` is not written here: that is the runner's.
 import ast
 import asyncio
 import fnmatch
-import hashlib
 import json
 import re
 from collections.abc import Callable, Mapping, Sequence
@@ -20,8 +19,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
+from pydantic import BaseModel, Field, TypeAdapter, model_validator
 
+from clutch import git
 from clutch.artifacts import (
     OUTCOMES,
     REVIEW_BASELINE_REPORT,
@@ -30,6 +30,7 @@ from clutch.artifacts import (
     Diagnosis,
     DiagnosisReply,
     Finding,
+    FrozenModel,
     Harvest,
     NonBlank,
     Outcome,
@@ -77,18 +78,14 @@ PRIOR_ATTEMPTS = "## Prior attempts (attempt-scoped, informational, unverified, 
 DIAGNOSIS_STUCK_S = 600.0
 
 
-class _Strict(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
-
-
 # --- artifacts ----------------------------------------------------------------------------------
 
 
-class SecondProblem(_Strict):
+class SecondProblem(FrozenModel):
     summary: NonBlank
 
 
-class ImplementReply(_Strict):
+class ImplementReply(FrozenModel):
     """The implement surface's model-facing reply (clutch/specs/implement.md); the stage stamps provenance."""
 
     outcome: Literal["ok", "already_satisfied", "premise_failed", "incomplete"]
@@ -123,7 +120,7 @@ class PackingSlip(Artifact):
     run_record: NonBlank  # repo-relative path of the lifted run.md
 
 
-class SeedReview(_Strict):
+class SeedReview(FrozenModel):
     """The Check verdict for one authored seed, pinned to its ticket.md blob."""
 
     stem: NonBlank
@@ -275,10 +272,6 @@ class StageContext:
                     raise result
 
 
-def ticket_blob(data: bytes) -> str:
-    return hashlib.sha1(f"blob {len(data)}\0".encode() + data).hexdigest()
-
-
 async def ticket_change_findings(ctx: StageContext, stem: str, *, expected: str | None = None) -> list[Finding]:
     """Only ticket.md belongs to the dispatch identity; lifts may freely move main."""
     if expected is None:
@@ -290,7 +283,7 @@ async def ticket_change_findings(ctx: StageContext, stem: str, *, expected: str 
     rel = ticket_path(stem)
     try:
         committed = await ctx.git.rev_parse(ctx.repo, f"{MAIN}:{rel}")
-        unchanged = committed == expected and ticket_blob((ctx.repo / rel).read_bytes()) == expected
+        unchanged = committed == expected and git.blob_sha((ctx.repo / rel).read_bytes()) == expected
     except GitError, OSError:
         unchanged = False
     if unchanged:
@@ -719,7 +712,7 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
 # --- Check --------------------------------------------------------------------------------------
 
 
-class CommandResult(_Strict):
+class CommandResult(FrozenModel):
     argv: list[str]
     rc: int | None  # None: the command could not run or timed out -- fails closed like a nonzero exit
     tail: str
@@ -746,7 +739,7 @@ async def run_host_command(ctx, ticket, attempt, argv, code, name, *, cwd=None):
     return result, GateReport(code=code, verdict="fail" if findings else "pass", findings=findings)
 
 
-class Evidence(_Strict):
+class Evidence(FrozenModel):
     """Everything the mechanical gates judge, gathered once per branch head (the stage layer's job)."""
 
     stem: NonBlank

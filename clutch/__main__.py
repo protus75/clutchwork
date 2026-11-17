@@ -17,7 +17,6 @@ from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import get_args
 from uuid import uuid4
 
 import yaml
@@ -29,7 +28,7 @@ from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
 from clutch.git import Git, GitError
 from clutch.journal import EventType, Journal, JournalCorruption, last_transition
-from clutch.llm import LLMRequest
+from clutch.llm import TIERS, LLMRequest
 from clutch.lockfile import ENGINE_VERBS, CommitLock, CommitLockTimeout, Lockfile, LockHeld
 from clutch.notify import NOTIFY_TIMEOUT_S, NotificationReconciler
 from clutch.providers import (
@@ -53,7 +52,8 @@ from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalF
 from clutch.status import last_states, lint_admission, order_admission, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
-    Frontmatter,
+    KINDS,
+    PRIORITIES,
     IntakeRefused,
     Ticket,
     TicketInvalid,
@@ -332,7 +332,7 @@ def _parser() -> argparse.ArgumentParser:
     merged = roadmap_sub.add_parser("merged", help="check merged roadmap conditions")
     merged.add_argument("stems", nargs="*")
     merged.add_argument("--release")
-    merged.add_argument("--priority", nargs="+", choices=get_args(Frontmatter.model_fields["priority"].annotation))
+    merged.add_argument("--priority", nargs="+", choices=PRIORITIES)
     merged.add_argument("--since")
     merged.add_argument("--at-least", type=int)
     merged.add_argument("--source")
@@ -350,11 +350,11 @@ def _parser() -> argparse.ArgumentParser:
     covgate.add_argument("command", nargs=argparse.REMAINDER)
     new = sub.add_parser("new", help="template tickets/<stem>/ticket.md and lint it")
     new.add_argument("stem")
-    new.add_argument("--kind", choices=("feature", "bug", "chore"), default="feature")
+    new.add_argument("--kind", choices=KINDS, default="feature")
     new.add_argument("--evidence", nargs="+", metavar="PATH")
     ordering = sub.add_parser("order", help="edit a ticket's priority or ordering")
     ordering.add_argument("stem")
-    ordering.add_argument("--priority", choices=("P0", "P1", "P2", "P3"))
+    ordering.add_argument("--priority", choices=PRIORITIES)
     ordering.add_argument("--runs-before", nargs="*", metavar="STEM")
     run = sub.add_parser("run", help="drive one ticket through intake and the stage pipeline under the lock")
     run.add_argument("stem")
@@ -503,7 +503,7 @@ def main(
                 print(f"  serves: {served or 'nothing listed'}")
                 for problem in listing.problems:
                     print(f"  problem: {problem}")
-                configured = [(f"models_by_tier.{tier}", getattr(provider.models_by_tier, tier)) for tier in ("low", "medium", "high", "max")]
+                configured = [(f"models_by_tier.{tier}", getattr(provider.models_by_tier, tier)) for tier in TIERS]
                 configured += [
                     (f"routing[{i}].candidates[{j}].model", candidate.model)
                     for i, route in enumerate(config.routing)
@@ -559,7 +559,7 @@ def main(
                     failed = True
                     continue
                 seen = set()
-                for tier in ("low", "medium", "high", "max"):
+                for tier in TIERS:
                     model = getattr(provider.models_by_tier, tier)
                     if model in seen:
                         continue
@@ -1145,7 +1145,7 @@ async def _stats(checkout, events, now, window):
         try:
             split = split_frontmatter((checkout.repo / ticket_path(stem)).read_text())
             data = yaml.safe_load(split[0]) if split else None
-            if isinstance(data, dict) and data.get("kind") in {"feature", "bug", "chore"}:
+            if isinstance(data, dict) and data.get("kind") in KINDS:
                 kinds[stem] = data["kind"]
         except OSError, UnicodeError, yaml.YAMLError:
             pass

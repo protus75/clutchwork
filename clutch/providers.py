@@ -25,7 +25,7 @@ from clutch.config import Config, ConfigSnapshot, Provider, snapshot_config
 from clutch.evidence.store import EvidenceStore
 from clutch.git import Git
 from clutch.journal import EventType, last_transition, render_ts
-from clutch.llm import AgentEffort, AgentTier, LLMRequest, LLMResult
+from clutch.llm import TIERS, AgentEffort, AgentTier, LLMRequest, LLMResult
 from clutch.lockfile import CommitLock
 from clutch.redact import Redactor, secret_names
 from clutch.seams import Clock, ExecutableNotFound, FileSystem, GroupExec, ProcessExec
@@ -830,7 +830,6 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
     present = [status for status in statuses if status.where != "absent"]
     if not present:
         raise ValueError("no provider CLI found")
-    tiers = ("low", "medium", "high", "max")
     lines = [
         "# Suggested by clutch init-config from the provider CLIs found; edit models, checks and routing, then run clutch doctor and clutch probe.",
         "schema_version: 1",
@@ -846,8 +845,8 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
         if adapter.uses_base_url:
             lines.append("    base_url: http://localhost:11434/v1  # clutch/docs/host-qwen.md")
         first = next(iter(listing.models.values()), PLACEHOLDER)
-        models = [listing.models.get(adapter.TIER_LABELS[tier], PLACEHOLDER) if adapter.TIER_LABELS else first for tier in tiers]
-        row = "    models_by_tier: {" + ", ".join(f"{tier}: {model or PLACEHOLDER}" for tier, model in zip(tiers, models, strict=True)) + "}"
+        models = [listing.models.get(adapter.TIER_LABELS[tier], PLACEHOLDER) if adapter.TIER_LABELS else first for tier in TIERS]
+        row = "    models_by_tier: {" + ", ".join(f"{tier}: {model or PLACEHOLDER}" for tier, model in zip(TIERS, models, strict=True)) + "}"
         if listing.models:
             row += "  # served: " + " ".join(" ".join(listing.models.values()).split())
         lines.append(row)
@@ -859,7 +858,7 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
             lines.append(f"    limits: {{concurrency: 1, est_cost_per_call_usd: {estimate}}}  # {adapter.binary} reports no cost: edit the estimate")
     lines.append("routing:")
     candidates = ", ".join(f"{{provider: {status.name}}}" for status in present)
-    for tier in tiers:
+    for tier in TIERS:
         for surface in ("implement", "review"):
             lines.append(f"  - {{tier: {tier}, surface: {surface}, candidates: [{candidates}]}}")
     lines.extend(["review: {}  # add your host's checks: clutch/docs/host-contract.md", "merge: {}", "engine_plane_safety_inventory: [config.yaml]"])
