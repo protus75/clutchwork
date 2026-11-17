@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Both verification commands and the applicable integration, lint, and format gates passed; the coverage gate was skipped because no measured production file changed.
+Both verification commands and the applicable integration, lint, and format checks passed; the coverage gate was skipped because the changed file is not measured.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 5 minutes; completed within the ticket budget.
+Expected 5 minutes; completed in approximately 5 minutes.
 
