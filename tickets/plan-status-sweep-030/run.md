@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The issue verb is now named `clutch box issue`. The first verification run hit a peak-memory test failure; the base run, isolated candidate test, and final full candidate run passed.
+The merged reporting command is `clutch box issue`. The required `./dev.py test` run failed the peak-memory assertion on both the candidate and the base commit; the separate integration gate passed all 3,409 tests. Lint and format checks passed; coverage was skipped because the changes affect only documentation.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000725-d79911e3: The peak-memory integration test intermittently fails its memory-difference threshold; a deterministic fixture would prevent this class of failure.
+- box-000726-00a67fc5: The peak-memory test has a nondeterministic RSS threshold failure, reproduced on the base commit and already filed as box-000725.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 15 minutes; completed within the budget.
+Expected 15 minutes; completed within the expected budget.
 
