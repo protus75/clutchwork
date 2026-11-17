@@ -63,6 +63,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `engine drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
 | `engine serve` | yes | Runs the continuous daemon until `engine kill`, `engine stop`, or a signal (section 7.2). |
 | `engine retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
+| `engine calibrate` | no | Reads the last `calibration.every` completed Implement calls from the journal, measuring minutes from each `effect_intent` to `effect_completion` and taking provider and model from completion `cost`. Reads expected minutes from each `tickets/<stem>/ticket.md`; calls without a readable estimate are left out. Journals one `estimate_calibration` signal and prints rows with the run count, median estimate, and median and 90th-percentile actual minutes per provider and model. |
 | `box suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
 | `box issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
 | `roadmap status` | no | Prints per-release merged, authored, ready, and blocked row counts and the last gate result, followed by `next:` and `waits:` lines for held rows, including declined messages, rejected stems, drafts, and spent re-files. Read-only. |
@@ -801,6 +802,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |
 | `retro` | `enabled`, `merges`, `settled`, `spikes` control automatic reports; `test_timing` and `coverage` control measurement summaries (section 9.5) |
+| `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers |
 | `scheduler`, `drain` | `max_unmerged`; `max_runtime_hours`, `max_ticket_minutes` |
 | `engine_plane_safety_inventory`, `box_policy` | Author starting state (section 9.3) |
 | `ask_notes` | Optional host guidance appended to operator prompts as a `host_notes` data block. |

@@ -666,7 +666,7 @@ def _parser() -> argparse.ArgumentParser:
     engine = sub.add_parser(
         "engine",
         help="run and control the engine",
-        description="Run tickets, control a running engine, and run retros.",
+        description="Run tickets, control a running engine, and run retros and estimate calibrations.",
         epilog="Examples:\nclutch engine drain\n  Run eligible tickets.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -766,6 +766,20 @@ def _parser() -> argparse.ArgumentParser:
         lock="Writer lock, or queue on the running engine.",
         exits="0 when committed, nothing merged since the last report, or queued; 1 when no report is committed; 2 on refusal.",
         examples=["clutch engine retro"],
+    )
+    _command(
+        engine_sub,
+        "calibrate",
+        summary="journal actual Implement minutes against ticket estimates",
+        does=(
+            "Compute, per provider and model, the run count, median estimate, and median and 90th-percentile actual minutes "
+            "of the last calibration.every completed Implement calls; journal them as an estimate_calibration signal and print the table."
+        ),
+        reads="Config, journal, and tickets of stems in the window.",
+        writes="One estimate_calibration journal signal.",
+        lock="None; journal append takes journal.lock.",
+        exits="0 when recorded; 2 on refusal.",
+        examples=["clutch engine calibrate"],
     )
     # Replace argparse's flat choice listing with one ordered command listing.
     sub.help = argparse.SUPPRESS
@@ -1038,6 +1052,12 @@ def main(
         print(json.dumps(stats_tree(result) if args.tree else result) if args.tree or args.json else render_stats(result), end="\n" if args.tree or args.json else "")
         return 0
 
+    def handle_calibrate():
+        from clutch.calibration import calibrate, render
+
+        print(render(calibrate(checkout.journal, checkout.fs, repo, config.calibration.every)), end="")
+        return 0
+
     def handle_status():
         print(render(asyncio.run(_status(checkout))), end="")
         return 0
@@ -1292,6 +1312,7 @@ def main(
             "resume": handle_control,
             "kill": handle_control,
             "retro": handle_retro,
+            "calibrate": handle_calibrate,
             "serve": handle_serve,
             "run": handle_pipeline,
             "drain": handle_pipeline,

@@ -178,6 +178,7 @@ def test_journal_closed_sets_and_constants():
         {
             "author_invoked",
             "checkpoint_push_failed",
+            "estimate_calibration",
             "control_decision",
             "dead_dependency",
             "diagnose_eval_start",

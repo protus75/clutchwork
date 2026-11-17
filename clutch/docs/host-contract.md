@@ -158,11 +158,15 @@ Config:
     circuit_breaker: {k: 3, cooldown_minutes: 10}
     drain: {max_runtime_hours: 12, max_ticket_minutes: 90}
     retro: {enabled: true, test_timing: true, coverage: true, merges: {enabled: true, every: 25}, settled: {enabled: true, every: 40}, spikes: {enabled: true, count: 5, kinds: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]}}
+    calibration: {every: 100}
     box_policy: {failure_report: confirmed, retro_finding: confirmed, override_report: draft, suggestion: draft, bug_report_self_diagnosed: confirmed, bug_report_player_repro: confirmed, bug_report_player_no_repro: draft, roadmap_row: confirmed}
     notify: unset
     report_inbox: unset
     context_files: []
     ask_notes: unset
+Calibration:
+  required: []
+  defaults: {every: 100}
 Evidence:
   required: []
   defaults: {max_gb: 20}

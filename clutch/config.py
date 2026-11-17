@@ -207,6 +207,10 @@ class Retro(StrictModel):
     spikes: RetroSpikes = RetroSpikes()
 
 
+class Calibration(StrictModel):
+    every: Count = 100
+
+
 class Package(StrictModel):
     argv: Argv
     kept: str
@@ -238,6 +242,7 @@ class Config(StrictModel):
     circuit_breaker: CircuitBreaker = CircuitBreaker()
     drain: Drain = Drain()
     retro: Retro = Retro()
+    calibration: Calibration = Calibration()
     engine_plane_safety_inventory: list[str]  # no shipped default: absence fails closed
     box_policy: dict[BoxRow, StartState] = Field(default_factory=lambda: dict(BOX_POLICY_DEFAULTS))
     notify: Argv | None = None
