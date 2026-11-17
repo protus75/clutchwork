@@ -48,7 +48,7 @@ async def test_live_admission(root, verb):
     task = asyncio.create_task(drain(checkout, Dispatch(), reexec=NoChild()))
     try:
         await asyncio.wait_for(entered.wait(), 5)
-        assert await asyncio.to_thread(entry.main, [verb, "dd", "--extension"], cwd=root, env=ENV, clock=checkout.clock) == 0
+        assert await asyncio.to_thread(entry.main, ["ticket", verb, "dd", "--extension"], cwd=root, env=ENV, clock=checkout.clock) == 0
         state = "confirmed" if verb == "confirm" else "rejected"
         path = root / "tickets/dd/ticket.md"
         await until(
@@ -92,7 +92,7 @@ async def test_unknown_and_settled(root):
     try:
         await asyncio.wait_for(entered.wait(), 5)
         for stem in ("unknown", "done"):
-            assert await asyncio.to_thread(entry.main, ["confirm", stem, "--extension"], cwd=root, env=ENV, clock=checkout.clock) == 0
+            assert await asyncio.to_thread(entry.main, ["ticket", "confirm", stem, "--extension"], cwd=root, env=ENV, clock=checkout.clock) == 0
         log = checkout.config.state_dir / "engine.log"
         await until(lambda: decisions(checkout, "unknown") and decisions(checkout, "done") and "verdict_refused" in log.read_text())
         assert decisions(checkout, "unknown")[-1]["decision"] == "stale"
@@ -130,7 +130,7 @@ async def test_confirm_during_pause(root):
         publish_request(checkout.config.state_dir, ControlRequest("pause-test", checkout.control.inbox.lifecycle_id, "pause", None), checkout.fs)
         release.set()
         await until(lambda: checkout.control.projection.pause_id == "pause-test")
-        assert await asyncio.to_thread(entry.main, ["confirm", "dd", "--extension"], cwd=root, env=ENV, clock=checkout.clock) == 0
+        assert await asyncio.to_thread(entry.main, ["ticket", "confirm", "dd", "--extension"], cwd=root, env=ENV, clock=checkout.clock) == 0
         await until(lambda: "state: confirmed" in (root / "tickets/dd/ticket.md").read_text())
         assert decisions(checkout, "dd")[-1]["decision"] == "accepted" and not task.done()
         publish_request(checkout.config.state_dir, ControlRequest("resume-test", checkout.control.inbox.lifecycle_id, "resume", "pause-test"), checkout.fs)

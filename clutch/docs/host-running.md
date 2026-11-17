@@ -7,7 +7,7 @@ uv run clutch doctor
 uv run clutch engine serve
 ```
 
-Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
+Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `ticket confirm`.
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
@@ -44,8 +44,8 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `ticket new` | Yes | Create and lint a ticket skeleton. |
 | `ticket order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
 | `engine run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |
-| `confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. |
-| `reject` | Yes | Intake the named ticket, then apply or publish a reject verdict after interactive confirmation; other pending tickets are left untouched. |
+| `ticket confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. |
+| `ticket reject` | Yes | Intake the named ticket, then apply or publish a reject verdict after interactive confirmation; other pending tickets are left untouched. |
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 

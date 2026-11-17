@@ -737,7 +737,7 @@ def snapshot(ctx) -> dict:
             "runsBefore": list(t.runs_before) if t else [],
             "path": str(ticket_path(stem)),
             "held": stem in held_stems,
-            # Only a committed draft awaits `clutch confirm`; intake confirms a new hand-written one itself.
+            # Only a committed draft awaits `clutch ticket confirm`; intake confirms a new hand-written one itself.
             "draft": bool(t) and t.frontmatter.state == "draft" and stem not in new,
             # Pending ticket changes go through intake before a verdict is submitted.
             "committed": stem not in dirty,
@@ -910,7 +910,7 @@ def snapshot(ctx) -> dict:
         "runningStem": running[0] if running else None,
         "verdictDecisions": [dict(zip(("request_id", "verb", "stem", "decision", "reason"), row)) for row in project(history).verdict_decisions],
         "verdictDecisionsHelp": "verdict.decisions",
-        "verdictCommands": {verb: [verb, "--extension"] for verb in ("confirm", "reject")},
+        "verdictCommands": {verb: ["ticket", verb, "--extension"] for verb in ("confirm", "reject")},
         "stateDir": str(state.resolve()),
         "configPath": str(ctx.config.resolve()),
         "at": now.isoformat(),

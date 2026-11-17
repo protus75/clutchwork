@@ -65,8 +65,8 @@ Stop `engine serve` before `engine drain` or `engine run`: each takes the writer
 ## Observe and decide
 
 5. Ask the chat agent to supervise: watch `clutch status` and `clutch watch`, diagnose rejected or blocked tickets from their `tickets/<stem>/` artifacts, fix small ticket problems, and stop with `clutch engine stop` or `clutch engine kill` and restart the drain as needed.
-6. Use the Suggestion Box as an escape valve. An implementing agent reports second problems in its `second_problems` reply, and the engine files them to the box so the ticket can complete its own goal. Retros and `clutch suggest` from a chat session also file there. An attempt-cap exhaustion puts the run in the Reject queue, where the supervisor may edit and keep a `gate_failed` or `premise_failed` ticket (`docs/how-clutch-works.md` section 6.6); otherwise it waits for `confirm` or `reject`. Triage resolves each message as `declined`, `tombstone` (already covered), or authored into a ticket; an authored ticket can start as a `draft` awaiting a person.
-7. Keep the judgment calls: ask the chat agent for a plain-English summary of each draft or held ticket, then run `clutch confirm` or `clutch reject` on each.
+6. Use the Suggestion Box as an escape valve. An implementing agent reports second problems in its `second_problems` reply, and the engine files them to the box so the ticket can complete its own goal. Retros and `clutch suggest` from a chat session also file there. An attempt-cap exhaustion puts the run in the Reject queue, where the supervisor may edit and keep a `gate_failed` or `premise_failed` ticket (`docs/how-clutch-works.md` section 6.6); otherwise it waits for `ticket confirm` or `ticket reject`. Triage resolves each message as `declined`, `tombstone` (already covered), or authored into a ticket; an authored ticket can start as a `draft` awaiting a person.
+7. Keep the judgment calls: ask the chat agent for a plain-English summary of each draft or held ticket, then run `clutch ticket confirm` or `clutch ticket reject` on each.
 
 In clutch's own repository history, measured on 2026-11-09 from `.clutch/state/box/` and the journal, 32 of 389 Suggestion Box messages (about 8%) became tickets, all as drafts. Of the 31 drafts decided, 24 were confirmed (about 77%) and 7 rejected.
 
@@ -82,8 +82,8 @@ uv run clutch status   # show the journal projection
 uv run clutch watch    # show the live text view
 uv run clutch stats    # show health and efficiency figures
 # Decisions
-uv run clutch confirm  # confirm a draft or Reject item
-uv run clutch reject   # reject a draft or Reject item
+uv run clutch ticket confirm  # confirm a draft or Reject item
+uv run clutch ticket reject   # reject a draft or Reject item
 ```
 
 ## VS Code extension

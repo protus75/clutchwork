@@ -33,8 +33,8 @@ def test_confirm_held_without_writer_lock(tmp_path, monkeypatch, capsys, dirless
             if dirless == "Reject":
                 ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=ticket.stem)
                 ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "gate_failed", "routed": "reject_queue"}, ticket=ticket.stem)
-                assert await asyncio.to_thread(entry.main, ["confirm", ticket.stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
-                assert await asyncio.to_thread(entry.main, ["confirm", ticket.stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 2
+                assert await asyncio.to_thread(entry.main, ["ticket", "confirm", ticket.stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
+                assert await asyncio.to_thread(entry.main, ["ticket", "confirm", ticket.stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 2
                 assert [e.body["verdict"] for e in ctx.driver.journal.read() if e.body.get("signal") == "reject_verdict"] == ["keep"]
                 return
             ctx.fs.write(path, stamp(path.read_text(), "state", "draft").encode())
@@ -47,7 +47,7 @@ def test_confirm_held_without_writer_lock(tmp_path, monkeypatch, capsys, dirless
             lock.acquire()
             control.write_active(ctx.config.state_dir, consumer.projection, ctx.fs, hold_id=None)
             try:
-                assert await asyncio.to_thread(entry.main, ["confirm", ticket.stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
+                assert await asyncio.to_thread(entry.main, ["ticket", "confirm", ticket.stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
                 consumer.inbox.consume()
 
                 await consumer.inbox.settle_admissions(owner.apply_verdict)
@@ -356,7 +356,7 @@ def test_live_verdict_recovery_and_refusal(tmp_path, monkeypatch, capsys, kind):
         control.write_active(ctx.config.state_dir, control.ControlProjection(inbox.lifecycle_id), ctx.fs, hold_id=None)
         verb = "confirm" if kind == "keep" else "reject"
         try:
-            assert await asyncio.to_thread(entry.main, [verb, stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
+            assert await asyncio.to_thread(entry.main, ["ticket", verb, stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
             assert f"{verb} submitted:" in capsys.readouterr().out
             inbox.consume()
             original = owner.apply_verdict
@@ -373,7 +373,7 @@ def test_live_verdict_recovery_and_refusal(tmp_path, monkeypatch, capsys, kind):
             verdicts = [e.body for e in events if e.ticket == stem and e.body.get("signal") == "reject_verdict"]
             if kind == "keep":
                 assert len(verdicts) == 1 and verdicts[0]["verdict"] == "keep" and verdicts[0]["actor"] == "operator"
-                assert await asyncio.to_thread(entry.main, [verb, stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
+                assert await asyncio.to_thread(entry.main, ["ticket", verb, stem], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
                 inbox.consume()
                 await inbox.settle_admissions(owner.apply_verdict)
                 events = ctx.driver.journal.read()
@@ -451,10 +451,10 @@ def test_yes_matches_typed_verdict(tmp_path, capsys, verb, verdict):
         for stem in ("typed-ticket", "yes-ticket"):
             await ready(ctx, stem=stem)
             ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "gate_failed", "routed": "reject_queue"}, ticket=stem)
-        assert await asyncio.to_thread(entry.main, [verb, "yes-ticket"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: False, forbidden)) == 2
+        assert await asyncio.to_thread(entry.main, ["ticket", verb, "yes-ticket"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: False, forbidden)) == 2
         assert "verdict requires an interactive terminal" in capsys.readouterr().err
-        assert await asyncio.to_thread(entry.main, [verb, "typed-ticket"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
-        assert await asyncio.to_thread(entry.main, [verb, "yes-ticket", "--yes"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: False, forbidden)) == 0
+        assert await asyncio.to_thread(entry.main, ["ticket", verb, "typed-ticket"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: True, lambda _: "y")) == 0
+        assert await asyncio.to_thread(entry.main, ["ticket", verb, "yes-ticket", "--yes"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: False, forbidden)) == 0
         bodies = {e.ticket: e.body for e in ctx.driver.journal.read() if e.body.get("signal") == "reject_verdict"}
         assert bodies["yes-ticket"] == bodies["typed-ticket"]
         assert bodies["yes-ticket"]["verdict"] == verdict
@@ -502,7 +502,7 @@ def test_extension_repeat_keep(tmp_path, capsys, live):
 
         async def invoke(flag):
             result = await asyncio.to_thread(
-                entry.main, ["confirm", stem, flag], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: False, lambda _: pytest.fail("unexpected prompt"))
+                entry.main, ["ticket", "confirm", stem, flag], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=(lambda: False, lambda _: pytest.fail("unexpected prompt"))
             )
             output = capsys.readouterr()
             if live:
@@ -542,7 +542,7 @@ def test_non_engine_holder_refuses_stop_and_confirm(root, capsys):
         discovery(root)
         assert invoke(root, "stop") == 2
         assert "triage" in capsys.readouterr().err
-        assert entry.main(["confirm", "candidate", "--yes"], cwd=root, env=ENV, clock=Clock()) == 2
+        assert entry.main(["ticket", "confirm", "candidate", "--yes"], cwd=root, env=ENV, clock=Clock()) == 2
         assert "triage" in capsys.readouterr().err
         assert requests(root) == []
     finally:
@@ -574,7 +574,7 @@ def test_live_confirm_intakes_before_submission(root, monkeypatch, capsys, kind)
         with (root / ".clutch/state/commit.lock").open("w") as commit_lock:
             if kind == "timeout":
                 fcntl.flock(commit_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            result = entry.main(["confirm", "candidate", "--yes"], cwd=root, env=ENV, clock=clock)
+            result = entry.main(["ticket", "confirm", "candidate", "--yes"], cwd=root, env=ENV, clock=clock)
         output = capsys.readouterr()
         if kind == "valid":
             assert result == 0 and "confirm submitted:" in output.out
@@ -601,13 +601,13 @@ def test_confirm_multiple_stems_stops_on_refusal(tmp_path):
             await ready(ctx, stem=stem)
             ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "gate_failed", "routed": "reject_queue"}, ticket=stem)
         terminal = (lambda: True, lambda _: "y")
-        assert await asyncio.to_thread(entry.main, ["confirm", "first", "second"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=terminal) == 0
+        assert await asyncio.to_thread(entry.main, ["ticket", "confirm", "first", "second"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=terminal) == 0
 
         def keeps():
             return [e.ticket for e in ctx.driver.journal.read() if e.body.get("signal") == "reject_verdict"]
 
         assert keeps() == ["first", "second"]
-        assert await asyncio.to_thread(entry.main, ["confirm", "first", "untouched"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=terminal) == 2
+        assert await asyncio.to_thread(entry.main, ["ticket", "confirm", "first", "untouched"], cwd=ctx.repo, env=ctx.env, clock=ctx.driver.clock, terminal=terminal) == 2
         assert keeps() == ["first", "second"]
 
     asyncio.run(exercise())

@@ -36,8 +36,8 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "clutch prompt drafts",
         "clutch prompt box",
         "clutch prompt running",
-        "clutch confirm --yes",
-        "clutch reject --yes",
+        "clutch ticket confirm --yes",
+        "clutch ticket reject --yes",
         "clutch suggest",
         "No person is in the loop",
         "Proposed",
@@ -66,7 +66,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
     ):
         assert phrase in text, phrase
     assert text.index("conduct files") < text.index("clutch doctor") < text.index("clutch probe") < text.index("clutch prompt drain-loop")
-    assert text.index("standing delegation") < text.index("clutch confirm --yes")
+    assert text.index("standing delegation") < text.index("clutch ticket confirm --yes")
     assert "Let the driver author" not in text
     assert "Hand-author only when the driver cannot" not in text
     assert not text.startswith("/loop")

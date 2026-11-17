@@ -458,7 +458,7 @@ def _parser() -> argparse.ArgumentParser:
     ticket = sub.add_parser(
         "ticket",
         help="author and maintain tickets",
-        description="Author, validate, review and order tickets.",
+        description="Author, validate, review, order, confirm and reject tickets.",
         epilog="Examples:\nclutch ticket lint example\n  Validate a ticket.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -516,7 +516,27 @@ def _parser() -> argparse.ArgumentParser:
     ordering.add_argument("--priority", choices=PRIORITIES)
     ordering.add_argument("--runs-before", nargs="*", metavar="STEM")
     for verb in ("confirm", "reject"):
-        verdict = sub.add_parser(verb, help=f"{verb} a draft or Reject item; publish the verdict to a running serve holding the lock")
+        does = (
+            "Keep each draft or Reject-queue stem, resetting its caps; refuse running stems, stems outside those states and unchanged repeat keeps without --extension."
+            if verb == "confirm"
+            else "Reject each stem, stamp and commit it, journal the kill and file failure reports for confirmed dependents; refuse running and settled stems."
+        )
+        verdict = _command(
+            ticket_sub,
+            verb,
+            summary=f"{verb} a draft or Reject-queue ticket",
+            does=does + " A person answers y at a terminal unless --yes or --extension is given.",
+            reads="Tickets, journal, git state and config.",
+            writes=(
+                "Named ticket pending edits through intake, then a clutch(<stem>): confirmed commit and draft_confirmed signal or reject_verdict keep signal; "
+                if verb == "confirm"
+                else "Named ticket pending edits through intake, then a clutch(<stem>): rejected commit, reject_verdict kill and rejected events and dependent box messages; "
+            )
+            + "with drain or serve running, a verdict request to that engine instead.",
+            lock="Writer lock; publish to a running drain or serve holding it, refuse any other holder.",
+            exits="0 when applied or submitted; 1 when the prompt is not answered y; 2 on refusal.",
+            examples=[f"clutch ticket {verb} add-widget", f"clutch ticket {verb} --yes add-widget"],
+        )
         verdict.add_argument("stems", nargs="+")
         verdict.add_argument("--yes", action="store_true")
         verdict.add_argument("--extension", action="store_true")
@@ -968,7 +988,7 @@ def main(
 
     def handle_verdict():
         for stem in args.stems:
-            if result := asyncio.run(_verdict(checkout, stem, args.verb, read_input, args.yes, args.extension)):
+            if result := asyncio.run(_verdict(checkout, stem, args.ticket_verb, read_input, args.yes, args.extension)):
                 return result
         return 0
 
@@ -1130,7 +1150,7 @@ def main(
         "install": handle_install,
         "migrate-config": handle_migrate_config,
         "covgate": handle_covgate,
-        "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order}[args.ticket_verb](),
+        "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
         "doctor": handle_doctor,
         "issue": handle_issue,
         "update-config": handle_update_config,
@@ -1143,8 +1163,6 @@ def main(
         "watch": handle_watch,
         "stats": handle_stats,
         "status": handle_status,
-        "reject": handle_verdict,
-        "confirm": handle_verdict,
         "roadmap": handle_roadmap,
         "release": handle_release,
         "publish": handle_publish,
@@ -1163,10 +1181,10 @@ def main(
     }
 
     try:
-        if args.verb in {"confirm", "reject"}:
+        if args.verb == "ticket" and args.ticket_verb in {"confirm", "reject"}:
             isatty, read_input = terminal if terminal is not None else (sys.stdin.isatty, input)
             if not (args.yes or args.extension) and not isatty():
-                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch confirm|reject <stem>`")
+                raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
         if args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "doctor", "issue"} or (args.verb == "ticket" and args.ticket_verb == "new"):
             return handlers[args.verb]()
         config = load_config(args.config, cwd=repo)

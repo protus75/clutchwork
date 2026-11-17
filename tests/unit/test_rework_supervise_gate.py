@@ -27,7 +27,7 @@ def test_split_is_refused():
     reply = ReworkReply(action="split", tickets=[TicketProposal(stem="one", ticket="one"), TicketProposal(stem="two", ticket="two")])
     [finding] = supervise_findings("original", ORIGINAL, reply)
     assert (finding.code, finding.message, finding.path) == ("supervise_edit", "a supervisor edit cannot split the ticket", "tickets/original/ticket.md")
-    assert "`clutch confirm original`" in finding.paved_road and "`clutch reject original`" in finding.paved_road
+    assert "`clutch ticket confirm original`" in finding.paved_road and "`clutch ticket reject original`" in finding.paved_road
 
 
 @pytest.mark.parametrize(

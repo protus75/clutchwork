@@ -22,7 +22,7 @@ def main():
             commit_ticket(root, "stale", confirmed())
             journal(root).append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="stale")
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-                result = clutch_main(["reject", "--yes", "stale"], cwd=root, env=ENV, clock=Clock())
+                result = clutch_main(["ticket", "reject", "--yes", "stale"], cwd=root, env=ENV, clock=Clock())
             states = [e.body["to"] for e in journal(root).read() if e.type == EventType.STATE_TRANSITION and e.ticket == "stale"]
             defect = result != 0 or states[-1] != "rejected"
     except Exception:

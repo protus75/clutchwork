@@ -10,7 +10,7 @@ Before you start:
 
 Delegation:
 - The owner's delegation covers the ticket edits a Recommendation names, including narrowing or repairing a ticket the engine authored. A host conduct rule that forbids them is a conflict for the first Before you start bullet.
-- Supervise through `clutch prompt drain-loop`, which carries the owner's delegation of `clutch prompt diagnose`, `clutch prompt drafts`, `clutch prompt box`, and `clutch prompt running` Recommendations, including `clutch confirm --yes` and `clutch reject --yes`.
+- Supervise through `clutch prompt drain-loop`, which carries the owner's delegation of `clutch prompt diagnose`, `clutch prompt drafts`, `clutch prompt box`, and `clutch prompt running` Recommendations, including `clutch ticket confirm --yes` and `clutch ticket reject --yes`.
 - Every cause fix goes to `clutch suggest` and is never authored. Triage's verdict is final.
 - No person is in the loop: a hand test is an agent-run capture committed as ticket evidence. An open plan decision takes its Proposed option; if none, three independent agents each propose one and a fourth judges, and the ticket for the dependent row records it in the plan. Calibration and baseline labels come from an AI panel of a different model family than the judge. Every gate is a command counted in runs, never wall-clock time: a week or daily means a count of merged tickets.
 - Never push; publishing happens only through the driver under `release.publish: true`. Never run a tree-wide destructive git verb. Never edit code, docs, specs, config, or conduct files on main: tickets do that. The exception is the roadmap rows in Closing each phase below, which this prompt authorizes.

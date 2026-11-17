@@ -1409,13 +1409,13 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     harvest = json.loads((repo / f"tickets/{STEM}/attempts/0/harvest.json").read_text())
     (finding,) = harvest["findings"]
     assert finding["code"] == "ticket_changed" and STEM in finding["message"]
-    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (`clutch confirm {STEM}`) or kill (`clutch reject {STEM}`)")
+    assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (`clutch ticket confirm {STEM}`) or kill (`clutch ticket reject {STEM}`)")
     assert not (repo / f"tickets/{STEM}/checks.json").exists()
     # Even a subsequent intake/daemon lifetime must wait for an explicit keep.
     assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     assert len(llm.requests) == 1
     monkeypatch.setattr(stages, "implement", original)
-    assert main(["confirm", STEM], cwd=repo, env=ENV, clock=clock, terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "confirm", STEM], cwd=repo, env=ENV, clock=clock, terminal=(lambda: True, lambda _: "y")) == 0
     from tests.approval import approve
 
     approve(repo, STEM, clock)
@@ -1732,7 +1732,7 @@ def test_operator_keep_releases_unchanged_premise_park(root):
     assert "work" in reject_queue(journal(root).read())  # The failure reached the Reject queue.
     script = Script()
     assert drain(root, script) == 0 and script.calls == []  # An unchanged ticket stays parked without a keep.
-    assert main(["confirm", "work", "--yes"], cwd=root, env=ENV, clock=Clock(START)) == 0
+    assert main(["ticket", "confirm", "work", "--yes"], cwd=root, env=ENV, clock=Clock(START)) == 0
     assert "work" not in reject_queue(journal(root).read())  # Confirm recorded the verdict.
     assert git_out(root, "rev-parse", "HEAD:tickets/work/ticket.md").strip() == blob  # No ticket edit caused release.
     assert drain(root, script) == 0 and script.calls == ["work"]  # The next drain dispatches it.

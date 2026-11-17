@@ -75,7 +75,7 @@ class Supervise:
 
 def supervise_findings(stem: str, original: str, reply: ReworkReply) -> list[Finding]:
     path = ticket_path(stem)
-    road = f"escalate to the operator: the stem stays in the Reject queue; edit {path}, then `clutch confirm {stem}`, or retire it with `clutch reject {stem}`"
+    road = f"escalate to the operator: the stem stays in the Reject queue; edit {path}, then `clutch ticket confirm {stem}`, or retire it with `clutch ticket reject {stem}`"
     messages = []
     if reply.action == "split":
         messages.append("a supervisor edit cannot split the ticket")

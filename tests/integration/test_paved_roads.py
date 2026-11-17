@@ -20,7 +20,9 @@ def test_reject_queue_road_names_confirm_and_reject(tmp_path, capsys):
     for _ in range(3):
         j.append(EventType.CAP_CONSUMED, {"cap": "retry", "ticket_sha": "x"}, ticket="spent")
     assert drain(root, Script()) == 0
-    assert "- spent: gate_failed at check; retry cap spent (3/3) -- edit tickets/spent/ticket.md, then `clutch confirm spent`; or retire it with `clutch reject spent`" in capsys.readouterr().out
+    assert (
+        "- spent: gate_failed at check; retry cap spent (3/3) -- edit tickets/spent/ticket.md, then `clutch ticket confirm spent`; or retire it with `clutch ticket reject spent`"
+    ) in capsys.readouterr().out
 
 
 def test_halted_reoffer_road_names_the_drain_verb(tmp_path, capsys):

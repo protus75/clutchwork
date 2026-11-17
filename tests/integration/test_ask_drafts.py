@@ -10,6 +10,6 @@ def test_render_drafts(tmp_path):
     text = ask.render("drafts", ["a-one", "b-two"], config, tmp_path)
     assert text.index("- a-one: tickets/a-one/ticket.md") < text.index("- b-two: tickets/b-two/ticket.md")  # Neither a fixed path nor reversed stems works.
     assert "custom/state/box/" in text  # The default state path is wrong.
-    for expected in ('"Recommendation"', "clutch confirm --yes", "clutch reject --yes", "gold plating"):
+    for expected in ('"Recommendation"', "clutch ticket confirm --yes", "clutch ticket reject --yes", "gold plating"):
         assert expected in text  # Omitting either verdict or its bar loses instructions.
     assert text.endswith(f"{specs.data_open('host_notes')}\nspecific guidance\n{specs.data_close('host_notes')}\n")  # Notes must be appended as data.

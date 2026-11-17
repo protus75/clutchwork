@@ -219,7 +219,7 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
             if state == "rejected":
                 waits.append(Wait(row, f"{row.stem} is rejected", "give the row a new stem"))
             elif row.stem in drafts and not state:
-                waits.append(Wait(row, f"{row.stem} is still a draft", "confirm the draft with `clutch confirm`"))
+                waits.append(Wait(row, f"{row.stem} is still a draft", "confirm the draft with `clutch ticket confirm`"))
             else:
                 open_rows.append(row)
         elif state:

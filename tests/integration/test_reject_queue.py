@@ -80,16 +80,16 @@ def test_keep_bounds_all_caps_but_machine_keep_does_not(tmp_path, capsys):
     j.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "machine"}, ticket="held")
     assert draws(j.read(), "held", "infra") == 1
     _queued(root, "held")
-    assert main(["confirm", "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "confirm", "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "held" not in reject_queue(j.read())
     for cap in CAPS:
         assert remaining(Caps(), j.read(), "held", cap) == getattr(Caps(), cap)
-    assert main(["confirm", "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 2
+    assert main(["ticket", "confirm", "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 2
     assert "edit the ticket" in capsys.readouterr().err
     path = root / "tickets/held/ticket.md"
     path.write_text(path.read_text().replace("`thing()` returns ok.", "`thing()` returns ok after editing."))
     _queued(root, "held")
-    assert main(["confirm", "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "confirm", "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
 
 
 def test_drain_skips_queue_and_marks_legacy_once(tmp_path, capsys):
@@ -109,7 +109,7 @@ def test_drain_skips_queue_and_marks_legacy_once(tmp_path, capsys):
     assert drain(root, script) == 0
     assert drain(root, script) == 0
     assert sum(e.body.get("signal") == "reject_arrival" for e in _events(root, "legacy")) == 1
-    assert main(["confirm", "legacy"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "confirm", "legacy"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
 
 
 def test_reject_stamps_notifies_dependents_and_is_idempotent(tmp_path, capsys):
@@ -117,7 +117,7 @@ def test_reject_stamps_notifies_dependents_and_is_idempotent(tmp_path, capsys):
     commit_ticket(root, "parent", confirmed())
     commit_ticket(root, "child", confirmed(depends="- parent"))
     _queued(root, "parent")
-    assert main(["reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "state: rejected" in git_out(root, "show", "HEAD:tickets/parent/ticket.md")
     assert git_out(root, "log", "-1", "--format=%s").strip() == "clutch(parent): rejected"
     events = _events(root, "parent")
@@ -127,15 +127,15 @@ def test_reject_stamps_notifies_dependents_and_is_idempotent(tmp_path, capsys):
     box = list((root / ".clutch/state/box").glob("*.json"))
     assert len(box) == 1 and "failure_report" in box[0].read_text()
     count = len(journal(root).read())
-    assert main(["reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "already rejected" in capsys.readouterr().out
     assert len(journal(root).read()) == count and len(list((root / ".clutch/state/box").glob("*.json"))) == 1
     journal(root).append(EventType.STATE_TRANSITION, {"to": "gate_failed"}, ticket="ghost")
     before = git_out(root, "rev-parse", "HEAD")
-    assert main(["reject", "ghost"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "reject", "ghost"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert git_out(root, "rev-parse", "HEAD") == before
     journal(root).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
-    assert main(["reject", "done"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 2
+    assert main(["ticket", "reject", "done"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 2
 
 
 def test_reject_survives_invalid_confirmed_ticket(tmp_path):
@@ -148,7 +148,7 @@ def test_reject_survives_invalid_confirmed_ticket(tmp_path):
     original = b"---\nstate: confirmed\n---\n\nUnfinished ticket.\n"
     path.write_bytes(original)
 
-    assert main(["reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "reject", "parent"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert sum(e.body.get("signal") == "dead_dependency" for e in _events(root, "child")) == 1
     assert path.read_bytes() == original
 
@@ -156,7 +156,7 @@ def test_reject_survives_invalid_confirmed_ticket(tmp_path):
 def test_draft_confirm_commits_and_next_drain_dispatches(tmp_path):
     root = make_root(tmp_path)
     commit_ticket(root, "rough", confirmed().replace("state: confirmed", "state: draft", 1))
-    assert main(["confirm", "rough"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "confirm", "rough"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert "state: confirmed" in git_out(root, "show", "HEAD:tickets/rough/ticket.md")
     assert git_out(root, "log", "-1", "--format=%s").strip() == "clutch(rough): confirmed"
     assert any(e.body.get("signal") == "draft_confirmed" for e in _events(root, "rough"))
@@ -168,7 +168,7 @@ def test_draft_confirm_commits_and_next_drain_dispatches(tmp_path):
 def test_dirless_ghost_can_be_kept(tmp_path):
     root = make_root(tmp_path)
     journal(root).append(EventType.STATE_TRANSITION, {"to": "gate_failed", "stage": "check", "routed": "reject_queue"}, ticket="ghost")
-    assert main(["confirm", "ghost"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "confirm", "ghost"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert _events(root, "ghost")[-1].body["ticket_sha"] is None
 
 
@@ -184,11 +184,11 @@ def test_dead_dependencies_resolve_through_supersedes(tmp_path, leaf_state):
     j = journal(root)
     for stem, successors in [("original", ["one", "two"]), ("one", ["leaf", "leaf-other"])]:
         j.append(EventType.SIGNAL, {"signal": "supersedes", "successors": successors}, ticket=stem)
-    assert main(["reject", "original"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "reject", "original"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert not any(e.body.get("signal") == "dead_dependency" for e in _events(root, "dependent"))
     assert not list((root / ".clutch/state/box").glob("*.json"))
     if leaf_state == "rejected":
-        assert main(["reject", "leaf"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+        assert main(["ticket", "reject", "leaf"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     else:
         j.append(EventType.STATE_TRANSITION, {"to": "abandoned"}, ticket="leaf")
         checkout = runner.Checkout(
@@ -200,7 +200,7 @@ def test_dead_dependencies_resolve_through_supersedes(tmp_path, leaf_state):
     boxes = list((root / ".clutch/state/box").glob("*.json"))
     assert len(boxes) == 1 and "failure_report" in boxes[0].read_text()
     before = len(j.read())
-    assert main(["reject", "original"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
+    assert main(["ticket", "reject", "original"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 0
     assert len(j.read()) == before and len(list((root / ".clutch/state/box").glob("*.json"))) == 1
 
 
@@ -216,8 +216,8 @@ def test_verdict_refused_without_terminal(tmp_path, monkeypatch, capsys, verb):
 
     monkeypatch.setattr(Lockfile, "acquire", forbidden)
     monkeypatch.setattr(Journal, "read", forbidden)
-    assert main([verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: False, forbidden)) == 2
-    assert "a human runs this in a terminal: `clutch confirm|reject <stem>`" in capsys.readouterr().err
+    assert main(["ticket", verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: False, forbidden)) == 2
+    assert "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`" in capsys.readouterr().err
     assert not (root / ".clutch/state/control/inbox").exists()
 
 
@@ -231,7 +231,7 @@ def test_verdict_requires_yes(tmp_path, capsys, verb, answer):
     path = root / "tickets/held/ticket.md"
     original = path.read_bytes()
     head = git_out(root, "rev-parse", "HEAD")
-    result = main([verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: answer))
+    result = main(["ticket", verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: answer))
     assert "held: Reject queue:" in capsys.readouterr().out
     if answer == " Y ":
         assert result == 0 and journal(root).read() != before
@@ -251,7 +251,7 @@ def test_verdict_invalid_frontmatter_refuses(tmp_path, capsys, verb, frontmatter
     original = path.read_bytes()
     before = journal(root).read()
     head = git_out(root, "rev-parse", "HEAD")
-    assert main([verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 2
+    assert main(["ticket", verb, "held"], cwd=root, env=ENV, clock=Clock(), terminal=(lambda: True, lambda _: "y")) == 2
     assert "fix the ticket and retry the verdict" in capsys.readouterr().err
     assert path.read_bytes() == original and journal(root).read() == before
     assert git_out(root, "rev-parse", "HEAD") == head

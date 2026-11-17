@@ -191,7 +191,7 @@ def test_status_preserves_sections_and_is_write_free(tmp_path, monkeypatch, caps
         legacy = (
             "merged:\n1\n\nin flight:\n(none)\n\ninterrupted (the engine stopped mid-run; reject it, or start the engine to rerun it):\n- active\n\nblocked:\n- held: gate_failed\n\n"
             "intake:\n- new: source: human, state: confirmed, commit 123456789abc\n\nspend:\n$2.00\n\n"
-            "Reject queue:\n- held: gate_failed at check -- confirm held after editing, or reject held\n\n"
+            "Reject queue:\n- held: gate_failed at check -- ticket confirm held after editing, or ticket reject held\n\n"
             f"Confirmed-class tombstones:\n- {id}: failure_report, 0 re-reports\n\n"
             f"Tombstone reopens:\n- {reopened}: reopened at 3 re-reports\n"
         )

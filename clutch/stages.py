@@ -295,7 +295,7 @@ async def ticket_change_findings(ctx: StageContext, stem: str, *, expected: str 
             code="ticket_changed",
             path=rel,
             message=f"{stem}: ticket.md changed during the run",
-            paved_road=f"review the change to {rel}, then keep (`clutch confirm {stem}`) or kill (`clutch reject {stem}`)",
+            paved_road=f"review the change to {rel}, then keep (`clutch ticket confirm {stem}`) or kill (`clutch ticket reject {stem}`)",
         )
     ]
 

@@ -28,7 +28,7 @@ def transitions(root):
 
 
 def test_reject_reaps_a_killed_run(stopped, capsys):
-    assert invoke(stopped, "reject", "--yes", "stale") == 0
+    assert invoke(stopped, "ticket", "reject", "--yes", "stale") == 0
     assert transitions(stopped)[-2:] == ["abandoned", "rejected"]
     assert "state: rejected" in (stopped / "tickets/stale/ticket.md").read_text()
     assert "is running" not in capsys.readouterr().err
@@ -36,7 +36,7 @@ def test_reject_reaps_a_killed_run(stopped, capsys):
 
 def test_confirm_reaps_then_refuses(stopped, capsys):
     before = (stopped / "tickets/stale/ticket.md").read_text()
-    assert invoke(stopped, "confirm", "--yes", "stale") == 2
+    assert invoke(stopped, "ticket", "confirm", "--yes", "stale") == 2
     assert "is neither a draft nor in the Reject queue" in capsys.readouterr().err
     assert transitions(stopped)[-1] == "abandoned"
     assert (stopped / "tickets/stale/ticket.md").read_text() == before
@@ -130,7 +130,7 @@ def test_every_locked_verb_reaps(stopped, monkeypatch):
     monkeypatch.setattr(runner, "reap", reap)
     path = stopped / "tickets/stale/ticket.md"
     path.write_text(path.read_text() + "\n")
-    for args in (("dismiss", "id"), ("triage",), ("engine", "retro"), ("reject", "--yes", "stale")):
+    for args in (("dismiss", "id"), ("triage",), ("engine", "retro"), ("ticket", "reject", "--yes", "stale")):
         calls.clear()
         with pytest.raises(RuntimeError, match="stopped after reap"):
             invoke(stopped, *args)

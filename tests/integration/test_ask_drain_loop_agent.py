@@ -14,8 +14,8 @@ def test_prompt_delegates_recommendations(tmp_path):
         "clutch prompt diagnose",
         "clutch prompt drafts",
         "clutch prompt running",
-        "clutch confirm --yes",
-        "clutch reject --yes",
+        "clutch ticket confirm --yes",
+        "clutch ticket reject --yes",
         "clutch ticket lint",
         "clutch ticket review",
         "clutch suggest",
@@ -31,7 +31,7 @@ def test_prompt_delegates_recommendations(tmp_path):
         assert phrase in text, f"Omitting {phrase} differs"
     for phrase in ("Never run `confirm` or `reject`", "Needs a human", "never pass `--yes`"):
         assert phrase not in text, f"Retaining {phrase} differs"
-    assert text.index("standing delegation") < text.index("clutch confirm --yes")  # A late delegation differs.
+    assert text.index("standing delegation") < text.index("clutch ticket confirm --yes")  # A late delegation differs.
 
 
 def test_prompt_keeps_hard_limits(tmp_path):

@@ -281,7 +281,7 @@ def render(status: Status) -> str:
                 block("blocked", (f"{stem}: {to}" for stem, to in status.blocked)),
                 block("intake", (f"{stem}: source: {source}, state: {state}, commit {commit[:12]}" for stem, source, state, commit in status.intake)),
                 f"spend:\n${status.spend_usd:.2f}",
-                block("Reject queue", (f"{stem}: {body['to']} at {body.get('stage', 'unknown')} -- confirm {stem} after editing, or reject {stem}" for stem, body in status.reject)),
+                block("Reject queue", (f"{stem}: {body['to']} at {body.get('stage', 'unknown')} -- ticket confirm {stem} after editing, or ticket reject {stem}" for stem, body in status.reject)),
                 block(
                     f"Suggestion Box ({sum(row[2] in {'pending', 'reopened'} for row in status.box)} pending, {sum(row[2] not in {'pending', 'reopened'} for row in status.box)} resolved)",
                     (f"{id}: {cls}: {label}: {summary}" for id, cls, label, summary in status.box),

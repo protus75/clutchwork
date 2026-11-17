@@ -80,8 +80,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `prompt author <stem>` | no | Print the hand-authoring prompt for one ticket from its roadmap row or a request; the ticket need not exist yet. |
 | `prompt plan-ticket-drain` | no | Print the kickoff prompt that runs the roadmap to completion unattended, authoring its rows as tickets and draining them, without writing state. |
 | `engine pause` / `engine resume` / `engine kill` / `engine stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `engine kill` and `engine stop` refuse (exit 2); `engine pause`/`engine resume` print "nothing running". |
-| `confirm <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to keep (or uses `--yes` to skip the prompt): promotes a draft to confirmed, keeps a Reject-queue item (section 6.6). Same-content repeat keeps are refused for command-line confirms; the extension uses `--extension` to allow them. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
-| `reject <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to kill (or uses `--yes` or `--extension` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
+| `ticket confirm <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to keep (or uses `--yes` to skip the prompt): promotes a draft to confirmed, keeps a Reject-queue item (section 6.6). Same-content repeat keeps are refused for command-line confirms; the extension uses `--extension` to allow them. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
+| `ticket reject <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to kill (or uses `--yes` or `--extension` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 
 ### 2.2 `./dev.py`
 
@@ -126,7 +126,7 @@ says what goes in each section.
 
 Frontmatter fields that drive behavior:
 
-- `state`: `draft` (an Author-written ticket awaiting `confirm`; intake stamps a new hand-written ticket `confirmed`), `confirmed` (dispatchable), `rejected`, `merged`.
+- `state`: `draft` (an Author-written ticket awaiting `ticket confirm`; intake stamps a new hand-written ticket `confirmed`), `confirmed` (dispatchable), `rejected`, `merged`.
 - `source`: `human` (hand-written), `box:<class>` (written by the Author stage), `seed`
   (historical bootstrap tickets; nothing writes it now).
 - `kind`: `feature`, `chore`, or `bug` (a bug must carry `## Regression` and evidence,
@@ -137,7 +137,7 @@ Frontmatter fields that drive behavior:
 
 ### 3.2 Intake
 
-`engine drain` and `engine serve` intake every pending ticket; `ticket review`, `engine run`, `confirm`, and `reject` intake only the named stem, including before verdict handoff to a running engine:
+`engine drain` and `engine serve` intake every pending ticket; `ticket review`, `engine run`, `ticket confirm`, and `ticket reject` intake only the named stem, including before verdict handoff to a running engine:
 
 - It reads status, checks for stray staged paths, and commits under one `commit.lock` hold.
 - It finds new or modified `tickets/<stem>/ticket.md` files in the working tree (`git status`).
@@ -383,7 +383,7 @@ with no model call. If the worktree exists, `diagnosis.json` is lifted and a `di
 ### 6.4 Caps and escalation
 
 Caps bound how much one ticket can fail over the stem's **lineage**: every event since the
-last operator keep or supervisor keep (`reject_verdict keep actor: supervisor`). Editing `ticket.md` never resets a cap; only an operator `confirm` or a supervisor keep does.
+last operator keep or supervisor keep (`reject_verdict keep actor: supervisor`). Editing `ticket.md` never resets a cap; only an operator `ticket confirm` or a supervisor keep does.
 Machine keeps never reset counts. Draws are journaled `cap_consumed` events, except `attempts`,
 which counts failed terminal `state_transition` events directly and journals no cap draw.
 
@@ -426,17 +426,17 @@ Keep and kill work while serve runs.
 The Reject queue holds stems whose latest terminal was routed there, plus stems the drain finds
 with a spent cap at quiescence. `status` lists them.
 Settled stems (`merged` and `already_satisfied`) never await a verdict, even when a historical
-terminal carries a Reject routing marker. `reject` refuses settled stems.
+terminal carries a Reject routing marker. `ticket reject` refuses settled stems.
 
-- **`confirm <stem>` (keep)** journals `reject_verdict keep actor: operator`. That resets the
+- **`ticket confirm <stem>` (keep)** journals `reject_verdict keep actor: operator`. That resets the
   lineage, so every cap starts over. A second command-line keep at the same ticket content is refused: edit the
   ticket first. The extension uses `--extension` to keep unchanged content.
-- **`reject <stem>` (kill)** stamps `state: rejected`, commits it, and files one Suggestion Box
+- **`ticket reject <stem>` (kill)** stamps `state: rejected`, commits it, and files one Suggestion Box
   `failure_report` per confirmed ticket that depended on it ("re-wire, re-scope, or reject it").
   Those dependents stay blocked.
 - **Supervisor keep:** inside `runner.drive` and merge-route `TicketWriter.consume_result`, a `premise_failed` routed to the Reject queue, or a routed `gate_failed` with a spent cap, meets supervisor-mode Rework with the lineage's diagnosis lessons. It needs a worktree and budget below `caps.supervise` (default 2, counted since the last operator keep). It excludes `ticket_changed` and `abandoned` (operator decisions), provider/runtime failures (`infra_error`, `timeout`, `invalid_artifact`, `incomplete`, or provider drought, which ticket edits cannot fix). The idle step also takes attempts that already requested Rework, using the `sup` key scope so their Effect keys do not replay. The serve idle point before dispatch and drain between tickets also run this step for Reject-queue stems, including legacy `reject_arrival` entries, with no attempt since the last operator keep. They lazily prepare providers only for eligible stems and use a detached worktree from `main`, removed and pruned through git after the step. The idle hook journals no terminal. Every attempt journals one `supervisor_attempt` signal with the stem in its body before Rework and, for a terminal-path attempt, before the terminal, whether approved, refused, or escalated. On a terminal path a reviewed update publishes before the terminal; after the terminal, a `supervise` draw and `reject_verdict keep actor: supervisor` with the new ticket blob start a fresh lineage and release the stem for re-offer. The idle hook records the same draw and keep after an approved update. Refused, snagged, or escalated edits lift `rework.md` as `rework-proposal` (before the terminal on a terminal path) and leave the stem queued. A terminal path without a worktree, or either path with spent supervisor budget, makes no call or proposal.
 - **Machine keep:** drain and serve use `awaiting_operator` and `reofferable` to hold queued stems with a spent cap or `ticket_changed` and re-offer others with budget. `record_reoffer` journals `keep actor: machine` for a queued stem, then draws `retry` unless the terminal is `premise_failed` without escalation, carries `provider_drought`, or is `infra_error` or `timeout` without an escalation rung. A machine keep never resets caps. The snapshot holds Reject-queue stems only when they await the operator (content parks remain separate).
-- `confirm` on a `draft` ticket promotes it to `confirmed` instead.
+- `ticket confirm` on a `draft` ticket promotes it to `confirmed` instead.
 
 Keep and kill normally require a person at an interactive terminal to answer `y` at the prompt before the verdict proceeds. `--yes` and `--extension` skip the terminal check and prompt.
 
@@ -444,20 +444,20 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 
 - **`ticket_changed`:** a committed or uncommitted change to `ticket.md` during a run ends the
   attempt `gate_failed` and holds it in the Reject queue, with no diagnosis, Rework, or cap draw.
-  Review the change to `tickets/<stem>/ticket.md`, then keep (`clutch confirm <stem>`) to run
-  the changed ticket as a fresh attempt, or kill (`clutch reject <stem>`). Machine keeps do
+  Review the change to `tickets/<stem>/ticket.md`, then keep (`clutch ticket confirm <stem>`) to run
+  the changed ticket as a fresh attempt, or kill (`clutch ticket reject <stem>`). Machine keeps do
   not release this hold. Stage boundaries, admission, and queued or confirmed merge admissions
   all check the dispatch identity. Rework updates between attempts are fresh ticket inputs.
 
-- **Premise park:** a requisition-stage `premise_failed` draws no cap, makes no Diagnose call, and is not routed to the Reject queue. Edit the committed ticket to release it; no `confirm` is needed. The next review receives the last recorded review’s findings and the diff since, rules on those findings, and raises new findings only against changed text, except that a defect making a criterion or `## Verification` command impossible to satisfy against merged code is raised whether or not its text changed. Other premise failures: with the default `premise_bounce: 1`, the first `premise_failed` spends
+- **Premise park:** a requisition-stage `premise_failed` draws no cap, makes no Diagnose call, and is not routed to the Reject queue. Edit the committed ticket to release it; no `ticket confirm` is needed. The next review receives the last recorded review’s findings and the diff since, rules on those findings, and raises new findings only against changed text, except that a defect making a criterion or `## Verification` command impossible to satisfy against merged code is raised whether or not its text changed. Other premise failures: with the default `premise_bounce: 1`, the first `premise_failed` spends
   the cap and routes to the Reject queue via `premise_bounce cap spent`; only an operator
-  `confirm` or a supervisor keep (section 6.6) releases it. When a host sets `premise_bounce` above 1 and caps still have budget,
+  `ticket confirm` or a supervisor keep (section 6.6) releases it. When a host sets `premise_bounce` above 1 and caps still have budget,
   an Implement premise overruled by Diagnose with `retry` escalates and is re-offered without an edit, drawing `retry` with the new rung and carrying the lessons. At the top rung it enters the Reject queue. Other premise failures park until their committed `ticket.md` changes; that re-offer draws no retry.
 - **`budget_exceeded`:** not diagnosed, draws nothing. Ticket stages pass no spend budget, so in
   practice only eval runs reach it.
 - **Reconcile:** whenever a verb other than pause, resume, kill or stop takes the writer lock, any stem still marked `running`
   (or with an unfinished effect) is reaped: harvested, journaled `abandoned`, worktree removed.
-  A stem with a `HELD` merge-queue receipt for its current attempt is not reaped, nor is a stem whose only unfinished effects are standalone review `llm/review-<stem>/` calls. `abandoned` stems stay eligible. With no engine running, `status` shows such a stem as interrupted, `reject`
+  A stem with a `HELD` merge-queue receipt for its current attempt is not reaped, nor is a stem whose only unfinished effects are standalone review `llm/review-<stem>/` calls. `abandoned` stems stay eligible. With no engine running, `status` shows such a stem as interrupted, `ticket reject`
   reaps and rejects it, and `ticket order` treats it as open.
 - **Flaky tests:** Check quarantines unedited fail-then-pass tests and releases them after a merged fix and a passing observation. Edited flakes and cap-blocked flakes fail Check.
 
@@ -540,10 +540,10 @@ For each candidate, in pick order:
 
 ### 7.3 Control
 
-`confirm` and `reject` publish verdict requests to the running drain or serve, which applies them.
+`ticket confirm` and `ticket reject` publish verdict requests to the running drain or serve, which applies them.
 
 The engine decides each published verdict request later. A verdict decision row marked `stale` or
-`rejected` was not applied; its reason says why. Fix that cause and run `confirm` or `reject` again
+`rejected` was not applied; its reason says why. Fix that cause and run `ticket confirm` or `ticket reject` again
 for the stem. The row disappears once the stem is resolved.
 
 `pause`, `resume`, `kill`, `retro`, and `stop` write a request file to `state_dir/control/inbox/`, bound to the
@@ -570,7 +570,7 @@ With `docs/roadmap.md` present, drain and serve run the driver at start and afte
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result`, and at the serve idle point and between drain tickets (section 6.6).
 
-The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch confirm --yes` or `clutch reject --yes`. It files cause fixes with `clutch suggest` and never authors a ticket itself. Between drains it triages or dismisses Suggestion Box messages pending when its tick starts, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
+The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch suggest` and never authors a ticket itself. Between drains it triages or dismisses Suggestion Box messages pending when its tick starts, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
 
 ## 8. AI providers and prompts
 
@@ -665,7 +665,7 @@ A `retro_finding` naming a spec path the repository does not track is declined b
 For a `roadmap_row` message, Author embeds the row and its plan, whole under 40,000 characters and otherwise the Target design and Where each piece lives sections. The ticket uses the row’s stem, kind, and priority; existing evidence under `tickets/<stem>/evidence/` is committed with it.
 
 The Author prompt embeds the authoring guide and skeletons, and each re-prompt carries the last parsed ticket in `previous_reply`. Each later review receives the previous review and the diff from the text it judged. The Author stage writes `tickets/<stem>/ticket.md` with `source: box:<class>`, has
-`requisition_review` check it, and commits it. Its state is `draft` (needs `confirm`) if the
+`requisition_review` check it, and commits it. Its state is `draft` (needs `ticket confirm`) if the
 message was reopened, the review baseline is not GO (except for `roadmap_row`), `engine_plane_safety_inventory` is empty or
 touched by the ticket's fence, or the ticket carries a `gate_bypass`. Otherwise `box_policy`
 decides per message class.
