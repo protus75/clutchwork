@@ -1,0 +1,3 @@
+supervise_idle call key (key_scope="sup"): llm/some-stem/sup-3/rework/0/1
+run_seq segment: 'sup-3'
+ValueError: invalid literal for int() with base 10: 'sup-3'
