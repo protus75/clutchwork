@@ -196,7 +196,7 @@ def current_release(repo: Path) -> str | None:
     return f"{parts[0]}.{parts[1]}.0"
 
 
-def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None, drafts: frozenset[str] = frozenset()) -> Choice:
+def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None, drafts: frozenset[str] = frozenset(), held: dict[str, str] | None = None) -> Choice:
     tables = [row._table for row in rows if release_name(row.release) == current] if current is not None else []
     c = min(tables) if tables else None
 
@@ -254,6 +254,9 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
                 waits.append(Wait(row, "capture evidence missing", f"run the capture and save it under {directory}"))
             elif not named and not has_evidence and row.kind == "bug":
                 waits.append(Wait(row, "observed failure evidence missing", f"save the observed failure under {directory}"))
+            elif held and release_name(row.release) in held:
+                release = release_name(row.release)
+                waits.append(Wait(row, f"start gate of {release} fails: {held[release]}", "make the release's start block pass"))
             else:
                 ready.append(row)
     unfinished = [rank(r) for r in links + open_rows + ready + [w.row for w in waits] if states.get(r.stem) != "rejected"]
@@ -310,7 +313,8 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     files = set((await checkout.git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
     events = checkout.journal.read()
     states = last_states(events)
-    choice = choose(rows, states=states, files=files, current=current_release(repo))
+    held = await start_holds(checkout, rows, states)
+    choice = choose(rows, states=states, files=files, current=current_release(repo), held=held)
     lines = []
     for action, selected, edit in (("strike", choice.strike, strike), ("link", choice.link, link)):
         for row in selected:
@@ -327,6 +331,8 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     rejected = [row for row in rows if not row.struck and states.get(row.stem) == "rejected"]
     reasons = {}
     for row in rejected:
+        if release_name(row.release) in held:
+            continue
         if opened + len(reasons) >= ahead:
             break
         messages = row_messages(box, row)
@@ -427,7 +433,8 @@ async def status(checkout) -> list[str]:
     files = set((await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
     events = checkout.journal.read()
     states = last_states(events)
-    choice = choose(rows, states=states, files=files, current=current_release(checkout.repo), drafts=draft_stems(checkout.repo, rows))
+    held = await start_holds(checkout, rows, states)
+    choice = choose(rows, states=states, files=files, current=current_release(checkout.repo), drafts=draft_stems(checkout.repo, rows), held=held)
     box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs)
     messages_by_row = {row: row_messages(box, row) for row in rows}
     declined = {row for row, messages in messages_by_row.items() if messages and messages[-1].resolution is not None and messages[-1].resolution.kind == "declined"}
@@ -472,37 +479,65 @@ async def status(checkout) -> list[str]:
     return lines
 
 
-def gates(text: str) -> dict[str, tuple[tuple[str, ...], ...]]:
+def gates(text: str, fence: str = "gate") -> dict[str, tuple[tuple[str, ...], ...]]:
     result = {}
     release = None
     commands = None
-    road = "add a ```gate block under the release's heading in docs/roadmap.md section 8"
+    road = f"add a ```{fence} block under the release's heading in docs/roadmap.md section 8"
     for line in text.splitlines():
         if commands is not None:
             if line.strip() == "```":
                 if not commands:
-                    raise Refusal(f"empty gate for {release}", "add at least one argv command to the gate block")
+                    raise Refusal(f"empty {fence} for {release}", f"add at least one argv command to the {fence} block")
                 result[release] = tuple(commands)
                 commands = None
             elif line.strip():
                 try:
                     argv = shlex.split(line, posix=True)
                 except ValueError as exc:
-                    raise Refusal(f"invalid gate command for {release}: {exc}", "fix the command's quoting so shlex.split can parse it") from None
+                    raise Refusal(f"invalid {fence} command for {release}: {exc}", "fix the command's quoting so shlex.split can parse it") from None
                 if not argv or not argv[0].strip():
-                    raise Refusal(f"gate command for {release} has no executable", "start each gate command with a non-empty executable")
+                    raise Refusal(f"{fence} command for {release} has no executable", f"start each {fence} command with a non-empty executable")
                 commands.append(tuple(argv))
         elif line.startswith("### "):
             release = release_name(line[4:].strip())
-        elif line.strip() == "```gate":
+        elif line.strip() == f"```{fence}":
             if release is None:
-                raise Refusal("gate has no release heading", road)
+                raise Refusal(f"{fence} has no release heading", road)
             if release in result:
-                raise Refusal(f"duplicate gate for {release}", "keep exactly one gate block per release in docs/roadmap.md section 8")
+                raise Refusal(f"duplicate {fence} for {release}", f"keep exactly one {fence} block per release in docs/roadmap.md section 8")
             commands = []
     if commands is not None:
-        raise Refusal(f"unclosed gate for {release}", "close the gate block with a ``` line")
+        raise Refusal(f"unclosed {fence} for {release}", f"close the {fence} block with a ``` line")
     return result
+
+
+async def run_start(checkout, release) -> tuple[bool, list[str]]:
+    path = checkout.repo / ROADMAP
+    if not path.is_file():
+        raise Refusal(f"missing {ROADMAP}", "restore docs/roadmap.md")
+    commands = gates(path.read_text(), "start").get(release, ())
+    lines = []
+    for argv in commands:
+        command = shlex.join(argv)
+        try:
+            rc, _, _ = await checkout.exec_.run(list(argv), cwd=checkout.repo, env=child_env(checkout.env, checkout.config), timeout=checkout.config.drain.max_ticket_minutes * 60.0)
+        except TimeoutError, ExecutableNotFound:
+            rc = 1
+        if rc:
+            return False, [command]
+        lines.append(command)
+    return True, lines
+
+
+async def start_holds(checkout, rows, states):
+    held = {}
+    releases = dict.fromkeys(release_name(row.release) for row in rows if not row.struck and states.get(row.stem) not in SETTLED)
+    for release in releases:
+        passed, lines = await run_start(checkout, release)
+        if not passed:
+            held[release] = lines[-1]
+    return held
 
 
 async def run_gate(checkout, release) -> tuple[bool, list[str]]:

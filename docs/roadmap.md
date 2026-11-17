@@ -23,10 +23,12 @@ Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor 
 | Release | Theme | Gate to start | Gate to ship |
 |---|---|---|---|
 | **0.3.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
-| **0.4.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.6.0 | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.5.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`); decision 19’s credential rule applies while this machine has no Gemini credential | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
-| **0.6.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a two-member review panel has reviewed the next 10 tickets with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
-| **0.7.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call`; the owner's lens prompts adapted | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
+| **0.4.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.6.0 (unchecked) | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
+| **0.5.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`) (unchecked); decision 19’s credential rule applies while this machine has no Gemini credential (unchecked) | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
+| **0.6.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain (unchecked) | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a two-member review panel has reviewed the next 10 tickets with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
+| **0.7.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call` (unchecked); the owner's lens prompts adapted (unchecked) | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
+
+The `start` block for 0.5.0 checks the three dedup tickets; clauses marked (unchecked) have no merged verb to check them. A release without a `start` block starts unconditionally.
 
 Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.3.0 because they touch nothing the later releases reshape, and both wait on an agent-run capture committed as their evidence; their plans say which agent action captures which facts.
 
@@ -295,6 +297,8 @@ Every plan under `docs/` has these sections in this order, so the next audit can
 
 Every proposed ticket, grouped by release and in priority order within a release. Row numbers are stable identifiers assigned in the order rows were added, not an ordering: the release sections and the `P` column order the work. "Owner" is the plan whose design the ticket implements; "roadmap" means the ticket comes from the audit above. `Depends on` lists only tickets whose merged code is needed; ordering that is not a dependency is in the `Runs before` column. Authoring follows `clutch new` and the authoring guide, and a row gains its link when it is authored (by the authoring agent today; by `roadmap author` once `docs/roadmap-driver-plan.md` lands).
 
+A release may also have a fenced `start` block under its heading, with the same command and passing rules as a `gate` block. The driver and `clutch roadmap status` check it before readying rows; it writes no gate signal.
+
 Each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use. Every block ends with `uv run clutch roadmap accept <release>`, after the `roadmap merged` checks and the suite: a model reviews the release's merged rows, taken together, against its theme and ship gate in section 1 and its owning plans' Target design, and appends a P1 row for each partial or unmet promise to the release's table (or, for a gap that should wait, to the next release's table) in a `clutch(roadmap): accept <release>` commit, so the gate fails until those rows merge. A later release's block checks only the suite, that release's rows, and the acceptance review: its other ship-gate clauses in section 1 have no command until merged code records their facts. The audit re-run before each minor release (section 9) adds to the next release's block a command for each such clause whose fact merged code now records.
 
 ### 0.3.0
@@ -400,6 +404,10 @@ uv run clutch roadmap accept 0.4.0
 ```
 
 ### 0.5.0
+
+```start
+uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner merge-admission-single-owner
+```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|

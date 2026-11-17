@@ -575,7 +575,7 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 
 ### 7.5 Roadmap driver
 
-With `docs/roadmap.md` present, drain and serve run the driver at start and after every settle; `run` never does. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, and publishes only with `release.publish: true`. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
+With `docs/roadmap.md` present, drain and serve run the driver at start and after every settle; `run` never does. It checks release `start` blocks before readying rows, as does `roadmap status`. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, and publishes only with `release.publish: true`. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result` (section 6.6).
 
