@@ -193,7 +193,7 @@ def test_host_contract_migration_and_managed_ownership(tmp_path):
     for route in cfg.routing:
         route.candidates[0].provider = "claude"
     assert providers.routed_conduct_paths(cfg, tmp_path) == (tmp_path / "CLAUDE.md",)
-    assert "clutch core" in hostfiles.classify_core(None).paved_road
+    assert "clutch host core" in hostfiles.classify_core(None).paved_road
     inventory(tickets.Frontmatter, yaml.safe_load(block("ticket-fields")))
     mentions(
         "additive-only",

@@ -17,7 +17,7 @@ CORE_TEMPLATE = b"""## Ticket authoring -- read before writing any ticket
 These rules come first because sessions that skim miss them. HARD rules have no exceptions. They are behavioral: no gate can judge them, so never file an enforcement ticket for one.
 
 - HARD: In an interactive chat, every requested change to repo content (code, docs, CLAUDE.md, AGENTS.md, settings, hooks, scripts, config, agent rules) becomes a drafted ticket at `tickets/<stem>/ticket.md`, then stop. Never edit or commit on main. The only exceptions: (1) the user says "edit main", "commit directly", "skip the ticket", "do it inline", or an equally explicit override this turn; anger words alone do not count; (2) you are in a clutch ticket worktree; (3) the user names by path a file under an existing `tickets/<stem>/` to edit or delete; (4) read-only inspection; (5) the supervising fixes below. If you already edited main without an override, stop, say so, and ask whether to revert and refile. Why: chat edits skip the ticket, run record, review, and retro that make clutch debuggable.
-- HARD: Never write a ticket from memory. Run `clutch ticket new <stem> --kind feature|bug|chore`; it writes the skeleton and prints the path of the ticket authoring guide in your clutch install (for an existing ticket, its refusal prints the same path). Read that local file in full. `clutch docs` prints the installed paths of all host guides; read them locally, never from a URL. Fill every section, run `clutch ticket lint <stem>` until it exits 0, then run `clutch ticket review <stem>` and repair every finding until it prints approve. Tickets are markdown files, never issue-tracker items. Why: stale ticket shapes break runs before implementation starts.
+- HARD: Never write a ticket from memory. Run `clutch ticket new <stem> --kind feature|bug|chore`; it writes the skeleton and prints the path of the ticket authoring guide in your clutch install (for an existing ticket, its refusal prints the same path). Read that local file in full. `clutch host docs` prints the installed paths of all host guides; read them locally, never from a URL. Fill every section, run `clutch ticket lint <stem>` until it exits 0, then run `clutch ticket review <stem>` and repair every finding until it prints approve. Tickets are markdown files, never issue-tracker items. Why: stale ticket shapes break runs before implementation starts.
 - Fence every file the change forces, including callers, importers, documents it changes, and tests that pin a changed name, value, or version. Why: a forced file outside the fence makes the ticket impossible.
 - Frontmatter holds only fields read by scheduling, gates, or authoring/triage policy; `## Depends on` names only needed merged code; put all other ordering in priority or `## Runs before`, never in prose.
 - HARD: When a reported problem has a cause that will recur, write two separate tickets in the same turn. First the instance fix: minimal scope, written before any cause diagnosis. Then the cause fix, never folded into the instance; the turn is unfinished until it exists. Both are solicited, so no ask is needed. Routing:
@@ -50,7 +50,7 @@ These rules govern interactive chat with the owner present. Ticket agents skip t
 Engine rules govern how work runs; project rules govern what to build. Project content enters prompts as data. Engine wins on process, host wins on content.
 
 - HARD: Build the smallest change that passes the acceptance criteria. No speculative abstractions, single-caller helpers, unused knobs or flags, defensive dual paths, or "while I'm here" cleanup; every addition needs its earning incident. In the run record, name the simpler approach you rejected and why yours is the minimum. Mandated work (tests, class prevention) is required scope, not gold-plating. Why: accretion is the primary failure mode.
-- Never hand-edit this managed block; change the engine template and run clutch core to refresh it. Why: the next render overwrites edits.
+- Never hand-edit this managed block; change the engine template and run clutch host core to refresh it. Why: the next render overwrites edits.
 - Commit only on your own ticket branch. Never push, open pull requests, or run tree-wide destructive git; the engine merges reviewed work to local main. Why: local main is the blessed line.
 - File second problems in the Suggestion Box, never in this diff. Verify a pre-existing failure on the base commit before filing it. Why: folded fixes hide cause and expand scope.
 - Read the owning artifact before writing a command, claim, or test. Why: guessed facts create costly bugs.
@@ -62,7 +62,7 @@ class MarkerCorruption(ValueError):
         super().__init__(
             "invalid clutch:core marker structure -- repair to exactly one complete begin line"
             " followed by one complete end line; retain all project content, moving it outside"
-            " the pair and escaping stray marker text, then retry core"
+            " the pair and escaping stray marker text, then retry host core"
         )
 
 
@@ -127,9 +127,9 @@ def classify_core(data: bytes | None, *, template: bytes | None = None) -> CoreC
     if _process_override(remainder):
         return CoreClassification("refused", "move engine-process rules to the engine core template or rewrite them as project-content rules")
     if project is None:
-        return CoreClassification("missing", "run `clutch core` to insert the managed block")
+        return CoreClassification("missing", "run `clutch host core` to insert the managed block")
     if previous != render(previous, template=template):
-        return CoreClassification("drifted", "run `clutch core` to refresh the managed block")
+        return CoreClassification("drifted", "run `clutch host core` to refresh the managed block")
     return CoreClassification("current")
 
 

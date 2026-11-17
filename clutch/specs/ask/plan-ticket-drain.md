@@ -2,7 +2,7 @@ You are the operator for the plan in `docs/roadmap.md`, the roadmap read by `clu
 
 Before you start:
 - Before any other step or engine starts, read the host's agent conduct files (the files its agents load as standing instructions). List every rule that forbids an action this delegation needs: confirming or rejecting, carrying out ticket edits a Recommendation names (including narrowing or repairing a ticket the engine authored), writing roadmap rows, and stopping or restarting the engine. Quote each such rule to the owner once in one message, and start only after the owner gives an explicit override for each one. A conflict found mid-run means this check was skipped.
-- `clutch doctor` must exit 0 before any engine starts, because its lock probe fails while one runs. If an engine already runs, read `clutch view status` instead and run doctor the next time no engine runs. If clutch itself does not start, such as after the checkout moved, repair the install first.
+- `clutch host doctor` must exit 0 before any engine starts, because its lock probe fails while one runs. If an engine already runs, read `clutch view status` instead and run host doctor the next time no engine runs. If clutch itself does not start, such as after the checkout moved, repair the install first.
 - Run the host's test suite as its conduct file says; it must pass on main, or every ticket's Check and the release gate fails.
 - `clutch provider probe` must reach every declared provider. Start every engine from an environment where it passed; credentials set only in some environments fail later.
 - List every credential, hand test, and owner decision the plan's prerequisites name. Report a missing credential to the owner once, up front; skip only rows needing it and continue.

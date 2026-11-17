@@ -38,15 +38,15 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
     def row(name, passed, detail):
         results.append(Check(name, passed, " ".join(str(detail).split())))
 
-    row("venv", in_venv, "active Python venv" if in_venv else "no active Python venv; run `uv run clutch doctor`")
+    row("venv", in_venv, "active Python venv" if in_venv else "no active Python venv; run `uv run clutch host doctor`")
     config = None
     try:
         config = load_config(config_path, cwd=repo)
         row("config", True, "config schema is valid")
     except Exception as exc:
-        row("config", False, f"{exc}; repair the selected config and rerun doctor")
+        row("config", False, f"{exc}; repair the selected config and rerun host doctor")
     if config is None:
-        row("git", False, "not checked: config did not load; fix the config and rerun doctor")
+        row("git", False, "not checked: config did not load; fix the config and rerun host doctor")
     else:
         git = Git(exec_, env={"PATH": env.get("PATH", "")}, timeout=30.0, commit_lock=CommitLock(config.state_dir, clock=clock, sleep=sleep))
         try:
@@ -56,21 +56,25 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
             row("git", False, f"{exc}; install git or fix PATH")
     for name in ("lock", "journal"):
         if config is None:
-            row(name, False, "state directory unavailable; repair the selected config and rerun doctor")
+            row(name, False, "state directory unavailable; repair the selected config and rerun host doctor")
             continue
         try:
             detail = inspect_lock(config.state_dir) if name == "lock" else f"readable history ({len(Journal(config.state_dir, clock).read())} events)"
             row(name, True, detail)
         except Exception as exc:
-            row(name, False, f"{exc}; " + ("restore journal readability from backup and rerun doctor" if name == "journal" else "wait for the writer to exit or stop it; never delete the lockfile"))
+            row(
+                name,
+                False,
+                f"{exc}; " + ("restore journal readability from backup and rerun host doctor" if name == "journal" else "wait for the writer to exit or stop it; never delete the lockfile"),
+            )
     if config is None:
-        row("core", False, "state directory unavailable; repair the selected config and rerun doctor")
+        row("core", False, "state directory unavailable; repair the selected config and rerun host doctor")
     else:
         try:
             messages = await stale_core(repo, config, git)
             row("core", not messages, "; ".join(messages) if messages else "routed conduct files are current")
         except Exception as exc:
-            row("core", False, f"{exc}; install git or fix PATH, then rerun doctor")
+            row("core", False, f"{exc}; install git or fix PATH, then rerun host doctor")
     return results
 
 

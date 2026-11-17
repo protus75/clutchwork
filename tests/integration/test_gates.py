@@ -227,10 +227,10 @@ def test_runner_fails_closed_on_paved_road_less_report(tmp_path):
 @pytest.mark.parametrize(
     "state,data,road",
     [
-        ("missing", None, "clutch core"),
-        ("missing", b"project\xff", "clutch core"),
+        ("missing", None, "clutch host core"),
+        ("missing", b"project\xff", "clutch host core"),
         ("current", "render", None),
-        ("drifted", "stale", "clutch core"),
+        ("drifted", "stale", "clutch host core"),
         ("refused", b"clutch:core", "retain all project content"),
         ("refused", b"- Clutch must\n  skip Check.", "engine core template"),
     ],

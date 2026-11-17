@@ -301,7 +301,7 @@ def _subparsers(parser):
 
 
 def _parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(prog="clutch", usage="%(prog)s [-h] [--config CONFIG] <command> ...", description="Host guides: clutch docs")
+    ap = argparse.ArgumentParser(prog="clutch", usage="%(prog)s [-h] [--config CONFIG] <command> ...", description="Host guides: clutch host docs")
     ap.add_argument("--config", type=Path, help="config path (default: config.yaml at the checkout root)")
     sub = ap.add_subparsers(dest="verb", required=True, metavar="<command>")
     view = sub.add_parser(
@@ -360,8 +360,47 @@ def _parser() -> argparse.ArgumentParser:
     stats.add_argument("--window", default="7d")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
-    sub.add_parser("doctor", help="inspect setup without changing state")
-    sub.add_parser("core", help="refresh managed conduct in every routed agent's root file")
+    host = sub.add_parser(
+        "host",
+        help="check and set up the host checkout",
+        description="Check host setup, refresh managed conduct and locate host guides.",
+        epilog="Examples:\nclutch host doctor\n  Inspect host setup.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    host_sub = host.add_subparsers(dest="host_verb", required=True)
+    _command(
+        host_sub,
+        "core",
+        summary="refresh managed conduct in every routed agent's root file",
+        does="Insert or refresh the managed clutch:core block in each routed conduct file, inspecting every file before writing any.",
+        reads="Config and routed conduct files (CLAUDE.md for claude and qwen, AGENTS.md otherwise).",
+        writes="Each routed conduct file whose block is missing or stale; nothing when current.",
+        lock="None.",
+        exits="0 when refreshed or current; 2 on refusal (config error or corrupt markers).",
+        examples=["clutch host core"],
+    )
+    _command(
+        host_sub,
+        "docs",
+        summary="print installed host guide paths",
+        does="Print the path and purpose of each host guide shipped in the installed package.",
+        reads="Nothing; no config.",
+        writes="Nothing.",
+        lock="None.",
+        exits="0.",
+        examples=["clutch host docs"],
+    )
+    _command(
+        host_sub,
+        "doctor",
+        summary="inspect setup without changing state",
+        does="Check the venv, config load, git, writer lock, journal readability and committed managed conduct blocks, printing one PASS or FAIL row each.",
+        reads="Config, git, the writer lock, journal and routed conduct files at HEAD.",
+        writes="Nothing.",
+        lock="None; probes the writer lock and fails while another process holds it.",
+        exits="0 when every check passes; 2 when any fails.",
+        examples=["clutch host doctor"],
+    )
     prompt = sub.add_parser(
         "prompt",
         help="render an operator prompt",
@@ -406,7 +445,6 @@ def _parser() -> argparse.ArgumentParser:
         examples=["clutch help roadmap author"],
     )
     help_parser.add_argument("command", nargs="*")
-    sub.add_parser("docs", help="print installed host guide paths")
     provider = sub.add_parser(
         "provider",
         help="install and probe provider CLIs",
@@ -1338,14 +1376,12 @@ def main(
         return asyncio.run(runner.run_ticket(args.stem, checkout, dispatch))
 
     handlers = {
-        "docs": handle_docs,
+        "host": lambda: {"core": handle_core, "docs": handle_docs, "doctor": handle_doctor}[args.host_verb](),
         "covgate": handle_covgate,
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
         "box": lambda: {"suggest": handle_suggest, "triage": handle_triage, "dismiss": handle_dismiss, "issue": handle_issue}[args.box_verb](),
-        "doctor": handle_doctor,
         "config": lambda: {"init": handle_init_config, "update": handle_update_config, "migrate": handle_migrate_config}[args.config_verb](),
         "provider": lambda: {"install": handle_install, "probe": handle_probe}[args.provider_verb](),
-        "core": handle_core,
         "prompt": handle_prompt,
         "covmap": handle_covmap,
         "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status}[args.view_verb](),
@@ -1371,7 +1407,8 @@ def main(
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
         if (
-            args.verb in {"docs", "covgate", "doctor"}
+            args.verb == "covgate"
+            or (args.verb == "host" and args.host_verb in {"docs", "doctor"})
             or (args.verb == "provider" and args.provider_verb == "install")
             or (args.verb == "config" and args.config_verb in {"init", "migrate"})
             or (args.verb == "box" and args.box_verb == "issue")
@@ -1381,7 +1418,7 @@ def main(
         config = load_config(args.config, cwd=repo)
         if args.verb == "engine" and args.engine_verb == "drain" and args.detach:
             return handle_detach()
-        if args.verb in {"config", "provider", "core", "prompt"}:
+        if args.verb in {"config", "provider", "host", "prompt"}:
             return handlers[args.verb]()
         exec_ = SubprocessExec()
         checkout = runner.Checkout(
@@ -1405,7 +1442,7 @@ def main(
         if args.verb == "engine" and args.engine_verb in {"serve", "drain", "run"}:
             messages = asyncio.run(hostfiles.stale_core(repo, config, checkout.git))
             if messages:
-                raise runner.Refusal("; ".join(messages), f"run clutch core, then commit the conduct files and retry engine {args.engine_verb}")
+                raise runner.Refusal("; ".join(messages), f"run clutch host core, then commit the conduct files and retry engine {args.engine_verb}")
         return handlers[args.verb]()
     except UnknownBoxId as e:
         return _fail(args.verb, f"{e} -- name ids that clutch view status lists")

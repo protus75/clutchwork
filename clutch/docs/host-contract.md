@@ -14,7 +14,7 @@ Windows uses `.venv\Scripts\clutch.exe`; set `clutch.command` explicitly there.
 
 `uv run clutch provider install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run clutch provider install` with no names reports each adapter's package, location, and version.
 
-`uv run clutch config init --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch doctor` and `clutch provider probe` check.
+`uv run clutch config init --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch host doctor` and `clutch provider probe` check.
 
 ## Copyable configuration
 
@@ -122,8 +122,8 @@ inventory sends a ticket that would lower a threshold to a human.
 2. Use `clutch provider install` for the routed CLIs; see the [run guide](host-running.md).
 3. Use `clutch config init` to generate a starting configuration; see the [run guide](host-running.md).
 4. Copy or edit `config.yaml` using [Copyable configuration](#copyable-configuration).
-5. Run `clutch doctor` and `clutch provider probe` to check the setup and providers; see the [run guide](host-running.md).
-6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
+5. Run `clutch host doctor` and `clutch provider probe` to check the setup and providers; see the [run guide](host-running.md).
+6. Run `clutch host core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
 7. Author the first ticket with `clutch ticket new`, then run `clutch ticket lint` and `clutch ticket review`; see the [run guide](host-running.md).
 8. Run the ticket with `clutch engine drain` or `clutch engine serve`; see the [run guide](host-running.md).
 9. Confirm the ticket merged on main with `clutch view status`; see the [run guide](host-running.md).
@@ -308,7 +308,7 @@ schema. Every future version bump must ship its migration step.
 Engine-owned `<!-- clutch:core begin -->` and `<!-- clutch:core end -->` lines
 delimit the managed conduct block; the remainder is project-owned content.
 The block carries only process rules that hold for every host; codebase rules belong in the project-owned remainder.
-Engine process wins over host content. Changes to the block follow its own `Engine conduct` rule: `clutch core`
+Engine process wins over host content. Changes to the block follow its own `Engine conduct` rule: `clutch host core`
 inserts or refreshes it, then commit the routed files. Routed candidates select
 CLAUDE.md for provider names `claude` and `qwen`, AGENTS.md otherwise, deduplicated;
 unrouted provider declarations do not select files.
@@ -316,9 +316,9 @@ First adoption with zero marker-like text inserts the block before every
 original byte. Refresh preserves prefix and suffix bytes without decoding them.
 Partial, duplicate, reversed, inline or stray marker text refuses; repair to
 exactly one complete begin line followed by one complete end line, retain
-project content outside it and escape stray marker text, then retry core.
+project content outside it and escape stray marker text, then retry host core.
 Refresh inspects the entire selection before writing any file. Core drift
-requires `clutch core`; uncommitted routed bytes must be committed or restored.
+requires `clutch host core`; uncommitted routed bytes must be committed or restored.
 Project remainder rules attempting to override engine process refuse: move
 them to the engine template or rewrite as project-content rules.
 

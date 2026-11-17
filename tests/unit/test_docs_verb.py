@@ -11,7 +11,7 @@ from clutch.runner import Refusal
 def test_docs_without_config_or_lock(monkeypatch, capsys):
     monkeypatch.setattr(cli, "load_config", Mock(side_effect=AssertionError("config read")))
     monkeypatch.setattr(cli, "Lockfile", Mock(side_effect=AssertionError("lock taken")))
-    assert cli.main(["docs"], cwd=Path("/absent-host")) == 0
+    assert cli.main(["host", "docs"], cwd=Path("/absent-host")) == 0
     lines = capsys.readouterr().out.splitlines()
     directory = Path(clutch.__file__).parent / "docs"
     assert [line.split("  ")[0] for line in lines] == [str(directory / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "gemini")]

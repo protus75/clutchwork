@@ -3,7 +3,7 @@
 From the host checkout root, with clutch [installed](host-contract.md#install) and `config.yaml` set up as in the [host contract](host-contract.md), run:
 
 ```sh
-uv run clutch doctor
+uv run clutch host doctor
 uv run clutch engine serve
 ```
 
@@ -18,15 +18,15 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket lint` | Yes | Validate tickets without writing. |
 | `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `engine calibrate` | Yes | Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
-| `doctor` | No | Inspect setup; its lock probe reports a held lock as a failure. |
+| `host doctor` | No | Inspect setup; its lock probe reports a held lock as a failure. |
 | `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, or the plan-ticket-drain kickoff without writing state. |
-| `core` | Yes | Refresh managed conduct files. |
+| `host core` | Yes | Refresh managed conduct files. |
 | `provider probe` | Yes | Probe declared providers and models. |
 | `provider install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |
 | `config init` | Yes | Print a suggested `config.yaml` from the provider CLIs found and the models they serve; `--write` creates `config.yaml` when none exists. |
 | `config update` | Yes | List the model names each declared provider serves and say which configured names are current, replaced, or not served; reports names as unverified when the listing is empty with a problem; writes nothing. |
 | `help` | Yes | Print a command's help and examples; `clutch --help <command>` does the same. |
-| `docs` | Yes | Print the installed host guide paths and their purposes. |
+| `host docs` | Yes | Print the installed host guide paths and their purposes. |
 | `config migrate` | Yes | Validate and migrate an older config. |
 | `engine pause` | Yes | Ask the running engine to pause admission. |
 | `engine resume` | Yes | Ask the running engine to release its current hold. |
@@ -50,7 +50,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 
-Stop serve before `roadmap author`, `box triage`, `box dismiss`, `release`, `publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `roadmap author`, `box triage`, `box dismiss`, `release`, `publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
 ## Reporting a critical clutch bug
 
@@ -65,12 +65,12 @@ Critical classes:
 - `state-loss`: clutch loses or corrupts committed work, tickets, the journal, or git state.
 - `secret-leak`: a configured secret reaches a log, journal, prompt, commit, or a process that should not have it.
 - `bad-merge`: clutch merges work that failed a hard gate or review, or changed files outside the fence.
-- `engine-stuck`: serve or drain cannot run any ticket on a setup `doctor` passes, and no documented verb releases it.
+- `engine-stuck`: serve or drain cannot run any ticket on a setup `host doctor` passes, and no documented verb releases it.
 - `wrong-refusal`: clutch refuses valid config, ticket, or intake with a paved road that cannot be followed.
 
 Name a clutch problem outside these classes to the user in chat; it goes nowhere else. A session never files a clutch defect to the host's Suggestion Box.
 
-The body contains the clutch file and line, gate or spec text or refusal message, and minimum host detail needed to reproduce. Leave out host-private code or data, ticket files, run records, `doctor` output, and host paths. The verb appends a version footer and scrubs configured provider secrets only when config loads.
+The body contains the clutch file and line, gate or spec text or refusal message, and minimum host detail needed to reproduce. Leave out host-private code or data, ticket files, run records, `host doctor` output, and host paths. The verb appends a version footer and scrubs configured provider secrets only when config loads.
 
 With the user's agreement, a chat session runs `clutch box issue --class <class> "<title>" --body <file>`. The person opens the printed link, reviews and edits the prefilled form, and submits it. clutch submits nothing. Ticket agents, triage, retro, Author, and harvest never prepare an upstream issue.
 

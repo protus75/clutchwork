@@ -21,16 +21,16 @@ Run its verbs as `uv run clutch <verb>`. Your host also needs `config.yaml`; sta
 
 ## Set up a host
 
-Run `uv run clutch doctor` and `uv run clutch provider probe`, then `uv run clutch core` to write the managed conduct block into `CLAUDE.md` for Claude and Qwen Code or `AGENTS.md` for other CLIs. Commit the files. The block gives a chat agent rules for authoring and editing tickets with `clutch ticket new`, `clutch ticket lint`, and `clutch ticket review`, and for supervising a drain. Re-run `core` after upgrading clutch: `engine drain`, `engine serve`, and `engine run` refuse to start while the block is stale.
+Run `uv run clutch host doctor` and `uv run clutch provider probe`, then `uv run clutch host core` to write the managed conduct block into `CLAUDE.md` for Claude and Qwen Code or `AGENTS.md` for other CLIs. Commit the files. The block gives a chat agent rules for authoring and editing tickets with `clutch ticket new`, `clutch ticket lint`, and `clutch ticket review`, and for supervising a drain. Re-run `host core` after upgrading clutch: `engine drain`, `engine serve`, and `engine run` refuse to start while the block is stale.
 
 ```sh
 # Setup
 uv run clutch config init  # print a suggested config.yaml
 uv run clutch provider install  # install provider CLIs into the host
 uv run clutch config update  # list current model names per provider
-uv run clutch doctor   # inspect host setup
+uv run clutch host doctor   # inspect host setup
 uv run clutch provider probe   # probe declared providers and models
-uv run clutch core     # refresh managed conduct files
+uv run clutch host core     # refresh managed conduct files
 ```
 
 ## Author and run tickets
@@ -92,7 +92,7 @@ The [clutch tickets extension](https://marketplace.visualstudio.com/items?itemNa
 
 ## Guides
 
-The host guides ship inside the installed package; `uv run clutch docs` prints each local path so agents read the copy matching the installed version.
+The host guides ship inside the installed package; `uv run clutch host docs` prints each local path so agents read the copy matching the installed version.
 
 - [Host run guide](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-running.md): invocation and operation on a host.
 - [Host ticket authoring](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-authoring.md): what to write in a ticket.

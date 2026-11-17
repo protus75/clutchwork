@@ -43,7 +43,7 @@ Preflight probes every routed model at drain start.
 
 ## Conduct file
 
-gemini reads `AGENTS.md`, where `clutch core` writes the managed block once gemini is routed. It also loads any `GEMINI.md` in the working directory or home, which clutch cannot switch off; keep host rules in `AGENTS.md`.
+gemini reads `AGENTS.md`, where `clutch host core` writes the managed block once gemini is routed. It also loads any `GEMINI.md` in the working directory or home, which clutch cannot switch off; keep host rules in `AGENTS.md`.
 
 ## Limits
 

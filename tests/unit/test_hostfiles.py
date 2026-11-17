@@ -30,4 +30,4 @@ async def test_stale_core(state, monkeypatch):
         expected = "missing" if state == "absent" else state
         assert len(messages) == 1
         assert f"CLAUDE.md: clutch core is {expected}" in messages[0]
-        assert "run `clutch core`" in messages[0]
+        assert "run `clutch host core`" in messages[0]

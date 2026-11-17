@@ -27,7 +27,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "conduct files",
         "explicit override",
         "the engine authored",
-        "clutch doctor",
+        "clutch host doctor",
         "clutch provider probe",
         "clutch release --minor",
         "never twice",
@@ -65,7 +65,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "Still open:",
     ):
         assert phrase in text, phrase
-    assert text.index("conduct files") < text.index("clutch doctor") < text.index("clutch provider probe") < text.index("clutch prompt drain-loop")
+    assert text.index("conduct files") < text.index("clutch host doctor") < text.index("clutch provider probe") < text.index("clutch prompt drain-loop")
     assert text.index("standing delegation") < text.index("clutch ticket confirm --yes")
     assert "Let the driver author" not in text
     assert "Hand-author only when the driver cannot" not in text
@@ -79,7 +79,7 @@ def test_author_prompt_content(prompts):
         "tickets/unique-stem/ticket.md",
         "clutch ticket new unique-stem --kind",
         "--evidence",
-        "clutch docs",
+        "clutch host docs",
         "clutch ticket lint unique-stem",
         "clutch ticket review unique-stem",
         "clutch view status",
@@ -105,7 +105,7 @@ def test_review_prompt_is_audit(prompts):
     for phrase in (
         "`unique-stem`",
         "tickets/unique-stem/ticket.md",
-        "clutch docs",
+        "clutch host docs",
         "clutch view status",
         "confirmed, unmerged",
         "either merge order",

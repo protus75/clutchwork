@@ -78,7 +78,7 @@ def test_doctor_check_order(root, monkeypatch):
     assert [r.passed for r in results] == [False, True, True, True, True, True]
     assert doctor.render(results) == (
         "doctor: failed\n"
-        "FAIL venv: no active Python venv; run `uv run clutch doctor`\n"
+        "FAIL venv: no active Python venv; run `uv run clutch host doctor`\n"
         "PASS config: config schema is valid\n"
         "PASS git: git version fixture\n"
         "PASS lock: no writer lock exists\n"
@@ -106,7 +106,7 @@ def test_doctor_failures(root, capsys, monkeypatch, failure):
     if failure == "venv":
         monkeypatch.setattr(sys, "prefix", sys.base_prefix)
     try:
-        assert main(["doctor"], cwd=root, env=ENV, clock=Clock()) == 2
+        assert main(["host", "doctor"], cwd=root, env=ENV, clock=Clock()) == 2
         output = capsys.readouterr()
         assert output.err == "" and "Traceback" not in output.out
         lines = output.out.splitlines()
@@ -114,7 +114,7 @@ def test_doctor_failures(root, capsys, monkeypatch, failure):
         assert [line.split()[1].rstrip(":") for line in lines[1:]] == ["venv", "config", "git", "lock", "journal", "core"]
         assert lines[["venv", "config", "git", "lock", "journal", "core"].index(failure) + 1].startswith("FAIL")
         if failure == "config":
-            assert lines[3] == "FAIL git: not checked: config did not load; fix the config and rerun doctor"
+            assert lines[3] == "FAIL git: not checked: config did not load; fix the config and rerun host doctor"
             assert all("FAIL" in line and "repair the selected config" in line for line in lines[4:])
         elif failure == "lock":
             assert "wait for" in lines[4] and "never delete" in lines[4]
@@ -155,7 +155,7 @@ def test_doctor_is_read_only(root, monkeypatch, capsys, history):
     before = snapshot(root)
     monkeypatch.setattr(Lockfile, "acquire", forbidden)
     try:
-        assert main(["doctor"], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden) == (2 if history in {"held", "corrupt"} else 0)
+        assert main(["host", "doctor"], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden) == (2 if history in {"held", "corrupt"} else 0)
         assert snapshot(root) == before
         if history == "absent":
             assert not (root / ".clutch").exists()
@@ -178,7 +178,7 @@ def test_doctor_core_committed(root, drifted):
     core = results[-1]
     assert core.name == "core"
     assert core.passed is not drifted
-    assert ("clutch core" in core.detail) is drifted
+    assert ("clutch host core" in core.detail) is drifted
     if not drifted:
         assert core.detail == "routed conduct files are current"
 
@@ -191,4 +191,4 @@ def test_doctor_core_exception_is_reported(root, monkeypatch):
     results = checks(root)
     assert [r.name for r in results] == ["venv", "config", "git", "lock", "journal", "core"]
     assert not results[-1].passed
-    assert results[-1].detail == "git probe failed; install git or fix PATH, then rerun doctor"
+    assert results[-1].detail == "git probe failed; install git or fix PATH, then rerun host doctor"

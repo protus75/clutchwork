@@ -799,7 +799,7 @@ def test_core_drift_merge_rerun(repo, mode, change):
         else:
             refused_untouched(ctx, result, before, "core_drift")
             finding = next(f for f in result.findings if f.code == "core_drift")
-            assert finding.path == "AGENTS.md" and "clutch core" in finding.paved_road
+            assert finding.path == "AGENTS.md" and "clutch host core" in finding.paved_road
             if change == "after-rebase":
                 assert (ctx.worktree(STEM) / "AGENTS.md").read_bytes() == (repo / "AGENTS.md").read_bytes()
 

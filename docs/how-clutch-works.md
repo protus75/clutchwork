@@ -46,15 +46,15 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
 | `covmap` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `covgate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `doctor` | no | Checks venv, config load, git, lock probe, journal readability, and core check. Git is not probed if config fails to load. Exit 2 on any failure. |
+| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, and core check. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
-| `core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
+| `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
 | `provider install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
 | `config update` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
 | `config init [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
 | `help [command ...]` | no | Prints command help and examples from each command parser in `clutch/__main__.py`; `--help` or `-h` before a command does the same. Exits 0, or 2 for an unknown command. |
-| `docs` | no | Prints the installed host guide paths and their purposes. |
+| `host docs` | no | Prints the installed host guide paths and their purposes. |
 | `config migrate` | no | Migrates a `schema_version: 0` config to the current schema. |
 | `ticket new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
 | `ticket order <stem> [--priority P0\|P1\|P2\|P3] [--runs-before [stem ...]]` | no | Validates and edits priority and/or runs-before ordering in the working tree; a bare `--runs-before` removes the section. Refuses a running ticket while an engine is live, and settled, rejected, missing or invalid tickets. An interrupted run with no live engine is editable. Intake commits the edit. |
@@ -816,14 +816,14 @@ See the [host run guide](../clutch/docs/host-running.md) for invocation and oper
 
 The block carries only process rules that hold for every host; codebase rules belong in the project-owned remainder. The block has four sections: `Ticket authoring` is for sessions writing tickets, `Diagnosis` is for sessions addressing failures, `Chat session conduct` is for interactive chat sessions, and `Engine conduct` is for ticket agents.
 
-- `clutch core` writes the managed block between `<!-- clutch:core begin -->` and
+- `clutch host core` writes the managed block between `<!-- clutch:core begin -->` and
   `<!-- clutch:core end -->` in `CLAUDE.md` (for `claude` and `qwen`) or `AGENTS.md` (other CLIs), for each
   routed provider. On first adoption the block goes above the existing content; after that only
   the block is replaced. Project text outside the block is the host's, but a paragraph that
   tells clutch how to run (for example "clutch must ...") is refused.
 - The `core_drift` gate fails a ticket when a routed conduct file's block is not current.
-- `engine serve`, `engine drain` and `engine run` refuse to start when a committed routed conduct block is stale; `doctor` reports this as a `core` row.
-- `doctor` checks a host's setup without changing anything.
+- `engine serve`, `engine drain` and `engine run` refuse to start when a committed routed conduct block is stale; `host doctor` reports this as a `core` row.
+- `host doctor` checks a host's setup without changing anything.
 - The `clutch.testreport` pytest plugin accepts `--clutch-results PATH` and writes JSON with
   `schema_version: 2`, a `tests` map from pytest node IDs to `passed`, `failed`, or `skipped`,
   and a matching `seconds` map of finite nonnegative floats. The reader accepts only schema 2 and refuses schema 1.

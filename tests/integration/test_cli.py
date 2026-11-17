@@ -646,7 +646,7 @@ def test_retro_refusals(root, capsys, failure):
 
 
 def test_doctor_cli(root, capsys):
-    assert cli(root, "doctor", stages=lambda c: pytest.fail("pipeline constructed")) == 0
+    assert cli(root, "host", "doctor", stages=lambda c: pytest.fail("pipeline constructed")) == 0
     lines = capsys.readouterr().out.splitlines()
     assert lines[0] == "doctor: ok"
     assert [line.split(":", 1)[0] for line in lines[1:]] == [f"PASS {n}" for n in ("venv", "config", "git", "lock", "journal", "core")]
@@ -682,7 +682,7 @@ def test_core_routed_conduct_files(tmp_path, monkeypatch, routes, expected):
     core_config(tmp_path, routes)
     fs = RecordingFS()
     monkeypatch.setattr(module, "LocalFileSystem", lambda: fs)
-    assert cli(tmp_path, "core") == 0
+    assert cli(tmp_path, "host", "core") == 0
     assert {p.name for p, _ in fs.writes} == expected
     assert len(fs.writes) == len(expected)
     for name in ("CLAUDE.md", "AGENTS.md"):
@@ -690,7 +690,7 @@ def test_core_routed_conduct_files(tmp_path, monkeypatch, routes, expected):
         assert path.exists() == (name in expected)
         if path.exists():
             assert path.read_bytes() == hostfiles.render(b"")
-    assert cli(tmp_path, "core") == 0
+    assert cli(tmp_path, "host", "core") == 0
     assert len(fs.writes) == len(expected)
     assert not (tmp_path / ".clutch").exists()
 
@@ -727,20 +727,20 @@ def test_core_refusal_and_no_git(tmp_path, monkeypatch, capsys):
 
     monkeypatch.setattr(os, "replace", observe_replace)
     monkeypatch.setattr(module, "LocalFileSystem", LocalFileSystem)
-    assert main(["--config", str(config), "core"], cwd=tmp_path, env=ENV, pipeline=forbidden) == 2
+    assert main(["--config", str(config), "host", "core"], cwd=tmp_path, env=ENV, pipeline=forbidden) == 2
     assert replacements == []
     assert {p: p.read_bytes() for p in tmp_path.iterdir()} == before
     error = capsys.readouterr().err
-    assert "repair" in error and "retain all project content" in error and "retry core" in error
+    assert "repair" in error and "retain all project content" in error and "retry host core" in error
     # The paved road escapes marker-like project text without deleting its content.
     repaired = before[corrupt].replace(b"clutch:core", b"clutch&#58;core")
     corrupt.write_bytes(repaired)
     before[corrupt] = repaired
-    assert main(["core"], cwd=tmp_path, env=ENV, pipeline=forbidden) == 0
+    assert main(["host", "core"], cwd=tmp_path, env=ENV, pipeline=forbidden) == 0
     assert replacements == [clean, corrupt]
     assert clean.read_bytes() == hostfiles.render(project)
     assert corrupt.read_bytes() == hostfiles.render(repaired)
-    assert main(["core"], cwd=tmp_path, env=ENV, pipeline=forbidden) == 0
+    assert main(["host", "core"], cwd=tmp_path, env=ENV, pipeline=forbidden) == 0
     assert replacements == [clean, corrupt]
     assert {p.name for p in tmp_path.iterdir()} == {"config.yaml", "CLAUDE.md", "AGENTS.md"}
 
@@ -812,8 +812,8 @@ def test_core_and_gate_share_routed_paths(tmp_path, monkeypatch):
         path.write_bytes(project)
     fs = RecordingFS()
     monkeypatch.setattr(module, "LocalFileSystem", lambda: fs)
-    assert cli(tmp_path, "core") == 0
-    assert cli(tmp_path, "core") == 0
+    assert cli(tmp_path, "host", "core") == 0
+    assert cli(tmp_path, "host", "core") == 0
     g = Git(SubprocessExec(), env=ENV, timeout=30, commit_lock=commit_lock(tmp_path / ".clutch/state"))
 
     async def check():
@@ -832,7 +832,7 @@ def test_core_and_gate_share_routed_paths(tmp_path, monkeypatch):
     damaged = tmp_path / "CLAUDE.md"
     damaged.write_bytes(before[damaged] + b"stray clutch:core")
     corrupt = {p: p.read_bytes() for p in before}
-    assert cli(tmp_path, "core") == 2
+    assert cli(tmp_path, "host", "core") == 2
     assert {p: p.read_bytes() for p in before} == corrupt and len(fs.writes) == 2
 
     async def refusal():
@@ -887,7 +887,7 @@ def test_suggest_refuses_blank(root, capsys):
 def test_docs_reports_installed_guides(root, capsys):
     import clutch
 
-    assert cli(root, "docs") == 0
+    assert cli(root, "host", "docs") == 0
     lines = capsys.readouterr().out.splitlines()
     assert len(lines) == 5
     package = Path(clutch.__file__).parent
