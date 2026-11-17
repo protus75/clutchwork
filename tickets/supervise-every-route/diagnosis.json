@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c11f761bd488e2dd10380694f2e549fc398a8332",
+  "stem": "supervise-every-route",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The attempt read code for 38s, then stopped with no diff. Redo all of it: the journal.py SIGNAL_NAMES entry, the test_closed_sets.py set, the failure_terminal gating, the daemon.py consume_result call site, the drain.py/serve.py idle hooks, the docs, and both test_supervise_every_route.py files.",
+    "In clutch/runner.py::failure_terminal the step runs only when `supervised` is set and ctx.worktree(stem) exists. Pass supervised=True from TicketWriter.consume_result (daemon.py:461). Journal the supervisor_attempt signal before the apply_rework call and before the terminal append (line 477). Do",
+    "Idle point: create a worktree from ctx.git.rev_parse(ctx.repo, MAIN), then call failure_terminal so its exists() gate passes. Remove it at line 484 via git.py worktree remove plus prune on both approve and escalate. A stem is unsupervised if no supervisor_attempt follows its last operator keep.",
+    "Effect keys: llm_key in clutch/llmeffect.py is llm/<stem>/<run_seq>/<surface>/<attempt>/<call_seq>, and attempt is an int. llmeffect.py is outside the fence, so keep attempt an int. Get disjoint keys from a run_seq or attempt the original run never used, and assert disjointness in the effect_keys",
+    "Run the full ## Verification command before reporting. Acceptance 8 needs tests/unit/test_supervisor_trigger.py to stay green: the last three events stay terminal, draw, keep, so supervisor_attempt must come before the terminal and must not be appended after the keep."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    3
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
