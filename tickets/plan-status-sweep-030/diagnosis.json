@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c0e02bac2a9db7b165faa892bd91969633e3ddd1",
+  "stem": "plan-status-sweep-030",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "docs/roadmap-driver-plan.md summary (scope item 6): keep the driver as the subject of the held-ticket sentence. Say the driver's supervisor step (rows 89 and 96, `failure_terminal`/`supervise_step`) handles held tickets, and that before it the operator did this by hand. Do not reduce it to past",
+    "Same summary, release sentence: the driver bumps and tags (`clutch/release.py::release`), uploads to PyPI only under `release.publish`, and keeps the VS Code package for the owner's Marketplace upload (decision 20, row 108). Never write 'hand upload'. Leave row 147's `./dev.py vscode-package`",
+    "Review found every other cited claim correct. Redo all 13 scope items from the merge base, editing only the listed sentences and adding the three Current state lead sentences. Keep headings, bullets and table rows as written.",
+    "docs/upstream-issue-plan.md items 12-13: the run found the verb is now `clutch box issue`. Read clutch/issue.py and clutch/hostfiles.py CORE_TEMPLATE and name the verb as the merged code names it, not the ticket's older `clutch issue`.",
+    "Run `./dev.py test` and confirm `git diff --name-only main...HEAD` lists only the four fenced plans. A peak-memory test flake was already filed (box-000725), so do not edit tests."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    1
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
