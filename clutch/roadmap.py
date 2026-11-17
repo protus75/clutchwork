@@ -298,8 +298,23 @@ def rejection_reason(events, stem):
     return " ".join(part for part in parts if part) or "rejected"
 
 
+def fresh_stem(stem, taken):
+    base = re.sub(r"-r\d+$", "", stem)
+    number = 1
+    while f"{base}-r{number}" in taken:
+        number += 1
+    return f"{base}-r{number}"
+
+
 def refile_row(text, row, stem):
     lines = text.splitlines(keepends=True)
+    for other in parse(text):
+        if other.number != row.number:
+            line = lines[other.line]
+            ending = line[len(line.rstrip("\r\n")) :]
+            cells = _cells(line)
+            cells[5] = cells[5].replace(f"`{row.stem}`", f"`{stem}`")
+            lines[other.line] = "|" + "|".join(cells) + "|" + ending
     line = lines[row.line]
     ending = line[len(line.rstrip("\r\n")) :]
     cells = _cells(line)
@@ -334,6 +349,8 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     files = set((await checkout.git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
     events = checkout.journal.read()
     states = last_states(events)
+    named = {event.ticket for event in events if event.ticket}
+    taken = named | {row.stem for row in rows} | {match.group(1) for path in files if (match := re.match(r"tickets/([^/]+)/", path))}
     held = await start_holds(checkout, rows, states)
     choice = choose(rows, states=states, files=files, current=current_release(repo), held=held)
     lines = []
@@ -363,15 +380,26 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
         if count >= checkout.config.caps.supervise:
             lines.append(f"roadmap: row {row.number} {row.stem} re-files spent: {reason}")
             continue
-        stem = re.sub(r"-r\d+$", "", row.stem) + f"-r{count + 1}"
+        stem = fresh_stem(row.stem, taken)
         updated = await _write_row(checkout, row, lambda text, fresh: refile_row(text, fresh, stem), "refile", f"clutch(roadmap): refile {row.stem} as {stem}", lines)
         if updated is None:
             continue
+        taken.add(stem)
         text = updated
         new_row = next(r for r in parse(text) if r.number == row.number)
         reasons[new_row.number] = reason
+    ready_numbers = []
+    for row in choice.ready:
+        if row.stem in named and not states.get(row.stem):
+            stem = fresh_stem(row.stem, taken)
+            updated = await _write_row(checkout, row, lambda text, fresh: refile_row(text, fresh, stem), "refile", f"clutch(roadmap): refile {row.stem} as {stem}", lines)
+            if updated is None:
+                continue
+            text = updated
+            taken.add(stem)
+        ready_numbers.append(row.number)
     rows = parse(text)
-    candidates = [r for r in rows if r.number in reasons] + list(choice.ready)
+    candidates = [r for r in rows if r.number in reasons] + [next(r for r in rows if r.number == number) for number in ready_numbers]
     for row in candidates:
         if opened + len(filed) >= ahead:
             break
