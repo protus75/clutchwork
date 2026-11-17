@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The idle-point path needs its own Effect-key namespace as well as a fresh worktree; the existing Rework attempt identifier is constrained to an integer.
+The idle-point path needs to preserve operator-lineage idempotency, use a fresh main-based worktree, and avoid replaying the original run's Effect keys.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 70 minutes; implementation was not completed.
+The ticket estimated 70 minutes; implementation and verification were not completed.
 
