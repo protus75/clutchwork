@@ -929,8 +929,11 @@ class ProviderLLM:
                 continue
             package = adapter.provider.package
             _, out, err = await self._exec.run([adapter.binary, "--version"], cwd=self._cwd, env=tool_env(child_env(self._env, self._config), self._cwd), timeout=PREFLIGHT_TIMEOUT_S)
-            _, latest, _ = await self._exec.run(["pnpm", "view", str(package), "version"], cwd=self._cwd, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S)
             installed = adapter.cli_version = installed_version(out, err)
+            try:
+                _, latest, _ = await self._exec.run(["pnpm", "view", str(package), "version"], cwd=self._cwd, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S)
+            except TimeoutError, ExecutableNotFound:
+                continue
             if not latest.strip() or installed is None or installed != latest.strip():
                 notices.append(f"{adapter.binary} {installed or '(unknown)'} is not the latest release {latest.strip() or '(unreadable)'} -- run: clutch install {adapter.provider.name}")
         probed: set[tuple[str, str]] = set()
