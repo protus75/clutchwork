@@ -99,7 +99,7 @@ def test_publish_command_failures_refuse(case):
 
 
 def test_release_token_is_a_configured_secret():
-    assert config.Release().model_dump() == {"publish": False, "pypi_token": "UV_PUBLISH_TOKEN"}
+    assert config.Release().model_dump() == {"publish": False, "pypi_token": "UV_PUBLISH_TOKEN", "packages": []}
     cfg, _, _, _ = setup()
     env = {"PATH": "/bin", "CLAUDE_KEY": "k", "PYPI_TOKEN": "pypi-secret"}
     assert child_env(env, cfg) == {"PATH": "/bin"}

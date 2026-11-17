@@ -657,6 +657,7 @@ async def ship(checkout) -> list[str]:
     if checkout.config.release.publish:
         version, _, _ = await release_module.publish(checkout.repo, checkout.git, checkout.exec_, checkout.fs, checkout.env, checkout.config)
         lines.append(f"publish: uploaded {version} to PyPI")
+    lines.extend(await release_module.run_packages(checkout.repo, checkout.exec_, checkout.fs, checkout.env, checkout.config))
     return lines
 
 

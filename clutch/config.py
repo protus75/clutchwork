@@ -207,9 +207,15 @@ class Retro(StrictModel):
     spikes: RetroSpikes = RetroSpikes()
 
 
+class Package(StrictModel):
+    argv: Argv
+    kept: str
+
+
 class Release(StrictModel):
     publish: bool = False
     pypi_token: str = "UV_PUBLISH_TOKEN"
+    packages: list[Package] = []
 
 
 class Evidence(StrictModel):

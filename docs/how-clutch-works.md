@@ -96,11 +96,11 @@ A unit test file may share its name with an integration test file.
 |---|---|
 | (none) | `uv run pytest -q -p clutch.testguard tests/unit`, then `uv run pytest -q tests/integration`; a unit failure stops before integration |
 | `test [args]` | With no args, the same as (none); otherwise pytest with those args, adding `-p clutch.testguard` when at least one test path is named and every test path is under `tests/unit` |
-| `vscode-package` | writes the `pyproject.toml` clutch version into the `Built for` line of `vscode-clutchwork/README.md`, then packages the current manifest version into `dist/vscode-clutchwork-<version>.vsix` and prints the Marketplace upload page; under WSL also prints the Windows path to paste into the upload dialog |
+| `vscode-package` | packages the current manifest version into `dist/vscode-clutchwork-<version>.vsix` with the clutch `Built for` stamp inside the VSIX, restores the README, and prints the Marketplace upload page; an existing file is kept without rebuilding; under WSL also prints the Windows path |
 | `vscode` | bumps the patch version in `vscode-clutchwork/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |
 
-To release the extension, bump `version` in `vscode-clutchwork/package.json`, run
-`./dev.py vscode-package` to write the `pyproject.toml` clutch version into the `Built for` line of `vscode-clutchwork/README.md`, commit that README change, and upload the printed VSIX on the [chunkydragon management page](https://marketplace.visualstudio.com/manage/publishers/chunkydragon).
+To release the extension, bump `version` in `vscode-clutchwork/package.json`.
+`ship` runs `./dev.py vscode-package` after tagging; it stamps `Built for` only in the VSIX and restores the README. An existing `dist/vscode-clutchwork-<version>.vsix` is kept without rebuilding, so bump `version` in `vscode-clutchwork/package.json` before ship to keep a new file. Upload the VSIX manually on the [chunkydragon management page](https://marketplace.visualstudio.com/manage/publishers/chunkydragon).
 Under WSL, paste the printed Windows path into the upload dialog.
 Choose New extension for the first release and the extension's Update action for subsequent releases.
 The Marketplace refuses a version it already holds.
@@ -575,7 +575,7 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 
 ### 7.5 Roadmap driver
 
-With `docs/roadmap.md` present, drain and serve run the driver at start and after every settle; `run` never does. It checks release `start` blocks before readying rows, as does `roadmap status`. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, and publishes only with `release.publish: true`. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
+With `docs/roadmap.md` present, drain and serve run the driver at start and after every settle; `run` never does. It checks release `start` blocks before readying rows, as does `roadmap status`. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, publishes only with `release.publish: true`, then runs configured packages and reports newly kept paths. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result` (section 6.6).
 

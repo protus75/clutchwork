@@ -1,6 +1,7 @@
 """Local version bumps and annotated release tags; publishing is separate."""
 
 from collections.abc import Mapping
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 from clutch.changelog import insert_section
@@ -9,7 +10,7 @@ from clutch.git import Git, GitError
 from clutch.journal import EventType
 from clutch.providers import child_env
 from clutch.runner import Refusal
-from clutch.seams import FileSystem, ProcessExec
+from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 
 UV_TIMEOUT_S = 60.0
 BUILD_TIMEOUT_S = 600.0
@@ -95,3 +96,29 @@ async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
         lines = [line for line in err.splitlines() if line.strip()]
         raise Refusal(f"uv publish failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
     return version, artifacts, True
+
+
+async def run_packages(repo: Path, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], config: Config) -> list[str]:
+    if not config.release.packages:
+        return []
+    lines = []
+    for package in config.release.packages:
+        try:
+            pattern = Path(package.kept)
+            before = set(fs.entries(repo / pattern.parent))
+            rc, _, _ = await exec_.run(package.argv, cwd=repo, env=child_env(env, config), timeout=BUILD_TIMEOUT_S)
+            if rc:
+                lines.append(f"package: {package.argv[0]} failed (rc {rc})")
+                continue
+            after = set(fs.entries(repo / pattern.parent))
+            kept = sorted(name for name in after - before if fnmatchcase(name, pattern.name))
+            lines.extend(f"package: kept {pattern.parent / name}" for name in kept)
+            if not kept:
+                lines.append(f"package: nothing kept for {package.kept}")
+        except TimeoutError:
+            lines.append(f"package: {package.argv[0]} failed (timeout)")
+        except ExecutableNotFound:
+            lines.append(f"package: {package.argv[0]} failed (not found)")
+        except Exception as exc:
+            lines.append(f"package: {package.argv[0]} failed ({type(exc).__name__})")
+    return lines

@@ -48,26 +48,33 @@ def main() -> None:
     sub.add_parser("vscode-package", help="build a VSIX for Marketplace upload")
     args = parser.parse_args()
     if args.task == "vscode-package":
+        package = json.loads((ROOT / "vscode-clutchwork" / "package.json").read_text())
+        output = ROOT / "dist" / f"vscode-clutchwork-{package['version']}.vsix"
+        if output.exists():
+            print(f"dev: kept {output}")
+            return
         with (ROOT / "pyproject.toml").open("rb") as stream:
             version = tomllib.load(stream)["project"]["version"]
         readme = ROOT / "vscode-clutchwork" / "README.md"
+        original = readme.read_text()
         text, count = re.subn(
             r"^Built for \[clutch [^\]]*\]\(https://pypi\.org/project/clutchwork/[^/)]*/\)\.$",
             f"Built for [clutch {version}](https://pypi.org/project/clutchwork/{version}/).",
-            readme.read_text(),
+            original,
             flags=re.MULTILINE,
         )
         if count != 1:
             sys.exit("dev: expected one Built for line in vscode-clutchwork/README.md")
-        readme.write_text(text)
-        print(f"dev: built for clutch {version}")
-        package = json.loads((ROOT / "vscode-clutchwork" / "package.json").read_text())
-        output = ROOT / "dist" / f"vscode-clutchwork-{package['version']}.vsix"
-        output.parent.mkdir(parents=True, exist_ok=True)
-        pack = ["npx", "--yes", "@vscode/vsce", "package", "--no-dependencies", "-o", str(output)]
-        print("$", " ".join(pack), flush=True)
-        if subprocess.run(pack, cwd=ROOT / "vscode-clutchwork", check=False).returncode != 0:
-            sys.exit("dev: packaging vscode-clutchwork failed")
+        try:
+            readme.write_text(text)
+            print(f"dev: built for clutch {version}")
+            output.parent.mkdir(parents=True, exist_ok=True)
+            pack = ["npx", "--yes", "@vscode/vsce", "package", "--no-dependencies", "-o", str(output)]
+            print("$", " ".join(pack), flush=True)
+            if subprocess.run(pack, cwd=ROOT / "vscode-clutchwork", check=False).returncode != 0:
+                sys.exit("dev: packaging vscode-clutchwork failed")
+        finally:
+            readme.write_text(original)
         print(f"dev: upload {output} at https://marketplace.visualstudio.com/manage/publishers/chunkydragon")
         if os.environ.get("WSL_DISTRO_NAME"):
             windows_path = subprocess.run(["wslpath", "-w", str(output)], capture_output=True, text=True, check=False)

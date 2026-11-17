@@ -27,6 +27,7 @@ routing:
   - {tier: max, surface: implement, candidates: [{provider: codex}]}
   - {tier: max, surface: author, candidates: [{provider: claude}]}
   - {tier: max, surface: review, candidates: [{provider: claude, model: claude-opus-5-5}]}
+release: {packages: [{argv: [uv, run, python, dev.py, vscode-package], kept: dist/vscode-clutchwork-*.vsix}]}
 review:
   autofix:
     - {code: ruff-fix, argv: [uv, run, ruff, check, --fix, --exit-zero], files: ["*.py"]}

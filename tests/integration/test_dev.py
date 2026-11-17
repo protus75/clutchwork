@@ -80,6 +80,7 @@ def test_vscode_package_stops_when_wslpath_fails(vscode_package, monkeypatch, ca
 def test_vscode_package_stamps_clutch_version(vscode_package, monkeypatch, capsys):
     monkeypatch.delenv("WSL_DISTRO_NAME", raising=False)
     readme = dev.ROOT / "vscode-clutchwork" / "README.md"
+    original = readme.read_text()
     packaged = []
 
     def fake_run(argv, *, cwd, check):
@@ -91,7 +92,7 @@ def test_vscode_package_stamps_clutch_version(vscode_package, monkeypatch, capsy
     dev.main()
     expected = "# clutch tickets\n\nBuilt for [clutch 9.8.7](https://pypi.org/project/clutchwork/9.8.7/).\n\ntail\n"
     assert packaged == [expected]  # The package must see the engine version and intact surrounding text.
-    assert readme.read_text() == expected  # The stamped README must remain for the operator.
+    assert readme.read_text() == original  # Restore the tracked README after packaging.
     assert "dev: built for clutch 9.8.7" in capsys.readouterr().out  # Report the engine version, not the extension version.
 
 
