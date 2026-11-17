@@ -276,7 +276,7 @@ def test_serve_closed_sets_and_constants():
 
 
 def test_specs_closed_sets_and_constants():
-    assert specs.ENGINE_LLM_SURFACES == frozenset({"author", "diagnose", "implement", "requisition_review", "retro", "review", "rework", "triage"})
+    assert specs.ENGINE_LLM_SURFACES == frozenset({"acceptance", "author", "diagnose", "implement", "requisition_review", "retro", "review", "rework", "triage"})
     assert specs.RENDER_BOUND_CHARS == 400000
     assert specs.REQ_RENDER_HEADROOM == 0.75
     assert specs.SPEC_MAX_LINES == 200

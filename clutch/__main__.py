@@ -327,6 +327,7 @@ def _parser() -> argparse.ArgumentParser:
 
     roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=AHEAD)
     roadmap_sub.add_parser("status", help="show read-only roadmap progress")
+    roadmap_sub.add_parser("accept", help="review a release against its promises").add_argument("release")
     roadmap_sub.add_parser("gate", help="run a release's ship gate").add_argument("release")
     merged = roadmap_sub.add_parser("merged", help="check merged roadmap conditions")
     merged.add_argument("stems", nargs="*")
@@ -705,6 +706,25 @@ def main(
             return 0
         if args.roadmap_verb == "gate":
             ok, lines = asyncio.run(roadmap.run_gate(checkout, args.release))
+            print("\n".join(lines))
+            return 0 if ok else 1
+        if args.roadmap_verb == "accept":
+            from clutch import acceptance
+            from clutch.driver import Driver
+            from clutch.effects import Effects
+
+            async def accept_release():
+                session = build_control(checkout).providers
+                try:
+                    llm = await _preflighted_llm(checkout, session)
+                    driver = Driver.from_config(config, llm=llm, env=env, clock=clock, sleep=checkout.sleep, fs=checkout.fs)
+                    driver.journal = checkout.journal
+                    driver.effects = Effects(checkout.journal)
+                    return await acceptance.accept(checkout, driver, args.release)
+                finally:
+                    await session.close()
+
+            ok, lines = asyncio.run(accept_release())
             print("\n".join(lines))
             return 0 if ok else 1
         if args.roadmap_verb == "merged":

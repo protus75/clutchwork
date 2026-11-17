@@ -101,6 +101,20 @@ def parse(text: str) -> list[Row]:
     return rows
 
 
+def append_row(text: str, release: str, line: str) -> str:
+    rows = [row for row in parse(text) if release_name(row.release) == release]
+    if not rows:
+        raise Refusal(f"no release {release}", "name a release heading of docs/roadmap.md section 8")
+    table = min(row._table for row in rows)
+    last = max(row.line for row in rows if row._table == table)
+    lines = text.splitlines(keepends=True)
+    ending = lines[last][len(lines[last].rstrip("\r\n")) :]
+    while last + 1 < len(lines) and lines[last + 1].startswith("|"):
+        last += 1
+    lines.insert(last + 1, line + ending)
+    return "".join(lines)
+
+
 def depends_on(row: Row, rows: list[Row]) -> tuple[str, ...]:
     result = []
     by_number = {r.number: r.stem for r in rows}
