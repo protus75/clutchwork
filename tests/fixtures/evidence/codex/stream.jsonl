@@ -1,0 +1,80 @@
+{"type": "thread.started", "thread_id": "redacted-thread"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "item_0", "type": "agent_message", "text": "[redacted]"}}
+{"type": "item.started", "item": {"id": "item_1", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_1", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_2", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_2", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_3", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_3", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_4", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_4", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 1, "status": "failed"}}
+{"type": "item.started", "item": {"id": "item_5", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_5", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_6", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_6", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_7", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_7", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_8", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_8", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_9", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_9", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_10", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_10", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.completed", "item": {"id": "item_11", "type": "agent_message", "text": "[redacted]"}}
+{"type": "item.started", "item": {"id": "item_12", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_12", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_13", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_13", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_14", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_14", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_15", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_15", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_16", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_16", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_17", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_17", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_18", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_18", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_19", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_19", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_20", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_20", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_21", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_21", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_22", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_22", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_23", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_23", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_24", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_24", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_25", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_25", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_26", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_26", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_27", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_27", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.completed", "item": {"id": "item_28", "type": "agent_message", "text": "[redacted]"}}
+{"type": "item.started", "item": {"id": "item_29", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_29", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_30", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_30", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_31", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_31", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_32", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_32", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_33", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_33", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_34", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_34", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.completed", "item": {"id": "item_35", "type": "agent_message", "text": "[redacted]"}}
+{"type": "item.started", "item": {"id": "item_36", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.started", "item": {"id": "item_37", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_37", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.completed", "item": {"id": "item_38", "type": "agent_message", "text": "[redacted]"}}
+{"type": "item.completed", "item": {"id": "item_39", "type": "agent_message", "text": "[redacted]"}}
+{"type": "item.completed", "item": {"id": "item_36", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.started", "item": {"id": "item_40", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": null, "status": "in_progress"}}
+{"type": "item.completed", "item": {"id": "item_40", "type": "command_execution", "command": "[redacted]", "aggregated_output": "[redacted]", "exit_code": 0, "status": "completed"}}
+{"type": "item.completed", "item": {"id": "item_41", "type": "agent_message", "text": "[redacted]"}}
+{"type": "turn.completed", "usage": {"input_tokens": 2540706, "cached_input_tokens": 2426880, "cache_write_input_tokens": 0, "output_tokens": 9259, "reasoning_output_tokens": 606}}
