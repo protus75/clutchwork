@@ -143,10 +143,7 @@ Frontmatter fields that drive behavior:
 - It finds new or modified `tickets/<stem>/ticket.md` files in the working tree (`git status`).
 - A new hand-written stem must be `draft` or `confirmed` and must not claim a machine `source`;
   intake stamps it `source: human`, `state: confirmed`.
-- Every ticket read (intake, lint, confirm, drain, serve, run, and Author) refuses a bug without
-  regular, non-symlink evidence under `tickets/<stem>/evidence/`. Intake and lint also require
-  committable, non-gitignored evidence. Settled and rejected tickets are exempt, including at intake
-  when the journal records settlement.
+- Bug evidence is checked as the authoring guide's [Evidence](../clutch/docs/host-authoring.md#evidence) section states.
 - Each ticket that lints clean is committed with its new or changed regular, non-symlink evidence
   files as `clutch(<stem>): ticket` and journaled as
   `ticket_intake`. A ticket that fails lint stays on disk uncommitted, and the refusal names the
@@ -222,11 +219,7 @@ Implement also runs each host hard coverage gate once after its last edit when t
 Failures reproduced on the base commit are reported as second problems rather than `premise_failed`.
 Implement updates documentation statements the diff makes false inside the scope fence in the same commit.
 
-The Implement prompt separates unit and integration suites. Unit tests use fakes for clock,
-filesystem, processes and network, read and write disk only under `tmp_path`, never read or write a repo file, start a process, or open a network connection, and run in milliseconds.
-Integration tests exercise seams using bounded, parallel-safe fixtures or simulators. Flaky tests
-must have nondeterminism removed, without retries. Coverage thresholds and test time budgets must
-not be lowered unless an acceptance criterion requires it; an unmet gate requires `premise_failed`.
+The Implement prompt also carries its test rules: suite placement, flaky tests, and coverage thresholds and test time budgets. The unit and integration suites are defined in the authoring guide's [Unit and integration tests](../clutch/docs/host-authoring.md#unit-and-integration-tests) section.
 
 The Implement prompt asks for each assertion to name the likely wrong implementation it rules out
 and use a fixture that gives a different value under that version. For filter, exclusion, ordering
@@ -312,10 +305,7 @@ A `kind: bug` ticket must prove the defect: at least one file under `tickets/<st
 a `## Regression` command that prints `{"regression_result": "pass"}` with exit 0 on the branch
 head, and `{"regression_result": "defect"}` with a non-zero exit on the merge base with the
 carried test or fixture files copied over it. Only files under `tests/`, `test/`, `fixtures/`, or
-`fixture/` can be carried. `clutch/docs/host-authoring.md` explains the protocol for authors. Every ticket read (intake, lint, confirm, drain, serve, run, and Author) refuses a bug without
-regular, non-symlink evidence. Intake and lint also require evidence that is not gitignored; intake
-commits it with the ticket. Settled and rejected tickets are exempt, including at intake when the
-journal records settlement. The Check gate still verifies the regression proof.
+`fixture/` can be carried. The authoring guide's [Bug tickets](../clutch/docs/host-authoring.md#bug-tickets) section explains the protocol for authors, and its [Evidence](../clutch/docs/host-authoring.md#evidence) subsection says which ticket reads refuse a bug without evidence. The Check gate still verifies the regression proof.
 
 ### 5.3 Severity and bypass
 

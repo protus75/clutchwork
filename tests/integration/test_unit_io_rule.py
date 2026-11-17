@@ -38,11 +38,8 @@ def test_rule_copies_allow_only_tmp_path_disk():
         assert required in task
         assert forbidden not in task
     docs = " ".join((ROOT / "docs/how-clutch-works.md").read_text().split())
-    # Both documentation locations must allow tmp_path without retaining either old ban.
-    for phrase in (
-        "Tests live in `tests/unit/` (disk only under `tmp_path`, no network or process; run under `clutch.testguard`)",
-        "read and write disk only under `tmp_path`, never read or write a repo file, start a process, or open a network connection, and run in milliseconds",
-    ):
+    # The documentation location must allow tmp_path without retaining either old ban.
+    for phrase in ("Tests live in `tests/unit/` (disk only under `tmp_path`, no network or process; run under `clutch.testguard`)",):
         assert phrase in docs
     for phrase in ("no disk, network or process", "avoid disk, network and processes"):
         assert phrase not in docs

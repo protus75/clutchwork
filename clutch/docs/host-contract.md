@@ -304,7 +304,7 @@ schema. Every future version bump must ship its migration step.
 Engine-owned `<!-- clutch:core begin -->` and `<!-- clutch:core end -->` lines
 delimit the managed conduct block; the remainder is project-owned content.
 The block carries only process rules that hold for every host; codebase rules belong in the project-owned remainder.
-Engine process wins over host content. Do not hand-edit the core: `clutch core`
+Engine process wins over host content. Changes to the block follow its own `Engine conduct` rule: `clutch core`
 inserts or refreshes it, then commit the routed files. Routed candidates select
 CLAUDE.md for provider names `claude` and `qwen`, AGENTS.md otherwise, deduplicated;
 unrouted provider declarations do not select files.
