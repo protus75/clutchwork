@@ -59,7 +59,7 @@ class Child:
         self.root, self.script, self.order, self.clock = root, script, order, clock
         self.spawns: list[dict] = []
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None):
+    async def replace(self, argv, *, cwd, env):
         self.order.append("spawn")
         contender = Lockfile(self.root / ".clutch" / "state", verb="drain", instance_id="probe", clock=self.clock)
         try:
@@ -70,13 +70,13 @@ class Child:
             contender.release()
             free = True
         last = journal(self.root).read()[-1]
-        self.spawns.append({"argv": list(argv), "cwd": cwd, "env": env, "timeout": timeout, "stdin_path": stdin_path, "lock_free": free, "last_event": last})
+        self.spawns.append({"argv": list(argv), "cwd": cwd, "env": env, "lock_free": free, "last_event": last})
         assert list(argv[:8]) == reexec_argv(["drain"])
         self.script.process = f"child{len(self.spawns)}"
         # `uv run python -m clutch <args>` -> the module entry's own argv; a thread, as asyncio.run cannot nest.
         rc = await asyncio.to_thread(main, list(argv[7:]), cwd=self.root, env=ENV, clock=self.clock, pipeline=self.script, reexec=self)
         self.order.append(f"exit {rc}")
-        return rc, "", ""
+        return rc
 
 
 @pytest.fixture
@@ -135,7 +135,6 @@ def test_a_self_upgrading_admission_hands_off_before_the_next_dispatch(tmp_path,
     assert script.calls == [("parent", "red"), ("parent", "red"), ("parent", "upgrade"), ("child1", "after")]
     (spawn,) = child.spawns
     assert spawn["argv"] == ["uv", "run", "--project", str(root.resolve()), "python", "-m", "clutch", "drain", "--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]
-    assert spawn["timeout"] is None and spawn["stdin_path"] is None
     assert spawn["cwd"] == root and spawn["env"] == ENV
     assert spawn["lock_free"]
     # The HANDOFF ORDER (section 18), then nothing in the parent after its child exits.
@@ -281,7 +280,7 @@ def test_a_premise_park_holds_across_invocations_until_a_ticket_edit_lands(root,
 # --- the handoff's seam surfaces -----------------------------------------------------------------
 
 
-def test_the_unbounded_handoff_spawn_streams_through_inherited_stdio(tmp_path, capfd):
+def test_unbounded_run_streams_through_inherited_stdio(tmp_path, capfd):
     argv = [sys.executable, "-c", "import sys; print('to the operator'); print('err', file=sys.stderr)"]
     rc, out, err = asyncio.run(SubprocessExec().run(argv, cwd=tmp_path, env=dict(os.environ), timeout=None))
     assert (rc, out, err) == (0, "", "")

@@ -676,7 +676,7 @@ class Serve:
                         finally:
                             lock.release()
         if handoff:
-            code, _, _ = await self.reexec.run(reexec_argv(self.argv, engine=self.engine), cwd=c.repo, env=c.env, timeout=None)
+            code = await self.reexec.replace(reexec_argv(self.argv, engine=self.engine), cwd=c.repo, env=c.env)
         return code
 
 

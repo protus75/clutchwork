@@ -496,7 +496,7 @@ SIGHUP, SIGTERM, and SIGINT stop a drain as `kill` does: the running ticket is a
 Bounds: `drain.max_runtime_hours` (default 12) halts it (exit 1). The ceiling is carried across a self-upgrade handoff.
 
 **Self-upgrade:** when draining the engine’s own source tree, a merge changing `clutch/` causes the drain to journal a handoff,
-releases the lock, and re-executes itself so the new engine code runs the rest of the queue.
+releases the lock, and replaces its process in place so the new engine code runs the rest of the queue.
 A host repo or pip-installed engine never self-upgrades through drain; upgrade those by reinstalling.
 Both verbs use `uv run --project <engine checkout> python -m clutch` followed by their invocation arguments.
 
@@ -526,7 +526,7 @@ With `docs/roadmap.md` present, the roadmap driver (section 7.5) holds new admis
 A git-checkout engine records its `clutch` tree at startup and checks it before
 admission and after merge passes. A change stops new admissions; after running tickets and
 pending or active merges finish, serve journals `serve_handoff`, cleans up, closes the journal,
-releases the lock, and spawns the new serve. A pending kill wins. An accepted stop waits for the same idle condition and exits without spawning. Non-git engines do not watch.
+releases the lock, and replaces its process in place with the new serve. A pending kill wins. An accepted stop waits for the same idle condition and exits without spawning. Non-git engines do not watch.
 
 #### 7.2.1 Merge queue (serve only)
 

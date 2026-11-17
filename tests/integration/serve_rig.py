@@ -338,12 +338,12 @@ class UpgradeChild:
         self.rig = rig
         self.calls = []
 
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None):
+    async def replace(self, argv, *, cwd, env):
         lock = Lockfile(self.rig.checkout.config.state_dir, verb="drain", instance_id="probe", clock=self.rig.time)
         lock.acquire()
         lock.release()
-        self.calls.append((list(argv), cwd, env, timeout))
-        return 7, "", ""
+        self.calls.append((list(argv), cwd, env))
+        return 7
 
 
 async def enable_upgrade(rig, engine):

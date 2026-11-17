@@ -1658,14 +1658,14 @@ async def test_control_lifecycle_cleanup_on_exit_and_handoff(root, monkeypatch, 
         return "merged"
 
     class Child:
-        async def run(self, argv, **kwargs):
+        async def replace(self, argv, **kwargs):
             assert live.trace[-2:] == [("discovery", None), "unlock"]
             assert (c.config.state_dir / "control/active.json").read_bytes() == b"null\n"
             lock = Lockfile(c.config.state_dir, verb="drain", instance_id="child", clock=c.clock)
             lock.acquire()
             lock.release()
             live.trace.append("child")
-            return 0, "", ""
+            return 0
 
     task = asyncio.create_task(live.run(dispatch, Child()))
     await live.held.get()

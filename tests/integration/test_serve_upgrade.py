@@ -55,9 +55,9 @@ async def test_upgrade_after_real_merge(root, monkeypatch, path):
             await until(rig, run.done)
             assert await run == 7
             assert len(rig.owner.reexec.calls) == 1
-            argv, cwd, env, timeout = rig.owner.reexec.calls[0]
+            argv, cwd, env = rig.owner.reexec.calls[0]
             assert argv == ["uv", "run", "--project", str(rig.owner.engine), "python", "-m", "clutch", "--config", "config.yaml", "serve"]
-            assert cwd == root and env == rig.checkout.env and timeout is None
+            assert cwd == root and env == rig.checkout.env
             [handoff] = [e for e in rig.journal.read() if e.body.get("signal") == "serve_handoff"]
             assert handoff.body == {"signal": "serve_handoff", "clutch": await rig.checkout.git.rev_parse(root, "HEAD:clutch")}
             assert rig.journal.read().index(terminals(rig, "work")[0]) < rig.journal.read().index(handoff)

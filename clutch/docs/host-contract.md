@@ -373,8 +373,8 @@ The minimal seams in `clutch/seams.py` are:
   timed work races injected sleep to a clock-derived deadline; tests advance
   deadlines without wall-clock waiting.
 - `async run(argv, *, cwd, env, timeout, stdin_path=None) -> (rc, out, err)`:
-  explicit required env and timeout (None only for the unbounded self-upgrade
-  handoff, which inherits stdio and returns empty out/err). Each child uses
+  explicit required env and timeout (None only for unbounded callers,
+  which inherit stdio and return empty out/err). Each child uses
   start_new_session; timeout and outer cancellation use the same group kill and
   wait helper. `kill_group(pgid)` is synchronous SIGKILL signal-not-reap; run
   owns reaping. `on_spawn` publishes the pgid, provider call return clears it.

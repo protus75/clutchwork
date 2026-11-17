@@ -5,6 +5,7 @@ import os
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from datetime import datetime
@@ -34,6 +35,11 @@ class ProcessExec(Protocol):
         timeout: float | None,
         stdin_path: Path | None = None,
     ) -> tuple[int, str, str]: ...
+
+
+@runtime_checkable
+class ReplaceExec(Protocol):
+    async def replace(self, argv: Sequence[str], *, cwd: Path, env: Mapping[str, str]) -> int: ...
 
 
 @runtime_checkable
@@ -113,8 +119,7 @@ class SubprocessExec:
     ) -> tuple[int, str, str]:
         if shutil.which(argv[0], path=env.get("PATH", "")) is None:
             raise ExecutableNotFound(argv[0])
-        # The one unbounded caller -- the drain's self-upgrade handoff child -- streams to the operator through
-        # INHERITED stdio; its out/err come back empty.
+        # Unbounded callers stream through inherited stdio; their out/err come back empty.
         stream = None if timeout is None else subprocess.PIPE
         with open(stdin_path, "rb") if stdin_path else open(os.devnull, "rb") as stdin:
             proc = await asyncio.create_subprocess_exec(
@@ -170,6 +175,14 @@ class SubprocessExec:
                 consumer_error.process_capture = (stdout.decode(errors="replace"), stderr.decode(errors="replace"))
                 raise consumer_error
         return proc.returncode or 0, (out or b"").decode(errors="replace"), (err or b"").decode(errors="replace")
+
+    async def replace(self, argv: Sequence[str], *, cwd: Path, env: Mapping[str, str]) -> int:
+        if shutil.which(argv[0], path=env.get("PATH", "")) is None:
+            raise ExecutableNotFound(argv[0])
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os.chdir(cwd)
+        os.execvpe(argv[0], argv, dict(env))
 
     def kill_group(self, pgid: int) -> None:
         try:

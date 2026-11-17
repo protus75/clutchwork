@@ -1278,14 +1278,14 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     class Child:
         spawns = 0
 
-        async def run(self, argv, **kwargs):
+        async def replace(self, argv, **kwargs):
             self.spawns += 1
             assert journal(root).read()[-1].body.get("signal") == "drain_handoff"
             contender = Lockfile(root / ".clutch/state", verb="drain", instance_id="child", clock=clock)
             contender.acquire()
             contender.release()
             code = await asyncio.to_thread(main, argv[7:], cwd=root, env=ENV, clock=clock, pipeline=runner.pipeline, reexec=self)
-            return code, "", ""
+            return code
 
     child = Child()
     assert main(["drain"], cwd=root, env=ENV, clock=clock, pipeline=runner.pipeline, reexec=child if scenario == "self-upgrade" else NoChild()) == 0
@@ -1561,12 +1561,12 @@ async def test_stop_survives_self_upgrade_handoff(root, monkeypatch):
             pytest.fail("stop aborted the running ticket")
 
     class Child:
-        async def run(self, argv, **kwargs):
+        async def replace(self, argv, **kwargs):
             assert argv[-2:] == ["--stop-lifecycle", checkout.control.inbox.lifecycle_id]
             child = pause_checkout(root)
             report = await run_drain(child, Dispatch(), reexec=NoChild(), stop_lifecycle=argv[-1])
             assert report.stopped and report.exit_code == 0 and report.merged == []
-            return report.exit_code, "", ""
+            return report.exit_code
 
     report = await run_drain(checkout, Dispatch(), reexec=Child())
     assert report.handoff == 0 and calls == ["aa"]

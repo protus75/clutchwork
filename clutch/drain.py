@@ -31,7 +31,7 @@ from clutch.reconcile import reconcile
 from clutch.redact import Redactor
 from clutch.retro import RetroCheckOutcome
 from clutch.runner import EXIT_MERGED, EXIT_TICKET, Checkout, Dispatch, Refusal, harvest_orphan
-from clutch.seams import ProcessExec
+from clutch.seams import ReplaceExec
 from clutch.status import SETTLED, last_states, reject_queue
 from clutch.tickets import (
     INTAKE_SIGNAL,
@@ -217,7 +217,7 @@ async def drain(
     checkout: Checkout,
     dispatch: Dispatch,
     *,
-    reexec: ProcessExec,
+    reexec: ReplaceExec,
     parked: Iterable[str] = (),
     deadline: datetime | None = None,
     argv: Iterable[str] = ("drain",),
@@ -334,8 +334,8 @@ async def drain(
                 finally:
                     lock.release()
     # The fixed HANDOFF order: journaled, journal closed, lock free -- the child is the only writer,
-    # and the parent does nothing after the spawn but exit with its code.
-    report.handoff, _, _ = await reexec.run(
+    # and replacement continues with the new engine.
+    report.handoff = await reexec.replace(
         reexec_argv(
             [
                 *argv,
@@ -347,7 +347,6 @@ async def drain(
         ),
         cwd=checkout.repo,
         env=checkout.env,
-        timeout=None,
     )
     return report
 
