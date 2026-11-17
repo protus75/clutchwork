@@ -22,6 +22,9 @@ def test_plan_ticket_drain_prompt_content(prompts):
     for phrase in (
         "docs/roadmap.md",
         "standing delegation",
+        "conduct files",
+        "explicit override",
+        "the engine authored",
         "clutch doctor",
         "clutch probe",
         "clutch release --minor",
@@ -58,7 +61,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "Still open:",
     ):
         assert phrase in text, phrase
-    assert text.index("clutch doctor") < text.index("clutch probe") < text.index("clutch prompt drain-loop")
+    assert text.index("conduct files") < text.index("clutch doctor") < text.index("clutch probe") < text.index("clutch prompt drain-loop")
     assert text.index("standing delegation") < text.index("clutch confirm --yes")
     assert not text.startswith("/loop")
 
