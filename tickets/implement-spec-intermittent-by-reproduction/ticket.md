@@ -10,6 +10,9 @@ agent_effort: medium
 ## Depends on
 none
 
+## Runs before
+- evidence-envelope
+
 ## Context
 - tickets/implement-spec-intermittent-not-premise/ticket.md
 
