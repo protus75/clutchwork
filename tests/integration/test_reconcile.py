@@ -45,7 +45,7 @@ def test_running_with_no_terminal_is_reaped_to_abandoned_on_the_next_run(root):
     journal(root).append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="dead-run")
     path = orphan_worktree(root, "dead-run")
     stages = Stages()
-    assert cli(root, "run", "add-thing", stages=stages) == 0
+    assert cli(root, "engine", "run", "add-thing", stages=stages) == 0
     events = journal(root).read()
     transitions = [(e.ticket, e.body["to"]) for e in events if e.type == EventType.STATE_TRANSITION]
     # Reaped BEFORE the next run's own dispatch.
@@ -116,10 +116,10 @@ def test_reap_without_a_worktree_still_journals_abandoned(root):
 
 def test_a_reaped_stem_reruns(root):
     write(root, "add-thing", ticket())
-    assert cli(root, "run", "add-thing", stages=Stages("gate_failed")) == 1
+    assert cli(root, "engine", "run", "add-thing", stages=Stages("gate_failed")) == 1
     Journal(root / STATE, Clock()).append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="add-thing")
     stages = Stages()
-    assert cli(root, "run", "add-thing", stages=stages) == 0
+    assert cli(root, "engine", "run", "add-thing", stages=stages) == 0
     assert stages.calls == ["add-thing"]
     assert last_states(journal(root).read())["add-thing"] == "merged"
 
@@ -325,6 +325,6 @@ def test_recovery_alert_does_not_change_disposition(root, verb):
         dispatch.stages = callback.stages
         return dispatch
 
-    assert cli(root, *(["run", "work"] if verb == "run" else ["drain"]), stages=prepare) == 0
+    assert cli(root, *(["engine", "run", "work"] if verb == "run" else ["engine", "drain"]), stages=prepare) == 0
     assert stages.calls == ["work"] and stages.lock_held == [True]
     assert last_states(j.read()) == {"history": "infra_error", "work": "merged"}

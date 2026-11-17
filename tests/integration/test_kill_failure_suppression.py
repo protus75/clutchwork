@@ -332,7 +332,7 @@ def test_kill_failure_suppression_is_dormant(root, tmp_path, monkeypatch, verb):
     dormant = daemon.WorkerFailureObserver(lifecycle_id="life", workers=(), projection=lambda: ControlProjection("life"), failure=lambda _: None)
     monkeypatch.setattr(daemon.WorkerFailureObserver, "observe", probe)
     write(root, "work", ticket())
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
 
     def deliberate(checkout):
         async def dispatch(_):

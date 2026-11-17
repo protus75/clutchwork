@@ -4,10 +4,10 @@ From the host checkout root, with clutch [installed](host-contract.md#install) a
 
 ```sh
 uv run clutch doctor
-uv run clutch serve
+uv run clutch engine serve
 ```
 
-Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `serve` is the normal mode: it runs until `kill`, `stop`, or Ctrl-C. `drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
+Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
@@ -30,11 +30,11 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `pause` | Yes | Ask the running engine to pause admission. |
 | `resume` | Yes | Ask the running engine to release its current hold. |
 | `kill` | Yes | Ask the running engine to stop at a safe point. |
-| `stop` | Yes | Finish active work and exit. |
+| `engine stop` | Yes | Finish active work and exit. |
 | `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |
 | `issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
-| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `drain` and `serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
+| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `engine drain` and `engine serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
 | `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
 | `publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
@@ -43,13 +43,13 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `covgate` | Yes | Run a unit command and check its coverage report. |
 | `ticket new` | Yes | Create and lint a ticket skeleton. |
 | `ticket order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
-| `run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |
+| `engine run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |
 | `confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. |
 | `reject` | Yes | Intake the named ticket, then apply or publish a reject verdict after interactive confirmation; other pending tickets are left untouched. |
-| `drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
-| `serve` | No | Run the continuous daemon. |
+| `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
+| `engine serve` | No | Run the continuous daemon. |
 
-Stop serve before `roadmap author`, `triage`, `dismiss`, `release`, `publish`, `run`, `drain`, or another `serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `roadmap author`, `triage`, `dismiss`, `release`, `publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
 ## Reporting a critical clutch bug
 

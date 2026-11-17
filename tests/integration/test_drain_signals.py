@@ -28,7 +28,7 @@ def test_signal_kills_a_running_drain_like_kill(root, monkeypatch, capsys):
         life.append(checkout.control.inbox.lifecycle_id)
         return runner.bind(checkout, Blocking([agent({}, outcome="already_satisfied")]))
 
-    assert cli.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == runner.EXIT_TICKET
+    assert cli.main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == runner.EXIT_TICKET
     assert "drain stopped by kill -- NOT quiescent" in capsys.readouterr().out
     events = [json.loads(line) for line in (root / ".clutch/state/engine.log").read_text().splitlines()]
     assert any(e["event"] == "engine_stop" and e["verb"] == "drain" and e["outcome"] == "killed" for e in events)

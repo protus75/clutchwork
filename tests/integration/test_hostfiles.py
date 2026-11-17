@@ -363,7 +363,7 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
 
         approve(root, "work", Clock())
         llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
-        assert main(["run", "work"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda checkout: runner.bind(checkout, llm)) == 0
+        assert main(["engine", "run", "work"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda checkout: runner.bind(checkout, llm)) == 0
     else:
         from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, until
 

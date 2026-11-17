@@ -399,7 +399,7 @@ def test_config_snapshot_is_dormant(root, monkeypatch, verb, operation):
         return DaemonAdmission(daemon.snapshot_dispatch(lambda: checkout.config, lambda snapshot: pipeline(checkout))).dispatch
 
     write(root, "work", ticket())
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
     if verb == "run" or operation == "snapshot_dispatch":
         with pytest.raises(AssertionError, match=f"{operation} wired"):
             main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired)

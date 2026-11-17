@@ -369,7 +369,7 @@ def test_run_logs_lifecycle_on_merge(root):
     import json
 
     write(root, "add-thing", ticket())
-    assert cli(root, "run", "add-thing", stages=Stages()) == 0
+    assert cli(root, "engine", "run", "add-thing", stages=Stages()) == 0
     events = [json.loads(line) for line in (root / ".clutch/state/engine.log").read_text().splitlines()]
     assert [(e["event"], e["verb"], e["pid"], e.get("outcome")) for e in events if e["event"] in {"engine_start", "engine_stop"}] == [
         ("engine_start", "run", os.getpid(), None),
@@ -380,7 +380,7 @@ def test_run_logs_lifecycle_on_merge(root):
 def test_run_dispatches_the_locked_validated_stem_to_the_stage_seam(root):
     write(root, "add-thing", ticket())
     stages = Stages()
-    assert cli(root, "run", "add-thing", stages=stages) == 0
+    assert cli(root, "engine", "run", "add-thing", stages=stages) == 0
     assert stages.calls == ["add-thing"]
     assert stages.lock_held == [True]  # the one process holding the lock is the one dispatching
     assert git_out(root, "status", "--porcelain") == ""  # intake committed the ticket before dispatch
@@ -393,7 +393,7 @@ def test_run_dispatches_the_locked_validated_stem_to_the_stage_seam(root):
 
 def test_run_exits_1_on_a_non_ok_terminal(root):
     write(root, "add-thing", ticket())
-    assert cli(root, "run", "add-thing", stages=Stages("gate_failed")) == 1
+    assert cli(root, "engine", "run", "add-thing", stages=Stages("gate_failed")) == 1
     assert (root / "tickets" / "add-thing" / "ticket.md").is_file()
 
 
@@ -403,7 +403,7 @@ def test_run_refused_when_the_lockfile_is_already_held(root, capsys):
     holder.acquire()
     try:
         stages = Stages()
-        assert cli(root, "run", "add-thing", stages=stages) == 2
+        assert cli(root, "engine", "run", "add-thing", stages=stages) == 2
     finally:
         holder.release()
     assert stages.calls == []
@@ -415,7 +415,7 @@ def test_run_refused_when_the_lockfile_is_already_held(root, capsys):
 def test_run_refuses_an_invalid_ticket(root, capsys):
     write(root, "add-thing", ticket().replace("## Verification", "## Verify"))
     stages = Stages()
-    assert cli(root, "run", "add-thing", stages=stages) == 2
+    assert cli(root, "engine", "run", "add-thing", stages=stages) == 2
     assert stages.calls == []
     assert "ticket_schema" in capsys.readouterr().err
     assert not any(e.type == EventType.STATE_TRANSITION for e in journal(root).read())
@@ -423,7 +423,7 @@ def test_run_refuses_an_invalid_ticket(root, capsys):
 
 def test_run_refuses_a_missing_stem(root, capsys):
     stages = Stages()
-    assert cli(root, "run", "no-such", stages=stages) == 2
+    assert cli(root, "engine", "run", "no-such", stages=stages) == 2
     assert stages.calls == []
     assert "new no-such" in capsys.readouterr().err
 
@@ -432,19 +432,19 @@ def test_run_refuses_an_unmerged_dependency(root, capsys):
     write(root, "first", ticket())
     write(root, "second", ticket(depends="- first"))
     stages = Stages()
-    assert cli(root, "run", "second", stages=stages) == 2
+    assert cli(root, "engine", "run", "second", stages=stages) == 2
     assert stages.calls == []
     assert "run first" in capsys.readouterr().err
-    assert cli(root, "run", "first", stages=stages) == 0
-    assert cli(root, "run", "second", stages=stages) == 0
+    assert cli(root, "engine", "run", "first", stages=stages) == 0
+    assert cli(root, "engine", "run", "second", stages=stages) == 0
     assert stages.calls == ["first", "second"]
 
 
 def test_run_refuses_a_merged_ticket(root, capsys):
     write(root, "add-thing", ticket())
     stages = Stages()
-    assert cli(root, "run", "add-thing", stages=stages) == 0
-    assert cli(root, "run", "add-thing", stages=stages) == 2
+    assert cli(root, "engine", "run", "add-thing", stages=stages) == 0
+    assert cli(root, "engine", "run", "add-thing", stages=stages) == 2
     assert stages.calls == ["add-thing"]
     assert "merged" in capsys.readouterr().err
 
@@ -454,7 +454,7 @@ def test_run_refused_before_the_lock_when_the_pipeline_refuses(root, capsys):
         raise Refusal("pipeline missing", "build it")
 
     write(root, "add-thing", ticket())
-    assert main(["run", "add-thing"], cwd=root, env=ENV, clock=Clock(), pipeline=unbuilt) == 2
+    assert main(["engine", "run", "add-thing"], cwd=root, env=ENV, clock=Clock(), pipeline=unbuilt) == 2
     assert "pipeline missing -- build it" in capsys.readouterr().err
     assert journal(root).read() == []
 

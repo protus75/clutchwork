@@ -38,7 +38,7 @@ def test_two_premise_terminals_draw_and_route_after_cap(repo, capsys):
         answers = [implement_reply("premise_failed", [finding])]
         if attempt == 0:
             answers.append(diagnosis_reply())
-        assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c, a=answers: runner.bind(c, FakeLLM(a))) == 1
+        assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c, a=answers: runner.bind(c, FakeLLM(a))) == 1
         if attempt == 0:
             path = repo / "tickets" / STEM / "ticket.md"
             path.write_text(path.read_text().replace("`thing.py` holds the word ok.", "`thing.py` holds the word ok, after correction."))
@@ -67,7 +67,7 @@ def test_over_bound_premise_draws_nothing(repo, monkeypatch):
         )
 
     monkeypatch.setattr(runner, "run_stages", over_bound)
-    assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, FakeLLM([]))) == 1
+    assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, FakeLLM([]))) == 1
     assert draws(_events(repo, STEM), STEM, "premise_bounce") == 0
     assert STEM not in reject_queue(journal(repo).read())
 

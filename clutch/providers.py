@@ -631,7 +631,7 @@ class ClaudeAdapter(CliAdapter):
     binary = "claude"
     reports_cost = True
     AUTH_MARKERS = ("invalid api key", "please run /login", "not logged in", "oauth token has expired")
-    LOGIN_ROAD = "run claude interactively and complete /login, then `clutch drain`"
+    LOGIN_ROAD = "run claude interactively and complete /login, then `clutch engine drain`"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
@@ -681,7 +681,7 @@ class CodexAdapter(CliAdapter):
     binary = "codex"
     reports_cost = False
     AUTH_MARKERS = ("not logged in", "401 unauthorized", "token has expired")
-    LOGIN_ROAD = "run codex login, then `clutch drain`"
+    LOGIN_ROAD = "run codex login, then `clutch engine drain`"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
@@ -729,7 +729,7 @@ class QwenAdapter(ClaudeAdapter):
     reports_cost = False
     uses_base_url = True
     AUTH_MARKERS = ()
-    LOGIN_ROAD = "follow clutch/docs/host-qwen.md, then run clutch drain"
+    LOGIN_ROAD = "follow clutch/docs/host-qwen.md, then run clutch engine drain"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
@@ -772,7 +772,7 @@ class GeminiAdapter(CliAdapter):
     reports_cost = False
     AUTH_MARKERS = ("please set an auth method", "api key not valid")
     AUTH_ENV = "GEMINI_API_KEY"
-    LOGIN_ROAD = "export GEMINI_API_KEY as clutch/docs/host-gemini.md describes, then `clutch drain`"
+    LOGIN_ROAD = "export GEMINI_API_KEY as clutch/docs/host-gemini.md describes, then `clutch engine drain`"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:

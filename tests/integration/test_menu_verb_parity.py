@@ -232,7 +232,7 @@ def test_verb_refusals_and_lint_summary(world, capsys):
     for verb in ("review", "run", "order"):
         assert (
             entry.main(
-                [*(["ticket"] if verb in {"review", "order"} else []), verb, "missing", *(["--priority", "P1"] if verb == "order" else [])],
+                [*(["ticket"] if verb in {"review", "order"} else ["engine"]), verb, "missing", *(["--priority", "P1"] if verb == "order" else [])],
                 cwd=w.root,
                 env=ENV,
                 clock=Clock(),

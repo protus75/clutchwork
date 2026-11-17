@@ -40,7 +40,7 @@ def main():
             return await super().call(req)
 
     with contextlib.redirect_stdout(io.StringIO()):
-        cli.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, Blocking([agent({}, outcome="already_satisfied")])))
+        cli.main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, Blocking([agent({}, outcome="already_satisfied")])))
     events = [json.loads(line) for line in (root / ".clutch/state/engine.log").read_text().splitlines()]
     passed = bool(callbacks) and any(e["event"] == "engine_stop" and e["verb"] == "drain" and e["outcome"] == "killed" for e in events)
     temporary.cleanup()

@@ -81,19 +81,19 @@ def run_admission(stem, events, file_exists, ticket, intake_decision=None, stray
 
     if stray:
         return intake_stray_admission(stray)
-    road = f"fix the ticket, then `run {stem}` again"
+    road = f"fix the ticket, then `engine run {stem}` again"
     for label, decision in (("failed intake", intake_decision), ("is invalid", ticket)):
         if isinstance(decision, list) and decision:
             return Admission("refuse", f"{ticket_path(stem)} {label}: " + "; ".join(f"[{f.code}] {f.message} ({f.paved_road})" for f in decision), road)
     if not file_exists:
-        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `clutch ticket new {stem}`, fill it, then `clutch run {stem}`")
+        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `clutch ticket new {stem}`, fill it, then `clutch engine run {stem}`")
     events = tuple(events)
     if last_states(events).get(stem) == "merged" or ticket.frontmatter.state == "merged":
         return Admission("refuse", f"{stem} is already merged", "author follow-up work as a new stem with `ticket new`")
     if ticket.frontmatter.state != "confirmed":
         return Admission("refuse", f"{stem} is `state: {ticket.frontmatter.state}`, not confirmed", f"set `state: confirmed` in {ticket_path(stem)} to dispatch it, or author a new stem")
     if unmerged := [d for d in ticket.depends if d not in settled_dependencies(events)]:
-        return Admission("refuse", f"{stem} depends on unmerged {', '.join(unmerged)}", " then ".join(f"`run {d}`" for d in unmerged) + f" first, then `run {stem}`")
+        return Admission("refuse", f"{stem} depends on unmerged {', '.join(unmerged)}", " then ".join(f"`engine run {d}`" for d in unmerged) + f" first, then `engine run {stem}`")
     return Admission("admit")
 
 

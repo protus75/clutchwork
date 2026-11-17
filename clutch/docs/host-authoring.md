@@ -25,7 +25,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
    Run `clutch ticket review <stem>`, repair every finding,
    and repeat until it prints `approve`. Reviews with unmerged dependencies are provisional and not
    journaled; repair their findings, and the drain reviews again after the dependencies merge.
-4. A running `serve` picks up the new ticket; alternatively run `clutch drain`. Intake commits
+4. A running `engine serve` picks up the new ticket; alternatively run `clutch engine drain`. Intake commits
    the ticket and its evidence together before running it.
 
 ## What each section is for

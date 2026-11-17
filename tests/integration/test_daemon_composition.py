@@ -1906,7 +1906,7 @@ async def test_production_shares_one_admission_control_consumer(root, tmp_path, 
         return writer
 
     monkeypatch.setattr(cli, "_engine_signals", lambda cb: lambda: None)
-    assert await asyncio.to_thread(cli.main, ["drain"], cwd=root, env=checkout_env, clock=Clock(), pipeline=pipeline) == 0
+    assert await asyncio.to_thread(cli.main, ["engine", "drain"], cwd=root, env=checkout_env, clock=Clock(), pipeline=pipeline) == 0
     assert len(consumers) == len(roots) == len(captured) == 1
     assert trace[:3] == ["build", "pipeline", "publish"] and "consume" in trace
     assert trace[-1] == "retire"
@@ -2088,7 +2088,10 @@ def test_bootstrap_inline_admission_never_holds(admission_context, monkeypatch, 
         return await inline(*args, **kwargs)
 
     monkeypatch.setattr(runner, "merge", merging)
-    assert cli.main([verb, STEM] if verb == "run" else [verb], cwd=source.repo, env=source.env, clock=source.driver.clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
+    assert (
+        cli.main(["engine", verb, STEM] if verb == "run" else ["engine", verb], cwd=source.repo, env=source.env, clock=source.driver.clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
+        == 0
+    )
     assert calls == [STEM] and len(captured) == 1
     queue = captured[0][2]
     assert queue.control is not None and queue.control.admission is None

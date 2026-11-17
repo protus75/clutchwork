@@ -727,7 +727,7 @@ def test_cli_failure_classifier_is_active(tmp_path, monkeypatch):
         results.clear()
         # main's default pipeline is the real runner.pipeline; it builds ProviderLLM,
         # performs preflight, and binds Driver + StageContext before this call runs.
-        assert __main__.main(["run", "dormancy"], cwd=tmp_path, env=ENV, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC)) == 0
+        assert __main__.main(["engine", "run", "dormancy"], cwd=tmp_path, env=ENV, clock=lambda: datetime(2026, 10, 6, tzinfo=UTC)) == 0
         assert len(results) == 2
         assert hits == ["codex", "claude"]
         assert [r.findings[0].code for r in results] == ["outage", "rate_limited"]

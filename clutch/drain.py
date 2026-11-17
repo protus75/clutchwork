@@ -179,11 +179,11 @@ class Report:
             return f"{name}:\n" + ("\n".join(f"- {line}" for line in lines) or "(none)")
 
         if self.killed:
-            head = "drain stopped by kill -- NOT quiescent. Continue with `clutch drain`."
+            head = "drain stopped by kill -- NOT quiescent. Continue with `clutch engine drain`."
         elif self.stopped:
             head = "drain stopped on request; no new ticket was admitted."
         elif self.halted:
-            head = f"drain HALTED by the {CEILING} ceiling ({self.halted}) -- NOT quiescent; no new ticket was admitted. Continue with `clutch drain`."
+            head = f"drain HALTED by the {CEILING} ceiling ({self.halted}) -- NOT quiescent; no new ticket was admitted. Continue with `clutch engine drain`."
         elif not (self.merged or self.parked or self.blocked):
             head = "drain quiescent: nothing eligible (empty ready set)."
         else:
@@ -219,7 +219,7 @@ async def drain(
     reexec: ReplaceExec,
     parked: Iterable[str] = (),
     deadline: datetime | None = None,
-    argv: Iterable[str] = ("drain",),
+    argv: Iterable[str] = ("engine", "drain"),
     before_dispatch: Callable[[], Awaitable[None]] | None = None,
     stop_lifecycle: str | None = None,
     signals: Callable[[Callable[[], None]], Callable[[], None]] | None = None,
@@ -529,7 +529,7 @@ class _Drain:
         for stem in sorted(open_):
             if cycle := depends_cycle(stem, edges):
                 raise Refusal(
-                    f"`## Depends on` cycle among committed tickets: {' -> '.join(cycle)}", "edit one ticket on the cycle to drop the edge that inverts the intended order, then `drain` again"
+                    f"`## Depends on` cycle among committed tickets: {' -> '.join(cycle)}", "edit one ticket on the cycle to drop the edge that inverts the intended order, then `engine drain` again"
                 )
         from clutch.rework import settled_dependencies, supersedes_maps
 
@@ -733,7 +733,7 @@ class _Drain:
                 elif stem in held and spent_cap is None:
                     why, road = f"{to}{where}; parked until its committed ticket.md changes", self._premise_road(t)
                 elif spent_cap is None:  # only a halt leaves budget unspent: the continuing drain re-offers it
-                    why, road = (f"{to}{where}; {cap_limit - drawn} of {cap_limit} retry units left", "`clutch drain` re-offers it")
+                    why, road = (f"{to}{where}; {cap_limit - drawn} of {cap_limit} retry units left", "`clutch engine drain` re-offers it")
                 else:
                     why, road = (
                         f"{to}{where}; {caps.spent_reason(spent_cap)} ({drawn}/{cap_limit})",

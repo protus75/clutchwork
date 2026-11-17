@@ -32,7 +32,7 @@ def drain(repo: Path, script: list, *, green_base: bool = True) -> tuple[int, Fa
         (repo / "clutch" / "thing.py").write_text("ok base\n")
         git(repo, "commit", "-am", "green verification base")
     llm = FakeLLM(script)
-    code = main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
+    code = main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
     return code, llm
 
 

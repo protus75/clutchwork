@@ -20,7 +20,7 @@ from tests.integration.test_terminal import author, clock, diagnosis_reply, repo
 
 def run(repo: Path, script: list, verb: str = "run") -> tuple[int, FakeLLM]:
     llm = FakeLLM(script)
-    argv = [verb, STEM] if verb == "run" else [verb]
+    argv = ["engine", verb, STEM] if verb == "run" else ["engine", verb]
     code = main(argv, cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
     return code, llm
 

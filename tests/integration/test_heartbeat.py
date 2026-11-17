@@ -194,7 +194,7 @@ def test_heartbeat_is_dormant(root, tmp_path, monkeypatch, verb):
 
     monkeypatch.setattr(HeartbeatCycle, "cycle", cycle_probe)
     write(root, "work", ticket())
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
 
     def wired_cycle(checkout):
         async def dispatch(_):

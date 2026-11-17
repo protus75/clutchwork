@@ -161,7 +161,7 @@ def test_live_drain_holds_only_emitting_stem(tmp_path, monkeypatch, stage):
 
     monkeypatch.setattr(cli, "build_control", build)
     monkeypatch.setattr("clutch.triage.triage_pass", Mock(side_effect=AssertionError("consumed Box")))
-    assert cli.main(["drain"], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=NoChild()) == 0
+    assert cli.main(["engine", "drain"], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=NoChild()) == 0
     assert script.calls == ["urgent", "zzz-old", "aaa-new", "one", "child"]
     assert script.lock_held == [True] * 5
     assert consumers[0].storm_holds() == {} and len(trips(journal)) == 1

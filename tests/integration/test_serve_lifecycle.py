@@ -107,7 +107,7 @@ def test_serve_cli_uses_production_composition(root, monkeypatch):
 
     monkeypatch.setattr(serve.Serve, "run", run)
     monkeypatch.setattr(cli, "_engine_signals", lambda stop: (stop(), lambda: None)[1])
-    assert cli.main(["serve"], cwd=root, env=ENV) == 0
+    assert cli.main(["engine", "serve"], cwd=root, env=ENV) == 0
     assert len(built) == 1 and len(built[0].workers) == 4
     assert "clutch.serve" in import_closure(sources())
 

@@ -23,7 +23,7 @@ def test_onboarding_and_operating_sections():
     verbs = ("clutch install", "clutch init-config", "clutch doctor", "clutch probe", "clutch core", "clutch ticket new", "clutch ticket lint", "clutch ticket review")
     positions = [onboarding.index(verb) for verb in verbs]
     assert positions == sorted(positions)
-    assert re.search(r"clutch (?:drain|serve)", onboarding[positions[-1] :])
+    assert re.search(r"clutch engine (?:drain|serve)", onboarding[positions[-1] :])
 
     operating = sections[headings[1]]
     for term in ("clutch.lock", "commit.lock", "state_dir", "uv sync", "upgrade", "rollback"):

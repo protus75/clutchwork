@@ -19,7 +19,7 @@ def history(repo: Path):
 
 def invoke(repo: Path, script: list, stem: str = STEM) -> tuple[int, FakeLLM]:
     llm = FakeLLM(script)
-    code = main(["run", stem], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm))
+    code = main(["engine", "run", stem], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm))
     return code, llm
 
 

@@ -32,7 +32,7 @@ def test_halted_reoffer_road_names_the_drain_verb(tmp_path, capsys):
         clock.now = START + timedelta(hours=13)
 
     assert drain(root, Script(outcomes={"red": ["gate_failed"]}, hooks={"red": overrun}), clock) == 1
-    assert "- red: gate_failed at review; 3 of 3 retry units left -- `clutch drain` re-offers it" in capsys.readouterr().out
+    assert "- red: gate_failed at review; 3 of 3 retry units left -- `clutch engine drain` re-offers it" in capsys.readouterr().out
 
 
 def test_box_reads_name_a_repair(tmp_path):

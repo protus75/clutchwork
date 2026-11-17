@@ -183,9 +183,9 @@ def test_dispatch_pause_boundary_is_active(root, tmp_path, monkeypatch):
     with monkeypatch.context() as patch:
         patch.setattr(control.ControlInbox, "consume", forbidden)
         with pytest.raises(AssertionError, match="control consumption"):
-            main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=script)
+            main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=script)
     assert script.calls == []
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=script) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=script) == 0
     assert script.calls == ["work"]
 
     async def composition():

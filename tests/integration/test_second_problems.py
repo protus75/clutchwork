@@ -32,7 +32,7 @@ def reply(outcome: str, problems: list[str] | None) -> str:
 
 def run(repo: Path, script: list) -> int:
     llm = FakeLLM(script)
-    return main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda checkout: runner.bind(checkout, llm))
+    return main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda checkout: runner.bind(checkout, llm))
 
 
 def box(repo: Path) -> Box:

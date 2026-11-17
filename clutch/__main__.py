@@ -209,7 +209,9 @@ def build_daemon_core(
     return core
 
 
-def build_serve(checkout: runner.Checkout, *, config_path=None, read=None, stems=None, prepare=runner.prepare_pipeline, signals=None, failure=None, argv=("serve",), reexec=None) -> serve.Serve:
+def build_serve(
+    checkout: runner.Checkout, *, config_path=None, read=None, stems=None, prepare=runner.prepare_pipeline, signals=None, failure=None, argv=("engine", "serve"), reexec=None
+) -> serve.Serve:
     """Compose filesystem delivery at the same root as every other real seam."""
 
     def read_ticket(stem):
@@ -365,7 +367,6 @@ def _parser() -> argparse.ArgumentParser:
     for verb in ("pause", "resume"):
         sub.add_parser(verb, help=f"submit {verb} to the running engine, or do nothing under the idle lock")
     sub.add_parser("kill", help="submit kill to the running engine; refuse when nothing is running")
-    sub.add_parser("stop", help="finish the running ticket, admit nothing new, then exit")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     issue_parser = sub.add_parser("issue", help="print a prefilled GitHub new-issue link for a critical clutch bug")
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
@@ -518,19 +519,68 @@ def _parser() -> argparse.ArgumentParser:
     ordering.add_argument("stem")
     ordering.add_argument("--priority", choices=PRIORITIES)
     ordering.add_argument("--runs-before", nargs="*", metavar="STEM")
-    run = sub.add_parser("run", help="drive one ticket through intake and the stage pipeline under the lock")
-    run.add_argument("stem")
     for verb in ("confirm", "reject"):
         verdict = sub.add_parser(verb, help=f"{verb} a draft or Reject item; publish the verdict to a running serve holding the lock")
         verdict.add_argument("stems", nargs="+")
         verdict.add_argument("--yes", action="store_true")
         verdict.add_argument("--extension", action="store_true")
-    dr = sub.add_parser("drain", help="run every eligible ticket to quiescence under the lock")
+    engine = sub.add_parser(
+        "engine",
+        help="run and stop the engine",
+        description="Run tickets and control engine shutdown.",
+        epilog="Examples:\nclutch engine drain\n  Run eligible tickets.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    engine_sub = engine.add_subparsers(dest="engine_verb", required=True)
+    dr = _command(
+        engine_sub,
+        "drain",
+        summary="run eligible tickets to quiescence",
+        does="Run every eligible ticket to quiescence.",
+        reads="Config, tickets and journal.",
+        writes="Ticket commits, journal events and engine state; --detach appends to <state_dir>/drain.out in its own session.",
+        lock="Writer lock; the child takes it with --detach.",
+        exits="0 at quiescence; 1 when halted or killed; 2 on refusal.",
+        examples=["clutch engine drain", "clutch engine drain --detach"],
+    )
     dr.add_argument("--detach", action="store_true", help="run in its own session and append to <state_dir>/drain.out")
     dr.add_argument("--parked", action="append", default=[], metavar="STEM", help="a stem the handing-off parent drain parked (set by the self-upgrade re-exec)")
-    dr.add_argument("--deadline", type=datetime.fromisoformat, default=None)
+    dr.add_argument("--deadline", type=datetime.fromisoformat, default=None, help="deadline set by the self-upgrade re-exec")
     dr.add_argument("--stop-lifecycle", help=argparse.SUPPRESS)
-    sub.add_parser("serve", help="run the foreground daemon until kill, stop, or a signal stops it")
+    _command(
+        engine_sub,
+        "serve",
+        summary="run the continuous daemon",
+        does="Run the continuous daemon until kill, engine stop or a signal.",
+        reads="Config, tickets and journal.",
+        writes="Ticket commits, journal events and engine state.",
+        lock="Writer lock.",
+        exits="0 after kill, stop or a signal; 1 when a component fails; 2 on refusal.",
+        examples=["clutch engine serve"],
+    )
+    run = _command(
+        engine_sub,
+        "run",
+        summary="drive one ticket through the pipeline",
+        does="Drive one ticket through intake and every stage.",
+        reads="Config, ticket and journal.",
+        writes="Ticket commits, journal events and engine state.",
+        lock="Writer lock.",
+        exits="0 when merged; 1 for a non-ok terminal; 2 on refusal.",
+        examples=["clutch engine run example"],
+    )
+    run.add_argument("stem")
+    _command(
+        engine_sub,
+        "stop",
+        summary="finish active work and exit",
+        does="Request a running drain or serve to finish its ticket, admit nothing new and exit; refuse when nothing runs or a non-engine holder has the lock.",
+        reads="Engine lock and state.",
+        writes="A stop request.",
+        lock="Writer lock only to probe.",
+        exits="0 when submitted; 2 on refusal.",
+        examples=["clutch engine stop"],
+    )
     # Replace argparse's flat choice listing with one ordered command listing.
     sub.help = argparse.SUPPRESS
     lines = ["Commands:"]
@@ -871,7 +921,7 @@ def main(
 
     # Control
     def handle_control():
-        return asyncio.run(_control(checkout, args.verb))
+        return asyncio.run(_control(checkout, args.engine_verb if args.verb == "engine" else args.verb))
 
     def handle_verdict():
         for stem in args.stems:
@@ -991,7 +1041,7 @@ def main(
 
     def handle_detach():
         output = config.state_dir / "drain.out"
-        pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "drain"], cwd=repo, env=env, output=output)
+        pid = spawn([sys.executable, "-m", "clutch", *(["--config", str(args.config)] if args.config else []), "engine", "drain"], cwd=repo, env=env, output=output)
         print(f"drain: pid {pid}, output {output}")
         return 0
 
@@ -1000,7 +1050,7 @@ def main(
         checkout = replace(checkout, control=build_control(checkout))
         checkout.control.load_config = _config_reloader(args.config, repo)
         dispatch = pipeline(checkout)
-        if args.verb == "drain":
+        if args.verb == "engine" and args.engine_verb == "drain":
             from clutch.retro import Retro
 
             class DrainDispatch:
@@ -1023,7 +1073,7 @@ def main(
                     parked=args.parked,
                     deadline=args.deadline,
                     stop_lifecycle=args.stop_lifecycle,
-                    argv=(["--config", str(args.config)] if args.config else []) + ["drain"],
+                    argv=(["--config", str(args.config)] if args.config else []) + ["engine", "drain"],
                 )
             )
             if report.handoff is None:
@@ -1053,7 +1103,6 @@ def main(
         "kill": handle_control,
         "pause": handle_control,
         "resume": handle_control,
-        "stop": handle_control,
         "reject": handle_verdict,
         "confirm": handle_verdict,
         "roadmap": handle_roadmap,
@@ -1061,10 +1110,8 @@ def main(
         "publish": handle_publish,
         "dismiss": handle_dismiss,
         "triage": handle_triage,
-        "serve": handle_serve,
         "retro": handle_retro,
-        "run": handle_pipeline,
-        "drain": handle_pipeline,
+        "engine": lambda: {"stop": handle_control, "serve": handle_serve, "run": handle_pipeline, "drain": handle_pipeline}[args.engine_verb](),
     }
 
     try:
@@ -1075,7 +1122,7 @@ def main(
         if args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "doctor", "issue"} or (args.verb == "ticket" and args.ticket_verb == "new"):
             return handlers[args.verb]()
         config = load_config(args.config, cwd=repo)
-        if args.verb == "drain" and args.detach:
+        if args.verb == "engine" and args.engine_verb == "drain" and args.detach:
             return handle_detach()
         if args.verb in {"update-config", "probe", "core", "prompt"}:
             return handlers[args.verb]()
@@ -1095,10 +1142,10 @@ def main(
             fs=LocalFileSystem(),
             clock=clock,
         )
-        if args.verb in {"serve", "drain", "run"}:
+        if args.verb == "engine" and args.engine_verb in {"serve", "drain", "run"}:
             messages = asyncio.run(hostfiles.stale_core(repo, config, checkout.git))
             if messages:
-                raise runner.Refusal("; ".join(messages), f"run clutch core, then commit the conduct files and retry {args.verb}")
+                raise runner.Refusal("; ".join(messages), f"run clutch core, then commit the conduct files and retry engine {args.engine_verb}")
         return handlers[args.verb]()
     except UnknownBoxId as e:
         return _fail(args.verb, f"{e} -- name ids that clutch status lists")
@@ -1482,7 +1529,7 @@ def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] =
         if kind == "bug":
             findings += missing_evidence_findings(stem, repo)
     if findings:
-        print(f"fill these before `run {stem}`:")
+        print(f"fill these before `engine run {stem}`:")
         for f in findings:
             print(f"- {f.message} ({f.paved_road})")
     return 0

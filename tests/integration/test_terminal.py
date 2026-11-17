@@ -49,7 +49,7 @@ def author(repo: Path, stem: str = STEM, depends: str = "none") -> None:
 
 def run(repo: Path, script: list) -> tuple[int, FakeLLM]:
     llm = FakeLLM(script)
-    code = main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm))
+    code = main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm))
     return code, llm
 
 
@@ -142,7 +142,7 @@ def test_an_engine_plane_refusal_exits_2_and_dispatches_nothing(repo, capsys):
 
 def test_an_unbuildable_provider_layer_refuses_with_exit_2(repo, capsys):
     author(repo)  # the test config's `fake` provider has no shipped cli adapter
-    code = main(["run", STEM], cwd=repo, env=ENV, clock=clock)
+    code = main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock)
 
     assert code == runner.EXIT_REFUSED
     assert "no shipped cli adapter" in capsys.readouterr().err

@@ -67,10 +67,11 @@ def test_drain_processes_only_this_repo(tmp_path, monkeypatch):
     monkeypatch.setattr(watch.os, "readlink", lambda path: str(tmp_path))
     monkeypatch.setattr(watch, "started", lambda ctx, pid: pid)
     rows = [
-        (30, 1, "/v/bin/python3 -m clutch --config config.yaml drain"),
-        (10, 1, "/v/bin/python3 -m clutch drain"),
-        (20, 1, "/v/bin/python3 -m clutch --config /elsewhere/config.yaml drain"),
-        (40, 1, "/v/bin/python3 -m clutch serve"),
+        (30, 1, "/v/bin/python3 -m clutch --config config.yaml engine drain"),
+        (10, 1, "/v/bin/python3 -m clutch engine drain"),
+        (20, 1, "/v/bin/python3 -m clutch --config /elsewhere/config.yaml engine drain"),
+        (40, 1, "/v/bin/python3 -m clutch engine serve"),
+        (50, 1, "/v/bin/python3 -m clutch drain"),
     ]
     assert watch.drain_processes(ctx, rows) == [10, 30]
 
@@ -305,7 +306,7 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
 
     declared = {item["command"] for item in json.loads(Path("vscode-clutchwork/package.json").read_text())["contributes"]["commands"]}
     assert all(entry.command in COMMANDS and entry.command in declared for entry in watch.MENU.values())
-    assert all(verb["detail"] == snap["help"]["verb." + verb["argv"][0]]["what"] for verb in snap["engineVerbs"])
+    assert all(verb["detail"] == snap["help"]["verb." + (verb["argv"][1] if verb["argv"][0] == "engine" else verb["argv"][0])]["what"] for verb in snap["engineVerbs"])
     assert any("on" in row["menu"].values() and "off" in row["menu"].values() for row in snap["rows"])
     for row in snap["rows"]:
         assert row["next"] == [COMMANDS[watch.MENU[key].command] for key, value in row["menu"].items() if value == "on"]
@@ -323,10 +324,10 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
     ]  # Both locations must be watched.
     assert len(snap["engineVerbs"]) == 6 and snap["engineVerbs"][0] == {
         "label": "Drain",
-        "detail": next(line.split("|")[3].strip().replace("`", "") for line in Path("clutch/docs/host-running.md").read_text().splitlines() if line.startswith("| `drain` |")),
-        "argv": ["drain", "--detach"],
+        "detail": next(line.split("|")[3].strip().replace("`", "") for line in Path("clutch/docs/host-running.md").read_text().splitlines() if line.startswith("| `engine drain` |")),
+        "argv": ["engine", "drain", "--detach"],
     }  # The menu must not be empty or reordered.
-    assert snap["drainCommand"] == ["drain", "--detach"]
+    assert snap["drainCommand"] == ["engine", "drain", "--detach"]
     assert rows["live"]["priorityChoices"] == [{"label": p, "description": "current" if p == "P1" else ""} for p in ("P0", "P1", "P2", "P3")]  # Only the actual priority is current.
     assert {item["heading"] for item in rows["done"]["detail"]} == {None, "Commit"}  # Merged rows do not show open fields.
     assert {"heading": None, "text": f"settled 2 days ago ({watch.local(ts).strftime('%x, %X')})"} in rows["done"]["detail"]  # Settlement uses its own timestamp.

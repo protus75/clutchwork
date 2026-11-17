@@ -112,7 +112,7 @@ class FixtureLoop:
 
     async def start(self):
         self.task = asyncio.create_task(
-            self.exec.run([sys.executable, "-m", "clutch", "serve"], cwd=self.root, env=self.env, timeout=self.timeout + 10, on_spawn=lambda pgid: setattr(self, "pgid", pgid))
+            self.exec.run([sys.executable, "-m", "clutch", "engine", "serve"], cwd=self.root, env=self.env, timeout=self.timeout + 10, on_spawn=lambda pgid: setattr(self, "pgid", pgid))
         )
         await self.until(lambda: (self.root / ".clutch/state/control/active.json").exists() and json.loads((self.root / ".clutch/state/control/active.json").read_bytes()) is not None)
 

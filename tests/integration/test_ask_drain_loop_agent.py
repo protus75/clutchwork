@@ -20,7 +20,7 @@ def test_prompt_delegates_recommendations(tmp_path):
         "clutch ticket review",
         "clutch suggest",
         "clutch roadmap status",
-        "clutch drain --detach",
+        "clutch engine drain --detach",
         "actor: operator",
         "--unattended",
         "release.publish",

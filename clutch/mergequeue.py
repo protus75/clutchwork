@@ -311,7 +311,7 @@ class MergeQueue:
                     rebasing = False
                     facts(stem, conflicts, hits)
                     message = f"rebase onto main refused: {exc.err.strip()}"
-                    road = f"re-run `run {stem}` so Implement re-branches from current main"
+                    road = f"re-run `engine run {stem}` so Implement re-branches from current main"
                     finding = self._finding(message, road) if conflict_ladder else Finding(code="post_rebase_regate", message=message, paved_road=road)
                     return refused([finding], elapsed())
                 except GitError:

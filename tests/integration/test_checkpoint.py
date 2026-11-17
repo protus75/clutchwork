@@ -470,7 +470,7 @@ def test_checkpoint_boundary_is_dormant(root, monkeypatch, verb):
     monkeypatch.setattr(Checkpoint, "poll", forbidden)
     monkeypatch.setattr(Git, "push", forbidden)
     write(root, "work", ticket())
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
     stages = Stages()
     assert cli.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=stages) == 0
     assert stages.calls == ["work"] and stages.lock_held == [True]

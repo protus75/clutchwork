@@ -28,7 +28,7 @@ def history(repo: Path):
 
 def invoke(repo: Path, script: list, verb: str = "run"):
     llm = FakeLLM(script)
-    argv = [verb, STEM] if verb == "run" else [verb]
+    argv = ["engine", verb, STEM] if verb == "run" else ["engine", verb]
     code = main(argv, cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
     return code, llm
 

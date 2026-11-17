@@ -29,7 +29,7 @@ Supervising:
 - Watch merges, holds, the Reject queue, the driver's roadmap_drive lines in ${state_dir}/engine.log, and the engine exiting.
 - On any failure, name the root cause in one sentence from the stem's artifacts before acting. Classify it as drift or not to set the window, and file the class-prevention change with `clutch suggest`.
 - A drain can exit right after starting, before any ticket runs, with a driver error in ${state_dir}/drain.out. Nothing unattended can recover: stop starting drains and report the error and roadmap row to the owner.
-- Driver authoring ahead can keep a drain from quiescing, so its between-drains Suggestion Box step can wait indefinitely. For a pending message whose cause wedges the engine or wastes runs, run `clutch stop` (the running ticket finishes first), take the message through that step, then restart the drain.
+- Driver authoring ahead can keep a drain from quiescing, so its between-drains Suggestion Box step can wait indefinitely. For a pending message whose cause wedges the engine or wastes runs, run `clutch engine stop` (the running ticket finishes first), take the message through that step, then restart the drain.
 - Keep a log the next tick reads, recording every action, verdict, and filing. End each reply with a Still open: list.
 
 Closing each phase:

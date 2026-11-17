@@ -273,7 +273,7 @@ def exercise_live_cli_kill(root, monkeypatch):
 
     monkeypatch.setattr(runner, "ProviderLLM", lambda *args, **kwargs: llm)
     monkeypatch.setattr(runner, "bind", composed_bind)
-    assert entry.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=runner.pipeline, reexec=NoChild()) == runner.EXIT_TICKET
+    assert entry.main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=runner.pipeline, reexec=NoChild()) == runner.EXIT_TICKET
     assert len(controls) == len(composed) == 1
     assert llm.calls == llm.aborts == llm.cancels == 1
     assert dispatch_cancelled == [False], "dispatch cancelled before composed executor abort"
@@ -309,7 +309,7 @@ def test_live_drain_kill_reaches_production_driver(root, monkeypatch, capsys, bi
     exercise_live_cli_kill(root, monkeypatch)
     output = capsys.readouterr().out
     assert "kill submitted: " in output and "drain stopped by kill" in output
-    assert "Continue with `clutch drain`." in output
+    assert "Continue with `clutch engine drain`." in output
 
 
 @pytest.mark.asyncio
@@ -771,7 +771,7 @@ def test_killed_run_is_terminal_or_restart_reconcilable(root, monkeypatch, termi
         assert last_states(producing)["work"] == "running"
         write(root, "next", confirmed())
         callback = Stages()
-        assert entry.main(["run", "next"], cwd=root, env=ENV, clock=c.clock, pipeline=callback) == 0
+        assert entry.main(["engine", "run", "next"], cwd=root, env=ENV, clock=c.clock, pipeline=callback) == 0
         events = c.journal.read()
         abandoned = next(e for e in events if e.ticket == "work" and e.body.get("to") == "abandoned")
         next_run = next(e for e in events if e.ticket == "next" and e.body.get("to") == "running")
@@ -830,7 +830,7 @@ def test_kill_activation_keeps_worker_boundaries_dormant(root, tmp_path, monkeyp
 
             return dispatch
 
-        args = [verb, stem] if verb == "run" else [verb]
+        args = ["engine", verb, stem] if verb == "run" else ["engine", verb]
         if verb == "run":
             with pytest.raises(AssertionError, match="worker boundary activated"):
                 entry.main(args, cwd=root, env=ENV, clock=Clock(), pipeline=wired)

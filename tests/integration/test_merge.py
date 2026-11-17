@@ -185,7 +185,7 @@ def test_bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb):
         from clutch.__main__ import main
         from tests.integration.test_drain_reentry import NoChild
 
-        assert main(["run", STEM] if verb == "run" else ["drain"], cwd=repo, env=ENV, clock=checkout.clock, pipeline=pipeline, reexec=NoChild()) == 0
+        assert main(["engine", "run", STEM] if verb == "run" else ["engine", "drain"], cwd=repo, env=ENV, clock=checkout.clock, pipeline=pipeline, reexec=NoChild()) == 0
     [(ctx, original_ticket, attempt)] = calls
     assert original_ticket.stem == ticket.stem and attempt == 0
     assert len(merged_events(ctx)) == 1
@@ -497,7 +497,7 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
         dispatch = runner.bind(checkout, ctx.driver.llm)
         return dispatch
 
-    assert main(["run", STEM], cwd=root, env=ENV, clock=ctx.driver.clock, pipeline=pipeline) == 0
+    assert main(["engine", "run", STEM], cwd=root, env=ENV, clock=ctx.driver.clock, pipeline=pipeline) == 0
     asyncio.run(evidence(*admissions.pop()))
 
     async def daemon():

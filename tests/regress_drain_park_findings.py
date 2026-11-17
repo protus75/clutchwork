@@ -26,7 +26,7 @@ def main() -> int:
             llm = FakeLLM([requisition("snag")])
             output = io.StringIO()
             with contextlib.redirect_stdout(output):
-                result = clutch_main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, llm))
+                result = clutch_main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, llm))
             terminal = [e.body for e in journal(root).read() if e.type == EventType.STATE_TRANSITION and e.ticket == "review-park"][-1]
             if result != 0 or terminal.get("stage") != "requisition" or not terminal.get("reason"):
                 raise RuntimeError("requisition park was not produced")

@@ -254,7 +254,10 @@ def test_storm_producer_hook_is_active(tmp_path, monkeypatch, admission_context,
         return "```json\n" + json.dumps(reply) + "\n```"
 
     llm = FakeLLM([report, verdict()])
-    assert cli.main([verb, STEM] if verb == "run" else [verb], cwd=source.repo, env=source.env, clock=source.driver.clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
+    assert (
+        cli.main(["engine", verb, STEM] if verb == "run" else ["engine", verb], cwd=source.repo, env=source.env, clock=source.driver.clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
+        == 0
+    )
     messages = Box(source.config.state_dir / "box", source.fs).messages()
     assert len(messages) == 1 and messages[0].summary == "ordinary production arrival"
     occurrences = [e for e in source.driver.journal.read() if e.body.get("kind") == "storm_occurrence"]

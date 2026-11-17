@@ -194,11 +194,11 @@ def this_repo(ctx, pid: int, config: str | None) -> bool:
 def drain_processes(ctx, rows: list[tuple[int, int, str]]) -> list[int]:
     """This repo's engine drain processes, oldest first; a self-upgrade re-exec leaves its parent waiting on the child.
 
-    Another host's drain also runs `python -m clutch --config <its config> drain` from this venv.
+    Another host's drain also runs `python -m clutch --config <its config> engine drain` from this venv.
     """
     pids = []
     for pid, _, args in rows:
-        match = re.match(r"\S*python3? -m clutch (?:--config (\S+) )?drain\b", args)
+        match = re.match(r"\S*python3? -m clutch (?:--config (\S+) )?engine drain\b", args)
         if match and this_repo(ctx, pid, match.group(1)):
             pids.append(pid)
     return sorted(pids, key=lambda pid: started(ctx, pid))
@@ -630,11 +630,11 @@ def extension_fields(root: Path) -> dict:
         "commands": {
             "review": ["ticket", "review"],
             "lint": ["ticket", "lint"],
-            "run": ["run"],
+            "run": ["engine", "run"],
             "triage": ["triage"],
             "dismiss": ["dismiss"],
-            "serve": ["serve"],
-            "stop": ["stop"],
+            "serve": ["engine", "serve"],
+            "stop": ["engine", "stop"],
             "order": ["ticket", "order"],
             "stats": ["stats", "--tree"],
             "askDiagnose": ["prompt", "diagnose"],
@@ -896,11 +896,11 @@ def snapshot(ctx) -> dict:
         "boxCounts": box_counts,
         "priorities": priorities,
         "watch": [{"base": str(ctx.root.resolve()), "glob": "tickets/*/ticket.md"}, {"base": str(state.resolve()), "glob": "{journal/*.jsonl,queue.json,engine.log,box/*.json}"}],
-        "drainCommand": ["drain", "--detach"],
+        "drainCommand": ["engine", "drain", "--detach"],
         "engineVerbs": [
-            {"label": "Drain", "detail": help["verb.drain"]["what"], "argv": ["drain", "--detach"]},
-            {"label": "Serve", "detail": help["verb.serve"]["what"], "argv": ["serve"]},
-            {"label": "Stop after the running ticket", "detail": help["verb.stop"]["what"], "argv": ["stop"]},
+            {"label": "Drain", "detail": help["verb.drain"]["what"], "argv": ["engine", "drain", "--detach"]},
+            {"label": "Serve", "detail": help["verb.serve"]["what"], "argv": ["engine", "serve"]},
+            {"label": "Stop after the running ticket", "detail": help["verb.stop"]["what"], "argv": ["engine", "stop"]},
             {"label": "Kill (drain or serve)", "detail": help["verb.kill"]["what"], "argv": ["kill"]},
             {"label": "Status", "detail": help["verb.status"]["what"], "argv": ["status"]},
             {"label": "Retro", "detail": help["verb.retro"]["what"], "argv": ["retro"]},

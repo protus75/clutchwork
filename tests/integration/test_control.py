@@ -407,13 +407,13 @@ def test_control_inbox_is_active(root, tmp_path, monkeypatch):
             patch.setattr(control.ControlInbox, "consume", forbidden)
             if verb == "drain":
                 with pytest.raises(AssertionError, match="control boundary"):
-                    cli(root, verb, stages=stages)
+                    cli(root, "engine", verb, stages=stages)
                 assert stages.calls == []
             else:
-                assert cli(root, verb, stem, stages=stages) == 0
+                assert cli(root, "engine", verb, stem, stages=stages) == 0
                 assert stages.calls == [stem] and stages.lock_held == [True]
         if verb == "drain":
-            assert cli(root, verb, stages=stages) == 0
+            assert cli(root, "engine", verb, stages=stages) == 0
             assert stages.calls == [stem] and stages.lock_held == [True]
     assert (root / ".clutch/state/control/active.json").read_bytes() == b"null\n"
     assert not any(e.body.get("kind") == control.CONTROL_DECISION for e in journal(root).read())

@@ -60,5 +60,5 @@ def test_drain_calls_driver_at_start_and_after_each_settle(tmp_path, monkeypatch
         calls.append((roadmap.settles(events), terminal[-1] if terminal else None, list(script.calls)))
 
     monkeypatch.setattr(cli, "build_driver", lambda: driver)
-    assert cli.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=script) == 0
+    assert cli.main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=script) == 0
     assert calls == ([(0, None, []), (1, "one", ["one"]), (2, "two", ["one", "two"])] if present else [])

@@ -323,7 +323,7 @@ def test_kill_worker_stop_is_dormant(root, tmp_path, monkeypatch, verb):
     dormant = daemon.WorkerStop(lifecycle_id="life", abort=probe, workers=())
     projection = ControlProjection("life", kill_requested=True)
     write(root, "work", ticket())
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
 
     def deliberate(checkout):
         async def dispatch(_):

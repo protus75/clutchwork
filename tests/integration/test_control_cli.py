@@ -67,7 +67,7 @@ def invoke(root, verb):
     def forbidden(_):
         pytest.fail("control constructed a pipeline")
 
-    return entry.main([verb], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden)
+    return entry.main((["engine", verb] if verb == "stop" else [verb]), cwd=root, env=ENV, clock=Clock(), pipeline=forbidden)
 
 
 def acquire(root):
@@ -198,7 +198,7 @@ def test_pause_resume_apply_directly_under_lock(root, monkeypatch, capsys, verb,
         return consumer
 
     monkeypatch.setattr(entry, "build_control", build)
-    assert entry.main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=stages) == 0
+    assert entry.main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(), pipeline=stages) == 0
     assert stages.calls == ["work"] and stages.lock_held == [True]
     assert len(lifecycles) == 1 and lifecycles[0] != "old-life"
     assert (state / "control/active.json").read_bytes() == b"null\n"

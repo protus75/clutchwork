@@ -19,12 +19,12 @@ from tests.fakes import FakeJournal
 def test_drain_heads_name_the_drain_verb():
     for report in (Report(killed=True), Report(halted="12h elapsed")):
         text = report.render()
-        assert "Continue with `clutch drain`." in text
+        assert "Continue with `clutch engine drain`." in text
         assert "python -m clutch" not in text
 
 
 def test_missing_ticket_road_names_clutch_verbs():
-    assert run_admission("item", [], False, None).paved_road == "author it with `clutch ticket new item`, fill it, then `clutch run item`"
+    assert run_admission("item", [], False, None).paved_road == "author it with `clutch ticket new item`, fill it, then `clutch engine run item`"
 
 
 def test_unknown_box_id_carries_a_road():
@@ -44,8 +44,8 @@ def test_enqueue_errors_name_a_repair():
 
 
 def test_login_roads_name_the_drain_verb():
-    assert ClaudeAdapter.LOGIN_ROAD == "run claude interactively and complete /login, then `clutch drain`"
-    assert CodexAdapter.LOGIN_ROAD == "run codex login, then `clutch drain`"
+    assert ClaudeAdapter.LOGIN_ROAD == "run claude interactively and complete /login, then `clutch engine drain`"
+    assert CodexAdapter.LOGIN_ROAD == "run codex login, then `clutch engine drain`"
 
 
 @pytest.mark.parametrize("exception", [False, True])

@@ -14,7 +14,9 @@ from tests.integration.test_config import VALID
 def prompts(tmp_path):
     (tmp_path / "config.yaml").write_text(VALID.replace("state_dir: .clutch", "state_dir: custom/state"))
     config = load_config(None, cwd=tmp_path)
-    return {kind: ask.render(kind, "" if kind == "plan-ticket-drain" else "unique-stem", config, tmp_path) for kind in ("plan-ticket-drain", "author", "review")}
+    return {
+        kind: ask.render(kind, "" if kind in ("plan-ticket-drain", "drain-loop") else "unique-stem", config, tmp_path) for kind in ("plan-ticket-drain", "author", "review", "drain-loop", "running")
+    }
 
 
 def test_plan_ticket_drain_prompt_content(prompts):
@@ -51,7 +53,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "clutch prompt review",
         "never hold",
         "clutch roadmap status",
-        "clutch stop",
+        "clutch engine stop",
         "roadmap_drive",
         "custom/state/engine.log",
         "custom/state/drain.out",
@@ -126,16 +128,14 @@ def test_prompts_carry_no_session_facts(prompts):
 def test_prompts_name_only_existing_verbs(prompts):
     parser = entry._parser()
     commands = next(a.choices for a in parser._actions if isinstance(a, argparse._SubParsersAction))
-    roadmap = next(a.choices for a in commands["roadmap"]._actions if isinstance(a, argparse._SubParsersAction))
+    groups = {name: action.choices for name, parser in commands.items() for action in parser._actions if isinstance(action, argparse._SubParsersAction)}
     for text in prompts.values():
         matches = re.findall(r"`clutch ([a-z-]+)(?: ([a-z-]+))?", text)
         assert matches
         for first, second in matches:
             assert first in commands
-            if first == "prompt" and second:
-                assert second in ask.KINDS
-            if first == "roadmap" and second:
-                assert second in roadmap
+            if first in groups and second:
+                assert second in groups[first]
 
 
 def test_docs_list_new_prompt_kinds():

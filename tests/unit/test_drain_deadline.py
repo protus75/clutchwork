@@ -21,6 +21,6 @@ def test_drain_computes_its_deadline_when_none_is_carried():
 
 
 def test_drain_parser_reads_a_carried_deadline():
-    args = _parser().parse_args(["drain", "--deadline", "2026-01-01T02:00:00+00:00"])
+    args = _parser().parse_args(["engine", "drain", "--deadline", "2026-01-01T02:00:00+00:00"])
     assert args.deadline == datetime(2026, 1, 1, 2, tzinfo=UTC)  # Dropping or retaining the string differs.
-    assert _parser().parse_args(["drain"]).deadline is None  # Omission must not invent a deadline.
+    assert _parser().parse_args(["engine", "drain"]).deadline is None  # Omission must not invent a deadline.

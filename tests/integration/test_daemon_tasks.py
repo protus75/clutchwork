@@ -330,7 +330,7 @@ def test_background_consumers_are_dormant(root, tmp_path, monkeypatch, verb):
     if verb == "drain":
         config = root / "config.yaml"
         config.write_text(config.read_text() + "\nretro: {enabled: false}\n")
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
 
     def deliberately_run(checkout):
         async def dispatch(_):

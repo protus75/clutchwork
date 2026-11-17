@@ -59,9 +59,9 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `ticket new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
 | `ticket order <stem> [--priority P0\|P1\|P2\|P3] [--runs-before [stem ...]]` | no | Validates and edits priority and/or runs-before ordering in the working tree; a bare `--runs-before` removes the section. Refuses a running ticket while an engine is live, and settled, rejected, missing or invalid tickets. An interrupted run with no live engine is editable. Intake commits the edit. |
 | `ticket review <stem>` | commit only | Only the named ticket's pending changes are committed through intake first; other pending tickets are left untouched. Reviews the committed ticket against merged code and journals its verdict and ticket blob SHA. A ticket with an unmerged dependency gets a provisional review that is printed but not journaled, so the drain reviews it again before its first run. Refuses missing, intake-failed, settled, or rejected tickets without a model call. Prints findings and exits 0 on approve, 1 on snag or rma. |
-| `run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
-| `drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
-| `serve` | yes | Runs the continuous daemon until `kill`, `stop`, or a signal (section 7.2). |
+| `engine run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
+| `engine drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
+| `engine serve` | yes | Runs the continuous daemon until `kill`, `stop`, or a signal (section 7.2). |
 | `retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
 | `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
 | `issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
@@ -79,7 +79,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `prompt drafts` | no | Print an assessment prompt for all committed drafts awaiting a verdict. |
 | `prompt author <stem>` | no | Print the hand-authoring prompt for one ticket from its roadmap row or a request; the ticket need not exist yet. |
 | `prompt plan-ticket-drain` | no | Print the kickoff prompt that runs the roadmap to completion unattended, authoring its rows as tickets and draining them, without writing state. |
-| `pause` / `resume` / `kill` / `stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `kill` and `stop` refuse (exit 2); `pause`/`resume` print "nothing running". |
+| `pause` / `resume` / `kill` / `engine stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `kill` and `stop` refuse (exit 2); `pause`/`resume` print "nothing running". |
 | `confirm <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to keep (or uses `--yes` to skip the prompt): promotes a draft to confirmed, keeps a Reject-queue item (section 6.6). Same-content repeat keeps are refused for command-line confirms; the extension uses `--extension` to allow them. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 | `reject <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to kill (or uses `--yes` or `--extension` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 
@@ -137,7 +137,7 @@ Frontmatter fields that drive behavior:
 
 ### 3.2 Intake
 
-`drain` and `serve` intake every pending ticket; `ticket review`, `run`, `confirm`, and `reject` intake only the named stem, including before verdict handoff to a running engine:
+`engine drain` and `engine serve` intake every pending ticket; `ticket review`, `engine run`, `confirm`, and `reject` intake only the named stem, including before verdict handoff to a running engine:
 
 - It reads status, checks for stray staged paths, and commits under one `commit.lock` hold.
 - It finds new or modified `tickets/<stem>/ticket.md` files in the working tree (`git status`).
@@ -588,7 +588,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
   calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch publish` upload receives it as `UV_PUBLISH_TOKEN`.
-- **Preflight** (start of `run`/`drain`/`serve`/`triage`/`ticket review`, and standalone `retro` with a merge to report): checks each CLI's version against its
+- **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`triage`/`ticket review`, and standalone `retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch install <provider>`.
 
@@ -706,7 +706,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
 | `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
 | `dist/` | Wheel and sdist last built by `clutch publish`; `uv build --clear` empties it on each publish. |
-| `drain.out` | Output appended by `drain --detach`. |
+| `drain.out` | Output appended by `engine drain --detach`. |
 | `coverage-map.json` | Written by `covmap` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
 | `spools/` | Per-attempt prompts, outputs, and command output. |
@@ -778,7 +778,7 @@ The block carries only process rules that hold for every host; codebase rules be
   the block is replaced. Project text outside the block is the host's, but a paragraph that
   tells clutch how to run (for example "clutch must ...") is refused.
 - The `core_drift` gate fails a ticket when a routed conduct file's block is not current.
-- `serve`, `drain` and `run` refuse to start when a committed routed conduct block is stale; `doctor` reports this as a `core` row.
+- `engine serve`, `engine drain` and `engine run` refuse to start when a committed routed conduct block is stale; `doctor` reports this as a `core` row.
 - `doctor` checks a host's setup without changing anything.
 - The `clutch.testreport` pytest plugin accepts `--clutch-results PATH` and writes JSON with
   `schema_version: 2`, a `tests` map from pytest node IDs to `passed`, `failed`, or `skipped`,

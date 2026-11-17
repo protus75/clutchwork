@@ -294,7 +294,7 @@ def test_storm_activation_does_not_hold_dispatch_or_notify(tmp_path, monkeypatch
             return consumer
 
         monkeypatch.setattr(cli, "build_control", build)
-    assert cli.main([verb, "one"] if verb == "run" else [verb], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=NoChild()) == 0
+    assert cli.main(["engine", verb, "one"] if verb == "run" else ["engine", verb], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=NoChild()) == 0
     assert script.calls == (["one"] if verb == "run" else ["unrelated", "one"])
     assert script.lock_held == [True] * len(script.calls)
     assert len(trips(journal)) == 1
@@ -602,7 +602,7 @@ def test_production_startup_recovers_without_new_arrival(admission_context, star
     else:
         if startup == "run":
             asyncio.run(ready(ctx, "one"))
-        assert cli.main([startup, "one"] if startup == "run" else [startup], cwd=ctx.repo, env=ctx.env, clock=clock, pipeline=Script(), reexec=NoChild()) == 0
+        assert cli.main(["engine", startup, "one"] if startup == "run" else ["engine", startup], cwd=ctx.repo, env=ctx.env, clock=clock, pipeline=Script(), reexec=NoChild()) == 0
         journal = Journal(ctx.config.state_dir, clock)
     assert len(trips(journal)) == 1
     reports = Box(ctx.config.state_dir / "box", ctx.fs).messages()

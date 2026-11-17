@@ -146,5 +146,5 @@ def test_every_locked_verb_reaps(stopped, monkeypatch):
         invoke(stopped, "ticket", "review", "stale")
     assert calls == []
     for verb in ("kill", "stop", "pause", "resume"):
-        invoke(stopped, verb)
+        invoke(stopped, *(["engine", verb] if verb == "stop" else [verb]))
         assert calls == []

@@ -23,8 +23,8 @@ def main() -> int:
             spawn = Mock(return_value=4242)
             try:
                 with contextlib.redirect_stdout(io.StringIO()):
-                    _parser().parse_args(["drain", "--detach"])
-                    result = clutch_main(["drain", "--detach"], cwd=root, env=ENV, spawn=spawn)
+                    _parser().parse_args(["engine", "drain", "--detach"])
+                    result = clutch_main(["engine", "drain", "--detach"], cwd=root, env=ENV, spawn=spawn)
                 defect = result != 0 or spawn.call_count != 1
             except SystemExit:
                 defect = True

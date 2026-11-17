@@ -88,7 +88,7 @@ def root(tmp_path: Path) -> Path:
 
 
 def drain(root: Path, script: Script, clock: Clock | None = None) -> int:
-    return main(["drain"], cwd=root, env=ENV, clock=clock or Clock(START), pipeline=script)
+    return main(["engine", "drain"], cwd=root, env=ENV, clock=clock or Clock(START), pipeline=script)
 
 
 def journal(root: Path) -> Journal:
@@ -149,7 +149,7 @@ def test_already_satisfied_settles_without_diagnosis(rework_repo):
         writers.append(writer)
         return writer
 
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind) == 0
     assert [r.surface for r in llm.requests] == ["implement"]
     events = Journal(repo / ".clutch/state", clock).read()
     history = [e for e in events if e.ticket == STEM]
@@ -171,7 +171,7 @@ def test_requisition_park_reports_full_reason_under_park_line(root, capsys):
     artifact = root / "tickets/review-park/review.md"
     artifact.write_text("existing detail")
     llm = FakeLLM([requisition("snag")])
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=lambda c: runner.bind(c, llm)) == 0
     output = capsys.readouterr().out
     terminal = [e.body for e in journal(root).read() if e.type == EventType.STATE_TRANSITION and e.ticket == "review-park"][-1]
     reason = terminal["reason"]
@@ -444,7 +444,7 @@ def test_the_runtime_ceiling_stops_the_next_dispatch_and_exits_1(root, capsys):
     assert tos(root, "bbb-second") == []
     out = capsys.readouterr().out
     assert CEILING in out and "HALTED" in out and "quiescent:" not in out
-    assert "Continue with `clutch drain`." in out
+    assert "Continue with `clutch engine drain`." in out
     assert "bbb-second" in out.split("eligible, not admitted:\n", 1)[1].split("\n\n", 1)[0]
     halts = [e.body for e in journal(root).read() if e.type == EventType.SIGNAL and e.body.get("signal") == HALT_SIGNAL]
     assert halts == [{"signal": HALT_SIGNAL, "ceiling": CEILING, "hours": 12, "merged": ["aaa-first"]}]
@@ -608,7 +608,7 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
     else:
         script = [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), json.dumps({"verdict": "split", "lessons": ["Narrow the work."]})]
     llm = FakeLLM([*script, update, requisition(), agent({"clutch/thing.py": "ok\n"}), verdict()])
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
     events = Journal(repo / ".clutch/state", clock).read()
     history = [e for e in events if e.ticket == STEM]
     terminals = [e for e in history if e.type == EventType.STATE_TRANSITION and e.body.get("to") != "running"]
@@ -690,7 +690,7 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
 
         return dispatch
 
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind) == 0
     assert returns == [(STEM, "rejected"), ("piece-one", "already_satisfied"), ("piece-two", "already_satisfied"), ("dependent", "already_satisfied")]
     events = Journal(repo / ".clutch/state", clock).read()
     history = [e for e in events if e.ticket == STEM]
@@ -798,7 +798,7 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
 
     from tests.integration.test_drain_reentry import NoChild
 
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind, reexec=NoChild()) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind, reexec=NoChild()) == 0
     events = Journal(repo / ".clutch/state", clock).read()
     original = [e for e in events if e.ticket == STEM]
     producing = next(e for e in original if e.body.get("to") == "premise_failed")
@@ -1281,7 +1281,7 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
             return code
 
     child = Child()
-    assert main(["drain"], cwd=root, env=ENV, clock=clock, pipeline=runner.pipeline, reexec=child if scenario == "self-upgrade" else NoChild()) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=clock, pipeline=runner.pipeline, reexec=child if scenario == "self-upgrade" else NoChild()) == 0
     assert child.spawns == (1 if scenario == "self-upgrade" else 0)
     assert invocations[0] == (False, [])
     if scenario in {"not-due", "phase"}:
@@ -1318,7 +1318,7 @@ def test_diff_budget_failure_holds_until_ticket_changes(root, capsys):
 
         return with_retro_driver(checkout, dispatch)
 
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
     assert calls == ["work"]
     assert not machine_keeps(root, "work")
     assert "diff budget" in capsys.readouterr().out
@@ -1330,7 +1330,7 @@ def test_diff_budget_failure_holds_until_ticket_changes(root, capsys):
     assert asyncio.run(run._between_tickets())  # An unrouted budget failure also ends the retry cycle.
     commit_ticket(root, "work", confirmed().replace("returns ok.", "returns revised ok."))
     assert not asyncio.run(run._between_tickets())
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
     assert calls == ["work", "work"]
 
 
@@ -1347,7 +1347,7 @@ def test_other_gate_failure_is_still_reoffered(root):
 
         return with_retro_driver(checkout, dispatch)
 
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
     assert calls == ["work", "work"]
 
 
@@ -1398,7 +1398,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
 
     monkeypatch.setattr(stages, "implement", implement)
     llm = FakeLLM([agent({"clutch/thing.py": "ok\n"})])
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     events = Journal(repo / ".clutch/state", clock).read()
     assert [r.surface for r in llm.requests] == ["implement"]
     assert not any(e.type == EventType.CAP_CONSUMED for e in events)
@@ -1412,7 +1412,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     assert finding["paved_road"] == (f"review the change to tickets/{STEM}/ticket.md, then keep (`clutch confirm {STEM}`) or kill (`clutch reject {STEM}`)")
     assert not (repo / f"tickets/{STEM}/checks.json").exists()
     # Even a subsequent intake/daemon lifetime must wait for an explicit keep.
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     assert len(llm.requests) == 1
     monkeypatch.setattr(stages, "implement", original)
     assert main(["confirm", STEM], cwd=repo, env=ENV, clock=clock, terminal=(lambda: True, lambda _: "y")) == 0
@@ -1422,7 +1422,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     fresh = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
     from tests.integration.test_drain_reentry import NoChild
 
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, fresh), reexec=NoChild()) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, fresh), reexec=NoChild()) == 0
     assert [r.surface for r in fresh.requests] == ["implement", "review"]
     assert STEM not in reject_queue(Journal(repo / ".clutch/state", clock).read())
 
@@ -1445,7 +1445,7 @@ def test_engine_artifacts_do_not_trigger(rework_repo):
     repo = rework_repo
     author(repo)
     llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild()) == 0
     events = Journal(repo / ".clutch/state", clock).read()
     assert [r.surface for r in llm.requests] == ["implement", "review"]
     assert [e.body["to"] for e in events if e.type == EventType.STATE_TRANSITION][-1] == "merged"

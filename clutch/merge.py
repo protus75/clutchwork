@@ -114,7 +114,7 @@ class ApprovalGate:
 
     def check(self, artifact: Candidate, workspace: Path) -> GateReport:
         path = f"{TICKETS_DIR}/{artifact.stem}/review.md"
-        road = f"re-run `run {artifact.stem}` so Review approves the current branch head"
+        road = f"re-run `engine run {artifact.stem}` so Review approves the current branch head"
         if artifact.review_text is None:
             return self._fail(path, "no review.md on main", road)
         try:

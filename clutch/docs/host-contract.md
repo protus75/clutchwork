@@ -125,7 +125,7 @@ inventory sends a ticket that would lower a threshold to a human.
 5. Run `clutch doctor` and `clutch probe` to check the setup and providers; see the [run guide](host-running.md).
 6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
 7. Author the first ticket with `clutch ticket new`, then run `clutch ticket lint` and `clutch ticket review`; see the [run guide](host-running.md).
-8. Run the ticket with `clutch drain` or `clutch serve`; see the [run guide](host-running.md).
+8. Run the ticket with `clutch engine drain` or `clutch engine serve`; see the [run guide](host-running.md).
 9. Confirm the ticket merged on main with `clutch status`; see the [run guide](host-running.md).
 
 ## Operating facts
@@ -404,7 +404,7 @@ executors are separate; abort targets the executor that spawned active work.
 ## Instance custody
 
 ONE instance writes a host repo line. Stable is a PyPI release pinned as a host dev dependency (see [Install](#install)); dev uses its own disposable checkout, worktree root and state dir,
-with checkpoint push disabled. Instances share only remotes. Upgrade or roll back by changing the pin, running `uv sync`, and restarting. A git-checkout engine running `serve`
+with checkpoint push disabled. Instances share only remotes. Upgrade or roll back by changing the pin, running `uv sync`, and restarting. A git-checkout engine running `engine serve`
 restarts itself when its `clutch/` tree changes.
 `<state_dir>/clutch.lock` uses advisory flock before writes and records instance_id,
 pid, host, state_dir, started_at and verb. The verb determines whether the holder consumes control requests. Kernel release on

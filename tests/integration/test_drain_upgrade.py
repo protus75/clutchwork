@@ -71,7 +71,7 @@ class Child:
             free = True
         last = journal(self.root).read()[-1]
         self.spawns.append({"argv": list(argv), "cwd": cwd, "env": env, "lock_free": free, "last_event": last})
-        assert list(argv[:8]) == reexec_argv(["drain"])
+        assert list(argv[:9]) == reexec_argv(["engine", "drain"])
         self.script.process = f"child{len(self.spawns)}"
         # `uv run python -m clutch <args>` -> the module entry's own argv; a thread, as asyncio.run cannot nest.
         rc = await asyncio.to_thread(main, list(argv[7:]), cwd=self.root, env=ENV, clock=self.clock, pipeline=self.script, reexec=self)
@@ -114,7 +114,7 @@ def order(monkeypatch) -> list[str]:
 def drain(root: Path, script: Script, order: list[str], clock: Clock | None = None) -> tuple[int, Child]:
     clock = clock or Clock()
     child = Child(root, script, order, clock)
-    return main(["drain"], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=child), child
+    return main(["engine", "drain"], cwd=root, env=ENV, clock=clock, pipeline=script, reexec=child), child
 
 
 # --- the self-upgrade handoff --------------------------------------------------------------------
@@ -134,7 +134,7 @@ def test_a_self_upgrading_admission_hands_off_before_the_next_dispatch(tmp_path,
     # The parent spends the retry before the upgrade; `after` runs in the child.
     assert script.calls == [("parent", "red"), ("parent", "red"), ("parent", "upgrade"), ("child1", "after")]
     (spawn,) = child.spawns
-    assert spawn["argv"] == ["uv", "run", "--project", str(root.resolve()), "python", "-m", "clutch", "drain", "--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]
+    assert spawn["argv"] == ["uv", "run", "--project", str(root.resolve()), "python", "-m", "clutch", "engine", "drain", "--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]
     assert spawn["cwd"] == root and spawn["env"] == ENV
     assert spawn["lock_free"]
     # The HANDOFF ORDER (section 18), then nothing in the parent after its child exits.
@@ -161,7 +161,7 @@ def test_the_carried_parked_set_rides_every_handoff_in_the_chain(tmp_path, order
     code, child = drain(root, script, order)
 
     assert code == 0
-    assert [s["argv"][8:] for s in child.spawns] == [["--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]] * 2
+    assert [s["argv"][9:] for s in child.spawns] == [["--parked", "red", "--deadline", "2026-01-01T12:00:00+00:00"]] * 2
     assert script.calls == [("parent", "red"), ("parent", "red"), ("parent", "one"), ("child1", "two")]
     # One awaiting parent per self-upgrading admission; each exits with its child's code.
     assert order.count("spawn") == 2 and order[-2:] == ["exit 0", "exit 0"]

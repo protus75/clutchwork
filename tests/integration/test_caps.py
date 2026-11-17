@@ -75,7 +75,7 @@ def test_attempts_cap_routes_to_reject_queue(repo, monkeypatch, capsys, outcome)
 
     monkeypatch.setattr(runner, "run_stages", stage_seam)
     llm = FakeLLM([])
-    assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     events = j.read()
     assert llm.requests == []
     assert failed_attempts(events, STEM) == 5
@@ -203,7 +203,7 @@ def test_retry_rung_is_rejected_on_other_caps_and_operator_keep_resets_it(repo):
 def test_crashing_implement_draws_infra_immediately_before_terminal(repo):
     author(repo)
     llm = FakeLLM([RuntimeError("provider crashed"), diagnosis_reply()])
-    assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == runner.EXIT_TICKET
+    assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == runner.EXIT_TICKET
     assert [request.surface for request in llm.requests if request.surface != "diagnose"] == ["implement"]
     events = [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
     terminal = next(i for i, e in enumerate(events) if e.type == EventType.STATE_TRANSITION and e.body.get("to") == "infra_error")
@@ -228,7 +228,7 @@ def test_other_terminals_draw_only_when_infra(repo, monkeypatch, outcome, expect
         return StagesRun(attempt=0, results={"implement": StageResult(outcome=outcome, artifact=None, findings=[], cost=Cost())})
 
     monkeypatch.setattr(runner, "run_stages", stage_seam)
-    assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, FakeLLM([]))) == runner.EXIT_TICKET
+    assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, FakeLLM([]))) == runner.EXIT_TICKET
     events = [e for e in Journal(repo / ".clutch" / "state", clock).read() if e.ticket == STEM]
     assert events[-1].body == {"to": outcome, "stage": "implement", "reason": outcome, "dispatch": "reject_queue", "routed": "reject_queue"}
     assert draws(events, STEM, "infra") == expected_draws

@@ -86,7 +86,7 @@ class Serve:
         prepare=runner.prepare_pipeline,
         signals: Callable | None = None,
         failure: Callable[[BaseException], None] | None = None,
-        argv=("serve",),
+        argv=("engine", "serve"),
         reexec=None,
     ) -> None:
         from clutch.__main__ import build_daemon_core, build_driver, build_notifications
@@ -703,7 +703,7 @@ async def serve(
     prepare=runner.prepare_pipeline,
     signals: Callable | None = None,
     failure: Callable[[BaseException], None] | None = None,
-    argv=("serve",),
+    argv=("engine", "serve"),
     reexec=None,
 ) -> int:
     from clutch.__main__ import build_serve

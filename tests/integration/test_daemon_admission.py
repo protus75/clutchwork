@@ -250,7 +250,7 @@ def test_daemon_admission_is_dormant(root, monkeypatch, verb):
 
     calls = []
     write(root, "work", ticket())
-    argv = ["run", "work"] if verb == "run" else ["drain"]
+    argv = ["engine", "run", "work"] if verb == "run" else ["engine", "drain"]
     if verb == "run":
         with pytest.raises(AssertionError, match="daemon dispatch wired"):
             main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=wired)

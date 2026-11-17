@@ -80,7 +80,7 @@ def test_snag_parks_before_implement(tmp_path):
     assert parked_blob(events, "gate") == sha
     from clutch.__main__ import main
 
-    assert main(["drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     assert [r.surface for r in llm.requests] == ["requisition_review"]
 
 
@@ -118,7 +118,7 @@ def test_edit_releases_and_reviews_the_new_content(tmp_path):
     assert parked_blob(checkout.journal.read(), "gate") != sha
     from clutch.__main__ import main
 
-    assert main(["drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["engine", "drain"], cwd=root, env=ENV, clock=checkout.clock, pipeline=lambda c: runner.bind(c, llm)) == 0
     assert [r.surface for r in llm.requests] == ["requisition_review", "requisition_review", "implement", "rework"]
     blocks = [r.rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0] for r in llm.requests[:2]]
     assert blocks[0] == FIRST_REVIEW

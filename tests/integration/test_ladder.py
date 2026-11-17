@@ -52,7 +52,7 @@ def terminals(repo):
 
 def run_drain(repo, script):
     llm = FakeLLM(script)
-    code = main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
+    code = main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
     assert code == 0
     return llm
 
@@ -191,7 +191,7 @@ def test_operator_confirm_resets_effective_rung(repo):
 
     def run_one(script):
         llm = FakeLLM(script)
-        assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
+        assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
         return llm
 
     run_one([agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("escalate")])
@@ -233,7 +233,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
     if failure != "review":
         script.append(requisition())
     llm = FakeLLM(script)
-    assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
+    assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
     history = events(repo)
     (producing,) = terminals(repo)
     expected = {"to": "gate_failed", "stage": "review", "reason": "logic"}
@@ -257,7 +257,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
 
             return forbidden
 
-        assert main(["drain"], cwd=repo, env=ENV, clock=clock, pipeline=pipeline, reexec=NoChild()) == 0
+        assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=pipeline, reexec=NoChild()) == 0
         assert [e for e in j.read() if e.body.get("signal") == "ticket_intake"] == before
         assert git(repo, "status", "--porcelain") == ""
     else:
@@ -304,7 +304,7 @@ def test_rework_escalation_preserves_starting_capability_and_caps(repo, action):
         llm = run_drain(repo, script)
     else:
         llm = FakeLLM(script)
-        assert main(["run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
+        assert main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm)) == 1
     terminal = terminals(repo)[0]
     if action == "exhausted":
         assert terminal["dispatch"] == terminal["routed"] == "reject_queue" and "rung" not in terminal
