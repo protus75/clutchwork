@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f377058dc5275f5acd17dc9a388724ae16d80bec",
+  "stem": "checkpoint-counts-settled",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket premise is false: tests/harness/daemon_soak.py:533 requires 'journal age rotation missing' evidence (>=2 segments), and the checkpoint-push timer/completion was the soak's only append after the 24h boundary. Removing it fails the soak while the ticket says 'Nothing else changes in this file'.",
+    "Rewrite the daemon_soak.py scope bullet so the quiet member's recurring step itself journals one valid event after the 24h advance, keeping the rotation check at line 533 and its test in tests/integration/test_daemon_soak_runner.py.",
+    "The ticket names no event type the soak may append for rotation; the rewrite must name one that production code already writes, so the harness does not invent a fake event.",
+    "Implementation of the other fenced files passed in the failed attempt (checkpoint, serve_lifecycle, daemon_composition tests green); after the ticket is fixed, redo that work from the merge base, since no diff survives."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
