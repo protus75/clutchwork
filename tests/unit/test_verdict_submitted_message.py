@@ -17,4 +17,4 @@ def test_verdict_submitted_names_the_clutch_verb(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(entry, "uuid4", lambda: SimpleNamespace(hex=request_id))
 
     asyncio.run(entry._verdict(checkout, "sample", "confirm", Mock(), True, False))
-    assert capsys.readouterr().out.splitlines()[-1] == f"confirm submitted: {request_id} -- `clutch status` shows the outcome"
+    assert capsys.readouterr().out.splitlines()[-1] == f"confirm submitted: {request_id} -- `clutch view status` shows the outcome"

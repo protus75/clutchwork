@@ -415,7 +415,7 @@ def text_snapshot(ctx) -> str:
     log = read_lines(state / "engine.log", 4000) if (state / "engine.log").exists() else []
     rows = processes(ctx)
     drains = drain_processes(ctx, rows)
-    lines = [f"clutch watch  {datetime.now().astimezone().strftime('%-I:%M:%S %p')}", ""]
+    lines = [f"clutch view watch  {datetime.now().astimezone().strftime('%-I:%M:%S %p')}", ""]
     if not drains:
         lines.append("Drain: not running")
         since = None
@@ -637,7 +637,7 @@ def extension_fields(root: Path) -> dict:
             "serve": ["engine", "serve"],
             "stop": ["engine", "stop"],
             "order": ["ticket", "order"],
-            "stats": ["stats", "--tree"],
+            "stats": ["view", "stats", "--tree"],
             "askDiagnose": ["prompt", "diagnose"],
             "askReview": ["prompt", "review"],
             "askDrafts": ["prompt", "drafts"],
@@ -903,7 +903,7 @@ def snapshot(ctx) -> dict:
             {"label": "Serve", "detail": help["verb.serve"]["what"], "argv": ["engine", "serve"]},
             {"label": "Stop after the running ticket", "detail": help["verb.stop"]["what"], "argv": ["engine", "stop"]},
             {"label": "Kill (drain or serve)", "detail": help["verb.kill"]["what"], "argv": ["engine", "kill"]},
-            {"label": "Status", "detail": help["verb.status"]["what"], "argv": ["status"]},
+            {"label": "Status", "detail": help["verb.status"]["what"], "argv": ["view", "status"]},
             {"label": "Retro", "detail": help["verb.retro"]["what"], "argv": ["engine", "retro"]},
         ],
         "counts": counts,

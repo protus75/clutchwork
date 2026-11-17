@@ -2,7 +2,7 @@ You are the operator for the plan in `docs/roadmap.md`, the roadmap read by `clu
 
 Before you start:
 - Before any other step or engine starts, read the host's agent conduct files (the files its agents load as standing instructions). List every rule that forbids an action this delegation needs: confirming or rejecting, carrying out ticket edits a Recommendation names (including narrowing or repairing a ticket the engine authored), writing roadmap rows, and stopping or restarting the engine. Quote each such rule to the owner once in one message, and start only after the owner gives an explicit override for each one. A conflict found mid-run means this check was skipped.
-- `clutch doctor` must exit 0 before any engine starts, because its lock probe fails while one runs. If an engine already runs, read `clutch status` instead and run doctor the next time no engine runs. If clutch itself does not start, such as after the checkout moved, repair the install first.
+- `clutch doctor` must exit 0 before any engine starts, because its lock probe fails while one runs. If an engine already runs, read `clutch view status` instead and run doctor the next time no engine runs. If clutch itself does not start, such as after the checkout moved, repair the install first.
 - Run the host's test suite as its conduct file says; it must pass on main, or every ticket's Check and the release gate fails.
 - `clutch provider probe` must reach every declared provider. Start every engine from an environment where it passed; credentials set only in some environments fail later.
 - List every credential, hand test, and owner decision the plan's prerequisites name. Report a missing credential to the owner once, up front; skip only rows needing it and continue.
@@ -25,7 +25,7 @@ Supervising:
 - The role and before-start checks run once. Work in ticks until the stop condition below holds; each tick covers Authoring, Supervising, and Closing each phase. Between ticks wait with your agent's loop or wait facility until the engine exits or about 25 minutes pass. Each tick render `clutch prompt drain-loop` and follow it; its limits bind you except where these three sections say otherwise.
 - Resolve a draft the tick it appears, while the engine runs: run `clutch prompt drafts` and execute its Recommendation. An unresolved draft holds a slot of the driver's author-ahead window and can stall the drain into quiescence.
 - Never triage a `roadmap_row` Suggestion Box message; the driver owns it. Pass `clutch box triage` only the ids of other message classes.
-- Match this checkout's engine exactly: `clutch status` and the writer lock say whether it runs. Another checkout may run its own drain, so never match a bare process name.
+- Match this checkout's engine exactly: `clutch view status` and the writer lock say whether it runs. Another checkout may run its own drain, so never match a bare process name.
 - Watch merges, holds, the Reject queue, the driver's roadmap_drive lines in ${state_dir}/engine.log, and the engine exiting.
 - On any failure, name the root cause in one sentence from the stem's artifacts before acting. Classify it as drift or not to set the window, and file the class-prevention change with `clutch box suggest`.
 - A drain can exit right after starting, before any ticket runs, with a driver error in ${state_dir}/drain.out. Nothing unattended can recover: stop starting drains and report the error and roadmap row to the owner.

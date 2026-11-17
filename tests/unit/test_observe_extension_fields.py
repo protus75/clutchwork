@@ -13,7 +13,7 @@ def test_extension_fields(tmp_path):
             "serve": ["engine", "serve"],
             "stop": ["engine", "stop"],
             "order": ["ticket", "order"],
-            "stats": ["stats", "--tree"],
+            "stats": ["view", "stats", "--tree"],
             "askDiagnose": ["prompt", "diagnose"],
             "askReview": ["prompt", "review"],
             "askDrafts": ["prompt", "drafts"],

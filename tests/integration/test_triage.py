@@ -602,7 +602,7 @@ def test_selected_triage_and_unknown_refusal(tmp_path, monkeypatch, capsys):
     assert len(llm.requests) == 1  # Only the selected message calls the model.
     before = events(root)
     assert main(["box", "triage", first, "unknown"], cwd=root, env=ENV, clock=Clock()) == 2
-    assert "unknown box id unknown -- name ids that clutch status lists" in capsys.readouterr().err
+    assert "unknown box id unknown -- name ids that clutch view status lists" in capsys.readouterr().err
     assert events(root) == before and len(llm.requests) == 1 and box.get(first).status == "pending"  # Refusal precedes the signal and model call.
 
 

@@ -39,10 +39,10 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 
 | Verb | Lock | What it does |
 |---|---|---|
-| `watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
-| `snapshot` | no | Prints the extension snapshot as JSON, including the absolute state directory and `configPath` for the resolved configuration file. |
-| `status` | no | Prints the journal projection (section 10.3). Read-only. |
-| `stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
+| `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
+| `view snapshot` | no | Prints the extension snapshot as JSON, including the absolute state directory and `configPath` for the resolved configuration file. |
+| `view status` | no | Prints the journal projection (section 10.3). Read-only. |
+| `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
 | `covmap` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `covgate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
@@ -111,7 +111,7 @@ The Marketplace refuses a version it already holds.
 SCM-style graph (blocked, queued, running, merged) with a detail pane. A line between ticket rows means a dependency; merged rows show their history line. Running and queued rows show their priority. Its Activity Bar badge shows the queued and running ticket count while the engine is alive, or the blocked and queued count while it is stopped, and is hidden when the count is zero. The Tickets view's More Actions
 menu holds Ticket lifecycle, which opens `vscode-clutchwork/media/ticket-lifecycle.svg`, a hand-drawn diagram of ticket states, and Ask Claude: drain loop, which opens a Claude Code chat with `prompt drain-loop`.
 Every verb-backed menu item is on exactly when its verb’s admission function admits the row, through the closed table in `clutch/observe.py`; an admitted action that needs the writer lock is locked while a holder is alive. Confirm and Reject use the shared verdict predicate without lock gating. The Ask items are extension-only.
-The Tickets view’s play button and Engine… picker start drain detached. The picker also runs serve, stop, kill, status, or retro. Its start/stop icon follows the snapshot engine flag, which is true only while a drain or serve holds the lock; `clutch.playAction` selects drain or serve for starting. Open config.yaml, also in More Actions, opens the snapshot’s `configPath`. Recent Steps row kinds are the closed vocabulary `STEP_KINDS` in `clutch/observe.py`, and a test fails until each step in it has its own icon. Recent Steps opens a step’s file when it exists; an Author row opens its Suggestion Box message, authored ticket, or decision record. The collapsed Stats view shows health figures for the window configured by `clutch.statsWindow` (default `7d`). The Suggestion Box view lists messages, supports multi-selection and manual triage or dismissal, and shows message details alongside tickets. `clutch snapshot` builds its data read-only from the configured host state and `order_tickets`, holding tickets awaiting an operator and those held by the drain's `parked_blob` rule; `clutch/graph.py` computes the graph layout for the extension to draw. The engine never runs the extension.
+The Tickets view’s play button and Engine… picker start drain detached. The picker also runs serve, stop, kill, status, or retro. Its start/stop icon follows the snapshot engine flag, which is true only while a drain or serve holds the lock; `clutch.playAction` selects drain or serve for starting. Open config.yaml, also in More Actions, opens the snapshot’s `configPath`. Recent Steps row kinds are the closed vocabulary `STEP_KINDS` in `clutch/observe.py`, and a test fails until each step in it has its own icon. Recent Steps opens a step’s file when it exists; an Author row opens its Suggestion Box message, authored ticket, or decision record. The collapsed Stats view shows health figures for the window configured by `clutch.statsWindow` (default `7d`). The Suggestion Box view lists messages, supports multi-selection and manual triage or dismissal, and shows message details alongside tickets. `clutch view snapshot` builds its data read-only from the configured host state and `order_tickets`, holding tickets awaiting an operator and those held by the drain's `parked_blob` rule; `clutch/graph.py` computes the graph layout for the extension to draw. The engine never runs the extension.
 
 The `clutch.command` setting supplies the command and arguments the extension runs the engine with; its default is `.venv/bin/clutch`, resolved from the workspace folder.
 
@@ -425,7 +425,7 @@ Supervisor mode supplies a `supervise` trigger and diagnosis lessons and permits
 Keep and kill work while serve runs.
 
 The Reject queue holds stems whose latest terminal was routed there, plus stems the drain finds
-with a spent cap at quiescence. `status` lists them.
+with a spent cap at quiescence. `view status` lists them.
 Settled stems (`merged` and `already_satisfied`) never await a verdict, even when a historical
 terminal carries a Reject routing marker. `ticket reject` refuses settled stems.
 
@@ -458,7 +458,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
   practice only eval runs reach it.
 - **Reconcile:** whenever a verb other than pause, resume, kill or stop takes the writer lock, any stem still marked `running`
   (or with an unfinished effect) is reaped: harvested, journaled `abandoned`, worktree removed.
-  A stem with a `HELD` merge-queue receipt for its current attempt is not reaped, nor is a stem whose only unfinished effects are standalone review `llm/review-<stem>/` calls. `abandoned` stems stay eligible. With no engine running, `status` shows such a stem as interrupted, `ticket reject`
+  A stem with a `HELD` merge-queue receipt for its current attempt is not reaped, nor is a stem whose only unfinished effects are standalone review `llm/review-<stem>/` calls. `abandoned` stems stay eligible. With no engine running, `view status` shows such a stem as interrupted, `ticket reject`
   reaps and rejects it, and `ticket order` treats it as open.
 - **Flaky tests:** Check quarantines unedited fail-then-pass tests and releases them after a merged fix and a passing observation. Edited flakes and cap-blocked flakes fail Check.
 
@@ -476,7 +476,7 @@ A dispatch exception is journaled as an `infra_error` terminal, re-offered, and 
    after the ticket naming them, with priority P0-P3, authored age, then stem breaking ties.
    Edges to ineligible stems never block a pick. Skipped: storm-held, drought-parked, Reject-queue stems without budget, and tickets
    whose `stuck` exceeds `drain.max_ticket_minutes` (default 90).
-   Each pick records this order and its hints in `queue.json`; `watch` displays it.
+   Each pick records this order and its hints in `queue.json`; `view watch` displays it.
 4. **Quiescence:** when nothing is eligible, it re-offers parked stems with budget (drawing
    `retry`, subject to the exclusions in section 6.6), and stops when nothing changes.
 5. **Report:** merged, parked (with reasons and the command to continue), blocked on depends,
@@ -637,7 +637,7 @@ times; each call is spooled under `state_dir/spools/`.
 ### 8.5 Spend and redaction
 
 - Spend is the sum of each call's journaled cost (the stream's reported USD, else the provider's
-  `est_cost_per_call_usd`). `status` prints the total.
+  `est_cost_per_call_usd`). `view status` prints the total.
 - Configured secret values are replaced with `[REDACTED:NAME]` in spools, the engine log,
   the evidence store's blobs, notifications, retro reports, and harvests (`attempts/<n>/harvest.json`). The journal itself is not scrubbed; model
   results are scrubbed before they are journaled.
@@ -734,9 +734,9 @@ An **Effect** is an action keyed so it happens once: a key with a recorded compl
 the recorded result instead of acting again. Model calls, ticket-plane commits, merges, pushes,
 and notifications are Effects, so a crash never repeats one.
 
-### 10.3 `status`
+### 10.3 `view status`
 
-`status` is a write-free projection of the journal:
+`view status` is a write-free projection of the journal:
 
 1. The merged count, and stems in flight, interrupted (last `running` with no live engine), or blocked (last state neither `running`, settled, nor rejected).
 2. Intake and verdict refusals for stems not settled or rejected, and reopens for unresolved messages.

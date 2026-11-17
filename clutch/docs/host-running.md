@@ -11,10 +11,10 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
-| `watch` | Yes | Show the live text view; `--once` prints one view. |
-| `snapshot` | Yes | Print the extension snapshot as JSON. |
-| `status` | Yes | Show the journal projection. |
-| `stats` | Yes | Show the read-only health and efficiency projection. |
+| `view watch` | Yes | Show the live text view; `--once` prints one view. |
+| `view snapshot` | Yes | Print the extension snapshot as JSON. |
+| `view status` | Yes | Show the journal projection. |
+| `view stats` | Yes | Show the read-only health and efficiency projection. |
 | `ticket lint` | Yes | Validate tickets without writing. |
 | `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `engine calibrate` | Yes | Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |

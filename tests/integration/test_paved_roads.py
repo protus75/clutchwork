@@ -51,7 +51,7 @@ def test_box_reads_name_a_repair(tmp_path):
     box.resolve(id, Resolution(kind="ticket", link="done"))
     with pytest.raises(BoxError) as exc:
         box.resolve(id, Resolution(kind="ticket", link="done"))
-    assert str(exc.value) == f"box id {id} is already resolved; its resolution stands and `clutch status` shows it"
+    assert str(exc.value) == f"box id {id} is already resolved; its resolution stands and `clutch view status` shows it"
     decisions = tmp_path / "tickets" / "decisions"
     decisions.mkdir(parents=True)
     (decisions / "b.md").write_text("body only")

@@ -4,7 +4,7 @@ Limits:
 - Write only under tickets/<your stems>/ and a scratch directory of your own outside the checkout. Never edit code, docs, specs, config, conduct files, or another ticket.
 - Run no git verb that writes. Never run `clutch engine drain`, `clutch engine run`, `clutch engine serve`, `clutch ticket confirm`, `clutch ticket reject`, `clutch box triage`, `clutch box dismiss`, `clutch engine stop`, or `clutch engine kill`.
 - The ticket review verb commits your ticket through intake; that is the only commit you cause.
-- A running drain's intake commits any edited ticket it sees. Edit a copy in your scratch directory and replace the ticket file in one write. Before each write, once every stem in its Depends on has merged, run `clutch status` and stop if the stem is in flight.
+- A running drain's intake commits any edited ticket it sees. Edit a copy in your scratch directory and replace the ticket file in one write. Before each write, once every stem in its Depends on has merged, run `clutch view status` and stop if the stem is in flight.
 - Second problems go to `clutch box suggest`, never into the ticket. A cause fix is always filed, never authored.
 - If review fails with a provider error, drought, or rate limit (not a verdict), wait about two minutes and retry, up to 3 times.
 

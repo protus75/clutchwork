@@ -411,7 +411,7 @@ class Box:
     def resolve(self, id: str, resolution: Resolution) -> None:
         message = self.get(id)
         if message.status == "resolved":
-            raise BoxError(f"box id {id} is already resolved; its resolution stands and `clutch status` shows it")
+            raise BoxError(f"box id {id} is already resolved; its resolution stands and `clutch view status` shows it")
         self._write(message.model_copy(update={"status": "resolved", "resolution": resolution}))
 
 

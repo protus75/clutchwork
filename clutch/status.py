@@ -153,7 +153,7 @@ def lint_admission(stem, events, file_exists):
 def _box_admission(id, messages):
     message = next((m for m in messages if m.id == id), None)
     if message is None:
-        return Admission("refuse", f"unknown box id {id}", "name ids that `clutch status` lists")
+        return Admission("refuse", f"unknown box id {id}", "name ids that `clutch view status` lists")
     if message.resolution is not None:
         return Admission("noop", f"{id}: already resolved -> {message.resolution.link}")
     return Admission("admit")

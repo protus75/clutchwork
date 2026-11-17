@@ -59,7 +59,7 @@ engine_plane_safety_inventory: [config.yaml, clutch/specs/, clutch/gates.py]
 
 ## VS Code extension
 
-[Install clutch](#install), and install `vscode-clutchwork` from the VS Code Marketplace (in Cursor and VSCodium, use Install from VSIX). The `vscode-clutchwork` extension activates in a workspace containing `tickets/` and uses the first such folder. Set the resource-scoped `clutch.command` array to the host invocation, for example `["scripts/clutch"]`; its default is `[".venv/bin/clutch"]`, resolved relative to the workspace folder. The extension calls `snapshot` for its read-only view and watches the returned state directory. `clutch watch [--once]` provides the same host observation as text. Both verbs work while the engine holds its lock.
+[Install clutch](#install), and install `vscode-clutchwork` from the VS Code Marketplace (in Cursor and VSCodium, use Install from VSIX). The `vscode-clutchwork` extension activates in a workspace containing `tickets/` and uses the first such folder. Set the resource-scoped `clutch.command` array to the host invocation, for example `["scripts/clutch"]`; its default is `[".venv/bin/clutch"]`, resolved relative to the workspace folder. The extension calls `view snapshot` for its read-only view and watches the returned state directory. `clutch view watch [--once]` provides the same host observation as text. Both verbs work while the engine holds its lock.
 
 The Help command lists help topics, and hover help explains extension surfaces.
 
@@ -126,7 +126,7 @@ inventory sends a ticket that would lower a threshold to a human.
 6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
 7. Author the first ticket with `clutch ticket new`, then run `clutch ticket lint` and `clutch ticket review`; see the [run guide](host-running.md).
 8. Run the ticket with `clutch engine drain` or `clutch engine serve`; see the [run guide](host-running.md).
-9. Confirm the ticket merged on main with `clutch status`; see the [run guide](host-running.md).
+9. Confirm the ticket merged on main with `clutch view status`; see the [run guide](host-running.md).
 
 ## Operating facts
 

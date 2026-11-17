@@ -62,11 +62,11 @@ def test_cli_json_refusal_and_no_write(tmp_path, capsys):
     journal = Journal(root / ".clutch/state", clock)
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
     before = {p: p.read_bytes() for p in journal.dir.glob("*")}
-    assert main(["stats", "--json"], cwd=root, env=ENV, clock=clock) == 0
+    assert main(["view", "stats", "--json"], cwd=root, env=ENV, clock=clock) == 0
     assert list(json.loads(capsys.readouterr().out)) == ["window", "throughput", "durations", "verification", "cycles", "ladder", "failures", "holds", "spend"]
     assert {p: p.read_bytes() for p in journal.dir.glob("*")} == before
-    assert main(["stats", "--window", "0d"], cwd=root, env=ENV, clock=clock) == 2
-    assert capsys.readouterr().err == "clutch stats: bad window 0d -- use <N>h, <N>d, or <N>t\n"
+    assert main(["view", "stats", "--window", "0d"], cwd=root, env=ENV, clock=clock) == 2
+    assert capsys.readouterr().err == "clutch view: bad window 0d -- use <N>h, <N>d, or <N>t\n"
 
 
 def test_stats_tree_generic_rows():
@@ -100,7 +100,7 @@ def test_cli_tree_json(tmp_path, capsys):
     clock = Clock()
     journal = Journal(root / ".clutch/state", clock)
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
-    assert main(["stats", "--tree", "--window", "3h"], cwd=root, env=ENV, clock=clock) == 0
+    assert main(["view", "stats", "--tree", "--window", "3h"], cwd=root, env=ENV, clock=clock) == 0
     rows = json.loads(capsys.readouterr().out)
     # Tree output must use the requested window and preserve projected throughput.
     assert rows[0]["label"] == f"window 3h · {(clock() - timedelta(hours=3)).isoformat()}"

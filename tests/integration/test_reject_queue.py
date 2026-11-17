@@ -53,7 +53,7 @@ def test_two_premise_terminals_draw_and_route_after_cap(repo, capsys):
     assert draws(events, STEM, "premise_bounce") == 2
     assert sum(e.type == EventType.CAP_CONSUMED and e.body.get("cap") == "premise_bounce" for e in events[: terminals[0][0]]) == 1
     assert terminals[-1][1].body["routed"] == "reject_queue"
-    assert main(["status"], cwd=repo, env=ENV, clock=clock) == 0
+    assert main(["view", "status"], cwd=repo, env=ENV, clock=clock) == 0
     assert f"Reject queue:\n- {STEM}: premise_failed" in capsys.readouterr().out
 
 

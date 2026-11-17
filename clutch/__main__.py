@@ -304,10 +304,59 @@ def _parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="clutch", usage="%(prog)s [-h] [--config CONFIG] <command> ...", description="Host guides: clutch docs")
     ap.add_argument("--config", type=Path, help="config path (default: config.yaml at the checkout root)")
     sub = ap.add_subparsers(dest="verb", required=True, metavar="<command>")
-    sub.add_parser("watch", help="read-only live engine view").add_argument("--once", action="store_true")
-    sub.add_parser("snapshot", help="read-only JSON snapshot")
-    sub.add_parser("status", help="project current state from the journal (read-only)")
-    stats = sub.add_parser("stats", help="project journal health over a window (read-only)")
+    view = sub.add_parser(
+        "view",
+        help="show read-only engine views",
+        description="Show read-only views of engine state.",
+        epilog="Examples:\nclutch view status\n  Show the journal projection.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    view_sub = view.add_subparsers(dest="view_verb", required=True)
+    watch = _command(
+        view_sub,
+        "watch",
+        summary="read-only live engine view",
+        does="Print a live text view of configured host state, refreshing every three seconds until Ctrl-C; --once prints one view.",
+        reads="Config, journal, engine log, tickets, git state and process list.",
+        writes="Nothing.",
+        lock="None; works while an engine holds the writer lock.",
+        exits="0 when stopped or printed; 2 on refusal.",
+        examples=["clutch view watch", "clutch view watch --once"],
+    )
+    watch.add_argument("--once", action="store_true")
+    _command(
+        view_sub,
+        "snapshot",
+        summary="read-only JSON snapshot",
+        does="Print the extension snapshot as JSON, including the absolute state directory and resolved config path.",
+        reads="Config, journal, engine log, lockfiles, box, tickets and git state.",
+        writes="Nothing.",
+        lock="None.",
+        exits="0 when printed; 2 on refusal.",
+        examples=["clutch view snapshot"],
+    )
+    _command(
+        view_sub,
+        "status",
+        summary="project current state from the journal (read-only)",
+        does="Print the journal projection of section 10.3.",
+        reads="Config, journal, box, retro spec, HEAD and committed checks records.",
+        writes="Nothing.",
+        lock="None.",
+        exits="0 when printed; 2 on refusal.",
+        examples=["clutch view status"],
+    )
+    stats = _command(
+        view_sub,
+        "stats",
+        summary="project journal health over a window (read-only)",
+        does="Print a health and efficiency projection over a time or ticket window; --json prints JSON and --tree the extension's tree.",
+        reads="Config, journal, tickets and committed checks records.",
+        writes="Nothing.",
+        lock="None.",
+        exits="0 when printed; 2 on refusal (a bad window).",
+        examples=["clutch view stats", "clutch view stats --window 3d --json"],
+    )
     stats.add_argument("--window", default="7d")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
@@ -1026,7 +1075,7 @@ def main(
         from clutch import observe
 
         context = _observe_context(repo, config, args.config, exec_, checkout.git, env)
-        if args.verb == "snapshot":
+        if args.view_verb == "snapshot":
             print(json.dumps(observe.snapshot(context)))
         elif args.once:
             print(observe.text_snapshot(context))
@@ -1047,7 +1096,7 @@ def main(
         try:
             window_start(events, now, args.window)
         except ValueError as exc:
-            return _fail("stats", str(exc))
+            return _fail(args.verb, str(exc))
         result = asyncio.run(_stats(checkout, events, now, args.window))
         print(json.dumps(stats_tree(result) if args.tree else result) if args.tree or args.json else render_stats(result), end="\n" if args.tree or args.json else "")
         return 0
@@ -1299,10 +1348,7 @@ def main(
         "core": handle_core,
         "prompt": handle_prompt,
         "covmap": handle_covmap,
-        "snapshot": handle_watch,
-        "watch": handle_watch,
-        "stats": handle_stats,
-        "status": handle_status,
+        "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status}[args.view_verb](),
         "roadmap": handle_roadmap,
         "release": handle_release,
         "publish": handle_publish,
@@ -1345,7 +1391,10 @@ def main(
             exec_=exec_,
             git=Git(
                 exec_,
-                env={**child_env(env, config), **({"GIT_OPTIONAL_LOCKS": "0"} if args.verb in {"watch", "snapshot"} or (args.verb == "ticket" and args.ticket_verb == "lint") else {})},
+                env={
+                    **child_env(env, config),
+                    **({"GIT_OPTIONAL_LOCKS": "0"} if (args.verb == "view" and args.view_verb in {"watch", "snapshot"}) or (args.verb == "ticket" and args.ticket_verb == "lint") else {}),
+                },
                 timeout=GIT_TIMEOUT_S,
                 commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep),
             ),
@@ -1359,7 +1408,7 @@ def main(
                 raise runner.Refusal("; ".join(messages), f"run clutch core, then commit the conduct files and retry engine {args.engine_verb}")
         return handlers[args.verb]()
     except UnknownBoxId as e:
-        return _fail(args.verb, f"{e} -- name ids that clutch status lists")
+        return _fail(args.verb, f"{e} -- name ids that clutch view status lists")
     except (ConfigError, runner.Refusal, LockHeld, CommitLockTimeout, IntakeRefused, JournalCorruption, ProviderSetupError, ExecutableNotFound, hostfiles.MarkerCorruption) as e:
         path = "engine retro" if args.verb == "engine" and args.engine_verb == "retro" else args.verb
         road = f" -- repair the selected config and retry {path}" if path in {"engine retro", "covmap"} and isinstance(e, ConfigError) else ""
@@ -1669,7 +1718,7 @@ async def _verdict(checkout, stem, verb, read_input, yes, extension):
         return await runner.verdict(stem, checkout, kill=verb == "reject", extension=extension)
     except LockHeld as exc:
         request = await _submit_engine(checkout, exc, verb, stem=stem, extension=extension)
-    print(f"{verb} submitted: {request.request_id} -- `clutch status` shows the outcome")
+    print(f"{verb} submitted: {request.request_id} -- `clutch view status` shows the outcome")
     return 0
 
 

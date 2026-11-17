@@ -63,7 +63,7 @@ def test_status_surfaces_confirmed_class_tombstones(tmp_path, monkeypatch, capsy
     assert status.tombstones == tuple((m.id, m.message_class, 0) for m in box.messages()[:2])
     output = render(status)
     assert all(id in output for id in ids)  # The box includes classes excluded from confirmed tombstones.
-    assert main(["status"], cwd=root, env=ENV, clock=clock) == 0
+    assert main(["view", "status"], cwd=root, env=ENV, clock=clock) == 0
     assert capsys.readouterr().out == output
     assert {p: p.read_bytes() for p in root.rglob("*") if p.is_file()} == before
     monkeypatch.undo()
@@ -159,7 +159,7 @@ def test_status_production_provenance(tmp_path, monkeypatch, capsys):
         return result
 
     monkeypatch.setattr(cli, "project", capture)
-    assert main(["status"], cwd=c.repo, env=ENV, clock=c.clock) == 0
+    assert main(["view", "status"], cwd=c.repo, env=ENV, clock=c.clock) == 0
     output = capsys.readouterr().out
     assert output == render(projected[0])
     assert dict(projected[0].provenance) == expected
@@ -229,10 +229,10 @@ def test_status_preserves_sections_and_is_write_free(tmp_path, monkeypatch, caps
         return await git_run(git, repo, *args)
 
     monkeypatch.setattr(Git, "_run", read_only)
-    assert main(["status"], cwd=c.repo, env=ENV, clock=c.clock, pipeline=forbidden) == 0
+    assert main(["view", "status"], cwd=c.repo, env=ENV, clock=c.clock, pipeline=forbidden) == 0
     first = capsys.readouterr().out
     assert first.split("\n\ncurrent-window scorecard:")[0] + "\n" == legacy
-    assert main(["status"], cwd=c.repo, env=ENV, clock=c.clock, pipeline=forbidden) == 0
+    assert main(["view", "status"], cwd=c.repo, env=ENV, clock=c.clock, pipeline=forbidden) == 0
     assert capsys.readouterr().out == first
     assert {p: p.read_bytes() for p in c.repo.rglob("*") if p.is_file()} == before
 
@@ -260,8 +260,8 @@ def test_corrupt_box_does_not_receive_unknown_id_advice(tmp_path, capsys):
     folder.mkdir(parents=True)
     (folder / "corrupt.json").write_text("{}")
     with pytest.raises(BoxError, match="invalid box file"):
-        main(["status"], cwd=root, env=ENV, clock=Clock())
-    assert "name ids that clutch status lists" not in capsys.readouterr().err
+        main(["view", "status"], cwd=root, env=ENV, clock=Clock())
+    assert "name ids that clutch view status lists" not in capsys.readouterr().err
 
 
 def test_stale_verdict_is_visible_in_status_and_snapshot(tmp_path):

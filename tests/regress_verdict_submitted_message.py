@@ -36,7 +36,7 @@ def main() -> int:
         lines = output.getvalue().splitlines()
         if not lines or " submitted: " not in lines[-1]:
             raise AssertionError(f"no submitted line: {lines!r}")
-        if lines[-1] != f"confirm submitted: {request_id} -- `clutch status` shows the outcome":
+        if lines[-1] != f"confirm submitted: {request_id} -- `clutch view status` shows the outcome":
             print(json.dumps({"regression_result": "defect"}))
             return 1
     except BaseException:

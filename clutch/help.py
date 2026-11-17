@@ -75,7 +75,7 @@ for _verb in ("drain", "serve", "stop", "kill", "status", "retro", "review", "li
         if _verb in {"drain", "serve", "stop", "run", "kill", "retro"}
         else f"box {_verb}"
         if _verb in {"triage", "dismiss"}
-        else _verb,
+        else f"view {_verb}",
     )
 
 _add(

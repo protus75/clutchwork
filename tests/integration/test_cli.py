@@ -282,7 +282,7 @@ def test_order_takes_no_lock(root):
 
 
 def test_status_on_an_empty_journal(root, capsys):
-    assert cli(root, "status") == 0
+    assert cli(root, "view", "status") == 0
     out = capsys.readouterr().out
     for heading in ("merged", "in flight", "blocked", "intake", "spend"):
         assert heading in out
@@ -303,7 +303,7 @@ def test_status_projects_the_journal(root, capsys):
     j.append(EventType.SIGNAL, {"signal": "ticket_intake", "source": "human", "state": "confirmed", "new": True, "commit": "abc123"}, ticket="d")
     before = sorted(p.read_bytes() for p in (root / ".clutch").rglob("*") if p.is_file())
 
-    assert cli(root, "status") == 0
+    assert cli(root, "view", "status") == 0
     out = capsys.readouterr().out
     section = dict(block.split("\n", 1) for block in out.strip().split("\n\n"))
     assert section["merged:"] == "1"
@@ -320,9 +320,9 @@ def test_status_is_deterministic(root, capsys):
     j = journal(root)
     for stem in ("z", "a", "m"):
         j.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=stem)
-    cli(root, "status")
+    cli(root, "view", "status")
     first = capsys.readouterr().out
-    cli(root, "status")
+    cli(root, "view", "status")
     assert capsys.readouterr().out == first
     assert "merged:\n3\n" in first
     assert "- merged tickets: 3\n" in first
@@ -356,7 +356,7 @@ def test_status_escape_projection(tmp_path, monkeypatch, capsys):
         assert text.split("| Surface |")[1] == receipt.split("| Surface |")[1]
         assert "| review | 1 | 0 | 1 | 0 | 0.0000 | 1.0000 | false |" in text
     assert c.journal.read() == before
-    assert main(["status"], cwd=c.repo, env=ENV, clock=c.clock) == 0
+    assert main(["view", "status"], cwd=c.repo, env=ENV, clock=c.clock) == 0
     output = capsys.readouterr().out
     assert output.split("| Surface |")[1] == text.split("| Surface |")[1]
     assert c.journal.read() == before
@@ -461,7 +461,7 @@ def test_run_refused_before_the_lock_when_the_pipeline_refuses(root, capsys):
 
 def test_config_error_exits_2(root, capsys):
     (root / "config.yaml").write_text("schema_version: 1\n")
-    assert cli(root, "status") == 2
+    assert cli(root, "view", "status") == 2
     assert "config.yaml" in capsys.readouterr().err
 
 
@@ -470,7 +470,7 @@ def test_config_error_exits_2(root, capsys):
 
 def test_python_dash_m_clutch_is_the_entry(root):
     env = {**ENV, "PYTHONPATH": str(Path(__file__).resolve().parents[2])}
-    proc = subprocess.run([sys.executable, "-m", "clutch", "status"], cwd=root, env=env, capture_output=True, text=True)
+    proc = subprocess.run([sys.executable, "-m", "clutch", "view", "status"], cwd=root, env=env, capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr
     assert "merged:" in proc.stdout
     proc = subprocess.run([sys.executable, "-m", "clutch", "bogus"], cwd=root, env=env, capture_output=True, text=True)

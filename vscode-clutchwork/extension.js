@@ -100,7 +100,7 @@ class Snapshot {
 			return;
 		}
 		this.running = true;
-		runData(root, ['snapshot'], { timeout: 30000, maxBuffer: 64 * 1024 * 1024 }, (err, stdout, stderr) => {
+		runData(root, ['view', 'snapshot'], { timeout: 30000, maxBuffer: 64 * 1024 * 1024 }, (err, stdout, stderr) => {
 			this.running = false;
 			if (err) {
 				this.publish(this.snap, (stderr || err.message).trim());

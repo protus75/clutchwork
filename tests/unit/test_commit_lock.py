@@ -177,6 +177,6 @@ def test_cli_handles_timeout(monkeypatch, capsys):
     from clutch import __main__
 
     monkeypatch.setattr(__main__, "load_config", lambda *args, **kwargs: (_ for _ in ()).throw(CommitLockTimeout(Path("/state/commit.lock"), {"pid": 729})))
-    assert __main__.main(["status"], cwd=Path("/repo"), env={}, clock=lambda: datetime.now(UTC)) == 2
+    assert __main__.main(["view", "status"], cwd=Path("/repo"), env={}, clock=lambda: datetime.now(UTC)) == 2
     output = capsys.readouterr()
     assert "729" in output.err and "Traceback" not in output.err

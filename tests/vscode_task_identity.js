@@ -31,7 +31,7 @@ const load = Module._load;
 Module._load = function (request, parent, isMain) {
 	if (request === 'vscode') return vscode;
 	if (request === 'child_process') return { execFile(binary, args, options, callback) {
-		if (args[0] === 'snapshot') callback(null, JSON.stringify({ root, commands: { review: ['review'], lint: ['lint'] }, orderFlags: {} }), '');
+		if (args.join(' ') === 'view snapshot') callback(null, JSON.stringify({ root, commands: { review: ['review'], lint: ['lint'] }, orderFlags: {} }), '');
 	} };
 	return load.call(this, request, parent, isMain);
 };

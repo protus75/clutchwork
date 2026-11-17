@@ -52,12 +52,12 @@ def test_order_beside_dead_run(stopped, monkeypatch, capsys):
 
 
 def test_status_shows_interrupted(stopped, monkeypatch, capsys):
-    assert invoke(stopped, "status") == 0
+    assert invoke(stopped, "view", "status") == 0
     sections = dict(block.split("\n", 1) for block in capsys.readouterr().out.strip().split("\n\n"))
     assert "- stale" in sections["interrupted (the engine stopped mid-run; reject it, or start the engine to rerun it):"]
     assert "stale" not in sections["in flight:"]
     monkeypatch.setattr(observe, "lock_holder", lambda _, *args: object())
-    assert invoke(stopped, "status") == 0
+    assert invoke(stopped, "view", "status") == 0
     assert "in flight:\n- stale" in capsys.readouterr().out
 
 

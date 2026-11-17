@@ -9,4 +9,4 @@ def test_extension_argv_from_snapshot():
     assert "--priority" not in source
     assert "--runs-before" not in source
     assert "snap.root" in source
-    assert source.count("['snapshot']") == 1
+    assert source.count("['view', 'snapshot']") == 1

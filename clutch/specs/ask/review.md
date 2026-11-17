@@ -1,4 +1,4 @@
-Audit clutch ticket `${stem}` against the merged code and the other open tickets. Read ${ticket}, the ticket authoring guide that `clutch docs` names, every file the ticket names, and every confirmed, unmerged ticket under tickets/ that fences a file this ticket fences or shares an interface with it; `clutch status` lists the queue.
+Audit clutch ticket `${stem}` against the merged code and the other open tickets. Read ${ticket}, the ticket authoring guide that `clutch docs` names, every file the ticket names, and every confirmed, unmerged ticket under tickets/ that fences a file this ticket fences or shares an interface with it; `clutch view status` lists the queue.
 
 The ticket may already pass `clutch ticket lint` and `clutch ticket review`. Find what they missed: anything that would make its run park, fail Check, waste a run, or deliver the wrong thing. Report only problems you verified, each with its evidence (a path::Name, heading, or command output). Do not praise.
 

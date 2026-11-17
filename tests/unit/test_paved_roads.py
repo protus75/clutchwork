@@ -29,7 +29,7 @@ def test_missing_ticket_road_names_clutch_verbs():
 
 def test_unknown_box_id_carries_a_road():
     for admission in (triage_admission("missing", []), dismiss_admission("missing", [])):
-        assert (admission.outcome, admission.message, admission.paved_road) == ("refuse", "unknown box id missing", "name ids that `clutch status` lists")
+        assert (admission.outcome, admission.message, admission.paved_road) == ("refuse", "unknown box id missing", "name ids that `clutch view status` lists")
 
 
 def test_enqueue_errors_name_a_repair():

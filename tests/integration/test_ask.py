@@ -72,7 +72,7 @@ def test_box_prompt_names_requested_files(config, tmp_path, capsys):
 
 def test_box_prompt_unknown_id_refuses(config, tmp_path, capsys):
     assert main(["prompt", "box", "missing-id"], cwd=tmp_path) == 2
-    assert "unknown box id missing-id -- name ids that clutch status lists" in capsys.readouterr().err
+    assert "unknown box id missing-id -- name ids that clutch view status lists" in capsys.readouterr().err
 
 
 def test_drafts_prompt_selects_committed_drafts(tmp_path, capsys):
