@@ -47,11 +47,13 @@ def test_real_roadmap_gate_blocks():
         ("uv", "run", "clutch", "roadmap", "merged", "docs-truth-sweep", "evidence-envelope"),
         ("uv", "run", "clutch", "roadmap", "merged", "--since", f"v{first}", "--at-least", "3", "--source", "box:roadmap_row", "--unattended"),
         ("./dev.py", "test"),
+        ("uv", "run", "clutch", "roadmap", "accept", first),
     )
     for release in releases - {first}:
-        assert blocks[release] == (("uv", "run", "clutch", "roadmap", "merged", "--release", release), ("./dev.py", "test"))
-    for commands in blocks.values():
-        assert commands[-1] == ("./dev.py", "test")
+        assert blocks[release] == (("uv", "run", "clutch", "roadmap", "merged", "--release", release), ("./dev.py", "test"), ("uv", "run", "clutch", "roadmap", "accept", release))
+    for release, commands in blocks.items():
+        assert commands[-1] == ("uv", "run", "clutch", "roadmap", "accept", release)
+        assert commands[-2] == ("./dev.py", "test")
         assert commands.count(("./dev.py", "test")) == 1
         for command in commands:
             if command[:3] == ("uv", "run", "clutch"):

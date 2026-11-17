@@ -292,7 +292,7 @@ Every plan under `docs/` has these sections in this order, so the next audit can
 
 Every proposed ticket, grouped by release and in priority order within a release. Row numbers are stable identifiers assigned in the order rows were added, not an ordering: the release sections and the `P` column order the work. "Owner" is the plan whose design the ticket implements; "roadmap" means the ticket comes from the audit above. `Depends on` lists only tickets whose merged code is needed; ordering that is not a dependency is in the `Runs before` column. Authoring follows `clutch new` and the authoring guide, and a row gains its link when it is authored (by the authoring agent today; by `roadmap author` once `docs/roadmap-driver-plan.md` lands).
 
-Each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use. A later release's block checks only the suite and that release's rows: its other ship-gate clauses in section 1 have no command until merged code records their facts. The audit re-run before each minor release (section 9) adds to the next release's block a command for each such clause whose fact merged code now records.
+Each release's ship gate (section 1) is also a fenced `gate` block under that release's first heading below. It has one argv command per line, no shell syntax, and runs from the checkout root. The gate passes when every command exits 0. `clutch roadmap gate <release>` runs it and journals the result. `clutch roadmap merged` is the query the blocks use. Every block ends with `uv run clutch roadmap accept <release>`, after the `roadmap merged` checks and the suite: a model reviews the release's merged rows, taken together, against its theme and ship gate in section 1 and its owning plans' Target design, and appends a P1 row for each partial or unmet promise to the release's table (or, for a gap that should wait, to the next release's table) in a `clutch(roadmap): accept <release>` commit, so the gate fails until those rows merge. A later release's block checks only the suite, that release's rows, and the acceptance review: its other ship-gate clauses in section 1 have no command until merged code records their facts. The audit re-run before each minor release (section 9) adds to the next release's block a command for each such clause whose fact merged code now records.
 
 ### 0.3.0
 
@@ -354,6 +354,7 @@ uv run clutch roadmap merged --release 0.3.0 --priority P0 P1
 uv run clutch roadmap merged docs-truth-sweep evidence-envelope
 uv run clutch roadmap merged --since v0.3.0 --at-least 3 --source box:roadmap_row --unattended
 ./dev.py test
+uv run clutch roadmap accept 0.3.0
 ```
 
 ### 0.3.0, last group: the roadmap driver
@@ -384,6 +385,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 ```gate
 uv run clutch roadmap merged --release 0.4.0
 ./dev.py test
+uv run clutch roadmap accept 0.4.0
 ```
 
 ### 0.5.0
@@ -409,6 +411,7 @@ uv run clutch roadmap merged --release 0.4.0
 ```gate
 uv run clutch roadmap merged --release 0.5.0
 ./dev.py test
+uv run clutch roadmap accept 0.5.0
 ```
 
 ### 0.6.0
@@ -437,6 +440,7 @@ uv run clutch roadmap merged --release 0.5.0
 ```gate
 uv run clutch roadmap merged --release 0.6.0
 ./dev.py test
+uv run clutch roadmap accept 0.6.0
 ```
 
 ### 0.7.0
@@ -460,6 +464,7 @@ uv run clutch roadmap merged --release 0.6.0
 ```gate
 uv run clutch roadmap merged --release 0.7.0
 ./dev.py test
+uv run clutch roadmap accept 0.7.0
 ```
 
 ### Agent tasks (not tickets)
