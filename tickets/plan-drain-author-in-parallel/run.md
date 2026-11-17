@@ -4,18 +4,16 @@ ok
 
 ## Surprises / judgment calls
 
-The focused verification passed. The final full verification and integration gate failed on test_follow_up_row, which also failed on the base commit. The base run also failed test_usage_and_independent_peak_memory. A candidate run timed out in test_kill_aborts_requested_retro; it passed alone and did not recur in the prescribed full rerun. The committed-conduct test passed after the changes were committed. No changed production file was measured by the coverage gate.
+The final verification passed: 842 unit and 3426 integration tests. The unit coverage, lint, and format checks passed. The host integration check encountered timestamp-ordering errors that passed in isolation and did not recur in the final full run. An earlier full run failed the peak-memory test, which also failed on the base commit.
 
 ## Dead ends
 
-The committed-conduct test failed while the conduct files were uncommitted; committing the scoped changes resolved it.
+none
 
 ## Second problems filed
 
-- box-000697-7d21eff7: test_follow_up_row expects a closed-sets-rest roadmap row that is absent on the base commit.
-- box-000698-fd8024b0: test_usage_and_independent_peak_memory failed its memory-difference threshold on the base commit.
-- box-000699-c6356fc6: test_kill_aborts_requested_retro timed out once but passed alone and in the subsequent full run.
-- box-000700-36a036ab: docs/how-clutch-works.md describes the supervising loop without the new draft timing and roadmap_row exclusion and is outside the scope fence.
+- box-000702-36269518: The peak-memory comparison can fail on the base commit because the measured memory difference falls below its threshold.
+- box-000703-ccb1d10f: The host-loop fixture intermittently produces non-monotonic journal timestamps; its affected tests passed on the base commit, in isolation, and in the final full run.
 
 ## Resolved engine/model
 
@@ -25,5 +23,5 @@ The committed-conduct test failed while the conduct files were uncommitted; comm
 
 ## Predicted vs actual
 
-The ticket estimated 10 minutes; the work took approximately 10 minutes.
+10-minute estimate; completed within the 20-minute stuck budget.
 
