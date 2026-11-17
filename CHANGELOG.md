@@ -1,0 +1,118 @@
+# Changelog
+
+## 0.4.0 - 2026-11-17
+- plan-status-sweep-030: Roadmap row 148.
+- cli-group-box: Roadmap row 134 (`cli-group-box`), group `box`.
+- plan-status-rusage-packages: Two plan documents still describe merged work as open.
+- cli-group-ticket-verdicts: Roadmap row 133 (`cli-group-ticket-verdicts`), group `ticket` part 2.
+- cli-group-engine-control: Roadmap row 131 (`cli-group-engine-control`), group `engine` part 2.
+- step-names-every-surface: `roadmap-accept` (`038fec29`) added `acceptance` to `clutch/specs/__init__.py::ENGINE_LLM_SURFACES` but not to `clutch/observe.py::STEP_NAMES`.
+- plan-status-lines-030: The Status sections of `docs/upstream-issue-plan.md`, `docs/parallel-tickets-plan.md` and `docs/gemini-graphics-refactor-plan.md` each say "Draft plan.
+- cli-group-engine-run: Roadmap row 130 (`cli-group-engine-run`), group `engine` part 1.
+- cli-group-ticket-authoring: Roadmap row 132 (`cli-group-ticket-authoring`), group `ticket` part 1.
+- projection-helpers-single-owner: Roadmap row 125 (`docs/roadmap.md` §2.3 and §2.1 item 10, recurred in 0.3.0).
+- rule-restatements-single-home: Roadmap row 126 (`docs/roadmap.md` section 8, release 0.4.0).
+- engine-callerless-code: Roadmap row 127 (`docs/roadmap.md` §3.5, recurred in 0.3.0; merged row 25 did not cover it) lists engine symbols with no engine caller.
+- cli-help-standard: Roadmap row 129 (`cli-help-standard`), an owner request of 2026-11-17.
+- readme-host-first: Roadmap row 141, an owner request of 2026-11-17.
+- plan-drain-author-in-parallel: The owner asked on 2026-11-17 that the lessons of the first plan-ticket-drain run reach the shipped prompts, so the next run on any host starts with them.
+- drop-closed-sets-follow-up-test: Main is red, and the 0.3.0 release gate fails on `./dev.py test` (engine.log `roadmap_drive`, 2026-11-17 14:39Z: `gate 0.3.0: failed (exit 1): ./dev.py test -- dev: uv run pytest -q tests/integration failed`).
+- evidence-rusage-capture: Merged row 29 (`evidence-envelope`) left its rusage piece unbuilt: `clutch/providers.py::CliAdapter.invoke` writes `"rusage": None` into every `end.json`.
+- exec-seam-owns-reap: Roadmap row 123 (`evidence-rusage-capture`) needs each child's own resource use, and only `os.wait4` on that child returns it.
+- drop-live-roadmap-content-test: Main is red.
+- plans-truth-after-030: Roadmap row 124.
+- closed-sets-remaining: Roadmap row 112, first slice.
+- release-audit-030: At the end of 0.3.0, `docs/roadmap.md` sections 2-4 describe the code as it was at commit `80b76d5d`, and section 9 says the audit is re-run before each minor release but names no actor.
+- evidence-normalize-gemini: A pure Gemini normalizer turns the raw stdout of one `gemini -o stream-json` call into a list of `clutch.evidence.events/1.0` events, id `gemini-stream/1`.
+- tests-shared-fakes-b: Three test modules define their own clock, filesystem or journal fake that `tests/fakes.py` already provides: `tests/integration/test_journal.py` (`FakeClock`), `tests/unit/test_suggest_box.py` (`MemoryFS`) and `tests/unit/test_retro_recurrence.py` (`MemoryJournal`).
+- implement-spec-no-quit-after-reading: An Implement attempt that has only read files, or that judges the change to be large, can no longer treat that as a reason to reply `incomplete`.
+- roadmap-named-stem-refile: Author declines any stem that appears on any journal event (`event.ticket == stem` in `clutch/author.py`).
+- preflight-latest-lookup-tolerant: On 2026-11-17 the roadmap driver's authoring pass called `_preflighted_llm`.
+- roadmap-fresh-write: `author_ahead` reads `docs/roadmap.md` once, then writes that in-memory text back for every strike, link and refile.
+- tests-shared-fakes-a: Five test modules each define their own clock or exec fake that `tests/fakes.py` already provides: `tests/integration/test_drain.py` (`Clock`), `tests/integration/test_cli.py` (`Clock`), `tests/integration/test_tickets.py` (`Clock`), `tests/integration/test_driver.py` (`FakeClock`) and `tests/integration/test_effects.py` (`FakeExec`).
+- serve-rig-shared-fakes: `tests/integration/serve_rig.py` keeps its own copy of the zero-wall-clock `turn` (imported from `tests/integration/test_scheduler.py`) and its own `until` loop.
+- shared-test-fakes: Today every test module hand-rolls its own clock, exec, filesystem, journal and git fake, and `until` exists in several copies.
+- regress-scripts-guarded: Ten `tests/regress_*.py` scripts have no `if __name__ == "__main__":` guard, so importing one runs its reproducer, prints JSON and raises `SystemExit`.
+- supervise-at-idle-point: Today the supervisor step runs only inside `failure_terminal`, so a Reject-queue stem that arrives another way (a drain `reject_arrival`, whose terminal lacks `routed: reject_queue`) is never supervised and waits for a person.
+- evidence-normalize-claude: A pure Claude normalizer turns the raw stdout of one `claude --output-format stream-json --verbose` call into a list of `clutch.evidence.events/1.0` events, id `claude-stream/1`.
+- refile-carries-diagnosis: Row 94's re-file promises the rejected stem's reason as the request, but `rejection_reason` reads a `reason` field on `reject_verdict` signals, and no `reject_verdict` the engine writes carries one (0 of 40 kill verdicts in the journal on 2026-11-17).
+- release-packages-kept: When `ship` tags a release, each package command the host declares under `release.packages` runs after the tag, and every file that run adds is named in the ship digest lines; a file already there before the run is never reported as kept.
+- supervisor-effect-scope: Today every Effect key a Rework step mints is built from the stem and an integer: `ticket-plane/{stem}/{attempt}/rework` in `apply_rework`, `llm/{stem}/{run_seq}/{surface}/{attempt}/{call_seq}` through `llm_key` for the rework call (`Driver._run` takes `run_seq` from the journal) and for each requisition review (`review_ticket` takes the attempt as `run_seq`), the rework state tree `state_dir/rework/{stem}/{attempt}/{call_seq}`, and `ticket-plane/{stem}/{attempt}/{kind}` in `lift_outbox`.
+- defer-journal-window: Roadmap decision 21 moves the journal window behind the training release, and the later releases take the versions they start at.
+- release-changelog: When `clutch release` runs, and so when the driver's `ship` runs, a `CHANGELOG.md` at the checkout root gets a new top section for the released version, and the `release: <version>` commit carries that file, so the `v<version>` tag contains it.
+- docs-truth-after-driver: After the 0.3.0 merges, six statements in three planning documents are false.
+- core-template-supervisor-verdicts: `CORE_TEMPLATE` tells every host's supervising session it "may not confirm or reject" and may not "rewrite a ticket the engine authored".
+- release-start-gates: Section 1 of `docs/roadmap.md` has a "Gate to start" column, but no command checks it and `clutch/roadmap.py::choose` never reads it (declined-box-000518; its reopen condition, the parser and gate blocks, has merged).
+- eval-go-ai-panel: Decision 19 (`docs/roadmap.md`, roadmap row 101) takes GO baselines from an AI panel of a different model family than the judge, so no person has to sign off.
+- checkpoint-counts-settled: Decision 19 (`docs/roadmap.md` section 6) counts every cadence in runs, never wall-clock time.
+- cadences-count-runs: Decision 19 (`docs/roadmap.md` section 6) counts every cadence in runs, never wall-clock time.
+- checkout-carries-journal: `Driver.from_config` takes the caller's `Journal` as a required keyword `journal` and no longer builds its own `Journal(config.state_dir, clock)`.
+- seams-passed-not-built: Today `Scheduler.dispatch_next` calls `write_queue(self.journal.dir.parent, self.journal._fs, self.journal._clock, ordered)`.
+- test-gate-floors-measured: `test-gate.toml` has no entry for `clutch/graph.py`, which is held only by `coverage.default` (90).
+- ticket-budget-limits: An open ticket with an oversized or inconsistent `## Time budget` is refused by `clutch lint` and by intake, so the roadmap driver's tickets are split instead of given larger budgets.
+- supervise-every-route: Open decision 2 of the roadmap driver plan supervises every `premise_failed` and spent-cap route.
+- plan-drain-conduct-conflicts: The owner, 2026-11-17: the plan-ticket-drain agent must surface, before it starts, any contradiction between its delegation and the host's own rules.
+- evidence-normalize-codex: A pure Codex normalizer turns the raw stdout of one `codex exec --json` call into a list of `clutch.evidence.events/1.0` events, id `codex-stream/1`.
+- closed-sets-follow-up-row-struck: Main is red.
+- roadmap-status-stuck-rows: `clutch roadmap status` prints a `waits:` line for every held row, so `next:` never hides a stuck row.
+- roadmap-held-row-refile: A roadmap row whose `roadmap_row` message Author declined, or whose linked stem was rejected, is released without a person, as the plan's "nothing waits on a person" requires.
+- closed-sets-single-owner: Roadmap row 19 (section 2.2 and 2.3 of `docs/roadmap.md`).
+- evidence-envelope: Raw provider captures are still written by `CliAdapter._write_capture` under `spools/providers/<stem>/<provider>-NNNN/` (and `spools/probe/` for `clutch probe`), numbered by `capture_sequence` from a directory listing.
+- implement-spec-intermittent-by-reproduction: An Implement run whose only remaining failure is one non-reproducing flake replies `ok` and records a second problem.
+- drain-handoff-replaces-process: After a self-upgrade handoff, the old engine process is gone and the new one has taken its place, so a long run keeps one engine process however many handoffs happen.
+- plan-drain-prompts: The owner asked on 2026-11-16: "I want the prompts used in this run to be in a commitable, easy recovered/regenerated as other clutch prompt types.
+- release-acceptance-review: The owner asked on 2026-11-16 that a release ship only when its tickets, taken together, satisfy the plan of the release: "it is one thing for each ticket to pass its acceptance criteria, however the sum of the tickets need to have satisfied the plan of the feature/phase of roadmap".
+- runner-terminal-removal-survives-kill: After a run journals the `already_satisfied` terminal, a kill that lands before or during the awaited `worktree_remove` no longer leaves the ticket worktree on disk.
+- roadmap-accept: Each roadmap row passes its own acceptance criteria, but nothing checks that the rows of a release, taken together, deliver what the release promised.
+- git-tree-id: The evidence envelope (`docs/evidence-trail-plan.md`, roadmap row 29, the next ticket `evidence-envelope`) records the git tree each model call saw before it ran (`repo.tree_before` in `start.json`) and, for the writing surface, the tree it left and the paths it changed (`repo.tree_after` and `repo.changed_paths` in `end.json`).
+- fs-seam-read-size: The `FileSystem` seam in `clutch/seams.py` can list, write, publish, replace, create directories and delete files, but it cannot read a file or report its size.
+- open-tickets-exclude-rejected: Triage and Author see only tickets that can still be built, and a message can no longer be tombstoned against a rejected ticket.
+- dead-config-and-spec-fields: Four inert items are gone, so the code, the specs and the docs describe only what the engine reads.
+- closed-sets-single-owner-refile: Roadmap row 19 is linked to the stem `closed-sets-single-home`, which was rejected on 2026-11-16.
+- evidence-store: A content-addressed evidence store exists as library code, with no caller yet.
+- diagnose-lesson-trim-in-engine: A Diagnose reply is no longer discarded because one lesson is a few characters over `DIAGNOSIS_LESSON_CHARS` (300).
+- host-onboarding-doc: `clutch/docs/host-contract.md` has an Install section and an Instance custody section, but no ordered path from a fresh host to its first merged ticket, and no single place that states the facts an operator needs while running (locks, state dir, upgrade, rollback).
+- extension-argv-from-snapshot: Every clutch verb the VS Code extension runs, except `snapshot` itself, takes its argv from one table in `clutch/observe.py` that `snapshot` emits.
+- lint-guide-parity: The authoring guide and `clutch lint` state the same rules.
+- main-verb-groups: Roadmap row 20 (`main-verb-groups`), the `__main__.py` half.
+- journal-last-transition-helper: Roadmap row 18 (duplication-table rows 5 and 6).
+- host-check-selection-single-owner: Roadmap row 17 (duplication-table rows 3 and 4, plus the swallow row for the coverage parse and base `results` read).
+- merge-admission-single-owner: Admission to main has one owner.
+- active-slot-single-owner: `DaemonAdmission` is the one owner of "what is running".
+- fs-seam-mkdir-remove: The `FileSystem` seam in `clutch/seams.py` has `entries`, `publish`, `write` and `replace` but no way to create a directory or delete a file.
+- roadmap-gate-cheap-first: Every release gate block in `docs/roadmap.md` (0.3.0 through 0.7.0) lists `./dev.py test` first.
+- drain-loop-agent: Roadmap row 93 (`driver-loop`, owning design `docs/roadmap-driver-plan.md` sections 6 and 7) asks for a rewritten `drain-loop` prompt.
+- driver-loop: Roadmap row 93 (`docs/roadmap.md`, owning design `docs/roadmap-driver-plan.md` section 6) is the loop that runs the roadmap unattended.
+- release-at-gate: Roadmap row 93 (`driver-loop`, owning design `docs/roadmap-driver-plan.md` section 6, step 3) needs a release step: when the current release's ship gate passes, `release` runs, then `publish` only when `release.publish` is true, and the next release becomes current.
+- gemini-provider: clutch routes calls only to the `claude`, `codex`, and `qwen` CLIs.
+- roadmap-status: `docs/roadmap-driver-plan.md` section 4 (roadmap row 91) asks for a read-only `clutch roadmap status`.
+- release-gates-as-commands: `docs/roadmap-driver-plan.md` section 4 (roadmap row 91) turns each release's ship gate into commands, so the roadmap driver (`driver-loop`, row 93) can decide by itself when a release may ship.
+- upstream-issue-verb: A host session that finds a bug in clutch itself has no way to report it.
+- roadmap-merged-query: The owner decided on 2026-11-16 that no release gate is a person's judgment: every gate in `docs/roadmap.md` is one or more argv commands that exit 0 when the release may ship (`docs/roadmap.md` section 6, the "No human in the loop" decision; roadmap row 91 `release-gates-as-commands`).
+- update-config-unverified-empty-listing: When a provider's listing names no models and carries a problem, `clutch update-config` prints `not served; pick a served name` for every configured model of that provider.
+- release-publish: `clutch release --minor|--patch` (merged by `release-verb`) bumps, commits, and tags a release locally, but nothing publishes it.
+- implement-spec-finish-mutation-check: After this change `clutch/specs/implement.md` tells Implement that the per-assertion mutation check (the paragraph beginning "For each assertion, name the likely wrong implementation") is part of the work and is finished before replying.
+- specs-json-reply-first-char-lint: Every JSON-reply prompt spec tells the model that its reply starts with the object, and `lint_spec` refuses a spec that does not.
+- diagnose-spec-first-char-json-reply: The Diagnose spec's Output format tells the model that the first character of its reply is `{` and the last is `}`, with no prose, markdown or code fence around the object, and that verdict reasoning goes in the lessons.
+- requisition-review-sibling-tickets: Requisition review today judges a ticket only against merged code.
+- supervisor-rework: Roadmap row 89 (`docs/roadmap.md`, owning design `docs/roadmap-driver-plan.md` section 2) wires together three engine pieces that the owner chained by hand for 78 of 142 verdicts: Diagnose, a reviewed Rework `update`, and a keep.
+- supervise-cap-lineage: Roadmap row 89 (`docs/roadmap.md`, owning design `docs/roadmap-driver-plan.md` section 2) adds a supervisor that keeps a Reject-queue ticket after a reviewed Rework edit, as the owner did by hand 78 times.
+- roadmap-author: `docs/roadmap-driver-plan.md` section 3 (roadmap row 90) defines `clutch roadmap author [--ahead N]`.
+- rework-supervise-gate: Roadmap row 89 (`docs/roadmap.md`, owning design `docs/roadmap-driver-plan.md` section 2) has the engine do what the owner did by hand for 78 of 142 verdicts: read the diagnosis, apply its suggested ticket edit, have the edit reviewed, and keep the ticket.
+- roadmap-table-parser: `docs/roadmap-driver-plan.md` section 3 (roadmap row 90) has the roadmap driver read the master ticket table in `docs/roadmap.md` (section 8) and find rows that have no linked stem and whose `Depends on` stems have all merged, in release order.
+- roadmap-no-human-gates: The owner decided on 2026-11-16 how the roadmap runs, and those decisions override the plans:
+- roadmap-plan-corrections: Every roadmap ticket is authored from `docs/roadmap.md` and the plans under `docs/`, and the roadmap driver tickets (`roadmap-author`, `release-gates-as-commands`) will parse `docs/roadmap.md` by release name and row.
+- roadmap-row-message: `docs/roadmap-driver-plan.md` section 3 (roadmap row 90) has the roadmap driver author `docs/roadmap.md` rows through the one Author stage that already writes tickets from Suggestion Box messages (`clutch/author.py::author`), with "a different shape" of message.
+- unit-test-io-rule-one-home: Suggestion Box messages `box-000477` and `box-000484` report that the engine's copies of the unit-test I/O rule disagree, and that the authoring guide states none of them.
+- install-docs-name-clutchwork: The PyPI distribution is `clutchwork` (`pyproject.toml` `[project] name = "clutchwork"`); the import package and the console script are `clutch`.
+- paved-roads-name-verbs: `CLAUDE.md` section A says a road an operator reads names the `clutch` verb that does the work, never a hand-built argv ("Guides name verbs, not command lines"), and that every refusal ships a paved road ("Fail closed").
+- docs-truth-sweep-code-strings: Three pieces of engine text describe behavior the code no longer has.
+- dev-surface-completeness: Check's `unit` gate runs `tests/unit` with `-p clutch.testguard` (`config.yaml`, `review.mechanical` code `unit`).
+- docs-truth-sweep: The maintained documents say things the code does not do.
+- release-verb: `docs/roadmap.md` section 1 makes every release a minor version with a git tag, but nothing in clutch bumps a minor version or creates a tag: `./dev.py publish` bumps only the patch, and `clutch/git.py::Git` has no tag method.
+- watch-surface-tier-truth: `clutch watch` prints, under `Now:` for a running ticket, the line `asked for tier/effort <tier>/<effort>`.
+- fence-closure-registries: The scope-fence set-membership rule misses in-code registries, and a ticket that adds a registry key passes requisition review with the test that pins that registry left outside its fence.
+- unit-criteria-disk-snag: Roadmap row 9 (`docs/roadmap.md` section 8, from Suggestion Box messages `box-000441` and `box-000442`).
+- contention-authoring-rules: The contention rules of `docs/parallel-tickets-plan.md` section 7 are in no rule file.
+- conduct-files-parity: `CLAUDE.md` says `AGENTS.md` is its curated subset for non-Claude agent CLIs (codex runs Implement here), and that a rule add, change, or removal touches both files in the same change.
+- redaction-harvest-seam: Configured secret values are meant to be redacted from every captured stream at the write seam (CLAUDE.md, "The journal is the record").
