@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import time
 from types import SimpleNamespace
 
 from clutch import __main__ as cli
@@ -18,23 +17,19 @@ from clutch.lockfile import Lockfile
 from clutch.mergequeue import RED_STREAK, TREE_MISMATCH
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import Invoice, PackingSlip
+from tests import fakes
+from tests.fakes import turn
 from tests.integration.test_cli import write as write_ticket
 from tests.integration.test_restart_timers import repository
-from tests.integration.test_scheduler import text, turn
+from tests.integration.test_scheduler import text
 from tests.integration.test_triage import reply
 
 
 async def until(rig, predicate):
-    deadline = time.monotonic() + 60
-    n = 0
-    while time.monotonic() < deadline:
-        if predicate():
-            return
-        if n % 20 == 0:
-            rig.time.advance(serve.SERVE_POLL_S)
-        await turn()
-        n += 1
-    raise AssertionError("production graph did not reach the scripted boundary")
+    try:
+        await fakes.until(predicate, rig.time, serve.SERVE_POLL_S)
+    except AssertionError as exc:
+        raise AssertionError("production graph did not reach the scripted boundary") from exc
 
 
 async def graph(root, monkeypatch, **kwargs):
