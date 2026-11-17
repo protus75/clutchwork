@@ -41,7 +41,7 @@ Roadmap row 127 (`docs/roadmap.md` §3.5, recurred in 0.3.0; merged row 25 did n
 After this ticket those seven are gone, and the tests that only drove them are ported to the production path or deleted.
 
 The row's other symbols have a caller and stay; this names each one:
-- `Git.init`: `tests/harness/host_loop.py`, `tests/harness/daemon_soak.py`, `tests/harness/reliability_battery.py`, `tests/harness/shakeout/bench.py`, `tests/regress_retro_reemit_skip.py` and over 20 integration tests build their repositories with it. It is the test seam for "all git through `git.py`".
+- `Git.init`: `tests/harness/host_loop.py`, `tests/harness/daemon_soak.py`, `tests/harness/reliability_battery.py`, `tests/harness/shakeout/bench.py`, `tests/regress_retro_reemit_skip.py` and 25 call sites in 17 integration test files build their repositories with it. It is the test seam for "all git through `git.py`".
 - `audit.audit`: `clutch/audit.py::audit_journal` and `tests/harness/shakeout/run.py`.
 - `policy.baseline_identity`: `eval/harness.py` (four calls).
 - `gates.lint_gate` and `providers.CliAdapter.parsed_failure`: `clutch/gates.py` and `clutch/providers.py` are on `engine_plane_safety_inventory` in `config.yaml`, so a ticket that fences them starts as a draft. Both are test seams (`tests/integration/test_gates.py`; `parsed_failure`'s own docstring says "Direct construction seam", used by `tests/integration/test_providers.py`). Neither is touched here.
@@ -103,7 +103,7 @@ Out:
 5. `./dev.py test tests/integration/test_requisition.py tests/integration/test_spec_sibling_tickets.py` passes. `test_base_render_matches_implement_and_gate` compares `_base_render`'s whole string to the production Implement render, not just its length. The over-bound test still returns verdict `snag` with mechanical `review render over bound` and makes no LLM request.
 6. `./dev.py test tests/integration/test_watchdog.py tests/integration/test_watchdog_activation.py` passes. The three ported tests keep each assertion they had: result text and usd, the observed events, tool ids, usage, tokens, spend, bases, the empty journal and the `reported no cost` refusal. `test_production_hard_timeout_group_kill_is_harvested` is not edited.
 7. `./dev.py test tests/integration/test_llm_effect.py` passes.
-8. `uv run ruff check .` exits 0, so no edit leaves an unused import.
+8. `uv run ruff check .` exits 0, so no deletion leaves an unused import in `clutch/`. `pyproject.toml` ignores F401 under `tests/*`, so in a test file a leftover import of a deleted name fails at collection in the suites above instead.
 9. `tests/unit/test_serve_responsiveness.py`: a new `Responsiveness()` reports `responsive()` False before any `ask()`, not True with nothing asked; after `ask()` it is False until `reply()`, then True. Checked by `./dev.py test tests/unit/test_serve_responsiveness.py`.
 10. `tests/unit/test_serve_responsiveness.py`: while `wait(work)` awaits a coroutine blocked on an `asyncio.Event`, an `ask()` makes `responsive()` True without the work finishing; setting the event makes `wait` return the work's value; a work that raises makes `wait` raise that same exception.
 11. `tests/unit/test_serve_responsiveness.py`: cancelling the task that runs `wait(work)` cancels the work too (the work observes `asyncio.CancelledError`), rather than leaving it running.
