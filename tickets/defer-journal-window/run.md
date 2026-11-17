@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The ticket permits release-name changes but excludes other wording changes, so older conditional-order and timing wording remains in the plans and roadmap. The changed start-gate assertion failed as expected against the old heading. The unit coverage gate was skipped because the diff changes no measured production files.
+The upstream issue plan retains an old graphics release name outside the scope fence. The ticket verification passed 94 tests; the host unit coverage gate, integration suite, lint, and format checks also passed. The changed start-gate assertion failed as expected under a temporary old-heading mutation.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-none
+- box-000632-454bc6f4: docs/upstream-issue-plan.md:13 still names graphics-kind as 0.5.0 and needs a follow-up update.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 30 minutes; completed within the budget.
+The ticket estimated 30 minutes; elapsed time was not measured.
 
