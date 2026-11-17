@@ -62,7 +62,8 @@ In:
 - New `clutch/specs/ask/plan-ticket-drain.md`. Its only placeholder is `${state_dir}`, and it holds no other `$`. It does not start with `/loop `, because a loop would rerun the start-up checks every tick, and `clutch doctor` fails while an engine holds the lock. In this order it says:
   1. Role. Run the plan in the roadmap that `clutch roadmap status` reads, named by its path, to completion. Work unattended, authoring its rows as tickets and draining them, starting where `clutch roadmap status` says. Read every document under `docs/` first. Running this prompt is the owner's `standing delegation` of the operator role for the run; nothing waits for a person. Use only clutch verbs. A host with no roadmap file has no plan to run: say so and stop.
   2. Before you start:
-     - `clutch doctor` exits 0. Run it before any engine starts, because its lock probe fails while one runs. If the clutch command itself does not start (for example after the checkout moved), repair the install first.
+     - `clutch doctor` exits 0. Run it before any engine starts, because its lock probe fails while one runs. If an engine already runs, read `clutch status` instead and run `clutch doctor` the next time no engine runs. If the clutch command itself does not start (for example after the checkout moved), repair the install first.
+     - The host's test suite, run the way its conduct file says, passes on main; a red main fails every ticket's Check and the release gate.
      - `clutch probe` reaches every declared provider. Start every engine from an environment where it passed: a credential set only in some shells fails the engine later.
      - List every credential, hand test, and owner decision the plan's prerequisites name. A missing credential is reported to the owner once, up front. Skip only the rows that need it and keep going.
      - `clutch release --minor` bumps and tags a release. The driver runs it itself when the current release's gate passes, and that is the bump before the next phase. So bump by hand only before the first phase, when the version does not yet name it, and `never twice` for one phase.
@@ -71,7 +72,7 @@ In:
      - Every cause fix goes to `clutch suggest` and is never authored. Triage's verdict is final.
      - `No person is in the loop`:
        - a hand test is an agent-run capture committed as ticket evidence;
-       - an open plan decision takes the plan's `Proposed` option; where there is none, three independent agents each propose one and a fourth judges, and a ticket records the choice in the plan;
+       - an open plan decision takes the plan's `Proposed` option; where there is none, three independent agents each propose one and a fourth judges, and the ticket for the row that needs the choice records it in the plan;
        - calibration and baseline labels come from an AI panel of a `different model family` than the judge;
        - every gate is a command `counted in runs`, never wall-clock time, so "a week" or "daily" in a plan reads as a count of merged tickets.
      - `Never push`; publishing happens only through the driver under `release.publish: true`. Never run a tree-wide destructive git verb. Never edit code, docs, specs, config, or conduct files on main: tickets do that. The one exception is the roadmap rows of step 6, which this prompt authorizes.
@@ -83,20 +84,20 @@ In:
      - After `clutch review` approves a hand-authored ticket, give it to a separate agent with `clutch prompt review <stem>`, the adversarial audit. Carry out the ticket edits its Recommendation names, then run `clutch lint` until it exits 0 and `clutch review` until it approves. Stop editing a stem the moment it is dispatched.
      - Authoring overlaps the running drain: `never hold` or stop a drain for it.
   5. Supervising:
-     - Each tick, render `clutch prompt drain-loop` and follow it. Its limits bind you except for this prompt's steps 4 and 6.
+     - Steps 1 and 2 `run once`. Then work in ticks until step 7's stop condition holds; each tick covers steps 4 to 6. Between ticks, wait with your agent's own loop or wait facility until the engine exits or about 25 minutes pass. Each tick, render `clutch prompt drain-loop` and follow it. Its limits bind you except where steps 4 to 6 say otherwise.
      - Match this checkout's engine exactly: `clutch status` and the writer lock say whether it runs. Another checkout on the machine may run its own `clutch drain`, so never match a bare process name.
      - Watch merges, holds, the Reject queue, the driver's `roadmap_drive` lines in `${state_dir}/engine.log`, and the engine exiting.
      - On any failure, name the root cause in one sentence from the stem's artifacts before acting. Classify it as drift or not, which sets the window, and file the class-prevention change with `clutch suggest`.
      - A drain can exit right after starting, before running any ticket, with an error from the roadmap driver step (a traceback in `${state_dir}/drain.out`). Nothing unattended can recover from that. Stop starting drains, and report the error and the roadmap row to the owner.
      - With the driver authoring ahead, a drain rarely quiesces, so the drain-loop prompt's between-drains Suggestion Box step can wait indefinitely. For a pending message whose cause wedges the engine or wastes runs, run `clutch stop` (the running ticket finishes first), take the message through that step, then restart the drain.
      - Keep a log that the next tick reads, recording every action, verdict, and filing. End each reply with a `Still open:` list.
-  6. Closing each phase. Do this once `clutch roadmap status` shows no ready row left in the current release, and before its gate can pass:
+  6. Closing each phase. Do this as soon as no row that the current release's `gate` block checks is left to author (each is merged, authored, or stuck), and before the last of them merges: the driver runs the gate after every settle and ships at the first pass:
      - A read-only agent reviews the release's merged rows, taken together, against its theme and ship gate and the owning plans' target design.
      - Every partial or unmet promise becomes a `P1 row` in that release's table, and a deferred one becomes a row in the next release's table. A gap is `never a Suggestion Box message`, so the gate waits on it.
      - A stuck row (its author message declined, or its stem rejected) gets a reworded or replacement row.
-     - Write those rows into the roadmap and commit that one file by explicit path.
-     - This step names no verb, because no merged verb runs the review yet.
-  7. Final report, terse:
+     - Write those rows into the roadmap in its table format, each with the next free number, a stem no row, ticket, or journal entry uses, and an Owner the existing rows use. Commit that one file by explicit path, then check that `clutch roadmap status` does not list a new row under `waits:`.
+     - When the release's `gate` block in the roadmap already runs an acceptance review, skip this step's review and rows: the gate files them itself.
+  7. Stop when no engine runs, `clutch roadmap status` shows `next: none` and lists under `waits:` only rows that need a missing credential, no Reject-queue stem or draft is left, and the last tick changed nothing. Then give the final report, terse:
      - merged this run, and releases tagged;
      - tickets hand-authored and why;
      - verdicts executed;
@@ -122,7 +123,7 @@ In:
         - `Fence closure` is where tickets fail. Apply the guide's `## Scope fence` rules to every name, value, verb, path, state, and set member the ticket adds or changes. Grep tests, docs, source, and any extension or client code, in-code registries and closed sets included.
         - Read every `confirmed, unmerged` ticket that fences a file yours fences. In `## Context` or the criteria, state what either merge order changes, so neither breaks.
         - Write test commands the way the host's conduct file says.
-        - `Depends on` names only tickets whose merged code this one needs. Order the rest with priority and `Runs before`, omitting a stem that has no ticket directory yet.
+        - Set `Depends on` and `Runs before` as the guide says.
         - Give a realistic time budget. When the request cannot fit one run, split it into `at most 3` tickets: keep `${stem}` as one and name the others `${stem}-<part>`.
      4. Run `clutch lint ${stem}` until it exits 0.
      5. Make the guide's pre-review checks.
@@ -160,12 +161,12 @@ Out:
 - `clutch/help.py`, `clutch/observe.py`, and the extension. The new kinds are CLI prompts for agents, and no extension surface opens them, so they need no help entry or snapshot argv. The `review` command's help ("Open a prompt to review the selected ticket.") stays true.
 - `clutch/docs/host-authoring.md`. Its missing rule (cite code by symbol, never by line number) is box-000586. CORE_TEMPLATE, `CLAUDE.md`, and `AGENTS.md` are also out: none lists prompt kinds.
 - A plan-ticket-serve prompt, and any kickoff parameter or kind for one: that process comes later.
-- Naming `clutch roadmap accept` in step 6. `roadmap-accept` is not merged at this ticket's base, so the step states the review without a verb. If `roadmap-accept` merges first, the step is still correct but no longer the only way to run the review. `release-acceptance-review` puts `roadmap accept` in every gate block, and the follow-up box-000587 names the verb.
+- Naming `clutch roadmap accept` in step 6. `roadmap-accept` is not merged at this ticket's base, so the step states the review without a verb. If `roadmap-accept` and `release-acceptance-review` merge first, the step defers to the gate's own review, as step 6 says. `release-acceptance-review` puts `roadmap accept` in every gate block, and the follow-up box-000587 names the verb.
 - Merge order with the confirmed, unmerged tickets that fence the same files. Either order merges cleanly:
   - `roadmap-accept` edits the `roadmap` parser and handler in `clutch/__main__.py`, the how-clutch-works section 2.1 row after `roadmap gate <release>`, the section 8.4 table, and the `roadmap` row of `clutch/docs/host-running.md`. This ticket edits only `handle_prompt`, the section 2.1 `prompt` rows, and the `prompt` row of `clutch/docs/host-running.md`. No hunk is adjacent to the other's.
   - `release-acceptance-review` edits how-clutch-works section 7.5 and `docs/roadmap.md`, which this ticket does not touch.
   - `evidence-envelope` edits the `probe` handler in `clutch/__main__.py` and how-clutch-works sections 8.5 and 10.1, also untouched here.
-  - The draft `closed-sets-single-owner` edits the tier, priority, and kind tuples in `clutch/__main__.py`, also untouched here.
+  - The confirmed `closed-sets-single-owner` edits the tier, priority, and kind tuples in `clutch/__main__.py`, also untouched here.
   - `tests/integration/test_ask_plan_drain.py::test_prompts_name_only_existing_verbs` passes on either base, because no prompt names `roadmap accept`.
 
 ## Scope fence
@@ -197,7 +198,7 @@ Out:
    - `No person is in the loop`, `Proposed`, `different model family`, `counted in runs`, `Never push`;
    - `Let the driver author`, `clutch roadmap author --ahead`, `drift failure`, `clutch prompt author`, `clutch prompt review`, `never hold`;
    - `clutch roadmap status`, `clutch stop`, `roadmap_drive`, `custom/state/engine.log`, `custom/state/drain.out`;
-   - `P1 row`, `never a Suggestion Box message`, `Still open:`.
+   - `P1 row`, `never a Suggestion Box message`, `before the last of them merges`, `run once`, `next: none`, `Still open:`.
 
    The first `clutch doctor` comes before the first `clutch probe`, which comes before the first `clutch prompt drain-loop`. `standing delegation` comes before the first `clutch confirm --yes`. The text does not start with `/loop`. Ruled out: a kickoff that drops the environment or credential checks or puts them after supervising starts, omits the delegation, the no-person rules, the drift window, the audit, or the phase-closing step, or sends acceptance gaps to the Suggestion Box.
 5. `tests/integration/test_ask_plan_drain.py::test_author_prompt_content` renders `ask.render("author", "unique-stem", config, tmp_path)`. The text contains each of these:
@@ -215,7 +216,7 @@ Out:
    - `"Recommendation"`, `wait for me to say go`.
 
    Ruled out: a review that ignores the queued tickets it can collide with, drops the fence and verification checks, or loses its report format.
-7. `tests/integration/test_ask_plan_drain.py::test_prompts_carry_no_session_facts` asserts the three texts from criteria 4-6. None contains `${`, `./dev.py`, `uv run`, `/home/`, or `.claude`. Lowercased, none contains `bash`, `fungo`, or `gemini`. Ruled out: an unrendered placeholder, clutch's own dev command, an argv prefix, a machine path, a shell name, another host, a provider name, or a session file reaching every host.
+7. `tests/integration/test_ask_plan_drain.py::test_prompts_carry_no_session_facts` asserts the three texts from criteria 4-6. None contains `${`, `./dev.py`, `uv run`, `/home/`, or `.claude`. Lowercased, none contains `bash`, `fungo`, `claude`, `codex`, `qwen`, `ollama`, or `gemini`. Ruled out: an unrendered placeholder, clutch's own dev command, an argv prefix, a machine path, a shell name, another host, a provider name, or a session file reaching every host.
 8. `tests/integration/test_ask_plan_drain.py::test_prompts_name_only_existing_verbs` checks the three texts with a regex that matches a backtick, then `clutch `, then a first word `([a-z-]+)`, then optionally a space and a second word `([a-z-]+)`; as a Python literal, ``r"`clutch ([a-z-]+)(?: ([a-z-]+))?"``. In each text it matches at least once. Every match's first group is a subcommand of `clutch.__main__._parser()`. When the first group is `prompt` and the second matched, the second is in `ask.KINDS`. When the first group is `roadmap` and the second matched, the second is a subcommand of the `roadmap` sub-parser. Ruled out: a prompt naming a verb, prompt kind, or roadmap subcommand that does not exist at the base, such as `clutch roadmap accept` before `roadmap-accept` merges.
 9. `tests/integration/test_ask_plan_drain.py::test_docs_list_new_prompt_kinds` checks two files:
    - The `` | `prompt` | `` row of `clutch/docs/host-running.md` contains `plan-ticket-drain` and `author`.
