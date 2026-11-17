@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "af97e5683e16ee00d76c73e41926326e1f3fde51",
+  "stem": "exec-seam-owns-reap",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "clutch/seams.py: do not reap via asyncio.to_thread or the loop's default executor. Its shared, capped pool can queue a timed-out run's reap behind long timeout=None waits (clutch/covmap.py:24), so run hangs past its timeout and leaves a zombie.",
+    "Reap with a pidfd: os.pidfd_open(proc.pid), loop.add_reader on it, then a non-blocking os.wait4(pid, 0) once readable, and close the fd and remove the reader in finally. Or use a dedicated threading.Thread per child that resolves a future with loop.call_soon_threadsafe.",
+    "Review found these parts sound, so redo them the same way: Popen with start_new_session=True, the rusage_figures/reap_outcome pure helpers, _kill_and_wait still calling kill_group(proc.pid), the tests/waiting.py spawn patch, and the single on_rusage line in clutch/docs/host-contract.md.",
+    "Add to tests/integration/test_exec_seam_reap.py a test that holds more long-sleeping children than min(32, cpu_count+4), then runs a 0.3s-timeout child. It must raise TimeoutError promptly, call on_rusage once, and leave its group exited per tests.waiting.group_exited.",
+    "Keep the clutch.evidence.schema import deferred inside the helper. An eager import made the coverage gate miss the schema's class definitions. Keep reap_outcome covered from tests/unit/test_seams_rusage.py so clutch/seams.py stays at its test-gate.toml floor."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
