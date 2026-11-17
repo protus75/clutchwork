@@ -208,6 +208,7 @@ def test_journal_closed_sets_and_constants():
             "storm_breaker_trip",
             "storm_occurrence",
             "supersedes",
+            "supervisor_attempt",
             "ticket_intake",
             "tombstone_auto_reopened",
             "triage_pass",

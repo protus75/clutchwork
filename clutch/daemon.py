@@ -466,7 +466,7 @@ class TicketWriter:
             await self.consume_handoff(ticket, result, attempt=attempt)
         elif result.outcome != "ok":
             await runner.harvest_failure(self.ctx, ticket, attempt=attempt, stage="merge", outcome=result.outcome, findings=result.findings, results=(result,))
-            await runner.failure_terminal(self.ctx, ticket, attempt=attempt, stage="merge", outcome=result.outcome, findings=result.findings)
+            await runner.failure_terminal(self.ctx, ticket, attempt=attempt, stage="merge", outcome=result.outcome, findings=result.findings, supervised=True)
 
     async def abort_current(self) -> None:
         await self.ctx.abort_current()

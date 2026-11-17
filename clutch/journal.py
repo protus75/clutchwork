@@ -72,6 +72,7 @@ SIGNAL_NAMES: frozenset[str] = frozenset(
         "storm_breaker_trip",
         "storm_occurrence",
         "supersedes",
+        "supervisor_attempt",
         "ticket_intake",
         "triage_pass",
         "watcher_parse_failure",

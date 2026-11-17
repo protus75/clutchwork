@@ -51,7 +51,7 @@ Struck: the premise is false (see Current state). A published split already reti
 
 ### 2. The supervisor step (`supervisor-rework`)
 
-Runs inside `runner.drive`'s terminal handling, after Diagnosis, for a terminal that would be routed to the Reject queue with reason `premise_failed` or a spent cap:
+Runs in the shared terminal handling used by `runner.drive` (after Diagnosis) and merge-route `TicketWriter.consume_result`, for a `premise_failed` terminal routed to the Reject queue or a routed `gate_failed` with a spent cap. Every attempt journals one `supervisor_attempt` signal naming the stem in its body before Rework and before the terminal, whether approved, refused, or escalated:
 
 1. **Propose.** Rework-update with the diagnosis lessons and findings as input, exactly as today's Rework. `clutch/specs/rework.md` gains the supervising rules as the allowed-edit list for this trigger: fix lint and format, add a missing fence or Context entry, correct a stale path, reword; never change `Goal / Why`, remove an acceptance criterion, or widen scope. A proposal that touches `Goal / Why` or drops a criterion is refused by a gate before review, with the road "the proposal escalates (step 4)".
 2. **Review.** `requisition_review` judges the proposal as it judges every Rework proposal, with the prior review's findings and the diff since (how-clutch-works §6.7).
@@ -83,12 +83,12 @@ Runs inside `runner.drive`'s terminal handling, after Diagnosis, for a terminal 
 
 At serve's idle point after each settle, in this order:
 
-1. If any Reject-queue stem is unsupervised, the supervisor step runs for it (section 2) before new work.
+1. Planned: if any Reject-queue stem is unsupervised, the supervisor step runs for it (section 2) before new work. Today the step runs in `runner.drive` and merge-route `TicketWriter.consume_result`; the idle-point hook remains roadmap row `supervise-idle-point`, using `supervisor_attempt` to identify attempted stems and the key scope from `supervisor-effect-scope`.
 2. `roadmap author --ahead N` tops up the open rows (section 3).
 3. If the current release's rows are all merged and its gate passes (section 4), `release` runs, then `publish` only when `release.publish` is true (section 5); the next release becomes current.
 4. A digest notification through `config.notify` (exists): rows merged since the last digest, held stems and why, the next rows to be authored, spend.
 
-`drain` gets steps 1 and 2 between tickets; `run` gets none. `clutch prompt drain-loop` describes what the driver does by itself and what the supervising agent loop it starts does for a held stem or an Author draft (open decision 5); no step waits on a person.
+`drain` gets step 2 between tickets; step 1 is still planned for both drain and serve. `run` gets none of these idle-point steps, but its `runner.drive` terminal handling runs the supervisor step. `clutch prompt drain-loop` describes what the driver does by itself and what the supervising agent loop it starts does for a held stem or an Author draft (open decision 5); no step waits on a person.
 
 ### 7. What still comes from outside
 

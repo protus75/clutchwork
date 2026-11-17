@@ -460,6 +460,7 @@ async def failure_terminal(
             )
         )
         trigger = spent_reason(cap) if cap is not None else "premise_failed"
+        ctx.driver.journal.append(EventType.SIGNAL, {"signal": "supervisor_attempt", "stem": ticket.stem}, ticket=ticket.stem)
         result = await apply_rework(ctx, ticket, findings, attempt=attempt, supervise=Supervise(trigger, lessons))
         proposal = result.artifact
         if result.outcome == "ok" and isinstance(proposal, ReworkOrder) and proposal.action == "update":
