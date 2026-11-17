@@ -1,23 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "7a2f2c446ca0325d2f9a467b490e5470db619a83",
+  "produced_at_sha": "36d2eb4720e6a9ffc0cfa7def483d9eba1e078b5",
   "stem": "regress-scripts-guarded",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In tests/regress_requisition_prior_review.py and tests/regress_review_intakes_own_stem.py, a new `def main() -> None:` shadows `from clutch.__main__ import main`. Alias the import as `from clutch.__main__ import main as clutch_main` and call `clutch_main([...], cwd=repo, env=env)` inside the",
-    "Before writing each wrapper, grep the file for an existing `main` name (import or def). Where one exists, alias the import instead of reusing the name. Keep `def main() -> None:` plus the `if __name__ == \"__main__\":` guard so AC3's text check still passes.",
-    "Redo all ten files from the merge base: move the module-level reproducer code into main(), keep imports, constants and helpers at module level, and end each file with the __main__ guard that calls main(). Review found the guard-and-wrapper approach sound apart from the name collision.",
-    "Before committing, run each of the ten files as `python tests/regress_<name>.py` on the base commit and again after the change. Confirm the stdout JSON line and exit code are identical. The new test only runs regress_premise_park_keep.py as a subprocess, so it missed the TypeError in the other two.",
-    "Keep tests/integration/test_regress_scripts_guarded.py globbing tests/regress_*.py. For each module, import it with stdout captured and assert empty output and no SystemExit. Also run regress_premise_park_keep.py as a subprocess and parse its single JSON line, as the ticket's acceptance criteria"
+    "In tests/integration/test_regress_scripts_guarded.py, assert that the line `if __name__ == \"__main__\":` appears in the text of every script matched by the glob of tests/regress_*.py. Add no skip for scripts that import clutch.__main__. Review found that the skip let",
+    "Redo all ten scripts from the merge base. Put the reproducer in `def main() -> None:` and end each file with `if __name__ == \"__main__\": main()`. Keep constants, imports and helpers at module level. Review found this approach sound.",
+    "In tests/regress_requisition_prior_review.py and tests/regress_review_intakes_own_stem.py, import clutch's entry point as `from clutch.__main__ import main as clutch_main` and call clutch_main. That way the new local main() does not shadow it. Review accepted this alias fix.",
+    "The test must glob tests/regress_*.py, never list the ten files by name. For each module, import it with stdout captured and assert empty stdout and no SystemExit. Run tests/regress_premise_park_keep.py as a subprocess and assert one line, {\"regression_result\": \"pass\"}, and exit code 0.",
+    "Before you finish, delete the guard line from one of the two clutch_main files and confirm the test fails. This checks that the text check covers those files. Then run ./dev.py test tests/integration/test_regress_scripts_guarded.py."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0,
-    4
+    0
   ],
   "spec_version": "1.7",
   "provider": "claude",
