@@ -10,6 +10,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from clutch import git, roadmap, runner, triage
+from clutch.calibration import calibrate_when_due
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
@@ -396,6 +397,7 @@ class Serve:
                                 return (await self.prepare(replace(self.checkout, config=snapshot_config(self.control.load_config())))).ctx
 
                             await supervise_idle(self.checkout, make_ctx)
+                            calibrate_when_due(self.checkout)
 
                     await response.wait(supervise())
                 await response.wait(self.core.scheduler.dispatch_next())

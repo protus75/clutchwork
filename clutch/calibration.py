@@ -28,6 +28,22 @@ def implement_runs(events):
     return runs
 
 
+def due(events, every):
+    count = 0
+    for event in events:
+        if event.type == EventType.SIGNAL and event.body.get("signal") == ESTIMATE_CALIBRATION:
+            count = 0
+        elif event.type == EventType.EFFECT_COMPLETION and _IMPLEMENT.fullmatch(event.key or ""):
+            count += 1
+    return count >= every
+
+
+def calibrate_when_due(checkout):
+    every = checkout.config.calibration.every
+    if due(checkout.journal.read(), every):
+        calibrate(checkout.journal, checkout.fs, checkout.repo, every)
+
+
 def calibrate(journal, fs, repo, every):
     groups = {}
     for stem, provider, model, minutes in implement_runs(journal.read())[-every:]:

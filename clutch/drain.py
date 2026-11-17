@@ -23,6 +23,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from clutch import caps, control, roadmap, runner, triage
+from clutch.calibration import calibrate_when_due
 from clutch.control import ControlRequest
 from clutch.enginelog import engine_log
 from clutch.journal import TERMINAL_STATES, Event, EventType, last_transition, render_ts, require_transition
@@ -421,6 +422,7 @@ class _Drain:
                     return self.dispatch.callback.ctx
 
                 await supervise_idle(self.c, make_ctx)
+                calibrate_when_due(self.c)
             material = self._offer_material()
             scan = await self._scan()
             shas = {s: await self._sha(s) for s in scan.tickets}

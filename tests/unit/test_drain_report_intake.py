@@ -17,6 +17,7 @@ async def test_loop_intakes_reports_after_tickets(monkeypatch):
 
     monkeypatch.setattr(drain, "intake", intake)
     monkeypatch.setattr(triage, "report_intake", lambda c: calls.append(("reports", c)))
+    monkeypatch.setattr(drain, "calibrate_when_due", lambda checkout: None)
     run = drain._Drain.__new__(drain._Drain)
     run.c, run.dispatch, run.before_dispatch = checkout, object(), None
     run.report, run.retro, run.provider_deadlines, run.storm_waiting = object(), None, [], False

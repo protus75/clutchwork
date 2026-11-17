@@ -83,6 +83,7 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
     d._await_controlled = controlled
     monkeypatch.setattr(drain, "intake", AsyncMock())
     monkeypatch.setattr(triage, "report_intake", lambda c: None)
+    monkeypatch.setattr(drain, "calibrate_when_due", lambda checkout: None)
     await d.run()
     d.driver.assert_awaited_once_with(c, log)
     assert d.driven == 1

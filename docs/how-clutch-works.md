@@ -469,7 +469,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 A dispatch exception is journaled as an `infra_error` terminal, re-offered, and held in the Reject queue at the attempts cap.
 
 1. Takes the lock, reconciles, fires due timers, runs the provider preflight, runs intake once.
-2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, run the roadmap driver after a settle (section 7.5), scan committed tickets (skipping stems settled or rejected in the journal), pick the
+2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, run the roadmap driver after a settle (section 7.5), calibrate estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1), scan committed tickets (skipping stems settled or rejected in the journal), pick the
    next ticket, review its committed content if it lacks an approval, run it, merge it inline. Serve applies the same review before Implement and holds a premise-parked ticket until its committed content changes.
 3. **Pick order:** confirmed, unsettled, not rejected, every dependency settled (through split
    successors); among eligible fresh tickets and re-offers, `## Runs before` orders named stems
@@ -514,6 +514,8 @@ Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
 Requested retros and automatic retros due after a ticket settles stop new admission, wait for
 the next idle point, run, and then resume admission. A pending stop takes precedence.
 With `docs/roadmap.md` present, the roadmap driver (section 7.5) holds new admission at start and after each settle, runs at the next idle point after any retro, then resumes admission.
+
+At each idle dispatch point, after supervising held stems, serve calibrates estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1).
 
 A git-checkout engine records its `clutch` tree at startup and checks it before
 admission and after merge passes. A change stops new admissions; after running tickets and
@@ -802,7 +804,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |
 | `retro` | `enabled`, `merges`, `settled`, `spikes` control automatic reports; `test_timing` and `coverage` control measurement summaries (section 9.5) |
-| `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers |
+| `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers; drain and serve also calibrate at their idle point once that many have completed since the last calibration (section 7) |
 | `scheduler`, `drain` | `max_unmerged`; `max_runtime_hours`, `max_ticket_minutes` |
 | `engine_plane_safety_inventory`, `box_policy` | Author starting state (section 9.3) |
 | `ask_notes` | Optional host guidance appended to operator prompts as a `host_notes` data block. |

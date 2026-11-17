@@ -61,6 +61,7 @@ def serve_rig(tmp_path, monkeypatch, checkout, ctx):
     # replace() in lazy preparation needs the real dataclass checkout.
     monkeypatch.setattr(serve, "replace", lambda c, **kwargs: Checkout(c.repo, c.journal, kwargs["config"]))
     monkeypatch.setattr(serve, "snapshot_config", lambda c: c)
+    monkeypatch.setattr(serve, "calibrate_when_due", lambda checkout: None)
     return s
 
 
@@ -124,6 +125,7 @@ def drain_rig(tmp_path, monkeypatch, checkout, dispatch):
     d._settle = lambda *args: None
     monkeypatch.setattr(drain, "intake", AsyncMock())
     monkeypatch.setattr(triage, "report_intake", lambda c: None)
+    monkeypatch.setattr(drain, "calibrate_when_due", lambda checkout: None)
     return d
 
 
