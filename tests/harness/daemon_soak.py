@@ -277,7 +277,7 @@ class _Member:
             + "".join(f"- {p}\n" for p in paths)
             + f"\n## Acceptance criteria\n1. `{sys.executable} verify.py` exits 0.\n\n## Verification\n```\n"
             + f"{sys.executable} verify.py\n```\n\n## Definition of rejected\nNeeds live work.\n\n"
-            "## Time budget\n- expected: 1m\n- stuck: 20m\n"
+            "## Time budget\n- expected: 10m\n- stuck: 20m\n"
         )
 
     def publish(self, stem, changes):

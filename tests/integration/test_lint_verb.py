@@ -211,11 +211,17 @@ def test_lint_unreadable_ticket(root, capsys):
 
 
 def test_lint_flags_stuck_over_drain_ceiling(root, capsys):
-    write(root, "budget", ticket().replace("- stuck: 20m", "- stuck: 91m"))
+    write(root, "budget", ticket().replace("- expected: 10m\n- stuck: 20m", "- expected: 50m\n- stuck: 100m\n- reason: cohesive work"))
     assert lint(root, "budget") == 1
     out = capsys.readouterr().out
-    assert "stuck 91m exceeds drain.max_ticket_minutes (90m)" in out
+    assert "stuck 100m exceeds drain.max_ticket_minutes (90m)" in out
     assert "lower `- stuck:`" in out and "split" in out
-    write(root, "budget", ticket().replace("- stuck: 20m", "- stuck: 90m"))
+    write(root, "budget", ticket().replace("- expected: 10m\n- stuck: 20m", "- expected: 45m\n- stuck: 90m\n- reason: cohesive work"))
     assert lint(root, "budget") == 0
     assert capsys.readouterr().out == "lint: 1/1 tickets valid\n"
+
+
+def test_lint_refuses_expected_over_limit(root, capsys):
+    write(root, "budget", ticket().replace("- expected: 10m\n- stuck: 20m", "- expected: 61m\n- stuck: 122m"))
+    assert lint(root, "budget") == 1
+    assert "split into more tickets" in capsys.readouterr().out

@@ -460,14 +460,14 @@ def test_the_runtime_ceiling_stops_the_next_dispatch_and_exits_1(root, capsys):
 
 
 def test_a_stuck_budget_over_the_per_ticket_ceiling_parks_at_dispatch(root, capsys):
-    write(root, "too-long", ticket().replace("- stuck: 20m", "- stuck: 200m"))
+    write(root, "too-long", ticket().replace("- expected: 10m\n- stuck: 20m", "- expected: 50m\n- stuck: 100m\n- reason: cohesive work"))
     write(root, "fits", ticket())
     script = Script()
     assert drain(root, script) == 0
     assert script.calls == ["fits"]
     assert tos(root, "too-long") == []
     out = capsys.readouterr().out
-    assert "too-long: `## Time budget` stuck 200m exceeds drain.max_ticket_minutes (90m)" in out
+    assert "too-long: `## Time budget` stuck 100m exceeds drain.max_ticket_minutes (90m)" in out
     assert "lower `- stuck:`" in out
 
 

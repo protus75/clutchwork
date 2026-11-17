@@ -218,7 +218,7 @@ class _Member:
             "## Scope in / Scope out\nIn: fixture work. Out: live work.\n\n## Scope fence\n- work.txt\n\n"
             f"## Acceptance criteria\n1. `{sys.executable} verify.py` exits 0.\n\n## Verification\n```\n"
             f"{sys.executable} verify.py\n```\n\n## Definition of rejected\nRequires live work.\n\n"
-            "## Time budget\n- expected: 1m\n- stuck: 20m\n"
+            "## Time budget\n- expected: 10m\n- stuck: 20m\n"
         )
         self.fs.write(self.root / f"tickets/{stem}/ticket.md", raw.encode())
         await intake(self.root, self.git, self.journal, self.fs, stems=None)

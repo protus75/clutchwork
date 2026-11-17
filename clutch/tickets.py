@@ -458,8 +458,9 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
         items, errs = _bullets(text_, "Time budget", path)
         findings += errs
         budget = {m.group(1): int(m.group(2)) for item in items if (m := _BUDGET.match(item))}
-        if len(items) != 2 or set(budget) != {"expected", "stuck"} or 0 in budget.values():
-            findings.append(_f("`## Time budget` is not an expected/stuck minutes pair", "write exactly two bullets, `- expected: <int>m` and `- stuck: <int>m`", path))
+        reasons = [item for item in items if item.startswith("reason:")]
+        if len(items) != 2 + len(reasons) or len(reasons) > 1 or set(budget) != {"expected", "stuck"} or 0 in budget.values():
+            findings.append(_f("`## Time budget` is not an expected/stuck minutes pair", "write `- expected: <int>m`, `- stuck: <int>m`, and optionally `- reason: <text>`", path))
         else:
             expected, stuck = budget["expected"], budget["stuck"]
             if stuck <= expected:
@@ -566,6 +567,15 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
     """Decidable authoring rules, separate from scan and merge admission."""
     path = ticket_path(ticket.stem)
     findings = []
+    expected, stuck = ticket.expected_minutes, ticket.stuck_minutes
+    if expected > 60:
+        findings.append(_f(f"`## Time budget` expected {expected}m exceeds 60m", "split into more tickets, each its own stem; never raise the budget instead", path))
+    if stuck != 2 * expected:
+        findings.append(_f(f"`## Time budget` stuck {stuck}m is not twice expected {expected}m", "set `stuck` to twice `expected`", path))
+    if 30 < expected <= 60:
+        items, _ = _bullets(ticket.sections["Time budget"], "Time budget", path)
+        if not any(item.startswith("reason:") and item[len("reason:") :].strip() for item in items):
+            findings.append(_f(f"`## Time budget` expected {expected}m has no reason", "split when possible, otherwise add `- reason: <why it is not split>`", path))
     if ticket.regression and not any(
         not Path(arg).is_absolute() and ".." not in Path(arg).parts and any(str(Path(arg)) == prefix.rstrip("/") or str(Path(arg)).startswith(prefix.rstrip("/") + "/") for prefix in ticket.carries)
         for arg in ticket.regression

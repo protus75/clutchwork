@@ -16,7 +16,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
    clean. Omit stems to check all tickets that are
    not settled or rejected in the journal (all tickets when there is no journal). In a linked
    worktree, lint with no stems uses the main checkout's journal. Lint applies
-   intake's claims and evidence checks and the `drain.max_ticket_minutes` stuck ceiling without taking the lock or writing anything; it prints
+   intake's claims, evidence and time budget checks and the `drain.max_ticket_minutes` stuck ceiling without taking the lock or writing anything; it prints
    findings with fixes and a valid/total summary. Exit 0 means all valid, 1 means findings, and
    2 means a named ticket is missing or the tickets directory is unreadable.
 3. Before review, check that no criterion contradicts merged behavior or an existing test outside
@@ -77,7 +77,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
 - `Verification`: the commands Check runs; every one must exit 0.
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.
-  `stuck` must exceed `expected`.
+  `stuck` is twice `expected`. Over 30m, split when possible or add `- reason: <why it is not split>`; over 60m, always split into more tickets, each its own stem. Never raise the budget instead.
 
 ## Keeping tickets apart
 
