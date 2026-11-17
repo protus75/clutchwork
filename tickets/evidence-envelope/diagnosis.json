@@ -1,0 +1,26 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0dee787d84363a2939f139521198d656fb7e8306",
+  "stem": "evidence-envelope",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Attempt 0 ended after about 26s of inspection with no diff and no failing check. Nothing hit a limit, so this is an early stop, not a capacity or size problem. Use the 150m budget and implement the ticket's Scope in fully before ending; do not report incomplete after reading files.",
+    "Work in this order. First, clutch/evidence: make schema End.rusage `Rusage | None` and add EvidenceStore.latest_stdout(prefix). Then clutch/providers.py: add CallCapture, engine_version(), spec_version(surface) and the start/end writes, and delete capture_sequence, capture_dir, _seq and",
+    "In CliAdapter.invoke, write start.json after tree_before and before exec.run. Write end.json in a finally-style path on every exit (ok, nonzero, timeout, spawn_error, killed), then prune. Keep the local name `prompt` and `stdin_path=prompt`, because test_host_contract pins it. Remove both scratch",
+    "Do the forced test-fixture edits early so existing suites stay green: ScriptFS read_bytes/size; ScriptExec, FakeExec and PreflightExec answer git argv first with a fixed 40-hex id; MemoryFS remove; harvest_redaction fs entries/read_bytes/size; RecordedExec records stdin text. Then delete",
+    "Write tests/evidence_records.py::seed_end and the unit tests for AC 1-11 in tests/unit/test_evidence_envelope.py, using fakes and tmp_path, with engine_version and spec_version replaced by fakes. Write the integration tests for AC 12-14. Before ending, run all three ## Verification commands."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    2,
+    3
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
