@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The change spans provider execution, evidence storage, harvest, logging, documentation, and multiple test fixtures, so I could not complete and verify it within this session.
+The focused harvest-redaction test passed after its filesystem fake was extended; the ticket's verification commands and host checks remain outstanding.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimates 150 minutes; the work stopped during initial inspection.
+The ticket budget was 150 minutes; the work stopped before completion.
 
