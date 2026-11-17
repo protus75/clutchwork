@@ -1,7 +1,10 @@
 import asyncio
+import json
 import os
 import sys
 import time
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -22,11 +25,29 @@ async def test_concurrent_exit_codes(caplog):
 
 @pytest.mark.asyncio
 async def test_usage_and_independent_peak_memory():
+    script = """
+import asyncio
+import json
+import os
+import sys
+from clutch.seams import SubprocessExec
+
+async def main():
     big, small = [], []
+    exec_ = SubprocessExec()
+    async def run(code, callback):
+        await exec_.run([sys.executable, "-c", code], cwd=os.getcwd(), env=os.environ, timeout=10, on_rusage=callback)
     await asyncio.gather(
-        run("import time; x=bytearray(200_000_000); t=time.process_time()+0.2\nwhile time.process_time()<t: pass", on_rusage=big.append),
-        run("pass", on_rusage=small.append),
+        run("import time; x=bytearray(200_000_000); t=time.process_time()+0.2\\nwhile time.process_time()<t: pass", big.append),
+        run("pass", small.append),
     )
+    print(json.dumps({"big": [item.model_dump() for item in big], "small": [item.model_dump() for item in small]}))
+
+asyncio.run(main())
+"""
+    _, stdout, _ = await SubprocessExec().run([sys.executable, "-c", script], cwd=Path(__file__).resolve().parents[2], env=os.environ, timeout=10)
+    usage = json.loads(stdout, object_hook=lambda value: SimpleNamespace(**value))
+    big, small = usage.big, usage.small
     assert len(big) == len(small) == 1
     assert big[0].user_s + big[0].sys_s > 0
     assert small[0].max_rss_kb > 0
