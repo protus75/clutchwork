@@ -246,7 +246,7 @@ Out:
 11. The `uv run python -c` check in `## Verification` exits 0. It requires:
     - `docs/how-clutch-works.md` holds a line starting ``| `roadmap accept <release>` | commit only |``, and a line starting ``| `acceptance.md` |``;
     - `clutch/docs/host-running.md` holds `roadmap accept <release>`.
-12. `./dev.py test` exits 0, including the unit coverage gate for `clutch/acceptance.py` and `clutch/roadmap.py`.
+12. `./dev.py test` exits 0, including the unit coverage gate for `clutch/acceptance.py` and `clutch/roadmap.py`. One known intermittent test is not a premise failure: if the only failure is `tests/integration/test_kill_cli_activation.py::test_killed_run_is_terminal_or_restart_reconcilable[True]`, and it passes on the base commit and passes when rerun alone on the candidate, it is intermittent for this ticket even though the test imports `clutch/__main__.py`. Its `[True]` case runs `clutch.drain.drain` and calls only the unchanged `build_control` from that file, never the `roadmap accept` parser or handler. Commit, reply `ok`, and report it in `second_problems` and `surprises`. Ruled out: a finished diff thrown away for one out-of-fence intermittent failure.
 
 ## Verification
 ```
