@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ecbb2e26343c810c3c7d7dffb99077806bdbf8aa",
+  "stem": "supervisor-effect-scope",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Redo the whole change from the merge base. Review found the implementation sound: scoped_seq in clutch/llmeffect.py, with key_scope threaded through Driver.run/_run, review_ticket, rework, apply_rework and lift_outbox. Unscoped keys stayed unchanged.",
+    "In tests/unit/test_key_scope.py, the Driver test for criterion 8 must also read the journal. Driver._run passes run_seq=seq to self.stage(...). For both the scoped and the unscoped Driver.run, assert each journaled stage event's run_seq is an int (type is int) equal to seq, never 'sup-<seq>'.",
+    "Keep the criterion 8 check of effect_completion keys: llm/<stem>/sup-<seq>/<surface>/<attempt>/1 with the scope and llm/<stem>/<seq>/<surface>/<attempt>/1 without it. Add the journal run_seq assertions beside it so a change that journals key_seq fails the test.",
+    "Before finishing, check every acceptance criterion (1-8) against a named assertion in tests/unit/test_key_scope.py. Review rejected the last attempt only because one clause of criterion 8 had no assertion."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
