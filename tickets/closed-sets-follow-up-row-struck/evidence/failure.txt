@@ -1,0 +1,27 @@
+$ uv run pytest -q tests/integration/test_closed_sets_single_owner.py -q
+bringing up nodes...
+bringing up nodes...
+
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+______________________________ test_follow_up_row ______________________________
+[gw2] linux -- Python 3.14.6 /home/djp/source/clutch/.venv/bin/python3
+
+    def test_follow_up_row():
+        text = (ROOT / "docs/roadmap.md").read_text()
+        section = text.split("### 0.3.0\n", 1)[1].split("```gate", 1)[0]
+        rows = [line for line in text.splitlines() if "| `closed-sets-remaining` |" in line]
+        assert len(rows) == 1
+        assert rows[0] in section
+        assert re.match(r"\| \d+ \| `closed-sets-remaining` \| roadmap \| chore \| P3 \| `closed-sets-single-owner` \|\s*\|", rows[0])
+>       assert re.search(r"^\| 19 \| `closed-sets-single-owner` \|", text, re.M)
+E       assert None
+E        +  where None = <function search at 0x71e81d4ca400>('^\\| 19 \\| `closed-sets-single-owner` \\|', "# clutch roadmap\n\nThe one place that orders clutch's planned work. Each plan under `docs/` owns its own design; thi...s (section 5, decision 5) and shared files (decision 8) are updated whenever a plan adds a ticket that touches them.\n", re.MULTILINE)
+E        +    where <function search at 0x71e81d4ca400> = re.search
+E        +    and   re.MULTILINE = re.M
+
+tests/integration/test_closed_sets_single_owner.py:50: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_closed_sets_single_owner.py::test_follow_up_row
+dev: `uv run pytest -q tests/integration/test_closed_sets_single_owner.py -q` failed
+a433d181 clutch(roadmap): author roadmap-status-stuck-rows
