@@ -75,7 +75,7 @@ Merge order. The drain runs one ticket at a time from main's tip, so whichever o
 Out:
 - An alias of any kind for the old names.
 - Lock and request vocabulary: `Lockfile` verbs, `lockfile.ENGINE_VERBS`, `control.Verb` and the inbox request format, engine.log `verb` fields, `observe.lock_verb`, `hostfiles._IMPERATIVES`.
-- Stdout lines (`kill submitted: ...`, `nothing running to pause`, `retro: committed ...`) and the `start a drain before submitting kill` road.
+- Stdout lines (`kill submitted: ...`, `nothing running to pause`, `retro: committed ...`), the `start a drain before submitting kill` road, and `clutch/notify.py`'s escalation field `"exit": "resume"` (a request verb, pinned by `tests/integration/test_serve_notify.py`).
 - Prose that names the control request or the mode rather than the command: section 7.3's list "`pause`, `resume`, `kill`, `retro`, and `stop` write a request file", section 3.1's reserved stem `retro`, section 11's `retro` config row, `retro:` config keys, stage and event names, module docstrings.
 - `clutch/hostfiles.py` CORE_TEMPLATE, the managed blocks, `CLAUDE.md` and `AGENTS.md`: none names these commands (`grep -nE 'clutch (pause|resume|kill|retro)' clutch/hostfiles.py CLAUDE.md AGENTS.md` prints nothing at HEAD), so `clutch core` is not run.
 - `dev.py`, `vscode-clutchwork/` (its README and `package.json` name none of the four as a command), `clutch/docs/host-contract.md`, `host-authoring.md`, `host-qwen.md` and `host-gemini.md` (none names them), `CLUTCH_PLAN.md`, `docs/roadmap.md` and the plans under `docs/`.
@@ -120,7 +120,7 @@ Out:
 ```
 
 ## Definition of rejected
-The branch is rejected, even if it passes, when any old name still parses (a top-level parser, a hidden or suppressed subparser, or an argv rewrite in `main`); an argument, stdout line, exit code, lock verb, control request, commit or journal event of the four commands changes; `control.Verb`, `lockfile.ENGINE_VERBS` or an engine.log `verb` changes; `drain`, `serve`, `run` or `stop` changes beyond the `serve` help sentence named in Scope in; a help field gets a default, or command help is copied into `clutch/help.py`; `clutch/hostfiles.py`, `CLAUDE.md`, `AGENTS.md` or `vscode-clutchwork/` changes; or a test is added to a do-not-grow file, or an existing assertion is dropped or loosened beyond the edits named in Scope in.
+The branch is rejected, even if it passes, when any old name still parses (a top-level parser, a hidden or suppressed subparser, or an argv rewrite in `main`); an argument, stdout line, exit code, lock verb, control request, commit or journal event of the four commands changes; `control.Verb`, `lockfile.ENGINE_VERBS` or an engine.log `verb` changes; the parser, dispatch or help of `engine drain`, `engine serve`, `engine run` or `engine stop` changes beyond the `serve` `does` sentence named in Scope in; a help field gets a default, or command help is copied into `clutch/help.py`; `clutch/hostfiles.py`, `CLAUDE.md`, `AGENTS.md` or `vscode-clutchwork/` changes; or a test is added to a do-not-grow file, or an existing assertion is dropped or loosened beyond the edits named in Scope in.
 
 ## Time budget
 - expected: 20m
