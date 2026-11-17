@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The fixture meets the ticket’s rule for treating cached tokens as included, though the inequality alone does not prove the provider’s token semantics. The simpler direct line-by-line mapping was sufficient; no additional abstraction was needed.
+The fixture selects the inclusive-input rule, though its counts alone do not prove that cached tokens are included. The current Claude and Codex Parsed values both appear to report total input under that rule, so the fixture does not establish a mixed-scale bug.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000605-4e62ffe8: The out-of-scope docs/evidence-trail-plan.md still says that nothing in clutch pins the Codex cached-token basis.
+- box-000606-d147480a: docs/evidence-trail-plan.md still says that nothing in clutch pins the Codex input-token basis; that statement is now stale and the file is outside the scope fence.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 45 minutes; the work completed within that budget.
+The ticket budget was 45 minutes; elapsed time was not measured.
 
