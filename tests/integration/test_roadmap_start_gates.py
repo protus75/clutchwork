@@ -74,5 +74,5 @@ def test_status_and_author_start(tmp_path, monkeypatch):
 
 def test_repository_start_and_ship_blocks():
     text = (Path(__file__).resolve().parents[2] / roadmap.ROADMAP).read_text()
-    assert roadmap.gates(text, "start") == {"0.5.0": (("uv", "run", "clutch", "roadmap", "merged", "closed-sets-single-owner", "active-slot-single-owner", "merge-admission-single-owner"),)}
+    assert roadmap.gates(text, "start") == {"0.4.0": (("uv", "run", "clutch", "roadmap", "merged", "closed-sets-single-owner", "active-slot-single-owner", "merge-admission-single-owner"),)}
     assert set(roadmap.gates(text, "gate")) == {"0.3.0", "0.4.0", "0.5.0", "0.6.0", "0.7.0"}

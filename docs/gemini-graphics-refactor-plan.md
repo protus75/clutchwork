@@ -8,9 +8,9 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Part A (`gemini-provider`) is release 0.3.0 (`docs/roadmap.md` row 32); it needs nothing and waits on its agent capture. Part B is release 0.5.0 (rows 49-55): seven tickets, depending on `closed-sets-single-owner` (row 19), which gives the kind set one home before this plan adds a member to it. What needs this plan: `evidence-normalize-gemini` (`docs/evidence-trail-plan.md` ticket 5) waits on `gemini-provider` and uses the A0 agent capture as its fixture. Shared files: `graphics-render-check` and the parallel plan's `conflict-discard-rerun` both bump `clutch/specs/implement.md`; this plan's ticket runs first (roadmap decision 8). Render commands run through `run_host_command`, under the parallel plan's host-command lock (decision 10). The judge's `graphics.judge_samples` majority is the `majority-verdict` combiner of `docs/stage-panels-plan.md` (decision 14); B5 moves onto it when that plan lands in 0.6.0 and until then carries its own per-row majority. Shared budget: `graphics-kind` adds 9 bytes (`|graphics`) to CORE_TEMPLATE (decision 5). New dependencies ship as optional extras (decision 18), never in core.
+Part A (`gemini-provider`) is release 0.3.0 (`docs/roadmap.md` row 32); it needs nothing and waits on its agent capture. Part B is release 0.4.0 (rows 49-55): seven tickets, depending on `closed-sets-single-owner` (row 19), which gives the kind set one home before this plan adds a member to it. What needs this plan: `evidence-normalize-gemini` (`docs/evidence-trail-plan.md` ticket 5) waits on `gemini-provider` and uses the A0 agent capture as its fixture. Shared files: `graphics-render-check` and the parallel plan's `conflict-discard-rerun` both bump `clutch/specs/implement.md`; this plan's ticket runs first (roadmap decision 8). Render commands run through `run_host_command`, under the parallel plan's host-command lock (decision 10). The judge's `graphics.judge_samples` majority is the `majority-verdict` combiner of `docs/stage-panels-plan.md` (decision 14); B5 moves onto it when that plan lands in 0.5.0 and until then carries its own per-row majority. Shared budget: `graphics-kind` adds 9 bytes (`|graphics`) to CORE_TEMPLATE (decision 5). New dependencies ship as optional extras (decision 18), never in core.
 
-**Risk the agent capture must retire first.** Part B's image mode assumes Gemini CLI can call an image model headlessly and write the result to a file. If A0 shows it cannot, image generation needs the `kind: api` provider client that `CLUTCH_PLAN.md` §18.2 defers to "the first configured `kind: api` provider". That trigger would then have fired, and an `api-provider-client` ticket (image models only, no new surfaces) joins 0.5.0 ahead of `image-candidates-select`. The plan is written for the CLI case; the api case changes only where the image call is made, not the grading.
+**Risk the agent capture must retire first.** Part B's image mode assumes Gemini CLI can call an image model headlessly and write the result to a file. If A0 shows it cannot, image generation needs the `kind: api` provider client that `CLUTCH_PLAN.md` §18.2 defers to "the first configured `kind: api` provider". That trigger would then have fired, and an `api-provider-client` ticket (image models only, no new surfaces) joins 0.4.0 ahead of `image-candidates-select`. The plan is written for the CLI case; the api case changes only where the image call is made, not the grading.
 
 ## Part A: Gemini CLI provider
 
@@ -280,15 +280,15 @@ Future tickets. None are authored yet. Each is written with `clutch new`, then `
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| A0 | (agent capture) | evidence | | | The nine facts under "Prerequisite: agent capture", captured as A1's evidence and as the Gemini normalizer's fixture; not a ticket. Fact 7 decides whether `api-provider-client` joins 0.5.0. |
+| A0 | (agent capture) | evidence | | | The nine facts under "Prerequisite: agent capture", captured as A1's evidence and as the Gemini normalizer's fixture; not a ticket. Fact 7 decides whether `api-provider-client` joins 0.4.0. |
 | A1 | `gemini-provider` | feature | P2 | | Part A. Release 0.3.0. |
-| B1 | `graphics-kind` | feature | P2 | `closed-sets-single-owner` (roadmap row 19) | Grammar for both modes, template, `--reference` and `--input`, lint, the kind set's one home, `CORE_TEMPLATE` (+9 bytes), authoring guide, requisition spec block. Release 0.5.0. |
-| B2 | `graphics-render-check` | feature | P2 | `graphics-kind` | `command` mode: render protocol and artifact checks at Check; implement spec block for both modes. Release 0.5.0. |
-| B3 | `route-kinds-filter` | feature | P2 | | `Route.kinds`, kind-aware `resolve()`, judge-independence warning in `doctor` and lint, host-contract inventory. Release 0.5.0. |
-| B4 | `image-quality-gate` | feature | P2 | `graphics-kind` | `clutch/images.py`, the `image_quality` gate, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. Release 0.5.0. |
-| B5 | `visual-review-surface` | feature | P2 | `graphics-render-check`, `route-kinds-filter`, `image-quality-gate` | `review_visual` spec with rubric, JSON schema, `graphics.judge_samples` majority, per-row verdicts; `review.md` provenance block. Release 0.5.0. |
-| B6 | `image-candidates-select` | feature | P2 | `visual-review-surface` | Candidates in Implement, ranking, the select commit, `visual_undecided` park, its release (open decision 4). Release 0.5.0. |
-| B7 | `visual-review-baseline` | feature | P2 | `visual-review-surface` | `eval/visual/` fixtures labelled by the AI label panel, `./dev.py visual-baseline`, the `visual_baseline` GO gate at 0.85 agreement; until GO every graphics ticket parks. Release 0.5.0. |
+| B1 | `graphics-kind` | feature | P2 | `closed-sets-single-owner` (roadmap row 19) | Grammar for both modes, template, `--reference` and `--input`, lint, the kind set's one home, `CORE_TEMPLATE` (+9 bytes), authoring guide, requisition spec block. Release 0.4.0. |
+| B2 | `graphics-render-check` | feature | P2 | `graphics-kind` | `command` mode: render protocol and artifact checks at Check; implement spec block for both modes. Release 0.4.0. |
+| B3 | `route-kinds-filter` | feature | P2 | | `Route.kinds`, kind-aware `resolve()`, judge-independence warning in `doctor` and lint, host-contract inventory. Release 0.4.0. |
+| B4 | `image-quality-gate` | feature | P2 | `graphics-kind` | `clutch/images.py`, the `image_quality` gate, the `images` and `images-embed` extras, side-by-side and heatmap artifacts. Release 0.4.0. |
+| B5 | `visual-review-surface` | feature | P2 | `graphics-render-check`, `route-kinds-filter`, `image-quality-gate` | `review_visual` spec with rubric, JSON schema, `graphics.judge_samples` majority, per-row verdicts; `review.md` provenance block. Release 0.4.0. |
+| B6 | `image-candidates-select` | feature | P2 | `visual-review-surface` | Candidates in Implement, ranking, the select commit, `visual_undecided` park, its release (open decision 4). Release 0.4.0. |
+| B7 | `visual-review-baseline` | feature | P2 | `visual-review-surface` | `eval/visual/` fixtures labelled by the AI label panel, `./dev.py visual-baseline`, the `visual_baseline` GO gate at 0.85 agreement; until GO every graphics ticket parks. Release 0.4.0. |
 
 `Runs before`: B2 before `conflict-discard-rerun` (both bump `clutch/specs/implement.md`). B7 before B6 is not required (B6 parks everything until B7 records GO), but B7 should merge in the same release or B6 only ever parks. `contention-authoring-rules` (roadmap row 13) before every ticket here.
 
@@ -296,7 +296,7 @@ Part A and Part B are independent except through A0's fact 7. Within B, each `De
 
 ## Risks
 
-- **Headless image generation may not exist in the CLI.** A0 fact 7. The fallback is the deferred `api` provider client, scoped to image models; it is a real ticket if the fact comes back negative, and it moves the first image ticket later in 0.5.0.
+- **Headless image generation may not exist in the CLI.** A0 fact 7. The fallback is the deferred `api` provider client, scoped to image models; it is a real ticket if the fact comes back negative, and it moves the first image ticket later in 0.4.0.
 - **Heavy optional dependencies.** `images-embed` pulls PyTorch. It is a separate extra so that hosts using keypoint presence never install it. Wheel availability on Python 3.14 is A0 fact 9.
 - **Judge self-grading.** A judge from the generator's family rates its own work kindly. B3's independence check and B7's calibration are the two guards; the calibration report records which family served the judge.
 - **Guessed thresholds.** Every layer-1 default is a guess until B7 measures it; that is why GO gates auto-accept and every ticket parks before GO.

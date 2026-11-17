@@ -10,7 +10,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.6.0 (`docs/roadmap.md` rows 57-61). Needs from other plans: the evidence store and envelope (`evidence-store`, `evidence-envelope`, 0.3.0), which own the call record this plan builds on; `merge-model-resolve` (0.5.0) for the `conflict` record kind, which export skips with a count until it exists. Nothing depends on this plan except the document agent's later `outcome` lens (`docs/document-agent-plan.md` §4.4). Shared budgets: none (no CORE_TEMPLATE text; one new config block `training_data`). The P0 capture bug (`provider-capture-overwrite`) is the roadmap's row 1, not this plan's; its cause fix is `evidence-envelope` (roadmap decision 4).
+Release 0.5.0 (`docs/roadmap.md` rows 57-61). Needs from other plans: the evidence store and envelope (`evidence-store`, `evidence-envelope`, 0.3.0), which own the call record this plan builds on; `merge-model-resolve` (0.4.0) for the `conflict` record kind, which export skips with a count until it exists. Nothing depends on this plan except the document agent's later `outcome` lens (`docs/document-agent-plan.md` §4.4). Shared budgets: none (no CORE_TEMPLATE text; one new config block `training_data`). The P0 capture bug (`provider-capture-overwrite`) is the roadmap's row 1, not this plan's; its cause fix is `evidence-envelope` (roadmap decision 4).
 
 ## Why clutch data is unusually good training data
 
@@ -105,7 +105,7 @@ The evidence store holds one record per model call (`evidence/calls/`). This pla
 
 clutch never trains a model and never sends data anywhere. It provides three things:
 
-1. **Retrieval first (no training).** Past tickets, decisions from `run.md`, and review findings are the cheapest win. That retrieval is the project index of `docs/annotations-index-plan.md` (0.6.0): `clutch context suggest` ranks past tickets, documents, and sections for a new ticket, and the export joins the index's file purposes onto its records. This plan adds no retrieval of its own.
+1. **Retrieval first (no training).** Past tickets, decisions from `run.md`, and review findings are the cheapest win. That retrieval is the project index of `docs/annotations-index-plan.md` (0.5.0): `clutch context suggest` ranks past tickets, documents, and sections for a new ticket, and the export joins the index's file purposes onto its records. This plan adds no retrieval of its own.
 2. **A local provider on narrow surfaces.** clutch already routes by `(tier, surface)` to providers such as a local `qwen` through Ollama. A host tunes a small model on its `triage`, `review`, or `ticket` records and routes only that surface to it. The existing GO baseline (`docs/how-clutch-works.md` §9.6) decides whether that model's output is trusted for auto-confirm.
 3. **Measured, not assumed.** `clutch training eval --route <tier>/<surface> --holdout FILE` replays held-out records through the given route and scores agreement with the recorded outcome (verdict match for review, triage, and requisition; check pass rate for implement). It is the evidence a host needs before routing a surface to its own model, and it is also the triage-dedup eval that `CLUTCH_PLAN.md` §18.2 deferred to the daemon era (roadmap §3.3). The report goes to stdout and the engine log, never to the journal.
 
@@ -130,7 +130,7 @@ clutch never trains a model and never sends data anywhere. It provides three thi
 
 ## Ticket breakdown
 
-Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). Release 0.6.0.
+Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). Release 0.5.0.
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
@@ -156,4 +156,4 @@ Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 i
 1. **Store the full tool-call stream in the export, or only prompts, outputs, and diffs?** Decided 2026-11-13: the export includes the full normalized trajectory; a per-run flag (`--no-trajectory`) trims it for review- and triage-only tuning.
 2. **Build `training eval` in clutch, or leave evaluation to hosts?** Decided 2026-11-14: build it (`training-eval`). Without an in-clutch measure, "the local model is good enough" is a guess, and the GO baseline already sets the precedent.
 3. **Should export include tickets from Author (engine-written), or only ones a person confirmed?** Decided 2026-11-13: both, with an `authored_by: human|author` field so hosts can filter.
-4. **Move `spools/<stem>/<attempt>/` onto the evidence store?** Decided 2026-11-14: later, once the store has run for a release; `spools-onto-evidence-store` (roadmap row 63, 0.6.0, owned by the evidence plan). Until then two capture paths exist, which roadmap decision 1 accepts.
+4. **Move `spools/<stem>/<attempt>/` onto the evidence store?** Decided 2026-11-14: later, once the store has run for a release; `spools-onto-evidence-store` (roadmap row 63, 0.5.0, owned by the evidence plan). Until then two capture paths exist, which roadmap decision 1 accepts.

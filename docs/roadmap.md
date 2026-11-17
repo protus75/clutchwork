@@ -18,17 +18,17 @@ Facts the ordering rests on:
 
 ## 1. Release plan
 
-Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor version, named for the version `clutch release --minor` gives it: a phase is bumped and tagged at its start, so tag `v0.3.0` (`c761b213`) opened 0.3.0. These names were once one minor lower (0.3.0 was `0.2.0`), and older commits, tickets, and Suggestion Box messages use the old names. Each phase takes the next minor when it starts, so if the conditional 0.4.0 window slides, the phases after 0.3.0 are renamed to the versions they start at. `clutch release --minor|--patch` (`release-verb`, merged) bumps, commits, and tags; `./dev.py publish` still bumps the patch again before it uploads, which `release-publish` (row 92) replaces with a publish that never bumps.
+Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor version, named for the version `clutch release --minor` gives it: a phase is bumped and tagged at its start, so tag `v0.3.0` (`c761b213`) opened 0.3.0. These names were once one minor lower (0.3.0 was `0.2.0`), and older commits, tickets, and Suggestion Box messages use the old names. Each phase takes the next minor when it starts, so if the conditional 0.6.0 window slides, the phases after 0.3.0 are renamed to the versions they start at. `clutch release --minor|--patch` (`release-verb`, merged) bumps, commits, and tags; `./dev.py publish` still bumps the patch again before it uploads, which `release-publish` (row 92) replaces with a publish that never bumps.
 
 | Release | Theme | Gate to start | Gate to ship |
 |---|---|---|---|
 | **0.3.0** | Truth, hygiene, shared infrastructure, and the roadmap driver (`docs/roadmap-driver-plan.md`) | none | every P0 and P1 row merged; evidence capture live; `docs-truth-sweep` merged so the next audit starts clean; the driver has authored and run at least three roadmap rows on this repo with no operator verdict |
-| **0.4.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows a drain start or `status` still dominated by journal reads after `journal-incremental-read` (merged `f790cf71`); if not, this release slides behind 0.6.0 (unchecked) | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
-| **0.5.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`) (unchecked); decision 19’s credential rule applies while this machine has no Gemini credential (unchecked) | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
-| **0.6.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain (unchecked) | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a two-member review panel has reviewed the next 10 tickets with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
+| **0.4.0** | Parallel runs and the graphics kind (`docs/parallel-tickets-plan.md`, `docs/gemini-graphics-refactor-plan.md` Part B) | 0.3.0 dedup tickets merged (`active-slot-single-owner`, `merge-admission-single-owner`, `closed-sets-single-owner`); Gemini agent capture A0 committed (fact 7 decides `api-provider-client`) (unchecked); decision 19’s credential rule applies while this machine has no Gemini credential (unchecked) | parallel serve has merged the next 10 tickets with no conflict-rerun cap hit; one `generate` graphics ticket merged through the select commit; `visual_baseline` GO recorded |
+| **0.5.0** | Training flywheel, stage panels, and the project index (`docs/training-data-plan.md`, `docs/stage-panels-plan.md`, `docs/annotations-index-plan.md`, evidence verbs) | evidence store has captured at least one full drain (unchecked) | `training export` produces every record kind from this repo's journal; `training eval` scores one lens; a two-member review panel has reviewed the next 10 tickets with its unique-catch count in the retro report; this repo's docs and tests carry filled meta blocks and `context suggest` returns selectors for a real ticket |
+| **0.6.0** | Journal query layer (`docs/journal-sql-refactor-plan.md`) | re-measurement shows `clutch status` over 1 second or a drain start spending over 2 seconds in journal reads (unchecked) | all four port groups merged and the SQL-only gate in place; no feature ticket runs during the window |
 | **0.7.0** | Document agent (`docs/document-agent-plan.md`) | isolated read-only calls proven by `isolated-readonly-call` (unchecked); the owner's lens prompts adapted (unchecked) | the three plans written on 2026-11-13 moved into doc sets and reviewed with `scope` and `buildability` |
 
-The `start` block for 0.5.0 checks the three dedup tickets; clauses marked (unchecked) have no merged verb to check them. A release without a `start` block starts unconditionally.
+The `start` block for 0.4.0 checks the three dedup tickets; clauses marked (unchecked) have no merged verb to check them. A release without a `start` block starts unconditionally.
 
 Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.3.0 because they touch nothing the later releases reshape, and both wait on an agent-run capture committed as their evidence; their plans say which agent action captures which facts.
 
@@ -36,7 +36,7 @@ Independent of release: `gemini-provider` and `upstream-issue-verb` land in 0.3.
 
 - **Truth first.** The audit found 16 places where the maintained documents say something the code does not do, and a capture bug that has lost 1,662 of 3,960 raw model-call records (counted at `328d07d9`). None of the feature plans can be authored against documents that are wrong, and the training plan cannot capture data that is being overwritten.
 - **Dedup before parallel.** Parallel runs change the one-run assumption in six separate trackers and the merge path in two separate implementations. Making each of those a single owner first turns the parallel tickets from a rewrite into an edit.
-- **Capture early, export late.** The evidence store (0.3.0) only has value once it holds data. Export and eval (0.6.0) are useful on day one if capture started three releases earlier.
+- **Capture early, export late.** The evidence store (0.3.0) only has value once it holds data. Export and eval (0.5.0) are useful on day one if capture started three releases earlier.
 - **Journal window is conditional.** Its measured trigger (157 of 164 seconds in journal reads) predates `journal-incremental-read`. The refactor freezes features for a release; it earns that only if re-measurement shows the cost is still there.
 - **Document agent last.** It is the largest new surface, depends on the isolated-call mode and the evidence record, and its first real use is reviewing the other plans, which is more useful once those plans have tickets behind them.
 
@@ -146,9 +146,9 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 | §18.2 item | Trigger | Fired | Decision |
 |---|---|---|---|
 | Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.3.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.4.0 |
-| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.4.0 is conditional on it |
-| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.6.0) covers triage records and makes this the first lens to score |
-| Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.5.0, declared in `docs/parallel-tickets-plan.md` |
+| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.6.0 is conditional on it |
+| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.5.0) covers triage records and makes this the first lens to score |
+| Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.4.0, declared in `docs/parallel-tickets-plan.md` |
 | Conflict-only micro-rework | first chronically re-resolved conflict in `merge_conflict_facts` | 13 events exist; nobody has read them | `merge-model-resolve` starts by reading them (its plan's A0) |
 
 ### 3.4 Never built, no ticket
@@ -243,8 +243,8 @@ Each decision settles a place where two plans overlapped or contradicted. The pl
 4. **One P0 for the capture bug.** `provider-capture-overwrite` is a single bug ticket owned by this roadmap. Its cause fix, under the CORE two-ticket rule, is `evidence-envelope` (every capture path keyed by the journal identity of what it captures). Both plans cite the stems; neither owns them.
 5. **CORE_TEMPLATE byte ledger.** 8,109 of 8,192 bytes used (row 103; `tests/integration/test_hostfiles.py:33`). Any further template text first compresses a rule that has gained its gate (`CLAUDE.md:57`).
 6. **Names.** The document agent's config block is `documents:` (not `docs:`, which is a verb and a directory). Its lens spec is `clutch/specs/doc/lens.md` (not `review.md`, which exists at `clutch/specs/`). Its specs carry the spec frontmatter that `tests/unit/test_specs.py:24` checks on everything under `clutch/specs/`.
-7. **Journal window.** 0.4.0 runs only on re-measurement. Its port tickets touch the same files as `serve-parallel-dispatch` and `conflict-discard-rerun`, so the parallel tickets land after the window, or before it if the window slides. Several runs in one process appending to the journal is compatible with the query layer's per-process offset because `journal.lock` serializes appends; the journal plan states this.
-8. **Shared files between plans.** `graphics-render-check` and `conflict-discard-rerun` both bump `clutch/specs/implement.md`; `graphics-render-check` runs first (it heads the longer chain). `upstream-issue-verb` (0.3.0) and `graphics-kind` (0.5.0) both edit `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, `README.md`; releases separate them. `gemini-provider`, `evidence-envelope`, `isolated-readonly-call`, and the journal ports all fence `clutch/providers.py`; under the parallel plan's own overlap rule they serialize, which the release slots already arrange.
+7. **Journal window.** 0.6.0 runs only on re-measurement. Its port tickets touch the same files as `serve-parallel-dispatch` and `conflict-discard-rerun`, so the parallel tickets land after the window, or before it if the window slides. Several runs in one process appending to the journal is compatible with the query layer's per-process offset because `journal.lock` serializes appends; the journal plan states this.
+8. **Shared files between plans.** `graphics-render-check` and `conflict-discard-rerun` both bump `clutch/specs/implement.md`; `graphics-render-check` runs first (it heads the longer chain). `upstream-issue-verb` (0.3.0) and `graphics-kind` (0.4.0) both edit `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, `README.md`; releases separate them. `gemini-provider`, `evidence-envelope`, `isolated-readonly-call`, and the journal ports all fence `clutch/providers.py`; under the parallel plan's own overlap rule they serialize, which the release slots already arrange.
 9. **Design-record departures are declared.** A plan that re-opens a `CLUTCH_PLAN.md` §18 item names the item, the trigger, and the owner decision in a "Departures from the design record" table. The parallel plan already did; the training, evidence, and document plans now do (audit trail and blob store, §18.1; metadata taxonomies, §18.1). The owner's decision of 2026-11-13 is the cited incident.
 10. **Host-command lock.** The parallel plan's engine-wide semaphore around `run_host_command` also serializes the graphics plan's render command and the merge queue's host checks. One lock, stated in both plans.
 11. **The mergequeue docstring** was fixed by `docs-truth-sweep-code-strings` (done), not by a parallel-plan ticket; that plan's row 2 now points at the roadmap's `active-slot-single-owner` and `merge-admission-single-owner`, the two 0.3.0 chores its dispatch and merge tickets depend on.
@@ -262,7 +262,7 @@ Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section
 1. **Mechanical fence-closure analyzer** (§18.2; trigger fired twice). Decided: instructions first. `fence-closure-registries` (0.3.0) widens the reviewer prompt to in-code registries and tables. A third escape schedules a bounded spike for the mechanical checker in 0.4.0.
 2. **P8 `core --check` and start-command file.** Decided: dropped. `doctor`'s `core` row and the start refusal cover drift detection; no host has asked for a start-command file. Both are recorded here as not built on purpose and are tracked nowhere else.
 3. **Settled-ticket archive.** 537 directories under `tickets/`. Decided: nothing until a scan (lint with no stems, intake, the snapshot) is timed and found slow; the timing is filed as evidence when it happens.
-4. **Split the do-not-grow test files.** Decided: the do-not-grow rule lands in 0.3.0 (`contention-authoring-rules`, done; it names seven files, the five measured at `80b76d5d` plus `tests/integration/test_cli.py` and `tests/integration/test_watch.py` measured at `c761b213`); splitting is chore tickets, one per file, during the 0.4.0 window if it runs, else in 0.5.0 before parallel runs start.
+4. **Split the do-not-grow test files.** Decided: the do-not-grow rule lands in 0.3.0 (`contention-authoring-rules`, done; it names seven files, the five measured at `80b76d5d` plus `tests/integration/test_cli.py` and `tests/integration/test_watch.py` measured at `c761b213`); splitting is chore tickets, one per file, during the 0.6.0 window if it runs, else in 0.4.0 before parallel runs start.
 5. **Parallel plan.** Decided: `serve` only; longest-chain ordering below P0 only (P0 keeps the emergency lane); conflict reruns have their own cap `CONFLICT_RERUN_LIMIT = 2` and never draw `retry`.
 6. **Training plan.** Decided: the export includes the full normalized tool-call trajectory (a per-run flag can trim it); Author-written tickets are included, tagged `authored_by: author`.
 7. **Evidence plan.** Decided: providers' own session transcripts are not copied, only their ids are recorded; Claude thinking text is stored as a blob with `visibility: text`.
@@ -272,9 +272,9 @@ Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section
 
 Decided 2026-11-14, from the plans' remaining open items:
 
-11. **Training eval.** Ships in clutch (`training-eval`, 0.6.0); it doubles as the deferred triage-dedup eval.
-12. **Per-attempt spools.** Move onto the evidence store later: `spools-onto-evidence-store` (0.6.0), after the store has run a release.
-13. **One parser per provider.** `CallMeter`, `Parsed`, and `live_call` move onto the evidence normalizers after a release of real traffic: `one-parser-per-provider` (0.6.0).
+11. **Training eval.** Ships in clutch (`training-eval`, 0.5.0); it doubles as the deferred triage-dedup eval.
+12. **Per-attempt spools.** Move onto the evidence store later: `spools-onto-evidence-store` (0.5.0), after the store has run a release.
+13. **One parser per provider.** `CallMeter`, `Parsed`, and `live_call` move onto the evidence normalizers after a release of real traffic: `one-parser-per-provider` (0.5.0).
 14. **Document agent.** Doc sets are any `docs/<name>/` with a `docset.yaml`, found by search; panels default 3, minimum 2; the plans written 2026-11-13 become the first doc sets once `doc-facet-registry` and `docset-manifest` merge, reviewed with `scope` and `buildability`.
 15. **Journal plan items 3-7** take that plan’s recommendations (decision 19).
 16. **Graphics scope.** AI-generated and AI-edited images are in v1 (`mode: generate`); they are the reason for the Gemini provider. Code-rendered output stays (`mode: command`).
@@ -385,25 +385,7 @@ Runs after the rows above; it is what runs every later release (`docs/roadmap-dr
 | 92 | ~~`release-publish`~~ | driver plan 5 | feature | P2 | `release-verb` | | **Merged** (`tickets/release-publish/`). Publishing never bumps the version: `clutch publish` (PyPI, token env name in config) uploads the `pyproject.toml` version only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480). `clutch release` (merged in `release-verb`) gains the `release` journal signal. PyPI uploads require `release.publish: true`; Marketplace publishing is manual (decision 20), and row 108 keeps the package. |
 | 93 | ~~`driver-loop`~~ | driver plan 6 | feature | P1 | rows 89-92 | | **Merged** (`tickets/driver-loop/`). The idle-point sequence in serve and drain (supervise, author ahead, release when the gate passes, digest); the rewritten `drain-loop` prompt; how-clutch-works "Roadmap driver". |
 
-### 0.4.0 (conditional)
-
-| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
-|---|---|---|---|---|---|---|---|
-| 35 | (re-measure) | journal plan | evidence | | | | Profile a drain start and `status` at the end of 0.3.0; the window runs only if journal reads still dominate. |
-| 36 | `journal-query-layer` | journal plan (b) | feature | P2 | `release-verb` | | after its agent capture `tickets/journal-query-layer/evidence/re-measure.md`: DuckDB connection, bulk load, incremental insert, `duckdb` dependency. |
-| 37 | `journal-ports-run-path` | journal plan (c) | chore | P2 | `journal-query-layer` | | `runner`, `stages`, `merge`, `mergequeue`, `rework`, `effects`, `driver`. |
-| 38 | `journal-ports-loop` | journal plan (c) | chore | P2 | `journal-query-layer` | | `drain`, `serve`, `daemon`, `scheduler`, `timers`, `watcher`, `control`, `checkpoint`, `reconcile`. |
-| 39 | `journal-ports-feedback` | journal plan (c) | chore | P2 | `journal-query-layer` | | `retro`, `triage`, `box`, `storm`, `flake`, `thresh`, `audit`, `notify`, `providers`. |
-| 40 | `journal-ports-cli-authoring` | journal plan (c) | chore | P2 | `journal-query-layer` | | `__main__`, `author`, `tickets`, `observe` (its raw reader goes). |
-| 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
-
-```gate
-uv run clutch roadmap merged --release 0.4.0
-./dev.py test
-uv run clutch roadmap accept 0.4.0
-```
-
-### 0.5.0
+### 0.4.0
 
 ```start
 uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner merge-admission-single-owner
@@ -428,12 +410,12 @@ uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner m
 | (56) | `api-provider-client` | gemini plan (conditional) | feature | P2 | `gemini-provider` | `image-candidates-select` | Only if A0 fact 7 shows the CLI cannot generate images headlessly: the deferred `kind: api` client, scoped to image models. Row number is provisional. |
 
 ```gate
-uv run clutch roadmap merged --release 0.5.0
+uv run clutch roadmap merged --release 0.4.0
 ./dev.py test
-uv run clutch roadmap accept 0.5.0
+uv run clutch roadmap accept 0.4.0
 ```
 
-### 0.6.0
+### 0.5.0
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
@@ -456,6 +438,24 @@ uv run clutch roadmap accept 0.5.0
 | 110 | `index-box-neighbors` | annotations plan | feature | P2 | `index-build` | | Owner request (2026-11-17): Suggestion Box messages, roadmap rows, and the decision records under `tickets/decisions/` join the index with their own chunks and embeddings from the host embed command, rebuilt incrementally like files. Triage and Author receive, as data, the nearest existing messages, rows, open tickets, and decision records for each message, so a recurring report, a duplicate of a roadmap row that has no ticket yet, or a re-filed declined idea is matched by meaning, not only by the exact summary `clutch/box.py::Box.enqueue` compares. On 2026-11-16 one flaky test was reported four times (box-000457, box-000529, box-000531, box-000574), and box-000582 duplicated row 94, which triage cannot see. With no embed command, full-text search is the floor, as the index plan says. |
 | 73 | `context-suggest` | annotations plan 5 | feature | P2 | `index-build` | | `clutch context suggest <stem>` and the Author data block. |
 | 74 | `index-consumers` | annotations plan 6 | feature | P3 | `context-suggest` | | `index.implement_hint`, `doc draft --from <topic>`, the training export join. |
+
+```gate
+uv run clutch roadmap merged --release 0.5.0
+./dev.py test
+uv run clutch roadmap accept 0.5.0
+```
+
+### 0.6.0 (conditional)
+
+| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
+|---|---|---|---|---|---|---|---|
+| 35 | (re-measure) | journal plan | evidence | | | | Profile a drain start and `status` at the end of 0.3.0; the window runs only if journal reads still dominate. |
+| 36 | `journal-query-layer` | journal plan (b) | feature | P2 | `release-verb` | | after its agent capture `tickets/journal-query-layer/evidence/re-measure.md`: DuckDB connection, bulk load, incremental insert, `duckdb` dependency. |
+| 37 | `journal-ports-run-path` | journal plan (c) | chore | P2 | `journal-query-layer` | | `runner`, `stages`, `merge`, `mergequeue`, `rework`, `effects`, `driver`. |
+| 38 | `journal-ports-loop` | journal plan (c) | chore | P2 | `journal-query-layer` | | `drain`, `serve`, `daemon`, `scheduler`, `timers`, `watcher`, `control`, `checkpoint`, `reconcile`. |
+| 39 | `journal-ports-feedback` | journal plan (c) | chore | P2 | `journal-query-layer` | | `retro`, `triage`, `box`, `storm`, `flake`, `thresh`, `audit`, `notify`, `providers`. |
+| 40 | `journal-ports-cli-authoring` | journal plan (c) | chore | P2 | `journal-query-layer` | | `__main__`, `author`, `tickets`, `observe` (its raw reader goes). |
+| 41 | `journal-query-rule-gate` | journal plan (d) | chore | P2 | rows 37-40 | | The rule in `CLAUDE.md`/`AGENTS.md` and the lint that refuses `journal.read()` outside `clutch/journal.py`. |
 
 ```gate
 uv run clutch roadmap merged --release 0.6.0
