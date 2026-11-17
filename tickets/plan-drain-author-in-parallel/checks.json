@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ad73e61ec1a2d33a58918d96f9a1f95a72c9234e",
+  "produced_at_sha": "ec2021377dc5b5d520ae08bed67da61662924cf3",
   "stem": "plan-drain-author-in-parallel",
   "passed": true,
   "changed_files": [
@@ -70,7 +70,7 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 13.148035,
+        "seconds": 13.406754,
         "passed": 842,
         "failed": 0,
         "skipped": 0,
@@ -112,9 +112,9 @@
         "tests/unit/test_ask_drain_loop.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_ask_plan_drain.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py tests/unit/test_ask_drain_loop.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.13s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_ask_plan_drain.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py tests/unit/test_ask_drain_loop.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.18s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 1.437326
+      "seconds": 1.492831
     },
     {
       "argv": [
@@ -122,9 +122,9 @@
         "test"
       ],
       "rc": 1,
-      "tail": "========\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\n  /home/djp/source/clutch/.clutch/state/worktrees/plan-drain-author-in-parallel/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED tests/integration/test_closed_sets_remaining.py::test_follow_up_row - ...\n1 failed, 3426 passed, 9 warnings in 80.00s (0:01:19)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q tests/integration` failed\n",
+      "tail": "========\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_budget_and_slowest\ntests/integration/test_testguard.py::test_guarded_calls_and_asyncio\ntests/integration/test_testguard.py::test_setup_and_teardown\ntests/integration/test_testguard.py::test_xdist_budget\ntests/integration/test_testguard.py::test_guards_are_phase_scoped\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\ntests/integration/test_testguard.py::test_default_and_invalid_budget\n  /home/djp/source/clutch/.clutch/state/worktrees/plan-drain-author-in-parallel/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\n  The event loop scope for asynchronous fixtures will default to the \"fixture\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \"function\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED tests/integration/test_closed_sets_remaining.py::test_follow_up_row - ...\n1 failed, 3426 passed, 9 warnings in 71.29s (0:01:11)\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q tests/integration` failed\n",
       "base_red": true,
-      "seconds": 87.919328
+      "seconds": 83.690475
     }
   ]
 }
