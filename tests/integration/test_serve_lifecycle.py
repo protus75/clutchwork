@@ -234,14 +234,14 @@ async def test_serve_recurring_maintenance_uses_injected_time(root, monkeypatch)
         return await original(argv, **kwargs)
 
     monkeypatch.setattr(rig.exec, "run", execute)
+    for n in range(10):
+        rig.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=f"settled-{n}")
     run = asyncio.create_task(rig.owner.run())
     try:
-        await until(rig, lambda: "checkpoint-push/0" in rig.owner.core.restart.timers.pending)
-        rig.time.advance(24 * 3600)
         await until(rig, lambda: len(pushes) == 2)
         assert any(e.body.get("kind") == "checkpoint_push_failed" for e in rig.journal.read())
         assert any(e.key == "checkpoint-push/0" and e.type == EventType.EFFECT_COMPLETION and e.body == {"result": {"merged": 0}} for e in rig.journal.read())
-        assert len([e for e in rig.journal.read() if e.type == EventType.TIMER_FIRED]) == 1
+        assert not [e for e in rig.journal.read() if e.type == EventType.TIMER_FIRED]
     finally:
         await finish(rig, run)
 

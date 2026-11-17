@@ -2126,7 +2126,6 @@ async def test_production_serve_graph_is_reachable(root, monkeypatch):
         assert owner.stopper.workers == owner.observer.workers == owner.workers
         assert len(owner.tasks.tasks) == 3 and len(owner.workers) == 4
         assert owner.checkpoint.journal is owner.checkpoint.effects._journal is rig.journal
-        assert owner.checkpoint.timers is owner.core.restart.timers
         assert "clutch.serve" in import_closure(sources())
     finally:
         await finish(rig, run)

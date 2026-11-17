@@ -570,7 +570,7 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 - **Notifications:** sent by running `config.notify` (an argv) with the message. `serve` replays
   undelivered escalations (storm trips, red streaks, tree mismatches) from the journal. Unset
   `notify` only logs. The roadmap driver sends a digest after every settle (section 7.5).
-- **Checkpoint push:** in `serve`, idle, after 5 merges or 24 hours: `git push origin main`. A
+- **Checkpoint push:** in `serve`, idle, after 5 merges or 10 settled tickets (merged, already satisfied, or rejected) since the last push: `git push origin main`. A
   failed push is journaled and filed to the Suggestion Box.
 
 ### 7.5 Roadmap driver

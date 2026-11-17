@@ -147,8 +147,6 @@ def test_daemon_soak_advances_each_member_24_hours(evidence):
         assert member.checkpoints[-1] - member.checkpoints[0] >= timedelta(hours=24)
         segments = list(member.journal.read_segments())
         assert len(segments) >= 2
-        assert any(e.type == EventType.TIMER_FIRED for e in member.journal.read())
-        assert any(e.key == "checkpoint-push/0" and e.type == EventType.EFFECT_COMPLETION for e in member.journal.read())
 
 
 def test_daemon_soak_worker_recovery(evidence):
@@ -233,7 +231,7 @@ async def test_soak_uses_candidate_base_regate_receipt(evidence):
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "index,field",
-    [(i, field) for i in range(3) for field in ("cycles", "health", "heartbeats", "sweeps", "checkpoints", "sleeps", "timer", "checkpoint", "rotation", "main", "checks", "review-custody")]
+    [(i, field) for i in range(3) for field in ("cycles", "health", "heartbeats", "sweeps", "checkpoints", "sleeps", "rotation", "main", "checks", "review-custody")]
     + [(0, f) for f in ("alert", "alert-sequence", "abandoned", "interrupted", "removal", "merged", "review")]
     + [
         (1, f)
@@ -290,9 +288,7 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
         def missing(e):
             body = e.body
             return (
-                (field == "timer" and e.type == EventType.TIMER_FIRED)
-                or (field == "checkpoint" and e.key == "checkpoint-push/0")
-                or (field in {"alert", "alert-sequence"} and body.get("kind") == RECOVERY_ALERT)
+                (field in {"alert", "alert-sequence"} and body.get("kind") == RECOVERY_ALERT)
                 or (field == "abandoned" and body.get("to") == "abandoned")
                 or (field == "merged" and body.get("to") == "merged")
                 or (field == "terminal" and body.get("to") == "gate_failed")

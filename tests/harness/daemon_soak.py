@@ -493,7 +493,7 @@ class _Member:
                 )
             )
             self.cycles.append((self.time(), tuple(r.responsive() for r in owner.responses)))
-        await self.until(lambda: any(e.type == EventType.EFFECT_COMPLETION and e.key == "checkpoint-push/0" for e in self.journal.read()))
+        caps.consume(self.journal, "rotation", "retry", "rotation")
 
 
 async def _cleanup(cleanup):
@@ -533,8 +533,6 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
     need(len(list(m.journal.read_segments())) >= 2, "journal age rotation missing")
     need(len(m.sweeps) >= 5 and m.sweeps[-1][0] - m.sweeps[0][0] >= timedelta(hours=24), "idle orphan sweeping did not recur")
     need(len(m.checkpoints) >= 5 and m.checkpoints[-1] - m.checkpoints[0] >= timedelta(hours=24), "checkpoint polling did not recur")
-    need(any(e.type == EventType.TIMER_FIRED for e in events), "timer firing missing")
-    need(any(e.type == EventType.EFFECT_COMPLETION and e.key == "checkpoint-push/0" for e in events) and any(argv[3:4] == ["push"] for argv, _, _ in m.exec.calls), "checkpoint polling missing")
     need(
         (
             any(message.message_class == "failure_report" and message.stage == "merge" for message in m.owner.box.messages())

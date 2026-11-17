@@ -532,7 +532,7 @@ class Serve:
             self.control.publish()
             if self.signals is not None:
                 restore = self.signals(self.stop)
-            self.checkpoint = checkpoint_push(c.repo, journal=c.journal, effects=Effects(c.journal), timers=self.core.restart.timers, git=c.git, box=self.box, clock=c.clock, log=self.log)
+            self.checkpoint = checkpoint_push(c.repo, journal=c.journal, effects=Effects(c.journal), git=c.git, box=self.box, log=self.log)
             # Guard only this lifetime: the component's ordinary run semantics stay intact.
             pending_failure = None
 

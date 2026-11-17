@@ -29,15 +29,14 @@ from clutch.seams import Clock, FileSystem, Sleep
 from clutch.stages import StageContext, StageName, Stages, StagesRun
 from clutch.storm import StormBreaker
 from clutch.tickets import Ticket, parse_ticket, ticket_path
-from clutch.timers import Timers
 from clutch.watcher import Watcher
 
 KILL_APPLIED = "kill_applied"
 
 
-def checkpoint_push(repo: Path, *, journal: Journal, effects: Effects, timers: Timers, git: Git, box: Box, clock: Clock, log: EngineLog) -> Checkpoint:
+def checkpoint_push(repo: Path, *, journal: Journal, effects: Effects, git: Git, box: Box, log: EngineLog) -> Checkpoint:
     """Idle boundary using the lock holder's existing writers; invoke poll explicitly."""
-    return Checkpoint(repo, journal=journal, effects=effects, timers=timers, git=git, box=box, clock=clock, log=log)
+    return Checkpoint(repo, journal=journal, effects=effects, git=git, box=box, log=log)
 
 
 def storm_producer(*, root: Path, fs: FileSystem, journal: Journal, clock: Clock) -> Box:

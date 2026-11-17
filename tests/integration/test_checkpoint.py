@@ -10,7 +10,7 @@ import pytest
 
 from clutch import __main__ as cli
 from clutch import daemon
-from clutch.checkpoint import CHECKPOINT_INTERVAL, CHECKPOINT_MERGES, Checkpoint
+from clutch.checkpoint import CHECKPOINT_MERGES, CHECKPOINT_SETTLED, Checkpoint
 from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.git import Git
@@ -18,7 +18,6 @@ from clutch.journal import EventType, Journal, JournalCorruption
 from clutch.redact import Redactor
 from clutch.seams import ExecutableNotFound, LocalFileSystem
 from clutch.storm import StormLedger, arrival_id
-from clutch.timers import Timers
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
@@ -66,9 +65,8 @@ class Rig:
     def restart(self):
         self.journal = Journal(self.path, self.time)
         self.effects = Effects(self.journal)
-        self.timers = Timers(journal=self.journal, clock=self.time, sleep=self.time.sleep)
         self.box = daemon.storm_producer(root=self.path / "box", fs=self.fs, journal=self.journal, clock=self.time)
-        self.boundary = daemon.checkpoint_push(self.path, journal=self.journal, effects=self.effects, timers=self.timers, git=self.git, box=self.box, clock=self.time, log=self.log)
+        self.boundary = daemon.checkpoint_push(self.path, journal=self.journal, effects=self.effects, git=self.git, box=self.box, log=self.log)
 
     async def poll(self):
         async with self.slot:
@@ -89,33 +87,43 @@ class Rig:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("trigger", ["merges", "quiet-day", "both"])
-async def test_checkpoint_merge_and_daily_triggers(tmp_path, trigger):
+@pytest.mark.parametrize("trigger", ["merges", "settled", "both"])
+async def test_checkpoint_merge_and_settled_triggers(tmp_path, trigger):
     rig = Rig(tmp_path)
-    assert CHECKPOINT_MERGES == 5 and CHECKPOINT_INTERVAL == timedelta(hours=24)
-    assert rig.events() == [] and not tmp_path.joinpath("journal").exists()
+    assert CHECKPOINT_MERGES == 5 and CHECKPOINT_SETTLED == 10
+    rig.merges(4 if trigger != "settled" else 0)
+    for n in range(5 if trigger != "settled" else 9):
+        rig.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=f"rejected-{n}")
+    rig.time.now += timedelta(days=30)
     await rig.poll()
     assert rig.exec.calls == []
-    rig.journal.append(EventType.SIGNAL, {"signal": "ticket_intake", "commit": "ticket-plane"})
-    rig.journal.append(EventType.STATE_TRANSITION, {"to": "merged", "commit": None})
-    rig.journal.append(EventType.STATE_TRANSITION, {"to": "running", "commit": "not-admitted"})
-    if trigger != "quiet-day":
-        rig.merges(4)
-    await rig.poll()
-    assert rig.exec.calls == []
-    rig.time.now = T0 + CHECKPOINT_INTERVAL - timedelta(microseconds=1)
-    await rig.poll()
-    assert rig.exec.calls == []
-    if trigger != "quiet-day":
+    if trigger in {"merges", "both"}:
         rig.merges(1)
-    if trigger != "merges":
-        rig.time.now += timedelta(microseconds=1)
+    if trigger in {"settled", "both"}:
+        rig.journal.append(EventType.STATE_TRANSITION, {"to": "already_satisfied"}, ticket="last")
     await rig.poll()
     assert len(rig.exec.calls) == 1
     argv, kwargs = rig.exec.calls[0]
     assert argv == ["git", "-C", str(tmp_path), "push", "origin", "main"]
     assert kwargs == {"cwd": tmp_path, "env": {"PATH": "/usr/bin"}, "timeout": 30}
-    assert rig.events(EventType.EFFECT_COMPLETION)[0].body == {"result": {"merged": 0 if trigger == "quiet-day" else 5}}
+    assert rig.events(EventType.EFFECT_COMPLETION)[0].body == {"result": {"merged": 0 if trigger == "settled" else 5}}
+    assert not rig.events(EventType.TIMER_ARMED) and not rig.events(EventType.TIMER_FIRED)
+
+
+@pytest.mark.asyncio
+async def test_checkpoint_settled_window_resets_on_completion(tmp_path):
+    rig = Rig(tmp_path)
+    for n in range(10):
+        rig.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=f"old-{n}")
+    await rig.poll()
+    for n in range(9):
+        rig.journal.append(EventType.STATE_TRANSITION, {"to": "already_satisfied"}, ticket=f"new-{n}")
+    await rig.poll()
+    assert len(rig.exec.calls) == 1
+    rig.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="old-0")
+    await rig.poll()
+    assert len(rig.exec.calls) == 2
+    assert not rig.events(EventType.TIMER_ARMED) and not rig.events(EventType.TIMER_FIRED)
 
 
 @pytest.mark.asyncio
@@ -131,7 +139,6 @@ async def test_checkpoint_success_advances_once(tmp_path):
     assert rig.events().index(intent) < rig.events().index(done)
     rig.time.now += timedelta(hours=3)
     await rig.poll()
-    assert rig.timers.pending["checkpoint-push/1"].deadline == T0 + CHECKPOINT_INTERVAL
     rig.restart()
     rig.merges(4)
     await rig.poll()
@@ -143,7 +150,6 @@ async def test_checkpoint_success_advances_once(tmp_path):
     await rig.poll()
     assert len(rig.exec.calls) == 2
     assert [(e.key, e.body) for e in rig.events(EventType.EFFECT_COMPLETION)] == [("checkpoint-push/0", {"result": {"merged": 5}}), ("checkpoint-push/1", {"result": {"merged": 10}})]
-    assert rig.timers.pending["checkpoint-push/2"].deadline == rig.time.now + CHECKPOINT_INTERVAL
 
 
 @pytest.mark.asyncio
@@ -172,7 +178,6 @@ async def test_checkpoint_failed_push_refires(tmp_path, failure, code):
     assert len(rig.exec.calls) == 3 and len(rig.box.messages()) == 1
     assert rig.events(EventType.EFFECT_COMPLETION)[0].key == "checkpoint-push/0"
     assert [e.key for e in rig.events(EventType.EFFECT_INTENT)] == ["checkpoint-push/0"] * 3
-    assert rig.timers.pending["checkpoint-push/0"].deadline == T0 + CHECKPOINT_INTERVAL
 
 
 @pytest.mark.asyncio
@@ -208,6 +213,7 @@ async def test_checkpoint_failure_occurrence_identity(tmp_path, monkeypatch):
     assert rig.occurrences() == occurrences
     rig.time.now += timedelta(hours=25)
     rig.restart()
+    rig.merges(5)
     rig.exec.results = [(1, "", "failure")]
     await rig.poll()
     assert rig.failures()[-1].body["window"] == 1 and rig.failures()[-1].body["attempt"] == 1
@@ -426,45 +432,6 @@ async def test_checkpoint_crash_windows(tmp_path, monkeypatch, point):
     assert len(rig.events(EventType.EFFECT_INTENT)) == (1 if point == "after-completion" else 2)
 
 
-@pytest.mark.asyncio
-async def test_checkpoint_timer_survives_restart_and_roll(tmp_path, monkeypatch):
-    import clutch.journal as module
-
-    monkeypatch.setattr(module, "ROLL_BYTES", 1)
-    rig = Rig(tmp_path)
-    await rig.poll()
-    (armed,) = rig.events(EventType.TIMER_ARMED)
-    assert armed.body == {"timer_id": "checkpoint-push/0", "deadline": (T0 + CHECKPOINT_INTERVAL).isoformat()}
-    assert armed.ticket is armed.key is None
-    rig.time.now += timedelta(hours=20)
-    rig.restart()
-    await rig.poll()
-    assert rig.timers.pending["checkpoint-push/0"].deadline == T0 + CHECKPOINT_INTERVAL
-    assert rig.exec.calls == []
-    rig.time.now += timedelta(hours=4)
-    rig.exec.results = [(1, "", "failed")]
-    await rig.poll()
-    (fired,) = rig.events(EventType.TIMER_FIRED)
-    assert fired.body == armed.body and fired.ticket is fired.key is None
-    rig.time.now += timedelta(hours=1)
-    rig.restart()
-    await rig.poll()
-    assert len(rig.exec.calls) == 2 and len(rig.events(EventType.TIMER_FIRED)) == 1
-    await rig.poll()
-    assert len(rig.exec.calls) == 2
-    assert rig.timers.pending["checkpoint-push/1"].deadline == rig.time.now + CHECKPOINT_INTERVAL
-    assert len(list(rig.journal.read_segments())) > 1
-    # A merge-triggered window's old daily timer may still fire afterwards.
-    rig.time.now += timedelta(hours=1)
-    rig.merges(5)
-    await rig.poll()
-    rig.time.now += timedelta(hours=23)
-    rig.restart()
-    await rig.poll()
-    assert len(rig.exec.calls) == 3
-    assert "checkpoint-push/1" in rig.timers.fired
-
-
 @pytest.mark.parametrize("verb", ["run", "drain"])
 def test_checkpoint_boundary_is_dormant(root, monkeypatch, verb):
     async def graph():
@@ -478,19 +445,15 @@ def test_checkpoint_boundary_is_dormant(root, monkeypatch, verb):
         exec_ = Exec()
         box = daemon.storm_producer(root=root / "checkpoint-box", fs=LocalFileSystem(), journal=rig.journal, clock=clock)
         effects = Effects(rig.journal)
-        timers = rig.core.restart.timers
         boundary = daemon.checkpoint_push(
             root,
             journal=rig.journal,
             effects=effects,
-            timers=timers,
             git=Git(exec_, env={"PATH": "/usr/bin"}, timeout=30, commit_lock=commit_lock(root / ".clutch/state")),
             box=box,
-            clock=clock,
             log=EngineLog(root / "checkpoint.log", Redactor({}), clock),
         )
         assert boundary.journal is rig.journal and boundary.effects is effects
-        assert boundary.timers is timers and boundary.box is box
         assert rig.journal.read() == [] and rig.exec.calls == [] and asyncio.all_tasks() == tasks
         for _ in range(5):
             rig.transition("prior", "merged", commit="code")
@@ -571,10 +534,8 @@ async def test_push_failure_preserves_production_admission(root, monkeypatch):
         root,
         journal=rig.journal,
         effects=Effects(rig.journal),
-        timers=rig.core.restart.timers,
         git=rig.checkout.git,
         box=box,
-        clock=rig.time,
         log=EngineLog(root / "checkpoint.log", Redactor({"KEY": SECRET}), rig.time),
     )
     for _ in range(5):
@@ -596,5 +557,4 @@ async def test_checkpoint_is_active_in_serve(root, monkeypatch):
     from tests.integration.serve_rig import activated_graph
 
     rig = await activated_graph(root, monkeypatch)
-    assert rig.owner.checkpoint.timers is rig.owner.core.restart.timers
-    assert "checkpoint-push/0" in rig.owner.checkpoint.timers.pending
+    assert rig.owner.checkpoint is not None

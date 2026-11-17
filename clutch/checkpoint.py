@@ -1,7 +1,6 @@
 """Explicit lock-held checkpoint pushes."""
 
 import re
-from datetime import datetime, timedelta
 from pathlib import Path
 
 from clutch.box import Box
@@ -9,12 +8,11 @@ from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.git import Git, GitError
 from clutch.journal import Event, EventType, Journal, JournalCorruption
-from clutch.seams import Clock
+from clutch.stats import SETTLED
 from clutch.storm import arrival_id
-from clutch.timers import Timers
 
 CHECKPOINT_MERGES = 5
-CHECKPOINT_INTERVAL = timedelta(hours=24)
+CHECKPOINT_SETTLED = 10
 _PUSH = "checkpoint-push/"
 _FAILED = "checkpoint-push-failed/"
 _KIND = "checkpoint_push_failed"
@@ -26,6 +24,14 @@ def _invalid(reason: str) -> ValueError:
 
 def _merged(events: list[Event]) -> int:
     return sum(event.type == EventType.STATE_TRANSITION and event.body.get("to") == "merged" and event.body.get("commit") is not None for event in events)
+
+
+def settled_since_last_push(events: list[Event]) -> int:
+    start = 0
+    for index, event in enumerate(events):
+        if event.type == EventType.EFFECT_COMPLETION and (event.key or "").startswith(_PUSH):
+            start = index + 1
+    return len({event.ticket for event in events[start:] if event.type == EventType.STATE_TRANSITION and event.ticket is not None and event.body.get("to") in SETTLED})
 
 
 def _history(events: list[Event]) -> tuple[list[Event], list[Event]]:
@@ -84,9 +90,9 @@ def _history(events: list[Event]) -> tuple[list[Event], list[Event]]:
 class Checkpoint:
     """Idle construction; every poll runs under the supplied writers' existing lock."""
 
-    def __init__(self, repo: Path, *, journal: Journal, effects: Effects, timers: Timers, git: Git, box: Box, clock: Clock, log: EngineLog) -> None:
-        self.repo, self.journal, self.effects, self.timers = repo, journal, effects, timers
-        self.git, self.box, self.clock, self.log = git, box, clock, log
+    def __init__(self, repo: Path, *, journal: Journal, effects: Effects, git: Git, box: Box, log: EngineLog) -> None:
+        self.repo, self.journal, self.effects = repo, journal, effects
+        self.git, self.box, self.log = git, box, log
 
     def _report(self, event: Event) -> None:
         body = event.body
@@ -107,12 +113,8 @@ class Checkpoint:
         window = len(completed)
         key = f"{_PUSH}{window}"
         baseline = completed[-1].body["result"]["merged"] if completed else 0
-        self.timers.reconstruct()
-        previous = self.timers.pending.get(key, self.timers.fired.get(key))
-        deadline = previous.deadline if previous is not None else (datetime.fromisoformat(completed[-1].ts) if completed else self.clock()) + CHECKPOINT_INTERVAL
-        self.timers.arm(key, deadline, ticket=None)
-        self.timers.fire_due()
-        if _merged(self.journal.read()) - baseline < CHECKPOINT_MERGES and self.clock() < deadline:
+        events = self.journal.read()
+        if _merged(events) - baseline < CHECKPOINT_MERGES and settled_since_last_push(events) < CHECKPOINT_SETTLED:
             return
 
         # Only the await of Git.push can earn a soft failure. Durable writes and
