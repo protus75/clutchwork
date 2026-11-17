@@ -33,6 +33,7 @@ from clutch.retro import RetroCheckOutcome
 from clutch.runner import EXIT_MERGED, EXIT_TICKET, Checkout, Dispatch, Refusal, harvest_orphan
 from clutch.seams import ReplaceExec
 from clutch.status import SETTLED, last_states, reject_queue
+from clutch.supervise_idle import supervise_idle
 from clutch.tickets import (
     INTAKE_SIGNAL,
     TICKET_FILE,
@@ -363,6 +364,7 @@ async def settle_admissions(checkout):
 
 
 class _Drain:
+    last_dispatched: str | None = None
     driver = None
     driven = None
 
@@ -382,7 +384,6 @@ class _Drain:
         self.report = Report()
         self.retro = None
         self.served_retro_id: str | None = None
-        self.last_dispatched: str | None = None
 
     async def run(self) -> Report:
         while True:
@@ -413,6 +414,15 @@ class _Drain:
                 if count != self.driven:
                     self.driven = count
                     await self._run_driver()
+            if await self._between_tickets():
+
+                async def make_ctx():
+                    if not hasattr(self.dispatch, "prepare"):
+                        return None
+                    await self.dispatch.prepare()
+                    return self.dispatch.callback.ctx
+
+                await supervise_idle(self.c, make_ctx)
             material = self._offer_material()
             scan = await self._scan()
             shas = {s: await self._sha(s) for s in scan.tickets}

@@ -331,6 +331,35 @@ async def harvest_failure(ctx: StageContext, ticket: Ticket, *, attempt: int, st
             ctx.driver.journal.append(EventType.SIGNAL, {"signal": "harvest_failed", "error": ctx.driver.redactor.scrub(f"{type(exc).__name__}: {exc}")}, ticket=ticket.stem)
 
 
+async def supervise_step(ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, trigger: str, lessons: tuple[str, ...], key_scope: str | None = None) -> str | None:
+    """Attempt a reviewed supervisor edit without closing a run."""
+    from clutch.daemon import apply_rework
+    from clutch.rework import ReworkOrder, ReworkReply, Supervise
+
+    ctx.driver.journal.append(EventType.SIGNAL, {"signal": "supervisor_attempt", "stem": ticket.stem}, ticket=ticket.stem)
+    result = await apply_rework(ctx, ticket, findings, attempt=attempt, supervise=Supervise(trigger, lessons), **({"key_scope": key_scope} if key_scope is not None else {}))
+    proposal = result.artifact
+    if result.outcome == "ok" and isinstance(proposal, ReworkOrder) and proposal.action == "update":
+        return await ctx.git.rev_parse(ctx.repo, f"HEAD:{ticket_path(ticket.stem)}")
+    else:
+        action = proposal.action if isinstance(proposal, ReworkReply) else "none"
+        lines = ["# Supervisor Rework escalated", "", f"- trigger: {trigger}", f"- outcome: {result.outcome}", f"- action: {action}", "", "## Findings", ""]
+        lines.extend(f"- `{f.code}`: {f.message} -- {f.paved_road}" for f in result.findings)
+        if not result.findings:
+            lines.append("- none")
+        if isinstance(proposal, ReworkReply) and proposal.tickets:
+            lines.extend(["", "## Proposed ticket", "", "````markdown", proposal.tickets[0].ticket, "````"])
+        ctx.fs.write(ctx.worktree(ticket.stem) / "tickets" / ticket.stem / "rework.md", ctx.driver.redactor.scrub("\n".join(lines) + "\n").encode())
+        await lift_outbox(ctx, ticket.stem, "rework-proposal", attempt=attempt, only="rework.md", **({"key_scope": key_scope} if key_scope is not None else {}))
+    return None
+
+
+def record_supervisor_keep(ctx: StageContext, stem: str, sha: str) -> None:
+    """Release a reviewed update after its producing terminal, if any."""
+    consume(ctx.driver.journal, stem, "supervise", sha)
+    ctx.driver.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "supervisor", "ticket_sha": sha}, ticket=stem)
+
+
 async def failure_terminal(
     ctx: StageContext,
     ticket: Ticket,
@@ -348,7 +377,7 @@ async def failure_terminal(
 ) -> str:
     """Preserve the producing terminal, then retire a published split before wiping and returning."""
     from clutch.daemon import storm_producer
-    from clutch.rework import ReworkOrder, ReworkReply, Supervise
+    from clutch.rework import ReworkOrder
 
     reason = ",".join(sorted({f.code for f in findings})) or outcome
     terminal = {"to": outcome, "stage": stage, "reason": reason}
@@ -450,33 +479,16 @@ async def failure_terminal(
         and ctx.worktree(ticket.stem).exists()
         and supervise_draws(history, ticket.stem) < ctx.config.caps.supervise
     ):
-        from clutch.daemon import apply_rework
-
         lessons = tuple(
             dict.fromkeys(
                 lesson for e in lineage(history, ticket.stem) if e.type == EventType.SIGNAL and e.ticket == ticket.stem and e.body.get("signal") == "diagnosis" for lesson in e.body.get("lessons", [])
             )
         )
         trigger = spent_reason(cap) if cap is not None else "premise_failed"
-        ctx.driver.journal.append(EventType.SIGNAL, {"signal": "supervisor_attempt", "stem": ticket.stem}, ticket=ticket.stem)
-        result = await apply_rework(ctx, ticket, findings, attempt=attempt, supervise=Supervise(trigger, lessons))
-        proposal = result.artifact
-        if result.outcome == "ok" and isinstance(proposal, ReworkOrder) and proposal.action == "update":
-            supervised_sha = await ctx.git.rev_parse(ctx.repo, f"HEAD:{ticket_path(ticket.stem)}")
-        else:
-            action = proposal.action if isinstance(proposal, ReworkReply) else "none"
-            lines = ["# Supervisor Rework escalated", "", f"- trigger: {trigger}", f"- outcome: {result.outcome}", f"- action: {action}", "", "## Findings", ""]
-            lines.extend(f"- `{f.code}`: {f.message} -- {f.paved_road}" for f in result.findings)
-            if not result.findings:
-                lines.append("- none")
-            if isinstance(proposal, ReworkReply) and proposal.tickets:
-                lines.extend(["", "## Proposed ticket", "", "````markdown", proposal.tickets[0].ticket, "````"])
-            ctx.fs.write(ctx.worktree(ticket.stem) / "tickets" / ticket.stem / "rework.md", ctx.driver.redactor.scrub("\n".join(lines) + "\n").encode())
-            await lift_outbox(ctx, ticket.stem, "rework-proposal", attempt=attempt, only="rework.md")
+        supervised_sha = await supervise_step(ctx, ticket, findings, attempt=attempt, trigger=trigger, lessons=lessons)
     ctx.driver.journal.append(EventType.STATE_TRANSITION, terminal, ticket=ticket.stem)
     if supervised_sha is not None:
-        consume(ctx.driver.journal, ticket.stem, "supervise", supervised_sha)
-        ctx.driver.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "supervisor", "ticket_sha": supervised_sha}, ticket=ticket.stem)
+        record_supervisor_keep(ctx, ticket.stem, supervised_sha)
     if split:
         checkout = Checkout(ctx.repo, ctx.config, ctx.env, ctx.exec_, ctx.git, ctx.driver.journal, ctx.fs, ctx.driver.clock, ctx.driver.sleep)
         await reject_ticket(ticket.stem, checkout)

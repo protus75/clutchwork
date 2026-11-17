@@ -26,6 +26,7 @@ from clutch.redact import Redactor
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.storm import StormLedger
+from clutch.supervise_idle import supervise_idle
 from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, ticket_path
 
 SERVE_POLL_S = 0.1
@@ -383,6 +384,20 @@ class Serve:
                 self.stop()
             if not self.stopping and self.control.projection.pause_id is None and not self.core.admission._slot.locked():
                 await response.wait(self.check_upgrade())
+                if self.upgrade_idle() and not self.control.projection.stop_requested:
+
+                    async def supervise():
+                        async with self.mutations():
+                            self.control.poll()
+                            if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested or self.control.projection.pause_id is not None:
+                                return
+
+                            async def make_ctx():
+                                return (await self.prepare(replace(self.checkout, config=snapshot_config(self.control.load_config())))).ctx
+
+                            await supervise_idle(self.checkout, make_ctx)
+
+                    await response.wait(supervise())
                 await response.wait(self.core.scheduler.dispatch_next())
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
