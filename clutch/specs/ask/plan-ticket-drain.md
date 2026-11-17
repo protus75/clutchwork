@@ -16,15 +16,15 @@ Delegation:
 - Never push; publishing happens only through the driver under `release.publish: true`. Never run a tree-wide destructive git verb. Never edit code, docs, specs, config, or conduct files on main: tickets do that. The exception is the roadmap rows in Closing each phase below, which this prompt authorizes.
 
 Authoring:
-- Let the driver author: drain and serve run the roadmap driver at start and after every settle.
+- Author while a ticket runs: author the next ready rows yourself, at most the window ahead. Give each row its own agent with `clutch prompt author <stem>`, then a separate agent with `clutch prompt review <stem>` for adversarial audit; carry out its Recommendation, run `clutch lint` until it exits 0 and `clutch review` until it approves, then confirm the ticket. The driver also authors at start and after every settle, and links a row whose ticket file already exists instead of authoring it twice.
 - Between drains, top up with `clutch roadmap author --ahead <window>` (it takes the writer lock). Keep at most 4 roadmap tickets confirmed and unrun, or 2 after any drift failure: a premise park, or a requisition or review snag citing code an earlier merge changed. A drain with no drift failure returns the window to 4. Never author a row before every stem in its Depends on has merged.
-- Hand-author only when the driver cannot, and record why: its author message was declined (the driver's declined line names the decision record), or it authored nothing for two consecutive idle ticks while `clutch roadmap status` listed next: rows. If a decline shows the row itself is wrong, through a false premise or already merged work, reword or replace it in Closing each phase instead.
-- Give each such row to its own agent with `clutch prompt author <stem>`, the decline record if any, and this run's Delegation rules.
-- After `clutch review` approves a hand-authored ticket, give it to a separate agent with `clutch prompt review <stem>` for adversarial audit. Carry out the ticket edits its Recommendation names, then run `clutch lint` until it exits 0 and `clutch review` until it approves. Stop editing a stem when dispatched.
+- If a decline shows the row itself is wrong, through a false premise or already merged work, reword or replace it in Closing each phase instead. Stop editing a stem when dispatched.
 - Authoring overlaps the running drain: never hold or stop a drain for it.
 
 Supervising:
 - The role and before-start checks run once. Work in ticks until the stop condition below holds; each tick covers Authoring, Supervising, and Closing each phase. Between ticks wait with your agent's loop or wait facility until the engine exits or about 25 minutes pass. Each tick render `clutch prompt drain-loop` and follow it; its limits bind you except where these three sections say otherwise.
+- Resolve a draft the tick it appears, while the engine runs: run `clutch prompt drafts` and execute its Recommendation. An unresolved draft holds a slot of the driver's author-ahead window and can stall the drain into quiescence.
+- Never triage a `roadmap_row` Suggestion Box message; the driver owns it. Pass `clutch triage` only the ids of other message classes.
 - Match this checkout's engine exactly: `clutch status` and the writer lock say whether it runs. Another checkout may run its own drain, so never match a bare process name.
 - Watch merges, holds, the Reject queue, the driver's roadmap_drive lines in ${state_dir}/engine.log, and the engine exiting.
 - On any failure, name the root cause in one sentence from the stem's artifacts before acting. Classify it as drift or not to set the window, and file the class-prevention change with `clutch suggest`.

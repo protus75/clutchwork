@@ -42,7 +42,9 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "different model family",
         "counted in runs",
         "Never push",
-        "Let the driver author",
+        "while a ticket runs",
+        "the tick it appears",
+        "roadmap_row",
         "clutch roadmap author --ahead",
         "drift failure",
         "clutch prompt author",
@@ -63,6 +65,8 @@ def test_plan_ticket_drain_prompt_content(prompts):
         assert phrase in text, phrase
     assert text.index("conduct files") < text.index("clutch doctor") < text.index("clutch probe") < text.index("clutch prompt drain-loop")
     assert text.index("standing delegation") < text.index("clutch confirm --yes")
+    assert "Let the driver author" not in text
+    assert "Hand-author only when the driver cannot" not in text
     assert not text.startswith("/loop")
 
 

@@ -54,6 +54,8 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
 
 ## Engine conduct
 
+- **Keep shipped process prompts in sync.** When the owner changes how a plan-ticket-drain run or supervising loop works in a chat in this repo, file a ticket in the same turn to update the shipped prompt that owns the process (`clutch/specs/ask/plan-ticket-drain.md` or `clutch/specs/ask/drain-loop.md`). A session note under `.claude/` is never that process's home.
+  Why: the shipped prompt must carry chat updates to its overall process (owner decision, 2026-11-17).
 - **One authoring process.** Ticket content rules live only in `clutch/docs/host-authoring.md`, and ticket format only in `clutch/tickets.py`. Every authoring surface (a chat session, the Author stage, any future one) reads those, and a prompt spec embeds the guide and skeletons rather than restating them. A fix to authoring changes that one source.
   Why: the 2026-11-13 box-000428 decline and 10 of 22 Author declines since 2026-11-11 exposed the drifting process.
 

@@ -57,6 +57,8 @@ def test_prompt_bounds_box_triage(tmp_path):
     text = render(tmp_path)
     for phrase in (
         "clutch prompt box",
+        "the tick it appears",
+        "roadmap_row",
         "clutch triage",
         "clutch dismiss",
         "only between drains",

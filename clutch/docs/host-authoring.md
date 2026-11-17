@@ -77,6 +77,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
 - `Verification`: the commands Check runs; every one must exit 0.
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.
+  Both `expected` and `stuck` are AI time: the actual Implement minutes on the model that runs the ticket, never human working time.
   `stuck` is twice `expected`. Over 30m, split when possible or add `- reason: <why it is not split>`; over 60m, always split into more tickets, each its own stem. Never raise the budget instead.
 
 ## Keeping tickets apart

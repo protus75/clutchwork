@@ -113,6 +113,8 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
 
 A human-present chat session is the one context the pipeline machinery does not govern; these rules govern it. (section 17)
 
+- **Keep shipped process prompts in sync.** When the owner changes how a plan-ticket-drain run or supervising loop works in a chat in this repo, file a ticket in the same turn to update the shipped prompt that owns the process (`clutch/specs/ask/plan-ticket-drain.md` or `clutch/specs/ask/drain-loop.md`). A session note under `.claude/` is never that process's home.
+  Why: the shipped prompt must carry chat updates to its overall process (owner decision, 2026-11-17).
 - **Comments explain why, not what.** Comment only invariants, hazards, and deliberate-looking-wrong choices; match surrounding density.
   Why: what-comments rot as the code changes; why-comments do not.
 - **Documentation follows changes.** A ticket updates the documentation its change affects; `CLUTCH_PLAN.md` is frozen and never edited.
