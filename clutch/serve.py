@@ -339,7 +339,7 @@ class Serve:
             due = False
             if suppressing_failure(window) is None:
                 evidence = await production_evidence(window, c)
-                due = select_trigger(window, evidence, c.clock(), c.config.retro, forced=False) is not None
+                due = select_trigger(window, evidence, c.config.retro, forced=False) is not None
                 if due:
                     self.retro_due = True
         except BaseException:

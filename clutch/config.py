@@ -187,9 +187,9 @@ class RetroMerges(StrictModel):
     every: Count = 25
 
 
-class RetroDays(StrictModel):
+class RetroSettled(StrictModel):
     enabled: bool = True
-    every: Count = 7
+    every: Count = 40
 
 
 class RetroSpikes(StrictModel):
@@ -203,7 +203,7 @@ class Retro(StrictModel):
     test_timing: bool = True
     coverage: bool = True
     merges: RetroMerges = RetroMerges()
-    days: RetroDays = RetroDays()
+    settled: RetroSettled = RetroSettled()
     spikes: RetroSpikes = RetroSpikes()
 
 
@@ -438,7 +438,7 @@ def _from_validation(path: Path, e: ValidationError) -> ConfigError:
 
 def _check_references(path: Path, cfg: Config) -> None:
     retro = cfg.retro
-    if retro.enabled and not (retro.merges.enabled or retro.days.enabled or retro.spikes.enabled):
+    if retro.enabled and not (retro.merges.enabled or retro.settled.enabled or retro.spikes.enabled):
         raise ConfigError(path, "retro.enabled", "no automatic triggers are enabled; enable a trigger or set retro.enabled: false")
     if len(retro.spikes.kinds) != len(set(retro.spikes.kinds)):
         raise ConfigError(path, "retro.spikes.kinds", "duplicate spike kinds; list each kind once")

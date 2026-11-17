@@ -44,7 +44,7 @@ def test_window_uses_completed_report_boundary(tmp_path):
     c, writer, hook, llm = rig(tmp_path)
     j = c.journal
     assert project_window([]).events == () and project_window([]).started_at is None
-    assert select_trigger(project_window([]), measurements(project_window([])), c.clock(), c.config.retro, forced=False) is None
+    assert select_trigger(project_window([]), measurements(project_window([])), c.config.retro, forced=False) is None
     first = merged(j, "first", "real-merge-sha")
     j.append(EventType.EFFECT_COMPLETION, {"result": {}, "cost": {"usd": 1.25, "input_tokens": 10, "output_tokens": None}}, key="llm/first/0/implement/0/1")
     j.append(EventType.EFFECT_COMPLETION, {"result": {}, "cost": {"usd": 0.5, "input_tokens": None, "output_tokens": 4}}, key="llm/first/0/review/0/1")
@@ -109,17 +109,19 @@ def test_window_over_headroom_is_read_on_demand(tmp_path, monkeypatch, size):
     assert asyncio.run(c.git._run(c.repo, "show", "--name-only", "--format=", result["commit"])).splitlines() == ["tickets/retro/000001.md"]
 
 
-@pytest.mark.parametrize("kind", ["merges", "elapsed", "override", "rework", "gate-failure", "integration-red", "reject", "premise-failed", "infra-error", "flake", "escape"])
+@pytest.mark.parametrize("kind", ["merges", "settled", "override", "rework", "gate-failure", "integration-red", "reject", "premise-failed", "infra-error", "flake", "escape"])
 def test_retro_trigger_boundaries(tmp_path, kind):
     c, writer, hook, llm = rig(tmp_path)
     j = c.journal
-    limit = 25 if kind == "merges" else 5
+    limit = 25 if kind == "merges" else 40 if kind == "settled" else 5
 
     def operand(n):
         stem = f"admission-{n}"
         j.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=stem)
         if kind == "merges":
             merged(j, stem)
+        elif kind == "settled":
+            j.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=stem)
         elif kind == "rework":
             from clutch.rework import rework
             from clutch.tickets import validate_ticket
@@ -162,23 +164,17 @@ def test_retro_trigger_boundaries(tmp_path, kind):
     def due():
         window = project_window(j.read())
         facts = asyncio.run(production_evidence(window, c))
-        return select_trigger(window, facts, c.clock(), c.config.retro, forced=False)
+        return select_trigger(window, facts, c.config.retro, forced=False)
 
-    if kind == "elapsed":
-        merged(j)
-        c.clock.now += timedelta(days=7, microseconds=-1)
+    for n in range(limit - 1):
+        operand(n)
+    assert due() is None
+    # Duplicate records of one invocation never combine into another operand.
+    if kind in {"integration-red", "rework", "gate-failure", "reject", "premise-failed", "infra-error", "flake", "escape"}:
+        event = j.read()[-1]
+        j.append(event.type, event.body, ticket=event.ticket, key=event.key)
         assert due() is None
-        c.clock.now += timedelta(microseconds=1)
-    else:
-        for n in range(limit - 1):
-            operand(n)
-        assert due() is None
-        # Duplicate records of one invocation never combine into another operand.
-        if kind in {"integration-red", "rework", "gate-failure", "reject", "premise-failed", "infra-error", "flake", "escape"}:
-            event = j.read()[-1]
-            j.append(event.type, event.body, ticket=event.ticket, key=event.key)
-            assert due() is None
-        operand(limit - 1)
+    operand(limit - 1)
     assert due() == kind
 
 
@@ -193,7 +189,7 @@ def test_mixed_spikes_do_not_sum_and_new_invocations_do_count(tmp_path):
     window = project_window(j.read())
     facts = measurements(window)
     assert facts["spikes"] == {"override": 0, "rework": 4, "gate-failure": 4, "integration-red": 4, "reject": 0, "premise-failed": 0, "infra-error": 0, "flake": 0, "escape": 0}
-    assert select_trigger(window, facts, c.clock(), c.config.retro, forced=False) is None
+    assert select_trigger(window, facts, c.config.retro, forced=False) is None
 
 
 def test_report_commit_replays_without_advancing_unfinished_window(tmp_path, monkeypatch):
@@ -424,44 +420,41 @@ def test_escape_report_projection(tmp_path, monkeypatch):
     asyncio.run(scenario())
 
 
-def test_custom_trigger_settings_and_disabled_forcing():
-    from datetime import datetime, timezone
-
-    now = datetime(2026, 1, 10, tzinfo=timezone.utc)
-    window = project_window([])
+def test_custom_trigger_settings_and_disabled_forcing(tmp_path):
+    c, _, _, _ = rig(tmp_path)
+    for n in range(2):
+        c.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=f"stem-{n}")
+    window = project_window(c.journal.read())
     facts = {"merged_count": 3, "spikes": {"rework": 4}}
-    settings = RetroSettings(merges={"every": 3}, days={"every": 2}, spikes={"count": 4})
-    assert select_trigger(window, facts, now, settings, forced=False) == "merges"  # Hard-coded 25 misses three merges.
+    settings = RetroSettings(merges={"every": 3}, settled={"every": 2}, spikes={"count": 4})
+    assert select_trigger(window, facts, settings, forced=False) == "merges"
     facts["merged_count"] = 2
-    assert select_trigger(window, facts, now, settings, forced=False) == "rework"  # Hard-coded 5 misses four spikes.
-    dated = replace(window, started_at=(now - timedelta(days=2)).isoformat())
-    assert select_trigger(dated, facts, now, settings, forced=False) == "elapsed"  # Hard-coded 7 misses two days.
-    disabled = RetroSettings(enabled=False, merges={"every": 3}, days={"every": 2}, spikes={"count": 4})
-    assert select_trigger(dated, facts, now, disabled, forced=False) is None  # Ignoring enabled selects elapsed.
-    assert select_trigger(dated, facts, now, disabled, forced=True) == "forced"  # Disabling must not block force.
+    assert select_trigger(window, facts, settings, forced=False) == "settled"
+    assert select_trigger(project_window([]), facts, settings, forced=False) == "rework"
+    disabled = RetroSettings(enabled=False, merges={"every": 3}, settled={"every": 2}, spikes={"count": 4})
+    assert select_trigger(window, facts, disabled, forced=False) is None
+    assert select_trigger(window, facts, disabled, forced=True) == "forced"
     facts["merged_count"] = 0
-    assert select_trigger(dated, facts, now, disabled, forced=True) is None  # Force still requires a merge.
+    assert select_trigger(window, facts, disabled, forced=True) is None
 
 
 @pytest.mark.parametrize(
-    "settings,facts,age",
+    "settings,facts,count",
     [
         ({"merges": {"enabled": False}}, {"merged_count": 25, "spikes": {}}, 0),
-        ({"days": {"enabled": False}}, {"merged_count": 0, "spikes": {}}, 8),
+        ({"settled": {"enabled": False}}, {"merged_count": 0, "spikes": {}}, 40),
         ({"spikes": {"enabled": False}}, {"merged_count": 0, "spikes": {"rework": 5}}, 0),
     ],
 )
-def test_disabled_trigger_never_fires(settings, facts, age):
-    from datetime import datetime, timezone
-
-    now = datetime(2026, 1, 10, tzinfo=timezone.utc)
-    window = replace(project_window([]), started_at=(now - timedelta(days=age)).isoformat())
-    assert select_trigger(window, facts, now, RetroSettings(**settings), forced=False) is None  # Ignoring the disabled switch fires its threshold.
+def test_disabled_trigger_never_fires(tmp_path, settings, facts, count):
+    c, _, _, _ = rig(tmp_path)
+    for n in range(count):
+        c.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=f"stem-{n}")
+    window = project_window(c.journal.read())
+    assert select_trigger(window, facts, RetroSettings(**settings), forced=False) is None
 
 
 def test_excluded_spike_kind_never_fires(tmp_path):
-    from datetime import datetime
-
     from clutch.rework import REWORK_ORDER
 
     c, _, _, _ = rig(tmp_path)
@@ -471,7 +464,7 @@ def test_excluded_spike_kind_never_fires(tmp_path):
     facts = measurements(window)
     assert facts["spikes"]["rework"] == 5  # Filtering measurements would erase the excluded evidence.
     settings = RetroSettings(spikes={"kinds": ["override"]})
-    assert select_trigger(window, facts, datetime.fromisoformat(window.started_at), settings, forced=False) is None  # Ignoring the allowlist fires rework.
+    assert select_trigger(window, facts, settings, forced=False) is None  # Ignoring the allowlist fires rework.
 
 
 def measurement_invoices(tmp_path, *, switches=True):

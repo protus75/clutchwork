@@ -4,7 +4,7 @@ import hashlib
 import json
 import re
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -18,6 +18,7 @@ from clutch.gates import GateReport
 from clutch.git import GitError
 from clutch.journal import Event, EventType
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
+from clutch.stats import SETTLED
 
 RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
@@ -167,15 +168,15 @@ def measurements(window: Window) -> dict:
     }
 
 
-def select_trigger(window: Window, evidence: dict, now: datetime, settings: RetroSettings, *, forced: bool) -> str | None:
+def select_trigger(window: Window, evidence: dict, settings: RetroSettings, *, forced: bool) -> str | None:
     if forced:
         return "forced" if evidence["merged_count"] else None
     if not settings.enabled:
         return None
     if settings.merges.enabled and evidence["merged_count"] >= settings.merges.every:
         return "merges"
-    if settings.days.enabled and window.started_at is not None and now - datetime.fromisoformat(window.started_at) >= timedelta(days=settings.days.every):
-        return "elapsed"
+    if settings.settled.enabled and len({e.ticket for e in window.events if e.ticket is not None and e.type == EventType.STATE_TRANSITION and e.body.get("to") in SETTLED}) >= settings.settled.every:
+        return "settled"
     return next((kind for kind, count in evidence["spikes"].items() if settings.spikes.enabled and kind in settings.spikes.kinds and count >= settings.spikes.count), None)
 
 
@@ -402,7 +403,7 @@ class Retro:
         window = project_window(c.journal.read())
         # No selection means no failure capture or writer construction.
         evidence = await production_evidence(window, c)
-        trigger = select_trigger(window, evidence, c.clock(), c.config.retro, forced=forced)
+        trigger = select_trigger(window, evidence, c.config.retro, forced=forced)
         if trigger is None:
             return None
         failure = suppressing_failure(window)
