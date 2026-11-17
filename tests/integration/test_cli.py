@@ -2,7 +2,6 @@ import asyncio
 import os
 import subprocess
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -13,6 +12,7 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.runner import Refusal
 from clutch.seams import SubprocessExec
+from tests.fakes import FakeClock as Clock
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import adopt_conduct
 
@@ -82,11 +82,6 @@ Needs a new dependency.
 
 def ticket(depends: str = "none") -> str:
     return TICKET.format(depends=depends)
-
-
-class Clock:
-    def __call__(self) -> datetime:
-        return datetime(2026, 1, 1, tzinfo=UTC)
 
 
 def with_retro_driver(checkout, dispatch):

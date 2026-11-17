@@ -1,7 +1,6 @@
 import asyncio
 import re
 import subprocess
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -18,6 +17,7 @@ from clutch.tickets import (
     template,
     validate_ticket,
 )
+from tests.fakes import FakeClock as Clock
 from tests.integration.test_git import commit_lock
 
 ENV = {
@@ -71,11 +71,6 @@ VALID = FRONT + BODY
 
 def run(coro):
     return asyncio.run(coro)
-
-
-class Clock:
-    def __call__(self) -> datetime:
-        return datetime(2026, 1, 1, tzinfo=UTC)
 
 
 @pytest.fixture

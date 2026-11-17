@@ -15,6 +15,7 @@ from clutch.gates import GateReport
 from clutch.journal import Journal
 from clutch.llm import HANG, FakeLLM, LLMRequest, LLMResult
 from clutch.redact import Redactor
+from tests.fakes import FakeClock
 
 SECRET = "sk-live-0123456789abcdef"
 
@@ -36,14 +37,6 @@ CONFIG = textwrap.dedent(
     engine_plane_safety_inventory: [specs/]
     """
 )
-
-
-class FakeClock:
-    def __init__(self) -> None:
-        self.now = datetime(2026, 10, 5, tzinfo=UTC)
-
-    def __call__(self) -> datetime:
-        return self.now
 
 
 class FakeSleep:
@@ -94,7 +87,7 @@ class MustSayHello:
 def build(tmp_path: Path, llm: FakeLLM, *, fires: bool = False, env=None) -> tuple[Driver, Path]:
     (tmp_path / "config.yaml").write_text(CONFIG)
     config = load_config(None, cwd=tmp_path)
-    clock = FakeClock()
+    clock = FakeClock(datetime(2026, 10, 5, tzinfo=UTC))
     driver = Driver.from_config(
         config,
         journal=Journal((config).state_dir, clock),
@@ -139,7 +132,7 @@ def test_echo_stage_with_empty_gate_list_emits_validated_artifact(tmp_path):
     events = [e["event"] for e in log_events(state)]
     assert events[0] == "stage_start" and events[-1] == "stage_end"
     # Diagnostics go to the engine log; the journal holds only the LLM effect's intent + completion.
-    journal = [(e.type, e.key) for e in Journal(state, FakeClock()).read()]
+    journal = [(e.type, e.key) for e in Journal(state, FakeClock(datetime(2026, 10, 5, tzinfo=UTC))).read()]
     key = "llm/t-echo/0/implement/1/1"
     assert journal == [("effect_intent", key), ("effect_completion", key)]
 
@@ -304,7 +297,7 @@ def test_exhausted_invalid_output_terminals_invalid_artifact(tmp_path):
 def test_soft_gate_failure_passes_with_findings(tmp_path):
     (tmp_path / "config.yaml").write_text(CONFIG.replace("review: {}", "review: {gate_severity: {run_record: soft}}"))
     config = load_config(None, cwd=tmp_path)
-    clock = FakeClock()
+    clock = FakeClock(datetime(2026, 10, 5, tzinfo=UTC))
     llm = FakeLLM([echo_json("hi")])
     driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env={}, clock=clock, sleep=FakeSleep(fires=False))
     stage = LlmStage(surface="implement", emits=Echo, gates=[MustSayHello()], render=render)
@@ -394,7 +387,7 @@ def test_redactor_replaces_longest_secret_first():
 
 
 def test_engine_log_rotates_by_size(tmp_path):
-    log = EngineLog(tmp_path / "engine.log", Redactor({}), FakeClock(), max_bytes=200, backups=3)
+    log = EngineLog(tmp_path / "engine.log", Redactor({}), FakeClock(datetime(2026, 10, 5, tzinfo=UTC)), max_bytes=200, backups=3)
     for i in range(40):
         log.event("tick", n=i, pad="x" * 40)
     names = sorted(p.name for p in tmp_path.iterdir())

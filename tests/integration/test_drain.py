@@ -21,6 +21,7 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.tickets import intake
+from tests.fakes import FakeClock as Clock
 from tests.integration.test_cli import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo as admission_repo
@@ -35,16 +36,6 @@ def test_bootstrap_never_supervised_holds(admission_repo, monkeypatch):
 
 
 START = datetime(2026, 1, 1, tzinfo=UTC)
-
-
-class Clock:
-    """A fake clock a test (or a scripted stage) can advance."""
-
-    def __init__(self) -> None:
-        self.now = START
-
-    def __call__(self) -> datetime:
-        return self.now
 
 
 class Script:
@@ -97,11 +88,11 @@ def root(tmp_path: Path) -> Path:
 
 
 def drain(root: Path, script: Script, clock: Clock | None = None) -> int:
-    return main(["drain"], cwd=root, env=ENV, clock=clock or Clock(), pipeline=script)
+    return main(["drain"], cwd=root, env=ENV, clock=clock or Clock(START), pipeline=script)
 
 
 def journal(root: Path) -> Journal:
-    return Journal(root / ".clutch" / "state", Clock())
+    return Journal(root / ".clutch" / "state", Clock(START))
 
 
 def confirmed(depends: str = "none", priority: str = "P2") -> str:
@@ -119,7 +110,7 @@ def commit_ticket(root: Path, stem: str, text: str) -> None:
 def intake_at(root: Path, stem: str, at: datetime) -> None:
     """Hand-author and intake one stem with the journal clock at `at` (its authoring-commit event)."""
     write(root, stem, ticket())
-    clock = Clock()
+    clock = Clock(START)
     clock.now = at
     g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
     asyncio.run(intake(root, g, Journal(root / ".clutch" / "state", clock), LocalFileSystem(), stems=None))
@@ -180,7 +171,7 @@ def test_requisition_park_reports_full_reason_under_park_line(root, capsys):
     artifact = root / "tickets/review-park/review.md"
     artifact.write_text("existing detail")
     llm = FakeLLM([requisition("snag")])
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda c: runner.bind(c, llm)) == 0
+    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=lambda c: runner.bind(c, llm)) == 0
     output = capsys.readouterr().out
     terminal = [e.body for e in journal(root).read() if e.type == EventType.STATE_TRANSITION and e.ticket == "review-park"][-1]
     reason = terminal["reason"]
@@ -416,7 +407,7 @@ def test_drain_mid_drain_intake_refusal_exits_2(root):
     script = Script(hooks={"aaa-first": stage_stray})
     assert drain(root, script) == 2  # ignoring intake refusal would continue
     assert script.calls == ["aaa-first"]  # the second ticket must not run
-    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="probe", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="probe", clock=Clock(START))
     lock.acquire()  # refusal must release the lock
     lock.release()
 
@@ -441,7 +432,7 @@ def test_drain_honors_priority_edit_mid_drain(root):
 def test_the_runtime_ceiling_stops_the_next_dispatch_and_exits_1(root, capsys):
     write(root, "aaa-first", ticket())
     write(root, "bbb-second", ticket())
-    clock = Clock()
+    clock = Clock(START)
 
     def overrun(checkout):
         clock.now = START + timedelta(hours=13)  # past the shipped 12h, mid-stage
@@ -542,7 +533,7 @@ def test_drain_scan_skips_finished_tickets(root, capsys, monkeypatch):
 
 def test_lock_contention_stops_the_drain_with_exit_2(root):
     write(root, "add-thing", ticket())
-    holder = Lockfile(root / ".clutch" / "state", verb="drain", instance_id="other", clock=Clock())
+    holder = Lockfile(root / ".clutch" / "state", verb="drain", instance_id="other", clock=Clock(START))
     holder.acquire()
     try:
         script = Script()
@@ -841,7 +832,9 @@ def pause_checkout(root):
     from clutch.runner import Checkout
 
     process = SubprocessExec()
-    checkout = Checkout(root, load_config(None, cwd=root), ENV, process, Git(process, env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state")), journal(root), LocalFileSystem(), Clock())
+    checkout = Checkout(
+        root, load_config(None, cwd=root), ENV, process, Git(process, env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state")), journal(root), LocalFileSystem(), Clock(START)
+    )
     return replace(checkout, control=build_control(checkout))
 
 
@@ -994,7 +987,7 @@ async def test_pause_checkpoint_failure_spends_no_retry(root, cancel):
         with pytest.raises(ValueError, match="checkpoint failed"):
             await task
     assert script.calls == [] and journal(root).read() == before and retry_draws(root, "work") == 0
-    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="after-cleanup", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="after-cleanup", clock=Clock(START))
     lock.acquire()
     lock.release()
     assert (await paused_drain(root, script, None)).merged == ["work"]
@@ -1196,7 +1189,7 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     commit_ticket(root, "feature", confirmed(priority="P0"))
     if scenario == "phase":
         commit_ticket(root, "phase5-exit", confirmed(depends="- feature"))
-    clock = Clock()
+    clock = Clock(START)
     if scenario in {"due", "selected-failure", "self-upgrade"}:
         for n in range(25):
             journal(root).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=f"prior-{n}")
@@ -1325,7 +1318,7 @@ def test_diff_budget_failure_holds_until_ticket_changes(root, capsys):
 
         return with_retro_driver(checkout, dispatch)
 
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == 0
+    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
     assert calls == ["work"]
     assert not machine_keeps(root, "work")
     assert "diff budget" in capsys.readouterr().out
@@ -1337,7 +1330,7 @@ def test_diff_budget_failure_holds_until_ticket_changes(root, capsys):
     assert asyncio.run(run._between_tickets())  # An unrouted budget failure also ends the retry cycle.
     commit_ticket(root, "work", confirmed().replace("returns ok.", "returns revised ok."))
     assert not asyncio.run(run._between_tickets())
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == 0
+    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
     assert calls == ["work", "work"]
 
 
@@ -1354,7 +1347,7 @@ def test_other_gate_failure_is_still_reoffered(root):
 
         return with_retro_driver(checkout, dispatch)
 
-    assert main(["drain"], cwd=root, env=ENV, clock=Clock(), pipeline=pipeline) == 0
+    assert main(["drain"], cwd=root, env=ENV, clock=Clock(START), pipeline=pipeline) == 0
     assert calls == ["work", "work"]
 
 
@@ -1726,7 +1719,7 @@ def test_drain_refuses_committed_core_drift_before_dispatch(root, capsys):
     assert drain(root, script) == 2
     assert "CLAUDE.md: clutch core is drifted" in capsys.readouterr().err
     assert script.calls == []
-    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="contender", clock=Clock())
+    lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="contender", clock=Clock(START))
     lock.acquire()
     lock.release()
 
@@ -1739,7 +1732,7 @@ def test_operator_keep_releases_unchanged_premise_park(root):
     assert "work" in reject_queue(journal(root).read())  # The failure reached the Reject queue.
     script = Script()
     assert drain(root, script) == 0 and script.calls == []  # An unchanged ticket stays parked without a keep.
-    assert main(["confirm", "work", "--yes"], cwd=root, env=ENV, clock=Clock()) == 0
+    assert main(["confirm", "work", "--yes"], cwd=root, env=ENV, clock=Clock(START)) == 0
     assert "work" not in reject_queue(journal(root).read())  # Confirm recorded the verdict.
     assert git_out(root, "rev-parse", "HEAD:tickets/work/ticket.md").strip() == blob  # No ticket edit caused release.
     assert drain(root, script) == 0 and script.calls == ["work"]  # The next drain dispatches it.

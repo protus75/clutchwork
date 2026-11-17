@@ -7,6 +7,7 @@ import pytest
 from clutch.effects import Effects
 from clutch.journal import EventType, Journal
 from clutch.seams import FileSystem, ProcessExec
+from tests.fakes import FakeExec
 
 T0 = datetime(2026, 8, 4, 12, 0, 0, tzinfo=UTC)
 
@@ -18,18 +19,6 @@ class FakeClock:
     def __call__(self) -> datetime:
         self.now += timedelta(seconds=1)
         return self.now
-
-
-class FakeExec:
-    """Scripted process-exec seam: records every argv it is asked to run."""
-
-    def __init__(self, rc: int = 0, out: str = "ok\n", err: str = "") -> None:
-        self.calls: list[list[str]] = []
-        self.result = (rc, out, err)
-
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None):
-        self.calls.append(list(argv))
-        return self.result
 
 
 class FakeFS:
@@ -74,7 +63,7 @@ class CrashAfterCompletion(Journal):
 
 
 def test_fakes_satisfy_seam_protocols():
-    exec_: ProcessExec = FakeExec()
+    exec_: ProcessExec = FakeExec(result=(0, "ok\n", ""))
     fs: FileSystem = FakeFS()
     assert isinstance(exec_, ProcessExec)
     assert isinstance(fs, FileSystem)
@@ -90,7 +79,7 @@ def git_push(exec_: FakeExec):
 
 def test_first_run_journals_intent_then_completion_and_returns_result(tmp_path):
     j = Journal(tmp_path, FakeClock())
-    exec_ = FakeExec()
+    exec_ = FakeExec(result=(0, "ok\n", ""))
     result = asyncio.run(Effects(j).run(git_push(exec_), key="push/t-1/merged", ticket="t-1"))
 
     assert result == {"rc": 0, "out": "ok\n"}
@@ -103,7 +92,7 @@ def test_first_run_journals_intent_then_completion_and_returns_result(tmp_path):
 
 def test_same_key_in_process_replays_without_reexecuting(tmp_path):
     j = Journal(tmp_path, FakeClock())
-    exec_ = FakeExec()
+    exec_ = FakeExec(result=(0, "ok\n", ""))
     effects = Effects(j)
     first = asyncio.run(effects.run(git_push(exec_), key="k", ticket=None))
     exec_.result = (1, "different", "")
@@ -116,7 +105,7 @@ def test_same_key_in_process_replays_without_reexecuting(tmp_path):
 
 def test_distinct_keys_each_execute(tmp_path):
     j = Journal(tmp_path, FakeClock())
-    exec_ = FakeExec()
+    exec_ = FakeExec(result=(0, "ok\n", ""))
     effects = Effects(j)
     asyncio.run(effects.run(git_push(exec_), key="k/1", ticket=None))
     asyncio.run(effects.run(git_push(exec_), key="k/2", ticket=None))
@@ -137,7 +126,7 @@ def test_completed_key_is_not_reexecuted_after_restart(tmp_path):
 
 
 def test_crash_after_completion_journaled_does_not_double_execute(tmp_path):
-    exec_ = FakeExec()
+    exec_ = FakeExec(result=(0, "ok\n", ""))
     with pytest.raises(Crash):
         asyncio.run(Effects(CrashAfterCompletion(tmp_path, FakeClock())).run(git_push(exec_), key="k", ticket="t"))
     assert len(exec_.calls) == 1
@@ -149,7 +138,7 @@ def test_crash_after_completion_journaled_does_not_double_execute(tmp_path):
 
 
 def test_intent_only_crash_reexecutes_because_reconcile_owns_that_window(tmp_path):
-    exec_ = FakeExec()
+    exec_ = FakeExec(result=(0, "ok\n", ""))
 
     async def dies_mid_effect():
         await exec_.run(["git", "push"], cwd=Path("."), env={}, timeout=30)

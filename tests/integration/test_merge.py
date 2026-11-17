@@ -21,7 +21,7 @@ from clutch.stages import StageContext, run_stages
 from clutch.tickets import validate_ticket
 from tests.integration.test_cli import root
 from tests.integration.test_git import commit_lock
-from tests.integration.test_stages import ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
+from tests.integration.test_stages import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
 
 
 @pytest.fixture(autouse=True)
@@ -39,7 +39,7 @@ def repo(tmp_path: Path) -> Path:
     (root / "clutch" / "thing.py").write_text("")
     (root / "clutch" / "other.py").write_text("")
     (root / "CLUTCH_PLAN.md").write_text("# Plan\n")
-    (root / "config.yaml").write_text((Path(__file__).parent / "test_stages.py").read_text().split('CONFIG = """')[1].split('"""')[0])
+    (root / "config.yaml").write_text(CONFIG)
     (root / ".gitignore").write_text(".clutch/\n")
     adopt_conduct(root)
     git(root, "init", "-b", "main")
