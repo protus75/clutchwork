@@ -9,7 +9,7 @@ from clutch import roadmap
 from clutch.git import GitError
 from clutch.journal import EventType
 from clutch.runner import Refusal
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 
 
 def run(c, stems=(), **kwargs):
@@ -35,7 +35,7 @@ class FakeGit:
 
 @pytest.fixture
 def checkout(tmp_path):
-    return SimpleNamespace(repo=tmp_path, journal=MemoryJournal(), git=FakeGit())
+    return SimpleNamespace(repo=tmp_path, journal=FakeJournal(), git=FakeGit())
 
 
 def table(c, *groups):

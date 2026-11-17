@@ -6,18 +6,7 @@ import pytest
 
 from clutch import journal as journal_mod
 from clutch.journal import Event, Journal, JournalCorruption
-
-
-class FakeClock:
-    def __init__(self, start: datetime) -> None:
-        self.now = start
-
-    def __call__(self) -> datetime:
-        return self.now
-
-    def advance(self, seconds: float) -> None:
-        self.now += timedelta(seconds=seconds)
-
+from tests.fakes import FakeClock
 
 T0 = datetime(2026, 8, 4, 12, 0, 0, tzinfo=UTC)
 

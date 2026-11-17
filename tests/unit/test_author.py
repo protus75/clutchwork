@@ -37,9 +37,10 @@ def test_retro_ticket_reopen_boundary():
     from clutch.author import record_retro_ticket
     from clutch.box import BoxError
     from clutch.journal import EventType
-    from tests.unit.test_retro_recurrence import MemoryJournal, message
+    from tests.fakes import FakeJournal
+    from tests.unit.test_retro_recurrence import message
 
-    journal = MemoryJournal()
+    journal = FakeJournal()
     original = message()
     record_retro_ticket(journal, original, "old-fix")
     with pytest.raises(BoxError):
@@ -55,9 +56,10 @@ async def test_recovery_ignores_completions_before_reopen(monkeypatch):
 
     from clutch import author
     from clutch.journal import EventType
-    from tests.unit.test_retro_recurrence import MemoryJournal, message
+    from tests.fakes import FakeJournal
+    from tests.unit.test_retro_recurrence import message
 
-    journal = MemoryJournal()
+    journal = FakeJournal()
 
     def completion(stem, seq):
         journal.append(EventType.EFFECT_COMPLETION, {"result": {"text": json.dumps({"stem": stem, "ticket": "ticket"})}}, key=f"llm/author/{seq}/author/1/1")
@@ -101,7 +103,8 @@ async def test_author_renders_inputs_and_passes_prior_review(monkeypatch):
     from clutch import author as module
     from clutch.artifacts import Finding
     from clutch.requisition import FIRST_REVIEW
-    from tests.unit.test_retro_recurrence import MemoryJournal, message
+    from tests.fakes import FakeJournal
+    from tests.unit.test_retro_recurrence import message
 
     class Done(Exception):
         pass
@@ -135,7 +138,7 @@ async def test_author_renders_inputs_and_passes_prior_review(monkeypatch):
     monkeypatch.setattr(module, "validate_ticket", lambda *args: SimpleNamespace(scope_fence=(), frontmatter=SimpleNamespace(gate_bypass=False)))
     monkeypatch.setattr(module, "resolve_baseline", lambda *args, **kwargs: SimpleNamespace(binds=False))
     monkeypatch.setattr(module, "start_state", lambda *args, **kwargs: "draft")
-    journal = MemoryJournal()
+    journal = FakeJournal()
     checkout = SimpleNamespace(
         repo=Path("/repo"),
         git=SimpleNamespace(ls_files=ls_files),

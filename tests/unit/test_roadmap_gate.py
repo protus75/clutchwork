@@ -8,7 +8,7 @@ from clutch import roadmap
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import ExecutableNotFound
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 
 
 class RecordingExec:
@@ -34,7 +34,7 @@ def checkout(repo, commands=None, answers=()):
         config=SimpleNamespace(drain=SimpleNamespace(max_ticket_minutes=7)),
         env={"PROVIDER_KEY": "secret"},
         exec_=RecordingExec(answers),
-        journal=MemoryJournal(),
+        journal=FakeJournal(),
     )
 
 
@@ -136,7 +136,7 @@ def test_run_gate_validates_all_blocks_before_running(tmp_path):
 def test_main_roadmap_gate(tmp_path, monkeypatch, capsys, result, code, out, err):
     monkeypatch.setattr(cli, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=tmp_path / "state"))
     monkeypatch.setattr(cli, "child_env", lambda *a: {"SAFE": "yes"})
-    monkeypatch.setattr(cli, "Journal", lambda *a: MemoryJournal())
+    monkeypatch.setattr(cli, "Journal", lambda *a: FakeJournal())
 
     class NoLock:
         def __init__(self, *a, **kw):

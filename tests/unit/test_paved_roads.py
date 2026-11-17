@@ -13,7 +13,7 @@ from clutch.journal import EventType
 from clutch.providers import ClaudeAdapter, CodexAdapter
 from clutch.retro import Retro
 from clutch.status import dismiss_admission, run_admission, triage_admission
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 
 
 def test_drain_heads_name_the_drain_verb():
@@ -52,7 +52,7 @@ def test_login_roads_name_the_drain_verb():
 def test_retro_error_code_names_the_stage_outcome(monkeypatch, exception):
     from clutch import daemon, retro, runner
 
-    journal = MemoryJournal()
+    journal = FakeJournal()
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="one")
     run = AsyncMock(return_value=SimpleNamespace(outcome="invalid_artifact"))
     rev_parse = AsyncMock(side_effect=OSError("disk full") if exception else None, return_value="head")

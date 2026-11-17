@@ -4,23 +4,11 @@ from unittest.mock import Mock
 
 from clutch import __main__ as cli
 from clutch.box import Box, Message
-
-
-class MemoryFS:
-    def __init__(self):
-        self.files = {}
-
-    def publish(self, path, data):
-        if path in self.files:
-            raise FileExistsError(path)
-        self.files[path] = data
-
-    def write(self, path, data):
-        self.files[path] = data
+from tests.fakes import FakeFileSystem
 
 
 def memory_box(monkeypatch):
-    fs = MemoryFS()
+    fs = FakeFileSystem()
     root = Path("/state/box")
     box = Box(root, fs)
     monkeypatch.setattr(box, "messages", lambda: sorted((Message.model_validate_json(data) for path, data in fs.files.items() if path.parent == root), key=lambda m: m.seq))
@@ -58,7 +46,7 @@ def test_suggest_output(monkeypatch, capsys):
     monkeypatch.setattr(box_module, "Box", Mock(return_value=box))
     monkeypatch.setattr(cli, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=Path("/state")))
     monkeypatch.setattr(cli, "child_env", lambda *a: {})
-    monkeypatch.setattr(cli, "LocalFileSystem", MemoryFS)
+    monkeypatch.setattr(cli, "LocalFileSystem", FakeFileSystem)
     assert cli.main(["suggest", "a distinct idea"], cwd=Path("/host"), env={}) == 0
     assert cli.main(["suggest", "a distinct idea"], cwd=Path("/host"), env={}) == 0
     assert capsys.readouterr().out.splitlines() == ["suggest: filed box-000007-abcdef12", "suggest: already in the box as box-000007-abcdef12"]

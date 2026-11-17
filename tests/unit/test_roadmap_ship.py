@@ -7,7 +7,7 @@ import pytest
 from clutch import release, roadmap
 from clutch.journal import EventType
 from clutch.runner import Refusal
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 
 
 def test_ship_steps(tmp_path, monkeypatch):
@@ -84,6 +84,6 @@ def test_release_helpers(tmp_path):
     git.dirty = ""
     cfg.release.publish = False
     assert asyncio.run(release.publishable(tmp_path, git, {}, cfg)) is None
-    journal = MemoryJournal()
+    journal = FakeJournal()
     release.journal_release(journal, "0.4.0", "abc")
     assert [(e.type, e.body) for e in journal.events] == [(EventType.SIGNAL, {"signal": "release", "version": "0.4.0", "tag": "v0.4.0", "commit": "abc"})]

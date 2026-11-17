@@ -7,8 +7,8 @@ import pytest
 
 from clutch import drain, roadmap, serve, triage
 from clutch.journal import EventType
+from tests.fakes import FakeJournal
 from tests.unit.test_phase_events import install_log
-from tests.unit.test_retro_recurrence import MemoryJournal
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class Checkout:
 @pytest.mark.asyncio
 async def test_serve_driver_pending_and_run(tmp_path, monkeypatch):
     s = object.__new__(serve.Serve)
-    journal = MemoryJournal()
+    journal = FakeJournal()
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="a")
     s.checkout = Checkout(tmp_path, journal, "old")
     s.control = SimpleNamespace(load_config=lambda: "new", poll=lambda: None, projection=SimpleNamespace(stop_requested=False, kill_requested=False))
@@ -52,7 +52,7 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
     (tmp_path / "docs").mkdir()
     path = tmp_path / roadmap.ROADMAP
     path.touch()
-    journal = MemoryJournal()
+    journal = FakeJournal()
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="a")
     c = SimpleNamespace(
         repo=tmp_path,
@@ -102,7 +102,7 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
 
 def test_serve_select_holds_only_new_admission(tmp_path):
     s = object.__new__(serve.Serve)
-    journal = MemoryJournal()
+    journal = FakeJournal()
     (tmp_path / "docs").mkdir()
     (tmp_path / roadmap.ROADMAP).touch()
     s.checkout = Checkout(tmp_path, journal, None)

@@ -6,7 +6,7 @@ import pytest
 from clutch import roadmap
 from clutch.runner import Refusal
 from clutch.seams import ExecutableNotFound
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 from tests.unit.test_roadmap_gate import RecordingExec
 
 
@@ -34,7 +34,7 @@ def test_run_start(tmp_path, monkeypatch, answer, passed):
     path = tmp_path / roadmap.ROADMAP
     path.parent.mkdir()
     path.write_text("### 0.5.0\n```start\ncheck value\n```\n")
-    c = SimpleNamespace(repo=tmp_path, exec_=RecordingExec([answer]), env={}, config=SimpleNamespace(drain=SimpleNamespace(max_ticket_minutes=7)), journal=MemoryJournal())
+    c = SimpleNamespace(repo=tmp_path, exec_=RecordingExec([answer]), env={}, config=SimpleNamespace(drain=SimpleNamespace(max_ticket_minutes=7)), journal=FakeJournal())
     monkeypatch.setattr(roadmap, "child_env", lambda *args: {"SAFE": "yes"})
     assert asyncio.run(roadmap.run_start(c, "0.5.0")) == (passed, ["check value"])
     assert c.exec_.calls == [(["check", "value"], {"cwd": tmp_path, "env": {"SAFE": "yes"}, "timeout": 420.0})]

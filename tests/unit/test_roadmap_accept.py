@@ -17,7 +17,7 @@ from clutch.effects import Effects
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 from tests.unit.test_roadmap_author import FakeGit
 from tests.unit.test_roadmap_table import HEADER, row
 
@@ -95,7 +95,7 @@ def checkout(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
     (repo / roadmap.ROADMAP).write_text(document())
-    return SimpleNamespace(repo=repo, config=SimpleNamespace(state_dir=tmp_path / "state", providers=[]), git=FakeGit(repo), fs=LocalFileSystem(), journal=MemoryJournal())
+    return SimpleNamespace(repo=repo, config=SimpleNamespace(state_dir=tmp_path / "state", providers=[]), git=FakeGit(repo), fs=LocalFileSystem(), journal=FakeJournal())
 
 
 def run(checkout, driver, release="1.0.0"):
@@ -296,7 +296,7 @@ def test_judge_family(checkout):
 @pytest.mark.parametrize(("result", "code", "output"), [(True, 0, "a"), (False, 1, "b"), (None, 2, None)])
 def test_main_roadmap_accept(tmp_path, monkeypatch, capsys, result, code, output):
     cfg = SimpleNamespace(state_dir=tmp_path / "state")
-    journal = MemoryJournal()
+    journal = FakeJournal()
     monkeypatch.setattr(cli, "load_config", lambda *a, **kw: cfg)
     monkeypatch.setattr(cli, "child_env", lambda *a: {})
     monkeypatch.setattr(cli, "Journal", lambda *a: journal)

@@ -11,7 +11,7 @@ from clutch.git import Git
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 from tests.unit.test_roadmap_table import document, row
 
 
@@ -42,7 +42,7 @@ def setup(tmp_path, monkeypatch):
     monkeypatch.setattr(roadmap, "load_spec", lambda _: SimpleNamespace(meta=SimpleNamespace(version="9.9")))
     git = FakeGit(repo)
     git.files = ["docs/sample-plan.md"]
-    checkout = SimpleNamespace(repo=repo, git=git, config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)), fs=LocalFileSystem(), journal=MemoryJournal())
+    checkout = SimpleNamespace(repo=repo, git=git, config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)), fs=LocalFileSystem(), journal=FakeJournal())
     return checkout, Box(checkout.config.state_dir / "box", checkout.fs)
 
 

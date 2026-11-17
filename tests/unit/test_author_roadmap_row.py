@@ -9,7 +9,7 @@ from clutch import author, policy
 from clutch.box import Box, Message, RoadmapRow
 from clutch.config import BOX_POLICY_DEFAULTS
 from clutch.seams import LocalFileSystem
-from tests.unit.test_retro_recurrence import MemoryJournal
+from tests.fakes import FakeJournal
 
 
 def row():
@@ -66,7 +66,7 @@ def test_plan_excerpt():
 def test_gate_holds_roadmap_row_identity(tmp_path, monkeypatch):
     box = Box(tmp_path / "box", LocalFileSystem())
     id, _ = box.enqueue(message_class="roadmap_row", origin="row", summary="build", roadmap_row=row())
-    gate = author.AuthorGate(SimpleNamespace(repo=tmp_path, journal=MemoryJournal()), "roadmap_row")
+    gate = author.AuthorGate(SimpleNamespace(repo=tmp_path, journal=FakeJournal()), "roadmap_row")
     gate.message = box.get(id)
     monkeypatch.setattr(author, "validate_ticket", lambda stem, text, repo: SimpleNamespace(frontmatter=SimpleNamespace(kind=text.split()[0], priority=text.split()[1])))
     evidence = tmp_path / "tickets/sample-row/evidence/hand.txt"
@@ -117,7 +117,7 @@ async def test_author_embeds_row_and_plan(tmp_path, monkeypatch):
     monkeypatch.setattr(author, "render", lambda spec, inputs: inputs)
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "failure_declined", decline)
-    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=MemoryJournal(), config=SimpleNamespace(routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(routing_default_tier="medium"))
     box = SimpleNamespace(root=tmp_path / "box")
     original = message().model_copy(update={"message_class": "roadmap_row", "roadmap_row": row(), "verdict": SimpleNamespace(rationale="row")})
     with pytest.raises(StopAsyncIteration):
@@ -182,7 +182,7 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
         repo=tmp_path,
         git=SimpleNamespace(ls_files=ls_files, _run=git_run, commit=commit),
         fs=LocalFileSystem(),
-        journal=MemoryJournal(),
+        journal=FakeJournal(),
         config=SimpleNamespace(
             state_dir=tmp_path, review=SimpleNamespace(coverage_map=None), routing_default_tier="medium", engine_plane_safety_inventory=["config.yaml"], box_policy=dict(BOX_POLICY_DEFAULTS)
         ),

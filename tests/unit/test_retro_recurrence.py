@@ -7,20 +7,8 @@ import pytest
 from clutch.box import Box, Message, RereportJournal, Resolution, Verdict
 from clutch.journal import Event, EventType
 from clutch.retro import Retro, RetroArtifact, prior_findings, validate_recurrences
+from tests.fakes import FakeJournal
 from tests.unit.test_retro_proposal import BASE, SPEC
-
-
-class MemoryJournal:
-    def __init__(self):
-        self.events = []
-
-    def read(self):
-        return list(self.events)
-
-    def append(self, type_, body, *, key=None, ticket=None):
-        event = Event(1, type_, "2026-01-01T00:00:00+00:00", ticket, key, body)
-        self.events.append(event)
-        return event
 
 
 def message(**changes):
@@ -28,7 +16,7 @@ def message(**changes):
 
 
 def setup_box(initial):
-    journal = MemoryJournal()
+    journal = FakeJournal()
     state = {"message": initial}
 
     def write(path, data):
@@ -47,7 +35,7 @@ def test_prior_findings_projection():
         message(id="tomb", status="resolved", resolution=Resolution(kind="tombstone", link="old")),
         message(id="pending"),
     ]
-    journal = MemoryJournal()
+    journal = FakeJournal()
     journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="done")
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
     journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="live")

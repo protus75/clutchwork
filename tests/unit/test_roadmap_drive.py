@@ -8,8 +8,8 @@ from clutch import roadmap, triage
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import NotificationFailed
+from tests.fakes import FakeJournal
 from tests.unit.test_phase_events import RecordingLog
-from tests.unit.test_retro_recurrence import MemoryJournal
 
 
 class Notifications:
@@ -25,7 +25,7 @@ class Notifications:
 def setup(tmp_path, monkeypatch):
     (tmp_path / "docs").mkdir()
     (tmp_path / roadmap.ROADMAP).touch()
-    journal = MemoryJournal()
+    journal = FakeJournal()
     for stem, body in [("a", {"to": "merged"}), ("b", {"to": "gate_failed", "routed": "reject_queue", "reason": "premise"}), ("c", {"to": "merged"})]:
         journal.append(EventType.STATE_TRANSITION, body, ticket=stem)
     journal.append(EventType.EFFECT_COMPLETION, {"cost": {"usd": 1.5}})
