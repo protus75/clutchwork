@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "031944a8286914f6ea1744a84977e48fd21f97aa",
+  "stem": "drop-closed-sets-owner-roadmap-test",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The diff was correct and complete: it deleted test_follow_up_row and `from clutch import roadmap` from tests/integration/test_closed_sets_single_owner.py (19 deletions), and the other two tests were unchanged. A later attempt should redo exactly this edit and nothing more.",
+    "The gate failed on tests/integration/test_serve_dispatch.py::test_kill_aborts_requested_retro, which timed out in serve_rig.py retro_scenario ('production graph did not reach the scripted boundary'). That file is outside the fence, and deleting a roadmap test cannot affect it.",
+    "This is a known intermittent timeout. It is recorded in declined-box-000457, tombstones box-000529/000531/000574/000634/000665, and box-000745 (cli-group-release run.md), and it has never been fixed. Rerunning until it passes would hide the problem, not fix it.",
+    "Human: write a P0 root-cause ticket for the test_kill_aborts_requested_retro flake (tests/integration/serve_rig.py retro_scenario timing under a full xdist suite), list this stem in its `## Runs before`, and then requeue this ticket without changes."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
