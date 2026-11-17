@@ -22,7 +22,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("implement", "2.15"), ("requisition_review", "3.19"), ("diagnose", "1.7")):
+    for name, version in (("implement", "2.16"), ("requisition_review", "3.19"), ("diagnose", "1.7")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -124,7 +124,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.15"
+    assert spec.meta.version == "2.16"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",
@@ -177,18 +177,19 @@ def test_implement_spec_consumer_read():
         "For each failure also on the base list, commit, reply `ok`, and report it in `second_problems` and `surprises`. "
         "A failure that passes on the base commit and requires an edit outside `## Scope fence` remains a `premise_failed` finding."
     ) in task
-    # Missing guards would excuse reached scenarios, accept suite retries, or conflict with step 2.
+    # Missing guards would excuse reproduced failures, accept suite retries, or conflict with step 2.
     for rule in (
         "Before reporting a failure you did not cause, verify that it also fails on the base commit.",
         "When a failing test passes on the base commit and fixing it would require an edit outside `## Scope fence`, "
-        "first rerun that test alone on the candidate; if it passes alone and the diff does not reach the test's scenario "
-        "(no changed file is imported, called or exercised by that test), treat it as an intermittent failure: commit, reply `ok`, "
+        "first rerun that test alone on the candidate and run the ticket's `## Verification` command one further time in full; "
+        "if it passes alone and the further full run does not reproduce the failure, treat it as an intermittent failure: commit, reply `ok`, "
         "and report it in `second_problems` and `surprises`.",
         "For this case only, this paragraph overrides step 2's requirement that a failure also fails on the base commit before you report it.",
-        "One isolated rerun is the only evidence; never rerun the full suite until it passes and count that as proof.",
-        "A failure that reproduces on the isolated rerun, or a test whose scenario the diff reaches, stays a `premise_failed` finding.",
+        "The isolated rerun and the one further full run are the only evidence; further reruns until green are never proof.",
+        "A failure that reproduces on the isolated rerun or on the further full run stays a `premise_failed` finding.",
     ):
         assert rule in task
+    assert "no changed file is imported, called or exercised by that test" not in task
     assert (
         "Before replying `premise_failed` for a scope reason, work the change through every file the "
         "acceptance criteria and `## Verification` commands force, and report each forced file outside "
