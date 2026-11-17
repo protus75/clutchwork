@@ -192,7 +192,7 @@ def test_older_schema_version_is_refused_naming_migrate_config(tmp_path):
     err = refusal(tmp_path, edit(VALID, "schema_version: 1", "schema_version: 0"))
     assert err.key == "schema_version"
     assert "older" in str(err)
-    assert "clutch migrate-config" in str(err)
+    assert "clutch config migrate" in str(err)
 
 
 @pytest.mark.parametrize("value", ['"1"', "1.0", "true", "-1"])
@@ -340,7 +340,7 @@ def test_migrate_config_validates_before_write(tmp_path, monkeypatch, invalid):
         return load(source, cwd=cwd)
 
     monkeypatch.setattr(module, "load_config", observe)
-    with pytest.raises(ConfigError, match="repair.*retry migrate-config"):
+    with pytest.raises(ConfigError, match="repair.*retry config migrate"):
         module.migrate_config(path, cwd=tmp_path, fs=fs)
     assert len(seen) == 1
     assert fs.writes == []

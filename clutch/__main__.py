@@ -358,11 +358,50 @@ def _parser() -> argparse.ArgumentParser:
     )
     help_parser.add_argument("command", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
-    sub.add_parser("init-config", help="print a suggested config.yaml from the provider CLIs found").add_argument("--write", action="store_true")
     sub.add_parser("install", help="install provider CLIs into the host project as pnpm dev dependencies").add_argument("providers", nargs="*")
-    sub.add_parser("update-config", help="list the model names each declared provider serves and compare them with config.yaml")
     sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
-    sub.add_parser("migrate-config", help="validate and migrate schema_version: 0 to the current config schema")
+    config_parser = sub.add_parser(
+        "config",
+        help="create, check and migrate config.yaml",
+        description="Suggest a config.yaml from provider CLIs, compare configured model names with those served, and migrate an older config schema.",
+        epilog="Examples:\nclutch config init\n  Suggest a configuration.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    config_sub = config_parser.add_subparsers(dest="config_verb", required=True)
+    init = _command(
+        config_sub,
+        "init",
+        summary="print a suggested config.yaml from the provider CLIs found",
+        does="Print a suggested config.yaml built from provider CLIs and their model names, validated with the real loader; --write creates it at the checkout root when absent.",
+        reads="Provider CLIs in the project or on PATH and their model listings; claude resolves each alias with a small model call. No config is needed.",
+        writes="Nothing; with --write, config.yaml.",
+        lock="None.",
+        exits="0 when printed or written; 2 on refusal (no provider CLI, invalid suggestion, or config.yaml already exists with --write).",
+        examples=["clutch config init", "clutch config init --write"],
+    )
+    init.add_argument("--write", action="store_true")
+    _command(
+        config_sub,
+        "update",
+        summary="compare configured model names with provider listings",
+        does="List model names served by declared providers and identify configured names as current, replaced, not served or unverified.",
+        reads="Config and each declared provider CLI's model listing.",
+        writes="Nothing.",
+        lock="None.",
+        exits="0 when every configured name is current; 1 when a suggestion was printed; 2 on refusal.",
+        examples=["clutch config update"],
+    )
+    _command(
+        config_sub,
+        "migrate",
+        summary="validate and migrate an older config",
+        does="Validate the selected config and migrate schema_version: 0 to the current schema in place; a current config is a byte-identical no-op.",
+        reads="The selected config (--config before the command, else config.yaml at the checkout root).",
+        writes="Original bytes to <config>.bak, then the migrated config; nothing for a current config.",
+        lock="None.",
+        exits="0 when migrated or already current; 2 on refusal.",
+        examples=["clutch config migrate", "clutch --config host.yaml config migrate"],
+    )
     box = sub.add_parser(
         "box",
         help="file and settle Suggestion Box messages",
@@ -1200,14 +1239,12 @@ def main(
 
     handlers = {
         "docs": handle_docs,
-        "init-config": handle_init_config,
         "install": handle_install,
-        "migrate-config": handle_migrate_config,
         "covgate": handle_covgate,
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
         "box": lambda: {"suggest": handle_suggest, "triage": handle_triage, "dismiss": handle_dismiss, "issue": handle_issue}[args.box_verb](),
         "doctor": handle_doctor,
-        "update-config": handle_update_config,
+        "config": lambda: {"init": handle_init_config, "update": handle_update_config, "migrate": handle_migrate_config}[args.config_verb](),
         "probe": handle_probe,
         "core": handle_core,
         "prompt": handle_prompt,
@@ -1237,7 +1274,8 @@ def main(
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
         if (
-            args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "doctor"}
+            args.verb in {"docs", "install", "covgate", "doctor"}
+            or (args.verb == "config" and args.config_verb in {"init", "migrate"})
             or (args.verb == "box" and args.box_verb == "issue")
             or (args.verb == "ticket" and args.ticket_verb == "new")
         ):
@@ -1245,7 +1283,7 @@ def main(
         config = load_config(args.config, cwd=repo)
         if args.verb == "engine" and args.engine_verb == "drain" and args.detach:
             return handle_detach()
-        if args.verb in {"update-config", "probe", "core", "prompt"}:
+        if args.verb in {"config", "probe", "core", "prompt"}:
             return handlers[args.verb]()
         exec_ = SubprocessExec()
         checkout = runner.Checkout(

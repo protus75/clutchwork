@@ -10,11 +10,11 @@ Run `clutch install gemini` to install a pnpm dev dependency in the host, or `pn
 
 ## Authenticate
 
-Create an API key in Google AI Studio, export `GEMINI_API_KEY` in the environment that starts clutch, and declare `auth: GEMINI_API_KEY` in the provider. `clutch init-config` writes that line when it finds gemini. The CLI reads exactly that variable. Declaring it makes clutch pass the key only to gemini calls and redact it from captures. Google OAuth login and Vertex AI are not covered.
+Create an API key in Google AI Studio, export `GEMINI_API_KEY` in the environment that starts clutch, and declare `auth: GEMINI_API_KEY` in the provider. `clutch config init` writes that line when it finds gemini. The CLI reads exactly that variable. Declaring it makes clutch pass the key only to gemini calls and redact it from captures. Google OAuth login and Vertex AI are not covered.
 
 ## Pick models
 
-The CLI has no listing command, so `clutch update-config` lists no gemini models and prints a problem line. The hand test called `gemini-3.1-pro-preview` and `gemini-3.1-flash-lite`, and the API lists `gemini-3-flash-preview`. A name ending in `flash` is rewritten by the CLI: `gemini-2.5-flash` was served as `gemini-3.6-flash`. clutch records the served name as the call's model. `gemini-2.5-pro` is listed but returns 404 for new keys. Confirm every choice with `clutch probe gemini`.
+The CLI has no listing command, so `clutch config update` lists no gemini models and prints a problem line. The hand test called `gemini-3.1-pro-preview` and `gemini-3.1-flash-lite`, and the API lists `gemini-3-flash-preview`. A name ending in `flash` is rewritten by the CLI: `gemini-2.5-flash` was served as `gemini-3.6-flash`. clutch records the served name as the call's model. `gemini-2.5-pro` is listed but returns 404 for new keys. Confirm every choice with `clutch probe gemini`.
 
 ## Declare it in config.yaml
 

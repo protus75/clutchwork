@@ -104,7 +104,7 @@ def test_verb(monkeypatch, capsys):
     monkeypatch.setattr(cli, "SubprocessExec", lambda: exec_)
 
     def run():
-        return cli.main(["update-config"], cwd=Path("/repo"), env={"PATH": "/bin"})
+        return cli.main(["config", "update"], cwd=Path("/repo"), env={"PATH": "/bin"})
 
     assert run() == 1
     out = capsys.readouterr().out
@@ -165,7 +165,7 @@ def test_verb_listing_status(monkeypatch, capsys, models, problems, name, expect
 
     monkeypatch.setattr(cli, "load_config", lambda *a, **k: config)
     monkeypatch.setattr(CodexAdapter, "list_models", list_models)
-    assert cli.main(["update-config"], cwd=Path("/repo"), env={"PATH": "/bin"}) == 1
+    assert cli.main(["config", "update"], cwd=Path("/repo"), env={"PATH": "/bin"}) == 1
     out = capsys.readouterr().out
     for tier in ("low", "medium", "high", "max"):
         assert f"models_by_tier.{tier}: {name} {expected}" in out

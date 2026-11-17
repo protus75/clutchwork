@@ -20,7 +20,7 @@ def test_onboarding_and_operating_sections():
 
     onboarding = sections[headings[0]]
     assert len(re.findall(r"^\d+\. ", onboarding, re.M)) >= 8
-    verbs = ("clutch install", "clutch init-config", "clutch doctor", "clutch probe", "clutch core", "clutch ticket new", "clutch ticket lint", "clutch ticket review")
+    verbs = ("clutch install", "clutch config init", "clutch doctor", "clutch probe", "clutch core", "clutch ticket new", "clutch ticket lint", "clutch ticket review")
     positions = [onboarding.index(verb) for verb in verbs]
     assert positions == sorted(positions)
     assert re.search(r"clutch engine (?:drain|serve)", onboarding[positions[-1] :])

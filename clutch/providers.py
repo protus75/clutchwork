@@ -837,7 +837,7 @@ def suggest_config(statuses: Sequence[CliStatus], listings: Mapping[str, ModelLi
     if not present:
         raise ValueError("no provider CLI found")
     lines = [
-        "# Suggested by clutch init-config from the provider CLIs found; edit models, checks and routing, then run clutch doctor and clutch probe.",
+        "# Suggested by clutch config init from the provider CLIs found; edit models, checks and routing, then run clutch doctor and clutch probe.",
         "schema_version: 1",
         "state_dir: .clutch",
         "providers:",

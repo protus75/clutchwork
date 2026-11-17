@@ -767,7 +767,7 @@ def test_migrate_config_before_load(tmp_path, monkeypatch, capsys, explicit):
     for name in ("Git", "Journal", "SubprocessExec", "ProviderLLM", "ProviderSession", "build_control"):
         monkeypatch.setattr(module, name, forbidden)
     monkeypatch.setattr(ProviderLLM, "call", forbidden)
-    args = (["--config", str(path)] if explicit else []) + ["migrate-config"]
+    args = (["--config", str(path)] if explicit else []) + ["config", "migrate"]
     assert main(args, cwd=tmp_path, env=ENV, pipeline=forbidden) == 0
     backup = path.with_name(path.name + ".bak")
     expected = CONFIG.encode()

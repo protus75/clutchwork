@@ -14,7 +14,7 @@ Windows uses `.venv\Scripts\clutch.exe`; set `clutch.command` explicitly there.
 
 `uv run clutch install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run clutch install` with no names reports each adapter's package, location, and version.
 
-`uv run clutch init-config --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch doctor` and `clutch probe` check.
+`uv run clutch config init --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch doctor` and `clutch probe` check.
 
 ## Copyable configuration
 
@@ -23,7 +23,7 @@ paths, package and checks for your host. `--config <path>` selects another file;
 otherwise the invocation cwd selects `config.yaml`. The loader uses PyYAML
 `safe_load`, refuses unknown fields and validates strict types (paths accept
 strings). These check commands and merge strategies are host choices, not engine
-presets. Loading this example does not run its commands or contact a provider. `clutch init-config` prints the same shape filled from the CLIs it finds.
+presets. Loading this example does not run its commands or contact a provider. `clutch config init` prints the same shape filled from the CLIs it finds.
 
 ```yaml host-example
 schema_version: 1
@@ -120,7 +120,7 @@ inventory sends a ticket that would lower a threshold to a human.
 
 1. Follow [Install](#install) to install clutch in the host.
 2. Use `clutch install` for the routed CLIs; see the [run guide](host-running.md).
-3. Use `clutch init-config` to generate a starting configuration; see the [run guide](host-running.md).
+3. Use `clutch config init` to generate a starting configuration; see the [run guide](host-running.md).
 4. Copy or edit `config.yaml` using [Copyable configuration](#copyable-configuration).
 5. Run `clutch doctor` and `clutch probe` to check the setup and providers; see the [run guide](host-running.md).
 6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
@@ -285,9 +285,9 @@ selected config rather than silently accepting a future schema.
 ## Version migration
 
 Newer versions refuse with a road to upgrade clutch; older versions name
-`clutch migrate-config`. The only prior schema is explicit integer version 0;
+`clutch config migrate`. The only prior schema is explicit integer version 0;
 missing version is a missing-required-key refusal, never inferred as 0.
-`clutch migrate-config` selects the same config path, changes only the version
+`clutch config migrate` selects the same config path, changes only the version
 scalar from 0 to 1, and keeps all other bytes (comments, BOM and line endings).
 It validates the full candidate with the real loader before any write, writes
 the original bytes to adjacent `config.yaml.bak` (selected filename plus `.bak`),
@@ -296,7 +296,7 @@ An existing backup is replaced. Current version is a validated byte-identical
 no-op with no backup write. Missing file, missing/non-integer/negative version,
 newer version, duplicate or aliased version-0 scalars, invalid YAML or invalid
 candidate refuse without writes. Create/select the file, supply the explicit
-integer, repair the named key and retry migrate-config, or upgrade for a newer
+integer, repair the named key and retry config migrate, or upgrade for a newer
 schema. Every future version bump must ship its migration step.
 
 ## Managed conduct and ticket ownership

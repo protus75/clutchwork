@@ -109,7 +109,7 @@ def test_verb(monkeypatch, capsys):
     monkeypatch.setattr(cli, "load_config_text", validate)
 
     def run(*args):
-        return cli.main(["init-config", *args], cwd=Path("/repo"), env={"PATH": "/bin"})
+        return cli.main(["config", "init", *args], cwd=Path("/repo"), env={"PATH": "/bin"})
 
     assert run() == 0
     text = capsys.readouterr().out

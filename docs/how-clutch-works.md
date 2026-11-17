@@ -51,11 +51,11 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
 | `install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
-| `update-config` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
-| `init-config [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
+| `config update` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
+| `config init [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
 | `help [command ...]` | no | Prints command help and examples from each command parser in `clutch/__main__.py`; `--help` or `-h` before a command does the same. Exits 0, or 2 for an unknown command. |
 | `docs` | no | Prints the installed host guide paths and their purposes. |
-| `migrate-config` | no | Migrates a `schema_version: 0` config to the current schema. |
+| `config migrate` | no | Migrates a `schema_version: 0` config to the current schema. |
 | `ticket new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
 | `ticket order <stem> [--priority P0\|P1\|P2\|P3] [--runs-before [stem ...]]` | no | Validates and edits priority and/or runs-before ordering in the working tree; a bare `--runs-before` removes the section. Refuses a running ticket while an engine is live, and settled, rejected, missing or invalid tickets. An interrupted run with no live engine is editable. Intake commits the edit. |
 | `ticket review <stem>` | commit only | Only the named ticket's pending changes are committed through intake first; other pending tickets are left untouched. Reviews the committed ticket against merged code and journals its verdict and ticket blob SHA. A ticket with an unmerged dependency gets a provisional review that is printed but not journaled, so the drain reviews it again before its first run. Refuses missing, intake-failed, settled, or rejected tickets without a model call. Prints findings and exits 0 on approve, 1 on snag or rma. |
@@ -583,7 +583,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
   ticket's worktree. Every other surface is read-only. Gemini's grant is also a packaged system settings file chosen per call: `gemini-readonly.json` allows only read tools and `gemini-write.json` allows every tool.
 `claude` and `qwen` read `CLAUDE.md`, and `codex` reads `AGENTS.md`. clutch points qwen at `CLAUDE.md` through its packaged `qwen-settings.json`. `gemini` reads `AGENTS.md` through the packaged settings files' `context.fileName`, and also loads any `GEMINI.md`, which that setting cannot exclude.
 
-**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `gemini` lists none because the CLI has no listing command; a gemini call records the model its stream's `stats.models` names, because `-m` does not pin flash-family names. `clutch update-config` prints listings beside the configured names.
+**Model names.** `claude` resolves the aliases `haiku`, `sonnet`, `opus`, `fable` with one small probe call each, reading the resolved name from the stream's `init` event. `codex` reads `codex debug models` (visible entries in priority order, no model call); `qwen` reads `ollama list` where `ollama` is on `PATH`. `gemini` lists none because the CLI has no listing command; a gemini call records the model its stream's `stats.models` names, because `-m` does not pin flash-family names. `clutch config update` prints listings beside the configured names.
 
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
@@ -749,7 +749,7 @@ One `config.yaml`, validated strictly: unknown keys, explicit nulls, and bad val
 with the fix. The full field inventory is in `clutch/docs/host-contract.md`. This repo’s own
 `config.yaml` uses its Python host test setup.
 
-`clutch init-config` prints a suggestion built from the installed CLIs.
+`clutch config init` prints a suggestion built from the installed CLIs.
 
 | Area | Controls |
 |---|---|

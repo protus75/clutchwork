@@ -22,11 +22,11 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `core` | Yes | Refresh managed conduct files. |
 | `probe` | Yes | Probe declared providers and models. |
 | `install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |
-| `init-config` | Yes | Print a suggested `config.yaml` from the provider CLIs found and the models they serve; `--write` creates `config.yaml` when none exists. |
-| `update-config` | Yes | List the model names each declared provider serves and say which configured names are current, replaced, or not served; reports names as unverified when the listing is empty with a problem; writes nothing. |
+| `config init` | Yes | Print a suggested `config.yaml` from the provider CLIs found and the models they serve; `--write` creates `config.yaml` when none exists. |
+| `config update` | Yes | List the model names each declared provider serves and say which configured names are current, replaced, or not served; reports names as unverified when the listing is empty with a problem; writes nothing. |
 | `help` | Yes | Print a command's help and examples; `clutch --help <command>` does the same. |
 | `docs` | Yes | Print the installed host guide paths and their purposes. |
-| `migrate-config` | Yes | Validate and migrate an older config. |
+| `config migrate` | Yes | Validate and migrate an older config. |
 | `engine pause` | Yes | Ask the running engine to pause admission. |
 | `engine resume` | Yes | Ask the running engine to release its current hold. |
 | `engine kill` | Yes | Ask the running engine to stop at a safe point. |

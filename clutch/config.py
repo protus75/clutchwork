@@ -348,14 +348,14 @@ def migrate_config(config_path: Path | None, *, cwd: Path, fs: FileSystem) -> bo
         node = yaml.compose(text, Loader=yaml.SafeLoader)
         tokens = list(yaml.scan(text))
     except (ValueError, yaml.YAMLError) as exc:
-        raise ConfigError(path, None, f"invalid YAML: {exc}; repair the selected config and retry migrate-config") from None
+        raise ConfigError(path, None, f"invalid YAML: {exc}; repair the selected config and retry config migrate") from None
     if not isinstance(raw, dict):
-        raise ConfigError(path, None, "top level must be a mapping of config keys; repair the selected config and retry migrate-config")
+        raise ConfigError(path, None, "top level must be a mapping of config keys; repair the selected config and retry config migrate")
     if "schema_version" not in raw:
-        raise ConfigError(path, "schema_version", "missing required key; supply explicit schema_version: 0 or 1 and retry migrate-config")
+        raise ConfigError(path, "schema_version", "missing required key; supply explicit schema_version: 0 or 1 and retry config migrate")
     version = raw["schema_version"]
     if type(version) is not int or version < 0:
-        raise ConfigError(path, "schema_version", f"must be a non-negative integer, got {version!r}; supply the required integer version and retry migrate-config")
+        raise ConfigError(path, "schema_version", f"must be a non-negative integer, got {version!r}; supply the required integer version and retry config migrate")
     if version > SCHEMA_VERSION:
         _check_schema_version(path, raw)
     candidate = text
@@ -371,7 +371,7 @@ def migrate_config(config_path: Path | None, *, cwd: Path, fs: FileSystem) -> bo
             and token.end_mark.index == entries[0][1].end_mark.index
         ]
         if len(scalars) != 1:
-            raise ConfigError(path, "schema_version", "version must be one explicit scalar, without duplicate keys or aliases; repair schema_version and retry migrate-config")
+            raise ConfigError(path, "schema_version", "version must be one explicit scalar, without duplicate keys or aliases; repair schema_version and retry config migrate")
         scalar = scalars[0]
         start, end = scalar.start_mark.index, scalar.end_mark.index
         if scalar.style in ("'", '"'):
@@ -387,7 +387,7 @@ def migrate_config(config_path: Path | None, *, cwd: Path, fs: FileSystem) -> bo
     try:
         load_config_text(candidate, path=path, cwd=cwd)
     except ConfigError as exc:
-        exc.args = (f"{exc}; repair the selected config and retry migrate-config",)
+        exc.args = (f"{exc}; repair the selected config and retry config migrate",)
         raise
     if version == SCHEMA_VERSION:
         return False
@@ -413,7 +413,7 @@ def _check_schema_version(path: Path, raw: dict[str, Any]) -> None:
         raise ConfigError(
             path,
             "schema_version",
-            f"{version} is older than this engine's {SCHEMA_VERSION}; run `clutch migrate-config` to migrate it (the 0->1 step only rewrites schema_version to 1, every other key unchanged)",
+            f"{version} is older than this engine's {SCHEMA_VERSION}; run `clutch config migrate` to migrate it (the 0->1 step only rewrites schema_version to 1, every other key unchanged)",
         )
 
 
