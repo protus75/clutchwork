@@ -7,7 +7,7 @@ uv run clutch doctor
 uv run clutch engine serve
 ```
 
-Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
+Use the same prefix for the other verbs below; for example, `clutch install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `confirm`.
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
@@ -16,7 +16,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `status` | Yes | Show the journal projection. |
 | `stats` | Yes | Show the read-only health and efficiency projection. |
 | `ticket lint` | Yes | Validate tickets without writing. |
-| `retro` | Yes | Run a retro report now, or queue one on the running engine. |
+| `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `doctor` | No | Inspect setup; its lock probe reports a held lock as a failure. |
 | `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, or the plan-ticket-drain kickoff without writing state. |
 | `core` | Yes | Refresh managed conduct files. |
@@ -27,9 +27,9 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `help` | Yes | Print a command's help and examples; `clutch --help <command>` does the same. |
 | `docs` | Yes | Print the installed host guide paths and their purposes. |
 | `migrate-config` | Yes | Validate and migrate an older config. |
-| `pause` | Yes | Ask the running engine to pause admission. |
-| `resume` | Yes | Ask the running engine to release its current hold. |
-| `kill` | Yes | Ask the running engine to stop at a safe point. |
+| `engine pause` | Yes | Ask the running engine to pause admission. |
+| `engine resume` | Yes | Ask the running engine to release its current hold. |
+| `engine kill` | Yes | Ask the running engine to stop at a safe point. |
 | `engine stop` | Yes | Finish active work and exit. |
 | `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |

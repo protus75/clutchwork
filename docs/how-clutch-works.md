@@ -61,8 +61,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `ticket review <stem>` | commit only | Only the named ticket's pending changes are committed through intake first; other pending tickets are left untouched. Reviews the committed ticket against merged code and journals its verdict and ticket blob SHA. A ticket with an unmerged dependency gets a provisional review that is printed but not journaled, so the drain reviews it again before its first run. Refuses missing, intake-failed, settled, or rejected tickets without a model call. Prints findings and exits 0 on approve, 1 on snag or rma. |
 | `engine run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
 | `engine drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
-| `engine serve` | yes | Runs the continuous daemon until `kill`, `stop`, or a signal (section 7.2). |
-| `retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
+| `engine serve` | yes | Runs the continuous daemon until `engine kill`, `engine stop`, or a signal (section 7.2). |
+| `engine retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
 | `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
 | `issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
 | `roadmap status` | no | Prints per-release merged, authored, ready, and blocked row counts and the last gate result, followed by `next:` and `waits:` lines for held rows, including declined messages, rejected stems, drafts, and spent re-files. Read-only. |
@@ -79,7 +79,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `prompt drafts` | no | Print an assessment prompt for all committed drafts awaiting a verdict. |
 | `prompt author <stem>` | no | Print the hand-authoring prompt for one ticket from its roadmap row or a request; the ticket need not exist yet. |
 | `prompt plan-ticket-drain` | no | Print the kickoff prompt that runs the roadmap to completion unattended, authoring its rows as tickets and draining them, without writing state. |
-| `pause` / `resume` / `kill` / `engine stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `kill` and `stop` refuse (exit 2); `pause`/`resume` print "nothing running". |
+| `engine pause` / `engine resume` / `engine kill` / `engine stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `engine kill` and `engine stop` refuse (exit 2); `engine pause`/`engine resume` print "nothing running". |
 | `confirm <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to keep (or uses `--yes` to skip the prompt): promotes a draft to confirmed, keeps a Reject-queue item (section 6.6). Same-content repeat keeps are refused for command-line confirms; the extension uses `--extension` to allow them. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 | `reject <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to kill (or uses `--yes` or `--extension` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 
@@ -482,7 +482,7 @@ A dispatch exception is journaled as an `infra_error` terminal, re-offered, and 
    invalid tickets excluding those settled or rejected in the journal, drafts awaiting confirm. A requisition
    park lists its review findings under the parked line.
 
-SIGHUP, SIGTERM, and SIGINT stop a drain as `kill` does: the running ticket is aborted and journaled, and the report says the drain is not quiescent.
+SIGHUP, SIGTERM, and SIGINT stop a drain as `engine kill` does: the running ticket is aborted and journaled, and the report says the drain is not quiescent.
 
 Bounds: `drain.max_runtime_hours` (default 12) halts it (exit 1). The ceiling is carried across a self-upgrade handoff.
 
@@ -532,7 +532,7 @@ For each candidate, in pick order:
    Anything else aborts the rebase and hands the ticket to Rework.
 2. **Safety tier:** scope fence, run record, Merge gates, and host safety checks.
 3. **Integration tier:** all Check and Merge gates, plus host `always` + `hard` checks through the shared runner also used by Check and inline merge.
-4. **Red streak:** three different stems failing integration in a row pause the queue; `resume`
+4. **Red streak:** three different stems failing integration in a row pause the queue; `engine resume`
    with the advertised hold releases it.
 5. Squash-merge as in section 4.5, and verify `main`'s tree equals the checked tree.
 
@@ -554,7 +554,7 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 ### 7.4 Storms, watchdog, notifications, pushes
 
 - **Storm breaker:** every Suggestion Box arrival is counted per signature. More than 5 in an
-  hour trips a hold on the emitting ticket's stage. Only `resume` naming that trip releases it.
+  hour trips a hold on the emitting ticket's stage. Only `engine resume` naming that trip releases it.
 - **Watchdog:** watches each model call's active time (soft past 1.5x expected, killed at the
   stuck budget) and spending without progress in the scope fence (warned past 3x a call's
   cost). It notifies on both.
@@ -588,7 +588,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
   calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch publish` upload receives it as `UV_PUBLISH_TOKEN`.
-- **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`triage`/`ticket review`, and standalone `retro` with a merge to report): checks each CLI's version against its
+- **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`triage`/`ticket review`, and standalone `engine retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch install <provider>`.
 
@@ -684,7 +684,7 @@ premise-failed transitions, infra-error transitions (including provider drought)
 detection signals, and escape signals for automatically reopened tombstones.
 
 The retro reads the journal since the last report. By default `retro.test_timing` includes each Check gate’s per-invoice counts and duration plus each slow test’s maximum duration and invoice count. `retro.coverage` includes the latest repository percentage and each file’s latest and minimum percentages and invoice count. Set either switch to false to omit its summary. During a drain it runs between tickets, never
-between attempts of one ticket, when due at the `retro:` thresholds: by default 25 merges, 40 settled tickets, or 5 events of one spike kind. A settled ticket is a stem whose state goes to merged, already satisfied or rejected, counted once. A requested retro runs at the drain’s next between-tickets point. Serve runs requested retros and automatic retros due after a ticket settles at its next idle point, then resumes admission. Each nested `retro.merges`, `retro.settled`, and `retro.spikes` block has an `enabled` switch; their thresholds are `merges.every`, `settled.every`, and `spikes.count`. The nonempty `spikes.kinds` allowlist selects which kinds can trigger; measurements still report every kind. The master `retro.enabled: false` disables automatic retros even if sub-triggers are enabled; run one on demand with `retro`. Config load refuses an enabled master with all three triggers disabled (enable a trigger or set `retro.enabled: false`) and duplicate spike kinds (list each kind once). It commits `tickets/retro/NNNNNN.md` (measurements,
+between attempts of one ticket, when due at the `retro:` thresholds: by default 25 merges, 40 settled tickets, or 5 events of one spike kind. A settled ticket is a stem whose state goes to merged, already satisfied or rejected, counted once. A requested retro runs at the drain’s next between-tickets point. Serve runs requested retros and automatic retros due after a ticket settles at its next idle point, then resumes admission. Each nested `retro.merges`, `retro.settled`, and `retro.spikes` block has an `enabled` switch; their thresholds are `merges.every`, `settled.every`, and `spikes.count`. The nonempty `spikes.kinds` allowlist selects which kinds can trigger; measurements still report every kind. The master `retro.enabled: false` disables automatic retros even if sub-triggers are enabled; run one on demand with `engine retro`. Config load refuses an enabled master with all three triggers disabled (enable a trigger or set `retro.enabled: false`) and duplicate spike kinds (list each kind once). It commits `tickets/retro/NNNNNN.md` (measurements,
 scorecard, proposals) and files new proposals as `retro_finding` messages. It supplies prior findings to the model; a proposal matching an existing cause counts as a recurrence on that message. A recurrence after its ticket fix merged reopens the finding for a new fix. Proposals identify either prompt-spec paths or repository paths for a test repair. Test repairs name one issue: `unit-io`, `slow`, `drift`, `flaky`, `coverage-hard`, `over-mocking`, `weak-assertion`, `shared-state`, `duplicate`, or `skip-rot`.
 
 ### 9.6 Scorecard and baseline

@@ -69,7 +69,7 @@ for _verb in ("drain", "serve", "stop", "kill", "status", "retro", "review", "li
         before="Choose the action for the current state.",
         after="Inspect the result.",
         doc="host-running.md",
-        verb=f"ticket {_verb}" if _verb in {"review", "lint", "order"} else f"engine {_verb}" if _verb in {"drain", "serve", "stop", "run"} else _verb,
+        verb=f"ticket {_verb}" if _verb in {"review", "lint", "order"} else f"engine {_verb}" if _verb in {"drain", "serve", "stop", "run", "kill", "retro"} else _verb,
     )
 
 _add(

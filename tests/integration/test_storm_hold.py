@@ -240,7 +240,7 @@ async def test_live_resume_releases_in_same_drain(live):
     assert hold == identity and not task.done() and live.calls == []
     before = live.offers
     live.clock.advance(1)
-    assert await asyncio.to_thread(cli.main, ["resume"], cwd=live.root, env=ENV, clock=live.clock) == 0
+    assert await asyncio.to_thread(cli.main, ["engine", "resume"], cwd=live.root, env=ENV, clock=live.clock) == 0
     (request,) = list((live.c.config.state_dir / "control/inbox").glob("*.json"))
     value = json.loads(request.read_bytes())
     assert value == asdict(ControlRequest(request.stem, lifecycle, "resume", identity))

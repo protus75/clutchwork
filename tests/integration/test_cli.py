@@ -495,7 +495,7 @@ def released(root):
 def test_retro_no_merge(root, capsys, completed_report):
     if completed_report:
         journal(root).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="one")
-        assert cli(root, "retro") == 0
+        assert cli(root, "engine", "retro") == 0
         capsys.readouterr()
 
     def factory(c):
@@ -509,7 +509,7 @@ def test_retro_no_merge(root, capsys, completed_report):
         return Dispatch()
 
     head = git_out(root, "rev-parse", "HEAD")
-    assert cli(root, "retro", stages=factory) == 0
+    assert cli(root, "engine", "retro", stages=factory) == 0
     assert capsys.readouterr().out == "retro: no merge since the latest completed report\n"
     assert git_out(root, "rev-parse", "HEAD") == head
     assert (root / "tickets/retro").exists() == completed_report
@@ -554,7 +554,7 @@ def test_retro_success(root, capsys, monkeypatch):
 
     monkeypatch.setattr(Retro, "__call__", invoke)
     journal(root).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="one")
-    assert module.main(["retro"], cwd=root, env=ENV, clock=Clock()) == 0
+    assert module.main(["engine", "retro"], cwd=root, env=ENV, clock=Clock()) == 0
     assert capsys.readouterr().out == "retro: committed tickets/retro/000001.md\n"
     assert len(llm.requests) == 1
     assert project_window(journal(root).read()).boundary == "retro/1"
@@ -596,12 +596,12 @@ def test_retro_no_commit(root, capsys, monkeypatch, suppressed, later_merge):
             pytest.fail("suppressed retro prepared providers")
 
         monkeypatch.setattr(runner, "prepare_pipeline", forbidden)
-        assert main(["retro"], cwd=root, env=ENV, clock=Clock()) == 1
+        assert main(["engine", "retro"], cwd=root, env=ENV, clock=Clock()) == 1
     elif later_merge:
-        assert main(["retro"], cwd=root, env=ENV, clock=Clock()) == 1
+        assert main(["engine", "retro"], cwd=root, env=ENV, clock=Clock()) == 1
         assert len(prepared) == 1
     else:
-        assert cli(root, "retro", stages=factory) == 1
+        assert cli(root, "engine", "retro", stages=factory) == 1
     assert git_out(root, "rev-parse", "HEAD") == head
     assert capsys.readouterr().out == "retro: no report committed; inspect status and the Suggestion Box\n"
     assert len(llm.requests) == (0 if suppressed and not later_merge else 1)
@@ -633,7 +633,7 @@ def test_retro_refusals(root, capsys, failure):
         return Dispatch()
 
     try:
-        assert cli(root, "retro", stages=factory) == 2
+        assert cli(root, "engine", "retro", stages=factory) == 2
         err = capsys.readouterr().err
         assert "Traceback" not in err
         if failure == "lock":

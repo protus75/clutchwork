@@ -101,7 +101,7 @@ def test_idle_kill_refuses_without_state(root, monkeypatch, capsys, stale):
         for obj, name in ((entry, "uuid4"), (entry, "build_control"), (Journal, "append"), (control, "read_active"), (control, "publish_request"), (control, "write_active")):
             patch.setattr(obj, name, forbidden)
         assert invoke(root, "kill") == runner.EXIT_REFUSED
-    assert capsys.readouterr().err == ("clutch kill: nothing running to kill -- start a drain before submitting kill\n")
+    assert capsys.readouterr().err == ("clutch engine: nothing running to kill -- start a drain before submitting kill\n")
     assert contents() == before and trace == ["lock", "unlock"]
     lock = acquire(root)
     lock.release()

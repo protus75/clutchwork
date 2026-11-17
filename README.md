@@ -55,16 +55,16 @@ uv run clutch engine drain    # run eligible tickets to quiescence
 uv run clutch engine serve    # run the continuous daemon
 uv run clutch engine run      # run one ticket through the pipeline
 uv run clutch engine stop     # finish active work and exit
-uv run clutch kill     # stop the engine at a safe point
-uv run clutch pause    # ask the engine to pause admission
-uv run clutch resume   # ask the engine to release its current hold
+uv run clutch engine kill     # stop the engine at a safe point
+uv run clutch engine pause    # ask the engine to pause admission
+uv run clutch engine resume   # ask the engine to release its current hold
 ```
 
 Stop `engine serve` before `engine drain` or `engine run`: each takes the writer lock. See the [host run guide](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-running.md) for every verb.
 
 ## Observe and decide
 
-5. Ask the chat agent to supervise: watch `clutch status` and `clutch watch`, diagnose rejected or blocked tickets from their `tickets/<stem>/` artifacts, fix small ticket problems, and stop with `clutch engine stop` or `clutch kill` and restart the drain as needed.
+5. Ask the chat agent to supervise: watch `clutch status` and `clutch watch`, diagnose rejected or blocked tickets from their `tickets/<stem>/` artifacts, fix small ticket problems, and stop with `clutch engine stop` or `clutch engine kill` and restart the drain as needed.
 6. Use the Suggestion Box as an escape valve. An implementing agent reports second problems in its `second_problems` reply, and the engine files them to the box so the ticket can complete its own goal. Retros and `clutch suggest` from a chat session also file there. An attempt-cap exhaustion puts the run in the Reject queue, where the supervisor may edit and keep a `gate_failed` or `premise_failed` ticket (`docs/how-clutch-works.md` section 6.6); otherwise it waits for `confirm` or `reject`. Triage resolves each message as `declined`, `tombstone` (already covered), or authored into a ticket; an authored ticket can start as a `draft` awaiting a person.
 7. Keep the judgment calls: ask the chat agent for a plain-English summary of each draft or held ticket, then run `clutch confirm` or `clutch reject` on each.
 

@@ -311,7 +311,6 @@ def _parser() -> argparse.ArgumentParser:
     stats.add_argument("--window", default="7d")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
-    sub.add_parser("retro", help="run a retro now, or queue one on the running engine")
     sub.add_parser("doctor", help="inspect setup without changing state")
     sub.add_parser("core", help="refresh managed conduct in every routed agent's root file")
     prompt = sub.add_parser(
@@ -364,9 +363,6 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("update-config", help="list the model names each declared provider serves and compare them with config.yaml")
     sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
     sub.add_parser("migrate-config", help="validate and migrate schema_version: 0 to the current config schema")
-    for verb in ("pause", "resume"):
-        sub.add_parser(verb, help=f"submit {verb} to the running engine, or do nothing under the idle lock")
-    sub.add_parser("kill", help="submit kill to the running engine; refuse when nothing is running")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     issue_parser = sub.add_parser("issue", help="print a prefilled GitHub new-issue link for a critical clutch bug")
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
@@ -526,8 +522,8 @@ def _parser() -> argparse.ArgumentParser:
         verdict.add_argument("--extension", action="store_true")
     engine = sub.add_parser(
         "engine",
-        help="run and stop the engine",
-        description="Run tickets and control engine shutdown.",
+        help="run and control the engine",
+        description="Run tickets, control a running engine, and run retros.",
         epilog="Examples:\nclutch engine drain\n  Run eligible tickets.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -551,7 +547,7 @@ def _parser() -> argparse.ArgumentParser:
         engine_sub,
         "serve",
         summary="run the continuous daemon",
-        does="Run the continuous daemon until kill, engine stop or a signal.",
+        does="Run the continuous daemon until engine kill, engine stop or a signal.",
         reads="Config, tickets and journal.",
         writes="Ticket commits, journal events and engine state.",
         lock="Writer lock.",
@@ -580,6 +576,53 @@ def _parser() -> argparse.ArgumentParser:
         lock="Writer lock only to probe.",
         exits="0 when submitted; 2 on refusal.",
         examples=["clutch engine stop"],
+    )
+    _command(
+        engine_sub,
+        "pause",
+        summary="pause ticket admission",
+        does="Ask a running drain or serve to admit no new ticket until engine resume; print nothing running to pause when idle; refuse a non-engine lock holder.",
+        reads="Engine lock and state.",
+        writes="A pause request to <state_dir>/control/inbox/ when an engine runs.",
+        lock="Writer lock only to probe.",
+        exits="0 when submitted or nothing runs; 2 on refusal.",
+        examples=["clutch engine pause"],
+    )
+    _command(
+        engine_sub,
+        "resume",
+        summary="release the current hold",
+        does=(
+            "Ask a running drain or serve to release its current advertised hold (pause, storm trip or red streak); "
+            "print nothing running to resume when idle; refuse if no hold is advertised or a non-engine holder has the lock."
+        ),
+        reads="Engine lock and state.",
+        writes="A resume request to <state_dir>/control/inbox/ when an engine runs.",
+        lock="Writer lock only to probe.",
+        exits="0 when submitted or nothing runs; 2 on refusal.",
+        examples=["clutch engine resume"],
+    )
+    _command(
+        engine_sub,
+        "kill",
+        summary="abort active work and stop",
+        does="Ask a running drain or serve to stop at the next safe point, aborting its running ticket; refuse when nothing runs or a non-engine holder has the lock.",
+        reads="Engine lock and state.",
+        writes="A kill request to <state_dir>/control/inbox/.",
+        lock="Writer lock only to probe.",
+        exits="0 when submitted; 2 on refusal.",
+        examples=["clutch engine kill"],
+    )
+    _command(
+        engine_sub,
+        "retro",
+        summary="run or queue a retro report",
+        does="Run a retro report now or queue one on a running drain or serve; refuse a non-engine lock holder.",
+        reads="Config, journal, tickets and engine state.",
+        writes="A committed tickets/retro/NNNNNN.md report or a retro request to <state_dir>/control/inbox/.",
+        lock="Writer lock, or queue on the running engine.",
+        exits="0 when committed, nothing merged since the last report, or queued; 1 when no report is committed; 2 on refusal.",
+        examples=["clutch engine retro"],
     )
     # Replace argparse's flat choice listing with one ordered command listing.
     sub.help = argparse.SUPPRESS
@@ -921,7 +964,7 @@ def main(
 
     # Control
     def handle_control():
-        return asyncio.run(_control(checkout, args.engine_verb if args.verb == "engine" else args.verb))
+        return asyncio.run(_control(checkout, args.engine_verb))
 
     def handle_verdict():
         for stem in args.stems:
@@ -1100,9 +1143,6 @@ def main(
         "watch": handle_watch,
         "stats": handle_stats,
         "status": handle_status,
-        "kill": handle_control,
-        "pause": handle_control,
-        "resume": handle_control,
         "reject": handle_verdict,
         "confirm": handle_verdict,
         "roadmap": handle_roadmap,
@@ -1110,8 +1150,16 @@ def main(
         "publish": handle_publish,
         "dismiss": handle_dismiss,
         "triage": handle_triage,
-        "retro": handle_retro,
-        "engine": lambda: {"stop": handle_control, "serve": handle_serve, "run": handle_pipeline, "drain": handle_pipeline}[args.engine_verb](),
+        "engine": lambda: {
+            "stop": handle_control,
+            "pause": handle_control,
+            "resume": handle_control,
+            "kill": handle_control,
+            "retro": handle_retro,
+            "serve": handle_serve,
+            "run": handle_pipeline,
+            "drain": handle_pipeline,
+        }[args.engine_verb](),
     }
 
     try:
@@ -1150,7 +1198,8 @@ def main(
     except UnknownBoxId as e:
         return _fail(args.verb, f"{e} -- name ids that clutch status lists")
     except (ConfigError, runner.Refusal, LockHeld, CommitLockTimeout, IntakeRefused, JournalCorruption, ProviderSetupError, ExecutableNotFound, hostfiles.MarkerCorruption) as e:
-        road = f" -- repair the selected config and retry {args.verb}" if args.verb in {"retro", "covmap"} and isinstance(e, ConfigError) else ""
+        path = "engine retro" if args.verb == "engine" and args.engine_verb == "retro" else args.verb
+        road = f" -- repair the selected config and retry {path}" if path in {"engine retro", "covmap"} and isinstance(e, ConfigError) else ""
         return _fail(args.verb, f"{e}{road}")
 
 
@@ -1271,7 +1320,7 @@ async def _retro(checkout, pipeline, *, config_path=None):
             try:
                 window = project_window(checkout.journal.read())
             except JournalCorruption as exc:
-                raise runner.Refusal(str(exc), "restore journal readability from backup and retry retro") from None
+                raise runner.Refusal(str(exc), "restore journal readability from backup and retry engine retro") from None
             selected = bool(measurements(window)["merged_count"])
             suppressed = suppressing_failure(window) is not None
             if selected and not suppressed and hasattr(dispatch, "prepare"):

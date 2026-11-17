@@ -67,7 +67,7 @@ def invoke(root, verb):
     def forbidden(_):
         pytest.fail("control constructed a pipeline")
 
-    return entry.main((["engine", verb] if verb == "stop" else [verb]), cwd=root, env=ENV, clock=Clock(), pipeline=forbidden)
+    return entry.main(["engine", verb], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden)
 
 
 def acquire(root):
