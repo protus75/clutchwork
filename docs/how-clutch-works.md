@@ -710,7 +710,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `coverage-map.json` | Written by `covmap` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
 | `spools/` | Per-attempt prompts, outputs, and command output. |
-| `evidence/` | Call records in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
+| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |
@@ -742,6 +742,46 @@ and notifications are Effects, so a crash never repeats one.
 5. Every Suggestion Box message in arrival order, with its state and summary.
 6. Tombstones and reopens.
 7. The current retro window's scorecard and provenance.
+
+### 10.4 Evidence records
+
+Each keyed provider call leaves a record under `<state_dir>/evidence/` with redacted stdout and stderr and an envelope of call facts. `CliAdapter.invoke` is the only writer. The only engine reader is harvest's provider event tail (section 6.2): `latest_stdout` takes stdout from the newest `end.json` by `clock.wall_end` whose key starts with `llm/<stem>/`. The journal, gates and dispatch do not read the store.
+
+`invoke` writes a record only with a `CallCapture`. `ProviderLLM.admitted_call` builds it from the journal Effect key passed by `llm_call` (section 10.2): `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`. The group is the ticket stem, or the surface name for a ticketless call. Keyless calls leave no record: these include preflight's probe calls (section 8.1), calls made by the probe verb in section 2.1, and calls through the raw `ProviderLLM.call` seam. A key with a completed Effect replays its result without calling the provider or writing a record. Every call, keyed or not, writes its redacted prompt to a temporary file under `evidence/scratch/` as the CLI's stdin; the file and temporary index are removed when the call ends.
+
+A record consists of `calls/<escaped key>/start.json` and `end.json`, with the key escaped by `urllib.parse.quote(key, safe="")`. If a key runs again, its existing directory causes the next record to use `<key>#2`, then `#3` and so on. Only a key without a journaled completion can run again; the record's `id` retains the unsuffixed key.
+
+`start.json` is written after the tree id is taken and before the CLI is spawned, so a crash, hang or kill can leave it behind. A start without an end means the call never finished recording, for example when the engine died mid-call. Its fields are:
+
+- `schema`: `clutch.evidence.call/1.0`.
+- `id`, `group`, `run_seq`, `surface`, `attempt` and `call` come from the key; `stem` is null for a ticketless call.
+- `engine`: `version` is the installed `clutchwork` package version, `spec` is `<surface>.md`, and `spec_version` is that spec's frontmatter version.
+- `route`: `tier`, `effort`, provider-name `candidates` in route order, the `chosen` provider, `reason` (`first`, `spill` or `failover`), and `config_sha`, the SHA-256 of the config snapshot's `repr`.
+- `provider`: `name`, adapter class `adapter`, `kind`, `package`, and `cli_version` read by preflight in this process, or null. `billing` is `local` for a `base_url` provider, `metered` for one with `auth`, otherwise `subscription`.
+- `model.requested`: the requested model.
+- `process`: redacted `argv`, sorted child environment names in `env_names` (never values), `cwd` (the ticket worktree for a writing call, otherwise the checkout), `timeout_s`, `writes` (true only for `implement`), `isolated` (always false today), and `conduct_file`, the file name returned by `conduct_file` for the provider (section 8.1).
+- `repo`: `main_sha` and `base_sha` resolve `main` and `HEAD` in that directory. `tree_before` is its working-tree git tree id, made with `git add -A` and `write-tree` through a temporary index using `GIT_INDEX_FILE` in `evidence/scratch/`. The real index, branch and reflog are untouched.
+- `prompt`: `blob`, `chars` and `bytes` of the redacted prompt.
+- `clock`: `wall_start` and `mono_start_ns`.
+
+Whenever a start was written, `end.json` is written when the call ends: at exit, nonzero exit, kill, timeout, spawn error or stream parse failure. It contains:
+
+- `exit.status`: `ok` for exit 0, `nonzero` for an exit above 0, `killed` for a signal exit or another unwind before the process returned, `timeout`, or `spawn_error` when the CLI was not found. This is process status: exit 0 with a parse failure is `ok` with a `failure_class`. `code` is the exit code or null, `signal` the signal number for a signal exit, and `failure_class` the raised `ProviderCallError` class, or null.
+- `clock`: `wall_end`, `mono_end_ns` and `wall_ms`. Both `mono_start_ns` and `mono_end_ns` are the engine clock seam's wall time as epoch nanoseconds, not a monotonic counter.
+- `rusage`: from `os.wait4` when the exec seam reaps the provider process, including after kill or timeout; null if no process was reaped, as for `spawn_error`. `user_s` and `sys_s` are CPU seconds and `max_rss_kb` is the kernel's `ru_maxrss` in kilobytes. On Linux this is the larger of the provider's own peak and the engine's peak at spawn, because exec carries the spawning process's high-water mark into the child; it is the provider's own peak only if that exceeds the engine's.
+- `raw`: `stdout` and `stderr` are blob refs to the redacted output returned by the exec seam, or, when a call raised, the output attached to the exception as `process_capture` (empty when none was attached). `stdout_times` is a blob containing a JSON list of integer nanosecond offsets from call start, one per stdout line as the seam delivered it. `lines` is the stdout line count; `non_json_lines` counts lines that are not JSON objects.
+- `repo`: `tree_after` and `changed_paths` from `git diff --name-only` between the two trees for a writing call whose process returned; otherwise null.
+- `model.served`: the first string `model` in the stream's JSON events, with `served_source` of `stream` or `none`. `native_ids.session_id` and `native_ids.thread_id` are the first such strings in the stream. `parsed` holds `text_chars`, `input_tokens`, `output_tokens` and `usd` returned by the adapter's `parse`, or 0 and nulls when nothing parsed.
+
+Blobs live at `blobs/<first two hex digits>/<sha256 hex>` and records refer to them as `sha256:<hex>`. `put_blob` redacts UTF-8 text with configured secrets before hashing, so a secret never reaches the store, even as a hash; non-UTF-8 bytes are stored as given. Blobs are compressed with `compression.zstd` and each digest is written once, so identical content such as a prompt re-sent on retry is stored once.
+
+After each `end.json` write, `invoke` calls `prune` with `evidence.max_gb` × 10^9 bytes. If the compressed blob files' on-disk size exceeds that bound, prune walks records with an `end.json` from oldest `clock.wall_end` first. It deletes blobs named by each end (stdout, stderr and arrival times), except those still named by a record not yet walked, including a newer record or one without an end. It stops when size is under the bound. Records are never deleted, and prune never removes a blob named only by a `start.json`, such as a prompt.
+
+`write_record` validates records against the strict pydantic `Start` or `End` model (strict types, `extra="forbid"`). `read_record` accepts any `clutch.evidence.call/1.<minor>` record, drops fields unknown to the current model and returns `SKIP` for another major version. `json_schema` generates JSON Schema for `start`, `end` and `event` from the models; no command exposes it yet.
+
+Each normalizer is a pure `normalize(stdout, times_ns, put_blob)` function turning raw stdout bytes and arrival offsets into `clutch.evidence.events/1.0` events. Their `NORMALIZER_ID`s are `claude-stream/1`, `codex-stream/1` and `gemini-stream/1`. A normalizer does no I/O: large text, including assistant text, thinking and tool output, goes through `put_blob` and the event carries the ref. Each event's `kind` comes from the closed `Event.kind` list; tool events carry a `class` from the closed `Tool.class_` list and the native tool name. Unmapped lines or content blocks become `unknown` events with their native payload; a non-JSON line is kept as `{"line": ...}`. `t_ms` is the line's arrival offset in milliseconds, or 0 without offsets.
+
+The Claude normalizer is verified only for `claude`, so qwen's Claude-shaped stream is unverified. Codex `input_tokens` includes cached tokens, so `input_uncached` is `input_tokens` minus `cached_input_tokens`. Each normalizer has a golden fixture under `tests/fixtures/evidence/<provider>/`. No engine code calls a normalizer yet; they run only in their tests, and no call record has a `normalized/` directory.
 
 ## 11. Config
 
