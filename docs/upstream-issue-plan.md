@@ -10,7 +10,7 @@ The `clutch issue` verb in `clutch/issue.py` and its host rule have merged (road
 
 ## Roadmap
 
-Release 0.3.0 (`docs/roadmap.md` row 34). Needs nothing from other plans; waits on its agent capture. Shared budget: CORE_TEMPLATE bytes (roadmap decision 5). The template is 7,840 of 8,192 bytes (`tests/integration/test_hostfiles.py:33`); this plan's sentence adds about 264. `conduct-files-parity` (roadmap row 5) runs before this ticket and frees 36 by dropping the stale guide list from the `clutch docs` rule; `graphics-kind` (0.5.0) adds 9 later. After all three about 115 bytes remain. `graphics-kind` also edits `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, and `README.md`; the release gap keeps the two apart, so no `Runs before` is needed.
+Merged in release 0.3.0 (`docs/roadmap.md` row 34). Shared budget: CORE_TEMPLATE bytes (roadmap decision 5). The template is 7,840 of 8,192 bytes (`tests/integration/test_hostfiles.py:33`); this plan's sentence adds about 264. `conduct-files-parity` (roadmap row 5) runs before this ticket and frees 36 by dropping the stale guide list from the `clutch docs` rule; `graphics-kind` (0.5.0) adds 9 later. After all three about 115 bytes remain. `graphics-kind` also edits `hostfiles.py`, `CLAUDE.md`, `AGENTS.md`, and `README.md`; the release gap keeps the two apart, so no `Runs before` is needed.
 
 ## Not the Suggestion Box
 
@@ -45,6 +45,8 @@ The owner settled this list on 2026-11-13 (`docs/roadmap.md` §6, decision 10): 
 The verb is named `issue`, not `report`, so it cannot be confused with `report_inbox` or the `bug_report` message class.
 
 ## Current state
+
+These bullets record the code before row 34 merged the `clutch box issue` verb in `clutch/issue.py` and the CORE_TEMPLATE rule in `clutch/hostfiles.py` that names it.
 
 - The CORE_TEMPLATE rule in `clutch/hostfiles.py` (Diagnosis section) says a fix that belongs in clutch is "never copied or patched into host files. Report it for the owner to carry to clutch, then stop." It names no way to report. A host session can only describe the problem in chat and hope the operator relays it.
 - §9.3 of `docs/how-clutch-works.md` has the same dead end: an untracked-spec `retro_finding` is declined "for the owner to carry to clutch".

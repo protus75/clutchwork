@@ -10,7 +10,7 @@ The evidence store, envelope, and Codex, Claude, and Gemini normalizers have mer
 
 ## Roadmap
 
-Release 0.3.0 for the store, envelope, and the Claude and Codex normalizers (`docs/roadmap.md` rows 28-31, 33); 0.5.0 for the verbs, the spool move, and the one-parser consolidation (rows 62-64). Needs from the roadmap: `provider-capture-overwrite` (row 1, the P0 instance fix) and `fs-seam-mkdir-remove` (row 14). What needs it: `training-attempt-manifest` (0.5.0), `isolated-readonly-call` (0.7.0, records calls that have no repo), and the Gemini normalizer, which waits on `gemini-provider` (0.3.0). Shared budgets: one new config block `evidence`; no CORE_TEMPLATE text. `evidence-envelope` is the cause fix for the P0 under the CORE two-ticket rule: every capture path is keyed by the journal identity of what it captures (roadmap decision 4). It replaces `spools/providers/` outright (roadmap decision 1).
+Release 0.3.0 for the store, envelope, and the Claude and Codex normalizers (`docs/roadmap.md` rows 28-31, 33); 0.5.0 for the verbs, the spool move, and the one-parser consolidation (rows 62-64). Needs from the roadmap: `provider-capture-overwrite` (row 1, the P0 instance fix) and `fs-seam-mkdir-remove` (row 14). What needs it: `training-attempt-manifest` (0.5.0), `isolated-readonly-call` (0.7.0, records calls that have no repo), and the Gemini normalizer, merged after `gemini-provider` (0.3.0, rows 32 and 33). Shared budgets: one new config block `evidence`; no CORE_TEMPLATE text. `evidence-envelope` is the cause fix for the P0 under the CORE two-ticket rule: every capture path is keyed by the journal identity of what it captures (roadmap decision 4). It replaces `spools/providers/` outright (roadmap decision 1).
 
 ## Principles
 
@@ -19,11 +19,13 @@ Release 0.3.0 for the store, envelope, and the Claude and Codex normalizers (`do
 3. **Closed vocabulary, open payload.** Normalized event kinds and tool classes are closed lists (fail closed, as elsewhere in clutch). Anything a normalizer cannot map is kept as an `unknown` event with its native payload, never dropped.
 4. **One identity.** A record's id is the journal effect key of the call, `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`, where `<group>` is the stem for a ticket's call and the surface name for a ticketless call (`clutch/driver.py:274`: "ticketless surfaces spool and key under their surface name"). So `stem` is nullable and `group` never is (roadmap decision 3). Provider-native ids (session id, thread id, message uuid) are recorded alongside so provider-side logs can be joined later.
 5. **The journal does not change.** It stays the record of decisions. The evidence store refers to the journal by key. The journal never refers to the evidence store.
-6. **Always on, bounded.** Capture replaces today's always-on `spools/providers/` and serves diagnosis and harvest, so it is not behind the training switch. `evidence.max_gb` bounds it (roadmap decision 2).
+6. **Always on, bounded.** Capture replaced the always-on `spools/providers/` in row 29 and serves diagnosis and harvest, so it is not behind the training switch. `evidence.max_gb` bounds it (roadmap decision 2).
 
 ## Current state
 
-How each adapter in `clutch/providers.py` handles its CLI today, and what this repo's captures contained at `0895b5d4` (`.clutch/state/spools/providers/`):
+This section records the code before this plan’s rows merged, with captures counted at `0895b5d4`: rows 28 and 29 replaced `spools/providers/` with the evidence store, where `CliAdapter.invoke` writes `start.json` before spawn and `end.json` with arrival times; row 30 pinned the Codex cached-token basis in `INPUT_INCLUDES_CACHED`, row 32 added `Parsed.model`, and row 123 records the exec seam’s `on_rusage` figures.
+
+How each adapter in `clutch/providers.py` handled its CLI at that baseline, and what this repo's captures contained at `0895b5d4` (`.clutch/state/spools/providers/`):
 
 | | claude | codex | qwen |
 |---|---|---|---|
@@ -37,7 +39,7 @@ How each adapter in `clutch/providers.py` handles its CLI today, and what this r
 | Served model | `system/init.model`, `result.modelUsage` keys | not in the stream | not yet observed |
 | CLI version | `system/init.claude_code_version` | not in the stream | not yet observed |
 
-What clutch keeps today:
+What clutch kept at that baseline:
 
 - `Parsed` (`clutch/providers.py:250`) keeps only `text`, `input_tokens`, `output_tokens`, and `usd`. For Claude, `input_tokens` is the sum of the three input buckets (`providers.py:472`). For Codex it is the raw `input_tokens`. Whether those two numbers are comparable depends on whether Codex's `input_tokens` already includes `cached_input_tokens`. Nothing in clutch pins that, so the journaled token totals may mix two scales.
 - `watchdog.CallMeter` (`clutch/watchdog.py:64`) has a second set of rules that recognize Claude and Codex tool events for progress tracking, and `observe.live_call` (`clutch/observe.py:189-215`) a third that re-encodes each adapter's argv as a regex over `ps` output (roadmap §2.4).
@@ -191,7 +193,7 @@ Recorded now even though nothing reads it yet, because it cannot be rebuilt late
 | `cli_version`, `package`, `adapter` | Explains format changes and behavior shifts between CLI releases |
 | Route `reason`, `config_sha` | Separates "the model was worse" from "a different model served the call" |
 | `rusage`, exit signal | Separates resource exhaustion from model failure |
-| Killed or timed-out calls (`start.json` with partial raw bytes) | Negative examples and failure analysis; dropped today |
+| Killed or timed-out calls (`start.json` with partial raw bytes) | Negative examples and failure analysis; dropped before row 29 |
 | `native_ids` | Joins to provider-side logs and billing if a host ever needs them |
 | `isolated`, `conduct_file` | Tells a reader which calls saw the repository and its rules, and which saw only a document |
 
@@ -199,7 +201,7 @@ Not recorded: values of environment variables, files the agent read (they are in
 
 ### 7. Redaction
 
-Raw bytes pass through the existing redactor before hashing, as `spools/providers/` does today (`providers.py:384-388`). `_scrub_event` (`providers.py:398`) already scrubs decoded strings inside JSON events; the same applies to `args` and blobs in normalized events. The training-data export scrub (`docs/training-data-plan.md` §3) still runs on top. Hashing after redaction means a configured secret never reaches the blob store, not even as a hash of the original text.
+Raw bytes pass through the existing redactor before hashing, through `CliAdapter.invoke`, which replaced the `spools/providers/` writer in row 29. `_scrub_event` (`providers.py:398`) already scrubs decoded strings inside JSON events; the same applies to `args` and blobs in normalized events. The training-data export scrub (`docs/training-data-plan.md` §3) still runs on top. Hashing after redaction means a configured secret never reaches the blob store, not even as a hash of the original text.
 
 ## Where each piece lives
 
