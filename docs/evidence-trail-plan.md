@@ -42,7 +42,7 @@ What clutch keeps today:
 - `Parsed` (`clutch/providers.py:250`) keeps only `text`, `input_tokens`, `output_tokens`, and `usd`. For Claude, `input_tokens` is the sum of the three input buckets (`providers.py:472`). For Codex it is the raw `input_tokens`. Whether those two numbers are comparable depends on whether Codex's `input_tokens` already includes `cached_input_tokens`. Nothing in clutch pins that, so the journaled token totals may mix two scales.
 - `watchdog.CallMeter` (`clutch/watchdog.py:64`) has a second set of rules that recognize Claude and Codex tool events for progress tracking, and `observe.live_call` (`clutch/observe.py:189-215`) a third that re-encodes each adapter's argv as a regex over `ps` output (roadmap §2.4).
 - The raw capture (`prompt.md`, `events.jsonl`, `stderr.txt`) is written once the process exits (`providers.py:384-388`). A killed or timed-out call keeps only what `process_capture` returned (`providers.py:346`). No arrival times are recorded, so the time between events is lost.
-- Capture directories are overwritten across processes (`_seq` resets to 0 at `providers.py:294`). 3,944 journaled calls, 2,453 capture directories. Roadmap row 1 is the instance fix.
+- Roadmap row 1 (`provider-capture-overwrite`) fixed capture directories being overwritten across processes. At `0895b5d4`, there were 3,944 journaled calls and 2,453 capture directories.
 - The exec seam already has `on_stdout_line` (`clutch/seams.py:57,112`); it reports no resource usage.
 
 ## Departures from the design record
