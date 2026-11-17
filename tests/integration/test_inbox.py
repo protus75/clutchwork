@@ -211,7 +211,7 @@ def test_report_replay_to_regression(tmp_path, monkeypatch):
     stem = proposal["stem"]
     llm = FakeLLM([reply("author"), json.dumps(proposal), requisition_reply("approve")])
     monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
-    assert main(["triage"], cwd=host, env=env, clock=Clock()) == 0
+    assert main(["box", "triage"], cwd=host, env=env, clock=Clock()) == 0
     box = Box(host / ".clutch/state/box", LocalFileSystem())
     (message,) = box.messages()
     assert message.resolution == Resolution(kind="ticket", link=stem)

@@ -32,13 +32,13 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `engine kill` | Yes | Ask the running engine to stop at a safe point. |
 | `engine stop` | Yes | Finish active work and exit. |
 | `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
-| `suggest` | Yes | File an idea into the Suggestion Box. |
-| `issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
+| `box suggest` | Yes | File an idea into the Suggestion Box. |
+| `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `engine drain` and `engine serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
-| `triage` | No | Make one pass over named pending box IDs, or all pending messages. |
+| `box triage` | No | Make one pass over named pending box IDs, or all pending messages. |
 | `publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
-| `dismiss` | No | Dismiss named box IDs without a model call. |
+| `box dismiss` | No | Dismiss named box IDs without a model call. |
 | `covmap` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `covgate` | Yes | Run a unit command and check its coverage report. |
 | `ticket new` | Yes | Create and lint a ticket skeleton. |
@@ -49,15 +49,15 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 
-Stop serve before `roadmap author`, `triage`, `dismiss`, `release`, `publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `roadmap author`, `box triage`, `box dismiss`, `release`, `publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
 ## Reporting a critical clutch bug
 
 | Channel | Carries | Ends as |
 |---|---|---|
-| Suggestion Box (`clutch suggest`) | The host's own work | A host ticket |
+| Suggestion Box (`clutch box suggest`) | The host's own work | A host ticket |
 | Host bug reports (`report_inbox`) | The host application's bug reports | A `bug_report` box message, then a host bug ticket |
-| Upstream issue (`clutch issue`) | A critical clutch bug confirmed by the person | A GitHub issue on the clutch repository |
+| Upstream issue (`clutch box issue`) | A critical clutch bug confirmed by the person | A GitHub issue on the clutch repository |
 
 Critical classes:
 
@@ -71,6 +71,6 @@ Name a clutch problem outside these classes to the user in chat; it goes nowhere
 
 The body contains the clutch file and line, gate or spec text or refusal message, and minimum host detail needed to reproduce. Leave out host-private code or data, ticket files, run records, `doctor` output, and host paths. The verb appends a version footer and scrubs configured provider secrets only when config loads.
 
-With the user's agreement, a chat session runs `clutch issue --class <class> "<title>" --body <file>`. The person opens the printed link, reviews and edits the prefilled form, and submits it. clutch submits nothing. Ticket agents, triage, retro, Author, and harvest never prepare an upstream issue.
+With the user's agreement, a chat session runs `clutch box issue --class <class> "<title>" --body <file>`. The person opens the printed link, reviews and edits the prefilled form, and submits it. clutch submits nothing. Ticket agents, triage, retro, Author, and harvest never prepare an upstream issue.
 
 The link opens the form only for a GitHub account with access to the repository named in the installed package's Repository URL. Any other account gets GitHub's 404 page.

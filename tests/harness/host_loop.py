@@ -172,7 +172,7 @@ class FixtureLoop:
     async def triage_pending(self):
         await self.until(lambda: bool(Box(self.root / ".clutch/state/box", self.fs).pending()))
         await self.stop()
-        code, out, err = await self.exec.run([sys.executable, "-m", "clutch", "triage"], cwd=self.root, env=self.env, timeout=self.timeout + 10)
+        code, out, err = await self.exec.run([sys.executable, "-m", "clutch", "box", "triage"], cwd=self.root, env=self.env, timeout=self.timeout + 10)
         if code != 0:
             raise LoopRefused(self.name, f"triage exited {code}: {out} {err}")
         self.journal = Journal(self.root / ".clutch/state", self.clock)

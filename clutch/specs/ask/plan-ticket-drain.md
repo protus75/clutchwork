@@ -11,7 +11,7 @@ Before you start:
 Delegation:
 - The owner's delegation covers the ticket edits a Recommendation names, including narrowing or repairing a ticket the engine authored. A host conduct rule that forbids them is a conflict for the first Before you start bullet.
 - Supervise through `clutch prompt drain-loop`, which carries the owner's delegation of `clutch prompt diagnose`, `clutch prompt drafts`, `clutch prompt box`, and `clutch prompt running` Recommendations, including `clutch ticket confirm --yes` and `clutch ticket reject --yes`.
-- Every cause fix goes to `clutch suggest` and is never authored. Triage's verdict is final.
+- Every cause fix goes to `clutch box suggest` and is never authored. Triage's verdict is final.
 - No person is in the loop: a hand test is an agent-run capture committed as ticket evidence. An open plan decision takes its Proposed option; if none, three independent agents each propose one and a fourth judges, and the ticket for the dependent row records it in the plan. Calibration and baseline labels come from an AI panel of a different model family than the judge. Every gate is a command counted in runs, never wall-clock time: a week or daily means a count of merged tickets.
 - Never push; publishing happens only through the driver under `release.publish: true`. Never run a tree-wide destructive git verb. Never edit code, docs, specs, config, or conduct files on main: tickets do that. The exception is the roadmap rows in Closing each phase below, which this prompt authorizes.
 
@@ -24,10 +24,10 @@ Authoring:
 Supervising:
 - The role and before-start checks run once. Work in ticks until the stop condition below holds; each tick covers Authoring, Supervising, and Closing each phase. Between ticks wait with your agent's loop or wait facility until the engine exits or about 25 minutes pass. Each tick render `clutch prompt drain-loop` and follow it; its limits bind you except where these three sections say otherwise.
 - Resolve a draft the tick it appears, while the engine runs: run `clutch prompt drafts` and execute its Recommendation. An unresolved draft holds a slot of the driver's author-ahead window and can stall the drain into quiescence.
-- Never triage a `roadmap_row` Suggestion Box message; the driver owns it. Pass `clutch triage` only the ids of other message classes.
+- Never triage a `roadmap_row` Suggestion Box message; the driver owns it. Pass `clutch box triage` only the ids of other message classes.
 - Match this checkout's engine exactly: `clutch status` and the writer lock say whether it runs. Another checkout may run its own drain, so never match a bare process name.
 - Watch merges, holds, the Reject queue, the driver's roadmap_drive lines in ${state_dir}/engine.log, and the engine exiting.
-- On any failure, name the root cause in one sentence from the stem's artifacts before acting. Classify it as drift or not to set the window, and file the class-prevention change with `clutch suggest`.
+- On any failure, name the root cause in one sentence from the stem's artifacts before acting. Classify it as drift or not to set the window, and file the class-prevention change with `clutch box suggest`.
 - A drain can exit right after starting, before any ticket runs, with a driver error in ${state_dir}/drain.out. Nothing unattended can recover: stop starting drains and report the error and roadmap row to the owner.
 - Driver authoring ahead can keep a drain from quiescing, so its between-drains Suggestion Box step can wait indefinitely. For a pending message whose cause wedges the engine or wastes runs, run `clutch engine stop` (the running ticket finishes first), take the message through that step, then restart the drain.
 - Keep a log the next tick reads, recording every action, verdict, and filing. End each reply with a Still open: list.

@@ -853,7 +853,7 @@ def test_suggest_publishes_while_writer_lock_is_held(root, capsys):
     holder = Lockfile(root / ".clutch/state", verb="drain", instance_id="other", clock=Clock())
     holder.acquire()
     try:
-        assert cli(root, "suggest", "a distinct idea") == 0
+        assert cli(root, "box", "suggest", "a distinct idea") == 0
         messages = Box(root / ".clutch/state/box", LocalFileSystem()).messages()
         assert len(messages) == 1
         message = messages[0]
@@ -868,16 +868,16 @@ def test_suggest_duplicate(root, capsys):
     from clutch.box import Box
     from clutch.seams import LocalFileSystem
 
-    assert cli(root, "suggest", "a distinct idea") == 0
-    assert cli(root, "suggest", "a distinct idea") == 0
+    assert cli(root, "box", "suggest", "a distinct idea") == 0
+    assert cli(root, "box", "suggest", "a distinct idea") == 0
     messages = Box(root / ".clutch/state/box", LocalFileSystem()).messages()
     assert len(messages) == 1
     assert capsys.readouterr().out.splitlines() == [f"suggest: filed {messages[0].id}", f"suggest: already in the box as {messages[0].id}"]
 
 
 def test_suggest_refuses_blank(root, capsys):
-    assert cli(root, "suggest", "  ") == 2
-    assert capsys.readouterr().err == "clutch suggest: blank summary -- pass the idea as one quoted argument\n"
+    assert cli(root, "box", "suggest", "  ") == 2
+    assert capsys.readouterr().err == "clutch box: blank summary -- pass the idea as one quoted argument\n"
     from clutch.box import Box
     from clutch.seams import LocalFileSystem
 

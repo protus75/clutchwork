@@ -204,7 +204,7 @@ def test_menu_matches_verbs(world, capsys, case, run, review, order, lint):
     finally:
         if live:
             lock.release()
-    assert entry.main(["dismiss", resolved], cwd=w.root, env=ENV, clock=Clock()) == 0
+    assert entry.main(["box", "dismiss", resolved], cwd=w.root, env=ENV, clock=Clock()) == 0
     assert f"{resolved}: already resolved -> item" in capsys.readouterr().out
 
 
@@ -243,7 +243,7 @@ def test_verb_refusals_and_lint_summary(world, capsys):
         output = capsys.readouterr()
         assert "tickets/missing/ticket.md does not exist" in output.err
     for verb in ("triage", "dismiss"):
-        assert entry.main([verb, "missing"], cwd=w.root, env=ENV, clock=Clock()) == 2
+        assert entry.main(["box", verb, "missing"], cwd=w.root, env=ENV, clock=Clock()) == 2
         assert "unknown box id missing" in capsys.readouterr().err
     w.write("done", confirmed())
     w.transition("done", "merged")

@@ -93,7 +93,7 @@ def test_author_reprompt_carries_previous_reply(tmp_path, monkeypatch):
 
 def _run(root, monkeypatch, llm):
     monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
-    return main(["triage"], cwd=root, env=ENV, clock=Clock())
+    return main(["box", "triage"], cwd=root, env=ENV, clock=Clock())
 
 
 def _track_specs(root, paths):

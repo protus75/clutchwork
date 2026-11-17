@@ -22,7 +22,7 @@ def metadata(monkeypatch):
 
 def test_link_prefills_only_title_and_body(metadata):
     url = issue.link("state-loss", "journal lost", "Steps:\n1. run `clutch drain`\n\n", lambda text: text)
-    body = "Steps:\n1. run `clutch drain`\n\n---\nclutchwork 9.9.9, Python " + platform.python_version() + ", " + platform.system() + "\nFiled with clutch issue"
+    body = "Steps:\n1. run `clutch drain`\n\n---\nclutchwork 9.9.9, Python " + platform.python_version() + ", " + platform.system() + "\nFiled with clutch box issue"
     assert url == "https://github.com/fork/clutchwork/issues/new?" + urlencode({"title": "[critical:state-loss] journal lost", "body": body})
     assert set(parse_qs(urlsplit(url).query)) == {"title", "body"}
     metadata[0].assert_called_once_with("clutchwork")
@@ -65,7 +65,7 @@ def test_main_prints_link_without_lock_or_writes(metadata, monkeypatch, tmp_path
     monkeypatch.setattr(cli, "load_config", load)
     monkeypatch.setattr(cli, "Lockfile", Mock(side_effect=AssertionError("lock")))
     monkeypatch.setattr(cli, "LocalFileSystem", Mock(side_effect=AssertionError("write")))
-    assert cli.main(["issue", "--class", "bad-merge", "merged a red gate", "--body", "body.md"], cwd=tmp_path, env={"TOKEN": "s3cr3t"}) == 0
+    assert cli.main(["box", "issue", "--class", "bad-merge", "merged a red gate", "--body", "body.md"], cwd=tmp_path, env={"TOKEN": "s3cr3t"}) == 0
     out, err = capsys.readouterr()
     assert len(out.splitlines()) == 1 and out.startswith("https://github.com/fork/clutchwork/issues/new?")
     body = parse_qs(urlsplit(out.strip()).query)["body"][0]
@@ -77,7 +77,7 @@ def test_main_prints_link_without_lock_or_writes(metadata, monkeypatch, tmp_path
 def test_main_unscrubbed_when_config_fails(metadata, monkeypatch, tmp_path, capsys):
     (tmp_path / "body.md").write_text("s3cr3t")
     monkeypatch.setattr(cli, "load_config", Mock(side_effect=ConfigError(tmp_path / "config.yaml", None, "config file not found")))
-    assert cli.main(["issue", "--class", "state-loss", "title", "--body", "body.md"], cwd=tmp_path, env={}) == 0
+    assert cli.main(["box", "issue", "--class", "state-loss", "title", "--body", "body.md"], cwd=tmp_path, env={}) == 0
     out, err = capsys.readouterr()
     assert "s3cr3t" in parse_qs(urlsplit(out.strip()).query)["body"][0]
     assert len(err.splitlines()) == 1 and "no secrets were scrubbed" in err and "config file not found" in err
@@ -91,20 +91,20 @@ def test_main_refusals(metadata, monkeypatch, tmp_path, capsys):
     (tmp_path / "body").write_text("evidence")
     cases = [("missing", "state-loss"), ("invalid", "state-loss"), ("body", "minor-annoyance"), ("body", None), ("empty", "state-loss"), ("large", "state-loss")]
     for path, cls in cases:
-        args = ["issue", *(["--class", cls] if cls else []), "title", "--body", path]
+        args = ["box", "issue", *(["--class", cls] if cls else []), "title", "--body", path]
         assert cli.main(args, cwd=tmp_path, env={}) == 2
         out, err = capsys.readouterr()
-        assert out == "" and any(line.startswith("clutch issue:") for line in err.splitlines())
+        assert out == "" and any(line.startswith("clutch box:") for line in err.splitlines())
         if path == "missing":
             assert path in err
     with pytest.raises(SystemExit) as exc:
-        cli.main(["issue", "--class", "state-loss", "t"], cwd=tmp_path, env={})
+        cli.main(["box", "issue", "--class", "state-loss", "t"], cwd=tmp_path, env={})
     assert exc.value.code == 2
 
 
 def test_help_lists_classes(capsys):
     with pytest.raises(SystemExit) as exc:
-        cli._parser().parse_args(["issue", "--help"])
+        cli._parser().parse_args(["box", "issue", "--help"])
     assert exc.value.code == 0
     output = "".join(capsys.readouterr().out.split())
     assert all(name in output for name in issue.CLASSES)

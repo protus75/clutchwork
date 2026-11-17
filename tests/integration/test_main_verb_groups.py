@@ -66,9 +66,9 @@ def test_dismiss_names_holder_and_preserves_lock(root, capsys):
     lock = Lockfile(state, verb="triage", instance_id="integration-holder", clock=Clock())
     lock.acquire()
     try:
-        expected = f"clutch dismiss: {LockHeld(lock.path, json.loads(lock.path.read_text()))}\n"
+        expected = f"clutch box: {LockHeld(lock.path, json.loads(lock.path.read_text()))}\n"
         # Bypassing the wrapper or swallowing LockHeld cannot return this refusal.
-        assert entry.main(["dismiss", "box-000001"], cwd=root, env=ENV, clock=Clock()) == runner.EXIT_REFUSED
+        assert entry.main(["box", "dismiss", "box-000001"], cwd=root, env=ENV, clock=Clock()) == runner.EXIT_REFUSED
         assert capsys.readouterr().err == expected
         # A refused acquisition must not create another lock or remove the holder's file.
         assert list(state.rglob("*.lock")) == [lock.path]

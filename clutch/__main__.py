@@ -363,12 +363,67 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("update-config", help="list the model names each declared provider serves and compare them with config.yaml")
     sub.add_parser("probe", help="probe declared providers").add_argument("providers", nargs="*")
     sub.add_parser("migrate-config", help="validate and migrate schema_version: 0 to the current config schema")
-    sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
-    issue_parser = sub.add_parser("issue", help="print a prefilled GitHub new-issue link for a critical clutch bug")
+    box = sub.add_parser(
+        "box",
+        help="file and settle Suggestion Box messages",
+        description="File ideas into the Suggestion Box, settle its messages, and link critical clutch bugs upstream.",
+        epilog="Examples:\nclutch box triage\n  Settle pending messages.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    box_sub = box.add_subparsers(dest="box_verb", required=True)
+    suggest = _command(
+        box_sub,
+        "suggest",
+        summary="queue an idea for triage",
+        does="File an idea as a suggestion in the Suggestion Box; repeats fold into the existing message and blank summaries are refused.",
+        reads="Config and the box.",
+        writes="A message under <state_dir>/box/; a journal reopen signal for a tombstoned message.",
+        lock="None; files while a writer holds the lock.",
+        exits="0 when filed or already in the box; 2 on refusal.",
+        examples=['clutch box suggest "<an idea>"'],
+    )
+    suggest.add_argument("summary")
+    triage_parser = _command(
+        box_sub,
+        "triage",
+        summary="settle pending box messages",
+        does=(
+            "Reap interrupted runs, then make one sequential pass over named pending messages or all pending messages, "
+            "settling each as author, tombstone or declined with a model call; refuse unknown ids before the pass."
+        ),
+        reads="Config, the box, journal, tickets and git state.",
+        writes="Decision records and authored tickets in commits, message resolutions and journal events.",
+        lock="Writer lock.",
+        exits="0 after the pass; 2 on refusal.",
+        examples=["clutch box triage", 'clutch box triage "<box id>"'],
+    )
+    triage_parser.add_argument("ids", nargs="*")
+    dismiss = _command(
+        box_sub,
+        "dismiss",
+        summary="dismiss box messages",
+        does="Decline named messages as operator decisions without a model call; refuse unknown ids before settling any, and print already-resolved messages' resolutions.",
+        reads="Config, the box and journal.",
+        writes="tickets/decisions/declined-<id>.md records in commits and message resolutions.",
+        lock="Writer lock.",
+        exits="0 when dismissed or already resolved; 2 on refusal.",
+        examples=["clutch box dismiss example"],
+    )
+    dismiss.add_argument("ids", nargs="+")
+    issue_parser = _command(
+        box_sub,
+        "issue",
+        summary="print a prefilled critical bug issue link",
+        does="Print a prefilled GitHub new-issue link for a critical clutch bug; submit nothing.",
+        reads="The --body file and, when it loads, config to scrub configured secrets.",
+        writes="Nothing; prints the link.",
+        lock="None.",
+        exits="0 when printed; 2 on refusal (unknown or missing class, unreadable or empty body, or link over 3,000 bytes).",
+        examples=['clutch box issue --class engine-stuck "<title>" --body body.md'],
+    )
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
     issue_parser.add_argument("title")
     issue_parser.add_argument("--body", type=Path, required=True)
-    sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
     roadmap = sub.add_parser(
         "roadmap",
         help="maintain roadmap tickets",
@@ -449,7 +504,6 @@ def _parser() -> argparse.ArgumentParser:
     part = release.add_mutually_exclusive_group(required=True)
     part.add_argument("--minor", dest="part", action="store_const", const="minor")
     part.add_argument("--patch", dest="part", action="store_const", const="patch")
-    sub.add_parser("dismiss", help="dismiss box messages under the lock").add_argument("ids", nargs="+")
     sub.add_parser("covmap", help="build the coverage map")
     covgate = sub.add_parser("covgate", help="check a coverage JSON report against thresholds")
     covgate.add_argument("--gate", type=Path, default=Path("test-gate.toml"))
@@ -938,7 +992,7 @@ def main(
             context = _observe_context(repo, config, args.config, exec_, git, env)
             stems = [row["stem"] for row in observe.snapshot(context)["rows"] if row["draft"]]
             if not stems:
-                raise runner.Refusal("no draft tickets await confirm or reject", "run triage, or author a ticket with clutch ticket new")
+                raise runner.Refusal("no draft tickets await confirm or reject", "run clutch box triage, or author a ticket with clutch ticket new")
             print(ask.render("drafts", stems, config, repo), end="")
             return 0
         if args.kind == "box":
@@ -1151,13 +1205,12 @@ def main(
         "migrate-config": handle_migrate_config,
         "covgate": handle_covgate,
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
+        "box": lambda: {"suggest": handle_suggest, "triage": handle_triage, "dismiss": handle_dismiss, "issue": handle_issue}[args.box_verb](),
         "doctor": handle_doctor,
-        "issue": handle_issue,
         "update-config": handle_update_config,
         "probe": handle_probe,
         "core": handle_core,
         "prompt": handle_prompt,
-        "suggest": handle_suggest,
         "covmap": handle_covmap,
         "snapshot": handle_watch,
         "watch": handle_watch,
@@ -1166,8 +1219,6 @@ def main(
         "roadmap": handle_roadmap,
         "release": handle_release,
         "publish": handle_publish,
-        "dismiss": handle_dismiss,
-        "triage": handle_triage,
         "engine": lambda: {
             "stop": handle_control,
             "pause": handle_control,
@@ -1185,7 +1236,11 @@ def main(
             isatty, read_input = terminal if terminal is not None else (sys.stdin.isatty, input)
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
-        if args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "doctor", "issue"} or (args.verb == "ticket" and args.ticket_verb == "new"):
+        if (
+            args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "doctor"}
+            or (args.verb == "box" and args.box_verb == "issue")
+            or (args.verb == "ticket" and args.ticket_verb == "new")
+        ):
             return handlers[args.verb]()
         config = load_config(args.config, cwd=repo)
         if args.verb == "engine" and args.engine_verb == "drain" and args.detach:

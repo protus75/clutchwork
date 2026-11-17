@@ -196,7 +196,7 @@ def test_locked_verbs_reap_after_acquire(monkeypatch):
         assert calls == ["acquire", "reap", "release"]
     monkeypatch.setattr(entry, "load_config", lambda *a, **kw: checkout.config)
     monkeypatch.setattr(entry, "child_env", lambda env, config: env)
-    for args in (["dismiss", "id"], ["triage"]):
+    for args in (["box", "dismiss", "id"], ["box", "triage"]):
         calls.clear()
         with pytest.raises(Stop):
             entry.main(args, cwd=Path("/repo"), env={})

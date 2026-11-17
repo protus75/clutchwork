@@ -130,7 +130,7 @@ def test_every_locked_verb_reaps(stopped, monkeypatch):
     monkeypatch.setattr(runner, "reap", reap)
     path = stopped / "tickets/stale/ticket.md"
     path.write_text(path.read_text() + "\n")
-    for args in (("dismiss", "id"), ("triage",), ("engine", "retro"), ("ticket", "reject", "--yes", "stale")):
+    for args in (("box", "dismiss", "id"), ("box", "triage"), ("engine", "retro"), ("ticket", "reject", "--yes", "stale")):
         calls.clear()
         with pytest.raises(RuntimeError, match="stopped after reap"):
             invoke(stopped, *args)

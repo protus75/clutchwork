@@ -30,7 +30,7 @@ def test_selection(monkeypatch, capsys):
     ("args", "road"),
     [
         (["prompt", "drafts", "some-stem"], "run clutch prompt drafts with no stems"),
-        (["prompt", "drafts"], "run triage, or author a ticket with clutch ticket new"),
+        (["prompt", "drafts"], "run clutch box triage, or author a ticket with clutch ticket new"),
         (["prompt", "box"], "name at least one box id"),
     ],
 )

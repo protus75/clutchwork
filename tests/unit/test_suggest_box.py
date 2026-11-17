@@ -47,8 +47,8 @@ def test_suggest_output(monkeypatch, capsys):
     monkeypatch.setattr(cli, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=Path("/state")))
     monkeypatch.setattr(cli, "child_env", lambda *a: {})
     monkeypatch.setattr(cli, "LocalFileSystem", FakeFileSystem)
-    assert cli.main(["suggest", "a distinct idea"], cwd=Path("/host"), env={}) == 0
-    assert cli.main(["suggest", "a distinct idea"], cwd=Path("/host"), env={}) == 0
+    assert cli.main(["box", "suggest", "a distinct idea"], cwd=Path("/host"), env={}) == 0
+    assert cli.main(["box", "suggest", "a distinct idea"], cwd=Path("/host"), env={}) == 0
     assert capsys.readouterr().out.splitlines() == ["suggest: filed box-000007-abcdef12", "suggest: already in the box as box-000007-abcdef12"]
     assert box.enqueue.call_args.kwargs["summary"] == "a distinct idea"
     assert box.enqueue.call_args.kwargs["origin"] == "session"

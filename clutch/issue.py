@@ -17,7 +17,7 @@ def link(issue_class: str | None, title: str, body: str, scrub: Callable[[str], 
     if not body.strip():
         raise runner.Refusal("--body file is empty", "write the clutch file, the defect, and minimal evidence into the --body file")
     title = f"[critical:{issue_class}] {title}"
-    body = body.rstrip() + "\n\n---\nclutchwork " + version("clutchwork") + ", Python " + platform.python_version() + ", " + platform.system() + "\nFiled with clutch issue"
+    body = body.rstrip() + "\n\n---\nclutchwork " + version("clutchwork") + ", Python " + platform.python_version() + ", " + platform.system() + "\nFiled with clutch box issue"
     url = observe.repository_url() + "/issues/new?" + urlencode({"title": scrub(title), "body": scrub(body)})
     if len(url) > MAX_LINK_BYTES:
         raise runner.Refusal(f"link is {len(url)} bytes, over the 3000-byte limit", "shorten the body; quote only the lines that show the defect")

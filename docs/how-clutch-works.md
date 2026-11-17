@@ -63,17 +63,17 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `engine drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
 | `engine serve` | yes | Runs the continuous daemon until `engine kill`, `engine stop`, or a signal (section 7.2). |
 | `engine retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
-| `suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
-| `issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
+| `box suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
+| `box issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
 | `roadmap status` | no | Prints per-release merged, authored, ready, and blocked row counts and the last gate result, followed by `next:` and `waits:` lines for held rows, including declined messages, rejected stems, drafts, and spent re-files. Read-only. |
 | `roadmap merged [stem ...] [--release R [--priority P ...]] [--since TAG --at-least N [--source S] [--unattended]]` | no | Checks named roadmap rows and release rows for settlement, and counts distinct first-parent ticket merges since a tag with optional source and unattended filters. Reports a draft without journal state as a draft. Prints unmet conditions or success; exits 0 when all hold, 1 otherwise, and 2 on refusal. Writes nothing. |
 | `roadmap gate <release>` | no | Runs the release's fenced `gate` block from `docs/roadmap.md` section 8 in order from the checkout root, stopping at the first failed command. Prints command results and a verdict, journals one `roadmap_gate` signal, and exits 0 when every command passes, 1 on failure, or 2 on refusal. |
 | `roadmap accept <release>` | commit only | Reviews the release’s merged rows together against its theme, ship gate, and owning plans through a read-only model call. Refuses a missing or dirty roadmap, unknown release, missing section 1 row, or a judge that implemented most of the release when another provider is declared. Appends new P1 gap rows to this release or deferred rows to the next in one `clutch(roadmap): accept <release>` commit. Exits 0 with no partial or unmet promises, 1 for those gaps, and 2 on refusal; takes no writer lock and works while serve runs. |
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order: the current release (the `pyproject.toml` version as `<major>.<minor>.0`) first, then rows that earlier releases left unfinished, then later releases, until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
-| `triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
+| `box triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
 | `release --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
 | `publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
-| `dismiss <id> ...` | yes | Dismiss named messages without a model call. |
+| `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
 | `prompt box <id> ...` | no | Print a prompt for discussing named box messages. |
 | `prompt drain-loop` | no | Print the supervising drain-loop prompt without writing state. |
 | `prompt drafts` | no | Print an assessment prompt for all committed drafts awaiting a verdict. |
@@ -570,7 +570,7 @@ With `docs/roadmap.md` present, drain and serve run the driver at start and afte
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result`, and at the serve idle point and between drain tickets (section 6.6).
 
-The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch suggest` and never authors a ticket itself. Between drains it triages or dismisses Suggestion Box messages pending when its tick starts, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
+The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch box suggest` and never authors a ticket itself. Between drains it triages or dismisses Suggestion Box messages pending when its tick starts, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
 
 ## 8. AI providers and prompts
 
@@ -588,7 +588,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
   calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch publish` upload receives it as `UV_PUBLISH_TOKEN`.
-- **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`triage`/`ticket review`, and standalone `engine retro` with a merge to report): checks each CLI's version against its
+- **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`box triage`/`ticket review`, and standalone `engine retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch install <provider>`.
 
@@ -645,18 +645,18 @@ times; each call is spooled under `state_dir/spools/`.
 
 Problems found while working are filed, not fixed in the current diff. Classes: `suggestion`,
 `failure_report`, `override_report`, `retro_finding`, `bug_report`, `roadmap_row`. A `roadmap_row` carries a roadmap row and its owning plan path. Each message is a file in
-`state_dir/box/`. A repeat of the same signature is folded into the existing message. Sessions file `suggestion` messages with `suggest` directly into the box.
+`state_dir/box/`. A repeat of the same signature is folded into the existing message. Sessions file `suggestion` messages with `box suggest` directly into the box.
 
 ### 9.2 Triage
 
-`triage` settles named pending messages, or all pending messages when no IDs are supplied, one at a time:
+`box triage` settles named pending messages, or all pending messages when no IDs are supplied, one at a time:
 
 - `author`: run the Author stage to write a ticket.
 - `tombstone`: the message is already covered by a merged or committed ticket. A third
   re-report reopens it. Retro recurrences use the same re-report rule.
 - `declined`: record a decision in `tickets/decisions/<id>.md`.
 
-`dismiss <id> ...` records operator decisions without a model call; unknown IDs refuse before any message is settled.
+`box dismiss <id> ...` records operator decisions without a model call; unknown IDs refuse before any message is settled.
 
 ### 9.3 Author and starting state
 
@@ -787,7 +787,7 @@ The block carries only process rules that hold for every host; codebase rules be
   and enforces the `test-gate.toml` unit time budget (60 seconds by default).
 - A host provides `config.yaml`, its conduct files, and its tickets. `clutch/docs/host-contract.md` is
   the full host-facing contract; Python hosts can use its `## Python host test setup`.
-- A clutch defect found in a host is named to the user in chat, never filed to the host Suggestion Box. Only a bug in a `clutch issue` critical class goes upstream, as a link the verb prints for a person to review and submit; see [Reporting a critical clutch bug](../clutch/docs/host-running.md#reporting-a-critical-clutch-bug).
+- A clutch defect found in a host is named to the user in chat, never filed to the host Suggestion Box. Only a bug in a `clutch box issue` critical class goes upstream, as a link the verb prints for a person to review and submit; see [Reporting a critical clutch bug](../clutch/docs/host-running.md#reporting-a-critical-clutch-bug).
 
 
 ## 13. Eval report artifacts

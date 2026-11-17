@@ -40,7 +40,7 @@ def test_triage_authors_roadmap_row_confirmed_under_no_go(tmp_path, monkeypatch)
     box.record_verdict(id, Verdict(verdict="author", produced_by_spec_version=version, rationale="approved row"))
     llm = FakeLLM([author_reply("sample-row"), requisition_reply("approve")])
     monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
-    assert main(["triage", id], cwd=root, env=ENV, clock=Clock()) == 0
+    assert main(["box", "triage", id], cwd=root, env=ENV, clock=Clock()) == 0
     prompt = next(r.rendered for r in llm.requests if r.surface == "author")
     assert json.loads(block(prompt, "roadmap_row")) == row.model_dump()
     assert block(prompt, "plan") == "A unique plan."

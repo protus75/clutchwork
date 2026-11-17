@@ -19,7 +19,7 @@ def main() -> int:
         with tempfile.TemporaryDirectory() as directory:
             repo = root.__wrapped__(Path(directory))
             with contextlib.redirect_stdout(io.StringIO()):
-                result = cli(repo, "suggest", "a distinct idea")
+                result = cli(repo, "box", "suggest", "a distinct idea")
             if result != 0:
                 raise RuntimeError(f"suggest exited {result}")
             messages = Box(repo / ".clutch/state/box", LocalFileSystem()).messages()
