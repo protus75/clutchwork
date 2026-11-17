@@ -69,7 +69,7 @@ class Start(Record):
     id: str
     group: str
     stem: str | None
-    run_seq: int
+    run_seq: int | str
     attempt: int
     surface: str
     call: int

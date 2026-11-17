@@ -415,7 +415,7 @@ class CliAdapter:
                         "id": capture.key,
                         "group": group,
                         "stem": capture.ticket,
-                        "run_seq": int(run_seq),
+                        "run_seq": int(run_seq) if run_seq.isdecimal() else run_seq,
                         "surface": surface,
                         "attempt": int(attempt),
                         "call": int(call),
