@@ -58,7 +58,7 @@ def repository(tmp_path, monkeypatch):
 def test_release_commits_and_tags(repository, capsys):
     repo, git, call, uv_calls = repository
     old_head = call("rev-parse", "HEAD")
-    assert main(["release", "--minor"], cwd=repo, env=ENV) == 0
+    assert main(["release", "bump", "--minor"], cwd=repo, env=ENV) == 0
     sha = call("rev-parse", "HEAD")
     assert sha != old_head
     assert capsys.readouterr().out == f"release: tagged v0.2.0 at {sha}\n"
@@ -91,7 +91,7 @@ def test_release_refusals_change_nothing(repository, capsys, reason):
 
     before = snapshot()
     try:
-        assert main(["release", "--minor"], cwd=repo, env=ENV) == 2
+        assert main(["release", "bump", "--minor"], cwd=repo, env=ENV) == 2
     finally:
         if lock.held:
             lock.release()

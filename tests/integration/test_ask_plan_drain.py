@@ -29,7 +29,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "the engine authored",
         "clutch host doctor",
         "clutch provider probe",
-        "clutch release --minor",
+        "clutch release bump --minor",
         "never twice",
         "clutch prompt drain-loop",
         "clutch prompt diagnose",

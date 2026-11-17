@@ -675,7 +675,7 @@ async def merged(checkout, stems, *, release=None, priorities=(), since=None, at
         try:
             await checkout.git.rev_parse(checkout.repo, tag)
         except GitError:
-            raise Refusal(f"missing tag {since}", "a phase's tag is made at its start by `clutch release --minor`") from None
+            raise Refusal(f"missing tag {since}", "a phase's tag is made at its start by `clutch release bump --minor`") from None
         log = await checkout.git._run(checkout.repo, "log", "--first-parent", "--format=%(trailers:key=clutch-ticket,valueonly)", f"{tag}..HEAD")
         found = {line.strip() for line in log.splitlines() if line.strip()}
         sources = {}

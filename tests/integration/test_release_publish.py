@@ -52,7 +52,7 @@ def test_publish_passes_the_token_to_the_upload_only(published_repo, capsys):
     repo, _, call, calls = published_repo
     sha, content = call("rev-parse", "HEAD"), (repo / "pyproject.toml").read_bytes()
     calls.clear()
-    assert main(["publish"], cwd=repo, env=ENV | {"PYPI_TOKEN": "pypi-secret"}) == 0
+    assert main(["release", "publish"], cwd=repo, env=ENV | {"PYPI_TOKEN": "pypi-secret"}) == 0
     lines = capsys.readouterr().out.splitlines()
     dist = repo / ".clutch/state/dist"
     assert lines == [f"publish: built {dist}/host-0.4.0-py3-none-any.whl", f"publish: built {dist}/host-0.4.0.tar.gz", "publish: uploaded 0.4.0 to PyPI"]
@@ -74,7 +74,7 @@ def test_publish_without_authorization_reports_artifacts(published_repo, capsys)
     call("tag", "-d", "v0.4.0")
     asyncio.run(git.tag(repo, "v0.4.0", "release", call("rev-parse", "HEAD")))
     calls.clear()
-    assert main(["publish"], cwd=repo, env=ENV) == 0
+    assert main(["release", "publish"], cwd=repo, env=ENV) == 0
     lines = capsys.readouterr().out.splitlines()
     dist = repo / ".clutch/state/dist"
     assert lines == [
@@ -101,23 +101,23 @@ def test_publish_refusals_change_nothing(published_repo, capsys, reason):
     before = (call("rev-parse", "HEAD"), call("tag", "--list"))
     calls.clear()
     try:
-        assert main(["publish"], cwd=repo, env=ENV | {"PYPI_TOKEN": "pypi-secret"}) == 2
+        assert main(["release", "publish"], cwd=repo, env=ENV | {"PYPI_TOKEN": "pypi-secret"}) == 2
     finally:
         if lock.held:
             lock.release()
     err = capsys.readouterr().err
-    assert err.startswith("clutch publish:")
+    assert err.startswith("clutch release:")
     if reason == "lock":
         assert "clutch.lock" in err and not any(a[0] == "uv" for a, _ in calls)
     else:
-        assert "v0.4.0" in err and "clutch release" in err
+        assert "v0.4.0" in err and "clutch release bump --minor" in err
         assert not any(a[:2] in (["uv", "build"], ["uv", "publish"]) for a, _ in calls)
     assert (call("rev-parse", "HEAD"), call("tag", "--list")) == before
 
 
 def test_release_journals_the_release_signal(repository):
     repo, _, call, _ = repository
-    assert main(["release", "--minor"], cwd=repo, env=ENV) == 0
+    assert main(["release", "bump", "--minor"], cwd=repo, env=ENV) == 0
     signals = [e for e in Journal(repo / ".clutch/state", clock).read() if e.type == "signal"]
     assert [e.body for e in signals] == [{"signal": "release", "version": "0.2.0", "tag": "v0.2.0", "commit": call("rev-parse", "HEAD")}]
 

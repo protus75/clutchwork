@@ -20,11 +20,11 @@ PUBLISH_TIMEOUT_S = 600.0
 async def release(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], part: str, today: str) -> tuple[str, str]:
     dirty = await git.status_porcelain(repo, "--", "pyproject.toml", "uv.lock", "CHANGELOG.md")
     if dirty:
-        raise Refusal(f"uncommitted version files: {dirty.strip()}", "commit or restore pyproject.toml, uv.lock and CHANGELOG.md before release")
+        raise Refusal(f"uncommitted version files: {dirty.strip()}", "commit or restore pyproject.toml, uv.lock and CHANGELOG.md before release bump")
     rc, out, err = await exec_.run(["uv", "version", "--bump", part, "--dry-run", "--short"], cwd=repo, env=env, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
-        raise Refusal(f"uv version dry run failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry release")
+        raise Refusal(f"uv version dry run failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry release bump")
     version = out.strip()
     tag = f"v{version}"
     try:
@@ -38,7 +38,7 @@ async def release(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
     rc, _, err = await exec_.run(["uv", "version", "--bump", part], cwd=repo, env=env, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
-        raise Refusal(f"uv version bump failed (rc {rc}): {lines[-1] if lines else ''}", "restore pyproject.toml and uv.lock before retrying release")
+        raise Refusal(f"uv version bump failed (rc {rc}): {lines[-1] if lines else ''}", "restore pyproject.toml and uv.lock before retrying release bump")
     path = repo / "CHANGELOG.md"
     try:
         existing = fs.read_bytes(path).decode("utf-8")
@@ -57,7 +57,7 @@ async def publishable(repo: Path, git: Git, env: Mapping[str, str], config: Conf
         raise Refusal(f"{token_name} is unset or empty", f"export {token_name} with a PyPI token or set release.publish: false to build without uploading")
     dirty = await git.status_porcelain(repo, "--untracked-files=no")
     if dirty.strip():
-        raise Refusal(f"uncommitted tracked files: {dirty.strip()}", "commit or restore them, then retry clutch publish")
+        raise Refusal(f"uncommitted tracked files: {dirty.strip()}", "commit or restore them, then retry clutch release publish")
 
 
 def journal_release(journal, version, sha) -> None:
@@ -71,7 +71,7 @@ async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
     rc, out, err = await exec_.run(["uv", "version", "--short"], cwd=repo, env=child, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
-        raise Refusal(f"uv version failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
+        raise Refusal(f"uv version failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch release publish")
     version = out.strip()
     tag = f"v{version}"
     head = await git.rev_parse(repo, "HEAD")
@@ -80,21 +80,21 @@ async def publish(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env:
     except GitError:
         tagged = None
     if tagged != head:
-        raise Refusal(f"tag {tag} is missing or not on HEAD", "run clutch release --minor or clutch release --patch to tag the version at HEAD, then retry clutch publish")
+        raise Refusal(f"tag {tag} is missing or not on HEAD", "run clutch release bump --minor or clutch release bump --patch to tag the version at HEAD, then retry clutch release publish")
     dist = config.state_dir / "dist"
     rc, _, err = await exec_.run(["uv", "build", "--clear", "-o", str(dist)], cwd=repo, env=child, timeout=BUILD_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
-        raise Refusal(f"uv build failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
+        raise Refusal(f"uv build failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch release publish")
     artifacts = [dist / name for name in sorted(fs.entries(dist)) if name.endswith((".whl", ".tar.gz"))]
     if not artifacts:
-        raise Refusal("uv build produced no artifacts", "fix the build, then retry clutch publish")
+        raise Refusal("uv build produced no artifacts", "fix the build, then retry clutch release publish")
     if not config.release.publish:
         return version, artifacts, False
     rc, _, err = await exec_.run(["uv", "publish", *map(str, artifacts)], cwd=repo, env={**child, "UV_PUBLISH_TOKEN": env[token_name]}, timeout=PUBLISH_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
-        raise Refusal(f"uv publish failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch publish")
+        raise Refusal(f"uv publish failed (rc {rc}): {lines[-1] if lines else ''}", "fix the uv error, then retry clutch release publish")
     return version, artifacts, True
 
 

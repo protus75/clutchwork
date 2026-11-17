@@ -655,11 +655,39 @@ def _parser() -> argparse.ArgumentParser:
     merged.add_argument("--at-least", type=int)
     merged.add_argument("--source")
     merged.add_argument("--unattended", action="store_true")
-    sub.add_parser("publish", help="build the tagged release and upload it when release.publish is true")
-    release = sub.add_parser("release", help="bump, commit, and tag a local release without publishing")
-    part = release.add_mutually_exclusive_group(required=True)
+    release = sub.add_parser(
+        "release",
+        help="bump, tag and publish releases",
+        description="Bump and tag a local release, or build and publish the tagged release.",
+        epilog="Examples:\nclutch release publish\n  Build the tagged release.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    release_sub = release.add_subparsers(dest="release_verb", required=True)
+    bump = _command(
+        release_sub,
+        "bump",
+        summary="bump, commit, and tag a local release without publishing",
+        does="Bump the version with uv, write a changelog section, commit the version files, tag the release and journal a release signal; publish nothing.",
+        reads="Config, git status of the version files, uv's next-version preview, existing tags and subjects merged since the previous release tag.",
+        writes="pyproject.toml, uv.lock and CHANGELOG.md in one commit, an annotated tag and one journal signal.",
+        lock="Writer lock; refuses while another process holds it.",
+        exits="0 when tagged; 2 on refusal (dirty version files, existing tag, uv failure or held lock).",
+        examples=["clutch release bump --minor", "clutch release bump --patch"],
+    )
+    part = bump.add_mutually_exclusive_group(required=True)
     part.add_argument("--minor", dest="part", action="store_const", const="minor")
     part.add_argument("--patch", dest="part", action="store_const", const="patch")
+    _command(
+        release_sub,
+        "publish",
+        summary="build the tagged release and upload it when release.publish is true",
+        does="Build the version tagged at HEAD into <state_dir>/dist and list artifacts; upload only with release.publish: true; never bump.",
+        reads="Config, tracked tree git status, uv's version, HEAD and its tag, and the variable named by release.pypi_token.",
+        writes="Wheel and sdist under <state_dir>/dist, emptied on each run; an upload when enabled; no commit, tag or journal event.",
+        lock="Writer lock; refuses while another process holds it.",
+        exits="0 when built (and uploaded when enabled); 2 on refusal (missing token, dirty tracked tree, missing or misplaced tag, uv failure or held lock).",
+        examples=["clutch release publish"],
+    )
     sub.add_parser("covmap", help="build the coverage map")
     covgate = sub.add_parser("covgate", help="check a coverage JSON report against thresholds")
     covgate.add_argument("--gate", type=Path, default=Path("test-gate.toml"))
@@ -1386,8 +1414,7 @@ def main(
         "covmap": handle_covmap,
         "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status}[args.view_verb](),
         "roadmap": handle_roadmap,
-        "release": handle_release,
-        "publish": handle_publish,
+        "release": lambda: {"bump": handle_release, "publish": handle_publish}[args.release_verb](),
         "engine": lambda: {
             "stop": handle_control,
             "pause": handle_control,

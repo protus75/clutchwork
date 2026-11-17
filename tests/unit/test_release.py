@@ -136,9 +136,9 @@ def test_git_tag_argv():
 def test_parser_requires_one_part():
     for argv in [[], ["--minor", "--patch"], ["--major"]]:
         with pytest.raises(SystemExit):
-            cli._parser().parse_args(["release", *argv])
+            cli._parser().parse_args(["release", "bump", *argv])
     for part in ["minor", "patch"]:
-        assert cli._parser().parse_args(["release", "--" + part]).part == part
+        assert cli._parser().parse_args(["release", "bump", "--" + part]).part == part
 
 
 @pytest.mark.parametrize("refuse", [False, True])
@@ -174,7 +174,7 @@ def test_main_release_locks_calls_and_prints(monkeypatch, capsys, refuse):
     monkeypatch.setattr(cli, "Lockfile", Lock)
     monkeypatch.setattr(Git, "describe", describe)
     monkeypatch.setattr(release, "release", fake_release)
-    assert cli.main(["release", "--minor"], cwd=REPO, env={}) == (2 if refuse else 0)
+    assert cli.main(["release", "bump", "--minor"], cwd=REPO, env={}) == (2 if refuse else 0)
     captured = capsys.readouterr()
     assert captured.out == ("" if refuse else f"release: tagged v0.2.0 at {SHA}\n")
     assert captured.err == ("clutch release: blocked -- repair\n" if refuse else "")

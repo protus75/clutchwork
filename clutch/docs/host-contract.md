@@ -264,7 +264,7 @@ NUL-free strings.
 
 `ship` runs each configured package after the tag and names the paths kept by the run.
 
-`release.pypi_token` names an environment variable, never a literal token; it is removed from every child and redacted like provider `auth`, and only the `clutch publish` upload receives its value. `release.publish: true` is the owner's standing authorization to upload.
+`release.pypi_token` names an environment variable, never a literal token; it is removed from every child and redacted like provider `auth`, and only the `clutch release publish` upload receives its value. `release.publish: true` is the owner's standing authorization to upload.
 
 Candidates name declared providers and are ordered primary-until-pressure;
 absent `model` selects `models_by_tier[tier]`. Non-review surfaces fall back to

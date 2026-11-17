@@ -72,8 +72,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `roadmap accept <release>` | commit only | Reviews the release’s merged rows together against its theme, ship gate, and owning plans through a read-only model call. Refuses a missing or dirty roadmap, unknown release, missing section 1 row, or a judge that implemented most of the release when another provider is declared. Appends new P1 gap rows to this release or deferred rows to the next in one `clutch(roadmap): accept <release>` commit. Exits 0 with no partial or unmet promises, 1 for those gaps, and 2 on refusal; takes no writer lock and works while serve runs. |
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order: the current release (the `pyproject.toml` version as `<major>.<minor>.0`) first, then rows that earlier releases left unfinished, then later releases, until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
 | `box triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
-| `release --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
-| `publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
+| `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
+| `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
 | `prompt box <id> ...` | no | Print a prompt for discussing named box messages. |
 | `prompt drain-loop` | no | Print the supervising drain-loop prompt without writing state. |
@@ -590,7 +590,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
-  calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch publish` upload receives it as `UV_PUBLISH_TOKEN`.
+  calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch release publish` upload receives it as `UV_PUBLISH_TOKEN`.
 - **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`box triage`/`ticket review`, and standalone `engine retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch provider install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch provider install <provider>`.
@@ -708,7 +708,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 |---|---|
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
 | `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
-| `dist/` | Wheel and sdist last built by `clutch publish`; `uv build --clear` empties it on each publish. |
+| `dist/` | Wheel and sdist last built by `clutch release publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `engine drain --detach`. |
 | `coverage-map.json` | Written by `covmap` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |

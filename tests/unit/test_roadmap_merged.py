@@ -139,7 +139,7 @@ def test_count_since_tag(checkout):
 
 def test_missing_tag_refuses(checkout):
     checkout.git.missing = True
-    with pytest.raises(Refusal, match="v9.9.9.*clutch release"):
+    with pytest.raises(Refusal, match="v9.9.9.*clutch release bump --minor"):
         run(checkout, since="v9.9.9", at_least=1)
     assert len(checkout.git.calls) == 1
 

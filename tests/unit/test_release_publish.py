@@ -67,7 +67,7 @@ def test_publish_false_builds_and_uploads_nothing():
 @pytest.mark.parametrize("tag", [(128, "", "missing"), (0, "other-sha", "")])
 def test_publish_refuses_a_tag_not_on_head(tag):
     cfg, process, git, fs = setup(results=[(0, "", ""), (0, "0.4.0", ""), (0, SHA, ""), tag])
-    with pytest.raises(Refusal, match="v0.4.0.*clutch release"):
+    with pytest.raises(Refusal, match="v0.4.0.*clutch release bump --minor"):
         invoke(cfg, process, git, fs)
     assert not any(a[:2] in (["uv", "build"], ["uv", "publish"]) for a, _ in process.calls)
 
@@ -137,11 +137,11 @@ def test_main_publish_locks_calls_and_prints(monkeypatch, capsys, result):
     monkeypatch.setattr(cli, "Lockfile", Lock)
     monkeypatch.setattr(Git, "describe", describe)
     monkeypatch.setattr(release, "publish", publish)
-    assert cli.main(["publish"], cwd=REPO, env=env) == (2 if result is None else 0)
+    assert cli.main(["release", "publish"], cwd=REPO, env=env) == (2 if result is None else 0)
     captured = capsys.readouterr()
     assert events == ["acquire", "publish", "unlock"]
     if result is None:
-        assert captured.err.startswith("clutch publish:") and not captured.out
+        assert captured.err.startswith("clutch release:") and not captured.out
     else:
         last = "publish: uploaded 0.4.0 to PyPI" if result else "publish: release.publish is false; uploaded nothing -- set release.publish: true in config.yaml to upload"
         assert captured.out.splitlines() == ["publish: built /state/dist/a.whl", "publish: built /state/dist/a.tar.gz", last]
@@ -183,6 +183,6 @@ def test_main_release_journals_the_release_signal(monkeypatch, refuse):
     monkeypatch.setattr(cli, "Journal", Journal)
     monkeypatch.setattr(Git, "describe", describe)
     monkeypatch.setattr(release, "release", bump)
-    assert cli.main(["release", "--minor"], cwd=REPO, env={}) == (2 if refuse else 0)
+    assert cli.main(["release", "bump", "--minor"], cwd=REPO, env={}) == (2 if refuse else 0)
     expected = [] if refuse else [(EventType.SIGNAL, {"signal": "release", "version": "0.2.0", "tag": "v0.2.0", "commit": SHA})]
     assert events == ["acquire", "release", *expected, "unlock"]

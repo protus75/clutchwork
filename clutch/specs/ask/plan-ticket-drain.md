@@ -6,7 +6,7 @@ Before you start:
 - Run the host's test suite as its conduct file says; it must pass on main, or every ticket's Check and the release gate fails.
 - `clutch provider probe` must reach every declared provider. Start every engine from an environment where it passed; credentials set only in some environments fail later.
 - List every credential, hand test, and owner decision the plan's prerequisites name. Report a missing credential to the owner once, up front; skip only rows needing it and continue.
-- `clutch release --minor` bumps and tags a release. The driver runs it when the current release's gate passes, the bump before the next phase. Bump by hand only before the first phase when the version does not yet name it, and never twice for one phase.
+- `clutch release bump --minor` bumps and tags a release. The driver runs it when the current release's gate passes, the bump before the next phase. Bump by hand only before the first phase when the version does not yet name it, and never twice for one phase.
 
 Delegation:
 - The owner's delegation covers the ticket edits a Recommendation names, including narrowing or repairing a ticket the engine authored. A host conduct rule that forbids them is a conflict for the first Before you start bullet.
