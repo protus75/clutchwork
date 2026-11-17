@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "3294e5bbce734e646de98e94b1b7f78575a81641",
+  "stem": "evidence-normalize-codex",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review found the normalizer, the redacted real fixture copied from phase3-continue-14/codex-0006/events.jsonl, and the unit tests sound. Redo the whole ticket from the merge base. Only one issue failed review: the fixture path in tests/integration/test_evidence_codex_fixture.py.",
+    "In tests/integration/test_evidence_codex_fixture.py, anchor the fixture on the test file: Path(__file__).resolve().parents[1] / \"fixtures\" / \"evidence\" / \"codex\" / \"stream.jsonl\". Do not use a cwd-relative Path(\"tests/...\"). The pattern to copy is in tests/integration/test_diagnose_eval.py:20 and",
+    "Before writing the mapping, read the real capture again for its field names. Redact secrets and host paths. Name the Codex CLI version in tests/fixtures/evidence/codex/README.md, or write unknown if no version appears. Set INPUT_INCLUDES_CACHED with the ticket's rule: true unless",
+    "Check that every new test opens any file by a path relative to __file__, never by a path that depends on the working directory. Then run ./dev.py test tests/unit/test_evidence_codex.py tests/integration/test_evidence_codex_fixture.py."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    2
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
