@@ -18,7 +18,7 @@ none
 - tests/unit/test_phase_events.py::install_log
 
 ## Goal / Why
-Roadmap row 125 (`docs/roadmap.md` §2.3 and §2.1 item 10, recurred in 0.3.0). At HEAD (`89c93b40`) five of the row's duplicates are still written out at several call sites:
+Roadmap row 125 (`docs/roadmap.md` §2.3 and §2.1 item 10, recurred in 0.3.0). At HEAD (`384cc161`, after `cli-help-standard` merged) five of the row's duplicates are still written out at several call sites:
 
 - Last-state fold. `status.last_states` owns the stem-to-state map, but `observe.text_snapshot`, `observe.snapshot` and `handle_prompt` in `__main__.main` each fold journal dicts into `{stem: {**body, "ts": ts}}` by hand. `provider_holds` in `__main__.build_daemon_core` folds `{stem: body}` by hand. `observe` wraps journal dicts in `SimpleNamespace` four times (twice in `queue`, once each in `text_snapshot` and `snapshot`) to call Event-typed helpers.
 - Spend sum. `status.project`, `stats.project_stats` and `retro.measurements` each sum `cost["usd"]` over effect completions.
@@ -32,7 +32,7 @@ Already single-owned at HEAD, so dropped: the `providers.py` drought-park lookup
 
 Left out of this ticket; each needs its own roadmap row:
 1. Attempt counting. The three sites count different things. `caps.failed_attempts` counts failed terminals since the last operator or supervisor keep (the attempts cap). `observe.text_snapshot` shows every non-`running` terminal plus one, drought parks and operator verdicts included. `stats.project_stats` counts `running` transitions. One owner has to choose which number `clutch watch` and `clutch stats` show (for example `journal.run_seq`, which skips drought parks), and that changes displayed values. It is an owner decision, not a move.
-2. Frontmatter reads. `observe.frontmatter` and `observe.depends` read tickets by regex because they must also read tickets that fail validation (invalid blocked rows). `retro.production_evidence` reads `expected` from ticket text at old merge commits that current rules may reject. `observe.frontmatter` also reads prompt-spec frontmatter (`clutch/specs/requisition_review.md`, on the engine-plane safety inventory). One owner needs a new tolerant reader in `clutch/tickets.py`, and its behavior on malformed text is a design choice.
+2. Frontmatter reads. `observe.frontmatter` and `observe.depends` read tickets by regex because they must also read tickets that fail validation (invalid blocked rows). `retro.production_evidence` reads `expected` from ticket text at old merge commits that current rules may reject. `observe.frontmatter` also reads prompt-spec frontmatter (`clutch/specs/requisition_review.md`, on the engine-plane safety inventory). `__main__._stats` splits with `tickets.split_frontmatter` but loads the YAML itself. One owner needs a new tolerant reader in `clutch/tickets.py`, and its behavior on malformed text is a design choice.
 3. The `EngineLog` in `Driver.from_config`. It shares one redactor with the driver's spool. Routing it through `engine_log` adds a second `Redactor.from_config` call, and `tests/integration/test_daemon_composition.py`, a do-not-grow file, pins exactly one after `driver` in its trace.
 4. `storm_producer` construction. §2.1 item 10 names it beside `EngineLog`, but row 125 does not.
 
@@ -63,7 +63,7 @@ Out:
 
 Behavior note: `status.latest_transitions` skips a `state_transition` without `to`, as `last_states` does today. The hand folds in `observe` and `__main__` did not skip it. This repo's journal holds no such event (0 of 3,100 transitions, none with an empty `ticket`), and every writer sets `to`.
 
-Merge order. Confirmed `cli-help-standard` also fences `clutch/__main__.py`. It changes `_parser`, the verb dispatch table and `help` handling, and states that `handle_prompt` is unchanged. This ticket edits only `build_control`, `build_daemon_core`, `handle_prompt` and `handle_suggest` there, and neither ticket renames a name the other uses. So either order merges without overlapping hunks, and both tickets' tests stay green. `engine-callerless-code` and `readme-host-first` share no file with this fence. The new `tests/unit/test_runner_prepared_dispatch.py` and `tests/unit/test_serve_responsiveness.py` from `engine-callerless-code` patch neither `EngineLog` nor `engine_log`.
+Merge order. `cli-help-standard` merged at `e09d9e05`; it left `build_control`, `build_daemon_core`, `handle_prompt` and `handle_suggest` in `clutch/__main__.py` as they were, and every count above was re-checked after it. No confirmed, unmerged ticket fences a file in this fence. The running `engine-callerless-code` deletes symbols in `clutch/effects.py`, `clutch/heartbeat.py`, `clutch/timers.py`, `clutch/git.py`, `clutch/requisition.py` and `clutch/watchdog.py`, none of which the source scan flags, and its new unit tests patch neither `EngineLog` nor `engine_log`. Confirmed `rule-restatements-single-home` edits only documents and `tests/integration/test_unit_io_rule.py`. So either merge order leaves both suites green.
 
 ## Scope fence
 - clutch/status.py
