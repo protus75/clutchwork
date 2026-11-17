@@ -2,7 +2,7 @@
 llm_surface: author
 tier: medium
 effort: medium
-version: "1.7"
+version: "1.8"
 ---
 ## Role
 
@@ -27,6 +27,11 @@ Ticket skeletons:
 <<clutch-data:begin skeletons>>
 {{skeletons}}
 <<clutch-data:end skeletons>>
+
+Estimate calibration (the guide's Time budget table):
+<<clutch-data:begin calibration>>
+{{calibration}}
+<<clutch-data:end calibration>>
 
 Request:
 <<clutch-data:begin request>>

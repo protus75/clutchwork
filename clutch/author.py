@@ -8,6 +8,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, ConfigDict, field_validator
 
+from clutch import calibration
 from clutch.artifacts import Finding, NonBlank
 from clutch.baseline import resolve_baseline
 from clutch.box import BOX_DIR, Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
@@ -309,6 +310,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
         inputs = {
             "guide": (Path(__file__).parent / "docs" / "host-authoring.md").read_text(),
             "skeletons": "\n".join(f"{kind}:\n{template(kind)}" for kind in KINDS),
+            "calibration": estimates,
             "request": request,
             "roadmap_row": roadmap.model_dump_json() if roadmap is not None else "none",
             "plan": plan,
@@ -320,6 +322,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
         return render(spec, inputs)
 
     open_tickets = await list_open_tickets(checkout)
+    estimates = calibration.render(calibration.latest(checkout.journal.read()))
     previous_reply: str | None = None
     next_unused = 1
     reviewed: RequisitionVerdict | None = None

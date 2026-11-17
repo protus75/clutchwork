@@ -66,3 +66,10 @@ def calibrate(journal, fs, repo, every):
 
 def render(rows):
     return "".join(f"{r['provider']}/{r['model']}: {r['runs']} runs, estimate p50 {r['expected_p50']}m, actual p50 {r['actual_p50']}m, actual p90 {r['actual_p90']}m\n" for r in rows) or "none\n"
+
+
+def latest(events) -> list[dict]:
+    for event in reversed(events):
+        if event.type == EventType.SIGNAL and event.body.get("signal") == ESTIMATE_CALIBRATION:
+            return event.body["rows"]
+    return []

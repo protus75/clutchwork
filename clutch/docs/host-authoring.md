@@ -78,6 +78,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.
   Both `expected` and `stuck` are AI time: the actual Implement minutes on the model that runs the ticket, never human working time.
+  Estimate from the latest calibration table, which `clutch engine calibrate` journals and prints and Author's prompt carries as its `calibration` block: per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of recent runs.
   `stuck` is twice `expected`. Over 30m, split when possible or add `- reason: <why it is not split>`; over 60m, always split into more tickets, each its own stem. Never raise the budget instead.
 
 ## Keeping tickets apart
