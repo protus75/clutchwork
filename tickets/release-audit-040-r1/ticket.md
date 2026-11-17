@@ -1,5 +1,5 @@
 ---
-priority: P1
+priority: P3
 kind: chore
 agent_tier: medium
 agent_effort: medium
