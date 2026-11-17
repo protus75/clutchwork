@@ -1,0 +1,122 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "cc6017e0a5c741f657224d804666f5f437794e56",
+  "stem": "roadmap-status-stuck-rows",
+  "passed": true,
+  "changed_files": [
+    "clutch/roadmap.py",
+    "docs/how-clutch-works.md",
+    "tests/unit/test_roadmap_status.py",
+    "tests/unit/test_roadmap_stuck_rows.py",
+    "tests/unit/test_roadmap_table.py"
+  ],
+  "inserted_lines": 140,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 16.140249,
+        "passed": 679,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {}
+      },
+      "coverage": {
+        "percent": 56.21149897330596,
+        "files": {
+          "clutch/roadmap.py": 97.13216957605985
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_roadmap_stuck_rows.py",
+        "tests/unit/test_roadmap_table.py",
+        "tests/unit/test_roadmap_status.py",
+        "tests/unit/test_roadmap_merged.py",
+        "tests/unit/test_roadmap_release_boundary.py",
+        "tests/integration/test_roadmap_table.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_roadmap_stuck_rows.py tests/unit/test_roadmap_table.py tests/unit/test_roadmap_status.py tests/unit/test_roadmap_merged.py tests/unit/test_roadmap_release_boundary.py tests/integration/test_roadmap_table.py\nbringing up nodes...\nbringing up nodes...\n\n........................................                                 [100%]\n40 passed in 3.65s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.028022
+    }
+  ]
+}
