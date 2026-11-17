@@ -1,0 +1,5 @@
+child pass, parent small: max_rss_kb = 21796
+child pass, parent holding 600 MB: max_rss_kb = 619036
+child bytearray(200_000_000), parent holding 600 MB: max_rss_kb = 619036
+
+Box messages reporting the full-suite failure of tests/integration/test_exec_seam_reap.py::test_usage_and_independent_peak_memory (passes alone): box-000706, box-000712, box-000717, box-000719, box-000724, box-000725.
