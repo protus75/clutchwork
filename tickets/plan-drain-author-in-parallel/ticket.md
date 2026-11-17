@@ -35,13 +35,16 @@ In:
   - Never triage a `roadmap_row` Suggestion Box message; the driver owns it. Pass `clutch triage` only the ids of other message classes.
 - `clutch/specs/ask/drain-loop.md`: one sentence in its drafts step saying a draft is resolved the tick it appears, even while an engine runs, because confirm and reject queue through the engine's inbox. One sentence in its Suggestion Box step saying a `roadmap_row` message is never triaged or dismissed.
 - `clutch/docs/host-authoring.md`, the `Time budget` bullet: add that `expected` and `stuck` are AI time, the actual Implement minutes on the model that runs the ticket, never human working time.
+- `CLAUDE.md` section B (session conduct) and the matching repo-local part of `AGENTS.md`, both outside the `clutch:core` managed block, gain one rule, because it is about working in this repo and must not reach other hosts. When the owner, in a chat in this repo, changes how a plan-ticket-drain run or the supervising loop works, the session updates the shipped prompt that owns that process (`clutch/specs/ask/plan-ticket-drain.md` or `clutch/specs/ask/drain-loop.md`) through a ticket filed in the same turn. A session note under `.claude/` is never that process's home. Why: the owner, 2026-11-17: "the shipped prompt should be kept in sync with chat updates to its overall process, when updated in the clutch repo".
 - Tests that pin the changed text:
   - `tests/integration/test_ask_plan_drain.py::test_plan_ticket_drain_prompt_content`: drop `Let the driver author` from its phrase list, and add `while a ticket runs`, `the tick it appears` and `roadmap_row`.
   - `tests/integration/test_ask_drain_loop.py`, `tests/integration/test_ask_drain_loop_agent.py` and `tests/unit/test_ask_drain_loop.py`: update only the assertions that pin drain-loop text this change edits.
 
-Out: the engine code, CORE_TEMPLATE, the author and review prompts, `docs/roadmap.md`, and estimate calibration (roadmap row 142).
+Out: the engine code, CORE_TEMPLATE and the `clutch:core` managed block, the author and review prompts, `docs/roadmap.md`, and estimate calibration (roadmap row 142).
 
 ## Scope fence
+- CLAUDE.md
+- AGENTS.md
 - clutch/specs/ask/plan-ticket-drain.md
 - clutch/specs/ask/drain-loop.md
 - clutch/docs/host-authoring.md
@@ -54,7 +57,8 @@ Out: the engine code, CORE_TEMPLATE, the author and review prompts, `docs/roadma
 1. `./dev.py test tests/integration/test_ask_plan_drain.py` exits 0. The rendered kickoff contains `while a ticket runs`, `the tick it appears` and `roadmap_row`, and no longer contains `Let the driver author` or `Hand-author only when the driver cannot`. Ruled out: a kickoff that still leaves authoring to the driver's idle points.
 2. `./dev.py test tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py tests/unit/test_ask_drain_loop.py` exits 0, and `uv run clutch prompt drain-loop` prints text containing `the tick it appears` and `roadmap_row`. Ruled out: a drain-loop prompt that still waits for quiescence to resolve drafts or lets triage take the driver's messages.
 3. `clutch/docs/host-authoring.md`'s `Time budget` bullet says `expected` and `stuck` are AI time, the actual Implement minutes on the model, which a reader can check in that bullet. Ruled out: a guide that leaves the estimate's unit open, which produced human-time estimates about ten times the actual run.
-4. `./dev.py test` exits 0.
+4. `CLAUDE.md` and `AGENTS.md` each hold the new rule outside the `<!-- clutch:core begin -->` to `<!-- clutch:core end -->` block, which a reader can check, and `clutch/hostfiles.py` CORE_TEMPLATE is unchanged. Ruled out: a repo-only rule shipped to every host through the managed block.
+5. `./dev.py test` exits 0.
 
 ## Verification
 ```
