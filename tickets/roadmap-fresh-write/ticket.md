@@ -10,6 +10,9 @@ state: draft
 ## Depends on
 none
 
+## Runs before
+- roadmap-named-stem-refile
+
 ## Context
 - clutch/roadmap.py::author_ahead
 - clutch/roadmap.py::refile_row
