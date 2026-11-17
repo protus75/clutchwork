@@ -18,7 +18,7 @@ Facts recorded in the original 2026-11-13 snapshot (counts were not re-measured)
 
 ## 1. Release plan
 
-Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor version, named for the version `clutch release --minor` gives it: a phase is bumped and tagged at its start, so tag `v0.3.0` (`c761b213`) opened 0.3.0. These names were once one minor lower (0.3.0 was `0.2.0`), and older commits, tickets, and Suggestion Box messages use the old names. Each phase takes the next minor when it starts, so if the conditional 0.6.0 window slides, the phases after 0.3.0 are renamed to the versions they start at. `clutch release --minor|--patch` (`release-verb`, merged) bumps, commits, and tags; `./dev.py publish` still bumps the patch again before it uploads, which `release-publish` (row 92) replaces with a publish that never bumps.
+Versions follow `pyproject.toml` (`0.3.0` today). Each release below is a minor version, named for the version `clutch release --minor` gives it: a phase is bumped and tagged at its start, so tag `v0.3.0` (`c761b213`) opened 0.3.0. These names were once one minor lower (0.3.0 was `0.2.0`), and older commits, tickets, and Suggestion Box messages use the old names. Each phase takes the next minor when it starts, so if the conditional 0.6.0 window slides, the phases after 0.3.0 are renamed to the versions they start at. `clutch release --minor|--patch` (`release-verb`, merged) bumps, commits, and tags; `clutch publish` uploads without bumping the version (row 92).
 
 | Release | Theme | Gate to start | Gate to ship |
 |---|---|---|---|

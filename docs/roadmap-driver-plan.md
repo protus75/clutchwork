@@ -4,7 +4,7 @@ Run `docs/roadmap.md` unattended. The driver authors the next few roadmap rows w
 
 ## Status
 
-The supervisor, roadmap authoring, release gates, publish, and driver loop have merged (roadmap rows 89–93); the idle-point supervisor hook and kept release packages remain planned (rows `supervise-idle-point` and 108). Written 2026-11-14 at commit `c2d1c2a7` for `docs/roadmap.md`.
+The supervisor, roadmap authoring, release gates, publish, and driver loop have merged (roadmap rows 89–93); the idle-point supervisor hook and kept release packages have also merged (`supervise-idle-point` and row 108). Written 2026-11-14 at commit `c2d1c2a7` for `docs/roadmap.md`.
 
 ## Roadmap
 
@@ -76,19 +76,19 @@ Runs in the shared terminal handling used by `runner.drive` (after Diagnosis) an
 ### 5. Release and publish (`release-publish`)
 
 - `clutch release --minor|--patch` exists (`release-verb`; see Current state). This ticket adds its `release` journal signal. Hosts use the same verb for their own versions.
-- `clutch publish`: never bumps the version. It uploads the version in `pyproject.toml` only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480). It builds and uploads to PyPI through the exec seam, with the token's env name in config (`release.pypi_token: UV_PUBLISH_TOKEN`), passed only to that child, like a provider key. `./dev.py vscode-publish`: bumps the extension's patch version, packages, and publishes with `vsce publish` under `release.vsce_token`; this repo only, since no host ships the extension.
+- `clutch publish`: never bumps the version. It uploads the version in `pyproject.toml` only when its `v<version>` tag is on HEAD, and refuses otherwise (box-000480). It builds and uploads to PyPI through the exec seam, with the token's env name in config (`release.pypi_token: UV_PUBLISH_TOKEN`), passed only to that child, like a provider key. The owner publishes the kept VS Code package to the Marketplace by hand (roadmap decision 20).
 - **Authorization.** Publishing is a remote mutation. `release.publish: true` in config is the owner's standing "push"; with it absent or false, the driver tags and bumps locally and does not publish. The conduct rule for chat sessions ("never push unless the user says push this turn") is untouched: the engine acts on config, sessions act on words.
 
 ### 6. The loop (`driver-loop`)
 
 At serve's idle point after each settle, in this order:
 
-1. Planned: if any Reject-queue stem is unsupervised, the supervisor step runs for it (section 2) before new work. Today the step runs in `runner.drive` and merge-route `TicketWriter.consume_result`; the idle-point hook remains roadmap row `supervise-idle-point`, using `supervisor_attempt` to identify attempted stems and the key scope from `supervisor-effect-scope`.
+1. If any Reject-queue stem is unsupervised, the supervisor step runs for it (section 2) before new work. The step also runs in `runner.drive` and merge-route `TicketWriter.consume_result`; the idle-point hook uses `supervisor_attempt` to identify attempted stems and the key scope from `supervisor-effect-scope`.
 2. `roadmap author --ahead N` tops up the open rows (section 3).
 3. If the current release's rows are all merged and its gate passes (section 4), `release` runs, then `publish` only when `release.publish` is true (section 5); the next release becomes current.
 4. A digest notification through `config.notify` (exists): rows merged since the last digest, held stems and why, the next rows to be authored, spend.
 
-`drain` gets step 2 between tickets; step 1 is still planned for both drain and serve. `run` gets none of these idle-point steps, but its `runner.drive` terminal handling runs the supervisor step. `clutch prompt drain-loop` describes what the driver does by itself and what the supervising agent loop it starts does for a held stem or an Author draft (open decision 5); no step waits on a person.
+`drain` runs steps 1 and 2 between tickets; serve runs them at its idle point. `run` gets none of these idle-point steps, but its `runner.drive` terminal handling runs the supervisor step. `clutch prompt drain-loop` describes what the driver does by itself and what the supervising agent loop it starts does for a held stem or an Author draft (open decision 5); no step waits on a person.
 
 ### 7. What still comes from outside
 
@@ -104,7 +104,7 @@ Escalations go through the supervisor (section 2) and the diagnose path (`docs/h
 | Roadmap table parser, `roadmap author`, `roadmap status`, row linking | new `clutch/roadmap.py`, `clutch/__main__.py` |
 | Author data blocks | `clutch/author.py`, `clutch/specs/author.md` |
 | Gate blocks | `docs/roadmap.md` (format), `clutch/roadmap.py` (runner) |
-| `publish`, `release` config, `release` signal | `clutch/__main__.py`, `clutch/release.py`, `clutch/config.py`; `dev.py` (`vscode-publish`) |
+| `publish`, `release` config, `release` signal | `clutch/__main__.py`, `clutch/release.py`, `clutch/config.py`; `dev.py` (`vscode-package`) |
 | Loop | `clutch/serve.py` (idle hooks), `clutch/drain.py` (between tickets), `clutch/notify.py` (digest) |
 | Docs | `docs/how-clutch-works.md` §6.4-6.7, §7.1-7.2, §9.3, new "Roadmap driver"; `clutch/docs/host-running.md`; `clutch/specs/ask/drain-loop.md` |
 
@@ -118,7 +118,7 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7). R
 | 2 | `supervisor-rework` | feature | P1 | | Section 2: the trigger, the allowed-edit gate, `caps.supervise`, the supervisor keep and lineage, `rework.md` lift on escalation; `rework.md` spec bump. |
 | 3 | `roadmap-author` | feature | P1 | | Section 3: `roadmap_row` message and policy row, `clutch/roadmap.py` parser, `roadmap author --ahead`, Author data blocks, row linking and striking, capture refusal. |
 | 4 | `release-gates-as-commands` | chore | P2 | | Section 4: gate blocks in `docs/roadmap.md`, `roadmap status`. |
-| 5 | `release-publish` | feature | P2 | `release-verb` | Section 5: the `release` signal, `clutch publish`, `./dev.py vscode-publish`, `release` config, publish only under `release.publish`. |
+| 5 | `release-publish` | feature | P2 | `release-verb` | Section 5: the `release` signal, `clutch publish`, `release` config, publish only under `release.publish`; decision 20 made Marketplace publishing manual. |
 | 6 | `driver-loop` | feature | P1 | 2, 3, 4, 5 | Section 6: the idle-point sequence in serve and drain, the digest, the rewritten `drain-loop` prompt, how-clutch-works "Roadmap driver". |
 
 `Runs before`: `docs-truth-sweep` (roadmap row 4) and `contention-authoring-rules` (row 13) before every ticket here.
