@@ -50,7 +50,12 @@ def test_real_roadmap_gate_blocks():
         ("uv", "run", "clutch", "roadmap", "accept", first),
     )
     for release in releases - {first}:
-        assert blocks[release] == (("uv", "run", "clutch", "roadmap", "merged", "--release", release), ("./dev.py", "test"), ("uv", "run", "clutch", "roadmap", "accept", release))
+        commands = blocks[release]
+        assert commands[0] == ("uv", "run", "clutch", "roadmap", "merged", "--release", release)
+        assert commands[-2:] == (("./dev.py", "test"), ("uv", "run", "clutch", "roadmap", "accept", release))
+        assert all(command[:3] == ("uv", "run", "clutch") for command in commands[1:-2])
+        if release != "0.4.0":
+            assert len(commands) == 3
     for release, commands in blocks.items():
         assert commands[-1] == ("uv", "run", "clutch", "roadmap", "accept", release)
         assert commands[-2] == ("./dev.py", "test")

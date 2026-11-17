@@ -6,14 +6,14 @@ A plan change that moves a ticket, adds a dependency on another plan, or spends 
 
 ## Status
 
-Written 2026-11-13 at commit `80b76d5d` (clutch `0.1.5`, extension `0.0.40`, no git tags). The audit sections are a snapshot at that commit, produced by six read-only passes over `clutch/`, `tests/`, `dev.py`, `docs/`, `clutch/docs/`, `clutch/specs/`, `CLAUDE.md`, `AGENTS.md`, `README.md`, and `CLUTCH_PLAN.md` §18-19. Re-run the audit before each minor release; the section headings are the checklist.
+Audit refreshed at commit `14752dc5` (clutch `0.3.0`, extension `0.3.0`). The audit sections are a snapshot at that commit, produced by six read-only passes over `clutch/`, `tests/`, `dev.py`, `docs/`, `clutch/docs/`, `clutch/specs/`, `CLAUDE.md`, `AGENTS.md`, `README.md`, and `CLUTCH_PLAN.md` §18-19. Re-run the audit before each minor release; the section headings are the checklist.
 
-Facts the ordering rests on:
+Facts recorded in the original 2026-11-13 snapshot (counts were not re-measured):
 
 - 506 tickets merged, 0 in flight, 0 confirmed and unrun. The queue is empty. One stem awaits a verdict in the Reject queue (`vscode-help`, `premise_failed`). Four stems are blocked in the journal with no ticket directory (`authoring-reading-specs`, `host-mechanical-check`, `phase7-continue`, `journal-sql-refactor-plan`).
 - Four Suggestion Box messages are pending: `box-000324` (fence closure misses in-code registries; recurrence recorded in `tickets/retro/000046.md`), `box-000440` (operator prompts hard-code `./dev.py`), `box-000441` and `box-000442` (unit-test criteria that need disk pass requisition review, then fail Implement). None is a ticket yet.
 - Spend to date $2,681.50. 5,090 commits since 2026-10-01.
-- `CLUTCH_PLAN.md` phases P3-P6 are complete. P7 `host-review-surfaces` was refused instead of built (`config.py:308-309`). P8 `rules-render` (`core --check`, a start-command file) and the "Onboarding a host" and "Operating facts" sections of `clutch/docs/host-contract.md` were never built and have no ticket. The registry that tracked them was retired, so only this document and the frozen plan record them.
+- `CLUTCH_PLAN.md` phases P3-P6 are complete. P7 `host-review-surfaces` was refused instead of built (`config.py:308-309`). P8 `rules-render` (`core --check`, a start-command file) was dropped; `host-onboarding-doc` added the two host-contract sections.
 - The CLI has 29 verbs (`clutch/__main__.py:237-287`) against the frozen plan's closed set of 16 (§18.1). Each arrived by ticket; the plan cannot be amended.
 
 ## 1. Release plan
@@ -48,76 +48,58 @@ Ranked by how many later tickets it blocks. Every item names the single owner th
 
 | # | Duplicated | Locations | Owner after fix | Ticket |
 |---|---|---|---|---|
-| 1 | Inline merge and queue admission share about 15 steps verbatim: `ticket_change_findings`, timing and `_refused`, `rev_parse`, `main_code_unchanged`, `restore(TICKETS_DIR)`, the `RebaseRefused` finding text, `gather_safety_evidence`, the skip rule, `read_candidate`, `check_severity`, `run_gates` on both gate sets, hard and soft flattening, `dirty_overlap`, `write_squash` + `retire` | `merge.merge` (`clutch/merge.py:285-328`) vs `MergeQueue._admit` (`clutch/mergequeue.py:271-370`) | `_admit`, with the conflict ladder, safety tier, receipt, tree check, and red streak as parameters; `merge.merge` becomes a thin inline call | `merge-admission-single-owner` |
-| 2 | Six trackers for "is something running": `scheduler.py:35-36`, `daemon.py:547-549` (`DaemonAdmission`), `daemon.py:440` (`TicketWriter.active`), `mergequeue.py:86,91`, `driver.py:152`, `restart.py:16` + `serve.py:112`. `serve.upgrade_idle` reads five of them (`serve.py:325-333`). `Scheduler._slot` wraps `admission.dispatch`, which takes its own lock | as listed | `DaemonAdmission` owns the run set; others read it | `active-slot-single-owner` |
-| 3 | Three filters over `review.mechanical`: `stages.triggered_hosts` (`stages.py:982-987`), `merge.py:317` (`hard_only=True`), `MergeQueue.host_checks` (`mergequeue.py:198-224`); spool names also diverge (`check/host-NN`, `merge/host-NN`, `merge-<tier>/host-NN`). `docs/how-clutch-works.md:337` says "one shared command runner": true for execution, false for selection | as listed | `triggered_hosts(tier=...)` | `host-check-selection-single-owner` |
-| 4 | Run-argv-with-stuck-budget, spool, tail: `run_host_command` (`stages.py:712-728`), `gather_evidence` branch loop (872-885), base loop (893-902), `_gather_bug.execute` (822-829); `MergeQueue._command` (195-196) is a pure pass-through | `clutch/stages.py` | `run_host_command` | `host-check-selection-single-owner` |
-| 5 | "Latest `state_transition` for stem" scanned inline 13 times: `stages.py:287,1562`; `serve.py:151,158,411`; `drain.py:107,456,547,586,594,681,699,731`. `status.last_states` returns only the state string | as listed | `journal.last_transition(events, stem)` beside `run_terminals` | `journal-last-transition-helper` |
-| 6 | Effect-completion lookups by key bypass `Effects._recorded` (`effects.py:49-53`): `stages.served_review:198`, `mergequeue.retained_ticket:138`, `merge.lifted_report_paths:370-376`, `runner.apply_admission:676-680`, `mergequeue._finish:164`, `checkpoint._history` | as listed | `Effects.recorded(key)` | `journal-last-transition-helper` |
-| 7 | Eligibility filter: `Scheduler.dispatch_next` (`scheduler.py:50-76`) and `_Drain._select` (`drain.py:508-558`) both compute `settled_dependencies`, `supersedes_maps`, `authored_at`, `parked_blob`, `reofferable`, then `order_tickets` + `write_queue`; drain adds `depends_cycle`, over-budget, storm, drought | as listed | one `eligible(events, tickets, ...)` in `drain.py`, consumed by `Scheduler` | `serve-parallel-dispatch` (it rewrites `dispatch_next` anyway) |
-| 8 | The former `run_stages` provider-exception mapper had no production caller: `Driver._run` maps stage failures first. Only a deleted test invoked requisition review inside a stage; `requisition_review` was the correct surface for that exception. | `runner.drive` and formerly `run_stages` | No mapper covers stage operations; the driver maps their provider failures | `provider-failure-single-mapper` (done) |
-| 9 | `running` transition + reoffer written by three callers: `runner.run_ticket:525-526`, `drain._run_one:571-574`, `serve.py:150-154` | as listed | `runner.run_ticket` | `serve-parallel-dispatch` |
-| 10 | Constructors repeated: `EngineLog(...)` built 8 times (`runner.py:123,503`; `drain.py:232,357,606`; `serve.py:117`; `driver.py:190`; `triage.py:369`), `storm_producer(...)` 15 times with identical args, `Driver.from_config(...); driver.journal = ...; driver.effects = Effects(...)` 5 times (`__main__.py:619-621`, `triage.py:85-87,110-112`, `runner.py:139-141,487-489`). `Driver.from_config` builds a `Journal` and `Effects` every caller overwrites; `Effects.__init__` scans the whole journal, so each bind pays a wasted read | as listed | `Checkout`/`StageContext` carry `log` and `box`; `Driver.from_config` takes `journal` | `main-verb-groups` |
-| 11 | `gather_safety_evidence` runs twice per admission: `merge.py:307` then inside `gather_evidence` (`stages.py:911`); same at `mergequeue.py:312` + 330 | as listed | `gather_evidence` reuses the safety result | `merge-admission-single-owner` |
-| 12 | "Refused" constructors: `merge._refused`, the `refused` closure in `_admit`, `stages._short`, and inline `StageResult(outcome="gate_failed", ...)` at `runner.py:219`, `stages.py:1454,1457,1465,1577`, `daemon.py:360,404,415-422` | as listed | `artifacts.refused(findings, cost)` | `merge-admission-single-owner` |
-| 13 | Fence matching: owner `stages._in_fence` (978-979); re-implemented at `watchdog.py:60`, `drain.py:484` (different semantics: trailing-slash dirs only), raw `startswith(f"{TICKETS_DIR}/")` at `merge.py:108,248,385`, `stages.py:1224` | as listed | `_in_fence`, moved to `clutch/tickets.py` (the fence grammar's home) | `fence-overlap` (it adds the pure overlap function beside it) |
-| 14 | `retro_check` phase logging with two outcome vocabularies: `drain.py:605-613` ("ran"/"no_report") vs `serve.py:339-353` ("due"/"not_due") | as listed | one vocabulary in `retro.py` | `docs-truth-sweep-code-strings` (done) |
+| 7 | Eligibility filter: `Scheduler.dispatch_next` (`scheduler.py:50-76`) and `_Drain._select` (`drain.py:508-558`) both compute `settled_dependencies`, `supersedes_maps`, `authored_at`, `parked_blob`, `reofferable`, then `order_tickets` + `write_queue`; drain adds `depends_cycle`, over-budget, storm, drought | as listed | one `eligible(events, tickets, ...)` in `drain.py`, consumed by `Scheduler` | `serve-parallel-dispatch` (it rewrites `dispatch_next` anyway) (recurred in 0.3.0) |
+| 9 | `running` transition + reoffer written by three callers: `runner.run_ticket:525-526`, `drain._run_one:571-574`, `serve.py:150-154` | as listed | `runner.run_ticket` | `serve-parallel-dispatch` (recurred in 0.3.0) |
+| 10 | `EngineLog` and `storm_producer` are constructed at multiple call sites (`runner.py`, `drain.py`, `serve.py`, `triage.py`, `driver.py`). | as listed | Share the construction where appropriate | `main-verb-groups` (constructor work remains) (recurred in 0.3.0) |
+| 13 | Fence matching: owner `stages._in_fence` (978-979); re-implemented at `watchdog.py:60`, `drain.py:484` (different semantics: trailing-slash dirs only), raw `startswith(f"{TICKETS_DIR}/")` at `merge.py:108,248,385`, `stages.py:1224` | as listed | `_in_fence`, moved to `clutch/tickets.py` (the fence grammar's home) | `fence-overlap` (it adds the pure overlap function beside it) (recurred in 0.3.0) |
 
 ### 2.2 Closed sets with more than one home
 
 | Set | Homes | Owner |
 |---|---|---|
-| Tiers `low|medium|high|max` | `config.py:21`, `llm.py:10-11`, `tickets.py:33`, `caps.py:13`, `policy.py:15`, `__main__.py:378`, `providers.py:688` | `llm.py` |
-| Priorities `P0..P3` | `tickets.py:58`, `__main__.py:273` (`observe.py:716` already derives from `Frontmatter`) | `tickets.py` |
-| Kinds `feature|bug|chore` | `tickets.py:59`, `tickets.py:810`, `__main__.py:269,791`, `stats.py:109`, `author.py:245` (different order), `hostfiles.py` CORE_TEMPLATE | `tickets.py`; CORE_TEMPLATE keeps its `--kind` list (section 5, decision 5) |
-| Settled and retired states | `status.py:17` `SETTLED`, `drain.py:53` `RETIRED`, `stats.py:11` `SETTLED` (same name, different set), `tickets.py:711` literal; `SETTLED | {"rejected"}` spelled out 15 times, `SETTLED | RETIRED` 8 times | `status.CLOSED = SETTLED | RETIRED`; `stats.SETTLED` deleted |
-| Failed-attempt terminals | `caps.py:48`, `scorecard.py:85`, `journal.py:101`, `stats.py:122` | `journal.py` |
-| Surfaces | `specs/__init__.py:32` (8), `observe.py:33-44` (10), `stats.py:12` (6), `observe.py:274,814`, `providers.py:29`, `policy.py:14` | `specs/__init__.py`; observe and stats derive |
-| Spike kinds | `config.py:23` owner; `clutch/docs/host-contract.md` repeats the list at lines 133, 193, 202, 206 | `config.py`; the contract lists it once |
-| Box classes and policy rows | `box.py:18`, `config.py:25-49`, `policy.py:33-45`, `host-contract.md:134,213`, `specs/triage.md:20-28` | `box.py` (classes), `config.py` (rows), `policy.py` the only bridge |
-| Triage verdicts | `triage.py:33`, `box.py:63,69,403` (three overlapping Literals in one file) | `box.py` |
-| Control verbs | `control.py:16,72`, `__main__.py:254-257`, `lockfile.py:19`, `observe.py:835-842` | `control.py` |
-| Ask kinds | `ask.py:11` owner; `__main__.py:398-421` branches per literal; `observe.py:527-529` hand-lists three menu entries | `ask.py` |
-| Finding codes | `ticket_schema` at `tickets.py:30`, `author.py:39`, `rework.py:66`; `requisition_review`/`requisition_rma` at nine sites; `core_drift` at `hostfiles.py:192,205,214` | `gates.ENGINE_GATE_CODES` plus one registry for stage finding codes |
-| Conduct-file routing `{claude, qwen}` -> `CLAUDE.md` | `providers.py:131`, `host-contract.md:274`, `how-clutch-works.md:756` | `providers.py`; docs cite it |
+| Settled and retired states | `status.py:17` `SETTLED`, `drain.py:53` `RETIRED`, `stats.py:11` `SETTLED` (same name, different set), `tickets.py:711` literal; `SETTLED | {"rejected"}` spelled out 15 times, `SETTLED | RETIRED` 8 times | `status.CLOSED = SETTLED | RETIRED`; `stats.SETTLED` deleted (recurred in 0.3.0) |
+| Failed-attempt terminals | `caps.py:48`, `scorecard.py:85`, `journal.py:101`, `stats.py:122` | `journal.py` (recurred in 0.3.0) |
+| Surfaces | `specs/__init__.py:32` (8), `observe.py:33-44` (10), `stats.py:12` (6), `observe.py:274,814`, `providers.py:29`, `policy.py:14` | `specs/__init__.py`; observe and stats derive (recurred in 0.3.0) |
+| Spike kinds | `config.py:23` owner; `clutch/docs/host-contract.md` repeats the list at lines 133, 193, 202, 206 | `config.py`; the contract lists it once (recurred in 0.3.0) |
+| Box classes and policy rows | `box.py:18`, `config.py:25-49`, `policy.py:33-45`, `host-contract.md:134,213`, `specs/triage.md:20-28` | `box.py` (classes), `config.py` (rows), `policy.py` the only bridge (recurred in 0.3.0) |
+| Triage verdicts | `triage.py:33`, `box.py:63,69,403` (three overlapping Literals in one file) | `box.py` (recurred in 0.3.0) |
+| Control verbs | `control.py:16,72`, `__main__.py:254-257`, `lockfile.py:19`, `observe.py:835-842` | `control.py` (recurred in 0.3.0) |
+| Ask kinds | `ask.py:11` owner; `__main__.py:398-421` branches per literal; `observe.py:527-529` hand-lists three menu entries | `ask.py` (recurred in 0.3.0) |
+| Finding codes | `ticket_schema` at `tickets.py:30`, `author.py:39`, `rework.py:66`; `requisition_review`/`requisition_rma` at nine sites; `core_drift` at `hostfiles.py:192,205,214` | `gates.ENGINE_GATE_CODES` plus one registry for stage finding codes (recurred in 0.3.0) |
+| Conduct-file routing `{claude, qwen}` -> `CLAUDE.md` | `providers.py:131`, `host-contract.md:274`, `how-clutch-works.md:756` | `providers.py`; docs cite it (recurred in 0.3.0) |
 
-Ticket: `closed-sets-single-owner`.
+Ticket: `closed-sets-remaining`.
 
 ### 2.3 Repeated helpers and projections
 
-- `NonBlank` redefined in `author.py:28`, `triage.py:27`, `box.py:55`, `inbox.py:15` while `artifacts.py:25` exists. `_Strict` bases in `config.py:61`, `box.py:58`, `inbox.py:29`, `artifacts.py:47`, `stages.py:79`.
-- Repo-relative path validators: `tickets.py:210`, `box.py:22`, `inbox.py:22`, `config.py:118`, `covgate.py:54`.
-- Spec-major extraction `int(version.split(".")[0])`: `requisition.py:141,161`, `rework.py:212`, `policy.py:28`, `baseline.py:45`; `stages._major` is called three times in `stages.py` and is the one helper the other spec-major sites will use.
-- Hand-rolled git blob SHA: `requisition.py:136`, `hostfiles.py:203`, `stages.py:281`.
-- Retro-recurrence reopen boundary: `author.py:159-161,179-181`, `triage.py:263-270`.
-- `requisition_verdict` signal body built by hand: `__main__.py:643-655`, `author.py:360-364`, `rework.py:169-180`, `runner.py:199`. `ticket_intake` body: `tickets.py:768` uses `INTAKE_SIGNAL`, `author.py:359` a literal.
-- Scorecard table builder byte-identical in `status.py:246-255` and `retro.py:255-265`.
-- Literal `"box"` instead of `BOX_DIR` at `__main__.py:80,460`, `author.py:74`, `ask.py:24`, `observe.py:757`; `f"tickets/{stem}/ticket.md"` instead of `ticket_path()` at `__main__.py:141`, `triage.py:201`, `observe.py:240,678,687`.
-- Last-state fold: `status.py:58-60` canonical; re-implemented at `observe.py:395-398,604-607,552`, `__main__.py:128,160-162,431`, `providers.py:244`. `observe.journal()` returns dicts, so `observe` wraps them in `SimpleNamespace` four times to call Event-typed helpers.
-- Attempt counting with three semantics: `caps.py:54-56`, `observe.py:403`, `stats.py:112`. Spend sum at `status.py:194`, `stats.py:130-131`, `retro.py:151,160`.
-- Frontmatter read by regex outside the owner: `observe.py:218-224,278-281`, `retro.py:228` (duplicates `tickets.py:82` `_BUDGET`), `__main__.py:789-792`.
-- `"cap spent"` produced by `caps.py:108` and parsed back by `observe.py:315`. `provider_drought` body probed at 14 sites.
-- `__main__.py`: lock acquire/try/release written four times (514-520, 527-539, 672-715, 839-861); `_require_engine` + `read_active` + `ValueError -> Refusal` three times; `observe.Context(...)` twice; `lambda: load_config(...)` six times; four ad-hoc `print(..., file=sys.stderr); return 2` beside the shared handler at 580-586; `checkout` built for every verb past line 435.
+- Retro-recurrence reopen boundary: `author.py:159-161,179-181`, `triage.py:263-270`. (recurred in 0.3.0)
+- `requisition_verdict` signal body built by hand: `__main__.py:643-655`, `author.py:360-364`, `rework.py:169-180`, `runner.py:199`. `ticket_intake` body: `tickets.py:768` uses `INTAKE_SIGNAL`, `author.py:359` a literal. (recurred in 0.3.0)
+- Scorecard table builders in `status.py` and `retro.py` duplicate the header and row formatting, though the retro table includes an extra blank line. (recurred in 0.3.0)
+- Literal `"box"` instead of `BOX_DIR` at `__main__.py:80,460`, `author.py:74`, `ask.py:24`, `observe.py:757`; `f"tickets/{stem}/ticket.md"` instead of `ticket_path()` at `__main__.py:141`, `triage.py:201`, `observe.py:240,678,687`. (recurred in 0.3.0)
+- Last-state fold: `status.py:58-60` canonical; re-implemented at `observe.py:395-398,604-607,552`, `__main__.py:128,160-162,431`, `providers.py:244`. `observe.journal()` returns dicts, so `observe` wraps them in `SimpleNamespace` four times to call Event-typed helpers. (recurred in 0.3.0)
+- Attempt counting with three semantics: `caps.py:54-56`, `observe.py:403`, `stats.py:112`. Spend sum at `status.py:194`, `stats.py:130-131`, `retro.py:151,160`. (recurred in 0.3.0)
+- Frontmatter read by regex outside the owner: `observe.py:218-224,278-281`, `retro.py:228` (duplicates `tickets.py:82` `_BUDGET`), `__main__.py:789-792`. (recurred in 0.3.0)
+- `"cap spent"` produced by `caps.py:108` and parsed back by `observe.py:315`. `provider_drought` body probed at 14 sites. (recurred in 0.3.0)
 
-Tickets: `main-verb-groups` (the `__main__.py` items and constructors), `closed-sets-single-owner` (helpers that guard a closed set), `journal-last-transition-helper` (projection folds).
+The projection and constructor duplication remains after `journal-last-transition-helper` and `main-verb-groups`.
 
 ### 2.4 Provider stream parsing
 
-`ClaudeAdapter.parse` (`providers.py:465-479`) and `CodexAdapter.parse` (493-511) read the terminal event and usage; `watchdog.CallMeter._consume` (85-126) re-parses the same fields with its own guards; `observe.live_call` (189-215) re-encodes the adapters' argv by regex over `ps` output. `docs/evidence-trail-plan.md` makes the per-provider normalizer the single parser and lists moving `CallMeter` and `Parsed` onto it as a follow-up once normalizers have run on real traffic.
+`ClaudeAdapter.parse` (`providers.py:465-479`) and `CodexAdapter.parse` (493-511) read the terminal event and usage; `watchdog.CallMeter._consume` (85-126) re-parses the same fields with its own guards; `observe.live_call` (189-215) re-encodes the adapters' argv by regex over `ps` output. `docs/evidence-trail-plan.md` makes the per-provider normalizer the single parser and lists moving `CallMeter` and `Parsed` onto it as a follow-up once normalizers have run on real traffic. (recurred in 0.3.0)
 
 ### 2.5 Rules stated in more than one home
 
-Second problems to the Box and verify at base (`hostfiles.py:55`, `CLAUDE.md:90-91`, `AGENTS.md:84-85`, `specs/implement.md:24-26,133-134`); read before write (`hostfiles.py:56`, `CLAUDE.md:92-93`, `AGENTS.md:86-87`); smallest change (`hostfiles.py:52`, `CLAUDE.md:72-73`, `AGENTS.md:68-69`, `implement.md:23-24`); never push (`hostfiles.py:44,54`, `CLAUDE.md:88-89`, `implement.md:56-58`); never hand-edit the managed block (`hostfiles.py:53`, `CLAUDE.md:82-83`, `host-contract.md:272`); the set-membership grep rule verbatim in `host-authoring.md:55` and `specs/requisition_review.md:24`; the bug-evidence refusal sentence three times (`host-authoring.md:88-92`, `how-clutch-works.md:148-151,315-318`); unit-test discipline in `implement.md:60-68`, `review.md:37-39`, `retro.md:24`, `how-clutch-works.md:225-229`.
+Second problems to the Box and verify at base (`hostfiles.py:55`, `CLAUDE.md:90-91`, `AGENTS.md:84-85`, `specs/implement.md:24-26,133-134`); read before write (`hostfiles.py:56`, `CLAUDE.md:92-93`, `AGENTS.md:86-87`); smallest change (`hostfiles.py:52`, `CLAUDE.md:72-73`, `AGENTS.md:68-69`, `implement.md:23-24`); never push (`hostfiles.py:44,54`, `CLAUDE.md:88-89`, `implement.md:56-58`); never hand-edit the managed block (`hostfiles.py:53`, `CLAUDE.md:82-83`, `host-contract.md:272`); the set-membership grep rule verbatim in `host-authoring.md:55` and `specs/requisition_review.md:24`; the bug-evidence refusal sentence three times (`host-authoring.md:88-92`, `how-clutch-works.md:148-151,315-318`); unit-test discipline in `implement.md:60-68`, `review.md:37-39`, `retro.md:24`, `how-clutch-works.md:225-229`. (recurred in 0.3.0)
 
-The `CLAUDE.md` rule "a rule has one of two homes" is the fix; `docs-truth-sweep` removes the restatements in `docs/` and `clutch/docs/`, and `conduct-files-parity` settles the three rule files. Specs may restate a rule the model needs; documents may not.
+The `CLAUDE.md` rule "a rule has one of two homes" is the fix; `conduct-files-parity` aligned the conduct files; the remaining restatements need review. Specs may restate a rule the model needs; documents may not.
 
 ### 2.6 Tests
 
-- No `conftest.py` anywhere. 37 test modules double as fixture libraries (257 top-level cross-test imports); `tests/integration/serve_rig.py:21-24` imports from four test modules; `test_drain.py:30-33` imports and calls a test function from `test_merge.py` as its body; `test_merge.py:43` reads `test_stages.py` as text and slices its `CONFIG` literal out.
-- Fakes: 9 clock fakes, 18 exec fakes, 11 filesystem fakes, 10 journal fakes, 8 git fakes defined across tests; `clutch/seams.py` ships none (only `FakeLLM` in `clutch/llm.py:58`).
-- `until`/wait has three implementations with three semantics (`serve_rig.py:27`, `test_drain_admissions.py:15`, `tests/waiting.py:10`); `repo()` fixtures six times building the same shape; `git()` four times with four meanings; `reply()` seven times.
-- `CONFIG` literal at 12 sites (three byte-identical groups), `TICKET` at 7, `config.yaml` written in 63 files, git-init sequences in 22.
-- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`.
+- Several test modules double as fixture libraries; `test_drain.py:30-33` imports and calls a test function from `test_merge.py` as its body; `test_merge.py:43` reads `test_stages.py` as text and slices its `CONFIG` literal out. (recurred in 0.3.0)
+- Shared clock, exec, filesystem, journal and git fakes now live in `tests/fakes.py`; other local fakes still exist (for example `tests/integration/test_mergequeue.py`). (recurred in 0.3.0)
+- `tests/waiting.py` provides `until`; local fixture builders such as `repo()` and `git()` still appear in multiple test modules. (recurred in 0.3.0)
+- `CONFIG` and `TICKET` literals, configuration writes and git-init sequences appear across test modules. (recurred in 0.3.0)
+- The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`. (recurred in 0.3.0)
 
 Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 
@@ -125,49 +107,34 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 
 ### 3.1 Defects found by the audit
 
-| Defect | Location | Ticket |
-|---|---|---|
-| The former stage mapper had no production caller; only a deleted test called requisition review inside a stage, for which `requisition_review` was the correct label. `Driver._run` maps production stage failures, so no mapper covers stage operations. | formerly `stages.run_stages` | `provider-failure-single-mapper` (done) |
-| Raw provider captures overwritten across processes: `_seq` restarts at 0 per process, so `providers/<stem>/<provider>-0001` is rewritten by the next run of the same stem. 3,960 journaled calls, 2,298 captures with `events.jsonl` at `328d07d9`; reproduced by `tickets/provider-capture-overwrite/evidence/` | `providers.py:294,324-325` | `provider-capture-overwrite` (P0, authored 2026-11-14); cause fix `evidence-envelope` |
-| `served_review` swallows `ValueError, KeyError, TypeError, AttributeError, GitError` to `(None, None)`, nulling the receipt's provider and model on any defect | `stages.py:227-228` | `docs-truth-sweep` names it; fix in `merge-admission-single-owner` |
-| Coverage parse `except: pass`, so coverage is silently absent although §5.4 says it is recorded; base `results` read then discarded | `stages.py:1104-1105,1191-1194` | `host-check-selection-single-owner` |
-| `diagnosis.json` is not written when the worktree is gone, although §6.3 promises it | `runner.py:275-277` | `docs-truth-sweep` (document the truth) |
-| Operator paved roads print `uv run python -m clutch drain|confirm|reject` and other argv instead of a verb, in the drain report and in `status.py`, `doctor.py`, and `providers.py`; `Admission("refuse", "unknown box id")` carries `paved_road=""`; `retro.py:458` collapses the stage outcome into `ValueError`; seven `BoxError`s name the fault without a repair | `drain.py:182,186,710,721`; `status.py:149`; `retro.py:458`; `box.py:179-434` | `paved-roads-name-verbs` (done, `tickets/paved-roads-name-verbs/`) |
-| `watch` shows spec-frontmatter tier and effort for review, diagnose, author, triage, and requisition_review, but the code never passes spec tier for those surfaces | `observe.py:229-231`; `author.py:316`, `triage.py:311`, `stages.py:453,660,1508` | `watch-surface-tier-truth` |
-| `harvest.json` is written without the redactor; `diff_stat` and finding messages are not pre-scrubbed. `redact.py:7-9` checklist says "journal writer NOT YET WIRED" and "harvest serialization: not built" | `runner.py:443-483`; `redact.py:7-9` | `redaction-harvest-seam` (done) |
-| `argparse` help for `review` says "under the lock"; the verb takes no `Lockfile` | `__main__.py:258` vs 589-660 | `docs-truth-sweep-code-strings` (done) |
+The listed defects were fixed by the 0.3.0 tickets.
 
 ### 3.2 Seams bypassed
 
-`FileSystem` now has `mkdir` and `remove` (row 14, `fs-seam-mkdir-remove`); before that change, callers bypassed the seam: `enginelog.py:29-32,39` raw `mkdir`/`open("ab")`/`Path.replace`; `journal.py:149` constructs `LocalFileSystem()` itself and `176-191` uses raw `os.open`/`os.write`; `stages.py:486,496` raw `mkdir`, `519,867,1068,1186,1446-1447` raw `unlink`; `driver.py:189` `fs or LocalFileSystem()` default in engine code; `scheduler.py:80` reaches into `journal.dir.parent`, `journal._fs`, `journal._clock` to write `queue.json`. Ticket: `fs-seam-mkdir-remove`, which also makes `write_queue` take the seams it needs.
+`fs-seam-mkdir-remove` added the missing filesystem operations and moved the listed callers onto the seam.
 
 ### 3.3 Deferred items whose trigger has fired
 
 | §18.2 item | Trigger | Fired | Decision |
 |---|---|---|---|
-| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.3.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.4.0 |
-| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.6.0 is conditional on it |
-| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.5.0) covers triage records and makes this the first lens to score |
-| Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.4.0, declared in `docs/parallel-tickets-plan.md` |
-| Conflict-only micro-rework | first chronically re-resolved conflict in `merge_conflict_facts` | 13 events exist; nobody has read them | `merge-model-resolve` starts by reading them (its plan's A0) |
+| Mechanical scope-fence closure analyzer | first fence-gap escape `requisition_review` misses | twice: `box-000324` (three rejects), recurrence in `tickets/retro/000046.md` proposal 2 (`test_menu_verb_parity.py:185`) | Decided (section 6, decision 1): 0.3.0 widens the prompt rule to in-code registries (`fence-closure-registries`); a third escape schedules a spike for the mechanical analyzer in 0.4.0 (recurred in 0.3.0) |
+| DuckDB analytics | first projection measured too slow as a fold | yes, 157 of 164 seconds (`tickets/journal-incremental-read/evidence/`), before the incremental reader merged | re-measure; 0.6.0 is conditional on it (recurred in 0.3.0) |
+| Triage-dedup real-model eval | daemon-era entry | yes, serve has run since the daemon era | not scheduled; `training-eval` (0.5.0) covers triage records and makes this the first lens to score (recurred in 0.3.0) |
+| Concurrent worker pool, dispatch overlap skip | measured starvation post-cutover | not fired; owner chose to bring it back for contention, not starvation | 0.4.0, declared in `docs/parallel-tickets-plan.md` (recurred in 0.3.0) |
+| Conflict-only micro-rework | first chronically re-resolved conflict in `merge_conflict_facts` | 13 events exist; nobody has read them | `merge-model-resolve` starts by reading them (its plan's A0) (recurred in 0.3.0) |
 
 ### 3.4 Never built, no ticket
 
-- P8 `rules-render`: `clutch core --check` and a start-command file. `doctor` has a `core` drift row (`doctor.py:67-73`); `serve`, `drain`, `run` refuse on stale blocks. Decided 2026-11-13: dropped (section 6, decision 2).
-- `clutch/docs/host-contract.md` "Onboarding a host" and "Operating facts" sections (P8). Its two sections still titled "Pending report-inbox contract" and "Pending cutover contract" describe shipped code. `docs-truth-sweep` retitles them; the onboarding checklist is `training-docs`' sibling, `host-onboarding-doc`, scheduled in 0.3.0.
-- `review.surfaces`: refused at config load "until a host that uses them onboards". Stays refused. `docs/document-agent-plan.md` Open decision 2 is the first proposal that would need host-defined prompts and it routes them as data instead.
-- `kind: api` provider: refused at `config.py:460-465`; stays deferred.
+- P8 `rules-render`: `clutch core --check` and a start-command file. `doctor` has a `core` drift row (`doctor.py:67-73`); `serve`, `drain`, `run` refuse on stale blocks. Decided 2026-11-13: dropped (section 6, decision 2). (recurred in 0.3.0)
+- `kind: api` provider: refused at `config.py:460-465`; stays deferred. (recurred in 0.3.0)
 
 ### 3.5 Dev surface and tests
 
-- At the audit, five verbs had no `./dev.py` subcommand: `covgate`, `doctor`, `migrate-config`, `retro`, `snapshot` (`pause`, `resume` also absent). `CLAUDE.md` §B now directs missing engine tasks to new `clutch` verbs and missing build tasks to new `dev.py` subcommands.
-- `./dev.py test` runs `uv run pytest -q` with `addopts = "-n auto"`; it never loads `clutch.testguard`, so the unit IO guard and the 60-second budget apply only inside Check. `how-clutch-works.md:79` says otherwise.
-- `tests/regress_*.py` (45 files) run only as bug tickets' `## Regression` argv; 10 have no `__main__` guard and execute at import. `tests/vscode_task_identity.js` is referenced by one of them and no test.
-- `test-gate.toml` lists 57 of 59 modules; `clutch/graph.py` has no floor; eight modules sit at floor 0 (`audit`, `covmap`, `doctor`, `observe` at 856 lines, `seams`, `stats`, `thresh`, `watchdog`).
-- Lint and the authoring guide disagree in both directions. Guide rules not linted: spec version "next minor above main" with a fenced pin (`host-authoring.md:57-58`), fence the document a behavior change affects (55-57), criterion names the wrong result it rules out (63-65). Linted rules the guide does not state: banned adjectives (`tickets.py:78`), no `clutch/specs/*.md` in `## Context` (377-378), `stuck` exceeds `expected` (462-463), `## On-demand` under the fence (422-423), `## Depends on` accepts `none` (342), reserved stems (28), `## Regression` refused on a non-bug (447), the stuck ceiling (`__main__.py:718`).
-- Extension: `order` argv is assembled in JavaScript (`vscode-clutchwork/extension.js:52,56,58`) while `confirm`/`reject`/`drain` argv come from the snapshot; `review`, `lint`, `run`, `triage`, `dismiss`, `serve`, `stop`, `prompt <kind>` are JavaScript literals (334-371); `clutchRoot()` (9-13) picks the workspace folder by probing the filesystem. `CLAUDE.md` says argv and policy come from the snapshot.
-- Config declared and read nowhere: `caps.poison` (`config.py:182`), `review.trigger_map` (151; pinned by four test files), `ReviewSurface` and `rules_doc` (129-133, unreachable). Spec frontmatter `consumes`, `emits`, `gates` (`specs/__init__.py:76-80`) is validated and read by no stage; `tier:` is honored only by retro (`retro.py:451`). `requisition_review.md:54-58` `context` always receives the literal `"included in render"` (`requisition.py:218`).
-- No engine caller: `heartbeat.is_fresh`, `Timers.wait_next`, `Git.branch`, `Git.init`, the `effects.effect` decorator, `gates.lint_gate`, `providers.CliAdapter.parsed_failure`, `requisition.RequisitionGate`, `requisition.base_render_chars`, `observe.uncommitted_tickets` (20+ tests monkeypatch it), `policy.baseline_identity`, `audit.audit`, `watchdog.Detector.watch`. Untested production paths: `mergequeue.retained_ticket`, `stages.served_review`, `serve.Responsiveness`, `runner.PreparedDispatch`.
+- Engine verbs such as `covgate`, `doctor`, `retro`, and `snapshot` have no `./dev.py` subcommand; `dev-py-dev-tasks-only` leaves engine tasks to `clutch` verbs. (recurred in 0.3.0)
+- `tests/vscode_task_identity.js` is referenced by the regression script `tests/regress_vscode_task_identity.py`, not a regular test. (recurred in 0.3.0)
+- `vscode-clutchwork/extension.js::clutchRoot` chooses the workspace by probing for `tickets/`; `extension-argv-from-snapshot` moved verb argv to the snapshot but did not change this lookup. (recurred in 0.3.0)
+- Spec frontmatter `tier` is used by retro and acceptance (`clutch/retro.py`, `clutch/acceptance.py`), while other stage calls do not use it. (recurred in 0.3.0)
+- No engine caller: `heartbeat.is_fresh`, `Timers.wait_next`, `Git.branch`, `Git.init`, the `effects.effect` decorator, `gates.lint_gate`, `providers.CliAdapter.parsed_failure`, `requisition.RequisitionGate`, `requisition.base_render_chars`, `observe.uncommitted_tickets` (20+ tests monkeypatch it), `policy.baseline_identity`, `audit.audit`, `watchdog.Detector.watch`. Untested production paths: `mergequeue.retained_ticket`, `serve.Responsiveness`, `runner.PreparedDispatch`. (recurred in 0.3.0)
 
 Tickets: `dev-surface-completeness`, `regress-scripts-guarded`, `test-gate-floors`, `lint-guide-parity`, `extension-argv-from-snapshot`, `dead-config-and-spec-fields`.
 
@@ -177,61 +144,15 @@ Every row is a claim the owning document makes that the code contradicts. `docs-
 
 ### 4.1 `docs/how-clutch-works.md`
 
-| Line | Claim | Code | Truth |
-|---|---|---|---|
-| 79 | unit tests "run under `clutch.testguard`" via `./dev.py test` | `dev.py:62`, `pyproject.toml:30`, no conftest | only the Check-gate argv loads the plugin (`config.yaml:36`); code fix in `dev-surface-completeness` |
-| 131 | `draft` "awaits `confirm`" | `tickets.py:692-695` | intake stamps every new hand-written ticket `confirmed`; only Author drafts wait |
-| 177-178 | lift "refuses symlinks" | `stages.py:332-342` | symlinks are skipped silently; only over-size raises |
-| 244 | Check "runs configured autofix commands" | `stages.py:1407` | only when Implement replied `ok` and `review.autofix` is nonempty |
-| 373 | lift kind `harvest` | `runner.py:371` | also `harvest-rework` |
-| 388-389 | worktree gone: `diagnosis.json` is lifted | `runner.py:275-277` | nothing is written or lifted; only the journal signal |
-| 452-453, 485-488 | paved roads say `clutch confirm|reject` | `drain.py:182,186,710,721` | drain prints `uv run python -m clutch ...`; code fix in `paved-roads-name-verbs` (done, `tickets/paved-roads-name-verbs/`) |
-| 463-464 | Reconcile reaps any stem still `running` | `reconcile.py:22,38` | stems with a HELD regate receipt at the current attempt and intents under `llm/review-<stem>/` are excluded |
-| 475-477 | drain loop steps omit Box intake | `drain.py:396` | drain calls `triage.report_intake` every iteration |
-| 528-530 | queue skip rule | `mergequeue.py:313` | also requires no HELD receipt |
-| 581 | preflight at run/drain/serve/triage | `__main__.py:618,696-697` | also `review` and `retro` with a report |
-| 592-593 | "a call waiting over 60s spills" | `thresh.py:167,177` | spill is decided up front from the projected wait |
-| 679-680 | prune candidate: 25+ evaluations and no catch | `scorecard.py:94` | also requires zero escapes |
-| 694 | one `retro_check` phase | `serve.py:353`, `drain.py:613` | two outcome vocabularies; one (`clutch/retro.py::RetroCheckOutcome`) since `docs-truth-sweep-code-strings` (done) |
-| 708 | `signal` is "a closed list" | `journal.py:94` | no registry; writers use `signal` or `kind` as the body key |
-| 72 | `reject <stem> [--yes]` | `__main__.py:277-281` | also `--extension` |
-| 10.1 table | state_dir files | `__main__.py:342,370`, `covmap.py:32`, `rework.py:122`, `box.py:268` | omits `drain.out`, `coverage-map.json`, `rework/<stem>/<attempt>/<call>/`, `spools/probe/`, `box.seq/`, `worktrees/.base/`, `.regression-base/`; rotation bounds 16 MiB x 3 and 64 MiB / 24 h unstated |
-| 10.2 | event types | `journal.py:32` | `checkpoint` type exists, never emitted; about 30 signal kinds unlisted |
-| 3.3:188 | engine commits on main | `retro.py:298`, `stages.py:1393` | omits `clutch(decisions): <id>`, `clutch: retro NNNNNN`, `undo refused rework`, branch `autofix` |
-| 11 | config areas | `config.py:83-91,226,75` | `providers[].package` (required for every CLI) unmentioned; `routing_default_tier` and `quota_window_minutes` defaults unstated |
-| 54 | `probe` row | `__main__.py:391` | exits 1 when any probe fails |
-| 61 | `drain [--detach]` | `__main__.py:284-285` | also `--parked STEM`, `--deadline ISO` (set by the self-upgrade re-exec) |
+The listed claims were corrected by `docs-truth-sweep` and the associated code tickets.
 
 ### 4.2 Other documents
 
-| Document | Claim | Truth |
-|---|---|---|
-| `README.md:31` | runs that exhaust attempt caps file to the Suggestion Box | they route to the Reject queue (`runner.py:390-393`, `drain.py:687`); `how-clutch-works.md:416,432` are right |
-| `clutch/docs/host-running.md:19` | serve "accepts [retro] but does not yet run it" | `serve.py:339-355` runs it |
-| `clutch/docs/host-contract.md:6-7,383,422,442` | "Pending report-inbox contract", "Pending cutover contract", "adds no report consumer" | `triage.py:358-372`, `inbox.py:120` ship the consumer |
-| `host-contract.md:45,330` | `trigger_map` is "engine gate codes only" | `config.py:151` validates nothing; it is read by nothing |
-| `host-contract.md:299` | "Put ordering in Depends on and priority" | `## Runs before` exists for ordering; `Depends on` is merged-code only (`hostfiles.py:22`, `host-authoring.md:33-38`) |
-| `host-authoring.md:15-21` | lint's checks | omits the `drain.max_ticket_minutes` stuck ceiling (`__main__.py:718-721,759`) |
-| CORE_TEMPLATE (`hostfiles.py:20`) | `clutch docs` prints "(authoring, running, config contract)" | four guides including qwen (`__main__.py:312`); dropping the parenthetical frees 36 of the template's 352 spare bytes |
-| `CLAUDE.md` vs `AGENTS.md` | "a rule add/change/remove touches both files" | `AGENTS.md` lacks "Lean ticket frontmatter" (`CLAUDE.md:94-95`), "The plan is the seed" (86-87), "Phase order" (107-108), and the "compress it to one line" sentence (57) |
-| `clutch/docs/host-authoring.md:12,16,25`, `host-qwen.md:66`, `clutch/specs/ask/*.md` | name `./dev.py` | engine-owned files carry this repo's dev surface, which no host has (`box-000440`) |
-| `clutch/mergequeue.py:1`, `clutch/heartbeat.py:1` | "Dormant" | serve routes every merge through the queue (`serve.py:129`); serve refreshes the heartbeat every loop (`serve.py:203-209`); both docstrings fixed by `docs-truth-sweep-code-strings` (done) |
-| `clutch/redact.py:7-9` | "journal writer NOT YET WIRED", "harvest serialization: not built" | fixed by `redaction-harvest-seam` (done): `clutch/runner.py::harvest` scrubs `harvest.json` at the write, and the checklist names every writer |
-| `vscode-clutchwork` settings | `how-clutch-works.md:116-119` names `clutch.playAction`, `clutch.statsWindow` | `clutch.command` (`package.json:73-83`) is named only in `README.md:77` |
+The listed claims were corrected by `docs-truth-sweep` and the associated tickets.
 
-### 4.3 Plan documents (fixed in this revision)
+### 4.3 Plan documents
 
-| Plan | Was | Now |
-|---|---|---|
-| training-data | `docs/host-contract.md` | `clutch/docs/host-contract.md` |
-| training-data | 2,301 capture directories | 2,453 (directories holding `events.jsonl` at `0895b5d4`) |
-| training-data, evidence-trail | two stores (`training/`, `evidence/`), two layouts, two retention stories, `spools/providers/` both kept and replaced | one store, section 5 decision 1 |
-| parallel-tickets | `tests/test_stages.py` | `tests/integration/test_stages.py` (tickets fenced the old path) |
-| gemini-graphics | `__main__.py:771`; "the watchdog's unit test file" | the kind check in `_new` (line 791 at `80b76d5d`); `tests/integration/test_watchdog.py`, `test_watchdog_activation.py` |
-| journal-sql | measurement presented as current | `journal-incremental-read` merged at `f790cf71`; trigger must be re-measured |
-| upstream-issue | status cites `ed48cbc9` (the Gemini plan's commit) | written 2026-11-13; revised at `80b76d5d` |
-| document-agent | `docs:` config block, `specs/doc/review.md`, `writes` "flag" | `documents:`, `specs/doc/lens.md`, `writes` is derived from `WRITING_SURFACES` |
-| all seven | different status forms, ticket-table columns, "Deferred" vs "Open" decisions, no priorities in three | one shape, section 7 |
+The listed plan-document drift was fixed in the previous audit revision.
 
 ## 5. Cross-plan decisions
 
@@ -411,6 +332,9 @@ uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner m
 | 54 | `image-candidates-select` | gemini plan B6 | feature | P2 | `visual-review-surface` | | Layer 3: candidates in Implement, ranking, the select commit, `visual_undecided` park, its release (Gemini plan open decision 4). |
 | 55 | `visual-review-baseline` | gemini plan B7 | feature | P2 | `visual-review-surface` | | `eval/visual/` fixtures labelled by an AI label panel of a model family other than the judge’s (§5, decision 13), `./dev.py visual-baseline`, the `visual_baseline` GO gate at 0.85 or above agreement with the panel’s labels. |
 | (56) | `api-provider-client` | gemini plan (conditional) | feature | P2 | `gemini-provider` | `image-candidates-select` | Only if A0 fact 7 shows the CLI cannot generate images headlessly: the deferred `kind: api` client, scoped to image models. Row number is provisional. |
+| 122 | `release-audit-040` | roadmap | chore | P1 | | | Re-run the six passes of sections 2-4 at the base commit: remove fixed items, mark recurring ones "recurred in 0.4.0", add to the next release's gate block a command for each section 1 ship clause that merged code now records, and add the same audit row, with its own stem, as the last row of the next release's table so every release ends with one. |
+
+The ship clauses for ten parallel merges without a conflict-rerun cap hit, a generated graphics ticket merged through the select commit, and `visual_baseline` GO remain unchecked: no merged verb records those conditions.
 
 ```gate
 uv run clutch roadmap merged --release 0.4.0
@@ -499,6 +423,6 @@ uv run clutch roadmap accept 0.7.0
 
 ## 9. Keeping this document true
 
-- A ticket authored from a row links its stem in that row; a merged row is struck through, not deleted, until the release ships; a shipped release's rows move to a "Shipped" section at the end. Once `roadmap-author` lands, the driver makes these edits as ticket-plane commits; until then the agent that authors the row does.
+- A ticket authored from a row links its stem in that row; merged rows stay struck in their release's table. Once `roadmap-author` lands, the driver makes these edits as ticket-plane commits; until then the agent that authors the row does.
 - The audit (sections 2-4) is re-run before each minor release with the same six passes; rows that are fixed are removed, rows that recur are marked with the release that was supposed to fix them.
 - Shared budgets (section 5, decision 5) and shared files (decision 8) are updated whenever a plan adds a ticket that touches them.
