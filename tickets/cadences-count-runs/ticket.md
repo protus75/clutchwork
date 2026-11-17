@@ -11,71 +11,65 @@ agent_effort: medium
 none
 
 ## Context
-- clutch/checkpoint.py
+- clutch/retro.py::Window
 - clutch/retro.py::select_trigger
 - clutch/config.py::RetroDays
-- clutch/daemon.py
+- clutch/config.py::Retro
+- clutch/config.py::_check_references
+- clutch/stats.py::SETTLED
 
 ## On-demand
 - clutch/docs/host-contract.md
 - docs/how-clutch-works.md
-- tests/integration/test_checkpoint.py
 - tests/integration/test_retro.py
 - tests/integration/test_config.py
 - tests/integration/test_drain.py
 
 ## Goal / Why
-Decision 19 counts every cadence in runs, not wall-clock time. Two cadences still read the clock. The retro's `elapsed` trigger fires when the window is `retro.days.every` (7) days old. The checkpoint push fires when `CHECKPOINT_INTERVAL` (24 hours) has passed. After this change both count settled tickets. A settled ticket is one whose state transition goes to `merged`, `already_satisfied` or `rejected`, counted once per stem. Neither cadence reads the clock or arms a timer. A slow day no longer triggers a retro or a push on its own, and a run of rejected or already-satisfied tickets that never merge still triggers one. The existing merge counts (`retro.merges.every`, `CHECKPOINT_MERGES`) are unchanged.
+Decision 19 (`docs/roadmap.md` section 6) counts every cadence in runs, never wall-clock time. The retro's `elapsed` trigger still reads the clock: `clutch/retro.py::select_trigger` returns `elapsed` when the window is `retro.days.every` (7) days old, whatever happened in it. On 2026-11-03 it started retro 000014 (`tickets/retro/000014.md`) on a 24-day-old window that held no events: 0 merges and 0 spikes, and a forced retro needs a merge, so only `elapsed` could select it. It spent one model call (41,734 input tokens, $0.13) that returned no proposals, and committed an empty report. After this change the third retro trigger counts settled tickets: the distinct stems in the window whose state transition goes to `merged`, `already_satisfied` or `rejected`, the set `clutch/stats.py::SETTLED` already names. It fires at `retro.settled.every` (default 40), and retro selection reads no clock. The checkpoint push, the other clock cadence of roadmap row 100, is the sibling ticket `checkpoint-counts-settled`.
 
 ## Scope in / Scope out
 Scope in:
-- `clutch/config.py`: rename class `RetroDays` to `RetroSettled`, and the `Retro.days` field to `settled`, in place with no alias. `RetroSettled` has `enabled: bool = True` and `every: Count = 40`. `Retro.days` is removed, so a config that still says `days:` is refused by the existing unknown-key check. `SCHEMA_VERSION` does not change. Line 441's check of `retro.days.enabled` becomes `retro.settled.enabled`.
-- `clutch/retro.py`: `select_trigger` drops its `now` parameter, because nothing else in it reads the clock. The `elapsed` branch becomes a `settled` branch. It returns the trigger name `settled` when the number of distinct stems in `window.events` with a state transition `to` in `{merged, already_satisfied, rejected}` is at least `settings.settled.every`. It still sits after `merges` and before spikes. Drop the `timedelta` import if it becomes unused. The `Window.started_at` field stays, because `window_start` is still reported.
-- `clutch/serve.py` and `tests/integration/test_drain.py`: the call sites of `select_trigger` drop the `now` argument. In `clutch/serve.py` the `checkpoint_push` call (around line 535) also drops `timers=` and `clock=`. Nothing else changes in either file.
-- `clutch/checkpoint.py`: remove `CHECKPOINT_INTERVAL`, the `timers` and `clock` constructor parameters, and every `self.timers` and deadline use in `poll`. Add `CHECKPOINT_SETTLED = 10`. `poll` pushes when merges since the last completed push are at least `CHECKPOINT_MERGES`, or settled tickets since then are at least `CHECKPOINT_SETTLED`. Settled tickets are counted after the last completed push event in journal order, or over the whole journal when no push has completed. The counting is a pure module-level function `settled_since_last_push(events)` over an in-memory list of journal events, which `poll` calls; it is the seam through which a unit test runs the new lines with fakes. The push, failure and history-validation code and the effect result shape `{"merged": n}` are untouched.
-- `clutch/daemon.py`: the `Checkpoint(...)` construction drops `timers=` and `clock=`. `daemon.checkpoint_push` drops its `timers` and `clock` parameters, which only forwarded to Checkpoint, and drops the `Timers` import if it becomes unused. Nothing else changes there. The `checkpoint_push` call sites in `tests/integration/test_checkpoint.py` (lines 71, 482 and 570) drop the same arguments.
-- `clutch/docs/host-contract.md`: update only the retro defaults lines (the two `days: {enabled: true, every: 7}` entries), the prose naming the `days` block and its threshold, and the config-fields `RetroDays:` row at lines 227-229, which is renamed `RetroSettled:` with `defaults: {enabled: true, every: 40}` so it matches the config class name. Each of these becomes `settled` with `every: 40`.
-- `docs/how-clutch-works.md`: update only two places. The Checkpoint push bullet in section 7.4 reads "after 5 merges or 10 settled tickets". The retro trigger sentence near line 696, which names `retro.days` and the 7-day elapsed trigger, says the retro fires after `retro.settled.every` (40) settled tickets.
-- Tests: pin the new behavior in the new file `tests/unit/test_cadence_counts.py`. Update the existing assertions in `tests/integration/test_checkpoint.py`, `tests/integration/test_retro.py` and `tests/integration/test_config.py` that the rename and the removal force.
+- `clutch/config.py`: rename class `RetroDays` to `RetroSettled` and the `Retro.days` field to `settled`, in place with no alias. `RetroSettled` has `enabled: bool = True` and `every: Count = 40`. A config that still says `days:` is refused by the existing unknown-key check. `SCHEMA_VERSION` does not change. In `_check_references`, `retro.days.enabled` becomes `retro.settled.enabled`. Nothing else changes in this file.
+- `clutch/retro.py`: `select_trigger` drops its `now` parameter. Its `elapsed` branch becomes a `settled` branch in the same place (after `merges`, before spikes). It returns `"settled"` when `settings.settled.enabled` and the number of distinct non-null `ticket` stems among `window.events` with a `STATE_TRANSITION` whose `to` is in `SETTLED` is at least `settings.settled.every`. Import `SETTLED` from `clutch.stats`; do not write the set again. The call in `Retro.__call__` drops `c.clock()`. Drop the `timedelta` import. `Window.started_at` and the report's `window_start` stay. Nothing else changes in this file.
+- `clutch/serve.py`: the `select_trigger` call in `Serve.check_retro` drops `c.clock()`. Nothing else changes in this file.
+- `tests/integration/test_drain.py`: the `select_trigger` call near line 1112 drops `checkout.clock()`. Nothing else changes in this file.
+- `tests/integration/test_retro.py`: every `select_trigger` call drops its clock argument. The `elapsed` case of the parametrized trigger test becomes a `settled` case that journals settled transitions instead of advancing the clock. `test_custom_trigger_settings_and_disabled_forcing` and `test_disabled_trigger_never_fires` use `settled` settings and settled counts instead of `days` settings and window ages.
+- `tests/integration/test_config.py`: `test_retro_yaml_values` and `test_retro_contradictory_settings_refused` use `settled` where they use `days`, and the latter also shows `retro: {days: {every: 2}}` refused as an unknown key, as it already does for `every_merges`.
+- `clutch/docs/host-contract.md`: in the `config-fields` block, the two retro defaults entries `days: {enabled: true, every: 7}` become `settled: {enabled: true, every: 40}`, and the `RetroDays:` row becomes `RetroSettled:` with `defaults: {enabled: true, every: 40}`. The prose sentence naming the `merges`, `days`, and `spikes` blocks names `settled` instead of `days`.
+- `docs/how-clutch-works.md`: only two places. In section 9.5 the default thresholds read "25 merges, 40 settled tickets, or 5 events of one spike kind", a settled ticket is defined as a stem whose state goes to merged, already satisfied or rejected, counted once, and `retro.days` and `days.every` become `retro.settled` and `settled.every`. In the section 11 config table the `retro` row names `settled` instead of `days`.
+- New test `tests/unit/test_retro_settled_trigger.py` pins the new branch with in-memory events and no journal.
 
-Scope out: `CHECKPOINT_MERGES`, `retro.merges`, `retro.spikes`, the journal timer machinery in `clutch/timers.py`, any other cadence, and the config schema version. No config migration is written, because the unknown-key refusal already names the stale `days` key.
-
-Reason the budget exceeds 30m: the two cadences share one decision and one doc change, and splitting would leave a half-renamed config on main.
+Scope out: the checkpoint push and `clutch/checkpoint.py` (ticket `checkpoint-counts-settled`), `retro.merges`, `retro.spikes`, `clutch/timers.py`, the config schema version, and any config migration; the unknown-key refusal already names the stale `retro.days` key, and no host config in this repo sets it.
 
 ## Scope fence
 - clutch/config.py
 - clutch/retro.py
 - clutch/serve.py
-- clutch/checkpoint.py
-- clutch/daemon.py
 - clutch/docs/host-contract.md
 - docs/how-clutch-works.md
-- tests/unit/test_cadence_counts.py
-- tests/integration/test_checkpoint.py
+- tests/unit/test_retro_settled_trigger.py
 - tests/integration/test_retro.py
 - tests/integration/test_config.py
 - tests/integration/test_drain.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_cadence_counts.py` shows `select_trigger` returning `"settled"` for a window holding 40 settled transitions across 40 distinct stems, and `None`, not `"settled"`, for 39.
-2. The same unit test shows that a stem with two `merged` transitions counts once, and that `rejected` and `already_satisfied` transitions each count toward the 40.
-3. The same unit test shows that a window whose `started_at` is 365 days old with 0 settled tickets returns `None`, not `"elapsed"`. Once a window holds 40 settled tickets and `settled.enabled` is false, it returns `None`.
-4. `./dev.py test tests/integration/test_config.py` shows a config containing `retro: {days: {every: 2}}` refused as an unknown key, not accepted. It also shows `retro: {settled: {every: 2}}` parsing to `settled.every == 2`, and the default `retro.settled.every == 40`.
-5. `./dev.py test tests/integration/test_checkpoint.py` shows a poll with 10 settled tickets and 0 merges since the last push performing the push. It shows a poll with 9 settled tickets, fewer than 5 merges, and a clock advanced by 30 days performing no push, not a push.
-6. `./dev.py test tests/integration/test_checkpoint.py` shows that after a completed push, the next window counts only settled tickets journaled after that push's completion event. Settled tickets from before it do not count.
-7. `./dev.py test tests/unit/test_cadence_counts.py` shows `settled_since_last_push` on in-memory event lists returning 10 for 10 settled tickets and 9, not 10, for 9; counting only events after a completed-push event when one exists; and counting a stem with two settled transitions once. This runs the new `clutch/checkpoint.py` lines with fakes and no real journal.
-8. `grep -rn "CHECKPOINT_INTERVAL\|retro.days\|RetroDays" clutch tests docs/how-clutch-works.md` prints nothing, and `grep -n "timers" clutch/checkpoint.py` prints nothing.
-9. `grep -n "days" clutch/docs/host-contract.md` prints no line naming a retro `days` block, and `grep -n "24 hours" docs/how-clutch-works.md` prints no line about the checkpoint push.
+1. `./dev.py test tests/unit/test_retro_settled_trigger.py` shows `select_trigger` with default settings and `merged_count` 0 returning `"settled"` for a window holding `rejected` or `already_satisfied` transitions on 40 distinct stems, and `None`, not `"settled"`, for 39.
+2. The same test shows that `merged`, `already_satisfied` and `rejected` each count; that a second settled transition of a stem already counted does not raise 39 stems to 40 (`None`, not `"settled"`); and that 40 stems whose transitions go to `abandoned` or `gate_failed` return `None`, not `"settled"`.
+3. The same test shows that `inspect.signature(select_trigger)` has no `now` parameter, that a window whose `started_at` is 365 days before its last event and which holds no settled stem returns `None`, not `"elapsed"`, and that with `settled.enabled` false a window of 40 settled stems returns `None`.
+4. `./dev.py test tests/integration/test_config.py` shows `retro: {days: {every: 2}}` refused with key `retro.days` and `unknown key` in the message, not accepted; `retro: {settled: {every: 2}}` parsing to `settled.every == 2`; the default `retro.settled.every == 40`; and `retro: {merges: {enabled: false}, settled: {enabled: false}, spikes: {enabled: false}}` refused with key `retro.enabled`.
+5. `./dev.py test tests/integration/test_retro.py` shows the parametrized trigger test's `settled` case returning `None` at 39 settled stems and `"settled"` at 40, with no clock advance.
+6. `grep -rn --include=*.py --include=*.md "RetroDays\|retro\.days\|days\.every" clutch docs/how-clutch-works.md` prints nothing, `grep -rn --include=*.py "RetroDays" tests` prints nothing, and `grep -n "timedelta\|\"elapsed\"" clutch/retro.py` prints nothing.
+7. `grep -n "days" clutch/docs/host-contract.md` prints nothing, and `grep -n "7 days" docs/how-clutch-works.md` prints nothing.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_cadence_counts.py tests/integration/test_checkpoint.py tests/integration/test_retro.py tests/integration/test_config.py tests/integration/test_drain.py tests/integration/test_serve_lifecycle.py tests/integration/test_host_contract.py
+./dev.py test tests/unit/test_retro_settled_trigger.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/integration/test_retro.py tests/integration/test_config.py tests/integration/test_drain.py tests/integration/test_host_contract.py
 ```
 
 ## Definition of rejected
-A branch is rejected if either cadence still reads the clock or arms a timer. It is also rejected if `RetroDays`, `retro.days` or `CHECKPOINT_INTERVAL` survive under an alias or a second code path, if a config migration or schema bump is added, or if the settled count includes states other than `merged`, `already_satisfied` and `rejected`.
+A branch is rejected if retro selection still reads the clock or takes a `now` argument, if `RetroDays` or `retro.days` survive under an alias or a second code path, if a config migration or schema bump is added, if the settled states are written out again instead of imported from `clutch.stats.SETTLED`, or if it changes `clutch/checkpoint.py`.
 
 ## Time budget
-- expected: 45m
-- stuck: 90m
-- reason: the two cadences share Decision 19 and one doc change, and splitting would leave a half-renamed config on main.
+- expected: 30m
+- stuck: 60m
