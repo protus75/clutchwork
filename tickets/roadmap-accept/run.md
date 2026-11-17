@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The failing kill-cleanup test passed both on the base commit and in one isolated candidate rerun; two earlier candidate full-suite runs also passed. The test imports the changed CLI module, so the ticket's exception for an unrelated intermittent failure does not apply.
+All 127 mutation checks caught the intended wrong implementations; coverage was 99.58% for acceptance.py and 98.53% for roadmap.py. Driver.run was retained over a simpler direct model call because it owns retries and read-only routing.
 
 ## Dead ends
 
-The base-commit comparison did not reproduce the failure, so it could not establish the failure as base-red.
+none
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.15
 
 ## Predicted vs actual
 
-none
+130 minutes expected; approximately 13 minutes actual.
 
