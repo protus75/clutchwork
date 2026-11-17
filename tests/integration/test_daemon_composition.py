@@ -35,6 +35,14 @@ from tests.integration.test_scheduler import Time, import_closure, text, turn
 
 
 class ScriptFS:
+    def read_bytes(self, path):
+        if path not in self.files:
+            raise FileNotFoundError(path)
+        return self.files[path]
+
+    def size(self, path):
+        return len(self.read_bytes(path))
+
     def mkdir(self, path):
         pass
 
@@ -69,6 +77,8 @@ class ScriptExec:
         self.refuse_probe = False
 
     async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+        if argv[0] == "git":
+            return 0, "a" * 40 + "\n", ""
         prompt = self.fs.files[stdin_path].decode() if stdin_path else None
         self.calls.append((list(argv), cwd, dict(env), prompt, timeout))
         if self.hook is not None:

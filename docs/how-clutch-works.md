@@ -645,7 +645,7 @@ times; each call is spooled under `state_dir/spools/`.
 - Spend is the sum of each call's journaled cost (the stream's reported USD, else the provider's
   `est_cost_per_call_usd`). `status` prints the total.
 - Configured secret values are replaced with `[REDACTED:NAME]` in spools, the engine log,
-  provider captures, notifications, retro reports, and harvests (`attempts/<n>/harvest.json`). The journal itself is not scrubbed; model
+  the evidence store's blobs, notifications, retro reports, and harvests (`attempts/<n>/harvest.json`). The journal itself is not scrubbed; model
   results are scrubbed before they are journaled.
 
 ## 9. Suggestion Box
@@ -713,12 +713,13 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | Path | Holds |
 |---|---|
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
-| `engine.log` | Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
+| `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
 | `dist/` | Wheel and sdist last built by `clutch publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `drain --detach`. |
 | `coverage-map.json` | Written by `covmap` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
-| `spools/` | Per-attempt prompts, outputs, and command output; `spools/providers/` holds raw CLI captures and `spools/probe/` holds probe captures. A stem’s capture numbers continue from the highest already on disk, so a later process does not overwrite an earlier capture. |
+| `spools/` | Per-attempt prompts, outputs, and command output. |
+| `evidence/` | Call records in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |

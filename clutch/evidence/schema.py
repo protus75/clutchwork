@@ -137,7 +137,7 @@ class End(Record):
     id: str
     exit: Exit
     clock: EndClock
-    rusage: Rusage
+    rusage: Rusage | None
     raw: Raw
     repo: EndRepo | None
     model: EndModel

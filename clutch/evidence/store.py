@@ -7,7 +7,7 @@ from collections import Counter
 from collections.abc import Callable
 from compression import zstd
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from pydantic import BaseModel
 
@@ -106,6 +106,23 @@ class EvidenceStore:
         data["schema"] = "clutch.evidence.call/1.0"
         model = {"start": Start, "end": End}[kind]
         return model.model_validate(_ignore_unknown(model, data))
+
+    def latest_stdout(self, prefix: str) -> str:
+        calls = self.root / "calls"
+        records = []
+        for entry in self.fs.entries(calls):
+            key = unquote(entry)
+            if key.startswith(prefix) and "end.json" in self.fs.entries(calls / entry):
+                record = self.read_record(key, "end")
+                if record is not SKIP:
+                    records.append((record.clock.wall_end, entry, record))
+        if not records:
+            return ""
+        record = max(records, key=lambda item: item[:2])[2]
+        try:
+            return self.get_blob(record.raw.stdout).decode(errors="replace")
+        except FileNotFoundError:
+            return ""
 
     def prune(self, max_bytes: int) -> None:
         blobs = self.root / "blobs"

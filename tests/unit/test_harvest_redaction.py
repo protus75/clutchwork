@@ -18,7 +18,7 @@ def test_harvest_json_carries_no_configured_secret(monkeypatch):
         repo=root / "repo",
         worktree=lambda stem: root / "worktrees" / stem,
         git=SimpleNamespace(diff_stat=AsyncMock(return_value=f" clutch/{SECRET}.py | 1 +")),
-        fs=SimpleNamespace(write=lambda path, data: writes.append((path, data))),
+        fs=SimpleNamespace(entries=lambda path: [], read_bytes=lambda path: b"", size=lambda path: 0, write=lambda path, data: writes.append((path, data))),
         driver=SimpleNamespace(redactor=Redactor({"FAKE_KEY": SECRET})),
     )
     lift = AsyncMock()

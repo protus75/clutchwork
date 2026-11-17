@@ -26,7 +26,7 @@ from clutch.gates import Gate, GateReport, merge_severity, run_gates
 from clutch.journal import Journal
 from clutch.journal import run_seq as journal_run_seq
 from clutch.llm import LLM, AgentEffort, AgentTier, LLMAborted, LLMRequest, LLMResult
-from clutch.llmeffect import llm_call
+from clutch.llmeffect import llm_call, llm_key
 from clutch.providers import WRITING_SURFACES, ProviderBudgetExceeded, ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, LocalFileSystem, Sleep
@@ -329,7 +329,7 @@ class Driver:
                 remaining = None if budget_usd is None else max(0.0, budget_usd - tally.usd)
                 if remaining == 0:
                     return done("budget_exceeded")
-                call = {**ctx, "call_seq": call_seq}
+                call = {**ctx, "call_seq": call_seq, "call_key": llm_key(stem, seq, stage.surface, attempt, call_seq)}
                 name = f"{stage.surface}/call-{call_seq:02d}"
                 prompt = stage.render(consumed, tally.findings)
                 req = LLMRequest(

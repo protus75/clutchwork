@@ -3,7 +3,7 @@
 Writer-site checklist (extend in the same change that adds a writer of a captured stream):
 - attempt-spool writer: clutch/driver.py `Spool`
 - engine-log writer: clutch/enginelog.py `EngineLog`
-- attempt-spool writer: clutch/providers.py `CliAdapter.invoke` (prompt, cli event stream, stderr)
+- evidence writer: clutch/evidence/store.py `EvidenceStore.put_blob` (prompt, stdout, stderr and arrival-time blobs from clutch/providers.py `CliAdapter.invoke`)
 - harvest writer: clutch/runner.py `harvest` (attempts/<n>/harvest.json)
 - retro report writer: clutch/retro.py `Retro.commit_report`
 - notification output: clutch/seams.py `CommandNotifications` (stdout and stderr scrubbed before the effect result is journaled)

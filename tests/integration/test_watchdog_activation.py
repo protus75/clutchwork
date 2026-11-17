@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 from pathlib import Path
+from urllib.parse import quote
 
 import pytest
 from pydantic import BaseModel
@@ -296,7 +297,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
         assert (d.expected_seconds, d.stuck_seconds, d.observe.fence) == (600, 1200, ())
         assert any(e.key == f"llm/baseline-{fixture.name}/0/review/{attempt}/1" for e in rig.journal.read())
         assert rig.checkout.config.state_dir / f"spools/baseline-{fixture.name}/{attempt}/review/call-01/prompt.md" in rig.fs.files
-        assert any("/providers/" in str(p) and f"/baseline-{fixture.name}/" in str(p) for p in rig.fs.files)
+        assert rig.checkout.config.state_dir / "evidence" / "calls" / quote(f"llm/baseline-{fixture.name}/0/review/{attempt}/1", safe="") / "end.json" in rig.fs.files
         if attempt == 1:
             assert observed[0][1] is observed[1][1]
             assert any(e.key == f"llm/baseline-{fixture.name}/0/review/1/2" for e in rig.journal.read())

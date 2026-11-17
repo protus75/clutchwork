@@ -12,6 +12,7 @@ from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS, StagesRun
+from tests.evidence_records import seed_end
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
@@ -44,9 +45,7 @@ def test_review_snag_commits_closed_harvest_without_code_content_and_wipes(repo)
     long_summary = "x" * (runner.HARVEST_TAIL_CHARS + 100)
 
     def review(req):
-        path = repo / ".clutch" / "state" / "spools" / "providers" / STEM / "fake-0001" / "events.jsonl"
-        path.parent.mkdir(parents=True)
-        path.write_text("e" * (runner.HARVEST_TAIL_CHARS + 100))
+        seed_end(repo / ".clutch" / "state", f"llm/{STEM}/0/review/0/1", "e" * (runner.HARVEST_TAIL_CHARS + 100), "2026-01-02T00:00:00.000Z")
         return json.dumps({"verdict": "snag", "summary": long_summary, "findings": [SNAG]})
 
     code, _ = run(repo, [agent({"clutch/thing.py": f"ok # {marker}\n"}), review, diagnosis_reply()])
@@ -56,7 +55,7 @@ def test_review_snag_commits_closed_harvest_without_code_content_and_wipes(repo)
     assert [f.model_dump(exclude_none=True) for f in h.findings] == [SNAG]
     assert "clutch/thing.py" in h.diff_stat and marker not in h.diff_stat
     assert len(h.stage_log_tail) <= runner.HARVEST_TAIL_CHARS
-    assert len(h.events_tail) <= runner.HARVEST_TAIL_CHARS
+    assert h.events_tail == "e" * runner.HARVEST_TAIL_CHARS
     assert h.run_record == f"tickets/{STEM}/run.md"
     assert set(h.model_dump()) == set(Harvest.model_fields)
     for path in (repo / "tickets" / STEM / "attempts").rglob("*"):

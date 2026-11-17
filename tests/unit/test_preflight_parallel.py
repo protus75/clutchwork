@@ -10,6 +10,9 @@ from clutch.providers import ProviderLLM
 
 
 class MemoryFS:
+    def remove(self, path):
+        pass
+
     def entries(self, path):
         return []
 

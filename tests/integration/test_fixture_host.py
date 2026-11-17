@@ -318,7 +318,7 @@ class RecordedExec(SubprocessExec):
         assert kwargs["cwd"] == self.host
         assert set(kwargs["env"]) <= set(environment(self.host)) | {"CLUTCH_FIXTURE_SCENARIO", "CLUTCH_FIXTURE_SURFACE"}
         assert all("secret" not in v.lower() for v in kwargs["env"].values())
-        self.calls.append((list(argv), dict(kwargs)))
+        self.calls.append((list(argv), {**kwargs, "stdin_text": kwargs["stdin_path"].read_text() if kwargs.get("stdin_path") else None}))
         return await super().run(argv, **kwargs)
 
 
@@ -333,7 +333,7 @@ def test_fixture_cli_adapter_roundtrip(host):
         assert await llm.preflight() == [] and llm.preflight_notices == []
         assert exec_.calls[0][0] == ["claude", "--version"]
         assert exec_.calls[1][0] == ["pnpm", "view", "@anthropic-ai/claude-code", "version"]
-        assert exec_.calls[2][1]["stdin_path"].read_text() == "Reply with the single word ok."
+        assert exec_.calls[2][1]["stdin_text"] == "Reply with the single word ok."
         base_settings = (host / "settings.json").read_bytes()
         for name in SCENARIOS:
             (host / "settings.json").write_bytes(base_settings)
@@ -346,7 +346,7 @@ def test_fixture_cli_adapter_roundtrip(host):
                 assert result.usd == 0 and result.provider == "claude" and result.model == "fixture"
                 model.model_validate_json(result.text)
                 argv, kwargs = exec_.calls[-1]
-                assert prompt not in argv and kwargs["stdin_path"].read_text() == prompt
+                assert prompt not in argv and kwargs["stdin_text"] == prompt
                 assert (host / ".fixture-runtime" / f"{name}-{surface}-0.prompt").read_text() == prompt
                 if surface == "implement":
                     assert "bypassPermissions" in argv

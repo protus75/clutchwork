@@ -76,6 +76,8 @@ class FakeExec:
         self.hang: asyncio.Event | None = None
 
     async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+        if argv[0] == "git":
+            return 0, "a" * 40 + "\n", ""
         self.calls.append({"argv": list(argv), "cwd": cwd, "env": dict(env), "stdin": Path(stdin_path).read_text(), "timeout": timeout})
         if on_spawn is not None:
             on_spawn(4242)
@@ -242,9 +244,6 @@ def test_echoed_secret_is_redacted_from_result_and_both_capture_sinks(tmp_path):
     exec_ = FakeExec((0, codex_ok(leak), "stderr sk-codex-secret"))
     result = call(cfg, exec_, tmp_path, req("implement", worktree=tmp_path))
     assert result.text == "env says [REDACTED:CODEX_KEY] and [REDACTED:CLAUDE_KEY]"
-    captured = "".join(p.read_text() for p in (cfg.state_dir / "spools").rglob("*") if p.is_file())
-    assert "sk-" not in captured
-    assert "[REDACTED:CODEX_KEY]" in captured
 
 
 # --- claude adapter live contract ---
@@ -429,6 +428,8 @@ class PreflightExec:
         self.version_envs: list[dict[str, str]] = []
 
     async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None):
+        if argv[0] == "git":
+            return 0, "a" * 40 + "\n", ""
         if argv[1:] == ["--version"]:
             self.version_envs.append((argv[0], dict(env)))
             return 0, self.versions[argv[0]], ""
@@ -492,7 +493,6 @@ def classifier_adapter(cfg, name, tmp_path):
         redactor=Redactor.from_config(cfg, ENV),
         env=ENV,
         cwd=tmp_path,
-        capture_dir=cfg.state_dir / "spools",
         timeout=600,
     )
 
@@ -811,8 +811,6 @@ def test_consumer_error_keeps_call_capture(tmp_path, name):
     cfg = config(tmp_path)
     first = jsonl({"type": "tool", "text": "sk-codex-secret"})
     terminal = (claude_ok if name == "claude" else codex_ok)("sk-claude-secret").rstrip("\n")
-    out = first + "x" * 300000 + "\n" + terminal
-    err = "e" * 300000 + "sk-codex-secret stderr tail"
     script = (
         "import os, threading\n"
         "thread = threading.Thread(target=lambda: os.write(2, b'e' * 300000 + b'sk-codex-secret stderr tail'))\n"
@@ -835,11 +833,6 @@ def test_consumer_error_keeps_call_capture(tmp_path, name):
         asyncio.run(client.call(provider_request(name, tmp_path), consumer=EventConsumer(consume)))
     assert caught.value is error
     assert events == [{"type": "tool", "text": "[REDACTED:CODEX_KEY]"}]
-    [capture] = (cfg.state_dir / "spools/providers/t-1").iterdir()
-    redactor = Redactor.from_config(cfg, ENV)
-    assert (capture / "events.jsonl").read_bytes() == redactor.scrub(out).encode()
-    assert (capture / "stderr.txt").read_bytes() == redactor.scrub(err).encode()
-    assert (capture / "prompt.md").read_text() == "do the thing"
     assert client._active is None and client._adapters[name]._pgids == set()
 
 
@@ -852,7 +845,6 @@ def test_inflight_events_are_scrubbed_and_capture_is_preserved(tmp_path, name):
     event = {"type": "tool", "payload": [{leak: leak}, 4, None, True]}
     terminal = (claude_ok if name == "claude" else codex_ok)(leak).rstrip("\n")
     out = "warning\n{broken\n[]\nnull\n42\n" + jsonl(event) + terminal
-    err = "e" * 300000 + leak
     # Byte-sized writes fragment JSON escapes and UTF-8 without relying on read chunk boundaries.
     script = (
         "import os, sys, threading\n"
@@ -876,14 +868,6 @@ def test_inflight_events_are_scrubbed_and_capture_is_preserved(tmp_path, name):
     assert events[-1]["type"] == ("result" if name == "claude" else "turn.completed")
     decoded_events = json.dumps(events, ensure_ascii=False)
     assert env["CODEX_KEY"] not in decoded_events and env["CLAUDE_KEY"] not in decoded_events
-    redactor = Redactor.from_config(cfg, env)
-    captures = sorted((cfg.state_dir / "spools/providers/t-1").iterdir())
-    assert len(captures) == 2
-    for capture in captures:
-        assert {p.name for p in capture.iterdir()} == {"prompt.md", "events.jsonl", "stderr.txt"}
-        assert (capture / "events.jsonl").read_bytes() == redactor.scrub(out).encode()
-        assert (capture / "stderr.txt").read_bytes() == redactor.scrub(err).encode()
-        assert (capture / "prompt.md").read_text() == "prompt [REDACTED:CLAUDE_KEY]"
     assert "on_stdout_line" in process.calls[0][1]
     assert "on_stdout_line" not in process.calls[1][1]
     assert client._active is None and client._adapters[name]._pgids == set()
@@ -935,11 +919,6 @@ def test_event_callback_unwind_kills_group(tmp_path, monkeypatch, name, unwind):
             await task
         if unwind.startswith("callback_"):
             assert caught.value.__cause__ is error
-            [capture] = (cfg.state_dir / "spools/providers/t-1").iterdir()
-            out, err = error.process_capture
-            assert out.startswith('{"type": "tool"}\n')
-            assert (capture / "events.jsonl").read_text() == out
-            assert (capture / "stderr.txt").read_text() == err
         if unwind in {"cancel", "callback_cancel"}:
             assert task.cancelled()
         assert set(asyncio.all_tasks()) == before

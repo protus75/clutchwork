@@ -24,6 +24,7 @@ from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.driver import Driver
 from clutch.effects import Effects
 from clutch.enginelog import EngineLog
+from clutch.evidence.store import EvidenceStore
 from clutch.git import Git, GitError
 from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, run_seq
 from clutch.journal import Dispatch as JournalDispatch
@@ -504,10 +505,7 @@ async def harvest(
     # Prompts are inputs, not stage logs: Review's prompt carries the unreviewed code diff.
     logs = sorted(p for p in spool.rglob("*") if p.is_file() and p.name != "prompt.md") if spool.is_dir() else []
     stage_log_tail = "".join(p.read_text(errors="replace") for p in logs)[-HARVEST_TAIL_CHARS:]
-    providers = ctx.config.state_dir / "spools" / "providers" / stem
-    events = list(providers.rglob("events.jsonl")) if providers.is_dir() else []
-    newest_events = max(events, key=lambda p: (p.stat().st_mtime_ns, str(p))) if events else None
-    events_tail = (newest_events.read_text(errors="replace") if newest_events else "")[-HARVEST_TAIL_CHARS:]
+    events_tail = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub).latest_stdout(f"llm/{stem}/")[-HARVEST_TAIL_CHARS:]
     record = f"tickets/{stem}/run.md"
     artifact = Harvest(
         attempt=attempt,

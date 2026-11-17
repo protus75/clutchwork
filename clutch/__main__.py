@@ -552,7 +552,6 @@ def main(
                         redactor=redactor,
                         env=env,
                         cwd=repo,
-                        capture_dir=config.state_dir / "spools" / "probe",
                         timeout=PREFLIGHT_TIMEOUT_S,
                     )
                 except Exception as exc:

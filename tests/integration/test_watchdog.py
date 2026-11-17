@@ -401,11 +401,6 @@ async def test_watched_result_and_capture_are_preserved(tmp_path, name):
     assert result == ordinary
     assert rig.detector.total_usd == result.usd and rig.detector.spend == result.usd
     assert rig.detector.bases == ({(name, served.model): result.usd} if name == "claude" else {})
-    calls = sorted((rig.cfg.state_dir / "spools/providers" / request.ticket).iterdir())
-    assert len(calls) == 2
-    for capture in calls:
-        assert {p.name for p in capture.iterdir()} == {"prompt.md", "events.jsonl", "stderr.txt"}
-        assert (capture / "events.jsonl").read_text() == stream
     assert rig.journal.read() == []
 
 

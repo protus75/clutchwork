@@ -45,7 +45,6 @@ def adapter(p=None):
         redactor=SimpleNamespace(scrub=lambda x: x),
         env={"PATH": "/bin", "GEMINI_API_KEY": "g", "CLAUDE_KEY": "c"},
         cwd=Path("/repo"),
-        capture_dir=Path("/capture"),
         timeout=120,
     )
 

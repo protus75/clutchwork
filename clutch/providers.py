@@ -7,21 +7,29 @@ argv contract and event-stream parse.
 """
 
 import asyncio
+import hashlib
+import importlib.metadata
 import json
 import math
 import os
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
+from urllib.parse import quote
+from uuid import uuid4
 
-from clutch.config import Config, ConfigSnapshot, Provider
+from clutch.config import Config, ConfigSnapshot, Provider, snapshot_config
+from clutch.evidence.store import EvidenceStore
+from clutch.git import Git
 from clutch.journal import EventType, last_transition, render_ts
 from clutch.llm import AgentEffort, AgentTier, LLMRequest, LLMResult
+from clutch.lockfile import CommitLock
 from clutch.redact import Redactor, secret_names
-from clutch.seams import ExecutableNotFound, FileSystem, GroupExec, ProcessExec
+from clutch.seams import Clock, ExecutableNotFound, FileSystem, GroupExec, ProcessExec
+from clutch.specs import load_spec
 
 if TYPE_CHECKING:
     from clutch.watchdog import EventConsumer
@@ -43,9 +51,22 @@ FAILURE_MARKERS: tuple[tuple[FailureClass, tuple[str, ...]], ...] = (
 )
 
 
-def capture_sequence(names: Iterable[str], provider: str) -> int:
-    pattern = re.compile(rf"{re.escape(provider)}-([0-9]{{4}})")
-    return max((int(match.group(1)) for name in names if (match := pattern.fullmatch(name))), default=0) + 1
+def engine_version() -> str:
+    return importlib.metadata.version("clutchwork")
+
+
+def spec_version(surface: str) -> str:
+    return load_spec((Path(__file__).parent / "specs" / f"{surface}.md").read_text()).meta.version
+
+
+@dataclass(frozen=True)
+class CallCapture:
+    key: str
+    ticket: str | None
+    candidates: tuple[str, ...]
+    reason: Literal["first", "spill", "failover"]
+    git: Git
+    clock: Clock
 
 
 class ProviderSetupError(Exception):
@@ -127,11 +148,13 @@ def candidates(config, tier, surface) -> tuple[Served, ...]:
     return tuple(_candidate(config, tier, surface, candidate) for candidate in route.candidates)
 
 
+def conduct_file(provider: str) -> str:
+    return "CLAUDE.md" if provider in {"claude", "qwen"} else "AGENTS.md"
+
+
 def routed_conduct_paths(config: Config | ConfigSnapshot, checkout: Path) -> tuple[Path, ...]:
     """Select each resolved CLI's conduct file once; unrouted declarations do not participate."""
-    return tuple(
-        dict.fromkeys(checkout / ("CLAUDE.md" if served.provider.name in {"claude", "qwen"} else "AGENTS.md") for route in config.routing for served in candidates(config, route.tier, route.surface))
-    )
+    return tuple(dict.fromkeys(checkout / conduct_file(served.provider.name) for route in config.routing for served in candidates(config, route.tier, route.surface)))
 
 
 class ProviderDrought(Exception):
@@ -292,7 +315,6 @@ class CliAdapter:
         redactor: Redactor,
         env: Mapping[str, str],
         cwd: Path,
-        capture_dir: Path,
         timeout: float,
     ) -> None:
         if provider.base_url and not self.uses_base_url:
@@ -308,9 +330,8 @@ class CliAdapter:
         self._redactor = redactor
         self._env = env
         self._cwd = cwd
-        self._capture_dir = capture_dir
         self._timeout = timeout
-        self._seq: dict[str, int] = {}
+        self.cli_version: str | None = None
         self._pgids: set[int] = set()
 
     def call_env(self, writes: bool) -> dict[str, str]:
@@ -331,84 +352,208 @@ class CliAdapter:
         if not self.within_budget(req):
             raise ProviderBudgetExceeded("remaining eval budget cannot admit the declared estimate; rerun the bounded eval")
 
-    async def invoke(self, req: LLMRequest, model: str, *, consumer: "EventConsumer | None" = None) -> LLMResult:
+    async def invoke(self, req: LLMRequest, model: str, *, consumer: "EventConsumer | None" = None, capture: CallCapture | None = None) -> LLMResult:
         self.check_budget(req)
         budget = req.budget_usd
-        argv = self.argv(model, req.effort, req.surface in WRITING_SURFACES)
+        writes = req.surface in WRITING_SURFACES
+        argv = self.argv(model, req.effort, writes)
         if budget is not None and self.reports_cost:
             argv.extend(["--max-budget-usd", str(budget)])
-        writes = req.surface in WRITING_SURFACES
         if writes and req.worktree is None:
             raise ProviderSetupError(f"surface {req.surface!r} writes the tree but the request carries no worktree")
-        stem = req.ticket or req.surface
-        if stem not in self._seq:
-            self._seq[stem] = capture_sequence(self._fs.entries(self._capture_dir / stem), self.provider.name)
-        else:
-            self._seq[stem] += 1
-        call_dir = self._capture_dir / stem / f"{self.provider.name}-{self._seq[stem]:04d}"
-        prompt = call_dir / "prompt.md"
-        # The prompt reaches the CLI only as a file on stdin: an argv element is capped by the OS limit.
-        self._fs.write(prompt, self._redactor.scrub(req.rendered).encode())
+        prompt = self._config.state_dir / "evidence" / "scratch" / f"{uuid4().hex}.md"
+        index = prompt.with_suffix(".index")
+        rendered = self._redactor.scrub(req.rendered)
+        self._fs.write(prompt, rendered.encode())
+        cwd = req.worktree if writes else self._cwd
         pgids: set[int] = set()
+        store = None
+        started = None
+        rc = None
+        out = err = ""
+        parsed = None
+        failure = None
+        returned = False
+        start_written = False
+        times = []
 
         def spawned(pgid: int) -> None:
             pgids.add(pgid)
             self._spawned(pgid)
 
+        def stdout_line(line: str) -> None:
+            if capture is not None:
+                times.append(int((capture.clock() - started).total_seconds() * 10**9))
+            if consumer is not None:
+                self._forward(line, consumer)
+
         try:
+            env = self.call_env(writes)
+            if capture is not None:
+                store = EvidenceStore(self._config.state_dir, self._fs, self._fs.read_bytes, self._fs.size, self._redactor.scrub)
+                key = capture.key
+                suffix = 1
+                entries = self._fs.entries(store.root / "calls")
+                while quote(key, safe="") in entries:
+                    suffix += 1
+                    key = f"{capture.key}#{suffix}"
+                _, group, run_seq, surface, attempt, call = capture.key.split("/")
+                tree_before = await capture.git.tree_id(cwd, index)
+                main_sha = await capture.git.rev_parse(cwd, "main")
+                base_sha = await capture.git.rev_parse(cwd, "HEAD")
+                started = capture.clock()
+                store.write_record(
+                    key,
+                    "start",
+                    {
+                        "schema": "clutch.evidence.call/1.0",
+                        "id": capture.key,
+                        "group": group,
+                        "stem": capture.ticket,
+                        "run_seq": int(run_seq),
+                        "surface": surface,
+                        "attempt": int(attempt),
+                        "call": int(call),
+                        "engine": {"version": engine_version(), "spec": f"{surface}.md", "spec_version": spec_version(surface)},
+                        "route": {
+                            "tier": req.tier,
+                            "effort": req.effort,
+                            "candidates": list(capture.candidates),
+                            "chosen": self.provider.name,
+                            "reason": capture.reason,
+                            "config_sha": hashlib.sha256(repr(snapshot_config(self._config)).encode()).hexdigest(),
+                        },
+                        "provider": {
+                            "name": self.provider.name,
+                            "adapter": type(self).__name__,
+                            "kind": self.provider.kind,
+                            "package": self.provider.package,
+                            "cli_version": self.cli_version,
+                            "billing": "local" if self.uses_base_url else "metered" if self.provider.auth else "subscription",
+                        },
+                        "model": {"requested": model},
+                        "process": {
+                            "argv": [self._redactor.scrub(arg) for arg in argv],
+                            "env_names": sorted(env),
+                            "cwd": str(cwd),
+                            "timeout_s": int(self._timeout),
+                            "writes": writes,
+                            "isolated": False,
+                            "conduct_file": conduct_file(self.provider.name),
+                        },
+                        "repo": {"main_sha": main_sha, "base_sha": base_sha, "tree_before": tree_before},
+                        "prompt": {"blob": store.put_blob(rendered.encode()), "chars": len(rendered), "bytes": len(rendered.encode())},
+                        "clock": {"wall_start": render_ts(started), "mono_start_ns": int(started.timestamp() * 10**9)},
+                    },
+                )
+                start_written = True
             rc, out, err = await self._exec.run(
                 argv,
-                cwd=req.worktree if writes else self._cwd,
-                env=self.call_env(writes),
+                cwd=cwd,
+                env=env,
                 timeout=self._timeout,
                 stdin_path=prompt,
                 on_spawn=spawned,
-                **({"on_stdout_line": lambda line: self._forward(line, consumer)} if consumer is not None else {}),
+                **({"on_stdout_line": stdout_line} if capture is not None or consumer is not None else {}),
+            )
+            returned = True
+            out, err = self._redactor.scrub(out), self._redactor.scrub(err)
+            tail = err[-2000:]
+            if rc != 0:
+                # A CLI may report its failure in the event stream, not stderr: carry that message forward.
+                try:
+                    parsed = self.parse(out)
+                    message = "nonzero exit"
+                except ValueError as e:
+                    message = f"nonzero exit: {e}"
+                self._raise_call_error(message, rc=rc, stderr_tail=tail)
+            try:
+                parsed = self.parse(out)
+            except ValueError as e:
+                self._raise_call_error(str(e), rc=rc, stderr_tail=tail)
+            usd = parsed.usd if parsed.usd is not None else self.provider.limits.est_cost_per_call_usd
+            if usd is None:
+                self._raise_call_error(
+                    "stream reported no cost and limits.est_cost_per_call_usd is unset; declare the estimate",
+                    rc=rc,
+                    stderr_tail=tail,
+                )
+            return LLMResult(
+                # Scrubbed BEFORE it becomes the result: the one version that ever exists. Again after
+                # decoding, since a JSON-escaped secret survives the raw-stream scrub.
+                text=self._redactor.scrub(parsed.text),
+                input_tokens=parsed.input_tokens,
+                output_tokens=parsed.output_tokens,
+                provider=self.provider.name,
+                model=parsed.model if parsed.model is not None else model,
+                usd=usd,
             )
         except BaseException as exc:
-            capture = getattr(exc, "process_capture", None)
-            if capture is not None:
-                self._write_capture(call_dir, *capture)
+            failure = exc
+            if not returned:
+                out, err = getattr(exc, "process_capture", ("", ""))
             raise
         finally:
             self._pgids.difference_update(pgids)
-        out, err = self._write_capture(call_dir, out, err)
-        tail = err[-2000:]
-        if rc != 0:
-            # A CLI may report its failure in the event stream, not stderr: carry that message forward.
             try:
-                self.parse(out)
-                message = "nonzero exit"
-            except ValueError as e:
-                message = f"nonzero exit: {e}"
-            self._raise_call_error(message, rc=rc, stderr_tail=tail)
-        try:
-            parsed = self.parse(out)
-        except ValueError as e:
-            self._raise_call_error(str(e), rc=rc, stderr_tail=tail)
-        usd = parsed.usd if parsed.usd is not None else self.provider.limits.est_cost_per_call_usd
-        if usd is None:
-            self._raise_call_error(
-                "stream reported no cost and limits.est_cost_per_call_usd is unset; declare the estimate",
-                rc=rc,
-                stderr_tail=tail,
-            )
-        return LLMResult(
-            # Scrubbed BEFORE it becomes the result: the one version that ever exists. Again after
-            # decoding, since a JSON-escaped secret survives the raw-stream scrub.
-            text=self._redactor.scrub(parsed.text),
-            input_tokens=parsed.input_tokens,
-            output_tokens=parsed.output_tokens,
-            provider=self.provider.name,
-            model=parsed.model if parsed.model is not None else model,
-            usd=usd,
-        )
+                if start_written:
+                    out, err = self._redactor.scrub(out), self._redactor.scrub(err)
+                    ended = capture.clock()
+                    repo = None
+                    if writes and returned:
+                        tree_after = await capture.git.tree_id(cwd, index)
+                        repo = {"tree_after": tree_after, "changed_paths": await capture.git.tree_changes(cwd, tree_before, tree_after)}
+                    events = _events(out)
 
-    def _write_capture(self, call_dir: Path, out: str, err: str) -> tuple[str, str]:
-        out, err = self._redactor.scrub(out), self._redactor.scrub(err)
-        self._fs.write(call_dir / "events.jsonl", out.encode())
-        self._fs.write(call_dir / "stderr.txt", err.encode())
-        return out, err
+                    def first(name):
+                        return next((e[name] for e in events if isinstance(e.get(name), str)), None)
+
+                    served = first("model")
+                    status = (
+                        ("ok" if rc == 0 else "nonzero" if rc > 0 else "killed")
+                        if returned
+                        else "timeout"
+                        if isinstance(failure, TimeoutError)
+                        else "spawn_error"
+                        if isinstance(failure, ExecutableNotFound)
+                        else "killed"
+                    )
+                    store.write_record(
+                        key,
+                        "end",
+                        {
+                            "schema": "clutch.evidence.call/1.0",
+                            "id": capture.key,
+                            "exit": {
+                                "status": status,
+                                "code": rc,
+                                "signal": -rc if rc is not None and rc < 0 else None,
+                                "failure_class": failure.failure_class if isinstance(failure, ProviderCallError) else None,
+                            },
+                            "clock": {"wall_end": render_ts(ended), "mono_end_ns": int(ended.timestamp() * 10**9), "wall_ms": int((ended - started).total_seconds() * 1000)},
+                            "rusage": None,
+                            "raw": {
+                                "stdout": store.put_blob(out.encode()),
+                                "stderr": store.put_blob(err.encode()),
+                                "stdout_times": store.put_blob(json.dumps(times).encode()),
+                                "lines": len(out.splitlines()),
+                                "non_json_lines": len(out.splitlines()) - len(events),
+                            },
+                            "repo": repo,
+                            "model": {"served": served, "served_source": "stream" if served is not None else "none"},
+                            "native_ids": {"session_id": first("session_id"), "thread_id": first("thread_id")},
+                            "parsed": {
+                                "text_chars": len(parsed.text) if parsed else 0,
+                                "input_tokens": parsed.input_tokens if parsed else None,
+                                "output_tokens": parsed.output_tokens if parsed else None,
+                                "usd": parsed.usd if parsed else None,
+                            },
+                        },
+                    )
+                    store.prune(self._config.evidence.max_gb * 10**9)
+            finally:
+                self._fs.remove(prompt)
+                self._fs.remove(index)
 
     def _spawned(self, pgid: int) -> None:
         self._pgids.add(pgid)
@@ -768,7 +913,6 @@ class ProviderLLM:
                 redactor=redactor,
                 env=env,
                 cwd=cwd,
-                capture_dir=config.state_dir / "spools" / "providers",
                 timeout=timeout,
             )
         self._active: CliAdapter | None = None
@@ -787,7 +931,7 @@ class ProviderLLM:
             package = adapter.provider.package
             _, out, err = await self._exec.run([adapter.binary, "--version"], cwd=self._cwd, env=tool_env(child_env(self._env, self._config), self._cwd), timeout=PREFLIGHT_TIMEOUT_S)
             _, latest, _ = await self._exec.run(["pnpm", "view", str(package), "version"], cwd=self._cwd, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S)
-            installed = installed_version(out, err)
+            installed = adapter.cli_version = installed_version(out, err)
             if not latest.strip() or installed is None or installed != latest.strip():
                 notices.append(f"{adapter.binary} {installed or '(unknown)'} is not the latest release {latest.strip() or '(unreadable)'} -- run: clutch install {adapter.provider.name}")
         probed: set[tuple[str, str]] = set()
@@ -836,7 +980,22 @@ class ProviderLLM:
 
         async def operation(served):
             consumer = meter(served) if meter else None
-            result = await self._invoke(req, served, consumer=consumer)
+            capture = None
+            if call_key is not None:
+                first = route[0].provider.name
+                breaker = self.session.thresh.breakers().get(first)
+                reason = (
+                    "first"
+                    if served == route[0]
+                    else "failover"
+                    if (breaker is not None and breaker.open_until is not None and breaker.open_until > self.session.clock()) or self.session.unavailable(first)[0]
+                    else "spill"
+                )
+                git = Git(
+                    self._exec, env=child_env(self._env, self._config), timeout=PREFLIGHT_TIMEOUT_S, commit_lock=CommitLock(self._config.state_dir, clock=self.session.clock, sleep=self.session.sleep)
+                )
+                capture = CallCapture(call_key, ticket, tuple(s.provider.name for s in route), reason, git, self.session.clock)
+            result = await self._invoke(req, served, consumer=consumer, capture=capture)
             if consumer is not None and hasattr(consumer, "complete"):
                 consumer.complete()
             return result
@@ -858,10 +1017,10 @@ class ProviderLLM:
         """The raw LLM execution seam; llm_call owns its durable admission boundary."""
         return await self._invoke(req, resolve(self._config, req.tier, req.surface), consumer=consumer)
 
-    async def _invoke(self, req, served, *, consumer=None):
+    async def _invoke(self, req, served, *, consumer=None, capture=None):
         self._active = self._adapters[served.provider.name]
         try:
-            return await self._active.invoke(req, served.model, **({"consumer": consumer} if consumer is not None else {}))
+            return await self._active.invoke(req, served.model, capture=capture, **({"consumer": consumer} if consumer is not None else {}))
         finally:
             self._active = None
 
