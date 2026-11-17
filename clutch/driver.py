@@ -26,7 +26,7 @@ from clutch.gates import Gate, GateReport, merge_severity, run_gates
 from clutch.journal import Journal
 from clutch.journal import run_seq as journal_run_seq
 from clutch.llm import LLM, AgentEffort, AgentTier, LLMAborted, LLMRequest, LLMResult
-from clutch.llmeffect import llm_call, llm_key
+from clutch.llmeffect import llm_call, llm_key, scoped_seq
 from clutch.providers import WRITING_SURFACES, ProviderBudgetExceeded, ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, LocalFileSystem, Sleep
@@ -212,6 +212,7 @@ class Driver:
         scope_fence: Sequence[str],
         run_seq: int | None = None,
         budget_usd: float | None = None,
+        key_scope: str | None = None,
     ) -> StageResult:
         if self._active is not None:
             raise ValueError("await the active Driver.run or abort_current before another stage")
@@ -230,6 +231,7 @@ class Driver:
                 expected_budget=expected_budget,
                 scope_fence=scope_fence,
                 budget_usd=budget_usd,
+                key_scope=key_scope,
             )
         )
         invocation = _Invocation(task)
@@ -270,12 +272,14 @@ class Driver:
         expected_budget: float | Literal["surface", "eval"],
         scope_fence: Sequence[str],
         budget_usd: float | None,
+        key_scope: str | None = None,
     ) -> StageResult:
         """Run one stage attempt; `attempt` is the run sequence, stuck_budget in seconds."""
         stem = ticket or stage.surface  # ticketless surfaces spool and key under their surface name
         if run_seq is not None and ticket is not None:
             raise ValueError("run_seq requires ticket=None")
         seq = run_seq if run_seq is not None else journal_run_seq(self.journal.read(), stem)
+        key_seq = scoped_seq(key_scope, seq)
         spool_stem = f"{stem}/{run_seq}" if run_seq is not None else stem
         self.begin_watch(
             owner=stem,
@@ -330,7 +334,7 @@ class Driver:
                 remaining = None if budget_usd is None else max(0.0, budget_usd - tally.usd)
                 if remaining == 0:
                     return done("budget_exceeded")
-                call = {**ctx, "call_seq": call_seq, "call_key": llm_key(stem, seq, stage.surface, attempt, call_seq)}
+                call = {**ctx, "call_seq": call_seq, "call_key": llm_key(stem, key_seq, stage.surface, attempt, call_seq)}
                 name = f"{stage.surface}/call-{call_seq:02d}"
                 prompt = stage.render(consumed, tally.findings)
                 req = LLMRequest(
@@ -355,7 +359,7 @@ class Driver:
                             self.redactor,
                             ticket=ticket,
                             stem=stem,
-                            run_seq=seq,
+                            run_seq=key_seq,
                             attempt=attempt,
                             call_seq=call_seq,
                         ),

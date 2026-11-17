@@ -19,6 +19,7 @@ from clutch.flake import Flake
 from clutch.git import Git
 from clutch.heartbeat import Heartbeat
 from clutch.journal import EventType, Journal
+from clutch.llmeffect import scoped_seq
 from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import ConflictHandoff, MergeQueue
 from clutch.restart import Restart
@@ -351,7 +352,9 @@ class DaemonTasks:
                 self.tasks = ()
 
 
-async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, handoff: ConflictHandoff | None = None, supervise: Supervise | None = None) -> StageResult:
+async def apply_rework(
+    ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, handoff: ConflictHandoff | None = None, supervise: Supervise | None = None, key_scope: str | None = None
+) -> StageResult:
     """Publish exact reviewed proposals on the ticket plane under the caller's writer lock."""
     road = "shrink or split the committed ticket text and rerun drain"
     workspace = ctx.worktree(ticket.stem)
@@ -362,7 +365,18 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
         original = parse_ticket(ticket.stem, text, ctx.repo)
         tier, effort = runner.capability(original, ctx.driver.journal.read())
         result = await rework(
-            ctx, original, text, findings, attempt=attempt, workspace=workspace, tier=tier, effort=effort, stuck_budget=original.stuck_minutes * 60, handoff=handoff, supervise=supervise
+            ctx,
+            original,
+            text,
+            findings,
+            attempt=attempt,
+            workspace=workspace,
+            tier=tier,
+            effort=effort,
+            stuck_budget=original.stuck_minutes * 60,
+            handoff=handoff,
+            supervise=supervise,
+            key_scope=key_scope,
         )
         if result.outcome != "ok":
             return result
@@ -399,7 +413,7 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
             return {"commit": sha}
 
         try:
-            await ctx.driver.effects.run(publish, key=f"ticket-plane/{ticket.stem}/{attempt}/rework", ticket=ticket.stem)
+            await ctx.driver.effects.run(publish, key=f"ticket-plane/{ticket.stem}/{scoped_seq(key_scope, attempt)}/rework", ticket=ticket.stem)
             if errors := await record_supersedes(ctx, order):
                 await restore_publication()
                 return refused(errors, result.cost)

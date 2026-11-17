@@ -5,6 +5,7 @@ and a same-key re-entry (no intervening terminal, so the same run_seq) replays t
 instead of calling. The driver reaches the model only through `llm_call`.
 """
 
+import re
 from dataclasses import asdict, replace
 from typing import Any
 
@@ -13,7 +14,15 @@ from clutch.llm import LLM, LLMRequest
 from clutch.redact import Redactor
 
 
-def llm_key(stem: str, run_seq: int, surface: str, attempt: int, call_seq: int) -> str:
+def scoped_seq(scope: str | None, n: int) -> int | str:
+    if scope is None:
+        return n
+    if re.fullmatch(r"[a-z][a-z0-9]*", scope) is None:
+        raise ValueError("invalid key scope")
+    return f"{scope}-{n}"
+
+
+def llm_key(stem: str, run_seq: int | str, surface: str, attempt: int, call_seq: int) -> str:
     return "/".join(("llm", stem, str(run_seq), surface, str(attempt), str(call_seq)))
 
 
@@ -21,7 +30,7 @@ def _cost(result: dict[str, Any]) -> dict[str, Any]:
     return {k: result[k] for k in ("usd", "input_tokens", "output_tokens", "provider", "model")}
 
 
-async def llm_call(effects: Effects, llm: LLM, req: LLMRequest, redactor: Redactor, *, ticket: str | None, stem: str, run_seq: int, attempt: int, call_seq: int) -> dict[str, Any]:
+async def llm_call(effects: Effects, llm: LLM, req: LLMRequest, redactor: Redactor, *, ticket: str | None, stem: str, run_seq: int | str, attempt: int, call_seq: int) -> dict[str, Any]:
     key = llm_key(stem, run_seq, req.surface, attempt, call_seq)
 
     async def record(operation):

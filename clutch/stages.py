@@ -46,6 +46,7 @@ from clutch.gates import BugEvidence, GateReport, RegressionRun, run_gates
 from clutch.git import Git, GitError
 from clutch.hostfiles import CORE_TEMPLATE, CoreDriftGate, committed_core
 from clutch.journal import EventType, last_transition, run_seq
+from clutch.llmeffect import scoped_seq
 from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
@@ -509,7 +510,7 @@ async def _base_worktree(ctx: StageContext, kind: str, stem: str, base: str) -> 
     return path
 
 
-async def lift_outbox(ctx: StageContext, stem: str, kind: str, *, attempt: int, only: str | None = None) -> str | None:
+async def lift_outbox(ctx: StageContext, stem: str, kind: str, *, attempt: int, only: str | None = None, key_scope: str | None = None) -> str | None:
     """Move the worktree outbox into the canonical ticket dir as ONE ticket-plane commit; None if empty.
 
     `ticket.md` is never lifted: it stays read-only to the agent. Keyed with the run
@@ -532,7 +533,7 @@ async def lift_outbox(ctx: StageContext, stem: str, kind: str, *, attempt: int, 
         sha = await ctx.git.commit(ctx.repo, f"clutch({stem}): {kind}", only=rels)
         return {"kind": kind, "paths": rels, "commit": sha}
 
-    key = "/".join(("ticket-plane", stem, str(attempt), kind))
+    key = "/".join(("ticket-plane", stem, str(scoped_seq(key_scope, attempt)), kind))
     return (await ctx.driver.effects.run(commit, key=key, ticket=stem))["commit"]
 
 

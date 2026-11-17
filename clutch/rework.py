@@ -15,6 +15,7 @@ from clutch.gates import GateReport
 from clutch.git import GitError
 from clutch.journal import Event, EventType
 from clutch.llm import AgentEffort, AgentTier
+from clutch.llmeffect import scoped_seq
 from clutch.mergequeue import ConflictHandoff
 from clutch.requisition import review_ticket
 from clutch.specs import RenderOverBound, load_spec, render
@@ -124,6 +125,7 @@ async def rework(
     stuck_budget: float,
     handoff: ConflictHandoff | None = None,
     supervise: Supervise | None = None,
+    key_scope: str | None = None,
 ) -> StageResult:
     """Call only after admission unwinds; return proposals, never publish or retire tickets."""
     if handoff is not None and handoff.stem != ticket.stem:
@@ -134,7 +136,8 @@ async def rework(
     # Review effects name successor identities too; those of THIS invocation are not prior use.
     history = ctx.driver.journal.read()
     identities = {e.ticket for e in history if e.ticket is not None}
-    prefix = f"llm/{ticket.stem}/{attempt}/requisition_review/{attempt}/"
+    key_attempt = scoped_seq(key_scope, attempt)
+    prefix = f"llm/{ticket.stem}/{key_attempt}/requisition_review/{attempt}/"
     review_seq = max((int(e.key.rsplit("/", 1)[-1]) for e in history if e.key is not None and e.key.startswith(prefix)), default=0)
 
     retry_findings: list[Finding] = []
@@ -170,7 +173,7 @@ async def rework(
         if errors or artifact.action == "escalate":
             return GateReport(code="ticket_schema", verdict="fail" if errors else "pass", findings=errors)
 
-        tree = ctx.config.state_dir / "rework" / ticket.stem / str(attempt) / str(call_seq)
+        tree = ctx.config.state_dir / "rework" / ticket.stem / str(key_attempt) / str(call_seq)
         try:
             await ctx.git.worktree_add_detached(ctx.repo, tree, repository_head)
             for proposal in artifact.tickets:
@@ -200,6 +203,7 @@ async def rework(
                     tier=tier,
                     stem_slot=ticket.stem,
                     run_seq=attempt,
+                    key_scope=key_scope,
                     attempt=attempt,
                     call_seq=review_seq + 1,
                     prior=review_prior(
@@ -253,6 +257,7 @@ async def rework(
             stuck_budget=stuck_budget,
             expected_budget=ticket.expected_minutes * 60.0,
             scope_fence=(),
+            key_scope=key_scope,
         )
     except RenderOverBound as exc:
         return StageResult(outcome="premise_failed", artifact=None, findings=[exc.finding], cost=Cost())

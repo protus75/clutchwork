@@ -15,7 +15,7 @@ from clutch.driver import Driver, _StuckBudget, unwrap_fence
 from clutch.gates import GateReport
 from clutch.journal import EventType
 from clutch.llm import AgentTier, LLMRequest, LLMResult
-from clutch.llmeffect import llm_call
+from clutch.llmeffect import llm_call, scoped_seq
 from clutch.policy import _path_overlap
 from clutch.providers import ProviderCallError, ProviderDrought
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
@@ -149,6 +149,7 @@ async def review_ticket(
     call_seq: int,
     expected_budget: float | Literal["surface", "eval"],
     prior: str,
+    key_scope: str | None = None,
 ) -> RequisitionVerdict:
     spec = load_spec((specs_dir / "requisition_review.md").read_text())
     ticket_bytes = text.encode()
@@ -282,7 +283,9 @@ async def review_ticket(
                 calls += 1
                 try:
                     recorded = await driver.race(
-                        lambda: llm_call(driver.effects, driver.watched_llm(), req, driver.redactor, ticket=stem, stem=stem_slot, run_seq=run_seq, attempt=attempt, call_seq=current_seq),
+                        lambda: llm_call(
+                            driver.effects, driver.watched_llm(), req, driver.redactor, ticket=stem, stem=stem_slot, run_seq=scoped_seq(key_scope, run_seq), attempt=attempt, call_seq=current_seq
+                        ),
                         REQUISITION_STUCK_S,
                     )
                 except _StuckBudget:
