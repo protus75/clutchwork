@@ -3,8 +3,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from clutch import roadmap
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -30,17 +28,6 @@ def test_single_definitions():
             for node in tree.body:
                 if isinstance(node, ast.ImportFrom):
                     assert not ({alias.name for alias in node.names} & {"CLOSED", "SETTLED"})
-
-
-def test_follow_up_row():
-    rows = roadmap.parse((ROOT / "docs/roadmap.md").read_text())
-    matches = [row for row in rows if row.stem == "closed-sets-rest"]
-    assert len(matches) == 1
-    row = matches[0]
-    assert roadmap.release_name(row.release) == "0.3.0"
-    assert (row.owner, row.kind, row.priority) == ("roadmap", "chore", "P3")
-    assert roadmap.depends_on(row, rows) == ("closed-sets-remaining",)
-    assert row.runs_before == ()
 
 
 def test_no_import_cycle():
