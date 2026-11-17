@@ -231,7 +231,12 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None, consume_ha
     if result.outcome == "already_satisfied":
         ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "already_satisfied", "stage": stage, "reason": "already_satisfied"}, ticket=ticket.stem)
         if ctx.worktree(ticket.stem).exists():
-            await ctx.git.worktree_remove(ctx.repo, ctx.worktree(ticket.stem))
+            removal = asyncio.create_task(ctx.git.worktree_remove(ctx.repo, ctx.worktree(ticket.stem)))
+            try:
+                await asyncio.shield(removal)
+            except asyncio.CancelledError:
+                await removal
+                raise
         return result.outcome
     await harvest_failure(ctx, ticket, attempt=run.attempt, stage=stage, outcome=result.outcome, findings=result.findings, results=(*run.results.values(),) + ((result,) if stage == "merge" else ()))
     if any(f.code == "ticket_changed" for f in result.findings):
