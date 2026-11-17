@@ -44,10 +44,10 @@ def test_confirm_reaps_then_refuses(stopped, capsys):
 
 def test_order_beside_dead_run(stopped, monkeypatch, capsys):
     monkeypatch.setattr(observe, "lock_holder", lambda _, *args: object())
-    assert invoke(stopped, "order", "stale", "--priority", "P0") == 2
+    assert invoke(stopped, "ticket", "order", "stale", "--priority", "P0") == 2
     assert "is running" in capsys.readouterr().err
     monkeypatch.setattr(observe, "lock_holder", lambda _, *args: None)
-    assert invoke(stopped, "order", "stale", "--priority", "P0") == 0
+    assert invoke(stopped, "ticket", "order", "stale", "--priority", "P0") == 0
     assert "priority: P0" in (stopped / "tickets/stale/ticket.md").read_text()
 
 
@@ -143,7 +143,7 @@ def test_every_locked_verb_reaps(stopped, monkeypatch):
 
     monkeypatch.setattr(entry, "build_control", lambda *_: (_ for _ in ()).throw(RuntimeError("review reached model")))
     with pytest.raises(RuntimeError, match="review reached model"):
-        invoke(stopped, "review", "stale")
+        invoke(stopped, "ticket", "review", "stale")
     assert calls == []
     for verb in ("kill", "stop", "pause", "resume"):
         invoke(stopped, verb)

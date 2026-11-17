@@ -86,10 +86,10 @@ def run_admission(stem, events, file_exists, ticket, intake_decision=None, stray
         if isinstance(decision, list) and decision:
             return Admission("refuse", f"{ticket_path(stem)} {label}: " + "; ".join(f"[{f.code}] {f.message} ({f.paved_road})" for f in decision), road)
     if not file_exists:
-        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `clutch new {stem}`, fill it, then `clutch run {stem}`")
+        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `clutch ticket new {stem}`, fill it, then `clutch run {stem}`")
     events = tuple(events)
     if last_states(events).get(stem) == "merged" or ticket.frontmatter.state == "merged":
-        return Admission("refuse", f"{stem} is already merged", "author follow-up work as a new stem with `new`")
+        return Admission("refuse", f"{stem} is already merged", "author follow-up work as a new stem with `ticket new`")
     if ticket.frontmatter.state != "confirmed":
         return Admission("refuse", f"{stem} is `state: {ticket.frontmatter.state}`, not confirmed", f"set `state: confirmed` in {ticket_path(stem)} to dispatch it, or author a new stem")
     if unmerged := [d for d in ticket.depends if d not in settled_dependencies(events)]:
@@ -113,11 +113,11 @@ def review_admission(stem, events, file_exists, ticket, intake_decision=None, st
         return Admission("refuse", findings[0].message, findings[0].paved_road)
     if pending and stray:
         return intake_stray_admission(stray)
-    road = f"fix the ticket and retry `review {stem}`"
+    road = f"fix the ticket and retry `ticket review {stem}`"
     if pending and isinstance(intake_decision, list) and intake_decision:
         return Admission("refuse", f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in intake_decision), road)
     if not file_exists:
-        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author the ticket before `review {stem}`")
+        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author the ticket before `ticket review {stem}`")
     if last_states(events).get(stem) in CLOSED:
         return Admission("refuse", f"{stem} is settled or rejected", "author follow-up work as a new ticket")
     if isinstance(ticket, list) and ticket:
@@ -130,7 +130,7 @@ def order_admission(stem, events, file_exists, lock_holder, ticket=None):
     from clutch.tickets import ticket_path
 
     if not file_exists:
-        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with clutch new {stem}")
+        return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with clutch ticket new {stem}")
     events = tuple(events)
     state = last_states(events).get(stem)
     if state == "running" and (stem not in orphans(events) or lock_holder is not None):
@@ -144,7 +144,7 @@ def order_admission(stem, events, file_exists, lock_holder, ticket=None):
 
 def lint_admission(stem, events, file_exists):
     if not file_exists:
-        return Admission("refuse", "no ticket file", "create tickets/<stem>/ticket.md with clutch new <stem>")
+        return Admission("refuse", "no ticket file", "create tickets/<stem>/ticket.md with clutch ticket new <stem>")
     if last_states(events).get(stem) in CLOSED:
         return Admission("noop")
     return Admission("admit")

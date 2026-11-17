@@ -230,7 +230,16 @@ def test_lock_only_gates_writer_actions(world):
 def test_verb_refusals_and_lint_summary(world, capsys):
     w = world
     for verb in ("review", "run", "order"):
-        assert entry.main([verb, "missing", *(["--priority", "P1"] if verb == "order" else [])], cwd=w.root, env=ENV, clock=Clock(), pipeline=lambda c: AsyncMock()) == 2
+        assert (
+            entry.main(
+                [*(["ticket"] if verb in {"review", "order"} else []), verb, "missing", *(["--priority", "P1"] if verb == "order" else [])],
+                cwd=w.root,
+                env=ENV,
+                clock=Clock(),
+                pipeline=lambda c: AsyncMock(),
+            )
+            == 2
+        )
         output = capsys.readouterr()
         assert "tickets/missing/ticket.md does not exist" in output.err
     for verb in ("triage", "dismiss"):
@@ -238,7 +247,7 @@ def test_verb_refusals_and_lint_summary(world, capsys):
         assert "unknown box id missing" in capsys.readouterr().err
     w.write("done", confirmed())
     w.transition("done", "merged")
-    assert entry.main(["lint", "missing", "done"], cwd=w.root, env=ENV, clock=Clock()) == 2
+    assert entry.main(["ticket", "lint", "missing", "done"], cwd=w.root, env=ENV, clock=Clock()) == 2
     output = capsys.readouterr().out
     assert "tickets/missing/ticket.md: no ticket file" in output
     assert "lint: 0/1 tickets valid" in output  # A no-op must not add a second total.

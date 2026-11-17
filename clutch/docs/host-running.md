@@ -15,7 +15,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `snapshot` | Yes | Print the extension snapshot as JSON. |
 | `status` | Yes | Show the journal projection. |
 | `stats` | Yes | Show the read-only health and efficiency projection. |
-| `lint` | Yes | Validate tickets without writing. |
+| `ticket lint` | Yes | Validate tickets without writing. |
 | `retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `doctor` | No | Inspect setup; its lock probe reports a held lock as a failure. |
 | `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, or the plan-ticket-drain kickoff without writing state. |
@@ -31,7 +31,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `resume` | Yes | Ask the running engine to release its current hold. |
 | `kill` | Yes | Ask the running engine to stop at a safe point. |
 | `stop` | Yes | Finish active work and exit. |
-| `review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
+| `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `suggest` | Yes | File an idea into the Suggestion Box. |
 | `issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `drain` and `serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
@@ -41,8 +41,8 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `dismiss` | No | Dismiss named box IDs without a model call. |
 | `covmap` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `covgate` | Yes | Run a unit command and check its coverage report. |
-| `new` | Yes | Create and lint a ticket skeleton. |
-| `order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
+| `ticket new` | Yes | Create and lint a ticket skeleton. |
+| `ticket order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
 | `run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |
 | `confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. |
 | `reject` | Yes | Intake the named ticket, then apply or publish a reject verdict after interactive confirmation; other pending tickets are left untouched. |

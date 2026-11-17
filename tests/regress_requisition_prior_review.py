@@ -97,12 +97,12 @@ def main() -> None:
         llm = FakeLLM([json.dumps({"verdict": "snag", "summary": "reviewed", "findings": [finding]}), json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
         with patch("clutch.__main__.ProviderLLM", return_value=llm):
             with contextlib.redirect_stdout(io.StringIO()):
-                first = clutch_main(["review", "candidate"], cwd=repo, env=env)
+                first = clutch_main(["ticket", "review", "candidate"], cwd=repo, env=env)
             path.write_text(path.read_text().replace("## Goal / Why", "## Goal / Why\nEdited."))
             git("add", "tickets/candidate/ticket.md")
             git("commit", "-m", "edit")
             with contextlib.redirect_stdout(io.StringIO()):
-                second = clutch_main(["review", "candidate"], cwd=repo, env=env)
+                second = clutch_main(["ticket", "review", "candidate"], cwd=repo, env=env)
         block = llm.requests[1].rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0]
         passed = first == 1 and second == 0 and "missing caller" in block
         print(json.dumps({"regression_result": "pass" if passed else "defect"}))

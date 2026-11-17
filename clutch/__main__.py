@@ -309,7 +309,6 @@ def _parser() -> argparse.ArgumentParser:
     stats.add_argument("--window", default="7d")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
-    sub.add_parser("lint", help="validate tickets without running or writing anything").add_argument("stems", nargs="*")
     sub.add_parser("retro", help="run a retro now, or queue one on the running engine")
     sub.add_parser("doctor", help="inspect setup without changing state")
     sub.add_parser("core", help="refresh managed conduct in every routed agent's root file")
@@ -367,7 +366,6 @@ def _parser() -> argparse.ArgumentParser:
         sub.add_parser(verb, help=f"submit {verb} to the running engine, or do nothing under the idle lock")
     sub.add_parser("kill", help="submit kill to the running engine; refuse when nothing is running")
     sub.add_parser("stop", help="finish the running ticket, admit nothing new, then exit")
-    sub.add_parser("review", help="review a committed ticket against merged code and journal its verdict").add_argument("stems", nargs="+")
     sub.add_parser("suggest", help="queue an idea for triage").add_argument("summary")
     issue_parser = sub.add_parser("issue", help="print a prefilled GitHub new-issue link for a critical clutch bug")
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
@@ -460,11 +458,63 @@ def _parser() -> argparse.ArgumentParser:
     covgate.add_argument("--gate", type=Path, default=Path("test-gate.toml"))
     covgate.add_argument("--report", type=Path, default=Path("coverage.json"))
     covgate.add_argument("command", nargs=argparse.REMAINDER)
-    new = sub.add_parser("new", help="template tickets/<stem>/ticket.md and lint it")
+    ticket = sub.add_parser(
+        "ticket",
+        help="author and maintain tickets",
+        description="Author, validate, review and order tickets.",
+        epilog="Examples:\nclutch ticket lint example\n  Validate a ticket.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    ticket_sub = ticket.add_subparsers(dest="ticket_verb", required=True)
+    new = _command(
+        ticket_sub,
+        "new",
+        summary="create and lint a ticket skeleton",
+        does="Create and lint a ticket skeleton; bug tickets require evidence.",
+        reads="Evidence files; no config is needed.",
+        writes="Ticket file and copied bug evidence; no journal or git state.",
+        lock="None.",
+        exits="0 when authored; 2 on refusal.",
+        examples=["clutch ticket new add-widget", "clutch ticket new fix-crash --kind bug --evidence crash.txt"],
+    )
     new.add_argument("stem")
     new.add_argument("--kind", choices=KINDS, default="feature")
     new.add_argument("--evidence", nargs="+", metavar="PATH")
-    ordering = sub.add_parser("order", help="edit a ticket's priority or ordering")
+    lint = _command(
+        ticket_sub,
+        "lint",
+        summary="validate tickets without writing",
+        does="Validate tickets without running them.",
+        reads="Tickets, journal (the main checkout's in a linked worktree), git status and config.",
+        writes="Nothing.",
+        lock="None.",
+        exits="0 when valid; 1 for findings; 2 for a missing named ticket or unreadable tickets directory.",
+        examples=["clutch ticket lint add-widget"],
+    )
+    lint.add_argument("stems", nargs="*")
+    review = _command(
+        ticket_sub,
+        "review",
+        summary="review a committed ticket",
+        does="Commit only named ticket edits through intake and review each committed ticket with a model.",
+        reads="Tickets, journal, git state and config.",
+        writes="Named ticket commits and journal verdicts; provisional reviews with unmerged dependencies are printed only.",
+        lock="Commit lock only.",
+        exits="0 on approve; 1 on snag or rma; 2 on refusal.",
+        examples=["clutch ticket review add-widget"],
+    )
+    review.add_argument("stems", nargs="+")
+    ordering = _command(
+        ticket_sub,
+        "order",
+        summary="edit ticket priority or ordering",
+        does="Edit priority and runs-before ordering for intake to commit.",
+        reads="Ticket, journal and lock holder.",
+        writes="Ticket in the working tree.",
+        lock="None.",
+        exits="0 when edited; 2 on refusal.",
+        examples=["clutch ticket order add-widget --priority P0", "clutch ticket order add-widget --runs-before"],
+    )
     ordering.add_argument("stem")
     ordering.add_argument("--priority", choices=PRIORITIES)
     ordering.add_argument("--runs-before", nargs="*", metavar="STEM")
@@ -775,7 +825,7 @@ def main(
             context = _observe_context(repo, config, args.config, exec_, git, env)
             stems = [row["stem"] for row in observe.snapshot(context)["rows"] if row["draft"]]
             if not stems:
-                raise runner.Refusal("no draft tickets await confirm or reject", "run triage, or author a ticket with clutch new")
+                raise runner.Refusal("no draft tickets await confirm or reject", "run triage, or author a ticket with clutch ticket new")
             print(ask.render("drafts", stems, config, repo), end="")
             return 0
         if args.kind == "box":
@@ -789,7 +839,7 @@ def main(
         if findings := stem_findings(args.stem):
             raise runner.Refusal(findings[0].message, findings[0].paved_road)
         if args.kind != "author" and not (repo / ticket_path(args.stem)).is_file():
-            raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch new {args.stem}")
+            raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch ticket new {args.stem}")
         from clutch import observe
 
         last = observe.last_bodies(observe.as_events(observe.journal(config.state_dir)))
@@ -987,7 +1037,7 @@ def main(
         "install": handle_install,
         "migrate-config": handle_migrate_config,
         "covgate": handle_covgate,
-        "new": handle_new,
+        "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order}[args.ticket_verb](),
         "doctor": handle_doctor,
         "issue": handle_issue,
         "update-config": handle_update_config,
@@ -999,8 +1049,6 @@ def main(
         "snapshot": handle_watch,
         "watch": handle_watch,
         "stats": handle_stats,
-        "lint": handle_lint,
-        "order": handle_order,
         "status": handle_status,
         "kill": handle_control,
         "pause": handle_control,
@@ -1008,7 +1056,6 @@ def main(
         "stop": handle_control,
         "reject": handle_verdict,
         "confirm": handle_verdict,
-        "review": handle_review,
         "roadmap": handle_roadmap,
         "release": handle_release,
         "publish": handle_publish,
@@ -1025,7 +1072,7 @@ def main(
             isatty, read_input = terminal if terminal is not None else (sys.stdin.isatty, input)
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch confirm|reject <stem>`")
-        if args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "new", "doctor", "issue"}:
+        if args.verb in {"docs", "init-config", "install", "migrate-config", "covgate", "doctor", "issue"} or (args.verb == "ticket" and args.ticket_verb == "new"):
             return handlers[args.verb]()
         config = load_config(args.config, cwd=repo)
         if args.verb == "drain" and args.detach:
@@ -1040,7 +1087,7 @@ def main(
             exec_=exec_,
             git=Git(
                 exec_,
-                env={**child_env(env, config), **({"GIT_OPTIONAL_LOCKS": "0"} if args.verb in {"lint", "watch", "snapshot"} else {})},
+                env={**child_env(env, config), **({"GIT_OPTIONAL_LOCKS": "0"} if args.verb in {"watch", "snapshot"} or (args.verb == "ticket" and args.ticket_verb == "lint") else {})},
                 timeout=GIT_TIMEOUT_S,
                 commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep),
             ),
@@ -1256,7 +1303,7 @@ async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
             else:
                 valid += 1
     except (OSError, UnicodeError, GitError) as exc:
-        print(f"{root}: {exc} (restore ticket and repository readability, then retry clutch lint)")
+        print(f"{root}: {exc} (restore ticket and repository readability, then retry clutch ticket lint)")
         exit_code = 2
     print(f"lint: {valid}/{total} tickets valid")
     return exit_code
@@ -1386,10 +1433,10 @@ def _order(checkout, stem, priority, runs_before):
             changed = order(text, priority=priority, runs_before=runs_before)
         except ValueError, StopIteration:
             validate_ticket(stem, text, checkout.repo)
-            raise runner.Refusal("ticket ordering fields cannot be edited", "use ordinary priority and section headings, then retry order") from None
+            raise runner.Refusal("ticket ordering fields cannot be edited", "use ordinary priority and section headings, then retry ticket order") from None
         ticket = validate_ticket(stem, changed, checkout.repo)
         if priority is not None and ticket.frontmatter.priority != priority:
-            raise runner.Refusal("priority line cannot be edited", "write priority as a plain `priority: P2` line, then retry order")
+            raise runner.Refusal("priority line cannot be edited", "write priority as a plain `priority: P2` line, then retry ticket order")
     except TicketInvalid as exc:
         admission = order_admission(stem, events, exists, holder, exc.findings)
         raise runner.Refusal(admission.message, admission.paved_road) from None
@@ -1403,7 +1450,7 @@ def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] =
     """Author a ticket and its evidence outside the lock fence."""
     if kind == "bug" and not evidence:
         raise runner.Refusal(
-            "a bug ticket needs its evidence first", f"save the observed failure (output, log excerpt, or captured command output) to a file, then rerun new {stem} --kind bug --evidence <file>"
+            "a bug ticket needs its evidence first", f"save the observed failure (output, log excerpt, or captured command output) to a file, then rerun ticket new {stem} --kind bug --evidence <file>"
         )
     if kind != "bug" and evidence:
         raise runner.Refusal("evidence is for bug tickets", "omit --evidence or choose --kind bug")

@@ -24,7 +24,7 @@ def test_drain_heads_name_the_drain_verb():
 
 
 def test_missing_ticket_road_names_clutch_verbs():
-    assert run_admission("item", [], False, None).paved_road == "author it with `clutch new item`, fill it, then `clutch run item`"
+    assert run_admission("item", [], False, None).paved_road == "author it with `clutch ticket new item`, fill it, then `clutch run item`"
 
 
 def test_unknown_box_id_carries_a_road():

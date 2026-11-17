@@ -61,7 +61,7 @@ def test_verdict_decisions_link():
 
 def test_verb_what_follows_run_guide():
     docs = documents()
-    docs["host-running.md"] = docs["host-running.md"].replace("Description of review.", "A `revised` review description.")
+    docs["host-running.md"] = docs["host-running.md"].replace("Description of ticket review.", "A `revised` review description.")
     assert build(docs)["verb.review"]["what"] == "A revised review description."  # A copied description would be stale.
 
 
@@ -71,7 +71,7 @@ def test_unresolved_link_raises():
     with pytest.raises(LookupError, match=r"view.clutch.details.*VS Code extension.*host-contract.md"):
         build(docs)
     docs = documents()
-    docs["host-running.md"] = docs["host-running.md"].replace("| `review` |", "| `renamed` |")
+    docs["host-running.md"] = docs["host-running.md"].replace("| `ticket review` |", "| `renamed` |")
     with pytest.raises(LookupError, match=r"verb.review.*review.*host-running.md"):
         build(docs)
 

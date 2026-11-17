@@ -27,7 +27,7 @@ def test_links_resolve():
             assert path.is_relative_to(Path(clutch.__file__).parent / "docs")
             line = path.read_text().splitlines()[link["line"]]
             if key.startswith("verb."):
-                assert line.startswith(f"| `{key[5:]}` |")
+                assert line.startswith(f"| `{TOPICS[key]['verb']}` |")
             else:
                 assert re.fullmatch(r"#+\s+" + re.escape(TOPICS[key]["heading"]), line)
         else:
@@ -65,5 +65,5 @@ def test_verb_what_from_run_guide():
     lines = (Path(clutch.__file__).parent / "docs/host-running.md").read_text().splitlines()
     for key in TOPICS:
         if key.startswith("verb."):
-            row = next(line for line in lines if line.startswith(f"| `{key[5:]}` |"))
+            row = next(line for line in lines if line.startswith(f"| `{TOPICS[key]['verb']}` |"))
             assert result[key]["what"] == row.split("|")[3].strip().replace("`", "")

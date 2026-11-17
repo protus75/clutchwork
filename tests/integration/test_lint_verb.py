@@ -17,7 +17,7 @@ def lint(root, *stems):
     def forbidden(checkout):
         pytest.fail("lint constructed the pipeline")
 
-    return main(["lint", *stems], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden)
+    return main(["ticket", "lint", *stems], cwd=root, env=ENV, clock=Clock(), pipeline=forbidden)
 
 
 def git(root, *argv):

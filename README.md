@@ -21,7 +21,7 @@ Run its verbs as `uv run clutch <verb>`. Your host also needs `config.yaml`; sta
 
 ## Set up a host
 
-Run `uv run clutch doctor` and `uv run clutch probe`, then `uv run clutch core` to write the managed conduct block into `CLAUDE.md` for Claude and Qwen Code or `AGENTS.md` for other CLIs. Commit the files. The block gives a chat agent rules for authoring and editing tickets with `clutch new`, `clutch lint`, and `clutch review`, and for supervising a drain. Re-run `core` after upgrading clutch: `drain`, `serve`, and `run` refuse to start while the block is stale.
+Run `uv run clutch doctor` and `uv run clutch probe`, then `uv run clutch core` to write the managed conduct block into `CLAUDE.md` for Claude and Qwen Code or `AGENTS.md` for other CLIs. Commit the files. The block gives a chat agent rules for authoring and editing tickets with `clutch ticket new`, `clutch ticket lint`, and `clutch ticket review`, and for supervising a drain. Re-run `core` after upgrading clutch: `drain`, `serve`, and `run` refuse to start while the block is stale.
 
 ```sh
 # Setup
@@ -37,17 +37,17 @@ uv run clutch core     # refresh managed conduct files
 
 1. Open Claude Code or Codex in the host checkout, often with auto permissions.
 2. Work out a plan with the chat agent.
-3. Ask it to turn the plan into tickets. It runs `clutch new`, fills each ticket, and repeats `clutch lint` and `clutch review` until each is clean.
+3. Ask it to turn the plan into tickets. It runs `clutch ticket new`, fills each ticket, and repeats `clutch ticket lint` and `clutch ticket review` until each is clean.
 4. Ask it to drain the queue with `uv run clutch drain`, or leave `uv run clutch serve` running to pick up new tickets live. clutch coordinates CLI agents through authoring, implementation, checking, review, and merge.
 
 One unattended drain ran about 30 tickets in about 4 hours, many of them triage-authored bug fixes and small features. The practical limit is how fast a person can plan enough work to fill the queue, so planning sessions with the chat agent are where the person spends their time.
 
 ```sh
 # Authoring
-uv run clutch new      # create and lint a ticket skeleton
-uv run clutch lint     # validate tickets without writing
-uv run clutch review   # review a committed ticket
-uv run clutch order    # edit ticket priority or ordering
+uv run clutch ticket new      # create and lint a ticket skeleton
+uv run clutch ticket lint     # validate tickets without writing
+uv run clutch ticket review   # review a committed ticket
+uv run clutch ticket order    # edit ticket priority or ordering
 uv run clutch suggest  # file an idea into the Suggestion Box
 uv run clutch issue    # link to report a critical clutch bug upstream
 # Running

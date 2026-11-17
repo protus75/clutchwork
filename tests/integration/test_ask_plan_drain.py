@@ -75,11 +75,11 @@ def test_author_prompt_content(prompts):
     for phrase in (
         "`unique-stem`",
         "tickets/unique-stem/ticket.md",
-        "clutch new unique-stem --kind",
+        "clutch ticket new unique-stem --kind",
         "--evidence",
         "clutch docs",
-        "clutch lint unique-stem",
-        "clutch review unique-stem",
+        "clutch ticket lint unique-stem",
+        "clutch ticket review unique-stem",
         "clutch status",
         "clutch suggest",
         "one write",
@@ -95,7 +95,7 @@ def test_author_prompt_content(prompts):
         "failed",
     ):
         assert phrase in text, phrase
-    assert text.index("clutch new unique-stem") < text.index("clutch lint unique-stem") < text.index("clutch review unique-stem")
+    assert text.index("clutch ticket new unique-stem") < text.index("clutch ticket lint unique-stem") < text.index("clutch ticket review unique-stem")
 
 
 def test_review_prompt_is_audit(prompts):

@@ -58,7 +58,7 @@ def invoke(argv, tmp_path, capsys):
     return result, output.out, output.err
 
 
-@pytest.mark.parametrize("path", [("roadmap", "merged"), ("prompt", "diagnose"), ("roadmap",), ("order",)])
+@pytest.mark.parametrize("path", [("roadmap", "merged"), ("prompt", "diagnose"), ("roadmap",), ("ticket", "order")])
 def test_help_forms_agree(path, tmp_path, capsys):
     results = [invoke(argv, tmp_path, capsys) for argv in (["help", *path], ["--help", *path], ["-h", *path], [*path, "--help"])]
     assert all(code == 0 and not err for code, _, err in results)

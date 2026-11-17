@@ -5,14 +5,14 @@ def test_extension_fields(tmp_path):
     assert extension_fields(tmp_path) == {
         "root": str(tmp_path.resolve()),
         "commands": {
-            "review": ["review"],
-            "lint": ["lint"],
+            "review": ["ticket", "review"],
+            "lint": ["ticket", "lint"],
             "run": ["run"],
             "triage": ["triage"],
             "dismiss": ["dismiss"],
             "serve": ["serve"],
             "stop": ["stop"],
-            "order": ["order"],
+            "order": ["ticket", "order"],
             "stats": ["stats", "--tree"],
             "askDiagnose": ["prompt", "diagnose"],
             "askReview": ["prompt", "review"],
@@ -22,3 +22,10 @@ def test_extension_fields(tmp_path):
         },
         "orderFlags": {"priority": "--priority", "runsBefore": "--runs-before"},
     }
+
+
+def test_extension_commands_parse(tmp_path):
+    from clutch.__main__ import _parser
+
+    for argv in extension_fields(tmp_path)["commands"].values():
+        _parser().parse_known_args([*argv, "some-stem"])

@@ -568,7 +568,7 @@ def test_new_skeleton_is_draft_until_intake(repo):
     from clutch import __main__ as cli
 
     root, g, journal = repo
-    assert cli.main(["new", "aaa-wip"], cwd=root) == 0
+    assert cli.main(["ticket", "new", "aaa-wip"], cwd=root) == 0
     path = root / "tickets/aaa-wip/ticket.md"
     text = path.read_text()
     assert "state: draft\n" in text.split("---", 2)[1]
@@ -596,7 +596,7 @@ def test_new_bug_copies_evidence(repo, capsys):
 
     root, _, _ = repo
     (root / "failure.txt").write_bytes(b"observed failure\x00")
-    assert cli.main(["new", "t-bug", "--kind", "bug", "--evidence", "failure.txt"], cwd=root) == 0
+    assert cli.main(["ticket", "new", "t-bug", "--kind", "bug", "--evidence", "failure.txt"], cwd=root) == 0
     assert (root / "tickets/t-bug/ticket.md").read_text() == template("bug")
     assert sorted(p.relative_to(root).as_posix() for p in (root / "tickets/t-bug").rglob("*") if p.is_file()) == ["tickets/t-bug/evidence/failure.txt", "tickets/t-bug/ticket.md"]
     assert (root / "tickets/t-bug/evidence/failure.txt").read_bytes() == b"observed failure\x00"
@@ -624,7 +624,7 @@ def test_new_refuses_invalid_evidence(repo, capsys, case):
     (root / "link.txt").symlink_to(root / "failure.txt")
     paths = {"missing": ["missing.txt"], "directory": ["other"], "symlink": ["link.txt"], "duplicate": ["failure.txt", "other/failure.txt"], "feature": ["failure.txt"]}[case]
     kind = "feature" if case == "feature" else "bug"
-    assert cli.main(["new", "t-bug", "--kind", kind, "--evidence", *paths], cwd=root) == 2
+    assert cli.main(["ticket", "new", "t-bug", "--kind", kind, "--evidence", *paths], cwd=root) == 2
     assert not (root / "tickets/t-bug").exists()
     error = capsys.readouterr().err
     assert (paths[0] if case in {"missing", "directory", "symlink"} else "duplicate" if case == "duplicate" else "bug tickets") in error

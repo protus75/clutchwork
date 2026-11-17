@@ -96,7 +96,7 @@ def main() -> None:
             path.write_text(TICKET.format(depends="none").replace("---\npriority:", "---\nstate: draft\npriority:", 1))
         llm = FakeLLM([json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
         with patch("clutch.__main__.ProviderLLM", return_value=llm), contextlib.redirect_stdout(io.StringIO()):
-            result = clutch_main(["review", "alpha"], cwd=repo, env=env)
+            result = clutch_main(["ticket", "review", "alpha"], cwd=repo, env=env)
         subjects = git("log", "--format=%s").splitlines()
         if "clutch(beta): ticket" in subjects:
             outcome = "defect"

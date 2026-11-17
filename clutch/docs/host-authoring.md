@@ -7,12 +7,12 @@ what content its tickets carry, never the format. See the [host run guide](host-
 
 ## Workflow
 
-1. Start with `clutch new <stem> --kind feature|bug|chore`, choosing one kind (default `feature`).
+1. Start with `clutch ticket new <stem> --kind feature|bug|chore`, choosing one kind (default `feature`).
    For a bug, first save the observed failure to a file and pass it with `--evidence <file>`.
    It writes
    `tickets/<stem>/ticket.md` with section placeholders and lints it. Every finding names the fix
    to apply. A bug includes `## Regression` and copies the evidence files into the ticket.
-2. Fill each section with the content below, run `clutch lint <stem>`, and repeat until it is
+2. Fill each section with the content below, run `clutch ticket lint <stem>`, and repeat until it is
    clean. Omit stems to check all tickets that are
    not settled or rejected in the journal (all tickets when there is no journal). In a linked
    worktree, lint with no stems uses the main checkout's journal. Lint applies
@@ -22,7 +22,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
 3. Before review, check that no criterion contradicts merged behavior or an existing test outside
    the fence, and that all criteria can hold together. Check that every invariant the ticket states
    or cites has a criterion whose test fails when the invariant is dropped.
-   Run `clutch review <stem>`, repair every finding,
+   Run `clutch ticket review <stem>`, repair every finding,
    and repeat until it prints `approve`. Reviews with unmerged dependencies are provisional and not
    journaled; repair their findings, and the drain reviews again after the dependencies merge.
 4. A running `serve` picks up the new ticket; alternatively run `clutch drain`. Intake commits
@@ -34,7 +34,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   dependency blocks every ticket behind it. Merged code includes a test helper, fixture, fixture
   data set, or check rule another ticket creates. A ticket that uses one depends on the ticket that creates it.
 - `Runs before`: stems this ticket runs ahead of when both are eligible. This soft order never
-  blocks; use it, not `Depends on`, for any other ordering. Use `clutch order` to change it or priority.
+  blocks; use it, not `Depends on`, for any other ordering. Use `clutch ticket order` to change it or priority.
   `Depends on` and `Runs before` stems name existing tickets, never the ticket itself, and never close a cycle.
   In `Depends on`, a stem with no `tickets/<stem>/ticket.md` is refused.
 - `Context`: files the implementing agent reads before starting; they are embedded in its prompt.
@@ -114,7 +114,7 @@ A `kind: bug` ticket must prove the defect existed and is fixed. Three things ca
 
 ### Evidence
 
-`new` copies the supplied files into `tickets/<stem>/evidence/`. At least one file there must be
+`ticket new` copies the supplied files into `tickets/<stem>/evidence/`. At least one file there must be
 committed with the ticket before it runs:
 the observed wrong output, a log excerpt, or the failing command's captured output. The file
 must be a regular, non-symlink file. Every ticket read (intake, lint, confirm, drain, serve, run,

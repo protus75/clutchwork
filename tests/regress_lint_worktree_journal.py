@@ -28,7 +28,7 @@ def main() -> int:
             git(repo, "worktree", "add", "--detach", str(worktree))
             output = io.StringIO()
             with contextlib.redirect_stdout(output):
-                result = clutch_main(["lint"], cwd=worktree, env=ENV, clock=Clock())
+                result = clutch_main(["ticket", "lint"], cwd=worktree, env=ENV, clock=Clock())
             text = output.getvalue()
             if result == 0 and text == "lint: 1/1 tickets valid\n":
                 outcome, code = "pass", 0

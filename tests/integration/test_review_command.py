@@ -15,7 +15,7 @@ from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_r
 
 def run(root, monkeypatch, llm, stem):
     monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
-    return main(["review", stem], cwd=root, env=ENV, clock=Clock())
+    return main(["ticket", "review", stem], cwd=root, env=ENV, clock=Clock())
 
 
 def verdicts(root):
@@ -34,8 +34,8 @@ def test_review_preflight_failure_refuses(tmp_path, monkeypatch, capsys):
         return ["probe refused"]
 
     monkeypatch.setattr("clutch.providers.ProviderLLM.preflight", preflight)
-    assert main(["review", "candidate"], cwd=root, env=ENV, clock=Clock()) == 2
-    assert "clutch review: probe refused" in capsys.readouterr().err
+    assert main(["ticket", "review", "candidate"], cwd=root, env=ENV, clock=Clock()) == 2
+    assert "clutch ticket: probe refused" in capsys.readouterr().err
     assert verdicts(root) == []
     lock = Lockfile(root / ".clutch/state", verb="drain", instance_id="probe", clock=Clock())
     lock.acquire()
@@ -192,7 +192,7 @@ def test_review_commit_lock_timeout(tmp_path, monkeypatch, capsys):
     (root / ".clutch/state").mkdir(parents=True, exist_ok=True)
     with (root / ".clutch/state/commit.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        assert entry.main(["review", "candidate"], cwd=root, env=ENV, clock=clock) == 2
+        assert entry.main(["ticket", "review", "candidate"], cwd=root, env=ENV, clock=clock) == 2
     assert "commit.lock" in capsys.readouterr().err
     assert "Changed." not in git_out(root, "show", "main:tickets/candidate/ticket.md")
 

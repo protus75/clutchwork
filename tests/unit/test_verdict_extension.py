@@ -45,11 +45,11 @@ def test_verdict_and_review_loop_over_stems(monkeypatch):
     monkeypatch.setattr(entry, "_review", review)
     assert entry._parser().parse_args(["confirm", "a", "b"]).stems == ["a", "b"]
     for verb, fake, args in (("confirm", verdict, ["--yes"]), ("review", review, [])):
-        assert entry.main([verb, "a", "b", *args], env={}) == 0
+        assert entry.main([*(["ticket"] if verb == "review" else []), verb, "a", "b", *args], env={}) == 0
         assert [call.args[1] for call in fake.await_args_list] == ["a", "b"]
         fake.reset_mock()
         fake.return_value = 7
-        assert entry.main([verb, "a", "b", *args], env={}) == 7
+        assert entry.main([*(["ticket"] if verb == "review" else []), verb, "a", "b", *args], env={}) == 7
         assert [call.args[1] for call in fake.await_args_list] == ["a"]
 
 

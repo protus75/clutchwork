@@ -124,7 +124,7 @@ inventory sends a ticket that would lower a threshold to a human.
 4. Copy or edit `config.yaml` using [Copyable configuration](#copyable-configuration).
 5. Run `clutch doctor` and `clutch probe` to check the setup and providers; see the [run guide](host-running.md).
 6. Run `clutch core` and commit the routed conduct files; see [Managed conduct](#managed-conduct-and-ticket-ownership).
-7. Author the first ticket with `clutch new`, then run `clutch lint` and `clutch review`; see the [run guide](host-running.md).
+7. Author the first ticket with `clutch ticket new`, then run `clutch ticket lint` and `clutch ticket review`; see the [run guide](host-running.md).
 8. Run the ticket with `clutch drain` or `clutch serve`; see the [run guide](host-running.md).
 9. Confirm the ticket merged on main with `clutch status`; see the [run guide](host-running.md).
 

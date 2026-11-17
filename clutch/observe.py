@@ -628,14 +628,14 @@ def extension_fields(root: Path) -> dict:
     return {
         "root": str(root.resolve()),
         "commands": {
-            "review": ["review"],
-            "lint": ["lint"],
+            "review": ["ticket", "review"],
+            "lint": ["ticket", "lint"],
             "run": ["run"],
             "triage": ["triage"],
             "dismiss": ["dismiss"],
             "serve": ["serve"],
             "stop": ["stop"],
-            "order": ["order"],
+            "order": ["ticket", "order"],
             "stats": ["stats", "--tree"],
             "askDiagnose": ["prompt", "diagnose"],
             "askReview": ["prompt", "review"],

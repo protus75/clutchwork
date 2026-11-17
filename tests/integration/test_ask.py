@@ -37,7 +37,7 @@ def test_host_notes_appended_as_data_block_only_when_set(config, tmp_path):
 def test_prompt_verb_refuses_missing_ticket(config, tmp_path, capsys):
     assert main(["prompt", "review", "missing-stem"], cwd=tmp_path) == 2  # A missing ticket must refuse.
     err = capsys.readouterr().err
-    assert "tickets/missing-stem/ticket.md does not exist" in err and "clutch new missing-stem" in err  # Refusal identifies both cause and remedy.
+    assert "tickets/missing-stem/ticket.md does not exist" in err and "clutch ticket new missing-stem" in err  # Refusal identifies both cause and remedy.
     assert main(["prompt", "review", "Bad_Stem"], cwd=tmp_path) == 2  # Invalid stems must refuse before path access.
     assert "kebab-case" in capsys.readouterr().err
 
