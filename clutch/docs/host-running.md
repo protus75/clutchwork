@@ -18,7 +18,7 @@ Use the same prefix for the other verbs below; for example, `clutch install` rep
 | `lint` | Yes | Validate tickets without writing. |
 | `retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `doctor` | No | Inspect setup; its lock probe reports a held lock as a failure. |
-| `prompt` | Yes | Render an operator prompt for a ticket, named box IDs, all committed drafts, or the drain loop without writing state. |
+| `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, or the plan-ticket-drain kickoff without writing state. |
 | `core` | Yes | Refresh managed conduct files. |
 | `probe` | Yes | Probe declared providers and models. |
 | `install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |

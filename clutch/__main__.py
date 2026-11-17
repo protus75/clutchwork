@@ -627,10 +627,10 @@ def main(
         return _new(repo, args.stem, args.kind, args.evidence or ())
 
     def handle_prompt():
-        if args.kind == "drain-loop":
+        if args.kind in ("drain-loop", "plan-ticket-drain"):
             if args.stems:
-                raise runner.Refusal("drain-loop takes no stem", "run clutch prompt drain-loop with no stems")
-            print(ask.render("drain-loop", "", config, repo), end="")
+                raise runner.Refusal(f"{args.kind} takes no stem", f"run clutch prompt {args.kind} with no stems")
+            print(ask.render(args.kind, "", config, repo), end="")
             return 0
         if args.kind == "drafts":
             if args.stems:
@@ -655,7 +655,7 @@ def main(
         args.stem = args.stems[0]
         if findings := stem_findings(args.stem):
             raise runner.Refusal(findings[0].message, findings[0].paved_road)
-        if not (repo / ticket_path(args.stem)).is_file():
+        if args.kind != "author" and not (repo / ticket_path(args.stem)).is_file():
             raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch new {args.stem}")
         from clutch import observe
 
