@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The idle-point path needs to preserve operator-lineage idempotency, use a fresh main-based worktree, and avoid replaying the original run's Effect keys.
+The idle-point implementation must coordinate fresh worktrees, effect keys, and existing terminal routing; I did not establish a complete implementation.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 70 minutes; implementation and verification were not completed.
+The ticket estimated 70 minutes; the work stopped during inspection.
 
