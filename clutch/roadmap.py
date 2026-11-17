@@ -309,6 +309,19 @@ def refile_row(text, row, stem):
     return "".join(lines)
 
 
+async def _write_row(checkout, row, edit, action, message, lines):
+    path = checkout.repo / ROADMAP
+    text = path.read_text()
+    fresh = next((r for r in parse(text) if r.number == row.number), None)
+    if fresh is None or fresh.stem != row.stem or fresh.content != row.content:
+        lines.append(f"roadmap: row {row.number} {row.stem} changed on disk; skipped {action}")
+        return None
+    text = edit(text, fresh)
+    checkout.fs.write(path, text.encode())
+    await checkout.git.commit(checkout.repo, message, only=[ROADMAP])
+    return text
+
+
 async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     repo = checkout.repo
     if await checkout.git.status_porcelain(repo, "--", ROADMAP):
@@ -328,9 +341,10 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
         for row in selected:
             if action == "link" and states.get(row.stem) == "rejected":
                 continue
-            text = edit(text, row)
-            checkout.fs.write(path, text.encode())
-            await checkout.git.commit(repo, f"clutch(roadmap): {action} {row.stem}", only=[ROADMAP])
+            updated = await _write_row(checkout, row, edit, action, f"clutch(roadmap): {action} {row.stem}", lines)
+            if updated is None:
+                continue
+            text = updated
             lines.append(f"roadmap: {'struck' if action == 'strike' else 'linked'} row {row.number} {row.stem}")
     opened = choice.open
     box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
@@ -350,9 +364,10 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
             lines.append(f"roadmap: row {row.number} {row.stem} re-files spent: {reason}")
             continue
         stem = re.sub(r"-r\d+$", "", row.stem) + f"-r{count + 1}"
-        text = refile_row(text, row, stem)
-        checkout.fs.write(path, text.encode())
-        await checkout.git.commit(repo, f"clutch(roadmap): refile {row.stem} as {stem}", only=[ROADMAP])
+        updated = await _write_row(checkout, row, lambda text, fresh: refile_row(text, fresh, stem), "refile", f"clutch(roadmap): refile {row.stem} as {stem}", lines)
+        if updated is None:
+            continue
+        text = updated
         new_row = next(r for r in parse(text) if r.number == row.number)
         reasons[new_row.number] = reason
     rows = parse(text)
@@ -402,9 +417,10 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     for row, id in filed:
         message = box.get(id)
         if message.resolution is not None and message.resolution.kind == "ticket":
-            text = link(text, row)
-            checkout.fs.write(path, text.encode())
-            await checkout.git.commit(repo, f"clutch(roadmap): author {row.stem}", only=[ROADMAP])
+            updated = await _write_row(checkout, row, link, "link", f"clutch(roadmap): author {row.stem}", lines)
+            if updated is None:
+                continue
+            text = updated
             lines.append(f"roadmap: authored row {row.number} {row.stem}")
             opened += 1
         elif message.resolution is not None and message.resolution.kind == "declined":
