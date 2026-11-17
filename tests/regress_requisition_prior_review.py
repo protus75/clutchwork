@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from clutch.__main__ import main
+from clutch.__main__ import main as clutch_main
 from clutch.config import load_config
 from clutch.hostfiles import render
 from clutch.llm import FakeLLM
@@ -72,37 +72,42 @@ Needs a new dependency.
 """
 
 
-with tempfile.TemporaryDirectory() as directory:
-    repo = Path(directory)
-    (repo / "clutch").mkdir()
-    (repo / "clutch/thing.py").write_text("")
-    (repo / "config.yaml").write_text(CONFIG)
-    (repo / "CLUTCH_PLAN.md").write_text(PLAN)
-    (repo / ".gitignore").write_text(".clutch/\n")
-    for path in routed_conduct_paths(load_config(None, cwd=repo), repo):
-        path.write_bytes(render(path.read_bytes() if path.exists() else b""))
-    path = repo / "tickets/candidate/ticket.md"
-    path.parent.mkdir(parents=True)
-    path.write_text(TICKET.format(depends="none").replace("---\npriority: P2", "---\nstate: confirmed\nsource: human\npriority: P2", 1))
-    env = {**os.environ, "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@example.com", "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@example.com"}
+def main() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        repo = Path(directory)
+        (repo / "clutch").mkdir()
+        (repo / "clutch/thing.py").write_text("")
+        (repo / "config.yaml").write_text(CONFIG)
+        (repo / "CLUTCH_PLAN.md").write_text(PLAN)
+        (repo / ".gitignore").write_text(".clutch/\n")
+        for path in routed_conduct_paths(load_config(None, cwd=repo), repo):
+            path.write_bytes(render(path.read_bytes() if path.exists() else b""))
+        path = repo / "tickets/candidate/ticket.md"
+        path.parent.mkdir(parents=True)
+        path.write_text(TICKET.format(depends="none").replace("---\npriority: P2", "---\nstate: confirmed\nsource: human\npriority: P2", 1))
+        env = {**os.environ, "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@example.com", "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@example.com"}
 
-    def git(*args):
-        subprocess.run(["git", "-C", str(repo), *args], env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        def git(*args):
+            subprocess.run(["git", "-C", str(repo), *args], env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    git("init", "-b", "main")
-    git("add", ".")
-    git("commit", "-m", "initial")
-    finding = {"code": "missing", "message": "missing caller", "paved_road": "add caller"}
-    llm = FakeLLM([json.dumps({"verdict": "snag", "summary": "reviewed", "findings": [finding]}), json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
-    with patch("clutch.__main__.ProviderLLM", return_value=llm):
-        with contextlib.redirect_stdout(io.StringIO()):
-            first = main(["review", "candidate"], cwd=repo, env=env)
-        path.write_text(path.read_text().replace("## Goal / Why", "## Goal / Why\nEdited."))
-        git("add", "tickets/candidate/ticket.md")
-        git("commit", "-m", "edit")
-        with contextlib.redirect_stdout(io.StringIO()):
-            second = main(["review", "candidate"], cwd=repo, env=env)
-    block = llm.requests[1].rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0]
-    passed = first == 1 and second == 0 and "missing caller" in block
-    print(json.dumps({"regression_result": "pass" if passed else "defect"}))
-    raise SystemExit(0 if passed else 1)
+        git("init", "-b", "main")
+        git("add", ".")
+        git("commit", "-m", "initial")
+        finding = {"code": "missing", "message": "missing caller", "paved_road": "add caller"}
+        llm = FakeLLM([json.dumps({"verdict": "snag", "summary": "reviewed", "findings": [finding]}), json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
+        with patch("clutch.__main__.ProviderLLM", return_value=llm):
+            with contextlib.redirect_stdout(io.StringIO()):
+                first = clutch_main(["review", "candidate"], cwd=repo, env=env)
+            path.write_text(path.read_text().replace("## Goal / Why", "## Goal / Why\nEdited."))
+            git("add", "tickets/candidate/ticket.md")
+            git("commit", "-m", "edit")
+            with contextlib.redirect_stdout(io.StringIO()):
+                second = clutch_main(["review", "candidate"], cwd=repo, env=env)
+        block = llm.requests[1].rendered.split("<<clutch-data:begin prior_review>>\n", 1)[1].split("\n<<clutch-data:end prior_review>>", 1)[0]
+        passed = first == 1 and second == 0 and "missing caller" in block
+        print(json.dumps({"regression_result": "pass" if passed else "defect"}))
+        raise SystemExit(0 if passed else 1)
+
+
+if __name__ == "__main__":
+    main()

@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from clutch.__main__ import main
+from clutch.__main__ import main as clutch_main
 from clutch.config import load_config
 from clutch.hostfiles import render
 from clutch.llm import FakeLLM
@@ -72,36 +72,41 @@ Needs a new dependency.
 """
 
 
-with tempfile.TemporaryDirectory() as directory:
-    repo = Path(directory)
-    (repo / "clutch").mkdir()
-    (repo / "clutch/thing.py").write_text("")
-    (repo / "config.yaml").write_text(CONFIG)
-    (repo / "CLUTCH_PLAN.md").write_text(PLAN)
-    (repo / ".gitignore").write_text(".clutch/\n")
-    for path in routed_conduct_paths(load_config(None, cwd=repo), repo):
-        path.write_bytes(render(path.read_bytes() if path.exists() else b""))
-    env = {**os.environ, "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@example.com", "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@example.com"}
+def main() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        repo = Path(directory)
+        (repo / "clutch").mkdir()
+        (repo / "clutch/thing.py").write_text("")
+        (repo / "config.yaml").write_text(CONFIG)
+        (repo / "CLUTCH_PLAN.md").write_text(PLAN)
+        (repo / ".gitignore").write_text(".clutch/\n")
+        for path in routed_conduct_paths(load_config(None, cwd=repo), repo):
+            path.write_bytes(render(path.read_bytes() if path.exists() else b""))
+        env = {**os.environ, "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@example.com", "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@example.com"}
 
-    def git(*args):
-        return subprocess.run(["git", "-C", str(repo), *args], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).stdout
+        def git(*args):
+            return subprocess.run(["git", "-C", str(repo), *args], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).stdout
 
-    git("init", "-b", "main")
-    git("add", ".")
-    git("commit", "-m", "initial")
-    for stem in ("alpha", "beta"):
-        path = repo / "tickets" / stem / "ticket.md"
-        path.parent.mkdir(parents=True)
-        path.write_text(TICKET.format(depends="none").replace("---\npriority:", "---\nstate: draft\npriority:", 1))
-    llm = FakeLLM([json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
-    with patch("clutch.__main__.ProviderLLM", return_value=llm), contextlib.redirect_stdout(io.StringIO()):
-        result = main(["review", "alpha"], cwd=repo, env=env)
-    subjects = git("log", "--format=%s").splitlines()
-    if "clutch(beta): ticket" in subjects:
-        outcome = "defect"
-    elif result == 0 and "clutch(alpha): ticket" in subjects and "state: draft" in (repo / "tickets/beta/ticket.md").read_text():
-        outcome = "pass"
-    else:
-        outcome = "error"
-    print(json.dumps({"regression_result": outcome}))
-    raise SystemExit(0 if outcome == "pass" else 1)
+        git("init", "-b", "main")
+        git("add", ".")
+        git("commit", "-m", "initial")
+        for stem in ("alpha", "beta"):
+            path = repo / "tickets" / stem / "ticket.md"
+            path.parent.mkdir(parents=True)
+            path.write_text(TICKET.format(depends="none").replace("---\npriority:", "---\nstate: draft\npriority:", 1))
+        llm = FakeLLM([json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
+        with patch("clutch.__main__.ProviderLLM", return_value=llm), contextlib.redirect_stdout(io.StringIO()):
+            result = clutch_main(["review", "alpha"], cwd=repo, env=env)
+        subjects = git("log", "--format=%s").splitlines()
+        if "clutch(beta): ticket" in subjects:
+            outcome = "defect"
+        elif result == 0 and "clutch(alpha): ticket" in subjects and "state: draft" in (repo / "tickets/beta/ticket.md").read_text():
+            outcome = "pass"
+        else:
+            outcome = "error"
+        print(json.dumps({"regression_result": outcome}))
+        raise SystemExit(0 if outcome == "pass" else 1)
+
+
+if __name__ == "__main__":
+    main()

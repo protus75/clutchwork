@@ -77,55 +77,60 @@ class Reply(BaseModel):
     value: str
 
 
-with tempfile.TemporaryDirectory() as directory:
-    repo = Path(directory)
-    (repo / "context.txt").write_text("context")
-    (repo / "config.yaml").write_text(CONFIG)
-    llm = FakeLLM([json.dumps({"value": "proposal"}), json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
-    driver = Driver.from_config(
-        load_config(None, cwd=repo),
-        journal=Journal((load_config(None, cwd=repo)).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)),
-        llm=llm,
-        env={"FAKE_KEY": "secret"},
-        clock=lambda: datetime(2026, 10, 6, tzinfo=UTC),
-        sleep=never,
-    )
-
-    async def review(artifact, call_seq):
-        verdict = await review_ticket(
-            driver,
-            repo=repo,
-            stem="candidate",
-            text=TICKET,
-            specs_dir=Path(__file__).resolve().parents[1] / "clutch/specs",
-            coverage_map=None,
-            tier="high",
-            stem_slot="owner",
-            run_seq=4,
-            attempt=2,
-            call_seq=call_seq,
-            expected_budget="surface",
-            prior=FIRST_REVIEW,
+def main() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        repo = Path(directory)
+        (repo / "context.txt").write_text("context")
+        (repo / "config.yaml").write_text(CONFIG)
+        llm = FakeLLM([json.dumps({"value": "proposal"}), json.dumps({"verdict": "approve", "summary": "reviewed", "findings": []})])
+        driver = Driver.from_config(
+            load_config(None, cwd=repo),
+            journal=Journal((load_config(None, cwd=repo)).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)),
+            llm=llm,
+            env={"FAKE_KEY": "secret"},
+            clock=lambda: datetime(2026, 10, 6, tzinfo=UTC),
+            sleep=never,
         )
-        return GateReport(code="requisition_review", verdict="pass" if verdict.verdict == "approve" else "fail", findings=verdict.findings)
 
-    result = asyncio.run(
-        driver.run(
-            LlmStage(surface="author", emits=Reply, gates=[], render=lambda consumed, findings: "proposal", review=review),
-            None,
-            ticket=None,
-            run_seq=4,
-            attempt=2,
-            workspace=repo,
-            tier="high",
-            effort="high",
-            stuck_budget=600,
-            expected_budget="surface",
-            scope_fence=(),
+        async def review(artifact, call_seq):
+            verdict = await review_ticket(
+                driver,
+                repo=repo,
+                stem="candidate",
+                text=TICKET,
+                specs_dir=Path(__file__).resolve().parents[1] / "clutch/specs",
+                coverage_map=None,
+                tier="high",
+                stem_slot="owner",
+                run_seq=4,
+                attempt=2,
+                call_seq=call_seq,
+                expected_budget="surface",
+                prior=FIRST_REVIEW,
+            )
+            return GateReport(code="requisition_review", verdict="pass" if verdict.verdict == "approve" else "fail", findings=verdict.findings)
+
+        result = asyncio.run(
+            driver.run(
+                LlmStage(surface="author", emits=Reply, gates=[], render=lambda consumed, findings: "proposal", review=review),
+                None,
+                ticket=None,
+                run_seq=4,
+                attempt=2,
+                workspace=repo,
+                tier="high",
+                effort="high",
+                stuck_budget=600,
+                expected_budget="surface",
+                scope_fence=(),
+            )
         )
-    )
-    events = [json.loads(line) for line in (repo / ".state/engine.log").read_text().splitlines()]
-    stages = [e for e in events if e["event"] in ("stage_start", "stage_end")]
-    passed = result.outcome == "ok" and len(stages) == 2 and all(e.get("surface") == "author" and e.get("stem") != "candidate" for e in stages)
-    print(json.dumps({"regression_result": "pass" if passed else "defect"}))
-    raise SystemExit(0 if passed else 1)
+        events = [json.loads(line) for line in (repo / ".state/engine.log").read_text().splitlines()]
+        stages = [e for e in events if e["event"] in ("stage_start", "stage_end")]
+        passed = result.outcome == "ok" and len(stages) == 2 and all(e.get("surface") == "author" and e.get("stem") != "candidate" for e in stages)
+        print(json.dumps({"regression_result": "pass" if passed else "defect"}))
+        raise SystemExit(0 if passed else 1)
+
+
+if __name__ == "__main__":
+    main()
