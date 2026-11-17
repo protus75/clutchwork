@@ -4,7 +4,7 @@ Let `serve` run more than one ticket at a time, behind an experimental config sw
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
+The `CLAUDE.md` do-not-grow list and the contention authoring rules have merged (roadmap row 13). Parallel dispatch, conflict resolution and the hot-paths view remain planned (rows 42–48). Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
 
 ## Roadmap
 

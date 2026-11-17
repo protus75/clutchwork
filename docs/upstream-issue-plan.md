@@ -6,7 +6,7 @@ Only critical bugs go upstream, never ideas, improvements, wording fixes, or fol
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-13 at commit `ed48cbc9`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
+The `clutch issue` verb in `clutch/issue.py` and its host rule have merged (roadmap row 34). Inbound issue triage remains manual, and an extension command is deferred until needed. Written 2026-11-13 at commit `ed48cbc9`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
 
 ## Roadmap
 
