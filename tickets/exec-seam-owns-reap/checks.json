@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "af97e5683e16ee00d76c73e41926326e1f3fde51",
+  "produced_at_sha": "3a0430869f310410d51620e30350e2bc97c008aa",
   "stem": "exec-seam-owns-reap",
   "passed": true,
   "changed_files": [
@@ -11,7 +11,7 @@
     "tests/unit/test_seams_rusage.py",
     "tests/waiting.py"
   ],
-  "inserted_lines": 125,
+  "inserted_lines": 164,
   "bypassed": [],
   "reports": [
     {
@@ -68,16 +68,16 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 24.445047,
+        "seconds": 17.31121,
         "passed": 838,
         "failed": 0,
         "skipped": 0,
         "slow": {}
       },
       "coverage": {
-        "percent": 58.749723634755696,
+        "percent": 58.63305383936452,
         "files": {
-          "clutch/seams.py": 25.821596244131456
+          "clutch/seams.py": 22.08835341365462
         }
       }
     },
@@ -110,9 +110,9 @@
         "tests/integration/test_exec_seam_reap.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_seams_rusage.py tests/integration/test_exec_seam_reap.py\nbringing up nodes...\nbringing up nodes...\n\n.....                                                                    [100%]\n5 passed in 1.43s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_seams_rusage.py tests/integration/test_exec_seam_reap.py\nbringing up nodes...\nbringing up nodes...\n\n......                                                                   [100%]\n6 passed in 1.66s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 1.932979
+      "seconds": 2.086351
     },
     {
       "argv": [
@@ -123,9 +123,9 @@
         "tests/integration/test_host_contract.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_git.py tests/integration/test_providers.py tests/integration/test_host_contract.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 62%]\n............................................                             [100%]\n116 passed in 2.29s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_git.py tests/integration/test_providers.py tests/integration/test_host_contract.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 62%]\n............................................                             [100%]\n116 passed in 4.90s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 2.787882
+      "seconds": 5.243469
     },
     {
       "argv": [
@@ -134,9 +134,9 @@
         "tests/unit"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [  8%]\n........................................................................ [ 17%]\n........................................................................ [ 25%]\n........................................................................ [ 34%]\n........................................................................ [ 42%]\n........................................................................ [ 51%]\n........................................................................ [ 60%]\n........................................................................ [ 68%]\n........................................................................ [ 77%]\n........................................................................ [ 85%]\n........................................................................ [ 94%]\n..............................................                           [100%]\n838 passed in 3.78s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [  8%]\n........................................................................ [ 17%]\n........................................................................ [ 25%]\n........................................................................ [ 34%]\n........................................................................ [ 42%]\n........................................................................ [ 51%]\n........................................................................ [ 60%]\n........................................................................ [ 68%]\n........................................................................ [ 77%]\n........................................................................ [ 85%]\n........................................................................ [ 94%]\n..............................................                           [100%]\n838 passed in 3.89s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.270844
+      "seconds": 4.499307
     }
   ]
 }
