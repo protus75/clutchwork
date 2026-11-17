@@ -1,22 +1,24 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "8defc422a46f370d8b5610b4b3f0aa81df47ceec",
+  "produced_at_sha": "80226a905ce73b87f9a74e2bdc32e8fbad5ae68f",
   "stem": "supervise-every-route",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "split",
   "lessons": [
-    "Attempt 1 ended incomplete after 41s and about $1.0 with no diff. The agent read runner, daemon, drain, serve, journal and docs, then stopped. The ticket spans 5 source modules, a worktree helper, 2 docs and 9 criteria, which is too many boundaries for one attempt.",
-    "Split part 1, the merge route: add supervisor_attempt to journal.SIGNAL_NAMES and tests/integration/test_closed_sets.py. Journal it in runner.py::failure_terminal before apply_rework and the routed terminal. Have daemon.py::TicketWriter.consume_result call failure_terminal supervised. Covers",
-    "Split part 2 (Depends on part 1): the idle-point step in drain.py after _settle and in serve.py beside the retro hook. Supervise Reject-queue stems with no supervisor_attempt after their last 'reject_verdict keep actor: operator'. Reuse failure_terminal; never copy the step. Covers criteria 2 and 6.",
-    "Part 2 also builds the fresh worktree from ctx.git.rev_parse(ctx.repo, MAIN) at the idle point. Remove it through git.py worktree remove plus prune on both approve and escalate. Effect keys get their own name, disjoint from the original run's keys. Covers criteria 3, 4 and 7.",
-    "Each part updates only its own slice of docs/how-clutch-works.md (6.4-6.7, last sentence of 7.5) and docs/roadmap-driver-plan.md (sections 2 and 6). Each part must leave tests/unit/test_supervisor_trigger.py order assertions green: last three events are terminal, draw, keep."
+    "Attempt 2 stopped while still reading the code and produced no diff. The run record says the idle-point step needs fresh worktrees, Effect keys and terminal routing handled together. That is too many boundaries for one attempt, so split along them.",
+    "Part A: add `supervisor_attempt` to `SIGNAL_NAMES` in clutch/journal.py and to the expected set in tests/integration/test_closed_sets.py. Journal it in the shared step in clutch/runner.py::failure_terminal before `apply_rework` and before the routed terminal, so",
+    "Part B, which depends on A: clutch/daemon.py::TicketWriter.consume_result calls `failure_terminal` with supervision on for a routed merge-stage failure. It reuses that step and does not copy it. Bound it with `caps.supervise` and `supervise_draws`. Covers criteria 1, 5 and 8.",
+    "Part C, which depends on A: the idle-point hook in clutch/drain.py after `_settle` and in clutch/serve.py beside the retro hook. It finds stems with no `supervisor_attempt` after the last operator `reject_verdict keep` and runs the step in a worktree from `ctx.git.rev_parse(ctx.repo, MAIN)`. Covers",
+    "Part C also needs Effect keys under their own name, disjoint from the original run's keys (criterion 4). Remove the worktree through git.py with `worktree remove` and `prune` on both approve and escalate. Each part updates only its own sections of docs/how-clutch-works.md (6.4-6.7, 7.5) and"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    1
+    1,
+    3,
+    4
   ],
   "spec_version": "1.7",
   "provider": "claude",
