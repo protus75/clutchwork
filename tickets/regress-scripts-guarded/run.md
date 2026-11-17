@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The historical audit in docs/roadmap.md still says ten scripts execute on import; it is outside the scope fence.
+The ticket verification, full integration and unit checks, lint, and formatting passed; all ten scripts printed a passing result when run. The guard-removal mutation failed the new test as intended, but individual mutation checks were not completed for every assertion.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000652-18e15aed: The historical audit in docs/roadmap.md says ten regression scripts execute on import, which is stale after this change.
+- box-000653-3d080392: docs/roadmap.md retains an out-of-scope historical statement that ten regression scripts execute on import.
 
 ## Resolved engine/model
 
