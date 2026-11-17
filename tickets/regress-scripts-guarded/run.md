@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The ticket verification, full integration and unit checks, lint, and formatting passed; all ten scripts printed a passing result when run. The guard-removal mutation failed the new test as intended, but individual mutation checks were not completed for every assertion.
+All ten scripts retained their baseline output and exit codes. The final ticket verification, integration suite, lint, and format checks passed; the coverage gate was skipped because no measured production files changed.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000653-3d080392: docs/roadmap.md retains an out-of-scope historical statement that ten regression scripts execute on import.
+none
 
 ## Resolved engine/model
 
