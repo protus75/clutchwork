@@ -306,7 +306,15 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
         }
     )
 
+    collected: list[Finding] = []
+
+    def collect(findings: list[Finding]) -> None:
+        for finding in findings:
+            if not any((old.code, old.message) == (finding.code, finding.message) for old in collected):
+                collected.append(finding)
+
     def render_author(_: object, findings: list) -> str:
+        collect(findings)
         inputs = {
             "guide": (Path(__file__).parent / "docs" / "host-authoring.md").read_text(),
             "skeletons": "\n".join(f"{kind}:\n{template(kind)}" for kind in KINDS),
@@ -395,7 +403,8 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
         raise
     if result.outcome != "ok" or not isinstance(result.artifact, AuthorReply):
         author_gate.cleanup()
-        return await failure_declined(checkout, driver, box, message, findings_text(result.findings) or result.outcome)
+        collect(result.findings)
+        return await failure_declined(checkout, driver, box, message, findings_text(collected) or result.outcome)
     reply = result.artifact
     assert reviewed is not None and reviewed_text is not None and reviewed_state is not None
     text = reviewed_text
