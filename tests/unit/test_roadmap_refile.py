@@ -54,13 +54,16 @@ def test_rejected_linked_row_is_rewritten(setup):
 
     run(checkout, 1, pending)
     put(checkout, r(1, "old-row", content="**Authored** (`tickets/old-row/`). Build it."))
+    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "premise_failed", "reason": "bad premise", "routed": "reject_queue"}, ticket="old-row")
+    checkout.journal.append(EventType.SIGNAL, {"signal": "diagnosis", "lessons": ["fix the path"]}, ticket="old-row")
     checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="old-row")
-    checkout.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "reason": "bad premise"}, ticket="old-row")
     run(checkout, 1, pending)
     row = roadmap.parse((checkout.repo / roadmap.ROADMAP).read_text())[0]
     assert row.stem == "old-row-r1" and row.content == "Build it." and not row.linked
     assert box.messages()[-1].origin == "roadmap/old-row-r1"
-    assert "bad premise [re-file 1]" in box.messages()[-1].summary
+    assert "bad premise" in box.messages()[-1].summary
+    assert "fix the path" in box.messages()[-1].summary
+    assert "[re-file 1]" in box.messages()[-1].summary
     assert checkout.git.commits[-1][0] == "clutch(roadmap): refile old-row as old-row-r1"
 
 

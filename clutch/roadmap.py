@@ -286,8 +286,16 @@ def decline_reason(repo, message):
 
 
 def rejection_reason(events, stem):
-    verdict = next((event for event in reversed(events) if event.ticket == stem and event.type == EventType.SIGNAL and event.body.get("signal") == "reject_verdict"), None)
-    return (verdict.body.get("reason") or "rejected") if verdict else "rejected"
+    terminal = diagnosis = None
+    for event in events:
+        if event.ticket != stem:
+            continue
+        if event.type == EventType.STATE_TRANSITION and event.body.get("routed") == "reject_queue":
+            terminal = event
+        elif event.type == EventType.SIGNAL and event.body.get("signal") == "diagnosis":
+            diagnosis = event
+    parts = ([terminal.body.get("reason")] if terminal else []) + (diagnosis.body.get("lessons", []) if diagnosis else [])
+    return " ".join(part for part in parts if part) or "rejected"
 
 
 def refile_row(text, row, stem):
