@@ -64,7 +64,7 @@ def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch):
         asyncio.run(git.commit(repo, "initial"))
         cfg = config.load_config(None, cwd=repo)
         journal = Journal(repo / ".clutch/state", clock)
-        return SimpleNamespace(repo=repo, git=git, exec_=SubprocessExec(), fs=LocalFileSystem(), env={**ENV, "TOKEN": "secret"}, config=cfg, journal=journal), call
+        return SimpleNamespace(repo=repo, git=git, exec_=SubprocessExec(), fs=LocalFileSystem(), env={**ENV, "TOKEN": "secret"}, config=cfg, journal=journal, clock=clock), call
 
     c, call = repository(tmp_path / "first")
     lines = asyncio.run(roadmap.ship(c))

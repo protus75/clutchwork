@@ -63,7 +63,7 @@ def test_release_commits_and_tags(repository, capsys):
     assert sha != old_head
     assert capsys.readouterr().out == f"release: tagged v0.2.0 at {sha}\n"
     assert call("show", "-s", "--format=%s", "HEAD") == "release: 0.2.0"
-    assert call("show", "--name-only", "--format=", "HEAD").splitlines() == ["pyproject.toml", "uv.lock"]
+    assert call("show", "--name-only", "--format=", "HEAD").splitlines() == ["CHANGELOG.md", "pyproject.toml", "uv.lock"]
     assert call("cat-file", "-t", "v0.2.0") == "tag"
     assert call("rev-parse", "v0.2.0^{commit}") == sha
     assert call("diff", "--name-only") == "modified"

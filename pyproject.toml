@@ -17,6 +17,7 @@ dependencies = [
 
 [project.urls]
 Repository = "https://github.com/protus75/clutchwork"
+Changelog = "https://github.com/protus75/clutchwork/blob/main/CHANGELOG.md"
 
 [project.scripts]
 clutch = "clutch.__main__:main"

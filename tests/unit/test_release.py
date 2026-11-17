@@ -1,6 +1,7 @@
 """Scripted calls distinguish release ordering, isolation, and refusal paths."""
 
 import asyncio
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,7 +14,7 @@ from clutch.runner import Refusal
 
 REPO = Path("/repo")
 SHA = "abc1234"
-STATUS = ["git", "-C", "/repo", "--no-optional-locks", "status", "--porcelain", "--", "pyproject.toml", "uv.lock"]
+STATUS = ["git", "-C", "/repo", "--no-optional-locks", "status", "--porcelain", "--", "pyproject.toml", "uv.lock", "CHANGELOG.md"]
 
 
 class FakeLock:
@@ -41,13 +42,26 @@ def setup(results=None, version="0.2.0"):
     process = FakeExec(
         results
         if results is not None
-        else [(0, "", ""), (0, f"  {version}\n", ""), (1, "", "absent"), (0, "ignored bump output", ""), (0, "", ""), (1, "", ""), (0, "", ""), (0, SHA + "\n", ""), (0, "", "")]
+        else [
+            (0, "", ""),
+            (0, f"  {version}\n", ""),
+            (1, "", "absent"),
+            (128, "", "No names found"),
+            (0, "", ""),
+            (0, "ignored bump output", ""),
+            (0, "", ""),
+            (1, "", ""),
+            (0, "", ""),
+            (0, SHA + "\n", ""),
+            (0, "", ""),
+        ]
     )
     return process, Git(process, env={"SAFE": "yes"}, timeout=1, commit_lock=FakeLock())
 
 
 def invoke(process, git, part="minor"):
-    return asyncio.run(release.release(REPO, git, process, {"SAFE": "yes"}, part))
+    fs = SimpleNamespace(read_bytes=lambda path: b"", write=lambda path, data: None)
+    return asyncio.run(release.release(REPO, git, process, fs, {"SAFE": "yes"}, part, "2026-01-01"))
 
 
 def test_minor_release_bumps_commits_and_tags():
@@ -59,10 +73,12 @@ def test_minor_release_bumps_commits_and_tags():
         STATUS,
         ["uv", "version", "--bump", "minor", "--dry-run", "--short"],
         ["git", "-C", "/repo", "rev-parse", "--verify", "refs/tags/v0.2.0"],
+        ["git", "-C", "/repo", "describe", "--tags", "--match", "v*", "--abbrev=0", "HEAD"],
+        ["git", "-C", "/repo", "log", "--first-parent", "--format=%s%x00%(trailers:key=clutch-ticket,valueonly)%x1e", "HEAD"],
         ["uv", "version", "--bump", "minor"],
-        ["git", "-C", "/repo", "update-index", "--add", "--remove", "--", "pyproject.toml", "uv.lock"],
-        ["git", "-C", "/repo", "diff", "--cached", "--quiet", "HEAD", "--", "pyproject.toml", "uv.lock"],
-        ["git", "-C", "/repo", "commit", "-m", "release: 0.2.0", "--only", "--", "pyproject.toml", "uv.lock"],
+        ["git", "-C", "/repo", "update-index", "--add", "--remove", "--", "pyproject.toml", "uv.lock", "CHANGELOG.md"],
+        ["git", "-C", "/repo", "diff", "--cached", "--quiet", "HEAD", "--", "pyproject.toml", "uv.lock", "CHANGELOG.md"],
+        ["git", "-C", "/repo", "commit", "-m", "release: 0.2.0", "--only", "--", "pyproject.toml", "uv.lock", "CHANGELOG.md"],
         ["git", "-C", "/repo", "rev-parse", "--verify", "HEAD"],
         ["git", "-C", "/repo", "tag", "-a", "v0.2.0", "-m", "release: 0.2.0", SHA],
     ]
@@ -94,7 +110,7 @@ def test_existing_tag_refuses():
 def test_uv_failure_refuses(bump, stderr):
     results = [(0, "", "")]
     if bump:
-        results += [(0, "0.2.0", ""), (1, "", "absent")]
+        results += [(0, "0.2.0", ""), (1, "", "absent"), (128, "", "No names found"), (0, "", "")]
     results += [(1 if bump else 2, "", stderr)]
     process, git = setup(results)
     with pytest.raises(Refusal) as error:
@@ -102,7 +118,7 @@ def test_uv_failure_refuses(bump, stderr):
     assert (stderr.strip().splitlines()[-1] if stderr else "failed") in str(error.value)
     if bump:
         assert "restore pyproject.toml and uv.lock" in str(error.value)
-    assert len(process.calls) == (4 if bump else 2)
+    assert len(process.calls) == (6 if bump else 2)
     assert process.calls[-1] == ["uv", "version", "--bump", "minor", *([] if bump else ["--dry-run", "--short"])]
 
 
@@ -145,7 +161,8 @@ def test_main_release_locks_calls_and_prints(monkeypatch, capsys, refuse):
         assert repo == REPO
         return "description"
 
-    async def fake_release(repo, git, process, env, part):
+    async def fake_release(repo, git, process, fs, env, part, today):
+        assert fs is not None and date.fromisoformat(today)
         assert repo == REPO and isinstance(git, Git) and isinstance(process, cli.SubprocessExec)
         assert env == {"SAFE": "yes"}
         events.append(part)

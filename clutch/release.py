@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 from pathlib import Path
 
+from clutch.changelog import insert_section
 from clutch.config import Config
 from clutch.git import Git, GitError
 from clutch.journal import EventType
@@ -15,10 +16,10 @@ BUILD_TIMEOUT_S = 600.0
 PUBLISH_TIMEOUT_S = 600.0
 
 
-async def release(repo: Path, git: Git, exec_: ProcessExec, env: Mapping[str, str], part: str) -> tuple[str, str]:
-    dirty = await git.status_porcelain(repo, "--", "pyproject.toml", "uv.lock")
+async def release(repo: Path, git: Git, exec_: ProcessExec, fs: FileSystem, env: Mapping[str, str], part: str, today: str) -> tuple[str, str]:
+    dirty = await git.status_porcelain(repo, "--", "pyproject.toml", "uv.lock", "CHANGELOG.md")
     if dirty:
-        raise Refusal(f"uncommitted version files: {dirty.strip()}", "commit or restore pyproject.toml and uv.lock before release")
+        raise Refusal(f"uncommitted version files: {dirty.strip()}", "commit or restore pyproject.toml, uv.lock and CHANGELOG.md before release")
     rc, out, err = await exec_.run(["uv", "version", "--bump", part, "--dry-run", "--short"], cwd=repo, env=env, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
@@ -31,12 +32,20 @@ async def release(repo: Path, git: Git, exec_: ProcessExec, env: Mapping[str, st
         pass
     else:
         raise Refusal(f"tag {tag} already exists", "choose a version whose release tag does not exist")
+    previous = await git.previous_release_tag(repo)
+    subjects = await git.merged_subjects(repo, previous)
     rc, _, err = await exec_.run(["uv", "version", "--bump", part], cwd=repo, env=env, timeout=UV_TIMEOUT_S)
     if rc:
         lines = [line for line in err.splitlines() if line.strip()]
         raise Refusal(f"uv version bump failed (rc {rc}): {lines[-1] if lines else ''}", "restore pyproject.toml and uv.lock before retrying release")
+    path = repo / "CHANGELOG.md"
+    try:
+        existing = fs.read_bytes(path).decode("utf-8")
+    except FileNotFoundError:
+        existing = None
+    fs.write(path, insert_section(existing, version, today, subjects).encode("utf-8"))
     message = f"release: {version}"
-    sha = await git.commit(repo, message, only=["pyproject.toml", "uv.lock"])
+    sha = await git.commit(repo, message, only=["pyproject.toml", "uv.lock", "CHANGELOG.md"])
     await git.tag(repo, tag, message, sha)
     return version, sha
 

@@ -756,7 +756,7 @@ def main(
 
         async def release_version():
             async with _locked(config.state_dir, "release", instance_id=await checkout.git.describe(repo), clock=clock):
-                version, sha = await release.release(repo, checkout.git, checkout.exec_, child_env(env, config), args.part)
+                version, sha = await release.release(repo, checkout.git, checkout.exec_, checkout.fs, child_env(env, config), args.part, checkout.clock().date().isoformat())
                 release.journal_release(checkout.journal, version, sha)
                 return version, sha
 

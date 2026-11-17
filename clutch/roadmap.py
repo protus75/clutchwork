@@ -651,7 +651,7 @@ async def ship(checkout) -> list[str]:
         return lines
     if checkout.config.release.publish:
         await release_module.publishable(checkout.repo, checkout.git, checkout.env, checkout.config)
-    version, sha = await release_module.release(checkout.repo, checkout.git, checkout.exec_, child_env(checkout.env, checkout.config), "minor")
+    version, sha = await release_module.release(checkout.repo, checkout.git, checkout.exec_, checkout.fs, child_env(checkout.env, checkout.config), "minor", checkout.clock().date().isoformat())
     release_module.journal_release(checkout.journal, version, sha)
     lines.append(f"release: tagged v{version} at {sha}")
     if checkout.config.release.publish:

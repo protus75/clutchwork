@@ -114,6 +114,24 @@ class Git:
         await self._run(dir, "commit", "-m", message, *(("--only", "--", *only) if only else ()))
         return await self.rev_parse(dir, "HEAD")
 
+    async def previous_release_tag(self, dir: Path) -> str | None:
+        argv, rc, out, err = await self._call(dir, "describe", "--tags", "--match", "v*", "--abbrev=0", "HEAD")
+        if rc:
+            if rc == 128 and ("No names found" in err or "No tags can describe" in err):
+                return None
+            raise GitError(argv, rc, out, err)
+        return out.strip()
+
+    async def merged_subjects(self, dir: Path, since: str | None) -> list[str]:
+        revision = f"{_ref(since)}..HEAD" if since else "HEAD"
+        out = await self._run(dir, "log", "--first-parent", "--format=%s%x00%(trailers:key=clutch-ticket,valueonly)%x1e", revision)
+        result = []
+        for record in out.split("\x1e"):
+            subject, separator, trailer = record.strip("\n").partition("\0")
+            if separator and trailer.strip():
+                result.append(subject)
+        return result
+
     async def tag(self, dir: Path, name: str, message: str, target: str) -> None:
         await self._run(dir, "tag", "-a", _ref(name), "-m", message, _ref(target))
 

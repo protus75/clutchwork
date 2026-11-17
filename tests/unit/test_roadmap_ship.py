@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from types import SimpleNamespace as NS
 
 import pytest
@@ -11,7 +12,7 @@ from tests.unit.test_retro_recurrence import MemoryJournal
 
 def test_ship_steps(tmp_path, monkeypatch):
     calls = []
-    c = NS(repo=tmp_path, git=object(), env={"a": "b"}, config=NS(release=NS(publish=False)), exec_=object(), fs=object(), journal=object())
+    c = NS(repo=tmp_path, git=object(), env={"a": "b"}, config=NS(release=NS(publish=False)), exec_=object(), fs=object(), journal=object(), clock=lambda: datetime(2026, 1, 2))
     passed = [False]
     blocked = [False]
 
@@ -48,7 +49,7 @@ def test_ship_steps(tmp_path, monkeypatch):
     calls.clear()
     passed[0] = True
     assert asyncio.run(roadmap.ship(c)) == ["gate line", "release: tagged v1.1.0 at sha"]
-    assert calls == [("gate", c, "1.0.0"), ("release", c.repo, c.git, c.exec_, {"safe": "env"}, "minor"), ("journal", c.journal, "1.1.0", "sha")]
+    assert calls == [("gate", c, "1.0.0"), ("release", c.repo, c.git, c.exec_, c.fs, {"safe": "env"}, "minor", "2026-01-02"), ("journal", c.journal, "1.1.0", "sha")]
     calls.clear()
     c.config.release.publish = True
     assert asyncio.run(roadmap.ship(c))[-1] == "publish: uploaded 1.1.0 to PyPI"
