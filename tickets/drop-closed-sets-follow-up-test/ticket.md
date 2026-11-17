@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 none
 
+## Runs before
+- plan-drain-author-in-parallel
+
 ## Context
 - tests/integration/test_closed_sets_remaining.py
 - tickets/drop-live-roadmap-content-test/ticket.md
