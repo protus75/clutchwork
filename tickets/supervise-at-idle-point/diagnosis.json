@@ -1,24 +1,25 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "9e65d6301d911c54096c5f2829163c49bb4b9ebb",
+  "produced_at_sha": "ed015df351a0aa388e64e618907a9eddb1d2b7cd",
   "stem": "supervise-at-idle-point",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Previous attempt ended 'incomplete' with work uncommitted after ~250s; no gate or review finding. Redo the full diff from the merge base and commit on the ticket branch before running the full `./dev.py test`, so a stop late in the run cannot lose the work.",
-    "Write one test for each of AC 1-7 and 13 in tests/unit/test_supervise_idle_point.py: no-`routed` reject_arrival supervised once, no state_transition, keep lineage, ticket_changed/abandoned/cap-spent skipped, git add->remove->prune order, `sup-` keys, cap_consumed+keep order.",
-    "Cover AC 8, 9, 11 and 12 in tests/unit/test_supervise_idle_hooks.py: serve calls the hook only when upgrade_idle() is true and the engine is not stopping; prepare is awaited 0 times with no eligible stem and once with one; a Drain dispatch without `prepare` gives make_ctx None, no",
-    "The last attempt's docs edit reworded the 'supervise draw' sentence instead of making the ticket's edits. In docs/how-clutch-works.md 6.4 (~line 413), drop 'and a conflict handoff never does'. In the 6.6 Supervisor keep bullet (~line 446), drop the Rework-replay exclusion and say the `sup` key",
-    "Move the step body out of `failure_terminal` into `supervise_step` and `record_supervisor_keep` in clutch/runner.py; don't copy it. Keep the event order the same so tests/unit/test_supervisor_trigger.py and test_supervise_merge_route.py pass unedited. Leave docs/roadmap-driver-plan.md alone (out of"
+    "Attempt 1 only inspected files and stopped after 49s with an empty diff, no findings, and no recorded blocker. Implement the whole ticket this time: the helper move in clutch/runner.py, new clutch/supervise_idle.py, the serve.py and drain.py hooks, the docs/how-clutch-works.md edits, and both test",
+    "clutch/runner.py: move the step body out of failure_terminal into supervise_step(ctx, ticket, findings, *, attempt, trigger, lessons, key_scope=None) and record_supervisor_keep(ctx, stem, sha). failure_terminal calls both, terminal first and keep second, so existing tests in",
+    "clutch/supervise_idle.py: await make_ctx only if a stem is eligible. Per stem: git.worktree_add_detached(repo, ctx.worktree(stem), 'main'), then supervise_step with key_scope='sup', then record_supervisor_keep on approve. In finally: worktree_remove then worktree_prune. Never journal a",
+    "Hooks: serve.py calls supervise_idle under self.mutations() when upgrade_idle() is true and the engine is not stopping or paused, with a lazy make_ctx like run_retro. drain.py Drain.run calls it after retro and driver when _between_tickets() is true, and make_ctx returns None when the dispatch has",
+    "Write tests/unit/test_supervise_idle_point.py and tests/unit/test_supervise_idle_hooks.py with fakes and tmp_path, covering criteria 1-13. Run both Verification commands, `./dev.py test` on the two files and then plain `./dev.py test`, before committing on the ticket branch."
   ],
   "mechanical": null,
   "trimmed_lessons": [
+    0,
+    1,
     2,
-    3,
-    4
+    3
   ],
   "spec_version": "1.7",
   "provider": "claude",
