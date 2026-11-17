@@ -1,26 +1,26 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The focused harvest-redaction test passed after its filesystem fake was extended; the ticket's verification commands and host checks remain outstanding.
+Final sequential verification passed: 24 envelope tests, 656 unit tests, and 3373 integration tests; all hard host gates passed and all 44 mutation checks detected faults. Working tree is clean; rusage remains null as specified.
 
 ## Dead ends
 
-none
+Rejected retaining legacy captures alongside evidence because it would create two capture paths; replaced the writer and its production reader together.
 
 ## Second problems filed
 
-none
+- box-000594-ac4726ce: Outside the fence, docs/training-data-plan.md and docs/evidence-trail-plan.md still describe the removed provider capture writer as current behavior.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.16
 
 ## Predicted vs actual
 
-The ticket budget was 150 minutes; the work stopped before completion.
+150m expected; approximately 17m actual.
 
