@@ -12,7 +12,6 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from clutch import git
 from clutch.artifacts import Artifact, Finding, NonBlank
 from clutch.driver import Driver, _StuckBudget, unwrap_fence
-from clutch.gates import GateReport
 from clutch.journal import EventType
 from clutch.llm import AgentTier, LLMRequest, LLMResult
 from clutch.llmeffect import llm_call, scoped_seq
@@ -106,15 +105,6 @@ def _base_render(repo: Path, ticket: Ticket, text: str, specs_dir: Path) -> str:
     spec = load_spec((specs_dir / "implement.md").read_text())
     inputs = implement_inputs(repo, text, ticket, ())
     return render(spec, {**inputs, "retry_findings": "none"})
-
-
-def base_render_chars(repo: Path, ticket: Ticket, text: str, specs_dir: Path) -> int:
-    """Measure the same first-attempt Implement prompt that production renders, at max effort."""
-    try:
-        return len(_base_render(repo, ticket, text, specs_dir))
-    except RenderOverBound as exc:
-        # The renderer measured the complete prompt before refusing it.
-        return int(re.search(r"rendered prompt is (\d+) characters", exc.finding.message).group(1))
 
 
 async def prior_review(git, repo, events, stem, text) -> str:
@@ -340,10 +330,3 @@ async def review_ticket(
         finally:
             if calls and owns_watch:
                 event.end(outcome, run_seq=run_seq, calls=calls)
-
-
-class RequisitionGate:
-    code = "requisition_review"
-
-    def check(self, artifact: RequisitionVerdict, workspace: Path) -> GateReport:
-        return GateReport(code=self.code, verdict="pass" if artifact.verdict == "approve" else "fail", findings=[] if artifact.verdict == "approve" else artifact.findings)

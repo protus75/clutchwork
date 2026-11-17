@@ -92,7 +92,6 @@ def test_status_porcelain_takes_no_optional_locks():
         (lambda g: g.diff(REPO, "main", "t-1"), ["diff", "main...t-1"]),
         (lambda g: g.diff_stat(REPO, "main", "t-1"), ["diff", "--stat", "main...t-1"]),
         (lambda g: g.add(REPO, ["a.py", "b c.py"]), ["add", "--", "a.py", "b c.py"]),
-        (lambda g: g.branch(REPO, "t-1", "main"), ["branch", "t-1", "main"]),
         (lambda g: g.branch_delete(REPO, "t-1"), ["branch", "-D", "t-1"]),
         (
             lambda g: g.worktree_add(REPO, Path("/wt/t-1"), "t-1", "main"),
@@ -204,8 +203,6 @@ def test_nonzero_exit_raises_git_error_with_argv_and_stderr():
 @pytest.mark.parametrize("ref", ["-x", "--exec=evil", ""])
 def test_option_shaped_or_empty_refs_are_refused_before_exec(ref):
     g, exec_ = git()
-    with pytest.raises(ValueError):
-        run(g.branch(REPO, ref, "main"))
     with pytest.raises(ValueError):
         run(g.rebase(REPO, ref))
     with pytest.raises(ValueError):
@@ -379,9 +376,8 @@ def test_ticket_lifecycle_against_real_repo(tmp_path):
         (repo / "a.txt").write_text("main\n")
         await g.add(repo, ["a.txt"])
         await g.commit(repo, "main moves")
-        await g.branch(repo, "t-2", "HEAD~1")
         wt2 = tmp_path / "wt" / "t-2"
-        await g.worktree_add(repo, wt2, "t-3", "t-2")
+        await g.worktree_add(repo, wt2, "t-3", "HEAD~1")
         (wt2 / "a.txt").write_text("conflict\n")
         await g.add(wt2, ["a.txt"])
         await g.commit(wt2, "clash")

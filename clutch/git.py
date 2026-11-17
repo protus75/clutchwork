@@ -135,9 +135,6 @@ class Git:
     async def tag(self, dir: Path, name: str, message: str, target: str) -> None:
         await self._run(dir, "tag", "-a", _ref(name), "-m", message, _ref(target))
 
-    async def branch(self, dir: Path, name: str, start: str) -> None:
-        await self._run(dir, "branch", _ref(name), _ref(start))
-
     async def branch_delete(self, dir: Path, name: str) -> None:
         await self._run(dir, "branch", "-D", _ref(name))
 

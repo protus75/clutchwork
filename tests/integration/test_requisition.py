@@ -8,10 +8,9 @@ import pytest
 from clutch.artifacts import Finding
 from clutch.config import load_config
 from clutch.driver import Driver
-from clutch.gates import lint_gate
 from clutch.journal import Journal
 from clutch.llm import FakeLLM
-from clutch.requisition import FIRST_REVIEW, RequisitionGate, RequisitionReply, RequisitionVerdict, base_render_chars, review_target, review_ticket
+from clutch.requisition import FIRST_REVIEW, RequisitionReply, RequisitionVerdict, review_target, review_ticket
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, lint_spec, load_spec, render
 from clutch.stages import StageContext, implement_inputs, implement_stage
 from clutch.tickets import TicketInvalid
@@ -274,7 +273,7 @@ def test_review_render_over_bound_is_mechanical_snag(tmp_path, monkeypatch):
     import clutch.specs as specs
 
     # The base Implement render fits the bound; the review render, which embeds it, does not.
-    base = base_render_chars(repo, review_target(repo, "one-thing", TICKET), TICKET, SPECS)
+    base = len(requisition._base_render(repo, review_target(repo, "one-thing", TICKET), TICKET, SPECS))
     monkeypatch.setattr(specs, "RENDER_BOUND_CHARS", base + 1)
     monkeypatch.setattr(requisition, "RENDER_BOUND_CHARS", 2 * base)
     verdict = run(driver, repo)
@@ -288,12 +287,9 @@ def test_base_render_matches_implement_and_gate(tmp_path):
     ticket = review_target(repo, "one-thing", TICKET)
     spec = load_spec((SPECS / "implement.md").read_text())
     production = render(spec, {**implement_inputs(repo, TICKET, ticket, ()), "retry_findings": "none"})
-    assert base_render_chars(repo, ticket, TICKET, SPECS) == len(production)
-    approved = run(driver, repo)
-    snag = approved.model_copy(update={"verdict": "snag", "findings": [Finding(**FINDING)]})
-    gate = RequisitionGate()
-    assert lint_gate(gate, [approved, snag], repo) == []
-    assert gate.check(snag, repo).findings == snag.findings
+    from clutch.requisition import _base_render
+
+    assert _base_render(repo, ticket, TICKET, SPECS) == production
 
 
 def test_coverage_dependents_in_prompt(tmp_path):

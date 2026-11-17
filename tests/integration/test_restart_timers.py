@@ -514,7 +514,7 @@ async def test_timer_append_is_write_ahead(tmp_path, monkeypatch, point):
             owner.arm("deadline", time(), ticket=None)
             actions.append("arm-success")
         else:
-            actions.extend(await owner.wait_next())
+            actions.extend(owner.fire_due())
     assert actions == [] and not owner.fired
     assert bool(owner.pending) == (point in {"fire", "after-fire"})
     if point.startswith("after-"):
@@ -590,55 +590,6 @@ def test_timers_rearm_from_journal(tmp_path):
             member.reconstruct()
         assert not member.pending and not member.fired and member.journal.read() == evidence
         green(member.journal)
-
-
-@pytest.mark.asyncio
-async def test_timer_deadline_wait_uses_injected_sleep(tmp_path):
-    time = Time()
-    wake = asyncio.Queue()
-    waits, cleanup = [], []
-
-    async def sleep(seconds):
-        waits.append(seconds)
-        try:
-            await wake.get()
-        finally:
-            cleanup.append(seconds)
-
-    owner = Timers(journal=Journal(tmp_path, time), clock=time, sleep=sleep)
-    for identity, seconds in (("later", 30), ("bb", 10), ("aa", 10)):
-        owner.arm(identity, time() + timedelta(seconds=seconds), ticket=None)
-    actions = []
-
-    async def consume():
-        result = await owner.wait_next()
-        assert all(t.body.timer_id in owner.fired for t in result)
-        actions.extend(t.body.timer_id for t in result)
-        return result
-
-    task = asyncio.create_task(consume())
-    await turn()
-    assert waits == [10] and actions == []
-    time.advance(3)
-    wake.put_nowait(None)
-    await turn()
-    assert waits == [10, 7] and actions == [] and not task.done()
-    time.advance(7)
-    wake.put_nowait(None)
-    assert [t.body.timer_id for t in await task] == ["aa", "bb"]
-    assert actions == ["aa", "bb"]
-    task = asyncio.create_task(consume())
-    await turn()
-    assert waits[-1] == 20
-    task.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await task
-    assert cleanup == waits and task not in asyncio.all_tasks()
-    assert set(owner.pending) == {"later"} and actions == ["aa", "bb"]
-    time.advance(20)
-    assert [t.body.timer_id for t in await consume()] == ["later"]
-    assert await owner.wait_next() == ()
-    green(owner.journal)
 
 
 @pytest.mark.asyncio

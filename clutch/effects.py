@@ -6,7 +6,6 @@ purpose -- that window belongs to reconcile-on-entry, not this
 primitive. A completion may carry a `cost` body field: the ledger folds it.
 """
 
-import functools
 import json
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -48,21 +47,3 @@ class Effects:
 
     def recorded(self, key: str, ticket: str | None = None) -> list[Any]:
         return [e.body.get("result") for e in self._journal.read() if e.type == EventType.EFFECT_COMPLETION and e.key == key and (ticket is None or e.ticket == ticket)]
-
-
-def effect(key: str | Callable[..., str], *, cost: Callable[[Any], dict[str, Any]] | None = None) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]:
-    """`@effect(key=...)` sugar over `Effects.run`.
-
-    The decorated function is called as `f(effects, *args, ticket=..., **kwargs)`; `key` is a bare
-    string (singleton) or a callable over the function's own arguments, components joined with '/'.
-    """
-
-    def wrap(fn: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
-        @functools.wraps(fn)
-        async def run(effects: Effects, *args: Any, ticket: str | None, **kwargs: Any) -> Any:
-            k = key if isinstance(key, str) else key(*args, **kwargs)
-            return await effects.run(lambda: fn(*args, **kwargs), key=k, ticket=ticket, cost=cost)
-
-        return run
-
-    return wrap

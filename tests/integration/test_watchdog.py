@@ -338,8 +338,9 @@ async def test_missing_cost_preserves_adapter_refusal(tmp_path):
     stream = terminal(None)
     client = python_client(cfg, PythonProviderExec(f"import os; os.write(1, {jsonl(stream).encode()!r})"), tmp_path)
     rig = DetectorRig(tmp_path / "detector")
+    meter = rig.detector.start_call(served)
     with pytest.raises(ProviderCallError, match="reported no cost"):
-        await rig.detector.watch(lambda consumer: client.call(provider_request("claude", tmp_path), consumer=consumer), served=served, abort=client.abort_current)
+        await client.call(provider_request("claude", tmp_path), consumer=meter)
     assert rig.detector.bases == {} and rig.detector.spend == 0
 
 
@@ -378,7 +379,9 @@ async def test_meter_ignores_non_object_event_fields(tmp_path):
 
         return await client.call(provider_request("claude", tmp_path), consumer=EventConsumer(consume))
 
-    result = await rig.detector.watch(start, served=served, abort=client.abort_current)
+    meter = rig.detector.start_call(served)
+    result = await start(meter)
+    meter.complete()
     assert result.text == "done" and result.usd == 0.42
     assert observed == [json.loads(line) for line in stream.splitlines()]
     assert rig.detector.call.tools == {"tool-1", "tool-2"}
@@ -396,7 +399,9 @@ async def test_watched_result_and_capture_are_preserved(tmp_path, name):
     stream = jsonl(*tool_events(name)) + (claude_ok() if name == "claude" else codex_ok())
     client = python_client(rig.cfg, PythonProviderExec(f"import os; os.write(1, {stream.encode()!r})"), tmp_path)
     request = provider_request(name, tmp_path)
-    result = await rig.detector.watch(lambda consumer: client.call(request, consumer=consumer), served=served, abort=client.abort_current)
+    meter = rig.detector.start_call(served)
+    result = await client.call(request, consumer=meter)
+    meter.complete()
     ordinary = await client.call(request)
     assert result == ordinary
     assert rig.detector.total_usd == result.usd and rig.detector.spend == result.usd
@@ -455,119 +460,6 @@ async def test_watchdog_regions_and_notify_once(tmp_path):
     await unset.detector.flush_notifications()
     assert unset.sent == [] and unset.journal.read() == []
     assert "spiral_warning" in unset.log.path.read_text() and "push is off" in unset.log.path.read_text()
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("name,estimate", [("claude", None), ("claude", 1), ("codex", 1)])
-async def test_watchdog_hard_timeout_group_cleanup(tmp_path, name, estimate):
-    # Expected==stuck is rejected by ticket grammar, not floored again at runtime.
-    rig = DetectorRig(tmp_path, expected=1, stuck=1)
-    d = rig.detector
-    started, cleaning, finish = (asyncio.Event() for _ in range(3))
-    trace = []
-
-    async def hung(consumer):
-        started.set()
-        try:
-            await asyncio.Event().wait()
-        finally:
-            trace.append("cancelled")
-            cleaning.set()
-            await finish.wait()
-            trace.append("reaped")
-
-    def abort():
-        trace.append("group-kill")
-
-    task = asyncio.create_task(d.watch(hung, served=rig.served(name=name, estimate=estimate), abort=abort))
-    await started.wait()
-    assert d.spend == (estimate or 0) and d.call.basis == estimate and not d.spiral
-    rig.waited = 20
-    rig.time.advance(79)
-    await turn()
-    assert not task.done() and trace == [] and d.active_seconds == 59
-    rig.time.advance(1)
-    await cleaning.wait()
-    assert trace == ["group-kill", "cancelled"] and not task.done()
-    # Even cancellation of the caller cannot abandon owned asynchronous cleanup.
-    task.cancel()
-    await turn()
-    assert not task.done()
-    finish.set()
-    with pytest.raises(asyncio.CancelledError):
-        await task
-    assert trace == ["group-kill", "cancelled", "reaped"]
-    assert d.bases == {} and d.stuck_warned
-
-    # Repeat without caller cancellation to prove the existing timeout outcome.
-    fresh = DetectorRig(tmp_path / "timeout", expected=1, stuck=1)
-
-    async def silent(_):
-        await asyncio.Event().wait()
-
-    timeout = asyncio.create_task(fresh.detector.watch(silent, served=fresh.served(name=name, estimate=estimate), abort=abort))
-    await turn()
-    fresh.time.advance(60)
-    result = await timeout
-    assert result.outcome == "timeout" and result.cost.seconds == 60
-    assert result.cost.usd == (estimate or 0) and fresh.detector.bases == {}
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("name", ["claude", "codex"])
-async def test_watchdog_real_group_cleanup(tmp_path, name):
-    rig = DetectorRig(tmp_path)
-    before = set(asyncio.all_tasks())
-    connected = asyncio.get_running_loop().create_future()
-
-    def connection(reader, writer):
-        connected.set_result((reader, writer))
-
-    server = await asyncio.start_server(connection, "127.0.0.1", 0)
-    port = server.sockets[0].getsockname()[1]
-    marker = tmp_path / "grandchild-wrote"
-    grandchild = f'import socket; gate=socket.create_connection(("127.0.0.1", {port})); gate.recv(1); open({str(marker)!r}, "w").close()'
-    script = f'import subprocess, sys, signal\nsubprocess.Popen([sys.executable, "-c", {grandchild!r}])\nprint({json.dumps(tool_events(name)[0])!r}, flush=True)\nsignal.pause()\n'
-    trace = []
-
-    class Process(PythonProviderExec):
-        def kill_group(self, pgid):
-            trace.append("group-kill")
-            super().kill_group(pgid)
-
-        async def run(self, argv, **kwargs):
-            try:
-                return await super().run(argv, **kwargs)
-            finally:
-                trace.append("reaped")
-
-    process = Process(script)
-    client = python_client(rig.cfg, process, tmp_path)
-    served = resolve(rig.cfg, "high" if name == "claude" else "medium", "implement")
-    task = asyncio.create_task(rig.detector.watch(lambda consumer: client.call(provider_request(name, tmp_path), consumer=consumer), served=served, abort=client.abort_current))
-    writer = None
-    try:
-        reader, writer = await asyncio.wait_for(connected, 5)
-        assert client._active._pgids and process.pgids[-1] in client._active._pgids
-        rig.time.advance(180)
-        result = await asyncio.wait_for(task, 5)
-        assert result.outcome == "timeout"
-        assert trace[0] == "group-kill" and trace[-1] == "reaped"
-        assert await asyncio.wait_for(reader.read(), 5) == b""  # Grandchild was killed too.
-        assert not marker.exists()
-        with pytest.raises(ProcessLookupError):
-            os.kill(process.pgids[-1], 0)
-        assert client._active is None and client._adapters[name]._pgids == set()
-    finally:
-        if not task.done():
-            task.cancel()
-        await asyncio.gather(task, return_exceptions=True)
-        if writer is not None:
-            writer.close()
-            await writer.wait_closed()
-        server.close()
-        await server.wait_closed()
-    assert set(asyncio.all_tasks()) == before
 
 
 # Pinned adapter objects: verdicts are explicit and require no external judge or fixture files.

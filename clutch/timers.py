@@ -113,13 +113,3 @@ class Timers:
             self._fired[timer.body.timer_id] = timer
             del self._pending[timer.body.timer_id]
         return tuple(due)
-
-    async def wait_next(self) -> tuple[Timer, ...]:
-        """Explicit wait owned, cancelled and awaited by the caller before unlocking."""
-        self._load()
-        while self._pending:
-            delay = (min(timer.deadline for timer in self._pending.values()) - self.clock()).total_seconds()
-            if delay <= 0:
-                return self.fire_due()
-            await self.sleep(delay)
-        return ()

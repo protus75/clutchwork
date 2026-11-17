@@ -3,9 +3,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 
-from clutch.artifacts import Cost, StageResult
-from clutch.driver import _observe
-from clutch.llm import LLMAborted, LLMResult
 from clutch.providers import ADAPTERS, ProviderSetupError, Served
 from clutch.seams import Clock, Sleep
 
@@ -218,49 +215,3 @@ class Detector:
     async def close_notifications(self) -> None:
         await asyncio.gather(*self.deliveries)
         await self.flush_notifications()
-
-    async def watch(self, start: Callable[[EventConsumer], Awaitable[LLMResult]], *, served: Served, abort: Callable[[], None]) -> LLMResult | StageResult:
-        meter = self.start_call(served)
-        work = asyncio.ensure_future(start(meter))
-        deliveries: list[asyncio.Task] = []
-
-        async def monitor() -> None:
-            while True:
-                region = self.decide()
-                if self.pending:
-                    deliveries.append(asyncio.create_task(self.flush_notifications()))
-                if region == "stuck":
-                    return
-                await self.sleep(min(1.0, self.stuck_seconds - self.active_seconds))
-
-        timer = asyncio.create_task(monitor())
-
-        async def cleanup() -> None:
-            results = await asyncio.gather(work, timer, *deliveries, return_exceptions=True)
-            for result in results:
-                if isinstance(result, BaseException) and not isinstance(result, (asyncio.CancelledError, LLMAborted)):
-                    raise result
-
-        try:
-            await asyncio.wait({work, timer}, return_when=asyncio.FIRST_COMPLETED)
-            # The hard boundary wins even if a terminal event arrived in the same turn.
-            if self.decide() == "stuck":
-                abort()  # Signal synchronously before cancelling any owned work.
-                work.cancel()
-                timer.cancel()
-                await _observe(asyncio.create_task(cleanup()))
-                return StageResult(
-                    "timeout", None, [], Cost(tokens=self.tokens, usd=self.total_usd, seconds=self.active_seconds, attempts=self.calls, provider=meter.identity[0], model=meter.identity[1])
-                )
-            if timer.done():
-                timer.result()
-            result = work.result()
-            meter.complete()
-            return result
-        finally:
-            if not work.done():
-                abort()
-                work.cancel()
-            timer.cancel()
-            await _observe(asyncio.create_task(cleanup()))
-            await self.flush_notifications()

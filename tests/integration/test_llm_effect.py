@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from clutch.artifacts import Artifact, Finding
 from clutch.config import load_config
 from clutch.driver import Driver, LlmStage
-from clutch.effects import Effects, effect
+from clutch.effects import Effects
 from clutch.journal import EventType, Journal, run_seq
 from clutch.llm import FakeLLM, LLMResult
 from clutch.llmeffect import llm_key
@@ -194,35 +194,3 @@ def test_failed_call_journals_no_completion_and_no_cost(tmp_path):
     assert run(driver).outcome == "infra_error"
     events = [e for e in Journal(state_dir, clock).read() if (e.key or "").startswith("llm/")]
     assert [e.type for e in events] == ["effect_intent"]
-
-
-def test_effect_decorator_keys_on_its_arguments_and_records_cost(tmp_path):
-    j = Journal(tmp_path, clock)
-    calls = []
-
-    @effect(key=lambda name, n: f"greet/{name}/{n}", cost=lambda r: {"usd": r["usd"]})
-    async def greet(name: str, n: int) -> dict:
-        calls.append((name, n))
-        return {"text": f"hi {name}", "usd": 0.1}
-
-    effects = Effects(j)
-    first = asyncio.run(greet(effects, "a", 1, ticket="t"))
-    again = asyncio.run(greet(effects, "a", 1, ticket="t"))
-    asyncio.run(greet(effects, "a", 2, ticket="t"))
-
-    assert first == again == {"text": "hi a", "usd": 0.1}
-    assert calls == [("a", 1), ("a", 2)]
-    done = [e for e in j.read() if e.type == EventType.EFFECT_COMPLETION]
-    assert [(e.key, e.ticket, e.body["cost"]) for e in done] == [("greet/a/1", "t", {"usd": 0.1}), ("greet/a/2", "t", {"usd": 0.1})]
-
-
-def test_singleton_effect_takes_a_bare_string_key(tmp_path):
-    j = Journal(tmp_path, clock)
-
-    @effect(key="retro/1")
-    async def retro() -> str:
-        return "done"
-
-    assert asyncio.run(retro(Effects(j), ticket=None)) == "done"
-    (done,) = [e for e in j.read() if e.type == EventType.EFFECT_COMPLETION]
-    assert done.key == "retro/1" and "cost" not in done.body

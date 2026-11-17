@@ -9,7 +9,7 @@ from clutch import __main__ as cli
 from clutch.config import load_config
 from clutch.daemon import HeartbeatCycle
 from clutch.git import Git
-from clutch.heartbeat import Heartbeat, is_fresh
+from clutch.heartbeat import Heartbeat
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
@@ -138,7 +138,7 @@ async def test_unhealthy_core_stops_refresh(tmp_path, component, state):
     assert task.done() is (state != "wedged")
     assert task.cancelling() == (1 if state == "cancelled" else 0)
     fs.now += AGE + timedelta(microseconds=1)
-    assert not is_fresh(heartbeat.path, metadata=fs.metadata, clock=fs.clock, max_age=AGE)
+    assert fs.now - fs.metadata(heartbeat.path) > AGE
 
     # A blocked main-loop continuation cannot independently refresh evidence.
     blocked, resume = asyncio.Event(), asyncio.Event()
@@ -156,7 +156,7 @@ async def test_unhealthy_core_stops_refresh(tmp_path, component, state):
     resume.set()
     assert await loop is True
     assert fs.trace == [(heartbeat.path, b"")]
-    assert is_fresh(heartbeat.path, metadata=fs.metadata, clock=fs.clock, max_age=AGE)
+    assert fs.now - fs.metadata(heartbeat.path) <= AGE
     release.set()
     await asyncio.gather(task, return_exceptions=True)
 
@@ -179,49 +179,6 @@ def test_heartbeat_failures_propagate(tmp_path, failure):
     with pytest.raises(OSError) as caught:
         owner.cycle()
     assert caught.value is error and fs.files == {} and fs.trace == []
-
-
-@pytest.mark.parametrize("age, expected", [(timedelta(0), True), (AGE, True), (AGE + timedelta(microseconds=1), False), (timedelta(microseconds=-1), False), (None, False)])
-def test_external_heartbeat_freshness(tmp_path, age, expected):
-    fs = Evidence()
-    path = tmp_path / "explicit-heartbeat"
-    reads = []
-    mtime = None if age is None else (fs.now - age).astimezone(timezone(timedelta(hours=3)))
-
-    def metadata(requested):
-        reads.append(requested)
-        return mtime
-
-    assert is_fresh(path, metadata=metadata, clock=fs.clock, max_age=AGE) is expected
-    assert reads == [path] and fs.files == {} and fs.trace == []
-    assert list(tmp_path.iterdir()) == []
-
-
-@pytest.mark.parametrize("invalid", ["zero", "negative", "naive-mtime", "naive-clock", "metadata"])
-def test_external_heartbeat_refuses_invalid_evidence(tmp_path, invalid):
-    fs = Evidence()
-    path = tmp_path / "heartbeat"
-    reads = []
-    error = OSError("metadata failed")
-
-    def metadata(requested):
-        reads.append(requested)
-        if invalid == "metadata":
-            raise error
-        return fs.now.replace(tzinfo=None) if invalid == "naive-mtime" else fs.now
-
-    age = timedelta(0) if invalid == "zero" else -AGE if invalid == "negative" else AGE
-    clock = (lambda: fs.now.replace(tzinfo=None)) if invalid == "naive-clock" else fs.clock
-    if invalid == "metadata":
-        with pytest.raises(OSError) as caught:
-            is_fresh(path, metadata=metadata, clock=clock, max_age=age)
-        assert caught.value is error
-    else:
-        road = "supply a strictly positive" if invalid in {"zero", "negative"} else "supply timezone-aware"
-        with pytest.raises(ValueError, match=road):
-            is_fresh(path, metadata=metadata, clock=clock, max_age=age)
-    assert reads == ([] if invalid in {"zero", "negative"} else [path])
-    assert fs.files == {} and fs.trace == [] and list(tmp_path.iterdir()) == []
 
 
 @pytest.mark.parametrize("verb", ["run", "drain"])
