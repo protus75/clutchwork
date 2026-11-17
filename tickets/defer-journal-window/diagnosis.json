@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "64120cdf900507bf16c8e543867c3401e14c61c0",
+  "stem": "defer-journal-window",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review found the rename, the section 8 table move, the 'Gate to start' cell and the test_roadmap_start_gates.py key sound. Redo all of them from the merge base, then grep all of docs/roadmap.md for every 0.4.0/0.5.0/0.6.0 mention, not just the sections the ticket lists.",
+    "docs/roadmap.md section 3.3 (deferred items whose trigger has fired): DuckDB analytics row 're-measure; 0.4.0 is conditional on it' -> 0.6.0; Triage-dedup row '`training-eval` (0.6.0)' -> 0.5.0; Concurrent worker pool row '0.5.0, declared in `docs/parallel-tickets-plan.md`' -> 0.4.0.",
+    "docs/roadmap.md section 1 prose: 'if the conditional 0.4.0 window slides' refers to the journal window, so rename it to 0.6.0. Change only the version number, nothing else in that sentence.",
+    "One reviewer found docs/upstream-issue-plan.md line 13 '`graphics-kind` (0.5.0)', but that file is outside the scope fence. Do not edit it. Say in the run record that it keeps the old name and needs a follow-up fence change."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
