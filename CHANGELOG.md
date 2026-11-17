@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.1 - 2026-11-17
+- decline-record-keeps-all-refusals: When an Author attempt declines after several driver calls, the `Evidence:` body of the committed decline record lists every distinct gate finding from the attempt, in the order the calls produced them.
+- drop-closed-sets-owner-roadmap-test: `tests/integration/test_closed_sets_single_owner.py::test_follow_up_row` reads the live `docs/roadmap.md` and asserts the current text of three rows: row 112 (`closed-sets-remaining`: release 0.3.0, owner, kind, priority P3, depends `closed-sets-single-owner`, no runs-before), row 19's stem, and row 49's stem and depends.
+- cli-group-release: Roadmap row 139 (`cli-group-release`), group `release`.
+- cli-group-host: Roadmap row 138 (`cli-group-host`), group `host`.
+- cli-group-view: Roadmap row 137 (`cli-group-view`), group `view`.
+- estimate-calibration-author: Roadmap row 142 (`estimate-calibration`, owner request 2026-11-17), part 3 of 3.
+- estimate-calibration-idle: Roadmap row 142 (`estimate-calibration`, owner request 2026-11-17), part 2 of 3.
+- estimate-calibration: Roadmap row 142 (`estimate-calibration`, owner request 2026-11-17), part 1 of 3.
+- evidence-record-doc-section: Roadmap row 149, added by the 0.3.0 acceptance review.
+- evidence-scoped-call-key: The idle-point supervisor step (roadmap rows 89, 96 and 114) fails on its first real-provider call.
+- cli-group-provider: Roadmap row 136 (`cli-group-provider`), group `provider`.
+- cli-group-config: Roadmap row 135 (`cli-group-config`), group `config`.
+- exec-seam-peak-memory-test: `tests/integration/test_exec_seam_reap.py::test_usage_and_independent_peak_memory` fails in full `./dev.py test` runs and passes alone.
+
 ## 0.4.0 - 2026-11-17
 - plan-status-sweep-030: Roadmap row 148.
 - cli-group-box: Roadmap row 134 (`cli-group-box`), group `box`.
