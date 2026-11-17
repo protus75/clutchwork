@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "7c69daddb2f0e050e4c23adc30fd88368ae3e226",
+  "produced_at_sha": "ec2021377dc5b5d520ae08bed67da61662924cf3",
   "stem": "plan-drain-author-in-parallel",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
-  "stage": "merge",
-  "verdict": "abandon-human",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "The ticket's diff is not the cause. Review approved it, and the only gate failure is tests/integration/test_closed_sets_remaining.py::test_follow_up_row, a test outside this ticket's fence.",
-    "Cause: docs/roadmap.md row 128 (`step-names-every-surface`) replaced the `closed-sets-rest` row, so test_follow_up_row finds 0 matching rows on current main. Fixing it means editing a file outside this fence (the test or docs/roadmap.md), which needs its own ticket.",
-    "A human should first land the fix for box-000690 (test_follow_up_row expects a closed-sets-rest roadmap row), ordered ahead of this ticket with `## Runs before`. Then retry this ticket at the same capability.",
-    "On retry, redo the same scoped edits: plan-ticket-drain.md Authoring/Supervising, drain-loop.md drafts and Suggestion Box sentences, host-authoring.md Time budget, CLAUDE.md and AGENTS.md outside clutch:core, and the phrase updates in test_ask_plan_drain.py and test_ask_drain_loop_agent.py.",
-    "Re-measure any claimed base failure with the plain `## Verification` command in a base-commit git worktree with full history and no environment overrides. The run record does not say how it measured the base failures in box-000690 and box-000691."
+    "Redo the attempt's prompt, guide, CLAUDE.md and AGENTS.md edits. Review found them sound. Keep the new conduct rule outside the clutch:core block in both files, and leave CORE_TEMPLATE untouched.",
+    "In tests/integration/test_ask_drain_loop_agent.py (about line 70, test_prompt_bounds_box_triage), keep the `for phrase in (\"never triage or dismiss\", \"left for the owner\"):` not-in assertion. Only add the positive phrases `the tick it appears` and `roadmap_row`.",
+    "In clutch/specs/ask/drain-loop.md, word the Suggestion Box sentence as Scope in does: a `roadmap_row` message \"is never triaged or dismissed\". Never write the lowercase phrase \"never triage or dismiss\", or the kept not-in assertion will fail.",
+    "The claim that test_follow_up_row and test_usage_and_independent_peak_memory fail on base is unproven. Before calling them base failures, run the plain `./dev.py test` once in a base-commit worktree with full history and no env overrides, and record that measurement in run.md.",
+    "Commit CLAUDE.md and AGENTS.md before the full `./dev.py test` run. The committed-conduct test fails while those files are uncommitted. Do not rerun a timeout like test_kill_aborts_requested_retro until it passes; report it."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
