@@ -1,5 +1,5 @@
 ---
-state: confirmed
+state: draft
 source: human
 priority: P1
 kind: chore
@@ -43,7 +43,7 @@ In:
   - Add `as_events(events: list[dict]) -> list[SimpleNamespace]`, the one wrap of journal dicts. Each object has `type`, `body` (`{}` when absent), `ticket`, `ts` and `key` (each `None` when absent). `queue` calls it once and passes the list to both `operator_holds` and `settled_dependencies`, so its second `SimpleNamespace` generator goes. `text_snapshot` and `snapshot` call it once each. `queue`'s signature is unchanged, because `tests/integration/test_watch.py` calls it with journal dicts.
   - Add `last_bodies(history) -> dict[str, dict]`, returning `{stem: {**e.body, "ts": e.ts}}` built from `status.latest_transitions(history)`. `text_snapshot` and `snapshot` use it in place of their loops. The maps keep their shape, so `running_stems`, `queue` and the row builders are unchanged.
   - Use `BOX_DIR` for the box in `snapshot`. Use `ticket_path` for the box-row resolution link (`ticket_path(m.resolution.link)`), the paths in `capability` and in `snapshot`'s `base` (`ctx.root / ticket_path(stem)`), and the row `path` field (`ticket_path(stem)`).
-- `clutch/__main__.py`: `handle_prompt` builds `last` with `observe.last_bodies(observe.as_events(observe.journal(config.state_dir)))`. `provider_holds` iterates `latest_transitions(checkout.journal.read())` and reads each event's `body`. `build_control` and `handle_suggest` use `BOX_DIR`. The `ticket_sha` lambda in `build_daemon_core` uses `f"HEAD:{ticket_path(stem)}"`. Nothing else in this file changes.
+- `clutch/__main__.py`: `handle_prompt` builds `last` with `observe.last_bodies(observe.as_events(observe.journal(config.state_dir)))`. `provider_holds` iterates `latest_transitions(checkout.journal.read())` and reads each event's `body`. In `build_control`, the `root=` argument of the `storm_producer(...)` call becomes `checkout.config.state_dir / BOX_DIR`, and nothing else in that call changes. `handle_suggest` uses `BOX_DIR` for its `Box`. The `ticket_sha` lambda in `build_daemon_core` uses `f"HEAD:{ticket_path(stem)}"`. Nothing else in this file changes.
 - `clutch/journal.py`: add `total_spend(events) -> float` beside `run_seq`. It returns `sum(e.body["cost"].get("usd", 0.0) for e in events if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict))`, the expression `status.project` uses today. `status.project` calls it. `stats.project_stats` sets `usd = total_spend(selected)`; its `costs` list stays for the per-surface and token sums. `retro.measurements` sets `"usd": total_spend(calls)`. Its de-duplicated `llm/` completions stay its own selection, and `costs` stays for the token counts. Every cost body in this repo's journal is a dict carrying `usd` (5,149 of 5,149), so retro's total is unchanged.
 - `clutch/enginelog.py`: add `engine_log(config, env, clock) -> EngineLog`, returning `EngineLog(config.state_dir / "engine.log", Redactor.from_config(config, env), clock)`. The eight sites call `engine_log(<checkout>.config, <checkout>.env, <checkout>.clock)`: `clutch/drain.py` (`drain`, `apply` in `settle_admissions`, `_Drain._run_driver`, `_Drain._run_retro`), `clutch/runner.py` (`prepare_pipeline`, `run_ticket`), `clutch/serve.py` (`Serve.__init__`) and `clutch/triage.py` (`report_intake`). Each module imports the name into its own namespace so a test can patch `<module>.engine_log`; `triage.py` keeps its import inside `report_intake`. Each site still makes exactly one `Redactor.from_config` call with the same config object, so the `redactor` trace in `tests/integration/test_daemon_composition.py` is unchanged.
 - `BOX_DIR` in `ask.render` (both joins) and in the evidence copy in `clutch/author.py` (`bounded(... / BOX_DIR, ...)`).
@@ -54,7 +54,7 @@ In:
 - New `tests/integration/test_projection_helpers_source.py`: it reads `clutch/**/*.py` with `ast`, in the style of `tests/integration/test_scan_owners.py`.
 
 Out:
-- The four left-out items in Goal / Why. `clutch/driver.py`, `clutch/caps.py` and `clutch/tickets.py` are not edited, and no `storm_producer(...)` call changes.
+- The four left-out items in Goal / Why. `clutch/driver.py`, `clutch/caps.py` and `clutch/tickets.py` are not edited. No `storm_producer(...)` call is moved, merged or given a new owner; the only edit to one is the `root=` argument in `build_control` named in Scope in.
 - In `clutch/observe.py`: the attempt count in `text_snapshot`, the `frontmatter` and `depends` readers, the `"engine.log"` reads and the watch globs (`tickets/*/ticket.md`, `box/*.json`).
 - Glob patterns such as `(repo / "tickets").glob("*/ticket.md")`, and paths to other files under `tickets/<stem>/` (`run.md`, `attempts/`, `evidence/`, `rework.md`).
 - `status.reject_queue` and `stats._latest_settled`. They are filtered folds, not the last-state map.
@@ -109,7 +109,7 @@ uv run ruff check .
 - A hand-written copy of an owned fold, wrap, sum, path or construction stays in a fenced file, or a compatibility alias keeps `EngineLog` or `Redactor` bound in `drain.py`, `runner.py` or `serve.py` for tests.
 - `Driver.from_config` changes, a site makes a second `Redactor.from_config` call, or `tests/integration/test_daemon_composition.py` or `tests/integration/test_watch.py` is edited.
 - An existing assertion changes, or `queue` or `running_stems` changes signature.
-- A left-out item (attempt counting, the frontmatter readers, `storm_producer`) is touched, or `clutch/driver.py`, `clutch/tickets.py` or `clutch/caps.py` is edited.
+- A left-out item (attempt counting, the frontmatter readers, de-duplicating `storm_producer` construction) is touched beyond the `root=` argument edit in `build_control`, or `clutch/driver.py`, `clutch/tickets.py` or `clutch/caps.py` is edited.
 
 ## Time budget
 - expected: 25m
