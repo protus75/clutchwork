@@ -37,6 +37,7 @@ from clutch.status import (
 from clutch.tickets import Frontmatter, TicketInvalid, _graph, _intake_plan_stem, _porcelain, intake_pending, order, parse_ticket, ticket_path, validate_ticket
 
 STEP_NAMES = {
+    "acceptance": "Acceptance",
     "requisition_review": "Requisition",
     "implement": "Implement",
     "check": "Check",

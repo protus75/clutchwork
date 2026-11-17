@@ -118,6 +118,7 @@ _add(
     {
         name: f"Records the {name.replace('_', ' ')} event."
         for name in (
+            "acceptance",
             "requisition_review",
             "implement",
             "check",
