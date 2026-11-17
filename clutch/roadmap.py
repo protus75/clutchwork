@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import get_args
 
 from clutch import release as release_module
-from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict
+from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict, parse_record, record_path
 from clutch.effects import Effects
 from clutch.git import GitError
 from clutch.journal import TERMINAL_STATES, EventType
@@ -261,6 +261,40 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
     return Choice(tuple(strikes), tuple(links), len(open_rows), tuple(ready), tuple(waits))
 
 
+def row_messages(box, row):
+    base = re.sub(r"-r\d+$", "", row.stem)
+    origin = re.compile(r"roadmap/" + re.escape(base) + r"(?:-r\d+)?$")
+    return [message for message in box.messages() if message.message_class == "roadmap_row" and origin.fullmatch(message.origin)]
+
+
+def refile_count(messages):
+    return sum(bool(re.search(r" \[re-file \d+\]$", message.summary)) for message in messages)
+
+
+def decline_reason(repo, message):
+    try:
+        _, body = parse_record((repo / record_path(message.resolution.link)).read_text())
+    except FileNotFoundError:
+        return ""
+    return body.partition("Evidence: ")[2].strip()
+
+
+def rejection_reason(events, stem):
+    verdict = next((event for event in reversed(events) if event.ticket == stem and event.type == EventType.SIGNAL and event.body.get("signal") == "reject_verdict"), None)
+    return (verdict.body.get("reason") or "rejected") if verdict else "rejected"
+
+
+def refile_row(text, row, stem):
+    lines = text.splitlines(keepends=True)
+    line = lines[row.line]
+    ending = line[len(line.rstrip("\r\n")) :]
+    cells = _cells(line)
+    cells[1] = f" `{stem}` "
+    cells[7] = " " + re.sub(r"^\*\*Authored\*\* \(.*?\)\.\s*", "", cells[7].strip()) + " "
+    lines[row.line] = "|" + "|".join(cells) + "|" + ending
+    return "".join(lines)
+
+
 async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     repo = checkout.repo
     if await checkout.git.status_porcelain(repo, "--", ROADMAP):
@@ -271,10 +305,14 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     text = path.read_text()
     rows = parse(text)
     files = set((await checkout.git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
-    choice = choose(rows, states=last_states(checkout.journal.read()), files=files, current=current_release(repo))
+    events = checkout.journal.read()
+    states = last_states(events)
+    choice = choose(rows, states=states, files=files, current=current_release(repo))
     lines = []
     for action, selected, edit in (("strike", choice.strike, strike), ("link", choice.link, link)):
         for row in selected:
+            if action == "link" and states.get(row.stem) == "rejected":
+                continue
             text = edit(text, row)
             checkout.fs.write(path, text.encode())
             await checkout.git.commit(repo, f"clutch(roadmap): {action} {row.stem}", only=[ROADMAP])
@@ -283,12 +321,37 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
     filed = []
 
-    def declined(row, message):
-        return f"roadmap: row {row.number} {row.stem} declined -> {message.resolution.link} -- reword the row's Content in docs/roadmap.md to file it again"
-
-    for row in choice.ready:
+    rejected = [row for row in rows if not row.struck and states.get(row.stem) == "rejected"]
+    reasons = {}
+    for row in rejected:
+        if opened + len(reasons) >= ahead:
+            break
+        messages = row_messages(box, row)
+        count = refile_count(messages)
+        reason = rejection_reason(events, row.stem)
+        if count >= checkout.config.caps.supervise:
+            lines.append(f"roadmap: row {row.number} {row.stem} re-files spent: {reason}")
+            continue
+        stem = re.sub(r"-r\d+$", "", row.stem) + f"-r{count + 1}"
+        text = refile_row(text, row, stem)
+        checkout.fs.write(path, text.encode())
+        await checkout.git.commit(repo, f"clutch(roadmap): refile {row.stem} as {stem}", only=[ROADMAP])
+        new_row = next(r for r in parse(text) if r.number == row.number)
+        reasons[new_row.number] = reason
+    rows = parse(text)
+    candidates = [r for r in rows if r.number in reasons] + list(choice.ready)
+    for row in candidates:
         if opened + len(filed) >= ahead:
             break
+        messages = row_messages(box, row)
+        count = refile_count(messages)
+        reason = reasons.get(row.number)
+        latest = messages[-1] if messages else None
+        if reason is None and latest and latest.resolution is not None and latest.resolution.kind == "declined":
+            reason = decline_reason(repo, latest)
+        if reason is not None and count >= checkout.config.caps.supervise:
+            lines.append(f"roadmap: row {row.number} {row.stem} re-files spent: {reason or 'declined'}")
+            continue
         payload = RoadmapRow(
             number=row.number,
             release=row.release,
@@ -301,10 +364,17 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
             content=row.content,
             plan=plan_path(row.owner, files),
         )
-        id, _ = box.enqueue(message_class="roadmap_row", origin=f"roadmap/{row.stem}", summary=f"Roadmap row {row.number} `{row.stem}`: {row.content}", roadmap_row=payload)
+        summary = f"Roadmap row {row.number} `{row.stem}`: {row.content}"
+        if reason is not None:
+            if row.number not in reasons and latest is not None:
+                summary = latest.summary
+            summary += (f" {reason}" if reason else "") + f" [re-file {count + 1}]"
+        elif latest and refile_count([latest]):
+            summary = latest.summary
+        id, _ = box.enqueue(message_class="roadmap_row", origin=f"roadmap/{row.stem}", summary=summary, roadmap_row=payload)
         message = box.get(id)
         if message.resolution is not None and message.resolution.kind == "declined":
-            lines.append(declined(row, message))
+            lines.append(f"roadmap: row {row.number} {row.stem} declined -> {message.resolution.link}")
             continue
         if message.status == "pending" and message.verdict is None:
             version = load_spec((SPECS_DIR / "triage.md").read_text()).meta.version
@@ -321,10 +391,10 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
             lines.append(f"roadmap: authored row {row.number} {row.stem}")
             opened += 1
         elif message.resolution is not None and message.resolution.kind == "declined":
-            lines.append(declined(row, message))
+            lines.append(f"roadmap: row {row.number} {row.stem} declined -> {message.resolution.link}")
         else:
             lines.append(f"roadmap: row {row.number} {row.stem} pending -- run clutch roadmap author again")
-    lines.extend(f"roadmap: row {wait.row.number} {wait.row.stem} waits: {wait.reason} -- {wait.road}" for wait in choice.waits)
+    lines.extend(f"roadmap: row {wait.row.number} {wait.row.stem} waits: {wait.reason} -- {wait.road}" for wait in choice.waits if wait.row not in rejected)
     lines.append(f"roadmap: {opened} of {ahead} rows open")
     return lines
 
@@ -366,6 +436,19 @@ async def status(checkout) -> list[str]:
         lines.append(f"release {release}: {merged_count} merged, {authored} authored, {ready} ready, {blocked} blocked; gate {gate}")
     lines.append("next: " + (", ".join(row.stem for row in choice.ready) or "none"))
     lines.extend(f"waits: row {wait.row.number} {wait.row.stem}: {wait.reason} -- {wait.road}" for wait in choice.waits)
+    box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs)
+    for row in rows:
+        messages = row_messages(box, row)
+        if row.struck or not messages or refile_count(messages) < checkout.config.caps.supervise:
+            continue
+        latest = messages[-1]
+        if states.get(row.stem) == "rejected":
+            reason = rejection_reason(events, row.stem)
+        elif latest.resolution is not None and latest.resolution.kind == "declined":
+            reason = decline_reason(checkout.repo, latest) or "declined"
+        else:
+            continue
+        lines.append(f"waits: row {row.number} {row.stem}: re-files spent -- {reason}")
     return lines
 
 

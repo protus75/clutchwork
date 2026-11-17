@@ -8,6 +8,7 @@ import clutch.__main__ as cli
 from clutch import roadmap
 from clutch.journal import Event, EventType
 from clutch.runner import Refusal
+from clutch.seams import LocalFileSystem
 
 HEADER = "| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |\n|---|---|---|---|---|---|---|---|\n"
 
@@ -52,7 +53,8 @@ def fixture(tmp_path):
         def append(self, *args, **kwargs):
             pytest.fail("status appended to journal")
 
-    return SimpleNamespace(repo=tmp_path, git=Git(), journal=Journal()), text, files, events
+    checkout = SimpleNamespace(repo=tmp_path, git=Git(), journal=Journal(), config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)), fs=LocalFileSystem())
+    return checkout, text, files, events
 
 
 def test_status_buckets(tmp_path):

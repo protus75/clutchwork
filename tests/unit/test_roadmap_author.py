@@ -42,7 +42,7 @@ def setup(tmp_path, monkeypatch):
     monkeypatch.setattr(roadmap, "load_spec", lambda _: SimpleNamespace(meta=SimpleNamespace(version="9.9")))
     git = FakeGit(repo)
     git.files = ["docs/sample-plan.md"]
-    checkout = SimpleNamespace(repo=repo, git=git, config=SimpleNamespace(state_dir=tmp_path / "state"), fs=LocalFileSystem(), journal=MemoryJournal())
+    checkout = SimpleNamespace(repo=repo, git=git, config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)), fs=LocalFileSystem(), journal=MemoryJournal())
     return checkout, Box(checkout.config.state_dir / "box", checkout.fs)
 
 
@@ -112,8 +112,8 @@ def test_declined_row_is_skipped(setup):
         box.resolve(ids[0], Resolution(kind="ticket", link="c-row"))
 
     lines = run(checkout, 2, author)
-    assert any("row 2 b-row declined -> declined-record" in line for line in lines)
-    assert [m for m, _, _ in checkout.git.commits] == ["clutch(roadmap): author c-row"]
+    assert any("roadmap: authored row 2 b-row" in line for line in lines)
+    assert [m for m, _, _ in checkout.git.commits] == ["clutch(roadmap): author b-row"]
 
 
 def test_full_window_calls_no_model(setup):
