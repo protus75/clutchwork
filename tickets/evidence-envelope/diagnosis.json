@@ -1,24 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "0dee787d84363a2939f139521198d656fb7e8306",
+  "produced_at_sha": "09d8af9e8cc6249948a10772d35433a5500cc4ca",
   "stem": "evidence-envelope",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "retry",
+  "verdict": "escalate",
   "lessons": [
-    "Attempt 0 ended after about 26s of inspection with no diff and no failing check. Nothing hit a limit, so this is an early stop, not a capacity or size problem. Use the 150m budget and implement the ticket's Scope in fully before ending; do not report incomplete after reading files.",
-    "Work in this order. First, clutch/evidence: make schema End.rusage `Rusage | None` and add EvidenceStore.latest_stdout(prefix). Then clutch/providers.py: add CallCapture, engine_version(), spec_version(surface) and the start/end writes, and delete capture_sequence, capture_dir, _seq and",
-    "In CliAdapter.invoke, write start.json after tree_before and before exec.run. Write end.json in a finally-style path on every exit (ok, nonzero, timeout, spawn_error, killed), then prune. Keep the local name `prompt` and `stdin_path=prompt`, because test_host_contract pins it. Remove both scratch",
-    "Do the forced test-fixture edits early so existing suites stay green: ScriptFS read_bytes/size; ScriptExec, FakeExec and PreflightExec answer git argv first with a fixed 40-hex id; MemoryFS remove; harvest_redaction fs entries/read_bytes/size; RecordedExec records stdin text. Then delete",
-    "Write tests/evidence_records.py::seed_end and the unit tests for AC 1-11 in tests/unit/test_evidence_envelope.py, using fakes and tmp_path, with engine_version and spec_version replaced by fakes. Write the integration tests for AC 12-14. Before ending, run all three ## Verification commands."
+    "Attempt 1 stopped after 145s of a 150m budget and committed nothing (diff_stat empty). Its edits to the test fakes followed Scope in. Next attempt: work through every Scope in item, commit on the ticket branch, and run all three ## Verification commands before reporting.",
+    "Redo the test-fake edits from the merge base: ScriptFS read_bytes/size; ScriptExec, FakeExec and PreflightExec answer git argv first with (0, 40-hex + newline, ''); MemoryFS no-op remove; test_harvest_redaction fs gains entries/read_bytes/size; drop capture_dir= from the qwen, gemini and providers",
+    "Core work in clutch/providers.py: CallCapture dataclass passed as capture= via _invoke to CliAdapter.invoke; scratch prompt and index under evidence/scratch; start.json before exec.run, end.json on every path; delete capture_sequence, capture_dir, _seq and _write_capture.",
+    "Also do: EvidenceStore.latest_stdout in clutch/evidence/store.py; End.rusage Rusage|None; harvest events_tail through latest_stdout; call_key in Driver._run's call dict; the redact.py checklist line; how-clutch-works sections 8.5 and 10.1; tests/evidence_records.py::seed_end.",
+    "Put tests for AC1-11 in tests/unit/test_evidence_envelope.py using fakes and tmp_path only, with engine_version and spec_version faked, so the new providers/driver/runner/evidence lines are covered. Put AC12-13 in tests/integration/test_evidence_envelope.py, then rewrite"
   ],
   "mechanical": null,
   "trimmed_lessons": [
     1,
-    2,
-    3
+    4
   ],
   "spec_version": "1.7",
   "provider": "claude",
