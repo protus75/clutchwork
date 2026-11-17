@@ -2,10 +2,12 @@
 
 import asyncio
 from collections.abc import Awaitable, Callable, Iterable, Set
+from pathlib import Path
 
 from clutch.config import Caps
 from clutch.drain import SETTLED, authored_at, order_tickets, parked_blob, reofferable, write_queue
 from clutch.journal import TERMINAL_STATES, Journal
+from clutch.seams import Clock, FileSystem
 from clutch.status import last_states
 from clutch.tickets import Ticket
 
@@ -16,6 +18,9 @@ class Scheduler:
         journal: Journal,
         dispatch: Callable[[Ticket], Awaitable[object]],
         *,
+        state_dir: Path,
+        fs: FileSystem,
+        clock: Clock,
         caps: Callable[[], Caps],
         ticket_sha: Callable[[str], Awaitable[str]],
         quarantined: Callable[[], Set[str]],
@@ -23,6 +28,7 @@ class Scheduler:
         completed_unmerged: Callable[[], int],
         max_unmerged: int,
     ) -> None:
+        self.state_dir, self.fs, self.clock = state_dir, fs, clock
         self.journal = journal
         self.dispatch = dispatch
         self.caps = caps
@@ -76,7 +82,7 @@ class Scheduler:
             if not ready:
                 return None
             ordered = order_tickets(ready, authored)
-            write_queue(self.journal.dir.parent, self.journal._fs, self.journal._clock, ordered)
+            write_queue(self.state_dir, self.fs, self.clock, ordered)
             ticket = ordered[0]
             self.remove(ticket.stem)
             await self.dispatch(ticket)

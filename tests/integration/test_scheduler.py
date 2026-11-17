@@ -13,6 +13,7 @@ from clutch import caps
 from clutch.config import Caps
 from clutch.journal import EventType, Journal
 from clutch.scheduler import Scheduler
+from clutch.seams import LocalFileSystem
 from clutch.tickets import INTAKE_SIGNAL, parse_ticket
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
 from tests.integration.test_cli import TICKET
@@ -64,6 +65,9 @@ class Rig:
         self.scheduler = Scheduler(
             self.journal,
             self.dispatch,
+            state_dir=root / "state",
+            fs=LocalFileSystem(),
+            clock=self.time,
             caps=Caps,
             ticket_sha=self.ticket_sha,
             quarantined=lambda: self.quarantine,

@@ -175,6 +175,8 @@ def build_daemon_core(
     core = daemon_core(
         checkout.repo,
         journal=checkout.journal,
+        state_dir=checkout.config.state_dir,
+        fs=checkout.fs,
         load=_config_reloader(config_path, checkout.repo),
         bind=bind,
         read=read,

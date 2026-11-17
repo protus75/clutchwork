@@ -41,7 +41,9 @@ async def test_scheduler_and_writer_have_no_active_attribute(monkeypatch, tmp_pa
 
     journal = SimpleNamespace(read=lambda: [], dir=tmp_path, _fs=None, _clock=None)
     monkeypatch.setattr(scheduler_module, "write_queue", lambda *args: None)
-    scheduler = Scheduler(journal, dispatch, caps=lambda: None, ticket_sha=sha, quarantined=set, drought_parked=set, completed_unmerged=lambda: 0, max_unmerged=1)
+    scheduler = Scheduler(
+        journal, dispatch, state_dir=tmp_path, fs=None, clock=None, caps=lambda: None, ticket_sha=sha, quarantined=set, drought_parked=set, completed_unmerged=lambda: 0, max_unmerged=1
+    )
     writer = TicketWriter(SimpleNamespace(), None)
     ticket = SimpleNamespace(stem="selected", frontmatter=SimpleNamespace(state="confirmed", priority="P2"), depends=(), runs_before=())
     scheduler.update(ticket)

@@ -487,6 +487,8 @@ def daemon_core(
     repo: Path,
     *,
     journal: Journal,
+    state_dir: Path,
+    fs: FileSystem,
     load: Callable[[], Config],
     bind: Callable[[ConfigSnapshot], Dispatch],
     read: Callable[[str], str | None],
@@ -505,6 +507,9 @@ def daemon_core(
     scheduler = Scheduler(
         journal,
         admission.dispatch,
+        state_dir=state_dir,
+        fs=fs,
+        clock=clock,
         caps=lambda: load().caps,
         ticket_sha=ticket_sha,
         quarantined=quarantined,
