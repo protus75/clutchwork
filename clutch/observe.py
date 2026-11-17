@@ -12,6 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Literal, get_args
 
+from clutch.box import BOX_DIR
 from clutch.config import load_config
 from clutch.drain import authored_at, awaiting_operator, order_tickets, parked_blob
 from clutch.graph import layout
@@ -25,6 +26,7 @@ from clutch.status import (
     confirm_admission,
     dismiss_admission,
     last_states,
+    latest_transitions,
     lint_admission,
     order_admission,
     reject_admission,
@@ -251,7 +253,7 @@ def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
         if e.get("ticket") == stem and body.get("signal") == "reject_verdict" and body.get("verdict") == "keep" and body.get("actor") in ("operator", "supervisor"):
             window = events[i + 1 :]
     rung = next((e["body"]["rung"] for e in reversed(window) if e.get("type") == "cap_consumed" and e.get("ticket") == stem and e["body"].get("cap") == "retry" and "rung" in e["body"]), None)
-    meta = frontmatter(ctx.root / "tickets" / stem / "ticket.md")
+    meta = frontmatter(ctx.root / ticket_path(stem))
     tier = rung["tier"] if rung else meta.get("agent_tier", "medium")
     effort = rung["effort"] if rung else meta.get("agent_effort", "medium")
     if surface == "requisition_review":
@@ -313,14 +315,24 @@ def operator_holds(ctx, history) -> set[str]:
     return {s for s in stems if awaiting_operator(history, s, caps_config)}
 
 
+def as_events(events: list[dict]) -> list[SimpleNamespace]:
+    """Adapt journal dictionaries for event projections."""
+    return [SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts"), key=e.get("key")) for e in events]
+
+
+def last_bodies(history) -> dict[str, dict]:
+    """Latest transition bodies with their timestamps."""
+    return {stem: {**e.body, "ts": e.ts} for stem, e in latest_transitions(history).items()}
+
+
 def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str], held_stems: set[str]) -> list[tuple[str, str, str]]:
     """Every confirmed ticket not yet settled, rejected, or running: (priority, stem, why it is waiting)."""
     done = CLOSED
-    history = [SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts")) for e in events]
+    history = as_events(events)
     waiting_on_person = operator_holds(ctx, history)
     held_stems = held_stems | waiting_on_person
     # A dependency is met when it, or every leaf of the split that superseded it, settled: the drain's own test.
-    settled = settled_dependencies(SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts")) for e in events)
+    settled = settled_dependencies(history)
     rows = []
     for path in sorted((ctx.root / "tickets").glob("*/ticket.md")):
         stem, meta = path.parent.name, frontmatter(path)
@@ -410,10 +422,8 @@ def text_snapshot(ctx) -> str:
         since = started(ctx, drains[0])
         restarts = f", restarted {len(drains) - 1}x on new engine code" if len(drains) > 1 else ""
         lines.append(f"Drain: running since {since.strftime('%-I:%M %p')} (pid {drains[-1]}{restarts})")
-    last_state: dict[str, dict] = {}
-    for e in events:
-        if e.get("type") == "state_transition" and e.get("ticket"):
-            last_state[e["ticket"]] = {**e["body"], "ts": e["ts"]}
+    history = as_events(events)
+    last_state = last_bodies(history)
     running = running_stems(state, last_state)
     lines.append("")
     if running:
@@ -441,7 +451,6 @@ def text_snapshot(ctx) -> str:
             lines.append(f"  {clock(body['ts'])}  {stem}  {outcome}")
         if not done:
             lines.append("  (nothing finished yet)")
-    history = [SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts")) for e in events]
     pending = queue(ctx, events, last_state, set(running), held(history, committed_ticket_shas(ctx)))
     lines += ["", f"Queue ({len(pending)} to do):"]
     lines += [f"  {priority}  {stem}  {why}" for priority, stem, why in pending] or ["  (empty)"]
@@ -644,12 +653,9 @@ def snapshot(ctx) -> dict:
     now = datetime.now().astimezone()
     events = journal(state)
     log = read_lines(state / "engine.log", 4000) if (state / "engine.log").exists() else []
-    last: dict[str, dict] = {}
-    for e in events:
-        if e.get("type") == "state_transition" and e.get("ticket"):
-            last[e["ticket"]] = {**e["body"], "ts": e["ts"]}
+    history = as_events(events)
+    last = last_bodies(history)
     tickets, invalid = load_tickets(ctx, {s for s, b in last.items() if b.get("to") in CLOSED})
-    history = [SimpleNamespace(type=e.get("type"), body=e.get("body", {}), ticket=e.get("ticket"), ts=e.get("ts"), key=e.get("key")) for e in events]
     from clutch.reconcile import orphans
 
     authored = authored_at(history)
@@ -718,7 +724,7 @@ def snapshot(ctx) -> dict:
         return ("after " + ", ".join(waits), "after") if waits else ("ready", "ready")
 
     def base(stem: str, section: str, status: str, status_key: str) -> dict:
-        t, path = tickets.get(stem), ctx.root / "tickets" / stem / "ticket.md"
+        t, path = tickets.get(stem), ctx.root / ticket_path(stem)
         return {
             "stem": stem,
             "section": section,
@@ -728,7 +734,7 @@ def snapshot(ctx) -> dict:
             "depends": list(t.depends) if t else depends(path) if path.exists() else [],
             "goal": t.sections.get("Goal / Why", "") if t else "",
             "runsBefore": list(t.runs_before) if t else [],
-            "path": f"tickets/{stem}/ticket.md",
+            "path": str(ticket_path(stem)),
             "held": stem in held_stems,
             # Only a committed draft awaits `clutch confirm`; intake confirms a new hand-written one itself.
             "draft": bool(t) and t.frontmatter.state == "draft" and stem not in new,
@@ -801,7 +807,7 @@ def snapshot(ctx) -> dict:
     from clutch.seams import LocalFileSystem
     from clutch.status import project
 
-    box = Box(state / "box", LocalFileSystem())
+    box = Box(state / BOX_DIR, LocalFileSystem())
     messages = box.messages()
     labels = {id: (cls, label, summary) for id, cls, label, summary in project([], box=box).box}
     box_rows = []
@@ -828,7 +834,7 @@ def snapshot(ctx) -> dict:
         path = box.path(m).resolve()
         link = None
         if m.resolution:
-            link = str(Path("tickets") / m.resolution.link / "ticket.md") if m.resolution.kind == "ticket" else str(Path("tickets/decisions") / (m.resolution.link + ".md"))
+            link = str(ticket_path(m.resolution.link)) if m.resolution.kind == "ticket" else str(Path("tickets/decisions") / (m.resolution.link + ".md"))
         outcome = ("author" if m.resolution.kind == "ticket" else m.resolution.kind) if m.resolution else ("reopened" if m.reopen else "pending")
         box_rows.append(
             {

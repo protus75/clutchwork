@@ -21,6 +21,7 @@ from clutch.seams import ExecutableNotFound
 from clutch.specs import load_spec, render
 from clutch.stages import findings_text
 from clutch.status import dismiss_admission, last_states, triage_admission
+from clutch.tickets import ticket_path
 
 TRIAGE_STUCK_S = 600.0
 ESCAPE_ATTRIBUTION = "escape-attribution"
@@ -193,7 +194,7 @@ async def attribute_escape(checkout, driver, message):
         commit = authored.body["result"]
         if not isinstance(commit, str) or re.fullmatch(r"[0-9a-f]{40}", commit) is None:
             raise ValueError("invalid authored ticket commit")
-        text = await checkout.git._run(checkout.repo, "show", f"{commit}:tickets/{stem}/ticket.md")
+        text = await checkout.git._run(checkout.repo, "show", f"{commit}:{ticket_path(stem)}")
         front = split_frontmatter(text)
         if front is None:
             raise ValueError("authored ticket has no frontmatter; restore its committed evidence")
@@ -326,7 +327,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
                 kind = reply.verdict
                 if kind == "tombstone":
                     assert reply.link is not None
-                    target = reply.link in merged or (await committed(checkout, Path("tickets") / reply.link / "ticket.md") and not await is_rejected(checkout, reply.link))
+                    target = reply.link in merged or (await committed(checkout, Path(ticket_path(reply.link))) and not await is_rejected(checkout, reply.link))
                     if not target:
                         for record, _ in registry:
                             if record.id == reply.link and await committed(checkout, record_path(record.id)):
@@ -351,8 +352,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
 
 
 def report_intake(checkout: Checkout) -> Box:
-    from clutch.enginelog import EngineLog
-    from clutch.redact import Redactor
+    from clutch.enginelog import engine_log
 
     if checkout.config.report_inbox is None:
         box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
@@ -361,7 +361,7 @@ def report_intake(checkout: Checkout) -> Box:
 
         box = storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
         box.recover()
-    log = EngineLog(checkout.config.state_dir / "engine.log", Redactor.from_config(checkout.config, checkout.env), checkout.clock)
+    log = engine_log(checkout.config, checkout.env, checkout.clock)
     if checkout.config.report_inbox is not None:
         ingest(box, root=checkout.repo, inbox=checkout.config.report_inbox, diagnostic=lambda error: log.event("report_intake_refused", error=error))
     return box

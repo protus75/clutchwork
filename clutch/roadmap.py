@@ -19,7 +19,7 @@ from clutch.runner import SPECS_DIR, Refusal
 from clutch.seams import ExecutableNotFound, NotificationFailed
 from clutch.specs import load_spec
 from clutch.status import SETTLED, last_states, project, reject_queue
-from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings
+from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings, ticket_path
 
 ROADMAP = "docs/roadmap.md"
 AHEAD = 2
@@ -213,7 +213,7 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
         state = states.get(row.stem)
         if state in SETTLED and all(states.get(stem) in SETTLED for stem in splits):
             strikes.append(row)
-        elif row.linked or f"tickets/{row.stem}/ticket.md" in files:
+        elif row.linked or str(ticket_path(row.stem)) in files:
             if not row.linked:
                 links.append(row)
             if state == "rejected":
@@ -467,7 +467,7 @@ def release_name(heading: str) -> str:
 def draft_stems(repo, rows):
     drafts = set()
     for row in rows:
-        path = repo / "tickets" / row.stem / "ticket.md"
+        path = repo / ticket_path(row.stem)
         try:
             text = path.read_text()
         except FileNotFoundError:
@@ -495,7 +495,7 @@ async def status(checkout) -> list[str]:
         counts = releases.setdefault(release_name(row.release), [0, 0, 0, 0])
         if row.struck or row in choice.strike:
             counts[0] += 1
-        elif (row.linked or f"tickets/{row.stem}/ticket.md" in files) and states.get(row.stem) != "rejected":
+        elif (row.linked or str(ticket_path(row.stem)) in files) and states.get(row.stem) != "rejected":
             counts[1] += 1
         elif row in choice.ready and row not in declined:
             counts[2] += 1

@@ -18,12 +18,12 @@ def render(kind: str, stem: str, config: Config, repo: Path) -> str:
     root = repo.resolve()
     state_dir = state.relative_to(root) if state.is_relative_to(root) else state
     if kind == "box":
-        from clutch.box import Box
+        from clutch.box import BOX_DIR, Box
         from clutch.seams import LocalFileSystem
 
-        box = Box(state / "box", LocalFileSystem())
+        box = Box(state / BOX_DIR, LocalFileSystem())
         messages = [box.get(id) for id in stem]
-        paths = "\n".join(f"- {m.id}: {state_dir / 'box' / box.path(m).name}" for m in messages)
+        paths = "\n".join(f"- {m.id}: {state_dir / BOX_DIR / box.path(m).name}" for m in messages)
         template = Template((SPECS_DIR / "ask" / "box.md").read_text())
         result = template.substitute(messages=paths)
     elif kind in ("drain-loop", "plan-ticket-drain"):

@@ -104,6 +104,11 @@ _SEGMENT_NAME = re.compile(r"^(\d{6})-(\d{8})\.jsonl$")
 TERMINAL_STATES: frozenset[str] = frozenset({"merged", "abandoned", "rejected"}) | (OUTCOMES - {"ok"})
 
 
+def total_spend(events: Iterable[Any]) -> float:
+    """Sum USD costs on effect completions."""
+    return sum(e.body["cost"].get("usd", 0.0) for e in events if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict))
+
+
 def run_seq(events: Iterable[Any], stem: str) -> int:
     """The RUN SEQUENCE: count of the stem's prior terminal events, folded at run entry, never stored."""
     return len(run_terminals(events, stem))

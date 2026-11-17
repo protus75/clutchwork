@@ -17,7 +17,7 @@ from clutch.runner import SPECS_DIR, Refusal
 from clutch.specs import load_spec, render
 from clutch.stages import findings_text
 from clutch.status import last_states
-from clutch.tickets import stem_findings
+from clutch.tickets import stem_findings, ticket_path
 
 ACCEPT_STUCK_S = 1800.0
 
@@ -93,7 +93,7 @@ async def accept(checkout, driver, release) -> tuple[bool, list[str]]:
             state = "rejected"
         elif message is not None and message.resolution is not None and message.resolution.kind == "declined":
             state = "declined"
-        elif row.linked or f"tickets/{row.stem}/ticket.md" in files:
+        elif row.linked or str(ticket_path(row.stem)) in files:
             state = "authored"
         else:
             state = "open"

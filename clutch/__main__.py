@@ -23,7 +23,7 @@ import yaml
 
 import clutch
 from clutch import ask, control, drain, hostfiles, issue, observe, reconcile, requisition, runner, seams, serve, triage
-from clutch.box import UnknownBoxId
+from clutch.box import BOX_DIR, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
 from clutch.git import Git, GitError
@@ -49,7 +49,7 @@ from clutch.providers import (
 from clutch.redact import Redactor
 from clutch.restart import Restart
 from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalFileSystem, ProcessExec, SubprocessExec
-from clutch.status import last_states, lint_admission, order_admission, project, reject_queue, render, review_admission
+from clutch.status import last_states, latest_transitions, lint_admission, order_admission, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
     KINDS,
@@ -117,7 +117,7 @@ def build_control(checkout: runner.Checkout) -> PauseConsumer:
     """Compose without reading requests, publishing discovery, or starting tasks."""
     from clutch.daemon import storm_producer
 
-    box = storm_producer(root=checkout.config.state_dir / "box", fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
+    box = storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
     consumer = PauseConsumer(
         journal=checkout.journal,
         lifecycle_id=uuid4().hex,
@@ -180,7 +180,7 @@ def build_daemon_core(
         load=_config_reloader(config_path, checkout.repo),
         bind=bind,
         read=read,
-        ticket_sha=lambda stem: checkout.git.rev_parse(checkout.repo, f"HEAD:tickets/{stem}/ticket.md"),
+        ticket_sha=lambda stem: checkout.git.rev_parse(checkout.repo, f"HEAD:{ticket_path(stem)}"),
         clock=checkout.clock,
         sleep=checkout.sleep,
         debounce=debounce,
@@ -198,12 +198,8 @@ def build_daemon_core(
 
     def provider_holds():
         held = set(drought_parked())
-        latest = {}
-        for event in checkout.journal.read():
-            if event.type == "state_transition" and event.ticket is not None:
-                latest[event.ticket] = event.body
-        for stem, body in latest.items():
-            if route := body.get("provider_drought"):
+        for stem, event in latest_transitions(checkout.journal.read()).items():
+            if route := event.body.get("provider_drought"):
                 snapshot = load_config(config_path, cwd=checkout.repo)
                 if consumer.providers.drought(snapshot, route["tier"], route["surface"]):
                     held.add(stem)
@@ -796,8 +792,7 @@ def main(
             raise runner.Refusal(f"{ticket_path(args.stem)} does not exist", f"author it with clutch new {args.stem}")
         from clutch import observe
 
-        events = observe.journal(config.state_dir)
-        last = {e["ticket"]: {**e["body"], "ts": e["ts"]} for e in events if e.get("type") == "state_transition" and e.get("ticket")}
+        last = observe.last_bodies(observe.as_events(observe.journal(config.state_dir)))
         kind = "running" if args.kind == "diagnose" and args.stem in observe.running_stems(config.state_dir, last) else args.kind
         print(ask.render(kind, args.stem, config, repo), end="")
         return 0
@@ -807,7 +802,7 @@ def main(
             raise runner.Refusal("blank summary", "pass the idea as one quoted argument")
         from clutch.box import Box, RereportJournal
 
-        box = Box(config.state_dir / "box", checkout.fs, rereport=RereportJournal(checkout.journal))
+        box = Box(config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
         id, created = box.enqueue(message_class="suggestion", origin="session", summary=args.summary, occurrence_id=uuid4().hex)
         print(f"suggest: filed {id}" if created else f"suggest: already in the box as {id}")
         return 0

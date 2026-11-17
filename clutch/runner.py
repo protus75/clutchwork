@@ -23,7 +23,7 @@ from clutch.caps import capability, consume, lineage, next_rung, spent, spent_re
 from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.driver import Driver
 from clutch.effects import Effects
-from clutch.enginelog import EngineLog
+from clutch.enginelog import engine_log
 from clutch.evidence.store import EvidenceStore
 from clutch.git import Git, GitError
 from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, run_seq
@@ -33,7 +33,6 @@ from clutch.lockfile import Lockfile
 from clutch.merge import compose_pipeline, merge
 from clutch.providers import ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.reconcile import reconcile
-from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, GroupExec, Sleep
 from clutch.stages import DiagnosisMaterial, StageContext, StagesRun, diagnose, lift_outbox, run_stages, ticket_change_findings, write_diagnosis
 from clutch.status import CLOSED, last_states, run_admission, verdict_refusal
@@ -121,7 +120,7 @@ def pipeline(checkout: Checkout) -> Dispatch:
 async def prepare_pipeline(checkout: Checkout) -> Dispatch:
     """Preflight this checkout's providers before constructing any stage consumers."""
     llm = ProviderLLM(checkout.config, exec_=checkout.exec_, fs=checkout.fs, env=checkout.env, cwd=checkout.repo, timeout=call_timeout(checkout.config), session=checkout.control.providers)
-    log = EngineLog(checkout.config.state_dir / "engine.log", Redactor.from_config(checkout.config, checkout.env), checkout.clock)
+    log = engine_log(checkout.config, checkout.env, checkout.clock)
     log.event("phase_start", phase="preflight")
     try:
         problems = await llm.preflight()
@@ -552,7 +551,7 @@ async def run_ticket(stem: str, checkout: Checkout, dispatch: Dispatch) -> int:
     if findings := stem_findings(stem):
         raise Refusal(findings[0].message, findings[0].paved_road)
     lock = Lockfile(checkout.config.state_dir, verb="run", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock)
-    log = EngineLog(checkout.config.state_dir / "engine.log", Redactor.from_config(checkout.config, checkout.env), checkout.clock)
+    log = engine_log(checkout.config, checkout.env, checkout.clock)
     pid = os.getpid()
     lock.acquire()
     outcome = "parked"

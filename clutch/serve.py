@@ -14,7 +14,7 @@ from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
 from clutch.effects import Effects
-from clutch.enginelog import EngineLog
+from clutch.enginelog import engine_log
 from clutch.git import GitError
 from clutch.heartbeat import Heartbeat
 from clutch.journal import TERMINAL_STATES, EventType, JournalCorruption, last_transition, run_seq
@@ -22,7 +22,6 @@ from clutch.lockfile import Lockfile
 from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import ConflictHandoff, regate_receipts
 from clutch.providers import ProviderSetupError
-from clutch.redact import Redactor
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.status import CLOSED
@@ -117,7 +116,7 @@ class Serve:
         self.observation: asyncio.Task | None = None
         self.stopper = self.observer = self.checkpoint = None
         self.responses = tuple(Responsiveness() for _ in range(4))
-        self.log = EngineLog(checkout.config.state_dir / "engine.log", Redactor.from_config(checkout.config, checkout.env), checkout.clock)
+        self.log = engine_log(checkout.config, checkout.env, checkout.clock)
         self.failure = failure or (lambda exc: self.log.event("worker_failure", error=str(exc)))
         self.notifications = build_notifications(checkout, config_path=config_path, log=self.log)
 

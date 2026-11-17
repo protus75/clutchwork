@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 
 from clutch.artifacts import Finding, NonBlank
 from clutch.baseline import resolve_baseline
-from clutch.box import Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
+from clutch.box import BOX_DIR, Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
 from clutch.driver import Driver, LlmStage, unwrap_fence
 from clutch.gates import GateReport
 from clutch.git import GitError
@@ -103,7 +103,7 @@ class AuthorGate:
                 paths = self.copied.setdefault(artifact.stem, [])
                 for kind in CAPS:
                     if (source := getattr(message.report.custody, kind)) is not None:
-                        data = bounded(self.checkout.config.state_dir / "box", source, kind)
+                        data = bounded(self.checkout.config.state_dir / BOX_DIR, source, kind)
                         target = f"tickets/{artifact.stem}/evidence/" + ("replay.json" if kind == "replay" else "log.txt")
                         self.checkout.fs.write(self.checkout.repo / target, data)
                         if target not in paths:
@@ -173,7 +173,7 @@ def ticket_state(text: str) -> str | None:
 async def is_rejected(checkout: Checkout, stem: str) -> bool:
     if last_states(checkout.journal.read()).get(stem) == "rejected":
         return True
-    path = Path("tickets") / stem / "ticket.md"
+    path = ticket_path(stem)
     try:
         text = await checkout.git._run(checkout.repo, "show", f"HEAD:{path}")
     except GitError:

@@ -15,6 +15,11 @@ MAX_BYTES = 16 * 1024 * 1024
 BACKUPS = 3  # 4 files with the active one
 
 
+def engine_log(config, env, clock) -> "EngineLog":
+    """Build the configured, redacted engine log."""
+    return EngineLog(config.state_dir / "engine.log", Redactor.from_config(config, env), clock)
+
+
 class EngineLog:
     def __init__(self, path: Path, redactor: Redactor, clock: Clock, *, max_bytes: int = MAX_BYTES, backups: int = BACKUPS) -> None:
         self.path = path

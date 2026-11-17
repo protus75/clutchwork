@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType, SimpleNamespace
 from typing import Literal
 
-from clutch.journal import Event, EventType
+from clutch.journal import Event, EventType, total_spend
 from clutch.retro import Window, project_window
 from clutch.scorecard import Scorecard, project_scorecard
 from clutch.tickets import INTAKE_SIGNAL
@@ -57,9 +57,14 @@ def reject_queue(events: Iterable[Event]) -> dict[str, Mapping]:
     return {stem: body for stem, body in waiting.items() if terminals[stem].get("to") not in SETTLED}
 
 
+def latest_transitions(events: Iterable[Event]) -> dict[str, Event]:
+    """Each stem's latest transition with a target."""
+    return {e.ticket: e for e in events if e.type == EventType.STATE_TRANSITION and e.ticket is not None and "to" in e.body}
+
+
 def last_states(events: Iterable[Event]) -> dict[str, str]:
     """Each stem's latest run-state transition target."""
-    return {e.ticket: e.body["to"] for e in events if e.type == EventType.STATE_TRANSITION and e.ticket is not None and "to" in e.body}
+    return {stem: e.body["to"] for stem, e in latest_transitions(events).items()}
 
 
 @dataclass(frozen=True)
@@ -198,7 +203,7 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
         for e in events
         if e.type == EventType.SIGNAL and e.body.get("signal") == INTAKE_SIGNAL and e.ticket is not None and last.get(e.ticket) not in done
     )
-    spend = sum(e.body["cost"].get("usd", 0.0) for e in events if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict))
+    spend = total_spend(events)
     messages = box.messages() if box is not None else []
     unresolved_ids = {m.id for m in messages if m.resolution is None}
     resolved_stems = set()

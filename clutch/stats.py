@@ -7,7 +7,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
 from clutch.help import TOPICS, topic_text
-from clutch.journal import EventType
+from clutch.journal import EventType, total_spend
 from clutch.status import CLOSED
 from clutch.tickets import KINDS
 
@@ -130,7 +130,7 @@ def project_stats(events, kinds, checks, *, now, window):
         return dict(Counter(b[field] for b in signals if b.get("signal") == signal and b.get(field) is not None))
 
     costs = [e for e in selected if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict)]
-    usd = sum(e.body["cost"].get("usd", 0.0) for e in costs)
+    usd = total_spend(selected)
     surfaces = defaultdict(float)
     for e in costs:
         parts = (e.key or "").split("/")

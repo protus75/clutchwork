@@ -16,8 +16,9 @@ from clutch.config import SpikeKind
 from clutch.driver import LlmStage
 from clutch.gates import GateReport
 from clutch.git import GitError
-from clutch.journal import Event, EventType
+from clutch.journal import Event, EventType, total_spend
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
+from clutch.tickets import ticket_path
 
 RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
@@ -159,7 +160,7 @@ def measurements(window: Window) -> dict:
     return {
         "merges": unique,
         "merged_count": len(unique),
-        "usd": sum(cost["usd"] for cost in costs),
+        "usd": total_spend(calls),
         "input_tokens": tokens("input_tokens"),
         "output_tokens": tokens("output_tokens"),
         "spikes": {kind: len(ids) for kind, ids in spikes.items()},
@@ -228,7 +229,7 @@ async def production_evidence(window, checkout):
     for row in evidence["elapsed_seconds"]:
         predicted = None
         if row["commit"] is not None:
-            text = await checkout.git._run(checkout.repo, "show", f"{row['commit']}:tickets/{row['ticket']}/ticket.md")
+            text = await checkout.git._run(checkout.repo, "show", f"{row['commit']}:{ticket_path(row['ticket'])}")
             match = re.search(r"^- expected: (\d+)m$", text, re.M)
             predicted = int(match[1]) * 60 if match else None
         row["predicted_seconds"] = predicted

@@ -18,8 +18,7 @@ class RecordingLog:
 
 def install_log(monkeypatch, module):
     log = RecordingLog()
-    monkeypatch.setattr(module, "EngineLog", lambda *args: log)
-    monkeypatch.setattr(module.Redactor, "from_config", lambda *args: None)
+    monkeypatch.setattr(module, "engine_log", lambda *args: log)
     return log
 
 

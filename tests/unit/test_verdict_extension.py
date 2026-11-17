@@ -198,8 +198,7 @@ def test_drain_logs_refusal(monkeypatch):
     from clutch import drain
 
     log = SimpleNamespace(event=Mock())
-    monkeypatch.setattr(drain, "EngineLog", lambda *args: log)
-    monkeypatch.setattr(drain.Redactor, "from_config", lambda *args: None)
+    monkeypatch.setattr(drain, "engine_log", lambda *args: log)
     monkeypatch.setattr(runner, "apply_admission", AsyncMock(return_value={"refusal": "settled"}))
 
     async def settle(callback):
