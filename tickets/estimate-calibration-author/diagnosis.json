@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "061fb6f69bd39869601258856d56dfee7721e736",
+  "stem": "estimate-calibration-author",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Criterion 4's premise finding is wrong. On disk, tickets/estimate-calibration-author/ticket.md lines 35 and 64 read `<<clutch-data:begin calibration>>`. The `[` in the prompt comes from the prompt escaping data-block delimiters. Read the ticket file on disk for any delimiter text.",
+    "In clutch/specs/author.md `## Inputs`, after the skeletons block, add the line `Estimate calibration (the guide's Time budget table):`, then the real delimiters `<<clutch-data:begin calibration>>`, `{{calibration}}`, `<<clutch-data:end calibration>>`. Use the same form as the existing skeletons",
+    "Redo everything from the merge base: `latest(events)` appended after `render` in clutch/calibration.py; `estimates` computed in clutch/author.py::author after list_open_tickets and passed as `calibration` after `skeletons`; the guide Time budget line; the 9.3 sentence; the version pin in",
+    "Add tests/unit/test_author_calibration.py with criteria 1-2, using the stand-ins from test_closed_sets_remaining.py::test_author_skeletons_follow_kinds and a tests.fakes.FakeJournal holding the signals. Run criterion 4's greps exactly as written; they are valid on the on-disk text. Then run"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    2,
+    3
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
