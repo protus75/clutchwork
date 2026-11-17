@@ -288,10 +288,24 @@ def watchdog_notifications(config, env, effects, log, *, redactor, cwd, **contex
     )
 
 
+def _command(subparsers, name, *, summary, does, reads, writes, lock, exits, examples):
+    return subparsers.add_parser(
+        name,
+        help=summary,
+        description=f"{does}\n\nReads: {reads}\nWrites: {writes}\nLock: {lock}\nExit codes: {exits}",
+        epilog="Examples:\n" + "\n".join(f"{example}\n  {does}" for example in examples),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+
+def _subparsers(parser):
+    return next((a for a in parser._actions if isinstance(a, argparse._SubParsersAction)), None)
+
+
 def _parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(prog="python -m clutch", description="Host guides: clutch docs")
+    ap = argparse.ArgumentParser(prog="clutch", usage="%(prog)s [-h] [--config CONFIG] <command> ...", description="Host guides: clutch docs")
     ap.add_argument("--config", type=Path, help="config path (default: config.yaml at the checkout root)")
-    sub = ap.add_subparsers(dest="verb", required=True)
+    sub = ap.add_subparsers(dest="verb", required=True, metavar="<command>")
     sub.add_parser("watch", help="read-only live engine view").add_argument("--once", action="store_true")
     sub.add_parser("snapshot", help="read-only JSON snapshot")
     sub.add_parser("status", help="project current state from the journal (read-only)")
@@ -303,9 +317,50 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("retro", help="run a retro now, or queue one on the running engine")
     sub.add_parser("doctor", help="inspect setup without changing state")
     sub.add_parser("core", help="refresh managed conduct in every routed agent's root file")
-    prompt = sub.add_parser("prompt", help="render an operator prompt")
-    prompt.add_argument("kind", choices=ask.KINDS)
-    prompt.add_argument("stems", nargs="*")
+    prompt = sub.add_parser(
+        "prompt",
+        help="render an operator prompt",
+        description="Render prompts for operators.",
+        epilog="Examples:\nclutch prompt diagnose example\n  Diagnose the example ticket.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    prompt_sub = prompt.add_subparsers(dest="kind", required=True)
+    prompt_details = {
+        "diagnose": "Diagnose a ticket, selecting the running prompt when it is live.",
+        "running": "Inspect a running ticket.",
+        "review": "Audit a ticket against merged and confirmed work.",
+        "box": "Discuss named Suggestion Box messages.",
+        "drafts": "Assess committed drafts awaiting a verdict.",
+        "drain-loop": "Print the supervising drain-loop prompt.",
+        "plan-ticket-drain": "Print the unattended roadmap kickoff prompt.",
+        "author": "Author a ticket from its roadmap row or request.",
+    }
+    for kind in ask.KINDS:
+        example = f"clutch prompt {kind}" + ("" if kind in ("drafts", "drain-loop", "plan-ticket-drain") else " example")
+        command = _command(
+            prompt_sub,
+            kind,
+            summary=prompt_details[kind],
+            does=prompt_details[kind],
+            reads="Config, prompt templates and relevant ticket or state data.",
+            writes="Nothing; prints the prompt.",
+            lock="None.",
+            exits="0 on success; 2 on refusal.",
+            examples=[example],
+        )
+        command.add_argument("stems", nargs="*")
+    help_parser = _command(
+        sub,
+        "help",
+        summary="show command help and examples",
+        does="Print help for a command path.",
+        reads="Command parser definitions.",
+        writes="Help to stdout.",
+        lock="None.",
+        exits="0 on success; 2 for an unknown command.",
+        examples=["clutch help roadmap author"],
+    )
+    help_parser.add_argument("command", nargs="*")
     sub.add_parser("docs", help="print installed host guide paths")
     sub.add_parser("init-config", help="print a suggested config.yaml from the provider CLIs found").add_argument("--write", action="store_true")
     sub.add_parser("install", help="install provider CLIs into the host project as pnpm dev dependencies").add_argument("providers", nargs="*")
@@ -323,15 +378,74 @@ def _parser() -> argparse.ArgumentParser:
     issue_parser.add_argument("title")
     issue_parser.add_argument("--body", type=Path, required=True)
     sub.add_parser("triage", help="make one sequential pass over pending suggestions under the lock").add_argument("ids", nargs="*")
-    roadmap = sub.add_parser("roadmap", help="maintain roadmap tickets")
+    roadmap = sub.add_parser(
+        "roadmap",
+        help="maintain roadmap tickets",
+        description="Maintain and inspect roadmap releases and tickets.",
+        epilog="Examples:\nclutch roadmap status\n  Show roadmap progress.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
     from clutch.roadmap import AHEAD
 
-    roadmap_sub.add_parser("author", help="author ready roadmap rows").add_argument("--ahead", type=int, default=AHEAD)
-    roadmap_sub.add_parser("status", help="show read-only roadmap progress")
-    roadmap_sub.add_parser("accept", help="review a release against its promises").add_argument("release")
-    roadmap_sub.add_parser("gate", help="run a release's ship gate").add_argument("release")
-    merged = roadmap_sub.add_parser("merged", help="check merged roadmap conditions")
+    author = _command(
+        roadmap_sub,
+        "author",
+        summary="author ready roadmap rows",
+        does="Author ready roadmap rows and maintain links.",
+        reads="Roadmap, tickets, journal and config.",
+        writes="Tickets and roadmap links in commits; journal state.",
+        lock="Writer lock.",
+        exits="0 on success; 2 on refusal.",
+        examples=["clutch roadmap author --ahead 2"],
+    )
+    author.add_argument("--ahead", type=int, default=AHEAD)
+    _command(
+        roadmap_sub,
+        "status",
+        summary="show read-only roadmap progress",
+        does="Show roadmap progress and waiting rows.",
+        reads="Roadmap, tickets and journal.",
+        writes="Nothing; prints progress.",
+        lock="None.",
+        exits="0 on success; 2 on refusal.",
+        examples=["clutch roadmap status"],
+    )
+    accept = _command(
+        roadmap_sub,
+        "accept",
+        summary="review a release against its promises",
+        does="Review a release against its promises and append gap rows.",
+        reads="Roadmap, release plans, tickets and config.",
+        writes="Gap rows in a roadmap commit.",
+        lock="Commit lock only.",
+        exits="0 when promises hold; 1 for gaps; 2 on refusal.",
+        examples=["clutch roadmap accept 1.0.0"],
+    )
+    accept.add_argument("release")
+    gate = _command(
+        roadmap_sub,
+        "gate",
+        summary="run a release's ship gate",
+        does="Run a release's ship gate in order.",
+        reads="Roadmap gate commands and config.",
+        writes="Gate result to the journal; commands may write files.",
+        lock="None.",
+        exits="0 when passing; 1 on failure; 2 on refusal.",
+        examples=["clutch roadmap gate 1.0.0"],
+    )
+    gate.add_argument("release")
+    merged = _command(
+        roadmap_sub,
+        "merged",
+        summary="check merged roadmap conditions",
+        does="Check roadmap settlement and merge counts.",
+        reads="Roadmap, tickets, journal and git history.",
+        writes="Nothing; prints conditions.",
+        lock="None.",
+        exits="0 when conditions hold; 1 otherwise; 2 on refusal.",
+        examples=["clutch roadmap merged example"],
+    )
     merged.add_argument("stems", nargs="*")
     merged.add_argument("--release")
     merged.add_argument("--priority", nargs="+", choices=PRIORITIES)
@@ -371,6 +485,16 @@ def _parser() -> argparse.ArgumentParser:
     dr.add_argument("--deadline", type=datetime.fromisoformat, default=None)
     dr.add_argument("--stop-lifecycle", help=argparse.SUPPRESS)
     sub.add_parser("serve", help="run the foreground daemon until kill, stop, or a signal stops it")
+    # Replace argparse's flat choice listing with one ordered command listing.
+    sub.help = argparse.SUPPRESS
+    lines = ["Commands:"]
+    for action in sub._choices_actions:
+        lines.append(f"  {action.dest}  {action.help}")
+        child = _subparsers(sub.choices[action.dest])
+        if child:
+            lines.extend(f"  {action.dest} {item.dest}  {item.help}" for item in child._choices_actions)
+    ap.epilog = "\n".join(lines) + "\n\nRun clutch help <command> for command help."
+    ap.formatter_class = argparse.RawDescriptionHelpFormatter
     return ap
 
 
@@ -386,7 +510,19 @@ def main(
     terminal: tuple[Callable[[], bool], Callable[[str], str]] | None = None,
 ) -> int:
     invocation = list(argv) if argv is not None else sys.argv[1:]
-    args = _parser().parse_args(invocation)
+    parser = _parser()
+    if invocation and invocation[0] in ("--help", "-h"):
+        invocation = ["help", *invocation[1:]]
+    args = parser.parse_args(invocation)
+    if args.verb == "help":
+        target = parser
+        for word in args.command:
+            children = _subparsers(target)
+            if children is None or word not in children.choices:
+                return _fail("help", f"unknown command {' '.join(args.command)} -- run clutch help to list commands")
+            target = children.choices[word]
+        target.print_help()
+        return 0
     repo = Path(cwd) if cwd is not None else Path.cwd()
     env = dict(os.environ) if env is None else env
 

@@ -53,6 +53,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `install [PROVIDER...]` | no | Installs named provider CLIs into the host project as pnpm dev dependencies, or with no names reports each adapter's package, location, and version. |
 | `update-config` | no | Lists the model names each declared provider's CLI serves and compares them with `models_by_tier` and routing candidates; exit 0 when every name is current, 1 when a suggestion was printed. Writes nothing. |
 | `init-config [--write]` | no | Prints a suggested `config.yaml` built from the provider CLIs found (project or system) and the model names they serve, validated with the real loader; `--write` publishes it when no `config.yaml` exists. Undetermined models are written as `OPERATOR-SETS-THIS`. |
+| `help [command ...]` | no | Prints command help and examples from each command parser in `clutch/__main__.py`; `--help` or `-h` before a command does the same. Exits 0, or 2 for an unknown command. |
 | `docs` | no | Prints the installed host guide paths and their purposes. |
 | `migrate-config` | no | Migrates a `schema_version: 0` config to the current schema. |
 | `new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
