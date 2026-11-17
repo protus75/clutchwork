@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import get_args
 
 from clutch import release as release_module
+from clutch.author import ticket_state
 from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict, parse_record, record_path
 from clutch.effects import Effects
 from clutch.git import GitError
@@ -195,7 +196,7 @@ def current_release(repo: Path) -> str | None:
     return f"{parts[0]}.{parts[1]}.0"
 
 
-def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None) -> Choice:
+def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None, drafts: frozenset[str] = frozenset()) -> Choice:
     tables = [row._table for row in rows if release_name(row.release) == current] if current is not None else []
     c = min(tables) if tables else None
 
@@ -212,12 +213,14 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
         state = states.get(row.stem)
         if state in SETTLED and all(states.get(stem) in SETTLED for stem in splits):
             strikes.append(row)
-        elif row.linked:
-            if state != "rejected":
-                open_rows.append(row)
-        elif f"tickets/{row.stem}/ticket.md" in files:
-            links.append(row)
-            if state != "rejected":
+        elif row.linked or f"tickets/{row.stem}/ticket.md" in files:
+            if not row.linked:
+                links.append(row)
+            if state == "rejected":
+                waits.append(Wait(row, f"{row.stem} is rejected", "give the row a new stem"))
+            elif row.stem in drafts and not state:
+                waits.append(Wait(row, f"{row.stem} is still a draft", "confirm the draft with `clutch confirm`"))
+            else:
                 open_rows.append(row)
         elif state:
             waits.append(Wait(row, f"{row.stem} is already in the journal", "give the row a new stem"))
@@ -403,6 +406,19 @@ def release_name(heading: str) -> str:
     return re.split(r"[ ,]", heading, maxsplit=1)[0]
 
 
+def draft_stems(repo, rows):
+    drafts = set()
+    for row in rows:
+        path = repo / "tickets" / row.stem / "ticket.md"
+        try:
+            text = path.read_text()
+        except FileNotFoundError:
+            continue
+        if ticket_state(text) == "draft":
+            drafts.add(row.stem)
+    return frozenset(drafts)
+
+
 async def status(checkout) -> list[str]:
     path = checkout.repo / ROADMAP
     if not path.is_file():
@@ -411,7 +427,10 @@ async def status(checkout) -> list[str]:
     files = set((await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z")).split("\0"))
     events = checkout.journal.read()
     states = last_states(events)
-    choice = choose(rows, states=states, files=files, current=current_release(checkout.repo))
+    choice = choose(rows, states=states, files=files, current=current_release(checkout.repo), drafts=draft_stems(checkout.repo, rows))
+    box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs)
+    messages_by_row = {row: row_messages(box, row) for row in rows}
+    declined = {row for row, messages in messages_by_row.items() if messages and messages[-1].resolution is not None and messages[-1].resolution.kind == "declined"}
     releases = {}
     for row in rows:
         counts = releases.setdefault(release_name(row.release), [0, 0, 0, 0])
@@ -419,7 +438,7 @@ async def status(checkout) -> list[str]:
             counts[0] += 1
         elif (row.linked or f"tickets/{row.stem}/ticket.md" in files) and states.get(row.stem) != "rejected":
             counts[1] += 1
-        elif row in choice.ready:
+        elif row in choice.ready and row not in declined:
             counts[2] += 1
         else:
             counts[3] += 1
@@ -434,21 +453,22 @@ async def status(checkout) -> list[str]:
         if event is not None:
             gate = f"passed {event.ts}" if event.body["passed"] else f"failed {event.ts}: {event.body['failed']}"
         lines.append(f"release {release}: {merged_count} merged, {authored} authored, {ready} ready, {blocked} blocked; gate {gate}")
-    lines.append("next: " + (", ".join(row.stem for row in choice.ready) or "none"))
+    lines.append("next: " + (", ".join(row.stem for row in choice.ready if row not in declined) or "none"))
     lines.extend(f"waits: row {wait.row.number} {wait.row.stem}: {wait.reason} -- {wait.road}" for wait in choice.waits)
-    box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs)
     for row in rows:
-        messages = row_messages(box, row)
-        if row.struck or not messages or refile_count(messages) < checkout.config.caps.supervise:
+        messages = messages_by_row[row]
+        if row.struck or not messages or any(wait.row == row for wait in choice.waits):
             continue
         latest = messages[-1]
-        if states.get(row.stem) == "rejected":
+        spent = refile_count(messages) >= checkout.config.caps.supervise
+        if spent and states.get(row.stem) == "rejected":
             reason = rejection_reason(events, row.stem)
-        elif latest.resolution is not None and latest.resolution.kind == "declined":
+        elif row in declined:
             reason = decline_reason(checkout.repo, latest) or "declined"
         else:
             continue
-        lines.append(f"waits: row {row.number} {row.stem}: re-files spent -- {reason}")
+        label = "re-files spent" if spent else "declined"
+        lines.append(f"waits: row {row.number} {row.stem}: {label} -- {reason}")
     return lines
 
 
@@ -542,12 +562,13 @@ async def merged(checkout, stems, *, release=None, priorities=(), since=None, at
         if not path.is_file():
             raise Refusal(f"missing {ROADMAP}", "restore docs/roadmap.md")
         rows = parse(path.read_text())
-        choice = choose(rows, states=states, files=frozenset())
+        drafts = draft_stems(checkout.repo, rows)
+        choice = choose(rows, states=states, files=frozenset(), drafts=drafts)
 
         def report(row, label):
             if not row.struck and row not in choice.strike:
                 state = states.get(row.stem)
-                reason = (f"is {state}" if state else "is not in the journal") if state not in SETTLED else "has a split ticket that has not settled"
+                reason = (f"is {state}" if state else "is a draft" if row.stem in drafts else "is not in the journal") if state not in SETTLED else "has a split ticket that has not settled"
                 lines.append(f"roadmap merged: {label}row {row.number} {row.stem} {reason}")
 
         for stem in stems:

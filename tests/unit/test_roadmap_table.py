@@ -146,12 +146,13 @@ def test_choose_partitions_rows():
     assert [r.stem for r in choice.link] == ["link"]
     assert choice.open == 2
     assert [r.stem for r in choice.ready] == ["p1", "p2"]
-    assert {w.row.stem for w in choice.waits} == {"blocked", "bad"}
-    assert "journal" in choice.waits[0].reason
+    assert {w.row.stem for w in choice.waits} == {"reject", "blocked", "bad"}
+    assert "journal" in next(w.reason for w in choice.waits if w.row.stem == "blocked")
+    assert "new stem" in next(w.road for w in choice.waits if w.row.stem == "reject")
     states = {r.stem: "merged" for r in rows if r.release == "Next"} | {"reject": "rejected", "blocked": "rejected"}
     choice = choose(rows, states=states, files=files)
     assert [r.stem for r in choice.ready] == ["later"]
-    assert [w.row.stem for w in choice.waits] == ["blocked"]
+    assert [w.row.stem for w in choice.waits] == ["reject", "blocked"]
 
 
 def test_choose_split_row():

@@ -6,6 +6,7 @@ import pytest
 
 import clutch.__main__ as cli
 from clutch import roadmap
+from clutch.box import Box, Resolution, RoadmapRow
 from clutch.journal import Event, EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
@@ -65,7 +66,10 @@ def test_status_buckets(tmp_path):
         "release 2.0.0: 0 merged, 0 authored, 0 ready, 1 blocked; gate not run",
         "next: q-eleven, r-six",
     ]
-    assert len(lines) == 4 and lines[3].startswith("waits: row 8 h-eight: ") and "tickets/h-eight/evidence/a0.txt" in lines[3] and " -- " in lines[3]
+    assert len(lines) == 5
+    assert any(line.startswith("waits: row 5 x-five: ") and "rejected" in line for line in lines)
+    held = next(line for line in lines if line.startswith("waits: row 8 h-eight: "))
+    assert "tickets/h-eight/evidence/a0.txt" in held and " -- " in held
     choice = roadmap.choose(roadmap.parse(text), states=roadmap.last_states(events), files=files)
     assert sum(int(line.split(", ")[1].split()[0]) for line in lines[:2]) == choice.open == 3
 
@@ -118,3 +122,16 @@ def test_main_roadmap_status(monkeypatch, capsys):
     assert capsys.readouterr().err == "clutch roadmap: missing -- restore it\n"
     with pytest.raises(SystemExit):
         cli._parser().parse_args(["roadmap", "status", "extra"])
+
+
+def test_status_declined_row_waits(tmp_path):
+    checkout, _, _, _ = fixture(tmp_path)
+    path = tmp_path / roadmap.ROADMAP
+    path.write_text("### 1.0.0\n" + HEADER + row(3, "a-row") + row(4, "b-row"))
+    box = Box(checkout.config.state_dir / "box", checkout.fs)
+    payload = RoadmapRow(number=3, release="1.0.0", stem="a-row", owner="roadmap", kind="feature", priority="P1", content="Work.", plan=roadmap.ROADMAP)
+    id_, _ = box.enqueue(message_class="roadmap_row", origin="roadmap/a-row", summary="Declined work", roadmap_row=payload)
+    box.resolve(id_, Resolution(kind="declined", link="missing"))
+    lines = asyncio.run(roadmap.status(checkout))
+    assert "waits: row 3 a-row: declined -- declined" in lines
+    assert "next: b-row" in lines
