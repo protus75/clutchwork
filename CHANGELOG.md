@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.4.2 - 2026-11-17
+
 ## 0.4.1 - 2026-11-17
 - decline-record-keeps-all-refusals: When an Author attempt declines after several driver calls, the `Evidence:` body of the committed decline record lists every distinct gate finding from the attempt, in the order the calls produced them.
 - drop-closed-sets-owner-roadmap-test: `tests/integration/test_closed_sets_single_owner.py::test_follow_up_row` reads the live `docs/roadmap.md` and asserts the current text of three rows: row 112 (`closed-sets-remaining`: release 0.3.0, owner, kind, priority P3, depends `closed-sets-single-owner`, no runs-before), row 19's stem, and row 49's stem and depends.
