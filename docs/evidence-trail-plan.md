@@ -6,7 +6,7 @@ This is the lower layer of `docs/training-data-plan.md`. That plan's attempt man
 
 ## Status
 
-The evidence store, envelope, and Codex, Claude, and Gemini normalizers have merged (roadmap rows 28–31 and 33). Resource usage capture remains open as `evidence-rusage-capture`; the evidence verbs, per-attempt spool move, and parser consolidation remain planned (rows 62–64). Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
+The evidence store, envelope, and Codex, Claude, and Gemini normalizers have merged (roadmap rows 28–31 and 33). Resource usage capture has merged as `evidence-rusage-capture` (roadmap row 123); the evidence verbs, per-attempt spool move, and parser consolidation remain planned (rows 62–64). Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
 
 ## Roadmap
 
