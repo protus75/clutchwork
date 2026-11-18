@@ -383,7 +383,7 @@ class Serve:
             self.control.poll()
             if self.control.projection.kill_requested:
                 self.stop()
-            if not self.stopping and self.control.projection.pause_id is None and not self.core.admission._slot.locked():
+            if not self.stopping and self.control.projection.pause_id is None and not self.core.admission.busy():
                 await response.wait(self.check_upgrade())
                 if self.upgrade_idle() and not self.control.projection.stop_requested:
 
@@ -514,7 +514,7 @@ class Serve:
         if self.stopping:
             return
         self.core.restart.timers.fire_due()
-        if not self.core.admission._slot.locked() and not self.core.scheduler._slot.locked():
+        if not self.core.admission.busy() and not self.core.scheduler._slot.locked():
             await self.core.sweep_orphans()
             async with self.core.admission._slot:
                 self.box.recover()

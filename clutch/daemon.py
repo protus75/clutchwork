@@ -306,7 +306,7 @@ class DaemonCore:
 
     async def sweep_orphans(self) -> list[str]:
         """Skip live dispatch, cleanup or admission; serialize the idle boundary with offers."""
-        if self.admission._slot.locked():
+        if self.admission.busy():
             return []
         async with self.admission._slot:
             if self.restart is None:
@@ -573,6 +573,10 @@ class DaemonAdmission:
                 yield
             finally:
                 self.mutating = None
+
+    def busy(self) -> bool:
+        # A released lock can be handed to a waiter before locked() becomes true.
+        return self._slot.locked() or bool(self._slot._waiters)
 
     def idle(self) -> bool:
         return self.active is None and self.task is None and self.mutating is None

@@ -35,7 +35,7 @@ def serve_rig(tmp_path, monkeypatch, checkout, ctx):
     s.upgrade_idle = lambda: True
     s.check_upgrade = AsyncMock()
     s.prepare = AsyncMock(return_value=SimpleNamespace(ctx=ctx))
-    s.core = SimpleNamespace(admission=SimpleNamespace(_slot=SimpleNamespace(locked=lambda: False)), scheduler=SimpleNamespace(dispatch_next=AsyncMock()))
+    s.core = SimpleNamespace(admission=SimpleNamespace(busy=lambda: False), scheduler=SimpleNamespace(dispatch_next=AsyncMock()))
     s.stop = lambda: setattr(s, "stopping", True)
     s.locked = False
 
