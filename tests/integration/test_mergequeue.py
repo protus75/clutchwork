@@ -3,6 +3,8 @@
 import ast
 import asyncio
 import dataclasses
+import os
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -439,7 +441,7 @@ def test_host_check_environment_timeout_and_redaction(ctx, monkeypatch, safety):
         results, reports = await queue.host_checks(ticket, attempt=4, safety=safety)
         argv, kw = calls[0]
         assert kw["cwd"] == ctx.worktree(ticket.stem) and kw["timeout"] == ticket.stuck_minutes * 60.0
-        assert "FAKE_KEY" not in kw["env"] and kw["env"]["PATH"] == ENV["PATH"]
+        assert "FAKE_KEY" not in kw["env"] and kw["env"]["PATH"] == f"{Path(sys.executable).parent}{os.pathsep}{ENV['PATH']}"
         assert not results[0].base_red and SECRET not in results[0].tail
         assert len(results[0].tail) <= stages.OUTPUT_TAIL_CHARS
         assert SECRET not in reports[0].findings[0].message and reports[0].code == "../unsafe-code"

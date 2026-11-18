@@ -2,7 +2,9 @@
 
 import asyncio
 import json
+import os
 import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -520,7 +522,7 @@ def test_verification_children_never_inherit_a_provider_key(repo):
     result, _, config = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
     spool = (config.state_dir / "spools" / STEM / str(result.attempt) / "check" / "verify-02.txt").read_text()
-    assert "PATH=/usr/bin:/bin" in spool and "FAKE_KEY" not in spool and SECRET not in spool
+    assert f"PATH={Path(sys.executable).parent}{os.pathsep}/usr/bin:/bin" in spool and "FAKE_KEY" not in spool and SECRET not in spool
 
 
 def test_a_fresh_run_tears_down_the_prior_worktree_and_branch(repo):

@@ -12,7 +12,9 @@ import ast
 import asyncio
 import fnmatch
 import json
+import os
 import re
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
 from dataclasses import dataclass, field
@@ -725,8 +727,11 @@ class CommandResult(FrozenModel):
 async def run_host_command(ctx, ticket, attempt, argv, code, name, *, cwd=None):
     road = "make the configured command exit 0 on the rebased candidate and retry"
     started = ctx.driver.clock()
+    env = child_env(ctx.env, ctx.config)
+    engine_bin = str(Path(sys.executable).parent)
+    env["PATH"] = engine_bin + os.pathsep + env["PATH"] if env.get("PATH") else engine_bin
     try:
-        rc, out, err = await ctx.exec_.run(argv, cwd=cwd or ctx.worktree(ticket.stem), env=child_env(ctx.env, ctx.config), timeout=ticket.stuck_minutes * 60.0)
+        rc, out, err = await ctx.exec_.run(argv, cwd=cwd or ctx.worktree(ticket.stem), env=env, timeout=ticket.stuck_minutes * 60.0)
     except TimeoutError:
         rc, out, err = None, "", f"timed out after the ticket's stuck budget ({ticket.stuck_minutes}m)"
         road = "make the command finish within the ticket's stuck budget or correct that budget and retry"
