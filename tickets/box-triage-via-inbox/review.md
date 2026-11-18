@@ -1,10 +1,10 @@
 # Review: snag
 
-The request kind, CLI submission, idle-point wiring, docs and prompt changes all match the ticket, but `settle_triage` drops accepted requests from any earlier lifecycle, so a request the CLI reported as submitted can be lost silently after a restart or handoff.
+The prior lifecycle-filter finding is fixed and the control, CLI, drain/serve and doc changes match the ticket, but acceptance criterion 8 has no test in the file that is supposed to check it.
 
 ## Findings
 
-- [logic] clutch/control.py:319 `settle_triage` skips every accepted decision whose `lifecycle_id` differs from `self.lifecycle_id`. Each drain or serve process builds a fresh uuid lifecycle (`build_control`), including after a crash restart or a self-upgrade re-exec handoff. So a triage request that `consume` accepted and journaled before the process ended, but that never reached an idle point, is never applied: the operator was told `triage submitted: <id>` and the pass never runs. The ticket says settle mirrors `settle_admissions` (which applies accepted requests regardless of lifecycle) and relies on the `triage/<request_id>` Effects key so that 'a repeated settle or a restart never runs it twice'. That wording assumes an accepted, unapplied request survives a restart. Lifecycle staleness is already enforced at `consume`, which journals requests from other lifecycles as `stale`, so the extra filter only drops valid accepted work. (do instead: Drop the `body["lifecycle_id"] != self.lifecycle_id` condition in `settle_triage`, as `settle_admissions` does, and let the `triage/<request_id>` effect key give once-only application. Add a unit case where a decision accepted under lifecycle `old` is settled exactly once by an inbox whose lifecycle is `live`.)
+- [acceptance] tests/integration/test_box_triage_inbox.py:25 Acceptance criterion 8 says 'With the lock free, `clutch box triage` still runs a pass directly, as before', checked by `tests/integration/test_box_triage_inbox.py`. That file has only three tests: `test_prompt_bounds`, `test_submit_and_non_engine_refusal` and `test_serve_processes_only_requested_triage`. Every `main(["box", "triage", ...])` call in it runs while a `Lockfile` is held, so nothing covers the lock-free direct pass. The changed `try/except LockHeld` in `handle_triage` could break the direct path and the named check would still pass. (do instead: Add a test to `tests/integration/test_box_triage_inbox.py` that runs `main(["box", "triage", <id>], ...)` with no lock held and a fake provider reply (as `tests/integration/test_triage.py` does). Assert that it exits 0, prints the pass line rather than `triage submitted:`, gives the message a resolution, and leaves `control/inbox` with no request file.)
 
 ## Record
 
@@ -12,17 +12,17 @@ The request kind, CLI submission, idle-point wiring, docs and prompt changes all
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "2a38bfb4e01dd1b37a71627b364261522f98e8c1",
+  "produced_at_sha": "6a9ffe3cb17e5e00fcc7acba4a58d3a09c22ba93",
   "stem": "box-triage-via-inbox",
-  "reviewed_sha": "2a38bfb4e01dd1b37a71627b364261522f98e8c1",
-  "summary": "The request kind, CLI submission, idle-point wiring, docs and prompt changes all match the ticket, but `settle_triage` drops accepted requests from any earlier lifecycle, so a request the CLI reported as submitted can be lost silently after a restart or handoff.",
+  "reviewed_sha": "6a9ffe3cb17e5e00fcc7acba4a58d3a09c22ba93",
+  "summary": "The prior lifecycle-filter finding is fixed and the control, CLI, drain/serve and doc changes match the ticket, but acceptance criterion 8 has no test in the file that is supposed to check it.",
   "findings": [
     {
-      "code": "logic",
-      "path": "clutch/control.py",
-      "line": 319,
-      "message": "`settle_triage` skips every accepted decision whose `lifecycle_id` differs from `self.lifecycle_id`. Each drain or serve process builds a fresh uuid lifecycle (`build_control`), including after a crash restart or a self-upgrade re-exec handoff. So a triage request that `consume` accepted and journaled before the process ended, but that never reached an idle point, is never applied: the operator was told `triage submitted: <id>` and the pass never runs. The ticket says settle mirrors `settle_admissions` (which applies accepted requests regardless of lifecycle) and relies on the `triage/<request_id>` Effects key so that 'a repeated settle or a restart never runs it twice'. That wording assumes an accepted, unapplied request survives a restart. Lifecycle staleness is already enforced at `consume`, which journals requests from other lifecycles as `stale`, so the extra filter only drops valid accepted work.",
-      "paved_road": "Drop the `body[\"lifecycle_id\"] != self.lifecycle_id` condition in `settle_triage`, as `settle_admissions` does, and let the `triage/<request_id>` effect key give once-only application. Add a unit case where a decision accepted under lifecycle `old` is settled exactly once by an inbox whose lifecycle is `live`.",
+      "code": "acceptance",
+      "path": "tests/integration/test_box_triage_inbox.py",
+      "line": 25,
+      "message": "Acceptance criterion 8 says 'With the lock free, `clutch box triage` still runs a pass directly, as before', checked by `tests/integration/test_box_triage_inbox.py`. That file has only three tests: `test_prompt_bounds`, `test_submit_and_non_engine_refusal` and `test_serve_processes_only_requested_triage`. Every `main([\"box\", \"triage\", ...])` call in it runs while a `Lockfile` is held, so nothing covers the lock-free direct pass. The changed `try/except LockHeld` in `handle_triage` could break the direct path and the named check would still pass.",
+      "paved_road": "Add a test to `tests/integration/test_box_triage_inbox.py` that runs `main([\"box\", \"triage\", <id>], ...)` with no lock held and a fake provider reply (as `tests/integration/test_triage.py` does). Assert that it exits 0, prints the pass line rather than `triage submitted:`, gives the message a resolution, and leaves `control/inbox` with no request file.",
       "kind": null,
       "unit": null
     }
