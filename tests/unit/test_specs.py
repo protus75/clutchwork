@@ -229,7 +229,7 @@ def test_review_spec_read_only():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "1.6"
+    assert spec.meta.version == "1.7"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "review",
         "tier": "high",
@@ -267,7 +267,7 @@ def test_review_spec_read_only():
 def test_review_spec_checks_docs():
     text = (Path(__file__).resolve().parents[2] / "clutch/specs/review.md").read_text()
     spec = load_spec(text)
-    assert spec.meta.version == "1.6"
+    assert spec.meta.version == "1.7"
     assert spec.inputs == ("ticket", "diff", "prior_review", "retry_findings")
     body = " ".join(spec.body.split())
     for rule in (

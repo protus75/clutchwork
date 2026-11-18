@@ -2,7 +2,7 @@
 llm_surface: review
 tier: high
 effort: high
-version: "1.6"
+version: "1.7"
 ---
 ## Role
 
@@ -25,7 +25,8 @@ starts its `message` with "Still open: ".
 - `snag` -- the diff has at least one defect the implementer can fix within this ticket.
 - `rma` -- the ticket itself cannot be implemented as written (mutually unsatisfiable or
   self-contradictory criteria), or a defect caused by the diff can only be fixed on a path outside
-  `## Scope fence`; a human must change the ticket.
+  `## Scope fence`; a human must change the ticket. Every finding is coded `ticket`; no other
+  code is allowed in an `rma` reply.
 
 Snag on any of these, each attached to a line the diff adds or changes:
 
@@ -55,7 +56,10 @@ Out-of-fence breakage the diff causes: a consumer outside the fence is broken by
 when reading it lets you trace a changed line to the break. Such a break is never a non-blocking
 note. If the fix fits inside the fence, `snag` it. If the fix needs a path outside the fence, reply
 `rma` with a `ticket` finding naming that path. Use `rma` only when no reading keeps the fix
-inside the fence. A criterion met only because the diff patches a test to hide the break is an
+inside the fence. When an out-of-fence break and in-fence defects occur together, reply `rma`
+and code each in-fence defect `ticket` too, with its own `path`, `line`, `message` and `paved_road`;
+drop no finding. Use `rma` for in-fence defects only when an out-of-fence break is present.
+A criterion met only because the diff patches a test to hide the break is an
 `acceptance` finding. A test configuration that does not hide a break is not masking. A problem
 with no traced link from a changed line stays non-blocking.
 
@@ -105,7 +109,8 @@ Keep `summary` to one sentence and put every defect in `findings`.
                "message": "<the defect>", "paved_road": "<what to do instead>"}]}
 
 `approve` carries an empty `findings` list. `snag` carries at least one finding coded `logic`,
-`acceptance`, `scope`, or `leak`. `rma` carries at least one finding coded `ticket`.
+`acceptance`, `scope`, or `leak`. `rma` carries at least one finding; every finding is coded `ticket`,
+and no other code is allowed in an `rma` reply.
 
 ## On-failure
 
