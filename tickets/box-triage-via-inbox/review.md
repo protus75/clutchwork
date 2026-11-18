@@ -1,10 +1,10 @@
-# Review: snag
+# Review: approve
 
-The prior lifecycle-filter finding is fixed and the control, CLI, drain/serve and doc changes match the ticket, but acceptance criterion 8 has no test in the file that is supposed to check it.
+The diff adds the triage request kind, the once-only `settle_triage` effect, and the request-gated idle-point calls in drain and serve; `handle_triage` now submits to a running engine and refuses non-engine lock holders, the docs, command help and drain-loop prompt are updated, every acceptance criterion has a test (including the lock-free direct pass the previous review asked for), and every changed file is inside the scope fence.
 
 ## Findings
 
-- [acceptance] tests/integration/test_box_triage_inbox.py:25 Acceptance criterion 8 says 'With the lock free, `clutch box triage` still runs a pass directly, as before', checked by `tests/integration/test_box_triage_inbox.py`. That file has only three tests: `test_prompt_bounds`, `test_submit_and_non_engine_refusal` and `test_serve_processes_only_requested_triage`. Every `main(["box", "triage", ...])` call in it runs while a `Lockfile` is held, so nothing covers the lock-free direct pass. The changed `try/except LockHeld` in `handle_triage` could break the direct path and the named check would still pass. (do instead: Add a test to `tests/integration/test_box_triage_inbox.py` that runs `main(["box", "triage", <id>], ...)` with no lock held and a fake provider reply (as `tests/integration/test_triage.py` does). Assert that it exits 0, prints the pass line rather than `triage submitted:`, gives the message a resolution, and leaves `control/inbox` with no request file.)
+none
 
 ## Record
 
@@ -12,24 +12,14 @@ The prior lifecycle-filter finding is fixed and the control, CLI, drain/serve an
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6a9ffe3cb17e5e00fcc7acba4a58d3a09c22ba93",
+  "produced_at_sha": "afd67045b8d9b9529875d7feebfa79f3ea853d14",
   "stem": "box-triage-via-inbox",
-  "reviewed_sha": "6a9ffe3cb17e5e00fcc7acba4a58d3a09c22ba93",
-  "summary": "The prior lifecycle-filter finding is fixed and the control, CLI, drain/serve and doc changes match the ticket, but acceptance criterion 8 has no test in the file that is supposed to check it.",
-  "findings": [
-    {
-      "code": "acceptance",
-      "path": "tests/integration/test_box_triage_inbox.py",
-      "line": 25,
-      "message": "Acceptance criterion 8 says 'With the lock free, `clutch box triage` still runs a pass directly, as before', checked by `tests/integration/test_box_triage_inbox.py`. That file has only three tests: `test_prompt_bounds`, `test_submit_and_non_engine_refusal` and `test_serve_processes_only_requested_triage`. Every `main([\"box\", \"triage\", ...])` call in it runs while a `Lockfile` is held, so nothing covers the lock-free direct pass. The changed `try/except LockHeld` in `handle_triage` could break the direct path and the named check would still pass.",
-      "paved_road": "Add a test to `tests/integration/test_box_triage_inbox.py` that runs `main([\"box\", \"triage\", <id>], ...)` with no lock held and a fake provider reply (as `tests/integration/test_triage.py` does). Assert that it exits 0, prints the pass line rather than `triage submitted:`, gives the message a resolution, and leaves `control/inbox` with no request file.",
-      "kind": null,
-      "unit": null
-    }
-  ],
+  "reviewed_sha": "afd67045b8d9b9529875d7feebfa79f3ea853d14",
+  "summary": "The diff adds the triage request kind, the once-only `settle_triage` effect, and the request-gated idle-point calls in drain and serve; `handle_triage` now submits to a running engine and refuses non-engine lock holders, the docs, command help and drain-loop prompt are updated, every acceptance criterion has a test (including the lock-free direct pass the previous review asked for), and every changed file is inside the scope fence.",
+  "findings": [],
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5",
-  "verdict": "snag"
+  "verdict": "approve"
 }
 ```
