@@ -1,14 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "406dc3adb7ef0961207c0c4ad1b82cf70edc8799",
+  "produced_at_sha": "2a38bfb4e01dd1b37a71627b364261522f98e8c1",
   "stem": "box-triage-via-inbox",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Ticket fence is missing files it forces. Scope says call settle_triage where supervise_idle runs (drain.py:424, serve.py:399), and that needs control.inbox. Unit fixtures there use a SimpleNamespace control with no inbox, so the change breaks 11 unit-gate tests."
+    "Review found the control request kind, CLI LockHeld path, idle-point wiring, docs and drain-loop.md edits sound. Since every attempt starts from the merge base, redo all of that work as the ticket's Scope in describes; only settle_triage needs a change.",
+    "In clutch/control.py ControlInbox.settle_triage, do not skip accepted decisions whose lifecycle_id differs from self.lifecycle_id. Mirror settle_admissions: consume() already journals other-lifecycle requests as stale, so settle applies every accepted, unapplied triage decision.",
+    "Keep once-only application through the Effects key triage/<request_id>. That key alone stops a repeated settle, a crash restart or a re-exec handoff from running a request twice. build_control makes a fresh lifecycle uuid per process.",
+    "In tests/unit/test_control_triage_request.py or tests/unit/test_drain_serve_triage_idle.py, add a case: a triage decision accepted under lifecycle 'old' is settled by an inbox whose lifecycle is 'live'. The fake run is called exactly once across two settle calls.",
+    "Give the SimpleNamespace control in test_calibration_idle.py, test_driver_hooks.py, test_drain_report_intake.py and test_supervise_idle_hooks.py a fake inbox whose settle_triage is a no-op. Change no assertion there. Then run the full ## Verification command."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
