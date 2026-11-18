@@ -141,7 +141,7 @@ def run_gate(argv: Sequence[str], *, gate_path: Path, report_path: Path, run: Ca
     try:
         report_path.unlink(missing_ok=True)
     except OSError as exc:
-        print(f"clutch covgate: cannot remove report {report_path}: {exc} -- make the report writable and retry", file=sys.stderr)
+        print(f"clutch coverage: cannot remove report {report_path}: {exc} -- make the report writable and retry", file=sys.stderr)
         return 2
     rc = run(argv)
     if rc:
@@ -149,16 +149,16 @@ def run_gate(argv: Sequence[str], *, gate_path: Path, report_path: Path, run: Ca
     try:
         gate = parse_gate(gate_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, GateInvalid) as exc:
-        print(f"clutch covgate: invalid gate {gate_path}: {exc} -- fix the gate file and retry", file=sys.stderr)
+        print(f"clutch coverage: invalid gate {gate_path}: {exc} -- fix the gate file and retry", file=sys.stderr)
         return 2
     try:
         report = json.loads(report_path.read_text(encoding="utf-8"))
         failures = evaluate(gate, report)
     except FileNotFoundError:
-        print(f"clutch covgate: missing report {report_path} -- command must write --cov-report=json:{report_path}", file=sys.stderr)
+        print(f"clutch coverage: missing report {report_path} -- command must write --cov-report=json:{report_path}", file=sys.stderr)
         return 2
     except (OSError, UnicodeError, ValueError) as exc:
-        print(f"clutch covgate: invalid report {report_path}: {exc} -- generate a coverage.py JSON format 3 report and retry", file=sys.stderr)
+        print(f"clutch coverage: invalid report {report_path}: {exc} -- generate a coverage.py JSON format 3 report and retry", file=sys.stderr)
         return 2
     for failure in failures:
         print(failure)

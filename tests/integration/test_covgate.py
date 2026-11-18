@@ -121,7 +121,7 @@ def test_cli_requires_command(tmp_path, capsys):
     (tmp_path / "test-gate.toml").write_text("[coverage]\ndefault=80")
     (tmp_path / "coverage.json").write_text(json.dumps(report(**{"a.py": file(9, 10)})))
     # Report-only mode would accept this passing report.
-    assert main(["covgate"], cwd=tmp_path) == 2
+    assert main(["coverage", "gate"], cwd=tmp_path) == 2
     assert "name the unit-test command after --" in capsys.readouterr().err
 
 
@@ -130,15 +130,15 @@ def test_cli_runs_in_cwd_and_process_group(tmp_path, capsys):
     passing = json.dumps(report(**{"a.py": file(9, 10)}))
     script = f"import os; from pathlib import Path; Path('pgid').write_text(str(os.getpgrp())); Path('coverage.json').write_text({passing!r})"
     # The relative report and pgid are written in cwd; a new session has a different pgid.
-    assert main(["covgate", "--", sys.executable, "-c", script], cwd=tmp_path) == 0
+    assert main(["coverage", "gate", "--", sys.executable, "-c", script], cwd=tmp_path) == 0
     assert int((tmp_path / "pgid").read_text()) == os.getpgrp()
-    assert main(["covgate", "--", "no-such-binary-xyz"], cwd=tmp_path) == 2
+    assert main(["coverage", "gate", "--", "no-such-binary-xyz"], cwd=tmp_path) == 2
     assert "no-such-binary-xyz not found -- install it or correct the command after --" in capsys.readouterr().err
 
 
 def test_cli_invalid_inputs(tmp_path, capsys):
     gate = tmp_path / "thresholds.toml"
-    args = ["covgate", "--gate", gate.name, "--report", "result.json", "--", sys.executable, "-c"]
+    args = ["coverage", "gate", "--gate", gate.name, "--report", "result.json", "--", sys.executable, "-c"]
     gate.write_text("[coverage]\ndefault=101")
     assert main(args + ["from pathlib import Path; Path('result.json').write_text('{}')"], cwd=tmp_path) == 2
     assert "coverage.default" in capsys.readouterr().err

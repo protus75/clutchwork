@@ -40,8 +40,8 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `box dismiss` | No | Dismiss named box IDs without a model call. |
-| `covmap` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
-| `covgate` | Yes | Run a unit command and check its coverage report. |
+| `coverage map` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
+| `coverage gate` | Yes | Run a unit command and check its coverage report. |
 | `ticket new` | Yes | Create and lint a ticket skeleton. |
 | `ticket order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
 | `engine run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |

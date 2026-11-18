@@ -688,8 +688,36 @@ def _parser() -> argparse.ArgumentParser:
         exits="0 when built (and uploaded when enabled); 2 on refusal (missing token, dirty tracked tree, missing or misplaced tag, uv failure or held lock).",
         examples=["clutch release publish"],
     )
-    sub.add_parser("covmap", help="build the coverage map")
-    covgate = sub.add_parser("covgate", help="check a coverage JSON report against thresholds")
+    coverage = sub.add_parser(
+        "coverage",
+        help="build and check coverage reports",
+        description="Build a coverage map or check coverage thresholds.",
+        epilog="Examples:\nclutch coverage map\n  Build the coverage map.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    coverage_sub = coverage.add_subparsers(dest="coverage_verb", required=True)
+    _command(
+        coverage_sub,
+        "map",
+        summary="build the coverage map",
+        does="Run review.coverage_map.argv and map covered source files to the tests that ran them for requisition review.",
+        reads="Config (review.coverage_map), the command's JSON report and the main commit.",
+        writes="<state_dir>/coverage-map.json, replaced whole; deletes the configured report before and after the run.",
+        lock="None.",
+        exits="0 on success; 2 on refusal (invalid config, missing setting, failed command or missing or invalid report).",
+        examples=["clutch coverage map"],
+    )
+    covgate = _command(
+        coverage_sub,
+        "gate",
+        summary="check a coverage JSON report against thresholds",
+        does="Run the unit-test command after -- in the invocation directory, then check its fresh coverage report and print each threshold failure.",
+        reads="Gate file (--gate, default test-gate.toml) and report (--report, default coverage.json), relative to the invocation directory; no config.",
+        writes="Nothing itself; deletes the report before the run.",
+        lock="None.",
+        exits="0 on coverage pass; 1 on threshold failures; 2 on refusal; otherwise the command's own nonzero code.",
+        examples=["clutch coverage gate -- python -m pytest tests/unit --cov=clutch --cov-report=json:coverage.json"],
+    )
     covgate.add_argument("--gate", type=Path, default=Path("test-gate.toml"))
     covgate.add_argument("--report", type=Path, default=Path("coverage.json"))
     covgate.add_argument("command", nargs=argparse.REMAINDER)
@@ -1005,14 +1033,14 @@ def main(
         from clutch.covgate import run_gate
 
         if len(args.command) < 2 or args.command[0] != "--":
-            return _fail("covgate", "name the unit-test command after --")
+            return _fail(args.verb, "name the unit-test command after --")
         command = args.command[1:]
         # ProcessExec starts a new session, orphaning the test run when Check kills
-        # covgate's group on timeout; inheriting the group carries the kill to it.
+        # coverage gate's group on timeout; inheriting the group carries the kill to it.
         try:
             return run_gate(command, gate_path=repo / args.gate, report_path=repo / args.report, run=lambda argv: subprocess.run(argv, cwd=repo, env=env).returncode)
         except FileNotFoundError:
-            return _fail("covgate", f"{command[0]} not found -- install it or correct the command after --")
+            return _fail(args.verb, f"{command[0]} not found -- install it or correct the command after --")
 
     def handle_doctor():
         from clutch import doctor
@@ -1405,13 +1433,12 @@ def main(
 
     handlers = {
         "host": lambda: {"core": handle_core, "docs": handle_docs, "doctor": handle_doctor}[args.host_verb](),
-        "covgate": handle_covgate,
+        "coverage": lambda: {"map": handle_covmap, "gate": handle_covgate}[args.coverage_verb](),
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),
         "box": lambda: {"suggest": handle_suggest, "triage": handle_triage, "dismiss": handle_dismiss, "issue": handle_issue}[args.box_verb](),
         "config": lambda: {"init": handle_init_config, "update": handle_update_config, "migrate": handle_migrate_config}[args.config_verb](),
         "provider": lambda: {"install": handle_install, "probe": handle_probe}[args.provider_verb](),
         "prompt": handle_prompt,
-        "covmap": handle_covmap,
         "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status}[args.view_verb](),
         "roadmap": handle_roadmap,
         "release": lambda: {"bump": handle_release, "publish": handle_publish}[args.release_verb](),
@@ -1434,7 +1461,7 @@ def main(
             if not (args.yes or args.extension) and not isatty():
                 raise runner.Refusal("verdict requires an interactive terminal", "a human runs this in a terminal: `clutch ticket confirm|reject <stem>`")
         if (
-            args.verb == "covgate"
+            (args.verb == "coverage" and args.coverage_verb == "gate")
             or (args.verb == "host" and args.host_verb in {"docs", "doctor"})
             or (args.verb == "provider" and args.provider_verb == "install")
             or (args.verb == "config" and args.config_verb in {"init", "migrate"})
@@ -1474,8 +1501,8 @@ def main(
     except UnknownBoxId as e:
         return _fail(args.verb, f"{e} -- name ids that clutch view status lists")
     except (ConfigError, runner.Refusal, LockHeld, CommitLockTimeout, IntakeRefused, JournalCorruption, ProviderSetupError, ExecutableNotFound, hostfiles.MarkerCorruption) as e:
-        path = "engine retro" if args.verb == "engine" and args.engine_verb == "retro" else args.verb
-        road = f" -- repair the selected config and retry {path}" if path in {"engine retro", "covmap"} and isinstance(e, ConfigError) else ""
+        path = "engine retro" if args.verb == "engine" and args.engine_verb == "retro" else "coverage map" if args.verb == "coverage" and args.coverage_verb == "map" else args.verb
+        road = f" -- repair the selected config and retry {path}" if path in {"engine retro", "coverage map"} and isinstance(e, ConfigError) else ""
         return _fail(args.verb, f"{e}{road}")
 
 

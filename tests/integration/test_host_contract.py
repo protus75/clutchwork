@@ -84,7 +84,7 @@ def test_python_host_setup_loads(tmp_path):
     assert set(checks) == {"unit", "integration", "lint", "format"}
     assert all(entry.trigger == "always" and entry.severity == "hard" for entry in checks.values())
     unit, integration = checks["unit"], checks["integration"]
-    assert unit.argv[:8] == ["clutch", "covgate", "--", "uv", "run", "python", "-m", "pytest"]
+    assert unit.argv[:9] == ["clutch", "coverage", "gate", "--", "uv", "run", "python", "-m", "pytest"]
     assert [unit.argv[i + 1] for i, arg in enumerate(unit.argv[:-1]) if arg == "-p"] == ["clutch.testguard", "clutch.testreport"]
     assert "--cov-context=test" in unit.argv
     assert unit.argv[unit.argv.index("--clutch-results") + 1] == str(unit.results)

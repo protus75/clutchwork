@@ -75,7 +75,7 @@ review:
     - {code: ruff-format, argv: [uv, run, ruff, format], files: ["*.py"]}
   mechanical:
     - code: unit
-      argv: [clutch, covgate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=<package>, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]
+      argv: [clutch, coverage, gate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=<package>, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]
       trigger: always
       severity: hard
       results: .clutch/results/unit.json
