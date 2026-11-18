@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Accepted triage requests are settled across lifecycle changes; verification passed with 967 unit tests, 3,422 integration tests, lint, formatting, and 156 ticket-specific tests.
+The final ticket verification passed 158 tests; the full unit coverage gate passed 967 tests, the integration suite passed 3,424 tests, and lint and formatting passed.
 
 ## Dead ends
 
-A duplicate CLI submission path failed the shared-owner integration tests; routing triage through the existing submission helper resolved it. Automatic idle triage was rejected because it would run without an operator request.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 45 minutes expected, 90 minutes stuck; actual duration was not measured.
+none
 
