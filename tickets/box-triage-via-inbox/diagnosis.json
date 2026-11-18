@@ -1,0 +1,18 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "406dc3adb7ef0961207c0c4ad1b82cf70edc8799",
+  "stem": "box-triage-via-inbox",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket fence is missing files it forces. Scope says call settle_triage where supervise_idle runs (drain.py:424, serve.py:399), and that needs control.inbox. Unit fixtures there use a SimpleNamespace control with no inbox, so the change breaks 11 unit-gate tests."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
