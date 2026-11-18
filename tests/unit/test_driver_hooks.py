@@ -63,7 +63,7 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
         sleep=None,
         git=None,
         fs=None,
-        control=SimpleNamespace(projection=SimpleNamespace(stop_requested=False)),
+        control=SimpleNamespace(inbox=SimpleNamespace(settle_triage=AsyncMock()), projection=SimpleNamespace(stop_requested=False)),
     )
     d = drain._Drain.__new__(drain._Drain)
     d.c, d.dispatch, d.before_dispatch = c, object(), None

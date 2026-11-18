@@ -71,7 +71,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `roadmap gate <release>` | no | Runs the release's fenced `gate` block from `docs/roadmap.md` section 8 in order from the checkout root, stopping at the first failed command. Prints command results and a verdict, journals one `roadmap_gate` signal, and exits 0 when every command passes, 1 on failure, or 2 on refusal. |
 | `roadmap accept <release>` | commit only | Reviews the release’s merged rows together against its theme, ship gate, and owning plans through a read-only model call. Refuses a missing or dirty roadmap, unknown release, missing section 1 row, or a judge that implemented most of the release when another provider is declared. Appends new P1 gap rows to this release or deferred rows to the next in one `clutch(roadmap): accept <release>` commit. Exits 0 with no partial or unmet promises, 1 for those gaps, and 2 on refusal; takes no writer lock and works while serve runs. |
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order: the current release (the `pyproject.toml` version as `<major>.<minor>.0`) first, then rows that earlier releases left unfinished, then later releases, until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
-| `box triage [id ...]` | yes | One sequential pass over named pending messages, or all pending messages (section 9.2). |
+| `box triage [id ...]` | try | One sequential pass over named pending messages, or all pending messages; submits to a running engine for its next idle point (section 9.2). |
 | `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
 | `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
@@ -573,7 +573,7 @@ With `docs/roadmap.md` present, drain and serve run the driver at start and afte
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result`, and at the serve idle point and between drain tickets (section 6.6).
 
-The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch box suggest` and never authors a ticket itself. Between drains it triages or dismisses Suggestion Box messages pending when its tick starts, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
+The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch box suggest` and never authors a ticket itself. It triages Suggestion Box messages pending when its tick starts, including during a drain, and dismisses them between drains, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
 
 ## 8. AI providers and prompts
 
@@ -652,7 +652,7 @@ Problems found while working are filed, not fixed in the current diff. Classes: 
 
 ### 9.2 Triage
 
-`box triage` settles named pending messages, or all pending messages when no IDs are supplied, one at a time:
+`box triage` settles named pending messages, or all pending messages when no IDs are supplied, one at a time. When drain or serve holds the lock, it submits a request for the engine to run at its next idle point:
 
 - `author`: run the Author stage to write a ticket.
 - `tombstone`: the message is already covered by a merged or committed ticket. A third

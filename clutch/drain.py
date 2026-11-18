@@ -421,6 +421,18 @@ class _Drain:
                     await self.dispatch.prepare()
                     return self.dispatch.callback.ctx
 
+                async def run_triage(ids):
+                    from clutch.__main__ import _preflighted_llm
+                    from clutch.box import UnknownBoxId
+
+                    try:
+                        llm = await _preflighted_llm(self.c, self.c.control.providers)
+                        await triage.triage_pass(self.c, llm, frozenset(ids))
+                    except UnknownBoxId as exc:
+                        engine_log(self.c.config, self.c.env, self.c.clock).event("triage_refused", reason=str(exc))
+                        raise
+
+                await self.c.control.inbox.settle_triage(run_triage)
                 await supervise_idle(self.c, make_ctx)
                 calibrate_when_due(self.c)
             material = self._offer_material()

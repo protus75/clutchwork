@@ -21,6 +21,7 @@ _SHAPE = (
     "match request_id to the filename; pause/kill/retro/stop require null hold_id; "
     "for resume read the current hold and submit its exact nonempty identity"
 )
+_TRIAGE_SHAPE = "publish a triage request with exactly {request_id, lifecycle_id, verb: triage, ids: list of strings, hold_id: null, actor}; actor is operator | machine | extension"
 _ADMISSION_SHAPE = "publish a fresh verdict request with exactly {request_id, lifecycle_id, verb, stem, hold_id, actor}; actor is operator | machine | extension and hold_id is null"
 
 
@@ -42,7 +43,32 @@ class AdmissionRequest:
     actor: Literal["operator", "machine", "extension"]
 
 
-def validate_request(value: object, filename: str) -> ControlRequest | AdmissionRequest:
+@dataclass(frozen=True)
+class TriageRequest:
+    request_id: str
+    lifecycle_id: str
+    verb: Literal["triage"]
+    ids: list[str]
+    hold_id: None
+    actor: Literal["operator", "machine", "extension"]
+
+
+def validate_request(value: object, filename: str) -> ControlRequest | AdmissionRequest | TriageRequest:
+    if isinstance(value, dict) and value.get("verb") == "triage":
+        if (
+            set(value) != {"request_id", "lifecycle_id", "verb", "ids", "hold_id", "actor"}
+            or not isinstance(value.get("request_id"), str)
+            or _ID.fullmatch(value["request_id"]) is None
+            or filename != value["request_id"] + ".json"
+            or not isinstance(value.get("lifecycle_id"), str)
+            or not value["lifecycle_id"]
+            or not isinstance(value.get("ids"), list)
+            or not all(isinstance(item, str) for item in value["ids"])
+            or value.get("hold_id") is not None
+            or value.get("actor") not in ("operator", "machine", "extension")
+        ):
+            raise ValueError(_TRIAGE_SHAPE)
+        return TriageRequest(**value)
     if isinstance(value, dict) and value.get("verb") in ("confirm", "reject"):
         road = _ADMISSION_SHAPE
         if (
@@ -77,7 +103,7 @@ def validate_request(value: object, filename: str) -> ControlRequest | Admission
     return ControlRequest(request_id, lifecycle_id, verb, hold_id)
 
 
-def publish_request(state_dir: Path, request: ControlRequest | AdmissionRequest, fs: FileSystem) -> None:
+def publish_request(state_dir: Path, request: ControlRequest | AdmissionRequest | TriageRequest, fs: FileSystem) -> None:
     value = asdict(request)
     validate_request(value, str(request.request_id) + ".json")
     try:
@@ -123,6 +149,8 @@ def decisions(events: Iterable[Event]) -> Iterable[Event]:
         admission = body.get("verb") in ("confirm", "reject")
         if admission:
             fields |= {"stem", "actor"}
+        elif body.get("verb") == "triage":
+            fields |= {"ids", "actor"}
         if (
             event.type != EventType.SIGNAL
             or event.ticket is not None
@@ -196,7 +224,7 @@ class ControlInbox:
             decided.add(request_id)
             if body["decision"] != "accepted" or body["lifecycle_id"] != self.lifecycle_id:
                 continue
-            if body["verb"] in ("confirm", "reject"):
+            if body["verb"] in ("confirm", "reject", "triage"):
                 continue
             accepted = True
             if body["verb"] == "pause":
@@ -234,6 +262,8 @@ class ControlInbox:
                 value = json.loads(self.read(path), object_pairs_hook=_object)
                 if isinstance(value, dict) and (value.get("verb") in ("confirm", "reject") or set(value) == {"request_id", "lifecycle_id", "verb", "stem", "hold_id", "actor"}):
                     body["reason"] = _ADMISSION_SHAPE
+                if isinstance(value, dict) and (value.get("verb") == "triage" or set(value) == {"request_id", "lifecycle_id", "verb", "ids", "hold_id", "actor"}):
+                    body["reason"] = _TRIAGE_SHAPE
                 request = validate_request(value, path.name)
             except ValueError, UnicodeError:
                 pass
@@ -277,6 +307,24 @@ class ControlInbox:
                 return await verdict(body["stem"], body["verb"], key, body["actor"])
 
             await Effects(self.journal).run(action, key=key, ticket=body["stem"])
+
+    async def settle_triage(self, run) -> None:
+        """Apply each accepted triage request under its durable effect key."""
+        from clutch.box import UnknownBoxId
+
+        for event in decisions(self.journal.read()):
+            body = event.body
+            if body["decision"] != "accepted" or body["verb"] != "triage":
+                continue
+
+            async def action():
+                try:
+                    await run(tuple(body["ids"]))
+                except UnknownBoxId as exc:
+                    return {"refusal": str(exc)}
+                return {"refusal": None}
+
+            await Effects(self.journal).run(action, key=f"triage/{body['request_id']}", ticket=None)
 
 
 _DISCOVERY_ROAD = "retry after the running engine publishes its current control identity; read that identity and submit a new request"

@@ -545,12 +545,13 @@ def _parser() -> argparse.ArgumentParser:
         summary="settle pending box messages",
         does=(
             "Reap interrupted runs, then make one sequential pass over named pending messages or all pending messages, "
-            "settling each as author, tombstone or declined with a model call; refuse unknown ids before the pass."
+            "settling each as author, tombstone or declined with a model call; refuse unknown ids before the pass. "
+            "When an engine holds the lock, submit a request for its next idle point."
         ),
         reads="Config, the box, journal, tickets and git state.",
-        writes="Decision records and authored tickets in commits, message resolutions and journal events.",
-        lock="Writer lock.",
-        exits="0 after the pass; 2 on refusal.",
+        writes="Decision records and authored tickets in commits, message resolutions and journal events, or an engine inbox request.",
+        lock="Try writer lock; submit to a running engine if held.",
+        exits="0 after the pass or submission; 2 on refusal.",
         examples=["clutch box triage", 'clutch box triage "<box id>"'],
     )
     triage_parser.add_argument("ids", nargs="*")
@@ -1379,7 +1380,12 @@ def main(
                 finally:
                     await session.close()
 
-        lines = asyncio.run(one_pass())
+        try:
+            lines = asyncio.run(one_pass())
+        except LockHeld as exc:
+            request = asyncio.run(_submit_engine(checkout, exc, "triage", ids=args.ids))
+            print(f"triage submitted: {request.request_id}")
+            return 0
         print("\n".join(line for _, line in lines) if lines else "no pending suggestions")
         return 0
 
@@ -1583,7 +1589,7 @@ def _require_engine(exc: LockHeld) -> None:
         raise runner.Refusal(f"writer lock held by {verb}", f"wait for {verb} to finish, then retry") from None
 
 
-async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False):
+async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False, ids=None):
     _require_engine(exc)
     if stem is not None and await runner.ticket_pending(checkout.git, checkout.repo, stem):
         from clutch.tickets import intake
@@ -1595,7 +1601,9 @@ async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False):
         lifecycle, hold = control.read_active(checkout.config.state_dir, Path.read_bytes)
     except ValueError as exc:
         raise runner.Refusal("current control identity unavailable", str(exc)) from exc
-    if stem is not None:
+    if verb == "triage":
+        request = control.TriageRequest(uuid4().hex, lifecycle, verb, list(ids), None, "operator")
+    elif stem is not None:
         request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator")
     else:
         if verb == "resume" and hold is None:

@@ -1,6 +1,7 @@
 """Drain admits reports after ticket intake on each loop."""
 
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -10,7 +11,13 @@ from clutch import drain, triage
 @pytest.mark.asyncio
 async def test_loop_intakes_reports_after_tickets(monkeypatch):
     calls = []
-    checkout = SimpleNamespace(repo=object(), git=object(), fs=object(), journal=SimpleNamespace(read=lambda: []), control=SimpleNamespace(projection=SimpleNamespace(stop_requested=False)))
+    checkout = SimpleNamespace(
+        repo=object(),
+        git=object(),
+        fs=object(),
+        journal=SimpleNamespace(read=lambda: []),
+        control=SimpleNamespace(inbox=SimpleNamespace(settle_triage=AsyncMock()), projection=SimpleNamespace(stop_requested=False)),
+    )
 
     async def intake(repo, git, journal, fs, *, stems):
         calls.append(("tickets", repo, git, journal, fs, stems))

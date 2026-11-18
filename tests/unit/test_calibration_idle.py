@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -79,7 +80,12 @@ async def test_serve_calibrates_at_its_idle_point(tmp_path, monkeypatch, mode):
 @pytest.mark.parametrize("between", [False, True])
 async def test_drain_calibrates_between_tickets(tmp_path, monkeypatch, between):
     history = arrival() if between else [arrival(to="gate_failed")[0]]
-    c = Checkout(tmp_path, Journal(history), SimpleNamespace(caps=Caps()), SimpleNamespace(projection=SimpleNamespace(stop_requested=False, retro_id=None), storm_holds=lambda: {}))
+    c = Checkout(
+        tmp_path,
+        Journal(history),
+        SimpleNamespace(caps=Caps()),
+        SimpleNamespace(inbox=SimpleNamespace(settle_triage=AsyncMock()), projection=SimpleNamespace(stop_requested=False, retro_id=None), storm_holds=lambda: {}),
+    )
     d = drain_rig(tmp_path, monkeypatch, c, object())
     calls = []
 

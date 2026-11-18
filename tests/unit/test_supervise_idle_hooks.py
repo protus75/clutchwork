@@ -30,7 +30,9 @@ class Checkout:
 def serve_rig(tmp_path, monkeypatch, checkout, ctx):
     s = object.__new__(serve.Serve)
     s.checkout = checkout
-    s.control = SimpleNamespace(poll=lambda: None, load_config=lambda: checkout.config, projection=SimpleNamespace(kill_requested=False, stop_requested=False, pause_id=None))
+    s.control = SimpleNamespace(
+        inbox=SimpleNamespace(settle_triage=AsyncMock()), poll=lambda: None, load_config=lambda: checkout.config, projection=SimpleNamespace(kill_requested=False, stop_requested=False, pause_id=None)
+    )
     s.stopping = False
     s.upgrade_idle = lambda: True
     s.check_upgrade = AsyncMock()
@@ -133,7 +135,12 @@ def drain_rig(tmp_path, monkeypatch, checkout, dispatch):
 @pytest.mark.parametrize("between", [False, True])
 async def test_drain_boundary_order(tmp_path, monkeypatch, between):
     history = arrival() if between else [arrival(to="gate_failed")[0]]
-    c = Checkout(tmp_path, Journal(history), SimpleNamespace(caps=Caps()), SimpleNamespace(projection=SimpleNamespace(stop_requested=False, retro_id=None), storm_holds=lambda: {}))
+    c = Checkout(
+        tmp_path,
+        Journal(history),
+        SimpleNamespace(caps=Caps()),
+        SimpleNamespace(inbox=SimpleNamespace(settle_triage=AsyncMock()), projection=SimpleNamespace(stop_requested=False, retro_id=None), storm_holds=lambda: {}),
+    )
     d = drain_rig(tmp_path, monkeypatch, c, object())
     calls = []
     d.retro = object()
@@ -158,7 +165,7 @@ async def test_drain_boundary_order(tmp_path, monkeypatch, between):
 @pytest.mark.parametrize("prepared,eligible", [(False, True), (True, False), (True, True)])
 async def test_drain_lazy_context(tmp_path, monkeypatch, prepared, eligible):
     c, ctx, _, apply = rig(tmp_path, monkeypatch, history=arrival() if eligible else [])
-    control = SimpleNamespace(load_config=lambda: c.config, projection=SimpleNamespace(stop_requested=False))
+    control = SimpleNamespace(inbox=SimpleNamespace(settle_triage=AsyncMock()), load_config=lambda: c.config, projection=SimpleNamespace(stop_requested=False))
     dispatch = SimpleNamespace(prepare=AsyncMock(), callback=SimpleNamespace(ctx=ctx)) if prepared else object()
     checkout = Checkout(c.repo, c.journal, c.config, control)
     d = drain_rig(tmp_path, monkeypatch, checkout, dispatch)

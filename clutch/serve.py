@@ -396,6 +396,18 @@ class Serve:
                             async def make_ctx():
                                 return (await self.prepare(replace(self.checkout, config=snapshot_config(self.control.load_config())))).ctx
 
+                            async def run_triage(ids):
+                                from clutch.__main__ import _preflighted_llm
+                                from clutch.box import UnknownBoxId
+
+                                try:
+                                    llm = await _preflighted_llm(self.checkout, self.control.providers)
+                                    await triage.triage_pass(self.checkout, llm, frozenset(ids))
+                                except UnknownBoxId as exc:
+                                    self.log.event("triage_refused", reason=str(exc))
+                                    raise
+
+                            await self.control.inbox.settle_triage(run_triage)
                             await supervise_idle(self.checkout, make_ctx)
                             calibrate_when_due(self.checkout)
 

@@ -49,3 +49,36 @@ def test_refusals_name_group(tmp_path, capsys):
         out, err = capsys.readouterr()
         assert out == ""
         assert len(err.splitlines()) == 1 and err.startswith("clutch box: ") and "config file not found" in err
+
+
+@pytest.mark.parametrize("verb,expected", [("drain", 0), ("release", 2)])
+def test_triage_lock_holder(tmp_path, monkeypatch, capsys, verb, expected):
+    from contextlib import asynccontextmanager
+    from types import SimpleNamespace
+
+    from clutch.lockfile import LockHeld
+
+    # Supply the config and git seam; no process or provider is started.
+    config = SimpleNamespace(state_dir=tmp_path)
+    monkeypatch.setattr(entry, "load_config", lambda *args, **kwargs: config)
+
+    async def describe(*args):
+        return "unit"
+
+    monkeypatch.setattr(entry.Git, "describe", describe)
+
+    @asynccontextmanager
+    async def locked(*args, **kwargs):
+        raise LockHeld(tmp_path, {"verb": verb})
+        yield
+
+    published = []
+    monkeypatch.setattr(entry, "_locked", locked)
+    monkeypatch.setattr(entry.control, "read_active", lambda *args: ("life", None))
+    monkeypatch.setattr(entry.control, "publish_request", lambda *args: published.append(args[1]))
+    assert entry.main(["box", "triage", "box-000001"], cwd=tmp_path, env={}) == expected
+    out, err = capsys.readouterr()
+    if verb == "drain":
+        assert "triage submitted:" in out and len(published) == 1 and published[0].ids == ["box-000001"]
+    else:
+        assert "writer lock held by release" in err and not published
