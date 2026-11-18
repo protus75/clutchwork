@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Reused the existing completion-keyed Effects mechanism and engine provider session; automatic idle triage was rejected because it would run without an operator request. Final verification passed 156 tests, the unit coverage gate passed 966 tests, the integration gate passed 3,423 tests, and lint and format checks passed.
+Accepted triage requests are settled across lifecycle changes; verification passed with 967 unit tests, 3,422 integration tests, lint, formatting, and 156 ticket-specific tests.
 
 ## Dead ends
 
-none
+A duplicate CLI submission path failed the shared-owner integration tests; routing triage through the existing submission helper resolved it. Automatic idle triage was rejected because it would run without an operator request.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket estimate: 45 minutes; actual duration not measured.
+Ticket budget: 45 minutes expected, 90 minutes stuck; actual duration was not measured.
 
