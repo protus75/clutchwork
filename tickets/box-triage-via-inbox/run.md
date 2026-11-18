@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The focused verification passed with 124 tests. The full unit gate had 11 failures because existing idle-loop fixtures lack the control inbox required by the new calls; those same four test files passed on the base commit. The exact ticket verification could not run on the base because its three new test files do not exist there. The integration gate exposed a shared-call ownership issue, which was fixed within scope and verified by its focused tests.
+Reused the existing completion-keyed Effects mechanism and engine provider session; automatic idle triage was rejected because it would run without an operator request. Final verification passed 156 tests, the unit coverage gate passed 966 tests, the integration gate passed 3,423 tests, and lint and format checks passed.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Ticket estimate: 45 minutes; actual duration not measured.
 
