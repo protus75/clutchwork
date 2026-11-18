@@ -701,7 +701,7 @@ def stamp(text: str, key: str, value: str) -> str:
 
 
 def _intake_claims(stem: str, text: str, new: bool) -> tuple[str, list[Finding]]:
-    """Apply the fail-closed `source` stamp and the human auto-confirm; return the text to commit."""
+    """Stamp new human sources and confirm only when no state was authored; return the text to commit."""
     path = ticket_path(stem)
     split = split_frontmatter(text)
     if split is None:
@@ -723,8 +723,9 @@ def _intake_claims(stem: str, text: str, new: bool) -> tuple[str, list[Finding]]
         ]
     state = data.get("state", "draft")
     if state not in ("draft", "confirmed"):
-        return text, [_f(f"new stem is authored `state: {state}`", "author new work as `state: draft` or `confirmed` (human intake auto-confirms)", path)]
-    return stamp(stamp(text, "source", "human"), "state", "confirmed"), []
+        return text, [_f(f"new stem is authored `state: {state}`", "author new work as `state: draft` or `confirmed`; confirm drafts after review", path)]
+    text = stamp(text, "source", "human")
+    return (stamp(text, "state", "confirmed") if "state" not in data else text), []
 
 
 def _intake_stray(repo: Path, entries: list[tuple[str, str]], evidence: Mapping[str, list[str]]) -> list[str]:

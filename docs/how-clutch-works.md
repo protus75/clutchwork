@@ -56,7 +56,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `help [command ...]` | no | Prints command help and examples from each command parser in `clutch/__main__.py`; `--help` or `-h` before a command does the same. Exits 0, or 2 for an unknown command. |
 | `host docs` | no | Prints the installed host guide paths and their purposes. |
 | `config migrate` | no | Migrates a `schema_version: 0` config to the current schema. |
-| `ticket new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake confirms it. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
+| `ticket new <stem> --kind feature\|bug\|chore` | no | Writes `tickets/<stem>/ticket.md` with section placeholders for the selected kind (default `feature`) and `state: draft`, and lints it; intake keeps authored `state: draft`, stamps `confirmed` only when the state line is absent, and drafts are confirmed with `clutch ticket confirm`. Bugs include `## Regression`, require `--evidence <file>...`, and copy those files into `tickets/<stem>/evidence/`. Refuses a bad, reserved, or existing stem, or unknown kind (exit 2); successful authorship exits 0. |
 | `ticket order <stem> [--priority P0\|P1\|P2\|P3] [--runs-before [stem ...]]` | no | Validates and edits priority and/or runs-before ordering in the working tree; a bare `--runs-before` removes the section. Refuses a running ticket while an engine is live, and settled, rejected, missing or invalid tickets. An interrupted run with no live engine is editable. Intake commits the edit. |
 | `ticket review <stem>` | commit only | Only the named ticket's pending changes are committed through intake first; other pending tickets are left untouched. Reviews the committed ticket against merged code and journals its verdict and ticket blob SHA. A ticket with an unmerged dependency gets a provisional review that is printed but not journaled, so the drain reviews it again before its first run. Refuses missing, intake-failed, settled, or rejected tickets without a model call. Prints findings and exits 0 on approve, 1 on snag or rma. |
 | `engine run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
@@ -127,7 +127,7 @@ says what goes in each section.
 
 Frontmatter fields that drive behavior:
 
-- `state`: `draft` (an Author-written ticket awaiting `ticket confirm`; intake stamps a new hand-written ticket `confirmed`), `confirmed` (dispatchable), `rejected`, `merged`.
+- `state`: `draft` (awaiting `clutch ticket confirm`; intake keeps an authored `state: draft` and stamps `confirmed` only when the state line is absent), `confirmed` (dispatchable), `rejected`, `merged`.
 - `source`: `human` (hand-written), `box:<class>` (written by the Author stage), `seed`
   (historical bootstrap tickets; nothing writes it now).
 - `kind`: `feature`, `chore`, or `bug` (a bug must carry `## Regression` and evidence,
@@ -143,7 +143,7 @@ Frontmatter fields that drive behavior:
 - It reads status, checks for stray staged paths, and commits under one `commit.lock` hold.
 - It finds new or modified `tickets/<stem>/ticket.md` files in the working tree (`git status`).
 - A new hand-written stem must be `draft` or `confirmed` and must not claim a machine `source`;
-  intake stamps it `source: human`, `state: confirmed`.
+  intake stamps it `source: human`, keeps an authored `state: draft`, and stamps `confirmed` only when the state line is absent; confirm a draft with `clutch ticket confirm`.
 - Bug evidence is checked as the authoring guide's [Evidence](../clutch/docs/host-authoring.md#evidence) section states.
 - Each ticket that lints clean is committed with its new or changed regular, non-symlink evidence
   files as `clutch(<stem>): ticket` and journaled as

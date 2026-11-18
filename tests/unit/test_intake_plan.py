@@ -91,11 +91,16 @@ def test_plan_decisions(tmp_path, monkeypatch):
     assert tickets._intake_stray(tmp_path, entries + [("M ", "outside.py"), ("D ", evidence["good"][0])], evidence) == ["outside.py", evidence["good"][0]]
     original, stamped, good = tickets._intake_plan_stem(tmp_path, "good", True, evidence["good"], None)
     assert "state: draft" in original
-    assert "state: confirmed" in stamped and "source: human" in stamped
+    assert "state: draft" in stamped and "state: confirmed" not in stamped and "source: human" in stamped
+    path = tmp_path / tickets.ticket_path("good")
+    path.write_text(original.replace("state: draft\n", ""))
+    _, no_state, _ = tickets._intake_plan_stem(tmp_path, "good", True, evidence["good"], None)
+    assert "state: confirmed" in no_state and "state: draft" not in no_state and "source: human" in no_state
+    path.write_text(original)
     assert good.stem == "good"
     assert tickets._intake_plan_stem(tmp_path, "bad", False, [], None)[2] == [finding]
     assert tickets._intake_plan_stem(tmp_path, "done", False, [], "merged")[2].stem == "done"
-    assert calls == [("good", False), ("bad", False), ("done", True)]
+    assert calls == [("good", False), ("good", False), ("bad", False), ("done", True)]
     assert (tmp_path / tickets.ticket_path("good")).read_text() == original
 
 

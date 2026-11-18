@@ -1,7 +1,7 @@
 Assess these draft clutch tickets, each waiting for me to confirm or reject it:
 ${tickets}
 
-For each draft, read its ticket, the merged code and files it names, and, when its frontmatter `source` starts with `box:`, the Suggestion Box message under ${state_dir}/box/ whose resolution links to it. Then recommend confirm or reject.
+For each draft, read its ticket, the merged code and files it names, and, when its frontmatter `source` starts with `box:`, the Suggestion Box message under ${state_dir}/box/ whose resolution links to it. A draft whose frontmatter `source` is `human` is hand-written and its author confirms it with `clutch ticket confirm` after the audit; list it as skipped and give it no confirm or reject step. Then recommend confirm or reject.
 
 The bar for confirm is high. Confirm only a ticket that fixes a defect or failure that has happened, or will happen in normal use, or that delivers a benefit the project needs now; name the incident, failure, or file that proves it. Being easy, cheap, or sensible-sounding is never a reason to confirm. Reject a ticket that is just-in-case hardening, guards a corner case unlikely to occur in normal use, duplicates or overlaps another ticket or merged code, rests on a premise the merged code contradicts, or is gold plating: polish, abstraction, configurability, or extra checks that no incident earned. When the evidence is thin, recommend reject and say what evidence would change your mind.
 

@@ -7,7 +7,7 @@ uv run clutch host doctor
 uv run clutch engine serve
 ```
 
-Use the same prefix for the other verbs below; for example, `clutch provider install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts written by Author wait for `ticket confirm`.
+Use the same prefix for the other verbs below; for example, `clutch provider install` reports provider CLIs. The host checkout remains the working directory; `--config PATH` before the verb selects a different config. `engine serve` is the normal mode: it runs until `engine kill`, `engine stop`, or Ctrl-C. `engine drain` is a finite run to quiescence. Closing its terminal, SIGTERM, or Ctrl-C ends it as `engine kill` does. Serve stops on SIGHUP as it does on Ctrl-C: an unjournaled stop that the next start reconciles. A running serve picks up config edits and new ticket files live. Drafts, including a new hand-written ticket authored `state: draft`, wait for `ticket confirm`.
 
 | Verb | Works while serve runs? | What it does |
 |---|---|---|

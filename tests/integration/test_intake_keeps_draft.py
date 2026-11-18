@@ -1,0 +1,56 @@
+import asyncio
+from pathlib import Path
+
+import pytest
+
+from clutch import __main__ as entry
+from clutch.drain import drain
+from clutch.journal import EventType
+from tests.integration.test_cli import ENV, git_out, ticket, write
+from tests.integration.test_drain import pause_checkout, root
+from tests.integration.test_drain_reentry import NoChild
+from tests.integration.test_tickets import VALID, do_intake, repo
+from tests.integration.test_tickets import write as write_ticket
+
+
+@pytest.mark.parametrize(("state", "expected"), [("draft", "draft"), (None, "confirmed"), ("confirmed", "confirmed")])
+def test_intake_preserves_authored_state(repo, state, expected):
+    checkout, git, journal = repo
+    text = VALID if state is None else VALID.replace("---\n", f"---\nstate: {state}\n", 1)
+    write_ticket(checkout, "human", text)
+    do_intake(checkout, git, journal)
+    committed = git_out(checkout, "show", "HEAD:tickets/human/ticket.md").split("---", 2)[1]
+    assert f"state: {expected}\n" in committed
+    assert f"state: {'confirmed' if expected == 'draft' else 'draft'}\n" not in committed
+    assert "source: human\n" in committed
+
+
+@pytest.mark.asyncio
+async def test_drain_waits_for_human_confirmation(root):
+    write(root, "human", ticket().replace("---\n", "---\nstate: draft\n", 1))
+    checkout = pause_checkout(root)
+    calls = []
+
+    async def dispatch(item):
+        calls.append(item.stem)
+        checkout.journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=item.stem)
+        return "merged"
+
+    await drain(checkout, dispatch, reexec=NoChild())
+    committed = git_out(root, "show", "HEAD:tickets/human/ticket.md")
+    assert "state: draft\n" in committed and "state: confirmed\n" not in committed
+    assert "source: human\n" in committed
+    assert calls == []
+    assert await asyncio.to_thread(entry.main, ["ticket", "confirm", "--yes", "human"], cwd=root, env=ENV, clock=checkout.clock) == 0
+    await drain(pause_checkout(root), dispatch, reexec=NoChild())
+    assert calls == ["human"]
+
+
+def test_author_and_drafts_guidance():
+    author = Path("clutch/specs/ask/author.md").read_text().splitlines()
+    assert any("clutch ticket confirm" in line and "Run no git verb" in line for line in author)
+    assert any("clutch ticket confirm" in line and "Run no git verb" not in line for line in author)
+    drafts = Path("clutch/specs/ask/drafts.md").read_text().splitlines()
+    assert any("source" in line and "human" in line and "skipped" in line and "no confirm or reject" in line for line in drafts)
+    guide = Path("clutch/docs/host-authoring.md").read_text().split("## Workflow", 1)[1].split("\n## ", 1)[0]
+    assert "clutch ticket confirm" in guide

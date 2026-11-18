@@ -705,7 +705,7 @@ def snapshot(ctx) -> dict:
 
     def why_blocked(t) -> tuple[str, str]:
         if t.stem in new:
-            return "new: confirmed by next intake", "new"  # human intake auto-confirms a new hand-written ticket
+            return "new: draft stays draft until clutch ticket confirm; no state is confirmed by next intake", "new"
         if t.frontmatter.state != "confirmed":
             return t.frontmatter.state, "draft"
         if t.stem in held_stems and t.stem not in reject_stems:
@@ -737,7 +737,7 @@ def snapshot(ctx) -> dict:
             "runsBefore": list(t.runs_before) if t else [],
             "path": str(ticket_path(stem)),
             "held": stem in held_stems,
-            # Only a committed draft awaits `clutch ticket confirm`; intake confirms a new hand-written one itself.
+            # Only a committed draft appears in the drafts prompt.
             "draft": bool(t) and t.frontmatter.state == "draft" and stem not in new,
             # Pending ticket changes go through intake before a verdict is submitted.
             "committed": stem not in dirty,

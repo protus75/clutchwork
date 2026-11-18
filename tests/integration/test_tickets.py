@@ -587,8 +587,8 @@ def test_new_skeleton_is_draft_until_intake(repo):
     path.write_text(re.sub(r"<([^<>]+)>", lambda match: samples[match[1]], text))
     do_intake(root, g, journal)
     committed = subprocess.run(["git", "show", "HEAD:tickets/aaa-wip/ticket.md"], cwd=root, env=ENV, capture_output=True, text=True, check=True).stdout
-    assert "state: confirmed\n" in committed.split("---", 2)[1]
-    assert "state: draft\n" not in committed.split("---", 2)[1]
+    assert "state: draft\n" in committed.split("---", 2)[1]
+    assert "state: confirmed\n" not in committed.split("---", 2)[1]
 
 
 def test_new_bug_copies_evidence(repo, capsys):

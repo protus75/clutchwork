@@ -34,7 +34,7 @@ def test_named_verbs_leave_other_pending_ticket(tmp_path, monkeypatch, verb):
     beta = (root / "tickets/beta/ticket.md").read_bytes()
     monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: FakeLLM([reply("approve")]))
     args = [*(["ticket"] if verb in {"review", "confirm", "reject"} else ["engine"] if verb == "run" else []), verb, "alpha"] + (["--yes"] if verb in {"confirm", "reject"} else [])
-    assert main(args, cwd=root, env=ENV, clock=Clock(), pipeline=Stages()) == (2 if verb == "confirm" else 0)
+    assert main(args, cwd=root, env=ENV, clock=Clock(), pipeline=Stages()) == (2 if verb == "run" else 0)
     subjects = git_out(root, "log", "--format=%s").splitlines()
     assert "clutch(alpha): ticket" in subjects
     assert "clutch(beta): ticket" not in subjects

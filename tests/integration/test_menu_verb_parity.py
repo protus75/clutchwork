@@ -97,8 +97,8 @@ def verb_inputs(w, stem, row, live):
     "case,run,review,order,lint",
     [
         ("draft", False, True, True, True),
-        ("new", True, True, True, True),
-        ("staged-new", True, True, True, True),
+        ("new", False, True, True, True),
+        ("staged-new", False, True, True, True),
         ("dirty", True, True, True, True),
         ("pending-lint", False, False, True, True),
         ("depends-cycle", False, False, False, True),

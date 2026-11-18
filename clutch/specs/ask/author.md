@@ -16,4 +16,6 @@ Procedure:
 5. Make the guide's pre-review checks.
 6. Run `clutch ticket review ${stem}`. Repair every finding, re-lint, and re-review until it prints approve. After 6 rounds without approve, stop and report review_stuck with the last findings verbatim.
 
+A reviewed ticket stays `state: draft`; name `clutch ticket confirm <stem>` in the final reply for the owner to run.
+
 Report status: approved, skipped, review_stuck, or failed. Per ticket report its stem, kind, priority, review rounds, final fence, Depends on, Runs before, and expected and stuck minutes; what you dropped and why; suggestions filed by id; and anything whoever launched you must know.
