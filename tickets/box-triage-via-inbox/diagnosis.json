@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "2a38bfb4e01dd1b37a71627b364261522f98e8c1",
+  "produced_at_sha": "6a9ffe3cb17e5e00fcc7acba4a58d3a09c22ba93",
   "stem": "box-triage-via-inbox",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Review found the control request kind, CLI LockHeld path, idle-point wiring, docs and drain-loop.md edits sound. Since every attempt starts from the merge base, redo all of that work as the ticket's Scope in describes; only settle_triage needs a change.",
-    "In clutch/control.py ControlInbox.settle_triage, do not skip accepted decisions whose lifecycle_id differs from self.lifecycle_id. Mirror settle_admissions: consume() already journals other-lifecycle requests as stale, so settle applies every accepted, unapplied triage decision.",
-    "Keep once-only application through the Effects key triage/<request_id>. That key alone stops a repeated settle, a crash restart or a re-exec handoff from running a request twice. build_control makes a fresh lifecycle uuid per process.",
-    "In tests/unit/test_control_triage_request.py or tests/unit/test_drain_serve_triage_idle.py, add a case: a triage decision accepted under lifecycle 'old' is settled by an inbox whose lifecycle is 'live'. The fake run is called exactly once across two settle calls.",
-    "Give the SimpleNamespace control in test_calibration_idle.py, test_driver_hooks.py, test_drain_report_intake.py and test_supervise_idle_hooks.py a fake inbox whose settle_triage is a no-op. Change no assertion there. Then run the full ## Verification command."
+    "Redo the full ticket from the merge base. Review found these sound: the control.py triage kind with _TRIAGE_SHAPE and settle_triage under the Effects key triage/<request_id>, the drain/serve idle-point calls, the handle_triage LockHeld path, the docs edits and the drain-loop.md edits.",
+    "Criterion 8 had no test. Add one to tests/integration/test_box_triage_inbox.py that runs main([\"box\",\"triage\",<id>]) with no Lockfile held and a fake provider reply, the way tests/integration/test_triage.py does.",
+    "In that lock-free test, assert exit 0, that the pass line prints and `triage submitted:` does not, that the message gets a resolution, and that control/inbox holds no request file.",
+    "Keep a test in test_box_triage_inbox.py for every criterion that names it (5, 6, 7, 8, 10). Before finishing, map each criterion to a named test function, because review checks each criterion against the file it names.",
+    "Route the CLI submit through the existing _submit_engine/_require_engine helper in clutch/__main__.py. The last run found that a duplicate submit path broke the shared-owner integration tests."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
