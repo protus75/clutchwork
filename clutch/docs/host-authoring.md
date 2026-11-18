@@ -96,6 +96,12 @@ A file that many tickets fence makes their changes collide. Keep new work out of
   is usually two tickets: link them with `Depends on` when the second needs the first's merged
   code, otherwise with `Runs before`.
 - A documentation update edits only the section the change makes false.
+- A ticket editing the roadmap or a plan document verifies the edit in review; never add a
+  standing test or criterion pinning current text, including rows, exact commands, or phrases.
+  The driver and `roadmap accept` rewrite roadmap rows and the owner revises plans, so such
+  tests break main during normal work. The one allowed standing roadmap check is that the
+  roadmap parses and its gate commands are valid. Write a criterion checking structure, such
+  as parsing, or a one-time review check instead.
 
 ## Unit and integration tests
 
