@@ -17,6 +17,10 @@ Proposed on 2026-11-18 from an owner design discussion. No rule, ticket section,
 or gate described here exists yet. This document records the design space and rollout needed before
 implementation tickets are authored.
 
+## Roadmap
+
+The [master roadmap](roadmap.md#8-master-ticket-table) places the trial and authoring rollout in 0.4.0 (rows 150–151), ahead of the graphics ticket kind. Deployed reviews provide the evidence for stronger lint in 0.5.0 (provisional row 152). Implement and diff review adopt the declared contracts in 0.5.0 (row 153), independently of whether that lint is earned. Roadmap §5 decisions 18–19 cover the shared prompt, managed-block budget and overlap with existing alignment work.
+
 ## Problem
 
 The current ticket process checks much of the necessary evidence indirectly:
@@ -710,7 +714,7 @@ before and after the change.
 
 ### Phase 4: earned specialized checks
 
-Only repeated incidents earn static gates or a generated discovery view. Each new check needs a
+Only repeated incidents earn specialized static gates. Decision 9 closes the discovery catalog proposal. Each new check needs a
 language-neutral application or a clearly host-owned implementation. Do not grow Clutch into a
 partial cross-language type system.
 
@@ -761,10 +765,8 @@ decisions recorded below.
 | 2 | `boundary-contract-authoring` | chore | Shared behavioral rule, host-authoring content, skeleton section, docs, and Author/requisition-review semantics. |
 | 3 | `boundary-contract-lint` | feature | Stable structural and referential checks demonstrated by the trial and initial reviews. |
 | 4 | `boundary-contract-implementation-review` | feature | Implement premise behavior and diff-review conformity to declared owners and contracts. |
-| 5 | `boundary-discovery-view` | feature | Only if measured discovery failures justify a generated, single-source interface view. |
 
-Tickets 3 and 4 depend on 2. Ticket 5, if earned, depends on observed evidence from deployed use and
-must identify its code-owned source of truth before authorship.
+Tickets 3 and 4 depend on 2. Ticket 3 also needs evidence of recurring mistakes from deployed use.
 
 ## Design decisions
 
