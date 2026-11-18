@@ -10,7 +10,7 @@ Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-1
 
 ## Roadmap
 
-Release 0.5.0 (`docs/roadmap.md` rows 57-61). Needs from other plans: the evidence store and envelope (`evidence-store`, `evidence-envelope`, 0.3.0), which own the call record this plan builds on; `merge-model-resolve` (0.4.0) for the `conflict` record kind, which export skips with a count until it exists. Nothing depends on this plan except the document agent's later `outcome` lens (`docs/document-agent-plan.md` §4.4). Shared budgets: none (no CORE_TEMPLATE text; one new config block `training_data`). The P0 capture bug (`provider-capture-overwrite`) is the roadmap's row 1, not this plan's; its cause fix is `evidence-envelope` (roadmap decision 4).
+Release 0.5.0 (`docs/roadmap.md` rows 57-61). Needs from other plans: the evidence store and envelope (`evidence-store`, `evidence-envelope`, 0.3.0), which own the call record this plan builds on; `merge-model-resolve` (0.4.0) for the `conflict` record kind, which export skips with a count until it exists. Nothing depends on this plan except the document agent's later `outcome` lens (`docs/document-agent/plan.md` §4.4). Shared budgets: none (no CORE_TEMPLATE text; one new config block `training_data`). The P0 capture bug (`provider-capture-overwrite`) is the roadmap's row 1, not this plan's; its cause fix is `evidence-envelope` (roadmap decision 4).
 
 ## Why clutch data is unusually good training data
 

@@ -16,7 +16,7 @@ Release 0.5.0 for the combiners, the routing key, review and diagnosis panels, a
 - `Route` (`clutch/config.py:99-102`) is `tier`, `surface`, `candidates`. The graphics plan adds `kinds`.
 - Review replies carry a verdict and findings (`clutch/specs/review.md`); the engine gates the reply shape and journals `review.md`. Requisition review, diagnosis, and triage reply with a verdict each.
 - The scorecard (`clutch/scorecard.py`) counts catches, escapes, and bypasses per gate and surface, for one reviewer.
-- `docs/document-agent-plan.md` §4 designs three isolated reviewers and a synthesis with an accounting gate for document lenses; `docs/gemini-graphics-refactor-plan.md` B5-B6 design a per-row majority judge and best-of-N image candidates. Both are panels; neither has an engine mechanism to stand on yet.
+- `docs/document-agent/plan.md` §4 designs three isolated reviewers and a synthesis with an accounting gate for document lenses; `docs/gemini-graphics-refactor-plan.md` B5-B6 design a per-row majority judge and best-of-N image candidates. Both are panels; neither has an engine mechanism to stand on yet.
 - The owner's review prompts (`CutReview.md` and the others) already run as three isolated agents plus a synthesis, by hand.
 
 ## Departures from the design record
@@ -96,7 +96,7 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 | 4 | `panel-scorecard` | feature | P3 | 3 | Per-member catch attribution; unique catches per 100 reviews and the cost multiplier in the retro report. Release 0.5.0. |
 | 5 | `implement-best-of-n` | feature | P3 | 1, `serve-parallel-dispatch` | Per-member worktrees, Check on every candidate, selection, retirement of the rest. Release 0.7.0. |
 
-`Runs before`: `contention-authoring-rules` (roadmap row 13) before every ticket here. Ticket 1 before `doc-review-runner` (`docs/document-agent-plan.md`), which consumes it.
+`Runs before`: `contention-authoring-rules` (roadmap row 13) before every ticket here. Ticket 1 before `doc-review-runner` (`docs/document-agent/plan.md`), which consumes it.
 
 ## Risks
 

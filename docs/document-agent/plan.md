@@ -4,7 +4,7 @@ A document agent for clutch that creates, reviews, and transforms documents. Eac
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` to take in the owner's review prompts in `/home/djp/source/` (`CutReview.md`, `KillReview.md`, `BuildItReview.md`, `CompressionReview.md`, and `gizmo/review/OutcomeReview.md`) and for `docs/roadmap.md`.
+Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` to take in the owner's review prompts in [review/](review/) and for `docs/roadmap.md`.
 
 ## Roadmap
 
@@ -24,7 +24,7 @@ Release 0.7.0, last (`docs/roadmap.md` rows 75-86). Needs from other plans: `evi
 - Driver specs in `clutch/specs/` run headless through one driver (`clutch/driver.py`), with routing by `(tier, surface)` and a fallback to the `review` row for an unrouted surface (`clutch/providers.py:104`). Every surface except Implement is read-only. The model returns text, and the engine writes the files.
 - Read-only surfaces are **not isolated**. Claude runs with `--tools Read Grep Glob LS` in the repo (`ClaudeAdapter.argv`). Codex runs `--sandbox read-only` in the repo. A reviewer can browse the repository, which the owner's review prompts forbid ("Your only input is the document").
 - Specs always load from the engine. Host material enters a prompt only inside `<<clutch-data:...>>` blocks (`ask_notes` is the precedent). Config load refuses `review.surfaces` (host review prompts).
-- The owner's review prompts (`/home/djp/source/*.md`, identical copies in `gizmo/review/`) have been run by hand against seed plans across several sibling repos. Reports sit in `gizmo/review/` (for example, `REVIEW_reports/cut-agent-{A,B,C}.md` with `REVIEW_CutSynthesis.md`).
+- The [review prompts](review/) have been used in manual seed-plan reviews. In one Cut review, all three reviewers flagged a spend ceiling. The synthesis checked the strongest reason to keep it against the plan: both configured providers used flat subscriptions. It recommended deferring the ceiling until the first metered provider and moving failure handling earlier. The agreement count, the check against the document, and the proposed edit all belong in the report.
 - No document tooling exists in clutch: no Markdown-to-HTML renderer, no PDF path, no theme CSS.
 
 ## Departures from the design record
@@ -44,12 +44,30 @@ Each dimension value is a **facet**: one Markdown file with frontmatter, kept un
 
 | Dimension | Initial values | Kind | Applies at |
 |---|---|---|---|
-| Type | `plan`, `seed`, `overview`, `architecture`, `api`, `spec`, `whitepaper`, `blog` | prompt facet: required sections and their order, what each section is for | create, derive |
-| Audience | `technical`, `non-technical`, `ai`, `user`, `developer`, `student` | prompt facet: assumed knowledge, vocabulary, what to explain, what to leave out | create, derive |
-| Tone | `default`, `examples` | prompt facet. `examples` takes example files as data: "match the voice, sentence length, and structure; never copy content" | create, derive |
+| Type | `plan`, `seed`, `overview`, `architecture`, `api`, `spec`, `whitepaper`, `blog`, `release-notes` | prompt facet: required sections and their order, what each section is for | create, derive |
+| Audience | [technical](audience/technical.md), [non-technical](audience/non-technical.md), [ai](audience/ai.md), [user](audience/user.md), [developer](audience/developer.md), [student](audience/student.md) | prompt facet: assumed knowledge, vocabulary, what to explain, what to leave out | create, derive |
+| Tone | [default](tone/default.md), [examples](tone/examples.md) | prompt facet. `examples` takes example files as data: "match the voice, sentence length, and structure; never copy content" | create, derive |
 | Review | `scope`, `viability`, `buildability`, `automatable`, `compression` | lens facet (section 4): roles, run shape, prompts, output schema, verdict set | review |
-| Format | `markdown`, `html`, `pdf` | render facet, mechanical, no model | render |
-| Theme | `light`, `dark` | render facet: a CSS token file, used by `html` and `pdf` only | render |
+| Format | [markdown](format/markdown.md), [html](format/html.md), [pdf](format/pdf.md) | render facet, mechanical, no model | render |
+| Theme | [light](theme/light.md), [dark](theme/dark.md) | render facet: a CSS token file, used by `html` and `pdf` only | render |
+
+Choose one value per applicable dimension. Type supplies the document structure, Audience sets assumed knowledge and explanatory detail, and Tone governs expression. Together they preserve the source’s obligations, uncertainty, protected text, and the fidelity rules in section 5. For example, a developer release note can show the changed signature and migration call; a user release note for the same change can describe the affected workflow and required action. Both must agree on release membership and compatibility.
+
+Section 4.1 links the five Review prompts and identifies their roles and verdicts. Format consumes the resulting Markdown. HTML and PDF use the same theme roles with either the [light tokens](theme/light.css) or the [dark tokens](theme/dark.css). The linked audience, tone, format, and theme files are first-pass design examples alongside the Type prompts.
+
+The first-pass Type prompts below are design examples. Their project references explain the choices in each prompt. At review time, an isolated panelist works from the generated document.
+
+| Type prompt | What it draws from the project |
+|---|---|
+| [Plan](type/plan.md) | The [roadmap](../roadmap.md) ties phases to entry conditions and observable exits. [Cut](review/CutReview.md) tests scope against the plan’s metric, [Kill](review/KillReview.md) tests the premise, and [Buildability](review/BuildItReview.md) exercises one named phase. |
+| [Seed](type/seed.md) | The [host authoring guide](../../clutch/docs/host-authoring.md) owns fences, dependency semantics, acceptance evidence, and the authoring handoff. Section 4.3 describes the Automatable lens ([AutomatableReview.md](review/AutomatableReview.md)). |
+| [Overview](type/overview.md) | Section 5 defines audience-change fidelity. The [running guide](../../clutch/docs/host-running.md) supplies operator actions and outcomes when explaining Clutch. |
+| [Architecture](type/architecture.md) | The [boundary-contract plan](../boundary-contract-plan.md) identifies owners and consumers. [How Clutch works](../how-clutch-works.md) distinguishes authoritative state, effects, diagnostics, and projections. |
+| [API](type/api.md) | The [boundary-contract plan](../boundary-contract-plan.md) defines the producer and consumer contract. A named phase gives the [Buildability dry run](review/BuildItReview.md) a scope for writing stubs from the reference alone. |
+| [Spec](type/spec.md) | [Compression and fidelity review](review/CompressionReview.md) preserves normative force, headings, protected regions, and unresolved differences. Section 5 defines promotion. |
+| [Whitepaper](type/whitepaper.md) | The [evidence trail](../evidence-trail-plan.md) and [training-data plan](../training-data-plan.md) distinguish captured observations, derived records, outcome labels, and proposed evaluations. |
+| [Blog](type/blog.md) | Section 5 governs fidelity when changing audience. For a run narrative, [How Clutch works](../how-clutch-works.md) identifies the artifacts that support claims about what happened. |
+| [Release notes](type/release-notes.md) | The [changelog](../../CHANGELOG.md) identifies release entries. [How Clutch works](../how-clutch-works.md) distinguishes a local release tag from publication. |
 
 Facet frontmatter:
 
@@ -135,11 +153,11 @@ Reply gates (fail closed, with re-prompting as the driver does now):
 
 | Lens id | Source prompt | Alias | Question | Run shape | Verdicts |
 |---|---|---|---|---|---|
-| `scope` | `CutReview.md` | `cut` | What does the document specify that no stated goal justifies, and what effort is in the wrong order? | 3 isolated cut agents → 1 synthesis | LEAN / TRIMMABLE / GOLD-PLATED, plus NO-METRIC |
-| `viability` | `KillReview.md` | `kill` | Should this be built as written? | 3 isolated kill agents → 1 synthesis | VIABLE / VIABLE-WITH-CHANGES / NOT VIABLE AS WRITTEN |
-| `buildability` | `BuildItReview.md` | `build-it` | What does an implementer have to invent, because the document does not decide it? | 3 isolated dry-run implementers for `<PHASE_SCOPE>` → 1 synthesis | SELF-CONTAINED / GAPS-FIXABLE / NOT SELF-CONTAINED |
-| `compression` | `CompressionReview.md` | | Rewrite in specification form with nothing lost | 1 compressor (writes a draft) → 1 isolated fidelity auditor | LOSSLESS / LOSSY-MINOR / LOSSY |
-| `automatable` | new, section 4.3 | | Could an AI pipeline carry the document to merged code with no human decisions? | 3 isolated dry-run *ticket authors* → mechanical lint → 1 synthesis | AUTOMATABLE / AUTOMATABLE-WITH-GATES / NOT AUTOMATABLE AS WRITTEN |
+| `scope` | [CutReview.md](review/CutReview.md) | `cut` | What does the document specify that no stated goal justifies, and what effort is in the wrong order? | 3 isolated cut agents → 1 synthesis | LEAN / TRIMMABLE / GOLD-PLATED, plus NO-METRIC |
+| `viability` | [KillReview.md](review/KillReview.md) | `kill` | Should this be built as written? | 3 isolated kill agents → 1 synthesis | VIABLE / VIABLE-WITH-CHANGES / NOT VIABLE AS WRITTEN |
+| `buildability` | [BuildItReview.md](review/BuildItReview.md) | `build-it` | What does an implementer have to invent, because the document does not decide it? | 3 isolated dry-run implementers for `<PHASE_SCOPE>` → 1 synthesis | SELF-CONTAINED / GAPS-FIXABLE / NOT SELF-CONTAINED |
+| `compression` | [CompressionReview.md](review/CompressionReview.md) | | Rewrite in specification form with nothing lost | 1 compressor (writes a draft) → 1 isolated fidelity auditor | LOSSLESS / LOSSY-MINOR / LOSSY |
+| `automatable` | [AutomatableReview.md](review/AutomatableReview.md) | | Could an AI pipeline carry the document to merged code with no human decisions? | 3 isolated dry-run *ticket authors* → mechanical lint → 1 synthesis | AUTOMATABLE / AUTOMATABLE-WITH-GATES / NOT AUTOMATABLE AS WRITTEN |
 
 What every lens shares, taken from the prompts:
 
@@ -160,7 +178,7 @@ A lens facet carries the source prompt text verbatim, split into roles, with the
 facet: review/buildability
 version: "1.0"
 aliases: [build-it]
-source: BuildItReview.md
+source: docs/document-agent/review/BuildItReview.md
 params: {PLAN_PATH: document, PHASE_SCOPE: required}   # refused with a paved road when missing
 stages:
   - {role: dry_run, count: 3, isolated: true, sees: [document]}
@@ -179,7 +197,7 @@ verdicts: [SELF-CONTAINED, GAPS-FIXABLE, NOT SELF-CONTAINED]
 - `<PLAN_PATH>` becomes the document's file name inside the scratch directory. `<SPEC_PATH>` (compression) becomes the draft the engine writes from the compressor's reply, since agents never write files.
 - `count` is configurable per run (`--panel N`, minimum 2). The default stays 3, as the prompts specify.
 - `compression` declares a different shape: `compressor` (count 1, returns the spec text + ledgers + metrics) then `fidelity` (count 1, sees the original, the draft, and the compressor's ledger and duplicate map, but not its reasoning). The fidelity auditor's mechanical checks ("check these mechanically with diff") run in the engine: protected regions (fenced code, commands, extraction-marker blocks) are compared byte for byte, and those results are given to the auditor as facts.
-- `OutcomeReview.md` and `SeedPlanDiagnosis.md` are **evidence lenses**: they read run history (repos, git logs, tickets), not one document. They are out of v1. Section 4.4 says how they connect later.
+- [OutcomeReview.md](review/evidence/OutcomeReview.md) and [SeedPlanDiagnosis.md](review/evidence/SeedPlanDiagnosis.md) are **evidence lenses**: they read local run evidence (plan revisions, commit records, tickets), not one document. They are out of v1. Section 4.4 says how they connect later.
 
 #### 4.3 The AI Automatable lens, and how it compares with BuildIt
 
@@ -224,22 +242,22 @@ verdicts: [SELF-CONTAINED, GAPS-FIXABLE, NOT SELF-CONTAINED]
 | Cost | 4 calls | 4 calls + one lint per ticket (+ requisition reviews with `--deep`) |
 | Can be checked against reality later | by OutcomeReview, by hand | by `docs/training-data-plan.md` data: predicted gates and ticket counts against the journal's actual parks, confirms, and attempts |
 
-Run BuildIt first. Automatable assumes the decisions are settled, so its findings on an unsettled document mostly repeat BuildIt's gaps. A full draft of the lens prompt in the owner's house style is in the Appendix.
+Run BuildIt first. Automatable assumes the decisions are settled, so its findings on an unsettled document mostly repeat BuildIt's gaps. The full prompt is in [AutomatableReview.md](review/AutomatableReview.md).
 
 #### 4.4 Later: evidence lenses
 
-OutcomeReview's **evidence overlay** stamps each document-review cluster CONFIRMED, UNCONTRADICTED, WEAKENED, or CONTRADICTED against what real runs did. "Convergence ranks attention; evidence decides." For a host that runs its plan through clutch, the run evidence is already in its own journal and tickets: attempts, parks, confirms, conflict facts, plus the evidence trail once it ships. A later `outcome` lens can read those instead of sibling repos. Its trigger is the first plan that has both a review report and a finished clutch run.
+OutcomeReview's **evidence overlay** stamps each document-review cluster CONFIRMED, UNCONTRADICTED, WEAKENED, or CONTRADICTED against what real runs did. "Convergence ranks attention; evidence decides." For a host that runs its plan through clutch, the run evidence is already in its own journal and tickets: attempts, parks, confirms, conflict facts, plus the evidence trail once it ships. A later `outcome` lens can read a local snapshot of those records. Its trigger is the first plan that has both a review report and a finished clutch run.
 
 ### 5. Fold-back, review dispositions, and fidelity
 
 1. `clutch doc status` reports a derived document as `diverged`, or a review report proposes edits.
 2. `clutch doc fold <path>` (or `clutch doc apply <report>`) writes a proposed patch to the canonical document, plus a note on what was not applied and why.
-3. The owner accepts the patch, edits it, or rejects it. Accepting applies it and updates the section hashes. Refuse-class cuts from the `scope` lens go to the document's refusals list, as `CutReview.md`'s disposition requires, so the cut scope does not come back.
+3. The owner accepts the patch, edits it, or rejects it. Accepting applies it and updates the section hashes. Refuse-class cuts from the `scope` lens go to the document's refusals list, as [CutReview.md](review/CutReview.md)'s disposition requires, so the cut scope does not come back.
 4. Derived documents built from changed sections become `stale`. `clutch doc derive --stale` rebuilds them.
 
 **Fidelity as a gate on derivation.** The compression lens's fidelity role is reused to check derived documents:
 
-- For a derive that changes only form (`spec`, or the same audience), the full class list applies (DROPPED, ALTERED, INVENTED, RESOLVED AMBIGUITY, VERBATIM VIOLATION, BROKEN REFERENCE), and a `spec` is promoted only on LOSSLESS plus a human-reviewed diff, as in `CompressionReview.md`.
+- For a derive that changes only form (`spec`, or the same audience), the full class list applies (DROPPED, ALTERED, INVENTED, RESOLVED AMBIGUITY, VERBATIM VIOLATION, BROKEN REFERENCE), and a `spec` is promoted only on LOSSLESS plus a human-reviewed diff, as in [CompressionReview.md](review/CompressionReview.md).
 - For a derive that changes audience (a non-technical overview drops detail on purpose), only INVENTED, ALTERED, and RESOLVED AMBIGUITY count. A derived document may leave things out, but never add or change facts.
 - The verdict is recorded in `docset.yaml` (`fidelity`).
 
@@ -302,8 +320,8 @@ Each ticket puts its tests in new files (`docs/parallel-tickets-plan.md` §7).
 | 2 | `docset-manifest` | feature | P2 | | `clutch.docset/1.0`, section hashing, `clutch doc status`. |
 | 3 | `isolated-readonly-call` | feature | P2 | `evidence-envelope` | `isolated` request mode: scratch working directory with only the declared files, for Claude and Codex; the evidence record carries `isolated`, `conduct_file: null`, `repo: null`. Tests prove a panelist cannot read a repo file. |
 | 4 | `doc-review-runner` | feature | P2 | 1, 3, `panel-combiners` | Generic `doc_review` surface, stage runner on `clutch/panel.py` (the lens's `stages` map onto panel members and combiners; the synthesis role is a model combiner the lens supplies), schema and verdict gates, accounting gate, report. |
-| 5 | `doc-lenses-from-owner-prompts` | feature | P2 | 4 | `scope`, `viability`, `buildability`, and `compression` lens facets from the owner's prompt files, with schemas. Engine-side byte-identity checks of protected regions for `compression`. |
-| 6 | `doc-lens-automatable` | feature | P2 | 4, `fence-overlap` | The Appendix prompt as a lens facet, the mechanical ticket-lint stage, the automation ratio, the fence-overlap estimate, and `--deep`. |
+| 5 | `doc-lenses-from-owner-prompts` | feature | P2 | 4 | `scope`, `viability`, `buildability`, and `compression` lens facets from the prompt files in [review/](review/), with schemas. Engine-side byte-identity checks of protected regions for `compression`. |
+| 6 | `doc-lens-automatable` | feature | P2 | 4, `fence-overlap` | [AutomatableReview.md](review/AutomatableReview.md) as a lens facet, the mechanical ticket-lint stage, the automation ratio, the fence-overlap estimate, and `--deep`. |
 | 7 | `doc-derive-fidelity` | feature | P2 | 2, 5 | `doc_derive`, fidelity gate by derive class, `fidelity` recorded in `docset.yaml`. |
 | 8 | `doc-fold-apply` | feature | P2 | 2, 7 | `doc_fold`, `doc apply <report>`, accept flow, refusals-list placement, `derive --stale`. |
 | 9 | `doc-render` | feature | P2 | 1 | Markdown to HTML with themes, PDF through the configured argv, the `documents` config block. |
@@ -333,54 +351,4 @@ Decisions taken on 2026-11-13 and 2026-11-14 are marked; `docs/roadmap.md` §6 i
 
 ## Appendix: draft `AutomatableReview` prompt
 
-Written to match the owner's review files and intended as the body of the `review/automatable` lens facet.
-
-```
-# What this tests and why
-A design document can be self-contained -- every decision determined, BuildItReview clean -- and still not be buildable by an AI pipeline, because determining a decision is not the same as being able to carry it out and verify it unattended. This exercise tests the document under automated execution. Fresh agents with no project context role-play the ticket author of an AI build pipeline for <PHASE_SCOPE> and must express the work as tickets in the pipeline's format, from the document at <PLAN_PATH> and the authoring contract at <GUIDE_PATH> alone. Every step they cannot hand to an agent, every criterion no machine can decide, and every place their decompositions diverge is a measured automation gap. Convergence is the signal: a gate or missing oracle independently found by two or more isolated agents is real, not one agent's caution. Run BuildItReview first; this review assumes the decisions are settled and measures whether they can be executed. Designed to re-run as the document evolves; an empty gate ledger is a valid outcome, not a failed run.
-
-# Run shape
-* 3 DRY-RUN AUTHOR agents, identical prompt (below), fully isolated: each gets the document at <PLAN_PATH> and the authoring contract at <GUIDE_PATH> and nothing else -- no repo browsing, no conversation history, no prior review results, no knowledge that other agents exist.
-* A MECHANICAL stage, no model: every ticket from every agent is run through the pipeline's real ticket lint; per-ticket results and counts are passed to synthesis as facts.
-* 1 SYNTHESIS agent (prompt below) compares the three ticket sets, their ledgers, and the lint facts after all finish.
-* High reasoning effort for all four. No file writes by any agent; output returns as structured data.
-
-# Dry-run author agent prompt (verbatim)
-You are the ticket author for an AI build pipeline that will implement the system specified by the design document at <PLAN_PATH>. The pipeline's rules for tickets are the authoring contract at <GUIDE_PATH>. Those two files are your ONLY input. Read both in full. You cannot ask questions; there is no other documentation, no repository, and no team. Every ticket you write will be implemented by an AI agent, checked only by the commands and criteria the ticket names, reviewed by another AI agent, and merged with no human in the loop except where you explicitly place one.
-
-Produce four things for <PHASE_SCOPE> as defined in the document's implementation-phases section:
-
-1. TICKET SET: the tickets you would author, in the contract's format, each complete: Goal, Scope in / Scope out, Scope fence, Acceptance criteria, Verification commands, Depends on. Cover every deliverable the document names for <PHASE_SCOPE>. Size each ticket so its diff stays within the contract's budget; if a deliverable cannot be split to fit, say so in the gate ledger.
-
-1. ORACLE LEDGER: for every acceptance criterion, one entry:
-  * criterion: quoted from your ticket.
-  * oracle: one of test (a test the ticket adds or names decides it), command (a named command's exit status or output decides it), path-exists (a file or section someone can read decides it), lint (a static check decides it), none (only a person can decide it).
-  * how: one sentence on what the machine runs or reads.
-
-1. HUMAN-GATE LEDGER: every step you could not hand to an agent, one entry each:
-  * step: what has to happen, in one sentence.
-  * section: the document section that requires it.
-  * class: one of credential (accounts, keys, payment), external (third-party approval, hardware, a service that does not exist yet), judgment (taste, feel, legal, business priority), data (inputs the document assumes but nothing produces), irreversible (an action with no rollback).
-  * placement: where in the ticket order a human must act, and which tickets wait on it.
-
-1. INVENTED-DECISIONS LEDGER: as in BuildItReview -- every choice the document did not determine for you, with decision, section, chose, and class (missing / ambiguous / contradictory / deliberate-freedom).
-
-Rules: author AS SPECIFIED -- do not evaluate, improve, or redesign the system. Follow the authoring contract exactly; a ticket that breaks it is a failed ticket, not a stylistic choice. Never write a judgment word into a criterion to avoid an oracle of none -- an honest none is the measurement; a disguised one corrupts it. Filling a gap from your own experience is still an invented decision -- ledger it. Do not pad the gate ledger: a step an agent can do with what the document provides is not a gate, and an empty gate ledger is a valid answer. Be exhaustive on the ledgers before polishing ticket prose; if effort runs short, cut ticket prose, never ledger entries.
-
-# Synthesis agent prompt (verbatim)
-You receive three ticket sets with oracle, human-gate, and invented-decisions ledgers, produced independently by three isolated authors from the same design document at <PLAN_PATH> and authoring contract at <GUIDE_PATH>, plus mechanical lint results for every ticket. Read the document, then:
-
-1. Map every ticket in every set to the document deliverable it serves. A deliverable no set covers is a finding; a deliverable all three cover with structurally different splits is DECOMPOSITION DIVERGENCE -- the document does not determine the shape of the work.
-1. Cluster ledger entries describing the same underlying gate, oracle gap, or decision across sets (they will word it differently).
-1. Rank: (a) any core deliverable whose criteria have oracle none in every set; (b) then human gates found by 3/3, then 2/3; (c) then oracle-none criteria by convergence; (d) then decomposition divergence; (e) then lint failures recurring on the same deliverable across sets -- recurrence points at the document, a single failure at the author. Single-agent deliberate-freedom entries drop; other single-agent entries go in a low-confidence tail.
-1. Verify each cluster against the document before reporting it: if the document does supply the oracle, the data, or the decision and the authors missed it, report it separately as FINDABILITY.
-1. For each surviving cluster: the deliverable, the owning section, what each author did (divergence matters), and a one-sentence document edit -- add the oracle, name the gate and its owner and placement, or fix the decomposition.
-1. Compute the AUTOMATION RATIO: the share of <PHASE_SCOPE> deliverables covered, in at least two of the three sets, by lint-clean tickets whose criteria all have an oracle other than none.
-
-Output, verdict first:
-* Automation: AUTOMATABLE (no verified human gate and ratio 1.0) / AUTOMATABLE-WITH-GATES (every verified gate is named and can be placed ahead of the tickets that need it) / NOT AUTOMATABLE AS WRITTEN (a core deliverable has no oracle in any set, or a verified gate sits where no ordering can isolate it) -- with the ratio and one paragraph of justification.
-* The ranked cluster list with per-cluster convergence counts, the findability list, and the low-confidence tail.
-
-# Disposition of results
-Gaps, gates, and findability problems become document edits, reviewed before applying, same as every round; the exercise re-runs after material edits, rescoped to the phases now earliest-unbuilt. Ticket sets are measurement instruments and are discarded, unless the owner explicitly promotes the consensus set as a starting point for real authoring -- which still goes through the pipeline's own authoring and review. Once the phase has actually run, its real parks, confirms, and attempt counts are the check on this review's predictions. Nothing from this exercise commits code.
-```
+[AutomatableReview.md](review/AutomatableReview.md) contains the full dry-run author and synthesis instructions.
