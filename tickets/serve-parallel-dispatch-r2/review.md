@@ -1,12 +1,10 @@
 # Review: snag
 
-The run-set and exclusive-gate design matches the ticket and the call sites move as required, but the new admission release paths now await a contended Condition lock in `finally` blocks where the old `Lock.release()` was synchronous, so a repeated cancellation can permanently leak a slot or leave the exclusive gate held.
+The run set, exclusive gate, occupied() probes, cancellation-safe releases, config wiring, tests, docs and roadmap rows match the ticket, but the diff also makes an unrequested change to how serve reports its failure type.
 
 ## Findings
 
-- [logic] clutch/daemon.py:655 `dispatch`'s outer `finally: await self._release_run()` acquires `self._condition`, which suspends when the lock is contended (for example by waiters re-acquiring after `notify_all`). In the cancellation path this finally runs after `raise`. A second cancel of the caller during that await (the code above explicitly expects repeated caller cancellation) skips `self._holding -= 1`, so the slot leaks for good. With `max_runs` 1 every later dispatch, and every exclusive gate (which waits for `_holding == 0`), then deadlocks. The old `async with self._slot` released synchronously and could not be interrupted. (do instead: Make slot release impossible to cancel: decrement `_holding` synchronously and notify without awaiting (for example, track waiters with futures or Events you can set synchronously), or run the release through `_protected_cleanup(asyncio.create_task(self._release_run()))` as `waiting_for_merge` already does for reacquire. Add a unit test that cancels the caller twice while the release is contended and then asserts the next dispatch is admitted.)
-- [logic] clutch/daemon.py:595 `exclusive()`'s exit `finally: async with self._condition: self._exclusive = False` awaits the condition lock. If the gate holder (a `mutations()` task cancelled by `Serve.abort`, startup, or the sweep) is cancelled again while that acquire is suspended, `_exclusive` stays True forever. All run admission and every later exclusive gate then deadlock. The old `_slot` released synchronously. (do instead: Clear `_exclusive` synchronously before any await, or protect the exit with `_protected_cleanup` so a repeated cancellation cannot skip it. Cover this with a test that cancels a gate holder during a contended exit.)
-- [logic] clutch/serve.py:301 Watch publication releases the gate with `await gate.__aexit__(None, None, None)` in a `finally`, replacing the synchronous `self.core.admission._slot.release()`. Cancelling the watch loop while that exit waits on the condition lock leaves `_exclusive` set, which blocks all later dispatch and maintenance. This is the same defect as `exclusive()`'s exit, reached through this caller. (do instead: Once `exclusive()`'s exit cannot be cancelled (previous finding), keep this call. Otherwise wrap the exit so cancellation cannot interrupt it.)
+- [scope] clutch/serve.py:656 The diff changes the serve lifetime's `except Exception` handler from always setting `failure_type = type(exc).__name__` to doing so only `if failure_type is None:`. This changes which failure type serve reports when a guarded worker has already latched one. The ticket does not ask for this: it covers admission slots, idle checks and watch publication, not serve's failure reporting. (do instead: Revert this hunk so the handler again sets `failure_type = type(exc).__name__` unconditionally. If the reporting order is a real defect, file it with `clutch box suggest` as a separate problem.)
 
 ## Record
 
@@ -14,35 +12,17 @@ The run-set and exclusive-gate design matches the ticket and the call sites move
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "a88e38adad59d87a537a7d3fd7a36527979f1131",
+  "produced_at_sha": "67dde2039927df55f91c2b6ef1026079986db33d",
   "stem": "serve-parallel-dispatch-r2",
-  "reviewed_sha": "a88e38adad59d87a537a7d3fd7a36527979f1131",
-  "summary": "The run-set and exclusive-gate design matches the ticket and the call sites move as required, but the new admission release paths now await a contended Condition lock in `finally` blocks where the old `Lock.release()` was synchronous, so a repeated cancellation can permanently leak a slot or leave the exclusive gate held.",
+  "reviewed_sha": "67dde2039927df55f91c2b6ef1026079986db33d",
+  "summary": "The run set, exclusive gate, occupied() probes, cancellation-safe releases, config wiring, tests, docs and roadmap rows match the ticket, but the diff also makes an unrequested change to how serve reports its failure type.",
   "findings": [
     {
-      "code": "logic",
-      "path": "clutch/daemon.py",
-      "line": 655,
-      "message": "`dispatch`'s outer `finally: await self._release_run()` acquires `self._condition`, which suspends when the lock is contended (for example by waiters re-acquiring after `notify_all`). In the cancellation path this finally runs after `raise`. A second cancel of the caller during that await (the code above explicitly expects repeated caller cancellation) skips `self._holding -= 1`, so the slot leaks for good. With `max_runs` 1 every later dispatch, and every exclusive gate (which waits for `_holding == 0`), then deadlocks. The old `async with self._slot` released synchronously and could not be interrupted.",
-      "paved_road": "Make slot release impossible to cancel: decrement `_holding` synchronously and notify without awaiting (for example, track waiters with futures or Events you can set synchronously), or run the release through `_protected_cleanup(asyncio.create_task(self._release_run()))` as `waiting_for_merge` already does for reacquire. Add a unit test that cancels the caller twice while the release is contended and then asserts the next dispatch is admitted.",
-      "kind": null,
-      "unit": null
-    },
-    {
-      "code": "logic",
-      "path": "clutch/daemon.py",
-      "line": 595,
-      "message": "`exclusive()`'s exit `finally: async with self._condition: self._exclusive = False` awaits the condition lock. If the gate holder (a `mutations()` task cancelled by `Serve.abort`, startup, or the sweep) is cancelled again while that acquire is suspended, `_exclusive` stays True forever. All run admission and every later exclusive gate then deadlock. The old `_slot` released synchronously.",
-      "paved_road": "Clear `_exclusive` synchronously before any await, or protect the exit with `_protected_cleanup` so a repeated cancellation cannot skip it. Cover this with a test that cancels a gate holder during a contended exit.",
-      "kind": null,
-      "unit": null
-    },
-    {
-      "code": "logic",
+      "code": "scope",
       "path": "clutch/serve.py",
-      "line": 301,
-      "message": "Watch publication releases the gate with `await gate.__aexit__(None, None, None)` in a `finally`, replacing the synchronous `self.core.admission._slot.release()`. Cancelling the watch loop while that exit waits on the condition lock leaves `_exclusive` set, which blocks all later dispatch and maintenance. This is the same defect as `exclusive()`'s exit, reached through this caller.",
-      "paved_road": "Once `exclusive()`'s exit cannot be cancelled (previous finding), keep this call. Otherwise wrap the exit so cancellation cannot interrupt it.",
+      "line": 656,
+      "message": "The diff changes the serve lifetime's `except Exception` handler from always setting `failure_type = type(exc).__name__` to doing so only `if failure_type is None:`. This changes which failure type serve reports when a guarded worker has already latched one. The ticket does not ask for this: it covers admission slots, idle checks and watch publication, not serve's failure reporting.",
+      "paved_road": "Revert this hunk so the handler again sets `failure_type = type(exc).__name__` unconditionally. If the reporting order is a real defect, file it with `clutch box suggest` as a separate problem.",
       "kind": null,
       "unit": null
     }
