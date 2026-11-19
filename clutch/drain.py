@@ -42,6 +42,7 @@ from clutch.tickets import (
     TicketInvalid,
     _porcelain,
     depends_cycle,
+    fences_overlap,
     intake,
     parse_ticket,
     ticket_path,
@@ -131,7 +132,10 @@ def sort_key(ticket: Ticket, authored: Mapping[str, str]) -> tuple:
 
 def order_tickets(tickets: Iterable[Ticket], authored: Mapping[str, str]) -> list[Ticket]:
     """Apply soft edges only within the eligible set, breaking ties by sort_key."""
-    remaining = sorted(tickets, key=lambda t: sort_key(t, authored))
+    return _soft_edges(sorted(tickets, key=lambda t: sort_key(t, authored)))
+
+
+def _soft_edges(remaining: list[Ticket]) -> list[Ticket]:
     ordered = []
     while remaining:
         named = {stem for ticket in remaining for stem in ticket.runs_before}
@@ -140,6 +144,49 @@ def order_tickets(tickets: Iterable[Ticket], authored: Mapping[str, str]) -> lis
         remaining.remove(ticket)
         ordered.append(ticket)
     return ordered
+
+
+SKIP_LIMIT = 3
+
+
+def chain(stem: str, unsettled: Mapping[str, Ticket]) -> int:
+    """Count distinct unsettled tickets waiting behind stem."""
+    seen = {stem}
+    pending = [stem]
+    while pending:
+        current = pending.pop()
+        source = unsettled.get(current)
+        for candidate in unsettled.values():
+            if candidate.stem not in seen and (current in candidate.depends or (source is not None and candidate.stem in source.runs_before)):
+                seen.add(candidate.stem)
+                pending.append(candidate.stem)
+    return len(seen) - 1
+
+
+def parallel_order(eligible: Iterable[Ticket], authored: Mapping[str, str], unsettled: Mapping[str, Ticket]) -> list[Ticket]:
+    """Order eligible tickets by urgency and downstream work, respecting soft edges."""
+    return _soft_edges(sorted(eligible, key=lambda t: (t.frontmatter.priority != "P0", -chain(t.stem, unsettled), *sort_key(t, authored))))
+
+
+def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int, shared: Iterable[str], skips: Mapping[str, int]) -> tuple[list[Ticket], dict[str, int]]:
+    """Select non-overlapping tickets, stopping at a repeatedly skipped barrier."""
+    counts = dict(skips)
+    dispatch = []
+    occupied = list(in_flight)
+    shared = tuple(shared)
+    for ticket in ordered:
+        if len(dispatch) >= free:
+            break
+        if any(fences_overlap(ticket, other, shared) for other in occupied):
+            prior = counts.get(ticket.stem, 0)
+            counts[ticket.stem] = prior + 1
+            if prior >= SKIP_LIMIT:
+                break
+        else:
+            dispatch.append(ticket)
+            occupied.append(ticket)
+            counts.pop(ticket.stem, None)
+    return dispatch, counts
 
 
 def write_queue(state_dir, fs, clock, ordered: list[Ticket]) -> None:
