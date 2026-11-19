@@ -7,15 +7,15 @@ buildable, keep API decisions out of Implement, lead agents to canonical reusabl
 parallel implementation before it lands.
 
 The owner decisions in this plan fix the section name, required content, exceptions, and staged
-enforcement policy. The retrospective trial still chooses the exact closed Markdown grammar from
-those decisions: the cost of a vague grammar is boilerplate, while the cost of an over-specific one
-is speculative abstraction throughout every host repository.
+enforcement policy. The retrospective trial chose the exact closed Markdown grammar from those decisions; see
+[Trial results](#trial-results). The cost of a vague grammar is boilerplate, while the cost of an
+over-specific one is speculative abstraction throughout every host repository.
 
 ## Status
 
-Proposed on 2026-11-18 from an owner design discussion. No rule, ticket section, lint, review check,
-or gate described here exists yet. This document records the design space and rollout needed before
-implementation tickets are authored.
+Proposed on 2026-11-18 from an owner design discussion. The retrospective trial is done. No rule,
+ticket section, lint, review check, or gate described here exists yet. This document records the
+design space and rollout needed before implementation tickets are authored.
 
 ## Roadmap
 
@@ -717,6 +717,134 @@ before and after the change.
 Only repeated incidents earn specialized static gates. Decision 9 closes the discovery catalog proposal. Each new check needs a
 language-neutral application or a clearly host-owned implementation. Do not grow Clutch into a
 partial cross-language type system.
+
+## Trial results
+
+This paper trial read the ticket and run record for each of these 12 merged tickets; it did not
+change them. Each line applies the form to the historical change, rather than claiming that the
+historical ticket already contained the form. Criteria and tests refer to that ticket's own
+acceptance and verification. The owner is also the post-merge source of truth unless stated
+otherwise. An unchanged contract is a preservation claim, not a claim that no code changed.
+
+- `fs-seam-mkdir-remove` — reuse of an existing external-effect seam: **extend**
+  `clutch/seams.py::FileSystem`; consumers `enginelog`, `journal`, and `stages` replace raw directory
+  creation and removal with injected `mkdir` and `remove`. Existing operations stay compatible;
+  production and fakes implement the added operations. Acceptance and seam tests cover both. Author
+  disagreement: whether to call this reuse or extend; extend records the added methods.
+- `dispatch-admission-boundary` — creation of a justified seam: **create**
+  `clutch/daemon.py::DaemonAdmission`, consuming injected `clutch.runner.Dispatch`. It serializes
+  calls, passes the ticket and terminal through, propagates failure and cancellation, and awaits
+  cleanup before releasing the slot. The existing scheduler owns selection and the runner owns
+  execution, so neither owns this single-flight task lifetime. The independently consumed async
+  callback boundary earns creation; production composition is deferred to `scheduler-activation`.
+  Its acceptance and admission tests include cancellation and dormancy. Author disagreement: a
+  dormant boundary alone might seem speculative; the named activation is its consumer.
+- `cli-group-config` — CLI behavior and sibling-ticket contract dependency: **replace** the three
+  top-level config verbs with `config init`, `config update`, and `config migrate`, owned by
+  `clutch/__main__.py`; operators, guides and tests migrate together. Arguments, output, writes and
+  exits are preserved except for the stated help, refusal and road changes; old names exit 2 with no
+  alias. Criteria and group, CLI and guide tests cover migration. It depends on `cli-help-standard`
+  for the command-help contract. Author disagreement: whether preserved handler behavior needs a
+  claim; it does, because the command names break while handler behavior must survive.
+- `closed-dispatch-signal-vocabularies` — configuration or a closed vocabulary: **extend** the
+  journal contract owned by `clutch/journal.py` and dispatch producers and consumers in
+  `clutch/runner.py` and `clutch/drain.py`. Dispatch becomes a closed exhaustive vocabulary and
+  unknown signal names fail at the write seam; valid records remain usable. Its criteria and tests
+  cover invalid names and consumers. It depends on `plan-bound-reject-release` for the release
+  behavior it classifies. Author disagreement: two related vocabularies need distinct entries in a
+  real ticket even though this trial summarizes them together.
+- `journal-roll` — persisted or journal format and reuse of an existing external-effect seam:
+  **extend** journal append/rotation, owned by `clutch/journal.py`, using the existing filesystem
+  publication seam. Readers retain ordered durable history and existing append callers retain their
+  contract; rotation occurs at the size or age boundary. Criteria and journal tests cover history
+  and rotation. Author disagreement: reuse of the filesystem seam is a separate entry from the
+  changed journal boundary.
+- `badge-stopped-backlog` — extension snapshot data: **extend** the snapshot badge consumed by the
+  extension, owned by `clutch/snapshot.py`. When stopped, it carries blocked plus queued count and
+  a stopped tooltip, or `None` at zero; alive behavior is preserved. The extension renders the
+  supplied value. Criteria and snapshot tests distinguish stopped and alive cases. Author
+  disagreement: whether the rendering consumer needs naming despite no extension edit; it does.
+- `consumer-error-keeps-capture` — private bug fix restoring behavior: **extend** the process and
+  provider capture contract, owned by `clutch/seams.py` and `clutch/providers.py` respectively.
+  A failing stdout consumer must still leave full stdout and stderr in the attempt spool; consumers
+  include `CliAdapter.invoke` and later spool readers. Criteria and tests cover the raised callback
+  and capture. Compatibility is restoration of the documented capture behavior. Author disagreement:
+  `none` would hide an observable failure and persisted output; restoration needs full entries.
+- `journal-last-transition-helper` — refactor preserving boundaries: **create** the shared lookups
+  `clutch/journal.py::last_transition` and `clutch/effects.py::Effects.recorded`, consumed by the
+  previously inline callers. The multiple named consumers and duplicated scans earn consolidation;
+  existing latest-transition and recorded-effect results remain unchanged. The closest candidates
+  are those inline scans and `Effects._recorded`; they do not provide one shared owner to all
+  callers. Criteria and lookup tests cover the results. Author disagreement: a preservation claim
+  does not eliminate the new internal boundaries.
+- `docs-truth-sweep` — documentation-only change: **none**; reason: documentation corrections
+  describe existing behavior; production callers, outputs, failures, side effects and formats remain
+  unchanged. The ticket's criteria compare corrected statements to code. Author disagreement: the
+  documents are consumed, but their corrected descriptions do not change the described behavior.
+- `core-renderer` — generated output: **extend** `clutch/hostfiles.py` core rendering and the
+  generated managed conduct blocks consumed by hosts; preserve project bytes outside the routed
+  block. The renderer is the source of truth, not the rendered files. Criteria and renderer tests
+  cover routing and byte preservation. Author disagreement: generated output is a boundary even if
+  the generator owns it.
+- `exec-seam-owns-reap` — reuse of an existing external-effect seam: **extend**
+  `clutch/seams.py::ProcessExec` and `SubprocessExec`; consumers can receive per-child resource
+  usage through `on_rusage`. Return value and other exec behavior are preserved, with the seam
+  owning child reaping. Criteria and process-seam tests cover per-child usage. Author disagreement:
+  an optional callback changes the boundary even though existing callers continue to work.
+- `cli-group-provider` — CLI behavior and sibling-ticket contract dependency: **replace** old
+  `install` and `probe` verbs with `provider install` and `provider probe`, owned by
+  `clutch/__main__.py`; operators, guides and tests migrate without aliases. Arguments, processes,
+  writes and exits are preserved except the stated road text. Criteria and CLI tests cover the
+  transition. It depends on `cli-help-standard`; its ticket also identifies `cli-group-config` as
+  the preceding shared parser change. Author disagreement: sequencing a shared edit is not by itself
+  a contract dependency; the help standard is the actual dependency.
+
+### Disagreements
+
+The entries record the author judgments above, not a vote to change an owner decision. In particular,
+calling the bug fix `none`, treating a shared edit order as a dependency, or omitting a rendering
+consumer would disagree with the decisions on preservation, sibling consistency and consumer
+closure. The trial found repetition when every unchanged specialized fact was written as “not
+applicable”; review instead needed the owner, actual consumers, observable change, compatibility,
+criteria and tests, plus the failure, composition or storage facts relevant to each boundary.
+
+### Chosen grammar
+
+The required section is `## Boundary contract`. It contains either the short `none` form or one or
+more `### <boundary>` entries. Each full entry uses labeled Markdown list fields: `disposition`,
+`owner`, `consumers`, `observable change`, `compatibility`, `acceptance`, `tests`, and
+`post-merge source of truth`. The closed dispositions are `reuse`, `extend`, `replace`, `create`,
+and `none`; `none` appears as the section's sole disposition followed by `- reason:` with one
+concise preservation statement, as in decision 13. `reuse` states no contract change and identifies
+composition where relevant. Inputs, outputs, failures, side effects, invariants, ordering,
+persistence, atomicity and composition are required when relevant, not as empty fields. Breaking
+changes identify old and replacement contracts, consumer migrations, removal and ordering.
+
+A `create` entry also names the closest existing symbols or artifacts in Context, why each cannot
+be reused, and its earning reason. The closed reasons are multiple production consumers; an
+external-effect fake; a named plugin or provider extension; consolidation of evidenced duplicates;
+or a process, storage, package or independently deployed boundary. `none` reasons are documentation
+corrections without behavior change; comments, spelling, formatting or metadata only; tests encoding
+an existing contract; regeneration with unchanged generator and generated contract; dependency or
+version updates proven not to change a consumed boundary; private implementation with callers,
+outputs, failures, side effects, construction and formats unchanged; or unreachable private code
+with no consumers. Bug fixes and refactors require an explicit restoration or preservation claim.
+
+The section heading, entry headings, labeled common fields, closed dispositions, and presence of a
+reason or create justification were consistent enough to check structurally. Path resolution can
+check named files; semantic completeness, applicability and whether a reason is true remain review
+judgments. Stronger lint waits for recurring findings in deployed use.
+
+### Baseline findings
+
+The historical tickets predate the form. `consumer-error-keeps-capture` shows why a private-looking
+callback failure must name the spool reader and restoration obligation; a `none` claim would miss
+captured output. `badge-stopped-backlog` shows why the extension reader belongs in consumer closure
+when only the snapshot changes. `cli-group-config` shows why a replacement must name old-command
+removal and migration, rather than merely describe the new command. `journal-last-transition-helper`
+shows why naming the existing inline owners and the preserved lookup result matters when a shared
+boundary is created. These are historical risks the form would surface, not assertions that the
+merged implementations failed.
 
 ## Measures of success
 
