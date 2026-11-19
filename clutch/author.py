@@ -417,6 +417,10 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
             paths.extend(p for p in evidence.split("\0") if p)
         return await checkout.git.commit(checkout.repo, f"clutch({reply.stem}): ticket", only=paths)
 
+    if (checkout.repo / path).exists() and reply.stem not in author_gate.copied:
+        author_gate.cleanup()
+        return await failure_declined(checkout, driver, box, message, f"stem {reply.stem!r} was claimed since the gate check")
+
     try:
         checkout.fs.write(checkout.repo / path, text.encode())
         sha = await driver.effects.run(commit, key=f"ticket-plane/{reply.stem}/author", ticket=None)

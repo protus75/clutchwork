@@ -194,6 +194,7 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
     assert "--others" in listings[0] and "--exclude-standard" in listings[0]
     assert commits[0] == ["tickets/sample-row/ticket.md", "tickets/sample-row/evidence/hand.txt"]
     assert (resolutions[0].kind, resolutions[0].link) == ("ticket", "sample-row")
+    (tmp_path / "tickets/sample-row/ticket.md").unlink()
     await author.author(checkout, driver, box, item.model_copy(update={"message_class": "failure_report", "roadmap_row": None}), 1)
     assert len(listings) == 1
     assert commits[1] == ["tickets/sample-row/ticket.md"]
