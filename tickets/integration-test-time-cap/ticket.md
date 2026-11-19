@@ -102,7 +102,7 @@ Scope out: the unit suite's whole-suite `[unit] budget_seconds` in `test-gate.to
 - The cap allows contention, retries a test that ran over, or applies to entries that do not set `max_test_seconds`.
 - `max_test_seconds` is set on the `unit` entry, or `[unit] budget_seconds` changes.
 - The cap is enforced in a pytest plugin instead of the Check stage.
-- A test that existed before this ticket changes in any way other than these three: the per-member `offers`/`consumed` comparison and `members` ordering in `test_daemon_soak_runner.py`, the added `"max_test_seconds": None` key in `test_fixture_host.py`'s expected dump, and the added `max_test_seconds=None` in `test_host_check_selection.py`'s `NS` entry.
+- A test that existed before this ticket changes in any way other than these five: the per-member `offers`/`consumed` comparison and `members` ordering in `test_daemon_soak_runner.py`, the `asyncio.gather` of the two `produce` calls in `test_daemon_soak_is_rederivable`, the raised `SHARDS` value in `test_fault_injection.py`, the added `"max_test_seconds": None` key in `test_fixture_host.py`'s expected dump, and the added `max_test_seconds=None` in `test_host_check_selection.py`'s `NS` entry.
 
 ## Time budget
 - expected: 25m
