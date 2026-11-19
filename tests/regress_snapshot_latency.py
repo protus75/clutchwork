@@ -20,6 +20,12 @@ def main():
             print(json.dumps({"error": "fixture counts below thresholds"}))
             return 2
         env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[1])}
+        latest = {}
+        for line in (root / ".clutch/journal/000001-20260804.jsonl").read_text().splitlines():
+            event = json.loads(line)
+            if event["type"] == "state_transition":
+                latest[event["ticket"]] = event["body"]["to"]
+        merged_count = sum(latest.get(stem) == "merged" for stem in fixture["stems"])
         times = []
         for i in range(4):
             start = time.perf_counter()
@@ -29,7 +35,17 @@ def main():
                 print(json.dumps({"error": proc.stderr}))
                 return 2
             data = json.loads(proc.stdout)
-            for key, expected, actual in (("stems", fixture["stems"], [r["stem"] for r in data["rows"]]), ("ids", fixture["ids"], [r["id"] for r in data["box"]])):
+            rows = data["rows"]
+            stems = [r["stem"] for r in rows]
+            if (
+                len(stems) != len(set(stems))
+                or not set(stems) <= set(fixture["stems"])
+                or sum(r["section"] == "merged" for r in rows) != min(merged_count, 100)
+                or sum(r["section"] != "merged" for r in rows) != len(fixture["stems"]) - merged_count
+            ):
+                print(json.dumps({"error": "snapshot row counts or stems mismatch"}))
+                return 2
+            for key, expected, actual in (("ids", fixture["ids"], [r["id"] for r in data["box"]]),):
                 if sorted(expected) != sorted(actual):
                     print(json.dumps({"error": f"{key}: missing {sorted(set(expected) - set(actual))}; extra {sorted(set(actual) - set(expected))}; counts {len(expected)} vs {len(actual)}"}))
                     return 2

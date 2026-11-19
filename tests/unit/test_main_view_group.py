@@ -47,7 +47,7 @@ def test_refusals_name_group(tmp_path, capsys):
 
 
 def test_dispatch_and_optional_locks(tmp_path, monkeypatch, capsys):
-    monkeypatch.setattr(entry, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=tmp_path, providers=[]))
+    monkeypatch.setattr(entry, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=tmp_path, providers=[], snapshot_merged_limit=7))
 
     class Journal:
         def __init__(self, *args):
@@ -61,13 +61,15 @@ def test_dispatch_and_optional_locks(tmp_path, monkeypatch, capsys):
         monkeypatch.setattr(entry, name, lambda *a, **kw: object())
     envs = []
     monkeypatch.setattr(entry, "Git", lambda *a, **kw: envs.append(kw["env"]) or object())
-    monkeypatch.setattr(observe, "snapshot", lambda ctx: {"snapshot": 42})
+    calls = []
+    monkeypatch.setattr(observe, "snapshot", lambda ctx, **kw: calls.append(kw) or {"snapshot": 42})
     monkeypatch.setattr(observe, "text_snapshot", lambda ctx: "text view")
     monkeypatch.setattr(entry, "_status", AsyncMock(return_value="projection"))
     monkeypatch.setattr(entry, "render", lambda value: f"rendered {value}\n")
     monkeypatch.setattr(entry, "_stats", AsyncMock(return_value={"health": 7}))
     for argv, expected in (
         (["view", "snapshot"], json.dumps({"snapshot": 42}) + "\n"),
+        (["view", "snapshot", "--all-merged"], json.dumps({"snapshot": 42}) + "\n"),
         (["view", "watch", "--once"], "text view\n"),
         (["view", "status"], "rendered projection\n"),
         (["view", "stats", "--json"], json.dumps({"health": 7}) + "\n"),
@@ -75,6 +77,7 @@ def test_dispatch_and_optional_locks(tmp_path, monkeypatch, capsys):
         assert entry.main(argv, cwd=tmp_path, env={}) == 0
         out, err = capsys.readouterr()
         assert (out, err) == (expected, "")
-    assert [env.get("GIT_OPTIONAL_LOCKS") for env in envs] == ["0", "0", None, None]
+    assert calls == [{"merged_limit": 7}, {"merged_limit": None}]
+    assert [env.get("GIT_OPTIONAL_LOCKS") for env in envs] == ["0", "0", "0", None, None]
     assert entry.main(["view", "stats", "--window", "0d"], cwd=tmp_path, env={}) == 2
     assert capsys.readouterr().err == "clutch view: bad window 0d -- use <N>h, <N>d, or <N>t\n"

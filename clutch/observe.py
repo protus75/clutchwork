@@ -658,7 +658,7 @@ def journal_facts(state: Path, history) -> AdmissionFacts:
         return AdmissionFacts(states=cache.last_states(), reject=frozenset(cache.reject_queue()), settled=settled_dependencies(history), orphans=frozenset(orphans(history)))
 
 
-def snapshot(ctx) -> dict:
+def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     state = ctx.state
     help, help_pick_items = help_payload()
     now = datetime.now().astimezone()
@@ -679,6 +679,7 @@ def snapshot(ctx) -> dict:
         return last.get(stem, {}).get("to")
 
     merged = sorted((s for s in last if to(s) in SETTLED), key=lambda s: last[s]["ts"], reverse=True)
+    merged = merged[:merged_limit]
     alive = lock_holder(state) is not None
     interrupted = set(facts.orphans) if not alive else set()
     lock, verb = lock_display(state, "clutch.lock")

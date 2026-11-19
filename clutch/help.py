@@ -91,7 +91,7 @@ _add(
         "blocked": "Tickets in this section cannot currently run.",
         "queued": "Tickets in this section are ordered for a future run.",
         "running": "Tickets in this section are currently running.",
-        "merged": "Tickets in this section have settled.",
+        "merged": "This section shows the most recently settled tickets, up to snapshot_merged_limit.",
     },
     "7.1 `drain`",
     "Tickets enter intake.",

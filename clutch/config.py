@@ -254,6 +254,7 @@ class Config(StrictModel):
     worktree_root: PathField | None = None
     providers: Annotated[list[Provider], Field(min_length=1)]
     routing: Annotated[list[Route], Field(min_length=1)]
+    snapshot_merged_limit: Count = 100
     routing_default_tier: AgentTier = "medium"
     review: Review
     merge: Merge

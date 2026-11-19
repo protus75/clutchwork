@@ -149,6 +149,7 @@ Config:
   required: [schema_version, state_dir, providers, routing, review, merge, engine_plane_safety_inventory]
   defaults:
     worktree_root: unset
+    snapshot_merged_limit: 100
     routing_default_tier: medium
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
     evidence: {max_gb: 20}

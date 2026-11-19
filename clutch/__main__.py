@@ -329,17 +329,18 @@ def _parser() -> argparse.ArgumentParser:
         examples=["clutch view watch", "clutch view watch --once"],
     )
     watch.add_argument("--once", action="store_true")
-    _command(
+    snapshot = _command(
         view_sub,
         "snapshot",
         summary="read-only JSON snapshot",
-        does="Print the extension snapshot as JSON, including the absolute state directory and resolved config path.",
+        does="Print the extension snapshot as JSON, capped by snapshot_merged_limit (default 100); --all-merged includes all settled tickets.",
         reads="Config, journal, journal cache, engine log, lockfiles, box, tickets and git state.",
         writes="Updates the rebuildable journal cache under the state directory.",
         lock="None.",
         exits="0 when printed; 2 on refusal.",
-        examples=["clutch view snapshot"],
+        examples=["clutch view snapshot", "clutch view snapshot --all-merged"],
     )
+    snapshot.add_argument("--all-merged", action="store_true", help="Include all merged history.")
     _command(
         view_sub,
         "status",
@@ -1192,7 +1193,7 @@ def main(
 
         context = _observe_context(repo, config, args.config, exec_, checkout.git, env)
         if args.view_verb == "snapshot":
-            print(json.dumps(observe.snapshot(context)))
+            print(json.dumps(observe.snapshot(context, merged_limit=None if args.all_merged else config.snapshot_merged_limit)))
         elif args.once:
             print(observe.text_snapshot(context))
         else:

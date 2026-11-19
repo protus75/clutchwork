@@ -12,7 +12,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | Verb | Works while serve runs? | What it does |
 |---|---|---|
 | `view watch` | Yes | Show the live text view; `--once` prints one view. |
-| `view snapshot` | Yes | Print the extension snapshot as JSON. |
+| `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
 | `view status` | Yes | Show the journal projection. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |
 | `view events` | Yes | Stream actionable engine changes after a silent baseline. |
