@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "6ecd7f1f155864d2b460afe3ccb9761bd0b506cb",
+  "stem": "route-kinds-filter-r1",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The fence is missing two files the change forces: tests/unit/test_gemini_adapter.py:122 and tests/unit/test_qwen_adapter.py:78. Both build SimpleNamespace route fixtures with no `kinds`, and the new row selector reads `route.kinds`. Add both files to `## Scope fence`.",
+    "In each of those fixtures, add `kinds=None` to the SimpleNamespace route, or build a real clutch/config.py::Route. Do not use getattr(route, 'kinds', None) in clutch/providers.py. That is the defensive dual path the ticket rejects.",
+    "Redo the whole diff from the merge base. The attempt reports that the focused verification and the integration suite passed, and that only these two unit fixtures failed `./dev.py test`. So its approach for the selector, routed_conduct_paths, Driver/LLMRequest kind and the judge check was sound."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
