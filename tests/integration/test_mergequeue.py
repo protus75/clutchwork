@@ -20,7 +20,7 @@ from clutch.driver import Driver
 from clutch.git import Git
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
-from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, ConflictHandoff, MergeQueue, TreeMismatch
+from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
 from clutch.stages import ApprovedInvoice, CommandResult, StageContext, render_review
@@ -776,8 +776,8 @@ def test_strategy_ownership_and_matching_fail_closed(ctx, failure):
         before = await ctx.git.rev_parse(ctx.repo, "main")
         reviewed = await ctx.git.rev_parse(ctx.repo, ticket.stem)
         result = await admission(ctx, ticket)
-        assert isinstance(result, ConflictHandoff) and result.approval_invalidated
-        assert result.conflicted_paths == [path] and result.reviewed_sha == reviewed
+        assert result.outcome == "gate_failed" and result.findings[0].code == "merge_conflict_rerun"
+        assert [f.path for f in result.findings if f.code == "merge_conflict_rerun"] == [path]
         assert result.findings[0].path == path and result.findings[0].paved_road
         assert await ctx.git.rev_parse(ctx.repo, "main") == before
         assert await ctx.git.rev_parse(ctx.repo, ticket.stem) == reviewed
@@ -834,7 +834,7 @@ def test_strategy_resolution_still_regates(ctx, monkeypatch):
 
 
 @pytest.mark.parametrize("failure", ["generator", "undeclared", "nonappend"])
-def test_unresolved_conflict_returns_typed_handoff_after_abort(ctx, failure):
+def test_unresolved_conflict_returns_rerun_after_abort(ctx, failure):
     async def scenario():
         ticket, path = await conflict(ctx, strategy="regenerate" if failure == "generator" else "union", generator=["false"])
         if failure == "undeclared":
@@ -844,27 +844,23 @@ def test_unresolved_conflict_returns_typed_handoff_after_abort(ctx, failure):
             await commit(ctx, ctx.repo, [path])
         reviewed, before = await ctx.git.rev_parse(ctx.repo, ticket.stem), await ctx.git.rev_parse(ctx.repo, "main")
         result = await admission(ctx, ticket)
-        assert isinstance(result, ConflictHandoff)
-        assert result.model_dump().keys() == {"stem", "reviewed_sha", "conflicted_paths", "findings", "approval_invalidated"}
-        assert result.stem == ticket.stem and result.reviewed_sha == reviewed
-        assert result.conflicted_paths == [path] and result.approval_invalidated is True
-        with pytest.raises(ValidationError):
-            result.approval_invalidated = False
+        assert result.outcome == "gate_failed" and result.findings[0].code == "merge_conflict_rerun"
+        assert [f.path for f in result.findings if f.code == "merge_conflict_rerun"] == [path]
         assert await ctx.git.rev_parse(ctx.repo, "main") == before
         assert await ctx.git.rev_parse(ctx.repo, ticket.stem) == reviewed
         assert await ctx.git.status_porcelain(ctx.worktree(ticket.stem)) == ""
-        assert facts(ctx)[0].body["resolving_rung"] == "rework"
+        assert facts(ctx)[0].body["resolving_rung"] == "rerun"
         assert not any(e.type == EventType.STATE_TRANSITION for e in ctx.driver.journal.read())
 
     run(scenario())
 
 
-@pytest.mark.parametrize("mode", ["clean", "mechanical", "handoff", "red"])
+@pytest.mark.parametrize("mode", ["clean", "mechanical", "rerun", "red"])
 def test_conflict_facts_shapes(ctx, monkeypatch, mode):
     async def scenario():
-        if mode in {"mechanical", "handoff"}:
+        if mode in {"mechanical", "rerun"}:
             ticket, path = await conflict(ctx)
-            if mode == "handoff":
+            if mode == "rerun":
                 ctx.config.merge.strategies = []
         else:
             ticket, path = await ready(ctx), None
@@ -879,7 +875,7 @@ def test_conflict_facts_shapes(ctx, monkeypatch, mode):
         assert event.body == {
             "kind": CONFLICT_FACTS,
             "conflicted_paths": [path] if path else [],
-            "resolving_rung": {"clean": "none", "mechanical": "mechanical", "handoff": "rework", "red": "none"}[mode],
+            "resolving_rung": {"clean": "none", "mechanical": "mechanical", "rerun": "rerun", "red": "none"}[mode],
             "strategy_paths": [path] if mode == "mechanical" else [],
             "integration_red_paths": ["clutch/thing.py"] if mode == "red" else [],
         }

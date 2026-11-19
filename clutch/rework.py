@@ -16,7 +16,6 @@ from clutch.git import GitError
 from clutch.journal import Event, EventType
 from clutch.llm import AgentEffort, AgentTier
 from clutch.llmeffect import scoped_seq
-from clutch.mergequeue import ConflictHandoff
 from clutch.requisition import review_ticket
 from clutch.specs import RenderOverBound, load_spec, render
 from clutch.stages import StageContext, _major
@@ -123,13 +122,10 @@ async def rework(
     tier: AgentTier,
     effort: AgentEffort,
     stuck_budget: float,
-    handoff: ConflictHandoff | None = None,
     supervise: Supervise | None = None,
     key_scope: str | None = None,
 ) -> StageResult:
     """Call only after admission unwinds; return proposals, never publish or retire tickets."""
-    if handoff is not None and handoff.stem != ticket.stem:
-        return StageResult(outcome="gate_failed", artifact=None, cost=Cost(), findings=[_finding("conflict handoff names a different ticket", "supply this ticket's queue-owned handoff")])
     spec = load_spec((ctx.specs_dir / "rework.md").read_text())
     head = await ctx.git.rev_parse(workspace, "HEAD")
     repository_head = await ctx.git.rev_parse(ctx.repo, "HEAD")
@@ -151,7 +147,6 @@ async def rework(
             {
                 "ticket": f"Original stem: {ticket.stem}\n\n{text}",
                 "findings": json.dumps([f.model_dump() for f in findings], sort_keys=True),
-                "conflict": handoff.model_dump_json() if handoff else "none",
                 "supervise": json.dumps({"trigger": supervise.trigger, "lessons": list(supervise.lessons)}, sort_keys=True) if supervise else "none",
                 "retry_findings": json.dumps([f.model_dump() for f in retry], sort_keys=True),
             },

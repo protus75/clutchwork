@@ -153,7 +153,7 @@ def bind(checkout: Checkout, llm: LLM) -> Dispatch:
     return TicketWriter(ctx, queue)
 
 
-async def drive(ctx: StageContext, ticket: Ticket, *, admission=None, consume_handoff=None) -> str:
+async def drive(ctx: StageContext, ticket: Ticket, *, admission=None) -> str:
     """Implement -> Check -> Review -> Merge; harvest, dispatch, journal, then wipe a non-ok run."""
     run = None
     if ctx.boundary.run is None:
@@ -220,14 +220,12 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None, consume_ha
     if findings := await ticket_change_findings(ctx, ticket.stem, expected=run.ticket_sha):
         result = refused(findings, result.cost)
     if stage == "review" and result.outcome == "ok":
-        from clutch.mergequeue import ConflictHandoff
-
         with ctx.driver.stage(stem=ticket.stem, attempt=run.attempt, surface="merge") as event:
             stage, result = "merge", await (admission(ticket, attempt=run.attempt) if admission is not None else merge(ctx, ticket, attempt=run.attempt))
-            event.end("conflict" if isinstance(result, ConflictHandoff) else result.outcome)
-        if isinstance(result, ConflictHandoff):
-            assert consume_handoff is not None
-            return await consume_handoff(ticket, result, attempt=run.attempt)
+            event.end(result.outcome)
+        if any(f.code == "merge_conflict_rerun" for f in result.findings):
+            # The queue's writer has retired the discarded attempt before delivery.
+            return result.outcome
         if result.outcome == "ok":
             return "merged"
     if result.outcome == "already_satisfied":

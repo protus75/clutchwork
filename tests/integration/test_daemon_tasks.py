@@ -10,7 +10,7 @@ from clutch import triage
 from clutch.artifacts import Cost, StageResult
 from clutch.daemon import DaemonTasks
 from clutch.journal import EventType
-from clutch.mergequeue import ConflictHandoff, MergeQueue
+from clutch.mergequeue import MergeQueue
 from clutch.runner import Checkout
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
@@ -258,7 +258,7 @@ async def test_overlapping_run_is_refused_until_cleanup_finishes(ending):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("outcome", ["ok", "gate_failed", "handoff"])
+@pytest.mark.parametrize("outcome", ["ok", "gate_failed"])
 async def test_merge_results_remain_consumer_owned(admission_context, monkeypatch, outcome):
     ctx = admission_context
     work = await ready(ctx)
@@ -266,11 +266,7 @@ async def test_merge_results_remain_consumer_owned(admission_context, monkeypatc
     queue.offer(work, attempt=0)
     expected = None
     if outcome != "ok":
-        expected = (
-            ConflictHandoff(stem=work.stem, reviewed_sha="reviewed", conflicted_paths=[], findings=[])
-            if outcome == "handoff"
-            else StageResult(outcome="gate_failed", artifact=None, findings=[], cost=Cost())
-        )
+        expected = StageResult(outcome="gate_failed", artifact=None, findings=[], cost=Cost())
 
         async def admit(original, attempt):
             assert original is work and attempt == 0 and queue.active == work.stem

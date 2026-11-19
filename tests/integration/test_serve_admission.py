@@ -459,8 +459,8 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("resolution", ["mechanical", "handoff"])
-async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeypatch, resolution):
+@pytest.mark.parametrize("resolution", ["mechanical", "rerun"])
+async def test_serve_conflict_rerun_runs_after_admission_unwinds(root, monkeypatch, resolution):
     async def settled(rig, ctx, ticket, attempt):
         rig.pinned = await ctx.git.rev_parse(root, ticket.stem)
         ctx.fs.write(root / "clutch/generated.txt", b"base\nmain\n")
@@ -494,23 +494,22 @@ async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeyp
         return result
 
     monkeypatch.setattr(MergeQueue, "process", processed)
-    apply = daemon.apply_rework
+    consume = daemon.TicketWriter.consume_conflict_rerun
 
-    async def reworked(ctx, ticket, findings, **kwargs):
-        queue = rig.owner.queue
-        handoff = kwargs["handoff"]
+    async def rerun(writer, ticket, result, **kwargs):
+        ctx, queue = writer.ctx, rig.owner.queue
         assert queue.active is None and not queue._slot.locked()
         assert chronology == ["abort", "unwind"]
-        assert handoff.approval_invalidated and handoff.reviewed_sha == rig.pinned
-        assert handoff.conflicted_paths == ["clutch/generated.txt"]
+        assert result.findings[0].code == "merge_conflict_rerun"
+        assert [f.path for f in result.findings if f.code == "merge_conflict_rerun"] == ["clutch/generated.txt"]
         assert (root / "clutch/generated.txt").read_text() == "base\nmain\n"
         assert await ctx.git.rev_parse(root, ticket.stem) == rig.pinned
         assert not await ctx.git.conflicted_paths(ctx.worktree(ticket.stem))
         assert await ctx.git.status_porcelain(ctx.worktree(ticket.stem)) == ""
-        chronology.append("rework")
-        return await apply(ctx, ticket, findings, **kwargs)
+        chronology.append("rerun")
+        return await consume(writer, ticket, result, **kwargs)
 
-    monkeypatch.setattr(daemon, "apply_rework", reworked)
+    monkeypatch.setattr(daemon.TicketWriter, "consume_conflict_rerun", rerun)
     from clutch import merge as merge_owner
 
     for gate in stages.CHECK_GATES + merge_owner.MERGE_GATES:
@@ -530,7 +529,7 @@ async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeyp
         assert facts.body == {
             "kind": CONFLICT_FACTS,
             "conflicted_paths": ["clutch/generated.txt"],
-            "resolving_rung": "mechanical" if resolution == "mechanical" else "rework",
+            "resolving_rung": "mechanical" if resolution == "mechanical" else "rerun",
             "strategy_paths": ["clutch/generated.txt"] if resolution == "mechanical" else [],
             "integration_red_paths": [],
         }
@@ -558,11 +557,10 @@ async def test_serve_conflict_handoff_runs_after_admission_unwinds(root, monkeyp
                 assert "exit 0" in (rig.checkout.config.state_dir / f"spools/work/0/merge-{tier}/host-01.txt").read_text()
             assert terminal.body["reviewed_sha"] == rig.pinned
         else:
-            assert rig.returns == [("work", "gate_failed")] and chronology == ["abort", "unwind", "rework"]
+            assert rig.returns == [("work", "gate_failed")] and chronology == ["abort", "unwind", "rerun"]
             assert terminal.body["stage"] == "merge" and "commit" not in terminal.body
-            [req] = [r for llm in rig.models for r in llm.requests if r.surface == "rework"]
-            assert '"approval_invalidated":true' in req.rendered
-            assert any(e.body.get("signal") == "rework_order" for e in rig.journal.read())
+            assert terminal.body["conflict_rerun"] is True
+            assert any(e.body.get("signal") == "merge_conflict_rerun" for e in rig.journal.read())
             assert not gates
     finally:
         await finish(rig, run)

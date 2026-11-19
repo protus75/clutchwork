@@ -20,7 +20,7 @@ from clutch.git import Git
 from clutch.hostfiles import render
 from clutch.journal import TERMINAL_STATES, EventType, Journal
 from clutch.llm import HANG, FakeLLM
-from clutch.mergequeue import CONFLICT_FACTS, MERGE_REGATE, ConflictHandoff
+from clutch.mergequeue import CONFLICT_FACTS, MERGE_REGATE
 from clutch.providers import routed_conduct_paths
 from clutch.reconcile import RECOVERY_ALERT
 from clutch.seams import LocalFileSystem, SubprocessExec
@@ -216,7 +216,6 @@ class _Member:
         self.moves = {}
         self.hang = False
         self.entered = asyncio.Event()
-        self.handoffs = []
         self.inputs = []
         self.cycles = []
         self.sweeps = []
@@ -299,7 +298,7 @@ class _Member:
                         member.entered.set()
                         self.script.append(HANG)
                     else:
-                        changes = member.changes[stem]
+                        changes = {"conflict.txt": "base\nmain\ncorrected\n"} if stem == "unresolved" and member.terminals(stem) else member.changes[stem]
                         for path, data in changes.items():
                             member.fs.write(req.worktree / path, data.encode())
                         await member.git.add(req.worktree, list(changes))
@@ -322,13 +321,6 @@ class _Member:
                         main = await member.verify(member.root)
                         member.inputs.append((stem, before, main, await member.git.rev_parse(member.root, "main")))
                     self.script.append(json.dumps(dict(verdict="approve", summary="Scripted fresh review", findings=[])))
-                elif req.surface == "rework":
-                    raw = req.rendered.split("<<clutch-data:begin conflict>>\n", 1)[1].split("\n<<clutch-data:end conflict>>", 1)[0]
-                    handoff = ConflictHandoff.model_validate_json(raw)
-                    queue = member.owner.queue
-                    member.handoffs.append((handoff, queue.active, queue._slot.locked()))
-                    member.changes[stem] = {"conflict.txt": "base\nmain\ncorrected\n"}
-                    self.script.append(json.dumps(dict(action="update", tickets=[dict(stem=stem, ticket=member.ticket(stem, ["conflict.txt"], corrected=True))])))
                 elif req.surface == "requisition_review":
                     self.script.append(json.dumps(dict(verdict="approve", summary="Buildable fixture", findings=[])))
                 elif req.surface == "diagnose":
@@ -453,15 +445,7 @@ class _Member:
             self.publish("unresolved", {"conflict.txt": "base\nbranch\n"})
             await self.settled("unresolved", 2)
             harvest = self.harvest("unresolved", 0)
-            summary = (
-                json.dumps(self.facts("unresolved")[0].body, sort_keys=True)
-                + "; "
-                + "; ".join(f.message for f in harvest.findings)
-                + "; "
-                + harvest.terminal
-                + "; "
-                + self.handoffs[0][0].model_dump_json()
-            )
+            summary = json.dumps(self.facts("unresolved")[0].body, sort_keys=True) + "; " + "; ".join(f.message for f in harvest.findings) + "; " + harvest.terminal
             await self.file_fault("unresolved", 0, "unresolved-conflict", "gate_failed", summary)
         else:
             for _ in range(self.checkout.config.caps.retry):
@@ -628,7 +612,7 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
     elif index == 1:
         need([e.body["to"] for e in terms("mechanical")] == ["merged"] and [e.body["to"] for e in terms("unresolved")] == ["gate_failed", "merged"], "conflict terminal sequences missing")
         need(terms("unresolved")[0].body.get("stage") == "merge", "unresolved conflict terminal belongs to another stage")
-        for stem, path, rung, hits in (("mechanical", "union.txt", "mechanical", ["union.txt"]), ("unresolved", "conflict.txt", "rework", [])):
+        for stem, path, rung, hits in (("mechanical", "union.txt", "mechanical", ["union.txt"]), ("unresolved", "conflict.txt", "rerun", [])):
             facts = m.facts(stem)
             need(
                 len(facts) == (1 if stem == "mechanical" else 2)
@@ -640,16 +624,10 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
             m.facts("unresolved")[1].body == dict(kind=CONFLICT_FACTS, conflicted_paths=[], resolving_rung="none", strategy_paths=[], integration_red_paths=[]),
             "corrected candidate did not re-enter ordinary admission",
         )
-        need(len(m.handoffs) == 1, "typed Rework handoff missing")
-        handoff, active, locked = m.handoffs[0]
-        need(
-            handoff.stem == "unresolved" and handoff.conflicted_paths == ["conflict.txt"] and handoff.approval_invalidated and active is None and not locked and handoff.findings,
-            "Rework ran before admission unwind or reused approval",
-        )
         harvest = m.harvest("unresolved", 0)
-        need(harvest.terminal == "gate_failed" and harvest.stage == "merge" and harvest.findings == handoff.findings, "unresolved production harvest missing")
-        need(any(e.ticket == "unresolved" and e.body.get("signal") == "rework_order" and e.body.get("action") == "update" for e in events), "reviewed Rework update missing")
-        first, fresh = handoff.reviewed_sha, merged("unresolved", 1).body["reviewed_sha"]
+        need(harvest.terminal == "gate_failed" and harvest.stage == "merge" and harvest.findings, "unresolved production harvest missing")
+        need(any(e.ticket == "unresolved" and e.body.get("signal") == "merge_conflict_rerun" for e in events), "conflict rerun signal missing")
+        first, fresh = reviews["unresolved", 0].reviewed_sha, merged("unresolved", 1).body["reviewed_sha"]
         need(first == reviews["unresolved", 0].reviewed_sha and first != fresh and fresh == reviews["unresolved", 1].reviewed_sha, "corrected candidate reused approval")
         merged("mechanical", 0)
         for stem, seq in (("mechanical", 0), ("unresolved", 1)):

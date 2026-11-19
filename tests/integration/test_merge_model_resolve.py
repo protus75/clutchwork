@@ -8,7 +8,7 @@ import pytest
 from clutch import runner, stages
 from clutch.artifacts import Cost, StageResult
 from clutch.llm import FakeLLM
-from clutch.mergequeue import ConflictHandoff, MergeQueue
+from clutch.mergequeue import MergeQueue
 from tests.integration.test_daemon_composition import production_writer
 from tests.integration.test_mergequeue import commit, ctx, facts, ready
 from tests.integration.test_stages import SNAG, verdict
@@ -57,8 +57,8 @@ def test_admission(ctx, mode):
             assert isinstance(result, StageResult) and result.outcome != "ok"
             assert len(ctx.driver.llm.requests) == 0  # Inline admission never calls resolve.
         else:
-            assert isinstance(result, ConflictHandoff)  # Refusals must not merge or escape as exceptions.
-            assert facts(ctx)[0].body["resolving_rung"] == "rework"
+            assert result.outcome == "gate_failed" and result.findings[0].code == "merge_conflict_rerun"  # Refusals must not merge or escape as exceptions.
+            assert facts(ctx)[0].body["resolving_rung"] == "rerun"
             root = ctx.worktree(ticket.stem)
             git_dir = (await ctx.git._run(root, "rev-parse", "--absolute-git-dir")).strip()
             from pathlib import Path
@@ -121,8 +121,8 @@ def test_marker_bound_accumulates_when_same_path_conflicts_again(ctx):
         ctx.driver.llm = FakeLLM([resolved(contents("main and first")), verdict()])
         result = await MergeQueue(ctx, escalate=lambda _: None)._admit(ticket, 0)
         # Each stop has 33 markers: forgetting the first stop would call resolve again.
-        assert isinstance(result, ConflictHandoff)
+        assert result.outcome == "gate_failed" and result.findings[0].code == "merge_conflict_rerun"
         assert [r.surface for r in ctx.driver.llm.requests] == ["resolve", "review"]
-        assert facts(ctx)[0].body["resolving_rung"] == "rework"
+        assert facts(ctx)[0].body["resolving_rung"] == "rerun"
 
     asyncio.run(exercise())

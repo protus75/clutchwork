@@ -21,7 +21,7 @@ from clutch.heartbeat import Heartbeat
 from clutch.journal import TERMINAL_STATES, EventType, JournalCorruption, last_transition, run_seq
 from clutch.lockfile import Lockfile
 from clutch.merge import AdmissionBoundary
-from clutch.mergequeue import ConflictHandoff, regate_receipts
+from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
@@ -450,11 +450,6 @@ class Serve:
                 await self.queue.process()
                 for ticket, attempt, result in self.queue.deliveries:
                     owner = self.writers.get(ticket.stem) or next(w for w in self.writers.values() if w.ctx is self.queue.contexts.get(ticket.stem))
-                    if isinstance(result, ConflictHandoff) and owner.ctx.driver.llm is None:
-                        owner = await self.prepare(self.checkout)
-                        owner.queue = self.queue
-                        owner.ctx.boundary.select = self.select
-                        owner.admission = AdmissionBoundary(owner.ctx, mode="daemon", queue=self.queue)
                     self.writers[ticket.stem] = owner
                     await owner.consume_result(ticket, result, attempt=attempt)
                     latest = (last_transition(self.checkout.journal.read(), ticket.stem) or {}).get("to")

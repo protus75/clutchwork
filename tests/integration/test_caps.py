@@ -85,35 +85,6 @@ def test_attempts_cap_routes_to_reject_queue(repo, monkeypatch, capsys, outcome)
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("delivery", ["drive", "consume_result"])
-async def test_attempts_cap_skips_conflict_rework(admission_context, monkeypatch, delivery):
-    from clutch.mergequeue import ConflictHandoff
-
-    _, writer = production_writer(admission_context, [])
-    ctx = writer.ctx
-    ticket = await ready(ctx)
-    for _ in range(4):
-        ctx.driver.journal.append(EventType.STATE_TRANSITION, {"to": "gate_failed"}, ticket=ticket.stem)
-    handoff = ConflictHandoff(stem=ticket.stem, reviewed_sha="reviewed", conflicted_paths=[], findings=[Finding(code="post_rebase_regate", message="conflict", paved_road="fresh review")])
-    if delivery == "drive":
-
-        async def stages(ctx, ticket):
-            return StagesRun(attempt=4, results={"review": StageResult(outcome="ok", artifact=None, findings=[], cost=Cost())})
-
-        async def admission(ticket, *, attempt):
-            return handoff
-
-        monkeypatch.setattr(runner, "run_stages", stages)
-        assert await runner.drive(ctx, ticket, admission=admission, consume_handoff=writer.consume_handoff) == "gate_failed"
-    else:
-        await writer.consume_result(ticket, handoff, attempt=4)
-    events = ctx.driver.journal.read()
-    assert failed_attempts(events, ticket.stem) == 5
-    assert reject_queue(events)[ticket.stem]["reason"] == "attempts cap spent"
-    assert ctx.driver.llm.requests == []
-
-
-@pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["split", "update", "escalate"])
 async def test_attempts_cap_preserves_published_rework(admission_context, action):
     from clutch.daemon import apply_rework

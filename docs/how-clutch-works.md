@@ -395,17 +395,16 @@ Conflict rerun signals are counted separately, with a limit of 2 per lineage; th
 |---|---|---|
 | `attempts` | 5 | total failed attempts per lineage |
 | `diagnosis` | 3 | each diagnosis call |
-| `retry` | 3 (never above `diagnosis`) | each drain or serve re-offer, except after a `premise_failed` without escalation, a provider drought, or an `infra_error` or `timeout` that carries no escalation rung |
+| `retry` | 3 (never above `diagnosis`) | each drain or serve re-offer, except after a `premise_failed` without escalation, a provider drought, a `conflict_rerun` terminal, or an `infra_error` or `timeout` that carries no escalation rung |
 | `infra` | 3 | each `infra_error` or `timeout` (not droughts) |
 | `premise_bounce` | 1 | each `premise_failed` (not over-bound renders or `requisition` snags) |
 | `quarantine` | 5 | flake quarantine size |
 | `supervise` | 2 | each supervisor keep; counted since the last operator keep, so supervisor keeps never reset it and it never routes a stem |
 
 Failed attempts are `gate_failed`, `premise_failed`, `incomplete`, `infra_error`, and `timeout` terminals.
-A requisition-stage `premise_failed`, an `infra_error` with reason `provider_drought`, `budget_exceeded`, an `abandoned` reap,
+A `conflict_rerun` terminal, a requisition-stage `premise_failed`, an `infra_error` with reason `provider_drought`, `budget_exceeded`, an `abandoned` reap,
 settled terminals, and `rejected` do not count. The failure reaching `caps.attempts` is itself
-routed with reason `attempts cap spent`, without another diagnosis or rework call, including
-merge-conflict handoffs; a `gate_failed` or `premise_failed` that `runner.drive` or merge-route `TicketWriter.consume_result` routes this way still meets the supervisor step (section 6.6); the idle-point hook also supervises a conflict-handoff stem. Terminal routing also counts a pending failure after a published Rework
+routed with reason `attempts cap spent`, without another diagnosis or rework call; a `gate_failed` or `premise_failed` that `runner.drive` or merge-route `TicketWriter.consume_result` routes this way still meets the supervisor step (section 6.6). Terminal routing also counts a pending failure after a published Rework
 update or escalation and leaves the published ticket text intact. A published split still retires
 its parent. The drain report shows the failed-attempt total, for example `attempts cap spent (5/5)`.
 
@@ -439,7 +438,7 @@ terminal carries a Reject routing marker. `ticket reject` refuses settled stems.
   `failure_report` per confirmed ticket that depended on it ("re-wire, re-scope, or reject it").
   Those dependents stay blocked.
 - **Supervisor keep:** inside `runner.drive` and merge-route `TicketWriter.consume_result`, a `premise_failed` routed to the Reject queue, or a routed `gate_failed` with a spent cap, meets supervisor-mode Rework with the lineage's diagnosis lessons. It needs a worktree and budget below `caps.supervise` (default 2, counted since the last operator keep). It excludes `ticket_changed` and `abandoned` (operator decisions), provider/runtime failures (`infra_error`, `timeout`, `invalid_artifact`, `incomplete`, or provider drought, which ticket edits cannot fix). The idle step also takes attempts that already requested Rework, using the `sup` key scope so their Effect keys do not replay. The serve idle point before dispatch and drain between tickets also run this step for Reject-queue stems, including legacy `reject_arrival` entries, with no attempt since the last operator keep. They lazily prepare providers only for eligible stems and use a detached worktree from `main`, removed and pruned through git after the step. The idle hook journals no terminal. Every attempt journals one `supervisor_attempt` signal with the stem in its body before Rework and, for a terminal-path attempt, before the terminal, whether approved, refused, or escalated. On a terminal path a reviewed update publishes before the terminal; after the terminal, a `supervise` draw and `reject_verdict keep actor: supervisor` with the new ticket blob start a fresh lineage and release the stem for re-offer. The idle hook records the same draw and keep after an approved update. Refused, snagged, or escalated edits lift `rework.md` as `rework-proposal` (before the terminal on a terminal path) and leave the stem queued. A terminal path without a worktree, or either path with spent supervisor budget, makes no call or proposal.
-- **Machine keep:** drain and serve use `awaiting_operator` and `reofferable` to hold queued stems with a spent cap or `ticket_changed` and re-offer others with budget. `record_reoffer` journals `keep actor: machine` for a queued stem, then draws `retry` unless the terminal is `premise_failed` without escalation, carries `provider_drought`, or is `infra_error` or `timeout` without an escalation rung. A machine keep never resets caps. The snapshot holds Reject-queue stems only when they await the operator (content parks remain separate).
+- **Machine keep:** drain and serve use `awaiting_operator` and `reofferable` to hold queued stems with a spent cap, `ticket_changed`, or `merge_conflict_rerun_spent` and re-offer others with budget. `record_reoffer` journals `keep actor: machine` for a queued stem, then draws `retry` unless the terminal is `premise_failed` without escalation, carries `provider_drought` or `conflict_rerun`, or is `infra_error` or `timeout` without an escalation rung. A machine keep never resets caps. The snapshot holds Reject-queue stems only when they await the operator (content parks remain separate).
 - `ticket confirm` on a `draft` ticket promotes it to `confirmed` instead.
 
 Keep and kill normally require a person at an interactive terminal to answer `y` at the prompt before the verdict proceeds. `--yes` and `--extension` skip the terminal check and prompt.
@@ -546,7 +545,18 @@ For each candidate, in pick order:
    surface over the resolution delta before the full safety and integration tiers run. The call
    writes no review record and lifts no outbox; the old approval alone cannot authorize the repair.
    Ineligible conflicts, decline, invalid replies and review refusals abort the rebase and return
-   the existing handoff to Rework. Kept repairs record `resolving_rung: model`.
+   a refused `StageResult` with finding code `merge_conflict_rerun`. After admission unwinds,
+   the consuming writer lifts the discarded diff's non-conflicted files to
+   `tickets/<stem>/attempts/<n>/prior.diff` as reference, journals
+   `merge_conflict_rerun` with the discarded attempt number, and retires the branch and worktree
+   through git (remove + prune). The `gate_failed` terminal carries `conflict_rerun: true`:
+   the ticket is re-offered for fresh Implement from current `main`, with no retry draw or
+   failed-attempt charge. Discarded code is never applied to the new branch.
+   `CONFLICT_RERUN_LIMIT` allows two reruns per lineage. A third conflict emits no rerun signal
+   and parks with `merge_conflict_rerun_spent` in the Reject queue until an operator keep;
+   its paved road is "split the ticket, or run it with parallel disabled".
+   Conflict facts record `resolving_rung: none | mechanical | model | rerun`; historical
+   `rework` facts still fold. Kept model repairs record `resolving_rung: model`.
 2. **Safety tier:** scope fence, run record, Merge gates, and host safety checks.
 3. **Integration tier:** all Check and Merge gates, plus host `always` + `hard` checks through the shared runner also used by Check and inline merge.
 4. **Red streak:** three different stems failing integration in a row pause the queue; `engine resume`

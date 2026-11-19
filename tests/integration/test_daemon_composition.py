@@ -1162,85 +1162,8 @@ async def test_production_composes_rework_without_running_it(tmp_path, monkeypat
 
 
 @pytest.mark.asyncio
-async def test_production_consumes_conflict_handoff_after_unwind(admission_context, monkeypatch):
-    from clutch.mergequeue import ConflictHandoff
-    from tests.integration.test_mergequeue import conflict
-    from tests.integration.test_rework import order, requisition
-    from tests.integration.test_stages import agent, verdict
-
-    source = admission_context
-    _, writer = production_writer(source, ['{"verdict":"decline","reason":"needs Rework","files":{}}'])
-    ctx, queue = writer.ctx, writer.queue
-    ticket, path = await conflict(ctx)
-    ctx.config.merge.strategies = []
-    text = (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text()
-    chronology = []
-    call = ctx.git._call
-
-    async def observe(root, *args, **kwargs):
-        value = await call(root, *args, **kwargs)
-        if args == ("rebase", "--abort"):
-            chronology.append("abort")
-        return value
-
-    monkeypatch.setattr(ctx.git, "_call", observe)
-
-    def forbid(*args, **kwargs):
-        pytest.fail("handoff reused code approval or called diagnosis")
-
-    monkeypatch.setattr(runner, "diagnose", forbid)
-    monkeypatch.setattr(ctx.git, "merge_squash", forbid)
-    queue.offer(ticket, attempt=0)
-    [handoff] = await queue.process()
-    assert isinstance(handoff, ConflictHandoff) and handoff.approval_invalidated
-    assert chronology == ["abort"] and [r.surface for r in ctx.driver.llm.requests] == ["resolve"]
-    assert queue.active is None and not queue._slot.locked()
-
-    def reply(req):
-        assert queue.active is None and not queue._slot.locked()
-        chronology.append("rework")
-        assert handoff.model_dump_json() in req.rendered
-        assert path in req.rendered and all(f.message in req.rendered for f in handoff.findings)
-        assert text in req.rendered
-        return order("update", [(ticket.stem, text.replace("holds the word ok", "holds the word ok after fresh review"))])
-
-    ctx.driver.llm = FakeLLM([reply, requisition()])
-    from clutch.drain import _Drain
-    from clutch.lockfile import Lockfile, LockHeld
-
-    checkout = runner.Checkout(ctx.repo, ctx.config, ctx.env, ctx.exec_, ctx.git, ctx.driver.journal, ctx.fs, ctx.driver.clock, ctx.driver.sleep)
-    lock = Lockfile(ctx.config.state_dir, verb="drain", instance_id="production", clock=ctx.driver.clock)
-    lock.acquire()
-    try:
-
-        async def consume(original):
-            contender = Lockfile(ctx.config.state_dir, verb="drain", instance_id="contender", clock=ctx.driver.clock)
-            with pytest.raises(LockHeld):
-                contender.acquire()
-            return await writer.consume_handoff(original, handoff, attempt=0)
-
-        await _Drain(checkout, consume, frozenset())._run_one(ticket, False, "blob")
-    finally:
-        lock.release()
-    assert chronology == ["abort", "rework"]
-    events = ctx.driver.journal.read()
-    [terminal] = [e.body for e in events if e.type == EventType.STATE_TRANSITION and e.body.get("to") != "running"]
-    assert terminal == {"to": "gate_failed", "stage": "merge", "reason": ",".join(sorted({f.code for f in handoff.findings})), "dispatch": "retry"}
-    assert not any(e.type == EventType.CAP_CONSUMED for e in events)
-    assert [r.surface for r in ctx.driver.llm.requests] == ["rework", "requisition_review"]
-    assert not ctx.worktree(ticket.stem).exists()
-    # Re-offer uses the ordinary Implement/Check/Review path, never the invalidated queue approval.
-    monkeypatch.undo()
-    ctx.driver.llm = FakeLLM([agent({"clutch/thing.py": "ok fresh\n"}), verdict()])
-    fresh = stages.validate_ticket(ticket.stem, (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text(), ctx.repo)
-    await writer(fresh)
-    assert [r.surface for r in ctx.driver.llm.requests] == ["implement", "review"]
-
-
-@pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["update", "split", "escalate", "exhausted"])
-async def test_production_applies_reviewed_rework_orders(admission_context, action):
-    from clutch.mergequeue import ConflictHandoff
+async def test_production_applies_reviewed_rework_orders(admission_context, monkeypatch, action):
     from clutch.rework import SUPERSEDES, record_supersedes
     from tests.integration.test_rework import order, requisition, successors
 
@@ -1256,16 +1179,24 @@ async def test_production_applies_reviewed_rework_orders(admission_context, acti
         await commit(ctx, ctx.repo, [f"tickets/{ticket.stem}/ticket.md"])
         ticket = stages.validate_ticket(ticket.stem, text, ctx.repo)
     proposals = successors(text.strip()) if action == "split" else [(ticket.stem, text.strip().replace("holds the word ok", "holds ok after narrowing"))] if action == "update" else []
-    ctx.driver.llm = FakeLLM([order("escalate" if action == "exhausted" else action, proposals)] + [requisition() for _ in proposals])
+    ctx.driver.llm = FakeLLM(([requisition()] if action == "exhausted" else []) + [order("escalate" if action == "exhausted" else action, proposals)] + [requisition() for _ in proposals])
     finding = stages.Finding(code="post_rebase_regate", message="conflict", paved_road="fresh review")
-    handoff = ConflictHandoff(stem=ticket.stem, reviewed_sha=await ctx.git.rev_parse(ctx.repo, ticket.stem), conflicted_paths=["clutch/thing.py"], findings=[finding, finding])
+
+    async def failed_stages(ctx, ticket):
+        return stages.StagesRun(attempt=0, results={"merge": stages.StageResult(outcome="gate_failed", artifact=None, cost=stages.Cost(), findings=[finding, finding])})
+
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    monkeypatch.setattr(runner, "diagnose", AsyncMock(return_value=SimpleNamespace(verdict="split", lessons=["narrow the ticket"], mechanical=None)))
+    monkeypatch.setattr(runner, "run_stages", failed_stages)
     from clutch.drain import _Drain
     from clutch.lockfile import Lockfile
 
     returned = []
 
     async def consume(original):
-        result = await writer.consume_handoff(original, handoff, attempt=0)
+        result = await runner.drive(ctx, original)
         returned.append(result)
         return result
 
@@ -1305,7 +1236,7 @@ async def test_production_applies_reviewed_rework_orders(admission_context, acti
             assert terminal["dispatch"] == terminal["routed"] == "reject_queue" and "rung" not in terminal
         if action != "update":
             assert (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text() == text
-    assert not any(e.type == EventType.CAP_CONSUMED for e in events)
+    assert caps.draws(events, ticket.stem, "diagnosis") == 1
     assert not ctx.worktree(ticket.stem).exists()
 
 
@@ -1313,7 +1244,6 @@ async def test_production_applies_reviewed_rework_orders(admission_context, acti
 @pytest.mark.parametrize("action", ["split", "update"])
 @pytest.mark.parametrize("failure", ["validation", "review", "write", "add", "commit", "partial", "incomplete", "all-commits", "spent"])
 async def test_production_refuses_failed_rework_publication(admission_context, monkeypatch, failure, action):
-    from clutch.mergequeue import ConflictHandoff
     from tests.integration.test_rework import order, requisition, successors
 
     checkout, writer = production_writer(admission_context, [])
@@ -1354,8 +1284,18 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
             caps.consume(ctx.driver.journal, ticket.stem, "retry", "old")
         script = []
     ctx.driver.llm = FakeLLM(script)
-    handoff = ConflictHandoff(stem=ticket.stem, reviewed_sha="reviewed", conflicted_paths=[], findings=[stages.Finding(code="post_rebase_regate", message="conflict", paved_road="fresh review")])
-    assert await writer.consume_handoff(ticket, handoff, attempt=0) == "gate_failed"
+    ctx.config.caps.supervise = 0
+
+    async def failed_stages(ctx, ticket):
+        finding = stages.Finding(code="post_rebase_regate", message="failure", paved_road="narrow the ticket")
+        return stages.StagesRun(attempt=0, results={"merge": stages.StageResult(outcome="gate_failed", artifact=None, cost=stages.Cost(), findings=[finding])})
+
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    monkeypatch.setattr(runner, "diagnose", AsyncMock(return_value=SimpleNamespace(verdict="split", lessons=["narrow the ticket"], mechanical=None)))
+    monkeypatch.setattr(runner, "run_stages", failed_stages)
+    assert await runner.drive(ctx, ticket) == "gate_failed"
     events = ctx.driver.journal.read()
     [terminal] = [e.body for e in events if e.type == EventType.STATE_TRANSITION]
     expected = {"to": "gate_failed", "stage": "merge", "reason": "post_rebase_regate", "dispatch": "reject_queue", "routed": "reject_queue"}
@@ -1368,7 +1308,7 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
     assert await ctx.git._run(ctx.repo, "show", f"HEAD:tickets/{ticket.stem}/ticket.md") == text
     assert not (ctx.repo / "tickets/piece-one/ticket.md").exists()
     assert not (ctx.repo / "tickets/piece-two/ticket.md").exists()
-    assert caps.draws(events, ticket.stem, "diagnosis") == 0
+    assert caps.draws(events, ticket.stem, "diagnosis") == (0 if failure == "spent" else 1)
     assert caps.draws(events, ticket.stem, "retry") == (ctx.config.caps.retry if failure == "spent" else 0)
     if failure == "spent":
         assert ctx.driver.llm.requests == []

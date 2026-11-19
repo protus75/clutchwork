@@ -10,7 +10,7 @@ from uuid import uuid4
 if TYPE_CHECKING:
     from clutch.daemon import PauseConsumer
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict
 
 from clutch import merge, stages
 from clutch.artifacts import Cost, Finding, StageResult, refused
@@ -82,23 +82,6 @@ def regate_receipts(events) -> dict[str, dict]:
     return receipts
 
 
-class ConflictHandoff(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
-
-    stem: str
-    reviewed_sha: str
-    conflicted_paths: list[str]
-    findings: list[Finding]
-    approval_invalidated: Literal[True] = True
-
-    @field_validator("conflicted_paths")
-    @classmethod
-    def _ordered_paths(cls, paths: list[str]) -> list[str]:
-        if paths != sorted(set(paths)):
-            raise ValueError("conflicted_paths must be sorted and unique")
-        return paths
-
-
 class TreeMismatch(RuntimeError):
     """Main has moved, but differs from the checked tree: pause without retiring the branch."""
 
@@ -135,7 +118,7 @@ class MergeQueue:
             self.control.hold(hold_id)
         self.escalate(event)
 
-    async def process(self) -> list[StageResult | ConflictHandoff]:
+    async def process(self) -> list[StageResult]:
         results = []
         self.deliveries = []
         async with self._slot:
@@ -202,13 +185,13 @@ class MergeQueue:
         if escalate:
             self.escalate(event)
 
-    def _facts(self, stem: str, conflicts: set[str], strategies: set[str], *, handoff: bool = False, model: bool = False, red: Sequence[str] = ()) -> None:
+    def _facts(self, stem: str, conflicts: set[str], strategies: set[str], *, rerun: bool = False, model: bool = False, red: Sequence[str] = ()) -> None:
         self._signal(
             stem,
             {
                 "kind": CONFLICT_FACTS,
                 "conflicted_paths": sorted(conflicts),
-                "resolving_rung": "rework" if handoff else "model" if model else "mechanical" if strategies else "none",
+                "resolving_rung": "rerun" if rerun else "model" if model else "mechanical" if strategies else "none",
                 "strategy_paths": sorted(strategies),
                 "integration_red_paths": sorted(set(red)),
             },
@@ -354,7 +337,7 @@ class MergeQueue:
         gather_stage: str = "merge-integration",
         strategy_scope: bool = True,
         receipt_lookup: bool = True,
-    ) -> StageResult | ConflictHandoff:
+    ) -> StageResult:
         ctx, stem = self.ctx, ticket.stem
         worktree = ctx.worktree(stem)
         started = ctx.driver.clock()
@@ -425,8 +408,12 @@ class MergeQueue:
                     if findings:
                         await ctx.git._call(worktree, "rebase", "--abort")
                         rebasing = False
-                        facts(stem, conflicts, hits, handoff=True)
-                        return ConflictHandoff(stem=stem, reviewed_sha=reviewed, conflicted_paths=sorted(conflicts), findings=findings)
+                        facts(stem, conflicts, hits, rerun=True)
+                        return refused(
+                            [self._finding("merge conflict requires fresh implementation", "re-implement from current main", path=path, code="merge_conflict_rerun") for path in sorted(conflicts)]
+                            + findings,
+                            elapsed(),
+                        )
                     step = ctx.git.rebase_continue(worktree)
 
             evidence = await stages.gather_safety_evidence(ctx, ticket, "ok")

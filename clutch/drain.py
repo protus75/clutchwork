@@ -94,7 +94,7 @@ def parked_blob(events: Iterable[Event], stem: str) -> str | None:
 def awaiting_operator(events: Iterable[Event], stem: str, caps_config) -> bool:
     history = tuple(events)
     queued = reject_queue(history)
-    return stem in queued and ("ticket_changed" in queued[stem].get("reason", "").split(",") or caps.spent(caps_config, history, stem) is not None)
+    return stem in queued and (bool({"ticket_changed", "merge_conflict_rerun_spent"}.intersection(queued[stem].get("reason", "").split(","))) or caps.spent(caps_config, history, stem) is not None)
 
 
 def reofferable(events: Iterable[Event], stem: str, caps_config) -> bool:
@@ -109,6 +109,7 @@ def record_reoffer(journal, events: Iterable[Event], stem: str, sha: str) -> Non
     body = next(e.body for e in reversed(history) if e.type == EventType.STATE_TRANSITION and e.ticket == stem and e.body.get("to") in TERMINAL_STATES)
     if (
         (body.get("to") != PREMISE or (body.get("stage") != "requisition" and body.get("dispatch") == "escalate"))
+        and "conflict_rerun" not in body
         and "provider_drought" not in body
         and not (body.get("to") in {"infra_error", "timeout"} and "rung" not in body)
     ):

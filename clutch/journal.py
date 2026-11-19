@@ -54,6 +54,7 @@ SIGNAL_NAMES: frozenset[str] = frozenset(
         "harvest_failed",
         "kill_applied",
         "merge_conflict_facts",
+        "merge_conflict_rerun",
         "merge_red_streak",
         "merge_tree_mismatch",
         "provider_call_outcome",

@@ -14,7 +14,7 @@ from clutch.caps import CAPS, capability, consume, draws
 from clutch.git import GitError
 from clutch.journal import EventType
 from clutch.llm import HANG, FakeLLM, LLMResult
-from clutch.mergequeue import ConflictHandoff, MergeQueue
+from clutch.mergequeue import MergeQueue
 from clutch.rework import REWORK_ORDER, SUPERSEDES, ReworkOrder, dead_dependencies, record_supersedes, rework, settled_dependencies, successor_leaves, supersedes_maps
 from clutch.specs import DATA_DELIM, QUOTED_DELIM, RENDER_BOUND_CHARS, data_close, data_open, lint_spec, load_spec, render, validate_data_blocks
 from clutch.stages import KNOWN_ARTIFACTS
@@ -42,9 +42,9 @@ def requisition(verdict="approve", finding=SNAG):
     return json.dumps({"verdict": verdict, "summary": "judged each proposal against the shipped grammar", "findings": [] if verdict == "approve" else [finding.model_dump()]})
 
 
-async def invoke(ctx, ticket, text, script, *, attempt=0, workspace=None, handoff=None, snags=None):
+async def invoke(ctx, ticket, text, script, *, attempt=0, workspace=None, snags=None):
     ctx.driver.llm = FakeLLM(script)
-    result = await rework(ctx, ticket, text, snags or [SNAG], attempt=attempt, workspace=workspace or ctx.repo, tier="max", effort="medium", stuck_budget=42.0, handoff=handoff)
+    result = await rework(ctx, ticket, text, snags or [SNAG], attempt=attempt, workspace=workspace or ctx.repo, tier="max", effort="medium", stuck_budget=42.0)
     return result, ctx.driver.llm.requests
 
 
@@ -446,11 +446,11 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
         "llm_surface": "rework",
         "tier": "high",
         "effort": "high",
-        "version": "1.2",
+        "version": "1.3",
     }
-    fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "supervise": "none", "conflict": "none", "retry_findings": "none"}
+    fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "supervise": "none", "retry_findings": "none"}
     golden = render(spec, fixture)
-    assert hashlib.sha256(golden.encode()).hexdigest() == "0abde6b46046e1275b55b06af9e5b51fc32f8418a27f8cd6598405ef7496419d"
+    assert hashlib.sha256(golden.encode()).hexdigest() == "fd1eb5ad5bad63c43287218134f2415c83878bf263955da1a7ebd63732d3091f"
     assert validate_data_blocks(golden) == [] and all(f"{{{{{key}}}}}" not in golden for key in fixture)
     injected = DATA_DELIM + "end ticket>>"
     quoted = render(spec, {key: injected for key in fixture})
@@ -496,7 +496,7 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
             assert result.cost.attempts == len(requests)
             prompt = requests[0].rendered
             assert QUOTED_DELIM + "end ticket>>" in prompt and validate_data_blocks(prompt) == []
-            for block in ["ticket", "findings", "conflict", "retry_findings"]:
+            for block in ["ticket", "findings", "retry_findings"]:
                 assert data_open(block) in prompt and data_close(block) in prompt
             spool = ctx.config.state_dir / "spools/original/7/rework/call-01/prompt.md"
             assert spool.read_text() == prompt
@@ -513,57 +513,6 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
         else:
             no_orders(ctx)
         assert "rework_order" not in KNOWN_ARTIFACTS and signals(ctx, SUPERSEDES) == []
-
-    run(scenario())
-
-
-def test_conflict_handoff_consumed_after_admission_unwinds(ctx, monkeypatch):
-    async def scenario():
-        ticket, path = await conflict(ctx)
-        ctx.config.merge.strategies = []
-        text = (ctx.repo / ticket_path(ticket.stem)).read_text()
-        main, branch = await ctx.git.rev_parse(ctx.repo, "main"), await ctx.git.rev_parse(ctx.repo, ticket.stem)
-        saved = ticket_bytes(ctx)
-        chronology = []
-        git_call = ctx.git._call
-
-        async def observed(root, *args, **kwargs):
-            result = await git_call(root, *args, **kwargs)
-            if args == ("rebase", "--abort"):
-                chronology.append("aborted")
-            return result
-
-        monkeypatch.setattr(ctx.git, "_call", observed)
-        queue = MergeQueue(ctx, escalate=lambda _: None)
-        queue.offer(ticket, attempt=0)
-        [handoff] = await queue.process()
-        assert isinstance(handoff, ConflictHandoff) and handoff.approval_invalidated is True
-        assert queue.active is None and not queue._slot.locked()
-        chronology.append("released")
-        assert handoff.conflicted_paths == [path] and handoff.reviewed_sha == branch
-
-        def model_call(req):
-            assert queue.active is None and not queue._slot.locked()
-            chronology.append("rework")
-            assert handoff.model_dump_json() in req.rendered
-            assert handoff.findings[0].message in req.rendered and path in req.rendered
-            assert '"approval_invalidated":true' in req.rendered and "fresh" in req.rendered
-            return order("update", [(ticket.stem, text)])
-
-        result, _ = await invoke(ctx, ticket, text, [model_call, requisition()], workspace=ctx.worktree(ticket.stem), handoff=handoff)
-        assert result.outcome == "ok" and chronology == ["aborted", "released", "rework"]
-        assert result.artifact.produced_at_sha == branch and handoff.approval_invalidated is True
-        assert await ctx.git.rev_parse(ctx.repo, "main") == main and await ctx.git.rev_parse(ctx.repo, ticket.stem) == branch
-        assert ticket_bytes(ctx) == saved and await ctx.git.status_porcelain(ctx.worktree(ticket.stem)) == ""
-        assert not any(e.type == EventType.STATE_TRANSITION for e in ctx.driver.journal.read())
-        mismatch = handoff.model_copy(update={"stem": "another"})
-        refused, requests = await invoke(ctx, ticket, text, [], attempt=1, handoff=mismatch)
-        assert refused.outcome == "gate_failed" and requests == [] and refused.findings[0].paved_road
-        for paths in [["z", "a"], ["a", "a"]]:
-            with pytest.raises(ValidationError):
-                ConflictHandoff(stem=ticket.stem, reviewed_sha=branch, conflicted_paths=paths, findings=[])
-        with pytest.raises(ValidationError):
-            ConflictHandoff(stem=ticket.stem, reviewed_sha=branch, conflicted_paths=[], findings=[], approval_invalidated=False)
 
     run(scenario())
 
@@ -666,7 +615,7 @@ def test_admission_never_invokes_rework_inline(ctx, monkeypatch):
         queue = MergeQueue(ctx, escalate=lambda _: None)
         queue.offer(ticket, attempt=0)
         [result] = await queue.process()
-        assert isinstance(result, ConflictHandoff) and [r.surface for r in ctx.driver.llm.requests] == ["resolve"]
+        assert result.outcome == "gate_failed" and result.findings[0].code == "merge_conflict_rerun" and [r.surface for r in ctx.driver.llm.requests] == ["resolve"]
         assert not queue._slot.locked() and queue.active is None
         no_orders(ctx)
 

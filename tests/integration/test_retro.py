@@ -128,7 +128,7 @@ def test_retro_trigger_boundaries(tmp_path, kind):
 
             ticket = validate_ticket(stem, confirmed(), c.repo)
             writer.stages.driver.llm = FakeLLM(['{"action": "escalate", "tickets": []}'])
-            result = asyncio.run(rework(writer.ctx, ticket, confirmed(), [], attempt=n, workspace=c.repo, tier="medium", effort="low", stuck_budget=120, handoff=None))
+            result = asyncio.run(rework(writer.ctx, ticket, confirmed(), [], attempt=n, workspace=c.repo, tier="medium", effort="low", stuck_budget=120))
             assert result.outcome == "ok"
         elif kind == "gate-failure":
             from clutch.tickets import validate_ticket

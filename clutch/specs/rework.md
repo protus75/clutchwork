@@ -2,7 +2,7 @@
 llm_surface: rework
 tier: high
 effort: high
-version: "1.2"
+version: "1.3"
 ---
 ## Role
 
@@ -43,10 +43,7 @@ For every proposal:
 Clear re-prompt findings before proposing another order. A feasibility snag returns findings;
 an RMA stops this invocation for the failure spine, never author around the refusal.
 
-A conflict handoff is evidence from an admission that already aborted rebase and released its
-serial slot. Preserve its invalidated approval: later implementation must pass Check and fresh
-Review before re-admission. Propose full Rework with this context, never conflict-only repair,
-squash, or reuse of former approval. A split's supersedes map is recorded separately only after
+A split's supersedes map is recorded separately only after
 the lock-owning caller commits every reviewed successor. This stage never publishes tickets.
 
 ## Inputs
@@ -68,12 +65,6 @@ The supervisor trigger and diagnosis lessons, or `none` outside a supervisor edi
 <<clutch-data:begin supervise>>
 {{supervise}}
 <<clutch-data:end supervise>>
-
-Optional queue-owned conflict handoff:
-
-<<clutch-data:begin conflict>>
-{{conflict}}
-<<clutch-data:end conflict>>
 
 Findings against the previous order:
 

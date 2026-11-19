@@ -76,16 +76,7 @@ async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
     from clutch.daemon import TicketWriter
 
     consume = TicketWriter.consume_result
-    publish = Serve.publish
-    held = []
     offered_corrected = False
-
-    def publishing(owner, ticket, text):
-        if ticket.stem == "unresolved" and ticket.sections["Goal / Why"] == "Resolve against current main." and not offered_corrected:
-            held[:] = [(owner, ticket, text)]
-            owner.core.scheduler.update(ticket)
-            return
-        publish(owner, ticket, text)
 
     def building(*args, **kwargs):
         owner = build(*args, **kwargs)
@@ -105,8 +96,6 @@ async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
         offer(queue, ticket, attempt=attempt, ctx=ctx)
         if (ticket.stem, attempt) == ("unresolved", 1):
             offered_corrected = True
-            for publication in held:
-                publish(*publication)
 
     async def processed(queue):
         # Only Serve.merge may drive the admission algorithm; dispatch never substitutes for it.
@@ -122,14 +111,13 @@ async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
         consumed.append((ticket.stem, attempt))
         await consume(writer, ticket, result, attempt=attempt)
 
-    monkeypatch.setattr(Serve, "publish", publishing)
     monkeypatch.setattr(cli, "build_serve", building)
     monkeypatch.setattr(MergeQueue, "offer", offered)
     monkeypatch.setattr(MergeQueue, "process", processed)
     monkeypatch.setattr(TicketWriter, "consume_result", consuming)
     report = await soak.produce(tmp_path / "production")
     assert all(e.green for e in report.entries)
-    assert held and offered_corrected
+    assert offered_corrected
     assert len(built) == 4  # One interrupted worker lifetime, its restart, and two fault members.
     assert [(stem, attempt) for _, stem, attempt in offers] == [("worker", 1), ("mechanical", 0), ("unresolved", 0), ("unresolved", 1), ("semantic", 0)]
     assert consumed == [("worker", 1), ("mechanical", 0), ("unresolved", 0), ("unresolved", 1), ("semantic", 0)]
@@ -173,12 +161,8 @@ def test_daemon_soak_conflict_rungs(evidence):
     assert report.entries[1].producing_run == "unresolved/1"
     assert member.facts("mechanical")[0].body["resolving_rung"] == "mechanical"
     assert member.facts("mechanical")[0].body["strategy_paths"] == ["union.txt"]
-    assert member.facts("unresolved")[0].body["resolving_rung"] == "rework"
+    assert member.facts("unresolved")[0].body["resolving_rung"] == "rerun"
     assert member.facts("unresolved")[0].body["conflicted_paths"] == ["conflict.txt"]
-    [(handoff, active, locked)] = member.handoffs
-    assert handoff.approval_invalidated and active is None and not locked
-    review = read_review((member.root / "tickets/unresolved/review.md").read_text())
-    assert review.reviewed_sha != handoff.reviewed_sha
     assert [e.body["to"] for e in member.terminals("unresolved")] == ["gate_failed", "merged"]
     reports = [m for m in member.owner.box.messages() if m.stage == "merge"]
     assert {(m.origin, m.outcome) for m in reports} == {("mechanical", "ok"), ("unresolved", "gate_failed")}
@@ -215,14 +199,14 @@ async def test_soak_uses_candidate_base_regate_receipt(evidence):
             assert (receipt["review_provider"], receipt["review_model"]) == ("claude", "script")
             assert receipt["admission"] == "READY" and receipt["reason"] == "bootstrap"
             draws = [e for e in member.journal.read() if e.type == EventType.CAP_CONSUMED and e.ticket == receipt["stem"] and e.body.get("cap") == "retry"]
-            assert len(draws) == (1 if receipt["stem"] in {"worker", "unresolved"} else 0)
+            assert len(draws) == (1 if receipt["stem"] in {"worker"} else 0)
         assert audit_journal(member.journal) == []
     member = members[1]
     history = member.journal.read()
     failure = next(i for i, e in enumerate(history) if e.ticket == "unresolved" and e.body.get("to") == "gate_failed" and e.body.get("stage") == "merge")
-    retry = next(i for i, e in enumerate(history) if e.ticket == "unresolved" and e.type == EventType.CAP_CONSUMED and e.body.get("cap") == "retry")
+    rerun = next(i for i, e in enumerate(history) if e.ticket == "unresolved" and e.body.get("signal") == "merge_conflict_rerun")
     running = [i for i, e in enumerate(history) if e.ticket == "unresolved" and e.body.get("to") == "running"]
-    assert len(running) == 2 and running[0] < failure < retry < running[1]
+    assert len(running) == 2 and running[0] < rerun < failure < running[1]
     mechanical = next(r for r in regate_receipts(member.journal.read()).values() if r["stem"] == "mechanical")
     assert await member.git._run(member.root, "show", mechanical["candidate_base_sha"] + ":union.txt") == "base\nmain\n"
     assert await member.git._run(member.root, "show", mechanical["reviewed_sha"] + ":union.txt") == "base\nbranch\n"
@@ -233,10 +217,7 @@ async def test_soak_uses_candidate_base_regate_receipt(evidence):
     "index,field",
     [(i, field) for i in range(3) for field in ("cycles", "health", "heartbeats", "sweeps", "checkpoints", "sleeps", "rotation", "main", "checks", "review-custody")]
     + [(0, f) for f in ("alert", "alert-sequence", "abandoned", "interrupted", "removal", "merged", "review")]
-    + [
-        (1, f)
-        for f in ("mechanical-facts", "unresolved-facts", "handoff", "handoff-unwind", "rework", "mechanical-box", "unresolved-box", "box-outcome", "harvest", "regating", "review", "terminal-stage")
-    ]
+    + [(1, f) for f in ("mechanical-facts", "unresolved-facts", "rerun", "mechanical-box", "unresolved-box", "box-outcome", "harvest", "regating", "review", "terminal-stage")]
     + [(2, f) for f in ("inputs", "refusal", "semantic-box", "harvest", "integration", "terminal", "semantic-facts")],
 )
 async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch, index, field):
@@ -248,11 +229,8 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
         monkeypatch.setattr(member, field, None if field == "interrupted" else [])
     elif field == "health":
         monkeypatch.setattr(member, "cycles", [(moment, (True, False, True, True)) for moment, _ in member.cycles])
-    elif field in {"inputs", "refusal", "handoff"}:
-        monkeypatch.setattr(member, {"inputs": "inputs", "refusal": "refusals", "handoff": "handoffs"}[field], [])
-    elif field == "handoff-unwind":
-        handoff, _, _ = member.handoffs[0]
-        monkeypatch.setattr(member, "handoffs", [(handoff, "unresolved", True)])
+    elif field in {"inputs", "refusal"}:
+        monkeypatch.setattr(member, {"inputs": "inputs", "refusal": "refusals"}[field], [])
     elif field == "heartbeats":
         monkeypatch.setattr(member.fs, "heartbeats", [])
     elif field == "sleeps":
@@ -295,7 +273,7 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
                 or (field == "mechanical-facts" and body.get("kind") == CONFLICT_FACTS and e.ticket == "mechanical")
                 or (field == "unresolved-facts" and body.get("kind") == CONFLICT_FACTS and e.ticket == "unresolved")
                 or (field == "semantic-facts" and body.get("kind") == CONFLICT_FACTS and e.ticket == "semantic")
-                or (field == "rework" and body.get("signal") == "rework_order")
+                or (field == "rerun" and body.get("signal") == "merge_conflict_rerun")
                 or (field == "terminal-stage" and e.ticket == "unresolved" and body.get("to") == "gate_failed")
                 or (field == "checks" and e.key == f"ticket-plane/{run[0]}/{run[1]}/checks")
                 or (field == "review-custody" and e.key == f"ticket-plane/{run[0]}/{run[1]}/review")

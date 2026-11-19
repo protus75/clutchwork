@@ -6,10 +6,10 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-from clutch import runner
+from clutch import merge, runner
 from clutch.artifacts import Cost, Finding, StageResult, refused
 from clutch.box import Box, RereportJournal
-from clutch.caps import spent
+from clutch.caps import CONFLICT_RERUN_ROAD, conflict_rerun_spent
 from clutch.checkpoint import Checkpoint
 from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.control import CONTROL_DECISION, ControlInbox, ControlProjection, write_active
@@ -21,13 +21,13 @@ from clutch.heartbeat import Heartbeat
 from clutch.journal import EventType, Journal
 from clutch.llmeffect import scoped_seq
 from clutch.merge import AdmissionBoundary
-from clutch.mergequeue import ConflictHandoff, MergeQueue
+from clutch.mergequeue import MergeQueue
 from clutch.restart import Restart
 from clutch.rework import ReworkOrder, Supervise, record_supersedes, rework
 from clutch.runner import Dispatch
 from clutch.scheduler import Scheduler
 from clutch.seams import Clock, FileSystem, Sleep
-from clutch.stages import StageContext, StageName, Stages, StagesRun
+from clutch.stages import StageContext, StageName, Stages, StagesRun, lift_prior_diff
 from clutch.storm import StormBreaker
 from clutch.tickets import Ticket, parse_ticket, ticket_path
 from clutch.watcher import Watcher
@@ -352,9 +352,7 @@ class DaemonTasks:
                 self.tasks = ()
 
 
-async def apply_rework(
-    ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, handoff: ConflictHandoff | None = None, supervise: Supervise | None = None, key_scope: str | None = None
-) -> StageResult:
+async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding], *, attempt: int, supervise: Supervise | None = None, key_scope: str | None = None) -> StageResult:
     """Publish exact reviewed proposals on the ticket plane under the caller's writer lock."""
     road = "shrink or split the committed ticket text and rerun drain"
     workspace = ctx.worktree(ticket.stem)
@@ -374,7 +372,6 @@ async def apply_rework(
             tier=tier,
             effort=effort,
             stuck_budget=original.stuck_minutes * 60,
-            handoff=handoff,
             supervise=supervise,
             key_scope=key_scope,
         )
@@ -444,7 +441,7 @@ class Continuation:
 
 
 class TicketWriter:
-    """The composed ticket writer; queue handoffs are consumed only after admission unwinds."""
+    """The composed ticket writer; queue results are consumed only after admission unwinds."""
 
     def __init__(self, ctx: StageContext, queue: MergeQueue) -> None:
         self.ctx, self.queue = ctx, queue
@@ -461,7 +458,7 @@ class TicketWriter:
             if self.admission.mode == "inline":
                 result = await runner.drive(self.ctx, ticket)
             else:
-                result = await runner.drive(self.ctx, ticket, admission=self.admission, consume_handoff=self.consume_handoff)
+                result = await runner.drive(self.ctx, ticket, admission=self.admission)
             if boundary.next_stage is not None:
                 assert boundary.run is not None and boundary.ticket is not None
                 self.continuations[ticket.stem] = Continuation(boundary.ticket, self.ctx, boundary.run, boundary.next_stage)
@@ -471,29 +468,36 @@ class TicketWriter:
         finally:
             boundary.run, boundary.ticket, boundary.next_stage = None, None, None
 
-    async def consume_result(self, ticket: Ticket, result: StageResult | ConflictHandoff, *, attempt: int) -> None:
+    async def consume_result(self, ticket: Ticket, result: StageResult, *, attempt: int) -> None:
         """Deliver the producing run's result; predecessor offers retain their existing custody."""
-        if self.admission.deliver(ticket, attempt, result):
-            return
-        if isinstance(result, ConflictHandoff):
-            await self.consume_handoff(ticket, result, attempt=attempt)
-        elif result.outcome != "ok":
+        if any(f.code == "merge_conflict_rerun" for f in result.findings):
+            await self.consume_conflict_rerun(ticket, result, attempt=attempt)
+            self.admission.deliver(ticket, attempt, result)
+        elif not self.admission.deliver(ticket, attempt, result) and result.outcome != "ok":
             await runner.harvest_failure(self.ctx, ticket, attempt=attempt, stage="merge", outcome=result.outcome, findings=result.findings, results=(result,))
             await runner.failure_terminal(self.ctx, ticket, attempt=attempt, stage="merge", outcome=result.outcome, findings=result.findings, supervised=True)
 
     async def abort_current(self) -> None:
         await self.ctx.abort_current()
 
-    async def consume_handoff(self, ticket: Ticket, handoff: ConflictHandoff, *, attempt: int) -> str:
+    async def consume_conflict_rerun(self, ticket: Ticket, result: StageResult, *, attempt: int) -> str:
         if self.queue.active is not None or self.queue._slot.locked():
-            raise ValueError("finish and await MergeQueue.process before consuming its handoff")
-        ctx = self.ctx
-        outcome = "gate_failed"
-        await runner.harvest_failure(ctx, ticket, attempt=attempt, stage="merge", outcome=outcome, findings=handoff.findings, results=())
-        reply = None
-        if not spent(ctx.config.caps, ctx.driver.journal.read(), ticket.stem, pending={"to": outcome}):
-            reply = await apply_rework(ctx, ticket, handoff.findings, attempt=attempt, handoff=handoff)
-        return await runner.failure_terminal(ctx, ticket, outcome=outcome, stage="merge", findings=handoff.findings, attempt=attempt, reworked=reply, rework_requested=True)
+            raise ValueError("finish and await MergeQueue.process before consuming its result")
+        ctx, stem = self.ctx, ticket.stem
+        await runner.harvest_failure(ctx, ticket, attempt=attempt, stage="merge", outcome="gate_failed", findings=result.findings, results=(result,))
+        terminal = {"to": "gate_failed", "stage": "merge", "conflict_rerun": True}
+        if conflict_rerun_spent(ctx.driver.journal.read(), stem):
+            finding = Finding(code="merge_conflict_rerun_spent", message="conflict rerun limit spent", paved_road=CONFLICT_RERUN_ROAD)
+            terminal.update(reason=finding.code, findings=[finding.model_dump()], dispatch="reject_queue", routed="reject_queue")
+        else:
+            diff = await ctx.git.diff(ctx.repo, "main", stem)
+            conflicted = sorted({f.path for f in result.findings if f.code == "merge_conflict_rerun" and f.path is not None})
+            await lift_prior_diff(ctx, stem, attempt=attempt, diff=diff, conflicted=conflicted)
+            ctx.driver.journal.append(EventType.SIGNAL, {"signal": "merge_conflict_rerun", "attempt": attempt}, ticket=stem)
+            terminal.update(reason="merge_conflict_rerun")
+        await merge.retire(ctx, stem)
+        ctx.driver.journal.append(EventType.STATE_TRANSITION, terminal, ticket=stem)
+        return "gate_failed"
 
 
 def daemon_core(

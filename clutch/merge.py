@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from clutch.daemon import PauseConsumer
-    from clutch.mergequeue import ConflictHandoff, MergeQueue
+    from clutch.mergequeue import MergeQueue
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
@@ -145,7 +145,7 @@ class AdmissionBoundary:
         self.ctx, self.mode, self.queue, self.waiting = ctx, mode, queue, waiting
         self.results: dict[tuple[str, int], asyncio.Future] = {}
 
-    async def __call__(self, ticket: Ticket, *, attempt: int) -> "StageResult | ConflictHandoff":
+    async def __call__(self, ticket: Ticket, *, attempt: int) -> "StageResult":
         ctx = self.ctx
         if findings := await ticket_change_findings(ctx, ticket.stem):
             return refused(findings, Cost())
@@ -171,7 +171,7 @@ class AdmissionBoundary:
         finally:
             self.results.pop(key, None)
 
-    def deliver(self, ticket: Ticket, attempt: int, result: "StageResult | ConflictHandoff") -> bool:
+    def deliver(self, ticket: Ticket, attempt: int, result: "StageResult") -> bool:
         future = self.results.get((ticket.stem, attempt))
         if future is None:
             return False

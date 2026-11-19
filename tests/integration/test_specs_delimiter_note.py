@@ -15,7 +15,7 @@ from clutch.specs import DATA_DELIM, data_close, data_open, lint_spec, load_spec
         ("requisition_review", "3.23"),
         ("retro", "1.5"),
         ("review", "1.7"),
-        ("rework", "1.2"),
+        ("rework", "1.3"),
         ("triage", "1.0"),
     ],
 )
