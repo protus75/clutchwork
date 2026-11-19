@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The verification command could not collect the two required new test files because they have not yet been created. Partial changes remain uncommitted in the worktree.
+The partial edits are uncommitted and will be discarded with the worktree.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; the work was not completed.
+The ticket estimates 30 minutes; work stopped before completion.
 
