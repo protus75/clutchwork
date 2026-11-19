@@ -32,6 +32,8 @@ none
 - clutch/docs/host-running.md
 - clutch/stages.py
 - tests/integration/test_host_contract.py
+- tests/unit/test_gemini_adapter.py
+- tests/unit/test_qwen_adapter.py
 
 ## Goal / Why
 Roadmap row 51 (Gemini plan B3). Today a routing row maps only `(tier, surface)` to candidates, so every ticket kind is served by the same model. After this ticket:
@@ -87,7 +89,7 @@ This lets a host route graphics tickets to an image model while every other kind
 ## Scope in / Scope out
 Scope in:
 - `clutch/config.py`: `Route` gains `kinds: Annotated[list[str], Field(min_length=1)] | None = None` with a field validator refusing a value not in `clutch.tickets.KINDS`, naming the accepted kinds. Import `KINDS` inside the validator, not at module top (`clutch.tickets` imports `clutch.gates`, which imports `clutch.config`). Do not copy the kind names.
-- `clutch/providers.py`: one private row selector used by `resolve` and `candidates`, replacing their two copies of the lookup and review fallback; `resolve(config, tier, surface, kind=None)`, `candidates(config, tier, surface, kind=None)`; `ProviderLLM.call` and `admitted_call` pass `req.kind`; `routed_conduct_paths` passes each route's first `kinds` entry (or None) so a provider served only on a `kinds` row still gets its conduct file; new `judge_independence_finding`.
+- `clutch/providers.py`: one private row selector used by `resolve` and `candidates`, replacing their two copies of the lookup and review fallback; `resolve(config, tier, surface, kind=None)`, `candidates(config, tier, surface, kind=None)`; `ProviderLLM.call` and `admitted_call` pass `req.kind`; `routed_conduct_paths` passes each route's first `kinds` entry (or None) so a provider served only on a `kinds` row still gets its conduct file; new `judge_independence_finding`. The selector reads `route.kinds` directly; never `getattr(route, "kinds", None)` or any other defensive fallback for route objects lacking the field.
 - `clutch/llm.py`: `LLMRequest.kind: str | None = None`.
 - `clutch/driver.py`: `Driver.run` and its inner runner gain keyword `kind`, set on the `LLMRequest`.
 - `clutch/stages.py`: the `ctx.driver.run` calls in `diagnose`, `implement` and `review` pass `kind=ticket.frontmatter.kind`. Nothing else changes there.
@@ -98,6 +100,7 @@ Scope in:
 - `docs/how-clutch-works.md`: update only the section describing routing (8.2) and the verb table row text for doctor and lint if it describes them.
 - New tests: `tests/unit/test_route_kinds_filter.py`, `tests/unit/test_route_kinds_judge.py`, `tests/integration/test_route_kinds_judge_lint.py` (follows the harness of `tests/integration/test_lint_verb.py`; tmp repo only). The unit file runs the new `_lint` lines through `clutch.__main__._lint` with a fake checkout: a `tmp_path` repo holding `tickets/<stem>/ticket.md` and the collision config, fake git methods returning `git_common_dir`, an empty `status_porcelain` and empty `_run` output for the evidence listing, and the journal under `tmp_path`. The integration file keeps the real-git CLI check.
 - `tests/integration/test_host_contract.py`: only the edit its inventory comparison forces for the new `Route` field.
+- `tests/unit/test_gemini_adapter.py` (the route fixture at line 122) and `tests/unit/test_qwen_adapter.py` (the route fixture at line 78): each `SimpleNamespace` route fixture passed to `routed_conduct_paths` gains `kinds=None`, because the row selector reads `route.kinds`. No other change in either file.
 
 Scope out:
 - Provider drought admission checks and `caps.next_rung` resolve with no kind and are not changed by this ticket.
@@ -116,6 +119,8 @@ Scope out:
 - clutch/docs/host-running.md
 - docs/how-clutch-works.md
 - tests/integration/test_host_contract.py
+- tests/unit/test_gemini_adapter.py
+- tests/unit/test_qwen_adapter.py
 - tests/unit/test_route_kinds_filter.py
 - tests/unit/test_route_kinds_judge.py
 - tests/integration/test_route_kinds_judge_lint.py
@@ -130,16 +135,16 @@ Scope out:
 7. The `config-fields` inventory matches `config.Route` with `kinds` as an unset default; checked by `./dev.py test tests/integration/test_host_contract.py`.
 8. `judge_independence_finding` returns a message naming the provider and model when the `kinds:[graphics]` implement row and the `review_visual` row (or, absent that row, the `review` row) serve the same provider and model, and returns None, not a message, when the models differ, when no row names `graphics`, or when resolution raises `ProviderSetupError` for the placeholder model; `doctor.check` on that config returns a failing `judge` row and on a differing-model config returns no `judge` row; and a named test in the same file runs `clutch.__main__._lint` against a `tmp_path` repo with fake git methods and a journal under `tmp_path`, where a `graphics` ticket under the collision config prints the finding and returns 1, not 0, and a `feature` ticket under the same config returns 0; checked by `./dev.py test tests/unit/test_route_kinds_judge.py`.
 9. `clutch ticket lint` on a valid `graphics` ticket in a repo whose config has the same-model collision prints the finding and exits 1, exits 0 with the models differing, and exits 0 for a `feature` ticket under the collision config; checked by `./dev.py test tests/integration/test_route_kinds_judge_lint.py`.
-10. Every existing test passes, including `tests/integration/test_providers.py`, `tests/integration/test_doctor.py`, `tests/integration/test_lint_verb.py`, `tests/integration/test_ladder.py` and `tests/unit/test_main_help.py`; checked by `./dev.py test`.
+10. Every existing test passes, including `tests/integration/test_providers.py`, `tests/integration/test_doctor.py`, `tests/integration/test_lint_verb.py`, `tests/integration/test_ladder.py`, `tests/unit/test_gemini_adapter.py`, `tests/unit/test_qwen_adapter.py` and `tests/unit/test_main_help.py`; checked by `./dev.py test`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_route_kinds_filter.py tests/unit/test_route_kinds_judge.py tests/integration/test_route_kinds_judge_lint.py tests/integration/test_host_contract.py
+./dev.py test tests/unit/test_route_kinds_filter.py tests/unit/test_route_kinds_judge.py tests/integration/test_route_kinds_judge_lint.py tests/integration/test_host_contract.py tests/unit/test_gemini_adapter.py tests/unit/test_qwen_adapter.py
 ./dev.py test
 ```
 
 ## Definition of rejected
-A row with `kinds` serves a kind it does not name or a call with no kind; kind names are copied out of `clutch.tickets`; `resolve` and `candidates` keep separate row-selection code; `schema_version` changes; routing changes for any config with no `kinds` row; the judge check fires on a config with no graphics row or on a non-graphics ticket; the judge check guesses image models by name.
+A row with `kinds` serves a kind it does not name or a call with no kind; kind names are copied out of `clutch.tickets`; `resolve` and `candidates` keep separate row-selection code; `clutch/providers.py` reads `kinds` through `getattr` or another defensive fallback; `schema_version` changes; routing changes for any config with no `kinds` row; the judge check fires on a config with no graphics row or on a non-graphics ticket; the judge check guesses image models by name.
 
 ## Time budget
 - expected: 30m
