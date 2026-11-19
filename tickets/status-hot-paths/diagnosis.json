@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a3895b81429a19d71947809917f36261da6bccbe",
+  "stem": "status-hot-paths",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket premise is false: `snapshot` must read `Ticket.scope_fence` (a required field, clutch/tickets.py:104), but snapshot test stand-ins built without it break existing suites. The ticket must fence those files, and its scope currently forbids editing tests/integration/test_watch.py.",
+    "Re-scope the fence to add tests/unit/test_menu_admission.py, tests/unit/test_snapshot_merged_cap.py, tests/unit/test_verdict_menu_parity.py, tests/integration/test_stale_running.py and tests/integration/test_watch.py. Only add `scope_fence=()` to their ticket stand-ins.",
+    "Remove the Scope in clause 'not editing that file or test_watch.py'. test_watch.py line 284 has stand-ins that need scope_fence (6 failures), so the fixture edit is forced. The no-new-tests-in-hot-files rule still applies: put new tests only in the two new files.",
+    "Do not add a getattr fallback for missing scope_fence in clutch/observe.py. It is a dual path for test doubles that CLAUDE.md 'No dual-path code' forbids. The attempt correctly rejected it as a dead end.",
+    "The rest of the approach was sound and passed the focused Verification: a private builder in observe.py, a help topic in help.py with a valid how-clutch-works.md link, and view.js drawing only snap.hotPaths. Redo it from the merge base once the fence is fixed."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
