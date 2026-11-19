@@ -4,11 +4,11 @@ incomplete
 
 ## Surprises / judgment calls
 
-None.
+The admission change also affects maintenance locking and cancellation handling; the partial edits were not verified or committed.
 
 ## Dead ends
 
-None.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 25 minutes; the implementation was not completed.
+The ticket estimated 25 minutes; the work was not completed within this attempt.
 
