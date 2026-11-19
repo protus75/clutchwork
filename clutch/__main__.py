@@ -136,6 +136,10 @@ def build_control(checkout: runner.Checkout) -> PauseConsumer:
     return consumer
 
 
+def _admission_max_runs(parallel):
+    return parallel.max_runs if parallel.enabled else 1
+
+
 def build_daemon_core(
     checkout: runner.Checkout,
     *,
@@ -188,11 +192,12 @@ def build_daemon_core(
         drought_parked=drought_parked,
         completed_unmerged=completed_unmerged,
         max_unmerged=checkout.config.scheduler.max_unmerged,
+        max_runs=_admission_max_runs(checkout.config.scheduler.parallel),
         before_dispatch=consumer.checkpoint,
         control=consumer,
     )
     timers = consumer.providers.timers
-    restart = Restart(checkout, timers=timers, owned=lambda: core.admission.active is not None or core.admission.task is not None)
+    restart = Restart(checkout, timers=timers, owned=lambda: core.admission.occupied())
     core.admission.restart = restart
     core.admission._before_dispatch = StartupBoundary(restart, consumer).checkpoint
 

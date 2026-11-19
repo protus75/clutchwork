@@ -28,8 +28,8 @@ async def turn():
 
 
 def assert_idle(admission):
-    assert admission.active is None
-    assert admission.task is None
+    assert not admission.occupied()
+    assert not admission.occupied()
 
 
 @pytest.mark.asyncio
@@ -55,8 +55,8 @@ async def test_dispatch_owns_task_and_returns_terminal(tickets):
 
     async def dispatch(ticket):
         calls.append(ticket)
-        assert admission.active is ticket
-        assert admission.task is asyncio.current_task()
+        assert ticket.stem in admission.runs
+        assert next(iter(admission.runs.values())) is asyncio.current_task()
         started.set()
         await release.wait()
         return terminal
@@ -64,7 +64,7 @@ async def test_dispatch_owns_task_and_returns_terminal(tickets):
     admission = DaemonAdmission(dispatch)
     caller = asyncio.create_task(admission.dispatch(tickets[0]))
     await started.wait()
-    owned = admission.task
+    owned = next(iter(admission.runs.values()))
     assert isinstance(owned, asyncio.Task) and owned is not caller
     assert not owned.done() and not caller.done()
     release.set()
@@ -91,11 +91,11 @@ async def test_concurrent_dispatch_is_single_flight(tickets):
     admission = DaemonAdmission(dispatch)
     first = asyncio.create_task(admission.dispatch(tickets[0]))
     await started.wait()
-    owned = admission.task
+    owned = next(iter(admission.runs.values()))
     second = asyncio.create_task(admission.dispatch(tickets[1]))
     await turn()
     assert calls == [tickets[0]] and finished == []
-    assert admission.active is tickets[0] and admission.task is owned
+    assert tickets[0].stem in admission.runs and next(iter(admission.runs.values())) is owned
     assert not first.done() and not second.done() and not owned.cancelling()
     release.set()
     assert await asyncio.gather(first, second) == ["first", "second"]
@@ -124,7 +124,7 @@ async def test_dispatch_exception_unwinds_and_releases_slot(tickets):
     admission = DaemonAdmission(dispatch)
     first = asyncio.create_task(admission.dispatch(tickets[0]))
     await cleaning.wait()
-    owned = admission.task
+    owned = next(iter(admission.runs.values()))
     second = asyncio.create_task(admission.dispatch(tickets[1]))
     await turn()
     assert calls == [tickets[0]] and not first.done() and not second.done()
@@ -151,14 +151,14 @@ async def test_cancelled_waiter_never_dispatches(tickets):
     admission = DaemonAdmission(dispatch)
     first = asyncio.create_task(admission.dispatch(tickets[0]))
     await started.wait()
-    owned = admission.task
+    owned = next(iter(admission.runs.values()))
     waiter = asyncio.create_task(admission.dispatch(tickets[1]))
     await turn()
     waiter.cancel()
     with pytest.raises(asyncio.CancelledError):
         await waiter
     assert calls == [tickets[0]]
-    assert admission.active is tickets[0] and admission.task is owned
+    assert tickets[0].stem in admission.runs and next(iter(admission.runs.values())) is owned
     assert not owned.done() and not owned.cancelling() and not first.done()
     release.set()
     assert await first == "merged"
@@ -190,7 +190,7 @@ async def test_active_cancellation_awaits_cleanup_before_release(tickets, cancel
     admission = DaemonAdmission(dispatch)
     first = asyncio.create_task(admission.dispatch(tickets[0]))
     await started.wait()
-    owned = admission.task
+    owned = next(iter(admission.runs.values()))
     first.cancel()
     await cleaning.wait()
     second = asyncio.create_task(admission.dispatch(tickets[1]))
@@ -199,7 +199,7 @@ async def test_active_cancellation_awaits_cleanup_before_release(tickets, cancel
     await turn()
     assert calls == [tickets[0]] and finished == []
     assert not first.done() and not second.done() and not owned.done()
-    assert admission.active is tickets[0] and admission.task is owned
+    assert tickets[0].stem in admission.runs and next(iter(admission.runs.values())) is owned
     release.set()
     with pytest.raises(asyncio.CancelledError):
         await first

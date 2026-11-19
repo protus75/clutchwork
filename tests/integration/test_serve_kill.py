@@ -77,10 +77,10 @@ async def test_serve_storm_suspends_stage_and_frees_selection(root, monkeypatch,
     run = asyncio.create_task(rig.owner.run())
     try:
         await until(rig, lambda: terminals(rig, "other"))
-        await until(rig, lambda: rig.owner.core.admission.active is None and not rig.owner.core.scheduler._slot.locked())
+        await until(rig, lambda: not rig.owner.core.admission.occupied() and not rig.owner.core.scheduler.occupied())
         assert not terminals(rig, "work")
-        assert not rig.owner.core.admission._slot.locked() or rig.owner.core.admission.active is None
-        assert rig.owner.core.admission.active is None
+        assert not rig.owner.core.admission.busy() or not rig.owner.core.admission.occupied()
+        assert not rig.owner.core.admission.occupied()
         expected = [] if stage == "implement" else ["implement"] if stage == "check" else ["implement", "check"]
         assert [s for stem, s, _ in calls if stem == "work"] == expected
         prior = rig.owner.resume(SimpleNamespace(stem="work"))
@@ -207,7 +207,7 @@ async def test_serve_suspended_run_cleanup_and_restart(root, monkeypatch, mode):
     try:
         await until(rig, lambda: "work" in rig.owner.writers and "work" in rig.owner.writers["work"].continuations)
         retained = rig.owner.writers["work"].continuations["work"]
-        await until(rig, lambda: rig.owner.core.admission.active is None)
+        await until(rig, lambda: not rig.owner.core.admission.occupied())
         assert await rig.owner.core.sweep_orphans() == []
         assert retained.ctx.worktree("work").exists() and not terminals(rig, "work")
         request(rig, "pause", "pause")

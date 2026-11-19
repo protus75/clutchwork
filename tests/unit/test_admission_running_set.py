@@ -23,11 +23,11 @@ async def test_admission_owns_mutation_and_dispatch_windows():
         assert admission.mutating is asyncio.current_task()
     assert admission.mutating is None
     assert admission.idle()
-    running = asyncio.create_task(admission.dispatch("selected"))
+    running = asyncio.create_task(admission.dispatch(SimpleNamespace(stem="selected")))
     await entered.wait()
     assert not admission.idle()
     release.set()
-    assert await running == "selected"
+    assert (await running).stem == "selected"
     assert admission.idle()
 
 

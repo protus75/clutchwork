@@ -201,7 +201,7 @@ class Serve:
         self.core.scheduler.next_stage = self.next_stage
         self.core.scheduler.select = self.select
         self.core.admission.resume = self.resume
-        self.core.restart.owned = lambda: self.core.admission.active is not None or self.core.admission.task is not None or any(w.continuations for w in self.writers.values())
+        self.core.restart.owned = lambda: self.core.admission.occupied() or any(w.continuations for w in self.writers.values())
         self.tasks = DaemonTasks(watcher=self.watch, merge_queue=self.merge, box_consumer=self.box_intake)
         self.heartbeat = HeartbeatCycle(
             heartbeat=Heartbeat(state_dir=checkout.config.state_dir, fs=checkout.fs),
@@ -290,14 +290,15 @@ class Serve:
             while True:
                 current = await response.wait(self.scan())
                 # Hold admission through parsing/publication, including debounce unwind.
-                await response.wait(self.core.admission._slot.acquire())
+                gate = self.core.admission.exclusive()
+                await response.wait(gate.__aenter__())
                 try:
                     for stem in sorted(previous.keys() | current.keys()):
                         if stem not in previous or previous.get(stem) != current.get(stem):
                             yield stem
                     await response.wait(asyncio.gather(*self.core.watcher._waits.values()))
                 finally:
-                    self.core.admission._slot.release()
+                    await gate.__aexit__(None, None, None)
                 previous = current
                 await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
@@ -324,7 +325,7 @@ class Serve:
     def upgrade_idle(self):
         return (
             self.core.admission.idle()
-            and not self.core.scheduler._slot.locked()
+            and not self.core.scheduler.occupied()
             and not any(w.continuations for w in self.writers.values())
             and (self.queue is None or not self.queue.pending and self.queue.active is None)
         )
@@ -454,7 +455,7 @@ class Serve:
                         self.queue.contexts.pop(ticket.stem, None)
                 await self.check_upgrade()
                 for stem, writer in tuple(self.writers.items()):
-                    if (self.core.admission.active is None or self.core.admission.active.stem != stem) and not writer.continuations and stem not in self.queue.pending:
+                    if stem not in self.core.admission.runs and not writer.continuations and stem not in self.queue.pending:
                         del self.writers[stem]
 
         while True:
@@ -476,7 +477,7 @@ class Serve:
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
     async def abort(self) -> None:
-        operations = {task for task in (self.core.admission.task, self.core.admission.mutating) if task is not None}
+        operations = set(self.core.admission.runs.values()) | {task for task in (self.core.admission.mutating,) if task is not None}
         aborts = [writer.abort_current for writer in tuple(self.writers.values())]
         if self.retro is not None:
             aborts.append(self.retro.abort_current)
@@ -526,9 +527,9 @@ class Serve:
         if self.stopping:
             return
         self.core.restart.timers.fire_due()
-        if not self.core.admission.busy() and not self.core.scheduler._slot.locked():
+        if not self.core.admission.busy() and not self.core.scheduler.occupied():
             await self.core.sweep_orphans()
-            async with self.core.admission._slot:
+            async with self.core.admission.exclusive():
                 self.box.recover()
                 await self.checkpoint.poll()
         self.heartbeat.cycle()

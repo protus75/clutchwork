@@ -628,7 +628,7 @@ async def test_production_restart_precedes_dispatch(root, monkeypatch):
         original = runner.harvest_orphan
 
         async def harvest(checkout, stem, attempt):
-            assert rig.core.admission.active is None and rig.core.admission.task is None
+            assert not rig.core.admission.occupied() and not rig.core.admission.occupied()
             contender = Lockfile(checkout.config.state_dir, verb="drain", instance_id="contender", clock=rig.time)
             with pytest.raises(LockHeld):
                 contender.acquire()
@@ -759,7 +759,7 @@ async def test_restart_failures_do_not_report_ready(root, monkeypatch, failure):
         else:
             assert results[0] is results[1]
         assert not rig.core.restart.ready and prepared == []
-        assert rig.core.admission.active is None and rig.core.admission.task is None
+        assert not rig.core.admission.occupied() and not rig.core.admission.occupied()
         with pytest.raises(type(results[0])):
             await rig.core.startup()
         with pytest.raises(type(results[0])):

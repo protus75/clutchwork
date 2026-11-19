@@ -298,7 +298,7 @@ class DaemonCore:
 
     async def startup(self) -> None:
         """Explicit startup under the caller's writer lock, also used by first admission."""
-        async with self.admission._slot:
+        async with self.admission.exclusive():
             if self.restart is not None:
                 await self.restart.startup()
             if self.control is not None and self.control._recover is not None:
@@ -308,7 +308,7 @@ class DaemonCore:
         """Skip live dispatch, cleanup or admission; serialize the idle boundary with offers."""
         if self.admission.busy():
             return []
-        async with self.admission._slot:
+        async with self.admission.exclusive():
             if self.restart is None:
                 return []
             return await self.restart.sweep_orphans()
@@ -513,10 +513,11 @@ def daemon_core(
     drought_parked: Callable[[], Set[str]],
     completed_unmerged: Callable[[], int],
     max_unmerged: int,
+    max_runs: int = 1,
     before_dispatch: Callable[[], Awaitable[None]] | None = None,
     control: PauseConsumer | None = None,
 ) -> DaemonCore:
-    admission = DaemonAdmission(snapshot_dispatch(load, bind), before_dispatch=before_dispatch)
+    admission = DaemonAdmission(snapshot_dispatch(load, bind), max_runs=max_runs, before_dispatch=before_dispatch)
     scheduler = Scheduler(
         journal,
         admission.dispatch,
@@ -555,43 +556,82 @@ def snapshot_dispatch(load: Callable[[], Config], bind: Callable[[ConfigSnapshot
 
 
 class DaemonAdmission:
-    def __init__(self, dispatch: Dispatch, *, before_dispatch: Callable[[], Awaitable[None]] | None = None) -> None:
+    def __init__(self, dispatch: Dispatch, *, max_runs: int = 1, before_dispatch: Callable[[], Awaitable[None]] | None = None) -> None:
         self._dispatch = dispatch
         self._before_dispatch = before_dispatch
         self.restart: Restart | None = None
-        self._slot = asyncio.Lock()
-        self.active: Ticket | None = None
-        self.task: asyncio.Task[str] | None = None
+        self.max_runs = max_runs
+        self.runs: dict[str, asyncio.Task] = {}
+        self._condition = asyncio.Condition()
+        self._holding = 0
+        self._exclusive = False
+        self._exclusive_waiters = 0
         self.mutating: asyncio.Task | None = None
         self.resume: Callable[[Ticket], Dispatch | None] = lambda _: None
 
+    async def _acquire_run(self) -> None:
+        async with self._condition:
+            await self._condition.wait_for(lambda: not self._exclusive and not self._exclusive_waiters and self._holding < self.max_runs)
+            self._holding += 1
+
+    async def _release_run(self) -> None:
+        async with self._condition:
+            self._holding -= 1
+            self._condition.notify_all()
+
+    @asynccontextmanager
+    async def exclusive(self):
+        async with self._condition:
+            self._exclusive_waiters += 1
+            try:
+                await self._condition.wait_for(lambda: not self._exclusive and self._holding == 0)
+                self._exclusive = True
+            finally:
+                self._exclusive_waiters -= 1
+                self._condition.notify_all()
+        try:
+            yield
+        finally:
+            self._exclusive = False
+            if self._condition.locked():
+                await _protected_cleanup(asyncio.create_task(self._release_exclusive()))
+            else:
+                await self._release_exclusive()
+
+    async def _release_exclusive(self) -> None:
+        async with self._condition:
+            self._condition.notify_all()
+
     @asynccontextmanager
     async def mutations(self):
-        async with self._slot:
+        async with self.exclusive():
             self.mutating = asyncio.current_task()
             try:
                 yield
             finally:
                 self.mutating = None
 
+    def occupied(self) -> bool:
+        return bool(self.runs)
+
     def busy(self) -> bool:
-        # A released lock can be handed to a waiter before locked() becomes true.
-        return self._slot.locked() or bool(self._slot._waiters)
+        return bool(self._holding or self._exclusive or self._exclusive_waiters)
 
     def idle(self) -> bool:
-        return self.active is None and self.task is None and self.mutating is None
+        return not self.occupied() and self.mutating is None
 
     @asynccontextmanager
     async def waiting_for_merge(self):
-        """Retain dispatch ownership while lending its ticket-plane boundary to the consumer."""
-        self._slot.release()
+        """Keep ownership while lending this run's slot to the merge consumer."""
+        await self._release_run()
         try:
             yield
         finally:
-            await _protected_cleanup(asyncio.create_task(self._slot.acquire()))
+            await _protected_cleanup(asyncio.create_task(self._acquire_run()))
 
     async def dispatch(self, ticket: Ticket) -> str:
-        async with self._slot:
+        await self._acquire_run()
+        try:
             if self._before_dispatch is not None:
                 await self._before_dispatch()
 
@@ -600,12 +640,11 @@ class DaemonAdmission:
                 return await callback(ticket)
 
             task = asyncio.create_task(invoke())
-            self.active, self.task = ticket, task
+            self.runs[ticket.stem] = task
             try:
                 return await asyncio.shield(task)
             except asyncio.CancelledError:
                 task.cancel()
-                # Repeated caller cancellation must not interrupt the callback's cleanup.
                 while not task.done():
                     try:
                         await asyncio.shield(task)
@@ -617,4 +656,6 @@ class DaemonAdmission:
                     task.exception()
                 raise
             finally:
-                self.active, self.task = None, None
+                del self.runs[ticket.stem]
+        finally:
+            await _protected_cleanup(asyncio.create_task(self._release_run()))

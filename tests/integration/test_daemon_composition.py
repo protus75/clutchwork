@@ -297,7 +297,7 @@ async def test_production_root_builds_daemon_core_without_running_work(tmp_path,
     rig = CoreRig(tmp_path, prepare=prepare)
     assert_core_wiring(rig)
     assert_idle(rig.core.admission)
-    assert not rig.core.scheduler.pending and rig.core.admission.active is None
+    assert not rig.core.scheduler.pending and not rig.core.admission.occupied()
     assert not rig.core.watcher.cache and not rig.core.watcher._waits
     assert loads == [] and rig.exec.calls == [] and rig.fs.files == {}
     assert rig.journal.read() == [] and asyncio.all_tasks() == tasks
@@ -317,8 +317,8 @@ async def test_production_core_dispatches_through_admission_and_snapshot(tmp_pat
 
         async def callback(original):
             assert original is ticket
-            assert rig.core.admission.active is original
-            assert rig.core.admission.task is asyncio.current_task()
+            assert original.stem in rig.core.admission.runs
+            assert next(iter(rig.core.admission.runs.values())) is asyncio.current_task()
             with pytest.raises(AttributeError):
                 local.config.caps.retry = 99
             return "original-terminal"
@@ -357,7 +357,7 @@ async def test_production_core_reprioritizes_without_preemption(tmp_path, new_ti
         await rig.add(stem, priority)
     first = asyncio.create_task(rig.core.scheduler.dispatch_next())
     await started.wait()
-    owned = rig.core.admission.task
+    owned = next(iter(rig.core.admission.runs.values()))
     waiter = asyncio.create_task(rig.core.scheduler.dispatch_next())
     stem = "new-urgent" if new_ticket else "urgent"
     rig.files[stem] = text("P0")
@@ -372,13 +372,13 @@ async def test_production_core_reprioritizes_without_preemption(tmp_path, new_ti
     release.set()
     await cleaning.wait()
     assert calls == ["active"] and not first.done() and not waiter.done()
-    assert rig.core.admission.active.stem == "active"
-    assert rig.core.admission.task is owned and not owned.done()
+    assert "active" in rig.core.admission.runs
+    assert next(iter(rig.core.admission.runs.values())) is owned and not owned.done()
     finish.set()
     assert (await first).stem == "active" and (await waiter).stem == stem
     assert calls == ["active", stem] and owned.done()
     assert_idle(rig.core.admission)
-    assert rig.core.admission.active is None
+    assert not rig.core.admission.occupied()
     await rig.core.watcher.close()
 
 
@@ -593,7 +593,7 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
     if failure == "cancel":
         first = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await started.wait()
-        owned = rig.core.admission.task
+        owned = next(iter(rig.core.admission.runs.values()))
         waiter = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await turn()
         waiter.cancel()
@@ -605,8 +605,8 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
         await cleaning.wait()
         second = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await turn()
-        assert rig.core.admission.active is first_ticket
-        assert rig.core.admission.task is owned and not second.done()
+        assert first_ticket.stem in rig.core.admission.runs
+        assert next(iter(rig.core.admission.runs.values())) is owned and not second.done()
         failing = False
         release.set()
         with pytest.raises(asyncio.CancelledError):
@@ -616,12 +616,12 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
     elif failure == "callback":
         first = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await cleaning.wait()
-        owned = rig.core.admission.task
+        owned = next(iter(rig.core.admission.runs.values()))
         second = asyncio.create_task(rig.core.scheduler.dispatch_next())
         await turn()
         assert calls == [first_ticket] and len(prepared) == 1 and not second.done()
-        assert rig.core.admission.active is first_ticket
-        assert rig.core.admission.task is owned and not owned.done()
+        assert first_ticket.stem in rig.core.admission.runs
+        assert next(iter(rig.core.admission.runs.values())) is owned and not owned.done()
         failing = False
         release.set()
         with pytest.raises(ValueError) as caught:
@@ -633,12 +633,12 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
             await rig.core.scheduler.dispatch_next()
         assert caught.value is error
         assert_idle(rig.core.admission)
-        assert rig.core.admission.active is None
+        assert not rig.core.admission.occupied()
         assert prepared == []
         failing = False
         assert await rig.core.scheduler.dispatch_next() is second_ticket
     assert_idle(rig.core.admission)
-    assert rig.core.admission.active is None and calls[-1] is second_ticket
+    assert not rig.core.admission.occupied() and calls[-1] is second_ticket
 
 
 def observe_preparation(monkeypatch):
@@ -752,7 +752,7 @@ async def test_production_core_uses_real_snapshot_pipeline(tmp_path, monkeypatch
     async def before_host_work(ctx, original):
         called.append(original)
         assert original is ticket and ctx is contexts[0] and isinstance(ctx, StageContext)
-        assert rig.core.admission.active is original and rig.core.admission.task is asyncio.current_task()
+        assert original.stem in rig.core.admission.runs and next(iter(rig.core.admission.runs.values())) is asyncio.current_task()
         snapshot = snapshots[0]
         assert ctx.config is snapshot and isinstance(ctx.driver, Driver)
         llm = ctx.driver.llm
@@ -816,9 +816,9 @@ async def test_production_core_awaits_preflight_inside_admission(tmp_path, monke
 
     async def hook(argv):
         if argv[0] == "pnpm" or argv[1:] == ["--version"]:
-            assert asyncio.current_task() is rig.core.admission.task
+            assert asyncio.current_task() is next(iter(rig.core.admission.runs.values()))
         else:
-            assert not rig.core.admission.task.done() and rig.core.admission.active is not None
+            assert not next(iter(rig.core.admission.runs.values())).done() and rig.core.admission.occupied()
         if not started.is_set():
             assert trace == ["capture", "provider", "redactor", "redactor", "preflight-start"]
             started.set()
@@ -834,7 +834,7 @@ async def test_production_core_awaits_preflight_inside_admission(tmp_path, monke
     assert trace == [] and rig.exec.calls == [] and not contexts
     first = asyncio.create_task(rig.core.admission.dispatch(first_ticket))
     await started.wait()
-    owned = rig.core.admission.task
+    owned = next(iter(rig.core.admission.runs.values()))
     waiter = asyncio.create_task(rig.core.admission.dispatch(second_ticket))
     cancelled = asyncio.create_task(rig.core.admission.dispatch(second_ticket))
     await turn()
@@ -842,7 +842,7 @@ async def test_production_core_awaits_preflight_inside_admission(tmp_path, monke
     with pytest.raises(asyncio.CancelledError):
         await cancelled
     assert len(snapshots) == 1 and not contexts and not called and not waiter.done()
-    assert rig.core.admission.task is owned and not owned.cancelling()
+    assert next(iter(rig.core.admission.runs.values())) is owned and not owned.cancelling()
     rig.put_config(CONFIG.replace("x-med", "x-edited"))
     release.set()
     assert await asyncio.gather(first, waiter) == ["merged", "merged"]
@@ -890,13 +890,13 @@ async def test_production_core_unwinds_preflight_refusal_and_cancellation(tmp_pa
     if failure == "cancel":
         first = asyncio.create_task(rig.core.admission.dispatch(first_ticket))
         await started.wait()
-        owned = rig.core.admission.task
+        owned = next(iter(rig.core.admission.runs.values()))
         first.cancel()
         await cleaning.wait()
         second = asyncio.create_task(rig.core.admission.dispatch(second_ticket))
         await turn()
         assert len(snapshots) == 1 and not contexts and not called and not second.done()
-        assert rig.core.admission.task is owned and rig.core.admission.active is first_ticket
+        assert next(iter(rig.core.admission.runs.values())) is owned and first_ticket.stem in rig.core.admission.runs
         rig.exec.hook = None
         finish.set()
         with pytest.raises(asyncio.CancelledError):
@@ -1775,7 +1775,7 @@ async def test_production_pause_defers_snapshot_and_effects_without_preempting(t
     first, second = await rig.add("first"), await rig.add("second")
     active = asyncio.create_task(rig.core.admission.dispatch(first))
     await started.wait()
-    owned = rig.core.admission.task
+    owned = next(iter(rig.core.admission.runs.values()))
     state, life = rig.core.control.state_dir, rig.core.control.inbox.lifecycle_id
     publish_request(state, ControlRequest("10-pause", life, "pause", None), LocalFileSystem())
     waiting = asyncio.create_task(rig.core.admission.dispatch(second))

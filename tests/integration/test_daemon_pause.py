@@ -75,7 +75,7 @@ async def test_pause_does_not_preempt_active_dispatch(tickets):
     admission = DaemonAdmission(dispatch, before_dispatch=checkpoint)
     first = asyncio.create_task(admission.dispatch(tickets[0]))
     await active.wait()
-    owned = admission.task
+    owned = next(iter(admission.runs.values()))
     paused = True
     second = asyncio.create_task(admission.dispatch(tickets[1]))
     finish.set()
@@ -161,14 +161,14 @@ async def test_checkpoint_failure_and_cancellation_leave_no_dispatch(tickets):
     blocked.cancel()
     with pytest.raises(asyncio.CancelledError):
         await blocked
-    assert calls == [] and not admission._slot.locked()
+    assert calls == [] and not admission.busy()
     assert_idle(admission)
     failure = ValueError("checkpoint failed")
     release.set()
     with pytest.raises(ValueError, match="checkpoint failed"):
         await admission.dispatch(tickets[0])
     assert_idle(admission)
-    assert calls == [] and not admission._slot.locked()
+    assert calls == [] and not admission.busy()
     failure = None
     assert await admission.dispatch(tickets[1]) == "merged"
     assert calls == [tickets[1]]

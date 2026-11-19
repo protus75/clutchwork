@@ -515,7 +515,7 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
         try:
             await until(rig, lambda: (stem, "merged") in rig.returns)
             request(rig, "pause", "proof-pause")
-            await until(rig, lambda: rig.owner.control.projection.pause_id == "proof-pause" and rig.owner.core.admission.active is None)
+            await until(rig, lambda: rig.owner.control.projection.pause_id == "proof-pause" and not rig.owner.core.admission.occupied())
             local, ticket, attempt, admission, tree = admissions.pop()
             assert admission.reviewed_sha == rig.pinned
             assert trace.count((stem, "remove")) == trace.count((stem, "delete")) == 1

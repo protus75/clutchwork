@@ -457,7 +457,7 @@ def test_checkpoint_boundary_is_dormant(root, monkeypatch, verb):
         assert rig.journal.read() == [] and rig.exec.calls == [] and asyncio.all_tasks() == tasks
         for _ in range(5):
             rig.transition("prior", "merged", commit="code")
-        async with rig.core.admission._slot:
+        async with rig.core.admission.exclusive():
             await boundary.poll()
         assert len(exec_.calls) == 1
 
@@ -541,13 +541,13 @@ async def test_push_failure_preserves_production_admission(root, monkeypatch):
     for _ in range(5):
         rig.transition("prior", "merged", commit="code")
     before = await rig.checkout.git.rev_parse(root, "main")
-    async with rig.core.admission._slot:
+    async with rig.core.admission.exclusive():
         await boundary.poll()
     assert await rig.checkout.git.rev_parse(root, "main") == before
     assert StormLedger(journal=rig.journal, clock=rig.time).holds() == {}
     await rig.add("next")
     await rig.drain()
-    assert calls == ["next"] and not rig.core.admission._slot.locked()
+    assert calls == ["next"] and not rig.core.admission.busy()
     assert rig.core.control.projection.pause_id is None
     assert not any(e.type == EventType.EFFECT_COMPLETION and e.key == "checkpoint-push/0" for e in rig.journal.read())
 

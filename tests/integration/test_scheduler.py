@@ -442,7 +442,7 @@ def test_scheduler_and_watcher_are_dormant(tmp_path):
         assert_reachable(changed)
     rig = CoreRig(tmp_path)
     assert_core_wiring(rig)
-    assert rig.exec.calls == [] and rig.core.admission.task is None
+    assert rig.exec.calls == [] and not rig.core.admission.occupied()
 
 
 @pytest.mark.asyncio

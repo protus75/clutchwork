@@ -504,6 +504,7 @@ publishes `state_dir/control/active.json`, and runs four loops (every 0.1s):
   while a stem is held (Reject queue awaiting an operator, storm, drought, or a premise or diff-budget park at unchanged ticket content). After a failed terminal, serve puts the ticket back for the re-offer rule and draws `retry` on re-offer as drain does, subject to the exclusions in section 6.6. Each fresh dispatch reviews committed content without an existing approval before Implement. Among eligible tickets,
   `## Runs before` orders named stems after the ticket naming them; priority, authored age,
   and stem break ties. Edges to ineligible stems never block dispatch.
+  Admission permits up to `scheduler.parallel.max_runs` slot-holding runs when enabled (one otherwise); the scheduler still awaits each dispatch. Runs waiting for merge retain ownership but release their slot. Maintenance, startup, sweeps and watch publication exclude slot-holding runs; idle checks include every owned run.
 - **Merge queue:** serial admission (section 7.2.1).
 - **Box intake:** ingests host bug reports into the Suggestion Box and never triages.
 

@@ -98,8 +98,8 @@ async def test_upgrade_waits_for_continuation(root, monkeypatch):
     write(root, "work", text(priority="P0"))
     run = asyncio.create_task(rig.owner.run())
     await until(rig, lambda: "work" in rig.owner.writers and "work" in rig.owner.writers["work"].continuations)
-    await until(rig, lambda: rig.owner.core.admission.active is None and not rig.owner.core.scheduler._slot.locked())
-    async with rig.owner.core.admission._slot:
+    await until(rig, lambda: not rig.owner.core.admission.occupied() and not rig.owner.core.scheduler.occupied())
+    async with rig.owner.core.admission.exclusive():
         (root / "clutch/thing.py").write_text("changed")
         await rig.checkout.git.add(root, ["clutch/thing.py"])
         await rig.checkout.git.commit(root, "upgrade")
@@ -143,7 +143,7 @@ async def test_kill_accepted_during_upgrade_cleanup_prevents_spawn(root, monkeyp
     monkeypatch.setattr(rig.owner, "cleanup", killing_cleanup)
     run = asyncio.create_task(rig.owner.run())
     await until(rig, rig.owner.ready.is_set)
-    async with rig.owner.core.admission._slot:
+    async with rig.owner.core.admission.exclusive():
         (root / "clutch/thing.py").write_text("changed")
         await rig.checkout.git.add(root, ["clutch/thing.py"])
         await rig.checkout.git.commit(root, "upgrade")
@@ -194,9 +194,9 @@ async def test_upgrade_waits_between_selection_and_admission(root, monkeypatch):
 
     ticket = parse_ticket("selected", (root / "tickets/selected/ticket.md").read_text(), root)
     rig.owner.core.scheduler.update(ticket)
-    async with rig.owner.core.admission._slot:
+    async with rig.owner.core.admission.exclusive():
         dispatch = asyncio.create_task(rig.owner.core.scheduler.dispatch_next())
-        await until(rig, lambda: rig.owner.core.scheduler._slot.locked() and "selected" not in rig.owner.core.scheduler.pending)
+        await until(rig, lambda: rig.owner.core.scheduler.occupied() and "selected" not in rig.owner.core.scheduler.pending)
         assert rig.owner.core.admission.idle()
         assert not rig.owner.upgrade_idle()
         dispatch.cancel()

@@ -412,7 +412,7 @@ class _Member:
 
     async def settled(self, stem, count=1):
         def settled():
-            return len(self.terminals(stem)) >= count and self.owner.core.admission.active is None and self.owner.core.admission.mutating is None
+            return len(self.terminals(stem)) >= count and not self.owner.core.admission.occupied() and self.owner.core.admission.mutating is None
 
         await self.until(settled)
 
@@ -489,7 +489,7 @@ class _Member:
                     and len(self.sweeps) > sweeps
                     and len(self.checkpoints) > checkpoints
                     and owner.core.admission.mutating is None
-                    and not owner.core.admission._slot.locked()
+                    and not owner.core.admission.busy()
                 )
             )
             self.cycles.append((self.time(), tuple(r.responsive() for r in owner.responses)))
@@ -516,7 +516,7 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
 
     events = m.journal.read()
     need(
-        m.task is None and all(o.tasks.tasks == () and all(t.done() for t in o.workers) and o.core.admission.task is None and not o.core.watcher._waits for o in m.lifetimes),
+        m.task is None and all(o.tasks.tasks == () and all(t.done() for t in o.workers) and not o.core.admission.occupied() and not o.core.watcher._waits for o in m.lifetimes),
         "owned lifetime cleanup is incomplete",
     )
     need(json.loads((m.checkout.config.state_dir / "control/active.json").read_text()) is None, "control lifetime was not retired")

@@ -66,8 +66,8 @@ async def test_serve_routes_settled_run_to_composed_queue_once(root, monkeypatch
             await until(rig, entered.is_set)
             assert len(offers) == 1 and offers[0][1] == 0
             assert not terminals(rig, "work") and rig.returns == []
-            assert rig.owner.core.admission.active.stem == "work"
-            assert not rig.owner.core.admission.task.done()
+            assert "work" in rig.owner.core.admission.runs
+            assert not next(iter(rig.owner.core.admission.runs.values())).done()
             release.set()
         await until(rig, lambda: rig.returns)
         [terminal] = terminals(rig, "work")
@@ -338,7 +338,7 @@ async def test_serve_admission_holds_and_cleanup(root, monkeypatch, case):
         assert rig.returns == [] and queue.active is None and not queue._slot.locked()
         assert rig.owner.tasks.tasks == () and all(t.done() for t in rig.owner.workers)
         assert all(t.cancelled() or not t._log_traceback for t in rig.owner.workers)
-        assert rig.owner.core.admission.task is None and rig.owner.core.admission.active is None
+        assert not rig.owner.core.admission.occupied() and not rig.owner.core.admission.occupied()
         assert json.loads((rig.checkout.config.state_dir / "control/active.json").read_text()) is None
         workspace = rig.checkout.config.worktree_root / "work"
         assert workspace.exists() and not await rig.checkout.git.conflicted_paths(workspace)

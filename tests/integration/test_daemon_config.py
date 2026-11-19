@@ -344,14 +344,14 @@ async def test_snapshot_dispatch_unwinds_failures_and_cancellation(tmp_path, tic
     if failure == "cancel":
         first = asyncio.create_task(admission.dispatch(tickets[0]))
         await started.wait()
-        owned = admission.task
+        owned = next(iter(admission.runs.values()))
         waiter = asyncio.create_task(admission.dispatch(tickets[1]))
         await turn()
         waiter.cancel()
         with pytest.raises(asyncio.CancelledError):
             await waiter
         assert calls == ["load", "capture", "bind", "callback"]
-        assert admission.task is owned and not owned.cancelling()
+        assert next(iter(admission.runs.values())) is owned and not owned.cancelling()
         first.cancel()
         await cleaning.wait()
         second = asyncio.create_task(admission.dispatch(tickets[1]))

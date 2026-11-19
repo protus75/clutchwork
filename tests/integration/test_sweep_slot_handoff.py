@@ -11,13 +11,15 @@ from clutch.daemon import DaemonAdmission, DaemonCore
 async def test_sweep_skips_queued_handoff():
     admission = DaemonAdmission(None)
     core = DaemonCore(admission, None, None)
-    await admission._slot.acquire()
-    waiter = asyncio.create_task(admission._slot.acquire())
+    first = admission.exclusive()
+    await first.__aenter__()
+    second = admission.exclusive()
+    waiter = asyncio.create_task(second.__aenter__())
     await asyncio.sleep(0)
-    admission._slot.release()
+    await first.__aexit__(None, None, None)
     try:
         # Wrong: acquiring behind the waiter blocks instead of skipping the sweep.
         assert await asyncio.wait_for(core.sweep_orphans(), timeout=1) == []
     finally:
         await waiter
-        admission._slot.release()
+        await second.__aexit__(None, None, None)

@@ -43,6 +43,9 @@ class Scheduler:
         self.next_stage: Callable[[Ticket], str] = lambda _: "implement"
         self.select: Callable[[Ticket, str], bool] = lambda _ticket, _stage: True
 
+    def occupied(self) -> bool:
+        return self._slot.locked()
+
     def update(self, ticket: Ticket) -> None:
         self.pending[ticket.stem] = ticket
 

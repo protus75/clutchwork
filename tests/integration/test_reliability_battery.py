@@ -273,6 +273,6 @@ async def test_reliability_battery_cleans_up_owned_lifetimes(tmp_path, monkeypat
         assert (await task).green
     [m] = created
     assert m.closed and not m.time.waits and not m.session.waits
-    assert m.core.admission.task is None and all(w.ctx.driver._active is None for w in m.writers)
+    assert not m.core.admission.occupied() and all(w.ctx.driver._active is None for w in m.writers)
     trees = await m.git._run(m.root, "worktree", "list", "--porcelain")
     assert sum(line.startswith("worktree ") for line in trees.splitlines()) == 1
