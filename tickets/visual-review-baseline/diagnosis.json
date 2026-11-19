@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e57f5a8f273693428909eb938acd871c6970e1da",
+  "stem": "visual-review-baseline",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket cannot pass as written. clutch/journal.py:38 SIGNAL_NAMES is a closed set, and Journal.append (journal.py:193) raises on any name outside it. Criterion 6 requires a visual_baseline signal, but journal.py is not in the scope fence.",
+    "Re-scope the ticket: add clutch/journal.py to the scope fence and the boundary contract (disposition extend, owner clutch/journal.py) so visual_baseline joins SIGNAL_NAMES. Name its consumer, eval/visual_harness.py, as the journal.py:194 error message requires.",
+    "Add tests/integration/test_closed_sets.py to the fence. Its test at line 178 pins the exact SIGNAL_NAMES frozenset, which already lists review_baseline at line 211, so visual_baseline must be added to that expected set.",
+    "tests/integration/test_vocabularies.py:106 requires every SIGNAL_NAMES member to appear as a signal constant in clutch/, eval/ or tests/harness/. Have eval/visual_harness.py import policy.VISUAL_BASELINE_SIGNAL and journal it by that name, not by a string literal.",
+    "Change the ticket's Verification to also run tests/integration/test_closed_sets.py and tests/integration/test_vocabularies.py. The earlier attempt passed the narrower command, and only the full suite exposed the journal rejection."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
