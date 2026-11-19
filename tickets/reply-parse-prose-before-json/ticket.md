@@ -33,6 +33,7 @@ A model reply that opens with prose and then holds exactly one top-level JSON ob
 
 ## Scope in / Scope out
 Scope in: in `clutch/driver.py`, extend `unwrap_fence` in place. Keep the one-fence strip first and unchanged. If it did not match and the stripped text does not start with `{`, scan each `{` with `json.JSONDecoder.raw_decode`, skip positions inside an already decoded object, and collect the decoded top-level objects (dicts only). Return the object's source slice when there is exactly one; otherwise return the text unchanged. Add `import json` there. In `tests/integration/test_driver.py`, the one expectation that may change is the `'prose first\n```json\n{"a": 1}\n```'` case of `test_unwrap_fence`, which now expects `'{"a": 1}'`. Add new tests in the new file.
+In `tests/integration/test_requisition.py::test_invalid_reply_is_reprompted_then_accepted`, the first reply becomes one with no JSON object (`"Here is the review: snag"`); its assertions are unchanged.
 
 Scope out: no spec wording changes, no provider JSON-mode request, no journal event for the extraction (the measured effect is the drop in schema retries), no caller changes, no documentation edits.
 
@@ -40,6 +41,7 @@ Scope out: no spec wording changes, no provider JSON-mode request, no journal ev
 - clutch/driver.py
 - tests/unit/test_driver_unwrap_prose.py
 - tests/integration/test_driver.py
+- tests/integration/test_requisition.py
 
 ## Acceptance criteria
 1. `unwrap_fence('Verdict: approve.\n{"a": 1}')` returns `'{"a": 1}'`, not the input unchanged; checked by `./dev.py test tests/unit/test_driver_unwrap_prose.py`.
@@ -50,7 +52,7 @@ Scope out: no spec wording changes, no provider JSON-mode request, no journal ev
 
 ## Verification
 ```
-./dev.py test tests/unit/test_driver_unwrap_prose.py tests/integration/test_driver.py
+./dev.py test tests/unit/test_driver_unwrap_prose.py tests/integration/test_driver.py tests/integration/test_requisition.py
 ```
 
 ## Definition of rejected
