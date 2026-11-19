@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-Partial, uncommitted changes were made to attempt accounting, re-offer handling, and prior-attempt rendering.
+The merge queue, runner, daemon, artifact lifting, and existing integration tests still need coordinated changes; verification was not run.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; the work was not completed.
+The ticket expected 30 minutes; work stopped before completion.
 
