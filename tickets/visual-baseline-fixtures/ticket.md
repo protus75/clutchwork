@@ -54,7 +54,7 @@ Scope out: `eval/visual_harness.py`, the `clutch/` package including the `review
 2. Every case's `panel.provider` differs from that judge provider and every case names the same `panel` provider and model, not blank; checked by `./dev.py test tests/integration/test_visual_fixtures.py`. A set whose panel equals the judge is refused, not accepted.
 3. Overall labels include at least 5 `accept` and at least 5 `reject`, and at least 6 cases are `mode: generate` with their five fixed row ids labelled; checked by `./dev.py test tests/integration/test_visual_fixtures.py`. An all-`accept` set fails.
 4. `eval/visual_report.json` parses as one JSON object with exactly the keys `case_count`, `overall`, `rows` and `verdict`; `verdict` is `GO` or `NO_GO`, `case_count` is at least 20, `overall` is between 0 and 1, and every `rows` key is a row id used in some case label; checked by `./dev.py test tests/integration/test_visual_fixtures.py`. The test does not pin `overall`, the verdict value or the case count of the report beyond these bounds.
-5. No file other than those under `eval/visual/`, `eval/visual_report.json` and `tests/integration/test_visual_fixtures.py` differs from main; checked by `git diff --name-only main` listing only those paths.
+5. No file other than those under `eval/visual/`, `eval/visual_report.json` and `tests/integration/test_visual_fixtures.py` differs from the branch's merge base with main; checked by `git diff --name-only main...HEAD` (three-dot, so tickets other work adds to main afterwards do not count) listing only those paths.
 
 ## Verification
 ```
