@@ -346,7 +346,7 @@ uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner m
 | 154 | ~~`boundary-contract-required`~~ | boundary plan 2 follow-up | chore | P1 | `boundary-contract-authoring` | | **Merged** (`tickets/boundary-contract-required/`). Require `## Boundary contract` with the settled/rejected exemption, and add the section to open tickets. |
 | 42 | ~~`parallel-config`~~ | parallel plan 3 | feature | P2 | | | **Merged** (`tickets/parallel-config/`). `scheduler.parallel` model, doctor warning, config table. |
 | 43 | ~~`fence-overlap`~~ | parallel plan 4 | feature | P2 | | | **Merged** (`tickets/fence-overlap/`). `fences_overlap`, run-alone rule, `_in_fence` moved to `tickets.py`. |
-| 44 | `chain-order` | parallel plan 5 | feature | P2 | | | `chain()`, parallel order, slot filling, starvation guard. |
+| 44 | `chain-order` | parallel plan 5 | feature | P2 | | | **Authored** (`tickets/chain-order/`). `chain()`, parallel order, slot filling, starvation guard. |
 | 45 | `serve-parallel-dispatch` | parallel plan 6 | feature | P2 | `parallel-config`, `fence-overlap`, `chain-order`, `active-slot-single-owner` | | Run set, slots, one eligibility filter, one `running` writer, host-command lock, idle checks. |
 | 46 | `merge-model-resolve` | parallel plan 7 | feature | P2 | `merge-admission-single-owner` | | after its agent capture `tickets/merge-model-resolve/evidence/merge-conflict-facts.md`: `specs/resolve.md`, bounds, re-review of the resolution delta, `model` step value. |
 | 47 | `conflict-discard-rerun` | parallel plan 8 | feature | P2 | `merge-model-resolve` | | Delete the Rework handoff; retire and re-offer; `prior-diff` lift; `implement.md` and `rework.md` bumps; rerun cap. |
