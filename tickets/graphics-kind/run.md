@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The example stem `s` also conflicts with the existing two-character minimum; a valid stem preserves the existing contract. Scoped implementation changes remain uncommitted.
+The generated GOLDEN bytes literal required formatting after regeneration. Render validation uses the existing section data rather than adding persistent ticket fields.
 
 ## Dead ends
 
-Running `uv run clutch host core --check` exits 2 with an unrecognized-arguments error; the existing hostfiles tests check drift without that flag.
+The first full-suite run read the old committed conduct files; it passed after the regenerated files were committed.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 30 minutes; completed within the 60-minute stuck budget.
 
