@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 import yaml
 
 from clutch.artifacts import Cost, Finding, Harvest, StageResult, refused
-from clutch.box import BOX_DIR
 from clutch.caps import capability, consume, lineage, next_rung, spent, spent_reason, supervise_draws
 from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.driver import Driver
@@ -377,7 +376,7 @@ async def failure_terminal(
     supervised: bool = False,
 ) -> str:
     """Preserve the producing terminal, then retire a published split before wiping and returning."""
-    from clutch.daemon import storm_producer
+    from clutch.daemon import storm_producer_for_config
     from clutch.rework import ReworkOrder
 
     reason = ",".join(sorted({f.code for f in findings})) or outcome
@@ -406,7 +405,7 @@ async def failure_terminal(
                 try:
                     await harvest(ctx, ticket.stem, attempt=attempt, stage=stage, terminal=outcome, findings=[*findings, *extra], results=(reworked,), kind="harvest-rework")
                 except Exception:
-                    storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock).enqueue(
+                    storm_producer_for_config(ctx.config, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock).enqueue(
                         message_class="failure_report",
                         origin=ticket.stem,
                         stage=stage,
@@ -415,7 +414,7 @@ async def failure_terminal(
                         occurrence_id=arrival_id("rework-failure", ticket.stem, attempt, stage, outcome),
                     )
             else:
-                storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock).enqueue(
+                storm_producer_for_config(ctx.config, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock).enqueue(
                     message_class="failure_report",
                     origin=ticket.stem,
                     stage=stage,
@@ -575,9 +574,9 @@ async def run_ticket(stem: str, checkout: Checkout, dispatch: Dispatch) -> int:
             checkout.control.providers.timers.fire_due()
         if hasattr(dispatch, "prepare"):
             await dispatch.prepare()
-        from clutch.daemon import storm_producer
+        from clutch.daemon import storm_producer_for_config
 
-        storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock).recover()
+        storm_producer_for_config(checkout.config, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock).recover()
         ticket = await _admit(stem, checkout)
         if checkout.control is not None:
             tier, _ = capability(ticket, checkout.journal.read())
@@ -690,9 +689,9 @@ async def _dead_dependents(dead: str, checkout: Checkout) -> None:
 
     last = last_states(history)
     deaths = dead_dependencies(history)
-    from clutch.daemon import storm_producer
+    from clutch.daemon import storm_producer_for_config
 
-    box = storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
+    box = storm_producer_for_config(checkout.config, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
     for path in sorted((checkout.repo / "tickets").glob("*/ticket.md")):
         stem = path.parent.name
         if stem == dead or _ticket_state(path) != "confirmed" or last.get(stem) in CLOSED:

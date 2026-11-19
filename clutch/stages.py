@@ -43,7 +43,6 @@ from clutch.artifacts import (
     major,
     refused,
 )
-from clutch.box import BOX_DIR
 from clutch.config import Config, ConfigSnapshot, Severity
 from clutch.driver import Driver, LlmStage
 from clutch.gates import BugEvidence, GateReport, RegressionRun, run_gates
@@ -742,9 +741,9 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
         return result
     reply = result.artifact
     assert isinstance(reply, ImplementReply)
-    from clutch.daemon import storm_producer
+    from clutch.daemon import storm_producer_for_config
 
-    box = storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
+    box = storm_producer_for_config(ctx.config, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
     second_problem_ids = [
         box.enqueue(message_class="suggestion", origin=stem, stage="implement", outcome=reply.outcome, summary=problem.summary, occurrence_id=arrival_id("second-problem", stem, attempt, index))[0]
         for index, problem in enumerate(reply.second_problems)
@@ -951,9 +950,9 @@ async def gather_evidence(
         base = await ctx.git.merge_base(ctx.repo, MAIN, stem)
         base_worktree = await _base_worktree(ctx, ".base", stem, base)
         try:
-            from clutch.daemon import storm_producer
+            from clutch.daemon import storm_producer_for_config
 
-            box = storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
+            box = storm_producer_for_config(ctx.config, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
             for n, argv in red:
                 baseline, _ = await run_host_command(ctx, ticket, attempt, argv, "verification", f"{stage}/verify-{n:02d}-base.txt", cwd=base_worktree)
                 if baseline.rc != 0 and not _names_branch_only_path(argv, lambda p: (worktree / p).exists(), lambda p: (base_worktree / p).exists()):
@@ -1107,14 +1106,14 @@ def flake_covered(report: dict, changed: dict[str, set[int]]) -> bool:
 
 async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
     from clutch.covgate import percentages
-    from clutch.daemon import flake_detection, storm_producer
+    from clutch.daemon import flake_detection, storm_producer_for_config
     from clutch.flake import GreenRerunEvidence, RerunEvidence
     from clutch.gates import TestCoverage, TestTiming
     from clutch.testreport import ResultsInvalid, read_results, slow_tests
 
     root = ctx.worktree(ticket.stem)
     path = root / entry.results
-    box = storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
+    box = storm_producer_for_config(ctx.config, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
     escalations = []
     flake = flake_detection(journal=ctx.driver.journal, box=box, config=ctx.config, escalate=escalations.append)
 
@@ -1339,9 +1338,9 @@ async def check_hosts(ctx, ticket, changed_files, attempt):
             finally:
                 await ctx.git.worktree_remove(ctx.repo, base_worktree)
             if baseline.rc != 0:
-                from clutch.daemon import storm_producer
+                from clutch.daemon import storm_producer_for_config
 
-                box = storm_producer(root=ctx.config.state_dir / BOX_DIR, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
+                box = storm_producer_for_config(ctx.config, fs=ctx.fs, journal=ctx.driver.journal, clock=ctx.driver.clock)
                 prefix = ctx.driver.redactor.scrub(f"`{' '.join(entry.argv)}` fails on the merge base ")
                 summary = f"{prefix}{base[:8]} too; fix main, not this ticket"
                 if not any(m.message_class == "failure_report" and m.origin == ticket.stem and m.outcome == "base_red" and m.summary.startswith(prefix) for m in box.messages()):

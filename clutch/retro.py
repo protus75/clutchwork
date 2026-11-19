@@ -321,11 +321,11 @@ class Retro:
         if not text.startswith("# Retro receipt\n\n```json\n"):
             return
         artifact = RetroArtifact.model_validate({"proposals": json.loads(text.split("```json\n", 1)[1].split("\n```", 1)[0])["proposals"]})
-        from clutch.daemon import storm_producer
+        from clutch.daemon import storm_producer_for_config
         from clutch.status import last_states
         from clutch.storm import arrival_id
 
-        box = storm_producer(root=c.config.state_dir / BOX_DIR, fs=c.fs, journal=c.journal, clock=c.clock)
+        box = storm_producer_for_config(c.config, fs=c.fs, journal=c.journal, clock=c.clock)
         messages = box.messages()
         origins = {message.origin for message in messages}
         for proposal in artifact.proposals:
@@ -383,10 +383,10 @@ class Retro:
         return {"commit": commit}
 
     def failure_report(self, identity):
-        from clutch.daemon import storm_producer
+        from clutch.daemon import storm_producer_for_config
 
         c = self.checkout
-        storm_producer(root=c.config.state_dir / BOX_DIR, fs=c.fs, journal=c.journal, clock=c.clock).enqueue(
+        storm_producer_for_config(c.config, fs=c.fs, journal=c.journal, clock=c.clock).enqueue(
             message_class="failure_report",
             origin=identity,
             stage="retro",
@@ -423,9 +423,9 @@ class Retro:
             spec = load_spec((SPECS_DIR / "retro.md").read_text())
             head = await c.git.rev_parse(c.repo, "HEAD")
             provenance = {"head": head, "spec_version": spec.meta.version, "at": c.clock().isoformat()}
-            from clutch.daemon import storm_producer
+            from clutch.daemon import storm_producer_for_config
 
-            box = storm_producer(root=c.config.state_dir / BOX_DIR, fs=c.fs, journal=c.journal, clock=c.clock)
+            box = storm_producer_for_config(c.config, fs=c.fs, journal=c.journal, clock=c.clock)
             prior = prior_findings(box.messages(), c.journal.read())
             consumed = {"events": [asdict(e) for e in window.events], "measurements": evidence, "provenance": provenance}
             call_seq = 0

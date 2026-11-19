@@ -8,7 +8,7 @@ from pathlib import Path
 
 from clutch import merge, runner
 from clutch.artifacts import Cost, Finding, StageResult, refused
-from clutch.box import Box, RereportJournal
+from clutch.box import BOX_DIR, Box, RereportJournal
 from clutch.caps import CONFLICT_RERUN_ROAD, conflict_rerun_spent
 from clutch.checkpoint import Checkpoint
 from clutch.config import Config, ConfigSnapshot, snapshot_config
@@ -45,6 +45,11 @@ def storm_producer(*, root: Path, fs: FileSystem, journal: Journal, clock: Clock
     storm = StormBreaker(journal=journal, clock=clock, publish=lambda body, count: box.publish_storm_report(body, count))
     box = Box(root, fs, arrival=storm.record, recover=storm.recover, rereport=RereportJournal(journal))
     return box
+
+
+def storm_producer_for_config(config: Config, *, fs: FileSystem, journal: Journal, clock: Clock) -> Box:
+    """Compose a storm producer at the configured box root."""
+    return storm_producer(root=config.state_dir / BOX_DIR, fs=fs, journal=journal, clock=clock)
 
 
 def flake_detection(*, journal: Journal, box: Box, config: Config, escalate: Callable[[str], None]) -> Flake:

@@ -440,11 +440,10 @@ class Driver:
         if self._notify_config is not None:
             config, env = self._notify_config
             if exc.failure_class == "quota_exhausted":
-                from clutch.box import BOX_DIR
-                from clutch.daemon import storm_producer
+                from clutch.daemon import storm_producer_for_config
                 from clutch.storm import arrival_id
 
-                storm_producer(root=config.state_dir / BOX_DIR, fs=self.spool._fs, journal=self.journal, clock=self.clock).enqueue(
+                storm_producer_for_config(config, fs=self.spool._fs, journal=self.journal, clock=self.clock).enqueue(
                     message_class="failure_report",
                     origin=owner,
                     stage=surface,

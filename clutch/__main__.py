@@ -114,9 +114,9 @@ async def _preflighted_llm(checkout: runner.Checkout, session: ProviderSession) 
 
 def build_control(checkout: runner.Checkout) -> PauseConsumer:
     """Compose without reading requests, publishing discovery, or starting tasks."""
-    from clutch.daemon import storm_producer
+    from clutch.daemon import storm_producer_for_config
 
-    box = storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
+    box = storm_producer_for_config(checkout.config, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
     consumer = PauseConsumer(
         journal=checkout.journal,
         lifecycle_id=uuid4().hex,

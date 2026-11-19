@@ -20,6 +20,12 @@ def violations(path, source):
         functions = [n.name for n in ancestors if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
         owner = functions[0] if functions else ""
         bad = False
+        if (
+            isinstance(node, ast.Call)
+            and path.name != "daemon.py"
+            and ((isinstance(node.func, ast.Name) and node.func.id == "storm_producer") or (isinstance(node.func, ast.Attribute) and node.func.attr == "storm_producer"))
+        ):
+            bad = True
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             if node.func.id == "EngineLog" and not (
                 (path.name == "enginelog.py" and owner == "engine_log")
@@ -63,6 +69,10 @@ def test_projection_owners():
 
 def test_scan_rejects_copies_and_permits_exclusions():
     cases = [
+        ("other.py", "storm_producer(root=r, fs=f, journal=j, clock=c)", True),
+        ("other.py", "daemon.storm_producer(root=r, fs=f, journal=j, clock=c)", True),
+        ("daemon.py", "storm_producer(root=r, fs=f, journal=j, clock=c)", False),
+        ("daemon.py", "daemon.storm_producer(root=r, fs=f, journal=j, clock=c)", False),
         ("other.py", "EngineLog(p, r, c)", True),
         ("enginelog.py", "def engine_log():\n    EngineLog(p, r, c)", False),
         ("driver.py", "class Driver:\n    def from_config():\n        EngineLog(p, r, c)", False),

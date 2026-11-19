@@ -357,9 +357,9 @@ def report_intake(checkout: Checkout) -> Box:
     if checkout.config.report_inbox is None:
         box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
     else:
-        from clutch.daemon import storm_producer
+        from clutch.daemon import storm_producer_for_config
 
-        box = storm_producer(root=checkout.config.state_dir / BOX_DIR, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
+        box = storm_producer_for_config(checkout.config, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
         box.recover()
     log = engine_log(checkout.config, checkout.env, checkout.clock)
     if checkout.config.report_inbox is not None:
