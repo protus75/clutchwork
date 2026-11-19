@@ -99,6 +99,7 @@ Scope in:
   - `tests/regress_shared_hold_rule.py`: today line 24 calls `held(history, {"work": "B"})`; it becomes `held(history, {"work": "B"}, {"work"})`. Nothing else in that file changes, and it still prints `{"regression_result": "pass"}`.
   - `tests/integration/test_watch.py`: the same patch migration in the snapshot tests that patch `watch.journal`, `watch.held` or `watch.operator_holds` (today lines near 296, 367-369, 424, 453, 480, 664, 687 and 700). One assertion changes: in `test_observe_verbs_take_no_lock_and_write_nothing` (today lines 204-222), the `before`/`after` comparisons leave out files under the state directory's `cache/` (the rebuildable `journal.duckdb` and its lock), so `after == before` still checks every other state file, and the lock and stdout assertions stay as they are. No other assertion changes, and no new test goes in this file.
   - `tests/unit/test_admission_facts.py` (created by `admission-facts-precomputed`): the one expectation that changes is that `ticket_menu_inputs` builds facts once. It now calls `status.admission_facts` zero times and passes the given `facts` object to every row. Nothing else in that file changes.
+- `tests/integration/test_ask.py`: `test_drafts_prompt_selects_committed_drafts` (line 94) asserts `not (root / ".clutch").exists()`, but `clutch prompt drafts` calls `observe.snapshot`, which now creates `<state_dir>/cache/journal.duckdb`. Change only that assertion to require that nothing under `root / ".clutch"` exists outside `cache/` (for example, every file under `.clutch` has `cache` in its path parts). Nothing else in that file changes.
 - New `tests/unit/test_observe_journal_facts.py` (disk only under `tmp_path`): `journal_facts` equality against `status.admission_facts`, and `held`/`operator_holds` checking only their candidates.
 - New `tests/integration/test_snapshot_cache_facts.py`: a small git-backed fixture under `tmp_path` and the equality and call-count criteria below. It carries in the test file a reference copy of today's event-only derivations: facts from `status.admission_facts(history)`, `held` over every stem in the history, and `operator_holds` over every stem in the history.
 - New `tests/snapshot_scale_fixture.py` (not collected: no `test_` prefix), with `build(root: Path) -> dict` that writes an incident-sized host under `root` and returns its counts and the expected row stems:
@@ -129,6 +130,7 @@ Scope out:
 - tests/unit/test_observe_journal_facts.py
 - tests/integration/test_stale_running.py
 - tests/integration/test_watch.py
+- tests/integration/test_ask.py
 - tests/integration/test_snapshot_cache_facts.py
 - tests/regress_snapshot_verdict_menu_parity.py
 - tests/regress_review_menu_committed_unlocked.py
