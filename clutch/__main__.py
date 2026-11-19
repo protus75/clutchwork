@@ -365,6 +365,17 @@ def _parser() -> argparse.ArgumentParser:
     stats.add_argument("--window", default="7d")
     stats.add_argument("--json", action="store_true")
     stats.add_argument("--tree", action="store_true")
+    _command(
+        view_sub,
+        "events",
+        summary="stream actionable engine changes",
+        does="Print one line per actionable engine change until Ctrl-C, after a silent baseline.",
+        reads="Config, journal, engine log and clutch lockfile.",
+        writes="Nothing.",
+        lock="None; works while an engine holds the writer lock.",
+        exits="0 when stopped by Ctrl-C; 2 on refusal.",
+        examples=["clutch view events"],
+    )
     host = sub.add_parser(
         "host",
         help="check and set up the host checkout",
@@ -1193,6 +1204,15 @@ def main(
                 pass
         return 0
 
+    def handle_events():
+        from clutch import events
+
+        try:
+            events.stream(config.state_dir, sleep=time.sleep, write=lambda line: print(line, flush=True))
+        except KeyboardInterrupt:
+            pass
+        return 0
+
     def handle_stats():
         from clutch.stats import render_stats, stats_tree, window_start
 
@@ -1455,7 +1475,7 @@ def main(
         "config": lambda: {"init": handle_init_config, "update": handle_update_config, "migrate": handle_migrate_config}[args.config_verb](),
         "provider": lambda: {"install": handle_install, "probe": handle_probe}[args.provider_verb](),
         "prompt": handle_prompt,
-        "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status}[args.view_verb](),
+        "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status, "events": handle_events}[args.view_verb](),
         "roadmap": handle_roadmap,
         "release": lambda: {"bump": handle_release, "publish": handle_publish}[args.release_verb](),
         "engine": lambda: {

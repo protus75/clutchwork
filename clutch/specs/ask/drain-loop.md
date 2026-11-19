@@ -4,7 +4,7 @@ The engine already does this itself: with `docs/roadmap.md`, drain and serve aut
 
 Each tick:
 
-1. Observe with `clutch view status`, `clutch roadmap status`, and the tail of ${state_dir}/drain.out. On a host with no `docs/roadmap.md`, skip `clutch roadmap status` (it refuses there) and treat the host as having no `next:` rows. A held writer lock or a running stem means an engine is running.
+1. Observe with `clutch view status`, `clutch roadmap status`, and the tail of ${state_dir}/drain.out. On a host with no `docs/roadmap.md`, skip `clutch roadmap status` (it refuses there) and treat the host as having no `next:` rows. A held writer lock or a running stem means an engine is running. Between ticks run `clutch view events` under your monitor facility and start the next tick on each line it prints.
 2. Leave a running engine that is making progress alone. If it stalls (no new journal or drain.out output for 30+ minutes while a stem runs), name the root cause in one sentence from status, the stem's artifacts, and ${state_dir}/engine.log. Run `clutch prompt running <stem>`, carry out the prompt it prints, and execute its Recommendation: wait, `clutch engine stop`, or `clutch engine kill`.
 3. Resolve a draft the tick it appears, even while an engine runs: run `clutch prompt drafts` and execute its Recommendation using its `clutch ticket confirm --yes` and `clutch ticket reject --yes` steps, which queue through the engine's inbox.
 4. With no engine running:

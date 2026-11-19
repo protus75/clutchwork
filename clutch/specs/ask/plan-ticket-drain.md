@@ -22,7 +22,7 @@ Authoring:
 - Authoring overlaps the running drain: never hold or stop a drain for it.
 
 Supervising:
-- The role and before-start checks run once. Work in ticks until the stop condition below holds; each tick covers Authoring, Supervising, and Closing each phase. Watch this checkout's engine state with your agent's monitor or wait facility and act on each change as it happens: a merge or settle, a new in-flight stem, a draft, a Reject-queue stem, or the engine exiting. Start new authoring the moment a ticket dispatches; fall back to a timed check only when no change arrives. Each tick render `clutch prompt drain-loop` and follow it; its limits bind you except where these three sections say otherwise.
+- The role and before-start checks run once. Work in ticks until the stop condition below holds; each tick covers Authoring, Supervising, and Closing each phase. Run `clutch view events` under your agent's monitor facility and act on each line it prints. Start new authoring the moment a ticket dispatches; fall back to a timed check only when no line arrives. Each tick render `clutch prompt drain-loop` and follow it; its limits bind you except where these three sections say otherwise.
 - Resolve a draft the tick it appears, while the engine runs: run `clutch prompt drafts` and execute its Recommendation. An unresolved draft holds a slot of the driver's author-ahead window and can stall the drain into quiescence.
 - Never triage a `roadmap_row` Suggestion Box message; the driver owns it. Pass `clutch box triage` only the ids of other message classes.
 - Match this checkout's engine exactly: `clutch view status` and the writer lock say whether it runs. Another checkout may run its own drain, so never match a bare process name.
