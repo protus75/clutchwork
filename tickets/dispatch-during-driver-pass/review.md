@@ -1,10 +1,10 @@
 # Review: snag
 
-The overlap change is correct and the tests cover it, but a driver pass that fails while serve's main loop is running logs `serve_failed` twice.
+The serve change is correct and fixes the prior duplicate `serve_failed` finding, but the shutdown-wait half of criterion 5 rests on a single `asyncio.sleep(0)` check that passes even without `wait_driver`, so it cannot fail.
 
 ## Findings
 
-- [logic] clutch/serve.py:672 When a pass fails while the main loop is running, the loop calls `self.driver_task.result()`, which raises before `self.driver_task = None` runs. The except branch then logs `serve_failed` and sets the code. Because the task is never cleared, the new `wait_driver()` awaits the same finished task, gets the same exception back, and logs `serve_failed` a second time for one failure. The `shutdown=False` case of `test_pass_failure_stops_serve` takes this path but only checks that at least one `serve_failed` event exists, so it does not catch the duplicate. (do instead: In the loop, clear the task before reading its result, for example `task, self.driver_task = self.driver_task, None; task.result()`, so `wait_driver()` only reports a failure that surfaces at the shutdown wait. Make the integration test assert exactly one `serve_failed` event in both parametrized cases.)
+- [logic] tests/integration/test_serve_driver_overlap.py:98 In `test_one_pass_at_a_time_and_shutdown_waits`, the test calls `rig.owner.stop()`, yields once with `await asyncio.sleep(0)`, then asserts `not run.done()`. One event-loop tick is not enough for `Serve.run` to wake from its `asyncio.wait`, leave the loop, run cleanup and return, so the assertion holds even if `run` never waits for the pass. Releasing the pass afterwards and asserting a return code of 0 also passes without the wait. The test therefore cannot fail, and criterion 5's 'a stop requested while a pass is blocked does not let `Serve.run` return until the pass is released' is not checked. (do instead: After `rig.owner.stop()`, wait until `run` has demonstrably reached the shutdown wait, for example `await until(rig, lambda: rig.owner.driver_task is None)` (`wait_driver` clears the task before awaiting it), then assert `not run.done()` and that the driver task has not finished before setting `release_second`. Only then await `run` and assert it returns 0.)
 
 ## Record
 
@@ -12,17 +12,17 @@ The overlap change is correct and the tests cover it, but a driver pass that fai
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ff6f9ebefab7d26ff2d4d4ab66706bc661567382",
+  "produced_at_sha": "991b1d764b2d5b7071bc9a805c063e473301f5fb",
   "stem": "dispatch-during-driver-pass",
-  "reviewed_sha": "ff6f9ebefab7d26ff2d4d4ab66706bc661567382",
-  "summary": "The overlap change is correct and the tests cover it, but a driver pass that fails while serve's main loop is running logs `serve_failed` twice.",
+  "reviewed_sha": "991b1d764b2d5b7071bc9a805c063e473301f5fb",
+  "summary": "The serve change is correct and fixes the prior duplicate `serve_failed` finding, but the shutdown-wait half of criterion 5 rests on a single `asyncio.sleep(0)` check that passes even without `wait_driver`, so it cannot fail.",
   "findings": [
     {
       "code": "logic",
-      "path": "clutch/serve.py",
-      "line": 672,
-      "message": "When a pass fails while the main loop is running, the loop calls `self.driver_task.result()`, which raises before `self.driver_task = None` runs. The except branch then logs `serve_failed` and sets the code. Because the task is never cleared, the new `wait_driver()` awaits the same finished task, gets the same exception back, and logs `serve_failed` a second time for one failure. The `shutdown=False` case of `test_pass_failure_stops_serve` takes this path but only checks that at least one `serve_failed` event exists, so it does not catch the duplicate.",
-      "paved_road": "In the loop, clear the task before reading its result, for example `task, self.driver_task = self.driver_task, None; task.result()`, so `wait_driver()` only reports a failure that surfaces at the shutdown wait. Make the integration test assert exactly one `serve_failed` event in both parametrized cases.",
+      "path": "tests/integration/test_serve_driver_overlap.py",
+      "line": 98,
+      "message": "In `test_one_pass_at_a_time_and_shutdown_waits`, the test calls `rig.owner.stop()`, yields once with `await asyncio.sleep(0)`, then asserts `not run.done()`. One event-loop tick is not enough for `Serve.run` to wake from its `asyncio.wait`, leave the loop, run cleanup and return, so the assertion holds even if `run` never waits for the pass. Releasing the pass afterwards and asserting a return code of 0 also passes without the wait. The test therefore cannot fail, and criterion 5's 'a stop requested while a pass is blocked does not let `Serve.run` return until the pass is released' is not checked.",
+      "paved_road": "After `rig.owner.stop()`, wait until `run` has demonstrably reached the shutdown wait, for example `await until(rig, lambda: rig.owner.driver_task is None)` (`wait_driver` clears the task before awaiting it), then assert `not run.done()` and that the driver task has not finished before setting `release_second`. Only then await `run` and assert it returns 0.",
       "kind": null,
       "unit": null
     }
