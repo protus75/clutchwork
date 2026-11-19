@@ -1,22 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c98faa441d5eb1884d98c44d13719466bba5b9fc",
+  "produced_at_sha": "48992052fc053dea21141087cc6de190a7978079",
   "stem": "graphics-kind",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Criterion 9 names `clutch host core --check`, but that flag does not exist; docs/roadmap.md records P8 `rules-render` (`core --check`) as dropped 2026-11-13. Reword it to say the drift checks in tests/integration/test_hostfiles.py pass. Adding the flag is out of this ticket's scope.",
-    "Criterion 8 uses stem `s`, which fails the stem rule `^[a-z0-9][a-z0-9-]{1,63}$` documented in docs/how-clutch-works.md:126 (at least two characters). Replace it with a valid stem such as `hero`, and make the expected paths tickets/hero/reference/a.png and b.png.",
-    "After the rewrite, redo all the work from the merge base. Change clutch/tickets.py (Kind, Render grammar and lint rules), clutch/__main__.py `_new` (--reference and --input), the CORE_TEMPLATE kind list, the host-authoring.md Graphics section, the listed test flips, and the new",
-    "Re-render the managed blocks in CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md with `uv run clutch host core`, not by hand. Keep CORE_TEMPLATE at 8192 bytes or less."
+    "clutch/tickets.py: keep the parse-time empty-body check on `## Goal / Why` for every graphics ticket except `mode: generate`. Base the exemption on the parsed Render mode, not on `kind: graphics`, so a `mode: command` ticket with an empty Goal / Why still raises TicketInvalid.",
+    "Criterion 7 asks only for a lint finding when a generate ticket has no `input:` and an empty Goal / Why. Keep that rule limited to generate mode, and don't loosen any other required section for graphics.",
+    "Add a test to tests/unit/test_graphics_kind.py: a `mode: command` graphics ticket (fenced command plus `carries: tests/render` in the fence) with an empty `## Goal / Why` raises TicketInvalid. Keep the generate-mode empty-prompt finding test.",
+    "Every attempt starts from the merge base, so redo all 13 fenced files. Review found the rest sound: KINDS, the Render grammar, the visual backtick exemption, --reference/--input in _new, the guide section, CORE_TEMPLATE `|graphics`, the GOLDEN regeneration and the closed-set test edits.",
+    "Re-render the managed blocks with `uv run clutch host core` and regenerate GOLDEN with `uv run python -m tests.integration.test_hostfiles`. Commit them before running `./dev.py test`, because the drift checks read the committed CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
