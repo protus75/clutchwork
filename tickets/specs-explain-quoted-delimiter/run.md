@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification passed with 100 tests, but the full integration check failed on the rework hash; the isolated test passes on the base commit. The exact ticket verification cannot run on base because its new test file does not exist there. The integration check also timed out in three host-loop tests; their base status was not established. Ruff reported an import-order issue in the uncommitted new test.
+The focused verification, full integration suite, lint, and format checks passed; the coverage gate did not measure any changed file. The regression test prevents recurrence across all nine specs. A shared sentence with a focused test was the minimum change; no renderer change was needed.
 
 ## Dead ends
 
-None.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 15 minutes; elapsed time was not measured.
+Expected 15 minutes; completed within the budget.
 
