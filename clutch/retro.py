@@ -18,7 +18,7 @@ from clutch.gates import GateReport
 from clutch.git import GitError
 from clutch.journal import Event, EventType, total_spend
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
-from clutch.tickets import read_tolerant, ticket_path
+from clutch.tickets import CHECKS_FILE, artifact_path, read_tolerant, ticket_path
 
 RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
@@ -198,7 +198,7 @@ async def production_evidence(window, checkout):
             checks[stem] = event
             if event.key not in invoices:
                 commit = event.body["result"]["commit"]
-                text = await checkout.git._run(checkout.repo, "show", f"{commit}:tickets/{stem}/checks.json")
+                text = await checkout.git._run(checkout.repo, "show", f"{commit}:{artifact_path(stem, CHECKS_FILE)}")
                 invoice = Invoice.model_validate_json(text)
                 invoices[event.key] = invoice
                 observations.extend((invoice.stem, report.code, report.verdict, report.code in invoice.bypassed) for report in invoice.reports)

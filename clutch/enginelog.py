@@ -11,13 +11,20 @@ from clutch.journal import render_ts
 from clutch.redact import Redactor
 from clutch.seams import Clock, LocalFileSystem
 
+ENGINE_LOG_FILE = "engine.log"
+
+
+def engine_log_path(state: Path) -> Path:
+    return state / ENGINE_LOG_FILE
+
+
 MAX_BYTES = 16 * 1024 * 1024
 BACKUPS = 3  # 4 files with the active one
 
 
-def engine_log(config, env, clock) -> "EngineLog":
+def engine_log(config, redactor, clock) -> "EngineLog":
     """Build the configured, redacted engine log."""
-    return EngineLog(config.state_dir / "engine.log", Redactor.from_config(config, env), clock)
+    return EngineLog(engine_log_path(config.state_dir), redactor, clock)
 
 
 class EngineLog:

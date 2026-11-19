@@ -23,6 +23,7 @@ from clutch.lockfile import Lockfile
 from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
+from clutch.redact import Redactor
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.status import CLOSED
@@ -119,7 +120,7 @@ class Serve:
         self.observation: asyncio.Task | None = None
         self.stopper = self.observer = self.checkpoint = None
         self.responses = tuple(Responsiveness() for _ in range(4))
-        self.log = engine_log(checkout.config, checkout.env, checkout.clock)
+        self.log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
         self.failure = failure or (lambda exc: self.log.event("worker_failure", error=str(exc)))
         self.notifications = build_notifications(checkout, config_path=config_path, log=self.log)
 

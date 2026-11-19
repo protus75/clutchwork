@@ -30,7 +30,7 @@ def events(phase, outcome):
 @pytest.mark.parametrize("result,outcome", [([], "ok"), (["bad provider"], "failed"), (RuntimeError("probe"), "failed")])
 async def test_preflight_events(monkeypatch, result, outcome):
     log = install_log(monkeypatch, runner)
-    config = SimpleNamespace(state_dir=Path("/state"))
+    config = SimpleNamespace(state_dir=Path("/state"), providers=[], release=SimpleNamespace(pypi_token=""))
     checkout = SimpleNamespace(config=config, exec_=None, fs=None, env={}, repo=Path("/repo"), control=SimpleNamespace(providers=None), clock=None)
     provider = SimpleNamespace(preflight=AsyncMock(side_effect=result if isinstance(result, Exception) else None, return_value=result), preflight_notices=[])
     monkeypatch.setattr(runner, "ProviderLLM", lambda *args, **kwargs: provider)
@@ -53,7 +53,7 @@ async def test_preflight_events(monkeypatch, result, outcome):
 async def test_drain_retro_events(monkeypatch, due, result, outcome):
     log = install_log(monkeypatch, drain)
     d = object.__new__(drain._Drain)
-    d.c = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state")), env={}, clock=None, sleep=None, control=None)
+    d.c = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state"), providers=[], release=SimpleNamespace(pypi_token="")), env={}, clock=None, sleep=None, control=None)
     d.retro = AsyncMock(side_effect=result if isinstance(result, Exception) else None, return_value=result)
     d.retro.due = due
     d.retro.abort_current = AsyncMock()

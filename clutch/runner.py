@@ -32,11 +32,27 @@ from clutch.lockfile import Lockfile
 from clutch.merge import compose_pipeline, merge
 from clutch.providers import ADAPTERS, ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.reconcile import reconcile
+from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, GroupExec, Sleep
 from clutch.stages import DiagnosisMaterial, StageContext, StagesRun, diagnose, lift_outbox, run_stages, ticket_change_findings, write_diagnosis
 from clutch.status import CLOSED, admission_facts, last_states, run_admission, verdict_refusal
 from clutch.storm import arrival_id
-from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, split_frontmatter, stamp, stem_findings, ticket_path, validate_ticket
+from clutch.tickets import (
+    HARVEST_FILE,
+    REWORK_FILE,
+    RUN_FILE,
+    Ticket,
+    TicketInvalid,
+    artifact_path,
+    harvest_path,
+    intake,
+    parse_ticket,
+    split_frontmatter,
+    stamp,
+    stem_findings,
+    ticket_path,
+    validate_ticket,
+)
 
 EXIT_MERGED = 0
 EXIT_TICKET = 1
@@ -123,7 +139,7 @@ def pipeline(checkout: Checkout) -> Dispatch:
 async def prepare_pipeline(checkout: Checkout) -> Dispatch:
     """Preflight this checkout's providers before constructing any stage consumers."""
     llm = ProviderLLM(checkout.config, exec_=checkout.exec_, fs=checkout.fs, env=checkout.env, cwd=checkout.repo, timeout=call_timeout(checkout.config), session=checkout.control.providers)
-    log = engine_log(checkout.config, checkout.env, checkout.clock)
+    log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
     log.event("phase_start", phase="preflight")
     try:
         problems = await llm.preflight()
@@ -284,9 +300,9 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None) -> str:
         else:
             ticket_sha = await ctx.git.rev_parse(ctx.repo, f"HEAD:{ticket_path(ticket.stem)}")
             consume(ctx.driver.journal, ticket.stem, "diagnosis", ticket_sha)
-            harvest_path = ctx.repo / "tickets" / ticket.stem / "attempts" / str(run.attempt) / "harvest.json"
-            harvest_artifact = Harvest.model_validate_json(harvest_path.read_text()) if harvest_path.is_file() else None
-            record_path = ctx.repo / "tickets" / ticket.stem / "run.md"
+            harvest_file = ctx.repo / harvest_path(ticket.stem, run.attempt)
+            harvest_artifact = Harvest.model_validate_json(harvest_file.read_text()) if harvest_file.is_file() else None
+            record_path = ctx.repo / artifact_path(ticket.stem, RUN_FILE)
             material = DiagnosisMaterial(
                 ticket=(ctx.repo / ticket_path(ticket.stem)).read_text(),
                 terminal=result.outcome,
@@ -349,8 +365,8 @@ async def supervise_step(ctx: StageContext, ticket: Ticket, findings: list[Findi
             lines.append("- none")
         if isinstance(proposal, ReworkReply) and proposal.tickets:
             lines.extend(["", "## Proposed ticket", "", "````markdown", proposal.tickets[0].ticket, "````"])
-        ctx.fs.write(ctx.worktree(ticket.stem) / "tickets" / ticket.stem / "rework.md", ctx.driver.redactor.scrub("\n".join(lines) + "\n").encode())
-        await lift_outbox(ctx, ticket.stem, "rework-proposal", attempt=attempt, only="rework.md", **({"key_scope": key_scope} if key_scope is not None else {}))
+        ctx.fs.write(ctx.worktree(ticket.stem) / artifact_path(ticket.stem, REWORK_FILE), ctx.driver.redactor.scrub("\n".join(lines) + "\n").encode())
+        await lift_outbox(ctx, ticket.stem, "rework-proposal", attempt=attempt, only=REWORK_FILE, **({"key_scope": key_scope} if key_scope is not None else {}))
     return None
 
 
@@ -519,7 +535,7 @@ async def harvest(
     logs = sorted(p for p in spool.rglob("*") if p.is_file() and p.name != "prompt.md") if spool.is_dir() else []
     stage_log_tail = "".join(p.read_text(errors="replace") for p in logs)[-HARVEST_TAIL_CHARS:]
     events_tail = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub).latest_stdout(f"llm/{stem}/")[-HARVEST_TAIL_CHARS:]
-    record = f"tickets/{stem}/run.md"
+    record = artifact_path(stem, RUN_FILE)
     llm_cost = next((r.cost for r in reversed(results) if r.cost.provider is not None), None)
     provider = next((p for p in ctx.config.providers if p.name == llm_cost.provider), None) if llm_cost else None
     adapter = ADAPTERS.get(provider.name) if provider else None
@@ -541,9 +557,9 @@ async def harvest(
         usd=sum(r.cost.usd for r in results) if results else None,
         run_record=record if (ctx.repo / record).is_file() else None,
     )
-    path = ctx.worktree(stem) / "tickets" / stem / "attempts" / str(attempt) / "harvest.json"
+    path = ctx.worktree(stem) / harvest_path(stem, attempt)
     ctx.fs.write(path, (ctx.driver.redactor.scrub(artifact.model_dump_json(indent=2)) + "\n").encode())
-    await lift_outbox(ctx, stem, kind, attempt=attempt, only=f"attempts/{attempt}/harvest.json")
+    await lift_outbox(ctx, stem, kind, attempt=attempt, only=f"attempts/{attempt}/{HARVEST_FILE}")
 
 
 async def harvest_orphan(checkout: Checkout, stem: str, attempt: int) -> None:
@@ -562,7 +578,7 @@ async def run_ticket(stem: str, checkout: Checkout, dispatch: Dispatch) -> int:
     if findings := stem_findings(stem):
         raise Refusal(findings[0].message, findings[0].paved_road)
     lock = Lockfile(checkout.config.state_dir, verb="run", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock)
-    log = engine_log(checkout.config, checkout.env, checkout.clock)
+    log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
     pid = os.getpid()
     lock.acquire()
     outcome = "parked"

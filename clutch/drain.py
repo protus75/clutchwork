@@ -29,6 +29,7 @@ from clutch.enginelog import engine_log
 from clutch.journal import TERMINAL_STATES, Event, EventType, last_transition, render_ts, require_transition
 from clutch.lockfile import Lockfile
 from clutch.reconcile import reconcile
+from clutch.redact import Redactor
 from clutch.retro import RetroCheckOutcome
 from clutch.runner import EXIT_MERGED, EXIT_TICKET, Checkout, Dispatch, Refusal, harvest_orphan
 from clutch.seams import ReplaceExec
@@ -283,7 +284,7 @@ async def drain(
     if consumer is None:
         raise Refusal("admission control consumer absent", "construct it with `build_control` at the composition root and supply it as `Checkout.control`")
     lock = Lockfile(checkout.config.state_dir, verb="drain", instance_id=await checkout.git.describe(checkout.repo), clock=checkout.clock)
-    log = engine_log(checkout.config, checkout.env, checkout.clock)
+    log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
     pid = os.getpid()
     lock.acquire()
     outcome = "quiescent"
@@ -408,7 +409,7 @@ async def settle_admissions(checkout):
     async def apply(stem, verb, key, actor, reason=None):
         result = await runner.apply_admission(stem, verb, key, actor, checkout, **({"reason": reason} if reason is not None else {}))
         if result["refusal"] is not None:
-            log = engine_log(checkout.config, checkout.env, checkout.clock)
+            log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
             log.event("verdict_refused", stem=stem, verb=verb, reason=result["refusal"])
         return result
 
@@ -500,7 +501,7 @@ class _Drain:
                         llm = await _preflighted_llm(self.c, self.c.control.providers)
                         await triage.triage_pass(self.c, llm, frozenset(ids))
                     except UnknownBoxId as exc:
-                        engine_log(self.c.config, self.c.env, self.c.clock).event("triage_refused", reason=str(exc))
+                        engine_log(self.c.config, Redactor.from_config(self.c.config, self.c.env), self.c.clock).event("triage_refused", reason=str(exc))
                         raise
 
                 await self.c.control.inbox.settle_triage(run_triage)
@@ -710,14 +711,14 @@ class _Drain:
                     self.upgrade = (stem, commit)
 
     async def _run_driver(self):
-        log = engine_log(self.c.config, self.c.env, self.c.clock)
+        log = engine_log(self.c.config, Redactor.from_config(self.c.config, self.c.env), self.c.clock)
         self.driver_task = asyncio.create_task(self.driver(self.c, log))
 
     async def _abort_driver(self):
         pass
 
     async def _run_retro(self, *, forced):
-        log = engine_log(self.c.config, self.c.env, self.c.clock)
+        log = engine_log(self.c.config, Redactor.from_config(self.c.config, self.c.env), self.c.clock)
         log.event("phase_start", phase="retro_check")
         try:
             await self._await_controlled(asyncio.create_task(self.retro(forced=forced)), self.retro.abort_current, self.c.sleep)

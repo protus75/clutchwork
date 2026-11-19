@@ -21,7 +21,7 @@ from clutch.seams import ExecutableNotFound
 from clutch.specs import load_spec, render
 from clutch.stages import findings_text
 from clutch.status import dismiss_admission, last_states, triage_admission
-from clutch.tickets import ticket_path
+from clutch.tickets import CHECKS_FILE, REVIEW_FILE, artifact_path, ticket_path
 
 TRIAGE_STUCK_S = 600.0
 ESCAPE_ATTRIBUTION = "escape-attribution"
@@ -151,7 +151,7 @@ async def _passed_surfaces(checkout, candidate, history):
             raise ValueError("invalid completed evidence commit")
         if await checkout.git.merge_base(checkout.repo, commit, candidate["commit"]) != commit:
             continue
-        path = f"tickets/{stem}/" + ("checks.json" if kind == "checks" else "review.md")
+        path = artifact_path(stem, CHECKS_FILE if kind == "checks" else REVIEW_FILE)
         text = await checkout.git._run(checkout.repo, "show", f"{commit}:{path}")
         if kind == "checks":
             invoice = Invoice.model_validate_json(text)
@@ -353,6 +353,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
 
 def report_intake(checkout: Checkout) -> Box:
     from clutch.enginelog import engine_log
+    from clutch.redact import Redactor
 
     if checkout.config.report_inbox is None:
         box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
@@ -361,7 +362,7 @@ def report_intake(checkout: Checkout) -> Box:
 
         box = storm_producer_for_config(checkout.config, fs=checkout.fs, journal=checkout.journal, clock=checkout.clock)
         box.recover()
-    log = engine_log(checkout.config, checkout.env, checkout.clock)
+    log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
     if checkout.config.report_inbox is not None:
         ingest(box, root=checkout.repo, inbox=checkout.config.report_inbox, diagnostic=lambda error: log.event("report_intake_refused", error=error))
     return box

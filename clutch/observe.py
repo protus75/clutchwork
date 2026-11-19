@@ -15,6 +15,7 @@ from typing import Literal, get_args
 from clutch.box import BOX_DIR
 from clutch.config import load_config
 from clutch.drain import PREMISE, authored_at, awaiting_operator, order_tickets, parked_blob
+from clutch.enginelog import ENGINE_LOG_FILE, engine_log_path
 from clutch.graph import layout
 from clutch.help import COMMANDS, help_map, help_pick
 from clutch.journalcache import open_journal_cache
@@ -36,7 +37,27 @@ from clutch.status import (
     run_admission,
     triage_admission,
 )
-from clutch.tickets import Frontmatter, TicketInvalid, _graph, _intake_plan_stem, _porcelain, intake_pending, order, parse_ticket, read_tolerant, ticket_path, validate_ticket
+from clutch.tickets import (
+    CHECKS_FILE,
+    DIAGNOSIS_FILE,
+    REVIEW_FILE,
+    RUN_FILE,
+    TICKET_FILE,
+    Frontmatter,
+    TicketInvalid,
+    _graph,
+    _intake_plan_stem,
+    _porcelain,
+    artifact_path,
+    intake_pending,
+    order,
+    parse_ticket,
+    read_tolerant,
+    ticket_path,
+    validate_ticket,
+)
+
+WATCH_STATE_GLOB = f"{{journal/*.jsonl,queue.json,{ENGINE_LOG_FILE},box/*.json}}"
 
 STEP_NAMES = {
     "acceptance": "Acceptance",
@@ -412,7 +433,7 @@ def recent_steps(state: Path, log: list[dict], limit: int) -> list[dict]:
 def text_snapshot(ctx) -> str:
     state = ctx.state
     events = journal(state)
-    log = read_lines(state / "engine.log", 4000) if (state / "engine.log").exists() else []
+    log = read_lines(engine_log_path(state), 4000) if (engine_log_path(state)).exists() else []
     rows = processes(ctx)
     drains = drain_processes(ctx, rows)
     lines = [f"clutch view watch  {datetime.now().astimezone().strftime('%-I:%M:%S %p')}", ""]
@@ -660,7 +681,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     help, help_pick_items = help_payload()
     now = datetime.now().astimezone()
     events = journal(state)
-    log = read_lines(state / "engine.log", 4000) if (state / "engine.log").exists() else []
+    log = read_lines(engine_log_path(state), 4000) if (engine_log_path(state)).exists() else []
     history = as_events(events)
     facts = journal_facts(state, history)
     last = last_bodies(history)
@@ -877,9 +898,9 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
             path = f"tickets/retro/{run_seq:06d}.md" if run_seq is not None else None
             step["path"] = path if path and (ctx.root / path).is_file() else None
         elif stem := step.get("stem"):
-            name = {"implement": "run.md", "check": "checks.json", "review": "review.md", "diagnose": "diagnosis.json"}.get(surface, "ticket.md")
-            path = Path("tickets") / stem / name
-            fallback = path.with_name("ticket.md")
+            name = {"implement": RUN_FILE, "check": CHECKS_FILE, "review": REVIEW_FILE, "diagnose": DIAGNOSIS_FILE}.get(surface, TICKET_FILE)
+            path = Path(artifact_path(stem, name))
+            fallback = Path(ticket_path(stem))
             step["path"] = str(path) if (ctx.root / path).is_file() else str(fallback) if (ctx.root / fallback).is_file() else None
         step["timeDisplay"] = clock(step["ts"])
         step["dateDisplay"] = local(step["ts"]).strftime("%x, %X")
@@ -903,7 +924,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
         "box": box_rows,
         "boxCounts": box_counts,
         "priorities": priorities,
-        "watch": [{"base": str(ctx.root.resolve()), "glob": "tickets/*/ticket.md"}, {"base": str(state.resolve()), "glob": "{journal/*.jsonl,queue.json,engine.log,box/*.json}"}],
+        "watch": [{"base": str(ctx.root.resolve()), "glob": "tickets/*/ticket.md"}, {"base": str(state.resolve()), "glob": WATCH_STATE_GLOB}],
         "drainCommand": ["engine", "drain", "--detach"],
         "engineVerbs": [
             {"label": "Drain", "detail": help["verb.drain"]["what"], "argv": ["engine", "drain", "--detach"]},

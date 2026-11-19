@@ -50,6 +50,7 @@ from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalF
 from clutch.status import admission_facts, latest_transitions, lint_admission, order_admission, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
+    CHECKS_FILE,
     KINDS,
     PRIORITIES,
     IntakeRefused,
@@ -59,6 +60,7 @@ from clutch.tickets import (
     _load_frontmatter,
     _pending,
     _porcelain,
+    artifact_path,
     evidence_findings,
     lint_findings,
     missing_evidence_findings,
@@ -1772,7 +1774,7 @@ async def _stats(checkout, events, now, window):
     checks = {}
     for e in events:
         if e.type == EventType.EFFECT_COMPLETION and e.ticket and re.fullmatch(r"ticket-plane/[^/]+/\d+/checks", e.key or "") and start <= datetime.fromisoformat(e.ts) <= now:
-            text = await checkout.git._run(checkout.repo, "show", f"{e.body['result']['commit']}:tickets/{e.ticket}/checks.json")
+            text = await checkout.git._run(checkout.repo, "show", f"{e.body['result']['commit']}:{artifact_path(e.ticket, CHECKS_FILE)}")
             checks[e.key] = Invoice.model_validate_json(text)
     return project_stats(events, kinds, checks, now=now, window=window)
 

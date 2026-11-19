@@ -19,7 +19,7 @@ def rig(tmp_path, monkeypatch):
     c = SimpleNamespace(
         repo=tmp_path,
         journal=FakeJournal(),
-        config=SimpleNamespace(state_dir=tmp_path),
+        config=SimpleNamespace(state_dir=tmp_path, providers=[], release=SimpleNamespace(pypi_token="")),
         env={},
         clock=datetime.now,
         sleep=asyncio.sleep,

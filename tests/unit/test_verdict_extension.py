@@ -204,7 +204,12 @@ def test_drain_logs_refusal(monkeypatch):
     async def settle(callback):
         assert await callback("done", "confirm", "key", "extension") == {"refusal": "settled"}
 
-    checkout = SimpleNamespace(config=SimpleNamespace(state_dir=PurePath("state")), env={}, clock=None, control=SimpleNamespace(inbox=SimpleNamespace(settle_admissions=settle)))
+    checkout = SimpleNamespace(
+        config=SimpleNamespace(state_dir=PurePath("state"), providers=[], release=SimpleNamespace(pypi_token="")),
+        env={},
+        clock=None,
+        control=SimpleNamespace(inbox=SimpleNamespace(settle_admissions=settle)),
+    )
     asyncio.run(drain.settle_admissions(checkout))
     log.event.assert_called_once_with("verdict_refused", stem="done", verb="confirm", reason="settled")
 

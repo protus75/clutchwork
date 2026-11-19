@@ -39,7 +39,7 @@ from clutch.stages import (
     read_review,
     ticket_change_findings,
 )
-from clutch.tickets import TICKETS_DIR, Ticket, TicketInvalid, ticket_path, validate_ticket
+from clutch.tickets import REVIEW_FILE, RUN_FILE, TICKETS_DIR, Ticket, TicketInvalid, artifact_path, ticket_path, validate_ticket
 
 # Versions the merge contract in the provenance slot, like the mechanical Check.
 MERGE_SPEC_VERSION = 1
@@ -113,7 +113,7 @@ class ApprovalGate:
     code = "correctness_review"
 
     def check(self, artifact: Candidate, workspace: Path) -> GateReport:
-        path = f"{TICKETS_DIR}/{artifact.stem}/review.md"
+        path = artifact_path(artifact.stem, REVIEW_FILE)
         road = f"re-run `engine run {artifact.stem}` so Review approves the current branch head"
         if artifact.review_text is None:
             return self._fail(path, "no review.md on main", road)
@@ -188,7 +188,7 @@ def squash_message(ticket: Ticket, reviewed_sha: str) -> str:
 
 def read_candidate(ctx: StageContext, ticket: Ticket, reviewed: str, changed_files: list[str]) -> Candidate:
     stem = ticket.stem
-    review_md = ctx.repo / TICKETS_DIR / stem / "review.md"
+    review_md = ctx.repo / artifact_path(stem, REVIEW_FILE)
     return Candidate(
         stem=stem,
         reviewed_sha=reviewed,
@@ -345,7 +345,7 @@ async def lifted_report_paths(ctx: StageContext, stem: str, attempt: int) -> lis
             if not isinstance(rel, str):
                 continue
             path = Path(rel)
-            if path.as_posix() != rel or ".." in path.parts or not rel.startswith(f"{TICKETS_DIR}/{stem}/") or path.name == "run.md" or path.name not in KNOWN_ARTIFACTS:
+            if path.as_posix() != rel or ".." in path.parts or not rel.startswith(f"{TICKETS_DIR}/{stem}/") or path.name == RUN_FILE or path.name not in KNOWN_ARTIFACTS:
                 continue
             lifted = await ctx.git.rev_parse(ctx.repo, f"{result['commit']}:{rel}")
             if await ctx.git.rev_parse(ctx.repo, f"{MAIN}:{rel}") != lifted:

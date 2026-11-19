@@ -25,6 +25,12 @@ from clutch.seams import FileSystem
 
 TICKETS_DIR = "tickets"
 TICKET_FILE = "ticket.md"
+RUN_FILE = "run.md"
+REVIEW_FILE = "review.md"
+CHECKS_FILE = "checks.json"
+DIAGNOSIS_FILE = "diagnosis.json"
+REWORK_FILE = "rework.md"
+HARVEST_FILE = "harvest.json"
 STEM = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
 RESERVED_STEMS = frozenset({"decisions", "retro"})  # sibling dirs that match the stem regex
 INTAKE_SIGNAL = "ticket_intake"
@@ -149,6 +155,14 @@ class IntakeRefused(Exception):
 
 def ticket_path(stem: str) -> str:
     return f"{TICKETS_DIR}/{stem}/{TICKET_FILE}"
+
+
+def artifact_path(stem: str, name: str) -> str:
+    return f"{TICKETS_DIR}/{stem}/{name}"
+
+
+def harvest_path(stem: str, attempt: int) -> str:
+    return f"{TICKETS_DIR}/{stem}/attempts/{attempt}/{HARVEST_FILE}"
 
 
 def stem_findings(stem: str) -> list[Finding]:

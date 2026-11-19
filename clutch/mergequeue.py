@@ -22,7 +22,7 @@ from clutch.git import GitError, RebaseRefused
 from clutch.journal import Event, EventType
 from clutch.specs import RenderOverBound, render
 from clutch.stages import CommandResult, Evidence, StageContext
-from clutch.tickets import TICKETS_DIR, Ticket, in_fence, ticket_path, validate_ticket
+from clutch.tickets import REVIEW_FILE, TICKETS_DIR, Ticket, artifact_path, in_fence, ticket_path, validate_ticket
 
 CONFLICT_FACTS = "merge_conflict_facts"
 RED_STREAK = "merge_red_streak"
@@ -147,7 +147,7 @@ class MergeQueue:
             source = lifts[-1]["commit"] if lifts else "main"
             text = await ctx.git._run(ctx.repo, "show", f"{source}:{ticket_path(stem)}")
             ticket = validate_ticket(stem, text, ctx.repo)
-            review = stages.read_review(await ctx.git._run(ctx.repo, "show", f"main:tickets/{stem}/review.md"))
+            review = stages.read_review(await ctx.git._run(ctx.repo, "show", f"main:{artifact_path(stem, REVIEW_FILE)}"))
             if (
                 not isinstance(review, stages.ApprovedInvoice)
                 or review.stem != stem
@@ -158,7 +158,7 @@ class MergeQueue:
             ):
                 raise ValueError(road)
             if lifts:
-                path = f"tickets/{stem}/review.md"
+                path = artifact_path(stem, REVIEW_FILE)
                 if await ctx.git.rev_parse(ctx.repo, f"main:{path}") != await ctx.git.rev_parse(ctx.repo, f"{source}:{path}"):
                     raise ValueError(road)
             if any(receipt[k] is not None for k in ("review_provider", "review_model")):

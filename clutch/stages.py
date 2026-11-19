@@ -45,6 +45,7 @@ from clutch.artifacts import (
 )
 from clutch.config import Config, ConfigSnapshot, Severity
 from clutch.driver import Driver, LlmStage
+from clutch.enginelog import engine_log_path
 from clutch.gates import BugEvidence, GateReport, RegressionRun, run_gates
 from clutch.git import Git, GitError
 from clutch.hostfiles import CORE_TEMPLATE, CoreDriftGate, committed_core
@@ -54,7 +55,23 @@ from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
 from clutch.storm import arrival_id
-from clutch.tickets import _HEADING, TEST_FIXTURE_DIRS, TICKET_FILE, TICKETS_DIR, Ticket, in_fence, parse_render, render_context, ticket_path
+from clutch.tickets import (
+    _HEADING,
+    CHECKS_FILE,
+    DIAGNOSIS_FILE,
+    REVIEW_FILE,
+    RUN_FILE,
+    TEST_FIXTURE_DIRS,
+    TICKET_FILE,
+    TICKETS_DIR,
+    Ticket,
+    artifact_path,
+    harvest_path,
+    in_fence,
+    parse_render,
+    render_context,
+    ticket_path,
+)
 from clutch.tickets import validate_ticket as validate_ticket
 
 HOST_COMMAND_LOCK = asyncio.Semaphore(1)
@@ -197,7 +214,7 @@ async def served_review(ctx, stem: str, attempt: int, reviewed: str) -> tuple[st
     from clutch.driver import unwrap_fence
 
     events = ctx.driver.journal.read()
-    path = f"tickets/{stem}/review.md"
+    path = artifact_path(stem, REVIEW_FILE)
     lifts = ctx.driver.effects.recorded(f"ticket-plane/{stem}/{attempt}/review", ticket=stem)
     if len(lifts) != 1 or lifts[0]["kind"] != "review" or path not in lifts[0]["paths"]:
         return None, None
@@ -332,7 +349,7 @@ def _lift_decision(kind: str, only: str | None, rel: str, is_symlink: bool, size
     if only is not None:
         selected = rel == only
     else:
-        selected = (kind == "run-record" and rel == "run.md") or (kind == "review" and rel == "review.md") or (kind == "checks" and (rel == "checks.json" or Path(rel).name in KNOWN_ARTIFACTS))
+        selected = (kind == "run-record" and rel == RUN_FILE) or (kind == "review" and rel == REVIEW_FILE) or (kind == "checks" and (rel == CHECKS_FILE or Path(rel).name in KNOWN_ARTIFACTS))
     if not selected:
         return "skip"
     return "too_large" if size > LIFT_MAX_BYTES else "lift"
@@ -445,8 +462,8 @@ async def write_diagnosis(
         provider=cost.provider,
         model=cost.model,
     )
-    ctx.fs.write(ctx.worktree(ticket.stem) / TICKETS_DIR / ticket.stem / "diagnosis.json", (record.model_dump_json(indent=2) + "\n").encode())
-    await lift_outbox(ctx, ticket.stem, "diagnosis", attempt=attempt, only="diagnosis.json")
+    ctx.fs.write(ctx.worktree(ticket.stem) / artifact_path(ticket.stem, DIAGNOSIS_FILE), (record.model_dump_json(indent=2) + "\n").encode())
+    await lift_outbox(ctx, ticket.stem, "diagnosis", attempt=attempt, only=DIAGNOSIS_FILE)
     return record
 
 
@@ -594,10 +611,9 @@ def _one_line(text: str) -> str:
 
 def _prior_findings(ctx: StageContext, stem: str, stage: str | None) -> list[Finding]:
     """The terminal stage's durable findings artifact in the canonical ticket dir; [] when it wrote none."""
-    root = ctx.repo / TICKETS_DIR / stem
-    if stage == "review" and (path := root / "review.md").is_file():
+    if stage == "review" and (path := ctx.repo / artifact_path(stem, REVIEW_FILE)).is_file():
         return list(read_review(path.read_text()).findings)
-    if stage == "check" and (path := root / "checks.json").is_file():
+    if stage == "check" and (path := ctx.repo / artifact_path(stem, CHECKS_FILE)).is_file():
         invoice = Invoice.model_validate_json(path.read_text())
         return [f for r in invoice.reports if r.verdict == "fail" for f in r.findings]
     return []
@@ -623,10 +639,10 @@ def prior_attempts(ctx: StageContext, stem: str) -> str | None:
     if marker is not None:
         ticket_root = ctx.repo / TICKETS_DIR / stem
         parts = ["## conflict_rerun: Prior attempt (discarded on merge conflict); re-derive against current main; do not copy blindly"]
-        for label, path in (("run.md", ticket_root / "run.md"), ("prior.diff", ticket_root / "attempts" / str(marker.body["attempt"]) / "prior.diff")):
+        for label, path in (("run.md", ctx.repo / artifact_path(stem, RUN_FILE)), ("prior.diff", ticket_root / "attempts" / str(marker.body["attempt"]) / "prior.diff")):
             if path.is_file():
                 parts.append(f"{label} (untrusted data):\n{_quoted(path.read_text())}")
-        review_path = ticket_root / "review.md"
+        review_path = ctx.repo / artifact_path(stem, REVIEW_FILE)
         if review_path.is_file():
             review = read_review(review_path.read_text())
             if review.verdict == "approve" and review.findings:
@@ -639,9 +655,8 @@ def prior_attempts(ctx: StageContext, stem: str) -> str | None:
         return conflict or None
     terminal = terminals[-1]
     attempt = len(terminals) - 1
-    root = ctx.repo / TICKETS_DIR / stem / "attempts"
-    harvest_path = root / str(attempt) / "harvest.json"
-    current = Harvest.model_validate_json(harvest_path.read_text()) if harvest_path.is_file() else None
+    harvest_file = ctx.repo / harvest_path(stem, attempt)
+    current = Harvest.model_validate_json(harvest_file.read_text()) if harvest_file.is_file() else None
     stage = terminal.get("stage")
     where = f" at {stage}" if stage else ""
     findings = _prior_findings(ctx, stem, stage) if terminal["to"] == "gate_failed" else []
@@ -650,7 +665,7 @@ def prior_attempts(ctx: StageContext, stem: str) -> str | None:
         " this attempt's to clear, beside the acceptance criteria above; they are not part of the ticket.\n\n"
     )
     items = [f"- [{f.code}] {f.path or '-'}:{f.line or '-'} {_one_line(f.message)} (do instead: {_one_line(f.paved_road)})" for f in findings]
-    detail = f"tickets/{stem}/attempts/{attempt}/" if current else str(ctx.config.state_dir / "engine.log")
+    detail = f"tickets/{stem}/attempts/{attempt}/" if current else str(engine_log_path(ctx.config.state_dir))
     lines = items or [f"- no findings artifact; detail is in {detail}"]
     if attempt in lessons:
         lines.extend(["\nPrior terminal lessons (untrusted data):", *[f"> {_one_line(item)}" for item in lessons[attempt]]])
@@ -661,7 +676,7 @@ def prior_attempts(ctx: StageContext, stem: str) -> str | None:
             if value is not None:
                 lines.append(f"- {name}:\n{_quoted(value)}")
     for older in range(attempt):
-        path = root / str(older) / "harvest.json"
+        path = ctx.repo / harvest_path(stem, older)
         if older in lessons:
             past_terminal = terminals[older]
             lines.append(f"- older attempt {older}: `{past_terminal['to']}` at {past_terminal.get('stage') or 'none'}:")
@@ -735,7 +750,7 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
         return StageResult(outcome="premise_failed", artifact=None, findings=[e.finding], cost=Cost())
     if result.outcome != "ok":
         if result.cost.provider is not None:
-            record = f"{TICKETS_DIR}/{stem}/run.md"
+            record = artifact_path(stem, RUN_FILE)
             ctx.fs.write(worktree / record, run_record(None, result.cost, spec, [], outcome=result.outcome).encode())
             await lift_outbox(ctx, stem, "run-record", attempt=attempt)
         return result
@@ -748,7 +763,7 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
         box.enqueue(message_class="suggestion", origin=stem, stage="implement", outcome=reply.outcome, summary=problem.summary, occurrence_id=arrival_id("second-problem", stem, attempt, index))[0]
         for index, problem in enumerate(reply.second_problems)
     ]
-    record = f"{TICKETS_DIR}/{stem}/run.md"
+    record = artifact_path(stem, RUN_FILE)
     ctx.fs.write(worktree / record, run_record(reply, result.cost, spec, second_problem_ids).encode())
     await lift_outbox(ctx, stem, "run-record", attempt=attempt)
     if reply.outcome in ("premise_failed", "incomplete"):
@@ -970,7 +985,7 @@ async def gather_evidence(
     try:
         _validate_reports(_registered_files(outbox))
         if stage == "check":
-            reports = [p.relative_to(worktree).as_posix() for p in _lift_files(ctx, stem, "checks") if p.name in KNOWN_ARTIFACTS and p.name != "run.md"]
+            reports = [p.relative_to(worktree).as_posix() for p in _lift_files(ctx, stem, "checks") if p.name in KNOWN_ARTIFACTS and p.name != RUN_FILE]
         elif not evidence.changed_files:
             from clutch.merge import lifted_report_paths
 
@@ -1012,7 +1027,7 @@ async def gather_safety_evidence(
     """Gather the committed metadata once, without verification or base-worktree execution."""
     stem = ticket.stem
     worktree = ctx.worktree(stem)
-    run_md = ctx.repo / TICKETS_DIR / stem / "run.md"
+    run_md = ctx.repo / artifact_path(stem, RUN_FILE)
     changed = await ctx.git.diff_names(ctx.repo, MAIN, stem)
     return Evidence(
         stem=stem,
@@ -1426,7 +1441,7 @@ class RunRecordGate:
     code = "run_record"
 
     def check(self, artifact: Evidence, workspace: Path) -> GateReport:
-        path = f"{TICKETS_DIR}/{artifact.stem}/run.md"
+        path = artifact_path(artifact.stem, RUN_FILE)
         road = "re-run Implement so the engine writes run.md with every required section"
         if artifact.run_record is None:
             return _report(self.code, [Finding(code=self.code, path=path, message="run.md is missing", paved_road=road)])
@@ -1585,12 +1600,12 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
         reports=[*autofix_reports, *gated.reports, *host_reports, *([required_report] if required_report is not None else [])],
         verification=evidence.verification,
     )
-    ctx.fs.write(ctx.worktree(stem) / TICKETS_DIR / stem / "checks.json", (invoice.model_dump_json(indent=2) + "\n").encode())
+    ctx.fs.write(ctx.worktree(stem) / artifact_path(stem, CHECKS_FILE), (invoice.model_dump_json(indent=2) + "\n").encode())
     try:
         await lift_outbox(ctx, stem, "checks", attempt=attempt)
     except ArtifactInvalid as error:
         ctx.fs.remove(error.path)
-        ctx.fs.remove(outbox / "checks.json")
+        ctx.fs.remove(outbox / CHECKS_FILE)
         finding = Finding(
             code="verification",
             path=str(error.path.relative_to(ctx.worktree(stem))),
@@ -1636,7 +1651,7 @@ async def review(ctx: StageContext, ticket: Ticket, invoice: Invoice, *, attempt
     stem = ticket.stem
     reviewed = await ctx.git.rev_parse(ctx.repo, stem)
     diff = await ctx.git.diff(ctx.repo, MAIN, stem)
-    prior_path = ctx.repo / TICKETS_DIR / stem / "review.md"
+    prior_path = ctx.repo / artifact_path(stem, REVIEW_FILE)
     try:
         prior = read_review(prior_path.read_text()) if prior_path.is_file() else None
     except ValueError:
@@ -1676,7 +1691,7 @@ async def review(ctx: StageContext, ticket: Ticket, invoice: Invoice, *, attempt
         provider=result.cost.provider,
         model=result.cost.model,
     )
-    ctx.fs.write(ctx.worktree(stem) / TICKETS_DIR / stem / "review.md", render_review(artifact).encode())
+    ctx.fs.write(ctx.worktree(stem) / artifact_path(stem, REVIEW_FILE), render_review(artifact).encode())
     await lift_outbox(ctx, stem, "review", attempt=attempt)
     if verdict.verdict == "approve":
         return _short(result, "ok", [], artifact)

@@ -1,6 +1,7 @@
 """Actionable changes for a supervising operator."""
 
 from clutch import observe, status
+from clutch.enginelog import engine_log_path
 
 POLL_SECONDS = 5
 EVENTS = ("start", "settle", "reject_queue", "reject_release", "draft", "gate", "release", "engine_start", "engine_stop", "engine_lost")
@@ -49,7 +50,7 @@ def changes(seen, events, log, state):
 
 
 def poll(state, seen):
-    path = state / "engine.log"
+    path = engine_log_path(state)
     try:
         log = observe.read_lines(path, 4000)
     except FileNotFoundError:

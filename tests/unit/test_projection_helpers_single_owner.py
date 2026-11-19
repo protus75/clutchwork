@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 
 from clutch import enginelog, journal, observe, status
+from clutch.redact import Redactor
 
 
 def event(kind, ticket, body, ts="time", key=None):
@@ -58,7 +59,7 @@ def test_total_spend_filters_events_and_costs():
 
 def test_engine_log_uses_config_env_and_clock(tmp_path):
     config = SimpleNamespace(state_dir=tmp_path, providers=[SimpleNamespace(auth="KEY")], release=SimpleNamespace(pypi_token="TOKEN"))
-    log = enginelog.engine_log(config, {"KEY": "s3cret-value"}, lambda: datetime(2026, 1, 2, tzinfo=UTC))
+    log = enginelog.engine_log(config, Redactor.from_config(config, {"KEY": "s3cret-value"}), lambda: datetime(2026, 1, 2, tzinfo=UTC))
     assert log.path == tmp_path / "engine.log"
     log.event("probe", detail="s3cret-value")
     text = log.path.read_text()

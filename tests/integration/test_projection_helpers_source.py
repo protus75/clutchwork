@@ -27,10 +27,7 @@ def violations(path, source):
         ):
             bad = True
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-            if node.func.id == "EngineLog" and not (
-                (path.name == "enginelog.py" and owner == "engine_log")
-                or (path.name == "driver.py" and owner == "from_config" and any(isinstance(n, ast.ClassDef) and n.name == "Driver" for n in ancestors))
-            ):
+            if node.func.id == "EngineLog" and not (path.name == "enginelog.py" and owner == "engine_log"):
                 bad = True
             if node.func.id == "SimpleNamespace" and path.name == "observe.py" and owner != "as_events" and any(k.arg == "type" for k in node.keywords):
                 bad = True
@@ -49,6 +46,13 @@ def violations(path, source):
                     bad = True
         if path.name != "tickets.py" and isinstance(node, ast.JoinedStr) and re.search(r"tickets/\{[^}]+\}/ticket\.md", ast.unparse(node)):
             bad = True
+        if path.name != "enginelog.py" and isinstance(node, ast.Constant) and isinstance(node.value, str) and "engine.log" in node.value:
+            bad = True
+        if path.name != "tickets.py" and isinstance(node, (ast.JoinedStr, ast.BinOp)):
+            source_text = ast.unparse(node)
+            names = ("run.md", "review.md", "checks.json", "diagnosis.json", "rework.md", "harvest.json")
+            if any(name in source_text for name in names) and ("tickets" in source_text or "TICKETS_DIR" in source_text or "ticket_root" in source_text):
+                bad = True
         if path.name in {"observe.py", "__main__.py"}:
             if isinstance(node, ast.DictComp) and ticket_index(node.key):
                 bad = True
@@ -75,7 +79,15 @@ def test_scan_rejects_copies_and_permits_exclusions():
         ("daemon.py", "daemon.storm_producer(root=r, fs=f, journal=j, clock=c)", False),
         ("other.py", "EngineLog(p, r, c)", True),
         ("enginelog.py", "def engine_log():\n    EngineLog(p, r, c)", False),
-        ("driver.py", "class Driver:\n    def from_config():\n        EngineLog(p, r, c)", False),
+        ("driver.py", "class Driver:\n    def from_config():\n        EngineLog(p, r, c)", True),
+        ("other.py", 'state / "engine.log"', True),
+        ("enginelog.py", 'state / "engine.log"', False),
+        ("other.py", 'f"tickets/{stem}/run.md"', True),
+        ("other.py", 'Path("tickets") / stem / "review.md"', True),
+        ("other.py", 'ticket_root / "diagnosis.json"', True),
+        ("other.py", 'f"{TICKETS_DIR}/{stem}/checks.json"', True),
+        ("other.py", 'specs_dir / "rework.md"', False),
+        ("tickets.py", 'f"tickets/{stem}/run.md"', False),
         ("other.py", 'p / "box"', True),
         ("other.py", 'f"tickets/{stem}/ticket.md"', True),
         ("other.py", 'Path("tickets") / stem / "ticket.md"', True),

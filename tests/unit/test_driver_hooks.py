@@ -55,7 +55,7 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
     c = SimpleNamespace(
         repo=tmp_path,
         journal=journal,
-        config=SimpleNamespace(state_dir=tmp_path),
+        config=SimpleNamespace(state_dir=tmp_path, providers=[], release=SimpleNamespace(pypi_token="")),
         env={},
         clock=None,
         sleep=None,

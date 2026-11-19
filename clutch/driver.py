@@ -22,7 +22,7 @@ from pydantic import BaseModel, ValidationError
 from clutch.artifacts import Cost, Finding, Outcome, StageResult
 from clutch.config import Config, ConfigSnapshot, Severity
 from clutch.effects import Effects
-from clutch.enginelog import EngineLog
+from clutch.enginelog import EngineLog, engine_log
 from clutch.gates import Gate, GateReport, merge_severity, run_gates
 from clutch.journal import Journal
 from clutch.journal import run_seq as journal_run_seq
@@ -206,7 +206,7 @@ class Driver:
             journal=journal,
             redactor=redactor,
             spool=Spool(config.state_dir / "spools", redactor, fs or LocalFileSystem()),
-            log=EngineLog(config.state_dir / "engine.log", redactor, clock),
+            log=engine_log(config, redactor, clock),
             clock=clock,
             sleep=sleep,
             severity=merge_severity(config),
