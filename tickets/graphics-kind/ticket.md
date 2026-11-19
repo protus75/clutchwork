@@ -16,6 +16,7 @@ kind: feature
 - clutch/tickets.py::missing_evidence_findings
 - clutch/__main__.py::_new
 - tests/unit/test_closed_sets_single_owner.py::test_owner_constants
+- tests/integration/test_hostfiles.py::test_core_golden_uses_branch_template
 - docs/gemini-graphics-refactor-plan.md#B1. Grammar and authoring (`graphics-kind`)
 
 ## Goal / Why
@@ -53,10 +54,10 @@ This is the grammar and authoring row only. Render checking, routing, image gate
 - disposition: extend
 - owner: clutch/docs/host-authoring.md for ticket content; `CORE_TEMPLATE` in clutch/hostfiles.py for the agent-conduct kind list
 - consumers: authors reading the guide; every host's managed block in CLAUDE.md and AGENTS.md rendered by `clutch host core`
-- observable change: the guide documents graphics tickets. The template reads `feature|bug|chore|graphics`. The managed blocks are re-rendered.
+- observable change: the guide documents graphics tickets. The template reads `feature|bug|chore|graphics`. The managed blocks are re-rendered, and the `GOLDEN` render pinned in `tests/integration/test_hostfiles.py` is regenerated.
 - compatibility: the template stays within the 8192-byte cap in `tests/integration/test_hostfiles.py`.
 - acceptance: criterion 9
-- tests: existing `tests/integration/test_hostfiles.py` size and drift checks
+- tests: existing `tests/integration/test_hostfiles.py` size, golden and drift checks
 - post-merge source of truth: clutch/docs/host-authoring.md and clutch/hostfiles.py
 
 ## Scope in / Scope out
@@ -64,7 +65,8 @@ In:
 - `clutch/tickets.py`: add `graphics` to `Kind`. Add `Render` to the optional sections. Parse and validate `## Render` (mode, artifact, input, reference, candidates, optional fenced command and carries). Refuse it on non-graphics kinds and require it on graphics. Add the lint rules above. The `template()` error text names all four kinds, and graphics gets a `## Render` placeholder.
 - `clutch/tickets.py` backtick rule: on `kind: graphics`, an acceptance item of the form `- visual: <artifact>: <observable>` whose `<artifact>` matches a declared `artifact:` counts as naming its check, because the artifact is the check, so it is exempt from the 'names no check' backtick refusal in `validate_ticket`. Every other criterion on a graphics ticket, and every criterion on every other kind, keeps the backtick rule unchanged. A `- visual:` item whose artifact is not declared is not exempt; it gets the undeclared-artifact finding. The guide's Graphics section states this, and keeps the phrase 'every criterion names a check in backticks' in `host-authoring.md` as it is, because `tests/integration/test_lint_guide_parity.py` pins it.
 - `clutch/__main__.py`: add `--reference` and `--input` to `ticket new` and copy them in `_new`. Update the command help and examples for the new flags.
-- `clutch/hostfiles.py`: change the kind list in CORE_TEMPLATE to `feature|bug|chore|graphics` and nothing else. Re-render the managed blocks in `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md` with `clutch host core`.
+- `clutch/hostfiles.py`: change the kind list in CORE_TEMPLATE to `feature|bug|chore|graphics` and nothing else. Re-render the managed blocks in `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md` with `uv run clutch host core`, never by hand.
+- `tests/integration/test_hostfiles.py`: after the CORE_TEMPLATE edit, regenerate only the `GOLDEN` line with `uv run python -m tests.integration.test_hostfiles` (the module's `__main__` rewrite). Change nothing else in that file.
 - `clutch/docs/host-authoring.md`: change the kind list in Workflow step 1, and add a Graphics tickets section after Bug tickets. It covers both modes, the Render block, artifacts, inputs and references, the visual and mechanical criterion forms, and preferring a mechanical criterion where a test can decide it.
 - `docs/how-clutch-works.md`: update only the section that names `--kind feature|bug|chore`.
 - `tests/unit/test_closed_sets_single_owner.py`: `graphics` is now valid. Change only the loop that uses it as the invalid kind (use another value such as `epic`), the `KINDS` equality assertion, and the `template("graphics")` ValueError assertion (use an invalid kind).
@@ -77,6 +79,7 @@ Out:
 - Per-row threshold syntax in criteria (open decision 1 of the plan).
 - Capping `input:` count at the routed model's limit. This ticket uses the plan's interim cap of 3.
 - The `--kind` list in `README.md` and `vscode-clutchwork/README.md`, which do not name it.
+- A `clutch host core --check` option, which `docs/roadmap.md` records as dropped.
 
 ## Scope fence
 - clutch/tickets.py
@@ -87,6 +90,7 @@ Out:
 - CLAUDE.md
 - AGENTS.md
 - hosts/fixture/CLAUDE.md
+- tests/integration/test_hostfiles.py
 - tests/unit/test_closed_sets_single_owner.py
 - tests/integration/test_closed_sets.py
 - tests/unit/test_graphics_kind.py
@@ -100,8 +104,8 @@ Out:
 5. On a `kind: graphics` ticket declaring `artifact: assets/hero.png`, the backtick-free criterion `- visual: assets/hero.png: the product sits at the left third` parses without `TicketInvalid` and yields no finding, while `- visual: other.png: the product sits at the left third` (artifact not declared) yields an undeclared-artifact finding, checked by `./dev.py test tests/unit/test_graphics_kind.py`. The identical backtick-free `- visual: assets/hero.png: ...` item on a `kind: feature` ticket still raises `TicketInvalid` with 'names no check', not a pass.
 6. A graphics ticket whose criteria are all `- visual:` items with declared artifacts yields a finding, and adding one non-visual criterion that names a check in backticks (for example `1. ` followed by a backticked `./dev.py test tests/unit/test_x.py`) clears it, checked by `./dev.py test tests/unit/test_graphics_kind.py`.
 7. A `generate` ticket with no `input:` and an empty prompt yields a finding, and with one `input:` (or a Goal / Why prompt) it does not. Four `input:` lines yield a finding, checked by `./dev.py test tests/unit/test_graphics_kind.py`.
-8. `ticket new s --kind graphics --reference a.png --input b.png` writes `tickets/s/reference/a.png` and `tickets/s/reference/b.png` and exits 0. `--input` with `--kind feature` exits 2 and writes nothing. Duplicate names and symlinks exit 2, checked by `./dev.py test tests/unit/test_graphics_new.py`.
-9. `len(hostfiles.CORE_TEMPLATE) <= 8192` and `clutch host core --check` reports no drift for CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md, checked by `./dev.py test tests/integration/test_hostfiles.py tests/unit/test_hostfiles_supervisor_verdicts.py`.
+8. `ticket new hero --kind graphics --reference a.png --input b.png` writes `tickets/hero/reference/a.png` and `tickets/hero/reference/b.png` and exits 0. `--input` with `--kind feature` exits 2 and writes nothing. Duplicate names and symlinks exit 2, checked by `./dev.py test tests/unit/test_graphics_new.py`.
+9. `len(hostfiles.CORE_TEMPLATE) <= 8192`, the regenerated `GOLDEN` matches `hostfiles.render(b"")`, and the drift checks in `tests/integration/test_hostfiles.py` pass for CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md, checked by `./dev.py test tests/integration/test_hostfiles.py tests/unit/test_hostfiles_supervisor_verdicts.py`.
 10. The full suite passes, including `tests/unit/test_closed_sets_single_owner.py`, `tests/integration/test_closed_sets.py`, `tests/unit/test_main_help.py` and `tests/integration/test_tickets.py`, checked by `./dev.py test`.
 
 ## Verification
@@ -110,7 +114,7 @@ Out:
 ```
 
 ## Definition of rejected
-A kind other than graphics gains `## Render` behavior. A visual criterion is judged by a denylist of words instead of the declared-artifact rule. Existing feature, bug or chore tickets stop linting. CORE_TEMPLATE exceeds 8192 bytes or the managed blocks drift.
+A kind other than graphics gains `## Render` behavior. A visual criterion is judged by a denylist of words instead of the declared-artifact rule. Existing feature, bug or chore tickets stop linting. CORE_TEMPLATE exceeds 8192 bytes, the managed blocks drift, or `tests/integration/test_hostfiles.py` changes beyond the `GOLDEN` line.
 
 ## Time budget
 - expected: 30m
