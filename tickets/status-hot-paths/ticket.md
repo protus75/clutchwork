@@ -13,8 +13,10 @@ none
 ## Context
 - clutch/observe.py::snapshot
 - clutch/tickets.py::fences_overlap
+- clutch/tickets.py::Ticket
 - clutch/help.py
 - vscode-clutchwork/media/view.js
+- tests/integration/test_status.py
 - docs/parallel-tickets-plan.md#8. Measurement
 
 ## Goal / Why
@@ -44,9 +46,10 @@ Counting rule, computed in Python in the snapshot builder: a ticket is unsettled
 
 ## Scope in / Scope out
 Scope in:
-- A private builder in `clutch/observe.py` that takes the unsettled tickets and returns the `hotPaths` rows; `snapshot` calls it and adds `hotPaths` and `hotPathsHelp`.
+- A private builder in `clutch/observe.py` that takes the unsettled tickets and returns the `hotPaths` rows; `snapshot` calls it and adds `hotPaths` and `hotPathsHelp`. The builder reads `Ticket.scope_fence` directly; no `getattr` fallback or other dual path for test doubles that lack it.
 - One help topic in `clutch/help.py` for the table: what it is, what comes before and after, linking the `docs/how-clutch-works.md` section that owns it. Edit existing help tests only where an exact topic-set assertion is forced.
-- A new integration test, `tests/integration/test_hot_paths_snapshot.py`, that builds a snapshot the way `tests/integration/test_status.py` does (not editing that file or `test_watch.py`) and asserts `snap['hotPathsHelp'] in snap['help']` and that `snap['hotPaths']` is a list of `{path, count}` rows. The builder's own lines stay covered by `tests/unit/test_observe_hot_paths.py` through in-memory Ticket inputs.
+- A new integration test, `tests/integration/test_hot_paths_snapshot.py`, that builds a snapshot the way `tests/integration/test_status.py` does (not editing that file) and asserts `snap['hotPathsHelp'] in snap['help']` and that `snap['hotPaths']` is a list of `{path, count}` rows. The builder's own lines stay covered by `tests/unit/test_observe_hot_paths.py` through in-memory Ticket inputs.
+- Existing snapshot test stand-ins that now break because `snapshot` reads `scope_fence`: in `tests/unit/test_menu_admission.py`, `tests/unit/test_snapshot_merged_cap.py`, `tests/unit/test_verdict_menu_parity.py`, `tests/integration/test_stale_running.py`, and `tests/integration/test_watch.py`, only add `scope_fence=()` to their ticket stand-ins. Add no new test, fixture, or helper to those files; new tests go only in the two new files.
 - `vscode-clutchwork/media/view.js` draws the rows; `view.css` styles them only if needed.
 - `docs/how-clutch-works.md`: add one sentence in the section that describes the snapshot or extension view, naming the hot-paths table. Edit only that section.
 Scope out:
@@ -64,6 +67,11 @@ Scope out:
 - tests/unit/test_help.py
 - tests/unit/test_help_snapshot.py
 - tests/integration/test_help.py
+- tests/unit/test_menu_admission.py
+- tests/unit/test_snapshot_merged_cap.py
+- tests/unit/test_verdict_menu_parity.py
+- tests/integration/test_stale_running.py
+- tests/integration/test_watch.py
 
 ## Acceptance criteria
 1. With three unsettled tickets fencing `a.py`, two fencing `b.py`, and one fencing `c.py`, the builder returns rows ordered `a.py` 3, `b.py` 2, `c.py` 1, checked by `./dev.py test tests/unit/test_observe_hot_paths.py`; an unsorted or insertion-order result fails it.
@@ -72,14 +80,15 @@ Scope out:
 4. Twelve distinct paths yield exactly 10 rows, with count ties broken by path ascending, checked by `./dev.py test tests/unit/test_observe_hot_paths.py`; no tickets yields `[]`, not `None`.
 5. The built snapshot's `hotPathsHelp` value is a key of its `help` map and `hotPaths` is a list of `{path, count}` rows, checked by `./dev.py test tests/integration/test_hot_paths_snapshot.py`; a snapshot missing either key fails it.
 6. `view.js` contains no sort, filter, or count over `hotPaths`, checked by review against the CLAUDE.md thin-wrapper rule at the diff.
+7. Existing snapshot suites pass with stand-ins given `scope_fence=()`, checked by `./dev.py test tests/unit/test_menu_admission.py tests/unit/test_snapshot_merged_cap.py tests/unit/test_verdict_menu_parity.py tests/integration/test_stale_running.py tests/integration/test_watch.py`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_observe_hot_paths.py tests/integration/test_hot_paths_snapshot.py tests/unit/test_help.py tests/unit/test_help_snapshot.py tests/integration/test_help.py
+./dev.py test tests/unit/test_observe_hot_paths.py tests/integration/test_hot_paths_snapshot.py tests/unit/test_help.py tests/unit/test_help_snapshot.py tests/integration/test_help.py tests/unit/test_menu_admission.py tests/unit/test_snapshot_merged_cap.py tests/unit/test_verdict_menu_parity.py tests/integration/test_stale_running.py tests/integration/test_watch.py
 ```
 
 ## Definition of rejected
-The branch counts, sorts, or cuts rows in JavaScript; counts settled tickets; or changes any existing snapshot key.
+The branch counts, sorts, or cuts rows in JavaScript; counts settled tickets; changes any existing snapshot key; or adds a fallback in `clutch/observe.py` for tickets missing `scope_fence`.
 
 ## Time budget
 - expected: 25m
