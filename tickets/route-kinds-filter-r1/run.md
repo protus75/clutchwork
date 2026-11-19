@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The focused verification passed, and the candidate integration suite passed 3,479 tests. The full verification failed on two route fixtures that omit the new kinds field; both tests passed on the base commit and failed again in isolation and on the repeated candidate run. No changes were committed.
+The final verification commands, coverage gate, configured integration check, lint, and format checks passed; seven routing and judge mutations were caught, but mutation checks were not completed for every assertion.
 
 ## Dead ends
 
-Supporting the incomplete fixture objects in production would introduce the compatibility path prohibited by the ticket; using real Route objects in the fixtures would prevent this class of schema drift.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimates 30 minutes; elapsed time was not measured.
+none
 
