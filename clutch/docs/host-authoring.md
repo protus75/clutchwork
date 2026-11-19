@@ -32,6 +32,9 @@ what content its tickets carry, never the format. See the [host run guide](host-
 - `Depends on`: tickets whose merged code this ticket needs. Use it only for that: a failed
   dependency blocks every ticket behind it. Merged code includes a test helper, fixture, fixture
   data set, or check rule another ticket creates. A ticket that uses one depends on the ticket that creates it.
+  Never state a precondition that a person must perform outside the pipeline. Instead, add a
+  `## Depends on` edge to a ticket that delivers it, or fence the file and put the edit in Scope in.
+  For a `tickets/` path, use `## Depends on`; Implement cannot edit ticket files.
 - `Runs before`: stems this ticket runs ahead of when both are eligible. This soft order never
   blocks; use it, not `Depends on`, for any other ordering. Use `clutch ticket order` to change it or priority.
   `Depends on` and `Runs before` stems name existing tickets, never the ticket itself, and never close a cycle.
