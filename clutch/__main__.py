@@ -476,7 +476,7 @@ def _parser() -> argparse.ArgumentParser:
         summary="install provider CLIs into the host project as pnpm dev dependencies",
         does="Install named provider CLIs as pnpm dev dependencies, then report their package, location and version; with no names, report every adapter.",
         reads="Provider CLI --version output from node_modules/.bin or PATH; no config.",
-        writes="With names, package.json, pnpm-lock.yaml and node_modules/ through pnpm; otherwise nothing.",
+        writes="With names, package.json, pnpm-lock.yaml, pnpm-workspace.yaml and node_modules/ through pnpm; otherwise nothing.",
         lock="None.",
         exits="0 when installed or reported; 2 on refusal (unknown provider, pnpm missing, pnpm add failed, or CLI printed no version after install).",
         examples=["clutch provider install", "clutch provider install claude codex"],

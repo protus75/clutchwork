@@ -12,7 +12,7 @@ For a specific release, pin it as `clutchwork==<version>`. Run `uv sync`; the
 executable is `.venv/bin/clutch`. Run verbs as `uv run clutch <verb>`. Native
 Windows uses `.venv\Scripts\clutch.exe`; set `clutch.command` explicitly there.
 
-`uv run clutch provider install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `node_modules/.bin`); commit the first two and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run clutch provider install` with no names reports each adapter's package, location, and version.
+`uv run clutch provider install claude codex` installs the CLIs you route as pnpm dev dependencies of the host (`package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `node_modules/.bin`); commit `package.json`, `pnpm-lock.yaml`, and `pnpm-workspace.yaml` and gitignore `node_modules/`. A CLI already on `PATH` works without it; a project install is used first. `uv run clutch provider install` with no names reports each adapter's package, location, and version.
 
 `uv run clutch config init --write` then creates a `config.yaml` from the CLIs found and the models they serve, which `clutch host doctor` and `clutch provider probe` check.
 

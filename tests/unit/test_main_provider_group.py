@@ -60,3 +60,9 @@ def test_refusals_name_group(tmp_path, monkeypatch, capsys):
         else:
             assert err == f"clutch provider: unknown provider 'llama' -- name one of {', '.join(sorted(ADAPTERS))}\n"
     assert list(tmp_path.iterdir()) == []
+
+
+def test_install_help_names_workspace_file(capsys):
+    with pytest.raises(SystemExit):
+        entry._parser().parse_args(["provider", "install", "--help"])
+    assert "pnpm-workspace.yaml" in capsys.readouterr().out
