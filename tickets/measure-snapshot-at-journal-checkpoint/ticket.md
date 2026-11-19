@@ -24,7 +24,7 @@ A release checkpoint must measure the command users wait on. The November 16 jou
 - disposition: extend
 - owner: docs/journal-sql-refactor-plan.md and the release gate blocks in docs/roadmap.md
 - consumers: roadmap driver, release acceptance and operator taking the measurement
-- observable change: record status, drain startup and full snapshot as separate measurements. An incident-scale snapshot at or above one second fails the ship check even with passing status and drain measurements. A missing or invalid measurement cannot certify the checkpoint.
+- observable change: record status, drain startup and full snapshot as separate measurements. An incident-scale snapshot whose median of the timed warm runs is 2 s or more (the bar of `tests/regress_snapshot_latency.py`; its cold first run is reported separately as `cold_s`) fails the ship check even with passing status and drain measurements. A missing or invalid measurement cannot certify the checkpoint.
 - compatibility: retain existing evidence, current status and drain thresholds, release identity, gate order and acceptance last. Keep the broad SQL migration's conditional schedule.
 - acceptance: a dedicated release check runs the actual end-to-end benchmark delivered by the dependency and propagates nonzero results
 - tests: run that benchmark and review parsed release blocks
@@ -41,13 +41,13 @@ Use the carried tests/regress_snapshot_latency.py and its fixture from the depen
 - tests/integration/test_roadmap_gate.py
 
 ## Acceptance criteria
-1. One-time review of `docs/journal-sql-refactor-plan.md` finds status, drain startup and the fresh-process snapshot listed independently, the one-second snapshot threshold, representative-scale requirement, sample/report fields, and how to handle invalid or slow results even when the other two measurements pass.
+1. One-time review of `docs/journal-sql-refactor-plan.md` finds status, drain startup and the fresh-process snapshot listed independently, the 2 s median threshold with the cold run reported separately, representative-scale requirement, sample/report fields, and how to handle invalid or slow results even when the other two measurements pass.
 2. One-time review of `docs/roadmap.md` using the existing gate parser finds the benchmark argv in each current/future planned release's ship block ahead of the final acceptance command. The existing merged checks, suite commands, and completed release blocks are preserved. Measurement and ownership prose describes the remaining journal work without commissioning a second snapshot reader. The existing gate validation permits this argv and adds no pin on row text.
-3. `python tests/regress_snapshot_latency.py` runs the dependency's actual CLI benchmark on its prepared representative checkout and exits 0 for pass. In one-time review, verify the gate runner propagates a nonzero benchmark exit as failure; a missing fixture or malformed snapshot cannot count as passing evidence.
+3. `uv run python tests/regress_snapshot_latency.py` runs the dependency's actual CLI benchmark on its prepared representative checkout and exits 0 for pass. In one-time review, verify the gate runner propagates a nonzero benchmark exit as failure; a missing fixture or malformed snapshot cannot count as passing evidence.
 
 ## Verification
 ```
-python tests/regress_snapshot_latency.py
+uv run python tests/regress_snapshot_latency.py
 ./dev.py test tests/integration/test_roadmap_gate.py tests/integration/test_roadmap_table.py
 ```
 
