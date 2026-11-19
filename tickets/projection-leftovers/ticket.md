@@ -27,6 +27,8 @@ agent_effort: medium
 - clutch/events.py
 - clutch/__main__.py
 - tests/integration/test_daemon_composition.py
+- tests/unit/test_drain_driver_overlap.py
+- tests/unit/test_driver_hooks.py
 
 ## Goal / Why
 Roadmap row 146, the part of row 125 that `projection-helpers-single-owner` left out. Three facts each get one owner, and a source scan keeps them there.
@@ -78,11 +80,14 @@ Scope in:
 - `tests/integration/test_projection_helpers_source.py`: extend the scan so `EngineLog(` is allowed only in `enginelog.py::engine_log` (drop the `Driver.from_config` allowance), `engine.log` is allowed only in `enginelog.py`, and the artifact names are allowed only in `tickets.py`. Add rejecting and permitting cases to its table.
 - `tests/unit/test_projection_helpers_single_owner.py`: `test_engine_log_uses_config_env_and_clock` changes to pass `Redactor.from_config(config, env)` to `engine_log(config, redactor, clock)`. It keeps its log path and its `[REDACTED:KEY]` assertions. This is the only edit in that file.
 - `tests/integration/test_daemon_composition.py`: change the expected `redactor` trace entries only if the change alters the count or order of `Redactor.from_config` calls. This is the one expectation that may change.
-- `tests/unit/test_phase_events.py`: its tests replace `runner.engine_log` and `drain.engine_log` with `lambda *args: log` and run `runner.prepare_pipeline` and `drain._Drain._run_retro` with `config = SimpleNamespace(state_dir=Path('/state'))`. Callers now call `Redactor.from_config(config, env)` themselves, which reads `config.providers` and `config.release`. Give those fake configs `providers=[]` and `release=SimpleNamespace(pypi_token='')`. Every event assertion stays as it is.
-- `tests/unit/test_verdict_extension.py`: its test replaces `drain.engine_log` with `lambda *args: log` and calls `drain.settle_admissions(checkout)` with `config=SimpleNamespace(state_dir=PurePath('state'))`. Give that fake config `providers=[]` and `release=SimpleNamespace(pypi_token='')`. No other edit is allowed in that file.
+- Fake configs in tests that replace `engine_log` through `install_log` or `lambda *args: log` and then run a real caller: callers now call `Redactor.from_config(config, env)` themselves, which reads `config.providers` and `config.release`. In each fixture below, give the fake config `providers=[]` and `release=SimpleNamespace(pypi_token='')`. Every event and behavior assertion stays as it is; no other edit is allowed in these files.
+  - `tests/unit/test_phase_events.py`: the `config = SimpleNamespace(state_dir=Path('/state'))` used with `runner.prepare_pipeline` and the one used with `drain._Drain._run_retro`.
+  - `tests/unit/test_verdict_extension.py`: the `config=SimpleNamespace(state_dir=PurePath('state'))` used with `drain.settle_admissions(checkout)`.
+  - `tests/unit/test_drain_driver_overlap.py`: the `rig` fixture's `config=SimpleNamespace(state_dir=tmp_path)` (line 22), which reaches `drain._Drain._run_driver`.
+  - `tests/unit/test_driver_hooks.py`: `test_drain_runs_driver_between_tickets`'s `config=SimpleNamespace(state_dir=tmp_path)` (line 58), which reaches `drain._Drain._run_driver`.
 - New `tests/unit/test_projection_leftovers.py`.
 
-Scope out: the `KNOWN_ARTIFACTS` mapping, the `evidence/` and `reference/` directories, `prior.diff`, the roadmap row (the driver strikes it), and any behavior change. If a site cannot use the owner without changing behavior, leave it and name it in the run record.
+Scope out: the `KNOWN_ARTIFACTS` mapping, the `evidence/` and `reference/` directories, `prior.diff`, the roadmap row (the driver strikes it), and any behavior change. If a site cannot use the owner without changing behavior, leave it and name it in the run record. If another test outside the fence fails only because its fake config lacks `providers` or `release`, stop and name it in the run record rather than editing it.
 
 ## Scope fence
 - clutch/enginelog.py
@@ -105,6 +110,8 @@ Scope out: the `KNOWN_ARTIFACTS` mapping, the `evidence/` and `reference/` direc
 - tests/unit/test_projection_leftovers.py
 - tests/unit/test_phase_events.py
 - tests/unit/test_verdict_extension.py
+- tests/unit/test_drain_driver_overlap.py
+- tests/unit/test_driver_hooks.py
 
 ## Acceptance criteria
 1. `Driver.from_config(...)` returns a driver whose `log` and `spool` use the same `Redactor` object, checked with `assert driver.log._redactor is driver.spool._redactor`, not two equal-valued objects. Check: `./dev.py test tests/unit/test_projection_leftovers.py`.
@@ -114,11 +121,13 @@ Scope out: the `KNOWN_ARTIFACTS` mapping, the `evidence/` and `reference/` direc
 5. The source scan fails on an `EngineLog(` call in `driver.py::Driver.from_config`, on an `engine.log` literal outside `enginelog.py`, and on an artifact file name used as a ticket path outside `tickets.py`. It passes on the real tree, and `specs_dir / "rework.md"` is not flagged. Check: `./dev.py test tests/integration/test_projection_helpers_source.py`.
 6. The composition trace pin matches the real sequence, and the provider, preflight and driver ordering assertions still hold. Check: `./dev.py test tests/integration/test_daemon_composition.py`.
 7. `test_engine_log_uses_config_env_and_clock` passes with the new `engine_log(config, redactor, clock)` signature and still asserts `[REDACTED:KEY]` in the log, not the raw secret. Check: `./dev.py test tests/unit/test_projection_helpers_single_owner.py`.
-8. No behavior regression across drain, runner, merge, triage and retro. Check: `./dev.py test tests/integration tests/unit`.
+8. The drain driver tests that replace `engine_log` still pass with their fake configs carrying `providers=[]` and `release`. Check: `./dev.py test tests/unit/test_drain_driver_overlap.py tests/unit/test_driver_hooks.py tests/unit/test_phase_events.py tests/unit/test_verdict_extension.py`.
+9. No behavior regression across drain, runner, merge, triage and retro. Check: `./dev.py test tests/integration tests/unit`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_projection_leftovers.py tests/unit/test_projection_helpers_single_owner.py tests/integration/test_projection_helpers_source.py tests/integration/test_daemon_composition.py tests/integration/test_driver.py tests/unit/test_phase_events.py tests/unit/test_verdict_extension.py
+./dev.py test tests/unit/test_projection_leftovers.py tests/unit/test_projection_helpers_single_owner.py tests/integration/test_projection_helpers_source.py tests/integration/test_daemon_composition.py tests/integration/test_driver.py tests/unit/test_phase_events.py tests/unit/test_verdict_extension.py tests/unit/test_drain_driver_overlap.py tests/unit/test_driver_hooks.py
+./dev.py test tests/integration tests/unit
 ```
 
 ## Definition of rejected
