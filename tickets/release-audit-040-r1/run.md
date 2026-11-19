@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-No merged verb records a 0.5.0 ship clause, so no gate command or test exemption was added; the Python coverage gate does not measure the Markdown-only diff. Final verification passed: 13 ticket tests, 3,438 integration tests, lint, and formatting.
+No merged verb records a 0.5.0 ship clause, so the gate block needed no new command. The final ticket verification passed with 13 tests; the integration suite passed with 3,438 tests, and lint and formatting passed. The coverage gate does not measure the Markdown-only change.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000766-8684446b: The release plan says pyproject.toml is at version 0.3.0, while the audited base is 0.4.2; filed as box-000001-7ff01b18.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 30 minutes expected and 60 minutes stuck; the work took less than 30 minutes.
+The ticket expected 30 minutes; the work took less than 30 minutes.
 
