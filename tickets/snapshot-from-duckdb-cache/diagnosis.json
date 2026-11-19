@@ -1,22 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "fc43df267c2698fb38649f92334753a3fe30ff13",
+  "produced_at_sha": "4e2027af6abc268c3fe22ec8bd639a032ea33168",
   "stem": "snapshot-from-duckdb-cache",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "premise_failed",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Scope fence is missing a file the ticket forces: tests/regress_shared_hold_rule.py:24 calls observe.held(history, {\"work\": \"B\"}) with two arguments. Replacing it with held(history, blobs, candidates), and leaving no default or wrapper, breaks that script. Add the file to the fence and Scope in.",
-    "Migrate tests/regress_shared_hold_rule.py:24 to held(history, {\"work\": \"B\"}, {\"work\"}). Its expected outcome stays the same, and it must still print {\"regression_result\": \"pass\"}. Add `uv run python tests/regress_shared_hold_rule.py` to ## Verification.",
-    "A grep of tests/ and clutch/ found no other unfenced callers or patches of held, operator_holds, ticket_menu_inputs or observe.journal. The fenced callers are test_watch.py:687, test_menu_admission.py:268 and test_admission_facts.py:197.",
-    "Next attempt: in tests/regress_snapshot_latency.py, check that every fixture ticket yields exactly one snapshot row and every box message one box row. Attempt 1 raised 'snapshot row counts differ from fixture', so compare tests/snapshot_scale_fixture.py output with observe.snapshot row rules before"
+    "Ticket fence is missing a file the change forces: tests/integration/test_ask.py::test_drafts_prompt_selects_committed_drafts line 94 asserts `not (root / \".clutch\").exists()`, but `clutch prompt drafts` calls observe.snapshot, which must now create cache/journal.duckdb. Add the test to the fence."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    3
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5"
