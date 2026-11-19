@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a88e38adad59d87a537a7d3fd7a36527979f1131",
+  "stem": "serve-parallel-dispatch-r2",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review approved the design: run dict bounded by max_runs, an exclusive gate that waits only on slot-holding runs, waiting_for_merge giving back the slot, and callers moved to occupied(). Redo all of it from the merge base. The only defect is in the release paths in clutch/daemon.py.",
+    "In clutch/daemon.py, DaemonAdmission.dispatch's finally must give back the slot without awaiting. Decrement the holding count synchronously and wake waiters synchronously (set Events or futures), or run the release through _protected_cleanup(asyncio.create_task(...)) as the waiting_for_merge",
+    "In clutch/daemon.py, exclusive()'s exit must clear the exclusive flag synchronously before any await, never inside `async with self._condition` in a finally. A second cancel of a mutations(), startup or sweep holder must not leave the gate held.",
+    "In clutch/serve.py, watch publication releases the gate with `await gate.__aexit__` in a finally. Make that exit impossible to cancel: make exclusive()'s exit synchronous, or wrap the exit so a cancelled watch loop cannot leave the gate set.",
+    "Add to tests/unit/test_admission_parallel_run_set.py: (1) cancel a dispatch caller twice while the release is contended, then assert the next dispatch is admitted; (2) cancel an exclusive-gate holder twice during a contended exit, then assert a run and a later gate are both admitted."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
