@@ -37,12 +37,12 @@ Why: the roadmap section 1 0.4.0 ship clause needs a recorded `visual_baseline` 
 
 ## Scope in / Scope out
 Scope in:
-- Draw 20 to 24 cases under `eval/visual/<case>/`, at most 256 by 256 pixels each, with kebab-case case names, with `case.json` per the `CaseData` schema in `eval/visual_harness.py` (its `label` omitted until the panel writes it). Generate-mode cases pair an `input.png` with a `candidate.png` that is the input composited into a base, the good and the broken placements, as `generate` mode defines. At least 5 cases end with `accept` and at least 5 with `reject` as labelled by the panel; if the panel's labels fall short of that, draw more cases of the missing kind (up to 24 in total) and relabel only the unlabelled ones.
+- Do all work from this ticket's merge base with main. Draw 20 to 24 cases under `eval/visual/<case>/`, at most 256 by 256 pixels each, with kebab-case case names, with `case.json` per the `CaseData` schema in `eval/visual_harness.py` (its `label` omitted until the panel writes it). Generate-mode cases pair an `input.png` with a `candidate.png` that is the input composited into a base, the good and the broken placements, as `generate` mode defines. The judge sees only the images listed in `inputs`, so each generate case also holds its base as `base.png` and lists it as the second `inputs` entry (`inputs: ["input.png", "base.png"]`); no new `case.json` key is added, because `CaseData` forbids extra keys. Each generate case carries one `visual_criteria` string that states the requested position and scale (for example `insert centred in the lower-left quadrant at half the base height`); that string never equals one of the five fixed row ids `identity`, `placement`, `lighting`, `unchanged`, `artifacts`, because `rubric_ids` would then refuse duplicate ids. At least 5 cases end with `accept` and at least 5 with `reject` as labelled by the panel; if the panel's labels fall short of that, draw more cases of the missing kind (up to 24 in total) and relabel only the unlabelled ones.
 - Run `uv run python -m eval.visual_harness label` until every case is labelled (it skips labelled cases and stops on an `unsure` reply, so a rerun resumes), then `./dev.py visual-baseline` once. It writes `eval/visual_report.json` and journals the signal into this worktree's state directory only.
 - Add `tests/integration/test_visual_fixtures.py` (a new file).
 - Name in `run.md` the panel and judge provider and model, any case redrawn and why, the verdict and the rows below 0.85; a run record is not a fenced file.
 
-Scope out: `eval/visual_harness.py`, the `clutch/` package including the `review_visual` rubric wording and layer-1 thresholds, `config.yaml`, `dev.py` and `docs/` stay unchanged, because the loader, the commands and the docs describe this format already. No verb, recurring test or gate that measures agreement is added. Journaling the `visual_baseline` signal in the main checkout's state directory happens when `./dev.py visual-baseline` runs there against these cases; the committed report is this ticket's record.
+Scope out: `eval/visual_harness.py`, the `clutch/` package including the `review_visual` rubric wording and layer-1 thresholds, `config.yaml`, `dev.py` and `docs/` stay unchanged, because the loader, the commands and the docs describe this format already. Files under `tickets/` that already differ between the merge base and current main are not reverted or edited. No verb, recurring test or gate that measures agreement is added. Journaling the `visual_baseline` signal in the main checkout's state directory happens when `./dev.py visual-baseline` runs there against these cases; the committed report is this ticket's record.
 
 ## Scope fence
 - eval/visual
@@ -54,11 +54,12 @@ Scope out: `eval/visual_harness.py`, the `clutch/` package including the `review
 2. Every case's `panel.provider` differs from that judge provider and every case names the same `panel` provider and model, not blank; checked by `./dev.py test tests/integration/test_visual_fixtures.py`. A set whose panel equals the judge is refused, not accepted.
 3. Overall labels include at least 5 `accept` and at least 5 `reject`, and at least 6 cases are `mode: generate` with their five fixed row ids labelled; checked by `./dev.py test tests/integration/test_visual_fixtures.py`. An all-`accept` set fails.
 4. `eval/visual_report.json` parses as one JSON object with exactly the keys `case_count`, `overall`, `rows` and `verdict`; `verdict` is `GO` or `NO_GO`, `case_count` is at least 20, `overall` is between 0 and 1, and every `rows` key is a row id used in some case label; checked by `./dev.py test tests/integration/test_visual_fixtures.py`. The test does not pin `overall`, the verdict value or the case count of the report beyond these bounds.
-5. No file other than those under `eval/visual/`, `eval/visual_report.json` and `tests/integration/test_visual_fixtures.py` differs from the branch's merge base with main; checked by `git diff --name-only main...HEAD` (three-dot, so tickets other work adds to main afterwards do not count) listing only those paths.
+5. No file other than those under `eval/visual/`, `eval/visual_report.json` and `tests/integration/test_visual_fixtures.py` differs from the ticket's merge base with main; checked by `git diff --name-only main...HEAD` listing only those paths.
 
 ## Verification
 ```
 ./dev.py test tests/integration/test_visual_fixtures.py
+git diff --name-only main...HEAD
 ```
 
 ## Definition of rejected
