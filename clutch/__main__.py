@@ -461,7 +461,7 @@ def _parser() -> argparse.ArgumentParser:
         reads="Provider CLI --version output from node_modules/.bin or PATH; no config.",
         writes="With names, package.json, pnpm-lock.yaml and node_modules/ through pnpm; otherwise nothing.",
         lock="None.",
-        exits="0 when installed or reported; 2 on refusal (unknown provider, pnpm missing, or pnpm add failed).",
+        exits="0 when installed or reported; 2 on refusal (unknown provider, pnpm missing, pnpm add failed, or CLI printed no version after install).",
         examples=["clutch provider install", "clutch provider install claude codex"],
     )
     install.add_argument("providers", nargs="*")
@@ -1009,13 +1009,15 @@ def main(
                 if args.providers:
                     package = ADAPTERS[name].PACKAGE
                     try:
-                        rc, _, err = await exec_.run(["pnpm", "add", "-D", f"{package}@latest"], cwd=repo, env=tool_env(env, repo), timeout=INSTALL_TIMEOUT_S)
+                        rc, _, err = await exec_.run(["pnpm", "add", "-D", f"--allow-build={package}", f"{package}@latest"], cwd=repo, env=tool_env(env, repo), timeout=INSTALL_TIMEOUT_S)
                     except ExecutableNotFound:
                         raise runner.Refusal("pnpm is not on PATH", "install pnpm (https://pnpm.io/installation), then rerun clutch provider install") from None
                     if rc:
                         lines = [line for line in err.splitlines() if line.strip()]
                         raise runner.Refusal(f"pnpm add {package}@latest failed (rc {rc}): {lines[-1] if lines else ''}", "fix the pnpm error, then rerun clutch provider install")
                 status = await cli_status(name, exec_=exec_, env=env, cwd=repo)
+                if args.providers and status.version is None:
+                    raise runner.Refusal(f"{name} CLI printed no version after install", f"rerun clutch provider install {name}; if this repeats, check that pnpm allowed the package's build script")
                 print(
                     f"{status.name}: {status.where}{' ' + status.version if status.version else ''}, package {status.package}"
                     + (f" -- run: clutch provider install {name}" if status.where == "absent" else "")

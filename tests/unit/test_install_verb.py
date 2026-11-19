@@ -68,7 +68,7 @@ def test_install(monkeypatch, capsys):
     assert main("codex") == 0
     assert capsys.readouterr().out == "codex: system 0.167.1, package @openai/codex\n"
     argv, kwargs = exec_.calls[0]
-    assert argv == ["pnpm", "add", "-D", "@openai/codex@latest"]
+    assert argv == ["pnpm", "add", "-D", "--allow-build=@openai/codex", "@openai/codex@latest"]
     assert kwargs == {"cwd": Path("/repo"), "env": {"PATH": "/repo/node_modules/.bin:/bin"}, "timeout": 600.0}
     exec_.calls.clear()
     assert main("codex", "llama") == 2
@@ -80,3 +80,16 @@ def test_install(monkeypatch, capsys):
     exec_.pnpm = (1, "", "ERR_PNPM_FETCH_404 not found\n")
     assert main("codex") == 2
     assert "ERR_PNPM_FETCH_404" in capsys.readouterr().err
+
+
+def test_install_refuses_broken_binary(monkeypatch, capsys):
+    class BrokenExec(Exec):
+        async def run(self, argv, **kwargs):
+            if argv == ["claude", "--version"]:
+                return 1, "", "Error: claude native binary not installed.\n"
+            return await super().run(argv, **kwargs)
+
+    monkeypatch.setattr(cli, "SubprocessExec", BrokenExec)
+    monkeypatch.setattr(Path, "is_file", lambda self: False)
+    assert cli.main(["provider", "install", "claude"], cwd=Path("/repo"), env={"PATH": "/bin"}) == 2
+    assert "claude" in capsys.readouterr().err
