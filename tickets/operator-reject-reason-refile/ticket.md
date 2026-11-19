@@ -56,7 +56,7 @@ Today an operator reject has no reason field. `rejection_reason` reads only the 
 - disposition: extend
 - owner: clutch/roadmap.py
 - consumers: roadmap re-file (`refile_row` callers) in clutch/roadmap.py
-- observable change: `rejection_reason(events, stem)` puts the latest operator kill-signal `reason` first, then the existing terminal reason and lessons
+- observable change: `rejection_reason(events, stem)` puts the `reason` of the latest `reject_verdict` signal whose `verdict` is `kill` and `actor` is `operator` first, then the existing terminal reason and lessons
 - compatibility: with no operator reason the result is unchanged, including the `rejected` fallback
 - acceptance: result starts with the operator reason; unchanged otherwise
 - tests: new unit test file
@@ -79,7 +79,7 @@ Scope in:
 - `clutch/drain.py` and `clutch/serve.py`: the callbacks `apply` (in `settle_admissions`) and `apply_verdict` take an optional `reason=None` and forward it to `runner.apply_admission`.
 - `clutch/runner.py`: `verdict`, `verdict_locked`, `reject_ticket` and `apply_admission` take the optional `reason`. `reject_ticket` adds `reason` to the kill signal only when given.
 - Forwarding rule: every forwarding hop passes `reason=` only when it is not None, and otherwise makes the exact call it makes today with no extra argument or keyword. The hops are `_verdict` to `runner.verdict`, `runner.verdict` to `verdict_locked`, `apply_admission` to `verdict_locked`, `verdict_locked` to `reject_ticket`, and `apply_verdict` (clutch/serve.py) and drain's `apply` to `apply_admission`. With this rule the reason-free calls stay identical to what tests/unit/test_verdict_extension.py pins (the `verdict_locked` await arguments, the five positional arguments of the `apply_admission` await, and the four arguments of the settle callback), so that file is not edited and is run as a preservation check.
-- `clutch/roadmap.py::rejection_reason`: put the latest operator kill-signal reason first.
+- `clutch/roadmap.py::rejection_reason`: put the `reason` of the latest `reject_verdict` signal whose `verdict` is `kill` and `actor` is `operator` first.
 - `clutch/specs/ask/drafts.md`: the Recommendation step for rejected drafts gives one `clutch ticket reject --yes --reason "<why>" STEM` command per rejected draft, with the reason drawn from that draft's verdict. Do not change the version or any other text.
 - Docs: the `ticket reject` row of the verb table in `docs/how-clutch-works.md` section 2 and the `ticket reject` row in `clutch/docs/host-running.md` name `--reason`; the backticked verb cell in the host-running row stays exactly as it is.
 - Tests: new files only (see fence).
@@ -109,6 +109,7 @@ Scope out: `confirm`; the extension; Reject-queue behavior; the control-request 
 5. In the same file, `clutch ticket confirm --reason x <stem>` exits 2 as an unrecognized argument, not 0; `--reason` appears in the `ticket reject` subparser's help text; the `ticket reject` rows of `docs/how-clutch-works.md` and `clutch/docs/host-running.md` contain `--reason`; checked by `./dev.py test tests/integration/test_reject_reason_both_paths.py`.
 6. In the same file, the drafts prompt rendered from `clutch/specs/ask/drafts.md` contains `ticket reject --yes --reason`, not only the bare `ticket reject --yes STEM` form; checked by `./dev.py test tests/integration/test_reject_reason_both_paths.py`.
 7. The unchanged `tests/unit/test_verdict_extension.py` still passes, so reason-free calls to `verdict_locked`, `apply_admission` and the settle callback carry exactly their current arguments, not an added `reason=None`; checked by `./dev.py test tests/unit/test_verdict_extension.py`.
+8. The unchanged `tests/unit/test_roadmap_rejection_reason.py` passes, including `test_other_stems_and_verdict_are_ignored`; checked by `./dev.py test tests/unit/test_roadmap_rejection_reason.py`.
 
 ## Verification
 ```
