@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The carried reproducer reported defect on the base commit and pass on the candidate; all ticket verification and hard host checks passed.
+The ticket verification commands, unit coverage gate, integration suite, lint, and format checks passed; mutation checks confirmed the new assertions detect the targeted failures.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 15 minutes; completed within that budget.
 
