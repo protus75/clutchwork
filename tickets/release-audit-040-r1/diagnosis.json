@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "aae8dd5ee69e683b7b0f6edab032616b71ff0e38",
+  "stem": "release-audit-040-r1",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Restore the §2.2 'Settled and retired states' row in docs/roadmap.md and mark it \"(recurred in 0.4.0)\". It is still true: the literal at clutch/tickets.py:813 and the hand-listed tuple at clutch/stats.py:149 both duplicate status.CLOSED, and closed-sets-remaining lists the tickets.py literal as out",
+    "In the §3.5 'No engine caller' item, keep Git.init (clutch/git.py:58) and audit.audit plus its wrapper audit_journal (clutch/audit.py:36) on the still-callerless list. Check each originally listed symbol at the base commit and drop only those that were deleted or now have an engine caller.",
+    "Keep §2.5 as an item marked \"(recurred in 0.4.0)\" that names the conduct-file restatements still present: hostfiles.py CORE_TEMPLATE vs. the CLAUDE.md managed block and CLAUDE.md/AGENTS.md section A. Remove only the host-contract.md, how-clutch-works.md and host-authoring.md restatements that row",
+    "Criterion 3: never delete or rewrite an item in sections 2-4 unless a merged change fixed every part of it. If only part was fixed, narrow the item to the parts still true and add \"recurred in 0.4.0\". Before removing any line, grep the cited file:line at the base commit.",
+    "Review found these parts sound, so redo them as before: the release-audit-050 row with an unused row number, P1, chore and Depends on rows 57-74, 110 and 153; the prose line naming the unchecked 0.5.0 clauses; and the Status refresh. Add no gate command and leave test_roadmap_gate.py alone."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    2
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
