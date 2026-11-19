@@ -28,7 +28,7 @@ QUOTED_DELIM = "[clutch-data:"
 SPEC_SECTIONS = ("Role", "Task", "Inputs", "Output format", "On-failure")
 SPEC_MAX_LINES = 200
 # The LLM stage names plus `diagnose` and `requisition_review`; config load extends with host surfaces.
-ENGINE_LLM_SURFACES: frozenset[str] = frozenset({"acceptance", "author", "implement", "review", "rework", "triage", "retro", "diagnose", "requisition_review", "resolve"})
+ENGINE_LLM_SURFACES: frozenset[str] = frozenset({"acceptance", "author", "implement", "review", "rework", "triage", "retro", "diagnose", "requisition_review", "resolve", "review_visual"})
 
 _NAME = r"[a-z][a-z0-9_]*"
 _PLACEHOLDER = re.compile(r"\{\{(.*?)\}\}")

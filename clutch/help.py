@@ -130,6 +130,7 @@ _add(
             "check",
             "merge",
             "review",
+            "review_visual",
             "diagnose",
             "rework",
             "retro",

@@ -66,6 +66,7 @@ STEP_NAMES = {
     "check": "Check",
     "merge": "Merge",
     "review": "Review",
+    "review_visual": "Visual review",
     "resolve": "Resolve",
     "diagnose": "Diagnose",
     "rework": "Rework",

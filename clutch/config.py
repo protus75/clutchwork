@@ -258,6 +258,10 @@ class Evidence(StrictModel):
     max_gb: Count = 20
 
 
+class Graphics(StrictModel):
+    judge_samples: Annotated[int, Field(ge=1, le=3)] = 1
+
+
 class Config(StrictModel):
     schema_version: int
     state_dir: PathField
@@ -276,6 +280,7 @@ class Config(StrictModel):
     drain: Drain = Drain()
     retro: Retro = Retro()
     calibration: Calibration = Calibration()
+    graphics: Graphics = Graphics()
     engine_plane_safety_inventory: list[str]  # no shipped default: absence fails closed
     box_policy: dict[BoxRow, StartState] = Field(default_factory=lambda: dict(BOX_POLICY_DEFAULTS))
     notify: Argv | None = None
