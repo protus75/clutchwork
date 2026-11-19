@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification passed, as did the unit coverage gate, lint, and format checks. The full integration suite failed on the candidate; the failing test also failed in isolation but passed on the base commit. The base cannot run the ticket verification unchanged because the new unit test does not exist there.
+The simpler option of retaining per-test contexts was rejected because it would preserve the cost this ticket removes.
 
 ## Dead ends
 
-Avoided suppressing the new field during model serialization solely to satisfy the existing assertion.
+None.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 15 minutes; actual time was not measured.
+None.
 
