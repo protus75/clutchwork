@@ -14,16 +14,17 @@ from typing import Literal, get_args
 
 from clutch.box import BOX_DIR
 from clutch.config import load_config
-from clutch.drain import authored_at, awaiting_operator, order_tickets, parked_blob
+from clutch.drain import PREMISE, authored_at, awaiting_operator, order_tickets, parked_blob
 from clutch.graph import layout
 from clutch.help import COMMANDS, help_map, help_pick
+from clutch.journalcache import open_journal_cache
 from clutch.lockfile import ENGINE_VERBS
 from clutch.rework import settled_dependencies
 from clutch.status import (
     CLOSED,
     SETTLED,
     Admission,
-    admission_facts,
+    AdmissionFacts,
     confirm_admission,
     dismiss_admission,
     latest_transitions,
@@ -306,18 +307,16 @@ def depends(path: Path) -> list[str]:
     return re.findall(r"^- (\S+)", section, re.M)
 
 
-def held(history, blobs) -> set[str]:
+def held(history, blobs, candidates) -> set[str]:
     """Content parks matching a committed ticket."""
-    stems = {e.ticket for e in history if e.ticket is not None}
-    return {s for s in stems if (blob := parked_blob(history, s)) is not None and blob == blobs.get(s)}
+    return {s for s in candidates if (blob := parked_blob(history, s)) is not None and blob == blobs.get(s)}
 
 
-def operator_holds(ctx, history) -> set[str]:
-    stems = {e.ticket for e in history if e.ticket is not None}
-    if not stems:
+def operator_holds(ctx, history, candidates) -> set[str]:
+    if not candidates:
         return set()
     caps_config = load_config(ctx.config, cwd=ctx.root).caps
-    return {s for s in stems if awaiting_operator(history, s, caps_config)}
+    return {s for s in candidates if awaiting_operator(history, s, caps_config)}
 
 
 def as_events(events: list[dict]) -> list[SimpleNamespace]:
@@ -334,7 +333,7 @@ def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str
     """Every confirmed ticket not yet settled, rejected, or running: (priority, stem, why it is waiting)."""
     done = CLOSED
     history = as_events(events)
-    waiting_on_person = operator_holds(ctx, history)
+    waiting_on_person = operator_holds(ctx, history, {e.ticket for e in history if e.ticket is not None})
     held_stems = held_stems | waiting_on_person
     # A dependency is met when it, or every leaf of the split that superseded it, settled: the drain's own test.
     settled = settled_dependencies(history)
@@ -456,7 +455,7 @@ def text_snapshot(ctx) -> str:
             lines.append(f"  {clock(body['ts'])}  {stem}  {outcome}")
         if not done:
             lines.append("  (nothing finished yet)")
-    pending = queue(ctx, events, last_state, set(running), held(history, committed_ticket_shas(ctx)))
+    pending = queue(ctx, events, last_state, set(running), held(history, committed_ticket_shas(ctx), {e.ticket for e in history if e.ticket is not None}))
     lines += ["", f"Queue ({len(pending)} to do):"]
     lines += [f"  {priority}  {stem}  {why}" for priority, stem, why in pending] or ["  (empty)"]
     recent = recent_steps(state, log, 8)
@@ -578,11 +577,10 @@ def row_menu(kind, inputs, alive):
     return menu
 
 
-def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
+def ticket_menu_inputs(ctx, facts, stems, holder, interrupted):
     """Read porcelain once and share graph reads across all row validations."""
     entries = _porcelain(asyncio.run(ctx.git.status_porcelain(ctx.root, "--untracked-files=all")))
     pending, evidence, stray = asyncio.run(intake_pending(ctx.root, ctx.git, entries))
-    facts = admission_facts(history)
     states = facts.states
     graphs = (_graph(ctx.root), _graph(ctx.root, "Runs before"))
     result = {}
@@ -653,6 +651,13 @@ def extension_fields(root: Path) -> dict:
     }
 
 
+def journal_facts(state: Path, history) -> AdmissionFacts:
+    from clutch.reconcile import orphans
+
+    with open_journal_cache(state) as cache:
+        return AdmissionFacts(states=cache.last_states(), reject=frozenset(cache.reject_queue()), settled=settled_dependencies(history), orphans=frozenset(orphans(history)))
+
+
 def snapshot(ctx) -> dict:
     state = ctx.state
     help, help_pick_items = help_payload()
@@ -660,23 +665,22 @@ def snapshot(ctx) -> dict:
     events = journal(state)
     log = read_lines(state / "engine.log", 4000) if (state / "engine.log").exists() else []
     history = as_events(events)
+    facts = journal_facts(state, history)
     last = last_bodies(history)
     tickets, invalid = load_tickets(ctx, {s for s, b in last.items() if b.get("to") in CLOSED})
-    from clutch.reconcile import orphans
-
     authored = authored_at(history)
     # The drain's own test: a dependency is met when it, or every leaf of the split that superseded it, settled.
-    settled = set(settled_dependencies(history))
+    settled = set(facts.settled)
     blobs = committed_ticket_shas(ctx)
-    reject_stems = operator_holds(ctx, history)
-    held_stems = held(history, blobs) | reject_stems
+    reject_stems = operator_holds(ctx, history, facts.reject)
+    held_stems = held(history, blobs, {s for s, st in facts.states.items() if st in (PREMISE, "gate_failed")}) | reject_stems
 
     def to(stem: str) -> str | None:
         return last.get(stem, {}).get("to")
 
     merged = sorted((s for s in last if to(s) in SETTLED), key=lambda s: last[s]["ts"], reverse=True)
     alive = lock_holder(state) is not None
-    interrupted = set(orphans(history)) if not alive else set()
+    interrupted = set(facts.orphans) if not alive else set()
     lock, verb = lock_display(state, "clutch.lock")
     commit_lock, _ = lock_display(state, "commit.lock")
     running = running_stems(state, last)
@@ -688,7 +692,7 @@ def snapshot(ctx) -> dict:
     blocked_stems = {t.stem for t in blocked}
 
     # The menu and displayed pending/new flags share intake's porcelain interpretation.
-    menu_inputs, dirty, new = ticket_menu_inputs(ctx, history, set(tickets) | set(invalid) | set(merged) | set(running), object() if alive else None, interrupted)
+    menu_inputs, dirty, new = ticket_menu_inputs(ctx, facts, set(tickets) | set(invalid) | set(merged) | set(running), object() if alive else None, interrupted)
     verdicts: dict[str, dict[str, str]] = {}  # stem -> ticket_sha -> last verdict for that content
     for e in events:
         body = e.get("body", {})

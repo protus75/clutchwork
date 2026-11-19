@@ -215,10 +215,10 @@ def test_observe_verbs_take_no_lock_and_write_nothing(tmp_path, capsys):
     lock.acquire()
     try:
         (state / "engine.log").write_text(json.dumps({"event": "engine_stop", "verb": "serve", "outcome": "stopped", "ts": "2026-01-01T00:00:00+00:00"}) + "\n")
-        before = {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file()}
+        before = {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file() and p.relative_to(state).parts[0] != "cache"}
         assert main(["--config", str(config), "view", "snapshot"], cwd=repo) == 0
         assert main(["--config", str(config), "view", "watch", "--once"], cwd=repo) == 0
-        after = {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file()}
+        after = {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file() and p.relative_to(state).parts[0] != "cache"}
         assert after == before
         assert "serve stopped (stopped)" in capsys.readouterr().out
     finally:
@@ -295,6 +295,7 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
         {"type": "state_transition", "ticket": "done", "body": {"to": "merged", "commit": "abc"}, "ts": ts},
     ]
     monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: events)
+    monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
     monkeypatch.setattr(watch, "running_stems", lambda *args: ["live"])
     monkeypatch.setattr(watch, "lock_holder", lambda state, *args: None)
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
@@ -367,8 +368,9 @@ def test_snapshot_menu_availability(tmp_path, monkeypatch):
     events = [{"type": "state_transition", "ticket": "done", "body": {"to": "merged"}, "ts": "2026-01-01T00:00:00+00:00"}]
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: (tickets, {"invalid": "bad ticket"}))
     monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: events)
-    monkeypatch.setattr(watch, "held", lambda history, blobs: {"held", "held-ready"})
-    monkeypatch.setattr(watch, "operator_holds", lambda ctx, history: set())
+    monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
+    monkeypatch.setattr(watch, "held", lambda history, blobs, candidates: {"held", "held-ready"})
+    monkeypatch.setattr(watch, "operator_holds", lambda ctx, history, candidates: set())
     monkeypatch.setattr(watch, "running_stems", lambda *args: [])
     monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: {stem: "sha" for stem in tickets})
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
@@ -424,6 +426,7 @@ def test_snapshot_priority_tag_on_running_and_queued(tmp_path, monkeypatch):
     events = [{"type": "state_transition", "ticket": stem, "body": {"to": state}, "ts": "2026-01-01T00:00:00+00:00"} for stem, state in (("live", "running"), ("done", "merged"))]
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: (tickets, {}))
     monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: events)
+    monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
     monkeypatch.setattr(watch, "running_stems", lambda *args: ["live"])
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
     monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: {})
@@ -453,6 +456,7 @@ def test_snapshot_badge(tmp_path, monkeypatch):
     ]
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: (tickets, {}))
     monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: events)
+    monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
 
     monkeypatch.setattr(watch, "running_stems", lambda *args: ["live"])
     monkeypatch.setattr(watch, "lock_holder", lambda state, *args: datetime.fromisoformat("2025-12-31T00:00:00+00:00"))
@@ -480,6 +484,7 @@ def test_diagnose_prompt_uses_live_running_state(tmp_path, monkeypatch, capsys):
     path.parent.mkdir(parents=True)
     path.write_text("ticket")
     monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: [{"type": "state_transition", "ticket": "live", "body": {"to": "running"}, "ts": "2026-01-01T00:00:00+00:00"}])
+    monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
     monkeypatch.setattr(watch, "lock_holder", lambda state, *args: watch.datetime.fromisoformat("2025-12-31T00:00:00+00:00"))
     assert main(["prompt", "diagnose", "live"], cwd=tmp_path) == 0  # The CLI accepts the ticket.
     running = capsys.readouterr().out
@@ -664,6 +669,7 @@ def test_snapshot_holds_a_parked_ticket(tmp_path, monkeypatch):
             {"type": "state_transition", "ticket": "work", "body": {"to": terminal, "reason": reason}, "ts": "2026-01-01T00:00:01+00:00"},
         ]
         monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: events)
+        monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
         for blobs, section, is_held in (({"work": "blob-B"}, "blocked", True), ({"work": "blob-C"}, "queued", False), ({}, "queued", False)):
             monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: blobs)
             row = watch.snapshot(ctx)["rows"][0]
@@ -684,7 +690,7 @@ def test_queue_reports_content_hold(tmp_path):
         {"type": "state_transition", "ticket": "work", "body": {"to": "premise_failed"}},
     ]
     history = [SimpleNamespace(**e) for e in events]
-    holds = watch.held(history, {"work": "B"})
+    holds = watch.held(history, {"work": "B"}, {"work"})
     assert watch.queue(ctx, events, {"work": events[-1]["body"]}, set(), holds) == [("P1", "work", "held until the ticket changes")]  # A retry or ready label conceals the park.
 
 
@@ -700,6 +706,7 @@ def test_snapshot_reject_queue_uses_configured_caps(tmp_path, monkeypatch):
     events.append({"type": "cap_consumed", "ticket": "spent", "body": {"cap": "retry"}, "ts": "2026-01-01T00:00:01+00:00"})
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: (tickets, {}))
     monkeypatch.setattr(watch, "journal", lambda *args, **kwargs: events)
+    monkeypatch.setattr(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
     monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: {})
     monkeypatch.setattr(watch, "commits", lambda ctx: {})

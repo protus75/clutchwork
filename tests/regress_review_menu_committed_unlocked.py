@@ -22,6 +22,7 @@ def main():
             with (
                 patch.object(watch, "load_tickets", return_value=({"ready": ticket}, {})),
                 patch.object(watch, "journal", return_value=[]),
+                patch.object(watch, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history)),
                 patch.object(watch, "lock_holder", return_value=object()),
                 patch.object(watch, "running_stems", return_value=[]),
                 patch.object(watch, "ticket_menu_inputs", fake_snapshot_inputs),

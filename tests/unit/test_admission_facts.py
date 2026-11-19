@@ -190,13 +190,15 @@ def test_menu_shares_facts(monkeypatch):
     monkeypatch.setattr(observe, "_graph", lambda *a: {})
     monkeypatch.setattr(observe, "validate_ticket", lambda *a, **k: object())
     monkeypatch.setattr(observe, "git_output", lambda *a: "text")
-    spy = Mock(wraps=observe.admission_facts)
-    monkeypatch.setattr(observe, "admission_facts", spy)
+    facts = status.admission_facts([transition("one", "running")])
+    spy = Mock(wraps=status.admission_facts)
+    monkeypatch.setattr(status, "admission_facts", spy)
     git = SimpleNamespace(status_porcelain=AsyncMock(return_value=""))
     ctx = SimpleNamespace(root=root, git=git)
-    rows, _, _ = observe.ticket_menu_inputs(ctx, [transition("one", "running")], stems, None, set())
-    spy.assert_called_once()
+    rows, _, _ = observe.ticket_menu_inputs(ctx, facts, stems, None, set())
+    spy.assert_not_called()
     shared = rows["one"]["clutchRun"]["facts"]
+    assert shared is facts
     for row in rows.values():
         for inputs in row.values():
             assert inputs["facts"] is shared

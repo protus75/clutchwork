@@ -93,9 +93,10 @@ def test_menu_offers_reject_for_dead_run(tmp_path, monkeypatch):
     ticket = SimpleNamespace(stem="stale", frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={})
     events = [{"type": "state_transition", "ticket": "stale", "body": {"to": "running"}, "ts": "2026-01-01T00:00:00+00:00"}]
     monkeypatch.setattr(observe, "journal", lambda *a, **kw: events)
+    monkeypatch.setattr(observe, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
     monkeypatch.setattr(observe, "load_tickets", lambda *a: ({"stale": ticket}, {}))
-    monkeypatch.setattr(observe, "held", lambda *a: set())
-    monkeypatch.setattr(observe, "operator_holds", lambda *a: set())
+    monkeypatch.setattr(observe, "held", lambda history, blobs, candidates: set())
+    monkeypatch.setattr(observe, "operator_holds", lambda ctx, history, candidates: set())
     monkeypatch.setattr(observe, "running_stems", lambda *a: [])
     monkeypatch.setattr(observe, "uncommitted_tickets", lambda *a: (set(), set()))
     monkeypatch.setattr(observe, "committed_ticket_shas", lambda *a: {"stale": "sha"})

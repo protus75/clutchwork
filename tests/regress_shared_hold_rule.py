@@ -21,7 +21,7 @@ def main():
             SimpleNamespace(type="state_transition", ticket="work", body={"to": "running", "ticket_sha": "B"}),
             SimpleNamespace(type="state_transition", ticket="work", body={"to": "premise_failed"}),
         ]
-        defect = parked_blob(history, "work") != "B" or "work" not in held(history, {"work": "B"})
+        defect = parked_blob(history, "work") != "B" or "work" not in held(history, {"work": "B"}, {"work"})
     except Exception:
         traceback.print_exc(file=sys.stderr)
         print(json.dumps({"regression_result": "error"}))

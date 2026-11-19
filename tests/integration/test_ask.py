@@ -91,4 +91,4 @@ def test_drafts_prompt_selects_committed_drafts(tmp_path, capsys):
     output = capsys.readouterr().out
     assert "committed-draft" in output  # Dropping the committed draft is wrong.
     assert "confirmed-ticket" not in output and "untracked-draft" not in output  # Neither other row is actionable.
-    assert not (root / ".clutch").exists()  # The read-only prompt must not write state.
+    assert all("cache" in p.relative_to(root / ".clutch").parts for p in (root / ".clutch").rglob("*") if p.is_file())

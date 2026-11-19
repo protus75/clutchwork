@@ -82,7 +82,7 @@ def test_lint_refusal_and_skip(monkeypatch, capsys):
     assert "lint: 0/1 tickets valid" in output
 
 
-def fake_snapshot_inputs(ctx, history, stems, holder, interrupted):
+def fake_snapshot_inputs(ctx, facts, stems, holder, interrupted):
     """Supply porcelain, claimed text, main text and validation to partial projection fixtures."""
     from dataclasses import replace
     from unittest.mock import patch
@@ -109,7 +109,7 @@ def fake_snapshot_inputs(ctx, history, stems, holder, interrupted):
         patch.object(observe, "_intake_plan_stem", lambda repo, stem, *a, **kw: ("disk text", "claimed text", decisions[stem])),
         patch.object(observe, "frontmatter", return_value={}),
     ):
-        inputs, _, _ = SNAPSHOT_INPUTS(replace(ctx, git=git), history, stems, holder, interrupted)
+        inputs, _, _ = SNAPSHOT_INPUTS(replace(ctx, git=git), facts, stems, holder, interrupted)
     return inputs, dirty, new
 
 
@@ -200,11 +200,12 @@ def test_snapshot_reads_one_porcelain_and_shared_graphs(monkeypatch, count, inva
     monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(Box, "messages", lambda self: [])
     monkeypatch.setattr(observe, "journal", lambda *a: [])
+    monkeypatch.setattr(observe, "journal_facts", lambda state, history: status.admission_facts(history))
     monkeypatch.setattr(observe, "load_tickets", lambda *a: ({}, {s: "bad disk" for s in parsed}) if invalid_disk else (parsed, {}))
     monkeypatch.setattr(observe, "committed_ticket_shas", lambda *a: {s: "blob" for s in parsed})
     monkeypatch.setattr(observe, "commits", lambda *a: {})
-    monkeypatch.setattr(observe, "held", lambda *a: set())
-    monkeypatch.setattr(observe, "operator_holds", lambda *a: set())
+    monkeypatch.setattr(observe, "held", lambda history, blobs, candidates: set())
+    monkeypatch.setattr(observe, "operator_holds", lambda ctx, history, candidates: set())
     monkeypatch.setattr(observe, "running_stems", lambda *a: [])
     monkeypatch.setattr(observe, "lock_holder", lambda *a: None)
     monkeypatch.setattr(observe, "lock_display", lambda *a: ("", None))
@@ -265,7 +266,7 @@ def test_intake_and_snapshot_share_pending_plan(monkeypatch, settled):
     monkeypatch.setattr(observe, "_intake_plan_stem", plan)
     monkeypatch.setattr(observe, "frontmatter", lambda *a: {"state": "confirmed"})
     ctx = observe.Context(root, root / "state", root / "config", None, git, None)
-    inputs, dirty, new = observe.ticket_menu_inputs(ctx, history, {"item"}, None, set())
+    inputs, dirty, new = observe.ticket_menu_inputs(ctx, status.admission_facts(history), {"item"}, None, set())
     result = asyncio.run(tickets.intake(root, git, journal, NS(write=lambda *a: pytest.fail("unchanged text must not be written")), stems={"item"}))
     assert plans == [(text, text, good), (text, text, good)]  # Different settled/evidence paths must still use identical decisions.
     assert (dirty, new) == ({"item"}, set())

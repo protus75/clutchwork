@@ -61,6 +61,7 @@ def world(monkeypatch):
     monkeypatch.setattr(runner, "Lockfile", Lock)
     monkeypatch.setattr(runner, "reap", reap)
     monkeypatch.setattr(observe, "journal", lambda *a: [dict(type=e.type, body=e.body, ticket=e.ticket, key=e.key, ts=e.ts) for e in events])
+    monkeypatch.setattr(observe, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
     monkeypatch.setattr(
         observe,
         "load_tickets",
@@ -81,7 +82,7 @@ def world(monkeypatch):
     monkeypatch.setattr(observe, "lock_holder", lambda *a: object() if live[0] else None)
     monkeypatch.setattr(observe, "lock_display", lambda *a: ("", None))
     monkeypatch.setattr(observe, "running_stems", lambda *a: ["running"] if live[0] else [])
-    monkeypatch.setattr(observe, "operator_holds", lambda ctx, history: {"awaiting"} & {e.ticket for e in history})
+    monkeypatch.setattr(observe, "operator_holds", lambda ctx, history, candidates: {"awaiting"} & {e.ticket for e in history})
     monkeypatch.setattr(Box, "messages", lambda self: [])
 
     def add(stem, state="confirmed"):

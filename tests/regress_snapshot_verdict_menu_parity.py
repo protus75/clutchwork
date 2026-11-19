@@ -16,9 +16,10 @@ def main() -> None:
     ticket = SimpleNamespace(stem="queued", frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={})
     with (
         patch.object(observe, "journal", return_value=[]),
+        patch.object(observe, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history)),
         patch.object(observe, "load_tickets", return_value=({"queued": ticket}, {})),
-        patch.object(observe, "held", return_value=set()),
-        patch.object(observe, "operator_holds", return_value=set()),
+        patch.object(observe, "held", lambda history, blobs, candidates: set()),
+        patch.object(observe, "operator_holds", lambda ctx, history, candidates: set()),
         patch.object(observe, "running_stems", return_value=[]),
         patch.object(observe, "ticket_menu_inputs", fake_snapshot_inputs),
         patch.object(observe, "uncommitted_tickets", return_value=(set(), set())),
