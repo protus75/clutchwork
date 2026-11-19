@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0c66a60a6596256d739d66ca61fd4af2cce7e6e5",
+  "stem": "serve-parallel-dispatch-r1",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "split",
+  "lessons": [
+    "The attempt stopped after 29s at usd 1.0, with 364k input tokens spent reading context. It made one edit (mark_running) and ended incomplete. Five boundaries and a 34-file fence are too much for one attempt, so split along the ticket's own boundary contract sections.",
+    "Split 1: 'Running transition writer'. Add runner.mark_running(journal, stem, sha) and call it from run_ticket, the serve prepared dispatch closure and _Drain._run_one. The earlier inline-replacement approach was sound. Acceptance: criterion 5 grep plus unit tests.",
+    "Split 2: 'Merge queue run context' plus 'Host command lock'. MergeQueue.offer takes ctx into contexts[stem]; drop self.queue.ctx = in clutch/merge.py; update .offer( callers in tests/integration/test_mergequeue.py and test_merge.py; asyncio.Semaphore(1) around stages.run_host_command. Criteria 7, 9.",
+    "Split 3: 'Eligibility filter'. Add drain.eligible() using fences_overlap, chain and SKIP_LIMIT, and call it from scheduler.dispatch_next and _Drain._select. Output must be unchanged with parallel off. Criteria 3, 4.",
+    "Split 4: 'Admission running set', which depends on splits 1-3. DaemonAdmission.running/max_runs/occupied(); serve.py and __main__.py Restart owned lambda; update admission.active/_slot assertions in serve_rig.py, test_checkpoint.py, test_daemon_pause.py, test_sweep_slot_handoff.py; doc section 7.2."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    4
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
