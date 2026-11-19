@@ -19,7 +19,7 @@ from clutch.gates import GateReport, run_gates
 from clutch.git import GitError, RebaseRefused
 from clutch.journal import Event, EventType
 from clutch.stages import CommandResult, Evidence, StageContext
-from clutch.tickets import TICKETS_DIR, Ticket, ticket_path, validate_ticket
+from clutch.tickets import TICKETS_DIR, Ticket, in_fence, ticket_path, validate_ticket
 
 CONFLICT_FACTS = "merge_conflict_facts"
 RED_STREAK = "merge_red_streak"
@@ -218,19 +218,19 @@ class MergeQueue:
         return results, reports
 
     def _strategy(self, path: str, ticket: Ticket):
-        matches = [s for s in self.ctx.config.merge.strategies if stages._in_fence(path, s.paths)]
+        matches = [s for s in self.ctx.config.merge.strategies if in_fence(path, s.paths)]
         road = "declare exactly one strategy for this path; regenerate paths must be outside the ticket fence"
         if len(matches) != 1:
             return None, self._finding(f"{path} has {len(matches)} matching strategies", road, path=path)
         strategy = matches[0]
-        if strategy.strategy == "regenerate" and stages._in_fence(path, ticket.scope_fence):
+        if strategy.strategy == "regenerate" and in_fence(path, ticket.scope_fence):
             return None, self._finding(f"{path} is owned by both regenerate and the ticket fence", road, path=path)
         return strategy, None
 
     def _scoped(self, evidence: Evidence, ticket: Ticket) -> tuple[Evidence, list[Finding]]:
         exempt, findings = [], []
         for path in evidence.changed_files:
-            if any(stages._in_fence(path, s.paths) for s in self.ctx.config.merge.strategies):
+            if any(in_fence(path, s.paths) for s in self.ctx.config.merge.strategies):
                 strategy, finding = self._strategy(path, ticket)
                 if finding:
                     findings.append(finding)

@@ -54,7 +54,7 @@ from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
 from clutch.storm import arrival_id
-from clutch.tickets import _HEADING, TEST_FIXTURE_DIRS, TICKET_FILE, TICKETS_DIR, Ticket, render_context, ticket_path
+from clutch.tickets import _HEADING, TEST_FIXTURE_DIRS, TICKET_FILE, TICKETS_DIR, Ticket, in_fence, render_context, ticket_path
 from clutch.tickets import validate_ticket as validate_ticket
 
 MAIN = "main"
@@ -811,7 +811,7 @@ async def _gather_bug(ctx: StageContext, ticket: Ticket, evidence: Evidence, *, 
         if not prefix or path.is_absolute() or ".." in path.parts or path.as_posix() != prefix.rstrip("/"):
             findings.append(_bug_finding(f"invalid carries prefix {prefix!r}"))
             continue
-        matched = [p for p in evidence.changed_files if _in_fence(p, [prefix])]
+        matched = [p for p in evidence.changed_files if in_fence(p, [prefix])]
         if not matched:
             findings.append(_bug_finding(f"carries prefix {prefix!r} matches no branch-changed file"))
         for rel in matched:
@@ -977,10 +977,6 @@ def _report(code: str, findings: list[Finding]) -> GateReport:
     return GateReport(code=code, verdict="fail" if findings else "pass", findings=findings)
 
 
-def _in_fence(path: str, prefixes: Sequence[str]) -> bool:
-    return any(path == p or path.startswith(p if p.endswith("/") else p + "/") for p in prefixes)
-
-
 def triggered_hosts(ctx, changed_files, *, tier):
     if tier not in {"check", "merge", "integration", "safety"}:
         raise ValueError(f"unknown host check tier: {tier}")
@@ -990,7 +986,7 @@ def triggered_hosts(ctx, changed_files, *, tier):
         return [(n, entry) for n, entry in entries if entry.severity == "hard" and entry.code in codes and sum(e.code == entry.code for _, e in entries) == 1]
     if tier == "integration":
         return [(n, entry) for n, entry in entries if entry.trigger == "always" and entry.severity == "hard"]
-    return [(n, entry) for n, entry in entries if (tier == "check" or entry.severity == "hard") and (entry.trigger == "always" or any(_in_fence(path, entry.trigger) for path in changed_files))]
+    return [(n, entry) for n, entry in entries if (tier == "check" or entry.severity == "hard") and (entry.trigger == "always" or any(in_fence(path, entry.trigger) for path in changed_files))]
 
 
 def _detection_letters(number):
@@ -1229,7 +1225,7 @@ class ScopeFenceGate:
 
     def check(self, artifact: Evidence, workspace: Path) -> GateReport:
         outbox = f"{TICKETS_DIR}/{artifact.stem}/"
-        outside = [p for p in artifact.changed_files if not _in_fence(p, artifact.scope_fence) and not (p.startswith(outbox) and p != outbox + TICKET_FILE)]
+        outside = [p for p in artifact.changed_files if not in_fence(p, artifact.scope_fence) and not (p.startswith(outbox) and p != outbox + TICKET_FILE)]
         return _report(
             self.code,
             [
@@ -1380,7 +1376,7 @@ def check_severity(ctx: StageContext, ticket: Ticket) -> dict[str, Severity]:
 
 async def check_autofix(ctx, ticket, attempt):
     worktree = ctx.worktree(ticket.stem)
-    files = [path for path in await ctx.git.diff_names(ctx.repo, MAIN, ticket.stem) if not _in_fence(path, [TICKETS_DIR]) and (worktree / path).is_file()]
+    files = [path for path in await ctx.git.diff_names(ctx.repo, MAIN, ticket.stem) if not in_fence(path, [TICKETS_DIR]) and (worktree / path).is_file()]
     selections = [[path for path in files if any(fnmatch.fnmatch(path, pattern) for pattern in entry.files)] for entry in ctx.config.review.autofix]
     selected = {path for paths in selections for path in paths}
     files = [path for path in files if path in selected]

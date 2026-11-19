@@ -18,8 +18,8 @@ from clutch.llmeffect import llm_call, scoped_seq
 from clutch.policy import _path_overlap
 from clutch.providers import ProviderCallError, ProviderDrought
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
-from clutch.stages import _in_fence, implement_inputs
-from clutch.tickets import Ticket, TicketInvalid, lint_findings, parse_ticket, validate_ticket
+from clutch.stages import implement_inputs
+from clutch.tickets import Ticket, TicketInvalid, in_fence, lint_findings, parse_ticket, validate_ticket
 
 REQUISITION_STUCK_S = 600.0
 FIRST_REVIEW = "first review: no earlier review recorded"
@@ -89,7 +89,7 @@ def dependent_errors(reply: RequisitionReply, expected: set[str], fence: tuple[s
     errors = [f"missing dependent: {path}" for path in sorted(expected - set(paths))]
     errors += [f"extra dependent: {path}" for path in sorted(set(paths) - expected)]
     errors += [f"duplicate dependent: {path}" for path in sorted(set(paths)) if paths.count(path) > 1]
-    errors += [f"wrongly fenced dependent: {entry.path}" for entry in reply.dependents if entry.status == "fenced" and not _in_fence(entry.path, fence)]
+    errors += [f"wrongly fenced dependent: {entry.path}" for entry in reply.dependents if entry.status == "fenced" and not in_fence(entry.path, fence)]
     return errors
 
 
@@ -203,12 +203,12 @@ async def review_ticket(
             return snag("missing or invalid coverage map", "invalid coverage map", "coverage_map", "run `clutch coverage map`")
         for path in ticket.scope_fence:
             for test in files.get(path, []):
-                if not _in_fence(test, ticket.scope_fence):
+                if not in_fence(test, ticket.scope_fence):
                     dependents.setdefault(test, set()).add(path)
     data_paths = [path for path in ticket.scope_fence if not path.endswith(".py")]
     if data_paths:
         for test, source in test_sources(repo).items():
-            if not _in_fence(test, ticket.scope_fence):
+            if not in_fence(test, ticket.scope_fence):
                 for path in data_paths:
                     if path in source:
                         reads.setdefault(test, set()).add(path)
