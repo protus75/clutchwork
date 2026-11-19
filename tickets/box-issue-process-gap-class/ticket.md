@@ -36,7 +36,7 @@ Scope in:
   - `does` becomes `Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submit nothing.`
   - Add a second example: `clutch box issue --class process-gap "<title>" --body body.md`.
   - The `--class` help still joins `issue.CLASSES`.
-- `clutch/hostfiles.py` `CORE_TEMPLATE`, the "Outside clutch's own repo" rule only: replace `Only a bug in a `clutch box issue` critical class goes upstream:` with `Only a `clutch box issue` class (critical bug, or process gap that cost a run a cycle) goes upstream:`. That adds 37 bytes, keeping the template under the 8,192-byte cap in `tests/integration/test_hostfiles.py`, which is 8,140 at authoring. Then run `uv run clutch host core` to refresh the managed blocks in `CLAUDE.md` and `AGENTS.md`. Never hand-edit those blocks.
+- `clutch/hostfiles.py` `CORE_TEMPLATE`, the "Outside clutch's own repo" rule only: replace `Only a bug in a `clutch box issue` critical class goes upstream:` with `Only a `clutch box issue` class (critical bug, or process gap that cost a run a cycle) goes upstream:`. Measure the byte budget against `CORE_TEMPLATE` on main when Implement runs, not at authoring. The sibling `boundary-contract-authoring` (P1, confirmed) also edits this template. The edit must leave the template at or under the 8,192-byte cap in `tests/integration/test_hostfiles.py`. If the replacement does not fit, shorten only this rule's new wording; the phrase `process gap that cost a run a cycle` must stay. Never reword another rule. Then run `uv run clutch host core` to refresh the managed blocks in `CLAUDE.md` and `AGENTS.md`; never hand-edit those blocks. Then regenerate `GOLDEN` in `tests/integration/test_hostfiles.py` with `uv run python -m tests.integration.test_hostfiles`, the file's own `__main__` generator, and change nothing else in that file.
 - `clutch/docs/host-running.md`:
   - The `box issue` verb-table row says it prints a link for a critical clutch bug or a process gap.
   - Rename the section heading `## Reporting a critical clutch bug` to `## Reporting a clutch problem upstream`.
@@ -62,6 +62,7 @@ Scope out:
 - clutch/issue.py
 - clutch/__main__.py
 - clutch/hostfiles.py
+- tests/integration/test_hostfiles.py
 - CLAUDE.md
 - AGENTS.md
 - clutch/docs/host-running.md
@@ -77,7 +78,7 @@ Scope out:
 2. `tests/unit/test_issue_process_gap.py::test_process_gap_title_prefix` checks that `link("process-gap", "retry skips re-audit", "body", str)` builds a URL whose `title` query value is exactly `[process-gap] retry skips re-audit`. It rules out `[critical:process-gap] ...` and an unprefixed title.
 3. `tests/unit/test_issue_process_gap.py::test_critical_prefix_unchanged` checks that every member of `issue.CRITICAL` still yields the title `[critical:<class>] t`. It rules out a critical class losing its prefix.
 4. `tests/unit/test_issue_process_gap.py::test_main_accepts_process_gap` checks that `cli.main(["box", "issue", "--class", "process-gap", "t", "--body", "body.md"], ...)` with load_config faked returns 0 and prints one link. It rules out argparse or the verb refusing the new class.
-5. `tests/integration/test_hostfiles.py` passes, so `CORE_TEMPLATE` stays at or under 8,192 bytes and still contains `is never copied or patched into host files`. Running `uv run clutch host core` after the change leaves `CLAUDE.md` and `AGENTS.md` matching the template. The `## Verification` grep checks that each contains `process gap that cost a run a cycle`.
+5. `tests/integration/test_hostfiles.py` passes against main's template at Implement time, so `CORE_TEMPLATE` stays at or under 8,192 bytes, still contains `is never copied or patched into host files`, and matches the regenerated `GOLDEN` (`test_core_golden_uses_branch_template`). Running `uv run clutch host core` after the change leaves `CLAUDE.md` and `AGENTS.md` matching the template. The `## Verification` grep checks that each contains `process gap that cost a run a cycle`.
 6. The `## Verification` docs check passes. `clutch/docs/host-running.md` has a `## Reporting a clutch problem upstream` section that names `process-gap` and all five critical classes. `docs/how-clutch-works.md` links `#reporting-a-clutch-problem-upstream` and no longer links `#reporting-a-critical-clutch-bug`. `README.md` mentions `process gap` on its `clutch box issue` line.
 
 ## Verification
