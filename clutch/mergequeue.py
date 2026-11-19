@@ -1,6 +1,7 @@
 """Serial merge admission for serve; run and drain merge inline through merge.merge."""
 
 import asyncio
+import json
 import re
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Literal
@@ -14,10 +15,12 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from clutch import merge, stages
 from clutch.artifacts import Cost, Finding, StageResult, refused
 from clutch.drain import authored_at, sort_key
+from clutch.driver import LlmStage
 from clutch.effects import Effects
 from clutch.gates import GateReport, run_gates
 from clutch.git import GitError, RebaseRefused
 from clutch.journal import Event, EventType
+from clutch.specs import RenderOverBound, render
 from clutch.stages import CommandResult, Evidence, StageContext
 from clutch.tickets import TICKETS_DIR, Ticket, in_fence, ticket_path, validate_ticket
 
@@ -26,6 +29,28 @@ RED_STREAK = "merge_red_streak"
 TREE_MISMATCH = "merge_tree_mismatch"
 RED_STREAK_LIMIT = 3
 MERGE_REGATE = "merge-regate"
+MODEL_MAX_FILES = 3
+MODEL_MAX_MARKER_LINES = 60
+CONFLICT_MARKER = re.compile(r"^(?:<<<<<<<|=======|>>>>>>>|\|\|\|\|\|\|\|)(?: |$)", re.MULTILINE)
+
+
+def model_eligible(files: dict[str, tuple[str | None, str | None, str | None]], marked: dict[str, str], inventory: Sequence[str], shared: Sequence[str], renamed: Sequence[str] = ()) -> bool:
+    """Bounds apply to the whole admission; shared paths waive only the safety exclusion."""
+    return (
+        0 < len(files) <= MODEL_MAX_FILES
+        and sum(len(CONFLICT_MARKER.findall(text)) for text in marked.values()) <= MODEL_MAX_MARKER_LINES
+        and not set(files).intersection(renamed)
+        and all(all(text is not None and "\0" not in text for text in contents) for contents in files.values())
+        and all(not in_fence(path, inventory) or in_fence(path, shared) for path in files)
+    )
+
+
+class ResolveReply(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
+
+    verdict: Literal["resolved", "decline"]
+    reason: str
+    files: dict[str, str]
 
 
 def regate_receipts(events) -> dict[str, dict]:
@@ -177,13 +202,13 @@ class MergeQueue:
         if escalate:
             self.escalate(event)
 
-    def _facts(self, stem: str, conflicts: set[str], strategies: set[str], *, handoff: bool = False, red: Sequence[str] = ()) -> None:
+    def _facts(self, stem: str, conflicts: set[str], strategies: set[str], *, handoff: bool = False, model: bool = False, red: Sequence[str] = ()) -> None:
         self._signal(
             stem,
             {
                 "kind": CONFLICT_FACTS,
                 "conflicted_paths": sorted(conflicts),
-                "resolving_rung": "rework" if handoff else "mechanical" if strategies else "none",
+                "resolving_rung": "rework" if handoff else "model" if model else "mechanical" if strategies else "none",
                 "strategy_paths": sorted(strategies),
                 "integration_red_paths": sorted(set(red)),
             },
@@ -262,6 +287,58 @@ class MergeQueue:
                 return [self._finding(f"cannot resolve {path}: {exc}", "resolve the conflict through Rework and obtain a new approval", path=path)]
         return []
 
+    async def _model_resolve(self, ticket, attempt, paths, files, marked, renamed, reviewed, base):
+        ctx = self.ctx
+        worktree = ctx.worktree(ticket.stem)
+        road = "resolve the conflict through Rework and obtain a new approval"
+        if not model_eligible(files, marked, ctx.config.engine_plane_safety_inventory, ctx.config.scheduler.parallel.shared_paths, renamed):
+            return None
+        try:
+            subjects = await ctx.git._run(ctx.repo, "log", "--format=%s", f"{base}..main", "--", *sorted(files))
+            others = []
+            for stem in dict.fromkeys(re.findall(r"^clutch\(([a-z0-9][a-z0-9-]*)\):", subjects, re.MULTILINE)):
+                text = await ctx.git._run(ctx.repo, "show", f"main:{ticket_path(stem)}")
+                # Read only the two intent sections, not instructions or unrelated ticket metadata.
+                sections = dict(re.findall(r"(?ms)^## ([^\n]+)\n(.*?)(?=^## |\Z)", text))
+                others.append({"stem": stem, "goal": sections.get("Goal / Why", ""), "scope": sections.get("Scope in / Scope out", "").split("Scope out:", 1)[0]})
+            spec = stages._spec(ctx, "resolve")
+            inputs = {
+                "ticket": json.dumps({"goal": ticket.sections["Goal / Why"], "scope": ticket.sections["Scope in / Scope out"].split("Scope out:", 1)[0]}),
+                "other_tickets": json.dumps(others),
+                "conflicts": json.dumps({path: dict(zip(("base", "ours", "theirs"), files[path], strict=True)) for path in paths}),
+                "retry_findings": "none",
+            }
+            stage = LlmStage(surface="resolve", emits=ResolveReply, gates=[], render=lambda _, findings: render(spec, {**inputs, "retry_findings": stages.findings_text(findings)}))
+            kwargs = dict(
+                ticket=ticket.stem,
+                attempt=attempt,
+                workspace=worktree,
+                stuck_budget=ticket.stuck_minutes * 60.0,
+                expected_budget=ticket.expected_minutes * 60.0,
+                scope_fence=(),
+                key_scope=f"resolve{len(files)}{await ctx.git.rev_parse(worktree, 'REBASE_HEAD')}",
+            )
+            result = await ctx.driver.run(stage, None, tier=spec.meta.tier, effort=spec.meta.effort, **kwargs)
+            reply = result.artifact
+            if result.outcome != "ok" or not isinstance(reply, ResolveReply):
+                return result.findings or [self._finding("model resolution failed", road)]
+            if reply.verdict == "decline":
+                return [self._finding(f"model declined: {reply.reason}", road, path=paths[0])]
+            if set(reply.files) != set(paths) or any("\0" in text or CONFLICT_MARKER.search(text) for text in reply.files.values()):
+                return [self._finding("model resolution has incorrect paths, binary text or conflict markers", road)]
+            # Validate the entire reply before writing or staging any file.
+            for path, text in reply.files.items():
+                ctx.fs.write(worktree / path, text.encode())
+            await ctx.git.add(worktree, paths)
+            delta = await ctx.git._run(worktree, "diff", "--cached", reviewed, "--", *paths)
+            review, review_spec = stages.review_stage(ctx, (await ctx.git._run(ctx.repo, "show", f"main:{ticket_path(ticket.stem)}")), delta, "none")
+            checked = await ctx.driver.run(review, None, tier=review_spec.meta.tier, effort=review_spec.meta.effort, **kwargs)
+            if checked.outcome != "ok" or not isinstance(checked.artifact, stages.ReviewVerdict) or checked.artifact.verdict != "approve":
+                return checked.findings or [self._finding("model resolution review did not approve", road)]
+            return []
+        except (GitError, RenderOverBound, UnicodeError) as exc:
+            return [self._finding(f"model resolution unavailable: {exc}", road)]
+
     async def _admit(
         self,
         ticket: Ticket,
@@ -283,13 +360,15 @@ class MergeQueue:
         started = ctx.driver.clock()
         conflicts, hits = set(), set()
         rebasing = False
+        model = False
+        files, marked, renamed = {}, {}, set()
 
         def elapsed() -> Cost:
             return Cost(seconds=(ctx.driver.clock() - started).total_seconds())
 
         def facts(*args, **kwargs):
             if conflict_facts:
-                self._facts(*args, **kwargs)
+                self._facts(*args, model=model, **kwargs)
 
         if findings := await stages.ticket_change_findings(ctx, stem):
             return refused(findings, elapsed() if conflict_ladder else Cost())
@@ -317,7 +396,32 @@ class MergeQueue:
                 except GitError:
                     paths = await ctx.git.conflicted_paths(worktree)
                     conflicts.update(paths)
+                    # Missing index stages reject modify/delete and rename conflicts.
+                    for path in paths:
+                        contents = []
+                        for n in (1, 2, 3):
+                            try:
+                                contents.append(await ctx.git._run(worktree, "show", f":{n}:{path}"))
+                            except GitError:
+                                contents.append(None)
+                        files[path] = tuple(contents)
+                        try:
+                            marked[path] = marked.get(path, "") + "\n" + ctx.fs.read_bytes(worktree / path).decode("utf-8", errors="replace")
+                        except FileNotFoundError:
+                            marked[path] = ""
+                    base = await ctx.git.merge_base(ctx.repo, reviewed, "main")
+                    for ref in (reviewed, "main"):
+                        changes = await ctx.git._run(ctx.repo, "diff", "--name-status", "-M", base, ref)
+                        for line in changes.splitlines():
+                            if line.startswith("R"):
+                                renamed.update(line.split("\t")[1:])
                     findings = await self._resolve(ticket, attempt, paths, hits)
+                    if findings and conflict_ladder:
+                        remaining = await ctx.git.conflicted_paths(worktree)
+                        resolution = await self._model_resolve(ticket, attempt, remaining, files, marked, renamed, reviewed, base)
+                        if resolution is not None:
+                            findings = findings + resolution if resolution else []
+                            model = model or not findings
                     if findings:
                         await ctx.git._call(worktree, "rebase", "--abort")
                         rebasing = False
@@ -326,7 +430,7 @@ class MergeQueue:
                     step = ctx.git.rebase_continue(worktree)
 
             evidence = await stages.gather_safety_evidence(ctx, ticket, "ok")
-            skip = unchanged and bool(evidence.changed_files) and not receipts
+            skip = unchanged and bool(evidence.changed_files) and not receipts and not model
             candidate = merge.read_candidate(ctx, ticket, reviewed, evidence.changed_files)
             severity = stages.check_severity(ctx, ticket)
             scoped, strategy_findings = self._scoped(evidence, ticket) if strategy_scope else (evidence, [])

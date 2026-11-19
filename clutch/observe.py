@@ -43,6 +43,7 @@ STEP_NAMES = {
     "check": "Check",
     "merge": "Merge",
     "review": "Review",
+    "resolve": "Resolve",
     "diagnose": "Diagnose",
     "rework": "Rework",
     "retro": "Retro",
@@ -257,6 +258,9 @@ def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
     meta = frontmatter(ctx.root / ticket_path(stem))
     tier = rung["tier"] if rung else meta.get("agent_tier", "medium")
     effort = rung["effort"] if rung else meta.get("agent_effort", "medium")
+    if surface == "resolve":
+        spec = frontmatter(Path(__file__).parent / "specs" / "resolve.md")
+        return f"{spec['tier']}/{spec['effort']}"
     if surface == "requisition_review":
         effort = frontmatter(Path(__file__).parent / "specs" / "requisition_review.md").get("effort", "?")
     return f"{tier}/{effort}" + (" (escalated)" if rung else "")

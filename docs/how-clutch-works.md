@@ -532,7 +532,17 @@ For each candidate, in pick order:
 
 1. Rebase onto `main`. A conflicted path that matches exactly one `merge.strategies` entry is
    resolved mechanically (`union` for append-only files, `regenerate` re-runs a generator).
-   Anything else aborts the rebase and hands the ticket to Rework.
+   If mechanical resolution cannot finish, the `resolve` model surface tries text conflicts
+   bounded by engine constants: at most 3 files and 60 conflict-marker lines across the admission,
+   no binary, modify/delete or rename conflicts, and no safety-inventory paths (except configured
+   `scheduler.parallel.shared_paths`, which waive only that exclusion). It receives the ticket's
+   and relevant main-side tickets' Goal and Scope in, plus each file's base, ours and theirs text.
+   Resolve and its review may nest inside the merge stage on the same driver; other stages do not nest.
+   Resolved contents must have no markers and receive an approving call of the unchanged review
+   surface over the resolution delta before the full safety and integration tiers run. The call
+   writes no review record and lifts no outbox; the old approval alone cannot authorize the repair.
+   Ineligible conflicts, decline, invalid replies and review refusals abort the rebase and return
+   the existing handoff to Rework. Kept repairs record `resolving_rung: model`.
 2. **Safety tier:** scope fence, run record, Merge gates, and host safety checks.
 3. **Integration tier:** all Check and Merge gates, plus host `always` + `hard` checks through the shared runner also used by Check and inline merge.
 4. **Red streak:** three different stems failing integration in a row pause the queue; `engine resume`
@@ -707,7 +717,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | Path | Holds |
 |---|---|
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
-| `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
+| `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver except for resolve and review inside merge admission; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
 | `dist/` | Wheel and sdist last built by `clutch release publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `engine drain --detach`. |
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |

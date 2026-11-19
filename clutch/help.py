@@ -148,6 +148,14 @@ _add(
     "Inspect the associated record when available.",
 )
 _add(
+    "step",
+    {"resolve": "Resolves bounded text conflicts in serve merge admission."},
+    "7.2.1 Merge queue (serve only)",
+    "Mechanical resolution could not finish and the conflict bounds passed.",
+    "An approving review of the resolution delta precedes safety and integration checks; refusals hand off to Rework.",
+)
+
+_add(
     "box",
     {
         "suggestion": "A suggestion proposes work or an idea.",

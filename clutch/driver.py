@@ -173,7 +173,8 @@ class Driver:
 
     @contextmanager
     def stage(self, *, stem, attempt, surface, **start_fields):
-        if self._open_stage is not None:
+        previous = self._open_stage
+        if previous is not None and not (previous == (stem, "merge") and surface in {"resolve", "review"}):
             raise ValueError(f"stage already open: stem={self._open_stage[0]}, surface={self._open_stage[1]}")
         self._open_stage = (stem, surface)
         try:
@@ -184,7 +185,7 @@ class Driver:
 
             yield SimpleNamespace(end=end)
         finally:
-            self._open_stage = None
+            self._open_stage = previous
 
     @classmethod
     def from_config(

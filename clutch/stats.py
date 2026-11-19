@@ -11,7 +11,7 @@ from clutch.journal import EventType, total_spend
 from clutch.status import CLOSED
 from clutch.tickets import KINDS
 
-SURFACES = {"requisition_review", "implement", "review", "diagnose", "rework", "retro"}
+SURFACES = {"resolve", "requisition_review", "implement", "review", "diagnose", "rework", "retro"}
 
 
 def _latest_settled(events, now):

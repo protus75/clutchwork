@@ -1169,7 +1169,7 @@ async def test_production_consumes_conflict_handoff_after_unwind(admission_conte
     from tests.integration.test_stages import agent, verdict
 
     source = admission_context
-    _, writer = production_writer(source, [])
+    _, writer = production_writer(source, ['{"verdict":"decline","reason":"needs Rework","files":{}}'])
     ctx, queue = writer.ctx, writer.queue
     ticket, path = await conflict(ctx)
     ctx.config.merge.strategies = []
@@ -1193,7 +1193,7 @@ async def test_production_consumes_conflict_handoff_after_unwind(admission_conte
     queue.offer(ticket, attempt=0)
     [handoff] = await queue.process()
     assert isinstance(handoff, ConflictHandoff) and handoff.approval_invalidated
-    assert chronology == ["abort"] and not ctx.driver.llm.requests
+    assert chronology == ["abort"] and [r.surface for r in ctx.driver.llm.requests] == ["resolve"]
     assert queue.active is None and not queue._slot.locked()
 
     def reply(req):

@@ -88,6 +88,11 @@ def test_serve_parameters_use_integration_stage_and_signal_conflict(monkeypatch)
     queue.ctx.git.rebase_stop_at_conflict = AsyncMock(side_effect=GitError(["git"], 1, "", "conflict"))
     queue.ctx.git.conflicted_paths = AsyncMock(return_value=["src/a"])
     queue.ctx.git._call = AsyncMock()
+    queue.ctx.git._run = AsyncMock(return_value="text")
+    queue.ctx.git.merge_base = AsyncMock(return_value="base")
+    queue.ctx.fs = SimpleNamespace(read_bytes=lambda _: b"text")
+    queue.ctx.config.engine_plane_safety_inventory = ["src"]
+    queue.ctx.config.scheduler = SimpleNamespace(parallel=SimpleNamespace(shared_paths=[]))
     queue._resolve = AsyncMock(return_value=[Finding(code="conflict", message="conflict", paved_road="rework")])
     asyncio.run(queue._admit(ticket, 1))
     assert events[0]["kind"] == "merge_conflict_facts"

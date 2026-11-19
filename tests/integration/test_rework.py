@@ -662,10 +662,11 @@ def test_admission_never_invokes_rework_inline(ctx, monkeypatch):
     async def scenario():
         ticket, _ = await conflict(ctx)
         ctx.config.merge.strategies = []
+        ctx.driver.llm = FakeLLM(['{"verdict":"decline","reason":"needs Rework","files":{}}'])
         queue = MergeQueue(ctx, escalate=lambda _: None)
         queue.offer(ticket, attempt=0)
         [result] = await queue.process()
-        assert isinstance(result, ConflictHandoff) and ctx.driver.llm.requests == []
+        assert isinstance(result, ConflictHandoff) and [r.surface for r in ctx.driver.llm.requests] == ["resolve"]
         assert not queue._slot.locked() and queue.active is None
         no_orders(ctx)
 

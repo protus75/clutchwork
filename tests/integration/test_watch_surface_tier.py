@@ -59,3 +59,8 @@ def test_watch_now_line_shows_the_engine_capability(ctx, monkeypatch):
     monkeypatch.setattr(watch, "processes", lambda ctx: [])
     monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: {})
     assert "     asked for tier/effort low/max" in watch.text_snapshot(ctx).splitlines()  # The review spec would show high/high.
+
+
+def test_resolve_uses_engine_spec_capability(ctx, rung):
+    # Ticket low/max and retry max/medium must not override resolve's high/high.
+    assert watch.capability(ctx, [rung], "alpha", "resolve") == "high/high"
