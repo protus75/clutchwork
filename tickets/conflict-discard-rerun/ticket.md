@@ -79,6 +79,7 @@ In:
 - `tests/integration/test_daemon_soak_runner.py`: its conflict-rungs test flips from the handoff/rework evidence (`resolving_rung` `rework`, `member.handoffs`, the `handoff` and `rework` evidence fields, the `['gate_failed', 'merged']` sequence) to the rerun evidence, together with the `tests/harness/daemon_soak.py` change.
 - Update docs/how-clutch-works.md section 7.2.1, and section 7.2 only where it describes the handoff: replace the Rework handoff with the rerun and list the `resolving_rung` values.
 - Remove the existing tests that name `ConflictHandoff`, `consume_handoff` or `handoff=`. Rewrite the ones that exercise queue conflict behavior in the new files. Existing test files are edited only to delete or flip those references.
+- Exception: `tests/integration/test_daemon_composition.py::test_production_applies_reviewed_rework_orders` and `::test_production_refuses_failed_rework_publication` use `writer.consume_handoff` only as a way into production Rework publication, which stays live. Re-point both at the surviving publication entry (the daemon's gate-failure Rework path that `apply_rework`/`runner.drive` use, without a handoff): replace only the `ConflictHandoff` construction and the `consume_handoff` call, keep every assertion, and add no new test to that file.
 
 Out:
 - The run-alone marking and dispatch overlap logic (the parallel dispatch tickets).
@@ -127,6 +128,7 @@ Out:
 8. `./dev.py test` passes for the whole suite, with no remaining test that passes only on the old handoff behavior or the old spec versions.
 9. `./dev.py test tests/unit/test_conflict_rerun.py` shows a Reject-queue `gate_failed` terminal whose reason carries `merge_conflict_rerun_spent` is held by `drain.awaiting_operator`, is not `reofferable`, and draws no `retry` cap until an operator `reject_verdict` keep; after that keep the rerun count restarts at zero, so the next conflict reruns instead of parking.
 10. `./dev.py test tests/unit/test_conflict_rerun.py` shows `prior_attempts` on a `conflict_rerun` terminal contains the review approval findings exactly once and does not contain "this attempt's to clear"; `./dev.py test tests/integration/test_drain_reentry.py tests/integration/test_harvest.py` passes unchanged, so non-rerun terminals keep today's output.
+11. `./dev.py test tests/integration/test_daemon_composition.py -k "applies_reviewed_rework_orders or refuses_failed_rework_publication"` passes with all of its update, split and escalate publication cases and its refusal cases, not deleted or skipped.
 
 ## Verification
 ```
