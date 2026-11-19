@@ -1,24 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "daf34c3203ffeac38c4069de6c22e56867a25573",
+  "produced_at_sha": "99812d81bcd231e61b9d62a1ee5bbf8dcb6624e9",
   "stem": "document-agent-roadmap-prompt",
-  "attempt": 0,
-  "terminal": "incomplete",
-  "stage": "implement",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Attempt 0 stopped by itself after about 4 minutes, uncommitted, with all Verification tests passing. Redo the full fenced work: clutch/ask.py, clutch/__main__.py, clutch/specs/ask/roadmap.md, clutch/specs/doc/facets/type/roadmap.md, the docs rows, tests/integration/test_ask.py and both",
-    "Review found the earlier approach sound: register roadmap as a stemless kind in clutch/ask.py KINDS. Load the facet and template from package resources. Leave roadmap out of the stem-taking parametrization in tests/integration/test_ask.py. Confirm both resources are in the built wheel.",
-    "Do criteria 3 and 4 yourself. Check the facet against docs/roadmap.md section 7, the Plan facet in docs/document-agent/type/plan.md, and the self-host roadmap's sections 1-9. Fix any missing requirement in the facet, then record each check in run.md.",
-    "For criterion 5, make a disposable configured host in a temp dir. Give it two qualifying plans that share a prerequisite and one plan with no exit check. Follow the printed `clutch prompt roadmap` by hand and run `clutch roadmap status` there. Check the bold release cell, the 8-column rows and the",
-    "For criterion 6, add a new qualified unit to a plan in that temp host and run the prompt again against the existing file. Confirm it gets an unused number and a fresh stem, and that links, struck rows, decisions and gates survive. A third unchanged pass must ask for no edit. Report pass or fail per"
+    "Redo the whole change from the merge base, since no earlier diff survives. Review found these parts sound: the stemless roadmap kind in clutch/ask.py and clutch/__main__.py, the single packaged facet clutch/specs/doc/facets/type/roadmap.md, the clutch/specs/ask/roadmap.md template, both Type table",
+    "README.md: do not put the roadmap prompt under `## Developing clutch`, because that section covers only clutch's own repo. Put it in the host-operator part, for example next to the planning example under `## Observe and decide`, so operators on installed hosts can find it.",
+    "In README.md, write the verb as `uv run clutch prompt roadmap` to match the other README commands. Say what it prints: the procedure for creating or maintaining docs/roadmap.md. Hand off through `uv run clutch roadmap status`, then `uv run clutch prompt plan-ticket-drain`.",
+    "clutch/docs/host-running.md: a separate prompt-table row failed the existing command-table test. Fold the roadmap description into the existing prompt row there, then update the verb table in docs/how-clutch-works.md section 2 to match.",
+    "Before finishing, run `./dev.py test tests/unit/test_ask_roadmap.py tests/integration/test_ask_roadmap.py tests/integration/test_ask.py tests/unit/test_main_help.py`. Also exclude roadmap from the stem-taking prompt parametrization in tests/integration/test_ask.py."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0,
-    3,
-    4
+    0
   ],
   "spec_version": "1.7",
   "provider": "claude",
