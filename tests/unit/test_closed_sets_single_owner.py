@@ -27,15 +27,15 @@ def test_blob_sha():
 def test_owner_constants():
     assert llm.TIERS == ("low", "medium", "high", "max")
     assert tickets.PRIORITIES == ("P0", "P1", "P2", "P3")
-    assert tickets.KINDS == ("feature", "bug", "chore")
-    for field, value in (("kind", "graphics"), ("priority", "P4")):
+    assert tickets.KINDS == ("feature", "bug", "chore", "graphics")
+    for field, value in (("kind", "epic"), ("priority", "P4")):
         data = dict(state="draft", source="human", priority="P1", kind="bug")
         data[field] = value
         with pytest.raises(ValidationError) as exc:
             tickets.Frontmatter(**data)
         assert field in str(exc.value)
     with pytest.raises(ValueError):
-        tickets.template("graphics")
+        tickets.template("epic")
 
 
 def test_inbox_paths_reject_traversal():

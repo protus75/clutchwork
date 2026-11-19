@@ -752,16 +752,18 @@ def _parser() -> argparse.ArgumentParser:
         ticket_sub,
         "new",
         summary="create and lint a ticket skeleton",
-        does="Create and lint a ticket skeleton; bug tickets require evidence.",
-        reads="Evidence files; no config is needed.",
-        writes="Ticket file and copied bug evidence; no journal or git state.",
+        does="Create and lint a ticket skeleton; bugs require evidence and graphics can include reference and input files.",
+        reads="Evidence, reference and input files; no config is needed.",
+        writes="Ticket file and copied evidence or graphics files; no journal or git state.",
         lock="None.",
         exits="0 when authored; 2 on refusal.",
-        examples=["clutch ticket new add-widget", "clutch ticket new fix-crash --kind bug --evidence crash.txt"],
+        examples=["clutch ticket new add-widget", "clutch ticket new fix-crash --kind bug --evidence crash.txt", "clutch ticket new hero --kind graphics --reference mock.png --input product.png"],
     )
     new.add_argument("stem")
     new.add_argument("--kind", choices=KINDS, default="feature")
     new.add_argument("--evidence", nargs="+", metavar="PATH")
+    new.add_argument("--reference", nargs="+", metavar="PATH")
+    new.add_argument("--input", nargs="+", metavar="PATH")
     lint = _command(
         ticket_sub,
         "lint",
@@ -1239,7 +1241,7 @@ def main(
 
     # Authoring
     def handle_new():
-        return _new(repo, args.stem, args.kind, args.evidence or ())
+        return _new(repo, args.stem, args.kind, args.evidence or (), args.reference or (), args.input or ())
 
     def handle_prompt():
         if args.kind in ("drain-loop", "plan-ticket-drain", "roadmap"):
@@ -1887,7 +1889,7 @@ def _order(checkout, stem, priority, runs_before):
     return 0
 
 
-def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] = ()) -> int:
+def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] = (), reference: Sequence[str] = (), inputs: Sequence[str] = ()) -> int:
     """Author a ticket and its evidence outside the lock fence."""
     if kind == "bug" and not evidence:
         raise runner.Refusal(
@@ -1895,7 +1897,9 @@ def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] =
         )
     if kind != "bug" and evidence:
         raise runner.Refusal("evidence is for bug tickets", "omit --evidence or choose --kind bug")
-    sources = [repo / path for path in evidence]
+    if kind != "graphics" and (reference or inputs):
+        raise runner.Refusal("reference and input files are for graphics tickets", "omit --reference and --input or choose --kind graphics")
+    sources = [repo / path for path in (*evidence, *reference, *inputs)]
     for source in sources:
         if source.is_symlink() or not source.is_file():
             raise runner.Refusal(f"invalid evidence file: {source}", "supply an existing regular file that is not a symlink")
@@ -1911,7 +1915,8 @@ def _new(repo: Path, stem: str, kind: str = "feature", evidence: Sequence[str] =
     fs = LocalFileSystem()
     fs.write(repo / rel, text.encode())
     for source in sources:
-        fs.write(repo / "tickets" / stem / "evidence" / source.name, source.read_bytes())
+        directory = "evidence" if kind == "bug" else "reference"
+        fs.write(repo / "tickets" / stem / directory / source.name, source.read_bytes())
     print(f"authored {rel}")
     print(f"read the ticket authoring guide before filling sections: {guide}")
     findings = []

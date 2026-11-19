@@ -311,7 +311,7 @@ def test_thresh_closed_sets_and_constants():
 
 def test_tickets_closed_sets_and_constants():
     assert set(get_args_deep(llm.AgentEffort)) == {"high", "low", "max", "medium"}
-    assert tickets.OPTIONAL_SECTIONS == ("Runs before", "On-demand", "Regression")
+    assert tickets.OPTIONAL_SECTIONS == ("Runs before", "On-demand", "Regression", "Render")
     assert tickets.REQUIRED_SECTIONS == (
         "Depends on",
         "Context",
@@ -339,6 +339,7 @@ def test_tickets_closed_sets_and_constants():
         "Runs before",
         "On-demand",
         "Regression",
+        "Render",
     )
 
 
@@ -363,7 +364,7 @@ LEVELS = {"low", "medium", "high", "max"}
 FRONTMATTER_VOCABULARIES = {
     "state": {"draft", "confirmed", "rejected", "merged"},
     "priority": {"P0", "P1", "P2", "P3"},
-    "kind": {"bug", "feature", "chore"},
+    "kind": {"bug", "feature", "chore", "graphics"},
     "agent_tier": LEVELS,
     "agent_effort": LEVELS,
 }

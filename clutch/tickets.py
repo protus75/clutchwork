@@ -33,7 +33,7 @@ TEST_FIXTURE_DIRS = frozenset({"tests", "test", "fixtures", "fixture"})
 
 Priority = Literal["P0", "P1", "P2", "P3"]
 PRIORITIES = get_args(Priority)
-Kind = Literal["feature", "bug", "chore"]
+Kind = Literal["feature", "bug", "chore", "graphics"]
 KINDS = get_args(Kind)
 Source = Annotated[str, StringConstraints(pattern=r"^(human|seed|box:[a-z][a-z0-9_]*)$")]
 
@@ -78,7 +78,7 @@ REQUIRED_SECTIONS = (
     "Definition of rejected",
     "Time budget",
 )
-OPTIONAL_SECTIONS = ("Runs before", "On-demand", "Regression")
+OPTIONAL_SECTIONS = ("Runs before", "On-demand", "Regression", "Render")
 SECTIONS = REQUIRED_SECTIONS + OPTIONAL_SECTIONS
 BANNED_ADJECTIVES = re.compile(r"\b(improved|better|cleaner)\b", re.IGNORECASE)
 _FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
@@ -402,7 +402,12 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
     findings += errs
     if evidence and fm is not None and fm.state not in {"merged", "rejected"} and "Boundary contract" in sections:
         findings += _boundary_findings(sections["Boundary contract"], path)
+    kind = fm.kind if fm is not None else data.get("kind")
+    render, render_errors = _render(sections.get("Render", ""), path) if kind == "graphics" and "Render" in sections else ({}, [])
+    findings += render_errors
     for name in REQUIRED_SECTIONS:
+        if name == "Goal / Why" and kind == "graphics" and render.get("mode") == ["generate"] and name in sections:
+            continue
         if name == "Boundary contract" and (not evidence or fm is None or fm.state in {"merged", "rejected"}):
             continue
         if not sections.get(name):
@@ -502,7 +507,8 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
         if m := BANNED_ADJECTIVES.search(text_):
             findings.append(_f(f"`## Acceptance criteria` uses the unmeasurable adjective {m.group(1)!r}", 'state a measurable outcome ("exits 0 when...", "is unchanged")', path))
         for item in _criteria(text_):
-            if "`" not in item:
+            visual = re.fullmatch(r"visual:\s*([^:]+):\s*(\S.*)", item)
+            if "`" not in item and not (kind == "graphics" and visual):
                 findings.append(_f(f"acceptance criterion {item!r} names no check", "name the `## Verification` command or the observable artifact that checks it, in backticks", path))
 
     commands: list[tuple[str, ...]] = []
@@ -513,7 +519,10 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
             findings.append(_f("`## Verification` has text outside its fenced block", "keep only the fenced command block in `## Verification`", path))
 
     regression, carries = (), ()
-    kind = fm.kind if fm is not None else data.get("kind")
+    if "Render" in sections and kind != "graphics":
+        findings.append(_f("`## Render` is present on a non-graphics ticket", "remove `## Render` or choose `kind: graphics`", path))
+    elif kind == "graphics" and "Render" not in sections:
+        findings.append(_f("a graphics ticket has no `## Render` section", "add `## Render` with mode and artifacts", path))
     if "Regression" in sections:
         if kind != "bug":
             findings.append(_f("`## Regression` is present on a non-bug ticket", "drop `## Regression`, or set `kind: bug` if this ticket fixes a defect", path))
@@ -580,6 +589,51 @@ def _regression(text: str, path: str) -> tuple[tuple[str, ...], tuple[str, ...],
         if not TEST_FIXTURE_DIRS.intersection(Path(prefix).parts):
             findings.append(_f(f"`## Regression` carries prefix {prefix!r} is not a test/fixture path", "carry a reproducer under `tests/`", path))
     return (commands[0] if len(commands) == 1 else ()), prefixes, findings
+
+
+def _render(text: str, path: str) -> tuple[dict, list[Finding]]:
+    """Parse the graphics render declaration without executing it."""
+    findings = []
+    fields: dict = {}
+    lines = text.splitlines()
+    fence_lines = [i for i, line in enumerate(lines) if line.strip().startswith("```")]
+    outside = lines
+    if fence_lines:
+        commands, outside, errs = _fenced_commands(text, "Render", path)
+        findings += errs
+        fields["command"] = commands
+    for line in outside:
+        if not line.strip():
+            continue
+        match = re.fullmatch(r"- (mode|artifact|input|reference|candidates|carries):\s*(\S+)", line.strip())
+        if not match:
+            findings.append(_f("invalid `## Render` entry", "use mode, artifact, input, reference, candidates or carries bullets", path))
+            continue
+        key, value = match.groups()
+        fields.setdefault(key, []).append(value)
+        if key in {"artifact", "input", "reference", "carries"}:
+            findings += _repo_path(value, "Render", path)
+    mode = fields.get("mode", [])
+    if len(mode) != 1 or mode[0] not in {"command", "generate"}:
+        findings.append(_f("`## Render` needs one valid mode", "set `- mode: command` or `- mode: generate`", path))
+    if not fields.get("artifact"):
+        findings.append(_f("`## Render` needs an artifact", "add `- artifact: <repo-relative path>`", path))
+    candidates = fields.get("candidates", [])
+    if len(candidates) > 1 or any(c not in {"1", "2", "3", "4", "5"} for c in candidates):
+        findings.append(_f("invalid Render candidates", "set one `- candidates:` value from 1 to 5", path))
+    if mode == ["generate"] and (fence_lines or fields.get("carries")):
+        findings.append(_f("generate Render cannot carry a command", "remove the command and carries bullets", path))
+    if mode == ["command"]:
+        if not fence_lines:
+            findings.append(_f("command Render needs one fenced command", "add one fenced argv command", path))
+        elif len(fields.get("command", [])) != 1:
+            findings.append(_f("command Render needs exactly one command", "keep one argv command in the fence", path))
+        if not fields.get("carries") or fields.get("input") or candidates:
+            findings.append(_f("invalid command Render fields", "add carries and remove input and candidates", path))
+        for prefix in fields.get("carries", []):
+            if not TEST_FIXTURE_DIRS.intersection(Path(prefix).parts):
+                findings.append(_f("Render carries is not a test/fixture path", "carry a render command under `tests/`", path))
+    return fields, findings
 
 
 def depends_cycle(stem: str, edges: Mapping[str, Sequence[str]]) -> list[str] | None:
@@ -659,6 +713,29 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
     for prefix in ticket.carries:
         if not any(prefix.rstrip("/") == fence.rstrip("/") or prefix.startswith(fence.rstrip("/") + "/") for fence in ticket.scope_fence):
             findings.append(_f(f"`## Regression` carries prefix {prefix!r} is outside `## Scope fence`", "add the carried prefix to `## Scope fence`", path))
+    if ticket.frontmatter.kind == "graphics":
+        render, _ = _render(ticket.sections["Render"], path)
+        criteria = _criteria(ticket.sections["Acceptance criteria"])
+        visuals = [item for item in criteria if item.startswith("visual:")]
+        for item in visuals:
+            match = re.fullmatch(r"visual:\s*([^:]+):\s*(\S.*)", item)
+            if not match or match.group(1).strip() not in render.get("artifact", []):
+                findings.append(_f("visual criterion names an undeclared artifact", "declare the artifact in `## Render` and state an observable", path))
+        if not any(not item.startswith("visual:") for item in criteria):
+            findings.append(_f("graphics ticket needs a mechanical criterion", "add a non-visual criterion naming a check in backticks", path))
+        if render.get("mode") == ["generate"]:
+            if not render.get("input") and not ticket.sections.get("Goal / Why", "").strip():
+                findings.append(_f("generate Render has no input or prompt", "add an input or a prompt in `## Goal / Why`", path))
+            if len(render.get("input", [])) > 3:
+                findings.append(_f("generate Render has more than three inputs", "use at most three input images", path))
+        if render.get("mode") == ["command"]:
+            prefixes = render.get("carries", [])
+            command = render.get("command", [[]])[0]
+            if not any(is_repo_relative(arg) and in_fence(arg, prefixes) for arg in command):
+                findings.append(_f("Render command does not name a carried file", "name a path under a carries prefix", path))
+            for prefix in prefixes:
+                if not in_fence(prefix, ticket.scope_fence):
+                    findings.append(_f(f"Render carries prefix {prefix!r} is outside `## Scope fence`", "add the prefix to the scope fence", path))
     scope = ticket.sections["Scope in / Scope out"]
     if (
         any((f == "clutch/specs" or f.startswith("clutch/specs/")) and f.endswith(".md") for f in ticket.scope_fence)
@@ -910,7 +987,7 @@ def order(text: str, *, priority: str | None, runs_before: Sequence[str] | None)
 def template(kind: Kind) -> str:
     """Authoring placeholders beside the grammar, with a regression proof only for bugs."""
     if kind not in KINDS:
-        raise ValueError("kind must be feature, bug, or chore")
+        raise ValueError("kind must be feature, bug, chore, or graphics")
     sections = {
         "Depends on": "<none or bullets of existing ticket stems>",
         "Context": "- <existing repo-relative read-first path>",
@@ -925,5 +1002,7 @@ def template(kind: Kind) -> str:
     }
     if kind == "bug":
         sections["Regression"] = "```\n<one argv command emitting the regression_result JSON protocol>\n```\n- carries: <test or fixture path prefix needed by the command>"
+    if kind == "graphics":
+        sections["Render"] = "- mode: generate\n- artifact: <repo-relative output path>\n- input: <repo-relative input path>\n- candidates: 3"
     body = "".join(f"\n## {name}\n{content}\n" for name, content in sections.items())
     return f"---\nstate: draft\nsource: human\npriority: P2\nkind: {kind}\n---\n" + body

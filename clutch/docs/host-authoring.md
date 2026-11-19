@@ -7,7 +7,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
 
 ## Workflow
 
-1. Start with `clutch ticket new <stem> --kind feature|bug|chore`, choosing one kind (default `feature`).
+1. Start with `clutch ticket new <stem> --kind feature|bug|chore|graphics`, choosing one kind (default `feature`).
    For a bug, first save the observed failure to a file and pass it with `--evidence <file>`.
    It writes
    `tickets/<stem>/ticket.md` with section placeholders and lints it. Every finding names the fix
@@ -152,6 +152,14 @@ When Scope in adds lines to a file with a floor above 0 under `[coverage.files]`
 A fence entry matches a file when the file IS that path or lives under it as a directory:
 `src/app` admits `src/app/views.py` but not `src/application.py`. A string prefix of a name never
 matches. The same rule applies to `carries`.
+
+## Graphics tickets
+
+Choose `kind: graphics` for a visual deliverable. `clutch ticket new hero --kind graphics --reference mock.png --input product.png` copies regular files into `tickets/hero/reference/`; names must be distinct. References are optional mockups or baselines; inputs are images supplied to a generator.
+
+A graphics ticket requires `## Render` and one or more `- artifact: <path>` output bullets. In `- mode: generate`, artifacts are committed deliverables; add up to three `- input: <path>` bullets or write the prompt in `## Goal / Why`. Optional `- reference: <path>` bullets name baselines and `- candidates: 1` through `5` selects the count (default 3). In `- mode: command`, artifacts live under a gitignored render directory. Include one fenced argv command and `- carries: <prefix>` bullets for its test or fixture paths; the command names a carried path and each prefix is in the scope fence. Inputs and candidates are generate only.
+
+Write visual criteria as `- visual: <artifact>: <observable>`, naming a declared artifact and a concrete visible outcome. A declared artifact counts as the check for this form, without backticks. Include at least one non-visual mechanical criterion naming its check in backticks; prefer mechanical criteria wherever a test can decide the result.
 
 ## Bug tickets
 
