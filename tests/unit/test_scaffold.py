@@ -16,7 +16,7 @@ def test_pyproject_pins_python_floor_and_runtime_deps():
     assert project["requires-python"] == ">=3.14"
     names = {re.match(r"[A-Za-z0-9._-]+", dep).group().lower() for dep in project["dependencies"]}
     # Section 0 runtime set: exactly these non-stdlib deps, nothing accreted.
-    assert names == {"pyyaml", "pydantic"}
+    assert names == {"pyyaml", "pydantic", "duckdb"}
 
 
 def test_pytest_timeout_configuration():

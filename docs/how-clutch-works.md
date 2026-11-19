@@ -719,6 +719,8 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | Path | Holds |
 |---|---|
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
+| `cache/journal.duckdb` | Rebuildable journal projection; never authoritative. Delete it to force a rebuild. |
+| `cache/journal.duckdb.lock` | Exclusive lock held while opening, loading, querying and closing the journal cache. |
 | `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver except for resolve and review inside merge admission; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
 | `dist/` | Wheel and sdist last built by `clutch release publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `engine drain --detach`. |

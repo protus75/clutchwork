@@ -218,7 +218,7 @@ class Journal:
 
         Only the active (newest) segment may end in a torn line, which is dropped.
         """
-        segments = self._segments()
+        segments = self.segments()
         for i, path in enumerate(segments):
             if i == len(segments) - 1:
                 yield tuple(self._read_active(path))
@@ -248,7 +248,7 @@ class Journal:
     def read(self) -> list[Event]:
         return [event for segment in self.read_segments() for event in segment]
 
-    def _segments(self) -> list[Path]:
+    def segments(self) -> list[Path]:
         if not self.dir.is_dir():
             return []
         paths = sorted(self.dir.glob("*.jsonl"))
@@ -264,7 +264,7 @@ class Journal:
         return paths
 
     def _active_segment(self, now: datetime) -> Path:
-        segments = self._segments()
+        segments = self.segments()
         if segments:
             return segments[-1]
         return self._create_segment(1, now)
