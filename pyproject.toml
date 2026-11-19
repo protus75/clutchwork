@@ -16,6 +16,10 @@ dependencies = [
     "pyyaml>=6.0.3",
 ]
 
+[project.optional-dependencies]
+images = ["pillow", "numpy", "scikit-image", "imagehash", "opencv-python-headless"]
+images-embed = ["open-clip-torch", "torch"]
+
 [project.urls]
 Repository = "https://github.com/protus75/clutchwork"
 Changelog = "https://github.com/protus75/clutchwork/blob/main/CHANGELOG.md"
@@ -41,6 +45,11 @@ core = "ctrace"
 
 [dependency-groups]
 dev = [
+    "pillow",
+    "numpy",
+    "scikit-image",
+    "imagehash",
+    "opencv-python-headless",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.0.0",
