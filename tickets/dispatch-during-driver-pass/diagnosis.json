@@ -1,20 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ff6f9ebefab7d26ff2d4d4ab66706bc661567382",
+  "produced_at_sha": "991b1d764b2d5b7071bc9a805c063e473301f5fb",
   "stem": "dispatch-during-driver-pass",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Redo the clutch/serve.py work in full. Review found the overlap sound: select drops driver_pending(), run_driver runs without mutations(), Serve.run's start gate drops upgrade_idle(), upgrade_idle checks driver_task is None, and a class attribute driver_task = None is added.",
-    "In Serve.run's main loop, when a finished pass is collected, clear the task before reading its result (task, self.driver_task = self.driver_task, None; task.result()). Then wait_driver() reports only a failure that first shows up at the shutdown wait, and serve_failed is logged once.",
-    "In tests/integration/test_serve_driver_overlap.py::test_pass_failure_stops_serve, assert exactly one serve_failed event in both parametrized cases (failure in the loop and failure at the shutdown wait). Checking that at least one exists missed the duplicate log.",
-    "Keep the new tests in tests/unit/test_serve_driver_overlap.py and tests/integration/test_serve_driver_overlap.py. Import tests/integration/serve_rig.py and never edit it. Update test_driver_hooks.py, test_serve_driver.py and docs/how-clutch-works.md sections 7.5 and serve as the ticket says."
+    "Redo the clutch/serve.py work in full: drop `driver_pending()` from `select`, run `run_driver` without `mutations()`, remove `upgrade_idle()` from the driver start condition, add a `driver_task` check and a class default to `upgrade_idle`, and add `wait_driver` with `serve_failed` handling. Review",
+    "In tests/integration/test_serve_driver_overlap.py::test_one_pass_at_a_time_and_shutdown_waits, one `await asyncio.sleep(0)` after `rig.owner.stop()` before `assert not run.done()` cannot fail. Review found that this half of criterion 5 goes unchecked.",
+    "After stop, first wait until run has reached the shutdown wait, e.g. `await until(rig, lambda: rig.owner.driver_task is None)` (wait_driver clears the task before awaiting). Then assert `not run.done()` and that the pass is still blocked, set the release event, await run, and assert 0.",
+    "Check that the shutdown test can fail: temporarily remove the `wait_driver` call from `Serve.run`, confirm the test fails or times out, then restore the call. Do the same for each half of criterion 6 (failure in the loop and failure at the shutdown wait).",
+    "Keep new tests out of tests/integration/serve_rig.py and the hot files; import the rig. The stale row 160 text in docs/roadmap.md is outside the fence and already filed as box-000812-19552338, so leave it alone."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0
+  ],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
