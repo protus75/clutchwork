@@ -117,5 +117,5 @@ async def produce(group: str, prior: ShakeoutReport | None, root: Path) -> Shake
 
     # Git provenance is read from the checkout running the report command, never supplied by a member.
     git = Git(SubprocessExec(), env=os.environ, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
-    sha = await git.rev_parse(Path.cwd(), "HEAD")
+    sha = await git.rev_parse(Path(__file__).resolve().parents[3], "HEAD")
     return ShakeoutReport(produced_by_spec_version=SHAKEOUT_SPEC_VERSION, produced_at_sha=sha, entries=entries)

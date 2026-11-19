@@ -478,6 +478,6 @@ async def _run_member(root, name):
 
 
 async def produce(root: Path) -> ReliabilityBatteryReport:
-    sha = await Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state")).rev_parse(Path.cwd(), "HEAD")
+    sha = await Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state")).rev_parse(Path(__file__).resolve().parents[2], "HEAD")
     entries = [await _run_member(root, name) for name in RELIABILITY_BATTERY_MEMBERS]
     return ReliabilityBatteryReport(produced_by_spec_version=RELIABILITY_BATTERY_SPEC_VERSION, produced_at_sha=sha, entries=entries)

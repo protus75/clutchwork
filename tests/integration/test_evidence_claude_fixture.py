@@ -2,9 +2,11 @@ from pathlib import Path
 
 from clutch.evidence.claude import normalize
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def test_real_claude_stream():
-    stream = Path("tests/fixtures/evidence/claude/stream.jsonl").read_bytes()
+    stream = (ROOT / "tests/fixtures/evidence/claude/stream.jsonl").read_bytes()
     events = normalize(stream, None, lambda data: "sha256:fixture")
     kinds = {event.kind for event in events}
     assert {"tool_call", "tool_result", "reasoning", "usage"} <= kinds

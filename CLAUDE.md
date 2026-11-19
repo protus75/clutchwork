@@ -101,6 +101,7 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
   Why: folded fixes blow scope and hide cause. (section 11)
 - **Read before write.** No command, claim, or test is written until the artifact that owns that fact has been read.
   Why: guessed facts are the cheapest bug to write and the costliest to find. (section 13)
+- **Integration isolation.** Integration tests run in an empty working directory (`tests/integration/conftest.py`) and read tracked files only through a `Path(__file__)` anchor, never the checkout’s `tickets/`, `.clutch/`, or journal.
 - **Verification uses `./dev.py test`.** A ticket's `## Verification` and acceptance criteria run tests as `./dev.py test [pytest args]`, never raw `uv run pytest`.
   Why: one command surface for people and tickets; nothing chose the raw form, it was copied ticket to ticket.
 - **Keep new tests out of the hot test files.** No new test, fixture, or helper goes into `tests/integration/test_daemon_composition.py`, `tests/integration/test_drain.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_stages.py`, `tests/integration/test_cli.py`, `tests/integration/test_watch.py`, or `tests/integration/serve_rig.py`. A new test goes in a new `tests/unit/test_<module>_<behavior>.py` or `tests/integration/test_<behavior>.py`, and a new fixture or helper in a new module next to it. Fence one of these files only when the change forces an edit there.

@@ -12,6 +12,8 @@ from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_tickets import VALID, do_intake, repo
 from tests.integration.test_tickets import write as write_ticket
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 @pytest.mark.parametrize(("state", "expected"), [("draft", "draft"), (None, "confirmed"), ("confirmed", "confirmed")])
 def test_intake_preserves_authored_state(repo, state, expected):
@@ -47,10 +49,10 @@ async def test_drain_waits_for_human_confirmation(root):
 
 
 def test_author_and_drafts_guidance():
-    author = Path("clutch/specs/ask/author.md").read_text().splitlines()
+    author = (ROOT / "clutch/specs/ask/author.md").read_text().splitlines()
     assert any("clutch ticket confirm" in line and "Run no git verb" in line for line in author)
     assert any("clutch ticket confirm" in line and "Run no git verb" not in line for line in author)
-    drafts = Path("clutch/specs/ask/drafts.md").read_text().splitlines()
+    drafts = (ROOT / "clutch/specs/ask/drafts.md").read_text().splitlines()
     assert any("source" in line and "human" in line and "skipped" in line and "no confirm or reject" in line for line in drafts)
-    guide = Path("clutch/docs/host-authoring.md").read_text().split("## Workflow", 1)[1].split("\n## ", 1)[0]
+    guide = (ROOT / "clutch/docs/host-authoring.md").read_text().split("## Workflow", 1)[1].split("\n## ", 1)[0]
     assert "clutch ticket confirm" in guide

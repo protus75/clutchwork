@@ -728,6 +728,6 @@ async def _member_lifetime(member: _Member) -> DaemonSoakEntry:
 
 async def produce(root: Path) -> DaemonSoakReport:
     git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(root / ".clutch/state"))
-    sha = await git.rev_parse(Path.cwd(), "HEAD")
+    sha = await git.rev_parse(Path(__file__).resolve().parents[2], "HEAD")
     entries = [await _run_member(root, name) for name in DAEMON_SOAK_MEMBERS]
     return DaemonSoakReport(produced_by_spec_version=DAEMON_SOAK_SPEC_VERSION, produced_at_sha=sha, entries=entries)

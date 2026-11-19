@@ -9,6 +9,8 @@ from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 @pytest.fixture
 def prompts(tmp_path):
@@ -146,10 +148,10 @@ def test_prompts_name_only_existing_verbs(prompts):
 
 
 def test_docs_list_new_prompt_kinds():
-    running = Path("clutch/docs/host-running.md").read_text()
+    running = (ROOT / "clutch/docs/host-running.md").read_text()
     row = next(line for line in running.splitlines() if line.startswith("| `prompt` |"))
     assert "plan-ticket-drain" in row and "author" in row
-    lines = Path("docs/how-clutch-works.md").read_text().splitlines()
+    lines = (ROOT / "docs/how-clutch-works.md").read_text().splitlines()
     assert any(line.startswith("| `prompt author <stem>` |") for line in lines)
     assert any(line.startswith("| `prompt plan-ticket-drain` |") for line in lines)
     assert any(line.startswith("| `prompt <diagnose") and "audits" in line for line in lines)

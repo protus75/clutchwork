@@ -377,14 +377,14 @@ async def test_daemon_soak_cleans_up_owned_lifetimes(tmp_path, monkeypatch, case
 @pytest.mark.asyncio
 async def test_daemon_soak_is_rederivable(tmp_path):
     git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=commit_lock(tmp_path / ".clutch/state"))
-    before = await git.rev_parse(Path.cwd(), "HEAD")
+    before = await git.rev_parse(Path(__file__).resolve().parents[2], "HEAD")
     first = await soak.produce(tmp_path / "first")
     second = await soak.produce(tmp_path / "second")
-    after = await git.rev_parse(Path.cwd(), "HEAD")
+    after = await git.rev_parse(Path(__file__).resolve().parents[2], "HEAD")
     for sha in (first.produced_at_sha, second.produced_at_sha):
-        assert await git.merge_base(Path.cwd(), before, sha) == before
-        assert await git.merge_base(Path.cwd(), sha, after) == sha
-    assert await git.merge_base(Path.cwd(), first.produced_at_sha, second.produced_at_sha) == first.produced_at_sha
+        assert await git.merge_base(Path(__file__).resolve().parents[2], before, sha) == before
+        assert await git.merge_base(Path(__file__).resolve().parents[2], sha, after) == sha
+    assert await git.merge_base(Path(__file__).resolve().parents[2], first.produced_at_sha, second.produced_at_sha) == first.produced_at_sha
     assert first.model_dump_json(indent=2, exclude={"produced_at_sha"}) == second.model_dump_json(indent=2, exclude={"produced_at_sha"})
     assert tuple(e.member for e in first.entries) == DAEMON_SOAK_MEMBERS
     assert not list(tmp_path.rglob("daemon-soak-report.json"))

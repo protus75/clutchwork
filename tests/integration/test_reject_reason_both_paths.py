@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +11,8 @@ from clutch.roadmap import rejection_reason
 from clutch.tickets import stamp
 from tests.integration.test_mergequeue import admission_control, commit, ready
 from tests.integration.test_mergequeue import ctx as context_fixture
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.mark.parametrize("inbox", [False, True])
@@ -53,10 +56,8 @@ def test_help_docs_and_prompt(tmp_path, capsys):
         entry._parser().parse_args(["ticket", "reject", "--help"])
     assert help_exit.value.code == 0
     assert "--reason" in capsys.readouterr().out
-    from pathlib import Path
-
     for path in ("docs/how-clutch-works.md", "clutch/docs/host-running.md"):
-        assert any("ticket reject" in line and "--reason" in line for line in Path(path).read_text().splitlines())
+        assert any("ticket reject" in line and "--reason" in line for line in (ROOT / path).read_text().splitlines())
     from clutch.config import load_config
     from tests.integration.test_config import VALID
 
