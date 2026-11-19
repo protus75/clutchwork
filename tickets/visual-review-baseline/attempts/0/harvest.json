@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "clutch/journal.py",
+      "line": 38,
+      "message": "The closed SIGNAL_NAMES vocabulary does not include visual_baseline, so Journal.append rejects the signal required by acceptance criterion 6.",
+      "paved_road": "Add clutch/journal.py to the scope fence and extend SIGNAL_NAMES with visual_baseline.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_closed_sets.py",
+      "line": 178,
+      "message": "This test pins the complete signal vocabulary and will fail when visual_baseline is added to the journal.",
+      "paved_road": "Add tests/integration/test_closed_sets.py to the scope fence and update its expected vocabulary.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required visual_baseline signal cannot be recorded within the ticket’s scope fence.\",\"surprises\":\"Journal.append rejects signal names outside its closed vocabulary. The focused verification passed, but the full integration suite exposed this mismatch.\",\"second_problems\":[],\"dead_ends\":\"Implemented and tested a candidate within the fence, but the journal rejects its required signal; no changes were committed.\",\"predicted_vs_actual\":\"The ticket budget was 30 minutes expected and 60 minutes stuck; elapsed time was not measured.\",\"findings\":[{\"code\":\"premise\",\"path\":\"clutch/journal.py\",\"line\":38,\"message\":\"The closed SIGNAL_NAMES vocabulary does not include visual_baseline, so Journal.append rejects the signal required by acceptance criterion 6.\",\"paved_road\":\"Add clutch/journal.py to the scope fence and extend SIGNAL_NAMES with visual_baseline.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_closed_sets.py\",\"line\":178,\"message\":\"This test pins the complete signal vocabulary and will fail when visual_baseline is added to the journal.\",\"paved_road\":\"Add tests/integration/test_closed_sets.py to the scope fence and update its expected vocabulary.\"}]}",
+  "events_tail": "RSIONS, SIGNAL_NAMES, TERMINAL_STATES, EventType, Journal, render_ts, run_seq\\ntests/integration/test_reconcile.py:132:    assert RECOVERY_ALERT == \\\"recovery_alert\\\" and RECOVERY_ALERT in SIGNAL_NAMES\\ntests/integration/test_closed_sets.py:178:    assert journal.SIGNAL_NAMES == frozenset(\\ntests/integration/test_closed_sets.py:211:            \\\"review_baseline\\\",\\ntests/integration/test_closed_sets.py:398:@pytest.mark.parametrize(\\\"name\\\", sorted(journal.SIGNAL_NAMES))\\ntests/integration/test_closed_sets.py:404:    with pytest.raises(ValueError, match=\\\"SIGNAL_NAMES\\\"):\\ntests/integration/test_eval_harness.py:102:    assert body[\\\"signal\\\"] == \\\"review_baseline\\\" and body[\\\"verdict\\\"] == \\\"NO_GO\\\"\\ntests/integration/test_eval_harness.py:196:        \\\"signal\\\": \\\"review_baseline\\\",\\ntests/integration/test_eval_harness.py:301:    assert not any(e.body.get(\\\"signal\\\") in {\\\"review_baseline\\\", \\\"author_invoked\\\"} for e in Journal(cfg.state_dir, lambda: NOW).read())\\ntests/unit/test_visual_baseline.py:89:    assert result[\\\"identity\\\"] == identity and result[\\\"signal\\\"] == \\\"visual_baseline\\\"\\ntests/integration/test_mergequeue.py:163:        assert not any(e.body.get(\\\"signal\\\") == \\\"review_baseline\\\" or e.body.get(\\\"verb\\\") == \\\"confirm\\\" for e in ctx.driver.journal.read())\\ntests/integration/test_vocabularies.py:106:    assert _engine_signal_names() == journal_module.SIGNAL_NAMES - {\\\"hardening_round\\\"}\\ntests/integration/test_vocabularies.py:107:    assert {\\\"tombstone_auto_reopened\\\", \\\"retro_ticket_authored\\\", \\\"retro_prompt_spec_change_merged\\\"} <= journal_module.SIGNAL_NAMES\\ntests/integration/test_vocabularies.py:123:    with pytest.raises(ValueError, match=\\\"SIGNAL_NAMES\\\"):\\ntests/integration/test_vocabularies.py:129:    with pytest.raises(ValueError, match=\\\"SIGNAL_NAMES\\\"):\\ntests/integration/test_vocabularies.py:137:    for name in sorted(journal_module.SIGNAL_NAMES):\\ntests/integration/test_vocabularies.py:139:    assert [event.body[field] for event in journal.read()] == sorted(journal_module.SIGNAL_NAMES)\\ntests/unit/test_go_panel_schema.py:37:                \\\"signal\\\": \\\"review_baseline\\\",\\ntests/integration/test_go_grade.py:81:def test_review_baseline_report_closed_schema(tmp_path):\\ntests/integration/test_roadmap_row_author.py:35:    journal.append(EventType.SIGNAL, {\\\"signal\\\": \\\"review_baseline\\\", \\\"verdict\\\": \\\"NO_GO\\\", \\\"identity\\\": baseline_identity(cfg)})\\nAGENTS.md\\nCLAUDE.md\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_21\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required visual_baseline signal cannot be recorded within the ticket’s scope fence.\\\",\\\"surprises\\\":\\\"Journal.append rejects signal names outside its closed vocabulary. The focused verification passed, but the full integration suite exposed this mismatch.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Implemented and tested a candidate within the fence, but the journal rejects its required signal; no changes were committed.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket budget was 30 minutes expected and 60 minutes stuck; elapsed time was not measured.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/journal.py\\\",\\\"line\\\":38,\\\"message\\\":\\\"The closed SIGNAL_NAMES vocabulary does not include visual_baseline, so Journal.append rejects the signal required by acceptance criterion 6.\\\",\\\"paved_road\\\":\\\"Add clutch/journal.py to the scope fence and extend SIGNAL_NAMES with visual_baseline.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_closed_sets.py\\\",\\\"line\\\":178,\\\"message\\\":\\\"This test pins the complete signal vocabulary and will fail when visual_baseline is added to the journal.\\\",\\\"paved_road\\\":\\\"Add tests/integration/test_closed_sets.py to the scope fence and update its expected vocabulary.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1882065,\"cached_input_tokens\":1831296,\"cache_write_input_tokens\":0,\"output_tokens\":8978,\"reasoning_output_tokens\":619}}\n",
+  "wall_seconds": 293.539588,
+  "usd": 1.0,
+  "run_record": "tickets/visual-review-baseline/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
