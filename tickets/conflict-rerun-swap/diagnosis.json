@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "b258099a707196db165f30ded2c52b3abae70287",
+  "stem": "conflict-rerun-swap",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The attempt stopped after about 41s with nothing committed. Do the whole ticket in one attempt, because Goal says the handoff cannot be removed in pieces. Commit only after the ## Verification commands pass.",
+    "Redo the accounting edits from scratch. In caps.failed_attempt, skip terminals whose body has conflict_rerun. In drain.record_reoffer, skip the retry draw for conflict_rerun, as it already does for provider_drought. In drain.awaiting_operator, hold merge_conflict_rerun_spent like ticket_changed.",
+    "In clutch/mergequeue.py, replace ConflictHandoff with a refused StageResult whose finding code is merge_conflict_rerun and whose fact rung is rerun. The fold must still accept historical rework. Do the lift, the SIGNAL and the worktree remove+prune through git.py in the daemon.py writer after",
+    "Delete consume_handoff, the handoff= parameter of rework() and apply_rework, and the consume_handoff parameter of runner.drive, with their callers in merge.py, serve.py and runner.py. Run grep -rn 'ConflictHandoff\\|consume_handoff' clutch tests until it finds nothing.",
+    "Remove the conflict block and the conflict-only sentence from rework.md. Bump its version to the next minor above main and move only the rework pin in test_specs_delimiter_note.py. Re-point the two test_daemon_composition.py publication tests to runner.drive. Add the SIGNAL_NAMES entry to"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2,
+    4
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
