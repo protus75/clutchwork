@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "874505eef3076b9b5fbaaff25f638c26f7bf75f1",
+  "stem": "snapshot-duckdb-under-one-second",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Attempt 0 stopped after 35 s with an empty diff and no findings: it did impact analysis, then replied incomplete. Do the implementation this time; the ticket's 55m budget allows it. Never return incomplete before you have edited and run the Verification command.",
+    "Start with the journal query owner in clutch/journal.py: one transient in-memory duckdb connection per snapshot that loads segments once in append order. Skip the incomplete tail and malformed lines. Add duckdb to pyproject.toml, pin it in tests/unit/test_scaffold.py and regenerate uv.lock.",
+    "In clutch/status.py, change verdict_refusal, confirm_admission, reject_admission and lint_admission to take shared admission facts (latest state, settled deps, interrupted set, reject membership) instead of events. Keep last_states/reject_queue callable. Update the __main__.py/runner.py callers.",
+    "Have clutch/observe.py::snapshot build those facts once through journal.py, plus the parked_blob and awaiting_operator holds from clutch/drain.py, then feed the existing admissions. Move fixtures in test_menu_admission.py, test_menu_verb_parity.py verb_inputs, test_watch.py and",
+    "Write tests/snapshot_scale_fixture.py (at least 37,763 events, 694 rows, 791 box rows), tests/regress_snapshot_latency.py (3 timed CLI processes, median under 1 s), and the unit and integration test_snapshot_duckdb.py tests. Run them, then put the real timings in run.md."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    3
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
