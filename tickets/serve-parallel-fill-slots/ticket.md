@@ -20,6 +20,7 @@ kind: feature
 - clutch/config.py::Parallel
 - clutch/tickets.py::fences_overlap
 - clutch/daemon.py::daemon_core
+- clutch/__main__.py::build_daemon_core
 - tests/unit/test_scheduler_write_queue_seams.py
 - tests/unit/test_drain_eligible.py
 - docs/parallel-tickets-plan.md#3. Ordering: fill free slots by longest chain
@@ -33,7 +34,7 @@ Honest limit, so the criteria do not promise more: `dispatch_next` still holds i
 ### Scheduler dispatch selection
 - disposition: extend
 - owner: clutch/scheduler.py (`Scheduler.dispatch_next`)
-- consumers: `serve.py` dispatch loop, `daemon_core` composition, and the `Scheduler` tests that call `dispatch_next`
+- consumers: `serve.py` dispatch loop, `daemon_core` and `build_daemon_core` composition, and the `Scheduler` tests that call `dispatch_next`
 - observable change: with `scheduler.parallel.enabled` true, the dispatched ticket is the first `fill_slots` accepts from the `parallel_order` list, `queue.json` `order` lists the dispatched ticket first and the remaining ordered candidates after it, and `dispatch_next` returns `None` when every candidate overlaps an in-flight ticket or `len(in-flight) >= parallel.max_runs`. With it false, selection, `write_queue` input and return value are exactly as today.
 - compatibility: preservation when disabled (the default): the same `order_tickets` call, same list to `write_queue`, same dispatched ticket. A `Scheduler` built without the new attributes behaves as parallel off. The `Parallel` config is read on each call, so a config reload applies at the next dispatch.
 - acceptance: the unit tests in the new file below pin parallel-off equality with today's choice and the parallel-on ordering, overlap skip, barrier, slot cap and log cases.
@@ -54,8 +55,9 @@ Honest limit, so the criteria do not promise more: `dispatch_next` still holds i
 ## Scope in / Scope out
 Scope in:
 - `clutch/scheduler.py`: add replaceable attributes `parallel` (a `Callable[[], Parallel]`, default returns `Parallel()`, i.e. disabled), `log` (a `Callable[..., None]`, default no-op), plus `self.flying: dict[str, Ticket]` and `self.skips: dict[str, int]`. `dispatch_next` records the dispatched ticket in `flying` before awaiting `self.dispatch` and removes it in a `finally`. When `parallel().enabled` is false the existing path (`order_tickets`, `ordered[0]`) runs unchanged. When true: return `None` if `len(flying) >= max_runs`; build `unsettled` as the candidate tickets not in `settled` plus `flying`, order `ready` with `parallel_order(ready, authored, unsettled)`, call `fill_slots(ordered, flying.values(), 1, parallel.shared_paths, self.skips)` (free is 1 because `dispatch_next` dispatches one ticket per call), store the returned counts in `self.skips`, call `self.log("dispatch_skip", stem=..., count=...)` once for each stem whose count rose, call `write_queue` with the dispatched ticket first and the other ordered tickets after it, return `None` if nothing was dispatched, else remove it from `pending` and dispatch it as today.
-- `clutch/daemon.py::daemon_core`: after building the scheduler set `scheduler.parallel = lambda: load().scheduler.parallel`.
-- `clutch/serve.py`: after `build_daemon_core` returns, set `self.core.scheduler.log = self.log.event`.
+- `clutch/daemon.py::daemon_core`: add a keyword `log: Callable[..., None] | None = None`; after building the scheduler set `scheduler.parallel = lambda: load().scheduler.parallel`, and set `scheduler.log = log` when `log` is given.
+- `clutch/__main__.py::build_daemon_core`: add the same `log` keyword and forward it to `daemon_core`.
+- `clutch/serve.py`: pass `log=self.log.event` in its `build_daemon_core(...)` call.
 - `docs/how-clutch-works.md` section 7.2 Dispatch bullet: replace "the scheduler runs one ticket at a time" and "the scheduler still awaits each dispatch" wording only as needed to say that, with `scheduler.parallel.enabled`, candidates are ordered by `parallel_order`, a candidate whose fence overlaps an in-flight ticket is skipped and logged (`dispatch_skip`), and one skipped `SKIP_LIMIT` times blocks later candidates. Leave the rest of the bullet, and the awaiting-each-dispatch statement, which stays true until row 166.
 - New test file `tests/unit/test_scheduler_parallel_fill.py` driving `dispatch_next` with in-memory fakes as `tests/unit/test_scheduler_write_queue_seams.py` does; tickets there carry `scope_fence`, `depends`, `runs_before` and `priority`.
 
@@ -69,6 +71,7 @@ Scope out:
 ## Scope fence
 - clutch/scheduler.py
 - clutch/daemon.py
+- clutch/__main__.py
 - clutch/serve.py
 - docs/how-clutch-works.md
 - tests/unit/test_scheduler_parallel_fill.py
@@ -81,18 +84,21 @@ Scope out:
 5. When `len(flying) >= parallel.max_runs`, `dispatch_next` returns `None` and does not call `dispatch`, and the skip counts are unchanged; `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
 6. Each overlap skip calls `scheduler.log` once with `"dispatch_skip"`, the stem and the new count, and a parallel-off run never calls it; `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
 7. `queue.json` written by a parallel dispatch lists the dispatched ticket first, then the remaining ordered candidates in order, with a skipped ticket after it, not before; `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
-8. A ticket whose overlap is only under a `parallel.shared_paths` entry is dispatched, not skipped, and `flying` is empty again after `dispatch_next` returns, including when `dispatch` raises; `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
-9. The existing scheduler, daemon and serve tests pass unchanged: `./dev.py test tests/integration/test_scheduler.py tests/integration/test_serve_upgrade.py tests/unit/test_admission_parallel_run_set.py tests/unit/test_admission_running_set.py tests/integration/test_requisition_gate.py`.
-10. `docs/how-clutch-works.md` section 7.2 states the parallel ordering and the logged skip, and still says the scheduler awaits each dispatch; checked by review, with no standing doc test.
+8. With an in-flight ticket that overlaps the candidate only under a `parallel.shared_paths` entry, the candidate is dispatched and no skip is counted; `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
+9. After `dispatch_next` returns, including when `dispatch` raises, `flying` holds exactly the entries it held before the call (empty when it started empty); `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
+10. A unit test in the same file calls `daemon_core` with in-memory fakes (journal, fs, a `load` returning a `Config` whose `scheduler.parallel` is enabled with `max_runs` 3, stub `bind`, `read` and `ticket_sha`) and a recording `log`; `core.scheduler.parallel()` equals that loaded `Parallel` (not the disabled default) and `core.scheduler.log` is the recording callable; `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
+11. The existing scheduler, daemon and serve tests pass unchanged: `./dev.py test tests/integration/test_scheduler.py tests/integration/test_serve_upgrade.py tests/unit/test_admission_parallel_run_set.py tests/unit/test_admission_running_set.py tests/integration/test_requisition_gate.py tests/integration/test_daemon_core_queue_seams.py`.
+12. `docs/how-clutch-works.md` section 7.2 states the parallel ordering and the logged skip, and still says the scheduler awaits each dispatch; checked by review, with no standing doc test.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_scheduler_parallel_fill.py tests/unit/test_scheduler_write_queue_seams.py tests/unit/test_drain_eligible.py tests/unit/test_chain_order.py tests/integration/test_scheduler.py tests/integration/test_serve_upgrade.py tests/unit/test_admission_parallel_run_set.py tests/unit/test_admission_running_set.py tests/integration/test_requisition_gate.py
+./dev.py test tests/unit/test_scheduler_parallel_fill.py tests/unit/test_scheduler_write_queue_seams.py tests/unit/test_drain_eligible.py tests/unit/test_chain_order.py tests/integration/test_scheduler.py tests/integration/test_serve_upgrade.py tests/unit/test_admission_parallel_run_set.py tests/unit/test_admission_running_set.py tests/integration/test_requisition_gate.py tests/integration/test_daemon_core_queue_seams.py
 ```
 
 ## Definition of rejected
 The branch is rejected if parallel off changes the dispatched ticket, the list passed to `write_queue`, or the return value; if `dispatch_next` awaits less than today or dispatches more than one ticket per call; if a skip is journaled instead of engine-logged; if `drain.py`, `tickets.py` or `config.py` are edited; or if skip counts are kept anywhere but the scheduler instance.
 
 ## Time budget
-- expected: 25m
-- stuck: 50m
+- expected: 30m
+- stuck: 60m
+- reason: one selection change in one file plus a two-line wiring and one doc paragraph; the wiring cannot go in a separate ticket without leaving the new attributes unset
