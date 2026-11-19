@@ -4,23 +4,24 @@ ok
 
 ## Surprises / judgment calls
 
-The mutation restoring the idle start gate caused the new in-flight start test to time out; the original code was restored before final verification. Clearing the completed task prevents duplicate failure handling, while the existing error-code guard also prevents a duplicate log.
+Strengthened shutdown and overlap tests with observed boundaries and mutation checks; final verification passed 13 tests, full suites passed 1,208 unit and 3,482 integration tests, and coverage, lint, and format gates passed.
 
 ## Dead ends
 
-None
+Keeping the idle start gate prevents overlap with an active ticket, so it was removed.
 
 ## Second problems filed
 
-- box-000812-19552338: The active row 160 description in docs/roadmap.md still describes serve as holding admission for the driver; that file is outside the scope fence.
+- box-000813-90b5f4bd: docs/roadmap.md row 160 retains the old admission-hold description, already reported as box-000812-19552338.
+- box-000814-434c57c7: docs/roadmap-driver-plan.md still describes the driver attaching at serve idle points; it is outside the scope fence.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.18
 
 ## Predicted vs actual
 
-Expected 25 minutes; actual time was not measured.
+Expected 25 minutes; actual approximately 8 minutes.
 
