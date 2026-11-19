@@ -60,7 +60,7 @@ Why it matters: parallel runs in `serve` will manufacture conflicts, and today e
 ### Surface and rung vocabularies
 - disposition: extend
 - owner: clutch/specs/__init__.py
-- consumers: clutch/observe.py, clutch/stats.py, clutch/help.py, and tests that list the engine surfaces
+- consumers: clutch/observe.py, clutch/stats.py, clutch/help.py, and tests that list the engine surfaces, vscode-clutchwork/extension.js (step icon table)
 - observable change: `resolve` joins the engine LLM surfaces with a display label and help entry
 - compatibility: existing surface names and labels are unchanged
 - acceptance: every list that carries the engine surfaces carries `resolve`
@@ -76,6 +76,7 @@ Scope in:
 - `clutch/git.py`: only the wrapper methods the step needs (a path-limited log, the range-diff or path-limited diff for the delta). Reuse existing methods where they exist.
 - `docs/how-clutch-works.md`: update only the 7.2.1 step 1 text that says anything else "hands the ticket to Rework", and add the model step and its re-review there.
 - `shared_paths`: if `scheduler.parallel.shared_paths` does not exist on main when this runs, skip the shared-path exemption entirely and say so in the run record. Do not add the config model here; `parallel-config` owns it.
+- `vscode-clutchwork/extension.js`: add `resolve_start`, `resolve_ok` and `resolve_failed` to the Recent Steps icon lookup table with one codicon no other step uses, and the same passed/failed colors as the other steps; `tests/integration/test_step_icons.py` requires an icon for every `STEP_KINDS` key.
 
 Scope out:
 - Discard-and-rerun, `ConflictHandoff` removal, `consume_handoff`, the `rework()` handoff parameter, the rework spec, the implement spec, the `prior-diff` lift.
@@ -93,6 +94,7 @@ Scope out:
 - clutch/observe.py
 - clutch/stats.py
 - clutch/help.py
+- vscode-clutchwork/extension.js
 - docs/how-clutch-works.md
 - tests/unit/test_merge_resolve.py
 - tests/integration/test_merge_model_resolve.py
@@ -117,7 +119,7 @@ Scope out:
 
 ## Verification
 ```
-./dev.py test tests/unit/test_merge_resolve.py tests/integration/test_merge_model_resolve.py tests/unit/test_specs.py tests/unit/test_step_names_cover_surfaces.py tests/integration/test_closed_sets.py tests/integration/test_watch_surface_tier.py tests/unit/test_help.py tests/integration/test_help.py tests/integration/test_mergequeue.py tests/integration/test_merge_admission_owner.py
+./dev.py test tests/integration/test_step_icons.py tests/unit/test_merge_resolve.py tests/integration/test_merge_model_resolve.py tests/unit/test_specs.py tests/unit/test_step_names_cover_surfaces.py tests/integration/test_closed_sets.py tests/integration/test_watch_surface_tier.py tests/unit/test_help.py tests/integration/test_help.py tests/integration/test_mergequeue.py tests/integration/test_merge_admission_owner.py
 ```
 
 ## Definition of rejected
