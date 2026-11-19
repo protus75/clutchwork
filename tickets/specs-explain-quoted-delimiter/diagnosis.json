@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "71926333c2e62b3ce37f1709800061225cd0532e",
+  "stem": "specs-explain-quoted-delimiter",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The premise holds. tests/integration/test_rework.py:452-453 renders clutch/specs/rework.md and checks the result's SHA-256 against a fixed digest (29fedebf...). Any Role sentence added to rework.md changes that digest, and the scope fence does not let the attempt edit test_rework.py.",
+    "Fix the ticket: add tests/integration/test_rework.py to the scope fence. Add a criterion to update only the hash at line 453 to the new render's digest, and add test_rework.py to the Verification command. No other test pins a rendered stage-spec hash; a grep of tests/ found only test_rework.py.",
+    "On the next attempt, keep the rest as the ticket says. Spell the delimiter in words in each ## Role section, bump no version, and put the new test in tests/integration/test_specs_delimiter_note.py. Fix the ruff import-order finding in that new file before committing."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
