@@ -110,9 +110,9 @@ Scope out:
 13. A command-mode graphics ticket with no `input:` and a valid artifact passes `ImageQualityGate().check(...)` with verdict `pass` and no finding, not `fail`, and the writer given that evidence writes only the side-by-side image, checked by `./dev.py test tests/unit/test_images_gate.py`.
 14. In one `ImageQualityGate().check(...)` call, an artifact that is the base image with a pasted textured non-base input passes all five checks, not-a-copy included, checked by `./dev.py test tests/unit/test_images_gate.py`.
 15. A fake-exec `check` test in `tests/unit/test_images_gate.py` shows the artifact `check_render` writes into `render_dir` is the file `ImageQualityGate` judges: with a render command that writes a valid image the Check report for `image_quality` is `pass`, not a missing-artifact `fail`; and when `check_render` reports a hard failure `render_failed` is true and the `image_quality` report is `pass` with no missing-artifact finding and no side-by-side or heatmap file exists in the render directory, checked by `./dev.py test tests/unit/test_images_gate.py`.
-18. `check()` on a non-graphics ticket writes no side-by-side or heatmap file anywhere, checked by `./dev.py test tests/unit/test_images_gate.py`.
 16. `gather_evidence` called with the merge stage on a command-mode graphics ticket leaves `render_dir` empty and `ImageQualityGate` returns `pass`, not a missing-artifact `fail`, checked by `./dev.py test tests/unit/test_images_gate.py`.
 17. A generate-mode graphics ticket leaves `render_dir` empty and `ImageQualityGate` returns `pass` with no finding, checked by `./dev.py test tests/unit/test_images_gate.py`.
+18. `check()` on a non-graphics ticket writes no side-by-side or heatmap file anywhere, checked by `./dev.py test tests/unit/test_images_gate.py`.
 
 ## Verification
 ```
