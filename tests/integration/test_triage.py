@@ -71,6 +71,10 @@ kind: feature
 ## Goal / Why
 `clutch/thing.py` is repaired.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 - In: `clutch/thing.py`.
 - Out: unrelated files.

@@ -48,7 +48,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   from its worktree.
   Lint requires that an `On-demand` path is fenced and never also in `Context`.
 - `Goal / Why`: what is true when the ticket is done that is not true now, and why it matters.
-- `Boundary contract` (optional until a later ticket requires it): declare each affected boundary
+- `Boundary contract`: required for every non-settled ticket; declare each affected boundary
   with a `### <boundary>` heading and non-empty labeled bullets for `disposition`, `owner`,
   `consumers`, `observable change`, `compatibility`, `acceptance`, `tests`, and
   `post-merge source of truth`. Disposition is `reuse`, `extend`, `replace`, or `create`.

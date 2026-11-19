@@ -101,6 +101,10 @@ none
 ## Goal / Why
 Add the fixture.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: fixture. Out: rest.
 

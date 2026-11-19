@@ -32,6 +32,10 @@ none
 ## Goal / Why
 Create one thing.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: thing. Out: the rest.
 

@@ -272,7 +272,7 @@ class _Member:
             "---\nstate: confirmed\nsource: human\npriority: P2\nkind: feature\n---\n\n"
             "## Depends on\nnone\n\n## Context\n- verify.py\n\n## Goal / Why\n"
             + ("Resolve against current main.\n" if corrected else "Exercise synthetic production work.\n")
-            + "\n## Scope in / Scope out\nIn: declared fixture paths. Out: live host work.\n\n"
+            + "\n## Boundary contract\nnone\n- reason: unchanged behavior\n\n## Scope in / Scope out\nIn: declared fixture paths. Out: live host work.\n\n"
             "## Scope fence\n"
             + "".join(f"- {p}\n" for p in paths)
             + f"\n## Acceptance criteria\n1. `{sys.executable} verify.py` exits 0.\n\n## Verification\n```\n"

@@ -16,6 +16,10 @@ none
 - clutch/x.py
 ## Goal / Why
 Change x.
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: change x. Out: other work.
 ## Scope fence

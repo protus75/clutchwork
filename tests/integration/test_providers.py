@@ -695,6 +695,9 @@ def test_cli_failure_classifier_is_active(tmp_path, monkeypatch):
             - config.yaml
             ## Goal / Why
             Exercise provider classifier dormancy through production composition.
+            ## Boundary contract
+            none
+            - reason: unchanged behavior
             ## Scope in / Scope out
             In: provider calls. Out: host work.
             ## Scope fence

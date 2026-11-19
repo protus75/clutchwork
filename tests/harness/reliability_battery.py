@@ -215,6 +215,7 @@ class _Member:
         raw = (
             "---\nstate: confirmed\nsource: human\npriority: P2\nkind: feature\n---\n\n"
             "## Depends on\nnone\n\n## Context\n- verify.py\n\n## Goal / Why\nExercise fixture.\n\n"
+            "## Boundary contract\nnone\n- reason: unchanged behavior\n\n"
             "## Scope in / Scope out\nIn: fixture work. Out: live work.\n\n## Scope fence\n- work.txt\n\n"
             f"## Acceptance criteria\n1. `{sys.executable} verify.py` exits 0.\n\n## Verification\n```\n"
             f"{sys.executable} verify.py\n```\n\n## Definition of rejected\nRequires live work.\n\n"

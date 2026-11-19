@@ -42,6 +42,10 @@ none
 ## Goal / Why
 `clutch thing` prints ok. Operators need it.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: the verb. Out: everything else.
 

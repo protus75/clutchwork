@@ -56,7 +56,7 @@ def check(root: Path, section: str | None, *, settled=False):
 
 @pytest.mark.parametrize(
     "section",
-    [None, "none\n- reason: unchanged behavior", ENTRY, ENTRY.replace("extend", "reuse"), ENTRY.replace("extend", "create") + "- closest existing: old.py\n- earning reason: multiple consumers\n"],
+    ["none\n- reason: unchanged behavior", ENTRY, ENTRY.replace("extend", "reuse"), ENTRY.replace("extend", "create") + "- closest existing: old.py\n- earning reason: multiple consumers\n"],
 )
 def test_valid_shapes(tmp_path, section):
     assert check(tmp_path, section) == []

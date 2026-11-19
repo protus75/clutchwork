@@ -19,6 +19,10 @@ none
 - context.txt
 ## Goal / Why
 Fix the observed failure.
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 Only the fix.
 ## Scope fence

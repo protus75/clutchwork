@@ -70,6 +70,7 @@ REQUIRED_SECTIONS = (
     "Depends on",
     "Context",
     "Goal / Why",
+    "Boundary contract",
     "Scope in / Scope out",
     "Scope fence",
     "Acceptance criteria",
@@ -77,7 +78,7 @@ REQUIRED_SECTIONS = (
     "Definition of rejected",
     "Time budget",
 )
-OPTIONAL_SECTIONS = ("Runs before", "On-demand", "Regression", "Boundary contract")
+OPTIONAL_SECTIONS = ("Runs before", "On-demand", "Regression")
 SECTIONS = REQUIRED_SECTIONS + OPTIONAL_SECTIONS
 BANNED_ADJECTIVES = re.compile(r"\b(improved|better|cleaner)\b", re.IGNORECASE)
 _FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
@@ -373,6 +374,8 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
     if evidence and fm is not None and fm.state not in {"merged", "rejected"} and "Boundary contract" in sections:
         findings += _boundary_findings(sections["Boundary contract"], path)
     for name in REQUIRED_SECTIONS:
+        if name == "Boundary contract" and (not evidence or fm is None or fm.state in {"merged", "rejected"}):
+            continue
         if not sections.get(name):
             findings.append(_f(f"missing or empty body section `## {name}`", f"add a non-empty `## {name}` section", path))
 

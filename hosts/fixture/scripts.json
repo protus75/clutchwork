@@ -5,7 +5,7 @@
       "author": [
         {
           "stem": "merge-add",
-          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nAdding increases score by the supplied amount.\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
+          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nAdding increases score by the supplied amount.\n\n## Boundary contract\nnone\n- reason: unchanged behavior\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
         }
       ],
       "implement": [
@@ -68,7 +68,7 @@
       "author": [
         {
           "stem": "merge-bonus",
-          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nBonus adds twice the supplied amount.\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
+          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nBonus adds twice the supplied amount.\n\n## Boundary contract\nnone\n- reason: unchanged behavior\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
         }
       ],
       "implement": [
@@ -131,7 +131,7 @@
       "author": [
         {
           "stem": "merge-floor",
-          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nSpending clamps score at zero.\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
+          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nSpending clamps score at zero.\n\n## Boundary contract\nnone\n- reason: unchanged behavior\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
         }
       ],
       "implement": [
@@ -194,7 +194,7 @@
       "author": [
         {
           "stem": "regression",
-          "ticket": "---\npriority: P1\nkind: bug\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nRepair the existing add regression.\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n- fixtures/\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n\n## Regression\n```\npython fixtures/report_regression.py\n```\n- carries: fixtures/\n"
+          "ticket": "---\npriority: P1\nkind: bug\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nRepair the existing add regression.\n\n## Boundary contract\nnone\n- reason: unchanged behavior\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n- fixtures/\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n\n## Regression\n```\npython fixtures/report_regression.py\n```\n- carries: fixtures/\n"
         }
       ],
       "implement": [
@@ -267,7 +267,7 @@
       "author": [
         {
           "stem": "escape",
-          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nChange spending sign (a planted escape).\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
+          "ticket": "---\npriority: P1\nkind: feature\nagent_tier: medium\nagent_effort: medium\n---\n\n## Depends on\n- none\n\n## Context\n- app.py\n- settings.json\n\n## Goal / Why\nChange spending sign (a planted escape).\n\n## Boundary contract\nnone\n- reason: unchanged behavior\n\n## Scope in / Scope out\nChange the declared score setting only.\n\n## Scope fence\n- settings.json\n\n## Acceptance criteria\n- `python check.py` exits 0 and `settings.json` has the declared setting.\n\n## Verification\n```\npython check.py\n```\n\n## Definition of rejected\nAn undeclared edit is rejected.\n\n## Time budget\n- expected: 1m\n- stuck: 2m\n"
         }
       ],
       "implement": [

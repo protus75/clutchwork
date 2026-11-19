@@ -112,6 +112,10 @@ none
 ## Goal / Why
 `thing.py` holds the word ok.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: thing. Out: the rest.
 

@@ -18,6 +18,10 @@ kind: bug
 - clutch/x.py
 ## Goal / Why
 Reproduce the reported defect.
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: x. Out: other modules.
 ## Scope fence

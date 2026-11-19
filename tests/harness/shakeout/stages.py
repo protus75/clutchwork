@@ -32,6 +32,10 @@ none
 ## Goal / Why
 Exercise the stage fixture `{stem}`.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: this fixture. Out: every other fixture.
 

@@ -57,6 +57,10 @@ kind: feature
 ## Goal / Why
 `thing()` returns ok.
 
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: thing. Out: the rest.
 

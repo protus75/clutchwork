@@ -29,6 +29,10 @@ kind: feature
 - context.py
 ## Goal / Why
 A goal.
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 A scope.
 ## Scope fence

@@ -16,6 +16,10 @@ none
 - source.py
 ## Goal / Why
 Build the feature.
+## Boundary contract
+none
+- reason: unchanged behavior
+
 ## Scope in / Scope out
 In: source. Out: other files.
 ## Scope fence
