@@ -6,6 +6,9 @@ kind: feature
 ---
 
 ## Depends on
+none
+
+## Runs before
 - boundary-contract-implementation-review
 
 ## Context
