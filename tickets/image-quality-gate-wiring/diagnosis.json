@@ -1,0 +1,18 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "489837eae8c5221fd2e1486e9a0cac530bd3518c",
+  "stem": "image-quality-gate-wiring",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review approved everything except docs/roadmap.md: the new image-embed-presence row was numbered 999. Line 225 says row numbers are stable IDs assigned in the order rows were added. Read the current highest row number on the merge base and use the next one (review saw 161, so 162)."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
