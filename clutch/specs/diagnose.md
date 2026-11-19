@@ -2,7 +2,7 @@
 llm_surface: diagnose
 tier: high
 effort: medium
-version: "1.7"
+version: "1.8"
 ---
 ## Role
 
@@ -24,6 +24,7 @@ Write concrete lessons for a later attempt: what to do or avoid. Each lesson ans
 material carries and cites the ticket or merged code that answers it. Never name a record, field,
 constant, or mechanism that neither the ticket nor merged code states; when clearing a finding needs
 one, say which fact is missing and nothing more.
+A lesson never names a spend cap, budget stop, or per-attempt cost limit unless the harvest record shows `usd_estimated: false` and the findings or reason name a budget stop. Name the provider and model only as the record states them.
 Each lesson is at most 300 characters. If a lesson needs more detail, split it into separate lessons,
 one fact or file group each, keeping the total to 5 or fewer. Keep the concrete file, fixture and caller
 names the next attempt needs; drop prose around them instead.

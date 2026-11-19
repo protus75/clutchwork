@@ -10,7 +10,7 @@ from clutch.specs import DATA_DELIM, data_close, data_open, lint_spec, load_spec
     [
         ("acceptance", "1.0"),
         ("author", "1.9"),
-        ("diagnose", "1.7"),
+        ("diagnose", "1.8"),
         ("implement", "2.18"),
         ("requisition_review", "3.22"),
         ("retro", "1.5"),

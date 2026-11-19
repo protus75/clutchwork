@@ -31,7 +31,7 @@ from clutch.journal import Dispatch as JournalDispatch
 from clutch.llm import LLM
 from clutch.lockfile import Lockfile
 from clutch.merge import compose_pipeline, merge
-from clutch.providers import ProviderCallError, ProviderDrought, ProviderLLM
+from clutch.providers import ADAPTERS, ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.reconcile import reconcile
 from clutch.seams import Clock, FileSystem, GroupExec, Sleep
 from clutch.stages import DiagnosisMaterial, StageContext, StagesRun, diagnose, lift_outbox, run_stages, ticket_change_findings, write_diagnosis
@@ -523,7 +523,15 @@ async def harvest(
     stage_log_tail = "".join(p.read_text(errors="replace") for p in logs)[-HARVEST_TAIL_CHARS:]
     events_tail = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub).latest_stdout(f"llm/{stem}/")[-HARVEST_TAIL_CHARS:]
     record = f"tickets/{stem}/run.md"
+    llm_cost = next((r.cost for r in reversed(results) if r.cost.provider is not None), None)
+    provider = next((p for p in ctx.config.providers if p.name == llm_cost.provider), None) if llm_cost else None
+    adapter = ADAPTERS.get(provider.name) if provider else None
+    reports_cost = adapter.reports_cost if adapter else None
     artifact = Harvest(
+        provider=llm_cost.provider if llm_cost else None,
+        model=llm_cost.model if llm_cost else None,
+        usd_estimated=not reports_cost if reports_cost is not None else None,
+        budget_capable=reports_cost,
         attempt=attempt,
         stage=stage,
         terminal=terminal,

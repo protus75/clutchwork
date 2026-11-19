@@ -92,6 +92,10 @@ class Harvest(FrozenModel):
     wall_seconds: float | None
     usd: float | None
     run_record: str | None
+    provider: str | None = None
+    model: str | None = None
+    usd_estimated: bool | None = None
+    budget_capable: bool | None = None
 
     @field_validator("terminal")
     @classmethod
