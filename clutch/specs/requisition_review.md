@@ -2,7 +2,7 @@
 llm_surface: requisition_review
 tier: high
 effort: high
-version: "3.24"
+version: "3.25"
 ---
 ## Role
 
@@ -36,6 +36,8 @@ ticket can be implemented as written. Reply `snag` for a ticket defect its autho
 - When Scope in adds statements or branches to a file listed with a floor above 0 under `[coverage.files]` in the repo's `test-gate.toml`, the fenced `tests/unit` file's named tests must run the new lines in each floored file.
 - When a criterion or `## Verification` line names a `tests/unit/` file whose test the ticket adds or newly requires to read a named repo file (a spec, doc, `package.json`, or `importlib.metadata` data), raise a `snag` finding: place that test under `tests/integration/` and fence that file. A test reading only `tmp_path` is not a hit. A test reaching a repo file only through an injected seam or fake is not a hit. Updating a pinned value in an existing unit test that already reads the file is not a hit.
 - When a criterion, a test Scope in adds, or a `## Verification` line makes a `tests/unit/` test write disk outside `tmp_path`, start a process, or open a network connection, raise a `snag` finding: place that test under `tests/integration/` and fence that file. When this snag or the repo-file snag above hits a test that must run new lines in a file with a floor above 0 under `[coverage.files]`, its paved road also names an in-fence seam, such as an injected reader or a parameter carrying the bytes, through which a fenced `tests/unit` test runs those lines with a fake, and moves only the real disk, process, or network checks to `tests/integration/`. A test using only in-memory buffers or fakes is not a hit. No seam is required for an I/O site where Scope in adds no line.
+
+For a `kind: graphics` ticket, snag a `visual:` criterion that cannot be decided from its named artifact alone, including one requiring taste or intent; a `mode: generate` ticket with no `- input:` bullet and no prompt in `## Goal / Why`; or a `review_visual` route that the ticket text or Context shows resolves to the same provider and model as the generator's `implement` route. A `visual:` criterion naming a declared artifact and a concrete visible outcome is not a hit.
 
 Report every finding in this one reply; never stop at the first.
 

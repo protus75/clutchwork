@@ -2,7 +2,7 @@
 llm_surface: review
 tier: high
 effort: high
-version: "1.7"
+version: "1.8"
 ---
 ## Role
 
@@ -49,6 +49,8 @@ Snag on any of these, each attached to a line the diff adds or changes:
   written to a log, journal, prompt, error message, artifact, or child-process environment that
   does not need it; private data exposed through a public interface; a solution that reads the
   expected answers a check holds back.
+
+For a `kind: graphics` ticket, judge the code, never the picture; the picture is `review_visual`'s to judge. Check owns select provenance. Snag as `acceptance`, attached to the changed line, a diff line that adds or changes a `cand-` candidate file or an image path that `## Render` does not declare as a `generate`-mode `- artifact:`.
 
 Admissibility: every finding names a concrete defect this diff introduces. Never block on a
 pre-existing problem the diff does not touch, on style or taste, or on a demand to do more than
