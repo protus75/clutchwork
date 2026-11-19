@@ -1,10 +1,10 @@
-# Review: snag
+# Review: approve
 
-The run set, exclusive gate, occupied() probes, cancellation-safe releases, config wiring, tests, docs and roadmap rows match the ticket, but the diff also makes an unrequested change to how serve reports its failure type.
+This change swaps the single `_slot`/`active`/`task` design in `DaemonAdmission` for a run dict capped at `max_runs`, gated by a condition. It adds an exclusive gate used by mutations, startup, the sweep and watch publication, and `occupied()` probes on both admission and scheduler. It moves every caller and test assertion to the new API, passes 1 when parallel is off, adds the two roadmap rows as rows 156 and 157, updates the docs, and drops the out-of-scope serve failure-type hunk from the prior review.
 
 ## Findings
 
-- [scope] clutch/serve.py:656 The diff changes the serve lifetime's `except Exception` handler from always setting `failure_type = type(exc).__name__` to doing so only `if failure_type is None:`. This changes which failure type serve reports when a guarded worker has already latched one. The ticket does not ask for this: it covers admission slots, idle checks and watch publication, not serve's failure reporting. (do instead: Revert this hunk so the handler again sets `failure_type = type(exc).__name__` unconditionally. If the reporting order is a real defect, file it with `clutch box suggest` as a separate problem.)
+none
 
 ## Record
 
@@ -12,24 +12,14 @@ The run set, exclusive gate, occupied() probes, cancellation-safe releases, conf
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "67dde2039927df55f91c2b6ef1026079986db33d",
+  "produced_at_sha": "a3aad31b859e5fb2b2685f5e169b7d26bcdfa890",
   "stem": "serve-parallel-dispatch-r2",
-  "reviewed_sha": "67dde2039927df55f91c2b6ef1026079986db33d",
-  "summary": "The run set, exclusive gate, occupied() probes, cancellation-safe releases, config wiring, tests, docs and roadmap rows match the ticket, but the diff also makes an unrequested change to how serve reports its failure type.",
-  "findings": [
-    {
-      "code": "scope",
-      "path": "clutch/serve.py",
-      "line": 656,
-      "message": "The diff changes the serve lifetime's `except Exception` handler from always setting `failure_type = type(exc).__name__` to doing so only `if failure_type is None:`. This changes which failure type serve reports when a guarded worker has already latched one. The ticket does not ask for this: it covers admission slots, idle checks and watch publication, not serve's failure reporting.",
-      "paved_road": "Revert this hunk so the handler again sets `failure_type = type(exc).__name__` unconditionally. If the reporting order is a real defect, file it with `clutch box suggest` as a separate problem.",
-      "kind": null,
-      "unit": null
-    }
-  ],
+  "reviewed_sha": "a3aad31b859e5fb2b2685f5e169b7d26bcdfa890",
+  "summary": "This change swaps the single `_slot`/`active`/`task` design in `DaemonAdmission` for a run dict capped at `max_runs`, gated by a condition. It adds an exclusive gate used by mutations, startup, the sweep and watch publication, and `occupied()` probes on both admission and scheduler. It moves every caller and test assertion to the new API, passes 1 when parallel is off, adds the two roadmap rows as rows 156 and 157, updates the docs, and drops the out-of-scope serve failure-type hunk from the prior review.",
+  "findings": [],
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5",
-  "verdict": "snag"
+  "verdict": "approve"
 }
 ```
