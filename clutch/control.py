@@ -22,7 +22,10 @@ _SHAPE = (
     "for resume read the current hold and submit its exact nonempty identity"
 )
 _TRIAGE_SHAPE = "publish a triage request with exactly {request_id, lifecycle_id, verb: triage, ids: list of strings, hold_id: null, actor}; actor is operator | machine | extension"
-_ADMISSION_SHAPE = "publish a fresh verdict request with exactly {request_id, lifecycle_id, verb, stem, hold_id, actor}; actor is operator | machine | extension and hold_id is null"
+_ADMISSION_SHAPE = (
+    "publish a fresh verdict request with exactly {request_id, lifecycle_id, verb, stem, hold_id, actor}; "
+    "actor is operator | machine | extension, hold_id is null, and reject may include a nonempty operator_reason"
+)
 
 
 @dataclass(frozen=True)
@@ -41,6 +44,7 @@ class AdmissionRequest:
     stem: str
     hold_id: str | None
     actor: Literal["operator", "machine", "extension"]
+    operator_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -72,7 +76,8 @@ def validate_request(value: object, filename: str) -> ControlRequest | Admission
     if isinstance(value, dict) and value.get("verb") in ("confirm", "reject"):
         road = _ADMISSION_SHAPE
         if (
-            set(value) != {"request_id", "lifecycle_id", "verb", "stem", "hold_id", "actor"}
+            set(value) - {"operator_reason"} != {"request_id", "lifecycle_id", "verb", "stem", "hold_id", "actor"}
+            or ("operator_reason" in value and (value["verb"] != "reject" or not isinstance(value["operator_reason"], str) or not value["operator_reason"]))
             or not isinstance(value.get("request_id"), str)
             or _ID.fullmatch(value["request_id"]) is None
             or filename != value["request_id"] + ".json"
@@ -105,6 +110,8 @@ def validate_request(value: object, filename: str) -> ControlRequest | Admission
 
 def publish_request(state_dir: Path, request: ControlRequest | AdmissionRequest | TriageRequest, fs: FileSystem) -> None:
     value = asdict(request)
+    if isinstance(request, AdmissionRequest) and request.operator_reason is None:
+        del value["operator_reason"]
     validate_request(value, str(request.request_id) + ".json")
     try:
         fs.publish(state_dir / "control/inbox" / (request.request_id + ".json"), json.dumps(value, separators=(",", ":")).encode())
@@ -149,6 +156,8 @@ def decisions(events: Iterable[Event]) -> Iterable[Event]:
         admission = body.get("verb") in ("confirm", "reject")
         if admission:
             fields |= {"stem", "actor"}
+            if "operator_reason" in body:
+                fields.add("operator_reason")
         elif body.get("verb") == "triage":
             fields |= {"ids", "actor"}
         if (
@@ -268,7 +277,10 @@ class ControlInbox:
             except ValueError, UnicodeError:
                 pass
             else:
-                body.update(asdict(request))
+                request_body = asdict(request)
+                if isinstance(request, AdmissionRequest) and request.operator_reason is None:
+                    del request_body["operator_reason"]
+                body.update(request_body)
                 live_holds = set(self.holds()) - projection.released_hold_ids
                 if projection.pause_id is not None:
                     live_holds.add(projection.pause_id)
@@ -304,6 +316,8 @@ class ControlInbox:
             key = f"ticket-plane/{body['stem']}/{body['verb']}/{body['request_id']}"
 
             async def action():
+                if "operator_reason" in body:
+                    return await verdict(body["stem"], body["verb"], key, body["actor"], reason=body["operator_reason"])
                 return await verdict(body["stem"], body["verb"], key, body["actor"])
 
             await Effects(self.journal).run(action, key=key, ticket=body["stem"])

@@ -415,8 +415,8 @@ class Serve:
                 await response.wait(self.core.scheduler.dispatch_next())
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
-    async def apply_verdict(self, stem, verb, key, actor):
-        result = await runner.apply_admission(stem, verb, key, actor, self.checkout)
+    async def apply_verdict(self, stem, verb, key, actor, reason=None):
+        result = await runner.apply_admission(stem, verb, key, actor, self.checkout, **({"reason": reason} if reason is not None else {}))
         if result["refusal"] is not None:
             self.log.event("verdict_refused", stem=stem, verb=verb, reason=result["refusal"])
         elif verb == "confirm" and stem in self.published:

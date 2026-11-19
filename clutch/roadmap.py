@@ -290,15 +290,17 @@ def decline_reason(repo, message):
 
 
 def rejection_reason(events, stem):
-    terminal = diagnosis = None
+    terminal = diagnosis = operator = None
     for event in events:
         if event.ticket != stem:
             continue
-        if event.type == EventType.STATE_TRANSITION and event.body.get("routed") == "reject_queue":
+        if event.type == EventType.SIGNAL and event.body.get("signal") == "reject_verdict" and event.body.get("verdict") == "kill" and event.body.get("actor") == "operator":
+            operator = event
+        elif event.type == EventType.STATE_TRANSITION and event.body.get("routed") == "reject_queue":
             terminal = event
         elif event.type == EventType.SIGNAL and event.body.get("signal") == "diagnosis":
             diagnosis = event
-    parts = ([terminal.body.get("reason")] if terminal else []) + (diagnosis.body.get("lessons", []) if diagnosis else [])
+    parts = ([operator.body.get("reason")] if operator else []) + ([terminal.body.get("reason")] if terminal else []) + (diagnosis.body.get("lessons", []) if diagnosis else [])
     return " ".join(part for part in parts if part) or "rejected"
 
 

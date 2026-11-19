@@ -352,8 +352,8 @@ async def drain(
 
 
 async def settle_admissions(checkout):
-    async def apply(stem, verb, key, actor):
-        result = await runner.apply_admission(stem, verb, key, actor, checkout)
+    async def apply(stem, verb, key, actor, reason=None):
+        result = await runner.apply_admission(stem, verb, key, actor, checkout, **({"reason": reason} if reason is not None else {}))
         if result["refusal"] is not None:
             log = engine_log(checkout.config, checkout.env, checkout.clock)
             log.event("verdict_refused", stem=stem, verb=verb, reason=result["refusal"])

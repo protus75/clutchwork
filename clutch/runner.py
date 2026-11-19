@@ -596,7 +596,7 @@ async def ticket_pending(git, repo, stem: str) -> bool:
     return bool(await git.status_porcelain(repo, "--untracked-files=all", "--", f"tickets/{stem}/"))
 
 
-async def verdict(stem: str, checkout: Checkout, *, kill: bool, extension: bool = False) -> int:
+async def verdict(stem: str, checkout: Checkout, *, kill: bool, extension: bool = False, reason: str | None = None) -> int:
     """Resolve a draft or Reject item while holding the same writer lock as run and drain."""
     if findings := stem_findings(stem):
         raise Refusal(findings[0].message, findings[0].paved_road)
@@ -604,12 +604,12 @@ async def verdict(stem: str, checkout: Checkout, *, kill: bool, extension: bool 
     lock.acquire()
     try:
         await reap(checkout)
-        return await verdict_locked(stem, checkout, kill=kill, extension=extension)
+        return await verdict_locked(stem, checkout, kill=kill, extension=extension, **({"reason": reason} if reason is not None else {}))
     finally:
         lock.release()
 
 
-async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension: bool = False) -> int:
+async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension: bool = False, reason: str | None = None) -> int:
     """Apply verdict rules with the writer lock already held."""
     intake_result = await intake(checkout.repo, checkout.git, checkout.journal, checkout.fs, stems={stem})
     if refused := intake_result.refused.get(stem):
@@ -625,7 +625,7 @@ async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension
     if refusal and (kill or draft or refusal[0].endswith("is running")):
         raise Refusal(*refusal)
     if kill:
-        changed = await reject_ticket(stem, checkout)
+        changed = await reject_ticket(stem, checkout, **({"reason": reason} if reason is not None else {}))
         print(f"rejected {stem}" if changed else f"already rejected {stem}")
         return EXIT_MERGED
     if draft:
@@ -652,7 +652,7 @@ async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension
     return EXIT_MERGED
 
 
-async def reject_ticket(stem: str, checkout: Checkout) -> bool:
+async def reject_ticket(stem: str, checkout: Checkout, *, reason: str | None = None) -> bool:
     """Reject mutation for a caller already holding the writer lock."""
     rel = ticket_path(stem)
     path = checkout.repo / rel
@@ -661,7 +661,7 @@ async def reject_ticket(stem: str, checkout: Checkout) -> bool:
         checkout.fs.write(path, stamp(path.read_text(), "state", "rejected").encode())
         await checkout.git.commit(checkout.repo, f"clutch({stem}): rejected", only=[rel])
     if last != "rejected":
-        checkout.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "kill", "actor": "operator"}, ticket=stem)
+        checkout.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "kill", "actor": "operator", **({"reason": reason} if reason is not None else {})}, ticket=stem)
         checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=stem)
     await _dead_dependents(stem, checkout)
     return last != "rejected"
@@ -722,7 +722,7 @@ async def _admit(stem: str, checkout: Checkout) -> Ticket:
     return ticket
 
 
-async def apply_admission(stem, verb, key, actor, c):
+async def apply_admission(stem, verb, key, actor, c, *, reason=None):
     events = c.journal.read()
     intents = [i for i, e in enumerate(events) if e.type == EventType.EFFECT_INTENT and e.key == key]
     since = events[intents[0] + 1 :] if intents else []
@@ -764,7 +764,7 @@ async def apply_admission(stem, verb, key, actor, c):
     refusal = None
     if not applied:
         try:
-            await verdict_locked(stem, c, kill=verb == "reject", extension=actor == "extension")
+            await verdict_locked(stem, c, kill=verb == "reject", extension=actor == "extension", **({"reason": reason} if reason is not None else {}))
         except Refusal as exc:
             refusal = str(exc)
     return {"refusal": refusal}

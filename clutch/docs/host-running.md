@@ -46,7 +46,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
 | `engine run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |
 | `ticket confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. |
-| `ticket reject` | Yes | Intake the named ticket, then apply or publish a reject verdict after interactive confirmation; other pending tickets are left untouched. |
+| `ticket reject` | Yes | Intake the named ticket, then apply or publish a reject verdict with an optional `--reason` after interactive confirmation; other pending tickets are left untouched. |
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 

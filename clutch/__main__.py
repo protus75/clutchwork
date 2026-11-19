@@ -797,16 +797,18 @@ def _parser() -> argparse.ArgumentParser:
             writes=(
                 "Named ticket pending edits through intake, then a clutch(<stem>): confirmed commit and draft_confirmed signal or reject_verdict keep signal; "
                 if verb == "confirm"
-                else "Named ticket pending edits through intake, then a clutch(<stem>): rejected commit, reject_verdict kill and rejected events and dependent box messages; "
+                else "Named ticket pending edits through intake, then a clutch(<stem>): rejected commit, reject_verdict kill with optional --reason and rejected events and dependent box messages; "
             )
             + "with drain or serve running, a verdict request to that engine instead.",
             lock="Writer lock; publish to a running drain or serve holding it, refuse any other holder.",
             exits="0 when applied or submitted; 1 when the prompt is not answered y; 2 on refusal.",
-            examples=[f"clutch ticket {verb} add-widget", f"clutch ticket {verb} --yes add-widget"],
+            examples=[f"clutch ticket {verb} add-widget", f"clutch ticket {verb} --yes add-widget"] + (['clutch ticket reject --yes --reason "scope too wide" add-widget'] if verb == "reject" else []),
         )
         verdict.add_argument("stems", nargs="+")
         verdict.add_argument("--yes", action="store_true")
         verdict.add_argument("--extension", action="store_true")
+        if verb == "reject":
+            verdict.add_argument("--reason")
     engine = sub.add_parser(
         "engine",
         help="run and control the engine",
@@ -1278,7 +1280,7 @@ def main(
 
     def handle_verdict():
         for stem in args.stems:
-            if result := asyncio.run(_verdict(checkout, stem, args.ticket_verb, read_input, args.yes, args.extension)):
+            if result := asyncio.run(_verdict(checkout, stem, args.ticket_verb, read_input, args.yes, args.extension, reason=getattr(args, "reason", None))):
                 return result
         return 0
 
@@ -1591,7 +1593,7 @@ def _require_engine(exc: LockHeld) -> None:
         raise runner.Refusal(f"writer lock held by {verb}", f"wait for {verb} to finish, then retry") from None
 
 
-async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False, ids=None):
+async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False, ids=None, reason=None):
     _require_engine(exc)
     if stem is not None and await runner.ticket_pending(checkout.git, checkout.repo, stem):
         from clutch.tickets import intake
@@ -1606,7 +1608,7 @@ async def _submit_engine(checkout, exc, verb, *, stem=None, extension=False, ids
     if verb == "triage":
         request = control.TriageRequest(uuid4().hex, lifecycle, verb, list(ids), None, "operator")
     elif stem is not None:
-        request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator")
+        request = control.AdmissionRequest(uuid4().hex, lifecycle, verb, stem, None, "extension" if extension else "operator", operator_reason=reason)
     else:
         if verb == "resume" and hold is None:
             raise runner.Refusal("no current hold identity", "read the running engine's current control identity and submit a new request")
@@ -1791,7 +1793,7 @@ async def _control(checkout: runner.Checkout, verb: str) -> int:
     return 0
 
 
-async def _verdict(checkout, stem, verb, read_input, yes, extension):
+async def _verdict(checkout, stem, verb, read_input, yes, extension, *, reason=None):
     if findings := stem_findings(stem):
         raise runner.Refusal(findings[0].message, findings[0].paved_road)
     history = checkout.journal.read()
@@ -1816,9 +1818,9 @@ async def _verdict(checkout, stem, verb, read_input, yes, extension):
         print("verdict aborted")
         return 1
     try:
-        return await runner.verdict(stem, checkout, kill=verb == "reject", extension=extension)
+        return await runner.verdict(stem, checkout, kill=verb == "reject", extension=extension, **({"reason": reason} if reason is not None else {}))
     except LockHeld as exc:
-        request = await _submit_engine(checkout, exc, verb, stem=stem, extension=extension)
+        request = await _submit_engine(checkout, exc, verb, stem=stem, extension=extension, reason=reason)
     print(f"{verb} submitted: {request.request_id} -- `clutch view status` shows the outcome")
     return 0
 
