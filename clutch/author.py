@@ -1,6 +1,7 @@
 """The Suggestion Box Author stage."""
 
 import json
+import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -118,6 +119,8 @@ class AuthorGate:
                 candidate = stamp(stamp(candidate, "source", f"box:{self.message_class}"), "state", "draft")
             parsed = validate_ticket(artifact.stem, candidate, self.checkout.repo)
             if roadmap is not None:
+                if "## Goal / Why\n" in candidate:
+                    findings.extend(slice_follow_up(roadmap, parsed.sections["Goal / Why"], parsed.scope_fence))
                 for field in ("kind", "priority"):
                     expected = getattr(roadmap, field)
                     if getattr(parsed.frontmatter, field) != expected:
@@ -144,6 +147,20 @@ class AuthorGate:
 class AuthorOutcome:
     stem: str | None = None
     declined: str | None = None
+
+
+def slice_follow_up(roadmap_row, goal_text: str, fence: tuple[str, ...]) -> list[Finding]:
+    from clutch.roadmap import ROADMAP
+
+    if roadmap_row is None or not re.search(r"\bslice\b", goal_text, re.IGNORECASE) or ROADMAP in fence:
+        return []
+    return [
+        Finding(
+            code=AuthorGate.code,
+            message="roadmap row slice has no follow-up roadmap fence",
+            paved_road=f"deliver the whole row, or fence {ROADMAP} and add a follow-up row for the remaining parts in Scope in",
+        )
+    ]
 
 
 def goal(text: str) -> str:
