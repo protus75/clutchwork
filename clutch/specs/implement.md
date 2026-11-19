@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.18"
+version: "2.19"
 ---
 ## Role
 
@@ -55,6 +55,8 @@ Read the ticket and the context files below before writing anything. For a prior
 5. Commit all of your work on the current branch (`git add` the changed paths, then
    `git commit`). Do not push, rebase, merge, switch branches, or create other branches. Only
    committed changes count: uncommitted edits are discarded with the worktree.
+
+For graphics tickets in `command` mode, run the render command, open your artifacts, and compare them with the references and `visual:` criteria before committing; never commit artifacts. In `generate` mode, produce the declared number of candidates from the inputs and prompt into the attempt render directory, never commit a candidate, and name in `run.md` what varied between candidates.
 
 Put each test in the suite its kind belongs to, as the host lays them out (for a Python host,
 `tests/unit/` and `tests/integration/`). A unit test checks one unit with fakes for the clock,

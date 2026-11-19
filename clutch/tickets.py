@@ -435,7 +435,7 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
     if evidence and fm is not None and fm.state not in {"merged", "rejected"} and "Boundary contract" in sections:
         findings += _boundary_findings(sections["Boundary contract"], path)
     kind = fm.kind if fm is not None else data.get("kind")
-    render, render_errors = _render(sections.get("Render", ""), path) if kind == "graphics" and "Render" in sections else ({}, [])
+    render, render_errors = parse_render(sections.get("Render", ""), path) if kind == "graphics" and "Render" in sections else ({}, [])
     findings += render_errors
     for name in REQUIRED_SECTIONS:
         if name == "Goal / Why" and kind == "graphics" and render.get("mode") == ["generate"] and name in sections:
@@ -623,7 +623,7 @@ def _regression(text: str, path: str) -> tuple[tuple[str, ...], tuple[str, ...],
     return (commands[0] if len(commands) == 1 else ()), prefixes, findings
 
 
-def _render(text: str, path: str) -> tuple[dict, list[Finding]]:
+def parse_render(text: str, path: str) -> tuple[dict, list[Finding]]:
     """Parse the graphics render declaration without executing it."""
     findings = []
     fields: dict = {}
@@ -746,7 +746,7 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
         if not any(prefix.rstrip("/") == fence.rstrip("/") or prefix.startswith(fence.rstrip("/") + "/") for fence in ticket.scope_fence):
             findings.append(_f(f"`## Regression` carries prefix {prefix!r} is outside `## Scope fence`", "add the carried prefix to `## Scope fence`", path))
     if ticket.frontmatter.kind == "graphics":
-        render, _ = _render(ticket.sections["Render"], path)
+        render, _ = parse_render(ticket.sections["Render"], path)
         criteria = _criteria(ticket.sections["Acceptance criteria"])
         visuals = [item for item in criteria if item.startswith("visual:")]
         for item in visuals:

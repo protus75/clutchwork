@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
 from dataclasses import dataclass, field
@@ -54,7 +55,7 @@ from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
 from clutch.storm import arrival_id
-from clutch.tickets import _HEADING, TEST_FIXTURE_DIRS, TICKET_FILE, TICKETS_DIR, Ticket, in_fence, render_context, ticket_path
+from clutch.tickets import _HEADING, TEST_FIXTURE_DIRS, TICKET_FILE, TICKETS_DIR, Ticket, in_fence, parse_render, render_context, ticket_path
 from clutch.tickets import validate_ticket as validate_ticket
 
 HOST_COMMAND_LOCK = asyncio.Semaphore(1)
@@ -776,7 +777,7 @@ class CommandResult(FrozenModel):
     seconds: float | None = None
 
 
-async def run_host_command(ctx, ticket, attempt, argv, code, name, *, cwd=None):
+async def run_host_command(ctx, ticket, attempt, argv, code, name, *, cwd=None, stdout_capture=None):
     road = "make the configured command exit 0 on the rebased candidate and retry"
     started = ctx.driver.clock()
     env = child_env(ctx.env, ctx.config)
@@ -791,6 +792,8 @@ async def run_host_command(ctx, ticket, attempt, argv, code, name, *, cwd=None):
     except ExecutableNotFound as exc:
         rc, out, err = None, "", str(exc)
         road = "install the executable or correct argv/PATH in the child environment and retry"
+    if stdout_capture is not None:
+        stdout_capture.append(out)
     seconds = (ctx.driver.clock() - started).total_seconds()
     ctx.driver.spool.write(ticket.stem, attempt, name, f"$ {' '.join(argv)}\n[exit {rc}]\n--- stdout\n{out}\n--- stderr\n{err}")
     tail = ctx.driver.redactor.scrub((out + err)[-OUTPUT_TAIL_CHARS:])
@@ -1235,6 +1238,92 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
     return recorded(report)
 
 
+def decode_render(stdout: str, rc: int | None) -> tuple[str, list[str]] | None:
+    def unique(pairs):
+        result = dict(pairs)
+        if len(result) != len(pairs):
+            raise ValueError("duplicate keys")
+        return result
+
+    if len(stdout) > OUTPUT_TAIL_CHARS:
+        return None
+    try:
+        result = json.loads(stdout, object_pairs_hook=unique)
+    except ValueError, TypeError, RecursionError:
+        return None
+    if not isinstance(result, dict):
+        return None
+    if result == {"render_result": "error"}:
+        return "error", []
+    if set(result) == {"render_result", "artifacts"} and result["render_result"] == "ok" and rc == 0:
+        artifacts = result["artifacts"]
+        if isinstance(artifacts, list) and all(isinstance(path, str) for path in artifacts):
+            return "ok", artifacts
+    return None
+
+
+def artifact_problem(path: str, data: bytes | None) -> str | None:
+    if data is None:
+        return "artifact is missing"
+    if not data:
+        return "artifact is empty"
+    suffix = Path(path).suffix.lower()
+    if suffix == ".png" and not data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "artifact is not a PNG"
+    if suffix == ".svg":
+        try:
+            root = ET.fromstring(data)
+        except ET.ParseError, ValueError:
+            return "artifact is not an SVG"
+        if root.tag not in {"svg", "{http://www.w3.org/2000/svg}svg"}:
+            return "artifact is not an SVG"
+    if suffix == ".html" and not re.search(rb"<html(?:\s|>)", data, re.IGNORECASE):
+        return "artifact is not HTML"
+    return None
+
+
+async def check_render(ctx, ticket, attempt):
+    if ticket.frontmatter.kind != "graphics":
+        return [], []
+    fields, errors = parse_render(ticket.sections.get("Render", ""), str(ticket_path(ticket.stem)))
+    if fields.get("mode") != ["command"]:
+        return [], []
+    road = "correct the Render declaration or renderer output and retry Check"
+
+    def fail(message):
+        finding = Finding(code="render", message=message, paved_road=road)
+        return [_report("render", [finding])], [finding]
+
+    if errors:
+        return fail("invalid Render declaration")
+    stdout = []
+    result, _ = await run_host_command(ctx, ticket, attempt, fields["command"][0], "render", "check/render.txt", stdout_capture=stdout)
+    decoded = decode_render(stdout[0], result.rc)
+    if decoded is None:
+        return fail("invalid render result protocol or exit status")
+    if decoded[0] == "error":
+        return fail("renderer reported a missing prerequisite")
+    paths = decoded[1]
+    if any(not path or Path(path).is_absolute() or ".." in Path(path).parts for path in paths):
+        return fail("render artifact paths must be repo-relative without ..")
+    declared = fields.get("artifact", [])
+    if len(paths) != len(set(paths)) or set(paths) != set(declared):
+        return fail("render artifact list does not match the declared artifacts")
+    artifacts = []
+    for path in paths:
+        try:
+            data = ctx.fs.read_bytes(ctx.worktree(ticket.stem) / path)
+        except OSError:
+            data = None
+        problem = artifact_problem(path, data)
+        if problem:
+            return fail(f"{path}: {problem}")
+        artifacts.append((path, data))
+    for path, data in artifacts:
+        ctx.fs.write(ctx.driver.spool.root / ticket.stem / str(attempt) / "render" / path, data)
+    return [_report("render", [])], []
+
+
 async def check_hosts(ctx, ticket, changed_files, attempt):
     reports, hard = [], []
     for n, entry in triggered_hosts(ctx, changed_files, tier="check"):
@@ -1463,6 +1552,9 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
     evidence = await gather_evidence(ctx, ticket, slip.outcome, attempt=attempt)
     gated = run_gates(CHECK_GATES, evidence, ctx.worktree(stem), severity=check_severity(ctx, ticket))
     host_reports, host_hard = await check_hosts(ctx, ticket, evidence.changed_files, attempt)
+    render_reports, render_hard = await check_render(ctx, ticket, attempt)
+    host_reports.extend(render_reports)
+    host_hard.extend(render_hard)
     host_hard.extend(autofix_hard)
     required = [name for name in KNOWN_ARTIFACTS if any(f"{TICKETS_DIR}/{stem}/{name}" in arg for argv in ticket.verification for arg in argv)]
     missing = [name for name in required if not (outbox / name).is_file()]

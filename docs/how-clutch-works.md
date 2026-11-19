@@ -243,7 +243,7 @@ the Suggestion Box as a `suggestion`.
 3. A failing command is rerun at the merge base. If it also fails there and names no path present in the branch but absent at the merge base, it is **base-red**: a
    pre-existing failure, excluded from the verdict and filed once to the Suggestion Box. A command naming a branch-only path is never base-red.
 4. Runs the engine Check gates (section 5.1).
-5. Runs triggered host checks in config order, attributing failures also red at base to main.
+5. Runs triggered host checks in config order, attributing failures also red at base to main, and runs the render command for graphics `command` tickets.
 6. Writes and lifts `checks.json`.
 
 A hard gate failure ends the attempt `gate_failed`. Soft failures are recorded and the run

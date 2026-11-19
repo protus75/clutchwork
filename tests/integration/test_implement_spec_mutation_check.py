@@ -11,4 +11,4 @@ def test_implement_spec_finishes_mutation_checks_before_replying():
         "rather than stopping partway; unfinished mutation checks are never a reason to reply `incomplete`." in text
     )
     assert "Never use `incomplete` because mutation checks remain while the Verification commands pass." in text
-    assert load_spec(text).meta.version == "2.18"
+    assert load_spec(text).meta.version == "2.19"
