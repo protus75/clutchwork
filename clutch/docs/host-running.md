@@ -35,7 +35,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine stop` | Yes | Finish active work and exit. |
 | `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `box suggest` | Yes | File an idea into the Suggestion Box. |
-| `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug; submits nothing. |
+| `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submits nothing. |
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `engine drain` and `engine serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
 | `box triage` | Yes | Make one pass over named pending box IDs, or all pending messages. |
 | `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
@@ -53,13 +53,13 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 
 Stop serve before `roadmap author`, `box dismiss`, `release bump`, `release publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
-## Reporting a critical clutch bug
+## Reporting a clutch problem upstream
 
 | Channel | Carries | Ends as |
 |---|---|---|
 | Suggestion Box (`clutch box suggest`) | The host's own work | A host ticket |
 | Host bug reports (`report_inbox`) | The host application's bug reports | A `bug_report` box message, then a host bug ticket |
-| Upstream issue (`clutch box issue`) | A critical clutch bug confirmed by the person | A GitHub issue on the clutch repository |
+| Upstream issue (`clutch box issue`) | A critical clutch bug or a process gap, confirmed by the person | A GitHub issue on the clutch repository |
 
 Critical classes:
 
@@ -69,7 +69,9 @@ Critical classes:
 - `engine-stuck`: serve or drain cannot run any ticket on a setup `host doctor` passes, and no documented verb releases it.
 - `wrong-refusal`: clutch refuses valid config, ticket, or intake with a paved road that cannot be followed.
 
-Name a clutch problem outside these classes to the user in chat; it goes nowhere else. A session never files a clutch defect to the host's Suggestion Box.
+- `process-gap`: a clutch prompt spec, gate, or process flaw that cost a real run an Implement attempt, a review cycle, or an escalation. The body names the clutch file at fault and the run evidence (attempt count and review findings showing the gap), leaving out the host-private material listed below. A bare idea with no run that paid for it is named to the user in chat and goes nowhere else.
+
+Name any other clutch problem to the user in chat; it goes nowhere else. A session never files a clutch defect to the host's Suggestion Box.
 
 The body contains the clutch file and line, gate or spec text or refusal message, and minimum host detail needed to reproduce. Leave out host-private code or data, ticket files, run records, `host doctor` output, and host paths. The verb appends a version footer and scrubs configured provider secrets only when config loads.
 

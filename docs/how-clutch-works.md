@@ -847,7 +847,7 @@ The block carries only process rules that hold for every host; codebase rules be
   and enforces the `test-gate.toml` unit time budget (60 seconds by default).
 - A host provides `config.yaml`, its conduct files, and its tickets. `clutch/docs/host-contract.md` is
   the full host-facing contract; Python hosts can use its `## Python host test setup`.
-- A clutch defect found in a host is named to the user in chat, never filed to the host Suggestion Box. Only a bug in a `clutch box issue` critical class goes upstream, as a link the verb prints for a person to review and submit; see [Reporting a critical clutch bug](../clutch/docs/host-running.md#reporting-a-critical-clutch-bug).
+- A clutch defect found in a host is named to the user in chat, never filed to the host Suggestion Box. Critical bugs and qualifying process gaps go upstream as a link `clutch box issue` prints for a person to review and submit; see [Reporting a clutch problem upstream](../clutch/docs/host-running.md#reporting-a-clutch-problem-upstream).
 
 
 ## 13. Eval report artifacts

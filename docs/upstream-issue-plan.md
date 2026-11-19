@@ -2,7 +2,7 @@
 
 Give a host a paved road for reporting a **critical** clutch bug to the clutch project's GitHub issue tracker: a `clutch issue` verb that prints a prefilled new-issue link, a host-shared rule that tells sessions when and how to use it, and the documentation that keeps it apart from the Suggestion Box.
 
-Only critical bugs go upstream, never ideas, improvements, wording fixes, or follow-ups. The GitHub tracker is a short list of real breakages the owner acts on, not another place to dump AI output.
+Critical bugs and evidence-bound process gaps go upstream, never bare ideas, improvements, wording fixes, or follow-ups. The GitHub tracker is a short list of real breakages the owner acts on, not another place to dump AI output.
 
 ## Status
 
@@ -20,17 +20,17 @@ Three channels exist or are planned. They do not overlap:
 |---|---|---|---|
 | Suggestion Box (`clutch suggest`, harvest, retro) | inside one host | work for that host's own repo | a ticket in that host's `tickets/` |
 | `report_inbox` (§9.4, `clutch/inbox.py`) | host app into the same host | the host application's own bug reports (player or self-diagnosed) | a `bug_report` box message, then a host bug ticket |
-| `clutch issue` (this plan) | host out to the clutch project | a critical bug in clutch (closed classes below), confirmed by the person | a GitHub issue on the clutch repo, which the clutch owner turns into a clutch ticket |
+| `clutch issue` (this plan) | host out to the clutch project | a critical bug or qualifying process gap in clutch, confirmed by the person | a GitHub issue on the clutch repo, which the clutch owner turns into a clutch ticket |
 
-The Suggestion Box is a high-volume AI outlet: agents, harvest, and retro file to it freely, and triage filters it. The upstream tracker is the opposite: low volume, a person decides every issue, and only critical bugs qualify. Nothing flows from the box to GitHub, ever.
+The Suggestion Box is a high-volume AI outlet: agents, harvest, and retro file to it freely, and triage filters it. The upstream tracker is the opposite: low volume, a person decides every issue, and only critical bugs and qualifying process gaps qualify. Nothing flows from the box to GitHub, ever.
 
 - A clutch defect never goes into a host's Suggestion Box: triage there can only decline it or author a host ticket, and a host ticket that patches clutch behaviour into host files is exactly what the CORE_TEMPLATE rule forbids.
-- A non-critical clutch problem (a rough spec, a confusing guide, an idea) is named to the user in one line in chat and goes nowhere else. The user can carry it to the owner by other means if they care.
+- A non-critical clutch problem outside the evidence-bound process-gap class (a rough spec, a confusing guide, an idea) is named to the user in one line in chat and goes nowhere else. The user can carry it to the owner by other means if they care.
 - A host-repo problem never goes upstream.
 
 ### Critical classes
 
-Closed set. A bug that fits none of these is not filed:
+Closed critical set. A problem that fits none of these or the evidence-bound `process-gap` class is not filed:
 
 | Class | Meaning |
 |---|---|
@@ -152,7 +152,7 @@ Decided 2026-11-16 (`docs/roadmap.md` §6, decision 19): items 2-4 take the opti
 
 Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record.
 
-1. **Class list.** Decided 2026-11-13: the five classes in the table above, `wrong-refusal` added. They are the verb's closed vocabulary and its tests.
+1. **Class list.** Decided 2026-11-13: the five classes in the table above, `wrong-refusal` added. Amended 2026-11-18 (`docs/roadmap.md` §6, decision 23): `process-gap` joins them in the verb's closed vocabulary and its tests.
 2. **`./dev.py issue`.** In this repo a clutch defect is just a clutch ticket, so the verb has no use here. Recommendation: no `dev.py` subcommand.
 3. **Inbound.** How a GitHub issue becomes a clutch ticket stays manual: the owner reads it and runs `clutch new`. Issues are never tickets; the "tickets are markdown files" rule stands.
 4. **Issue templates.** None needed: the verb owns the body shape. Add one only if people start filing by hand without the verb.

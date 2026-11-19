@@ -49,7 +49,7 @@ uv run clutch ticket lint     # validate tickets without writing
 uv run clutch ticket review   # review a committed ticket
 uv run clutch ticket order    # edit ticket priority or ordering
 uv run clutch box suggest  # file an idea into the Suggestion Box
-uv run clutch box issue    # link to report a critical clutch bug upstream
+uv run clutch box issue    # link to report a critical clutch bug or process gap upstream
 # Running
 uv run clutch engine drain    # run eligible tickets to quiescence
 uv run clutch engine serve    # run the continuous daemon

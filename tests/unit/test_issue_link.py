@@ -30,12 +30,13 @@ def test_link_prefills_only_title_and_body(metadata):
 
 
 def test_classes_are_closed():
-    assert issue.CLASSES == ("state-loss", "secret-leak", "bad-merge", "engine-stuck", "wrong-refusal")
+    assert issue.CRITICAL == ("state-loss", "secret-leak", "bad-merge", "engine-stuck", "wrong-refusal")
+    assert issue.CLASSES == issue.CRITICAL + ("process-gap",)
     for name in ("minor-annoyance", None):
         with pytest.raises(runner.Refusal) as exc:
             issue.link(name, "title", "body", str)
         assert all(x in str(exc.value) for x in issue.CLASSES)
-        assert "only critical bugs are filed upstream; name a non-critical clutch problem to the user in chat instead" in str(exc.value)
+        assert "only a critical bug, or a process gap that cost a real run an attempt or review cycle, is filed upstream; name anything else to the user in chat instead" in str(exc.value)
 
 
 def test_empty_body_refuses():

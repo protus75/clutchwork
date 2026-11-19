@@ -540,7 +540,7 @@ def _parser() -> argparse.ArgumentParser:
     box = sub.add_parser(
         "box",
         help="file and settle Suggestion Box messages",
-        description="File ideas into the Suggestion Box, settle its messages, and link critical clutch bugs upstream.",
+        description="File ideas into the Suggestion Box, settle its messages, and link critical clutch bugs and process gaps upstream.",
         epilog="Examples:\nclutch box triage\n  Settle pending messages.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -588,13 +588,13 @@ def _parser() -> argparse.ArgumentParser:
     issue_parser = _command(
         box_sub,
         "issue",
-        summary="print a prefilled critical bug issue link",
-        does="Print a prefilled GitHub new-issue link for a critical clutch bug; submit nothing.",
+        summary="print a prefilled upstream issue link",
+        does="Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submit nothing.",
         reads="The --body file and, when it loads, config to scrub configured secrets.",
         writes="Nothing; prints the link.",
         lock="None.",
         exits="0 when printed; 2 on refusal (unknown or missing class, unreadable or empty body, or link over 3,000 bytes).",
-        examples=['clutch box issue --class engine-stuck "<title>" --body body.md'],
+        examples=['clutch box issue --class engine-stuck "<title>" --body body.md', 'clutch box issue --class process-gap "<title>" --body body.md'],
     )
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
     issue_parser.add_argument("title")
