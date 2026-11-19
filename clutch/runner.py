@@ -465,6 +465,8 @@ async def failure_terminal(
             assert_never(terminal_dispatch)
     if not mechanical and not split and routed and provider_drought is None:
         terminal["routed"] = "reject_queue"
+        if rework_requested and reworked is not None and reworked.outcome != "ok":
+            terminal["rework_findings"] = [f"{f.message}; {f.paved_road}" for f in extra]
     supervised_sha = None
     cap = spent(ctx.config.caps, history, ticket.stem, pending=terminal)
     if (

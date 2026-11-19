@@ -1358,7 +1358,11 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
     assert await writer.consume_handoff(ticket, handoff, attempt=0) == "gate_failed"
     events = ctx.driver.journal.read()
     [terminal] = [e.body for e in events if e.type == EventType.STATE_TRANSITION]
-    assert terminal == {"to": "gate_failed", "stage": "merge", "reason": "post_rebase_regate", "dispatch": "reject_queue", "routed": "reject_queue"}
+    expected = {"to": "gate_failed", "stage": "merge", "reason": "post_rebase_regate", "dispatch": "reject_queue", "routed": "reject_queue"}
+    if failure != "spent":
+        findings = json.loads((ctx.repo / f"tickets/{ticket.stem}/attempts/0/harvest.json").read_text())["findings"][1:]
+        expected["rework_findings"] = [f"{f['message']}; {f['paved_road']}" for f in findings]
+    assert terminal == expected
     assert not any(e.body.get("signal") == "supersedes" for e in events)
     assert (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text() == text
     assert await ctx.git._run(ctx.repo, "show", f"HEAD:tickets/{ticket.stem}/ticket.md") == text

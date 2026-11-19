@@ -310,7 +310,12 @@ def rejection_reason(events, stem):
             terminal = event
         elif event.type == EventType.SIGNAL and event.body.get("signal") == "diagnosis":
             diagnosis = event
-    parts = ([operator.body.get("reason")] if operator else []) + ([terminal.body.get("reason")] if terminal else []) + (diagnosis.body.get("lessons", []) if diagnosis else [])
+    parts = (
+        ([operator.body.get("reason")] if operator else [])
+        + ([terminal.body.get("reason")] if terminal else [])
+        + (terminal.body.get("rework_findings", []) if terminal else [])
+        + (diagnosis.body.get("lessons", []) if diagnosis else [])
+    )
     return " ".join(part for part in parts if part) or "rejected"
 
 

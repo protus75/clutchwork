@@ -238,7 +238,11 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
     (producing,) = terminals(repo)
     expected = {"to": "gate_failed", "stage": "review", "reason": "logic"}
     if failure:
-        expected.update(dispatch="reject_queue", routed="reject_queue")
+        expected.update(
+            dispatch="reject_queue",
+            routed="reject_queue",
+            rework_findings=[f"{f['message']}; {f['paved_road']}" for f in json.loads((repo / f"tickets/{STEM}/attempts/0/harvest.json").read_text())["findings"][1:]],
+        )
         assert not any(e.body.get("signal") == "supersedes" or e.body.get("to") == "rejected" for e in history)
         harvest = json.loads((repo / f"tickets/{STEM}/attempts/0/harvest.json").read_text())
         assert len(harvest["findings"]) >= 2 and all(f["paved_road"] for f in harvest["findings"])
