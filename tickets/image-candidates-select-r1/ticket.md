@@ -72,6 +72,8 @@ Scope in:
 - In `clutch/stages.py`, add one function for Check on generate-mode graphics tickets. For each declared artifact in order it collects `cand-<k>.<ext>` from `.clutch/renders/<stem>/a<i>/` in the worktree, copies them to the spool render directory, drops candidates failing `images.judge`, calls the judge per survivor and calls `decide`. If every artifact is decided it copies each selected candidate to its artifact path and makes the single select commit; otherwise it returns one `visual_undecided` finding naming the undecided artifact paths and makes no commit. On a park, `check()` returns `refused([visual_undecided finding], Cost(seconds=active_seconds()))` at once, before `gather_evidence` and `run_gates`, with no `checks.json`, so the only finding code is `visual_undecided` and `failure_terminal` joins it to exactly that reason (the gates would otherwise add a `verification` finding for the empty branch). Wire it in `check()` before `gather_evidence`, as `check_autofix` is, so the select commit exists when Verification runs and the gates read `changed_files`; in generate mode Implement itself commits nothing. Each judge call goes through `driver.run` with its own `key_scope` (`a<i>c<k>s<j>` for artifact `i`, candidate `k`, sample `j`, matching `[a-z][a-z0-9]*`), because `call_seq` restarts at 1 on every run and an unscoped repeat reuses one effect key and replays the first reply (`clutch/llmeffect.py::scoped_seq`). The judge call's evidence id in the select commit body is that call's effect key, recomputed in stage code as `llm_key(stem, scoped_seq(scope, journal_run_seq(ctx.driver.journal.read(), stem)), "review_visual", attempt, call_seq)` where `call_seq` is the `StageResult.cost.attempts` of that judge call (the last call it made, so a re-prompt after an invalid reply names the accepted call, not the first), and the commit body names the key of sample `s0` of the winning candidate's judge call for each artifact (the first sample's accepted call) with `llm_key` and `scoped_seq` from `clutch.llmeffect` and `journal_run_seq` imported as `from clutch.journal import run_seq as journal_run_seq`; the evidence store's `#n` suffix is not used. Before selecting, the function checks the branch diff against main: if it already changes any declared artifact path or any `.clutch/renders/` path, it returns a hard finding with a paved road (Implement writes candidates only under `.clutch/renders/<stem>/a<i>/` and never an artifact path) and makes no select commit. Image decoding and git go through the existing seams, so a fenced unit test can run these lines with fakes.
 - In `clutch/specs/implement.md`, edit only the existing graphics paragraph, to give the per-artifact candidate path `.clutch/renders/<stem>/a<i>/cand-<k>.<ext>` and say no artifact path is ever written by Implement. Bump the spec `version` to the next minor above the version on main (no literal target is written here). Update the pins that force an edit: the implement version pins in `tests/unit/test_specs.py`, `tests/integration/test_specs_delimiter_note.py` and `tests/integration/test_implement_spec_mutation_check.py`, and the `spec: implement` version assertion in `tests/integration/test_stages.py`. Those pin edits are the only expected changes in those four files.
 - In `docs/how-clutch-works.md`, update only the section that describes Check for graphics tickets, to describe per-artifact candidates, the single select commit and the `visual_undecided` finding.
+- `clutch/driver.py`: `Driver.stage` (line 175-178) refuses to open a stage while another is open, except a `merge` stage opening `resolve` or `review`. The `review_visual` judge calls that the selection function makes through `driver.run` inside `check()` open their own stage while Check is open, so extend that one exemption to allow an open `(stem, "check")` stage to open the `review_visual` surface; change nothing else in the driver. The selection stays inside `check()`'s `ctx.driver.stage(... surface="check")` block (stages.py), so the check `stage_start`/`stage_end` events and the `failure_terminal` path stay intact; never run it outside that block.
+- New `tests/unit/test_driver_check_nesting.py`: a `review_visual` stage opens while `(stem, "check")` is open and the open stage is restored afterwards; any other nested surface under check, and `review_visual` under any other open stage, still raises `stage already open`.
 
 Scope out:
 - Any change to `clutch/tickets.py` or `parse_render`: several artifacts stay allowed.
@@ -82,6 +84,7 @@ Scope out:
 - Moving the judge onto the `majority-verdict` combiner of the stage-panels plan.
 
 ## Scope fence
+- clutch/driver.py
 - clutch/images.py
 - clutch/visual.py
 - clutch/stages.py
@@ -91,6 +94,7 @@ Scope out:
 - tests/integration/test_specs_delimiter_note.py
 - tests/integration/test_implement_spec_mutation_check.py
 - tests/integration/test_stages.py
+- tests/unit/test_driver_check_nesting.py
 - tests/unit/test_visual_select.py
 - tests/unit/test_images_scores.py
 - tests/unit/test_stages_candidates_select.py
@@ -111,10 +115,11 @@ Scope out:
 12. `./dev.py test tests/unit/test_visual_review.py tests/integration/test_visual_review_spec.py` still passes, which shows the judge schema and `judge_samples` majority are unchanged.
 13. `./dev.py test tests/unit/test_stages_candidates_select.py tests/integration/test_image_candidates_select.py` shows that when the branch diff against main, before selection, already changes any declared artifact path or any `.clutch/renders/` path, the function returns a hard finding with a paved road and makes no select commit, not a commit that overwrites the path.
 14. `./dev.py test tests/integration/test_image_candidates_select.py` shows that for a clear-winner Check run, `checks.json` lists the artifact path in `changed_files` and the `verification` report passes, so the select commit was visible to Verification and the gates.
+15. `./dev.py test tests/unit/test_driver_check_nesting.py tests/unit/test_merge_resolve.py` shows a `review_visual` stage opens inside an open `check` stage and the open stage is restored on exit, while every other nested surface under check, and `review_visual` under a non-check stage, still raises `stage already open`; `tests/unit/test_merge_resolve.py` still passes unchanged.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_visual_select.py tests/unit/test_images_scores.py tests/unit/test_images_checks.py tests/unit/test_stages_candidates_select.py tests/integration/test_image_candidates_select.py tests/unit/test_visual_review.py tests/integration/test_visual_review_spec.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py tests/integration/test_stages.py
+./dev.py test tests/unit/test_driver_check_nesting.py tests/unit/test_merge_resolve.py tests/unit/test_visual_select.py tests/unit/test_images_scores.py tests/unit/test_images_checks.py tests/unit/test_stages_candidates_select.py tests/integration/test_image_candidates_select.py tests/unit/test_visual_review.py tests/integration/test_visual_review_spec.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py tests/integration/test_stages.py
 ```
 
 ## Definition of rejected
