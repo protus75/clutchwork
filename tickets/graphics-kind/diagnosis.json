@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c98faa441d5eb1884d98c44d13719466bba5b9fc",
+  "stem": "graphics-kind",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Criterion 9 names `clutch host core --check`, but that flag does not exist; docs/roadmap.md records P8 `rules-render` (`core --check`) as dropped 2026-11-13. Reword it to say the drift checks in tests/integration/test_hostfiles.py pass. Adding the flag is out of this ticket's scope.",
+    "Criterion 8 uses stem `s`, which fails the stem rule `^[a-z0-9][a-z0-9-]{1,63}$` documented in docs/how-clutch-works.md:126 (at least two characters). Replace it with a valid stem such as `hero`, and make the expected paths tickets/hero/reference/a.png and b.png.",
+    "After the rewrite, redo all the work from the merge base. Change clutch/tickets.py (Kind, Render grammar and lint rules), clutch/__main__.py `_new` (--reference and --input), the CORE_TEMPLATE kind list, the host-authoring.md Graphics section, the listed test flips, and the new",
+    "Re-render the managed blocks in CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md with `uv run clutch host core`, not by hand. Keep CORE_TEMPLATE at 8192 bytes or less."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
