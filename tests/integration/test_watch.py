@@ -6,6 +6,7 @@ import sys
 import pytest
 
 import clutch.observe as watch
+from tests.integration.watch_fixture_repo import watch_fixture_repo
 
 
 @pytest.fixture(autouse=True)
@@ -183,17 +184,17 @@ def test_recent_steps_triage_message_number():
 
 
 def test_snapshot_verb_reads_config_state_dir(tmp_path, capsys):
-    from pathlib import Path
 
     from clutch.__main__ import main
 
+    repo = watch_fixture_repo(tmp_path, "custom-state")
     config = tmp_path / "host.yaml"
-    source = Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state")
+    source = (repo / "config.yaml").read_text()
     config.write_text(source)
     state = tmp_path / "custom-state"
     state.mkdir()
     (state / "engine.log").write_text(json.dumps({"event": "engine_start", "verb": "serve", "pid": 719, "ts": "2026-01-01T00:00:00+00:00"}) + "\n")
-    assert main(["--config", str(config), "view", "snapshot"]) == 0
+    assert main(["--config", str(config), "view", "snapshot"], cwd=repo) == 0
     result = json.loads(capsys.readouterr().out)
     assert result["configPath"] == str(config.resolve())  # The default config path is a different file.
     assert result["stateDir"] == str(state)
@@ -202,21 +203,21 @@ def test_snapshot_verb_reads_config_state_dir(tmp_path, capsys):
 
 def test_observe_verbs_take_no_lock_and_write_nothing(tmp_path, capsys):
     from datetime import UTC, datetime
-    from pathlib import Path
 
     from clutch.__main__ import main
     from clutch.lockfile import Lockfile
 
+    repo = watch_fixture_repo(tmp_path, "custom-state")
     config = tmp_path / "host.yaml"
-    config.write_text(Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state"))
+    config.write_text((repo / "config.yaml").read_text())
     state = tmp_path / "custom-state"
     lock = Lockfile(state, verb="drain", instance_id="test", clock=lambda: datetime(2026, 1, 1, tzinfo=UTC))
     lock.acquire()
     try:
         (state / "engine.log").write_text(json.dumps({"event": "engine_stop", "verb": "serve", "outcome": "stopped", "ts": "2026-01-01T00:00:00+00:00"}) + "\n")
         before = {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file()}
-        assert main(["--config", str(config), "view", "snapshot"]) == 0
-        assert main(["--config", str(config), "view", "watch", "--once"]) == 0
+        assert main(["--config", str(config), "view", "snapshot"], cwd=repo) == 0
+        assert main(["--config", str(config), "view", "watch", "--once"], cwd=repo) == 0
         after = {p.relative_to(state): p.read_bytes() for p in state.rglob("*") if p.is_file()}
         assert after == before
         assert "serve stopped (stopped)" in capsys.readouterr().out
@@ -304,7 +305,8 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
     rows = {r["stem"]: r for r in snap["rows"]}
     from clutch.help import COMMANDS
 
-    declared = {item["command"] for item in json.loads(Path("vscode-clutchwork/package.json").read_text())["contributes"]["commands"]}
+    repo = Path(__file__).resolve().parents[2]
+    declared = {item["command"] for item in json.loads((repo / "vscode-clutchwork/package.json").read_text())["contributes"]["commands"]}
     assert all(entry.command in COMMANDS and entry.command in declared for entry in watch.MENU.values())
     assert all(verb["detail"] == snap["help"]["verb." + verb["argv"][1]]["what"] for verb in snap["engineVerbs"])
     assert any("on" in row["menu"].values() and "off" in row["menu"].values() for row in snap["rows"])
@@ -324,7 +326,7 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
     ]  # Both locations must be watched.
     assert len(snap["engineVerbs"]) == 6 and snap["engineVerbs"][0] == {
         "label": "Drain",
-        "detail": next(line.split("|")[3].strip().replace("`", "") for line in Path("clutch/docs/host-running.md").read_text().splitlines() if line.startswith("| `engine drain` |")),
+        "detail": next(line.split("|")[3].strip().replace("`", "") for line in (repo / "clutch/docs/host-running.md").read_text().splitlines() if line.startswith("| `engine drain` |")),
         "argv": ["engine", "drain", "--detach"],
     }  # The menu must not be empty or reordered.
     assert snap["drainCommand"] == ["engine", "drain", "--detach"]
@@ -714,16 +716,16 @@ def test_snapshot_reject_queue_uses_configured_caps(tmp_path, monkeypatch):
 
 
 def test_snapshot_watch_uses_configured_state(tmp_path, capsys):
-    from pathlib import Path
 
     from clutch.__main__ import main
 
+    repo = watch_fixture_repo(tmp_path, "custom-state")
     config = tmp_path / "host.yaml"
-    config.write_text(Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state"))
-    assert main(["--config", str(config), "view", "snapshot"]) == 0
+    config.write_text((repo / "config.yaml").read_text())
+    assert main(["--config", str(config), "view", "snapshot"], cwd=repo) == 0
     snap = json.loads(capsys.readouterr().out)
     assert snap["watch"] == [
-        {"base": str(Path.cwd().resolve()), "glob": "tickets/*/ticket.md"},
+        {"base": str(repo.resolve()), "glob": "tickets/*/ticket.md"},
         {"base": str((tmp_path / "custom-state").resolve()), "glob": "{journal/*.jsonl,queue.json,engine.log,box/*.json}"},
     ]  # The state watcher must not use the repository base.
 
