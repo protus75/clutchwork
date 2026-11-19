@@ -1,21 +1,26 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "9fc42b4c5d9cae6852dae689bf043b587823e739",
+  "produced_at_sha": "1e5cb46e1333cc5208777969073c0793714fc254",
   "stem": "merge-model-resolve",
-  "attempt": 2,
-  "terminal": "premise_failed",
+  "attempt": 3,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "escalate",
   "lessons": [
-    "The premise is false. clutch/runner.py:221 keeps the driver's `merge` stage open around admission, and clutch/driver.py:177 raises 'stage already open' on a nested stage. So the resolve and review calls fail in serve. Re-author with clutch/runner.py or clutch/driver.py in the fence.",
-    "The re-authored ticket must say how the resolve and review calls run inside merge admission: either close the merge stage before them, or let Driver.stage allow those surfaces nested. It must name the owner and add a test that runs the full serve path, not only direct MergeQueue._admit calls.",
-    "tests/integration/test_daemon_composition.py:1196 asserts `not ctx.driver.llm.requests` for an eligible conflict. That contradicts the required resolve call. It is a hot file that Scope out forbids, so the ticket must fence it and allow this one minimal assertion change.",
-    "tests/integration/test_rework.py:668 asserts `ctx.driver.llm.requests == []` for an eligible conflict with strategies=[]. Fence it, and keep its no-inline-Rework check while allowing a scripted resolve decline before the ConflictHandoff.",
-    "Add both test files to `## Verification`, so the ticket's own command catches the full host-check failure. Attempt 2 passed its 214 ticket tests but failed the host checks on these two files."
+    "Attempts 1 and 3 both stopped as incomplete after about 1 minute. Each wrote only clutch/specs/resolve.md and the surface list edits, then quit without trying the mergequeue work. Attempt 2 got through 214 ticket tests, so the scope fits one attempt. Do the whole ticket in one run; do not stop",
+    "Redo from the merge base: create clutch/specs/resolve.md (llm_surface resolve, version 1.0, at most 200 lines). Add `resolve` to ENGINE_LLM_SURFACES and to the lists in observe.py, stats.py, help.py, test_closed_sets.py, test_specs.py and test_watch_surface_tier.py. Add resolve_start, resolve_ok",
+    "In clutch/mergequeue.py, add bound constants (3 files, 60 marker lines) and a pure eligibility function. Put the model step in _admit's GitError branch after _resolve. Re-review through stages.review_stage. Return ConflictHandoff on decline, snag or malformed reply, and add `model` to _facts. Test",
+    "clutch/runner.py::drive keeps the `merge` stage open during admission, and Driver.stage refuses nesting (attempt 2's premise failure). Use option (a): end the merge stage before the resolve and review calls and reopen it after. Name the choice in run.md and prove it with the AC14 runner.drive test.",
+    "Edit only the asserts that the resolve call forces: test_daemon_composition.py (test_production_consumes_conflict_handoff_after_unwind), test_rework.py::test_admission_never_invokes_rework_inline, and the fakes in test_merge_admission_params.py. Run the full ## Verification command before"
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0,
+    1,
+    2,
+    4
+  ],
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5"
