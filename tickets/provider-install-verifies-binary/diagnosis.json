@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c4b4fd8fe454f8975fa0bb3fed92d34f18a7ac4f",
+  "stem": "provider-install-verifies-binary",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "Cause: stages.py regression_result parses the whole stdout as one JSON object. At base, main() printed 'claude: system, package @anthropic-ai/claude-code' to stdout before the JSON, so base decoded as null even with rc 1. The JSON line must be the only thing on stdout.",
+    "In tests/regress_provider_install_broken_binary.py, wrap the clutch.__main__.main([\"provider\",\"install\",\"claude\"], ...) call in contextlib.redirect_stdout(io.StringIO()) (stderr can stay as is), then print only json.dumps({\"regression_result\": ...}).",
+    "Redo the clutch/__main__.py work from the merge base: in handle_install, the pnpm argv gets f\"--allow-build={package}\", and a named install raises runner.Refusal when status.version is None (exit 2). Add the refusal to the install exits= help. Review found this approach sound.",
+    "Redo the tests/unit/test_install_verb.py changes: update the codex argv assertion to include --allow-build=@openai/codex, and add a fake-exec test where claude --version returns (1, \"\", \"Error: claude native binary not installed.\\n\"), asserting rc 2 and 'claude' in stderr.",
+    "Before you commit, run the reproducer at the base commit with only the carried file overlaid. stdout must be exactly {\"regression_result\": \"defect\"} with a nonzero exit, and at head exactly {\"regression_result\": \"pass\"} with exit 0."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
