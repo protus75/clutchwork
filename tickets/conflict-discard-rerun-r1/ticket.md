@@ -30,7 +30,7 @@ The marker is one journal event: type `SIGNAL`, `ticket` equal to the stem, body
 - observable change: `prior_attempts` reads the latest `SIGNAL` event for the stem whose body signal is `merge_conflict_rerun`. When one exists it appends a `conflict_rerun` section holding `tickets/<stem>/run.md` text, the approval findings from `tickets/<stem>/review.md`, and the text of `tickets/<stem>/attempts/<n>/prior.diff`, with n taken from the event body. The marker is read independently of `run_terminals`: a discarded run that never reached a terminal still renders the section, and when `run_terminals` is empty `prior_attempts` returns only that section instead of None.
 - compatibility: with no such event, `prior_attempts` output is byte-identical to today. A missing `prior.diff`, `run.md` or `review.md` omits that part and does not raise.
 - acceptance: the section is present when the event exists and absent otherwise.
-- tests: new unit test in tests/unit/test_stages_conflict_rerun_inputs.py appends exactly the event above to the journal
+- tests: new unit test in tests/unit/test_stages_conflict_rerun_inputs.py feeds exactly the event above through a fake journal whose `read()` returns an Event with this type and body, never calling `Journal.append` (the name joins `SIGNAL_NAMES` in part 3 with its emitter)
 - post-merge source of truth: clutch/stages.py
 
 ### prior-diff lift
@@ -59,7 +59,7 @@ Scope in:
 - Add `lift_prior_diff` with the signature above.
 - Add the static Implement wording and bump its version to the next minor above main.
 - Update only the version pin or expected text that changes in tests/unit/test_specs.py, tests/integration/test_specs_delimiter_note.py, tests/integration/test_implement_spec_mutation_check.py and tests/integration/test_stages.py.
-- Update docs/how-clutch-works.md section 7.2.1 only where it describes the Implement prompt inputs.
+- Update docs/how-clutch-works.md section 4.2 only where it lists the Implement prompt's Prior attempts inputs, adding the conflict_rerun section.
 - In docs/roadmap.md, add follow-up rows for part 2 `conflict-rerun-accounting` and part 3 `conflict-rerun-swap`, each depending on the one before it. Part 3's Content names the exact `merge_conflict_rerun` SIGNAL event (body `signal`, `attempt`) as what the rerun outcome must emit, and the call to `lift_prior_diff`.
 
 Scope out:
@@ -79,7 +79,7 @@ Scope out:
 - docs/roadmap.md
 
 ## Acceptance criteria
-1. After the test appends `SIGNAL {signal: merge_conflict_rerun, attempt: 0}` for the stem, `prior_attempts` contains the `conflict_rerun` section with the `run.md` text and the `prior.diff` text, and returns that section rather than None when there are no run terminals; a journal without the event yields no such section and the section is not an empty heading; checked by `./dev.py test tests/unit/test_stages_conflict_rerun_inputs.py`.
+1. After the test feeds `SIGNAL {signal: merge_conflict_rerun, attempt: 0}` for the stem through a fake journal (no `Journal.append` call), `prior_attempts` contains the `conflict_rerun` section with the `run.md` text and the `prior.diff` text, and returns that section rather than None when there are no run terminals; a journal without the event yields no such section and the section is not an empty heading; checked by `./dev.py test tests/unit/test_stages_conflict_rerun_inputs.py`.
 2. `lift_prior_diff` called with a two-file diff where one path is in `conflicted` writes a `prior.diff` containing the other file's hunks and none of the conflicted file's header or hunks, not the whole diff; checked by `./dev.py test tests/unit/test_stages_conflict_rerun_inputs.py`.
 3. A missing `prior.diff` renders the section without raising, not a `FileNotFoundError`; checked by `./dev.py test tests/unit/test_stages_conflict_rerun_inputs.py`.
 4. The Implement spec carries the re-derive wording and a bumped `version`; checked by `./dev.py test tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py`.
