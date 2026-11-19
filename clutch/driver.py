@@ -8,6 +8,7 @@ Every model call crosses the LLM effect (clutch/llmeffect.py); the driver never 
 """
 
 import asyncio
+import json
 import re
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from contextlib import contextmanager
@@ -35,9 +36,25 @@ _FENCE = re.compile(r"\A\s*(`{3,})[\w+-]*[ \t]*\n(.*)\n\1[ \t]*\s*\Z", re.DOTALL
 
 
 def unwrap_fence(text: str) -> str:
-    """Strip exactly ONE surrounding markdown code fence (optionally language-tagged)."""
+    """Strip one surrounding fence or extract a single object after prose."""
     m = _FENCE.match(text)
-    return m.group(2) if m else text
+    if m:
+        return m.group(2)
+    if text.lstrip().startswith("{"):
+        return text
+    decoder = json.JSONDecoder()
+    objects = []
+    pos = 0
+    while (start := text.find("{", pos)) != -1:
+        try:
+            value, end = decoder.raw_decode(text, start)
+        except json.JSONDecodeError:
+            pos = start + 1
+            continue
+        if isinstance(value, dict):
+            objects.append(text[start:end])
+        pos = end
+    return objects[0] if len(objects) == 1 else text
 
 
 @dataclass(frozen=True)

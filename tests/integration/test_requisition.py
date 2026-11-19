@@ -209,7 +209,7 @@ def test_snag_and_invalid_reply(tmp_path):
 
 def test_invalid_reply_is_reprompted_then_accepted(tmp_path):
     valid = reply("snag", [FINDING])
-    repo, driver, llm = setup(tmp_path, [f"Here is the review:\n```json\n{valid}\n```", valid])
+    repo, driver, llm = setup(tmp_path, ["Here is the review: snag", valid])
     verdict = run(driver, repo)
     assert verdict.verdict == "snag" and verdict.mechanical is None
     assert verdict.findings[0].message == "missing file"

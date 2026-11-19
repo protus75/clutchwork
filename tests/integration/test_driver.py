@@ -215,7 +215,7 @@ def test_single_surrounding_fence_is_stripped_before_validation(tmp_path):
         ('  \n```json\n{"a": 1}\n```\n  ', '{"a": 1}'),
         ('{"a": 1}', '{"a": 1}'),
         ('````\n```json\n{"a": 1}\n```\n````', '```json\n{"a": 1}\n```'),  # exactly ONE layer
-        ('prose first\n```json\n{"a": 1}\n```', 'prose first\n```json\n{"a": 1}\n```'),
+        ('prose first\n```json\n{"a": 1}\n```', '{"a": 1}'),
     ],
 )
 def test_unwrap_fence(raw, expected):
