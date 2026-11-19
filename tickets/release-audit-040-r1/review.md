@@ -1,10 +1,10 @@
-# Review: snag
+# Review: approve
 
-All three prior findings are fixed, the new row 155, the gate prose and the gate block are correct, but the rewritten §2.1 item 13 drops two fence-matching copies that are still in merge.py at the base commit.
+Item 13 in §2.1 now lists the raw `startswith` copies at `merge.py:102,238` again, which fixes the prior finding; the counted claims I checked (watchdog.py:57, drain.py:562, the callerless symbols, versions 0.4.2/0.4.1, row 155 unused) hold at the base, and the new `release-audit-050` row, the prose above the gate block naming the unchecked ship clauses, and the unchanged gate block meet every acceptance criterion within the fence.
 
 ## Findings
 
-- [acceptance] docs/roadmap.md:55 §2.1 item 13 was rewritten to say only `watchdog.py` and `drain.py` still match paths on their own. At the base commit, `clutch/merge.py:102` and `clutch/merge.py:238` still use raw `startswith(f"{TICKETS_DIR}/")` instead of `tickets.in_fence`. No merged change fixed these two, so the rewrite drops part of the item that is still true. Criterion 3 forbids that. (do instead: Restore the merge.py copies in item 13 with their base-commit locations (`merge.py:102,238`), next to `watchdog.py:57` and `drain.py:562`. Keep the owner `tickets.in_fence` and the "(recurred in 0.4.0)" mark. Drop only the `stages.py` copy, which now calls `in_fence`.)
+none
 
 ## Record
 
@@ -12,24 +12,14 @@ All three prior findings are fixed, the new row 155, the gate prose and the gate
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "dbd7ab3ff6095c46fdc03ab3fc58ecc11e529a00",
+  "produced_at_sha": "6adf5eb1bdb98c100d73b60910a2e9ef4936b03d",
   "stem": "release-audit-040-r1",
-  "reviewed_sha": "dbd7ab3ff6095c46fdc03ab3fc58ecc11e529a00",
-  "summary": "All three prior findings are fixed, the new row 155, the gate prose and the gate block are correct, but the rewritten §2.1 item 13 drops two fence-matching copies that are still in merge.py at the base commit.",
-  "findings": [
-    {
-      "code": "acceptance",
-      "path": "docs/roadmap.md",
-      "line": 55,
-      "message": "§2.1 item 13 was rewritten to say only `watchdog.py` and `drain.py` still match paths on their own. At the base commit, `clutch/merge.py:102` and `clutch/merge.py:238` still use raw `startswith(f\"{TICKETS_DIR}/\")` instead of `tickets.in_fence`. No merged change fixed these two, so the rewrite drops part of the item that is still true. Criterion 3 forbids that.",
-      "paved_road": "Restore the merge.py copies in item 13 with their base-commit locations (`merge.py:102,238`), next to `watchdog.py:57` and `drain.py:562`. Keep the owner `tickets.in_fence` and the \"(recurred in 0.4.0)\" mark. Drop only the `stages.py` copy, which now calls `in_fence`.",
-      "kind": null,
-      "unit": null
-    }
-  ],
+  "reviewed_sha": "6adf5eb1bdb98c100d73b60910a2e9ef4936b03d",
+  "summary": "Item 13 in §2.1 now lists the raw `startswith` copies at `merge.py:102,238` again, which fixes the prior finding; the counted claims I checked (watchdog.py:57, drain.py:562, the callerless symbols, versions 0.4.2/0.4.1, row 155 unused) hold at the base, and the new `release-audit-050` row, the prose above the gate block naming the unchecked ship clauses, and the unchanged gate block meet every acceptance criterion within the fence.",
+  "findings": [],
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5",
-  "verdict": "snag"
+  "verdict": "approve"
 }
 ```
