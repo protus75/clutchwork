@@ -651,14 +651,17 @@ def parse_render(text: str, path: str) -> tuple[dict, list[Finding]]:
     for line in outside:
         if not line.strip():
             continue
-        match = re.fullmatch(r"- (mode|artifact|input|reference|candidates|carries):\s*(\S+)", line.strip())
+        match = re.fullmatch(r"- (mode|artifact|input|reference|candidates|carries|presence):\s*(\S+)", line.strip())
         if not match:
-            findings.append(_f("invalid `## Render` entry", "use mode, artifact, input, reference, candidates or carries bullets", path))
+            findings.append(_f("invalid `## Render` entry", "use mode, artifact, input, reference, candidates, carries or presence bullets", path))
             continue
         key, value = match.groups()
         fields.setdefault(key, []).append(value)
         if key in {"artifact", "input", "reference", "carries"}:
             findings += _repo_path(value, "Render", path)
+    presence = fields.get("presence", [])
+    if len(presence) > 1 or any(value != "embedding" for value in presence):
+        findings.append(_f("invalid Render presence", "use at most one `- presence: embedding` bullet", path))
     mode = fields.get("mode", [])
     if len(mode) != 1 or mode[0] not in {"command", "generate"}:
         findings.append(_f("`## Render` needs one valid mode", "set `- mode: command` or `- mode: generate`", path))

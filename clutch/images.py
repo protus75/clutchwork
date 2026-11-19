@@ -11,6 +11,7 @@ COPY_DISTANCE = 1
 BASE_COPY_DISTANCE = 1
 MIN_SSIM = 0.65
 MIN_ORB_MATCHES = 4
+MIN_EMBED_SIMILARITY = 0.25
 PREVIEW_SIZE = 256
 
 
@@ -22,6 +23,21 @@ def _load():
     from skimage.metrics import structural_similarity
 
     return Image, np, imagehash, cv2, structural_similarity
+
+
+def _embedder():
+    import open_clip
+    import torch
+
+    model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-32", pretrained="laion2b_s34b_b79k")
+    model.eval()
+
+    def embed(images):
+        with torch.no_grad():
+            vectors = model.encode_image(torch.stack([preprocess(image) for image in images]))
+            return vectors / vectors.norm(dim=-1, keepdim=True)
+
+    return embed
 
 
 def _preservation(source, candidate, np, ssim):
@@ -56,7 +72,7 @@ def scores(artifact: Path, inputs: list[Path]) -> tuple[float | None, int | None
     return preservation, presence
 
 
-def judge(artifact: Path, inputs: list[Path]) -> list[str]:
+def judge(artifact: Path, inputs: list[Path], *, embedding: bool = False) -> list[str]:
     """Return one diagnostic for each failed applicable check."""
     try:
         Image, np, imagehash, cv2, ssim = _load()
@@ -69,6 +85,11 @@ def judge(artifact: Path, inputs: list[Path]) -> list[str]:
             candidate = image.convert("RGB")
     except OSError, ValueError:
         return [f"{artifact}: decode check failed"]
+    if embedding and len(inputs) > 1:
+        try:
+            embed = _embedder()
+        except ImportError:
+            return [f"{artifact}: embedding checks require clutchwork[images-embed]; install clutchwork[images-embed]"]
     failures = []
     width, height = candidate.size
     if min(width, height) < MIN_DIMENSION or max(width, height) > MAX_DIMENSION or max(width, height) / min(width, height) > MAX_ASPECT_RATIO:
@@ -91,7 +112,12 @@ def judge(artifact: Path, inputs: list[Path]) -> list[str]:
             if _preservation(source, candidate, np, ssim) < MIN_SSIM:
                 failures.append(f"{artifact}: preservation check failed against {path}")
         else:
-            if _presence(source, candidate, np, cv2) < MIN_ORB_MATCHES:
+            if embedding:
+                views = [candidate.crop((x * width // 3, y * height // 3, (x + 1) * width // 3, (y + 1) * height // 3)) for y in range(3) for x in range(3)] + [candidate]
+                vectors = embed([source, *views])
+                if max(float((vectors[0] * vector).sum()) for vector in vectors[1:]) < MIN_EMBED_SIMILARITY:
+                    failures.append(f"{path}: presence check failed in {artifact} (embedding)")
+            elif _presence(source, candidate, np, cv2) < MIN_ORB_MATCHES:
                 failures.append(f"{path}: presence check failed in {artifact}")
     return failures
 

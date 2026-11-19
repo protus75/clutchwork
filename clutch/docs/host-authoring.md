@@ -159,6 +159,8 @@ Choose `kind: graphics` for a visual deliverable. `clutch ticket new hero --kind
 
 A graphics ticket requires `## Render` and one or more `- artifact: <path>` output bullets. In `- mode: generate`, artifacts are committed deliverables; add up to three `- input: <path>` bullets or write the prompt in `## Goal / Why`. Optional `- reference: <path>` bullets name baselines and `- candidates: 1` through `5` selects the count (default 3). In `- mode: command`, artifacts live under a gitignored render directory. Include one fenced argv command and `- carries: <prefix>` bullets for its test or fixture paths; the command names a carried path and each prefix is in the scope fence. Inputs and candidates are generate only. The command prints exactly one JSON object: `{"render_result": "ok", "artifacts": [...]}` with exit 0, or `{"render_result": "error"}` for a missing prerequisite.
 
+Add `- presence: embedding` to check input presence with embeddings; this requires `clutchwork[images-embed]`.
+
 Write visual criteria as `- visual: <artifact>: <observable>`, naming a declared artifact and a concrete visible outcome. A declared artifact counts as the check for this form, without backticks. Include at least one non-visual mechanical criterion naming its check in backticks; prefer mechanical criteria wherever a test can decide the result.
 
 ## Bug tickets

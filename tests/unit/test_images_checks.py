@@ -10,7 +10,7 @@ from clutch import images
 
 
 def test_import_is_lazy():
-    names = ("PIL", "numpy", "skimage", "imagehash", "cv2")
+    names = ("PIL", "numpy", "skimage", "imagehash", "cv2", "open_clip", "torch")
     before = {name for name in sys.modules if name.split(".")[0] in names}
     real_import = builtins.__import__
 

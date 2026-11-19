@@ -1539,8 +1539,15 @@ class ImageQualityGate:
         inputs = [workspace / path for path in artifact.render.get("input", [])]
         findings = []
         for path in artifact.render.get("artifact", []):
-            for message in images.judge(Path(artifact.render_dir) / path, inputs):
-                findings.append(Finding(code=self.code, path=path, message=message, paved_road=message if "clutchwork[images]" in message else "correct the image and rerun Check"))
+            for message in images.judge(Path(artifact.render_dir) / path, inputs, embedding=artifact.render.get("presence") == ["embedding"]):
+                findings.append(
+                    Finding(
+                        code=self.code,
+                        path=path,
+                        message=message,
+                        paved_road=message if "clutchwork[images]" in message or "clutchwork[images-embed]" in message else "correct the image and rerun Check",
+                    )
+                )
         return _report(self.code, findings)
 
 
@@ -1643,7 +1650,7 @@ async def check_candidates(ctx, ticket, attempt):
                 continue
             candidate = spool / relative
             ctx.fs.write(candidate, data)
-            if images.judge(candidate, inputs):
+            if images.judge(candidate, inputs, **({"embedding": True} if fields.get("presence") == ["embedding"] else {})):
                 continue
             ctx.fs.write(candidate.with_name(candidate.name + ".side-by-side.png"), images.side_by_side([*inputs, candidate]))
             if inputs:
