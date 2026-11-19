@@ -51,7 +51,7 @@ class GroupExec(ProcessExec, Protocol):
 
     A failed line consumer stops delivery, not capture: drain and reap, then raise its first
     exception with (stdout, stderr) in `process_capture`. An intervening unwind keeps its
-    exception type, with the consumer failure as its cause and the capture attached to both.
+    exception type and carries the capture; any consumer failure is its cause and carries it too.
     """
 
     async def run(
@@ -181,12 +181,12 @@ class SubprocessExec:
                     reader.cancel()
                 await asyncio.gather(*readers, return_exceptions=True)
                 remaining_out, remaining_err = await _kill_and_wait(proc)
+                stdout.extend(remaining_out or b"")
+                stderr.extend(remaining_err or b"")
+                capture = (stdout.decode(errors="replace"), stderr.decode(errors="replace"))
+                exc.process_capture = capture
                 if consumer_error is not None:
-                    stdout.extend(remaining_out or b"")
-                    stderr.extend(remaining_err or b"")
-                    capture = (stdout.decode(errors="replace"), stderr.decode(errors="replace"))
                     consumer_error.process_capture = capture
-                    exc.process_capture = capture
                     # Cancellation/timeout still owns the unwind; keep the consumer failure visible.
                     raise exc from consumer_error
                 raise
