@@ -8,6 +8,9 @@ from clutch.llm import TIERS
 from clutch.providers import ProviderSetupError, resolve
 from clutch.tickets import Ticket
 
+CONFLICT_RERUN_LIMIT = 2
+CONFLICT_RERUN_ROAD = "split the ticket, or run it with parallel disabled"
+
 CAPS = ("diagnosis", "retry", "infra", "premise_bounce")
 # Audit recognizes historical hardening draws; supervise counts supervisor keeps and never routes.
 DECLARED_CAPS = CAPS + ("hardening", "supervise")
@@ -36,6 +39,15 @@ def draws(events: Iterable[Event], stem: str, cap: str) -> int:
     """Count this stem's draws for one cap across all ticket content revisions."""
     _check(cap)
     return sum(e.type == EventType.CAP_CONSUMED and e.ticket == stem and e.body.get("cap") == cap for e in lineage(events, stem))
+
+
+def conflict_reruns(events: Iterable[Event], stem: str) -> int:
+    """Count conflict rerun signals in the current lineage."""
+    return sum(e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "merge_conflict_rerun" for e in lineage(events, stem))
+
+
+def conflict_rerun_spent(events: Iterable[Event], stem: str) -> bool:
+    return conflict_reruns(events, stem) >= CONFLICT_RERUN_LIMIT
 
 
 def supervise_draws(events: Iterable[Event], stem: str) -> int:

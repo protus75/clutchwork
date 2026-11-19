@@ -389,6 +389,7 @@ Caps bound how much one ticket can fail over the stem's **lineage**: every event
 last operator keep or supervisor keep (`reject_verdict keep actor: supervisor`). Editing `ticket.md` never resets a cap; only an operator `ticket confirm` or a supervisor keep does.
 Machine keeps never reset counts. Draws are journaled `cap_consumed` events, except `attempts`,
 which counts failed terminal `state_transition` events directly and journals no cap draw.
+Conflict rerun signals are counted separately, with a limit of 2 per lineage; they never draw `retry` or count as failed attempts.
 
 | Cap | Default | Drawn by |
 |---|---|---|
