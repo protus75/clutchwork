@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e1c68eed2dbf228d9667fd740eac057641a10ed2",
+  "stem": "snapshot-from-duckdb-cache",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Contradiction: tests/integration/test_watch.py:204-222 (test_observe_verbs_take_no_lock_and_write_nothing) asserts `view snapshot` leaves every file under the state dir unchanged. The Boundary contract makes each snapshot write cache/journal.duckdb and its lock, and Scope in forbids changing",
+    "Fix the ticket: let test_watch.py:222 leave out only `cache/` (journal.duckdb and its lock) from the before/after comparison and keep its checks on every other state file. Drop or reword the 'No assertion changes' rule for test_watch.py so this one change is allowed.",
+    "Second contradiction: observe.journal reads an unterminated final JSON line, but the journal cache skips it. Implement reproduced event states {'a':'merged'} against cache states {}. That breaks 'snapshot JSON identical for every history' and criterion 1's journal_facts == admission_facts equality.",
+    "The ticket must define behavior for an unterminated journal tail: (a) narrow the equality claims to newline-terminated journals, as Journal.append writes them, or (b) fence a change to the journal reader or clutch/journalcache.py, which is now scope-out, so both readers agree."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
