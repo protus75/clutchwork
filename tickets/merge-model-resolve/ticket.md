@@ -75,7 +75,7 @@ Scope in:
 - The input for other tickets' Goal and Scope in: `git log` of main from the merge base over the conflicted paths, subjects naming `clutch(<stem>)`, then read each stem's `tickets/<stem>/ticket.md` from main. A commit whose subject names no stem is omitted.
 - `clutch/git.py`: only the wrapper methods the step needs (a path-limited log, the range-diff or path-limited diff for the delta). Reuse existing methods where they exist.
 - `docs/how-clutch-works.md`: update only the 7.2.1 step 1 text that says anything else "hands the ticket to Rework", and add the model step and its re-review there.
-- `shared_paths`: if `scheduler.parallel.shared_paths` does not exist on main when this runs, skip the shared-path exemption entirely and say so in the run record. Do not add the config model here; `parallel-config` owns it.
+- `shared_paths`: `scheduler.parallel.shared_paths` exists on main (`clutch/config.py`, merged by `parallel-config`); read it from config. Do not change the config model.
 - `vscode-clutchwork/extension.js`: add `resolve_start`, `resolve_ok` and `resolve_failed` to the Recent Steps icon lookup table with one codicon no other step uses, and the same passed/failed colors as the other steps; `tests/integration/test_step_icons.py` requires an icon for every `STEP_KINDS` key.
 
 Scope out:
@@ -116,6 +116,9 @@ Scope out:
 8. The `resolve` spec lints clean, has `llm_surface: resolve`, version `1.0`, at most 200 lines, and appears in `ENGINE_LLM_SURFACES`; `./dev.py test tests/unit/test_specs.py tests/unit/test_step_names_cover_surfaces.py tests/integration/test_closed_sets.py tests/unit/test_help.py` exits 0.
 9. The 7.2.1 section of `docs/how-clutch-works.md` no longer says every non-mechanical conflict goes straight to Rework; reviewed once by reading the section. No test pins its text.
 10. Existing queue behavior is preserved: `./dev.py test tests/integration/test_mergequeue.py tests/integration/test_merge_admission_owner.py` exits 0 with no edit to those files.
+11. In `tests/unit/test_merge_resolve.py`, a path listed in `shared_paths` under the safety inventory is accepted by the bounds function, while the same path is still rejected at 4 files, at 61 marker lines, and when binary; run by `./dev.py test tests/unit/test_merge_resolve.py`.
+12. In `tests/integration/test_merge_model_resolve.py`, a fake LLM reply that fails the resolve schema returns a `ConflictHandoff` with the rebase aborted and `resolving_rung` equal to `rework`, not an exception or an ok result.
+13. `tests/unit/test_merge_resolve.py` runs the new `clutch/mergequeue.py` lines through fakes (a fake git, driver and ctx, injected so no real git process starts): the model step's decline, approve and malformed paths, and `_facts` returning `model`; any new `clutch/git.py` wrapper method gets a unit test with a fake runner, or the change reuses `_run` instead. `./dev.py test tests/unit/test_merge_resolve.py` passes and the `[coverage.files]` floors for both files hold in the unit gate.
 
 ## Verification
 ```
