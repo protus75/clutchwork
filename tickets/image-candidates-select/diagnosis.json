@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0a53856a66800d5a24f6e2d389ebb706db15b01d",
+  "stem": "image-candidates-select",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise confirmed: clutch/tickets.py::parse_render appends every `- artifact:` bullet with no count limit, and clutch/docs/host-authoring.md line 160 allows one or more generated artifacts. The ticket's single `.clutch/renders/<stem>/cand-<k>.<ext>` path and single select commit cannot tell",
+    "Re-author the ticket with one of two designs. (a) Per-artifact candidates: give each declared artifact its own candidate path that names that artifact, and define rank/decide/select/park per artifact. (b) One artifact only: fence clutch/tickets.py, clutch/docs/host-authoring.md and their tests.",
+    "If option (a) is chosen, criteria 5, 6 and 10 must state the per-artifact behavior: whether the select commit message names each artifact's candidate index and evidence id, and whether one undecided artifact parks the whole Check with `visual_undecided`.",
+    "Keep the parts the attempt found sound: the images.scores split, the pure visual.rank/decide pair, wiring before gather_evidence, scoped key_scope per judge call, and the re-offer through existing failure_terminal/reofferable with no drain or runner edits."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
