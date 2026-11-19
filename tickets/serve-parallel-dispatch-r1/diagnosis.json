@@ -1,14 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f24aa48caa16f07464f420361517de2d2443ad65",
+  "produced_at_sha": "7d64d92f66d7e26a46500bfebc693ac5d8e9fbd5",
   "stem": "serve-parallel-dispatch-r1",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "split",
   "lessons": [
-    "Attempt 1 stopped at implement with no diff after 41.7s and usd 1.0, while still grepping call sites. Five boundaries and 34 fenced files do not fit one attempt. Split along the ticket's own Boundary contract sections, each with its own tests in a new tests/unit file."
+    "Split on the ticket's five Boundary contract sections. Attempt 2 stopped at implement after 88s with 871k input tokens and no commit. The fence covers 34 files across five boundaries, so one attempt cannot finish it within the 25m budget.",
+    "Split out 'Running transition writer' as a standalone ticket: runner.mark_running(journal, stem, sha), called from run_ticket, the serve prepared dispatch closure and _Drain._run_one. Check it with the AC5 grep. It needs no admission change.",
+    "Split out 'Merge queue run context' (MergeQueue.offer takes ctx and records contexts[stem], and the self.queue.ctx assignment is removed from merge.py) and 'Host command lock' (Semaphore(1) in stages.run_host_command) as two small independent tickets.",
+    "Split out 'Eligibility filter' (drain.eligible() called by scheduler.dispatch_next and _Drain._select) on its own. With parallel off, order must stay identical, so pin today's order in tests/unit/test_parallel_dispatch.py.",
+    "Keep the admission running set and occupied() as a final ticket. Attempt 2 found that DaemonAdmission._slot also serializes maintenance (mutations()) and merge handoffs, and serve.py:529 reads scheduler._slot.locked(). The ticket must say how those stay serialized when runs become concurrent."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
