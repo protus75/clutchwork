@@ -1,0 +1,63 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/unit/test_menu_admission.py",
+      "line": 116,
+      "message": "Snapshot test ticket stand-ins lack scope_fence, causing two full unit-suite failures.",
+      "paved_road": "Add this file to the scope fence and give the stand-ins a scope_fence.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_snapshot_merged_cap.py",
+      "line": 10,
+      "message": "The snapshot test uses ticket stand-ins without scope_fence, causing a full unit-suite failure.",
+      "paved_road": "Add this file to the scope fence and give the stand-ins a scope_fence.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_verdict_menu_parity.py",
+      "line": 70,
+      "message": "Snapshot ticket stand-ins lack scope_fence, causing nine full unit-suite failures.",
+      "paved_road": "Add this file to the scope fence and give the stand-ins a scope_fence.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_stale_running.py",
+      "line": 93,
+      "message": "The snapshot ticket stand-in lacks scope_fence, causing an integration-suite failure.",
+      "paved_road": "Add this file to the scope fence and give the stand-in a scope_fence.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_watch.py",
+      "line": 284,
+      "message": "Multiple snapshot ticket stand-ins lack scope_fence, causing six integration-suite failures; the ticket explicitly excludes edits to this file.",
+      "paved_road": "Permit and fence the necessary fixture updates in this file.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The hot-paths implementation passes the ticket’s focused verification, but the required full suites expose five test fixture files outside the scope fence that must be updated.\",\"surprises\":\"The exact verification command cannot run on the base commit because its two new test files do not exist there. The candidate’s full unit suite had 12 fixture failures, and the integration suite had seven fixture failures; all use ticket stand-ins without scope_fence. An additional integration failure from the initial help link was corrected.\",\"second_problems\":[],\"dead_ends\":\"A defensive fallback for missing scope_fence would accommodate incomplete test doubles but would add a production compatibility path for a field every real Ticket has.\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/unit/test_menu_admission.py\",\"line\":116,\"message\":\"Snapshot test ticket stand-ins lack scope_fence, causing two full unit-suite failures.\",\"paved_road\":\"Add this file to the scope fence and give the stand-ins a scope_fence.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_snapshot_merged_cap.py\",\"line\":10,\"message\":\"The snapshot test uses ticket stand-ins without scope_fence, causing a full unit-suite failure.\",\"paved_road\":\"Add this file to the scope fence and give the stand-ins a scope_fence.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_verdict_menu_parity.py\",\"line\":70,\"message\":\"Snapshot ticket stand-ins lack scope_fence, causing nine full unit-suite failures.\",\"paved_road\":\"Add this file to the scope fence and give the stand-ins a scope_fence.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_stale_running.py\",\"line\":93,\"message\":\"The snapshot ticket stand-in lacks scope_fence, causing an integration-suite failure.\",\"paved_road\":\"Add this file to the scope fence and give the stand-in a scope_fence.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_watch.py\",\"line\":284,\"message\":\"Multiple snapshot ticket stand-ins lack scope_fence, causing six integration-suite failures; the ticket explicitly excludes edits to this file.\",\"paved_road\":\"Permit and fence the necessary fixture updates in this file.\"}]}",
+  "events_tail": ":\\ntests/unit/test_verdict_menu_parity.py:26:        events.append(SimpleNamespace(type=kind, body=body, ticket=ticket, key=key, ts=\\\"2026-01-01T00:00:00+00:00\\\"))\\ntests/unit/test_verdict_menu_parity.py:36:    git = SimpleNamespace(describe=AsyncMock(return_value=\\\"id\\\"), rev_parse=AsyncMock(return_value=\\\"head-sha\\\"), commit=commit, _run=AsyncMock(return_value=\\\"\\\"))\\ntests/unit/test_verdict_menu_parity.py:37:    journal = SimpleNamespace(read=lambda: list(events), append=append)\\ntests/unit/test_verdict_menu_parity.py:38:    checkout = SimpleNamespace(repo=root, config=SimpleNamespace(state_dir=root / \\\"state\\\"), journal=journal, git=git, fs=FS(), clock=None)\\ntests/unit/test_verdict_menu_parity.py:44:    monkeypatch.setattr(runner, \\\"intake\\\", AsyncMock(return_value=SimpleNamespace(refused={})))\\ntests/unit/test_verdict_menu_parity.py:70:                s: SimpleNamespace(stem=s, frontmatter=SimpleNamespace(priority=\\\"P1\\\", state=\\\"draft\\\" if \\\"state: draft\\\" in text else \\\"confirmed\\\"), depends=(), runs_before=(), sections={})\\ntests/unit/test_verdict_menu_parity.py:94:    return SimpleNamespace(events=events, files=files, commits=commits, live=live, checkout=checkout, append=append, add=add, row=row)\\n M clutch/help.py\\n M clutch/observe.py\\n M docs/how-clutch-works.md\\n M vscode-clutchwork/media/view.js\\n?? tests/integration/test_hot_paths_snapshot.py\\n?? tests/unit/test_observe_hot_paths.py\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_22\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The hot-paths implementation passes the ticket’s focused verification, but the required full suites expose five test fixture files outside the scope fence that must be updated.\\\",\\\"surprises\\\":\\\"The exact verification command cannot run on the base commit because its two new test files do not exist there. The candidate’s full unit suite had 12 fixture failures, and the integration suite had seven fixture failures; all use ticket stand-ins without scope_fence. An additional integration failure from the initial help link was corrected.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"A defensive fallback for missing scope_fence would accommodate incomplete test doubles but would add a production compatibility path for a field every real Ticket has.\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_menu_admission.py\\\",\\\"line\\\":116,\\\"message\\\":\\\"Snapshot test ticket stand-ins lack scope_fence, causing two full unit-suite failures.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and give the stand-ins a scope_fence.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_snapshot_merged_cap.py\\\",\\\"line\\\":10,\\\"message\\\":\\\"The snapshot test uses ticket stand-ins without scope_fence, causing a full unit-suite failure.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and give the stand-ins a scope_fence.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_verdict_menu_parity.py\\\",\\\"line\\\":70,\\\"message\\\":\\\"Snapshot ticket stand-ins lack scope_fence, causing nine full unit-suite failures.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and give the stand-ins a scope_fence.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_stale_running.py\\\",\\\"line\\\":93,\\\"message\\\":\\\"The snapshot ticket stand-in lacks scope_fence, causing an integration-suite failure.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and give the stand-in a scope_fence.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_watch.py\\\",\\\"line\\\":284,\\\"message\\\":\\\"Multiple snapshot ticket stand-ins lack scope_fence, causing six integration-suite failures; the ticket explicitly excludes edits to this file.\\\",\\\"paved_road\\\":\\\"Permit and fence the necessary fixture updates in this file.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":2189095,\"cached_input_tokens\":2130432,\"cache_write_input_tokens\":0,\"output_tokens\":6510,\"reasoning_output_tokens\":662}}\n",
+  "wall_seconds": 249.212538,
+  "usd": 1.0,
+  "run_record": "tickets/status-hot-paths/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
