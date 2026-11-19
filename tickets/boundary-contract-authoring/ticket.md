@@ -30,9 +30,10 @@ Scope in:
 - `clutch/specs/author.md` and `clutch/specs/requisition_review.md`: add the Author instruction and the review judgment. Bump each `version` to the next minor above the version on main, never a literal target. Fence the pin test.
 - `clutch/hostfiles.py`: one short paragraph in `CORE_TEMPLATE`: declare the boundary disposition, reuse the canonical owner, justify a new owner, and never invent an undeclared boundary. `CORE_TEMPLATE` is 8140 of 8192 bytes at base: make room by tightening the wording of existing `CORE_TEMPLATE` rules without dropping any rule, and update any test that pins a reworded phrase. Then refresh the managed blocks in `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md` through `uv run clutch host core`; never hand-edit them.
 - `docs/roadmap.md`: add a row after row 151 for `boundary-contract-required` (make `## Boundary contract` required with the settled/rejected exemption, and add the section to open tickets), depending on `boundary-contract-authoring`.
+- `docs/boundary-contract-plan.md`: in `## Status` only, replace the sentence saying no rule, ticket section, lint, review check, or gate exists yet with what this ticket delivered (optional section, shape lint, guide, specs, core paragraph) and what is still pending.
 - Tests: every existing test whose ticket fixture, skeleton expectation, spec version pin or `CORE_TEMPLATE` size assertion flips because of the new optional section or skeleton; grep `tests/` for `Definition of rejected` and the changed names, and update only those. New tests go in the new file `tests/unit/test_boundary_contract_shape.py` (shape check, run through fake or `tmp_path` tickets) and, if a repo file or process is needed, `tests/integration/test_boundary_contract_authoring.py`. `tests/unit/test_hostfiles.py` runs the `CORE_TEMPLATE` lines. Use the existing fixture helpers; do not edit the hot integration test files unless a flipped assertion forces it. Add a value for the new skeleton placeholder in `tests/regress_lint_carries.py`.
 
-Scope out: do not add `Boundary contract` to `REQUIRED_SECTIONS` and do not edit any file under `tickets/` (Implement cannot edit tickets, and open tickets may be queued or running). Adding the section to open tickets and making it required, with the settled/rejected exemption, are the follow-up roadmap row added above. No Python symbol resolution, path-resolution lint, Context-owner checks or unfenced-consumer checks (those are `boundary-contract-lint`); no Implement or Review changes; no discovery catalog; no standing test pinning the exact text of any plan or guide; no edit to the frozen bootstrap plan or the boundary plan document.
+Scope out: do not add `Boundary contract` to `REQUIRED_SECTIONS` and do not edit any file under `tickets/` (Implement cannot edit tickets, and open tickets may be queued or running). Adding the section to open tickets and making it required, with the settled/rejected exemption, are the follow-up roadmap row added above. No Python symbol resolution, path-resolution lint, Context-owner checks or unfenced-consumer checks (those are `boundary-contract-lint`); no Implement or Review changes; no discovery catalog; no standing test pinning the exact text of any plan or guide; no edit to the frozen bootstrap plan, and in `docs/boundary-contract-plan.md` no edit outside `## Status`.
 
 ## Scope fence
 - clutch/tickets.py
@@ -57,6 +58,7 @@ Scope out: do not add `Boundary contract` to `REQUIRED_SECTIONS` and do not edit
 - hosts/fixture/CLAUDE.md
 - tests/regress_lint_carries.py
 - docs/roadmap.md
+- docs/boundary-contract-plan.md
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_boundary_contract_shape.py` passes. It asserts a draft ticket with no `## Boundary contract` yields no boundary finding, not a finding, and a draft ticket with a malformed section yields a finding that names a fix.
