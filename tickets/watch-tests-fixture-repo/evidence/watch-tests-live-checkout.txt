@@ -1,0 +1,13 @@
+# 2026-11-19, main c407fcd6, 20 cores, pytest -n auto tests/integration --junitxml
+27.205 tests.integration.test_watch::test_snapshot_verb_reads_config_state_dir
+28.036 tests.integration.test_watch::test_snapshot_watch_uses_configured_state
+27.762 tests.integration.test_watch::test_observe_verbs_take_no_lock_and_write_nothing
+
+# live-checkout reads:
+191:    source = Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state")
+211:    config.write_text(Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state"))
+722:    config.write_text(Path("config.yaml").read_text().replace("state_dir: .clutch/state", "state_dir: custom-state"))
+726:        {"base": str(Path.cwd().resolve()), "glob": "tickets/*/ticket.md"},
+
+# live checkout size: 757 ticket dirs
+# $ time uv run clutch view snapshot  -> wall 28.34 s
