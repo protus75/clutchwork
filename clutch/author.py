@@ -121,6 +121,8 @@ class AuthorGate:
             if roadmap is not None:
                 if "## Goal / Why\n" in candidate:
                     findings.extend(slice_follow_up(roadmap, parsed.sections["Goal / Why"], parsed.scope_fence))
+                if "## Scope in / Scope out\n" in candidate:
+                    findings.extend(deferral_follow_up(roadmap, parsed.sections["Scope in / Scope out"], parsed.scope_fence, self.checkout.repo))
                 for field in ("kind", "priority"):
                     expected = getattr(roadmap, field)
                     if getattr(parsed.frontmatter, field) != expected:
@@ -159,6 +161,23 @@ def slice_follow_up(roadmap_row, goal_text: str, fence: tuple[str, ...]) -> list
             code=AuthorGate.code,
             message="roadmap row slice has no follow-up roadmap fence",
             paved_road=f"deliver the whole row, or fence {ROADMAP} and add a follow-up row for the remaining parts in Scope in",
+        )
+    ]
+
+
+def deferral_follow_up(roadmap_row, scope_text: str, fence: tuple[str, ...], repo: Path) -> list[Finding]:
+    from clutch.roadmap import ROADMAP
+
+    phrase = r"\b(?:separate tickets?|follow-up tickets?|follow-up rows?|later tickets?|future tickets?|another ticket|other tickets)\b"
+    if roadmap_row is None or not re.search(phrase, scope_text, re.IGNORECASE) or ROADMAP in fence:
+        return []
+    if any((repo / ticket_path(stem)).is_file() for stem in re.findall(r"`([a-z0-9][a-z0-9-]{1,63})`", scope_text)):
+        return []
+    return [
+        Finding(
+            code=AuthorGate.code,
+            message="roadmap row defers work without an existing follow-up ticket",
+            paved_road=f"name an existing ticket stem in backticks, or fence {ROADMAP} and add a follow-up row, or deliver the whole row",
         )
     ]
 

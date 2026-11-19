@@ -91,6 +91,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   Lint requires that a document named in `Scope in` is fenced; say which part to update or drop the mention.
   For a roadmap-row request whose Goal calls the work a slice, deliver the whole row, or fence
   `docs/roadmap.md` and add a follow-up row for the remaining parts in Scope in.
+  Work deferred to separate tickets needs an existing ticket stem in backticks or a fenced follow-up roadmap row.
 - `Scope fence`: every path the agent may write. Fence every file the acceptance criteria force
   it to change, including existing tests whose assertions flip; a forced file outside the fence
   makes the ticket impossible. Before replying, grep the repo for each changed name or value.
