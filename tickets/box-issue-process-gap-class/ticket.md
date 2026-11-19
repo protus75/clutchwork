@@ -22,6 +22,17 @@ A host session can send a clutch process gap upstream through `clutch box issue 
 
 Today the `CORE_TEMPLATE` rule in `clutch/hostfiles.py` allows only a critical bug upstream. A non-critical clutch problem may only be "named to the user in one line" and may not go into the host's Suggestion Box. It reaches clutch only when the owner carries it over by hand. On 2026-11-18 a host (Fungo) found that a retry fixed only the four defects the previous review named and resubmitted. The next review then found two more unmet requirements, which cost an extra review-and-retry cycle. The host's session correctly declined to file it as a critical issue. It reached clutch only because the owner relayed it (box-000757-c6238f23), and other hosts' owners will not. The owner decided on 2026-11-18 to add one evidence-bound class rather than open the tracker to ideas. A bare improvement idea with no run that paid for it still goes nowhere.
 
+## Boundary contract
+### Upstream issue classes
+- disposition: extend
+- owner: clutch/issue.py
+- consumers: `clutch box issue`, the CORE_TEMPLATE host rule, the host-running guide
+- observable change: `--class process-gap` is accepted and titled `[process-gap] <title>`
+- compatibility: the five critical classes and their `[critical:<class>]` titles are unchanged
+- acceptance: process-gap links carry the new prefix; critical links are unchanged
+- tests: tests/unit/test_issue_link.py
+- post-merge source of truth: clutch/issue.py
+
 ## Scope in / Scope out
 Scope in:
 - `clutch/issue.py`:
@@ -36,7 +47,7 @@ Scope in:
   - `does` becomes `Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submit nothing.`
   - Add a second example: `clutch box issue --class process-gap "<title>" --body body.md`.
   - The `--class` help still joins `issue.CLASSES`.
-- `clutch/hostfiles.py` `CORE_TEMPLATE`, the "Outside clutch's own repo" rule only: replace `Only a bug in a `clutch box issue` critical class goes upstream:` with `Only a `clutch box issue` class (critical bug, or process gap that cost a run a cycle) goes upstream:`. Measure the byte budget against `CORE_TEMPLATE` on main when Implement runs, not at authoring. The sibling `boundary-contract-authoring` (P1, confirmed) also edits this template. The edit must leave the template at or under the 8,192-byte cap in `tests/integration/test_hostfiles.py`. If the replacement does not fit, shorten only this rule's new wording; the phrase `process gap that cost a run a cycle` must stay. Never reword another rule. Then run `uv run clutch host core` to refresh the managed blocks in `CLAUDE.md` and `AGENTS.md`. Run it again from `hosts/fixture` to refresh `hosts/fixture/CLAUDE.md`. Never hand-edit any of these blocks. Then regenerate `GOLDEN` in `tests/integration/test_hostfiles.py` with `uv run python -m tests.integration.test_hostfiles`, the file's own `__main__` generator, and change nothing else in that file.
+- `clutch/hostfiles.py` `CORE_TEMPLATE`, the "Outside clutch's own repo" rule only: replace `Only a bug in a `clutch box issue` critical class goes upstream:` with `A critical bug or process gap that cost a run a cycle goes upstream:` (68 bytes for 64; `CORE_TEMPLATE` was 8,186 bytes at authoring, leaving 8,190). Measure the byte budget against `CORE_TEMPLATE` on main when Implement runs, not at authoring. `boundary-contract-authoring` (merged at `a79b00e4`) already spent most of the remaining budget. The edit must leave the template at or under the 8,192-byte cap in `tests/integration/test_hostfiles.py`. If the replacement does not fit, shorten only this rule's new wording; the phrase `process gap that cost a run a cycle` must stay. Never reword another rule. Then run `uv run clutch host core` to refresh the managed blocks in `CLAUDE.md` and `AGENTS.md`. Run it again from `hosts/fixture` to refresh `hosts/fixture/CLAUDE.md`. Never hand-edit any of these blocks. Then regenerate `GOLDEN` in `tests/integration/test_hostfiles.py` with `uv run python -m tests.integration.test_hostfiles`, the file's own `__main__` generator, and change nothing else in that file.
 - `clutch/docs/host-running.md`:
   - The `box issue` verb-table row says it prints a link for a critical clutch bug or a process gap.
   - Rename the section heading `## Reporting a critical clutch bug` to `## Reporting a clutch problem upstream`.

@@ -30,6 +30,10 @@ At the end of 0.4.0, `docs/roadmap.md` sections 2-4 describe the code as it was 
 
 This is row 122 of the master table and follows decision 5: the audit is re-run before each minor release. The roadmap driver holds row 122 until every stem in the row's Depends column has merged; this ticket lists only `cli-group-coverage` under `## Depends on` because that is the one row 122 dependency with a ticket directory today.
 
+## Boundary contract
+none
+- reason: documentation correction without behavior change: an audit of docs/roadmap.md that adds only existing `clutch` verbs to a gate block and one roadmap row
+
 ## Scope in / Scope out
 In, edits in `docs/roadmap.md`:
 - Re-run the six read-only passes that produced sections 2-4, at the base commit, over the files the Status section lists. Remove fixed items from sections 2, 3 and 4. Mark each recurring item "recurred in 0.4.0". Update the Status section's commit hash, version and counts only where the audit measured them again.
