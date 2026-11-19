@@ -2,7 +2,7 @@
 llm_surface: requisition_review
 tier: high
 effort: high
-version: "3.23"
+version: "3.24"
 ---
 ## Role
 
@@ -25,6 +25,7 @@ ticket can be implemented as written. Reply `snag` for a ticket defect its autho
 - A path in `## Scope fence` or a `## Verification` command does not exist at the review commit and Scope in does not say the ticket creates it: report a `snag` finding naming the path; a path the ticket creates is not a hit, and a path that is only an output of a command is not a hit.
 - When Scope in adds, removes, renames, or moves a member of a set (CLI subcommand, file or directory path, spec name, or an entry of an in-code registry, table, mapping, or closed vocabulary such as a menu, verb, kind, or adapter table), grep `tests/` and `docs/` for files that list that set or hardcode the old path, and fence every hit that asserts against the changed set or hardcodes the moved path. For an in-code entry, also grep `tests/` for the collection's name, and fence every test that compares that collection or a filtered subset of it for exact equality or lists it in full, and every file holding a table that a test requires to match the collection entry for entry. A mere textual mention, a path built under `tmp_path`, or a historical form the ticket keeps valid is not a hit. A test that only imports or iterates the collection, or reads one entry the change leaves alone, is not a hit.
 - When Scope in adds, removes, or renames a field of a model, dataclass, or config type, or changes text a render function emits, grep `tests/` for whole-value comparisons of that type's serialized form or that render (`model_dump()`, `asdict`, `dict(...) ==`, golden bytes, base64 or digest constants), and fence every hit or raise a snag; only whole-value equality is a hit: a test that only builds or loads the model, or asserts fields the change leaves alone, is not a hit.
+- When Scope in makes a path newly read an attribute or field of a type, grep `tests/` for hand-built stand-ins of that type (`SimpleNamespace(...)`, ad-hoc fake classes, partial dicts). A hit both reaches the changed read and lacks the attribute; the finding names the reaching call. Stand-ins that never reach the changed read or already carry the attribute are not hits. Fence the hit and add a Scope-in line adding only that attribute, or raise a snag; never use a `getattr` fallback in production code.
 - Snag a draft criterion, `## Verification` line, or Scope in that adds a standing test pinning current text of the roadmap (rows or exact gate-block commands) or a plan document. Instead, check structure such as parsing or use a one-time review check; the allowed standing roadmap check is that it parses and its gate commands are valid.
 - A criterion or a Definition-of-rejected clause contradicts merged behavior, or two criteria cannot both be satisfied.
 - Two statements anywhere in the ticket cannot both hold, for example a declared signature and a call to it, or a named fixture and the result a criterion expects from it.
