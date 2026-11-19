@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "86c557577b2a214612e307760e058f21c8f010f7",
+  "stem": "merge-model-resolve",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "split",
+  "lessons": [
+    "The attempt read ~970k input tokens and stopped after 125s with no diff. The ticket spans 3 boundaries, 17 fenced files and 13 criteria against a 30m budget. Split it so each part fits one attempt.",
+    "Part A: create clutch/specs/resolve.md (version 1.0, llm_surface: resolve, at most 200 lines, review spec layout) and add `resolve` to ENGINE_LLM_SURFACES. Update observe.py, stats.py, help.py and the extension.js resolve_start/ok/failed icons. Covers criterion 8 and",
+    "Part B depends on part A. In clutch/mergequeue.py add the bound constants (3 files, 60 marker lines), the pure eligibility function and the model step in the _admit GitError branch. Re-review through stages.review_stage and add `model` in _facts. Covers criteria 1-7 and 10-13.",
+    "In part B, write tests/unit/test_merge_resolve.py and tests/integration/test_merge_model_resolve.py first, with a fake LLM, a fake review and a git rig. Inject a fake git, driver and ctx so the unit tests cover the new mergequeue.py lines against its floor in [coverage.files].",
+    "In part B, reuse existing clutch/git.py methods or _run for the path-limited log and the delta diff. Unit-test any new wrapper with a fake runner. Update only the docs/how-clutch-works.md 7.2.1 step 1 text. Commit partial progress, not uncommitted edits."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
