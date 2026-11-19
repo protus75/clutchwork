@@ -202,6 +202,10 @@ def unfinished_dependency(dependencies, rows, strikes, states):
     return next((stem for stem in dependencies if (stem not in done if stem in by_stem else states.get(stem) not in SETTLED)), None)
 
 
+def _is_release_audit(row: Row) -> bool:
+    return re.sub(r"-r\d+$", "", row.stem) == "release-audit-" + release_name(row.release).replace(".", "")
+
+
 def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None, drafts: frozenset[str] = frozenset(), held: dict[str, str] | None = None) -> Choice:
     tables = [row._table for row in rows if release_name(row.release) == current] if current is not None else []
     c = min(tables) if tables else None
@@ -242,6 +246,12 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
             waits.append(Wait(row, str(exc), "correct the Depends on cell"))
             continue
         if unfinished_dependency(dependencies, rows, strikes, states) is not None:
+            continue
+        siblings = (
+            [other for other in rows if other != row and release_name(other.release) == release_name(row.release) and not other.struck and other not in strikes] if _is_release_audit(row) else []
+        )
+        if siblings:
+            waits.append(Wait(row, f"release {release_name(row.release)} has {len(siblings)} open rows", "merge or strike the other rows of the release"))
             continue
         if row.kind not in kinds or row.priority not in priorities:
             waits.append(Wait(row, f"invalid kind or priority: {row.kind}, {row.priority}", "use a ticket kind and priority"))
