@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The generated GOLDEN bytes literal required formatting after regeneration. Render validation uses the existing section data rather than adding persistent ticket fields.
+A repeated full run encountered host-loop timestamp ordering errors; the base run, isolated tests, and subsequent full run passed.
 
 ## Dead ends
 
-The first full-suite run read the old committed conduct files; it passed after the regenerated files were committed.
+none
 
 ## Second problems filed
 
-none
+- box-000809-f68239e7: The host-loop integration fixture intermittently reports non-monotonic journal timestamps; deterministic ordering or clock control would prevent recurrence.
 
 ## Resolved engine/model
 
