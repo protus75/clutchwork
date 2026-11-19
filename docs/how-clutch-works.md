@@ -46,7 +46,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, and core check. Git is not probed if config fails to load. Exit 2 on any failure. |
+| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency check. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
@@ -805,7 +805,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |
 | `retro` | `enabled`, `merges`, `settled`, `spikes` control automatic reports; `test_timing` and `coverage` control measurement summaries (section 9.5) |
 | `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers; drain and serve also calibrate at their idle point once that many have completed since the last calibration (section 7) |
-| `scheduler`, `drain` | `max_unmerged`; `max_runtime_hours`, `max_ticket_minutes` |
+| `scheduler`, `drain` | `max_unmerged`; experimental serve-only `scheduler.parallel` with `enabled` (default false), `max_runs` (default 2), `shared_paths` (default []); `max_runtime_hours`, `max_ticket_minutes` |
 | `engine_plane_safety_inventory`, `box_policy` | Author starting state (section 9.3) |
 | `ask_notes` | Optional host guidance appended to operator prompts as a `host_notes` data block. |
 | `notify`, `report_inbox`, `context_files` | notification command; host bug report folder; extra Implement context |

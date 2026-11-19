@@ -75,6 +75,13 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
             row("core", not messages, "; ".join(messages) if messages else "routed conduct files are current")
         except Exception as exc:
             row("core", False, f"{exc}; install git or fix PATH, then rerun host doctor")
+    if config is not None and config.scheduler.parallel.enabled:
+        route = next((r for r in config.routing if r.tier == config.routing_default_tier and r.surface == "implement"), None)
+        if route is not None:
+            provider = next(p for p in config.providers if p.name == route.candidates[0].provider)
+            max_runs = config.scheduler.parallel.max_runs
+            if max_runs > provider.limits.concurrency:
+                row("parallel", False, f"max_runs {max_runs} exceeds provider {provider.name} limits.concurrency {provider.limits.concurrency}; lower max_runs or raise limits.concurrency")
     return results
 
 

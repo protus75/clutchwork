@@ -153,7 +153,7 @@ Config:
     routing_default_tier: medium
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
     evidence: {max_gb: 20}
-    scheduler: {max_unmerged: 2}
+    scheduler: {max_unmerged: 2, parallel: {enabled: false, max_runs: 2, shared_paths: []}}
     caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
     drain: {max_runtime_hours: 12, max_ticket_minutes: 90}
@@ -213,9 +213,12 @@ RegenerateStrategy:
 UnionStrategy:
   required: [paths, strategy]
   defaults: {}
+Parallel:
+  required: []
+  defaults: {enabled: false, max_runs: 2, shared_paths: []}
 Scheduler:
   required: []
-  defaults: {max_unmerged: 2}
+  defaults: {max_unmerged: 2, parallel: {enabled: false, max_runs: 2, shared_paths: []}}
 Caps:
   required: []
   defaults: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}

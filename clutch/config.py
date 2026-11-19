@@ -158,8 +158,22 @@ class Merge(StrictModel):
     strategies: list[Annotated[RegenerateStrategy | UnionStrategy, Field(discriminator="strategy")]] = []
 
 
+class Parallel(StrictModel):
+    enabled: bool = False
+    max_runs: Count = 2
+    shared_paths: list[str] = []
+
+    @field_validator("shared_paths")
+    @classmethod
+    def _shared_paths(cls, paths: list[str]) -> list[str]:
+        if any(not is_repo_relative(path) for path in paths):
+            raise ValueError("shared_paths entries must be repo-relative paths")
+        return paths
+
+
 class Scheduler(StrictModel):
     max_unmerged: Count = 2
+    parallel: Parallel = Parallel()
 
 
 class Caps(StrictModel):
