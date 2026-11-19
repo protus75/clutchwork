@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ab8e68744c4003dee8f564a4683ae63749f47a98",
+  "stem": "unit-coverage-drop-test-contexts",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The scope fence leaves out a file the change forces. tests/integration/test_fixture_host.py:79 checks the exact MechanicalCheck model_dump() dict, so any new field breaks it. Add that file to ## Scope fence and ## Scope in, then re-lint and re-review the ticket.",
+    "Once that file is fenced, add \"flake_coverage_argv\": None to the expected dict at tests/integration/test_fixture_host.py:79-88, between \"coverage\": None and \"slow_test_seconds\". Do not hide the field from model_dump just to keep the old assertion passing.",
+    "The earlier attempt reported that the ticket's Verification, the unit coverage gate, lint and format all passed, and that only test_fixture_host.py failed. Redo the full scope from the merge base. Before declaring done, also run ./dev.py test tests/integration/test_fixture_host.py."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
