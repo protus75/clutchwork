@@ -117,9 +117,9 @@ class MergeQueue:
         self.deliveries: list[tuple[Ticket, int, object]] = []
         self.contexts: dict[str, StageContext] = {}
 
-    def offer(self, ticket: Ticket, *, attempt: int) -> None:
+    def offer(self, ticket: Ticket, *, attempt: int, ctx: StageContext | None = None) -> None:
         self.pending[ticket.stem] = (ticket, attempt)
-        self.contexts[ticket.stem] = self.ctx
+        self.contexts[ticket.stem] = ctx if ctx is not None else self.ctx
 
     def _release(self) -> None:
         if self.paused and self.control is not None and self.hold_id in self.control.projection.released_hold_ids:

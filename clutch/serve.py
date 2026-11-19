@@ -154,7 +154,7 @@ class Serve:
                 latest = (last_transition(events, ticket.stem) or {}).get("to")
                 if latest in TERMINAL_STATES:
                     record_reoffer(local.journal, events, ticket.stem, sha)
-                local.journal.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": sha}, ticket=ticket.stem, key=None)
+                runner.mark_running(local.journal, ticket.stem, sha)
                 try:
                     return await callback(ticket)
                 finally:

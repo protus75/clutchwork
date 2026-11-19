@@ -165,9 +165,7 @@ class AdmissionBoundary:
         result = asyncio.get_running_loop().create_future()
         self.results[key] = result
         try:
-            # Single-flight dispatch retains this run's snapshot until its receipt is consumed.
-            self.queue.ctx = ctx
-            self.queue.offer(ticket, attempt=attempt)
+            self.queue.offer(ticket, attempt=attempt, ctx=ctx)
             async with self.waiting():
                 return await result
         finally:

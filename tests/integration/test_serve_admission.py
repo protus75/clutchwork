@@ -43,13 +43,13 @@ async def test_serve_routes_settled_run_to_composed_queue_once(root, monkeypatch
     entered, release = asyncio.Event(), asyncio.Event()
     offer, admit = MergeQueue.offer, MergeQueue._admit
 
-    def offered(queue, ticket, *, attempt):
+    def offered(queue, ticket, *, attempt, ctx):
         writer = rig.owner.writers[ticket.stem]
         assert queue is writer.queue is rig.owner.queue
-        assert queue.ctx is writer.ctx and queue.control is rig.owner.control
-        assert queue.ctx.driver.journal is queue.control.inbox.journal is rig.journal
+        assert ctx is writer.ctx and queue.control is rig.owner.control
+        assert ctx.driver.journal is queue.control.inbox.journal is rig.journal
         offers.append((ticket, attempt))
-        offer(queue, ticket, attempt=attempt)
+        offer(queue, ticket, attempt=attempt, ctx=ctx)
 
     async def admitted(queue, ticket, attempt):
         entered.set()

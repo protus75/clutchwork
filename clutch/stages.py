@@ -57,6 +57,8 @@ from clutch.storm import arrival_id
 from clutch.tickets import _HEADING, TEST_FIXTURE_DIRS, TICKET_FILE, TICKETS_DIR, Ticket, in_fence, render_context, ticket_path
 from clutch.tickets import validate_ticket as validate_ticket
 
+HOST_COMMAND_LOCK = asyncio.Semaphore(1)
+
 MAIN = "main"
 LIFT_MAX_BYTES = 256 * 1024
 KNOWN_ARTIFACTS: Mapping[str, type[BaseModel]] = {
@@ -731,7 +733,8 @@ async def run_host_command(ctx, ticket, attempt, argv, code, name, *, cwd=None):
     engine_bin = str(Path(sys.executable).parent)
     env["PATH"] = engine_bin + os.pathsep + env["PATH"] if env.get("PATH") else engine_bin
     try:
-        rc, out, err = await ctx.exec_.run(argv, cwd=cwd or ctx.worktree(ticket.stem), env=env, timeout=ticket.stuck_minutes * 60.0)
+        async with HOST_COMMAND_LOCK:
+            rc, out, err = await ctx.exec_.run(argv, cwd=cwd or ctx.worktree(ticket.stem), env=env, timeout=ticket.stuck_minutes * 60.0)
     except TimeoutError:
         rc, out, err = None, "", f"timed out after the ticket's stuck budget ({ticket.stuck_minutes}m)"
         road = "make the command finish within the ticket's stuck budget or correct that budget and retry"

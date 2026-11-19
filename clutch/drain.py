@@ -649,7 +649,7 @@ class _Drain:
         if reoffer:
             record_reoffer(self.c.journal, self.c.journal.read(), stem, sha)
         # The `ticket.md` the run answers, used to identify content parks.
-        self.c.journal.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": sha}, ticket=stem)
+        runner.mark_running(self.c.journal, stem, sha)
         self.last_dispatched = stem
 
         async def abort():

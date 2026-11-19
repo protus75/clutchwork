@@ -53,6 +53,10 @@ IDENTICAL_K = 3
 Dispatch = Callable[[Ticket], Awaitable[str]]
 
 
+def mark_running(journal: Journal, stem: str, sha: str) -> None:
+    journal.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": sha}, ticket=stem)
+
+
 # The provider backstop is the drain ceiling every ticket stuck budget fits under:
 # the ticket's own stuck budget is the bound the driver enforces, never a shorter per-call cap.
 def call_timeout(config: Config) -> float:
@@ -576,7 +580,7 @@ async def run_ticket(stem: str, checkout: Checkout, dispatch: Dispatch) -> int:
                 checkout.control.providers.park(stem, drought)
                 return EXIT_TICKET
         ticket_sha = await checkout.git.rev_parse(checkout.repo, f"main:{ticket_path(stem)}")
-        checkout.journal.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": ticket_sha}, ticket=stem)
+        mark_running(checkout.journal, stem, ticket_sha)
         terminal = await dispatch(ticket)
         if terminal not in TERMINAL_STATES:
             raise ValueError(f"stage seam returned {terminal!r}, not a terminal state {sorted(TERMINAL_STATES)}")

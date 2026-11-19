@@ -92,17 +92,17 @@ async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
         built.append(owner)
         return owner
 
-    def offered(queue, ticket, *, attempt):
+    def offered(queue, ticket, *, attempt, ctx):
         nonlocal offered_corrected
-        owner = next(o for o in built if o.checkout.journal is queue.ctx.driver.journal)
+        owner = next(o for o in built if o.checkout.journal is ctx.driver.journal)
         writer = owner.writers[ticket.stem]
         assert writer.admission.mode == "daemon" and writer.queue is owner.queue is queue
         assert owner.core.scheduler.dispatch == owner.core.admission.dispatch
         repo = owner.checkout.repo
         assert parse_ticket(ticket.stem, (repo / ticket_path(ticket.stem)).read_text(), repo).sections == ticket.sections
-        assert owner.control.inbox.journal is queue.ctx.driver.journal
+        assert owner.control.inbox.journal is ctx.driver.journal
         offers.append((queue, ticket.stem, attempt))
-        offer(queue, ticket, attempt=attempt)
+        offer(queue, ticket, attempt=attempt, ctx=ctx)
         if (ticket.stem, attempt) == ("unresolved", 1):
             offered_corrected = True
             for publication in held:
