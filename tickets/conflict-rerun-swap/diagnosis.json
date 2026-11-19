@@ -1,23 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b258099a707196db165f30ded2c52b3abae70287",
+  "produced_at_sha": "a81bafc124f6533e7add29e490f269a042ede9ce",
   "stem": "conflict-rerun-swap",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "retry",
+  "verdict": "escalate",
   "lessons": [
-    "The attempt stopped after about 41s with nothing committed. Do the whole ticket in one attempt, because Goal says the handoff cannot be removed in pieces. Commit only after the ## Verification commands pass.",
-    "Redo the accounting edits from scratch. In caps.failed_attempt, skip terminals whose body has conflict_rerun. In drain.record_reoffer, skip the retry draw for conflict_rerun, as it already does for provider_drought. In drain.awaiting_operator, hold merge_conflict_rerun_spent like ticket_changed.",
-    "In clutch/mergequeue.py, replace ConflictHandoff with a refused StageResult whose finding code is merge_conflict_rerun and whose fact rung is rerun. The fold must still accept historical rework. Do the lift, the SIGNAL and the worktree remove+prune through git.py in the daemon.py writer after",
-    "Delete consume_handoff, the handoff= parameter of rework() and apply_rework, and the consume_handoff parameter of runner.drive, with their callers in merge.py, serve.py and runner.py. Run grep -rn 'ConflictHandoff\\|consume_handoff' clutch tests until it finds nothing.",
-    "Remove the conflict block and the conflict-only sentence from rework.md. Bump its version to the next minor above main and move only the rework pin in test_specs_delimiter_note.py. Re-point the two test_daemon_composition.py publication tests to runner.drive. Add the SIGNAL_NAMES entry to"
+    "Attempt 1 (codex gpt-6.1-terra) stopped itself as incomplete after 93s. Source edits were partial and no tests were migrated or run. Its CONFLICT_FACTS resolving_rung shape (rerun/model/mechanical/none) looked sound. Redo all of it from the merge base: nothing carries over.",
+    "Do it in one pass: mergequeue refused StageResult with finding merge_conflict_rerun; replace TicketWriter.consume_handoff in daemon.py with the rerun consumer; delete the handoff params of rework()/apply_rework and runner.drive consume_handoff, plus callers in merge.py and serve.py.",
+    "Add the merge_conflict_rerun SIGNAL to journal.SIGNAL_NAMES and to the exact set in tests/integration/test_closed_sets.py. Make drain.record_reoffer skip the retry cap for conflict_rerun bodies. Hold merge_conflict_rerun_spent in drain.awaiting_operator. Exclude conflict_rerun from",
+    "Migrate the fenced tests that name ConflictHandoff, consume_handoff, handoff= or rework rung, plus tests/harness/daemon_soak.py. In test_daemon_composition.py, re-point the two Rework publication tests at runner.drive's Diagnose-then-Rework path and keep every assertion. Run grep to confirm no",
+    "Write new tests/unit/test_conflict_rerun_swap.py and tests/integration/test_conflict_rerun_swap.py for acceptance criteria 1-5. Update docs/how-clutch-works.md sections 6.4, 6.6, 7.2 and 7.2.1. Run both Verification commands green before you commit."
   ],
   "mechanical": null,
   "trimmed_lessons": [
     2,
-    4
+    3
   ],
   "spec_version": "1.8",
   "provider": "claude",
