@@ -196,6 +196,12 @@ def current_release(repo: Path) -> str | None:
     return f"{parts[0]}.{parts[1]}.0"
 
 
+def unfinished_dependency(dependencies, rows, strikes, states):
+    done = {row.stem for row in rows if row.struck or row in strikes}
+    by_stem = {row.stem for row in rows}
+    return next((stem for stem in dependencies if (stem not in done if stem in by_stem else states.get(stem) not in SETTLED)), None)
+
+
 def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current: str | None = None, drafts: frozenset[str] = frozenset(), held: dict[str, str] | None = None) -> Choice:
     tables = [row._table for row in rows if release_name(row.release) == current] if current is not None else []
     c = min(tables) if tables else None
@@ -224,8 +230,6 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
                 open_rows.append(row)
         elif state:
             waits.append(Wait(row, f"{row.stem} is already in the journal", "give the row a new stem"))
-    done = {row.stem for row in rows if row.struck or row in strikes}
-    by_stem = {row.stem: row for row in rows}
     handled = set(strikes + links + open_rows + [w.row for w in waits])
     kinds = get_args(Frontmatter.model_fields["kind"].annotation)
     priorities = get_args(Frontmatter.model_fields["priority"].annotation)
@@ -237,7 +241,7 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
         except ValueError as exc:
             waits.append(Wait(row, str(exc), "correct the Depends on cell"))
             continue
-        if any(stem not in done if stem in by_stem else states.get(stem) not in SETTLED for stem in dependencies):
+        if unfinished_dependency(dependencies, rows, strikes, states) is not None:
             continue
         if row.kind not in kinds or row.priority not in priorities:
             waits.append(Wait(row, f"invalid kind or priority: {row.kind}, {row.priority}", "use a ticket kind and priority"))
@@ -374,6 +378,15 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
             continue
         if opened + len(reasons) >= ahead:
             break
+        try:
+            dependencies = depends_on(row, rows)
+        except ValueError as exc:
+            lines.append(f"roadmap: row {row.number} {row.stem} waits: {exc} -- correct the Depends on cell")
+            continue
+        dependency = unfinished_dependency(dependencies, rows, choice.strike, states)
+        if dependency is not None:
+            lines.append(f"roadmap: row {row.number} {row.stem} waits: {dependency} is not done -- wait for it to merge or edit the Depends on cell")
+            continue
         messages = row_messages(box, row)
         count = refile_count(messages)
         reason = rejection_reason(events, row.stem)
