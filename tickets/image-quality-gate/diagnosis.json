@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ce474866cc078a71f6c57a2f85ef71ccc5284752",
+  "stem": "image-quality-gate",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "split",
+  "lessons": [
+    "Only the diff budget failed, at 1617 inserted lines against 1500. uv.lock alone added 1268 of them. The hand-written code and tests came to about 350 lines, and ./dev.py test, ruff and the full suites all passed. Splitting the dependency work out of the gate work fixes the overrun.",
+    "Stem 1: add the `images` and `images-embed` extras under [project.optional-dependencies] in pyproject.toml, add the `images` libraries to the dev dependency group, and refresh uv.lock. [project.dependencies] stays duckdb, pydantic and pyyaml. Verify with `uv lock --check`. Its fence is",
+    "Stem 2 lists stem 1 under ## Depends on and builds the rest: clutch/images.py, ImageQualityGate right after BugEvidenceGate in CHECK_GATES, the new Evidence fields, check_render moved before run_gates, the writer, gates.py, docs, the closed-set and mergequeue/serve_admission pins, and",
+    "If torch from `images-embed` is what makes uv.lock large, stem 1 can be split further: one stem for `images` plus the dev group, one for `images-embed`. Each stem's uv.lock diff must stay under 1500 inserted lines.",
+    "Engine cause: DiffBudgetGate (clutch/stages.py:1455) counts every inserted line from the git diff, so a required uv.lock refresh counts against the review budget. Name this to the operator as a possible generated-file exclusion; it is not ticket scope."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    2
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
