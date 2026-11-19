@@ -22,6 +22,7 @@ ENGINE_GATE_CODES: frozenset[str] = frozenset(
         "diff_budget",
         "post_rebase_regate",
         "bug_evidence",
+        "image_quality",
         "core_drift",
         "correctness_review",
         "requisition_review",

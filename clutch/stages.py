@@ -24,7 +24,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, TypeAdapter, model_validator
 
-from clutch import git
+from clutch import git, images
 from clutch.artifacts import (
     OUTCOMES,
     REVIEW_BASELINE_REPORT,
@@ -833,6 +833,11 @@ class Evidence(FrozenModel):
     report_paths: list[str] = []
     report_findings: list[Finding] = []
     is_bug: bool = False
+    is_graphics: bool = False
+    render: dict = {}
+    render_dir: str = ""
+    attempt: int = 0
+    render_failed: bool = False
     bug_evidence: BugEvidence | None = None
     bug_findings: list[Finding] = []
 
@@ -1016,7 +1021,20 @@ async def gather_evidence(
             for p in await dirty_code(ctx, stem)
         )
     bug, bug_findings = await _gather_bug(ctx, ticket, evidence, attempt=attempt, stage=stage) if ticket.frontmatter.kind == "bug" else (None, [])
-    return evidence.model_copy(update={"verification": results, "report_paths": reports, "report_findings": findings, "bug_evidence": bug, "bug_findings": bug_findings})
+    render_fields, _ = parse_render(ticket.sections.get("Render", ""), str(ticket_path(stem))) if stage == "check" and evidence.is_graphics else ({}, [])
+    render_dir = str(ctx.driver.spool.root / stem / str(attempt) / "render") if render_fields.get("mode") == ["command"] else ""
+    return evidence.model_copy(
+        update={
+            "verification": results,
+            "report_paths": reports,
+            "report_findings": findings,
+            "bug_evidence": bug,
+            "bug_findings": bug_findings,
+            "render": render_fields,
+            "render_dir": render_dir,
+            "attempt": attempt if stage == "check" and evidence.is_graphics else 0,
+        }
+    )
 
 
 async def gather_safety_evidence(
@@ -1038,6 +1056,7 @@ async def gather_safety_evidence(
         inserted_lines=_inserted(await ctx.git.diff(ctx.repo, MAIN, stem)),
         verification=[],
         is_bug=ticket.frontmatter.kind == "bug",
+        is_graphics=ticket.frontmatter.kind == "graphics",
         run_record=run_md.read_text() if run_md.is_file() else None,
         **await committed_core(worktree, ctx.config, ctx.git),
     )
@@ -1507,13 +1526,39 @@ class BugEvidenceGate:
         return GateReport(code=self.code, verdict="fail" if findings else "pass", findings=findings, bug_evidence=record)
 
 
-CHECK_GATES: tuple[ScopeFenceGate | VerificationGate | RunRecordGate | DiffBudgetGate | CoreDriftGate | BugEvidenceGate, ...] = (
+class ImageQualityGate:
+    """Judge command render artifacts without writing operator previews."""
+
+    code = "image_quality"
+
+    def check(self, artifact: Evidence, workspace: Path) -> GateReport:
+        if not artifact.is_graphics or not artifact.render_dir or artifact.render_failed:
+            return _report(self.code, [])
+        inputs = [workspace / path for path in artifact.render.get("input", [])]
+        findings = []
+        for path in artifact.render.get("artifact", []):
+            for message in images.judge(Path(artifact.render_dir) / path, inputs):
+                findings.append(Finding(code=self.code, path=path, message=message, paved_road=message if "clutchwork[images]" in message else "correct the image and rerun Check"))
+        return _report(self.code, findings)
+
+
+def write_image_previews(fs: FileSystem, evidence: Evidence, workspace: Path) -> None:
+    inputs = [workspace / path for path in evidence.render.get("input", [])]
+    for path in evidence.render.get("artifact", []):
+        candidate = Path(evidence.render_dir) / path
+        fs.write(candidate.with_name(candidate.name + ".side-by-side.png"), images.side_by_side([*inputs, candidate]))
+        if inputs:
+            fs.write(candidate.with_name(candidate.name + ".heatmap.png"), images.heatmap(inputs[0], candidate))
+
+
+CHECK_GATES: tuple[ScopeFenceGate | VerificationGate | RunRecordGate | DiffBudgetGate | CoreDriftGate | BugEvidenceGate | ImageQualityGate, ...] = (
     ScopeFenceGate(),
     VerificationGate(),
     RunRecordGate(),
     DiffBudgetGate(),
     CoreDriftGate(),
     BugEvidenceGate(),
+    ImageQualityGate(),
 )
 
 
@@ -1564,9 +1609,12 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
     outbox = ctx.worktree(stem) / TICKETS_DIR / stem
     autofix_reports, autofix_hard = await check_autofix(ctx, ticket, attempt) if slip.outcome == "ok" and ctx.config.review.autofix else ([], [])
     evidence = await gather_evidence(ctx, ticket, slip.outcome, attempt=attempt)
-    gated = run_gates(CHECK_GATES, evidence, ctx.worktree(stem), severity=check_severity(ctx, ticket))
-    host_reports, host_hard = await check_hosts(ctx, ticket, evidence.changed_files, attempt)
     render_reports, render_hard = await check_render(ctx, ticket, attempt)
+    evidence = evidence.model_copy(update={"render_failed": bool(render_hard)})
+    gated = run_gates(CHECK_GATES, evidence, ctx.worktree(stem), severity=check_severity(ctx, ticket))
+    if evidence.is_graphics and evidence.render_dir and not evidence.render_failed and any(r.code == "image_quality" and r.verdict == "pass" for r in gated.reports):
+        write_image_previews(ctx.fs, evidence, ctx.worktree(stem))
+    host_reports, host_hard = await check_hosts(ctx, ticket, evidence.changed_files, attempt)
     host_reports.extend(render_reports)
     host_hard.extend(render_hard)
     host_hard.extend(autofix_hard)

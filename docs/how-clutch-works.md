@@ -242,8 +242,8 @@ the Suggestion Box as a `suggestion`.
    environment, timeout = the ticket's stuck budget, output spooled to `check/verify-NN.txt`).
 3. A failing command is rerun at the merge base. If it also fails there and names no path present in the branch but absent at the merge base, it is **base-red**: a
    pre-existing failure, excluded from the verdict and filed once to the Suggestion Box. A command naming a branch-only path is never base-red.
-4. Runs the engine Check gates (section 5.1).
-5. Runs triggered host checks in config order, attributing failures also red at base to main, and runs the render command for graphics `command` tickets.
+4. Runs the render command for graphics `command` tickets, then the engine Check gates (section 5.1).
+5. Runs triggered host checks in config order, attributing failures also red at base to main.
 6. Writes and lifts `checks.json`.
 
 A hard gate failure ends the attempt `gate_failed`. Soft failures are recorded and the run
@@ -293,6 +293,7 @@ Every engine gate is hard by default.
 | `diff_budget` | More than 1,500 inserted lines: split the ticket. |
 | `core_drift` | A routed conduct file's managed `clutch:core` block does not match the current template (section 12). |
 | `bug_evidence` | For `kind: bug` only: see section 5.2. |
+| `image_quality` | Judges command-mode graphics render artifacts with deterministic image checks. |
 
 **Merge gates** (on the rebased candidate, at admission):
 

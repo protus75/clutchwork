@@ -549,6 +549,7 @@ async def test_serve_conflict_rerun_runs_after_admission_unwinds(root, monkeypat
                 "diff_budget",
                 "core_drift",
                 "bug_evidence",
+                "image_quality",
                 "ticket_schema",
                 "post_rebase_regate",
                 "correctness_review",

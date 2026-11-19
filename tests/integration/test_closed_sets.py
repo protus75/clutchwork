@@ -150,6 +150,7 @@ def test_enginelog_closed_sets_and_constants():
 def test_gates_closed_sets_and_constants():
     assert dict(gates.DEFAULT_GATE_SEVERITY) == {
         "bug_evidence": "hard",
+        "image_quality": "hard",
         "core_drift": "hard",
         "correctness_review": "hard",
         "diff_budget": "hard",
@@ -161,7 +162,7 @@ def test_gates_closed_sets_and_constants():
         "verification": "hard",
     }
     assert gates.ENGINE_GATE_CODES == frozenset(
-        {"bug_evidence", "core_drift", "correctness_review", "diff_budget", "post_rebase_regate", "requisition_review", "run_record", "scope_fence", "ticket_schema", "verification"}
+        {"bug_evidence", "image_quality", "core_drift", "correctness_review", "diff_budget", "post_rebase_regate", "requisition_review", "run_record", "scope_fence", "ticket_schema", "verification"}
     )
 
 
@@ -289,7 +290,7 @@ def test_specs_closed_sets_and_constants():
 
 
 def test_stages_closed_sets_and_constants():
-    assert tuple(ident(g) for g in stages.CHECK_GATES) == ("ScopeFenceGate", "VerificationGate", "RunRecordGate", "DiffBudgetGate", "CoreDriftGate", "BugEvidenceGate")
+    assert tuple(ident(g) for g in stages.CHECK_GATES) == ("ScopeFenceGate", "VerificationGate", "RunRecordGate", "DiffBudgetGate", "CoreDriftGate", "BugEvidenceGate", "ImageQualityGate")
     assert stages.CHECK_SPEC_VERSION == 1
     assert stages.DIAGNOSIS_STUCK_S == 600.0
     assert stages.DIFF_BUDGET_INSERTED == 1500

@@ -105,7 +105,7 @@ def test_check_wiring(monkeypatch, tmp_path):
     ctx.exec_.run = run
 
     async def evidence(*args, **kwargs):
-        return SimpleNamespace(changed_files=[], head_sha="abc", inserted_lines=0, verification=[])
+        return stages.Evidence(stem="work", head_sha="abc", claimed="ok", scope_fence=[], changed_files=[], inserted_lines=0, verification=[], run_record=None)
 
     async def hosts(*args):
         return [], []

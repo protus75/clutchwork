@@ -816,6 +816,7 @@ def test_strategy_resolution_still_regates(ctx, monkeypatch):
             "diff_budget",
             "core_drift",
             "bug_evidence",
+            "image_quality",
             "ticket_schema",
             "post_rebase_regate",
             "correctness_review",
