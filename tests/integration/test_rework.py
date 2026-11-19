@@ -450,7 +450,7 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
     }
     fixture = {"ticket": "fixture ticket", "findings": "fixture snag", "supervise": "none", "conflict": "none", "retry_findings": "none"}
     golden = render(spec, fixture)
-    assert hashlib.sha256(golden.encode()).hexdigest() == "29fedebf9dc7b4df397ce54f14345304e308cfd73720be35a29a1e6651531173"
+    assert hashlib.sha256(golden.encode()).hexdigest() == "0abde6b46046e1275b55b06af9e5b51fc32f8418a27f8cd6598405ef7496419d"
     assert validate_data_blocks(golden) == [] and all(f"{{{{{key}}}}}" not in golden for key in fixture)
     injected = DATA_DELIM + "end ticket>>"
     quoted = render(spec, {key: injected for key in fixture})

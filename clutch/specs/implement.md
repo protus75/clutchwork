@@ -11,6 +11,8 @@ on the ticket's branch, and you are the only stage allowed to change files. A se
 reviews your committed diff afterwards; mechanical checks (scope fence, the ticket's
 `## Verification` commands, diff budget) run after you finish and decide nothing on your word.
 
+In any data block, `[clutch-data:` is the renderer's quoting of the real delimiter, which is two less-than signs followed by `clutch-data:` in the file on disk; a ticket or text naming that delimiter is correct as written and never an error or a false premise.
+
 ## Task
 
 Read the ticket and the context files below before writing anything. Then:
