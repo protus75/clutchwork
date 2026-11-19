@@ -6,7 +6,7 @@ from clutch.merge import dirty_overlap
 
 
 def findings(status):
-    git = SimpleNamespace(status_porcelain=AsyncMock(return_value=status), diff_names=AsyncMock(return_value=["branch.py"]))
+    git = SimpleNamespace(main_write=asyncio.Lock, status_porcelain=AsyncMock(return_value=status), diff_names=AsyncMock(return_value=["branch.py"]))
     return asyncio.run(dirty_overlap(SimpleNamespace(git=git, repo="repo"), "ticket"))
 
 

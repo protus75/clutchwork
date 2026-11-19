@@ -12,7 +12,16 @@ from tests.fakes import FakeJournal
 
 def test_ship_steps(tmp_path, monkeypatch):
     calls = []
-    c = NS(repo=tmp_path, git=object(), env={"a": "b"}, config=NS(release=NS(publish=False, packages=[])), exec_=object(), fs=object(), journal=object(), clock=lambda: datetime(2026, 1, 2))
+    c = NS(
+        repo=tmp_path,
+        git=NS(main_write=asyncio.Lock),
+        env={"a": "b"},
+        config=NS(release=NS(publish=False, packages=[])),
+        exec_=object(),
+        fs=object(),
+        journal=object(),
+        clock=lambda: datetime(2026, 1, 2),
+    )
     passed = [False]
     blocked = [False]
 

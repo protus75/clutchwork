@@ -346,16 +346,17 @@ def refile_row(text, row, stem):
 
 
 async def _write_row(checkout, row, edit, action, message, lines):
-    path = checkout.repo / ROADMAP
-    text = path.read_text()
-    fresh = next((r for r in parse(text) if r.number == row.number), None)
-    if fresh is None or fresh.stem != row.stem or fresh.content != row.content:
-        lines.append(f"roadmap: row {row.number} {row.stem} changed on disk; skipped {action}")
-        return None
-    text = edit(text, fresh)
-    checkout.fs.write(path, text.encode())
-    await checkout.git.commit(checkout.repo, message, only=[ROADMAP])
-    return text
+    async with checkout.git.main_write():
+        path = checkout.repo / ROADMAP
+        text = path.read_text()
+        fresh = next((r for r in parse(text) if r.number == row.number), None)
+        if fresh is None or fresh.stem != row.stem or fresh.content != row.content:
+            lines.append(f"roadmap: row {row.number} {row.stem} changed on disk; skipped {action}")
+            return None
+        text = edit(text, fresh)
+        checkout.fs.write(path, text.encode())
+        await checkout.git.commit(checkout.repo, message, only=[ROADMAP])
+        return text
 
 
 async def author_ahead(checkout, ahead, author_messages) -> list[str]:
@@ -725,22 +726,23 @@ async def merged(checkout, stems, *, release=None, priorities=(), since=None, at
 
 
 async def ship(checkout) -> list[str]:
-    current = current_release(checkout.repo)
-    if current is None:
-        return []
-    passed, lines = await run_gate(checkout, current)
-    if not passed:
+    async with checkout.git.main_write():
+        current = current_release(checkout.repo)
+        if current is None:
+            return []
+        passed, lines = await run_gate(checkout, current)
+        if not passed:
+            return lines
+        if checkout.config.release.publish:
+            await release_module.publishable(checkout.repo, checkout.git, checkout.env, checkout.config)
+        version, sha = await release_module.release(checkout.repo, checkout.git, checkout.exec_, checkout.fs, child_env(checkout.env, checkout.config), "minor", checkout.clock().date().isoformat())
+        release_module.journal_release(checkout.journal, version, sha)
+        lines.append(f"release: tagged v{version} at {sha}")
+        if checkout.config.release.publish:
+            version, _, _ = await release_module.publish(checkout.repo, checkout.git, checkout.exec_, checkout.fs, checkout.env, checkout.config)
+            lines.append(f"publish: uploaded {version} to PyPI")
+        lines.extend(await release_module.run_packages(checkout.repo, checkout.exec_, checkout.fs, checkout.env, checkout.config))
         return lines
-    if checkout.config.release.publish:
-        await release_module.publishable(checkout.repo, checkout.git, checkout.env, checkout.config)
-    version, sha = await release_module.release(checkout.repo, checkout.git, checkout.exec_, checkout.fs, child_env(checkout.env, checkout.config), "minor", checkout.clock().date().isoformat())
-    release_module.journal_release(checkout.journal, version, sha)
-    lines.append(f"release: tagged v{version} at {sha}")
-    if checkout.config.release.publish:
-        version, _, _ = await release_module.publish(checkout.repo, checkout.git, checkout.exec_, checkout.fs, checkout.env, checkout.config)
-        lines.append(f"publish: uploaded {version} to PyPI")
-    lines.extend(await release_module.run_packages(checkout.repo, checkout.exec_, checkout.fs, checkout.env, checkout.config))
-    return lines
 
 
 def settles(events) -> int:

@@ -1,5 +1,6 @@
 """All git access: argv lists, dir-pinned, through the process-exec seam."""
 
+import asyncio
 import hashlib
 import re
 from collections.abc import Mapping, Sequence
@@ -39,10 +40,14 @@ def _ref(name: str) -> str:
 
 class Git:
     def __init__(self, exec_: ProcessExec, *, env: Mapping[str, str], timeout: float | None, commit_lock: CommitLock) -> None:
+        self._main_write = asyncio.Lock()
         self._commit_lock = commit_lock
         self._exec = exec_
         self._env = env
         self._timeout = timeout
+
+    def main_write(self) -> asyncio.Lock:
+        return self._main_write
 
     async def _call(self, dir: Path, *args: str, env: Mapping[str, str] | None = None) -> tuple[list[str], int, str, str]:
         argv = ["git", "-C", str(dir), *args]
@@ -184,9 +189,10 @@ class Git:
             raise RebaseRefused(argv, rc, out, err)
 
     async def merge_squash(self, dir: Path, branch: str, message: str) -> str:
-        async with self._commit_lock:
-            await self._run(dir, "merge", "--squash", _ref(branch))
-            return await self._commit(dir, message)
+        async with self.main_write():
+            async with self._commit_lock:
+                await self._run(dir, "merge", "--squash", _ref(branch))
+                return await self._commit(dir, message)
 
     async def push(self, dir: Path, remote: str, branch: str) -> None:
         await self._run(dir, "push", _ref(remote), _ref(branch))

@@ -18,6 +18,8 @@ from tests.unit.test_roadmap_table import document, row
 class FakeGit:
     def __init__(self, repo):
         self.repo, self.dirty, self.files, self.commits = repo, "", [], []
+        self.main_write = lambda: self._lock
+        self._lock = asyncio.Lock()
 
     async def status_porcelain(self, repo, *args):
         assert (repo, args) == (self.repo, ("--", roadmap.ROADMAP))
