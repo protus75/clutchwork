@@ -48,6 +48,39 @@ what content its tickets carry, never the format. See the [host run guide](host-
   from its worktree.
   Lint requires that an `On-demand` path is fenced and never also in `Context`.
 - `Goal / Why`: what is true when the ticket is done that is not true now, and why it matters.
+- `Boundary contract` (optional until a later ticket requires it): declare each affected boundary
+  with a `### <boundary>` heading and non-empty labeled bullets for `disposition`, `owner`,
+  `consumers`, `observable change`, `compatibility`, `acceptance`, `tests`, and
+  `post-merge source of truth`. Disposition is `reuse`, `extend`, `replace`, or `create`.
+  `reuse` declares no contract change and identifies composition when relevant. Describe inputs,
+  outputs, failures, side effects, invariants, ordering, persistence, atomicity, and composition
+  when relevant. For breaking changes identify old and replacement contracts, consumer migrations,
+  removal, and ordering. Bug fixes and refactors explicitly claim restoration or preservation.
+  A `create` entry also has `closest existing` and `earning reason` bullets: name the closest
+  existing symbols or artifacts in Context and why each cannot be reused. Earn creation through
+  multiple production consumers, an external-effect fake, a named plugin or provider extension,
+  consolidation of evidenced duplicates, or a process, storage, package, or independently deployed
+  boundary. For example:
+
+  ```markdown
+  ### Ticket parser
+  - disposition: extend
+  - owner: clutch/tickets.py
+  - consumers: intake and lint
+  - observable change: accept the optional section
+  - compatibility: existing tickets remain valid
+  - acceptance: malformed declarations are refused
+  - tests: parser shape tests
+  - post-merge source of truth: clutch/tickets.py
+  ```
+
+  If no boundary changes, use `none` followed by `- reason: <preservation statement>`. Valid
+  reasons are documentation corrections without behavior change; comments, spelling, formatting or
+  metadata only; tests encoding an existing contract; regeneration with unchanged generator and
+  generated contract; dependency or version updates proven not to change a consumed boundary;
+  private implementation with callers, outputs, failures, side effects, construction and formats
+  unchanged; or unreachable private code with no consumers. Repair malformed declarations using
+  the lint finding; repair unsupported claims by identifying the canonical owner and true reason.
 - `Scope in / Scope out`: what the agent changes, and what it must leave alone. When Scope in
   limits changes in a fenced file with "only" or "nothing else changes", it names every edit the change forces there.
   Include an import a new name needs and the expected set or skip list of every test that loops

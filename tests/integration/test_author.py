@@ -23,7 +23,7 @@ def test_author_spec_requires_criteria_to_name_wrong_results():
     root = Path(__file__).resolve().parents[2]
     spec = load_spec((root / "clutch/specs/author.md").read_text())
     guide = (root / "clutch/docs/host-authoring.md").read_text()
-    assert spec.meta.version == "1.8"
+    assert spec.meta.version == "1.9"
     for rule in ("the next minor above the version on main", "criterion checked by a test names the wrong result", "adds, removes, renames, or moves a member of a set"):
         assert rule not in spec.body
         assert rule in guide

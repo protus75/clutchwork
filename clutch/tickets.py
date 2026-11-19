@@ -77,7 +77,7 @@ REQUIRED_SECTIONS = (
     "Definition of rejected",
     "Time budget",
 )
-OPTIONAL_SECTIONS = ("Runs before", "On-demand", "Regression")
+OPTIONAL_SECTIONS = ("Runs before", "On-demand", "Regression", "Boundary contract")
 SECTIONS = REQUIRED_SECTIONS + OPTIONAL_SECTIONS
 BANNED_ADJECTIVES = re.compile(r"\b(improved|better|cleaner)\b", re.IGNORECASE)
 _FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
@@ -306,6 +306,41 @@ def render_context(repo: Path, entry: str) -> str:
     return context_excerpt(entry, (repo / context_path(entry)).read_text())
 
 
+def _boundary_findings(body: str, path: str) -> list[Finding]:
+    road = "write `none` with a non-empty `- reason:` or boundary entries with the required labeled bullets"
+    lines = [line.strip() for line in body.splitlines() if line.strip()]
+    if lines and lines[0] == "none":
+        if len(lines) == 2 and re.fullmatch(r"- reason:\s*\S.*", lines[1]):
+            return []
+        return [_f("`## Boundary contract` none needs a non-empty reason", road, path)]
+    common = {"disposition", "owner", "consumers", "observable change", "compatibility", "acceptance", "tests", "post-merge source of truth"}
+    findings = []
+    entries: list[list[str]] = []
+    for line in lines:
+        if re.fullmatch(r"###\s+\S.*", line):
+            entries.append([])
+        elif entries:
+            entries[-1].append(line)
+        else:
+            return [_f("`## Boundary contract` needs a boundary heading", road, path)]
+    if not entries:
+        return [_f("`## Boundary contract` is empty", road, path)]
+    for entry in entries:
+        fields = {}
+        for line in entry:
+            match = re.fullmatch(r"- ([^:]+):\s*(.*)", line)
+            if not match or not match[2].strip() or match[1] in fields:
+                findings.append(_f("`## Boundary contract` has an invalid or empty field", road, path))
+                continue
+            fields[match[1]] = match[2].strip()
+        required = common | ({"closest existing", "earning reason"} if fields.get("disposition") == "create" else set())
+        for field in sorted(required - fields.keys()):
+            findings.append(_f(f"`## Boundary contract` missing {field}", f"add a non-empty `- {field}:` bullet", path))
+        if fields.get("disposition") not in {"reuse", "extend", "replace", "create"}:
+            findings.append(_f("`## Boundary contract` has an invalid disposition", "set disposition to reuse, extend, replace, or create", path))
+    return findings
+
+
 def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket:
     """Validate one ticket against the full ticket grammar; raise TicketInvalid with every finding.
 
@@ -335,6 +370,8 @@ def _parse_ticket(stem: str, text: str, repo: Path, *, evidence: bool) -> Ticket
 
     sections, errs = _sections(split[1], path)
     findings += errs
+    if evidence and fm is not None and fm.state not in {"merged", "rejected"} and "Boundary contract" in sections:
+        findings += _boundary_findings(sections["Boundary contract"], path)
     for name in REQUIRED_SECTIONS:
         if not sections.get(name):
             findings.append(_f(f"missing or empty body section `## {name}`", f"add a non-empty `## {name}` section", path))
@@ -846,6 +883,7 @@ def template(kind: Kind) -> str:
         "Depends on": "<none or bullets of existing ticket stems>",
         "Context": "- <existing repo-relative read-first path>",
         "Goal / Why": "<observable outcome and why it matters>",
+        "Boundary contract": "<declare boundaries or none with a reason>",
         "Scope in / Scope out": "<what changes and what stays outside this ticket>",
         "Scope fence": "- <repo-relative writable path prefix>",
         "Acceptance criteria": "1. <measurable outcome naming a check in backticks>",

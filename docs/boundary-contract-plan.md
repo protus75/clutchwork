@@ -13,9 +13,7 @@ over-specific one is speculative abstraction throughout every host repository.
 
 ## Status
 
-Proposed on 2026-11-18 from an owner design discussion. The retrospective trial is done. No rule,
-ticket section, lint, review check, or gate described here exists yet. This document records the
-design space and rollout needed before implementation tickets are authored.
+Proposed on 2026-11-18 from an owner design discussion. The retrospective trial is done. The optional ticket section, shape lint, authoring guide, author and requisition review specs, and core paragraph are in place. Requiring the section and the later lint and implementation review remain pending.
 
 ## Roadmap
 

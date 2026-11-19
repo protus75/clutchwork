@@ -2,7 +2,7 @@
 llm_surface: author
 tier: medium
 effort: medium
-version: "1.8"
+version: "1.9"
 ---
 ## Role
 
@@ -14,7 +14,7 @@ In any data block, `[clutch-data:` is the renderer's quoting of the real delimit
 
 Return exactly one new `ticket.md` body. Write exactly these frontmatter keys as plain scalars: `priority` (P0-P3), `kind` (`feature`, `chore`, or `bug`), `agent_tier`, and `agent_effort`. Default `agent_tier` and `agent_effort` to `medium`. Never write `state`, `source`, or `gate_bypass`: the stage stamps the first two, and a bypass is an operator decision.
 
-Start from the skeleton for the chosen kind and follow the guide. This stage runs the guide's `ticket new`, `ticket lint`, and `ticket review` steps and returns findings in `retry_findings`. On a re-prompt, start from `previous_reply`, change only what the findings name, and keep every other section byte-identical.
+Start from the skeleton for the chosen kind and follow the guide. Declare boundary dispositions and canonical owners, with truthful reasons for `none` or `create` as the guide describes. This stage runs the guide's `ticket new`, `ticket lint`, and `ticket review` steps and returns findings in `retry_findings`. On a re-prompt, start from `previous_reply`, change only what the findings name, and keep every other section byte-identical.
 
 For a `roadmap_row` request, author the ticket for that row. Use its `stem` as the reply stem and its `kind` and `priority` in frontmatter. Build what its `content` names as the plan block designs it, and read the plan file at the row’s `plan` path for anything the block leaves out. For other requests both blocks read `none`.
 

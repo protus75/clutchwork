@@ -536,10 +536,12 @@ def test_staged_uncommittable_evidence_refuses_before_any_commit(repo, staged_ki
 @pytest.mark.parametrize("kind", ["feature", "bug", "chore"])
 def test_template_per_kind(tmp_path, kind):
     text = template(kind)
+    assert "## Boundary contract" in text
     assert ("## Regression" in text) == (kind == "bug")
     samples = {
         "none or bullets of existing ticket stems": "none",
         "existing repo-relative read-first path": "src/thing.py",
+        "declare boundaries or none with a reason": "none\n- reason: no behavior changes",
         "observable outcome and why it matters": "The command prints ok for operators.",
         "what changes and what stays outside this ticket": "In: the command. Out: other commands.",
         "repo-relative writable path prefix": "src/thing.py",
@@ -575,6 +577,7 @@ def test_new_skeleton_is_draft_until_intake(repo):
     samples = {
         "none or bullets of existing ticket stems": "none",
         "existing repo-relative read-first path": "clutch/thing.py",
+        "declare boundaries or none with a reason": "none\n- reason: no behavior changes",
         "observable outcome and why it matters": "The command prints ok for operators.",
         "what changes and what stays outside this ticket": "In: the command. Out: other commands.",
         "repo-relative writable path prefix": "clutch/thing.py",

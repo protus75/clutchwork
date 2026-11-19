@@ -16,6 +16,7 @@ def main() -> int:
         values = {
             "none or bullets of existing ticket stems": "none",
             "existing repo-relative read-first path": "clutch/tickets.py",
+            "declare boundaries or none with a reason": "none\n- reason: existing behavior",
             "observable outcome and why it matters": "Lint rejects implementation paths.",
             "what changes and what stays outside this ticket": "In: lint. Out: other checks.",
             "repo-relative writable path prefix": "clutch/tickets.py",

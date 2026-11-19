@@ -311,7 +311,7 @@ def test_thresh_closed_sets_and_constants():
 
 def test_tickets_closed_sets_and_constants():
     assert set(get_args_deep(llm.AgentEffort)) == {"high", "low", "max", "medium"}
-    assert tickets.OPTIONAL_SECTIONS == ("Runs before", "On-demand", "Regression")
+    assert tickets.OPTIONAL_SECTIONS == ("Runs before", "On-demand", "Regression", "Boundary contract")
     assert tickets.REQUIRED_SECTIONS == ("Depends on", "Context", "Goal / Why", "Scope in / Scope out", "Scope fence", "Acceptance criteria", "Verification", "Definition of rejected", "Time budget")
     assert tickets.RESERVED_STEMS == frozenset({"decisions", "retro"})
     assert tickets.SECTIONS == (
@@ -327,6 +327,7 @@ def test_tickets_closed_sets_and_constants():
         "Runs before",
         "On-demand",
         "Regression",
+        "Boundary contract",
     )
 
 
