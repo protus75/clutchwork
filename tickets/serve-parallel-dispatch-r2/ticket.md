@@ -62,6 +62,7 @@ Scope in:
 - `clutch/serve.py`: idle and restart checks use `occupied()`; the maintenance check uses the scheduler and admission `occupied()`; writer retention keeps reading the stem-keyed run dict; watch publication takes the exclusive gate.
 - `docs/how-clutch-works.md`: update only the section that describes the single-flight slot and idle checks.
 - Existing tests and harness files that assert on `admission._slot`, `admission.active` or `admission.task` move to `occupied()`; these are forced edits to assertions and stand-ins, not new tests, so the hot files `tests/integration/test_daemon_composition.py` and `tests/integration/serve_rig.py` are fenced for those edits only. This includes `tests/integration/test_scheduler.py`, where the assertion `rig.core.admission.task is None` becomes `not rig.core.admission.occupied()`.
+- `docs/roadmap.md`: this ticket delivers only the admission run set of row 45, so add two rows directly after row 45 in the same release table, each with the next row number unused anywhere in the file at the base commit, owner `parallel plan 6`, kind `chore`, priority `P2`, no runs-before, carrying no link until authored: (1) stem `parallel-dispatch-run-context`, Depends on `serve-parallel-dispatch-r2`: one `runner.mark_running(journal, stem, sha)` called from `runner.run_ticket`, the serve dispatch closure and `_Drain._run_one`; `MergeQueue.offer` takes `ctx` and records `contexts[stem]` and `AdmissionBoundary` stops setting `queue.ctx` (fence the `offer` stand-ins in `tests/integration/test_serve_admission.py` and `tests/integration/test_daemon_soak_runner.py`); a `Semaphore(1)` in `stages.run_host_command`. (2) stem `parallel-dispatch-eligible`, Depends on `serve-parallel-dispatch-r2`: one `drain.eligible()` used by `Scheduler.dispatch_next` and `_Drain._select`, keeping today's storm, budget, drought and park side effects and `order_tickets` order, with today's order pinned with parallel off. Edit no other roadmap row; row 45 itself is linked and struck by the driver.
 
 Scope out: `Scheduler` constructor and `Scheduler._slot`/`active` internals, `runner.mark_running` and the other `running` writers, `MergeQueue.offer` context and `AdmissionBoundary` ctx assignment, the `Semaphore(1)` in `stages.run_host_command`, the shared `drain.eligible()` filter, `queue._slot` and `queue.active` in merge-queue code (including `consume_handoff`), and conflict steps. `drain` and `run` stay single-flight. No new test goes into `test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `test_cli.py`, `test_watch.py` or `serve_rig.py`.
 
@@ -91,6 +92,7 @@ Scope out: `Scheduler` constructor and `Scheduler._slot`/`active` internals, `ru
 - tests/integration/test_serve_kill.py
 - tests/integration/test_serve_upgrade.py
 - tests/integration/test_sweep_slot_handoff.py
+- docs/roadmap.md
 
 ## Acceptance criteria
 1. With `max_runs` 2, two dispatched stems are in flight and a third dispatch is still waiting, not started, until one releases; a test that sees the third start early fails: `./dev.py test tests/unit/test_admission_parallel_run_set.py`.
