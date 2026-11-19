@@ -70,6 +70,8 @@ Stop `engine serve` before `engine drain` or `engine run`: each takes the writer
 
 In clutch's own repository history, measured on 2026-11-09 from `.clutch/state/box/` and the journal, 32 of 389 Suggestion Box messages (about 8%) became tickets, all as drafts. Of the 31 drafts decided, 24 were confirmed (about 77%) and 7 rejected.
 
+Run `uv run clutch prompt roadmap` to print the procedure for creating or maintaining `docs/roadmap.md`. Then use `uv run clutch roadmap status` and hand off through `uv run clutch prompt plan-ticket-drain`.
+
 For example, ask your chat agent:
 
 - “Help me plan this feature and turn the plan into clutch tickets.”

@@ -44,7 +44,7 @@ Each dimension value is a **facet**: one Markdown file with frontmatter, kept un
 
 | Dimension | Initial values | Kind | Applies at |
 |---|---|---|---|
-| Type | `plan`, `seed`, `overview`, `architecture`, `api`, `spec`, `whitepaper`, `blog`, `release-notes` | prompt facet: required sections and their order, what each section is for | create, derive |
+| Type | `plan`, [roadmap](../../clutch/specs/doc/facets/type/roadmap.md), `seed`, `overview`, `architecture`, `api`, `spec`, `whitepaper`, `blog`, `release-notes` | prompt facet: required sections and their order, what each section is for | create, derive |
 | Audience | [technical](audience/technical.md), [non-technical](audience/non-technical.md), [ai](audience/ai.md), [user](audience/user.md), [developer](audience/developer.md), [student](audience/student.md) | prompt facet: assumed knowledge, vocabulary, what to explain, what to leave out | create, derive |
 | Tone | [default](tone/default.md), [examples](tone/examples.md) | prompt facet. `examples` takes example files as data: "match the voice, sentence length, and structure; never copy content" | create, derive |
 | Review | `scope`, `viability`, `buildability`, `automatable`, `compression` | lens facet (section 4): roles, run shape, prompts, output schema, verdict set | review |
@@ -59,6 +59,7 @@ The first-pass Type prompts below are design examples. Their project references 
 
 | Type prompt | What it draws from the project |
 |---|---|
+| [Roadmap](../../clutch/specs/doc/facets/type/roadmap.md) | Synthesizes local plans into the roadmap read by the driver. |
 | [Plan](type/plan.md) | The [roadmap](../roadmap.md) ties phases to entry conditions and observable exits. [Cut](review/CutReview.md) tests scope against the plan’s metric, [Kill](review/KillReview.md) tests the premise, and [Buildability](review/BuildItReview.md) exercises one named phase. |
 | [Seed](type/seed.md) | The [host authoring guide](../../clutch/docs/host-authoring.md) owns fences, dependency semantics, acceptance evidence, and the authoring handoff. Section 4.3 describes the Automatable lens ([AutomatableReview.md](review/AutomatableReview.md)). |
 | [Overview](type/overview.md) | Section 5 defines audience-change fidelity. The [running guide](../../clutch/docs/host-running.md) supplies operator actions and outcomes when explaining Clutch. |
