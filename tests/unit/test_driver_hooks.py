@@ -86,9 +86,12 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
     monkeypatch.setattr(drain, "calibrate_when_due", lambda checkout: None)
     await d.run()
     d.driver.assert_awaited_once_with(c, log)
-    assert d.driven == 1
+    assert d.driven == 1 and d.driver_task is None
     await d.run()
     assert d.driver.await_count == 1
+    journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="b")
+    await d.run()
+    assert d.driver.await_count == 2 and d.driven == 2
     d.driven = None
     d._between_tickets.return_value = False
     await d.run()

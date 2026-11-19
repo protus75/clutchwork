@@ -417,6 +417,7 @@ async def settle_admissions(checkout):
 class _Drain:
     last_dispatched: str | None = None
     driver = None
+    driver_task = None
     driven = None
 
     def _signal_kill(self) -> None:
@@ -437,6 +438,20 @@ class _Drain:
         self.served_retro_id: str | None = None
 
     async def run(self) -> Report:
+        try:
+            return await self._run()
+        finally:
+            if self.driver_task is not None:
+                prior = sys.exception()
+                try:
+                    await self._await_controlled(self.driver_task, self._abort_driver, self.c.sleep)
+                except BaseException:
+                    if prior is None:
+                        raise
+                finally:
+                    self.driver_task = None
+
+    async def _run(self) -> Report:
         while True:
             if hasattr(self.dispatch, "prepare"):
                 from dataclasses import replace
@@ -460,7 +475,10 @@ class _Drain:
                     self.served_retro_id = request_id
                 else:
                     await self._run_retro(forced=False)
-            if self.driver is not None and (self.c.repo / roadmap.ROADMAP).is_file() and await self._between_tickets():
+            if self.driver_task is not None and self.driver_task.done():
+                task, self.driver_task = self.driver_task, None
+                task.result()
+            if self.driver_task is None and self.driver is not None and (self.c.repo / roadmap.ROADMAP).is_file() and await self._between_tickets():
                 count = roadmap.settles(self.c.journal.read())
                 if count != self.driven:
                     self.driven = count
@@ -505,6 +523,11 @@ class _Drain:
             pick, reoffer = self._select(scan, events, last, held)
             if pick is None:
                 if self.retro is not None and self.c.control.projection.retro_id is not None and self.c.control.projection.retro_id != self.served_retro_id and await self._between_tickets():
+                    continue
+                if self.driver_task is not None:
+                    await self._await_controlled(self.driver_task, self._abort_driver, self.c.sleep)
+                    continue
+                if self.driver is not None and (self.c.repo / roadmap.ROADMAP).is_file() and await self._between_tickets() and roadmap.settles(self.c.journal.read()) != self.driven:
                     continue
                 if self.provider_deadlines:
                     now = self.c.clock()
@@ -687,11 +710,10 @@ class _Drain:
 
     async def _run_driver(self):
         log = engine_log(self.c.config, self.c.env, self.c.clock)
+        self.driver_task = asyncio.create_task(self.driver(self.c, log))
 
-        async def abort():
-            pass
-
-        await self._await_controlled(asyncio.create_task(self.driver(self.c, log)), abort, self.c.sleep)
+    async def _abort_driver(self):
+        pass
 
     async def _run_retro(self, *, forced):
         log = engine_log(self.c.config, self.c.env, self.c.clock)
