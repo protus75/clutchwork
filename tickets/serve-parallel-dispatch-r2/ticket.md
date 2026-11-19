@@ -48,7 +48,7 @@ The running-transition writer, the merge-queue run context, the host-command loc
 - disposition: extend
 - owner: clutch/scheduler.py (Scheduler)
 - consumers: clutch/serve.py maintenance and idle checks
-- observable change: `Scheduler.occupied()` returns true while its lock is held or a ticket is active, replacing serve's reads of `scheduler._slot.locked()` and `scheduler.active`
+- observable change: `Scheduler.occupied()` returns true while its `_slot` lock is held, replacing serve's two reads of `scheduler._slot.locked()` (`clutch/serve.py` idle and maintenance probes); no new Scheduler state
 - compatibility: the constructor, `dispatch_next` and its await-the-run behavior are unchanged
 - acceptance: `occupied()` is true during a dispatch and false after it
 - tests: tests/unit/test_admission_parallel_run_set.py
@@ -57,7 +57,7 @@ The running-transition writer, the merge-queue run context, the host-command loc
 ## Scope in / Scope out
 Scope in:
 - `clutch/daemon.py`: replace `DaemonAdmission._slot`, `active` and `task` with a run dict of up to `max_runs` entries, one task per run; add `occupied()`; add the exclusive gate and use it in `mutations()`, `DaemonCore.startup()` and the sweep (the two `async with self.admission._slot` sites); `waiting_for_merge` releases the run's slot but keeps it in the dict; `daemon_core` takes `max_runs` and passes it to `DaemonAdmission` only.
-- `clutch/__main__.py`: `build_daemon_core` reads `checkout.config.scheduler.parallel` and passes `max_runs` (1 when `enabled` is false); the `owned` lambda for `Restart` uses `core.admission.occupied()`.
+- `clutch/__main__.py`: `build_daemon_core` reads `checkout.config.scheduler.parallel` and passes `max_runs` (1 when `enabled` is false); the `owned` lambda for `Restart` uses `core.admission.occupied()`. Add `tests/unit/test_admission_parallel_run_set.py` cases that call `build_daemon_core` (or the helper it uses to compute the count) with fakes and assert it passes 1 when `scheduler.parallel.enabled` is false and the configured `max_runs` when true.
 - `clutch/scheduler.py`: add `occupied()` only.
 - `clutch/serve.py`: idle and restart checks use `occupied()`; the maintenance check uses the scheduler and admission `occupied()`; writer retention keeps reading the stem-keyed run dict; watch publication takes the exclusive gate.
 - `docs/how-clutch-works.md`: update only the section that describes the single-flight slot and idle checks.
