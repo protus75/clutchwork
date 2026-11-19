@@ -1,21 +1,24 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6a3ee4321c7ee96d5068fb5fbd2d054dbb8b1794",
+  "produced_at_sha": "2e78566657a44d631b15a692ed52f7dac16c799a",
   "stem": "conflict-discard-rerun",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "abandon-human",
+  "verdict": "split",
   "lessons": [
-    "Both attempts ended 'incomplete' with an empty diff_stat after under 60s, on two providers (attempt 0 claude-opus-5-5, attempt 1 codex gpt-6.1-terra). Each harvest reports usd exactly 1.0. A shared spend cap, not model capability, is the likely cause.",
-    "A human should check where the implement stage's per-attempt USD limit is set and whether $1.0 was the stop. Attempt 1 read 428k input tokens and wrote 1.5k output tokens, so a 28-file fence can spend $1 on reading before any edit.",
-    "Attempt 0's diagnosis said the run 'hit no budget or blocker' without checking usd. Retrying at the same cap will repeat the empty stop. Raise the cap for this ticket, or split it if the cap must stay.",
-    "If you split: the ticket says the handoff deletion and the rerun step cannot land apart without a dual path. Split along other lines: the stages.py prior-diff lift and implement.md wording; the drain.py and caps.py conflict_rerun accounting; then the mergequeue swap with the handoff deletion.",
-    "Next attempt: before any edit, read mergequeue.py, rework.py and the stages.py prior_attempts code. Do the edits in the order from attempt 0's diagnosis, then run both ## Verification commands, and stop only when all 11 criteria pass."
+    "Attempt 2 stopped like attempts 0 and 1: incomplete with an empty diff_stat after 51s at exactly usd 1.0, after reading 421k input tokens and writing 1.9k output tokens. The 28-file fence spends the per-attempt budget on reading before any edit lands, so retrying at that budget will stop again.",
+    "Split part 1: the stages.py prior_attempts conflict_rerun section, the prior-diff lift at attempts/<n>/prior.diff, and the static implement.md wording plus its version pins (test_specs.py, test_specs_delimiter_note.py, test_implement_spec_mutation_check.py, test_stages.py). It is inert until a",
+    "Split part 2: drain.py record_reoffer skips the retry draw for a conflict_rerun body, and awaiting_operator holds a stem whose reason carries merge_conflict_rerun_spent. caps.py does not count a conflict_rerun terminal toward attempts. Both are inert until mergequeue emits those bodies.",
+    "Split part 3 must stay one ticket (no dual path): swap mergequeue ConflictHandoff for the rerun outcome with CONFLICT_RERUN_LIMIT=2, and delete consume_handoff, rework() handoff and apply_rework. Drop {{conflict}} from rework.md, flip test_serve_admission and test_daemon_soak_runner, and re-point",
+    "Each part's ## Depends on names the earlier merged parts. Each part fences only its own files and the test files that pin them, so one attempt reads less before it edits."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1,
+    3
+  ],
   "spec_version": "1.7",
   "provider": "claude",
   "model": "claude-opus-5-5"
