@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-Partial, uncommitted changes were made to accounting and the Rework prompt; the conflict delivery path and required verification remain unfinished.
+The existing handoff is exercised across both live delivery paths and several integration fixtures; the partial changes have not been verified.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimates 30 minutes; elapsed time was not measured.
+none
 
