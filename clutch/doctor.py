@@ -8,6 +8,7 @@ from clutch.git import Git
 from clutch.hostfiles import stale_core
 from clutch.journal import Journal
 from clutch.lockfile import CommitLock, LockHeld, _read_holder
+from clutch.providers import judge_independence_finding
 
 
 @dataclass(frozen=True)
@@ -82,6 +83,8 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
             max_runs = config.scheduler.parallel.max_runs
             if max_runs > provider.limits.concurrency:
                 row("parallel", False, f"max_runs {max_runs} exceeds provider {provider.name} limits.concurrency {provider.limits.concurrency}; lower max_runs or raise limits.concurrency")
+    if config is not None and (finding := judge_independence_finding(config)):
+        row("judge", False, finding)
     return results
 
 

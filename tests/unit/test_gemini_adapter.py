@@ -119,7 +119,7 @@ def test_registry_listing_and_conduct():
     claude = CliStatus("claude", "@anthropic-ai/claude-code", "claude", "system", "1")
     assert "    auth:" not in providers.suggest_config([claude], {"claude": ModelListing({}, ())})
     p = provider()
-    route = SimpleNamespace(tier="low", surface="review", candidates=[SimpleNamespace(provider="gemini", model=None)])
+    route = SimpleNamespace(kinds=None, tier="low", surface="review", candidates=[SimpleNamespace(provider="gemini", model=None)])
     assert providers.routed_conduct_paths(SimpleNamespace(providers=[p], routing=[route]), Path("/checkout")) == (Path("/checkout/AGENTS.md"),)
     for p in (provider(estimate=None), provider(base_url="http://localhost")):
         with pytest.raises(ProviderSetupError):

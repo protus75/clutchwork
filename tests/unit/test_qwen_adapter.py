@@ -75,5 +75,5 @@ def test_setup_and_conduct():
         ClaudeAdapter(p, config=Mock(), exec_=Mock(), fs=Mock(), redactor=Mock(), env={}, cwd=Path("/"), timeout=1)
     assert providers.ADAPTERS["qwen"] is QwenAdapter and not QwenAdapter.reports_cost
     p = provider()
-    route = SimpleNamespace(tier="low", surface="implement", candidates=[SimpleNamespace(provider="qwen", model=None)])
+    route = SimpleNamespace(kinds=None, tier="low", surface="implement", candidates=[SimpleNamespace(provider="qwen", model=None)])
     assert providers.routed_conduct_paths(SimpleNamespace(providers=[p], routing=[route]), Path("/checkout")) == (Path("/checkout/CLAUDE.md"),)

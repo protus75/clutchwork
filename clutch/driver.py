@@ -231,6 +231,7 @@ class Driver:
         run_seq: int | None = None,
         budget_usd: float | None = None,
         key_scope: str | None = None,
+        kind: str | None = None,
     ) -> StageResult:
         if self._active is not None:
             raise ValueError("await the active Driver.run or abort_current before another stage")
@@ -250,6 +251,7 @@ class Driver:
                 scope_fence=scope_fence,
                 budget_usd=budget_usd,
                 key_scope=key_scope,
+                kind=kind,
             )
         )
         invocation = _Invocation(task)
@@ -291,6 +293,7 @@ class Driver:
         scope_fence: Sequence[str],
         budget_usd: float | None,
         key_scope: str | None = None,
+        kind: str | None = None,
     ) -> StageResult:
         """Run one stage attempt; `attempt` is the run sequence, stuck_budget in seconds."""
         stem = ticket or stage.surface  # ticketless surfaces spool and key under their surface name
@@ -363,6 +366,7 @@ class Driver:
                     ticket=ticket,
                     worktree=workspace if stage.surface in WRITING_SURFACES else None,
                     budget_usd=remaining,
+                    kind=kind,
                 )
                 # Before the call: a call that raises or hangs must leave exactly what was sent on disk.
                 self.spool.write(spool_stem, attempt, f"{name}/prompt.md", prompt)

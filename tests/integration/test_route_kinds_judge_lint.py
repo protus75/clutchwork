@@ -1,0 +1,19 @@
+from tests.integration.test_cli import root, ticket, write
+from tests.integration.test_lint_verb import lint
+
+
+def test_graphics_judge_lint(root, capsys):
+    path = root / "config.yaml"
+    original = path.read_text()
+    original = original.replace("surface: implement, candidates:", "surface: implement, kinds: [graphics], candidates:")
+    original = original.replace("review: {}", "  - {tier: medium, surface: review, candidates: [{provider: claude}]}\nreview: {}")
+    path.write_text(original)
+    graphics = ticket().replace("kind: feature", "kind: graphics") + "\n## Render\n- mode: generate\n- artifact: assets/hero.png\n- candidates: 3\n"
+    write(root, "example", graphics)
+    assert lint(root, "example") == 1
+    assert "review_visual" in capsys.readouterr().out
+    path.write_text(original.replace("surface: review, candidates: [{provider: claude}]", "surface: review, candidates: [{provider: claude, model: judge}]"))
+    assert lint(root, "example") == 0
+    path.write_text(original)
+    write(root, "example", ticket())
+    assert lint(root, "example") == 0

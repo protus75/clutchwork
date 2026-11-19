@@ -121,14 +121,22 @@ class Served:
     model: str
 
 
-def resolve(config: Config | ConfigSnapshot, tier: AgentTier, surface: str) -> Served:
-    """The FIRST candidate of the (tier, surface) row; its model, else the provider's models_by_tier[tier]."""
-    route = next((r for r in config.routing if r.tier == tier and r.surface == surface), None)
-    if route is None and surface != "review":
-        route = next((r for r in config.routing if r.tier == tier and r.surface == "review"), None)
-    if route is None:
-        raise ProviderSetupError(f"no routing row for tier {tier!r}, surface {surface!r}; add one under `routing:` in config.yaml")
-    return _candidate(config, tier, surface, route.candidates[0])
+def _route(config, tier, surface, kind):
+    for name in (surface, "review") if surface != "review" else (surface,):
+        rows = [r for r in config.routing if r.tier == tier and r.surface == name]
+        if kind is not None:
+            matched = next((r for r in rows if r.kinds is not None and kind in r.kinds), None)
+            if matched is not None:
+                return matched
+        matched = next((r for r in rows if r.kinds is None), None)
+        if matched is not None:
+            return matched
+    raise ProviderSetupError(f"no routing row for tier {tier!r}, surface {surface!r}; add one under `routing:` in config.yaml")
+
+
+def resolve(config: Config | ConfigSnapshot, tier: AgentTier, surface: str, kind: str | None = None) -> Served:
+    """Resolve the first candidate of the matching route."""
+    return _candidate(config, tier, surface, _route(config, tier, surface, kind).candidates[0])
 
 
 def _candidate(config, tier, surface, cand):
@@ -139,13 +147,21 @@ def _candidate(config, tier, surface, cand):
     return Served(provider, model)
 
 
-def candidates(config, tier, surface) -> tuple[Served, ...]:
-    # Resolve through the existing routing/placeholder owner, including the review fallback.
-    route = next((r for r in config.routing if r.tier == tier and r.surface == surface), None)
-    if route is None:
-        resolve(config, tier, surface)
-        route = next(r for r in config.routing if r.tier == tier and r.surface == "review")
+def candidates(config, tier, surface, kind=None) -> tuple[Served, ...]:
+    route = _route(config, tier, surface, kind)
     return tuple(_candidate(config, tier, surface, candidate) for candidate in route.candidates)
+
+
+def judge_independence_finding(config) -> str | None:
+    for tier in dict.fromkeys(r.tier for r in config.routing if r.kinds is not None and "graphics" in r.kinds):
+        try:
+            implement = resolve(config, tier, "implement", "graphics")
+            judge = resolve(config, tier, "review_visual", "graphics")
+        except ProviderSetupError:
+            continue
+        if implement.provider.name == judge.provider.name and implement.model == judge.model:
+            return f"graphics implement and review_visual for tier {tier!r} both use provider {judge.provider.name!r} and model {judge.model!r}; route the judge to a different provider or model"
+    return None
 
 
 def conduct_file(provider: str) -> str:
@@ -154,7 +170,9 @@ def conduct_file(provider: str) -> str:
 
 def routed_conduct_paths(config: Config | ConfigSnapshot, checkout: Path) -> tuple[Path, ...]:
     """Select each resolved CLI's conduct file once; unrouted declarations do not participate."""
-    return tuple(dict.fromkeys(checkout / conduct_file(served.provider.name) for route in config.routing for served in candidates(config, route.tier, route.surface)))
+    return tuple(
+        dict.fromkeys(checkout / conduct_file(served.provider.name) for route in config.routing for served in candidates(config, route.tier, route.surface, route.kinds[0] if route.kinds else None))
+    )
 
 
 class ProviderDrought(Exception):
@@ -975,7 +993,7 @@ class ProviderLLM:
     async def admitted_call(self, req, *, ticket, call_key, effect, meter=None):
         from clutch.thresh import UnavailableRoute
 
-        route = candidates(self._config, req.tier, req.surface)
+        route = candidates(self._config, req.tier, req.surface, req.kind)
         # Budget eligibility precedes admission, so a refusal cannot become a
         # provider failure or leave an unmatched Effect intent. Preserve the
         # configured order among candidates that can serve the bounded request.
@@ -1023,7 +1041,7 @@ class ProviderLLM:
 
     async def call(self, req: LLMRequest, *, consumer: "EventConsumer | None" = None) -> LLMResult:
         """The raw LLM execution seam; llm_call owns its durable admission boundary."""
-        return await self._invoke(req, resolve(self._config, req.tier, req.surface), consumer=consumer)
+        return await self._invoke(req, resolve(self._config, req.tier, req.surface, req.kind), consumer=consumer)
 
     async def _invoke(self, req, served, *, consumer=None, capture=None):
         self._active = self._adapters[served.provider.name]

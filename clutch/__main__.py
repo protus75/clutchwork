@@ -410,7 +410,7 @@ def _parser() -> argparse.ArgumentParser:
         host_sub,
         "doctor",
         summary="inspect setup without changing state",
-        does="Check the venv, config load, git, writer lock, journal readability, committed managed conduct blocks and parallel provider concurrency, printing PASS or FAIL rows.",
+        does="Check setup, managed conduct blocks, parallel provider concurrency and graphics judge independence, printing PASS or FAIL rows.",
         reads="Config, git, the writer lock, journal and routed conduct files at HEAD.",
         writes="Nothing.",
         lock="None; probes the writer lock and fails while another process holds it.",
@@ -767,7 +767,7 @@ def _parser() -> argparse.ArgumentParser:
         ticket_sub,
         "lint",
         summary="validate tickets without writing",
-        does="Validate tickets without running them.",
+        does="Validate tickets and graphics judge independence without running them.",
         reads="Tickets, journal (the main checkout's in a linked worktree), git status and config.",
         writes="Nothing.",
         lock="None.",
@@ -1693,6 +1693,8 @@ def stuck_ceiling_finding(stuck_minutes: int, ceiling: int) -> str | None:
 
 
 async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
+    from clutch.providers import judge_independence_finding
+
     root = checkout.repo / "tickets"
     valid = total = 0
     exit_code = 0
@@ -1724,10 +1726,12 @@ async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
             total += 1
             text, findings = _intake_claims(stem, path.read_text(), pending.get(stem, False))
             ceiling_finding = None
+            judge_finding = None
             try:
                 if findings:
                     raise TicketInvalid(findings)
                 ticket = validate_ticket(stem, text, checkout.repo)
+                judge_finding = judge_independence_finding(checkout.config) if ticket.frontmatter.kind == "graphics" else None
                 ceiling_finding = stuck_ceiling_finding(ticket.stuck_minutes, checkout.config.drain.max_ticket_minutes)
                 paths = await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"tickets/{stem}/evidence/")
                 findings = lint_findings(ticket, checkout.repo) + evidence_findings(ticket, checkout.repo, paths=paths.split("\0"))
@@ -1739,7 +1743,9 @@ async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
                 print(f"{finding.path or rel}: {message} ({road})")
             if ceiling_finding:
                 print(f"{rel}: {ceiling_finding}")
-            if findings or ceiling_finding:
+            if judge_finding:
+                print(f"{rel}: {judge_finding}")
+            if findings or ceiling_finding or judge_finding:
                 exit_code = max(exit_code, 1)
             else:
                 valid += 1

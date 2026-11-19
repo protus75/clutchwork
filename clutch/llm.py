@@ -21,6 +21,7 @@ class LLMRequest:
     ticket: str | None
     worktree: Path | None  # set for a cli Implement run only: the one surface granted write
     budget_usd: float | None = None
+    kind: str | None = None
 
     def __post_init__(self) -> None:
         if self.budget_usd is not None and (type(self.budget_usd) not in (float, int) or not math.isfinite(self.budget_usd) or self.budget_usd < 0):

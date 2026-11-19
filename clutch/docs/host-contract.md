@@ -187,7 +187,7 @@ Limits:
   defaults: {est_cost_per_call_usd: unset, quota_window_minutes: 60}
 Route:
   required: [tier, surface, candidates]
-  defaults: {}
+  defaults: {kinds: unset}
 Candidate:
   required: [provider]
   defaults: {model: unset}
@@ -241,6 +241,8 @@ RetroSpikes:
   required: []
   defaults: {enabled: true, count: 5, kinds: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]}
 ```
+
+A route may restrict `kinds` to a nonempty list of ticket kinds. Routing prefers a matching kind, then an unrestricted row, first for the requested surface and then for review.
 
 ```yaml config-values
 spike_kind: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]

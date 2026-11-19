@@ -99,6 +99,16 @@ class Route(StrictModel):
     tier: AgentTier
     surface: str
     candidates: Annotated[list[Candidate], Field(min_length=1)]
+    kinds: Annotated[list[str], Field(min_length=1)] | None = None
+
+    @field_validator("kinds")
+    @classmethod
+    def _known_kinds(cls, value):
+        from clutch.tickets import KINDS
+
+        if value is not None and any(kind not in KINDS for kind in value):
+            raise ValueError(f"kinds must be drawn from {', '.join(KINDS)}")
+        return value
 
 
 class MechanicalCheck(StrictModel):
