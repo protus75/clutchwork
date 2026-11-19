@@ -38,7 +38,7 @@ When Diagnose or Rework splits a ticket and the replacement tickets fail review,
 - post-merge source of truth: clutch/roadmap.py::rejection_reason
 
 ## Scope in / Scope out
-In: add `rework_findings` to the terminal body in `failure_terminal` only in the branch that routes the terminal to the Reject queue, when `rework_requested` and the rework result is not ok; read it in `rejection_reason`; add the three new test files. The new unit test file `tests/unit/test_runner_rework_findings_terminal.py` runs the new runner.py lines with the same fake-context pattern as `tests/unit/test_supervise_merge_route.py` (a fake context and a hand-built failed rework StageResult, no real repo, process or network); the real-repo checks stay in `tests/integration/test_rework_failure_terminal_findings.py`. In `tests/integration/test_daemon_composition.py` only the routed-terminal expectation near line 1361 changes: it gains the `rework_findings` key with the failed rework's message strings. The existing `tests/unit/test_roadmap_rejection_reason.py` stays unchanged and must still pass. Mechanical terminals (`render_over_bound` in tests/integration/test_diagnose.py and tests/integration/test_drain.py) get no key, so those tests stay unchanged.
+In: add `rework_findings` to the terminal body in `failure_terminal` only in the branch that routes the terminal to the Reject queue, when `rework_requested` and the rework result is not ok; read it in `rejection_reason`; add the three new test files. The new unit test file `tests/unit/test_runner_rework_findings_terminal.py` runs the new runner.py lines with the same fake-context pattern as `tests/unit/test_supervise_merge_route.py` (a fake context and a hand-built failed rework StageResult, no real repo, process or network); the real-repo checks stay in `tests/integration/test_rework_failure_terminal_findings.py`. In `tests/integration/test_daemon_composition.py` only the routed-terminal expectation near line 1361 changes: the cases whose rework runs and fails gain the `rework_findings` key with the failed rework's message strings, while the `spent` case, where no rework runs, keeps the body without the key (build the expected dict per case rather than editing the shared literal). In `tests/integration/test_ladder.py::test_split_dispatches_reviewed_rework`, only the failed-rework branch's `expected` body (where `expected.update(dispatch=..., routed=...)` is set) gains the `rework_findings` key; change nothing else in that file. The existing `tests/unit/test_roadmap_rejection_reason.py` stays unchanged and must still pass. Mechanical terminals (`render_over_bound` in tests/integration/test_diagnose.py and tests/integration/test_drain.py) get no key, so those tests stay unchanged.
 Out: harvest and box behavior, Diagnose and Rework specs, the drain report (covered by drain-park-shows-review-findings), diagnosis lessons carry (refile-carries-diagnosis), operator reason carry (operator-reject-reason-refile), and docs.
 
 ## Scope fence
@@ -48,6 +48,7 @@ Out: harvest and box behavior, Diagnose and Rework specs, the drain report (cove
 - tests/unit/test_runner_rework_findings_terminal.py
 - tests/integration/test_rework_failure_terminal_findings.py
 - tests/integration/test_daemon_composition.py
+- tests/integration/test_ladder.py
 
 ## Acceptance criteria
 1. `rejection_reason` over a routed terminal with `reason: "x"` and `rework_findings: ["fence gap; add path"]` returns a string containing `fence gap; add path`, not just `x`; checked by `./dev.py test tests/unit/test_roadmap_rejection_reason_rework_findings.py`.
@@ -59,7 +60,7 @@ Out: harvest and box behavior, Diagnose and Rework specs, the drain report (cove
 
 ## Verification
 ```
-./dev.py test tests/unit/test_roadmap_rejection_reason.py tests/unit/test_roadmap_rejection_reason_rework_findings.py tests/unit/test_runner_rework_findings_terminal.py tests/integration/test_rework_failure_terminal_findings.py tests/integration/test_daemon_composition.py tests/integration/test_diagnose.py tests/integration/test_drain.py
+./dev.py test tests/unit/test_roadmap_rejection_reason.py tests/unit/test_roadmap_rejection_reason_rework_findings.py tests/unit/test_runner_rework_findings_terminal.py tests/integration/test_rework_failure_terminal_findings.py tests/integration/test_daemon_composition.py tests/integration/test_diagnose.py tests/integration/test_drain.py tests/integration/test_ladder.py
 ```
 
 ## Definition of rejected
