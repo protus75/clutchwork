@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Journal.append rejects signal names outside its closed vocabulary. The focused verification passed, but the full integration suite exposed this mismatch.
+The final ticket verification passed (109 tests), as did the unit coverage gate (1,292 tests), integration suite (3,490 tests), lint, and format checks. An initial integration run failed because CLAUDE.md differed from the committed candidate; it passed after the commit.
 
 ## Dead ends
 
-Implemented and tested a candidate within the fence, but the journal rejects its required signal; no changes were committed.
+none
 
 ## Second problems filed
 
-none
+- box-000839-fe115fc6: docs/gemini-graphics-refactor-plan.md describes layer-1 score distributions and a committed report that the scoped ticket does not implement.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 30 minutes expected and 60 minutes stuck; elapsed time was not measured.
+none
 
