@@ -24,7 +24,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, TypeAdapter, model_validator
 
-from clutch import git, images
+from clutch import git, images, visual
 from clutch.artifacts import (
     OUTCOMES,
     REVIEW_BASELINE_REPORT,
@@ -50,7 +50,8 @@ from clutch.gates import BugEvidence, GateReport, RegressionRun, run_gates
 from clutch.git import Git, GitError
 from clutch.hostfiles import CORE_TEMPLATE, CoreDriftGate, committed_core
 from clutch.journal import EventType, last_transition, run_seq
-from clutch.llmeffect import scoped_seq
+from clutch.journal import run_seq as journal_run_seq
+from clutch.llmeffect import llm_key, scoped_seq
 from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
@@ -65,6 +66,7 @@ from clutch.tickets import (
     TICKET_FILE,
     TICKETS_DIR,
     Ticket,
+    _criteria,
     artifact_path,
     harvest_path,
     in_fence,
@@ -1597,6 +1599,112 @@ async def check_autofix(ctx, ticket, attempt):
     return reports, []
 
 
+async def check_candidates(ctx, ticket, attempt):
+    """Judge each artifact independently and commit only a complete selection."""
+    fields, errors = parse_render(ticket.sections.get("Render", ""), str(ticket_path(ticket.stem)))
+    if ticket.frontmatter.kind != "graphics" or fields.get("mode") != ["generate"]:
+        return []
+    if errors:
+        return errors
+    stem = ticket.stem
+    worktree = ctx.worktree(stem)
+    artifacts = fields["artifact"]
+    changed = await ctx.git.diff_names(ctx.repo, MAIN, stem)
+    forbidden = [p for p in changed if p in artifacts or in_fence(p, [".clutch/renders"])]
+    if forbidden:
+        return [
+            Finding(
+                code="candidate_paths",
+                message=f"Implement changed forbidden paths: {', '.join(forbidden)}",
+                paved_road="Implement writes candidates only under .clutch/renders/<stem>/a<i>/ and never an artifact path",
+            )
+        ]
+    inputs = [worktree / p for p in fields.get("input", [])]
+    spool = ctx.driver.spool.root / stem / str(attempt) / "render"
+    ticket_text = ctx.fs.read_bytes(ctx.repo / ticket_path(stem)).decode()
+    spec = _spec(ctx, "review_visual")
+    selected = []
+    undecided = []
+    for i, artifact in enumerate(artifacts):
+        criteria = []
+        for line in _criteria(ticket.sections.get("Acceptance criteria", "")):
+            match = re.fullmatch(r"visual:\s*([^:]+):\s*(\S.*)", line)
+            if match and match.group(1).strip() == artifact:
+                criteria.append(match.group(2))
+        ids = visual.rubric_ids(criteria, "generate")
+        ranked = []
+        keys = {}
+        for k in range(int(fields.get("candidates", ["3"])[0])):
+            relative = Path(f"a{i}") / f"cand-{k}{Path(artifact).suffix}"
+            source = worktree / ".clutch" / "renders" / stem / relative
+            try:
+                data = ctx.fs.read_bytes(source)
+            except OSError:
+                continue
+            candidate = spool / relative
+            ctx.fs.write(candidate, data)
+            if images.judge(candidate, inputs):
+                continue
+            ctx.fs.write(candidate.with_name(candidate.name + ".side-by-side.png"), images.side_by_side([*inputs, candidate]))
+            if inputs:
+                ctx.fs.write(candidate.with_name(candidate.name + ".heatmap.png"), images.heatmap(inputs[0], candidate))
+            preservation, presence = images.scores(candidate, inputs)
+            material = {
+                "ticket": ticket_text,
+                "generator_prompt": ticket.sections.get("Goal / Why", ""),
+                "images": "\n".join(str(worktree / p) for p in fields.get("input", []) + fields.get("reference", [])),
+                "candidates": str(candidate),
+                "scores": str((preservation, presence)),
+                "rubric": "\n".join(ids),
+            }
+
+            async def validate_rubric(reply, call_seq):
+                try:
+                    visual.parse_reply(reply.model_dump_json(), ids)
+                except ValueError as error:
+                    return _report("visual_rubric", [Finding(code="visual_rubric", message=str(error), paved_road="return exactly the supplied rubric rows")])
+                return _report("visual_rubric", [])
+
+            stage = LlmStage(surface="review_visual", emits=visual.Reply, gates=[], review=validate_rubric, render=lambda _, findings: render(spec, material))
+            replies = []
+            for j in range(ctx.config.graphics.judge_samples):
+                scope = f"a{i}c{k}s{j}"
+                result = await ctx.driver.run(
+                    stage,
+                    ticket,
+                    ticket=stem,
+                    kind=ticket.frontmatter.kind,
+                    attempt=attempt,
+                    workspace=worktree,
+                    tier=ticket.frontmatter.agent_tier,
+                    effort=ticket.frontmatter.agent_effort,
+                    stuck_budget=ticket.stuck_minutes * 60.0,
+                    expected_budget=ticket.expected_minutes * 60.0,
+                    scope_fence=(),
+                    key_scope=scope,
+                )
+                if result.outcome != "ok":
+                    return result.findings or [Finding(code="visual_undecided", message=f"visual judge failed for {artifact}", paved_road="retry Check with fresh candidates")]
+                replies.append(result.artifact)
+                if j == 0:
+                    keys[k] = llm_key(stem, scoped_seq(scope, journal_run_seq(ctx.driver.journal.read(), stem)), "review_visual", attempt, result.cost.attempts)
+            reply = visual.majority(replies)
+            ranked.append((k, reply.verdict, sum(row.verdict == "pass" for row in reply.rows), preservation, presence))
+        winner, _ = visual.decide(ranked)
+        if winner is None:
+            undecided.append(artifact)
+        else:
+            selected.append((artifact, i, winner, keys[winner]))
+    if undecided:
+        return [Finding(code="visual_undecided", message=f"visual selection undecided: {', '.join(undecided)}", paved_road="retry with fresh candidates")]
+    for artifact, i, winner, _ in selected:
+        candidate = spool / f"a{i}" / f"cand-{winner}{Path(artifact).suffix}"
+        ctx.fs.write(worktree / artifact, ctx.fs.read_bytes(candidate))
+    body = "\n".join(f"{artifact}: candidate {winner}, evidence {key}" for artifact, _, winner, key in selected)
+    await ctx.git.commit(worktree, f"clutch({stem}): select\n\n{body}", only=artifacts)
+    return []
+
+
 async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt: int) -> StageResult:
     """Invoicing: run the mechanical gates on the branch head, write + lift `checks.json`."""
     stem = ticket.stem
@@ -1608,6 +1716,9 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
 
     outbox = ctx.worktree(stem) / TICKETS_DIR / stem
     autofix_reports, autofix_hard = await check_autofix(ctx, ticket, attempt) if slip.outcome == "ok" and ctx.config.review.autofix else ([], [])
+    candidate_findings = await check_candidates(ctx, ticket, attempt)
+    if candidate_findings:
+        return refused(candidate_findings, Cost(seconds=active_seconds()))
     evidence = await gather_evidence(ctx, ticket, slip.outcome, attempt=attempt)
     render_reports, render_hard = await check_render(ctx, ticket, attempt)
     evidence = evidence.model_copy(update={"render_failed": bool(render_hard)})

@@ -24,6 +24,38 @@ def _load():
     return Image, np, imagehash, cv2, structural_similarity
 
 
+def _preservation(source, candidate, np, ssim):
+    size = (PREVIEW_SIZE, PREVIEW_SIZE)
+    left = np.asarray(source.resize(size).convert("L"))
+    right = np.asarray(candidate.resize(size).convert("L"))
+    return ssim(left, right, data_range=255)
+
+
+def _presence(source, candidate, np, cv2):
+    orb = cv2.ORB_create(nfeatures=1000, edgeThreshold=5, fastThreshold=10)
+    _, source_descriptors = orb.detectAndCompute(np.asarray(source.convert("L")), None)
+    _, candidate_descriptors = orb.detectAndCompute(np.asarray(candidate.convert("L")), None)
+    if source_descriptors is None or candidate_descriptors is None:
+        return 0
+    pairs = cv2.BFMatcher(cv2.NORM_HAMMING).knnMatch(source_descriptors, candidate_descriptors, k=2)
+    return sum(1 for pair in pairs if len(pair) == 2 and pair[0].distance < 0.75 * pair[1].distance)
+
+
+def scores(artifact: Path, inputs: list[Path]) -> tuple[float | None, int | None]:
+    Image, np, _, cv2, ssim = _load()
+    with Image.open(artifact) as image:
+        candidate = image.convert("RGB")
+    preservation, presence = None, None
+    for index, path in enumerate(inputs):
+        with Image.open(path) as image:
+            source = image.convert("RGB")
+        if index == 0:
+            preservation = _preservation(source, candidate, np, ssim)
+        else:
+            presence = (presence or 0) + _presence(source, candidate, np, cv2)
+    return preservation, presence
+
+
 def judge(artifact: Path, inputs: list[Path]) -> list[str]:
     """Return one diagnostic for each failed applicable check."""
     try:
@@ -56,22 +88,10 @@ def judge(artifact: Path, inputs: list[Path]) -> list[str]:
         if identical or candidate_hash - imagehash.phash(source) <= floor:
             failures.append(f"{artifact}: not-a-copy check failed for {path}")
         if index == 0:
-            size = (PREVIEW_SIZE, PREVIEW_SIZE)
-            left = np.asarray(source.resize(size).convert("L"))
-            right = np.asarray(candidate.resize(size).convert("L"))
-            if ssim(left, right, data_range=255) < MIN_SSIM:
+            if _preservation(source, candidate, np, ssim) < MIN_SSIM:
                 failures.append(f"{artifact}: preservation check failed against {path}")
         else:
-            orb = cv2.ORB_create(nfeatures=1000, edgeThreshold=5, fastThreshold=10)
-            source_gray = np.asarray(source.convert("L"))
-            candidate_gray = np.asarray(candidate.convert("L"))
-            _, source_descriptors = orb.detectAndCompute(source_gray, None)
-            _, candidate_descriptors = orb.detectAndCompute(candidate_gray, None)
-            matches = []
-            if source_descriptors is not None and candidate_descriptors is not None:
-                pairs = cv2.BFMatcher(cv2.NORM_HAMMING).knnMatch(source_descriptors, candidate_descriptors, k=2)
-                matches = [pair[0] for pair in pairs if len(pair) == 2 and pair[0].distance < 0.75 * pair[1].distance]
-            if len(matches) < MIN_ORB_MATCHES:
+            if _presence(source, candidate, np, cv2) < MIN_ORB_MATCHES:
                 failures.append(f"{path}: presence check failed in {artifact}")
     return failures
 

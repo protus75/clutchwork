@@ -60,3 +60,18 @@ def majority(replies: list[Reply]) -> Reply:
     verdict = _winner([reply.verdict for reply in replies])
     reason = next((reply.reason for reply in replies if reply.verdict == verdict), "No strict majority among verdicts.")
     return Reply(rows=rows, verdict=verdict, reason=reason)
+
+
+def rank(candidates: list[tuple[int, str, int, float | None, int | None]]) -> list[tuple[int, str, int, float | None, int | None]]:
+    """Order candidates by verdict, passing rows, preservation and presence."""
+    order = {"accept": 2, "unsure": 1, "reject": 0}
+    return sorted(candidates, key=lambda c: (order[c[1]], c[2], c[3] if c[3] is not None else -1, c[4] if c[4] is not None else -1), reverse=True)
+
+
+def decide(candidates: list[tuple[int, str, int, float | None, int | None]]) -> tuple[int | None, str | None]:
+    ordered = rank(candidates)
+    if not ordered or any(c[1] == "unsure" for c in ordered) or ordered[0][1] != "accept":
+        return None, "visual_undecided"
+    if len(ordered) > 1 and ordered[0][2] <= ordered[1][2]:
+        return None, "visual_undecided"
+    return ordered[0][0], None
