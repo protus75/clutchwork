@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ddc6869ddb93cfac41eac5cb3813f04f911a9412",
+  "stem": "image-candidates-select-r1",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket can't be done as written. It requires `review_visual` judge calls through `driver.run` inside `check()`, but `Driver._run` opens `self.stage` (clutch/driver.py:321) and `Driver.stage` (clutch/driver.py:175-178) raises 'stage already open' while the Check stage is open.",
+    "`Driver.stage` lets a nested stage open only for a `merge` stage opening `resolve` or `review`. Check is already open at clutch/stages.py:1799, so a nested `review_visual` call fails. clutch/driver.py is not in the scope fence, so the attempt bypassed the Check stage wrapper and stopped incomplete.",
+    "Re-author the ticket: add clutch/driver.py to `## Scope fence` and to Scope in. Extend the exemption at clutch/driver.py:177 so an open (stem, \"check\") stage may open the `review_visual` surface. Add a unit test in a new tests/unit/test_driver_check_nesting.py.",
+    "Never run generate-mode Check outside the `ctx.driver.stage(... surface=\"check\")` block at clutch/stages.py:1799. Keep the selection inside `check()` before `gather_evidence`, as the ticket says, so the stage_start and stage_end events and the `failure_terminal` path stay intact.",
+    "On the next attempt, redo everything from the merge base: the `images.scores` helpers, `visual.rank` and `visual.decide`, the stages selection function, the implement.md paragraph and version pins, and the docs. Also write the four new test files the fence names, and commit the result. The last"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    4
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
