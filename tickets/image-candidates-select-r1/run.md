@@ -1,10 +1,10 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification command, full unit and integration suites, coverage gate, lint, and format checks passed; generate-mode Check currently bypasses the normal Check stage wrapper to allow nested visual judge calls, and that integration needs further work.
+The ticket verification passed with 152 tests; the full unit coverage gate, 3,487 integration tests, lint, and format checks also passed.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-none
+- box-000836-f2068ed4: docs/gemini-graphics-refactor-plan.md still describes the earlier candidate location and park-release design; it is outside the scope fence.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+30 minutes expected; approximately 10 minutes actual.
 
