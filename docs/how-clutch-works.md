@@ -517,13 +517,13 @@ Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
 
 Requested retros and automatic retros due after a ticket settles stop new admission, wait for
 the next idle point, run, and then resume admission. A pending stop takes precedence.
-With `docs/roadmap.md` present, the roadmap driver (section 7.5) holds new admission at start and after each settle, runs at the next idle point after any retro, then resumes admission.
+With `docs/roadmap.md` present, the roadmap driver (section 7.5) runs in the background beside tickets at start and after each settle, without holding admission. Retro still holds new admission and waits for any running pass.
 
 At each idle dispatch point, after supervising held stems, serve calibrates estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1).
 
 A git-checkout engine records its `clutch` tree at startup and checks it before
-admission and after merge passes. A change stops new admissions; after running tickets and
-pending or active merges finish, serve journals `serve_handoff`, cleans up, closes the journal,
+admission and after merge passes. A change stops new admissions; after running tickets,
+pending or active merges, and any running roadmap pass finish, serve journals `serve_handoff`, cleans up, closes the journal,
 releases the lock, and replaces its process in place with the new serve. A pending kill wins. An accepted stop waits for the same idle condition and exits without spawning. Non-git engines do not watch.
 
 #### 7.2.1 Merge queue (serve only)
@@ -583,7 +583,7 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
 
 ### 7.5 Roadmap driver
 
-With `docs/roadmap.md` present, drain starts the driver at start and after settles in the background beside the next ticket; serve runs it at start and after every settle at its idle point. `run` never does. It checks release `start` blocks before readying rows, as does `roadmap status`. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, publishes only with `release.publish: true`, then runs configured packages and reports newly kept paths. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
+With `docs/roadmap.md` present, drain and serve start the driver at start and after settles in the background beside the next ticket (serve after every settle). `run` never does. It checks release `start` blocks before readying rows, as does `roadmap status`. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, publishes only with `release.publish: true`, then runs configured packages and reports newly kept paths. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
 
 Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result`, and at the serve idle point and between drain tickets (section 6.6).
 

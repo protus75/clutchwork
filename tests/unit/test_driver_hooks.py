@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -29,9 +28,8 @@ async def test_serve_driver_pending_and_run(tmp_path, monkeypatch):
     s.driver = AsyncMock()
     monkeypatch.setattr(serve, "snapshot_config", lambda c: c)
 
-    @asynccontextmanager
-    async def mutations():
-        yield
+    def mutations():
+        raise AssertionError("driver must not take mutations")
 
     s.mutations = mutations
     assert not s.driver_pending()
@@ -104,7 +102,7 @@ async def test_drain_runs_driver_between_tickets(tmp_path, monkeypatch):
     assert d.driven is None
 
 
-def test_serve_select_holds_only_new_admission(tmp_path):
+def test_serve_select_admits_while_driver_pending(tmp_path):
     s = object.__new__(serve.Serve)
     journal = FakeJournal()
     (tmp_path / "docs").mkdir()
@@ -121,9 +119,11 @@ def test_serve_select_holds_only_new_admission(tmp_path):
     s.storm = SimpleNamespace(held_stages=lambda: {})
     s.retro_pending = lambda: False
     ticket = SimpleNamespace(stem="one")
-    assert not s.select(ticket, "implement")
+    assert s.select(ticket, "implement")
+    s.retro_pending = lambda: True
     s.writers["one"] = object()
     assert s.select(ticket, "check")
     del s.writers["one"]
+    s.retro_pending = lambda: False
     s.driven = 0
     assert s.select(ticket, "implement")

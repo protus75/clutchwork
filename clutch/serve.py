@@ -77,6 +77,8 @@ class Responsiveness:
 class Serve:
     """One idle composition; only run acquires the lock and starts owned work."""
 
+    driver_task = None
+
     def __init__(
         self,
         checkout: runner.Checkout,
@@ -254,7 +256,7 @@ class Serve:
                 return False
         return (
             not self.stopping
-            and (self.upgrade is None and not projection.stop_requested and not self.retro_pending() and not self.driver_pending() or ticket.stem in self.writers)
+            and (self.upgrade is None and not projection.stop_requested and not self.retro_pending() or ticket.stem in self.writers)
             and projection.pause_id is None
             and (self.control.admission is None or self.control.admission in projection.released_hold_ids)
             and not any(target["emitting_origin"] == ticket.stem and target["emitting_stage"] == stage for target in self.storm.held_stages().values())
@@ -324,7 +326,8 @@ class Serve:
 
     def upgrade_idle(self):
         return (
-            self.core.admission.idle()
+            self.driver_task is None
+            and self.core.admission.idle()
             and not self.core.scheduler.occupied()
             and not any(w.continuations for w in self.writers.values())
             and (self.queue is None or not self.queue.pending and self.queue.active is None)
@@ -355,13 +358,21 @@ class Serve:
         return (self.checkout.repo / roadmap.ROADMAP).is_file() and roadmap.settles(self.checkout.journal.read()) != self.driven
 
     async def run_driver(self):
-        async with self.mutations():
-            self.control.poll()
-            if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested:
-                return
-            c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
-            self.driven = roadmap.settles(c.journal.read())
-            await self.driver(c, self.log)
+        self.control.poll()
+        if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested:
+            return
+        c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
+        self.driven = roadmap.settles(c.journal.read())
+        await self.driver(c, self.log)
+
+    async def wait_driver(self):
+        task, self.driver_task = self.driver_task, None
+        if task is not None:
+            try:
+                await task
+            except Exception as exc:
+                return exc
+        return None
 
     async def run_retro(self, request_id):
         async with self.mutations():
@@ -621,8 +632,8 @@ class Serve:
                             request_id = None
                         self.retro_task = asyncio.create_task(self.run_retro(request_id))
                     if self.driver_task is not None and self.driver_task.done():
-                        self.driver_task.result()
-                        self.driver_task = None
+                        task, self.driver_task = self.driver_task, None
+                        task.result()
                     if (
                         self.driver_task is None
                         and self.retro_task is None
@@ -630,7 +641,6 @@ class Serve:
                         and self.driver_pending()
                         and self.upgrade is None
                         and not self.control.projection.stop_requested
-                        and self.upgrade_idle()
                     ):
                         self.driver_task = asyncio.create_task(self.run_driver())
                     for response in self.responses:
@@ -657,6 +667,12 @@ class Serve:
                 self.log.event("serve_failed", error=str(exc))
                 code = 2 if isinstance(exc, (ConfigError, runner.Refusal, ProviderSetupError, JournalCorruption, ExecutableNotFound)) else 1
                 self.stop()
+            driver_error = await self.wait_driver()
+            if driver_error is not None:
+                self.log.event("serve_failed", error=str(driver_error))
+                if code == 0:
+                    failure_type = type(driver_error).__name__
+                    code = 2 if isinstance(driver_error, (ConfigError, runner.Refusal, ProviderSetupError, JournalCorruption, ExecutableNotFound)) else 1
             self.control.poll()
             handoff = upgrade_stop and self.upgrade is not None and self.upgrade_idle() and not self.control.projection.kill_requested and code == 0
             if handoff:
