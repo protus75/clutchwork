@@ -51,6 +51,8 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "roadmap_row",
         "clutch roadmap author --ahead",
         "drift failure",
+        "at most 3",
+        "confirmed, unmerged ticket",
         "clutch prompt author",
         "clutch prompt review",
         "never hold",
@@ -69,6 +71,7 @@ def test_plan_ticket_drain_prompt_content(prompts):
         assert phrase in text, phrase
     assert text.index("conduct files") < text.index("clutch host doctor") < text.index("clutch provider probe") < text.index("clutch prompt drain-loop")
     assert text.index("standing delegation") < text.index("clutch ticket confirm --yes")
+    assert "at most 4" not in text
     assert "about 25 minutes" not in text
     assert "top up with" not in text
     assert "Let the driver author" not in text
