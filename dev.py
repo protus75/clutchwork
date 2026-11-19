@@ -3,6 +3,7 @@
 
     ./dev.py                  the full suite (unit under clutch.testguard)
     ./dev.py test [args]      the suite, or named tests (unit under clutch.testguard)
+    ./dev.py visual-baseline  score the visual judge against panel labels
     ./dev.py vscode           package and install the vscode-clutchwork extension
     ./dev.py vscode-package   build a VSIX for Marketplace upload
 
@@ -44,10 +45,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="./dev.py", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="task")
     sub.add_parser("test", help="the suite, or the named tests")
+    sub.add_parser("visual-baseline", help="score the visual judge against panel labels")
     sub.add_parser("vscode", help="package and install the vscode-clutchwork extension")
     sub.add_parser("vscode-package", help="build a VSIX for Marketplace upload")
     args = parser.parse_args()
-    if args.task == "vscode-package":
+    if args.task == "visual-baseline":
+        argv = ["uv", "run", "python", "-m", "eval.visual_harness", "run"]
+        print("$", " ".join(argv), flush=True)
+        sys.exit(subprocess.run(argv, cwd=ROOT, check=False).returncode)
+    elif args.task == "vscode-package":
         package = json.loads((ROOT / "vscode-clutchwork" / "package.json").read_text())
         output = ROOT / "dist" / f"vscode-clutchwork-{package['version']}.vsix"
         if output.exists():

@@ -100,6 +100,7 @@ A unit test file may share its name with an integration test file.
 |---|---|
 | (none) | `uv run pytest -q -p clutch.testguard tests/unit`, then `uv run pytest -q tests/integration`; a unit failure stops before integration |
 | `test [args]` | With no args, the same as (none); otherwise pytest with those args, adding `-p clutch.testguard` when at least one test path is named and every test path is under `tests/unit` |
+| `visual-baseline` | runs `uv run python -m eval.visual_harness run` to score the visual judge and record its verdict |
 | `vscode-package` | packages the current manifest version into `dist/vscode-clutchwork-<version>.vsix` with the clutch `Built for` stamp inside the VSIX, restores the README, and prints the Marketplace upload page; an existing file is kept without rebuilding; under WSL also prints the Windows path |
 | `vscode` | bumps the patch version in `vscode-clutchwork/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |
 
@@ -724,6 +725,7 @@ scorecard, proposals) and files new proposals as `retro_finding` messages. It su
 - The **review baseline** is a GO / NO_GO verdict recorded by the eval harness
   (`eval/harness.py`). GO counts only while the recorded review and author models and spec
   versions still match the config. It gates Author starting state only.
+- The **visual baseline** records a `visual_baseline` GO / NO_GO verdict bound to the visual judge routing and spec major; GO requires at least 20 labelled cases and 0.85 overall agreement.
 
 ## 10. State on disk
 

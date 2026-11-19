@@ -11,6 +11,7 @@ from clutch.providers import resolve
 from clutch.specs import load_spec
 
 BASELINE_SIGNAL = "review_baseline"
+VISUAL_BASELINE_SIGNAL = "visual_baseline"
 BASELINED_SURFACES = ("review", "author")
 TIERS: tuple[AgentTier, ...] = get_args(AgentTier)
 SPECS = Path(__file__).resolve().parent / "specs"
@@ -30,6 +31,19 @@ def baseline_identity(config: Config, specs_dir: Path = SPECS) -> dict:
         major = _major(load_spec(path.read_text())) if path.exists() else None
         out[surface] = {"spec_major": major, "rows": rows}
     return out
+
+
+def visual_identity(config: Config, specs_dir: Path = SPECS) -> dict:
+    """Return the visual judge routing rows and spec-major version."""
+    from clutch.stages import _major
+
+    rows = {}
+    for tier in TIERS:
+        served = resolve(config, tier, "review_visual", "graphics")
+        rows[tier] = {"provider": served.provider.name, "model": served.model}
+    path = specs_dir / "review_visual.md"
+    major = _major(load_spec(path.read_text())) if path.exists() else None
+    return {"review_visual": {"spec_major": major, "rows": rows}}
 
 
 def policy_row(message_class: str, bug_origin: str | None, has_repro: bool | None) -> BoxRow:
