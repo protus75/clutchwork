@@ -5,7 +5,7 @@ A projection, never an authority: no gate or dispatch decision reads its renderi
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from types import MappingProxyType, SimpleNamespace
+from types import MappingProxyType
 from typing import Literal
 
 from clutch.journal import Event, EventType, total_spend
@@ -68,15 +68,30 @@ def last_states(events: Iterable[Event]) -> dict[str, str]:
 
 
 @dataclass(frozen=True)
+class AdmissionFacts:
+    states: Mapping[str, str]
+    settled: frozenset[str]
+    orphans: frozenset[str]
+    reject: frozenset[str]
+
+
+def admission_facts(events: Iterable[Event]) -> AdmissionFacts:
+    from clutch.reconcile import orphans
+    from clutch.rework import settled_dependencies
+
+    history = tuple(events)
+    return AdmissionFacts(last_states(history), settled_dependencies(history), frozenset(orphans(history)), frozenset(reject_queue(history)))
+
+
+@dataclass(frozen=True)
 class Admission:
     outcome: Literal["admit", "noop", "refuse"]
     message: str = ""
     paved_road: str = ""
 
 
-def run_admission(stem, events, file_exists, ticket, intake_decision=None, stray=()):
+def run_admission(stem, facts, file_exists, ticket, intake_decision=None, stray=()):
     """Dispatch admission; ticket is the full disk validation, including evidence."""
-    from clutch.rework import settled_dependencies
     from clutch.tickets import ticket_path
 
     if stray:
@@ -87,12 +102,11 @@ def run_admission(stem, events, file_exists, ticket, intake_decision=None, stray
             return Admission("refuse", f"{ticket_path(stem)} {label}: " + "; ".join(f"[{f.code}] {f.message} ({f.paved_road})" for f in decision), road)
     if not file_exists:
         return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with `clutch ticket new {stem}`, fill it, then `clutch engine run {stem}`")
-    events = tuple(events)
-    if last_states(events).get(stem) == "merged" or ticket.frontmatter.state == "merged":
+    if facts.states.get(stem) == "merged" or ticket.frontmatter.state == "merged":
         return Admission("refuse", f"{stem} is already merged", "author follow-up work as a new stem with `ticket new`")
     if ticket.frontmatter.state != "confirmed":
         return Admission("refuse", f"{stem} is `state: {ticket.frontmatter.state}`, not confirmed", f"set `state: confirmed` in {ticket_path(stem)} to dispatch it, or author a new stem")
-    if unmerged := [d for d in ticket.depends if d not in settled_dependencies(events)]:
+    if unmerged := [d for d in ticket.depends if d not in facts.settled]:
         return Admission("refuse", f"{stem} depends on unmerged {', '.join(unmerged)}", " then ".join(f"`engine run {d}`" for d in unmerged) + f" first, then `engine run {stem}`")
     return Admission("admit")
 
@@ -105,7 +119,7 @@ def intake_stray_admission(stray):
     )
 
 
-def review_admission(stem, events, file_exists, ticket, intake_decision=None, stray=(), pending=False):
+def review_admission(stem, facts, file_exists, ticket, intake_decision=None, stray=(), pending=False):
     """Review admission; ticket is validated main text, or claimed pending text."""
     from clutch.tickets import stem_findings, ticket_path
 
@@ -118,22 +132,20 @@ def review_admission(stem, events, file_exists, ticket, intake_decision=None, st
         return Admission("refuse", f"{ticket_path(stem)} failed intake: " + "; ".join(f.message for f in intake_decision), road)
     if not file_exists:
         return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author the ticket before `ticket review {stem}`")
-    if last_states(events).get(stem) in CLOSED:
+    if facts.states.get(stem) in CLOSED:
         return Admission("refuse", f"{stem} is settled or rejected", "author follow-up work as a new ticket")
     if isinstance(ticket, list) and ticket:
         return Admission("refuse", f"{ticket_path(stem)} is invalid: " + "; ".join(f.message for f in ticket), road)
     return Admission("admit")
 
 
-def order_admission(stem, events, file_exists, lock_holder, ticket=None):
-    from clutch.reconcile import orphans
+def order_admission(stem, facts, file_exists, lock_holder, ticket=None):
     from clutch.tickets import ticket_path
 
     if not file_exists:
         return Admission("refuse", f"{ticket_path(stem)} does not exist", f"author it with clutch ticket new {stem}")
-    events = tuple(events)
-    state = last_states(events).get(stem)
-    if state == "running" and (stem not in orphans(events) or lock_holder is not None):
+    state = facts.states.get(stem)
+    if state == "running" and (stem not in facts.orphans or lock_holder is not None):
         return Admission("refuse", f"{stem} is running; editing a ticket during its run stops it with ticket_changed", "reorder it after the run ends")
     if state in CLOSED:
         return Admission("refuse", f"{stem} is {state}", "author follow-up work as a new ticket")
@@ -142,10 +154,10 @@ def order_admission(stem, events, file_exists, lock_holder, ticket=None):
     return Admission("admit")
 
 
-def lint_admission(stem, events, file_exists):
+def lint_admission(stem, facts, file_exists):
     if not file_exists:
         return Admission("refuse", "no ticket file", "create tickets/<stem>/ticket.md with clutch ticket new <stem>")
-    if last_states(events).get(stem) in CLOSED:
+    if facts.states.get(stem) in CLOSED:
         return Admission("noop")
     return Admission("admit")
 
@@ -167,27 +179,26 @@ def dismiss_admission(id, messages):
     return _box_admission(id, messages)
 
 
-def verdict_refusal(events: Iterable[Event], stem: str, kill: bool, draft: bool, interrupted: set[str]) -> tuple[str, str] | None:
+def verdict_refusal(facts: AdmissionFacts, stem: str, kill: bool, draft: bool, interrupted: set[str]) -> tuple[str, str] | None:
     """Apply verdict admission after the interrupted runs have been reaped."""
-    history = list(events) + [SimpleNamespace(type=EventType.STATE_TRANSITION, ticket=s, body={"to": "abandoned"}) for s in interrupted]
-    last = last_states(history).get(stem)
+    last = "abandoned" if stem in interrupted else facts.states.get(stem)
     if last == "running":
         return f"{stem} is running", "wait for its terminal, then retry"
     if kill:
         if last in SETTLED:
             return f"{stem} is settled", "leave settled work in place"
-    elif not draft and stem not in reject_queue(history):
+    elif not draft and (stem in interrupted or stem not in facts.reject):
         return f"{stem} is neither a draft nor in the Reject queue", "run `status` to list the Reject queue"
     return None
 
 
-def confirm_admission(events, stem, draft, interrupted):
-    refusal = verdict_refusal(events, stem, False, draft, interrupted)
+def confirm_admission(facts, stem, draft, interrupted):
+    refusal = verdict_refusal(facts, stem, False, draft, interrupted)
     return Admission("refuse", *refusal) if refusal else Admission("admit")
 
 
-def reject_admission(events, stem, draft, interrupted):
-    refusal = verdict_refusal(events, stem, True, draft, interrupted)
+def reject_admission(facts, stem, draft, interrupted):
+    refusal = verdict_refusal(facts, stem, True, draft, interrupted)
     return Admission("refuse", *refusal) if refusal else Admission("admit")
 
 

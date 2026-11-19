@@ -35,7 +35,7 @@ from clutch.providers import ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.reconcile import reconcile
 from clutch.seams import Clock, FileSystem, GroupExec, Sleep
 from clutch.stages import DiagnosisMaterial, StageContext, StagesRun, diagnose, lift_outbox, run_stages, ticket_change_findings, write_diagnosis
-from clutch.status import CLOSED, last_states, run_admission, verdict_refusal
+from clutch.status import CLOSED, admission_facts, last_states, run_admission, verdict_refusal
 from clutch.storm import arrival_id
 from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, split_frontmatter, stamp, stem_findings, ticket_path, validate_ticket
 
@@ -626,7 +626,7 @@ async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension
     if not path.is_file() and not any(e.ticket == stem for e in history):
         raise Refusal(f"unknown stem {stem}", "name a journaled stem or an existing ticket.md")
     draft = path.is_file() and _ticket_state(path) == "draft"
-    refusal = verdict_refusal(history, stem, kill, draft, set())
+    refusal = verdict_refusal(admission_facts(history), stem, kill, draft, set())
     # Preserve the command-line repeat-keep refusal's precedence over queue admission.
     if refusal and (kill or draft or refusal[0].endswith("is running")):
         raise Refusal(*refusal)
@@ -722,7 +722,7 @@ async def _admit(stem: str, checkout: Checkout) -> Ticket:
         except TicketInvalid as exc:
             ticket = exc.findings
     history = checkout.journal.read() if ticket is not None and not isinstance(ticket, list) else ()
-    admission = run_admission(stem, history, exists, ticket, result.refused.get(stem))
+    admission = run_admission(stem, admission_facts(history), exists, ticket, result.refused.get(stem))
     if admission.outcome == "refuse":
         raise Refusal(admission.message, admission.paved_road)
     return ticket

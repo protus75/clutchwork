@@ -19,17 +19,17 @@ def event(state):
 
 
 def test_stem_admissions():
-    assert status.order_admission("item", [], False, None).message == "tickets/item/ticket.md does not exist"
-    assert status.order_admission("item", [event("merged")], True, None).outcome == "refuse"
+    assert status.order_admission("item", status.admission_facts([]), False, None).message == "tickets/item/ticket.md does not exist"
+    assert status.order_admission("item", status.admission_facts([event("merged")]), True, None).outcome == "refuse"
     running = [event("running")]
-    assert status.order_admission("item", running, True, None).outcome == "admit"
-    assert status.order_admission("item", running, True, object()).outcome == "refuse"
+    assert status.order_admission("item", status.admission_facts(running), True, None).outcome == "admit"
+    assert status.order_admission("item", status.admission_facts(running), True, object()).outcome == "refuse"
     with pytest.raises(TicketInvalid):
         validate_ticket("item", "not a ticket", Path("/repo"))
-    assert status.order_admission("item", [], True, None).outcome == "admit"
-    assert status.lint_admission("item", [], False).outcome == "refuse"
-    assert status.lint_admission("item", [event("rejected")], True).outcome == "noop"
-    assert status.lint_admission("item", [], True).outcome == "admit"
+    assert status.order_admission("item", status.admission_facts([]), True, None).outcome == "admit"
+    assert status.lint_admission("item", status.admission_facts([]), False).outcome == "refuse"
+    assert status.lint_admission("item", status.admission_facts([event("rejected")]), True).outcome == "noop"
+    assert status.lint_admission("item", status.admission_facts([]), True).outcome == "admit"
 
 
 def test_box_admissions():
@@ -124,27 +124,27 @@ def test_run_review_admission(verb):
     admit = getattr(status, verb + "_admission")
     good = dispatch_ticket()
     finding = _f("specific lint failure", "repair that field")
-    assert admit("item", [], True, good, good).outcome == "admit"  # Successful claimed pending text is accepted.
-    assert admit("item", [], True, good).outcome == "admit"  # A clean committed ticket needs no intake decision.
+    assert admit("item", status.admission_facts([]), True, good, good).outcome == "admit"  # Successful claimed pending text is accepted.
+    assert admit("item", status.admission_facts([]), True, good).outcome == "admit"  # A clean committed ticket needs no intake decision.
     kwargs = {"pending": True} if verb == "review" else {}
-    refused = admit("item", [], True, good, [finding], **kwargs)
+    refused = admit("item", status.admission_facts([]), True, good, [finding], **kwargs)
     assert refused.outcome == "refuse" and "failed intake: " in refused.message
     assert "specific lint failure" in refused.message  # Rules out reporting disk validation instead of intake.
-    invalid = admit("item", [], True, [finding])
+    invalid = admit("item", status.admission_facts([]), True, [finding])
     assert invalid.outcome == "refuse" and "is invalid: " in invalid.message
-    assert admit("item", [], False, None).outcome == "refuse"
-    stray = admit("item", [], True, good, stray=["staged.py"], **kwargs)
+    assert admit("item", status.admission_facts([]), False, None).outcome == "refuse"
+    stray = admit("item", status.admission_facts([]), True, good, stray=["staged.py"], **kwargs)
     assert stray.message == "staged changes outside pending ticket files: staged.py"
     if verb == "review":
-        assert admit("item", [], True, good, stray=["staged.py"], pending=False).outcome == "admit"
-        assert admit("item", [event("running")], True, good).outcome == "admit"
-        assert admit("item", [event("already_satisfied")], True, good).message == "item is settled or rejected"
+        assert admit("item", status.admission_facts([]), True, good, stray=["staged.py"], pending=False).outcome == "admit"
+        assert admit("item", status.admission_facts([event("running")]), True, good).outcome == "admit"
+        assert admit("item", status.admission_facts([event("already_satisfied")]), True, good).message == "item is settled or rejected"
     else:
-        assert admit("item", [], True, dispatch_ticket("draft")).message == "item is `state: draft`, not confirmed"
-        assert admit("item", [event("merged")], True, good).message == "item is already merged"
-        assert admit("item", [], True, dispatch_ticket(depends=("other",))).message == "item depends on unmerged other"
+        assert admit("item", status.admission_facts([]), True, dispatch_ticket("draft")).message == "item is `state: draft`, not confirmed"
+        assert admit("item", status.admission_facts([event("merged")]), True, good).message == "item is already merged"
+        assert admit("item", status.admission_facts([]), True, dispatch_ticket(depends=("other",))).message == "item depends on unmerged other"
         settled = [NS(type=EventType.STATE_TRANSITION, ticket="other", body={"to": "already_satisfied"})]
-        assert admit("item", settled, True, dispatch_ticket(depends=("other",))).outcome == "admit"
+        assert admit("item", status.admission_facts(settled), True, dispatch_ticket(depends=("other",))).outcome == "admit"
 
 
 @pytest.mark.parametrize("verb", ["run", "review"])
@@ -171,7 +171,12 @@ def test_dispatch_verbs_use_admission_refusals(monkeypatch, verb, failure):
     monkeypatch.setattr(entry, "validate_ticket", validate)
     checkout = NS(repo=Path("/fake"), git=NS(_run=AsyncMock(return_value="main text")), journal=NS(read=lambda: events), fs=None)
     expected = getattr(status, verb + "_admission")(
-        "item", events, failure != "missing", [finding] if failure == "invalid" else good, [finding] if failure == "intake" else None, **({"pending": True} if verb == "review" else {})
+        "item",
+        status.admission_facts(events),
+        failure != "missing",
+        [finding] if failure == "invalid" else good,
+        [finding] if failure == "intake" else None,
+        **({"pending": True} if verb == "review" else {}),
     )
     assert expected.outcome == "refuse"  # A fixture that accidentally admits would hide delegation drift.
     with pytest.raises(runner.Refusal) as exc:

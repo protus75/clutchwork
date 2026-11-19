@@ -23,9 +23,9 @@ from clutch.status import (
     CLOSED,
     SETTLED,
     Admission,
+    admission_facts,
     confirm_admission,
     dismiss_admission,
-    last_states,
     latest_transitions,
     lint_admission,
     order_admission,
@@ -552,16 +552,16 @@ class MenuEntry:
 
 # Every emitted key lives here. Ask rules are extension-only; every other rule is a verb admission.
 MENU = {
-    "clutchReview": MenuEntry("ticket", review_admission, ("stem", "events", "file_exists", "ticket", "intake_decision", "stray", "pending"), command="clutch.ticket.review"),
-    "clutchLint": MenuEntry("ticket", lint_admission, ("stem", "events", "file_exists"), command="clutch.ticket.lint"),
-    "clutchRun": MenuEntry("ticket", run_admission, ("stem", "events", "file_exists", "ticket", "intake_decision", "stray"), needs_lock=True, command="clutch.ticket.run"),
-    "clutchConfirm": MenuEntry("ticket", confirm_admission, ("events", "stem", "draft", "interrupted"), command="clutch.ticket.confirm"),
-    "clutchReject": MenuEntry("ticket", reject_admission, ("events", "stem", "draft", "interrupted"), command="clutch.ticket.reject"),
+    "clutchReview": MenuEntry("ticket", review_admission, ("stem", "facts", "file_exists", "ticket", "intake_decision", "stray", "pending"), command="clutch.ticket.review"),
+    "clutchLint": MenuEntry("ticket", lint_admission, ("stem", "facts", "file_exists"), command="clutch.ticket.lint"),
+    "clutchRun": MenuEntry("ticket", run_admission, ("stem", "facts", "file_exists", "ticket", "intake_decision", "stray"), needs_lock=True, command="clutch.ticket.run"),
+    "clutchConfirm": MenuEntry("ticket", confirm_admission, ("facts", "stem", "draft", "interrupted"), command="clutch.ticket.confirm"),
+    "clutchReject": MenuEntry("ticket", reject_admission, ("facts", "stem", "draft", "interrupted"), command="clutch.ticket.reject"),
     "clutchAskDiagnose": MenuEntry("ticket", lambda section: Admission("admit" if section != "merged" else "noop"), ("section",), extension_only=True, command="clutch.ticket.askDiagnose"),
     "clutchAskDrafts": MenuEntry("ticket", lambda row_draft: Admission("admit" if row_draft else "noop"), ("row_draft",), extension_only=True, command="clutch.ticket.askDrafts"),
     "clutchAskReview": MenuEntry("ticket", lambda section: Admission("admit" if section in ("queued", "blocked") else "noop"), ("section",), extension_only=True, command="clutch.ticket.askReview"),
-    "clutchPriority": MenuEntry("ticket", order_admission, ("stem", "events", "file_exists", "lock_holder", "ticket"), command="clutch.ticket.priority"),
-    "clutchRunsBefore": MenuEntry("ticket", order_admission, ("stem", "events", "file_exists", "lock_holder", "ticket"), command="clutch.ticket.runsBefore"),
+    "clutchPriority": MenuEntry("ticket", order_admission, ("stem", "facts", "file_exists", "lock_holder", "ticket"), command="clutch.ticket.priority"),
+    "clutchRunsBefore": MenuEntry("ticket", order_admission, ("stem", "facts", "file_exists", "lock_holder", "ticket"), command="clutch.ticket.runsBefore"),
     "clutchTriage": MenuEntry("box", triage_admission, ("id", "messages"), needs_lock=True, command="clutch.box.triage"),
     "clutchDismiss": MenuEntry("box", dismiss_admission, ("id", "messages"), needs_lock=True, command="clutch.box.dismiss"),
 }
@@ -582,7 +582,8 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
     """Read porcelain once and share graph reads across all row validations."""
     entries = _porcelain(asyncio.run(ctx.git.status_porcelain(ctx.root, "--untracked-files=all")))
     pending, evidence, stray = asyncio.run(intake_pending(ctx.root, ctx.git, entries))
-    states = last_states(history)
+    facts = admission_facts(history)
+    states = facts.states
     graphs = (_graph(ctx.root), _graph(ctx.root, "Runs before"))
     result = {}
 
@@ -608,7 +609,7 @@ def ticket_menu_inputs(ctx, history, stems, holder, interrupted):
             review_ticket = disk if main_text == claimed else validated(stem, main_text)
         common = dict(
             stem=stem,
-            events=history,
+            facts=facts,
             file_exists=exists,
             intake_decision=decision,
             stray=stray,

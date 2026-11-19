@@ -22,7 +22,7 @@ from uuid import uuid4
 import yaml
 
 import clutch
-from clutch import ask, control, drain, hostfiles, issue, observe, reconcile, requisition, runner, seams, serve, triage
+from clutch import ask, control, drain, hostfiles, issue, observe, requisition, runner, seams, serve, triage
 from clutch.box import BOX_DIR, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
@@ -49,7 +49,7 @@ from clutch.providers import (
 from clutch.redact import Redactor
 from clutch.restart import Restart
 from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalFileSystem, ProcessExec, SubprocessExec
-from clutch.status import last_states, latest_transitions, lint_admission, order_admission, project, reject_queue, render, review_admission
+from clutch.status import admission_facts, latest_transitions, lint_admission, order_admission, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
     KINDS,
@@ -1527,7 +1527,7 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
     from clutch.tickets import intake
 
     # Preserve stem, intake, existence and settled refusal precedence before reading main.
-    admission = review_admission(stem, (), True, None)
+    admission = review_admission(stem, admission_facts(()), True, None)
     if admission.outcome == "refuse":
         raise runner.Refusal(admission.message, admission.paved_road)
     pending = await runner.ticket_pending(checkout.git, checkout.repo, stem)
@@ -1535,8 +1535,9 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
     path = checkout.repo / ticket_path(stem)
     intake_decision = result.refused.get(stem) if result else None
     history = checkout.journal.read() if path.is_file() and not intake_decision else ()
-    states = last_states(history)
-    admission = review_admission(stem, history, path.is_file(), None, intake_decision, pending=pending)
+    facts = admission_facts(history)
+    states = facts.states
+    admission = review_admission(stem, facts, path.is_file(), None, intake_decision, pending=pending)
     if admission.outcome == "refuse":
         raise runner.Refusal(admission.message, admission.paved_road)
     text = await checkout.git._run(checkout.repo, "show", f"main:{ticket_path(stem)}")
@@ -1544,7 +1545,7 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
         ticket = validate_ticket(stem, text, checkout.repo)
     except TicketInvalid as exc:
         ticket = exc.findings
-    admission = review_admission(stem, history, True, ticket, pending=pending)
+    admission = review_admission(stem, facts, True, ticket, pending=pending)
     if admission.outcome == "refuse":
         raise runner.Refusal(admission.message, admission.paved_road)
     unmerged = [dep for dep in ticket.depends if states.get(dep) != "merged"]
@@ -1683,13 +1684,14 @@ async def _lint(checkout: runner.Checkout, stems: Sequence[str]) -> int:
         if common_dir.parent != repo and state_dir.is_relative_to(repo):
             journal = Journal(common_dir.parent / state_dir.relative_to(repo), checkout.clock)
         events = journal.read()
+        facts = admission_facts(events)
         pending = _pending(checkout.repo, _porcelain(await checkout.git.status_porcelain(checkout.repo)))
         for stem in selected:
             rel = ticket_path(stem)
             path = checkout.repo / rel
             # Check existence before the stem grammar, without following an escaped path.
             inside = Path(stem).name == stem and stem not in {".", ".."} and path.resolve().is_relative_to(root.resolve())
-            admission = lint_admission(stem, events, inside and path.is_file())
+            admission = lint_admission(stem, facts, inside and path.is_file())
             if admission.outcome == "refuse":
                 print(f"{rel}: {admission.message} ({admission.paved_road})")
                 total += 1
@@ -1839,9 +1841,10 @@ def _order(checkout, stem, priority, runs_before):
     path = checkout.repo / ticket_path(stem)
     exists = path.is_file()
     events = checkout.journal.read() if exists else ()
-    state = last_states(events).get(stem)
-    holder = observe.lock_holder(checkout.config.state_dir) if state == "running" and stem in reconcile.orphans(events) else None
-    admission = order_admission(stem, events, exists, holder)
+    facts = admission_facts(events)
+    state = facts.states.get(stem)
+    holder = observe.lock_holder(checkout.config.state_dir) if state == "running" and stem in facts.orphans else None
+    admission = order_admission(stem, facts, exists, holder)
     if admission.outcome == "refuse":
         raise runner.Refusal(admission.message, admission.paved_road)
     text = path.read_bytes().decode()
@@ -1855,7 +1858,7 @@ def _order(checkout, stem, priority, runs_before):
         if priority is not None and ticket.frontmatter.priority != priority:
             raise runner.Refusal("priority line cannot be edited", "write priority as a plain `priority: P2` line, then retry ticket order")
     except TicketInvalid as exc:
-        admission = order_admission(stem, events, exists, holder, exc.findings)
+        admission = order_admission(stem, facts, exists, holder, exc.findings)
         raise runner.Refusal(admission.message, admission.paved_road) from None
     checkout.fs.write(path, changed.encode())
     fields = ([f"priority: {priority}"] if priority is not None else []) + ([f"runs before: {', '.join(runs_before) or '(cleared)'}"] if runs_before is not None else [])

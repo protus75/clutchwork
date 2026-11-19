@@ -12,7 +12,7 @@ from clutch.drain import Report
 from clutch.journal import EventType
 from clutch.providers import ClaudeAdapter, CodexAdapter
 from clutch.retro import Retro
-from clutch.status import dismiss_admission, run_admission, triage_admission
+from clutch.status import admission_facts, dismiss_admission, run_admission, triage_admission
 from tests.fakes import FakeJournal
 
 
@@ -24,7 +24,7 @@ def test_drain_heads_name_the_drain_verb():
 
 
 def test_missing_ticket_road_names_clutch_verbs():
-    assert run_admission("item", [], False, None).paved_road == "author it with `clutch ticket new item`, fill it, then `clutch engine run item`"
+    assert run_admission("item", admission_facts([]), False, None).paved_road == "author it with `clutch ticket new item`, fill it, then `clutch engine run item`"
 
 
 def test_unknown_box_id_carries_a_road():

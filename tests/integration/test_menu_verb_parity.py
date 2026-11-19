@@ -66,7 +66,7 @@ def verb_inputs(w, stem, row, live):
 
     common = dict(
         stem=stem,
-        events=history,
+        facts=status.admission_facts(history),
         file_exists=path.is_file(),
         intake_decision=plan[2] if plan else None,
         stray=stray,
