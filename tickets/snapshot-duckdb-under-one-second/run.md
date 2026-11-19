@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The run record is created by the engine after the implementer replies, so it is not available to inspect during this invocation.
+The verification command could not run because the two required snapshot DuckDB test files have not yet been created.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimates 55 minutes; the implementation and required timing checks were not completed.
+The ticket budget is 55 minutes; implementation and timing measurements remain unfinished.
 
