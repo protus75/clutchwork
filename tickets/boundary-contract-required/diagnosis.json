@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ff874ce64fe31d7392beecb4bf80391166398640",
+  "stem": "boundary-contract-required",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The implementation was sound: focused tests and the full suite passed (998 unit, 3433 integration). It failed only because the ticket's stated precondition was not met. Redo the same work after a human unblocks it. Do not change the approach.",
+    "Blocker: tickets/box-issue-process-gap-class/ticket.md and tickets/release-audit-040-r1/ticket.md still have no '## Boundary contract' section. A supervising session must add a valid one to each, by path, before redispatch. Implement may not edit tickets/.",
+    "Before redispatch, confirm the two sections are committed on main so the merge base carries them. Then run `uv run clutch ticket lint` on main with the candidate's tickets.py change applied. It must exit 0, as acceptance criterion 5 requires.",
+    "On retry, redo all of it from the merge base: move 'Boundary contract' to REQUIRED_SECTIONS in clutch/tickets.py, keeping the settled/rejected/merged exemption. Edit the host-authoring.md bullet. Flip the test_closed_sets.py pins. Fix the tests/ and hosts/fixture/ tickets that hit 'Definition of"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    3
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
