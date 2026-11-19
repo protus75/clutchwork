@@ -76,17 +76,20 @@ class RecordingExec(SubprocessExec):
 def production(tmp_path_factory):
     root = tmp_path_factory.mktemp("host-loop")
     exec_ = RecordingExec()
-    members = []
+    members = [
+        host_loop.FixtureLoop(root / name, name, exec_=exec_, fs=LocalFileSystem(), clock=lambda: datetime.now(UTC), sleep=asyncio.sleep, notifications=None, timeout=30)
+        for name in host_loop.scaffold.SCENARIOS
+    ]
 
     async def exercise():
-        for name in host_loop.scaffold.SCENARIOS:
-            loop = host_loop.FixtureLoop(root / name, name, exec_=exec_, fs=LocalFileSystem(), clock=lambda: datetime.now(UTC), sleep=asyncio.sleep, notifications=None, timeout=30)
+        async def run(loop):
             try:
                 await loop.initialize()
                 await loop.exercise()
             finally:
                 await loop.stop()
-            members.append(loop)
+
+        await asyncio.gather(*(run(loop) for loop in members))
         return HostLoopReport(schema_version=1, entries=[await m.observe() for m in members])
 
     report = asyncio.run(exercise())
@@ -100,7 +103,7 @@ def test_host_loop_drives_supervised_fixture_serve(production, tmp_path):
     serve_calls = [argv for argv, _ in exec_.calls if argv[1:3] == ["-m", "clutch"]]
     assert [argv[-1] for argv in serve_calls].count("serve") == 11
     assert [argv[-1] for argv in serve_calls].count("triage") == 6
-    assert exec_.spawned == exec_.killed
+    assert sorted(exec_.spawned) == sorted(exec_.killed)
     for member in members:
         assert member.task.done()
         assert json.loads((member.root / ".clutch/state/control/active.json").read_bytes()) is None
