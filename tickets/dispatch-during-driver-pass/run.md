@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-Keeping the idle start gate would have prevented the required overlap. Mutation checks confirmed the admission and mutations-lock assertions, but were not completed for every assertion.
+The mutation restoring the idle start gate caused the new in-flight start test to time out; the original code was restored before final verification. Clearing the completed task prevents duplicate failure handling, while the existing error-code guard also prevents a duplicate log.
 
 ## Dead ends
 
-none
+None
 
 ## Second problems filed
 
-- box-000811-773ed1cc: docs/roadmap.md row 160 still describes the former serve driver admission hold and is outside the ticket's scope fence.
+- box-000812-19552338: The active row 160 description in docs/roadmap.md still describes serve as holding admission for the driver; that file is outside the scope fence.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; completed in under 25 minutes.
+Expected 25 minutes; actual time was not measured.
 
