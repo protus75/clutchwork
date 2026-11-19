@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The existing watch test passed on the base commit and failed after the cache was wired in because the snapshot created cache/journal.duckdb and its lock. The exact verification command could not run on the base commit because its two new test files do not exist there.
+The scoped implementation and tests remain uncommitted; the incident-scale fixture and final verification are unfinished.
 
 ## Dead ends
 
-None.
+The candidate implementation makes the existing shared-hold regression script fail with a missing candidates argument; a compatibility wrapper is explicitly rejected by the ticket.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 30 minutes expected and 60 minutes stuck; implementation stopped after identifying the contradictory requirements.
+none
 
