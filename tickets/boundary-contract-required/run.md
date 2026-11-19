@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The full suite passed with 998 unit and 3433 integration tests. Repository lint passes on the base commit and fails on the candidate for the two missing boundary contracts.
+Settled, merged, and rejected tickets retain the existing exemption; all verification commands and configured host checks passed.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 20 minutes; completed within the 40-minute stuck budget.
 
