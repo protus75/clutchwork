@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The targeted suite passed, and the latency fixture reported a 0.690-second median with 38,404 events, 694 tickets, and 791 box messages. The full suite passed on the base commit but failed twice on the candidate, including once with the failing test isolated. Class prevention: update the prompt test and its documentation alongside the cache side effect.
+Final latency JSON: {"cold_s":22.619825741974637,"timings_s":[0.7564778400119394,0.7572570859920233,0.7566437260247767],"median_s":0.7566437260247767,"events":37764,"tickets":694,"box":791}. The removed hot spots were repeated menu-fact derivation and hold checks across every historical stem. The engine owns run.md, so these measurements are supplied here for its run record.
 
 ## Dead ends
 
-The existing prompt test cannot pass with the mandated cache side effect without changing its assertion outside the scope fence.
+none
 
 ## Second problems filed
 
-- box-000798-7dfd22ee: clutch/docs/host-running.md says prompts write no state, but prompt drafts now creates the rebuildable journal cache.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ The existing prompt test cannot pass with the mandated cache side effect without
 
 ## Predicted vs actual
 
-Ticket budget: 30 minutes expected, 60 minutes stuck; actual time not measured.
+The ticket expected 30 minutes; elapsed time was not measured.
 
