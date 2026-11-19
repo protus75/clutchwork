@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The merge queue, runner, daemon, artifact lifting, and existing integration tests still need coordinated changes; verification was not run.
+Partial edits were made to accounting and prompt files, but the merge queue and its consumers still need to be migrated together.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket expected 30 minutes; work stopped before completion.
+The ticket budget was 30 minutes expected and 60 minutes stuck; the work stopped before completion.
 
