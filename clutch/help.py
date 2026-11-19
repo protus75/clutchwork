@@ -207,6 +207,13 @@ _add(
     "A process requests the lock.",
     "The holder releases the lock when finished.",
 )
+TOPICS["hotPaths"] = dict(
+    what="Shows the ten paths fenced by the most unsettled tickets.",
+    before="Tickets declare their scope fences.",
+    after="Inspect frequently fenced paths when planning splits.",
+    doc="docs/how-clutch-works.md",
+    heading="2. Commands",
+)
 TOPICS["priority"] = dict(
     what="Priority helps order eligible tickets.", before="A ticket is authored or reordered.", after="The scheduler selects eligible work.", doc="docs/how-clutch-works.md", heading="7.1 `drain`"
 )

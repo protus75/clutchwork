@@ -49,6 +49,7 @@ from clutch.tickets import (
     _intake_plan_stem,
     _porcelain,
     artifact_path,
+    in_fence,
     intake_pending,
     order,
     parse_ticket,
@@ -677,6 +678,15 @@ def journal_facts(state: Path, history) -> AdmissionFacts:
         return AdmissionFacts(states=cache.last_states(), reject=frozenset(cache.reject_queue()), settled=settled_dependencies(history), orphans=frozenset(orphans(history)))
 
 
+def _hot_paths(tickets):
+    counts = {}
+    for ticket in tickets:
+        paths = {path.rstrip("/") for path in ticket.scope_fence if not in_fence(path, [f"tickets/{ticket.stem}"])}
+        for path in paths:
+            counts[path] = counts.get(path, 0) + 1
+    return [{"path": path, "count": count} for path, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:10]]
+
+
 def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     state = ctx.state
     help, help_pick_items = help_payload()
@@ -918,6 +928,8 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     return {
         **extension_fields(ctx.root),
         "help": help,
+        "hotPaths": _hot_paths(tickets[r["stem"]] for r in rows if r["section"] != "merged" and r["stem"] in tickets),
+        "hotPathsHelp": "hotPaths",
         "helpPick": help_pick_items,
         "headerHelp": {**{section: f"section.{section}" for section in counts}, "engine": "lock.engine", "commit": "lock.commit"},
         "boxHeaderHelp": {kind: f"boxOutcome.{kind}" for kind in box_counts},

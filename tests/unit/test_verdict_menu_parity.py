@@ -67,7 +67,9 @@ def world(monkeypatch):
         "load_tickets",
         lambda *a: (
             {
-                s: SimpleNamespace(stem=s, frontmatter=SimpleNamespace(priority="P1", state="draft" if "state: draft" in text else "confirmed"), depends=(), runs_before=(), sections={})
+                s: SimpleNamespace(
+                    stem=s, frontmatter=SimpleNamespace(priority="P1", state="draft" if "state: draft" in text else "confirmed"), depends=(), runs_before=(), sections={}, scope_fence=()
+                )
                 for p, text in files.items()
                 if (s := p.parent.name) not in {"merged", "rejected"}
             },

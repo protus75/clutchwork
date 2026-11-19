@@ -83,7 +83,12 @@ function render(snap) {
 		row.title = snap.help[snap.verdictDecisionsHelp].text;
 		return row;
 	});
-	list.replaceChildren(...decisions, ...rows);
+	const hotPaths = snap.hotPaths.map(item => {
+		const row = el('div', 'status', `${item.path}: ${item.count}`);
+		row.title = snap.help[snap.hotPathsHelp].text;
+		return row;
+	});
+	list.replaceChildren(...decisions, ...hotPaths, ...rows);
 	if (pinned && !snap.rows.some(r => r.stem === pinned)) {
 		pinned = undefined;
 	}

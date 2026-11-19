@@ -287,6 +287,7 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
             depends=(),
             runs_before=("waiting",) if stem == "live" else (),
             sections={"Goal / Why": "goal" if stem == "live" else ""},
+            scope_fence=(),
         )
 
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: ({s: ticket(s) for s in ("live", "waiting")}, {}))
@@ -362,7 +363,7 @@ def test_snapshot_menu_availability(tmp_path, monkeypatch):
 
     ctx = watch.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
     tickets = {
-        stem: SimpleNamespace(stem=stem, frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=deps, runs_before=(), sections={})
+        stem: SimpleNamespace(stem=stem, frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=deps, runs_before=(), sections={}, scope_fence=())
         for stem, deps in (("held", ("missing",)), ("ready", ()), ("held-ready", ()))
     }
     events = [{"type": "state_transition", "ticket": "done", "body": {"to": "merged"}, "ts": "2026-01-01T00:00:00+00:00"}]
@@ -417,7 +418,7 @@ def test_snapshot_priority_tag_on_running_and_queued(tmp_path, monkeypatch):
 
     ctx = watch.Context(tmp_path, tmp_path, tmp_path / "config.yaml", None, None, None)
     tickets = {
-        stem: SimpleNamespace(stem=stem, frontmatter=SimpleNamespace(priority=priority, state=state), depends=(), runs_before=(), sections={})
+        stem: SimpleNamespace(stem=stem, frontmatter=SimpleNamespace(priority=priority, state=state), depends=(), runs_before=(), sections={}, scope_fence=())
         for stem, priority, state in (("live", "P1", "confirmed"), ("waiting", "P2", "confirmed"), ("blocked", "P0", "draft"))
     }
     merged = tmp_path / "tickets/done/ticket.md"
@@ -447,7 +448,7 @@ def test_snapshot_badge(tmp_path, monkeypatch):
     ctx = watch.Context(tmp_path, tmp_path, tmp_path / "config.yaml", None, None, None)
 
     def ticket(stem, state="confirmed"):
-        return SimpleNamespace(stem=stem, frontmatter=SimpleNamespace(priority="P1", state=state), depends=(), runs_before=(), sections={})
+        return SimpleNamespace(stem=stem, frontmatter=SimpleNamespace(priority="P1", state=state), depends=(), runs_before=(), sections={}, scope_fence=())
 
     tickets = {t.stem: t for t in (ticket("live"), ticket("waiting"), ticket("blocked", "draft"))}
     events = [
@@ -659,7 +660,7 @@ def test_snapshot_holds_a_parked_ticket(tmp_path, monkeypatch):
     from types import SimpleNamespace
 
     ctx = watch.Context(tmp_path, tmp_path, tmp_path / "config.yaml", None, None, None)
-    ticket = SimpleNamespace(stem="work", frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={})
+    ticket = SimpleNamespace(stem="work", frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={}, scope_fence=())
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: ({"work": ticket}, {}))
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
     monkeypatch.setattr(watch, "commits", lambda ctx: {})
@@ -701,7 +702,7 @@ def test_snapshot_reject_queue_uses_configured_caps(tmp_path, monkeypatch):
 
     (tmp_path / "config.yaml").write_text(VALID + "caps: {retry: 1}\n")
     ctx = watch.Context(tmp_path, tmp_path, tmp_path / "config.yaml", None, None, None)
-    tickets = {s: SimpleNamespace(stem=s, frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={}) for s in ("retry", "spent")}
+    tickets = {s: SimpleNamespace(stem=s, frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={}, scope_fence=()) for s in ("retry", "spent")}
     events = [{"type": "state_transition", "ticket": s, "body": {"to": "gate_failed", "routed": "reject_queue"}, "ts": "2026-01-01T00:00:00+00:00"} for s in tickets]
     events.append({"type": "cap_consumed", "ticket": "spent", "body": {"cap": "retry"}, "ts": "2026-01-01T00:00:01+00:00"})
     monkeypatch.setattr(watch, "load_tickets", lambda ctx, skip: (tickets, {}))

@@ -114,7 +114,7 @@ def fake_snapshot_inputs(ctx, facts, stems, holder, interrupted):
 
 
 def dispatch_ticket(state="confirmed", depends=()):
-    return NS(stem="item", frontmatter=NS(state=state, priority="P1", source="human"), depends=depends, runs_before=(), sections={})
+    return NS(stem="item", frontmatter=NS(state=state, priority="P1", source="human"), depends=depends, runs_before=(), sections={}, scope_fence=())
 
 
 @pytest.mark.parametrize("verb", ["run", "review"])

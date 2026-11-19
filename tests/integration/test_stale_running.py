@@ -90,7 +90,7 @@ def test_menu_offers_reject_for_dead_run(tmp_path, monkeypatch):
 
     monkeypatch.setattr(observe, "ticket_menu_inputs", fake_snapshot_inputs)
     ctx = observe.Context(tmp_path, tmp_path / "state", tmp_path / "config.yaml", None, None, None)
-    ticket = SimpleNamespace(stem="stale", frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={})
+    ticket = SimpleNamespace(stem="stale", frontmatter=SimpleNamespace(priority="P1", state="confirmed"), depends=(), runs_before=(), sections={}, scope_fence=())
     events = [{"type": "state_transition", "ticket": "stale", "body": {"to": "running"}, "ts": "2026-01-01T00:00:00+00:00"}]
     monkeypatch.setattr(observe, "journal", lambda *a, **kw: events)
     monkeypatch.setattr(observe, "journal_facts", lambda state, history: __import__("clutch.status", fromlist=["admission_facts"]).admission_facts(history))
