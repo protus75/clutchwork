@@ -4,15 +4,15 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The scoped implementation and tests remain uncommitted; the incident-scale fixture and final verification are unfinished.
+The targeted suite passed, and the latency fixture reported a 0.690-second median with 38,404 events, 694 tickets, and 791 box messages. The full suite passed on the base commit but failed twice on the candidate, including once with the failing test isolated. Class prevention: update the prompt test and its documentation alongside the cache side effect.
 
 ## Dead ends
 
-The candidate implementation makes the existing shared-hold regression script fail with a missing candidates argument; a compatibility wrapper is explicitly rejected by the ticket.
+The existing prompt test cannot pass with the mandated cache side effect without changing its assertion outside the scope fence.
 
 ## Second problems filed
 
-none
+- box-000798-7dfd22ee: clutch/docs/host-running.md says prompts write no state, but prompt drafts now creates the rebuildable journal cache.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Ticket budget: 30 minutes expected, 60 minutes stuck; actual time not measured.
 
