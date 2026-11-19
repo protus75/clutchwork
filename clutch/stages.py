@@ -542,6 +542,37 @@ async def lift_outbox(ctx: StageContext, stem: str, kind: str, *, attempt: int, 
     return (await ctx.driver.effects.run(commit, key=key, ticket=stem))["commit"]
 
 
+async def lift_prior_diff(ctx: StageContext, stem: str, *, attempt: int, diff: str, conflicted: list[str]) -> str | None:
+    """Commit the discarded diff's non-conflicting file sections to the ticket plane."""
+    sections = re.split(r"(?=^diff --git )", diff, flags=re.MULTILINE)
+    kept = []
+    for section in sections:
+        if not section.startswith("diff --git "):
+            continue
+        header = section.splitlines()[0][len("diff --git ") :]
+        # Git quotes unusual paths as C-style strings; ordinary paths may contain spaces.
+        match = re.fullmatch(r'("(?:[^"\\]|\\.)*"|a/.*?) ("(?:[^"\\]|\\.)*"|b/.*)', header)
+        if not match:
+            raise ValueError(f"invalid diff header: {header}")
+        paths = []
+        for name in match.groups():
+            if name.startswith('"'):
+                name = ast.literal_eval("b" + name).decode("utf-8")
+            paths.append(name[2:])
+        if not any(path in conflicted for path in paths):
+            kept.append(section)
+    if not kept:
+        return None
+    rel = f"{TICKETS_DIR}/{stem}/attempts/{attempt}/prior.diff"
+
+    async def commit() -> dict:
+        ctx.fs.write(ctx.repo / rel, "".join(kept).encode())
+        sha = await ctx.git.commit(ctx.repo, f"clutch({stem}): prior-diff", only=[rel])
+        return {"kind": "prior-diff", "paths": [rel], "commit": sha}
+
+    return (await ctx.driver.effects.run(commit, key=f"ticket-plane/{stem}/{attempt}/prior-diff", ticket=stem))["commit"]
+
+
 # --- Implement ----------------------------------------------------------------------------------
 
 
@@ -586,8 +617,25 @@ def prior_attempts(ctx: StageContext, stem: str) -> str | None:
 
     terminals = [e.body for e in run_terminals(history, stem)]
     lessons = {e.body.get("attempt"): e.body["lessons"] for e in history if e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "diagnosis" and e.body.get("lessons")}
+    marker = next((e for e in reversed(history) if e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "merge_conflict_rerun"), None)
+    conflict = ""
+    if marker is not None:
+        ticket_root = ctx.repo / TICKETS_DIR / stem
+        parts = ["## conflict_rerun: Prior attempt (discarded on merge conflict); re-derive against current main; do not copy blindly"]
+        for label, path in (("run.md", ticket_root / "run.md"), ("prior.diff", ticket_root / "attempts" / str(marker.body["attempt"]) / "prior.diff")):
+            if path.is_file():
+                parts.append(f"{label} (untrusted data):\n{_quoted(path.read_text())}")
+        review_path = ticket_root / "review.md"
+        if review_path.is_file():
+            review = read_review(review_path.read_text())
+            if review.verdict == "approve" and review.findings:
+                parts.append(
+                    "Approval findings (untrusted data):\n"
+                    + "\n".join(f"> [{f.code}] {f.path or '-'}:{f.line or '-'} {_one_line(f.message)} (do instead: {_one_line(f.paved_road)})" for f in review.findings)
+                )
+        conflict = "\n\n".join(parts)
     if not terminals:
-        return None
+        return conflict or None
     terminal = terminals[-1]
     attempt = len(terminals) - 1
     root = ctx.repo / TICKETS_DIR / stem / "attempts"
@@ -620,7 +668,7 @@ def prior_attempts(ctx: StageContext, stem: str) -> str | None:
         elif path.is_file():
             past = Harvest.model_validate_json(path.read_text())
             lines.append(f"- older attempt {older}: `{past.terminal}` at {past.stage or 'none'}; tickets/{stem}/attempts/{older}/")
-    return head + "\n".join(lines)
+    return head + "\n".join(lines) + ("\n\n" + conflict if conflict else "")
 
 
 def _in_criteria_position(ticket_text: str, block: str) -> str:

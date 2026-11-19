@@ -200,7 +200,7 @@ created at the merge base for base-red reruns and the bug gate, and removed afte
 
 The `implement` prompt (`clutch/specs/implement.md`) gets the ticket text, its `## Context` files plus
 `config.context_files`, and a "Prior attempts" block (last terminal, findings, diagnosis lessons,
-log tails) when this is a retry. Context entries may select a Python top-level definition or
+log tails) when this is a retry. A conflict rerun marker also adds the discarded run record, approval findings, and non-conflicting prior diff as reference material. Context entries may select a Python top-level definition or
 assignment (`path.py::Name`), a class method (`path.py::Class.method`), or a Markdown heading
 (`path.md#Heading`), including its subheadings. Heading text may start with the selector followed
 by a space. Selectors must resolve uniquely, and a file cannot be listed both whole and by section.

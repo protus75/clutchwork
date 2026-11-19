@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.17"
+version: "2.18"
 ---
 ## Role
 
@@ -15,7 +15,7 @@ In any data block, `[clutch-data:` is the renderer's quoting of the real delimit
 
 ## Task
 
-Read the ticket and the context files below before writing anything. Then:
+Read the ticket and the context files below before writing anything. For a prior attempt discarded on a merge conflict, re-derive against current main; do not copy the prior diff blindly. Then:
 
 1. Change only files under the ticket's `## Scope fence` prefixes. Never edit
    `tickets/<stem>/ticket.md` or anything else under `tickets/`; the engine writes the run record.
