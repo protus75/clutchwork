@@ -78,6 +78,7 @@ Scope in:
 - clutch/tickets.py: rename `_render` to `parse_render` and update its two callers; nothing else.
 - clutch/specs/implement.md: add the graphics block and bump `version` to the next minor above the version on main.
 - tests/unit/test_specs.py: move both implement version pins to the new version: line 25 in `test_spec_lint_accepts_the_implement_and_requisition_specs` and line 129 in `test_implement_spec_consumer_read`; no other expectation changes.
+- tests/integration/test_stages.py: move only the `- spec: implement 2.18` pin at line 341 to the new version; no other change and no new tests in that file (the version bump forces this edit).
 - tests/integration/test_implement_spec_mutation_check.py: move only its version pin at line 14 (`load_spec(text).meta.version == "2.18"`) to the new version; nothing else in that file changes.
 - The graphics block in `clutch/specs/implement.md` is a paragraph or bullet list inside `## Task`, not a new `## ` heading (tests/unit/test_specs.py:136 pins the section list to Role, Task, Inputs, Output format, On-failure), and the spec stays within SPEC_MAX_LINES (200; it is 141 lines at HEAD).
 - tests/integration/test_specs_delimiter_note.py: move only its `("implement", ...)` version pin to the bumped version; no other expectation changes.
@@ -94,6 +95,7 @@ Scope out: the `image_quality` gate, the visual judge, candidate selection and t
 - docs/how-clutch-works.md
 - tests/unit/test_specs.py
 - tests/integration/test_specs_delimiter_note.py
+- tests/integration/test_stages.py
 - tests/integration/test_implement_spec_mutation_check.py
 - tests/unit/test_stages_render_check.py
 
@@ -106,12 +108,12 @@ Scope out: the `image_quality` gate, the visual judge, candidate selection and t
 6. `check_render` on a `generate` graphics ticket and on a `feature` ticket returns `([], [])` and the fake exec records zero calls; checked by `./dev.py test tests/unit/test_stages_render_check.py`.
 7. A listed artifact path `../x.png` or an absolute path is refused as a hard finding and never read; checked by `./dev.py test tests/unit/test_stages_render_check.py`.
 8. `clutch/tickets.py` has no `_render` definition or call, and the existing graphics lint tests pass unchanged; checked by `./dev.py test tests/unit/test_graphics_kind.py tests/unit/test_graphics_new.py`.
-9. `clutch/specs/implement.md` has a graphics block covering `command` and `generate` modes, its `version` is the next minor above main's, and every implement version pin passes at the new version (`test_spec_lint_accepts_the_implement_and_requisition_specs` and `test_implement_spec_consumer_read` in tests/unit/test_specs.py, the `("implement", ...)` entry in tests/integration/test_specs_delimiter_note.py, and line 14 of tests/integration/test_implement_spec_mutation_check.py); checked by `./dev.py test tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py`.
+9. `clutch/specs/implement.md` has a graphics block covering `command` and `generate` modes, its `version` is the next minor above main's, and every implement version pin passes at the new version (`test_spec_lint_accepts_the_implement_and_requisition_specs` and `test_implement_spec_consumer_read` in tests/unit/test_specs.py, the `("implement", ...)` entry in tests/integration/test_specs_delimiter_note.py, line 14 of tests/integration/test_implement_spec_mutation_check.py, and line 341 of tests/integration/test_stages.py); checked by `./dev.py test tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py tests/integration/test_stages.py::test_implement_check_review_all_ok_with_artifacts_and_provenance`.
 10. Calling `check` on a graphics `command` ticket with a fake exec returning `{"render_result": "error"}` yields a refused result carrying a hard finding with code `render`, and the invoice contains a `render` report; calling `check` on a `feature` ticket yields no `render` report in the invoice and no finding with code `render`; an implementation that never calls `check_render` from `check` fails the first case; checked by `./dev.py test tests/unit/test_stages_render_check.py`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_stages_render_check.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py tests/unit/test_graphics_kind.py tests/unit/test_graphics_new.py tests/unit/test_stages_host_lock.py
+./dev.py test tests/unit/test_stages_render_check.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_mutation_check.py tests/integration/test_stages.py::test_implement_check_review_all_ok_with_artifacts_and_provenance tests/unit/test_graphics_kind.py tests/unit/test_graphics_new.py tests/unit/test_stages_host_lock.py
 ```
 
 ## Definition of rejected
