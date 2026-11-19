@@ -108,8 +108,16 @@ class MechanicalCheck(StrictModel):
     severity: Severity
     results: str | None = None
     coverage: str | None = None
+    flake_coverage_argv: Argv | None = None
     slow_test_seconds: Annotated[float, Field(gt=0)] = 1.0
     slow_test_limit: Count = 100
+
+    @field_validator("flake_coverage_argv")
+    @classmethod
+    def _flake_coverage_requires_coverage(cls, value: list[str] | None, info: ValidationInfo) -> list[str] | None:
+        if value is not None and info.data.get("coverage") is None:
+            raise ValueError("flake_coverage_argv requires coverage")
+        return value
 
     @field_validator("results", "coverage")
     @classmethod

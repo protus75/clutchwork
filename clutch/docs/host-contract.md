@@ -75,11 +75,12 @@ review:
     - {code: ruff-format, argv: [uv, run, ruff, format], files: ["*.py"]}
   mechanical:
     - code: unit
-      argv: [clutch, coverage, gate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=<package>, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]
+      argv: [clutch, coverage, gate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=<package>, --cov-branch, --cov-report=json:coverage.json, -n, auto]
       trigger: always
       severity: hard
       results: .clutch/results/unit.json
       coverage: coverage.json
+      flake_coverage_argv: [uv, run, python, -m, pytest, --cov=<package>, --cov-branch, --cov-report=json:coverage.json, -n, "0"]
     - code: integration
       argv: [uv, run, python, -m, pytest, tests/integration, -p, clutch.testreport, --clutch-results, .clutch/results/integration.json, -n, auto]
       trigger: always
@@ -107,9 +108,7 @@ budget_seconds = 60
 ```
 
 Add dev dependencies `clutchwork`, `pytest`, `pytest-cov`, `pytest-xdist`, and `ruff`.
-In `pyproject.toml`, set `[tool.coverage.run]` `core = "ctrace"` and
-`[tool.coverage.json]` `show_contexts = true`: Python 3.14's default `sysmon` core drops
-per-test contexts. Gitignore `coverage.json` and `.clutch/`.
+In `pyproject.toml`, set `[tool.coverage.run]` `core = "ctrace"`. Gitignore `coverage.json` and `.clutch/`.
 
 Covgate runs unit tests and then gates their coverage; its base rerun measures the base's own
 coverage. Whole-repo `lint` and `format` also fail at the merge base when main drifts, and
@@ -203,7 +202,7 @@ AutofixCommand:
   defaults: {}
 MechanicalCheck:
   required: [code, argv, trigger, severity]
-  defaults: {results: unset, coverage: unset, slow_test_seconds: 1.0, slow_test_limit: 100}
+  defaults: {results: unset, coverage: unset, flake_coverage_argv: unset, slow_test_seconds: 1.0, slow_test_limit: 100}
 Merge:
   required: []
   defaults: {safety_checks: [], strategies: []}
@@ -377,7 +376,7 @@ command with failed tests runs once more; failed-then-passed tests in changed fi
 flaky, while unedited flakes enter quarantine unless its cap is full. Failed tests block unless
 quarantined and unedited. A passing quarantined test is released after its report resolves to a
 merged fix ticket. Missing or invalid results after a successful run or rerun fail the entry.
-An entry with `results` may also declare a worktree-relative `coverage` report. A flaky test is edited if its test file changed or its coverage context appears on a changed line (or a line adjacent to a pure deletion). Generate coverage.py JSON with `pytest-cov --cov-context=test`, `[tool.coverage.json] show_contexts = true`, and `[tool.coverage.run] core = "ctrace"`. When a flaky test needs classification, missing or invalid coverage contexts fail the entry. Merge-time checks continue to use exit status alone.
+An entry with `results` may also declare a worktree-relative `coverage` report. A flaky test is edited if its test file changed or a per-test coverage rerun executes a changed line (or a line adjacent to a pure deletion). Configure `flake_coverage_argv` to write the coverage.py JSON report; Check appends the test ID. Missing configuration or an invalid report fails classification. Merge-time checks continue to use exit status alone.
 
 The minimal seams in `clutch/seams.py` are:
 

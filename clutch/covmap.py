@@ -7,7 +7,26 @@ from uuid import uuid4
 from clutch.git import Git, GitError
 from clutch.runner import Refusal
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
-from clutch.stages import coverage_contexts
+
+
+def coverage_contexts(report: dict) -> dict[str, dict[str, list[str]]]:
+    files = report["files"]
+    if not isinstance(files, dict):
+        raise ValueError("invalid files")
+    contexts = {}
+    has_test_context = False
+    for name, data in files.items():
+        mapping = data["contexts"]
+        if not isinstance(mapping, dict):
+            raise ValueError("invalid contexts")
+        for line, values in mapping.items():
+            if not isinstance(line, str) or not isinstance(values, list) or not all(isinstance(value, str) for value in values):
+                raise ValueError("invalid contexts")
+            has_test_context |= any("|" in value for value in values)
+        contexts[name] = mapping
+    if not has_test_context:
+        raise ValueError("no test contexts")
+    return contexts
 
 
 def reduce_map(report: dict) -> dict[str, list[str]]:

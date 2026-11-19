@@ -34,11 +34,12 @@ review:
     - {code: ruff-format, argv: [uv, run, ruff, format], files: ["*.py"]}
   mechanical:
     - code: unit
-      argv: [clutch, coverage, gate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=clutch, --cov-branch, --cov-context=test, --cov-report=json:coverage.json, -n, auto]
+      argv: [clutch, coverage, gate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=clutch, --cov-branch, --cov-report=json:coverage.json, -n, auto]
       trigger: always
       severity: hard
       results: .clutch/results/unit.json
       coverage: coverage.json
+      flake_coverage_argv: [uv, run, python, -m, pytest, --cov=clutch, --cov-branch, --cov-report=json:coverage.json, -n, "0"]
     - code: integration
       argv: [uv, run, python, -m, pytest, tests/integration, -p, clutch.testreport, --clutch-results, .clutch/results/integration.json, -n, auto]
       trigger: always
@@ -47,7 +48,7 @@ review:
     - {code: lint, argv: [uv, run, ruff, check, .], trigger: always, severity: hard}
     - {code: format, argv: [uv, run, ruff, format, --check, .], trigger: always, severity: hard}
   coverage_map:
-    argv: [uv, run, pytest, -q, --cov=clutch, --cov=eval, --cov-context=test, --cov-report=json:.clutch/coverage.json]
+    argv: [uv, run, pytest, -q, --cov=clutch, --cov=eval, --cov-context=test, --cov-report=json:.clutch/coverage.json, --cov-config=coverage-map.toml]
     report: .clutch/coverage.json
 merge: {}
 drain:

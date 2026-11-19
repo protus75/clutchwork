@@ -441,60 +441,72 @@ def test_coverage_changed_lines(ctx, monkeypatch, deletion, covered, expected):
         else:
             changed[2] = "edited\n"
         ticket = await ready(ctx, changes={"pkg/m.py": "".join(changed)}, fence=("pkg/m.py",))
-        ctx.config.review.mechanical = [host("tests").model_copy(update={"results": "results.json", "coverage": "coverage.json"})]
+        ctx.config.review.mechanical = [host("tests").model_copy(update={"results": "results.json", "coverage": "coverage.json", "flake_coverage_argv": ["flake"]})]
         original = ctx.exec_.run
-        calls = 0
+        calls = []
 
         async def execute(argv, **kw):
-            nonlocal calls
-            if argv[0] != "host":
+            if argv[0] not in {"host", "flake"}:
                 return await original(argv, **kw)
-            calls += 1
-            outcomes = {test: "failed" if calls == 1 else "passed"}
-            (kw["cwd"] / "results.json").write_text(json.dumps({"schema_version": 2, "tests": outcomes, "seconds": {key: 0.0 for key in outcomes}}))
-            (kw["cwd"] / "coverage.json").write_text(json.dumps({"files": {"pkg/m.py": {"contexts": {str(covered): [test + "|run"]}}}}))
-            return (1 if calls == 1 else 0), "", ""
+            calls.append(argv)
+            if argv[0] == "flake":
+                (kw["cwd"] / "coverage.json").write_text(json.dumps({"files": {"pkg/m.py": {"executed_lines": [covered]}}}))
+                return 0, "", ""
+            outcomes = {test: "failed" if len(calls) == 1 else "passed"}
+            (kw["cwd"] / "results.json").write_text(json.dumps({"schema_version": 2, "tests": outcomes, "seconds": {test: 0.0}}))
+            return (1 if len(calls) == 1 else 0), "", ""
 
         monkeypatch.setattr(ctx.exec_, "run", execute)
         result = await checked(ctx, ticket)
         assert result.outcome == expected
+        assert ["flake", test] in calls
         detected = [e for e in ctx.driver.journal.read() if e.body.get("kind") == "flake_detected"]
         assert bool(detected) == (expected == "ok")
         if expected == "gate_failed":
             assert any(test in f.message for f in result.findings)
+        assert all("show_contexts" not in f.message + f.paved_road for f in result.findings)
 
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("coverage,flaky,expected", [(None, True, "gate_failed"), ({"files": {"x": {"contexts": {"1": [""]}}}}, True, "gate_failed"), (None, False, "gate_failed")])
-def test_coverage_fail_closed(ctx, monkeypatch, coverage, flaky, expected):
+@pytest.mark.parametrize("case", ["missing", "malformed", "unset", "green", "green_invalid"])
+def test_coverage_fail_closed(ctx, monkeypatch, case):
     import json
 
     async def run():
         test = "tests/test_a.py::test_x"
         ticket = await ready(ctx)
-        ctx.config.review.mechanical = [host("tests").model_copy(update={"results": "results.json", "coverage": "coverage.json"})]
+        command = None if case == "unset" else ["flake"]
+        ctx.config.review.mechanical = [host("tests").model_copy(update={"results": "results.json", "coverage": "coverage.json", "flake_coverage_argv": command})]
         original = ctx.exec_.run
-        calls = 0
+        calls = []
 
         async def execute(argv, **kw):
-            nonlocal calls
-            if argv[0] != "host":
+            if argv[0] not in {"host", "flake"}:
                 return await original(argv, **kw)
-            calls += 1
-            (kw["cwd"] / "results.json").write_text(json.dumps({"schema_version": 2, "tests": {test: "failed" if flaky and calls == 1 else "passed"}, "seconds": {test: 0.0}}))
-            if coverage is not None:
-                (kw["cwd"] / "coverage.json").write_text(json.dumps(coverage))
-            return (1 if flaky and calls == 1 else 0), "", ""
+            calls.append(argv)
+            if argv[0] == "flake":
+                if case == "malformed":
+                    (kw["cwd"] / "coverage.json").write_text(json.dumps({"files": {"x": {}}}))
+                return 0, "", ""
+            flaky = case not in {"green", "green_invalid"}
+            (kw["cwd"] / "results.json").write_text(json.dumps({"schema_version": 2, "tests": {test: "failed" if flaky and len(calls) == 1 else "passed"}, "seconds": {test: 0.0}}))
+            if case == "green":
+                (kw["cwd"] / "coverage.json").write_text(json.dumps({"meta": {"format": 3}, "files": {}}))
+            return (1 if flaky and len(calls) == 1 else 0), "", ""
 
         monkeypatch.setattr(ctx.exec_, "run", execute)
         result = await checked(ctx, ticket)
-        assert result.outcome == expected
+        assert result.outcome == ("ok" if case == "green" else "gate_failed")
         assert not any(e.body.get("kind") == "flake_detected" for e in ctx.driver.journal.read())
-        if flaky:
-            assert any("coverage.json" in f.message for f in result.findings)
-        else:
+        assert sum(call[0] == "flake" for call in calls) == (1 if case in {"missing", "malformed"} else 0)
+        if case == "green":
+            assert calls == [["host", "tests"]]
+        if case in {"missing", "malformed", "unset"}:
+            assert any("flake_coverage_argv" in f.paved_road for f in result.findings)
+        if case == "green_invalid":
             assert any("Missing or invalid coverage report" in f.message for f in result.findings)
+        assert all("show_contexts" not in f.message + f.paved_road for f in result.findings)
 
     asyncio.run(run())
 

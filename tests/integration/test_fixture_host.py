@@ -83,6 +83,7 @@ def test_fixture_profile_loads(host):
         "severity": "hard",
         "results": None,
         "coverage": None,
+        "flake_coverage_argv": None,
         "slow_test_seconds": 1.0,
         "slow_test_limit": 100,
     }

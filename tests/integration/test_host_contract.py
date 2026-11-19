@@ -86,7 +86,8 @@ def test_python_host_setup_loads(tmp_path):
     unit, integration = checks["unit"], checks["integration"]
     assert unit.argv[:9] == ["clutch", "coverage", "gate", "--", "uv", "run", "python", "-m", "pytest"]
     assert [unit.argv[i + 1] for i, arg in enumerate(unit.argv[:-1]) if arg == "-p"] == ["clutch.testguard", "clutch.testreport"]
-    assert "--cov-context=test" in unit.argv
+    assert "--cov-context=test" not in unit.argv
+    assert unit.flake_coverage_argv and "--cov-report=json:coverage.json" in unit.flake_coverage_argv
     assert unit.argv[unit.argv.index("--clutch-results") + 1] == str(unit.results)
     assert [arg for arg in unit.argv if arg.startswith("--cov-report=json:")] == [f"--cov-report=json:{unit.coverage}"]
     assert integration.argv == ["uv", "run", "python", "-m", "pytest", "tests/integration", "-p", "clutch.testreport", "--clutch-results", ".clutch/results/integration.json", "-n", "auto"]

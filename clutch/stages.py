@@ -1084,24 +1084,20 @@ def _changed_lines(diff: str) -> dict[str, set[int]]:
     return lines
 
 
-def coverage_contexts(report: dict) -> dict[str, dict[str, list[str]]]:
-    files = report["files"]
-    if not isinstance(files, dict):
-        raise ValueError("invalid files")
-    contexts = {}
-    has_test_context = False
-    for name, data in files.items():
-        mapping = data["contexts"]
-        if not isinstance(mapping, dict):
-            raise ValueError("invalid contexts")
-        for line, values in mapping.items():
-            if not isinstance(line, str) or not isinstance(values, list) or not all(isinstance(value, str) for value in values):
-                raise ValueError("invalid contexts")
-            has_test_context |= any("|" in value for value in values)
-        contexts[name] = mapping
-    if not has_test_context:
-        raise ValueError("no test contexts")
-    return contexts
+def flake_covered(report: dict, changed: dict[str, set[int]]) -> bool:
+    try:
+        files = report["files"]
+        if not isinstance(files, dict):
+            raise ValueError("invalid files")
+        covered = False
+        for name, data in files.items():
+            lines = data["executed_lines"]
+            if not isinstance(name, str) or not isinstance(lines, list) or any(type(line) is not int or line < 1 for line in lines):
+                raise ValueError("invalid executed lines")
+            covered |= bool(changed.get(name, set()).intersection(lines))
+        return covered
+    except (KeyError, TypeError) as exc:
+        raise ValueError("invalid coverage report") from exc
 
 
 async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
@@ -1181,28 +1177,30 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
         projection = flake.quarantine()
         findings = []
         flaky = {test for test, outcome in first.items() if outcome == "failed" and last.get(test) == "passed"}
-        covered = set()
-        if flaky and entry.coverage is not None:
-            try:
-                contexts = coverage_contexts(json.loads((root / entry.coverage).read_text()))
-            except OSError, UnicodeError, ValueError, KeyError, TypeError:
-                return recorded(
-                    _report(
-                        entry.code,
-                        [
-                            Finding(
-                                code=entry.code,
-                                path=entry.coverage,
-                                message=f"Missing or invalid coverage contexts: {entry.coverage}",
-                                paved_road='run with --cov-context=test, and set [tool.coverage.json] show_contexts = true and [tool.coverage.run] core = "ctrace"',
-                            )
-                        ],
+        changed = _changed_lines(await ctx.git.diff(ctx.repo, MAIN, ticket.stem)) if flaky and entry.coverage is not None else {}
+        for k, test in enumerate(sorted(flaky), 1):
+            edited = test.split("::", 1)[0] in changed_files
+            if not edited and entry.coverage is not None:
+                try:
+                    if entry.flake_coverage_argv is None:
+                        raise ValueError("missing flake coverage command")
+                    ctx.fs.remove(root / entry.coverage)
+                    await run_host_command(ctx, ticket, attempt, entry.flake_coverage_argv + [test], entry.code, f"check/host-{n:02d}-flake-{k}.txt")
+                    edited = flake_covered(json.loads((root / entry.coverage).read_text()), changed)
+                except OSError, UnicodeError, ValueError, TypeError:
+                    return recorded(
+                        _report(
+                            entry.code,
+                            [
+                                Finding(
+                                    code=entry.code,
+                                    path=entry.coverage,
+                                    message=f"Missing or invalid flake coverage report: {entry.coverage}",
+                                    paved_road=f"configure flake_coverage_argv to write --cov-report=json:{entry.coverage}",
+                                )
+                            ],
+                        )
                     )
-                )
-            changed = _changed_lines(await ctx.git.diff(ctx.repo, MAIN, ticket.stem))
-            covered = {context.split("|", 1)[0] for name, numbers in changed.items() for number in numbers for context in contexts.get(name, {}).get(str(number), []) if "|" in context}
-        for test in sorted(flaky):
-            edited = test.split("::", 1)[0] in changed_files or test in covered
             if edited:
                 findings.append(Finding(code=entry.code, message=f"{test} is flaky and touches edited code", paved_road="make it deterministic by faking time, IO and ordering"))
             elif test not in projection.tests:

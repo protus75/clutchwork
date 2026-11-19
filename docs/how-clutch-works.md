@@ -333,7 +333,7 @@ An entry may declare a worktree-relative `results` file written by `clutch.testr
 clears it before each run and reruns a failing command with failed tests once. Edited flakes
 block; unedited flakes are quarantined unless the cap is full. Quarantined unedited failures
 do not block, and a passing quarantined test is released when its resolved fix has merged.
-Missing or invalid results after a successful run or rerun fail the entry. Check records command wall time, outcome counts and slow tests from the first run, bounded by `slow_test_seconds` (default 1.0) and `slow_test_limit` (default 100). Readable coverage records the repository percentage and percentages for changed files. With a declared coverage.py JSON report, a flake also counts as edited when its test context covers a changed line or a line adjacent to a pure deletion. The host must run with `--cov-context=test`, `[tool.coverage.json] show_contexts = true` and `[tool.coverage.run] core = "ctrace"`; missing or invalid contexts fail classification.
+Missing or invalid results after a successful run or rerun fail the entry. Check records command wall time, outcome counts and slow tests from the first run, bounded by `slow_test_seconds` (default 1.0) and `slow_test_limit` (default 100). Readable coverage records the repository percentage and percentages for changed files. With a declared coverage.py JSON report, Check runs `flake_coverage_argv` for each flake whose test file is unchanged, and counts it as edited when executed lines include a changed line or a line adjacent to a pure deletion. Missing configuration or an invalid report fails classification.
 
 
 ## 6. When a run fails

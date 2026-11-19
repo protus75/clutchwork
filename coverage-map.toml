@@ -1,0 +1,5 @@
+[tool.coverage.run]
+core = "ctrace"
+
+[tool.coverage.json]
+show_contexts = true
