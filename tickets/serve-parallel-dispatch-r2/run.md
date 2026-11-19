@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The orphan sweep retains its existing behavior of skipping when admission is busy; once entered, its exclusive gate blocks new runs.
+The ticket verification passed 458 tests; the unit coverage gate passed 1,107 tests, the integration check passed 3,464 tests, and lint and format checks passed. The initial verification exposed a worker-cancellation reporting race, which was fixed. Both new cancellation tests were checked against the vulnerable release paths; mutation checks for every other assertion were not completed.
 
 ## Dead ends
 
-Initial gate tests needed explicit synchronization to detect admission bypassing the gate.
+The exact verification command could not run on the base commit because the new test file did not exist there; the failing worker-cancellation test passed alone on the base.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 30 minutes expected, 60 minutes stuck; actual duration not measured.
+The ticket budget was 30 minutes expected and 60 minutes stuck; actual elapsed time was not measured.
 
