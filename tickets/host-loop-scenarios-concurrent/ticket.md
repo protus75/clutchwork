@@ -34,7 +34,7 @@ Scope out: `tests/harness/host_loop.py`, `hosts/fixture/`, the engine, the per-s
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_host_loop.py` passes every test in the file, with entries still in `SCENARIOS` order (a completion-order report fails `HostLoopReport` validation and the `entries[:3]` producing-run assertion).
-2. `./dev.py test tests/integration/test_host_loop.py --durations=5` reports setup of `test_host_loop_drives_supervised_fixture_serve` (the `production` fixture) under 12s on a 20-core machine, not the current ~35s.
+2. `./dev.py test tests/integration/test_host_loop.py --durations=5` reports setup of `test_host_loop_drives_supervised_fixture_serve` (the `production` fixture) at most 8s on a 20-core machine, not the current ~35s, so the test fits the 10s per-test cap in `integration-test-time-cap`.
 3. `./dev.py test tests/integration/test_host_loop.py` still fails when a spawned serve process group is never killed: the spawned-equals-killed check compares the full sets of process groups, not just their counts.
 
 ## Verification
