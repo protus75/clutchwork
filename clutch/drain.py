@@ -130,6 +130,11 @@ def sort_key(ticket: Ticket, authored: Mapping[str, str]) -> tuple:
     return (PRIORITY[ticket.frontmatter.priority], ts is None, ts or "", ticket.stem)
 
 
+def eligible(tickets: Iterable[Ticket], last: Mapping[str, str], settled: set[str], maps: Mapping) -> list[Ticket]:
+    """Filter the common dispatch eligibility conditions in input order."""
+    return [t for t in tickets if t.frontmatter.state == "confirmed" and last.get(t.stem) not in CLOSED and t.stem not in maps and set(t.depends) <= settled]
+
+
 def order_tickets(tickets: Iterable[Ticket], authored: Mapping[str, str]) -> list[Ticket]:
     """Apply soft edges only within the eligible set, breaking ties by sort_key."""
     return _soft_edges(sorted(tickets, key=lambda t: sort_key(t, authored)))
@@ -597,7 +602,7 @@ class _Drain:
         settled = settled_dependencies(events)
         maps = supersedes_maps(events)
         authored = authored_at(events)
-        ready = sorted((t for t in open_.values() if t.stem not in maps and set(t.depends) <= settled), key=lambda t: sort_key(t, authored))
+        ready = sorted(eligible(open_.values(), last, settled, maps), key=lambda t: sort_key(t, authored))
         candidates = []
         storm_held = set(self.c.control.storm_holds().values()) if self.c.control is not None else set()
         self.storm_waiting = False
