@@ -1,5 +1,5 @@
 ---
-state: draft
+state: rejected
 source: human
 priority: P0
 kind: feature
