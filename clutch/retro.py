@@ -18,7 +18,7 @@ from clutch.gates import GateReport
 from clutch.git import GitError
 from clutch.journal import Event, EventType, total_spend
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
-from clutch.tickets import ticket_path
+from clutch.tickets import read_tolerant, ticket_path
 
 RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
@@ -230,8 +230,8 @@ async def production_evidence(window, checkout):
         predicted = None
         if row["commit"] is not None:
             text = await checkout.git._run(checkout.repo, "show", f"{row['commit']}:{ticket_path(row['ticket'])}")
-            match = re.search(r"^- expected: (\d+)m$", text, re.M)
-            predicted = int(match[1]) * 60 if match else None
+            minutes = read_tolerant(text).expected_minutes
+            predicted = minutes * 60 if minutes is not None else None
         row["predicted_seconds"] = predicted
         row["divergence_seconds"] = row["actual_seconds"] - predicted if row["actual_seconds"] is not None and predicted is not None else None
     evidence["check_observations"] = observations

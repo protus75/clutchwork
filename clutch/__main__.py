@@ -19,8 +19,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-import yaml
-
 import clutch
 from clutch import ask, control, drain, hostfiles, issue, observe, requisition, runner, seams, serve, triage
 from clutch.box import BOX_DIR, UnknownBoxId
@@ -65,6 +63,7 @@ from clutch.tickets import (
     lint_findings,
     missing_evidence_findings,
     order,
+    read_tolerant,
     split_frontmatter,
     stem_findings,
     template,
@@ -1759,11 +1758,10 @@ async def _stats(checkout, events, now, window):
     kinds = {}
     for stem in {e.ticket for e in events if e.ticket}:
         try:
-            split = split_frontmatter((checkout.repo / ticket_path(stem)).read_text())
-            data = yaml.safe_load(split[0]) if split else None
-            if isinstance(data, dict) and data.get("kind") in KINDS:
-                kinds[stem] = data["kind"]
-        except OSError, UnicodeError, yaml.YAMLError:
+            kind = read_tolerant((checkout.repo / ticket_path(stem)).read_text()).frontmatter.get("kind")
+            if kind in KINDS:
+                kinds[stem] = kind
+        except OSError, UnicodeError:
             pass
     checks = {}
     for e in events:

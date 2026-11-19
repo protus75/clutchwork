@@ -172,6 +172,38 @@ def split_frontmatter(text: str) -> tuple[str, str] | None:
     return (m.group(1), text[m.end() :]) if m else None
 
 
+@dataclass(frozen=True)
+class TolerantTicket:
+    frontmatter: dict[str, object]
+    depends: tuple[str, ...]
+    expected_minutes: int | None
+
+
+def read_tolerant(text: str) -> TolerantTicket:
+    split = split_frontmatter(text)
+    data = None
+    if split:
+        try:
+            data = yaml.safe_load(split[0])
+        except yaml.YAMLError, RecursionError, ValueError:
+            pass
+    sections, _ = _sections(split[1] if split else text, "")
+    deps, _ = _bullets(sections.get("Depends on", ""), "Depends on", "")
+    if deps == ["none"]:
+        deps = []
+    budget, _ = _bullets(sections.get("Time budget", ""), "Time budget", "")
+    expected = None
+    for item in budget:
+        match = _BUDGET.match(item)
+        if match and match[1] == "expected":
+            try:
+                expected = int(match[2])
+            except ValueError:
+                pass
+            break
+    return TolerantTicket(data if isinstance(data, dict) else {}, tuple(deps), expected)
+
+
 def _load_frontmatter(raw: str, path: str) -> tuple[dict | None, list[Finding]]:
     try:
         data = yaml.safe_load(raw)

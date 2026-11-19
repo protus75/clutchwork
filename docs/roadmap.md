@@ -77,7 +77,6 @@ Ticket: `closed-sets-remaining`.
 - `requisition_verdict` signal body built by hand: `__main__.py:1573`, `author.py:466`, `rework.py:227`, `runner.py:197`. `ticket_intake` body: `tickets.py:870` uses `INTAKE_SIGNAL`, `author.py:463` a literal. (recurred in 0.4.0)
 - Scorecard table builders in `status.py` and `retro.py` duplicate the header and row formatting, though the retro table includes an extra blank line. (recurred in 0.4.0)
 - Attempt counting with different semantics remains in `caps.failed_attempts`, `observe.py:432` (non-running terminals) and `stats.py:114` (running transitions). Spend sums now share `journal.total_spend`. (recurred in 0.4.0)
-- Ticket metadata still read outside the owner: regex in `observe.py:240-247` and its dependency reader, the expected-time regex at `retro.py:242`, and a separate YAML read in `__main__.py:1731-1734`. (recurred in 0.4.0)
 - `"cap spent"` produced by `caps.py:113` and parsed back by `observe.py:346`. `provider_drought` bodies are still probed across `runner.py`, `providers.py`, `__main__.py`, `drain.py` and `audit.py`. (recurred in 0.4.0)
 
 `projection-helpers-single-owner` centralized last-state folds, spend sums, `BOX_DIR`, `ticket_path()` and most log construction. The remaining metadata reads and constructor/path copies are assigned to `ticket-frontmatter-tolerant-reader`, `storm-producer-one-builder` and `projection-leftovers`.

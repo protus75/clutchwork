@@ -20,6 +20,7 @@ from clutch.help import COMMANDS, help_map, help_pick
 from clutch.journalcache import open_journal_cache
 from clutch.lockfile import ENGINE_VERBS
 from clutch.rework import settled_dependencies
+from clutch.specs import load_spec
 from clutch.status import (
     CLOSED,
     SETTLED,
@@ -35,7 +36,7 @@ from clutch.status import (
     run_admission,
     triage_admission,
 )
-from clutch.tickets import Frontmatter, TicketInvalid, _graph, _intake_plan_stem, _porcelain, intake_pending, order, parse_ticket, ticket_path, validate_ticket
+from clutch.tickets import Frontmatter, TicketInvalid, _graph, _intake_plan_stem, _porcelain, intake_pending, order, parse_ticket, read_tolerant, ticket_path, validate_ticket
 
 STEP_NAMES = {
     "acceptance": "Acceptance",
@@ -239,13 +240,11 @@ def live_call(rows: list[tuple[int, int, str]], root: int) -> str:
     return ""
 
 
-def frontmatter(path: Path) -> dict[str, str]:
+def frontmatter(path: Path) -> dict[str, object]:
     try:
-        text = path.read_text()
+        return read_tolerant(path.read_text()).frontmatter
     except OSError:
         return {}
-    head = text.split("---", 2)[1] if text.startswith("---") else ""
-    return dict(re.findall(r"^(\w+):\s*\"?([^\"\n]+)\"?\s*$", head, re.M))
 
 
 def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
@@ -260,10 +259,10 @@ def capability(ctx, events: list[dict], stem: str, surface: str) -> str:
     tier = rung["tier"] if rung else meta.get("agent_tier", "medium")
     effort = rung["effort"] if rung else meta.get("agent_effort", "medium")
     if surface == "resolve":
-        spec = frontmatter(Path(__file__).parent / "specs" / "resolve.md")
-        return f"{spec['tier']}/{spec['effort']}"
+        spec = load_spec((Path(__file__).parent / "specs" / "resolve.md").read_text()).meta
+        return f"{spec.tier}/{spec.effort}"
     if surface == "requisition_review":
-        effort = frontmatter(Path(__file__).parent / "specs" / "requisition_review.md").get("effort", "?")
+        effort = load_spec((Path(__file__).parent / "specs" / "requisition_review.md").read_text()).meta.effort
     return f"{tier}/{effort}" + (" (escalated)" if rung else "")
 
 
@@ -302,9 +301,7 @@ def current_step(log: list[dict], stem: str) -> tuple[str, str, str | None]:
 
 
 def depends(path: Path) -> list[str]:
-    text = path.read_text()
-    section = text.split("## Depends on", 1)[1].split("\n## ", 1)[0] if "## Depends on" in text else ""
-    return re.findall(r"^- (\S+)", section, re.M)
+    return list(read_tolerant(path.read_text()).depends)
 
 
 def held(history, blobs, candidates) -> set[str]:
