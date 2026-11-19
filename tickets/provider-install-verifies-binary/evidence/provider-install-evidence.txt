@@ -1,0 +1,16 @@
+$ .venv/bin/clutch provider install claude   (2026-11-18, pnpm 10.34.5; exit 0)
+claude: project, package @anthropic-ai/claude-code
+$ .venv/bin/clutch provider install codex
+codex: project 0.170.0, package @openai/codex
+$ node_modules/.bin/claude --version
+Error: claude native binary not installed.
+
+Either postinstall did not run (--ignore-scripts, some pnpm configs)
+or the platform-native optional dependency was not downloaded
+(--omit=optional).
+
+Run the postinstall manually (adjust path for local vs global install):
+  node node_modules/@anthropic-ai/claude-code/install.cjs
+
+Or reinstall without --ignore-scripts / --omit=optional.
+(exit 1)
