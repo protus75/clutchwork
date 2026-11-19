@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The disposable-host example preserved row identities and history across an update, and roadmap status showed the dependent row blocked. Both prompt resources were present in the built wheel. The focused verification passed with 29 tests; the full unit coverage gate, 3,466 integration tests, lint, and format checks passed. The facet was reviewed against the plan-admission and self-host roadmap requirements. A single packaged facet was used instead of duplicating its instructions in the operator template.
+The disposable-host example preserved row identities, links, strikes, decisions and the conditional start block; its new dependent row remained blocked. Both resources were present in the built wheel. The final verification command passed 28 tests; the host unit coverage gate passed 1,131 tests, the integration gate passed 3,466 tests, and lint and format checks passed.
 
 ## Dead ends
 
-An initial host-running documentation row violated the existing command-table test; the description was folded into the existing prompt row.
+A mutation check exposed a weak help assertion; the assertion was tightened and the wrong implementation then failed.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket expected 15 minutes; elapsed time was not recorded.
 
