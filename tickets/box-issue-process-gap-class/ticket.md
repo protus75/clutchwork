@@ -36,7 +36,7 @@ Scope in:
   - `does` becomes `Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submit nothing.`
   - Add a second example: `clutch box issue --class process-gap "<title>" --body body.md`.
   - The `--class` help still joins `issue.CLASSES`.
-- `clutch/hostfiles.py` `CORE_TEMPLATE`, the "Outside clutch's own repo" rule only: replace `Only a bug in a `clutch box issue` critical class goes upstream:` with `Only a `clutch box issue` class (critical bug, or process gap that cost a run a cycle) goes upstream:`. Measure the byte budget against `CORE_TEMPLATE` on main when Implement runs, not at authoring. The sibling `boundary-contract-authoring` (P1, confirmed) also edits this template. The edit must leave the template at or under the 8,192-byte cap in `tests/integration/test_hostfiles.py`. If the replacement does not fit, shorten only this rule's new wording; the phrase `process gap that cost a run a cycle` must stay. Never reword another rule. Then run `uv run clutch host core` to refresh the managed blocks in `CLAUDE.md` and `AGENTS.md`; never hand-edit those blocks. Then regenerate `GOLDEN` in `tests/integration/test_hostfiles.py` with `uv run python -m tests.integration.test_hostfiles`, the file's own `__main__` generator, and change nothing else in that file.
+- `clutch/hostfiles.py` `CORE_TEMPLATE`, the "Outside clutch's own repo" rule only: replace `Only a bug in a `clutch box issue` critical class goes upstream:` with `Only a `clutch box issue` class (critical bug, or process gap that cost a run a cycle) goes upstream:`. Measure the byte budget against `CORE_TEMPLATE` on main when Implement runs, not at authoring. The sibling `boundary-contract-authoring` (P1, confirmed) also edits this template. The edit must leave the template at or under the 8,192-byte cap in `tests/integration/test_hostfiles.py`. If the replacement does not fit, shorten only this rule's new wording; the phrase `process gap that cost a run a cycle` must stay. Never reword another rule. Then run `uv run clutch host core` to refresh the managed blocks in `CLAUDE.md` and `AGENTS.md`. Run it again from `hosts/fixture` to refresh `hosts/fixture/CLAUDE.md`. Never hand-edit any of these blocks. Then regenerate `GOLDEN` in `tests/integration/test_hostfiles.py` with `uv run python -m tests.integration.test_hostfiles`, the file's own `__main__` generator, and change nothing else in that file.
 - `clutch/docs/host-running.md`:
   - The `box issue` verb-table row says it prints a link for a critical clutch bug or a process gap.
   - Rename the section heading `## Reporting a critical clutch bug` to `## Reporting a clutch problem upstream`.
@@ -65,6 +65,7 @@ Scope out:
 - tests/integration/test_hostfiles.py
 - CLAUDE.md
 - AGENTS.md
+- hosts/fixture/CLAUDE.md
 - clutch/docs/host-running.md
 - docs/how-clutch-works.md
 - README.md
@@ -78,19 +79,19 @@ Scope out:
 2. `tests/unit/test_issue_process_gap.py::test_process_gap_title_prefix` checks that `link("process-gap", "retry skips re-audit", "body", str)` builds a URL whose `title` query value is exactly `[process-gap] retry skips re-audit`. It rules out `[critical:process-gap] ...` and an unprefixed title.
 3. `tests/unit/test_issue_process_gap.py::test_critical_prefix_unchanged` checks that every member of `issue.CRITICAL` still yields the title `[critical:<class>] t`. It rules out a critical class losing its prefix.
 4. `tests/unit/test_issue_process_gap.py::test_main_accepts_process_gap` checks that `cli.main(["box", "issue", "--class", "process-gap", "t", "--body", "body.md"], ...)` with load_config faked returns 0 and prints one link. It rules out argparse or the verb refusing the new class.
-5. `tests/integration/test_hostfiles.py` passes against main's template at Implement time, so `CORE_TEMPLATE` stays at or under 8,192 bytes, still contains `is never copied or patched into host files`, and matches the regenerated `GOLDEN` (`test_core_golden_uses_branch_template`). Running `uv run clutch host core` after the change leaves `CLAUDE.md` and `AGENTS.md` matching the template. The `## Verification` grep checks that each contains `process gap that cost a run a cycle`.
+5. `tests/integration/test_hostfiles.py` passes against main's template at Implement time, so `CORE_TEMPLATE` stays at or under 8,192 bytes, still contains `is never copied or patched into host files`, and matches the regenerated `GOLDEN` (`test_core_golden_uses_branch_template`). `tests/integration/test_core_supervisor_verdicts.py` and `tests/integration/test_fixture_host.py` pass, so `hosts/fixture/CLAUDE.md`'s managed block equals the template. The `## Verification` grep checks that `CLAUDE.md`, `AGENTS.md` and `hosts/fixture/CLAUDE.md` each contain `process gap that cost a run a cycle`.
 6. The `## Verification` docs check passes. `clutch/docs/host-running.md` has a `## Reporting a clutch problem upstream` section that names `process-gap` and all five critical classes. `docs/how-clutch-works.md` links `#reporting-a-clutch-problem-upstream` and no longer links `#reporting-a-critical-clutch-bug`. `README.md` mentions `process gap` on its `clutch box issue` line.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_issue_link.py tests/unit/test_issue_process_gap.py tests/integration/test_issue_verb.py tests/integration/test_hostfiles.py tests/unit/test_main_help.py
-uv run python -c "import pathlib; r = lambda p: pathlib.Path(p).read_text(); h = r('clutch/docs/host-running.md').split('## Reporting a clutch problem upstream', 1)[1]; assert all(w in h for w in ('process-gap', 'state-loss', 'secret-leak', 'bad-merge', 'engine-stuck', 'wrong-refusal')); w = r('docs/how-clutch-works.md'); assert '#reporting-a-clutch-problem-upstream' in w and '#reporting-a-critical-clutch-bug' not in w; assert any('clutch box issue' in l and 'process gap' in l for l in r('README.md').splitlines()); assert all('process gap that cost a run a cycle' in r(p) for p in ('CLAUDE.md', 'AGENTS.md'))"
+./dev.py test tests/unit/test_issue_link.py tests/unit/test_issue_process_gap.py tests/integration/test_issue_verb.py tests/integration/test_hostfiles.py tests/integration/test_core_supervisor_verdicts.py tests/integration/test_fixture_host.py tests/unit/test_main_help.py
+uv run python -c "import pathlib; r = lambda p: pathlib.Path(p).read_text(); h = r('clutch/docs/host-running.md').split('## Reporting a clutch problem upstream', 1)[1]; assert all(w in h for w in ('process-gap', 'state-loss', 'secret-leak', 'bad-merge', 'engine-stuck', 'wrong-refusal')); w = r('docs/how-clutch-works.md'); assert '#reporting-a-clutch-problem-upstream' in w and '#reporting-a-critical-clutch-bug' not in w; assert any('clutch box issue' in l and 'process gap' in l for l in r('README.md').splitlines()); assert all('process gap that cost a run a cycle' in r(p) for p in ('CLAUDE.md', 'AGENTS.md', 'hosts/fixture/CLAUDE.md'))"
 ```
 
 ## Definition of rejected
 - A critical-class issue title is no longer `[critical:<class>] <title>`, or any existing `tests/integration/test_issue_verb.py` assertion changes.
 - `CORE_TEMPLATE` exceeds 8,192 bytes, or another `CORE_TEMPLATE` rule is reworded or dropped to make room.
-- The `CLAUDE.md` or `AGENTS.md` managed block is edited by hand instead of refreshed with `clutch host core`.
+- The `CLAUDE.md`, `AGENTS.md`, or `hosts/fixture/CLAUDE.md` managed block is edited by hand instead of refreshed with `clutch host core`.
 - The class list becomes open, such as a free-form class or a catch-all like `improvement`.
 - Any autonomous surface gains a path to prepare an upstream issue.
 
