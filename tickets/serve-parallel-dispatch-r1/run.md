@@ -4,11 +4,11 @@ incomplete
 
 ## Surprises / judgment calls
 
-The admission change also affects maintenance locking and cancellation handling; the partial edits were not verified or committed.
+The existing admission lock also serializes maintenance and merge handoffs, so replacing it requires preserving those boundaries while allowing concurrent runs.
 
 ## Dead ends
 
-none
+The shared running-transition writer and part of the queue-context and host-command changes are uncommitted and incomplete.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 25 minutes; the work was not completed within this attempt.
+The ticket expected 25 minutes; the work was not completed.
 
