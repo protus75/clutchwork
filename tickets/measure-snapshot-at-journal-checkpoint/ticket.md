@@ -6,7 +6,7 @@ kind: chore
 ---
 
 ## Depends on
-- snapshot-duckdb-under-one-second
+- snapshot-from-duckdb-cache
 
 ## Context
 - docs/journal-sql-refactor-plan.md#Problem
