@@ -33,11 +33,11 @@ The only Check reader of those contexts is the flaky-test classification in `_ch
 ### Mechanical check config
 - disposition: extend
 - owner: clutch/config.py (`MechanicalCheck`)
-- consumers: Check (`_check_host_results` in clutch/stages.py), `config.yaml`, the `config-fields` and `python-host` blocks in clutch/docs/host-contract.md
+- consumers: Check (`_check_host_results` in clutch/stages.py), `config.yaml`, the `config-fields` and `python-host` blocks in clutch/docs/host-contract.md, the exact `MechanicalCheck.model_dump()` assertion in tests/integration/test_fixture_host.py
 - observable change: optional `flake_coverage_argv` (argv list, default unset); config load refuses it on an entry whose `coverage` is unset, naming the field
-- compatibility: configs without the field load unchanged
+- compatibility: configs without the field load unchanged; `model_dump()` gains `"flake_coverage_argv": None`
 - acceptance: a `MechanicalCheck` with `flake_coverage_argv` and no `coverage` raises a validation error; one with both loads
-- tests: tests/unit/test_stages_flake_coverage.py
+- tests: tests/unit/test_stages_flake_coverage.py, tests/integration/test_fixture_host.py
 - post-merge source of truth: clutch/config.py
 
 ### Flake edit classification in Check
@@ -70,6 +70,7 @@ The only Check reader of those contexts is the flaky-test classification in `_ch
 - In: `clutch/docs/host-contract.md`: the `python-host` block (drop `--cov-context=test`, add `flake_coverage_argv`), the onboarding sentence telling hosts to set `show_contexts = true` (remove it), the `config-fields` `MechanicalCheck` defaults row (add `flake_coverage_argv: unset`), and the flaky-test paragraph (describe the per-flake rerun).
 - In: `docs/how-clutch-works.md`: only the flaky-test coverage sentences in the paragraph that requires `--cov-context=test` and `show_contexts`.
 - In: `tests/integration/test_host_mechanical.py`: `test_coverage_changed_lines` and `test_coverage_fail_closed` drive the new flow (fake exec writes `executed_lines` for the flake run; add the missing-`flake_coverage_argv` fail-closed case). `tests/integration/test_host_contract.py`: the `--cov-context=test` assertion flips to its absence plus a `flake_coverage_argv` check.
+- In: `tests/integration/test_fixture_host.py`: the exact `cfg.review.mechanical[0].model_dump()` expected dict gains `"flake_coverage_argv": None` between `"coverage": None` and `"slow_test_seconds"`; the field is not hidden from `model_dump` to keep the old assertion passing.
 - In: new `tests/unit/test_stages_flake_coverage.py` for `flake_covered` and the config validation.
 - Out: `test-gate.toml` floors (unchanged), `clutch/covgate.py`, the integration check, slow-test timing, the quarantine and release logic, and DuckDB storage for the coverage map (not needed: no per-test map is stored).
 
@@ -85,6 +86,7 @@ The only Check reader of those contexts is the flaky-test classification in `_ch
 - tests/integration/test_host_mechanical.py
 - tests/integration/test_host_contract.py
 - tests/integration/test_covmap.py
+- tests/integration/test_fixture_host.py
 - tests/unit/test_stages_flake_coverage.py
 
 ## Acceptance criteria
@@ -95,11 +97,11 @@ The only Check reader of those contexts is the flaky-test classification in `_ch
 5. A green unit run (no flake) runs only the `unit` argv: the fake exec in `tests/integration/test_host_mechanical.py` records no `flake_coverage_argv` call, not one per test; checked by `./dev.py test tests/integration/test_host_mechanical.py`.
 6. `grep -rn "show_contexts" clutch/stages.py clutch/docs/host-contract.md docs/how-clutch-works.md pyproject.toml` prints nothing, and `grep -n "coverage_contexts" clutch/stages.py` prints nothing; checked in review against the merged branch.
 7. `tests/unit/test_stages_flake_coverage.py` calls `stages._check_host_results` with a fake ctx (as `tests/unit/test_host_check_selection.py::test_invalid_coverage` does: fake exec writing `results.json` and the coverage report under `tmp_path`, fake `ctx.git.diff` returning a one-line edit to `pkg/m.py`, `daemon.storm_producer` and `daemon.flake_detection` monkeypatched) and drives a failed-then-passed test through three cases: the flake run's `executed_lines` include the edited line, so the report fails with a finding naming the test, not a pass; the entry has `coverage` but no `flake_coverage_argv`, so it fails with a finding whose paved road names `flake_coverage_argv` and the fake exec records no extra run; the flake run writes a report lacking `executed_lines`, so it fails closed rather than classifying the test unedited; checked by `./dev.py test tests/unit/test_stages_flake_coverage.py`. The unedited `flake.detect` path stays covered in `tests/integration/test_host_mechanical.py`.
-8. `tests/integration/test_covmap.py` and `tests/integration/test_host_contract.py` pass, the latter asserting the `python-host` `unit` argv has no `--cov-context=test` and declares `flake_coverage_argv`; checked by `./dev.py test tests/integration/test_covmap.py tests/integration/test_host_contract.py`.
+8. `tests/integration/test_covmap.py` and `tests/integration/test_host_contract.py` pass, the latter asserting the `python-host` `unit` argv has no `--cov-context=test` and declares `flake_coverage_argv`; and `tests/integration/test_fixture_host.py` passes with its exact `model_dump()` dict including `"flake_coverage_argv": None`; checked by `./dev.py test tests/integration/test_covmap.py tests/integration/test_host_contract.py tests/integration/test_fixture_host.py`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_stages_flake_coverage.py tests/integration/test_host_mechanical.py tests/integration/test_covmap.py tests/integration/test_host_contract.py
+./dev.py test tests/unit/test_stages_flake_coverage.py tests/integration/test_host_mechanical.py tests/integration/test_covmap.py tests/integration/test_host_contract.py tests/integration/test_fixture_host.py
 uv run python -c "import sys, tomllib, yaml; u = next(c for c in yaml.safe_load(open('config.yaml'))['review']['mechanical'] if c['code'] == 'unit'); p = tomllib.load(open('pyproject.toml', 'rb')); sys.exit(0 if not any(a.startswith('--cov-context') for a in u['argv']) and u.get('flake_coverage_argv') and 'json' not in p['tool']['coverage'] else 1)"
 ```
 
@@ -108,6 +110,7 @@ uv run python -c "import sys, tomllib, yaml; u = next(c for c in yaml.safe_load(
 - Check, covmap, or any clutch code reads coverage.py's `.coverage` data file, or any SQLite storage is added.
 - The unit check still records per-test contexts on a run with no flaky test.
 - A flaky test is classified unedited when its flake-coverage report is missing or malformed.
+- `flake_coverage_argv` is excluded from `MechanicalCheck.model_dump()` to keep `tests/integration/test_fixture_host.py` passing unchanged.
 
 ## Time budget
 - expected: 15m
