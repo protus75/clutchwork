@@ -1,5 +1,5 @@
 ---
-state: confirmed
+state: rejected
 priority: P2
 kind: feature
 agent_tier: medium
