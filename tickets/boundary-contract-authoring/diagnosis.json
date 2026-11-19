@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "bbd24eb40259e4956d3a7f682acdb012b2b24105",
+  "stem": "boundary-contract-authoring",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The only gate finding is the flaky tests/integration/test_serve_admission.py::test_serve_admission_holds_and_cleanup[tree-mismatch]. The diff never touches merge-queue admission, and the full suite passed (3433 passed). The check stage then refused to quarantine it because the quarantine cap is",
+    "A human must fix and release the existing test quarantines, or fix the flaky tree-mismatch admission test, so the quarantine cap is no longer crossed. Only then requeue this ticket. Do not change this ticket's scope for it.",
+    "When requeued, redo the full diff from the merge base: tickets.py optional section, skeleton and shape check; host-authoring.md bullet; author/requisition_review spec minor bumps; tightened CORE_TEMPLATE paragraph; rendered managed blocks; roadmap row; plan Status;",
+    "Run `uv run clutch host core` and commit the refreshed CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md before the full `./dev.py test`. The committed-conduct check fails while those managed files are uncommitted, as the prior run record shows."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    2
+  ],
+  "spec_version": "1.7",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
