@@ -46,7 +46,7 @@ Restore interactive ticket refresh. The actual extension command, clutch view sn
 - post-merge source of truth: clutch/observe.py for presentation, status and drain for decisions
 
 ## Scope in / Scope out
-Add the duckdb runtime dependency and regenerate the lock. Confine this port to the snapshot and the code it needs to share journal facts with the current policy owners. Batch the latest states, parked blobs and operator/reject holds as well as the journal facts consumed by the remaining snapshot fields; keep SQL results in memory. No per-row replay, second raw read, materialization of whole history for Python to replay, persistent cache, stale results, smaller UI, refresh interval change or application-wide journal migration. Update the current snapshot and journal description in docs/how-clutch-works.md. Adapt fixtures which inject the old snapshot journal/menu inputs to the new seam, preserving their assertions. Exercise floored Python changes in unit tests with an injected in-memory connection, fake filesystem/checkout and synthetic events. Leave release-wide rollout to the existing roadmap. Build a reproducible synthetic checkout in tests, with complete valid event envelopes, real ticket files and at least the observed row/history cardinality, with setup outside the timed interval.
+Add duckdb to the runtime dependency set, its exact set pin in tests/unit/test_scaffold.py and regenerate the lock; the measured repeated journal scans earn this dependency. Replace the event-list input of menu/verb admissions with shared admission facts (latest state, settled dependencies, interruption and reject membership). Build them once per snapshot through the journal query owner, and supply the equivalent facts to the same admission functions from CLI and runner callers. Migrate their direct unit tests and the independent verb_inputs in tests/integration/test_menu_verb_parity.py. Preserve the callable contracts and semantics of last_states, reject_queue, parked_blob and awaiting_operator for existing non-snapshot users. Factor decisions that act on facts once in their current owner, so snapshot does not create a second admission policy. Confine this port to the snapshot and the code it needs to share journal facts with the current policy owners. Batch the latest states, parked blobs and operator/reject holds as well as the journal facts consumed by the remaining snapshot fields; keep SQL results in memory. No per-row replay, second raw read, materialization of whole history for Python to replay, persistent cache, stale results, smaller UI, refresh interval change or application-wide journal migration. Update the current snapshot and journal description in docs/how-clutch-works.md. Adapt fixtures which inject the old snapshot journal/menu inputs to the new seam, preserving their assertions. Exercise floored Python changes in unit tests with an injected in-memory connection, fake filesystem/checkout and synthetic events. Leave release-wide rollout to the existing roadmap. Build a reproducible synthetic checkout in tests, with complete valid event envelopes, real ticket files and at least the observed row/history cardinality, with setup outside the timed interval.
 
 ## Scope fence
 - clutch/journal.py
@@ -54,6 +54,10 @@ Add the duckdb runtime dependency and regenerate the lock. Confine this port to 
 - clutch/status.py
 - clutch/drain.py
 - clutch/__main__.py
+- clutch/runner.py
+- tests/unit/test_scaffold.py
+- tests/unit/test_paved_roads.py
+- tests/integration/test_menu_verb_parity.py
 - pyproject.toml
 - uv.lock
 - docs/how-clutch-works.md
