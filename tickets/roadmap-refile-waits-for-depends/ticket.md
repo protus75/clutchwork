@@ -10,6 +10,9 @@ agent_effort: medium
 ## Depends on
 none
 
+## Runs before
+- roadmap-release-audit-last
+
 ## Context
 - clutch/roadmap.py::author_ahead
 - clutch/roadmap.py::choose
