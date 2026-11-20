@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The __init__.py stem produces surrounding spaces when underscores are replaced; trimming them preserved the intended purpose and satisfied formatting. The coverage gate was skipped because the diff changes no measured production files.
+Trimmed the spaces produced by replacing underscores in the __init__.py stem. Skipped the coverage gate because no measured production files changed.
 
 ## Dead ends
 
