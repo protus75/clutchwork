@@ -411,7 +411,7 @@ uv run clutch roadmap accept 0.4.0
 | 62 | `evidence-verbs` | evidence plan 6 | feature | P3 | `evidence-envelope`, rows 30-31 | | `evidence show`, `schema`, `renormalize`, `coverage`. |
 | 63 | `spools-onto-evidence-store` | evidence plan 7 | chore | P3 | `evidence-envelope` | | Per-attempt `spools/<stem>/<attempt>/` move into the store; harvest, diagnosis, and the spool readers follow; one capture path (decision 12). |
 | 64 | `one-parser-per-provider` | evidence plan 8 | chore | P3 | rows 30-31, `evidence-normalize-gemini` | | `CallMeter`, `Parsed`, and `live_call` read the normalized events; the adapter and watchdog parsers go (decision 13). |
-| 65 | `panel-combiners` | panels plan 1 | feature | P2 | | `doc-review-runner` | `clutch/panel.py`: `findings-union`, `majority-verdict`, `best-of-n` over the existing artifact models; `panel_facts` body. Pure. |
+| 65 | `panel-combiners` | panels plan 1 | feature | P2 | | `doc-review-runner` | **Authored** (`tickets/panel-combiners/`). `clutch/panel.py`: `findings-union`, `majority-verdict`, `best-of-n` over the existing artifact models; `panel_facts` body. Pure. |
 | 66 | `panel-routing-config` | panels plan 2 | feature | P2 | `route-kinds-filter-r1` | | `Route.panel {size, combine}`, surface-fit refusal, distinct-candidate assignment, `doctor` warning for single-slot providers. |
 | 67 | `review-panel` | panels plan 3 | feature | P2 | `panel-combiners`, `panel-routing-config` | | Driver fan-out with member effect keys and evidence records; review, requisition review, diagnosis, and triage use the combined result. |
 | 68 | `panel-scorecard` | panels plan 4 | feature | P3 | `review-panel` | | Per-member catch attribution; unique catches per 100 reviews and the cost multiplier in the retro report. |
