@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The current documentation says no command exposes the schemas and no call has a normalized directory; both statements would become false.
+The host-running verb table requires command names without arguments. The ticket verification, full unit coverage gate, full integration suite, lint, and formatting checks passed.
 
 ## Dead ends
 
-none
+The first coverage-gate run exposed the verb-table format and missing unit coverage; both were corrected.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 15 minutes; elapsed time was not measured.
 
