@@ -1,22 +1,24 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "e7af57a2315da1dcdade078b20f3feba8d5baeda",
+  "produced_at_sha": "f3be5ba23b67276e85aad13c88e30e27e50f0b81",
   "stem": "training-eval",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "review",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "In clutch/training.py evaluate, decode the reply as json.loads(unwrap_fence(result.text)) using clutch/driver.py::unwrap_fence, the canonical parser the Review stage uses. Do not use raw json.loads on result.text, because the review spec allows a reply that opens with one json code fence.",
-    "Keep the closed verdict check in evaluate: verdict must be exactly approve, snag or rma. Anything else, including non-JSON, a missing verdict or \"maybe\", counts as unparsed and never as agree (acceptance criterion 2).",
-    "Add a case to tests/unit/test_training_eval.py: a FakeLLM reply that is a ```json fenced {\"verdict\":\"snag\"} with a negative label counts as agree. Keep the criterion 1-7 cases: the 2/1/0 counts, unparsed replies, render only={\"a\"}, zero records, refusal when disabled, and journal and evidence left",
-    "Every attempt starts from the merge base, so redo all of it: render(only=...), evaluate and report_eval in clutch/training.py; the eval subcommand via _command in clutch/__main__.py (route restricted to low|medium|high|max/review); doc rows in host-running.md, host-training.md and"
+    "The premise finding is wrong. In clutch/providers.py:440-443 the scratch prompt is only a temporary stdin file, and the finally block at lines 636-638 deletes it. Evidence records are written only when `capture` is not None (line 473). Call `llm.call(...)` with no capture, and leave providers.py",
+    "The journal risk is real. `_preflighted_llm` (clutch/__main__.py:107-114) calls `session.timers.fire_due()`, which appends TIMER_FIRED to the journal. In the eval branch, build ProviderLLM the way line 108 does and call `llm.preflight()` directly, without reconstruct/fire_due. The provider session",
+    "Redo all of the work from the merge base: `only` on `training.render`, `evaluate` and `report_eval` in clutch/training.py, the `training eval` subcommand via `_command` in clutch/__main__.py, the docs rows in host-running.md, host-training.md and how-clutch-works.md, and",
+    "Last run, a test fixture in test_training_eval.py was missing a field. It was fixed, but the full `## Verification` command never ran again. Before reporting an outcome, run the whole Verification command and get it green.",
+    "For AC7, compare the journal file and the evidence directory byte for byte before and after an eval run through the handler. Inject FakeLLM at the handler's LLM-construction point, so no real provider call happens and the test also proves timers are not fired."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    2,
-    3
+    0,
+    1,
+    2
   ],
   "spec_version": "1.8",
   "provider": "claude",
