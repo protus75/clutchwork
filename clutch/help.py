@@ -208,7 +208,7 @@ _add(
     "The holder releases the lock when finished.",
 )
 TOPICS["hotPaths"] = dict(
-    what="Shows the ten paths fenced by the most unsettled tickets.",
+    what="Shows up to ten paths fenced by two or more unsettled tickets.",
     before="Tickets declare their scope fences.",
     after="Inspect frequently fenced paths when planning splits.",
     doc="docs/how-clutch-works.md",

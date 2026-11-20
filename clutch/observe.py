@@ -672,7 +672,7 @@ def _hot_paths(tickets):
         paths = {path.rstrip("/") for path in ticket.scope_fence if not in_fence(path, [f"tickets/{ticket.stem}"])}
         for path in paths:
             counts[path] = counts.get(path, 0) + 1
-    return [{"path": path, "count": count} for path, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:10]]
+    return [{"path": path, "count": count} for path, count in sorted(((path, count) for path, count in counts.items() if count >= 2), key=lambda item: (-item[1], item[0]))[:10]]
 
 
 def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
