@@ -16,6 +16,7 @@ from clutch.scheduler import Scheduler
 from clutch.seams import LocalFileSystem
 from clutch.tickets import INTAKE_SIGNAL, parse_ticket
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
+from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_cli import TICKET
 
 
@@ -117,7 +118,7 @@ class Rig:
         await turn()
 
     async def drain(self):
-        while await self.scheduler.dispatch_next() is not None:
+        while await dispatch_settled(self.scheduler) is not None:
             pass
 
 
@@ -216,24 +217,24 @@ async def test_eligibility_and_hold_release(rig):
         caps.consume(rig.journal, "reject-held", "retry", "old")
     rig.quarantine.add("quarantined")
     rig.drought.add("drought-held")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None
     rig.transition("parent", "merged")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None
     rig.transition("noop", "already_satisfied")
-    assert (await rig.scheduler.dispatch_next()).stem == "child"
-    assert await rig.scheduler.dispatch_next() is None
+    assert (await dispatch_settled(rig.scheduler)).stem == "child"
+    assert await dispatch_settled(rig.scheduler) is None
     rig.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "machine"}, ticket="reject-held")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None
     rig.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "operator"}, ticket="reject-held")
-    assert (await rig.scheduler.dispatch_next()).stem == "reject-held"
+    assert (await dispatch_settled(rig.scheduler)).stem == "reject-held"
     rig.add("machine-held")
     rig.transition("machine-held", "gate_failed", routed="reject_queue")
-    assert (await rig.scheduler.dispatch_next()).stem == "machine-held"
+    assert (await dispatch_settled(rig.scheduler)).stem == "machine-held"
     rig.quarantine.clear()
-    assert (await rig.scheduler.dispatch_next()).stem == "quarantined"
+    assert (await dispatch_settled(rig.scheduler)).stem == "quarantined"
     rig.drought.clear()
-    assert (await rig.scheduler.dispatch_next()).stem == "drought-held"
-    assert await rig.scheduler.dispatch_next() is None
+    assert (await dispatch_settled(rig.scheduler)).stem == "drought-held"
+    assert await dispatch_settled(rig.scheduler) is None
 
 
 @pytest.mark.asyncio
@@ -241,9 +242,9 @@ async def test_scheduler_holds_diff_budget_failure(rig):
     rig.add("work")
     rig.transition("work", "running", ticket_sha=rig.files["work"])
     rig.transition("work", "gate_failed", reason="diff_budget")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None
     rig.files["work"] += "\nchanged\n"
-    assert (await rig.scheduler.dispatch_next()).stem == "work"
+    assert (await dispatch_settled(rig.scheduler)).stem == "work"
     assert rig.calls == ["work"]
 
 
@@ -374,8 +375,8 @@ async def test_watcher_parse_failure_preserves_last_good(rig):
         assert event.type == EventType.SIGNAL and event.ticket == stem and event.key is None
         assert event.body == {"signal": WATCHER_PARSE_FAILURE, "path": f"tickets/{stem}/ticket.md", "reason": event.body["reason"]}
         assert isinstance(event.body["reason"], str) and event.body["reason"].strip()
-    assert (await rig.scheduler.dispatch_next()).stem == "other"
-    assert (await rig.scheduler.dispatch_next()).stem == "old"  # Old P2 position survived.
+    assert (await dispatch_settled(rig.scheduler)).stem == "other"
+    assert (await dispatch_settled(rig.scheduler)).stem == "old"  # Old P2 position survived.
     rig.files["old"] = text("P0")
     rig.files["new-invalid"] = text("P1")
     await rig.publish("old", "new-invalid")
@@ -395,7 +396,7 @@ async def test_watcher_removal_drops_pending(rig):
     del rig.files["removed"]
     await rig.publish("removed")
     assert "removed" not in rig.watcher.cache and "removed" not in rig.scheduler.pending
-    assert await rig.scheduler.dispatch_next() is None and not rig.journal.read()
+    assert await dispatch_settled(rig.scheduler) is None and not rig.journal.read()
     await rig.watcher.close()
 
 
@@ -468,9 +469,9 @@ async def test_superseded_dependencies_require_all_successor_leaves(tmp_path):
     rig.transition("leaf-a", "already_satisfied")
     for state in ("running", "gate_failed", "timeout", "rejected", "abandoned"):
         rig.transition("leaf-b", state)
-        assert await rig.core.scheduler.dispatch_next() is None
+        assert await dispatch_settled(rig.core.scheduler) is None
     rig.transition("leaf-b", "already_satisfied")
-    assert await rig.core.scheduler.dispatch_next() is child
+    assert await dispatch_settled(rig.core.scheduler) is child
     assert calls == ["dependent"] and "original" in rig.core.scheduler.pending
 
 
@@ -484,7 +485,7 @@ async def test_runs_before_orders_eligible_tickets(rig):
 
     rig.scheduler.update(replace(hint, runs_before=("old",)))
     rig.intake("new")
-    await rig.scheduler.dispatch_next()
+    await dispatch_settled(rig.scheduler)
     assert json.loads((rig.root / "state/queue.json").read_text()) == {"at": rig.time.now.isoformat(), "order": ["new", "old"], "runs_before": {"new": ["old"]}}
     await rig.drain()
     assert rig.calls == ["new", "old"]
@@ -526,9 +527,9 @@ async def test_scheduler_holds_premise_until_content_changes(rig):
     rig.add("work")
     rig.transition("work", "running", ticket_sha=rig.files["work"])
     rig.transition("work", "premise_failed")
-    assert await rig.scheduler.dispatch_next() is None  # Unchanged content must not dispatch.
+    assert await dispatch_settled(rig.scheduler) is None  # Unchanged content must not dispatch.
     rig.files["work"] += "\nrevised\n"
-    assert (await rig.scheduler.dispatch_next()).stem == "work"  # Changed content releases the park.
+    assert (await dispatch_settled(rig.scheduler)).stem == "work"  # Changed content releases the park.
     assert rig.calls == ["work"]  # Only the released offer dispatches.
 
 
@@ -542,7 +543,7 @@ async def test_scheduler_does_not_fetch_blob_for_infra_failure(rig):
         pytest.fail(f"unnecessary blob lookup for {stem}")
 
     rig.scheduler.ticket_sha = unexpected
-    assert (await rig.scheduler.dispatch_next()).stem == "work"  # An unrelated failure remains eligible.
+    assert (await dispatch_settled(rig.scheduler)).stem == "work"  # An unrelated failure remains eligible.
     assert rig.calls == ["work"]  # The candidate actually reached dispatch.
 
 
@@ -550,20 +551,20 @@ async def test_scheduler_does_not_fetch_blob_for_infra_failure(rig):
 async def test_serve_scheduler_follows_the_drain_reoffer_rule(rig):
     rig.add("budget")
     rig.transition("budget", "gate_failed", routed="reject_queue")
-    assert (await rig.scheduler.dispatch_next()).stem == "budget"
+    assert (await dispatch_settled(rig.scheduler)).stem == "budget"
     rig.scheduler.update(rig.watcher.cache.get("budget") or parse_ticket("budget", rig.files["budget"], rig.root))
     for _ in range(Caps().retry):
         caps.consume(rig.journal, "budget", "retry", "old")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None
     rig.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "operator"}, ticket="budget")
-    assert (await rig.scheduler.dispatch_next()).stem == "budget"
+    assert (await dispatch_settled(rig.scheduler)).stem == "budget"
     rig.add("changed")
     rig.transition("changed", "gate_failed", routed="reject_queue", reason="ticket_changed")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None
     rig.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "operator"}, ticket="changed")
-    assert (await rig.scheduler.dispatch_next()).stem == "changed"
+    assert (await dispatch_settled(rig.scheduler)).stem == "changed"
     rig.add("unqueued")
     rig.transition("unqueued", "gate_failed")
     for _ in range(Caps().retry):
         caps.consume(rig.journal, "unqueued", "retry", "old")
-    assert await rig.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.scheduler) is None

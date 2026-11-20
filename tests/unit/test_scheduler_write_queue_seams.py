@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from clutch.scheduler import Scheduler
+from tests.dispatch_settle import dispatch_settled
 
 
 @pytest.mark.asyncio
@@ -28,7 +29,7 @@ async def test_queue_uses_injected_seams():
     )
     ticket = SimpleNamespace(stem="chosen", frontmatter=SimpleNamespace(state="confirmed", priority="P2"), depends=(), runs_before=())
     scheduler.update(ticket)
-    await scheduler.dispatch_next()
+    await dispatch_settled(scheduler)
     assert len(writes) == 1
     assert writes[0][0] == Path("/state/queue.json")
     value = json.loads(writes[0][1])

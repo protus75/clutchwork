@@ -24,6 +24,7 @@ from clutch.redact import Redactor
 from clutch.seams import SubprocessExec
 from clutch.tickets import intake
 from clutch.timers import Timers
+from tests.dispatch_settle import dispatch_settled
 from tests.integration.serve_rig import finish, graph, terminals, until
 from tests.integration.test_cli import root, write
 from tests.integration.test_daemon_composition import CoreRig
@@ -188,7 +189,7 @@ async def test_all_candidates_cooling_recovers_on_timer_fired(tmp_path, monkeypa
     for provider in rig.checkout.config.providers:
         session.quota(provider)
     ticket = await rig.add("dry")
-    assert await rig.core.scheduler.dispatch_next() is ticket
+    assert await dispatch_settled(rig.core.scheduler) is ticket
     assert called == []
     [park] = terminals(rig, "dry")
     assert park.body == {"to": "infra_error", "reason": "provider_drought", "provider_drought": {"tier": "medium", "surface": "implement", "providers": ["codex", "claude"]}}
@@ -199,11 +200,11 @@ async def test_all_candidates_cooling_recovers_on_timer_fired(tmp_path, monkeypa
     await turn()
     rig.time.advance((deadline - rig.time()).total_seconds() - 1)
     await turn()
-    assert not wait.done() and await rig.core.scheduler.dispatch_next() is None
+    assert not wait.done() and await dispatch_settled(rig.core.scheduler) is None
     rig.time.advance(1)
     await wait
     assert len([e for e in rig.journal.read() if e.type == EventType.TIMER_FIRED]) == 2
-    assert await rig.core.scheduler.dispatch_next() is ticket and called == ["dry"]
+    assert await dispatch_settled(rig.core.scheduler) is ticket and called == ["dry"]
     assert not session.waits
 
 
@@ -717,7 +718,7 @@ async def test_escalated_drought_uses_effective_route(root, monkeypatch, entry, 
     elif entry == "run":
         code = await runner.run_ticket(ticket.stem, checkout, runner.pipeline(checkout))
     else:
-        assert await rig.core.scheduler.dispatch_next() is ticket
+        assert await dispatch_settled(rig.core.scheduler) is ticket
 
     if cooling == "claude":
         await until(rig, lambda: any("provider_drought" in e.body for e in rig.journal.read()))
@@ -726,10 +727,10 @@ async def test_escalated_drought_uses_effective_route(root, monkeypatch, entry, 
         assert calls == [] and run_seq(rig.journal.read(), ticket.stem) == 0
         assert not any(e.body.get("to") == "running" or e.type == EventType.EFFECT_INTENT for e in rig.journal.read())
         if entry == "core":
-            assert await rig.core.scheduler.dispatch_next() is None
+            assert await dispatch_settled(rig.core.scheduler) is None
         rig.time.advance(3600)
         if entry == "core":
-            assert await rig.core.scheduler.dispatch_next() is ticket
+            assert await dispatch_settled(rig.core.scheduler) is ticket
         elif entry == "run":
             assert code == runner.EXIT_TICKET
             code = await runner.run_ticket(ticket.stem, checkout, runner.pipeline(checkout))

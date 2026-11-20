@@ -11,6 +11,7 @@ from clutch.drain import fill_slots
 from clutch.journal import Event, EventType
 from clutch.scheduler import Scheduler
 from clutch.tickets import Frontmatter, Ticket, fences_overlap
+from tests.dispatch_settle import dispatch_settled
 
 
 def ticket(stem, path):
@@ -72,7 +73,7 @@ async def test_scheduler_reads_rerun_for_both_sides(signal):
     scheduler.parallel = lambda: Parallel(enabled=True, max_runs=2, shared_paths=["docs"])
     scheduler.update(candidate)
     scheduler.flying[busy.stem] = busy
-    result = await scheduler.dispatch_next()
+    result = await dispatch_settled(scheduler)
     assert result is (candidate if signal is None else None)
     assert calls == ([candidate] if signal is None else [])
     assert scheduler.skips == ({} if signal is None else {"candidate": 1})

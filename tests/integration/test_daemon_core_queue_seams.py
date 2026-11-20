@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_daemon_composition import CoreRig
 
 
@@ -24,7 +25,7 @@ async def test_production_core_writes_queue_to_checkout_seams(tmp_path):
 
     rig.fs.write = record
     await rig.add("selected")
-    await rig.core.scheduler.dispatch_next()
+    await dispatch_settled(rig.core.scheduler)
     queue_writes = [(path, data) for path, data in writes if path.name == "queue.json"]
     assert len(queue_writes) == 1
     assert queue_writes[0][0] == rig.checkout.config.state_dir / "queue.json"

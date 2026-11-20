@@ -12,6 +12,7 @@ from clutch.scheduler import Scheduler
 from clutch.status import reject_queue
 from clutch.tickets import validate_ticket
 from tests.approval import approve
+from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, pause_checkout
 from tests.integration.test_stages import implement_reply
@@ -154,12 +155,12 @@ def test_serve_holds_a_parked_ticket(tmp_path):
             max_unmerged=1,
         )
         scheduler.update(validate_ticket("gate", (root / "tickets/gate/ticket.md").read_text(), root))
-        assert await scheduler.dispatch_next() is None
+        assert await dispatch_settled(scheduler) is None
         path = root / "tickets/gate/ticket.md"
         path.write_text(path.read_text().replace("## Goal / Why", "## Goal / Why\nEdited content."))
         git_out(root, "add", "tickets/gate/ticket.md")
         git_out(root, "commit", "-m", "edit ticket")
-        assert (await scheduler.dispatch_next()).stem == "gate"
+        assert (await dispatch_settled(scheduler)).stem == "gate"
 
     asyncio.run(exercise())
     assert calls == ["gate"]

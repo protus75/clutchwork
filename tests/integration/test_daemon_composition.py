@@ -24,6 +24,7 @@ from clutch.scheduler import Scheduler
 from clutch.stages import StageContext
 from clutch.tickets import INTAKE_SIGNAL
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
+from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_cli import root, write
 from tests.integration.test_daemon_admission import assert_idle
 from tests.integration.test_daemon_config import assert_detached, python_values
@@ -233,7 +234,7 @@ class CoreRig:
         self.journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL, "source": "human", "state": "confirmed", "new": True, "commit": "abc"}, ticket=stem)
 
     async def drain(self):
-        while await self.core.scheduler.dispatch_next() is not None:
+        while await dispatch_settled(self.core.scheduler) is not None:
             pass
 
 

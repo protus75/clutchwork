@@ -24,6 +24,7 @@ from clutch.lockfile import Lockfile
 from clutch.providers import PROBE_PROMPT, routed_conduct_paths
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.tickets import intake, validate_ticket
+from tests.dispatch_settle import dispatch_settled
 from tests.harness.daemon_soak import _Time, _turn
 from tests.integration.test_git import commit_lock
 
@@ -232,7 +233,7 @@ class _Member:
 
     async def dispatch(self, stem):
         await self.add(stem)
-        return await self.core.scheduler.dispatch_next()
+        return await dispatch_settled(self.core.scheduler)
 
     async def exercise(self):
         if self.name == RELIABILITY_BATTERY_MEMBERS[1]:
@@ -245,7 +246,7 @@ class _Member:
             await self.dispatch("cooling-recovery")
             self.hold = tuple(self.journal.read())
             self.held_calls = tuple(self.exec.calls)
-            if await self.core.scheduler.dispatch_next() is not None:
+            if await dispatch_settled(self.core.scheduler) is not None:
                 raise BatteryRefused(self.name, "drought did not remain held")
             deadline = min(self.session.cooling().values())
             wait = asyncio.create_task(self.session.wait_until(deadline))

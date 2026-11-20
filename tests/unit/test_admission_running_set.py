@@ -6,6 +6,7 @@ import pytest
 from clutch import scheduler as scheduler_module
 from clutch.daemon import DaemonAdmission, TicketWriter
 from clutch.scheduler import Scheduler
+from tests.dispatch_settle import dispatch_settled
 
 
 @pytest.mark.asyncio
@@ -48,5 +49,5 @@ async def test_scheduler_and_writer_have_no_active_attribute(monkeypatch, tmp_pa
     ticket = SimpleNamespace(stem="selected", frontmatter=SimpleNamespace(state="confirmed", priority="P2"), depends=(), runs_before=())
     scheduler.update(ticket)
     assert "active" not in vars(scheduler) and "active" not in vars(writer)
-    assert await scheduler.dispatch_next() is ticket
+    assert await dispatch_settled(scheduler) is ticket
     assert "active" not in vars(scheduler) and "active" not in vars(writer)

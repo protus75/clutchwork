@@ -10,6 +10,7 @@ from clutch.daemon import daemon_core
 from clutch.drain import SKIP_LIMIT
 from clutch.scheduler import Scheduler
 from clutch.tickets import Frontmatter, Ticket
+from tests.dispatch_settle import dispatch_settled
 
 
 def ticket(stem, priority="P2", depends=(), path=None):
@@ -63,7 +64,7 @@ async def test_order(enabled, expected, order):
     long, short = ticket("long"), ticket("short", "P1")
     children = [ticket("child1", depends=("long",)), ticket("child2", depends=("long",))]
     obj, writes, calls, logs = rig([long, short, *children], Parallel(enabled=enabled))
-    assert (await obj.dispatch_next()).stem == expected
+    assert (await dispatch_settled(obj)).stem == expected
     assert [t.stem for t in calls] == [expected]
     assert writes[0]["order"] == order
     assert logs == []
@@ -74,7 +75,7 @@ async def test_order(enabled, expected, order):
 async def test_p0_precedes_chain():
     long, short, urgent = ticket("long"), ticket("short", "P1"), ticket("urgent", "P0")
     obj, writes, _, _ = rig([long, short, urgent, ticket("child1", depends=("long",)), ticket("child2", depends=("long",))], Parallel(enabled=True))
-    assert await obj.dispatch_next() is urgent
+    assert await dispatch_settled(obj) is urgent
     assert writes[0]["order"] == ["urgent", "long", "short"]
 
 
@@ -83,7 +84,7 @@ async def test_overlap_skip_and_queue():
     blocked, later, busy = ticket("blocked", "P1", path="src/file"), ticket("later", path="docs"), ticket("busy", path="src")
     obj, writes, calls, logs = rig([blocked, later], Parallel(enabled=True, max_runs=3))
     obj.flying[busy.stem] = busy
-    assert await obj.dispatch_next() is later
+    assert await dispatch_settled(obj) is later
     assert calls == [later]
     assert obj.skips == {"blocked": 1}
     assert logs == [(("dispatch_skip",), {"stem": "blocked", "count": 1})]
@@ -97,12 +98,12 @@ async def test_barrier_and_capacity():
     obj, writes, calls, logs = rig([blocked, later], Parallel(enabled=True, max_runs=2))
     obj.flying[busy.stem] = busy
     obj.skips = {"blocked": SKIP_LIMIT}
-    assert await obj.dispatch_next() is None
+    assert await dispatch_settled(obj) is None
     assert calls == [] and writes == []
     assert obj.skips == {"blocked": SKIP_LIMIT + 1}
     assert logs == [(("dispatch_skip",), {"stem": "blocked", "count": SKIP_LIMIT + 1})]
     obj.flying["other"] = ticket("other")
-    assert await obj.dispatch_next() is None
+    assert await dispatch_settled(obj) is None
     assert obj.skips == {"blocked": SKIP_LIMIT + 1} and len(logs) == 1 and calls == []
 
 
@@ -119,7 +120,7 @@ async def test_shared_path_and_dispatch_failure_cleanup():
 
     obj.dispatch = fail
     with pytest.raises(ValueError, match="dispatch"):
-        await obj.dispatch_next()
+        await dispatch_settled(obj)
     assert calls == [candidate] and obj.skips == {} and logs == []
     assert obj.flying == {"busy": busy}
 
@@ -134,10 +135,10 @@ async def test_failed_config_keeps_pending():
 
     obj.parallel = fail
     with pytest.raises(ValueError, match="load"):
-        await obj.dispatch_next()
+        await dispatch_settled(obj)
     assert obj.pending == {"item": item} and calls == []
     obj.parallel = Parallel
-    assert await obj.dispatch_next() is item
+    assert await dispatch_settled(obj) is item
     assert calls == [item]
 
 

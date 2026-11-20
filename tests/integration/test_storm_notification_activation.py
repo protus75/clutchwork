@@ -20,6 +20,7 @@ from clutch.llm import FakeLLM
 from clutch.seams import LocalFileSystem
 from clutch.storm import STORM_THRESHOLD, STORM_TRIP, STORM_WINDOW, StormLedger
 from clutch.tickets import validate_ticket
+from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_cli import ENV
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_drain import Script, commit_ticket, confirmed, make_root
@@ -563,9 +564,9 @@ async def test_storm_leaves_daemon_selection_and_accounting_unchanged(admission_
     six(box)
     core.scheduler.update(one)
     core.scheduler.update(other)
-    assert await core.scheduler.dispatch_next() == one
-    assert await core.scheduler.dispatch_next() == other
-    assert await core.scheduler.dispatch_next() is None
+    assert await dispatch_settled(core.scheduler) == one
+    assert await dispatch_settled(core.scheduler) == other
+    assert await dispatch_settled(core.scheduler) is None
     assert calls == ["one", "unrelated"]
     assert core.control.admission is None and core.control.projection.pause_id is None
     (hold,) = core.control.storm_holds()

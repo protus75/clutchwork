@@ -8,6 +8,7 @@ import pytest
 from clutch.drain import eligible
 from clutch.journal import Event, EventType
 from clutch.scheduler import Scheduler
+from tests.dispatch_settle import dispatch_settled
 
 
 def ticket(stem, priority="P2", state="confirmed", depends=(), runs_before=()):
@@ -57,7 +58,7 @@ def scheduler(items, events=(), held=frozenset()):
 async def test_select_order_and_exclusions():
     events = [Event(1, EventType.STATE_TRANSITION, "2026-01-01T00:00:00+00:00", "running", None, {"to": "running"})]
     obj, _, selected, _ = scheduler([ticket("low"), ticket("high", "P0"), ticket("held"), ticket("running")], events, {"held"})
-    await obj.dispatch_next()
+    await dispatch_settled(obj)
     assert selected == ["low", "high"]  # Sorting first or selecting held/running tickets changes the calls.
 
 
@@ -65,6 +66,6 @@ async def test_select_order_and_exclusions():
 async def test_soft_edge_only_applies_to_survivors():
     a, c, b = ticket("a", "P0"), ticket("c", "P1"), ticket("b", "P2", runs_before=("a",))
     obj, writes, _, dispatched = scheduler([b, c, a], held={"b"})
-    await obj.dispatch_next()
+    await dispatch_settled(obj)
     assert dispatched == ["a"]  # Ordering before filtering lets b delay a.
     assert writes[0]["order"] == ["a", "c"]  # The queue must use the same post-filter set.
