@@ -107,6 +107,26 @@ class EvidenceStore:
         model = {"start": Start, "end": End}[kind]
         return model.model_validate(_ignore_unknown(model, data))
 
+    def write_normalized(self, key: str, normalizer_id: str, view: dict) -> None:
+        path = self._record_path(key, "start").parent / "normalized" / (quote(normalizer_id, safe="") + ".json")
+        self.fs.write(path, self.redact(json.dumps(view)).encode())
+
+    def read_normalized(self, key: str) -> tuple[list[dict], int]:
+        """Return understood views and the count skipped for unknown versions."""
+        directory = self._record_path(key, "start").parent / "normalized"
+        views = []
+        skipped = 0
+        for name in self.fs.entries(directory):
+            if not name.endswith(".json"):
+                continue
+            view = json.loads(self.read_bytes(directory / name))
+            match = re.fullmatch(r"clutch\.evidence\.events/(\d+)\.(\d+)", view["schema"])
+            if not match or match.group(1) != "1":
+                skipped += 1
+                continue
+            views.append(view)
+        return views, skipped
+
     def write_attempt(self, data: dict) -> None:
         record = Attempt.model_validate(data)
         path = self.root / "attempts" / record.stem / str(record.run_seq) / f"{record.attempt}.json"

@@ -43,6 +43,10 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `box dismiss` | No | Dismiss named box IDs without a model call. |
+| `evidence show` | Yes | Print call envelopes and stored normalized event lines. |
+| `evidence schema` | Yes | Print the JSON Schema for start, end or event records. |
+| `evidence renormalize` | Yes | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
+| `evidence coverage` | Yes | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `training export` | Yes | With `--kinds` choose implement, preference, review, diagnosis, ticket, or conflict; `--since DATE` filters by call date. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set. |
 | `training eval` | Yes | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
 | `coverage map` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |

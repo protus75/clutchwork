@@ -6,6 +6,7 @@ from collections.abc import Callable
 from clutch.evidence.schema import Event
 
 NORMALIZER_ID = "codex-stream/1"
+VERIFIED_PROVIDERS = frozenset({"codex"})
 INPUT_INCLUDES_CACHED = True
 
 

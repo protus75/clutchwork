@@ -733,6 +733,61 @@ def _parser() -> argparse.ArgumentParser:
         exits="0 when built (and uploaded when enabled); 2 on refusal (missing token, dirty tracked tree, missing or misplaced tag, uv failure or held lock).",
         examples=["clutch release publish"],
     )
+    evidence = sub.add_parser(
+        "evidence",
+        help="inspect and normalize captured evidence",
+        description="Inspect always-on evidence capture. Subcommands: show, schema, renormalize, coverage.",
+        epilog="Examples:\nclutch evidence show llm/example/1/implement/0/1\nclutch evidence schema event\nclutch evidence renormalize\nclutch evidence coverage",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    evidence_sub = evidence.add_subparsers(dest="evidence_verb", required=True)
+    show = _command(
+        evidence_sub,
+        "show",
+        summary="show a captured call",
+        does="Print start.json, end.json and stored normalized event lines (seq, t_ms, kind, native_type).",
+        reads="Config and the selected evidence call.",
+        writes="Stdout only.",
+        lock="None.",
+        exits="0 on success; 2 for an unknown key or unreadable store.",
+        examples=["clutch evidence show llm/example/1/implement/0/1"],
+    )
+    show.add_argument("call_key")
+    schema = _command(
+        evidence_sub,
+        "schema",
+        summary="print an evidence JSON Schema",
+        does="Print the generated JSON Schema for an evidence record.",
+        reads="Evidence schema models.",
+        writes="Stdout only.",
+        lock="None.",
+        exits="0 on success; 2 for an unknown record name or invalid config.",
+        examples=["clutch evidence schema event"],
+    )
+    schema.add_argument("record", choices=("start", "end", "event"))
+    renormalize = _command(
+        evidence_sub,
+        "renormalize",
+        summary="rebuild normalized evidence views",
+        does="Normalize stored raw stdout with current provider normalizers; count calls skipped for missing raw data, unfinished calls or unsupported providers and versions.",
+        reads="Config, call envelopes, raw stdout and arrival times.",
+        writes="Only normalized/*.json views and blobs under <state_dir>/evidence; preserves other normalizer ids. No journal event.",
+        lock="None.",
+        exits="0 on success; 2 for an unreadable store.",
+        examples=["clutch evidence renormalize --prefix llm/example/"],
+    )
+    renormalize.add_argument("--prefix", default="", metavar="KEY_PREFIX")
+    _command(
+        evidence_sub,
+        "coverage",
+        summary="report normalized event coverage",
+        does="Print known-event percentages and common unknown native types by provider and CLI version, and unknown-version skip counts.",
+        reads="Config, call envelopes and normalized views.",
+        writes="Stdout only.",
+        lock="None.",
+        exits="0 on success; 2 for an unreadable store.",
+        examples=["clutch evidence coverage"],
+    )
     training = sub.add_parser(
         "training",
         help="export training data and evaluate review routes",
@@ -1584,6 +1639,66 @@ def main(
             return report.exit_code
         return asyncio.run(runner.run_ticket(args.stem, checkout, dispatch))
 
+    def handle_evidence():
+        from compression.zstd import ZstdError
+
+        from clutch.evidence import views
+        from clutch.evidence.schema import json_schema
+        from clutch.evidence.store import SKIP, EvidenceStore
+
+        if args.evidence_verb == "schema":
+            print(json.dumps(json_schema(args.record), indent=2))
+            return 0
+        redactor = Redactor.from_config(config, env)
+        store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
+        try:
+            if args.evidence_verb == "show":
+                start = store.read_record(args.call_key, "start")
+                try:
+                    end = store.read_record(args.call_key, "end")
+                except FileNotFoundError:
+                    end = None
+                normalized, _ = store.read_normalized(args.call_key)
+                print("\n".join(views.show_lines(start, end, normalized)))
+                return 0
+            skipped = 0
+            normalized = 0
+            records = []
+            for key in store.call_keys(args.prefix if args.evidence_verb == "renormalize" else ""):
+                start = store.read_record(key, "start")
+                if args.evidence_verb == "coverage":
+                    stored, unknown = store.read_normalized(key)
+                    skipped += unknown
+                    records.append((start, stored))
+                    continue
+                if start is SKIP or views.normalizer(start.provider.name) is None:
+                    skipped += 1
+                    continue
+                try:
+                    end = store.read_record(key, "end")
+                    if end is SKIP:
+                        skipped += 1
+                        continue
+                    times = json.loads(store.get_blob(end.raw.stdout_times))
+                    stdout = store.get_blob(end.raw.stdout)
+                except FileNotFoundError:
+                    skipped += 1
+                    continue
+                view = views.build_view(start, stdout, times, store.put_blob)
+                store.write_normalized(key, view["normalizer"], view)
+                normalized += 1
+            if args.evidence_verb == "renormalize":
+                print(f"normalized: {normalized}, skipped: {skipped}")
+            else:
+                rows, skipped = views.coverage(records, skipped)
+                for row in rows:
+                    unknown = ", ".join(f"{name}: {count}" for name, count in row["unknown"]) or "none"
+                    print(f"{row['provider']} {row['cli_version']}: {row['known_pct']:.1f}% known; unknown: {unknown}")
+                print(f"skipped (unknown major version): {skipped}")
+            return 0
+        except (OSError, ValueError, KeyError, TypeError, IndexError, ZstdError) as exc:
+            raise runner.Refusal(f"cannot read or normalize evidence: {exc}", "check the call key and evidence store permissions and records, then retry clutch evidence") from None
+
     def handle_training():
         from clutch import training
         from clutch.evidence.store import EvidenceStore
@@ -1625,6 +1740,7 @@ def main(
     handlers = {
         "meta": handle_meta,
         "training": handle_training,
+        "evidence": handle_evidence,
         "host": lambda: {"core": handle_core, "docs": handle_docs, "doctor": handle_doctor}[args.host_verb](),
         "coverage": lambda: {"map": handle_covmap, "gate": handle_covgate}[args.coverage_verb](),
         "ticket": lambda: {"new": handle_new, "lint": handle_lint, "review": handle_review, "order": handle_order, "confirm": handle_verdict, "reject": handle_verdict}[args.ticket_verb](),

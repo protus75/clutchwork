@@ -6,6 +6,7 @@ from collections.abc import Callable
 from clutch.evidence.schema import Event
 
 NORMALIZER_ID = "gemini-stream/1"
+VERIFIED_PROVIDERS = frozenset({"gemini"})
 TOOL_CLASSES = {"read_file": "read", "write_file": "write", "run_shell_command": "shell", "update_topic": "plan"}
 
 
