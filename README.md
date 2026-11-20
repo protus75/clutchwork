@@ -102,6 +102,7 @@ The host guides ship inside the installed package; `uv run clutch host docs` pri
 - [Host contract](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md): the config schema and host-facing contract.
 - [Local qwen provider setup](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-qwen.md).
 - [Gemini provider setup](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-gemini.md).
+- [Training data guide](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-training.md).
 - [How clutch works](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md): how clutch behaves today. Tickets keep it current.
 
 ## Developing clutch

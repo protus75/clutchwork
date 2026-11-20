@@ -1034,6 +1034,7 @@ def main(
             ("contract", "host contract"),
             ("qwen", "local qwen provider setup"),
             ("gemini", "gemini provider setup"),
+            ("training", "training data export"),
         ):
             print(f"{Path(clutch.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
         return 0

@@ -36,7 +36,9 @@ def test_docs_and_doctor_need_no_config(tmp_path, capsys):
     assert entry.main(["host", "docs"], cwd=tmp_path, env={}) == 0
     out, err = capsys.readouterr()
     assert err == ""
-    assert [line.split("  ")[0] for line in out.splitlines()] == [str(Path(clutch.__file__).parent / "docs" / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "gemini")]
+    assert [line.split("  ")[0] for line in out.splitlines()] == [
+        str(Path(clutch.__file__).parent / "docs" / f"host-{name}.md") for name in ("authoring", "running", "contract", "qwen", "gemini", "training")
+    ]
     assert entry.main(["host", "doctor"], cwd=tmp_path, env={}) == 2
     out, err = capsys.readouterr()
     assert err == ""
