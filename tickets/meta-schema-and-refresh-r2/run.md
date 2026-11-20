@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Refresh preserves non-empty authored relates and owner values; generated relates are limited to tracked paths. Mutation checks caught a missing invalid-schema test, which was added.
+The full suite initially exposed missing config inventory entries and an error-printing convention; both were corrected. Verification and all configured hard checks passed, with 96.6% coverage for clutch/meta.py.
 
 ## Dead ends
 
-none
+Rejected a second metadata parser for each command because refresh and check share the same format and hash contract.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 25 minutes expected and 50 minutes stuck; actual elapsed time was not measured.
+The ticket estimated 25 minutes; elapsed time was not measured.
 
