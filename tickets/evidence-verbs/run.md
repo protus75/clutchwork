@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Renormalization skips and counts calls whose raw blobs were pruned. Temporary mutation checks left stale Python bytecode; refreshing it resolved the resulting test failure. The final ticket verification, full unit and integration suites, coverage gate, lint, and formatting checks passed.
+read_normalized returns accepted views plus a skipped-version count; renormalize skips and counts pruned raw blobs.
 
 ## Dead ends
 
-none
+Kept shared interpretation in the required pure views module rather than mixing it into persistence.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.21
 
 ## Predicted vs actual
 
-Expected 15 minutes; actual time was not measured.
+none
 
