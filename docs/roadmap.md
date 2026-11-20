@@ -10,9 +10,8 @@ Audit refreshed at commit `a098b404` (clutch `0.4.2`, extension `0.4.1`). The au
 
 Facts recorded in the original 2026-11-13 snapshot (counts were not re-measured):
 
-- 506 tickets merged, 0 in flight, 0 confirmed and unrun. The queue is empty. One stem awaits a verdict in the Reject queue (`vscode-help`, `premise_failed`). Four stems are blocked in the journal with no ticket directory (`authoring-reading-specs`, `host-mechanical-check`, `phase7-continue`, `journal-sql-refactor-plan`).
+- 725 tickets merged and 1 in flight (`visual-baseline-fixtures`) as of 2026-11-19. The Reject queue is empty. Five stems are blocked in the journal: `authoring-reading-specs`, `clutch-ruff-reclean`, `restore-orphan-ticket-stems` (all `premise_failed`), `host-mechanical-check` and `phase7-continue` (both `abandoned`).
 - Four Suggestion Box messages are pending: `box-000324` (fence closure misses in-code registries; recurrence recorded in `tickets/retro/000046.md`), `box-000440` (operator prompts hard-code `./dev.py`), `box-000441` and `box-000442` (unit-test criteria that need disk pass requisition review, then fail Implement). None is a ticket yet.
-- Spend to date $2,681.50. 5,090 commits since 2026-10-01.
 - `CLUTCH_PLAN.md` phases P3-P6 are complete. P7 `host-review-surfaces` was refused instead of built (`config.py:308-309`). P8 `rules-render` (`core --check`, a start-command file) was dropped; `host-onboarding-doc` added the two host-contract sections.
 - The CLI has 29 verbs (`clutch/__main__.py:237-287`) against the frozen plan's closed set of 16 (§18.1). Each arrived by ticket; the plan cannot be amended.
 

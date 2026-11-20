@@ -1,7 +1,7 @@
 ---
 state: confirmed
 source: box:roadmap_row
-priority: P2
+priority: P3
 kind: feature
 ---
 
