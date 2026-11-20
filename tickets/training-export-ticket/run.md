@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The existing ticket path helper was required by the integration ownership check. Final verification passed: 13 focused tests, 1,393 unit tests with coverage, 3,504 integration tests, lint, and formatting.
+Author source validation reuses the canonical Source schema; unreadable prompts are skipped before selecting the latest usable call.
 
 ## Dead ends
 
-Initially constructed the ticket path directly; replaced it with the canonical ticket path helper after the integration check identified it.
+none
 
 ## Second problems filed
 
