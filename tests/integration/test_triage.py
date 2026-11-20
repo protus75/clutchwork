@@ -647,6 +647,25 @@ def test_test_proposal_request(tmp_path, monkeypatch):
     assert '"proposed_paths": ["tests/unit/test_x.py"]' in prompt
 
 
+def test_conflict_proposal_request(tmp_path, monkeypatch):
+    root, box = root_with_box(tmp_path)
+    box.enqueue(
+        message_class="retro_finding",
+        origin="retro",
+        summary="slow test",
+        retro_report_key="retro/1",
+        fixed_failure="slow test",
+        overcorrection_risk="lost coverage",
+        conflict_action="split",
+        proposed_paths=["clutch/big.py"],
+    )
+    llm = FakeLLM([reply("author"), author_reply("test-repair"), requisition_reply("approve")])
+    assert run(root, monkeypatch, llm) == 0
+    prompt = next(r.rendered for r in llm.requests if r.surface == "triage")
+    assert '"conflict_action": "split"' in prompt
+    assert '"proposed_paths": ["clutch/big.py"]' in prompt
+
+
 def test_reopened_author_verdict_with_stale_author_invoked_calls_author(tmp_path, monkeypatch):
     from unittest.mock import AsyncMock
 

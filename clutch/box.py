@@ -18,6 +18,7 @@ from clutch.tickets import Frontmatter
 
 BOX_DIR = "box"
 MessageClass = Literal["suggestion", "failure_report", "override_report", "retro_finding", "bug_report", "roadmap_row"]
+ConflictAction = Literal["strategy", "split"]
 TestIssue = Literal["unit-io", "slow", "drift", "flaky", "coverage-hard", "over-mocking", "weak-assertion", "shared-state", "duplicate", "skip-rot"]
 
 
@@ -101,6 +102,7 @@ class Message(StrictModel):
     overcorrection_risk: NonBlank | None = None
     proposed_spec_paths: list[Annotated[str, Field(pattern=r"^specs/[a-z0-9_-]+\.md$")]] = []
     test_issue: TestIssue | None = None
+    conflict_action: ConflictAction | None = None
     proposed_paths: list[RepoPath] = []
     recurrences: Annotated[int, Field(ge=0)] = 0
     reports: Annotated[int, Field(ge=0)] = 0
@@ -125,11 +127,15 @@ class Message(StrictModel):
             raise ValueError("resolution is required exactly when resolved")
         evidence = (self.retro_report_key, self.fixed_failure, self.overcorrection_risk)
         if self.message_class == "retro_finding":
-            if any(value is None for value in evidence) or bool(self.proposed_spec_paths) == bool(self.proposed_paths) or (self.test_issue is not None) != bool(self.proposed_paths):
+            if (
+                any(value is None for value in evidence)
+                or bool(self.proposed_spec_paths) == bool(self.proposed_paths)
+                or ((self.test_issue is not None) + (self.conflict_action is not None)) != bool(self.proposed_paths)
+            ):
                 raise ValueError("retro_finding requires completed report and proposal evidence")
             if re.fullmatch(r"retro/[0-9]+", self.retro_report_key) is None:
                 raise ValueError("retro_report_key must name a completed retro/<seq> effect")
-        elif any(value is not None for value in evidence) or self.proposed_spec_paths or self.test_issue is not None or self.proposed_paths:
+        elif any(value is not None for value in evidence) or self.proposed_spec_paths or self.test_issue is not None or self.conflict_action is not None or self.proposed_paths:
             raise ValueError("proposal evidence is allowed only for retro_finding")
         return self
 
@@ -226,6 +232,7 @@ class Box:
         overcorrection_risk: str | None = None,
         proposed_spec_paths: Sequence[str] = (),
         test_issue: TestIssue | None = None,
+        conflict_action: ConflictAction | None = None,
         proposed_paths: Sequence[str] = (),
         roadmap_row: RoadmapRow | None = None,
     ) -> tuple[str, bool]:
@@ -255,6 +262,7 @@ class Box:
                 overcorrection_risk=overcorrection_risk,
                 proposed_spec_paths=list(proposed_spec_paths),
                 test_issue=test_issue,
+                conflict_action=conflict_action,
                 proposed_paths=list(proposed_paths),
                 roadmap_row=roadmap_row,
             )

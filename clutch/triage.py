@@ -284,6 +284,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
                     "overcorrection_risk": message.overcorrection_risk,
                     "proposed_spec_paths": [f"clutch/{path}" for path in message.proposed_spec_paths],
                     "test_issue": message.test_issue,
+                    "conflict_action": message.conflict_action,
                     "proposed_paths": message.proposed_paths,
                     "reopen": message.reopen,
                     "report": report_data(message.report, box.root) if message.report else None,

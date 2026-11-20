@@ -24,6 +24,7 @@ async def test_tombstone_rejected(monkeypatch, rejected, expected, tmp_path):
         overcorrection_risk=None,
         proposed_spec_paths=[],
         test_issue=None,
+        conflict_action=None,
         proposed_paths=[],
         report=None,
     )

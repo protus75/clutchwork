@@ -10,7 +10,7 @@ from typing import Annotated, Literal, get_args
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from clutch.artifacts import Finding, NonBlank
-from clutch.box import BOX_DIR, Box, RepoPath, RereportJournal, TestIssue, read_registry
+from clutch.box import BOX_DIR, Box, ConflictAction, RepoPath, RereportJournal, TestIssue, read_registry
 from clutch.config import Retro as RetroSettings
 from clutch.config import SpikeKind
 from clutch.driver import LlmStage
@@ -19,6 +19,9 @@ from clutch.git import GitError
 from clutch.journal import Event, EventType, total_spend
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, RenderOverBound, load_spec, render
 from clutch.tickets import CHECKS_FILE, artifact_path, read_tolerant, ticket_path
+
+CONFLICT_PATH_MIN = 2
+CONFLICT_PATH_TOP = 10
 
 RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
@@ -38,11 +41,12 @@ class RetroProposal(BaseModel):
     overcorrection_risk: NonBlank
     proposed_spec_paths: list[Annotated[str, Field(pattern=r"^specs/[a-z0-9_-]+\.md$")]] = []
     test_issue: TestIssue | None = None
+    conflict_action: ConflictAction | None = None
     proposed_paths: list[RepoPath] = []
 
     @model_validator(mode="after")
     def _coherent(self) -> "RetroProposal":
-        if bool(self.proposed_spec_paths) == bool(self.proposed_paths) or (self.test_issue is not None) != bool(self.proposed_paths):
+        if bool(self.proposed_spec_paths) == bool(self.proposed_paths) or ((self.test_issue is not None) + (self.conflict_action is not None)) != bool(self.proposed_paths):
             raise ValueError("choose spec paths or test paths with a test issue")
         return self
 
@@ -119,6 +123,7 @@ def measurements(window: Window) -> dict:
     from clutch.rework import REWORK_ORDER
 
     merges, calls = [], []
+    conflict_paths = {}
     spikes = {kind: set() for kind in get_args(SpikeKind)}
     sequences, running, durations, completed_calls = {}, {}, {}, set()
     for event in window.events:
@@ -144,8 +149,13 @@ def measurements(window: Window) -> dict:
                 spikes["flake" if body["kind"] == "flake_detected" else "escape"].add(event.key)
             if body.get("signal") == REWORK_ORDER:
                 spikes["rework"].add((stem, body["attempt"]))
-            if body.get("kind") == CONFLICT_FACTS and body.get("integration_red_paths"):
-                spikes["integration-red"].add(identity)
+            if body.get("kind") == CONFLICT_FACTS:
+                if body.get("integration_red_paths"):
+                    spikes["integration-red"].add(identity)
+                for path in set(body.get("conflicted_paths", [])):
+                    rung = "mechanical" if path in body.get("strategy_paths", []) else body["resolving_rung"]
+                    rungs = conflict_paths.setdefault(path, {})
+                    rungs[rung] = rungs.get(rung, 0) + 1
         elif event.type == EventType.EFFECT_COMPLETION and (event.key or "").startswith("llm/"):
             if event.key not in completed_calls:
                 calls.append(event)
@@ -158,6 +168,10 @@ def measurements(window: Window) -> dict:
         return {"known": sum(value for value in values if value is not None), "unknown_calls": sum(value is None for value in values)}
 
     return {
+        "conflict_paths": sorted(
+            ({"path": path, "conflicts": sum(rungs.values()), "rungs": rungs} for path, rungs in conflict_paths.items() if sum(rungs.values()) >= CONFLICT_PATH_MIN),
+            key=lambda row: (-row["conflicts"], row["path"]),
+        )[:CONFLICT_PATH_TOP],
         "merges": unique,
         "merged_count": len(unique),
         "usd": total_spend(calls),
