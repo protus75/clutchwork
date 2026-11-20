@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "fe614526fdf7dbf66537e51cdc1a1973d1e84c04",
+  "stem": "training-export-ticket",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review found the ticket kind, tests and docs sound; the only finding is clutch/training.py duplicating the `box:` regex from clutch/tickets.py::Source (`^(human|seed|box:[a-z][a-z0-9_]*)$`). Redo the full ticket from the merge base without any `re.fullmatch` copy of that pattern.",
+    "Validate `source:` against the owner clutch/tickets.py::Source, for example `pydantic.TypeAdapter(Source).validate_python(source)`, and count a `ValidationError` as skipped. Then map `human` to human and a `box:` prefix to author, and skip and count `seed`.",
+    "Redo the rest as the ticket states: link calls to stems through the reply in the assistant `message` text_blobs (Claude/Codex: last one; Gemini: all joined), pick the highest (run_seq, attempt, call), use the canonical ticket path helper, apply the _safe scrub and holdout, and add",
+    "Fence edits again: clutch/__main__.py adds `ticket` to the --kinds choices but not the default list; update test_main_training_group.py, add ticket=0 in test_training_export.py, and update the verb rows in host-running.md and how-clutch-works.md. Cover AC1-9 in"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2,
+    3
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
