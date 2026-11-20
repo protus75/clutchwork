@@ -86,7 +86,9 @@ Scope in:
 - add `clutch/evidence/views.py` and the two store methods.
 - `renormalize` reads `stdout_times` the way `CliAdapter.invoke` wrote it and passes the arrival times to the normalizer; read that function first. A call whose provider has no normalizer is skipped and counted. A call with no `end.json` is skipped and counted.
 - `renormalize` is idempotent: same normalizer id overwrites its own file, other ids stay.
-- update the verb tables in `clutch/docs/host-running.md` and `docs/how-clutch-works.md` section 2 (add four rows and nothing else) and add the command help and examples.
+- update the verb table in `clutch/docs/host-running.md` (add four rows and nothing else).
+- update `docs/how-clutch-works.md`: add four rows to the section 2 verb table; in section 10, rewrite the `json_schema` sentence ending "no command exposes it yet" to say `clutch evidence schema` prints it, and rewrite the sentence "No call record has a `normalized/` directory." to say `clutch evidence renormalize` writes `normalized/<escaped normalizer id>.json` beside the record. No other text in that document changes.
+- add the command help and examples.
 - the unit tests build stored calls from inline codex and claude JSONL bytes held in memory (through an in-memory or `tmp_path` store); only the integration test reads `tests/fixtures/evidence/codex/stream.jsonl`.
 
 Scope out:
@@ -116,7 +118,7 @@ Scope out:
 4. `./dev.py test tests/unit/test_evidence_views.py` shows coverage for a stream of 4 events with 1 `unknown` reports 75.0, not 100.0, lists that event's `native_type` first among unknown types, and groups by provider and `cli_version`; a record with an unknown major version is counted as skipped.
 5. `./dev.py test tests/integration/test_evidence_verbs.py` shows `evidence schema event` stdout parses to a dict equal to `json_schema("event")`, `evidence show` on an unknown key exits 2 with no traceback, and `evidence renormalize` on a call stored from `tests/fixtures/evidence/codex/stream.jsonl` then `evidence show` lists non-empty event lines, not none.
 6. `./dev.py test tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py` shows the parser accepts exactly `show`, `schema`, `renormalize`, `coverage`, rejects `schema bogus`, and every evidence command has description and examples.
-7. `uv run clutch help evidence` lists the four verbs; a one-time review check confirms `clutch/docs/host-running.md` and `docs/how-clutch-works.md` each gained exactly those four rows and no other text changed.
+7. `uv run clutch help evidence` lists the four verbs; a one-time review check confirms `clutch/docs/host-running.md` gained exactly those four rows and no other text changed, and `docs/how-clutch-works.md` gained exactly those four rows plus the two rewritten section 10 sentences (the `json_schema` sentence now naming `clutch evidence schema`, and the `normalized/` sentence now naming `clutch evidence renormalize`) and no other text changed.
 
 ## Verification
 ```
@@ -124,7 +126,7 @@ Scope out:
 ```
 
 ## Definition of rejected
-Any verb rewrites or deletes a `start.json`, `end.json` or raw blob; `renormalize` deletes another normalizer id's view; a verb is gated by `training_data.enabled`; a normalizer's output or id changes; a unit test reads a repo file; or a new command is left out of its group help or the two verb tables.
+Any verb rewrites or deletes a `start.json`, `end.json` or raw blob; `renormalize` deletes another normalizer id's view; a verb is gated by `training_data.enabled`; a normalizer's output or id changes; a unit test reads a repo file; a new command is left out of its group help or the two verb tables; or `docs/how-clutch-works.md` still says no command exposes `json_schema` or no call record has a `normalized/` directory.
 
 ## Time budget
 - expected: 15m
