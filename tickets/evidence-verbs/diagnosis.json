@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "47dc4f826b47d57fb71faf0125c613be24705173",
+  "produced_at_sha": "4bb46f7218ef83da4f0aa1fe72a4c85a5d216dc8",
   "stem": "evidence-verbs",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In clutch/__main__.py `renormalize`, wrap each call's `store.get_blob` reads of `end.raw.stdout_times` and `end.raw.stdout` in `try/except FileNotFoundError`. On that error, add 1 to `skipped` and continue. A pruned call must not abort the run with exit 2.",
-    "Reason: `EvidenceStore.prune` deletes raw blobs of older calls but keeps start.json/end.json (docs/how-clutch-works.md section 10), so a missing blob is the normal state of an old call. Treat it like a missing end.json: skip it, count it, and print the normalized/skipped summary.",
-    "Add a test in tests/unit/test_evidence_normalized_store.py or tests/integration/test_evidence_verbs.py. Store a call, delete its stdout blob, run `renormalize`, and assert exit 0, the call counted as skipped, and the other calls still normalized.",
-    "Review found the rest sound; rebuild it from the merge base. That means the four-verb `evidence` group with `_command` help, clutch/evidence/views.py, store write_normalized/read_normalized, VERIFIED_PROVIDERS in codex.py and gemini.py, and the doc rows and two section 10 sentences.",
-    "host-running.md verb table rows take command names without arguments (found by the gate on attempt 1). Unit tests must cover views.py and the store methods from inline JSONL bytes; only tests/integration reads tests/fixtures/evidence/codex/stream.jsonl."
+    "Redo the full ticket from the merge base. Review found the code, store methods, views, tests, and the how-clutch-works.md edits sound. The only findings were the four new clutch/docs/host-running.md rows.",
+    "In clutch/docs/host-running.md, set the 'Works while serve runs?' column (header line 12) to `Yes` for the evidence show, schema, renormalize, and coverage rows. They take no lock, the same as `training export` and `meta check`, which already say `Yes`.",
+    "Keep the fix from attempt 1: renormalize skips and counts a call whose raw stdout blob was pruned, instead of failing. Review confirmed this fix.",
+    "Before you write the new host-running.md rows, read the column headers and copy the cell values from an existing no-lock verb row. Add exactly four rows and change no other text."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
