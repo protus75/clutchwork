@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The host-running verb table requires command names without arguments. The ticket verification, full unit coverage gate, full integration suite, lint, and formatting checks passed.
+Renormalization skips and counts calls whose raw blobs were pruned. Temporary mutation checks left stale Python bytecode; refreshing it resolved the resulting test failure. The final ticket verification, full unit and integration suites, coverage gate, lint, and formatting checks passed.
 
 ## Dead ends
 
-The first coverage-gate run exposed the verb-table format and missing unit coverage; both were corrected.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 15 minutes; elapsed time was not measured.
+Expected 15 minutes; actual time was not measured.
 
