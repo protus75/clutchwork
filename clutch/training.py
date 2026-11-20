@@ -9,9 +9,11 @@ from pathlib import PurePosixPath
 
 from pydantic import TypeAdapter, ValidationError
 
+from clutch.driver import unwrap_fence
 from clutch.evidence import claude, codex, gemini
 from clutch.evidence.store import SKIP
 from clutch.git import GitError
+from clutch.llm import LLMRequest
 from clutch.tickets import DIAGNOSIS_FILE, Source, artifact_path, read_tolerant, stem_findings, ticket_path
 
 NOTICE = "Notice: model outputs come from third-party providers whose terms may restrict training other models on them. Check each provider's terms before training on this export."
@@ -106,7 +108,7 @@ def _identity(start, keys, stem, label, kind):
     )
 
 
-async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None):
+async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None, *, only=None):
     counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict_skipped=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
@@ -145,9 +147,9 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
             except FileNotFoundError, ValueError, UnicodeError, KeyError, IndexError, TypeError, ValidationError:
                 counts["skipped"] += 1
         stems.update(ticket_calls)
-    held = sorted(stem for stem in stems if int(hashlib.sha256(stem.encode()).hexdigest(), 16) % 100 < holdout)
+    held = sorted(stem for stem in stems if only is None and int(hashlib.sha256(stem.encode()).hexdigest(), 16) % 100 < holdout)
     counts["heldout"] = len(held)
-    held_set = set(held)
+    held_set = set(held) if only is None else stems - only
     diffs = {}
     for stem, sha in sorted(merged.items()):
         if stem in held_set:
@@ -279,6 +281,30 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
             else:
                 counts["dropped"] += 1
         files["sft.jsonl" if kind == "implement" else f"{kind}.jsonl"] = "".join(lines).encode()
-    if holdout:
+    if holdout and only is None:
         files["holdout.txt"] = "".join(stem + "\n" for stem in held).encode()
     return files, counts
+
+
+async def evaluate(records, llm, tier):
+    counts = dict(total=0, agree=0, disagree=0, unparsed=0)
+    for record in records:
+        result = await llm.call(LLMRequest(surface="review", rendered=record["messages"][0]["content"], tier=tier, effort="medium", ticket=None, worktree=None))
+        counts["total"] += 1
+        try:
+            reply = json.loads(unwrap_fence(result.text))
+        except ValueError:
+            reply = None
+        verdict = reply.get("verdict") if isinstance(reply, dict) else None
+        if verdict not in ("approve", "snag", "rma"):
+            counts["unparsed"] += 1
+        elif (verdict == "snag") == (record["label"] == "negative"):
+            counts["agree"] += 1
+        else:
+            counts["disagree"] += 1
+    counts["agreement"] = counts["agree"] / counts["total"] if counts["total"] else 0.0
+    return counts
+
+
+def report_eval(counts):
+    return f"total: {counts['total']}, agree: {counts['agree']}, disagree: {counts['disagree']}, unparsed: {counts['unparsed']}, agreement: {counts['agreement']:.2%}"

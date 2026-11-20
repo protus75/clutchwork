@@ -1,4 +1,4 @@
-# Training data export
+# Training data export and evaluation
 
 ## Retrieval first
 
@@ -6,7 +6,7 @@ Past tickets, decisions in `run.md`, and review findings are the cheapest win. U
 
 ## Enable it
 
-Set `training_data: {enabled: true, exclude: [...]}` in `config.yaml`, replacing the example list with paths to exclude. Only attempts after enabling it carry a diff. When disabled, `clutch training export` refuses and tells you to set `training_data.enabled: true`; only later attempts carry a diff. See the [host contract](host-contract.md) for the field inventory.
+Set `training_data: {enabled: true, exclude: [...]}` in `config.yaml`, replacing the example list with paths to exclude. Only attempts after enabling it carry a diff. When disabled, `clutch training export` and `clutch training eval` refuse and tell you to set `training_data.enabled: true`; only later attempts carry a diff. See the [host contract](host-contract.md) for the field inventory.
 
 ## What is excluded
 
@@ -15,6 +15,12 @@ The fixed always-excluded globs are `.env*`, `*.pem`, `*.key`, and `id_*`; `excl
 ## Export
 
 Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, and `ticket`. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
+
+## Evaluate a review route
+
+Run `clutch training eval --route medium/review --holdout FILE` with the holdout file from export. Only the review lens is supported; tiers are `low`, `medium`, `high` and `max`. Eval rebuilds review records for those stems and calls the route with each recorded prompt.
+
+A recorded label is negative for logic, acceptance, scope or leak findings, and neutral otherwise. Agreement means the model replies `snag` exactly when the label is negative; `approve` and `rma` agree with neutral labels. Replies without a valid JSON verdict count as unparsed, never as agreement. The agreement fraction is agreements divided by all records (zero for no records). The report prints total, agree, disagree and unparsed counts to stdout only; eval writes no journal, evidence records or engine log.
 
 ## Provider terms
 

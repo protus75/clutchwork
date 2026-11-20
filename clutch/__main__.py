@@ -714,9 +714,9 @@ def _parser() -> argparse.ArgumentParser:
     )
     training = sub.add_parser(
         "training",
-        help="export training data",
-        description="Build training data from local evidence.",
-        epilog="Examples:\nclutch training export --out training-data",
+        help="export training data and evaluate review routes",
+        description="Export training data and evaluate review routes from local evidence. Subcommands: export, eval.",
+        epilog="Examples:\nclutch training export --out training-data\nclutch training eval --route medium/review --holdout training-data/holdout.txt",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     training_sub = training.add_subparsers(dest="training_verb", required=True)
@@ -746,6 +746,19 @@ def _parser() -> argparse.ArgumentParser:
     export.add_argument("--since", type=export_date, metavar="DATE", help="include calls on or after YYYY-MM-DD")
     export.add_argument("--no-trajectory", action="store_false", dest="trajectory", help="omit implement tool-call trajectories")
     export.add_argument("--holdout", type=int, choices=range(101), default=0, metavar="PCT")
+    evaluation = _command(
+        training_sub,
+        "eval",
+        summary="score a review route against held-out records",
+        does="Replay held-out review prompts and print agreement with recorded negative or neutral labels.",
+        reads="Config, holdout stems, evidence and first-parent git commits; calls the selected model route.",
+        writes="Report to stdout only; no journal, evidence records or engine log.",
+        lock="None.",
+        exits="0 on success; 2 when disabled, the route is invalid, the holdout is unreadable or provider setup fails.",
+        examples=["clutch training eval --route medium/review --holdout training-data/holdout.txt"],
+    )
+    evaluation.add_argument("--route", choices=[f"{tier}/review" for tier in TIERS], required=True)
+    evaluation.add_argument("--holdout", type=Path, required=True)
     coverage = sub.add_parser(
         "coverage",
         help="build and check coverage reports",
@@ -1035,7 +1048,7 @@ def main(
             ("contract", "host contract"),
             ("qwen", "local qwen provider setup"),
             ("gemini", "gemini provider setup"),
-            ("training", "training data export"),
+            ("training", "training data export and evaluation"),
         ):
             print(f"{Path(clutch.__file__).parent / 'docs' / f'host-{name}.md'}  {purpose}")
         return 0
@@ -1527,9 +1540,30 @@ def main(
         try:
             config.training_data.require_enabled()
         except ValueError as e:
-            raise runner.Refusal("training export is off", str(e)) from None
+            raise runner.Refusal(f"training {args.training_verb} is off", str(e)) from None
         redactor = Redactor.from_config(config, env)
         store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
+        if args.training_verb == "eval":
+            try:
+                only = set(checkout.fs.read_bytes(args.holdout).decode().splitlines())
+            except (OSError, UnicodeError) as exc:
+                raise runner.Refusal(f"cannot read holdout {args.holdout}: {exc}", "pass a readable UTF-8 holdout file from training export") from None
+
+            async def evaluation():
+                files, _ = await training.render(store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, kinds=("review",), only=only)
+                session = build_control(checkout).providers
+                try:
+                    # Eval must not reconstruct or fire journal-backed timers.
+                    llm = ProviderLLM(config, exec_=checkout.exec_, fs=checkout.fs, env=env, cwd=repo, timeout=runner.call_timeout(config), session=session)
+                    problems = await llm.preflight()
+                    if problems:
+                        raise ProviderSetupError("; ".join(problems))
+                    return await training.evaluate((json.loads(line) for line in files["review.jsonl"].splitlines()), llm, args.route.split("/")[0])
+                finally:
+                    await session.close()
+
+            print(training.report_eval(asyncio.run(evaluation())))
+            return 0
         files, counts = asyncio.run(training.render(store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, args.kinds, args.holdout, args.trajectory, args.since))
         for name, data in files.items():
             checkout.fs.write(args.out / name, data)

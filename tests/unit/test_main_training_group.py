@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from clutch import __main__ as entry
@@ -28,3 +30,16 @@ def test_new_options():
     assert parser.parse_args(["training", "export", "--out", "x"]).kinds == args.kinds
     export = parser._subparsers._group_actions[0].choices["training"]._subparsers._group_actions[0].choices["export"]
     assert "--since" in export.format_help() and "diagnosis" in export.format_help()
+
+
+def test_eval_parser():
+    args = entry._parser().parse_args(["training", "eval", "--route", "medium/review", "--holdout", "h.txt"])
+    # Rules out losing the eval verb, route or typed holdout path during parsing.
+    assert (args.training_verb, args.route, args.holdout) == ("eval", "medium/review", Path("h.txt"))
+
+
+@pytest.mark.parametrize("route", ["medium/triage", "review", "bogus/review"])
+def test_eval_bad_route(route):
+    # Rules out accepting unsupported surfaces, missing tiers or unknown tiers.
+    with pytest.raises(SystemExit):
+        entry._parser().parse_args(["training", "eval", "--route", route, "--holdout", "h.txt"])
