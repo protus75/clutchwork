@@ -25,17 +25,17 @@ none
 ## Scope in / Scope out
 Scope in:
 - Create `tests/dispatch_settle.py` with `async def dispatch_settled(scheduler)`: `ticket = await scheduler.dispatch_next()`; while `ticket is not None and ticket.stem in scheduler.flying`, `await turn()`; return `ticket`. It reads `scheduler.dispatch_next` at call time, so a test that monkeypatches that attribute still works through it.
-- In each fenced existing test or harness file, replace every plain `await <scheduler>.dispatch_next()` (including `asyncio.run(<scheduler>.dispatch_next())` in `tests/regress_serve_reoffer_dispatch.py` and `while await ... is not None` loops) with `dispatch_settled(<scheduler>)`, and add the import. Nothing else in those files changes. The sites are in `tests/regress_serve_reoffer_dispatch.py`, `tests/harness/reliability_battery.py` (`_Member.dispatch` and the drought check in `exercise`), `tests/unit/test_drain_eligible.py`, `tests/unit/test_admission_running_set.py`, `tests/unit/test_scheduler_write_queue_seams.py`, `tests/unit/test_scheduler_parallel_fill.py`, `tests/integration/test_daemon_core_queue_seams.py`, `tests/integration/test_storm_notification_activation.py`, `tests/integration/test_requisition_gate.py`, `tests/integration/test_provider_cooldown_failover.py`, `tests/integration/test_daemon_composition.py` and `tests/integration/test_scheduler.py`.
+- In each fenced existing test or harness file, replace every plain `await <scheduler>.dispatch_next()` (including `while await ... is not None` loops) with `dispatch_settled(<scheduler>)`, and add the import. Nothing else in those files changes. The sites are in `tests/harness/reliability_battery.py` (`_Member.dispatch` and the drought check in `exercise`), `tests/unit/test_drain_eligible.py`, `tests/unit/test_admission_running_set.py`, `tests/unit/test_scheduler_write_queue_seams.py`, `tests/unit/test_scheduler_parallel_fill.py`, `tests/integration/test_daemon_core_queue_seams.py`, `tests/integration/test_storm_notification_activation.py`, `tests/integration/test_requisition_gate.py`, `tests/integration/test_provider_cooldown_failover.py`, `tests/integration/test_daemon_composition.py` and `tests/integration/test_scheduler.py`.
 - Add `tests/unit/test_dispatch_settle.py`.
 
 Scope out:
 - Every `asyncio.create_task(<scheduler>.dispatch_next())` site, the `delayed_dispatch` wrapper in `tests/integration/test_reliability_battery.py` and the `dispatch` task in `tests/harness/reliability_battery.py`: left for `serve-dispatch-returns-on-slot`.
+- `tests/regress_serve_reoffer_dispatch.py`: it only reads the returned ticket's stem and runs as a script, so it needs no conversion.
 - `clutch/` code and docs: unchanged.
 
 ## Scope fence
 - tests/dispatch_settle.py
 - tests/unit/test_dispatch_settle.py
-- tests/regress_serve_reoffer_dispatch.py
 - tests/harness/reliability_battery.py
 - tests/unit/test_drain_eligible.py
 - tests/unit/test_admission_running_set.py
@@ -52,11 +52,11 @@ Scope out:
 1. `dispatch_settled` returns the ticket `dispatch_next` returned, and returns `None` without waiting when `dispatch_next` returns `None`, checked by `./dev.py test tests/unit/test_dispatch_settle.py`.
 2. `dispatch_settled` does not return while the dispatched stem is still in `scheduler.flying`, so a scheduler whose `flying` entry clears only after several turns makes the helper return after that clearing, not on the first return of `dispatch_next`, checked by `./dev.py test tests/unit/test_dispatch_settle.py`.
 3. `dispatch_settled` calls the scheduler's current `dispatch_next` attribute, so a test that monkeypatches it is still observed, checked by `./dev.py test tests/unit/test_dispatch_settle.py`.
-4. Every converted file still passes against today's scheduler with its assertions unchanged, checked by `./dev.py test tests/unit tests/integration/test_scheduler.py tests/integration/test_daemon_composition.py tests/integration/test_provider_cooldown_failover.py tests/integration/test_requisition_gate.py tests/integration/test_storm_notification_activation.py tests/integration/test_daemon_core_queue_seams.py tests/integration/test_reliability_battery.py tests/regress_serve_reoffer_dispatch.py`.
+4. Every converted file still passes against today's scheduler with its assertions unchanged, checked by `./dev.py test tests/unit tests/integration/test_scheduler.py tests/integration/test_daemon_composition.py tests/integration/test_provider_cooldown_failover.py tests/integration/test_requisition_gate.py tests/integration/test_storm_notification_activation.py tests/integration/test_daemon_core_queue_seams.py tests/integration/test_reliability_battery.py`.
 
 ## Verification
 ```
-./dev.py test tests/unit tests/integration/test_scheduler.py tests/integration/test_daemon_composition.py tests/integration/test_provider_cooldown_failover.py tests/integration/test_requisition_gate.py tests/integration/test_storm_notification_activation.py tests/integration/test_daemon_core_queue_seams.py tests/integration/test_reliability_battery.py tests/regress_serve_reoffer_dispatch.py
+./dev.py test tests/unit tests/integration/test_scheduler.py tests/integration/test_daemon_composition.py tests/integration/test_provider_cooldown_failover.py tests/integration/test_requisition_gate.py tests/integration/test_storm_notification_activation.py tests/integration/test_daemon_core_queue_seams.py tests/integration/test_reliability_battery.py
 ```
 
 ## Definition of rejected
