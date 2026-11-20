@@ -27,7 +27,8 @@ from clutch.gates import Gate, GateReport, merge_severity, run_gates
 from clutch.journal import Journal
 from clutch.journal import run_seq as journal_run_seq
 from clutch.llm import LLM, AgentEffort, AgentTier, LLMAborted, LLMRequest, LLMResult
-from clutch.llmeffect import llm_call, llm_key, scoped_seq
+from clutch.llmeffect import llm_call, llm_key, member_index, scoped_seq
+from clutch.panel import DroppedMember
 from clutch.providers import WRITING_SURFACES, ProviderBudgetExceeded, ProviderCallError, ProviderDrought, ProviderLLM
 from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, LocalFileSystem, Sleep
@@ -86,6 +87,12 @@ class _StuckBudget(Exception):
 @dataclass(frozen=True)
 class ProviderDroughtResult(StageResult):
     provider_drought: dict | None = None
+
+
+@dataclass
+class PanelResult:
+    members: list[StageResult]
+    dropped: list[DroppedMember]
 
 
 @dataclass
@@ -277,6 +284,58 @@ class Driver:
                 if self._active is invocation and (invocation.abort is None or invocation.abort.done()):
                     self._active = None
 
+    async def run_panel(
+        self,
+        stage: LlmStage,
+        consumed: Any,
+        *,
+        size: int,
+        ticket: str | None,
+        attempt: int,
+        workspace: Path,
+        tier: AgentTier,
+        effort: AgentEffort,
+        stuck_budget: float,
+        expected_budget: float | Literal["surface", "eval"],
+        scope_fence: Sequence[str],
+        run_seq: int | None = None,
+        budget_usd: float | None = None,
+        kind: str | None = None,
+    ) -> PanelResult:
+        started = self.clock()
+        members: list[StageResult] = []
+        dropped: list[DroppedMember] = []
+        for index in range(size):
+            remaining = stuck_budget - (self.clock() - started).total_seconds()
+            if remaining <= 0:
+                break
+            result = await self.run(
+                stage,
+                consumed,
+                ticket=ticket,
+                attempt=attempt,
+                workspace=workspace,
+                tier=tier,
+                effort=effort,
+                stuck_budget=remaining,
+                expected_budget=expected_budget,
+                scope_fence=scope_fence,
+                run_seq=run_seq,
+                budget_usd=budget_usd,
+                key_scope=f"m{index}" if size > 1 else None,
+                kind=kind,
+            )
+            if isinstance(result, ProviderDroughtResult):
+                members.append(result)
+                break
+            if result.outcome == "infra_error":
+                dropped.append(DroppedMember(index=index, failure_class="infra_error"))
+                continue
+            members.append(result)
+            if result.outcome != "ok":
+                break
+        return PanelResult(members, dropped)
+
     async def _run(
         self,
         stage: LlmStage,
@@ -356,7 +415,9 @@ class Driver:
                 if remaining == 0:
                     return done("budget_exceeded")
                 call = {**ctx, "call_seq": call_seq, "call_key": llm_key(stem, key_seq, stage.surface, attempt, call_seq)}
-                name = f"{stage.surface}/call-{call_seq:02d}"
+                member = member_index(call["call_key"])
+                segment = f"/m{member}" if member is not None else ""
+                name = f"{stage.surface}{segment}/call-{call_seq:02d}"
                 prompt = stage.render(consumed, tally.findings)
                 req = LLMRequest(
                     surface=stage.surface,

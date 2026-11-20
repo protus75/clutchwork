@@ -26,6 +26,21 @@ def llm_key(stem: str, run_seq: int | str, surface: str, attempt: int, call_seq:
     return "/".join(("llm", stem, str(run_seq), surface, str(attempt), str(call_seq)))
 
 
+def member_index(call_key: str | None) -> int | None:
+    if not isinstance(call_key, str):
+        return None
+    parts = call_key.split("/")
+    if len(parts) != 6 or parts[0] != "llm" or not all(parts[1:]):
+        return None
+    match = re.fullmatch(r"m([0-9]+)-[0-9]+", parts[2])
+    if match is None or not parts[4].isdigit() or not parts[5].isdigit():
+        return None
+    try:
+        return int(match.group(1))
+    except ValueError:
+        return None
+
+
 def _cost(result: dict[str, Any]) -> dict[str, Any]:
     return {k: result[k] for k in ("usd", "input_tokens", "output_tokens", "provider", "model")}
 

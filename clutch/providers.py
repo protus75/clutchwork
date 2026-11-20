@@ -31,6 +31,7 @@ from clutch.evidence.store import EvidenceStore
 from clutch.git import Git
 from clutch.journal import EventType, last_transition, render_ts
 from clutch.llm import TIERS, AgentEffort, AgentTier, LLMRequest, LLMResult
+from clutch.llmeffect import member_index
 from clutch.lockfile import CommitLock
 from clutch.redact import Redactor, secret_names
 from clutch.seams import Clock, ExecutableNotFound, FileSystem, GroupExec, ProcessExec
@@ -999,6 +1000,13 @@ class ProviderLLM:
         from clutch.thresh import UnavailableRoute
 
         route = candidates(self._config, req.tier, req.surface, req.kind)
+        index = member_index(call_key)
+        if index is not None:
+            members = panel_members(self._config, req.tier, req.surface, req.kind)
+            if index >= len(members):
+                raise ValueError(f"member index {index} exceeds member count {len(members)}")
+            assigned = members[index]
+            route = (assigned, *(candidate for candidate in route if candidate != assigned))
         # Budget eligibility precedes admission, so a refusal cannot become a
         # provider failure or leave an unmatched Effect intent. Preserve the
         # configured order among candidates that can serve the bounded request.

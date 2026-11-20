@@ -56,7 +56,7 @@ Combiners take and return the existing artifact models (`ReviewArtifact`, `Diagn
 
 ### 3. Execution
 
-- The driver fans out `size` calls with `asyncio.gather`, each a normal driver call: its own effect key (`.../<call>` gains a member index: `llm/<stem>/<run_seq>/review/<attempt>/<call>/m<k>`), its own spool, its own evidence record, its own re-prompt loop, under the stage's one stuck budget. Provider slots (`limits.concurrency`) still apply, so a panel on a `concurrency: 1` provider runs its members in turn; `doctor` warns when a panel row resolves every member to such a provider.
+- The driver runs `size` members in turn under one stuck budget. Each has its own effect key (`llm/<stem>/m<k>-<run_seq>/review/<attempt>/<call>`), spool, evidence record and re-prompt loop; provider concurrency limits still apply.
 - A member whose call fails with a `ProviderCallError` is dropped when at least one member survives; the combined result records the dropped member and its failure class. When every member fails, the stage result is `infra_error`, as one failed call is today.
 - One `panel_facts` signal per combined stage: members' provider and model, each verdict, the agreement counts, and the dropped members. The journal is otherwise unchanged; `review.md` and `diagnosis.json` are the combined artifacts.
 - A crash mid-panel replays through the effect keys: completed members are not re-called.

@@ -666,7 +666,7 @@ Every model call goes through one driver (`clutch/driver.py`) using a prompt spe
 Specs always load from the engine's `clutch/specs/`, never from the host. Host material is injected only
 inside `<<clutch-data:...>>` blocks; a rendered prompt over 400,000 characters is refused. The
 driver re-prompts with findings when a reply is invalid or fails a gate, up to `caps.retry`
-times; each call is spooled under `state_dir/spools/`.
+times; each call is spooled under `state_dir/spools/`. `Driver.run_panel` runs members in turn under one stuck budget and returns their results and dropped members; member spools include `m<k>` beneath the surface.
 
 ### 8.5 Spend and redaction
 
@@ -787,7 +787,7 @@ and notifications are Effects, so a crash never repeats one.
 
 Each keyed provider call leaves a record under `<state_dir>/evidence/` with redacted stdout and stderr and an envelope of call facts. `CliAdapter.invoke` writes call records; harvest reads their start records for attempt manifests and reads the provider event tail (section 6.2): `latest_stdout` takes stdout from the newest `end.json` by `clock.wall_end` whose key starts with `llm/<stem>/`. The journal, gates and dispatch do not read the store.
 
-`invoke` writes a record only with a `CallCapture`. `ProviderLLM.admitted_call` builds it from the journal Effect key passed by `llm_call` (section 10.2): `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`. The group is the ticket stem, or the surface name for a ticketless call. Keyless calls leave no record: these include preflight's probe calls (section 8.1), calls made by the probe verb in section 2.1, and calls through the raw `ProviderLLM.call` seam. A key with a completed Effect replays its result without calling the provider or writing a record. Every call, keyed or not, writes its redacted prompt to a temporary file under `evidence/scratch/` as the CLI's stdin; the file and temporary index are removed when the call ends.
+`invoke` writes a record only with a `CallCapture`. `ProviderLLM.admitted_call` builds it from the journal Effect key passed by `llm_call` (section 10.2): `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`. The group is the ticket stem, or the surface name for a ticketless call. Panel member keys scope the run sequence as `m<k>-<run_seq>` while retaining six parts. Keyless calls leave no record: these include preflight's probe calls (section 8.1), calls made by the probe verb in section 2.1, and calls through the raw `ProviderLLM.call` seam. A key with a completed Effect replays its result without calling the provider or writing a record. Every call, keyed or not, writes its redacted prompt to a temporary file under `evidence/scratch/` as the CLI's stdin; the file and temporary index are removed when the call ends.
 
 A record consists of `calls/<escaped key>/start.json` and `end.json`, with the key escaped by `urllib.parse.quote(key, safe="")`. If a key runs again, its existing directory causes the next record to use `<key>#2`, then `#3` and so on. Only a key without a journaled completion can run again; the record's `id` retains the unsuffixed key.
 
