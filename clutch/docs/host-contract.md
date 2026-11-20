@@ -196,7 +196,10 @@ Limits:
   defaults: {est_cost_per_call_usd: unset, quota_window_minutes: 60}
 Route:
   required: [tier, surface, candidates]
-  defaults: {kinds: unset}
+  defaults: {kinds: unset, panel: unset}
+Panel:
+  required: [size, combine]
+  defaults: {}
 Candidate:
   required: [provider]
   defaults: {model: unset}
@@ -251,7 +254,7 @@ RetroSpikes:
   defaults: {enabled: true, count: 5, kinds: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]}
 ```
 
-A route may restrict `kinds` to a nonempty list of ticket kinds. Routing prefers a matching kind, then an unrestricted row, first for the requested surface and then for review.
+A route may restrict `kinds` to a nonempty list of ticket kinds. Routing prefers a matching kind, then an unrestricted row, first for the requested surface and then for review. A `panel` requires size 1 to 3 and a surface-compatible combiner: `findings-union` for review and requisition_review, `majority-verdict` for diagnose, triage and review_visual, or `best-of-n` for implement.
 
 ```yaml config-values
 spike_kind: [override, rework, gate-failure, integration-red, reject, premise-failed, infra-error, flake, escape]

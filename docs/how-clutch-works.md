@@ -48,7 +48,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `training export --out DIR [--kinds K ...] [--holdout PCT]` | no | Exports labelled training records from evidence and merged commits. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency and graphics judge independence checks. Git is not probed if config fails to load. Exit 2 on any failure. |
+| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
@@ -632,7 +632,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 `routing` rows map `(tier, surface)` to an ordered list of candidates. An optional `kinds` list restricts a row to those ticket kinds; matching kind rows precede unrestricted rows for the requested surface and then review. A surface with no row
 falls back to the `(tier, review)` row. The model is the candidate's `model` or the provider's
-`models_by_tier[tier]`.
+`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; no stage fans out yet.
 
 ### 8.3 Admission, breakers, droughts
 

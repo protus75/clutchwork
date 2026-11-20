@@ -17,6 +17,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote
 from uuid import uuid4
@@ -150,6 +151,27 @@ def _candidate(config, tier, surface, cand):
 def candidates(config, tier, surface, kind=None) -> tuple[Served, ...]:
     route = _route(config, tier, surface, kind)
     return tuple(_candidate(config, tier, surface, candidate) for candidate in route.candidates)
+
+
+def panel_members(config, tier, surface, kind=None) -> tuple[Served, ...]:
+    route = _route(config, tier, surface, kind)
+    size = route.panel.size if route.panel is not None and route.surface == surface else 1
+    selected = route.candidates[:size] if len(route.candidates) >= size else [route.candidates[0]] * size
+    return tuple(_candidate(config, tier, surface, candidate) for candidate in selected)
+
+
+def panel_slots_finding(config) -> str | None:
+    for i, route in enumerate(config.routing):
+        if route.panel is None or route.panel.size == 1:
+            continue
+        kind = route.kinds[0] if route.kinds else None
+        try:
+            members = panel_members(SimpleNamespace(routing=[route], providers=config.providers), route.tier, route.surface, kind)
+        except ProviderSetupError:
+            continue
+        if all(member.provider.limits.concurrency == 1 for member in members):
+            return f"routing.{i} panel members have limits.concurrency 1; raise limits.concurrency or add a second candidate on another provider"
+    return None
 
 
 def judge_independence_finding(config) -> str | None:

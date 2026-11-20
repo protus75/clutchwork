@@ -414,7 +414,7 @@ def _parser() -> argparse.ArgumentParser:
         host_sub,
         "doctor",
         summary="inspect setup without changing state",
-        does="Check setup, managed conduct blocks, parallel provider concurrency and graphics judge independence, printing PASS or FAIL rows.",
+        does="Check setup, managed conduct blocks, parallel provider concurrency, graphics judge independence and panel provider concurrency, printing PASS or FAIL rows.",
         reads="Config, git, the writer lock, journal and routed conduct files at HEAD.",
         writes="Nothing.",
         lock="None; probes the writer lock and fails while another process holds it.",

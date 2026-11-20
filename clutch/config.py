@@ -95,11 +95,25 @@ class Candidate(StrictModel):
     model: str | None = None  # absent: the provider's models_by_tier[tier] serves
 
 
+PanelCombine = Literal["findings-union", "majority-verdict", "best-of-n"]
+PANEL_SURFACES = {
+    "findings-union": ("review", "requisition_review"),
+    "majority-verdict": ("diagnose", "triage", "review_visual"),
+    "best-of-n": ("implement",),
+}
+
+
+class Panel(StrictModel):
+    size: Annotated[int, Field(ge=1, le=3)]
+    combine: PanelCombine
+
+
 class Route(StrictModel):
     tier: AgentTier
     surface: str
     candidates: Annotated[list[Candidate], Field(min_length=1)]
     kinds: Annotated[list[str], Field(min_length=1)] | None = None
+    panel: Panel | None = None
 
     @field_validator("kinds")
     @classmethod
@@ -514,6 +528,9 @@ def _check_references(path: Path, cfg: Config) -> None:
         if entry.coverage is not None and entry.results is None:
             raise ConfigError(path, f"review.mechanical.{i}.coverage", "coverage requires results on the same entry; declare results")
     kinds = {p.name: p.kind for p in cfg.providers}
+    for i, route in enumerate(cfg.routing):
+        if route.panel is not None and route.surface not in PANEL_SURFACES[route.panel.combine]:
+            raise ConfigError(path, f"routing.{i}.panel.combine", f"{route.panel.combine!r} does not fit surface {route.surface!r}; choose a combiner for this surface")
     # Before the api refusal: routing Implement to api stays wrong after the api client ships.
     for i, route in enumerate(cfg.routing):
         for j, cand in enumerate(route.candidates):
