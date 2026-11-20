@@ -43,6 +43,7 @@ from clutch.artifacts import (
     major,
     refused,
 )
+from clutch.baseline import resolve_visual_baseline
 from clutch.config import Config, ConfigSnapshot, Severity
 from clutch.driver import Driver, LlmStage
 from clutch.enginelog import engine_log_path
@@ -1624,6 +1625,14 @@ async def check_candidates(ctx, ticket, attempt):
                 code="candidate_paths",
                 message=f"Implement changed forbidden paths: {', '.join(forbidden)}",
                 paved_road="Implement writes candidates only under .clutch/renders/<stem>/a<i>/ and never an artifact path",
+            )
+        ]
+    if not resolve_visual_baseline(ctx.config, ctx.driver.journal.read(), specs_dir=ctx.specs_dir).binds:
+        return [
+            Finding(
+                code="visual_undecided",
+                message="visual_baseline GO is missing or stale",
+                paved_road="the ticket stays parked until a GO visual_baseline is recorded for the current review_visual routing and spec major, then retry",
             )
         ]
     inputs = [worktree / p for p in fields.get("input", [])]

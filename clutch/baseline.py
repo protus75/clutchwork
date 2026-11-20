@@ -7,7 +7,7 @@ from typing import Any, Literal, get_args
 
 from clutch.config import Config, ConfigSnapshot
 from clutch.journal import EventType
-from clutch.policy import BASELINE_SIGNAL, BASELINED_SURFACES, TIERS
+from clutch.policy import BASELINE_SIGNAL, BASELINED_SURFACES, TIERS, VISUAL_BASELINE_SIGNAL, visual_identity
 from clutch.providers import PLACEHOLDER, resolve
 from clutch.specs import load_spec
 
@@ -75,4 +75,22 @@ def resolve_baseline(config: Config | ConfigSnapshot, events: Iterable[Any], *, 
         return BaselineResolution("GO" if _matches(config, latest.get("identity"), specs_dir) else "REVOKED")
     except Exception:
         # This authority boundary also contains registry, spec and event-iteration failures.
+        return BaselineResolution("REVOKED")
+
+
+def resolve_visual_baseline(config: Config | ConfigSnapshot, events: Iterable[Any], *, specs_dir: Path) -> BaselineResolution:
+    """Bind only the latest valid visual baseline to the current judge identity."""
+    try:
+        latest = None
+        for event in events:
+            if event.type not in EventType or not isinstance(event.body, Mapping):
+                return BaselineResolution("REVOKED")
+            if event.type == EventType.SIGNAL and event.body.get("signal") == VISUAL_BASELINE_SIGNAL:
+                latest = event.body
+        if latest is None:
+            return BaselineResolution("ABSENT")
+        if latest.get("verdict") != "GO":
+            return BaselineResolution("NO_GO")
+        return BaselineResolution("GO" if latest.get("identity") == visual_identity(config, specs_dir) else "REVOKED")
+    except Exception:
         return BaselineResolution("REVOKED")

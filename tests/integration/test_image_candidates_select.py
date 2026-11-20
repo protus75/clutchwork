@@ -11,8 +11,9 @@ from clutch import stages
 from clutch.config import load_config
 from clutch.driver import Driver
 from clutch.git import Git
-from clutch.journal import Journal
+from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
+from clutch.policy import visual_identity
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import PackingSlip, StageContext
 from clutch.tickets import validate_ticket
@@ -25,13 +26,19 @@ def reply(verdict, passes):
     return json.dumps({"rows": [{"id": key, "verdict": "pass" if i < passes else "fail", "observation": "observed"} for i, key in enumerate(ids)], "verdict": verdict, "reason": "observed"})
 
 
-def rig(repo, replies):
+def rig(repo, replies, *, baseline=True):
     author(repo)
     base = np.random.default_rng(4).integers(0, 256, (128, 128, 3), dtype=np.uint8)
     input_path = repo / "base.png"
     Image.fromarray(base).save(input_path)
     git(repo, "add", "base.png")
     git(repo, "commit", "-m", "input")
+    config_path = repo / "config.yaml"
+    config_path.write_text(
+        config_path.read_text().replace(
+            "routing:\n", "routing:\n" + "".join(f"  - {{tier: {tier}, surface: review_visual, candidates: [{{provider: fake}}]}}\n" for tier in ("low", "medium", "high", "max"))
+        )
+    )
     config = load_config(None, cwd=repo)
     clock = lambda: datetime(2026, 10, 5, tzinfo=UTC)  # noqa: E731
 
@@ -40,6 +47,8 @@ def rig(repo, replies):
 
     exec_ = SubprocessExec()
     driver = Driver.from_config(config, journal=Journal(config.state_dir, clock), llm=FakeLLM(replies), env=ENV, clock=clock, sleep=never)
+    if baseline:
+        driver.journal.append(EventType.SIGNAL, {"signal": "visual_baseline", "verdict": "GO", "identity": visual_identity(config, SPECS), "overall": 1.0, "case_count": 20})
     ctx = StageContext(
         repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
     )
@@ -145,3 +154,18 @@ def test_committed_forbidden_path_refuses(repo, forbidden):
     findings = asyncio.run(stages.check_candidates(ctx, ticket, 0))
     assert findings[0].code == "candidate_paths" and "never an artifact path" in findings[0].paved_road
     assert git(repo, "rev-parse", STEM).strip() == before
+
+
+def test_missing_visual_baseline_parks(repo):
+    ctx, ticket, slip, _ = rig(repo, [], baseline=False)
+    before = git(repo, "rev-parse", STEM).strip()
+
+    async def run():
+        with ctx.driver.stage(stem=STEM, attempt=0, surface="check"):
+            return await stages.check(ctx, ticket, slip, attempt=0)
+
+    result = asyncio.run(run())
+    assert [f.code for f in result.findings] == ["visual_undecided"]
+    assert git(repo, "rev-parse", STEM).strip() == before
+    assert not (ctx.worktree(STEM) / "output.png").exists()
+    assert not (ctx.driver.spool.root / STEM / "0/render").exists()

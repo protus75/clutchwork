@@ -7,6 +7,7 @@ import pytest
 
 from clutch import stages, visual
 from clutch.artifacts import Cost, StageResult
+from clutch.baseline import BaselineResolution
 from clutch.llmeffect import llm_key, scoped_seq
 
 
@@ -35,7 +36,7 @@ def fixture(monkeypatch, replies, artifacts=("out.png",), changed=()):
         return StageResult(outcome="ok", artifact=visual.Reply(rows=rows, verdict=verdict, reason="observed"), findings=[], cost=Cost(attempts=attempts))
 
     driver = SimpleNamespace(run=run, journal=SimpleNamespace(read=lambda: []), spool=SimpleNamespace(root=root / "spool"))
-    ctx = SimpleNamespace(repo=root, worktree=lambda _: work, fs=fs, git=git, driver=driver, config=SimpleNamespace(graphics=SimpleNamespace(judge_samples=1)))
+    ctx = SimpleNamespace(repo=root, worktree=lambda _: work, fs=fs, git=git, driver=driver, config=SimpleNamespace(graphics=SimpleNamespace(judge_samples=1)), specs_dir=None)
     ticket = SimpleNamespace(
         stem="work",
         sections={"Render": "- mode: generate\n" + "".join(f"- artifact: {a}\n" for a in artifacts), "Acceptance criteria": "", "Goal / Why": "goal"},
@@ -43,6 +44,7 @@ def fixture(monkeypatch, replies, artifacts=("out.png",), changed=()):
         expected_minutes=2,
         stuck_minutes=4,
     )
+    monkeypatch.setattr(stages, "resolve_visual_baseline", lambda *args, **kwargs: BaselineResolution("GO"))
     monkeypatch.setattr(stages, "_spec", lambda *args: None)
     monkeypatch.setattr(stages.images, "judge", lambda path, inputs: ["bad"] if path.name == "cand-2.png" else [])
     monkeypatch.setattr(stages.images, "scores", lambda *args: (0.8, None))
@@ -105,3 +107,22 @@ def test_rubric_uses_numbered_and_continued_criteria_for_each_artifact(monkeypat
     ctx.driver.run = run
     asyncio.run(stages.check_candidates(ctx, ticket, 0))
     assert seen == ["pass", "pass"]
+
+
+def test_missing_baseline_parks_before_judging(monkeypatch):
+    ctx, ticket, writes, scopes = fixture(monkeypatch, [])
+    monkeypatch.setattr(stages, "resolve_visual_baseline", lambda *args, **kwargs: BaselineResolution("ABSENT"))
+    findings = asyncio.run(stages.check_candidates(ctx, ticket, 0))
+    assert [f.code for f in findings] == ["visual_undecided"]
+    assert "visual_baseline" in findings[0].message
+    assert not scopes and not writes and not ctx.git.commit.await_count
+
+
+def test_forbidden_paths_precede_baseline(monkeypatch):
+    ctx, ticket, _, _ = fixture(monkeypatch, [], changed=("out.png",))
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("baseline read before forbidden paths")
+
+    monkeypatch.setattr(stages, "resolve_visual_baseline", unexpected)
+    assert asyncio.run(stages.check_candidates(ctx, ticket, 0))[0].code == "candidate_paths"

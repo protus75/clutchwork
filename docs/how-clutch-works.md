@@ -240,7 +240,7 @@ the Suggestion Box as a `suggestion`.
 ### 4.3 Check
 
 1. When Implement replied `ok` and `review.autofix` is nonempty, runs configured autofix commands on existing changed files outside `tickets/` matching each entry's `files` patterns and commits changes.
-2. For graphics `generate` tickets, Check judges candidates separately per artifact and commits all selected images in one select commit, or returns `visual_undecided` without a select commit.
+2. For graphics `generate` tickets, Check returns `visual_undecided` before judging unless the latest `visual_baseline` is GO for the current judge routing and spec major. Otherwise, Check judges candidates separately per artifact and commits all selected images in one select commit, or returns `visual_undecided` without a select commit.
 3. Runs each `## Verification` command in the worktree (provider keys removed from the
    environment, timeout = the ticket's stuck budget, output spooled to `check/verify-NN.txt`).
 4. A failing command is rerun at the merge base. If it also fails there and names no path present in the branch but absent at the merge base, it is **base-red**: a
@@ -725,7 +725,7 @@ scorecard, proposals) and files new proposals as `retro_finding` messages. It su
 - The **review baseline** is a GO / NO_GO verdict recorded by the eval harness
   (`eval/harness.py`). GO counts only while the recorded review and author models and spec
   versions still match the config. It gates Author starting state only.
-- The **visual baseline** records a `visual_baseline` GO / NO_GO verdict bound to the visual judge routing and spec major; GO requires at least 20 labelled cases and 0.85 overall agreement.
+- The **visual baseline** records a `visual_baseline` GO / NO_GO verdict bound to the visual judge routing and spec major; GO requires at least 20 labelled cases and 0.85 overall agreement. Check reads it before selecting graphics candidates.
 
 ## 10. State on disk
 
