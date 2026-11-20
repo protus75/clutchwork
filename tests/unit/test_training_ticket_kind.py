@@ -107,7 +107,7 @@ def test_surfaces_and_gemini():
 
 
 def test_report_requires_ticket():
-    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=2, conflict_skipped=0, dropped=0, skipped=0, heldout=0)
+    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=2, conflict=0, dropped=0, skipped=0, heldout=0)
     assert "ticket: 2" in training.report(counts)[1]
     del counts["ticket"]
     with pytest.raises(KeyError):

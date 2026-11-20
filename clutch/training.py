@@ -26,7 +26,7 @@ def report(counts):
         NOTICE,
         (
             f"implement: {counts['implement']}, preference: {counts['preference']}, review: {counts['review']}, diagnosis: {counts['diagnosis']}, ticket: {counts['ticket']}, "
-            f"conflict skipped: {counts['conflict_skipped']}, "
+            f"conflict: {counts['conflict']}, "
             f"dropped: {counts['dropped']}, skipped: {counts['skipped']}, held-out stems: {counts['heldout']}"
         ),
     ]
@@ -77,6 +77,23 @@ def _trajectory(store, key, start, config):
     return result
 
 
+def _reply_text(store, key, start):
+    normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "GeminiAdapter": gemini.normalize}[start.provider.adapter]
+    end = store.read_record(key, "end")
+    if end is SKIP:
+        raise ValueError("missing end")
+    blobs = {}
+
+    def capture(data):
+        digest = hashlib.sha256(data).hexdigest()
+        blobs[digest] = data
+        return digest
+
+    events = normalizer(store.get_blob(end.raw.stdout), times_ns=None, put_blob=capture)
+    messages = [blobs[event.text_blob].decode() for event in events if event.kind == "message" and event.role == "assistant"]
+    return "".join(messages) if start.provider.adapter == "GeminiAdapter" else messages[-1]
+
+
 def _calls(store, keys, surface="implement"):
     calls = []
     for key in keys:
@@ -109,32 +126,18 @@ def _identity(start, keys, stem, label, kind):
 
 
 async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None, *, only=None):
-    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict_skipped=0, dropped=0, skipped=0, heldout=0)
+    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
     attempts = store.attempts()
     keys = store.call_keys("llm/")
     call_stems = {parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] in ("diagnose", "resolve")}
     stems = set(merged) | {stem for stem, _, _ in attempts} | call_stems
-    counts["conflict_skipped"] = len({parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] == "resolve"})
     ticket_calls = {}
     if "ticket" in records:
         for _, _, _, key, start in _calls(store, keys, "author"):
             try:
-                normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "GeminiAdapter": gemini.normalize}[start.provider.adapter]
-                end = store.read_record(key, "end")
-                if end is SKIP:
-                    raise ValueError("missing end")
-                blobs = {}
-
-                def capture(data):
-                    digest = hashlib.sha256(data).hexdigest()
-                    blobs[digest] = data
-                    return digest
-
-                events = normalizer(store.get_blob(end.raw.stdout), times_ns=None, put_blob=capture)
-                messages = [blobs[event.text_blob].decode() for event in events if event.kind == "message" and event.role == "assistant"]
-                reply = "".join(messages) if start.provider.adapter == "GeminiAdapter" else messages[-1]
+                reply = _reply_text(store, key, start)
                 stem = json.loads(reply)["stem"]
                 if not isinstance(stem, str) or stem_findings(stem):
                     raise ValueError("invalid stem")
@@ -271,6 +274,38 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
                 "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": content}],
             }
             records["ticket"].append((record, []))
+    if "conflict" in records:
+        for key in keys:
+            parts = key.split("/")
+            if len(parts) != 6 or parts[3] != "resolve" or parts[1] in held_set:
+                continue
+            stem = parts[1]
+            try:
+                start = store.read_record(key, "start")
+                if start is SKIP or start.surface != "resolve":
+                    continue
+                if since and start.clock.wall_start[:10] < since:
+                    continue
+                reply = _reply_text(store, key, start)
+                if json.loads(reply)["verdict"] != "resolved":
+                    raise ValueError("unresolved")
+                prompt = store.get_blob(start.prompt.blob).decode()
+                record = dict(
+                    kind="conflict",
+                    stem=stem,
+                    group=stem,
+                    run_seq=str(start.run_seq),
+                    attempt=start.attempt,
+                    call_keys=[key],
+                    engine_version=start.engine.version,
+                    spec=start.engine.spec,
+                    spec_version=start.engine.spec_version,
+                    label="merged" if stem in merged else "neutral",
+                    messages=[{"role": "user", "content": prompt}, {"role": "assistant", "content": reply}],
+                )
+                records["conflict"].append((record, []))
+            except FileNotFoundError, ValueError, UnicodeError, KeyError, IndexError, TypeError:
+                counts["skipped"] += 1
     files = {}
     for kind, items in records.items():
         lines = []

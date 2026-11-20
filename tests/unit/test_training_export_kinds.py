@@ -93,8 +93,8 @@ def test_since_conflict_holdout_and_scrub():
     files, counts = export(store, {"old": b"old", "new": b"new"}, kinds=("implement", "review", "diagnosis"), since="2026-11-10")
     assert [r["stem"] for r in rows(files, "sft")] == ["new"]
     assert [r["stem"] for r in rows(files, "review")] == ["new"]
-    assert counts["conflict_skipped"] == 2 and "conflict.jsonl" not in files
-    assert "conflict skipped: 2" in training.report(counts)[1]
+    assert counts["conflict"] == 0 and "conflict.jsonl" not in files
+    assert "conflict: 0" in training.report(counts)[1]
     held, _ = export(store, {"old": b"old", "new": b"new"}, kinds=("review", "diagnosis"), holdout=100)
     assert not rows(held, "review") and not rows(held, "diagnosis")
     store.blobs["prompt"] = ("Bearer " + "x" * 20).encode()

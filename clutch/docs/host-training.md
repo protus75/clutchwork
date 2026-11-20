@@ -14,7 +14,7 @@ The fixed always-excluded globs are `.env*`, `*.pem`, `*.key`, and `id_*`; `excl
 
 ## Export
 
-Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, and `ticket`. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
+Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, `ticket`, and `conflict`. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
 
 ## Evaluate a review route
 
