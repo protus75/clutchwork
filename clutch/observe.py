@@ -11,6 +11,7 @@ from importlib.metadata import metadata
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Literal, get_args
+from urllib.parse import unquote
 
 from clutch.box import BOX_DIR
 from clutch.config import load_config
@@ -231,36 +232,23 @@ def drain_processes(ctx, rows: list[tuple[int, int, str]]) -> list[int]:
     return sorted(pids, key=lambda pid: started(ctx, pid))
 
 
-def live_call(rows: list[tuple[int, int, str]], root: int) -> str:
-    """The model call running under the newest drain, read from the provider CLI's command line."""
-    children: dict[int, list[int]] = {}
-    for pid, ppid, _ in rows:
-        children.setdefault(ppid, []).append(pid)
-    args = {pid: a for pid, _, a in rows}
-    stack, seen = [root], []
-    while stack:
-        pid = stack.pop()
-        seen.append(pid)
-        stack.extend(children.get(pid, []))
-    for pid in seen:
-        argv = args[pid].split()
-        if not argv:
+def live_call(evidence: Path, stem: str, surface: str, began: str) -> str:
+    """The newest open model call for this stage, from its evidence record."""
+    records = []
+    for directory in (evidence / "calls").glob("*"):
+        if not unquote(directory.name).startswith(f"llm/{stem}/") or (directory / "end.json").exists():
             continue
-        name = Path(argv[0]).name
-        if name == "codex" and "exec" in argv:
-            model = argv[argv.index("-m") + 1] if "-m" in argv else "?"
-            effort = next((a.split("=", 1)[1] for a in argv if a.startswith("model_reasoning_effort=")), "?")
-            return f"codex {model} (reasoning effort {effort})"
-        if name == "claude" and "-p" in argv:
-            model = argv[argv.index("--model") + 1] if "--model" in argv else "?"
-            return f"claude {model}"
-        if name == "node" and len(argv) > 1 and argv[1].endswith("@qwen-code/qwen-code/cli-entry.js"):
-            model = argv[argv.index("-m") + 1] if "-m" in argv and argv.index("-m") + 1 < len(argv) else "?"
-            return f"qwen {model}"
-        if name == "node" and len(argv) > 1 and (Path(argv[1]).name == "gemini" or "/@google/gemini-cli/" in argv[1]):
-            model = argv[argv.index("-m") + 1] if "-m" in argv and argv.index("-m") + 1 < len(argv) else "?"
-            return f"gemini {model}"
-    return ""
+        try:
+            record = json.loads((directory / "start.json").read_text())
+        except OSError, ValueError:
+            continue
+        start = datetime.fromisoformat(record["clock"]["wall_start"])
+        if record["surface"] == surface and (not began or start >= datetime.fromisoformat(began)):
+            records.append((start, directory.name, record))
+    if not records:
+        return ""
+    record = max(records, key=lambda item: item[:2])[2]
+    return f"{record['provider']['name']} {record['model']['requested']}"
 
 
 def frontmatter(path: Path) -> dict[str, object]:
@@ -458,7 +446,7 @@ def text_snapshot(ctx) -> str:
             lines.append(f"Now: {stem}  attempt {attempt + 1}  step: {step}{when}")
             if surface:
                 lines.append(f"     asked for tier/effort {capability(ctx, events, stem, surface)}")
-                model = live_call(rows, drains[-1]) if drains else ""
+                model = live_call(state / "evidence", stem, surface, began) if drains else ""
                 lines.append(f"     model: {model or 'no model call running'}")
             else:
                 lines.append("     no model call (mechanical step)")
