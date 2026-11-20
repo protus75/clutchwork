@@ -14,7 +14,7 @@ from clutch.redact import Redactor
 
 
 def call(run=1, attempt=1, call=1, surface="implement", blob="prompt"):
-    return NS(run_seq=run, attempt=attempt, call=call, surface=surface, prompt=NS(blob=blob), engine=NS(version="engine", spec="implement", spec_version="v1"))
+    return NS(run_seq=run, attempt=attempt, call=call, surface=surface, provider=NS(adapter="ClaudeAdapter"), prompt=NS(blob=blob), engine=NS(version="engine", spec="implement", spec_version="v1"))
 
 
 class Store:
@@ -30,7 +30,7 @@ class Store:
         return self.manifests[key]
 
     def read_record(self, key, kind):
-        if key not in self.starts:
+        if kind == "end" or key not in self.starts:
             raise FileNotFoundError(key)
         return self.starts[key]
 
@@ -71,6 +71,7 @@ def test_records_and_pairing():
     files, counts = export(store)
     rows = [json.loads(line) for line in files["sft.jsonl"].splitlines()]
     assert [(r["stem"], r["label"]) for r in rows] == [("a", "negative"), ("a", "merged"), ("b", "neutral"), ("c", "neutral")]
+    assert all("trajectory" not in row for row in rows)
     assert rows[1]["run_seq"] == 2
     assert rows[1]["messages"][1]["content"].endswith("+merged")
     pair = json.loads(files["preference.jsonl"])

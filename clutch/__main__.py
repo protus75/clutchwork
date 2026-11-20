@@ -723,15 +723,16 @@ def _parser() -> argparse.ArgumentParser:
         training_sub,
         "export",
         summary="export training records",
-        does="Export labelled training records.",
+        does="Export labelled training records, including implement tool-call trajectories unless --no-trajectory is given.",
         reads="Config, evidence and first-parent git commits.",
         writes="Requested JSONL files and optional holdout list under --out, replaced whole.",
         lock="None.",
         exits="0 on success; 2 when disabled or refused.",
-        examples=["clutch training export --out training-data"],
+        examples=["clutch training export --out training-data --no-trajectory"],
     )
     export.add_argument("--out", type=Path, required=True)
     export.add_argument("--kinds", nargs="+", choices=("implement", "preference"), default=["implement", "preference"])
+    export.add_argument("--no-trajectory", action="store_false", dest="trajectory", help="omit implement tool-call trajectories")
     export.add_argument("--holdout", type=int, choices=range(101), default=0, metavar="PCT")
     coverage = sub.add_parser(
         "coverage",
@@ -1516,7 +1517,7 @@ def main(
             raise runner.Refusal("training export is off", str(e)) from None
         redactor = Redactor.from_config(config, env)
         store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
-        files, counts = asyncio.run(training.render(store, checkout.git, repo, redactor, config.training_data, args.kinds, args.holdout))
+        files, counts = asyncio.run(training.render(store, checkout.git, repo, redactor, config.training_data, args.kinds, args.holdout, args.trajectory))
         for name, data in files.items():
             checkout.fs.write(args.out / name, data)
         for line in training.report(counts):

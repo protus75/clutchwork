@@ -7,6 +7,7 @@ import re
 import shlex
 from pathlib import PurePosixPath
 
+from clutch.evidence import claude, codex, gemini
 from clutch.evidence.store import SKIP
 from clutch.git import GitError
 
@@ -37,6 +38,31 @@ def _safe(record, diffs, redactor, config):
                 if not path or any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for glob in config.effective_exclude()):
                     return False
     return True
+
+
+def _trajectory(store, key, start, config):
+    normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "GeminiAdapter": gemini.normalize}.get(start.provider.adapter)
+    if normalizer is None:
+        return None
+    try:
+        end = store.read_record(key, "end")
+        if end is SKIP:
+            return None
+        stdout = store.get_blob(end.raw.stdout)
+    except FileNotFoundError:
+        return None
+    events = normalizer(stdout, times_ns=None, put_blob=lambda data: hashlib.sha256(data).hexdigest())
+    result = []
+    for event in events:
+        if event.kind != "tool_call":
+            continue
+        paths = event.args or {}
+        values = [paths.get(k) for k in ("file_path", "path", "paths", "notebook_path")]
+        paths = [path for value in values for path in (value if isinstance(value, list) else [value]) if isinstance(path, str)]
+        if any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for path in paths for glob in config.effective_exclude()):
+            continue
+        result.append({"seq": event.seq, "tool": event.tool.class_, "native": event.tool.native, "args": event.args})
+    return result
 
 
 def _calls(store, keys):
@@ -70,7 +96,7 @@ def _identity(start, keys, stem, label, kind):
     )
 
 
-async def render(store, git, repo, redactor, config, kinds=("implement", "preference"), holdout=0):
+async def render(store, git, repo, redactor, config, kinds=("implement", "preference"), holdout=0, trajectory=True):
     counts = dict(implement=0, preference=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
@@ -95,6 +121,8 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
                 _, _, _, key, start = calls[-1]
                 prompt = store.get_blob(start.prompt.blob).decode()
                 record = {**_identity(start, [key], stem, "merged", "implement"), "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": diff}]}
+                if trajectory and (events := _trajectory(store, key, start, config)) is not None:
+                    record["trajectory"] = events
                 records["implement"].append((record, [diff]))
         except FileNotFoundError, ValueError, UnicodeError, GitError:
             if "implement" in records:
@@ -110,7 +138,7 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
             calls = _calls(store, manifest.call_keys)
             if not calls:
                 raise ValueError("missing call")
-            _, _, _, _, start = min(calls, key=lambda item: item[1:3])
+            _, _, _, key, start = min(calls, key=lambda item: item[1:3])
             prompt = store.get_blob(start.prompt.blob).decode()
             diff = store.get_blob(manifest.diff_blob).decode()
             if not diff:
@@ -123,6 +151,8 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
                     "attempt": attempt,
                     "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": diff}],
                 }
+                if trajectory and (events := _trajectory(store, key, start, config)) is not None:
+                    record["trajectory"] = events
                 records["implement"].append((record, [diff]))
             if label == "negative" and stem in merged and "preference" in records:
                 if stem not in diffs:
