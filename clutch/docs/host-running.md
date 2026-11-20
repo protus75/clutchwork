@@ -41,7 +41,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `box dismiss` | No | Dismiss named box IDs without a model call. |
-| `training export` | Yes | With `--kinds` choose implement, preference, review, or diagnosis; `--since DATE` filters by call date. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set. |
+| `training export` | Yes | With `--kinds` choose implement, preference, review, diagnosis, or ticket; `--since DATE` filters by call date. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set. |
 | `coverage map` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate` | Yes | Run a unit command and check its coverage report. |
 | `ticket new` | Yes | Create and lint a ticket skeleton. |

@@ -7,10 +7,12 @@ import re
 import shlex
 from pathlib import PurePosixPath
 
+from pydantic import TypeAdapter, ValidationError
+
 from clutch.evidence import claude, codex, gemini
 from clutch.evidence.store import SKIP
 from clutch.git import GitError
-from clutch.tickets import DIAGNOSIS_FILE, artifact_path
+from clutch.tickets import DIAGNOSIS_FILE, Source, artifact_path, read_tolerant, stem_findings, ticket_path
 
 NOTICE = "Notice: model outputs come from third-party providers whose terms may restrict training other models on them. Check each provider's terms before training on this export."
 _SECRET = re.compile(r"AKIA[A-Z0-9]{16}|-----BEGIN [^\n]*PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._~+/=-]{20,}")
@@ -21,7 +23,8 @@ def report(counts):
     return [
         NOTICE,
         (
-            f"implement: {counts['implement']}, preference: {counts['preference']}, review: {counts['review']}, diagnosis: {counts['diagnosis']}, conflict skipped: {counts['conflict_skipped']}, "
+            f"implement: {counts['implement']}, preference: {counts['preference']}, review: {counts['review']}, diagnosis: {counts['diagnosis']}, ticket: {counts['ticket']}, "
+            f"conflict skipped: {counts['conflict_skipped']}, "
             f"dropped: {counts['dropped']}, skipped: {counts['skipped']}, held-out stems: {counts['heldout']}"
         ),
     ]
@@ -104,7 +107,7 @@ def _identity(start, keys, stem, label, kind):
 
 
 async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None):
-    counts = dict(implement=0, preference=0, review=0, diagnosis=0, conflict_skipped=0, dropped=0, skipped=0, heldout=0)
+    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict_skipped=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
     attempts = store.attempts()
@@ -112,6 +115,36 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
     call_stems = {parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] in ("diagnose", "resolve")}
     stems = set(merged) | {stem for stem, _, _ in attempts} | call_stems
     counts["conflict_skipped"] = len({parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] == "resolve"})
+    ticket_calls = {}
+    if "ticket" in records:
+        for _, _, _, key, start in _calls(store, keys, "author"):
+            try:
+                normalizer = {"ClaudeAdapter": claude.normalize, "CodexAdapter": codex.normalize, "GeminiAdapter": gemini.normalize}[start.provider.adapter]
+                end = store.read_record(key, "end")
+                if end is SKIP:
+                    raise ValueError("missing end")
+                blobs = {}
+
+                def capture(data):
+                    digest = hashlib.sha256(data).hexdigest()
+                    blobs[digest] = data
+                    return digest
+
+                events = normalizer(store.get_blob(end.raw.stdout), times_ns=None, put_blob=capture)
+                messages = [blobs[event.text_blob].decode() for event in events if event.kind == "message" and event.role == "assistant"]
+                reply = "".join(messages) if start.provider.adapter == "GeminiAdapter" else messages[-1]
+                stem = json.loads(reply)["stem"]
+                if not isinstance(stem, str) or stem_findings(stem):
+                    raise ValueError("invalid stem")
+                content = read_bytes(repo / ticket_path(stem)).decode()
+                source = TypeAdapter(Source).validate_python(read_tolerant(content).frontmatter.get("source"))
+                if source == "seed":
+                    raise ValueError("seed ticket")
+                prompt = store.get_blob(start.prompt.blob).decode()
+                ticket_calls[stem] = (key, start, content, prompt, "human" if source == "human" else "author")
+            except FileNotFoundError, ValueError, UnicodeError, KeyError, IndexError, TypeError, ValidationError:
+                counts["skipped"] += 1
+        stems.update(ticket_calls)
     held = sorted(stem for stem in stems if int(hashlib.sha256(stem.encode()).hexdigest(), 16) % 100 < holdout)
     counts["heldout"] = len(held)
     held_set = set(held)
@@ -226,6 +259,16 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
                 records["diagnosis"].append((record, []))
             except FileNotFoundError, ValueError, UnicodeError:
                 counts["skipped"] += 1
+    if "ticket" in records:
+        for stem, (key, start, content, prompt, authored_by) in sorted(ticket_calls.items()):
+            if stem in held_set or (since and start.clock.wall_start[:10] < since):
+                continue
+            record = {
+                **_identity(start, [key], stem, "merged" if stem in merged else "neutral", "ticket"),
+                "authored_by": authored_by,
+                "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": content}],
+            }
+            records["ticket"].append((record, []))
     files = {}
     for kind, items in records.items():
         lines = []

@@ -7,9 +7,10 @@ def test_parser():
     parser = entry._parser()
     args = parser.parse_args(["training", "export", "--out", "dest", "--kinds", "preference", "--holdout", "50"])
     assert (args.training_verb, args.kinds, args.holdout) == ("export", ["preference"], 50)
+    assert parser.parse_args(["training", "export", "--out", "x", "--kinds", "ticket"]).kinds == ["ticket"]
     for argv in (
         ["training", "export"],
-        ["training", "export", "--out", "x", "--kinds", "ticket"],
+        ["training", "export", "--out", "x", "--kinds", "bogus"],
         ["training", "export", "--out", "x", "--kinds", "conflict"],
         ["training", "export", "--out", "x", "--since", "2026-13-45"],
         ["training", "export", "--out", "x", "--holdout", "101"],

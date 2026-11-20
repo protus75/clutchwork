@@ -723,12 +723,12 @@ def _parser() -> argparse.ArgumentParser:
         training_sub,
         "export",
         summary="export training records",
-        does="Export labelled training records, including implement tool-call trajectories unless --no-trajectory is given.",
+        does="Export labelled training records, including ticket records and implement tool-call trajectories unless --no-trajectory is given.",
         reads="Config, evidence and first-parent git commits.",
         writes="Requested JSONL files and optional holdout list under --out, replaced whole.",
         lock="None.",
         exits="0 on success; 2 when disabled or refused.",
-        examples=["clutch training export --out training-data --kinds review diagnosis --since 2026-11-10"],
+        examples=["clutch training export --out training-data --kinds ticket diagnosis --since 2026-11-10"],
     )
     export.add_argument("--out", type=Path, required=True)
 
@@ -741,7 +741,7 @@ def _parser() -> argparse.ArgumentParser:
         except ValueError:
             raise argparse.ArgumentTypeError("expected a valid YYYY-MM-DD date") from None
 
-    export.add_argument("--kinds", nargs="+", choices=("implement", "preference", "review", "diagnosis"), default=["implement", "preference", "review", "diagnosis"])
+    export.add_argument("--kinds", nargs="+", choices=("implement", "preference", "review", "diagnosis", "ticket"), default=["implement", "preference", "review", "diagnosis"])
     export.add_argument("--since", type=export_date, metavar="DATE", help="include calls on or after YYYY-MM-DD")
     export.add_argument("--no-trajectory", action="store_false", dest="trajectory", help="omit implement tool-call trajectories")
     export.add_argument("--holdout", type=int, choices=range(101), default=0, metavar="PCT")
