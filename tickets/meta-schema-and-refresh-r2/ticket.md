@@ -22,7 +22,7 @@ none
 - clutch/__main__.py
 
 ## Goal / Why
-Roadmap row 69, ticket 1 of `docs/annotations-index-plan.md`. After this ticket a Markdown or Python file under a configured root can carry a `clutch.meta/1.0` block, and `clutch meta refresh` and `clutch meta check` maintain and report on it. This repo ships annotated for `docs/`, `clutch/docs/` and `tests/`.
+Roadmap row 69, ticket 1 of `docs/annotations-index-plan.md`. After this ticket a Markdown or Python file under a configured root can carry a `clutch.meta/1.0` block, and `clutch meta refresh` and `clutch meta check` maintain and report on it. This repo's `config.yaml` names the roots `docs/`, `clutch/docs/` and `tests/`; annotating the files under them is split into the shard tickets `meta-annotate-docs-support`, `meta-annotate-tests-unit-a`, `meta-annotate-tests-unit-b`, `meta-annotate-tests-integration-a` and `meta-annotate-tests-integration-b`, because the first attempt inserted 5512 lines and failed the 1500-line diff budget.
 
 Key count, stated once so every section agrees: a block is one version line, `schema: clutch.meta/1.0`, plus exactly six keys: `kind`, `purpose`, `relates`, `owner`, `verified`, `hash`. That is seven lines in the block. A seventh key (an eighth line) is refused.
 
@@ -33,7 +33,7 @@ Block shapes:
 Rules:
 - `kind` is closed: `doc`, `guide`, `spec`, `test`, `fixture`, `plan`. It comes from the `meta.paths` root; a `tests/` file under a `fixtures/` or `harness/` directory takes `fixture`.
 - `purpose` is free text, one line; refresh inserts it empty and never edits it.
-- `relates` is a list of repo paths that exist in the tracked file list. Refresh generates it only when the block's list is empty: for a Python file from its imports of repo modules, for Markdown from relative links and `path::` selectors. A non-empty list is never rewritten.
+- `relates` is a list of repo paths that exist in the tracked file list. For a Python file the generated line (`# relates: [...]`) is at most 160 characters: entries are sorted and trailing entries that do not fit are left out, so no block needs a ruff line-length exemption (the project line length is 200). Refresh generates it only when the block's list is empty: for a Python file from its imports of repo modules, for Markdown from relative links and `path::` selectors. A non-empty list is never rewritten.
 - `owner` is generated only when empty: the one `relates` module that more than half of the entries share, else `engine`.
 - `verified` is the first 8 characters of the commit sha, stamped when refresh inserts a block or changes `hash`.
 - `hash` is the SHA-256 of the file bytes with the block (and its line break) removed.
@@ -83,10 +83,9 @@ Scope in:
 - `clutch/config.py`: `Meta` model and `meta` field on `Config`, beside `training_data`. `tests/unit/test_meta_config.py` runs these lines.
 - `clutch/__main__.py`: `meta` group with `refresh` and `check`, `_run_meta`, `handle_meta`, group listing in help. Both verbs take optional `paths` that narrow to files under `meta.paths`. Refresh takes the writer lock; check takes none. `tests/unit/test_meta_cli.py` and `tests/unit/test_main_meta_group.py` run these lines through the injected parameters, with no process.
 - `config.yaml`: `meta.paths` with `docs/` as `plan`, `clutch/docs/` as `guide`, `tests/` as `test`.
-- Run `uv run clutch meta refresh` so every `.md` and `.py` file under those roots carries a block; `docs/`, `clutch/docs/` and `tests/` are fenced for that output only. Existing tests that the new blocks force to change are edited minimally.
 - Docs, same change: `README.md` and the verb tables in `docs/how-clutch-works.md` section 2 and `clutch/docs/host-running.md` add the `meta` verbs; `docs/how-clutch-works.md` config table and `clutch/docs/host-contract.md` inventory add `meta`.
 
-Scope out: `meta fill`, a `meta` model surface, the `meta_drift` gate, Check-time refresh, the index and `index` config, `context suggest`, annotating `clutch/specs/`, other root-level documents, ticket files and source files outside `tests/`. `docs/annotations-index-plan.md` is not edited.
+Scope out: running `clutch meta refresh` over the repo (the five `meta-annotate-*` shard tickets named in Goal / Why do that), `meta fill`, a `meta` model surface, the `meta_drift` gate, Check-time refresh, the index and `index` config, `context suggest`, annotating `clutch/specs/`, other root-level documents, ticket files and source files outside `tests/`.
 
 ## Scope fence
 - clutch/meta.py
@@ -94,9 +93,9 @@ Scope out: `meta fill`, a `meta` model surface, the `meta_drift` gate, Check-tim
 - clutch/__main__.py
 - config.yaml
 - README.md
-- docs/
-- clutch/docs/
-- tests/
+- docs/how-clutch-works.md
+- clutch/docs/host-running.md
+- clutch/docs/host-contract.md
 - tests/unit/test_meta_block.py
 - tests/unit/test_meta_refresh.py
 - tests/unit/test_meta_cli.py
@@ -112,18 +111,18 @@ Scope out: `meta fill`, a `meta` model surface, the `meta_drift` gate, Check-tim
 6. `relates` entries that do not exist in the tracked file list are dropped, and `kind` follows the root with `fixture` under `fixtures/` or `harness/` in `tests/`. Check: `./dev.py test tests/unit/test_meta_refresh.py`.
 7. `Config` with no `meta` key has `meta.paths == []`, and a `kind` outside the closed six is refused. Check: `./dev.py test tests/unit/test_meta_config.py`.
 8. `clutch meta` appears in the help group list with description and examples for both subcommands. Check: `./dev.py test tests/unit/test_main_meta_group.py tests/unit/test_main_help.py`.
-9. After `uv run clutch meta refresh` has run once on this ticket's tree, `uv run clutch meta check` exits 0: every tracked `.md` and `.py` file under `docs/`, `clutch/docs/` and `tests/` has a valid block with a matching hash. This is a one-time check of this ticket's own output, not a standing test: no permanent test asserts repo-wide freshness, because Check-time refresh and the `meta_drift` gate belong to a later plan ticket and a standing test would fail the next ticket that edits those roots. `docs/roadmap.md` still parses with `parse` and `choose`. Check: `uv run clutch meta check` and `./dev.py test tests/integration/test_roadmap_table.py`.
-10. Every shipped spec still loads: `./dev.py test tests/unit/test_specs.py`.
+9. `config.yaml` sets `meta.paths` to the three roots with kinds `plan`, `guide` and `test`, and the repo loads, so `uv run clutch meta check tests/unit/test_meta_block.py` runs and reports `missing` for that unannotated file, not an error; `docs/roadmap.md` still parses with `parse` and `choose`. No repo-wide freshness test is added: annotating the files and any `meta_drift` gate belong to later tickets. Check: `./dev.py test tests/unit/test_meta_config.py tests/integration/test_roadmap_table.py`.
+10. A Python file whose imports would generate more than 160 characters of `relates` gets a `# relates:` line of at most 160 characters made of the sorted leading entries, never a longer one. Check: `./dev.py test tests/unit/test_meta_refresh.py`.
+11. Every shipped spec still loads: `./dev.py test tests/unit/test_specs.py`.
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_meta_block.py tests/unit/test_meta_refresh.py tests/unit/test_meta_cli.py tests/unit/test_meta_config.py tests/unit/test_main_meta_group.py tests/unit/test_main_help.py tests/unit/test_specs.py tests/integration/test_roadmap_table.py
-uv run clutch meta check
 ./dev.py test
 ```
 
 ## Definition of rejected
-A block key beyond `schema` plus the six listed keys; any edit under `clutch/specs/`; `refresh` changing a non-empty `purpose`; a meta unit test that starts a process; a second `refresh` that rewrites files; or any existing test left failing.
+A block key beyond `schema` plus the six listed keys; any edit under `clutch/specs/`; `refresh` changing a non-empty `purpose`; a meta unit test that starts a process; a second `refresh` that rewrites files; any file under `docs/`, `clutch/docs/` or `tests/` annotated by this ticket, a diff over 1499 inserted lines, or any existing test left failing.
 
 ## Time budget
 - expected: 25m
