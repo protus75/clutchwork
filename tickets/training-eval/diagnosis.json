@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e7af57a2315da1dcdade078b20f3feba8d5baeda",
+  "stem": "training-eval",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In clutch/training.py evaluate, decode the reply as json.loads(unwrap_fence(result.text)) using clutch/driver.py::unwrap_fence, the canonical parser the Review stage uses. Do not use raw json.loads on result.text, because the review spec allows a reply that opens with one json code fence.",
+    "Keep the closed verdict check in evaluate: verdict must be exactly approve, snag or rma. Anything else, including non-JSON, a missing verdict or \"maybe\", counts as unparsed and never as agree (acceptance criterion 2).",
+    "Add a case to tests/unit/test_training_eval.py: a FakeLLM reply that is a ```json fenced {\"verdict\":\"snag\"} with a negative label counts as agree. Keep the criterion 1-7 cases: the 2/1/0 counts, unparsed replies, render only={\"a\"}, zero records, refusal when disabled, and journal and evidence left",
+    "Every attempt starts from the merge base, so redo all of it: render(only=...), evaluate and report_eval in clutch/training.py; the eval subcommand via _command in clutch/__main__.py (route restricted to low|medium|high|max/review); doc rows in host-running.md, host-training.md and"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2,
+    3
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
