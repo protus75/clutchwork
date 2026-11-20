@@ -1,18 +1,18 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The historical training plan says evaluation writes to the engine log; the ticket specifies stdout only. The simpler change extends the existing render and CLI paths without adding a separate evaluation pipeline.
+The initial verification run exposed a missing field in the new test fixture; I corrected the fixture but did not complete a final verification pass. Standard preflight also fires due timers, which can append to the journal and must be addressed within the CLI scope.
 
 ## Dead ends
 
-none
+The handler test using FakeLLM passed without exercising the real provider seam, so it could not establish the required evidence-store behavior.
 
 ## Second problems filed
 
-- box-000863-e78bc01b: The historical training plan's evaluation description still says the report goes to the engine log, outside the ticket's scope fence.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 20 minutes; completed within that budget.
+The ticket budget was 20 minutes; elapsed time was not measured.
 
