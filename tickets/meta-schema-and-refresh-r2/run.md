@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Initial purpose text was filled from file names so the repository-wide check passes; long Python relation lists use a lint exemption to preserve the required single-line format. Ticket verification and all hard host checks passed.
+Refresh preserves non-empty relates values, including manually supplied values, to honor the ticket's preservation requirement; generated values use tracked paths only. Focused mutation checks covered the parser, hash, placement, findings, ordering, and idempotence.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; approximately 22 minutes elapsed.
+none
 
