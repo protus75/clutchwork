@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The manifest uses the merge base and branch head for the existing Git diff range; per-file filtering was necessary to exclude both path names and contents. Focused tests and mutation checks guard the manifest behavior.
+The exclusion mutation was verified; the requested mutation check was not completed for every assertion.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; actual time was not measured.
+none
 
