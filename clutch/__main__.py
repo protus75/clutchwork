@@ -663,12 +663,12 @@ def _parser() -> argparse.ArgumentParser:
         roadmap_sub,
         "merged",
         summary="check merged roadmap conditions",
-        does="Check roadmap settlement and merge counts.",
+        does="Check roadmap settlement and merge counts, with a parallel overlap filter and conflict-rerun cap check.",
         reads="Roadmap, tickets, journal and git history.",
         writes="Nothing; prints conditions.",
         lock="None.",
         exits="0 when conditions hold; 1 otherwise; 2 on refusal.",
-        examples=["clutch roadmap merged example"],
+        examples=["clutch roadmap merged example", "clutch roadmap merged --since v0.4.0 --at-least 10 --parallel"],
     )
     merged.add_argument("stems", nargs="*")
     merged.add_argument("--release")
@@ -677,6 +677,7 @@ def _parser() -> argparse.ArgumentParser:
     merged.add_argument("--at-least", type=int)
     merged.add_argument("--source")
     merged.add_argument("--unattended", action="store_true")
+    merged.add_argument("--parallel", action="store_true")
     release = sub.add_parser(
         "release",
         help="bump, tag and publish releases",
@@ -1345,7 +1346,17 @@ def main(
             return 0 if ok else 1
         if args.roadmap_verb == "merged":
             ok, lines = asyncio.run(
-                roadmap.merged(checkout, args.stems, release=args.release, priorities=args.priority or (), since=args.since, at_least=args.at_least, source=args.source, unattended=args.unattended)
+                roadmap.merged(
+                    checkout,
+                    args.stems,
+                    release=args.release,
+                    priorities=args.priority or (),
+                    since=args.since,
+                    at_least=args.at_least,
+                    source=args.source,
+                    unattended=args.unattended,
+                    parallel=args.parallel,
+                )
             )
             print("\n".join(lines))
             return 0 if ok else 1

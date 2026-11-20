@@ -189,6 +189,6 @@ def test_main_roadmap_merged(monkeypatch, capsys):
         assert cli.main(args, cwd=Path("/repo"), env={}) == expected
         captured = capsys.readouterr()
         assert (captured.out, captured.err) == (out, err)
-    assert calls[0] == (["a-row"], {"release": None, "priorities": (), "since": "v1.0.0", "at_least": 2, "source": "box:roadmap_row", "unattended": True})
+    assert calls[0] == (["a-row"], {"release": None, "priorities": (), "since": "v1.0.0", "at_least": 2, "source": "box:roadmap_row", "unattended": True, "parallel": False})
     with pytest.raises(SystemExit):
         cli._parser().parse_args(["roadmap", "merged", "--release", "1.0.0", "--priority", "P4"])

@@ -385,10 +385,11 @@ uv run clutch roadmap merged closed-sets-single-owner active-slot-single-owner m
 | 170 | ~~`visual-baseline-fixtures`~~ | gemini | chore | P1 | | | **Merged** (`tickets/visual-baseline-fixtures/`). Replaces merged row 55 (visual-review-baseline). gemini-graphics-refactor-plan B7 wants 20-50 eval/visual fixtures labelled by an AI panel from another model family, and a committed visual_baseline report. eval/visual holds only .gitkeep, so no GO can be recorded for the roadmap §1 0.4.0 ship clause. |
 | 171 | ~~`graphics-review-spec-blocks`~~ | gemini | feature | P1 | | | **Merged** (`tickets/graphics-review-spec-blocks/`). Replaces merged rows 49 and 53. gemini-graphics-refactor-plan B8 promises a graphics block in clutch/specs/requisition_review.md (visual criteria decidable from the image alone; snag a generate ticket with no input or prompt, or a review_visual route that resolves to the generator) and a provenance block in clutch/specs/review.md (the select commit matches a graded candidate). Neither spec mentions graphics. |
 
-The ship clauses for ten parallel merges without a conflict-rerun cap hit, a generated graphics ticket merged through the select commit, and `visual_baseline` GO remain unchecked: no merged verb records those conditions.
+The 0.4.0 gate block checks ten parallel merges without a conflict-rerun cap hit with `roadmap merged --parallel`; the ship clauses for a generated graphics ticket merged through the select commit and `visual_baseline` GO remain unchecked: no merged verb records those conditions.
 
 ```gate
 uv run clutch roadmap merged --release 0.4.0
+uv run clutch roadmap merged --since v0.4.0 --at-least 10 --parallel
 ./dev.py test
 uv run clutch roadmap accept 0.4.0
 ```

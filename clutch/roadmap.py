@@ -658,15 +658,33 @@ async def run_gate(checkout, release) -> tuple[bool, list[str]]:
     return passed, lines
 
 
-async def merged(checkout, stems, *, release=None, priorities=(), since=None, at_least=None, source=None, unattended=False) -> tuple[bool, list[str]]:
+def parallel_stems(events) -> set[str]:
+    running = set()
+    parallel = set()
+    for event in events:
+        if event.type != EventType.STATE_TRANSITION or event.ticket is None or "to" not in event.body:
+            continue
+        if event.body["to"] == "running":
+            others = running - {event.ticket}
+            if others:
+                parallel.update(others | {event.ticket})
+            running.add(event.ticket)
+        else:
+            running.discard(event.ticket)
+    return parallel
+
+
+async def merged(checkout, stems, *, release=None, priorities=(), since=None, at_least=None, source=None, unattended=False, parallel=False) -> tuple[bool, list[str]]:
     if not stems and release is None and at_least is None:
         raise Refusal("no condition", "add a stem, --release, or --since and --at-least")
     if priorities and release is None:
         raise Refusal("--priority needs --release", "add --release or drop --priority")
     if (since is None) != (at_least is None):
         raise Refusal("--since and --at-least must be paired", "add the missing flag or drop the other")
-    if (source is not None or unattended) and at_least is None:
-        raise Refusal("count filter needs --at-least", "add --since and --at-least or drop --source and --unattended")
+    if (source is not None or unattended or parallel) and at_least is None:
+        raise Refusal(
+            "count filter needs --at-least", "add --since and --at-least or drop --source, --unattended and --parallel" if parallel else "add --since and --at-least or drop --source and --unattended"
+        )
     if at_least is not None and at_least < 1:
         raise Refusal("--at-least must be positive", "set --at-least to at least 1")
     for stem in stems:
@@ -719,9 +737,13 @@ async def merged(checkout, stems, *, release=None, priorities=(), since=None, at
                 sources[event.ticket] = event.body.get("source")
             if signal == "draft_confirmed" or (signal == "reject_verdict" and event.body.get("actor") == "operator"):
                 verdicts.add(event.ticket)
-        count = sum(1 for stem in found if (source is None or sources.get(stem) == source) and (not unattended or stem not in verdicts))
+        overlapping = parallel_stems(events) if parallel else set()
+        count = sum(1 for stem in found if (source is None or sources.get(stem) == source) and (not unattended or stem not in verdicts) and (not parallel or stem in overlapping))
         if count < at_least:
             lines.append(f"roadmap merged: {count} of {at_least} tickets merged since {since} match")
+        if parallel:
+            spent = {event.ticket for event in events if event.type == EventType.STATE_TRANSITION and event.ticket in overlapping and event.body.get("reason") == "merge_conflict_rerun_spent"}
+            lines.extend(f"roadmap merged: {stem} hit merge_conflict_rerun_spent" for stem in sorted(spent))
     return (False, lines) if lines else (True, ["roadmap merged: ok"])
 
 
