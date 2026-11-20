@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask roadmap
+# relates: [clutch/__main__.py, clutch/ask.py, clutch/runner.py, clutch/specs/__init__.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: cc464732d7762ea0f4a267371d6eef07afb90d2b74c5c8c70f0d7ec558f37b4b
 import yaml
 
 from clutch import ask, specs

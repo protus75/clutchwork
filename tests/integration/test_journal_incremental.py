@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal incremental
+# relates: [clutch/journal.py]
+# owner: clutch/journal.py
+# verified: 148a8874
+# hash: 4a2c43b1e2291632bc0421661485385654ff81017f0a80af6d1d603de1d31bc1
 import json
 from datetime import UTC, datetime
 

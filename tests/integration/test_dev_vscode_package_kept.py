@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test dev vscode package kept
+# relates: [clutch/config.py, dev.py]
+# owner: engine
+# verified: 148a8874
+# hash: e598f3204624b790e1928c961b6a1674c158756495f49813a1db1fb5218d9205
 import json
 from pathlib import Path
 from unittest.mock import Mock

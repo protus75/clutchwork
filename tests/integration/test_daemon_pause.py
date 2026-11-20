@@ -1,4 +1,12 @@
 """Explicit pause checkpoints and their active production composition."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Explicit pause checkpoints and their active production composition.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/control.py, clutch/daemon.py, tests/integration/test_cli.py, tests/integration/test_control.py]
+# owner: engine
+# verified: 148a8874
+# hash: 192ea3a974aed00f1eb046c9686cddbfd6c51d38650b9a2ed5d3f4050ffa6b2d
 
 import asyncio
 

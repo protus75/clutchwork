@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test go ai panel
+# relates: [clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, eval/harness.py, tests/integration/test_eval_harness.py]
+# owner: engine
+# verified: 148a8874
+# hash: ee2b11a4f8bcbccfba12cc7bcce95aacfc6af3033bf1a2b40627565b7237ac1c
 import asyncio
 import json
 from types import SimpleNamespace

@@ -1,4 +1,12 @@
 """Host reports use the production Box, Author, and regression Check seams."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Host reports use the production Box, Author, and regression Check seams.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: f2f7903659af5d8a692110ddac9dbc40d66fbdd0eaf1c9fcb27369e76edbf931
 
 import asyncio
 import json

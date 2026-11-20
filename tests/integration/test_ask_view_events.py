@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask view events
+# relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: 2e14902f79bbaf31cce6a9b5b295e3d60b1bb2dadfb995c8a3ac93fef1f400d1
 from pathlib import Path
 
 from clutch import ask

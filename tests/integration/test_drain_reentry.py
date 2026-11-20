@@ -4,6 +4,14 @@ A stem re-offered after a non-ok terminal renders the prior terminal's durable f
 reject findings, a failing checks.json) as a prior-attempts block in criteria-position; ticket.md is never
 written. The production stage pipeline runs behind a scripted FakeLLM.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Findings-fed re-entry behind the `drain` verb (CLUTCH_PLAN.md sections 11.2, 19.P1) against a temp checkout.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 148a8874
+# hash: 0bf5a248673ee348833436b90cdfbd20e95b522444b4d3f278a4f9a4ef8d04fa
 
 from pathlib import Path
 

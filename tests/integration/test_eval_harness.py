@@ -1,4 +1,12 @@
 """Review-baseline harness (CLUTCH_PLAN.md 19.P1), offline: scripted fake LLM, temp journal."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Review-baseline harness (CLUTCH_PLAN.md 19.P1), offline: scripted fake LLM, temp journal.
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/specs/__init__.py, eval/harness.py]
+# owner: engine
+# verified: 148a8874
+# hash: c541edc210ca549fd485d9e52eeaa01bf6e0bc362f814c7cb710e35bedd2ae5f
 
 import asyncio
 import json

@@ -1,4 +1,12 @@
 """Heartbeat construction, custody, freshness, and calibrated behavioral dormancy."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Heartbeat construction, custody, freshness, and calibrated behavioral dormancy.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/heartbeat.py, clutch/journal.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: 83afdbef394aebdffdea520fcd3067bc95c8519a3ad1d318b9311bf57bc7a765
 
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone

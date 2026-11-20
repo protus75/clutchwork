@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask drain loop
+# relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: 8a130baa05606ed13248bbdf6a2dbcf1609539d7de3eb6c4629e2f99f9c13556
 from clutch import ask
 from clutch.__main__ import main
 from clutch.config import load_config

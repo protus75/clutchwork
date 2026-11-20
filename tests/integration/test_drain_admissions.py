@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain admissions
+# relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: 90f2564aea7129a4d15bc301eee2e80dec72cf01bdbf749773413f8cfc59d3ac
 import asyncio
 import json
 

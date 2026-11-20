@@ -1,4 +1,12 @@
 """Per-admission capture, production core reachability, and bootstrap preservation."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Per-admission capture, production core reachability, and bootstrap preservation.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: 3d5c307656999889e053dcad9da69f19d3d8133f8dfaf4169ae44e581e525a1e
 
 import asyncio
 from collections.abc import Mapping

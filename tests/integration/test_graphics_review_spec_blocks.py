@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test graphics review spec blocks
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 148a8874
+# hash: 18ead36cc5896e49b58080b2ef1232b7e6d9d9edeb377cb93b503004b40c7156
 import re
 from pathlib import Path
 

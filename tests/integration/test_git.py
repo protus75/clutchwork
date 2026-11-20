@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git
+# relates: [clutch/git.py, clutch/lockfile.py, clutch/seams.py, tests/waiting.py]
+# owner: engine
+# verified: 148a8874
+# hash: 4a201e135a062d9c23d7c525951f2ee9f79b52bb3c10131d8c697b4530d3d9f6
 import asyncio
 import os
 import sys

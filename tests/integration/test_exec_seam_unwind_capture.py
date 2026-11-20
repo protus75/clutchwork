@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test exec seam unwind capture
+# relates: [clutch/seams.py]
+# owner: clutch/seams.py
+# verified: 148a8874
+# hash: 3bcecc5099dc438ce1710c05de5ce32c3ecf01fe5d23a583b8febf11f250e043
 import asyncio
 import os
 import sys

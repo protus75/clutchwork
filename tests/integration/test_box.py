@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test box
+# relates: [clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: ef2ae403ffb198650d63c4c6d172ed2830aa1e8d9541e47d493b172d7b38870f
 import asyncio
 import hashlib
 import json

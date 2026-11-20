@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence codex fixture
+# relates: [clutch/evidence/codex.py]
+# owner: clutch/evidence/codex.py
+# verified: 148a8874
+# hash: d2be6e2cab096437ee427b4e10e0fb56827b39c8b36d92fed352091f00b3ebae
 import hashlib
 import json
 from pathlib import Path

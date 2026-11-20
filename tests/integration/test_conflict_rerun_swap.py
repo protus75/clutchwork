@@ -1,4 +1,12 @@
 """Real rebase abort, reference lift, branch retirement and fresh admission."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Real rebase abort, reference lift, branch retirement and fresh admission.
+# relates: [clutch/caps.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, tests/integration/test_mergequeue.py]
+# owner: engine
+# verified: 148a8874
+# hash: 0f163b8677060961590f30650e4d1460e685265fb49132de476c4ab1806e8990
 
 import asyncio
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test handoff replace
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: e93cf07becbe54b1039f4702f5a6cd4b7a9993c5490bb059b7a824f2b8a24899
 import subprocess
 import sys
 from pathlib import Path

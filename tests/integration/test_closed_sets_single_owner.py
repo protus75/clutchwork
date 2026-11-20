@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test closed sets single owner
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 0856ac868af39e71391a15c71b3a752104a6a9ffa9e443fcbe6a11820796a182
 import ast
 from pathlib import Path
 

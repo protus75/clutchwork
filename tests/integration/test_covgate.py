@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test covgate
+# relates: [clutch/__main__.py, clutch/covgate.py]
+# owner: engine
+# verified: 148a8874
+# hash: 7623fcacb0a5f6589a1b0f91141579ae4677fb3bab1120a30f715f58f4437b21
 import json
 import os
 import sys

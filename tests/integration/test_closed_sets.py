@@ -5,6 +5,14 @@ pinned here by exact value: a renamed, added, or dropped member, or a changed sh
 constant, fails this file. Values were taken from the merged code; changing one is a
 plan change first (the owning section names the set), then a deliberate edit here.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Closed sets are invariants (plan 19.I).
+# relates: [clutch/artifacts.py, clutch/audit.py, clutch/author.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/config.py]
+# owner: engine
+# verified: 148a8874
+# hash: fe08b4d74b4683a834281d556fa486d51c537e3462437e9748dbb281b1088321
 
 import typing
 from typing import get_args

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test fs seam sites
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 1a7fef7ce33aa217298809cace0359cd8f6bab4003fbbd7930c18ff238766716
 import ast
 from pathlib import Path
 

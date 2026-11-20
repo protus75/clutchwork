@@ -1,4 +1,12 @@
 """Keep contention guidance in its host and project rule homes."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Keep contention guidance in its host and project rule homes.
+# relates: [clutch/hostfiles.py]
+# owner: clutch/hostfiles.py
+# verified: 148a8874
+# hash: 0a46fee088e4f69afbb3041c57ad8c7fb94b7a53ef9d39a4c57d30a5b0c47013
 
 from pathlib import Path
 

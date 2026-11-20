@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test box triage inbox
+# relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: 851d1bbc9c3f073cca2375f4550fe0ad2d016dfb1e5e0a82a83a6c6413deb267
 from pathlib import Path
 
 from clutch import control

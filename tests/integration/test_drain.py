@@ -3,6 +3,14 @@
 The stage-dispatch seam is scripted per stem; everything else -- lockfile, reconcile, intake, the tickets-dir
 re-scan, the journal cap fold, the ceilings -- is the production path.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The `drain` scaffold verb (CLUTCH_PLAN.md sections 9, 11.2, 18, 19.P1) against a temp checkout.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: 2b2dc1b16a93dc7adb56977d16cde6c2edf7af8ad8b603d29979eba6cd4b6da7
 
 import asyncio
 import json

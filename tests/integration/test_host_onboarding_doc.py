@@ -1,4 +1,12 @@
 """The host guide provides a discoverable path to the first merge."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The host guide provides a discoverable path to the first merge.
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: d11a40f2cd31bcafa11e7cbf5a880cd4b9a6e39b3dd76015f47948a0bfaab4bb
 
 import re
 from pathlib import Path

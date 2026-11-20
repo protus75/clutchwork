@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test core supervisor verdicts
+# relates: [clutch/hostfiles.py]
+# owner: clutch/hostfiles.py
+# verified: 148a8874
+# hash: 0bd5303d67d8354295609aad88b3d0a4f255058eaf3ab305b9bf80fe127ab414
 from pathlib import Path
 
 import pytest

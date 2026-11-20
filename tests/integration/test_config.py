@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test config
+# relates: [clutch/config.py, clutch/runner.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: 43bb2a87381637e3b0448ac050a08f8ce5bb5a0efbe3f3ed8f78da42fcb85268
 import textwrap
 from pathlib import Path
 

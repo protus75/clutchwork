@@ -1,4 +1,12 @@
 """Kill decisions use the lock holder's inbox and journal fold, including live drain activation."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Kill decisions use the lock holder's inbox and journal fold, including live drain activation.
+# relates: [clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_effects.py]
+# owner: engine
+# verified: 148a8874
+# hash: b29b48931197c39a552283e16e208a1f252a137ca91a216341997c44ff8cef53
 
 import asyncio
 import json

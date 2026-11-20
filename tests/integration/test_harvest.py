@@ -1,4 +1,12 @@
 """Failed-run harvest through the production CLI and ticket-plane lane."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Failed-run harvest through the production CLI and ticket-plane lane.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
+# owner: engine
+# verified: 148a8874
+# hash: db4498871c9614fb2b09f841bdb8a1005a99e1cf8e32d2ac45c05455c489ae93
 
 import json
 from pathlib import Path

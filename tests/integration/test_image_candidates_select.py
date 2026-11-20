@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test image candidates select
+# relates: [clutch/caps.py, clutch/config.py, clutch/drain.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
+# owner: engine
+# verified: 148a8874
+# hash: 05bcbb7c18d1d2039fbe15187c590e74924ccb07e31e1f84b06697ed1c3bcb3a
 import asyncio
 import json
 from dataclasses import replace

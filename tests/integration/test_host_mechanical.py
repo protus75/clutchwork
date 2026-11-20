@@ -1,4 +1,12 @@
 """Host checks through production Check and inline admission."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Host checks through production Check and inline admission.
+# relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/merge.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 148a8874
+# hash: cc4356e63046c95a0f7717cd36da80739530b56d95f319c153a930a16cd41281
 
 import asyncio
 

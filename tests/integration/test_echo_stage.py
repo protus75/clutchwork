@@ -1,5 +1,13 @@
 """Phase 0 exit read (CLUTCH_PLAN.md 19.P0): a toy echo stage -- consumes a stub artifact,
 emits one -- runs end to end under the driver with the fake LLM."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Phase 0 exit read (CLUTCH_PLAN.md 19.P0): a toy echo stage -- consumes a stub artifact,
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/llm.py]
+# owner: engine
+# verified: 148a8874
+# hash: d0cf82a6aae3615f61f01cf3ac68b15ebc88f73d29f0d7195e75d1cf57f8bfb2
 
 import asyncio
 import json

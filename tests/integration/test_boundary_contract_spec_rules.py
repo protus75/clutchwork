@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test boundary contract spec rules
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 148a8874
+# hash: 17866ce9e04dd149f2fd2bd403aab02f69d58efc1beb8825530d2215d78a0697
 import re
 from pathlib import Path
 

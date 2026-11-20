@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test diagnose spec json reply
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 879bde10e6d6df73cea23ac7526f74869215dc1833865cb7c1458ad38fae8d44
 from pathlib import Path
 
 

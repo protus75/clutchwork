@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test harvest cost source
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/integration/test_harvest_orphans.py]
+# owner: engine
+# verified: 148a8874
+# hash: 47038886a65d0ff936bffd3ddc595494e7d9e803e04ffeb39a40fd88eac91309
 import asyncio
 import json
 from types import SimpleNamespace

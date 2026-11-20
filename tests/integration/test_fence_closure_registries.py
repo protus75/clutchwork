@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test fence closure registries
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 148a8874
+# hash: 6ebd5e69035c6e3f41d12e041eea193253734058a189c1a7db5aea069b78c2e9
 from pathlib import Path
 
 from clutch.specs import load_spec, render

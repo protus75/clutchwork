@@ -1,4 +1,12 @@
 """Worker notification suppression and preserved bootstrap dormancy."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Worker notification suppression and preserved bootstrap dormancy.
+# relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
+# owner: engine
+# verified: 148a8874
+# hash: 3074bad84f3ffc6408e0c16a9953332ec1bdb883656d16b2acb802d21952f4be
 
 import asyncio
 import json

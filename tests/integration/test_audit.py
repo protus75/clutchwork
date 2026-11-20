@@ -1,4 +1,12 @@
 """Invariant auditor coverage over direct journal fixtures and the production drain."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Invariant auditor coverage over direct journal fixtures and the production drain.
+# relates: [clutch/audit.py, clutch/journal.py, tests/integration/test_drain_reentry.py, tests/integration/test_stages.py, tests/integration/test_terminal.py]
+# owner: engine
+# verified: 148a8874
+# hash: 47a33e69d52d72e7f385a9940791e74bf1c57fdda935f921f7dd1a2be631e863
 
 from clutch.audit import INVARIANTS, audit, audit_journal
 from clutch.journal import Event, EventType, Journal

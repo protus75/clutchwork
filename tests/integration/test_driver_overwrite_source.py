@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test driver overwrite source
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 2a5fdef2f79cc76461afcef818ca2dd901e843d2344dc084e39d4707226e0478
 from pathlib import Path
 
 import pytest

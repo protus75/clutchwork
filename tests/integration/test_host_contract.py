@@ -1,4 +1,12 @@
 """Executable host documentation."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Executable host documentation.
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/covgate.py, clutch/gates.py, clutch/hostfiles.py, clutch/llm.py, clutch/lockfile.py]
+# owner: engine
+# verified: 148a8874
+# hash: 6b616712b755382233ecfc6cef5d2cac3faebc4d6099794b440efeaaae62983d
 
 import asyncio
 import copy

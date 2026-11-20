@@ -3,6 +3,14 @@
 All observations here are synthetic construction values in disposable repositories,
 never the phase exit artifact.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Closed report and ordinary checks custody (CLUTCH_PLAN.md 19.P3.daemon-soak).
+# relates: [clutch/artifacts.py, clutch/git.py, clutch/seams.py, tests/harness/daemon_soak.py, tests/integration/test_cli.py, tests/integration/test_git.py]
+# owner: engine
+# verified: 148a8874
+# hash: 8faa0dd01cb5683d66ab779d2a7a9556cccf3ca83d9503f6c4c6d3493f724cd0
 
 import json
 from copy import deepcopy

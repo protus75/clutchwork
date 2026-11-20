@@ -3,6 +3,14 @@
 The stage seam is scripted per stem (a merge commits its admitted paths to main for real); the handoff's process
 seam is faked to run the child drain in-process, so the whole chain shares one journal and one git checkout.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The `drain` self-upgrade re-exec and the premise park (CLUTCH_PLAN.md sections 11.2, 18, 19.P1), temp checkout.
+# relates: [clutch/__main__.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: 21d993cfe8f5795304f5b13abbe062c418971bb24d871247e4543f53429e244c
 
 import asyncio
 import os

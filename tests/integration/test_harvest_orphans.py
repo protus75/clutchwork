@@ -1,4 +1,12 @@
 """Reconcile-on-entry harvest through the production run composition."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reconcile-on-entry harvest through the production run composition.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
+# owner: engine
+# verified: 148a8874
+# hash: d9b3567a14c8a9eeca27f44ffb40f4c76915968efed02bfdb6b9765d190bc0a4
 
 from pathlib import Path
 

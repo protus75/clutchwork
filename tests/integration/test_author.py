@@ -1,4 +1,12 @@
 """Author integration: triage drives the one ticket-plane authoring path."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Author integration: triage drives the one ticket-plane authoring path.
+# relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
+# owner: engine
+# verified: 148a8874
+# hash: 64fb31e6f731187018ef65e22d0f3a19f12085b37aeed6ef3af596b4b1663681
 
 import asyncio
 import json

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test acceptance spec
+# relates: [clutch/acceptance.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 148a8874
+# hash: d52ba43107733aef3187dc0a2f9ceabbc95498558496c410258a48398ed653db
 from pathlib import Path
 
 from clutch.acceptance import AcceptanceReply, GapRow, Promise

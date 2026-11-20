@@ -1,4 +1,12 @@
 """Identity-bound kill through the bootstrap CLI's existing writer and shared inbox."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Identity-bound kill through the bootstrap CLI's existing writer and shared inbox.
+# relates: [clutch/__main__.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
+# owner: engine
+# verified: 148a8874
+# hash: 3354013bac9f488a5628560d6920b0570ecbe009fac01633b2e5cad23a3e51c7
 
 import asyncio
 import json

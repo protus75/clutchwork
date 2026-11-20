@@ -1,4 +1,12 @@
 """Shared rig for integration tests of the continuous serve graph."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Shared rig for integration tests of the continuous serve graph.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
+# owner: engine
+# verified: 148a8874
+# hash: bc3744fe0571081258ad1770f193021b778b3f7c557ea68c70cf61a50b14dafb
 
 import asyncio
 import json

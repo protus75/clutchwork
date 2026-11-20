@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test daemon core queue seams
+# relates: [tests/dispatch_settle.py, tests/integration/test_daemon_composition.py]
+# owner: engine
+# verified: 148a8874
+# hash: e2559dca78154f1ff694b9747bc0757108bf44bb6c62578704ffe671ea091e33
 import json
 
 import pytest

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test cli
+# relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
+# owner: engine
+# verified: 148a8874
+# hash: 390a82c2c22bbe37c0f418ac368f8b857090ac2a25330b18d16b61a8d4ce164f
 import asyncio
 import os
 import subprocess

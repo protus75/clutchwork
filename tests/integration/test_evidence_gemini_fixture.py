@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence gemini fixture
+# relates: [clutch/evidence/gemini.py]
+# owner: clutch/evidence/gemini.py
+# verified: 148a8874
+# hash: e71d7a0784bdf4738a032eb96725f6f18d0eb29074f52aadf9ef5892bf6cee3c
 import hashlib
 import json
 from pathlib import Path

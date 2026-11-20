@@ -1,4 +1,12 @@
 """Real CLI lock routing and identity-bound durable requests."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Real CLI lock routing and identity-bound durable requests.
+# relates: [clutch/__main__.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/seams.py, clutch/status.py]
+# owner: engine
+# verified: 148a8874
+# hash: 675c96bcfec51de584bb87e76dc7cfde3f67b7a525ec8d72cc5503d00e7347bd
 
 import json
 from dataclasses import asdict

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask
+# relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/config.py, clutch/seams.py, clutch/specs/__init__.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: a9a4e81f8068bcbf04b42916de9d9c8c550066f7cc73e56e3d6276afd43f0048
 from pathlib import Path
 
 import pytest

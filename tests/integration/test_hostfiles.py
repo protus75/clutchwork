@@ -1,4 +1,12 @@
 """Core renderer contract; regenerate the golden with uv run python -m tests.test_hostfiles."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Core renderer contract; regenerate the golden with uv run python -m tests.test_hostfiles.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
+# owner: engine
+# verified: 148a8874
+# hash: e76518f7d5e1e8c9df0502c569b9d9bddb31e97cb66cbda1c5d1f90454c304f2
 
 import asyncio
 import base64

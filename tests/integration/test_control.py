@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test control
+# relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: 8fc99aa34271f84b1f82fe6a1bcebc19b570f36c4ed22f48f1b0a1c7e2179038
 import asyncio
 import json
 import os

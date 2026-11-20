@@ -1,4 +1,12 @@
 """Diagnosis through the production run and drain composition."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Diagnosis through the production run and drain composition.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py]
+# owner: engine
+# verified: 148a8874
+# hash: 871fb6e484b20c1e2e12bf0ad7a674835e49b379f8b34ac1a7c7aea89d2a118a
 
 import json
 from pathlib import Path

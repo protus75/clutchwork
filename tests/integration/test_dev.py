@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test dev
+# relates: [dev.py]
+# owner: dev.py
+# verified: 148a8874
+# hash: 7668c49776a8aafc7aee221cda0a5a2fcbddfeaed3af532450eda4fcd5de5005
 from pathlib import Path
 from unittest.mock import Mock
 

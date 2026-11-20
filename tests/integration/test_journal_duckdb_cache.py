@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal duckdb cache
+# relates: [clutch/journal.py, clutch/journalcache.py, clutch/status.py]
+# owner: engine
+# verified: 148a8874
+# hash: 7248ade4bbe1216b5dee6b7e79ff6715bd94d679cb3c9a20c30957f920a30bdf
 import multiprocessing
 from datetime import UTC, datetime
 

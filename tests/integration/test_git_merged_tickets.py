@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git merged tickets
+# relates: [clutch/git.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: 2b7fdebc8f41a7d4927808fc5d740d2f74d45893c3c692bcfc5c973ff3ff9e8f
 import asyncio
 import os
 import subprocess

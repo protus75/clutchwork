@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test driver
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/redact.py]
+# owner: engine
+# verified: 148a8874
+# hash: 50a034ad613ea194549964e2f8e2a925c10d47e3ce1e5527894a93d61b2cd029
 import asyncio
 import json
 import textwrap

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain signals
+# relates: [clutch/__main__.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: b8fa32ceed037a14b9e03cf4d9eaaad85ab6aee78a6221cae5ef14b892dc436b
 import asyncio
 import json
 

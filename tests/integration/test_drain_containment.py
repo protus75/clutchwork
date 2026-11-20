@@ -1,4 +1,12 @@
 """Dispatch exceptions are isolated to their ticket."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Dispatch exceptions are isolated to their ticket.
+# relates: [clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/status.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: 1991b0acc768e7400ee83b919f49662eba61d71c36403c7a8a51a6cb51610d08
 
 from clutch import caps
 from clutch.config import Caps

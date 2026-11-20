@@ -6,6 +6,14 @@ crash point -- for writes, once per landed-byte prefix -- dying there; a restart
 the survivor (torn-tail tolerance), finish the scenario, and leave each effect executed exactly
 once if its completion survived the crash, re-executed if not.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Crash-point / fault-injection harness on the state layer (CLUTCH_PLAN.md 19.P0, section 15 rung 2).
+# relates: [clutch/effects.py, clutch/journal.py]
+# owner: engine
+# verified: 148a8874
+# hash: 2a3ba6dd089b91afcb101ee6e3ff2d58e655be9de45175ddb74f86c4c7f107a9
 
 import asyncio
 import os

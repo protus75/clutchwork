@@ -1,4 +1,12 @@
 """Production soak evidence, false-green refusal, and owned lifetime cleanup."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Production soak evidence, false-green refusal, and owned lifetime cleanup.
+# relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/mergequeue.py]
+# owner: engine
+# verified: 148a8874
+# hash: 0da31c081787c3cc7990e0a7fa86387a6adc294648ac64be53bd309b8cb30b10
 
 import asyncio
 import json

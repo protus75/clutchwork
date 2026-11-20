@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test intake keeps draft
+# relates: [clutch/__main__.py, clutch/drain.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: 2481440c5c928d74b1e2543d4cddf6babe1f23be8720817a3ab67ef2076e3ce6
 import asyncio
 from pathlib import Path
 

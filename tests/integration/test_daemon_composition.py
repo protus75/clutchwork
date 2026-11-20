@@ -1,4 +1,12 @@
 """Drive the production CLI core through injected delivery, process, filesystem and time seams."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Drive the production CLI core through injected delivery, process, filesystem and time seams.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
+# owner: engine
+# verified: 148a8874
+# hash: f8d38b328462a60743fb99edd83ed600ce2660a2c6c2dedfa9bfbba23f9ddcfa
 
 import ast
 import asyncio

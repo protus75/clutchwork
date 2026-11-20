@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask drafts
+# relates: [clutch/ask.py, clutch/config.py, clutch/specs/__init__.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: 7b608d75a0a9336f7ef2fa930bc9aab11d548fe65b55e5c90c4394cfab4ed510
 from clutch import ask, specs
 from clutch.config import load_config
 from tests.integration.test_config import VALID

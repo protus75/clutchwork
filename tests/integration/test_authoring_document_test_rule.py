@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test authoring document test rule
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 3d11d6d779e6430f3ba0738abb5ec7764a7736ce9ccd67b3b7c6e591ab73fbb3
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]

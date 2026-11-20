@@ -1,4 +1,12 @@
 """Executor unwind ordering and its activation through the production drain."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Executor unwind ordering and its activation through the production drain.
+# relates: [clutch/daemon.py, clutch/llm.py, tests/integration/test_cli.py, tests/integration/test_driver.py, tests/integration/test_kill_cli_activation.py]
+# owner: engine
+# verified: 148a8874
+# hash: 249754a5dd151c142f79bc72551294ddc97110981833c2f5be8547c2d212d184
 
 import asyncio
 from dataclasses import replace

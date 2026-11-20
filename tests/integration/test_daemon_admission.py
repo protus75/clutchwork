@@ -1,4 +1,12 @@
 """Ownership, production core reachability, and bootstrap CLI preservation evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Ownership, production core reachability, and bootstrap CLI preservation evidence.
+# relates: [clutch/__main__.py, clutch/daemon.py, clutch/journal.py, clutch/tickets.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: 019d729e7d68693a8133b36086828832015eb2e127806a6e77b452d0633fea58
 
 import ast
 import asyncio

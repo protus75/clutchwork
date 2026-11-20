@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask plan serve
+# relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: 0e26fae02e4f1b9ba726cc5ae3f444fe6ab9d344487c330a000084661be8cd2b
 from pathlib import Path
 
 from clutch import ask

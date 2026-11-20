@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask drain loop agent
+# relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: 6c54136f4d0cf6b6f358b368936416153d63221c52d21b65138ae7317f718c78
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID

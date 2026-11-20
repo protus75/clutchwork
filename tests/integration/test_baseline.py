@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test baseline
+# relates: [clutch/baseline.py, clutch/config.py, clutch/journal.py, clutch/policy.py, clutch/providers.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 148a8874
+# hash: 5e92d1528d2907b5f8be91e355435702de30246233eb15aef2da98742b3acba7
 import json
 import re
 from copy import deepcopy

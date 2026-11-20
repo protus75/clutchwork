@@ -1,4 +1,12 @@
 """Consumer ownership, serve activation, and preserved bootstrap dormancy."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Consumer ownership, serve activation, and preserved bootstrap dormancy.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/daemon.py, clutch/journal.py, clutch/mergequeue.py, clutch/runner.py, clutch/triage.py]
+# owner: engine
+# verified: 148a8874
+# hash: fb6c1939b19e9d50cdee304095738ec6f7472c471d551f77c0440c863380364f
 
 import asyncio
 import gc

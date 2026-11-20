@@ -1,4 +1,12 @@
 """Failure-spine cap fold, terminal draws, and parked-stem eligibility."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Failure-spine cap fold, terminal draws, and parked-stem eligibility.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
+# owner: engine
+# verified: 148a8874
+# hash: e4009a1beb476f384a0cc6d63b48537596882848a3476ff4229cf819bf82e6c6
 
 import pytest
 

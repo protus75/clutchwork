@@ -1,4 +1,12 @@
 """Real metadata/source and the composed in-memory filesystem boundary."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Real metadata/source and the composed in-memory filesystem boundary.
+# relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llm.py, clutch/llmeffect.py, clutch/providers.py, clutch/redact.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 148a8874
+# hash: 7cc6f50b851f04eb622db653fb56eb4333126cea7134fdf19856ab7ed4d11686
 
 import asyncio
 import importlib.metadata

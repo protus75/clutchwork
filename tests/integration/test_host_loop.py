@@ -1,4 +1,12 @@
 """Closed exit records and real supervised subprocess evidence on disposable hosts."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Closed exit records and real supervised subprocess evidence on disposable hosts.
+# relates: [clutch/audit.py, clutch/seams.py, tests/harness/host_loop.py]
+# owner: engine
+# verified: 148a8874
+# hash: e390afa9c87bf22db7928ead114efa50262fbfe6bf70e7757ebb78e0dfa43035
 
 import asyncio
 import copy

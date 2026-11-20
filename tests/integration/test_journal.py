@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal
+# relates: [clutch/journal.py, tests/fakes.py]
+# owner: engine
+# verified: 148a8874
+# hash: 91d95f9dacc4bf9d160b460c43c17e0e71bf9b074aa8b61fffbc46976fced857
 import json
 import multiprocessing
 from datetime import UTC, datetime, timedelta, timezone

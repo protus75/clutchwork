@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test implement spec mutation check
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 148a8874
+# hash: f0f2903ac085323988309a3f40644c36f515a4eae2428e93af1aeb564a63c026
 from pathlib import Path
 
 from clutch.specs import load_spec

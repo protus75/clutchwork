@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain detach
+# relates: [clutch/__main__.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 148a8874
+# hash: b3792d5469b95a341a4b17054843e358b852bde554b5fbcf8825abd57c192de9
 import os
 import sys
 from unittest.mock import Mock

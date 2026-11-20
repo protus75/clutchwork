@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test intake scope
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, clutch/tickets.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: b1c43347de1b904043ab0d8a0810342f0eb12fcb320a7b88911b7507755d6a63
 import asyncio
 
 import pytest

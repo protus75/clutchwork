@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain eligible callers
+# relates: [clutch/drain.py, clutch/journal.py]
+# owner: engine
+# verified: 148a8874
+# hash: 7cc2451d1a45d1b95fdfccd82ced249c640a87bd30d2d856529cc6fb065a2894
 from types import SimpleNamespace as NS
 
 from clutch import drain

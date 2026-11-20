@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test issue verb
+# relates: [clutch/__main__.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 148a8874
+# hash: 513a5490829ef641b0c23184a42a3ffb0b3aa8a088011b77aa978121153770f4
 import importlib.metadata
 import platform
 from urllib.parse import parse_qs, urlsplit

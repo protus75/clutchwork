@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test effects
+# relates: [clutch/effects.py, clutch/journal.py, clutch/seams.py, tests/fakes.py]
+# owner: engine
+# verified: 148a8874
+# hash: 955b7370e360a13947478c8a2e85e83b3abb6fc840464dcda7b99059941dd01b
 import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path

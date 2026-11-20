@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence claude fixture
+# relates: [clutch/evidence/claude.py]
+# owner: clutch/evidence/claude.py
+# verified: 148a8874
+# hash: bc5161cffedea9fe375a2afa302b8c9027aded463c1e53334006b7d08317a6be
 from pathlib import Path
 
 from clutch.evidence.claude import normalize

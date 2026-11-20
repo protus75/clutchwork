@@ -1,4 +1,12 @@
 """Snapshot drawing errors remain visible in each extension view."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Snapshot drawing errors remain visible in each extension view.
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 1a46d8636b689ff83c8da55866ac4322fffbb85f41546a8a4606a0d12c60228a
 
 import json
 import subprocess

@@ -1,4 +1,12 @@
 """Direct scaffold evidence, deliberately below production host-loop evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Direct scaffold evidence, deliberately below production host-loop evidence.
+# relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/git.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: b7994b8c10bd193966211a3e8c9e843ed2d768c0a7cbcd47cbcb0c75c9355936
 
 import asyncio
 import json

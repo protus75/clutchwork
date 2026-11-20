@@ -1,4 +1,12 @@
 """Engine text must name host-accessible operator verbs."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Engine text must name host-accessible operator verbs.
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: a9078fa211eb870da212af635f56adee07f981a79923375567d917591ae9f40f
 
 import os
 from pathlib import Path

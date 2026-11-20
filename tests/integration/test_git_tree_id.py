@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git tree id
+# relates: [clutch/git.py, clutch/seams.py, tests/integration/test_git.py]
+# owner: engine
+# verified: 148a8874
+# hash: a0bc26015287440bfe80c35b4e8948b0da73b01e8c6551c324290e89e7987975
 import asyncio
 import os
 

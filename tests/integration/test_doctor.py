@@ -1,4 +1,12 @@
 """Read-only operator setup inspection through production readers."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Read-only operator setup inspection through production readers.
+# relates: [clutch/__main__.py, clutch/doctor.py, clutch/journal.py, clutch/lockfile.py, clutch/providers.py, clutch/runner.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: 96598de3df582fc648edb68f70c9d4fc4059badfb3d12cafed5903baae40a056
 
 import asyncio
 import sys

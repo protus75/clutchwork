@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test exec seam reap
+# relates: [clutch/seams.py, tests/waiting.py]
+# owner: engine
+# verified: 148a8874
+# hash: 6d1a1b23f3a169ccf9f2efc589f51f63b96700526bbb66a163fc59d1b7dbec6a
 import asyncio
 import json
 import os

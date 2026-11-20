@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test closed sets remaining
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 86da91a987563285a31dcdfce1ea3f1fecfdc98ceb332fd63b8d524bfd41fd70
 import ast
 import subprocess
 import sys

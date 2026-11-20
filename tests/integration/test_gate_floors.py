@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test gate floors
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: 63ce1d64e64bbfe2892f5a3fbda568a379df1dec694d359aafcdcf948ee4ba6a
 import tomllib
 from pathlib import Path
 

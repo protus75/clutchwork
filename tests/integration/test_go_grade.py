@@ -1,4 +1,12 @@
 """GO-grade entry contract, closed reports and operator-only verdict production."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: GO-grade entry contract, closed reports and operator-only verdict production.
+# relates: [clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, eval/harness.py, tests/integration/test_eval_harness.py]
+# owner: engine
+# verified: 148a8874
+# hash: 43054c22a6008bd087285937688239ea2aa8e8bf90150f0c4be4114c48da0203
 
 import asyncio
 import json

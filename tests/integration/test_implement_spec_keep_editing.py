@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test implement spec keep editing
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: dbe5464e1eb35f6ee8080de74588959e89478c4fba4086744eee627dfcc0771e
 from pathlib import Path
 
 

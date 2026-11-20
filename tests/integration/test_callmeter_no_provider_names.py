@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test callmeter no provider names
+# relates: [clutch/watchdog.py]
+# owner: clutch/watchdog.py
+# verified: 148a8874
+# hash: 73e92e02d34dfd622d9083fd2410124e9c227a7283c84dba48dcbf21a6d8ba14
 from pathlib import Path
 
 import clutch.watchdog

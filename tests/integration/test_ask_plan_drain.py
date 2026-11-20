@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask plan drain
+# relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 148a8874
+# hash: a370e78643afeb62b5798887e55a4012f6c2e0dd178fb72dbfad322f900c51d1
 import argparse
 import re
 from pathlib import Path

@@ -1,4 +1,12 @@
 """Injected detection, durable record custody, and calibrated production dormancy."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Injected detection, durable record custody, and calibrated production dormancy.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/seams.py]
+# owner: engine
+# verified: 148a8874
+# hash: f4f657541b54846811060100efe7be580b7e2e701fe03718bb5e7e0d2f520f50
 
 import asyncio
 from dataclasses import replace

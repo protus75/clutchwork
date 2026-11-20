@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal roll
+# relates: [clutch/journal.py, tests/integration/test_journal.py]
+# owner: engine
+# verified: 148a8874
+# hash: 94aa761310af24af8d39a2fd9e734d107f5613eaa256174a7b01c0d9b3232201
 import json
 import os
 import stat

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: conftest
+# relates: []
+# owner: engine
+# verified: 148a8874
+# hash: e2d7759b6fb3841a3514e0e12950a4cf223f4f9350878d0abd2683fecddeb080
 import pytest
 
 

@@ -1,4 +1,12 @@
 """Regression custody and admission proofs with disposable real Git repositories."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Regression custody and admission proofs with disposable real Git repositories.
+# relates: [clutch/gates.py, clutch/merge.py, clutch/mergequeue.py, clutch/redact.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
+# owner: engine
+# verified: 148a8874
+# hash: a6006d4840510434b85a0361ee41e38fe951d2eecc6bff30825766bf77d1430c
 
 import asyncio
 import dataclasses

@@ -1,4 +1,12 @@
 """Checkpoint custody through the existing journal, process, timer and production Box seams."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Checkpoint custody through the existing journal, process, timer and production Box seams.
+# relates: [clutch/__main__.py, clutch/checkpoint.py, clutch/daemon.py, clutch/effects.py, clutch/enginelog.py, clutch/git.py, clutch/journal.py]
+# owner: engine
+# verified: 148a8874
+# hash: bc53d0a562709b4e19218dd5db4da2d30ea0a0283f0ee7f6f7b31c6ca71de563
 
 import asyncio
 import hashlib

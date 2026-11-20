@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test hot paths snapshot
+# relates: [clutch/journal.py, clutch/observe.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_retro.py]
+# owner: engine
+# verified: 148a8874
+# hash: 8b1ae3a7a9852acf925569fb9b95d72a8177e0b7c03756a3dcbd8c6f0f29cb43
 from clutch import observe
 from clutch.journal import EventType
 from tests.integration.test_cli import ENV

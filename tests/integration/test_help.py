@@ -1,4 +1,12 @@
 """Check registry links and vocabulary against shipped inputs."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Check registry links and vocabulary against shipped inputs.
+# relates: [clutch/__init__.py, clutch/help.py]
+# owner: engine
+# verified: 148a8874
+# hash: 6f9d0e4bdc1c40f357306e7ea987fceab39c5f5481e5f0fec302a08319877784
 
 import json
 import re

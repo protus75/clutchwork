@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test covmap
+# relates: [clutch/covmap.py, clutch/runner.py]
+# owner: engine
+# verified: 148a8874
+# hash: 96c36c584902317a776f181866d8b3d41b9b88f87cd006ddab6ae23d2e73f41c
 import json
 from types import SimpleNamespace
 
