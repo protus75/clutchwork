@@ -666,13 +666,17 @@ def journal_facts(state: Path, history) -> AdmissionFacts:
         return AdmissionFacts(states=cache.last_states(), reject=frozenset(cache.reject_queue()), settled=settled_dependencies(history), orphans=frozenset(orphans(history)))
 
 
-def _hot_paths(tickets):
-    counts = {}
+def _shared_fences(tickets):
+    paths = {}
     for ticket in tickets:
-        paths = {path.rstrip("/") for path in ticket.scope_fence if not in_fence(path, [f"tickets/{ticket.stem}"])}
-        for path in paths:
-            counts[path] = counts.get(path, 0) + 1
-    return [{"path": path, "count": count} for path, count in sorted(((path, count) for path, count in counts.items() if count >= 2), key=lambda item: (-item[1], item[0]))[:10]]
+        for path in {path.rstrip("/") for path in ticket.scope_fence if not in_fence(path, [f"tickets/{ticket.stem}"])}:
+            paths.setdefault(path, set()).add(ticket.stem)
+    shared = {}
+    for path, stems in sorted(paths.items()):
+        if len(stems) > 1:
+            for stem in stems:
+                shared.setdefault(stem, []).append(f"{path} (also: {', '.join(sorted(stems - {stem}))})")
+    return {stem: "\n".join(lines) for stem, lines in shared.items()}
 
 
 def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
@@ -792,6 +796,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     shown = {r["stem"] for r in rows}
     unmerged = [r["stem"] for r in rows if r["section"] != "merged"]
     priorities = list(get_args(Frontmatter.model_fields["priority"].annotation))
+    shared_fences = _shared_fences(tickets[r["stem"]] for r in rows if r["section"] != "merged" and r["stem"] in tickets)
 
     for r in rows:
         inputs = menu_inputs[r["stem"]]
@@ -826,6 +831,8 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
                     {"heading": "Runs before", "text": ", ".join(r["runsBefore"]) or "(none)"},
                 ]
             )
+        if r["stem"] in shared_fences and r["section"] != "merged":
+            detail.append({"heading": "Shared fence", "text": shared_fences[r["stem"]]})
         if r["depends"]:
             detail.append({"heading": "Depends on", "text": ", ".join(r["depends"])})
         r["detail"] = detail
@@ -916,8 +923,6 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     return {
         **extension_fields(ctx.root),
         "help": help,
-        "hotPaths": _hot_paths(tickets[r["stem"]] for r in rows if r["section"] != "merged" and r["stem"] in tickets),
-        "hotPathsHelp": "hotPaths",
         "helpPick": help_pick_items,
         "headerHelp": {**{section: f"section.{section}" for section in counts}, "engine": "lock.engine", "commit": "lock.commit"},
         "boxHeaderHelp": {kind: f"boxOutcome.{kind}" for kind in box_counts},
