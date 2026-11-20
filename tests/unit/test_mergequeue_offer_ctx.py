@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test mergequeue offer ctx
+# relates: [clutch/mergequeue.py]
+# owner: clutch/mergequeue.py
+# verified: 9a610809
+# hash: d0df12ee3adea1485b05232e0c991f43dfca37f5b410485d8968077b3d6e07ff
 from types import SimpleNamespace
 
 from clutch.mergequeue import MergeQueue

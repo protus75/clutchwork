@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition prior review
+# relates: [clutch/journal.py, clutch/requisition.py]
+# owner: engine
+# verified: 9a610809
+# hash: 207576381a00d54fe049a35343c6627def2b50bae89c93975d2b4545fcbbf91e
 import asyncio
 import inspect
 

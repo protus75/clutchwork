@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test retro check vocabulary
+# relates: [clutch/retro.py]
+# owner: clutch/retro.py
+# verified: 9a610809
+# hash: 0201177034371722363973cb10672bfc30c7c4e1455d63b70da5a597ff45f006
 from types import SimpleNamespace
 from typing import get_args
 from unittest.mock import AsyncMock

@@ -1,4 +1,12 @@
 """Settled work leaves the status projection while actionable work remains."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Settled work leaves the status projection while actionable work remains.
+# relates: [clutch/journal.py, clutch/status.py]
+# owner: engine
+# verified: 9a610809
+# hash: ffd9c750bf78e831da006a3aee4f8fcf55a70316d8996a9b6c1b1b6c84ae0133
 
 from types import SimpleNamespace as NS
 

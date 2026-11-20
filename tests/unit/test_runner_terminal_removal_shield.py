@@ -1,4 +1,12 @@
 """Cancellation waits for the already-satisfied worktree removal."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Cancellation waits for the already-satisfied worktree removal.
+# relates: [clutch/journal.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: d7fdd92bd9410c3582ebe91819ad1f9b1c32095d02d7da66275376dcef0003be
 
 import asyncio
 from pathlib import Path

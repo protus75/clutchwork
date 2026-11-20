@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test panel combiners
+# relates: [clutch/artifacts.py, clutch/panel.py, clutch/triage.py]
+# owner: engine
+# verified: 9a610809
+# hash: 7d554378ca46b98629a047594572d4660b25e1a63ca3263a633054f200247add
 import pytest
 from pydantic import ValidationError
 

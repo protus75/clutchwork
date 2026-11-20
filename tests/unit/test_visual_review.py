@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test visual review
+# relates: [clutch/config.py, clutch/visual.py]
+# owner: engine
+# verified: 9a610809
+# hash: 509f29332fe29aa778d54be6371b2cdd5ecbc4a11561efd6ec02c5c25ac8fe19
 import json
 from pathlib import Path
 

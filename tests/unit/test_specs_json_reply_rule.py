@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test specs json reply rule
+# relates: [clutch/specs/__init__.py, tests/unit/test_specs.py]
+# owner: engine
+# verified: 9a610809
+# hash: 0364454bb5761231079f5c2aacb4920cdb24acdda8faecb16f35bcc4240996fb
 from clutch.specs import lint_spec
 from tests.unit.test_specs import spec_text
 

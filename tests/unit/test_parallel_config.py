@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test parallel config
+# relates: [clutch/config.py, clutch/doctor.py]
+# owner: engine
+# verified: 9a610809
+# hash: 41f9e6a0f537fceb11b4f3a34652c924eea45bb1e3ad326359f97491467e34be
 import asyncio
 from datetime import datetime, timezone
 

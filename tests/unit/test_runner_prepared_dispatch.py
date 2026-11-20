@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test runner prepared dispatch
+# relates: [clutch/runner.py]
+# owner: clutch/runner.py
+# verified: 9a610809
+# hash: f44c1a36d799d4bd80094467a065aa633981dd3ef5df3d3dd2ffb28d63a32bb6
 from dataclasses import dataclass
 
 import pytest

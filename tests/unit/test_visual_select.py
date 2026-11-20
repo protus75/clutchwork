@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test visual select
+# relates: [clutch/visual.py]
+# owner: clutch/visual.py
+# verified: 9a610809
+# hash: e703d05ac4d5df2386e5c285515057625ca933a47c2fa25b1ec8eb9e2c829143
 from clutch.visual import decide, rank
 
 

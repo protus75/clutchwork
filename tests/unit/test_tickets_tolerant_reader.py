@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test tickets tolerant reader
+# relates: [clutch/__main__.py, clutch/observe.py, clutch/stats.py, clutch/tickets.py]
+# owner: engine
+# verified: 9a610809
+# hash: 3285641acd29120483cd4c98e45eca92e09ffe032ecf673f623cde36d646bebb
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace

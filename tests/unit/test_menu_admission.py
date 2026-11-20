@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test menu admission
+# relates: [clutch/__main__.py, clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/runner.py, clutch/status.py, clutch/tickets.py, clutch/triage.py]
+# owner: engine
+# verified: 9a610809
+# hash: 79f87a7be458c55cc161e04c10ebb388bbf0b5e14cc62f4a69e70cf66f2f4ab9
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace as NS

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test verdict menu parity
+# relates: [clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/reconcile.py, clutch/runner.py, tests/unit/test_menu_admission.py]
+# owner: engine
+# verified: 9a610809
+# hash: 3d1afdbf756b3d43997c977620499ed73ce70e37d7d8747ce3539cde1355e84b
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

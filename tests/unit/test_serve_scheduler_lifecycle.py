@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test serve scheduler lifecycle
+# relates: [clutch/daemon.py, clutch/serve.py, tests/fakes.py, tests/unit/test_supervise_idle_hooks.py]
+# owner: engine
+# verified: 9a610809
+# hash: 55aea33441d745691f1a20c1aee69608a00a1fb4c51572f12cd7126f4706a5a7
 import asyncio
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock, Mock

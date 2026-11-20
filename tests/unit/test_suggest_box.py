@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test suggest box
+# relates: [clutch/__main__.py, clutch/box.py, tests/fakes.py]
+# owner: engine
+# verified: 9a610809
+# hash: 028fc1da080b8506ef498aff04860a1f48cfa2461f7ad29d1690f22440003acf
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test panel member keys
+# relates: [clutch/config.py, clutch/effects.py, clutch/evidence/store.py, clutch/llm.py, clutch/llmeffect.py, clutch/providers.py, clutch/redact.py]
+# owner: engine
+# verified: 9a610809
+# hash: c4b94a2beafec788b74d9028af9e22776a27a9df9a0184a17795081886f1f5bb
 import asyncio
 from types import SimpleNamespace
 

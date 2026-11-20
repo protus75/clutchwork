@@ -1,4 +1,12 @@
 """The automatic retro cadence counts distinct settled tickets."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The automatic retro cadence counts distinct settled tickets.
+# relates: [clutch/config.py, clutch/journal.py, clutch/retro.py]
+# owner: engine
+# verified: 9a610809
+# hash: bbd7e597ab44043262ae456a591dc151e6b2446eb1bcb484fabfd58864147348
 
 import inspect
 

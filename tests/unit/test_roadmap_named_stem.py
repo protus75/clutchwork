@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap named stem
+# relates: [clutch/roadmap.py]
+# owner: clutch/roadmap.py
+# verified: 9a610809
+# hash: d2562ff3aaf06534e0189eb79e1a7df52575aeb6a5141ce6e43131398de96c77
 from clutch.roadmap import fresh_stem
 
 

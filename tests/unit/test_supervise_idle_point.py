@@ -1,4 +1,12 @@
 """Idle supervision selects operator lineages without producing another terminal."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Idle supervision selects operator lineages without producing another terminal.
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/rework.py, clutch/runner.py, clutch/supervise_idle.py]
+# owner: engine
+# verified: 9a610809
+# hash: 114422910f533bb09103aae214ab67ba223d8ec5807b168ce8d57afda0e92348
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, call

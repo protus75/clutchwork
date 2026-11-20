@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test phase events
+# relates: [clutch/drain.py, clutch/runner.py, clutch/serve.py]
+# owner: engine
+# verified: 9a610809
+# hash: e7c2245ccbde6fe2c6e3af1e16875554d6be4d0ac19e69df4efb495a9033d137
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace

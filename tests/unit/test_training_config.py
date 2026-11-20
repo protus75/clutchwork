@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test training config
+# relates: [clutch/config.py]
+# owner: clutch/config.py
+# verified: 9a610809
+# hash: 9e47129e66e49ef8df2745a647194057fc5d56d70553138429b1083692363c54
 import pytest
 from pydantic import ValidationError
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stage events seam
+# relates: [clutch/driver.py]
+# owner: clutch/driver.py
+# verified: 9a610809
+# hash: 2f7b043e5fcd6e0b76bf10661d552cb5281698c77ae1303a4fe6b5a06847965c
 import ast
 import asyncio
 from pathlib import Path

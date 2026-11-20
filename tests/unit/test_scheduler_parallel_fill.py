@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test scheduler parallel fill
+# relates: [clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/scheduler.py, clutch/tickets.py, tests/dispatch_settle.py]
+# owner: engine
+# verified: 9a610809
+# hash: cf76f3a7f38c05e2891f2f15f93a504e297a62244fb9f5c44a65a7d5af501314
 import json
 from datetime import UTC, datetime
 from pathlib import Path

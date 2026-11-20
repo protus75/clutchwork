@@ -1,4 +1,12 @@
 """Review replay and its read-only handler contract, with scripted model calls."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Review replay and its read-only handler contract, with scripted model calls.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/evidence/store.py, clutch/journal.py, clutch/llm.py, clutch/redact.py, clutch/timers.py]
+# owner: engine
+# verified: 9a610809
+# hash: b3c4be7823fa792575a3ad1121a019d8ec8e122aaa4b9dbdd70139dfe40260fc
 
 import asyncio
 import json

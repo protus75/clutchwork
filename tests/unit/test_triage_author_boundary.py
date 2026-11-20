@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test triage author boundary
+# relates: [clutch/journal.py, clutch/triage.py]
+# owner: engine
+# verified: 9a610809
+# hash: 3b7bc8ca547745e841c5237de5e50b2308412b3a26a64126dd26b7959d6b1468
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

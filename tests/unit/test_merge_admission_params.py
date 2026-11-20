@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test merge admission params
+# relates: [clutch/artifacts.py, clutch/gates.py, clutch/git.py, clutch/merge.py, clutch/mergequeue.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 8adfd95ef538fcd4a6d101ed06135ad7ce20aab1f3abc02fec92f30034a371d0
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path

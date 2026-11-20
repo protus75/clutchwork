@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap refile ready
+# relates: [clutch/journal.py, clutch/roadmap.py, tests/unit/test_roadmap_author.py]
+# owner: engine
+# verified: 9a610809
+# hash: b005234746c35f0c0088e8690ebd2d474987d1a1d07c5f4a4618a083da309647
 import pytest
 
 from clutch import roadmap

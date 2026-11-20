@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test watchdog gemini
+# relates: [clutch/providers.py, clutch/watchdog.py, tests/unit/test_gemini_adapter.py]
+# owner: engine
+# verified: 9a610809
+# hash: 6ebc511d82f665f8bd19f7dc0f8de022fbbf2a354b77387367c473737a31ccdb
 from datetime import UTC, datetime
 from unittest.mock import Mock
 

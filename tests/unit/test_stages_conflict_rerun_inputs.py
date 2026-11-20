@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stages conflict rerun inputs
+# relates: [clutch/artifacts.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 6e3232dffc80b16a26d02eab36e502180de76a03b8e306f1a254a70be4610341
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 

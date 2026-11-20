@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stages host lock
+# relates: [clutch/gates.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: d9a445c1da0b1673319f88a0be0d9a84a8eb566f0cb55ed6cb7b4bc9dd1b418f
 import asyncio
 from datetime import datetime, timezone
 from types import SimpleNamespace

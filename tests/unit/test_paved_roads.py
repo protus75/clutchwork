@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test paved roads
+# relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/providers.py, clutch/retro.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 0b5f62cba8bb4d0eee99ae78f19a2713708f3d2b0f3541bef4084fe07f910f2e
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path

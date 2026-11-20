@@ -1,4 +1,12 @@
 """Overruled implement premises escalate and retain their retry rung."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Overruled implement premises escalate and retain their retry rung.
+# relates: [clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 603d20edf586edeb0a1899a33c6dc7f25176986c250e30fabff6ed62205481ce
 
 from types import SimpleNamespace
 

@@ -1,4 +1,12 @@
 """Budget admission rules at their boundaries."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Budget admission rules at their boundaries.
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 9a610809
+# hash: 6441f29fd3781745e19a1f56ed1ff7210cbd93ec7e736418dc97b7a82354a4a9
 
 import pytest
 

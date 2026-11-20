@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition dependents
+# relates: [clutch/requisition.py]
+# owner: clutch/requisition.py
+# verified: 9a610809
+# hash: 60be492a56f853f3fa1b36c8d7a15659574daa7519e3a574635d2730e39da36e
 import asyncio
 import json
 from types import SimpleNamespace

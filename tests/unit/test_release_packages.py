@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test release packages
+# relates: [clutch/release.py, clutch/seams.py]
+# owner: engine
+# verified: 9a610809
+# hash: 8ce1e0b9dd1dae74103e04b08aebd677db46dedc50708729e32b62320cf3da53
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace as NS

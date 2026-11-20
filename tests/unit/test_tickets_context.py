@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test tickets context
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 9a610809
+# hash: ee2ff32bc5d1e0e21df165572b532e729f885e27a6a2e03f67e5cdf4e6297088
 import pytest
 
 from clutch.tickets import context_conflicts, context_excerpt, render_context

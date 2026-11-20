@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test runner rework findings terminal
+# relates: [clutch/artifacts.py, clutch/journal.py, clutch/runner.py, tests/unit/test_supervisor_trigger.py]
+# owner: engine
+# verified: 9a610809
+# hash: 44fcaa48d53b3018449f6c30834b9558161b367d4d36a45b489df441701183e1
 from unittest.mock import AsyncMock
 
 import pytest

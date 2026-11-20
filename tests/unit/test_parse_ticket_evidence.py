@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test parse ticket evidence
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 9a610809
+# hash: b4bd2c0cab431fc280a5e950339f4629ad38a3a4e0a96b0c37e6a93a200d35a9
 from pathlib import Path
 
 import pytest

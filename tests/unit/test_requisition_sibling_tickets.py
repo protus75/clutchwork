@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition sibling tickets
+# relates: [clutch/requisition.py, clutch/tickets.py]
+# owner: engine
+# verified: 9a610809
+# hash: 7bf05a24ead784d78012a580244ed75bd77b4a21de4693a446aa584f771934f3
 import asyncio
 import json
 from types import SimpleNamespace

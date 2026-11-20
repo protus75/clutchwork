@@ -1,4 +1,12 @@
 """Supervisor effects precede the terminal; only successful keeps follow it."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Supervisor effects precede the terminal; only successful keeps follow it.
+# relates: [clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/rework.py, clutch/runner.py, clutch/status.py]
+# owner: engine
+# verified: 9a610809
+# hash: 66169352bd5853f7ad37c669c745940021d83fcc3a90438df17c61f6b3bd2e99
 
 from pathlib import Path
 from types import SimpleNamespace

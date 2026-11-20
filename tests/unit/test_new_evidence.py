@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test new evidence
+# relates: [clutch/__main__.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 9e16d490cd4cc11e12c702612f4d583aa26c26f148186549ec2968c5d9a91214
 from pathlib import Path
 
 import pytest

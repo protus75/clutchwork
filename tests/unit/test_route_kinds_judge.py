@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test route kinds judge
+# relates: [clutch/__main__.py, clutch/doctor.py, clutch/journal.py, clutch/providers.py, tests/unit/test_graphics_kind.py]
+# owner: engine
+# verified: 9a610809
+# hash: f5851833f43cf3ac3438d106208d69d15c58c47cb6cb79ee5f7ffa9d57a570cb
 from clutch.providers import judge_independence_finding
 from tests.unit.test_route_kinds_filter import config
 

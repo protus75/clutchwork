@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test scheduler write queue seams
+# relates: [clutch/scheduler.py, tests/dispatch_settle.py]
+# owner: engine
+# verified: 9a610809
+# hash: 36ba039d435153e6d0727dda8b9db168bdd159297eab448ce67f1151f22fc6d0
 import json
 from datetime import UTC, datetime
 from pathlib import Path

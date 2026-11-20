@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test projection helpers single owner
+# relates: [clutch/enginelog.py, clutch/journal.py, clutch/observe.py, clutch/redact.py, clutch/status.py]
+# owner: engine
+# verified: 9a610809
+# hash: ecd1359ba5e0665b2e99742488a5084fcf9b9a7a433ce4a4f4005b8ed196b723
 from datetime import UTC, datetime
 from types import SimpleNamespace
 

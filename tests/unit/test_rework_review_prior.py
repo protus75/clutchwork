@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test rework review prior
+# relates: [clutch/rework.py]
+# owner: clutch/rework.py
+# verified: 9a610809
+# hash: f9213acb040e91ad0df1d9f32093d146263c27bceece3f1276fe8b82f381c8c2
 import json
 
 from clutch.rework import TicketProposal, review_prior

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stages candidates select
+# relates: [clutch/artifacts.py, clutch/baseline.py, clutch/llmeffect.py, clutch/stages.py, clutch/visual.py]
+# owner: engine
+# verified: 9a610809
+# hash: 0c1d296ff5d2046a7976c670ffa3308c3b804618bb847b05261ebceb603896cf
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

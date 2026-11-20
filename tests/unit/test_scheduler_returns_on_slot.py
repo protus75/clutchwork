@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test scheduler returns on slot
+# relates: [clutch/config.py, clutch/journal.py, tests/fakes.py, tests/unit/test_scheduler_parallel_fill.py, tests/unit/test_supervise_idle_point.py]
+# owner: engine
+# verified: 9a610809
+# hash: 2cd3c6d641b162a06644b221e176beb20a5cf459187f42f18f0ccf02ea3c7a32
 import asyncio
 from unittest.mock import AsyncMock, Mock
 

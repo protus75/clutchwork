@@ -1,4 +1,12 @@
 """Serve and drain supervise only at idle boundaries, with lazy preparation."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Serve and drain supervise only at idle boundaries, with lazy preparation.
+# relates: [clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/serve.py, clutch/triage.py, tests/unit/test_supervise_idle_point.py]
+# owner: engine
+# verified: 9a610809
+# hash: bec2746806f3c02505acf5b775c600d00179c12eba4d3b3ab9c3338fa2f371a7
 
 from contextlib import asynccontextmanager
 from dataclasses import dataclass

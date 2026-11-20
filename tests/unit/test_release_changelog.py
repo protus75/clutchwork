@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test release changelog
+# relates: [clutch/git.py, clutch/release.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 18eed84516f3cb3673cd17acf2dce10dff760c6fed8d529290b9f1b8ade35e21
 import asyncio
 from pathlib import Path
 

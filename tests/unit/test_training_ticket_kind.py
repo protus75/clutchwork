@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test training ticket kind
+# relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
+# owner: engine
+# verified: 9a610809
+# hash: 6eec77d0a6e45d626af0af09ba4f9493946b8c31caaae0fd28c894786bf91cac
 import asyncio
 import json
 from pathlib import Path

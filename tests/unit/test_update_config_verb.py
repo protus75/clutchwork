@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test update config verb
+# relates: [clutch/__main__.py, clutch/config.py, clutch/providers.py, clutch/seams.py]
+# owner: engine
+# verified: 9a610809
+# hash: 862f70192e6e45ee371502c3434b1846063d5191b7142040ccc8073ed5a81d2d
 import asyncio
 import json
 from pathlib import Path

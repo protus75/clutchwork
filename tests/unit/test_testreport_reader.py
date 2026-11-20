@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test testreport reader
+# relates: [clutch/testreport.py]
+# owner: clutch/testreport.py
+# verified: 9a610809
+# hash: 1f21ad4bfbe043a7c92bb415a1e00998512e2360837ca9a6e2bc7263b6a92e54
 import json
 
 import pytest

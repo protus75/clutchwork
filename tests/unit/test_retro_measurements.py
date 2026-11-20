@@ -1,4 +1,12 @@
 """Retro measurement aggregation without filesystem or process access."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Retro measurement aggregation without filesystem or process access.
+# relates: [clutch/config.py, clutch/gates.py, clutch/journal.py, clutch/retro.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: a468b6061a12171086b91a9cdf9ee0bf90d5ab2ace7d322b2590a79ed8f449b4
 
 import asyncio
 from types import SimpleNamespace

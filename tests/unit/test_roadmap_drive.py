@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap drive
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, clutch/triage.py, tests/fakes.py]
+# owner: engine
+# verified: 9a610809
+# hash: a4eac8bbdbcd9ec438a1401a55560d0fc4032bf53b4bd001eb916b62c05ddfac
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 

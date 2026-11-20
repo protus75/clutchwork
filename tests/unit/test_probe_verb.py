@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test probe verb
+# relates: [clutch/__main__.py, clutch/config.py]
+# owner: engine
+# verified: 9a610809
+# hash: c6b1618794fd0cf5381e57d4b913e93e3d24e16258f961bff01109c65a872438
 import json
 from pathlib import Path
 from types import SimpleNamespace

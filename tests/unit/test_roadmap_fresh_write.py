@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap fresh write
+# relates: [clutch/box.py, clutch/roadmap.py, tests/unit/test_roadmap_author.py]
+# owner: engine
+# verified: 9a610809
+# hash: c4ca0a6ba2290d22be3c2e913dbfee9b7104d995b4e3ea892b6ecd5d752752d9
 from clutch import roadmap
 from clutch.box import Resolution
 from tests.unit.test_roadmap_author import put, r, run, setup  # noqa: F401

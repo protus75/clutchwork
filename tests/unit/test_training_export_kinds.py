@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test training export kinds
+# relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
+# owner: engine
+# verified: 9a610809
+# hash: c60d1033ac69b710982c6226efb1cebcf5dd66ae0b741874d19ec0e4157a9cfa
 import asyncio
 import json
 from pathlib import Path

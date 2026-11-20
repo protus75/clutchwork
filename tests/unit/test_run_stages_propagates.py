@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test run stages propagates
+# relates: [clutch/providers.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 260611d710da258ce3130db632c702949d46ddc7721581b8d51a88de5e1e22e3
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock

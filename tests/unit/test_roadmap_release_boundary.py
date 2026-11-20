@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap release boundary
+# relates: [clutch/roadmap.py, tests/unit/test_roadmap_author.py, tests/unit/test_roadmap_status.py]
+# owner: engine
+# verified: 9a610809
+# hash: 92e9f4f06cd636594d40e63534f4a88e4c2372ad4156806c610d63308caf2f00
 import asyncio
 
 from clutch import roadmap

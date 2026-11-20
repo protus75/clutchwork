@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main view events
+# relates: [clutch/__main__.py, clutch/events.py]
+# owner: engine
+# verified: 9a610809
+# hash: 4377ae9669a226dfb828dc1180aa59550ea0e53616bc703dcd141dc48e93af2e
 from types import SimpleNamespace
 
 import pytest

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stages render check
+# relates: [clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 21b0017eb0206730c1c3097b5c4973d3f27fb8cbbf0d7d280b7b8a071bda97d9
 import asyncio
 import json
 from datetime import datetime, timezone

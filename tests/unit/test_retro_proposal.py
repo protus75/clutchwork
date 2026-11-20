@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test retro proposal
+# relates: [clutch/box.py, clutch/daemon.py, clutch/journal.py, clutch/retro.py]
+# owner: engine
+# verified: 9a610809
+# hash: ae37b5b99cdbec5453db57850c209e84422dd3a71e48b34432d115b5d0bf8d0f
 import pytest
 from pydantic import ValidationError
 

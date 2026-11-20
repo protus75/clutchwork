@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test observe extension fields
+# relates: [clutch/__main__.py, clutch/observe.py]
+# owner: engine
+# verified: 9a610809
+# hash: 41c0e35420f711f08b86dbb49d39c74e702ddfd9723bb80a6a828cd5eaa12534
 from clutch.observe import extension_fields
 
 

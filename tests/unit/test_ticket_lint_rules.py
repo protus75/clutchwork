@@ -1,4 +1,12 @@
 """Authoring checks against parsed tickets with an in-memory repository."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Authoring checks against parsed tickets with an in-memory repository.
+# relates: [clutch/__main__.py, clutch/tickets.py]
+# owner: engine
+# verified: 9a610809
+# hash: 5c3f4393c6a59d810752966dab83d931a7be3896492838b6a716cb1117536fe8
 
 from pathlib import Path
 

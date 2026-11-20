@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test visual baseline
+# relates: [clutch/journal.py, clutch/policy.py, clutch/visual.py, eval/visual_harness.py]
+# owner: engine
+# verified: 9a610809
+# hash: 44bbb8c3b2f46f30d782d0c065627cda628d7abdddcd1368372269e5181bdefd
 import asyncio
 import json
 from datetime import UTC, datetime

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test premise park keep
+# relates: [clutch/drain.py, clutch/journal.py]
+# owner: engine
+# verified: 9a610809
+# hash: 3475d9ef53fec10463c067b000fd75a7e85af91178d49cea2b408ee773915112
 from clutch.drain import parked_blob
 from clutch.journal import Event, EventType
 

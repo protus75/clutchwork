@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap release audit order
+# relates: [clutch/roadmap.py, tests/unit/test_roadmap_status.py]
+# owner: engine
+# verified: 9a610809
+# hash: bed645e193d37d9f843d64f46513c18da0682f469f52a6d3e094aeb5ac367ed6
 from clutch import roadmap
 from tests.unit.test_roadmap_status import HEADER, row
 

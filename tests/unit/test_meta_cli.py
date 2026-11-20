@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test meta cli
+# relates: [clutch/__main__.py, tests/unit/test_meta_refresh.py]
+# owner: engine
+# verified: 9a610809
+# hash: e12bbe71f10a62398c827fe220c7f83917c78a9a331eb8d3c2d3582ecbc40bf3
 from pathlib import Path
 
 from clutch.__main__ import _run_meta

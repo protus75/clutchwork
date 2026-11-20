@@ -1,4 +1,12 @@
 """Host commands resolve the engine and do not inherit provider secrets."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Host commands resolve the engine and do not inherit provider secrets.
+# relates: [clutch/stages.py]
+# owner: clutch/stages.py
+# verified: 9a610809
+# hash: 536cf4b5f0bcb1fd8d9a3e0425ff834bf58ea21f9a49200640e6df503bcd7e9a
 
 import asyncio
 import os

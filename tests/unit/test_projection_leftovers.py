@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test projection leftovers
+# relates: [clutch/driver.py, clutch/enginelog.py, clutch/observe.py, clutch/tickets.py]
+# owner: engine
+# verified: 9a610809
+# hash: b92701b9708e7a7a0fadedff13ecc256a807e371597b334c1e0486a80199a9e5
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock

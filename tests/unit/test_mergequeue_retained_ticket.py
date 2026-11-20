@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test mergequeue retained ticket
+# relates: [clutch/mergequeue.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 325f56523fbfd5b9aaf960ba263f0f13c301232858d4180fad3648b380fec81d
 from types import SimpleNamespace
 
 import pytest

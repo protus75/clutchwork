@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test seam replace
+# relates: [clutch/seams.py]
+# owner: clutch/seams.py
+# verified: 9a610809
+# hash: c8714a3598dbaa36fe3d8996c092474afa866a2d8dae80b2569f8bb501951ab6
 import asyncio
 
 import pytest

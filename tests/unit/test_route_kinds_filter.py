@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test route kinds filter
+# relates: [clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/providers.py, clutch/redact.py, clutch/seams.py]
+# owner: engine
+# verified: 9a610809
+# hash: 2675a945e9838ef1c17a820d6a4a84f46536da135836d1517a53506ae71aa604
 from pathlib import Path
 from types import SimpleNamespace
 

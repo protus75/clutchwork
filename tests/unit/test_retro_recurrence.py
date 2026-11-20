@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test retro recurrence
+# relates: [clutch/box.py, clutch/daemon.py, clutch/journal.py, clutch/retro.py, tests/fakes.py, tests/unit/test_retro_proposal.py]
+# owner: engine
+# verified: 9a610809
+# hash: 5e7ffe8bad01382a2e34a8ec0af08de5183a15ef9907a393c5a112cd37a882ee
 import json
 from pathlib import Path
 from types import SimpleNamespace

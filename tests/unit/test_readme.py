@@ -1,4 +1,12 @@
 """Keep the PyPI README suitable for host users."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Keep the PyPI README suitable for host users.
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 9a610809
+# hash: e92f9cd0afcafec3921a570f98a651144d3ccbce5df5a5e94ec8de3bc8e4d4f0
 
 import argparse
 import re

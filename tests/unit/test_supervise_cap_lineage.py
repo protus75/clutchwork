@@ -1,4 +1,12 @@
 """Supervisor keeps reset ordinary budgets but not their own bound."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Supervisor keeps reset ordinary budgets but not their own bound.
+# relates: [clutch/audit.py, clutch/caps.py, clutch/config.py, clutch/journal.py]
+# owner: engine
+# verified: 9a610809
+# hash: a9aaf41daf173bd11f14a29ad594b723dde839a32f72f1d02cdae933b16d87cd
 
 from types import SimpleNamespace
 

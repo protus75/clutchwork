@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test merge dirty
+# relates: [clutch/merge.py]
+# owner: clutch/merge.py
+# verified: 9a610809
+# hash: 94ab11eae99d8a04bb6e0695758af1d8e4b46227552897bec098eecbe791a6f6
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

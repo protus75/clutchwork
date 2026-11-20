@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test retro conflict paths
+# relates: [clutch/box.py, clutch/journal.py, clutch/retro.py, clutch/seams.py]
+# owner: engine
+# verified: 9a610809
+# hash: 25d2d197ca238f784efafda7d758ee88a5b6f2c92d82ab176fd0b2e4381dab29
 import pytest
 from pydantic import ValidationError
 

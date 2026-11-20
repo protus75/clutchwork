@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap operator reject reason
+# relates: [clutch/journal.py, clutch/roadmap.py]
+# owner: engine
+# verified: 9a610809
+# hash: 38151035d30a810b5f05463ccb9d98025262b0dfdbfab44233658392b92b8585
 from clutch.journal import Event, EventType
 from clutch.roadmap import rejection_reason
 

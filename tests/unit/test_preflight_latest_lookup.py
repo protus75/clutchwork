@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test preflight latest lookup
+# relates: [clutch/seams.py, tests/unit/test_preflight_parallel.py]
+# owner: engine
+# verified: 9a610809
+# hash: 50406442f06485b5118219efeba243c36f7cb8c9ccbea25996de48a63de71be6
 import json
 
 import pytest

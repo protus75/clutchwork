@@ -1,4 +1,12 @@
 """Publish keeps tagged builds and credentials isolated."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Publish keeps tagged builds and credentials isolated.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/providers.py, clutch/redact.py, clutch/release.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 6941257dd9ce5543ac770a9a27e0cf734e8c526f866ce8e9cc892f54d510960a
 
 import asyncio
 from pathlib import Path

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test preflight parallel
+# relates: [clutch/llm.py, clutch/providers.py]
+# owner: engine
+# verified: 9a610809
+# hash: 6239ba884d98c4a29611e9fb2fae5f0785601bbd291da8cf4104fb0927839c66
 import asyncio
 import json
 from pathlib import Path

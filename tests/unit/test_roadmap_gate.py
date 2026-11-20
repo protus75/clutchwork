@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap gate
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/fakes.py]
+# owner: engine
+# verified: 9a610809
+# hash: b0f447ca87019d44e0c43ca6c4a6804cef91c98e79b37802610c1400d7c80859
 import asyncio
 from types import SimpleNamespace
 

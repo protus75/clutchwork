@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main view group
+# relates: [clutch/__main__.py, clutch/observe.py]
+# owner: engine
+# verified: 9a610809
+# hash: 256b3c0c6aa072a3c7b9da4adfefdf1ddb8379edbf72c0a9bad843740da5fd0b
 import argparse
 import json
 from types import SimpleNamespace

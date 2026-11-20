@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test view events
+# relates: [clutch/events.py]
+# owner: clutch/events.py
+# verified: 9a610809
+# hash: 57c4e1039d7ff4f88a6bb67c1f3ebabebee3fab53abdd224cee56c04ab551072
 import json
 import os
 

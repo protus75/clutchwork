@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap refile
+# relates: [clutch/box.py, clutch/journal.py, clutch/roadmap.py, tests/unit/test_roadmap_author.py]
+# owner: engine
+# verified: 9a610809
+# hash: 0becbdfc907b7364970f2cdd0a853532c5b553fe03eaebfa24caec93986ec38b
 import asyncio
 
 from clutch import roadmap

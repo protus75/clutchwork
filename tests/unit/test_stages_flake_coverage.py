@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stages flake coverage
+# relates: [clutch/config.py, clutch/daemon.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 676c2fe661e8c6c493b0c4fb1569ac43ea1914036f9cb7a11a4eb75bc14809e2
 import asyncio
 import json
 from datetime import datetime

@@ -1,4 +1,12 @@
 """Scripted calls distinguish release ordering, isolation, and refusal paths."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Scripted calls distinguish release ordering, isolation, and refusal paths.
+# relates: [clutch/__main__.py, clutch/git.py, clutch/release.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 44be2191cb3c1ce6c2116cceea022c2c188776c520d186855fcebe2867a0cacb
 
 import asyncio
 from datetime import date

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test qwen adapter
+# relates: [clutch/__init__.py, clutch/config.py, clutch/providers.py]
+# owner: engine
+# verified: 9a610809
+# hash: 1fd35b40869c6fe9fc7b458c91ecccd31fef80b384feaae4a73a03e0023a3c7f
 import json
 from pathlib import Path
 from types import SimpleNamespace

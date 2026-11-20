@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test triage tombstone rejected
+# relates: [clutch/triage.py]
+# owner: clutch/triage.py
+# verified: 9a610809
+# hash: 7403d2dd664a3b67558cdc61695872b49323135c16e3502a9acc8460418dea9d
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 

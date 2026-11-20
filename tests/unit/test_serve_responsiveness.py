@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test serve responsiveness
+# relates: [clutch/serve.py]
+# owner: clutch/serve.py
+# verified: 9a610809
+# hash: a3b79ef2635da5aa525760fdbdfde573c94fa9f88427afba00dc02b668ecfd19
 import asyncio
 
 import pytest

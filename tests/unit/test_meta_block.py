@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test meta block
+# relates: [clutch/meta.py]
+# owner: clutch/meta.py
+# verified: 9a610809
+# hash: 361c6ffefe3f5845e689dd0f131d3553ef96dd0f870a89d94ed5c0a58741d59e
 import pytest
 
 from clutch.meta import Malformed, digest, parse

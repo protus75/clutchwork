@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test serve driver overlap
+# relates: [clutch/journal.py, clutch/roadmap.py, clutch/serve.py, tests/fakes.py]
+# owner: engine
+# verified: 9a610809
+# hash: 4973b237e5235f36e471ca7882fb193e39a8e372b8197bb5503d5be485d7f33e
 import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass

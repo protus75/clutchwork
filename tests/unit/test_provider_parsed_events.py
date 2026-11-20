@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test provider parsed events
+# relates: [clutch/evidence/claude.py, clutch/evidence/codex.py, clutch/evidence/gemini.py, clutch/evidence/schema.py, clutch/providers.py]
+# owner: engine
+# verified: 9a610809
+# hash: bbf771652dbb09f62d699e081f4ddb9d137f492edc0b9c216c34380518ba3db0
 import json
 
 import pytest

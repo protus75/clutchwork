@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition stage events
+# relates: [clutch/artifacts.py, clutch/driver.py, clutch/providers.py, clutch/requisition.py, clutch/tickets.py]
+# owner: engine
+# verified: 9a610809
+# hash: b779fc8352f7fa9ec1c271da85aa7999936f15e59af811380ccd926cfe66f8cd
 import asyncio
 import json
 from types import SimpleNamespace

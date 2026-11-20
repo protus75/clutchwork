@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test training trajectory
+# relates: [clutch/__main__.py, clutch/config.py, clutch/redact.py, clutch/training.py]
+# owner: engine
+# verified: 9a610809
+# hash: e9c5eed57c8d99e39b6fa2f795c3b8fd7c35bc49f2b78e545f1df23be6db0a2e
 import asyncio
 import hashlib
 import json

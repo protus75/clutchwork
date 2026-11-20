@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test reject reason paths
+# relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py]
+# owner: engine
+# verified: 9a610809
+# hash: 886b03222e69e3cd80372fa2024e9baf96d96e6cd86ef31ec1dc58c8969be69f
 import asyncio
 import json
 from pathlib import PurePath

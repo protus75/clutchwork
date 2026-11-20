@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test runner attempt manifest
+# relates: [clutch/config.py, clutch/evidence/store.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/unit/test_evidence_schema.py]
+# owner: engine
+# verified: 9a610809
+# hash: 7c014508be1b309c3e2bab2ca633c1095141b68e88226a9c55c4abe372e31063
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

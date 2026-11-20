@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stages base red
+# relates: [clutch/stages.py]
+# owner: clutch/stages.py
+# verified: 9a610809
+# hash: f59fa1e54a245e53fae4487820b52860c00c48be5510d555b4ac8f8cc18016e9
 from clutch.stages import _names_branch_only_path
 
 

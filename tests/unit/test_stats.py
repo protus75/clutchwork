@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stats
+# relates: [clutch/journal.py, clutch/stats.py]
+# owner: engine
+# verified: 9a610809
+# hash: b6ae7679cad62c732c726c0884cdf58d70fa356935357d977ccd7f45c47183e0
 from datetime import UTC, datetime
 
 from clutch.journal import Event, EventType

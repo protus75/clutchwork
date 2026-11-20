@@ -1,4 +1,12 @@
 """Non-accepted control decisions are projected in journal order."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Non-accepted control decisions are projected in journal order.
+# relates: [clutch/journal.py, clutch/status.py]
+# owner: engine
+# verified: 9a610809
+# hash: c966dadfcf8719640cc218ab8d7aecd18e5d1a4af7289d4d722cfdeda77116f0
 
 from types import SimpleNamespace
 

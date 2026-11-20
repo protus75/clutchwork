@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test observe journal facts
+# relates: [clutch/journal.py, clutch/observe.py, clutch/status.py, tests/unit/test_admission_facts.py]
+# owner: engine
+# verified: 9a610809
+# hash: 5d5c8f3acd02e1e6acc1aa9f1e76a46c3197ce88a004cc986fd96987ed1affbe
 import json
 from types import SimpleNamespace
 from unittest.mock import Mock

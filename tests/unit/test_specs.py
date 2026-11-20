@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test specs
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 9a610809
+# hash: 2541d2ce962ee1ae75a558218f730b7faa6e2d0bcde414c64861510556de39a1
 from pathlib import Path
 
 import pytest

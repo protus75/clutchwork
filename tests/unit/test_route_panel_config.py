@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test route panel config
+# relates: [clutch/config.py, clutch/doctor.py, clutch/providers.py, tests/unit/test_route_kinds_filter.py]
+# owner: engine
+# verified: 9a610809
+# hash: 62eac3304ce487c9b02008065d55de98b51b5a2929497ebb3ee2d99282967a0f
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace

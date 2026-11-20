@@ -1,4 +1,12 @@
 """Release acceptance uses real temporary files and a scripted, gate-aware driver."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Release acceptance uses real temporary files and a scripted, gate-aware driver.
+# relates: [clutch/__main__.py, clutch/acceptance.py, clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/effects.py]
+# owner: engine
+# verified: 9a610809
+# hash: fd16e49f9d7253e1d1baec14ffb23165fe4d6c946400e155bb45c125657a56a9
 
 import asyncio
 import json

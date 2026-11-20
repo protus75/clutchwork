@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test scaffold
+# relates: []
+# owner: engine
+# verified: 9a610809
+# hash: c471d4694bea84cdb2e71245bd1f86c1273078e6758619d8cb021d966471f264
 import importlib
 import re
 import tomllib

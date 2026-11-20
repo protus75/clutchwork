@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stale running
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/retro.py, clutch/runner.py, clutch/specs/__init__.py, clutch/status.py]
+# owner: engine
+# verified: 9a610809
+# hash: 1953b93e86e3a20c69bdce0ef9a2fbf7dbb5a8da41be83d40b6a52973c0261a9
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path

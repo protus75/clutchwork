@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test rework supervise gate
+# relates: [clutch/rework.py]
+# owner: clutch/rework.py
+# verified: 9a610809
+# hash: 358dea6cf8ed48817441a6328eac0f151403c54948f890e87b5ac2980fbb8154
 import pytest
 
 from clutch.rework import ReworkReply, TicketProposal, supervise_findings

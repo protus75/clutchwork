@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test seams unwind capture
+# relates: [clutch/seams.py]
+# owner: clutch/seams.py
+# verified: 9a610809
+# hash: 0cc80df75311621e599916343fbfbcbc385ee0db4c792287b487f10ab910cd0c
 import asyncio
 from types import SimpleNamespace
 

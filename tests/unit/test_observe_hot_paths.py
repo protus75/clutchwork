@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test observe hot paths
+# relates: [clutch/box.py, clutch/observe.py, clutch/status.py, clutch/tickets.py, tests/unit/test_menu_admission.py]
+# owner: engine
+# verified: 9a610809
+# hash: bb737804b57bc5da8f54936b7053651f4a45f860a8b95a5dfd17995fbd07f165
 from pathlib import Path
 from types import SimpleNamespace as NS
 

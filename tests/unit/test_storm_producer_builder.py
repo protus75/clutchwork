@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test storm producer builder
+# relates: [clutch/daemon.py]
+# owner: clutch/daemon.py
+# verified: 9a610809
+# hash: 1af2755c529396772317e3b21ee3309cbaaf91aa1743ff89e72221f3463a5973
 from types import SimpleNamespace
 from unittest.mock import Mock
 

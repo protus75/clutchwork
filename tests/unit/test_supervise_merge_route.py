@@ -1,4 +1,12 @@
 """Both terminal producers share supervisor attempts and the operator-lineage bound."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Both terminal producers share supervisor attempts and the operator-lineage bound.
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/rework.py, clutch/runner.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: 902bcfe1f813d596fa1a1bd549494f547fdd475ff20b54b076a32e4da370d058
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

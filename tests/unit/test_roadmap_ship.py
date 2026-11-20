@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap ship
+# relates: [clutch/journal.py, clutch/release.py, clutch/roadmap.py, clutch/runner.py, tests/fakes.py]
+# owner: engine
+# verified: 9a610809
+# hash: 45a263d14d8274a126389da62457bc7de9bc79dea8970a8d9eed0234b135e7fb
 import asyncio
 from datetime import datetime
 from types import SimpleNamespace as NS

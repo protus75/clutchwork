@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test snapshot merged cap
+# relates: [clutch/box.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
+# owner: engine
+# verified: 9a610809
+# hash: 309c14df7f631ffc67f7e02ec8f2255cf35f0ac01665caaa7ddd4f3905c720ab
 from pathlib import Path
 from types import SimpleNamespace as NS
 from unittest.mock import Mock

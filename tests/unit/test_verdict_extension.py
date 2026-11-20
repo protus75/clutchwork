@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test verdict extension
+# relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/tickets.py]
+# owner: engine
+# verified: 9a610809
+# hash: 53f8055e0d8bc62e79c2ccb9b26f37b2fa688e23851e3d3c4098d3a7b65e67d9
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock

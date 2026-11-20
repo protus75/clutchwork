@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test runner dead dependents
+# relates: [clutch/journal.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 5ce22a7c8d4a172c13e1f40ffeacfda39611884b86d00e91e08f67f649b3e9fa
 import asyncio
 from types import SimpleNamespace
 

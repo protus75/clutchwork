@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test meta refresh
+# relates: [clutch/meta.py]
+# owner: clutch/meta.py
+# verified: 9a610809
+# hash: 4aa1f31bb53dcda249c4593291f3dd5cc8c3a3682e8c89fb44f8045e648ec29c
 from pathlib import Path
 from types import SimpleNamespace
 

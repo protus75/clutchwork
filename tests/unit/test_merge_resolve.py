@@ -1,4 +1,12 @@
 """Boundaries and model repair use only injected seams."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Boundaries and model repair use only injected seams.
+# relates: [clutch/artifacts.py, clutch/driver.py, clutch/mergequeue.py, clutch/specs/__init__.py, clutch/stages.py]
+# owner: engine
+# verified: 9a610809
+# hash: a7fbc782c2d3380cc9aac30a7c185c1fdd3eb844427f86339af778151cbd8f1b
 
 import asyncio
 from pathlib import Path

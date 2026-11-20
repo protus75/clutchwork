@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap stuck rows
+# relates: [clutch/box.py, clutch/journal.py, clutch/roadmap.py, tests/unit/test_roadmap_status.py]
+# owner: engine
+# verified: 9a610809
+# hash: 7c568a11e153594976bb408c96914312e888474770a643b944aa329e385a387a
 import asyncio
 
 from clutch import roadmap

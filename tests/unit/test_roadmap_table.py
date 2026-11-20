@@ -1,4 +1,12 @@
 """Roadmap table contracts, using only in-memory documents."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Roadmap table contracts, using only in-memory documents.
+# relates: [clutch/roadmap.py, clutch/runner.py]
+# owner: engine
+# verified: 9a610809
+# hash: 7466213f9004eaf07ef525607b4a973619282d8b651f9379a94a657c13282865
 
 from dataclasses import replace
 
