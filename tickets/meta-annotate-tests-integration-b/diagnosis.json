@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "7a48a2fd4322ce1aa841d7818c783817b7b53148",
+  "stem": "meta-annotate-tests-integration-b",
+  "attempt": 1,
+  "terminal": "infra_error",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Cause was a codex transport outage (Responses WebSocket stream disconnected), not the ticket or approach. Retry once provider codex recovers; the attempt was sound and took about 3 minutes.",
+    "Redo from the merge base: run `uv run clutch meta refresh` on exactly the 112 `## Scope fence` paths, then set each empty `purpose` with an uncommitted throwaway script using the ticket's docstring/heading/stem rule, cut to 120 chars.",
+    "The prior approach was 8 inserted lines per file, 896 insertions and no deletions, under the 1499-line cap. Keep every change inside the block and leave relates/owner/kind/verified/hash, pyproject.toml and config.yaml alone.",
+    "Before reporting ok, run all three `## Verification` commands as written: `uv run clutch meta check <112 paths>`, `uv run ruff format --check <112 paths>`, and `./dev.py test`. Then commit only the fenced paths on the ticket branch."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
