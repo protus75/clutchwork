@@ -25,7 +25,7 @@ none
 ## Scope in / Scope out
 Scope in:
 - Create `tests/dispatch_settle.py` with `async def dispatch_settled(scheduler)`: `ticket = await scheduler.dispatch_next()`; while `ticket is not None and ticket.stem in scheduler.flying`, `await turn()`; return `ticket`. It reads `scheduler.dispatch_next` at call time, so a test that monkeypatches that attribute still works through it.
-- In each fenced existing test or harness file, replace every plain `await <scheduler>.dispatch_next()` (including `while await ... is not None` loops) with `dispatch_settled(<scheduler>)`, and add the import. Nothing else in those files changes. The sites are in `tests/harness/reliability_battery.py` (`_Member.dispatch` and the drought check in `exercise`), `tests/unit/test_drain_eligible.py`, `tests/unit/test_admission_running_set.py`, `tests/unit/test_scheduler_write_queue_seams.py`, `tests/unit/test_scheduler_parallel_fill.py`, `tests/integration/test_daemon_core_queue_seams.py`, `tests/integration/test_storm_notification_activation.py`, `tests/integration/test_requisition_gate.py`, `tests/integration/test_provider_cooldown_failover.py`, `tests/integration/test_daemon_composition.py` and `tests/integration/test_scheduler.py`.
+- In each fenced existing test or harness file, replace every plain `await <scheduler>.dispatch_next()` (including `while await ... is not None` loops) with `dispatch_settled(<scheduler>)`, and add the import. Nothing else in those files changes. The sites are in `tests/harness/reliability_battery.py` (`_Member.dispatch` and the drought check in `exercise`), `tests/unit/test_drain_eligible.py`, `tests/unit/test_admission_running_set.py`, `tests/unit/test_scheduler_write_queue_seams.py`, `tests/unit/test_scheduler_parallel_fill.py`, `tests/unit/test_conflict_rerun_runs_alone.py` (`test_scheduler_reads_rerun_for_both_sides`), `tests/integration/test_daemon_core_queue_seams.py`, `tests/integration/test_storm_notification_activation.py`, `tests/integration/test_requisition_gate.py`, `tests/integration/test_provider_cooldown_failover.py`, `tests/integration/test_daemon_composition.py` and `tests/integration/test_scheduler.py`.
 - Add `tests/unit/test_dispatch_settle.py`.
 
 Scope out:
@@ -41,6 +41,7 @@ Scope out:
 - tests/unit/test_admission_running_set.py
 - tests/unit/test_scheduler_write_queue_seams.py
 - tests/unit/test_scheduler_parallel_fill.py
+- tests/unit/test_conflict_rerun_runs_alone.py
 - tests/integration/test_daemon_core_queue_seams.py
 - tests/integration/test_storm_notification_activation.py
 - tests/integration/test_requisition_gate.py
