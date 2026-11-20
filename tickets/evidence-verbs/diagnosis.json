@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c6ed3cdd35ae26ee9feec2e0f970af1a39f4954f",
+  "stem": "evidence-verbs",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise contradiction confirmed: docs/how-clutch-works.md:821 says json_schema has 'no command exposes it yet' and :825 says 'No call record has a normalized/ directory'; both become false once evidence schema and renormalize ship, yet criterion 7 allows only four new table rows.",
+    "Fix the ticket: change criterion 7 and Scope in so docs/how-clutch-works.md may also rewrite the line 821 sentence (name `clutch evidence schema`) and the line 825 sentence (renormalize writes normalized/<escaped id>.json), besides the four verb rows.",
+    "Keep the 'exactly four rows, nothing else' limit for clutch/docs/host-running.md only, unless an author check finds a similar now-false statement there; grep it for 'normalized' and 'schema' before relinting.",
+    "After the ticket is fixed, redo the full implementation from the merge base: the provider codex/gpt-6.1-terra attempt stopped at the premise check and produced an empty diff, so no earlier code exists to reuse."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
