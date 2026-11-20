@@ -113,20 +113,31 @@ def fake_clock(pytester, elapsed, budget=None):
 def test_budget_and_slowest(pytester):
     fake_clock(pytester, 6, 5)
     pytester.makepyfile("""
-        import time
         import pytest
-        def test_slowest(): time.sleep(0.2)
-        def test_slower(): time.sleep(0.1)
+        def test_slowest(): pass
+        def test_slower(): pass
         @pytest.mark.parametrize("n", range(10))
         def test_fast(n): pass
     """)
-    result = run(pytester)
+    pytester.makepyfile(
+        slow_durations="""
+        import pytest
+        @pytest.hookimpl(wrapper=True)
+        def pytest_runtest_makereport(item, call):
+            report = yield
+            if report.when == "call":
+                report.duration = {"test_slowest": 2.0, "test_slower": 1.0}.get(item.name, 0.0)
+            return report
+    """
+    )
+    pytester.syspathinsert()
+    result = run(pytester, "-p", "slow_durations")
     assert result.ret == pytest.ExitCode.TESTS_FAILED
     lines = result.stdout.str().split("Unit suite took", 1)[1].split("Speed the listed", 1)[0]
     assert lines.index("test_slowest") < lines.index("test_slower")
     assert len([line for line in lines.splitlines() if "::test_" in line]) == 10
     fake_clock(pytester, 4, 5)
-    assert run(pytester).ret == pytest.ExitCode.OK
+    assert run(pytester, "-p", "slow_durations").ret == pytest.ExitCode.OK
 
 
 def test_xdist_budget(pytester):
