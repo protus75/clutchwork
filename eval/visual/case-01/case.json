@@ -1,0 +1,26 @@
+{
+  "mode": "generate",
+  "visual_criteria": [
+    "Place the circular object in the lower-left area at half the base height."
+  ],
+  "inputs": [
+    "input.png",
+    "base.png"
+  ],
+  "candidate": "candidate.png",
+  "panel": {
+    "provider": "codex",
+    "model": "gpt-6.1-terra"
+  },
+  "label": {
+    "verdict": "accept",
+    "rows": {
+      "Place the circular object in the lower-left area at half the base height.": "pass",
+      "identity": "pass",
+      "placement": "pass",
+      "lighting": "pass",
+      "unchanged": "pass",
+      "artifacts": "pass"
+    }
+  }
+}

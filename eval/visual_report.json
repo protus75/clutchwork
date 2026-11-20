@@ -1,0 +1,32 @@
+{
+  "case_count": 20,
+  "overall": 0.85,
+  "rows": {
+    "Place the circular object in the lower-left area at half the base height.": 0.0,
+    "identity": 0.6666666666666666,
+    "placement": 0.8333333333333334,
+    "lighting": 0.8333333333333334,
+    "unchanged": 0.6666666666666666,
+    "artifacts": 0.8333333333333334,
+    "Place the circular object in the centre at 150 pixels high on the 200 pixel base.": 1.0,
+    "Place the circular object in the upper-left area at 120 pixels high on the 200 pixel base.": 1.0,
+    "Place the circular object in the upper-right area at 80 pixels high on the 200 pixel base.": 1.0,
+    "Place the circular object in the centre at 120 pixels high on the 200 pixel base.": 1.0,
+    "Place the circular object in the lower-right area at 90 pixels high on the 200 pixel base.": 1.0,
+    "The image contains a #df4538 circle.": 1.0,
+    "The image contains two squares.": 1.0,
+    "The triangle is in the upper half of the image.": 1.0,
+    "The image contains a vertical rectangle.": 1.0,
+    "The image contains a diamond.": 1.0,
+    "The image contains two stars.": 1.0,
+    "A blue oval is taller than it is wide.": 1.0,
+    "The image contains a #2c73bd circle.": 1.0,
+    "The image contains a square.": 1.0,
+    "The triangle is in the lower half of the image.": 1.0,
+    "The image contains a horizontal rectangle.": 0.0,
+    "The image contains a circle.": 1.0,
+    "The image contains a star.": 1.0,
+    "The image contains a vertical oval.": 0.0
+  },
+  "verdict": "GO"
+}

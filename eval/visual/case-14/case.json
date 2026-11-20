@@ -1,0 +1,18 @@
+{
+  "mode": "command",
+  "visual_criteria": [
+    "The image contains a #2c73bd circle."
+  ],
+  "inputs": [],
+  "candidate": "candidate.png",
+  "panel": {
+    "provider": "codex",
+    "model": "gpt-6.1-terra"
+  },
+  "label": {
+    "verdict": "reject",
+    "rows": {
+      "The image contains a #2c73bd circle.": "fail"
+    }
+  }
+}

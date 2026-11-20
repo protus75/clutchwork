@@ -1,0 +1,18 @@
+{
+  "mode": "command",
+  "visual_criteria": [
+    "The image contains two squares."
+  ],
+  "inputs": [],
+  "candidate": "candidate.png",
+  "panel": {
+    "provider": "codex",
+    "model": "gpt-6.1-terra"
+  },
+  "label": {
+    "verdict": "reject",
+    "rows": {
+      "The image contains two squares.": "fail"
+    }
+  }
+}
