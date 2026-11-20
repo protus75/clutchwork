@@ -56,7 +56,7 @@ def test_old_owner_removed():
     ],
 )
 def test_overlap(left, right, expected):
-    assert fences_overlap(ticket("one", [left]), ticket("two", [right]), []) is expected
+    assert fences_overlap(ticket("one", [left]), ticket("two", [right]), [], set()) is expected
 
 
 def test_shared_and_run_alone():
@@ -64,10 +64,10 @@ def test_shared_and_run_alone():
     plain = ticket("one", ["docs"])
     other = ticket("two", [path])
     bypass = [GateBypass(code="scope_fence", reason="unbounded")]
-    assert fences_overlap(plain, other, [])
-    assert not fences_overlap(plain, other, [path])
-    assert fences_overlap(ticket("one", ["docs"], bypass), other, [path])
-    assert fences_overlap(plain, ticket("two", [path], bypass), [path])
+    assert fences_overlap(plain, other, [], set())
+    assert not fences_overlap(plain, other, [path], set())
+    assert fences_overlap(ticket("one", ["docs"], bypass), other, [path], set())
+    assert fences_overlap(plain, ticket("two", [path], bypass), [path], set())
 
 
 def test_runs_alone():

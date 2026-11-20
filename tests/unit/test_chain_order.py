@@ -68,8 +68,8 @@ def test_single_flight_order_is_unchanged():
 
 def test_fill_slots_and_selected_overlap():
     a, b, c = (ticket(s) for s in ("a", "b", "c"))
-    assert stems(fill_slots([a, b, c], [], 2, [], {"a": 2})[0]) == ["a", "b"]
-    dispatch, counts = fill_slots([a, ticket("overlap", path="a"), c], [], 2, [], {"a": 2})
+    assert stems(fill_slots([a, b, c], [], 2, [], {"a": 2}, set())[0]) == ["a", "b"]
+    dispatch, counts = fill_slots([a, ticket("overlap", path="a"), c], [], 2, [], {"a": 2}, set())
     assert stems(dispatch) == ["a", "c"]
     assert counts == {"overlap": 1}
 
@@ -79,11 +79,11 @@ def test_skips_barrier_and_input_unchanged():
     blocked = ticket("blocked", path="src/file")
     later = ticket("later", path="docs")
     original = {"other": 2}
-    dispatch, counts = fill_slots([blocked, later], [busy], 2, [], original)
+    dispatch, counts = fill_slots([blocked, later], [busy], 2, [], original, set())
     assert stems(dispatch) == ["later"]
     assert counts == {"other": 2, "blocked": 1}
     assert original == {"other": 2}
-    dispatch, counts = fill_slots([blocked, later], [busy], 2, [], {"blocked": SKIP_LIMIT})
+    dispatch, counts = fill_slots([blocked, later], [busy], 2, [], {"blocked": SKIP_LIMIT}, set())
     assert dispatch == []
     assert counts == {"blocked": 4}
 
@@ -92,6 +92,6 @@ def test_shared_and_bypass_use_fence_overlap():
     busy = ticket("busy", path="docs")
     allowed = ticket("allowed", path="docs/file")
     bypass = ticket("bypass", path="docs/file", bypass=True)
-    dispatch, counts = fill_slots([allowed, bypass], [busy], 2, ["docs"], {})
+    dispatch, counts = fill_slots([allowed, bypass], [busy], 2, ["docs"], {}, set())
     assert stems(dispatch) == ["allowed"]
     assert counts == {"bypass": 1}

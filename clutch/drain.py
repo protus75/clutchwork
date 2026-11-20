@@ -16,7 +16,7 @@ import asyncio
 import json
 import os
 import sys
-from collections.abc import Awaitable, Callable, Iterable, Mapping
+from collections.abc import Awaitable, Callable, Collection, Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -175,7 +175,7 @@ def parallel_order(eligible: Iterable[Ticket], authored: Mapping[str, str], unse
     return _soft_edges(sorted(eligible, key=lambda t: (t.frontmatter.priority != "P0", -chain(t.stem, unsettled), *sort_key(t, authored))))
 
 
-def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int, shared: Iterable[str], skips: Mapping[str, int]) -> tuple[list[Ticket], dict[str, int]]:
+def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int, shared: Iterable[str], skips: Mapping[str, int], rerun: Collection[str]) -> tuple[list[Ticket], dict[str, int]]:
     """Select non-overlapping tickets, stopping at a repeatedly skipped barrier."""
     counts = dict(skips)
     dispatch = []
@@ -184,7 +184,7 @@ def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int
     for ticket in ordered:
         if len(dispatch) >= free:
             break
-        if any(fences_overlap(ticket, other, shared) for other in occupied):
+        if any(fences_overlap(ticket, other, shared, rerun) for other in occupied):
             prior = counts.get(ticket.stem, 0)
             counts[ticket.stem] = prior + 1
             if prior >= SKIP_LIMIT:

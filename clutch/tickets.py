@@ -118,8 +118,8 @@ def runs_alone(ticket: Ticket) -> bool:
     return any(bypass.code == "scope_fence" for bypass in ticket.frontmatter.gate_bypass)
 
 
-def fences_overlap(a: Ticket, b: Ticket, shared: Sequence[str]) -> bool:
-    allowed = () if runs_alone(a) or runs_alone(b) else shared
+def fences_overlap(a: Ticket, b: Ticket, shared: Sequence[str], rerun: Collection[str]) -> bool:
+    allowed = () if runs_alone(a) or runs_alone(b) or a.stem in rerun or b.stem in rerun else shared
     left = [path for path in a.scope_fence if not in_fence(path, [f"{TICKETS_DIR}/{a.stem}"])]
     right = [path for path in b.scope_fence if not in_fence(path, [f"{TICKETS_DIR}/{b.stem}"])]
     for x in left:

@@ -4,6 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Callable, Iterable, Set
 from pathlib import Path
 
+from clutch.caps import conflict_reruns
 from clutch.config import Caps, Parallel
 from clutch.drain import authored_at, eligible, fill_slots, order_tickets, parallel_order, parked_blob, reofferable, write_queue
 from clutch.journal import TERMINAL_STATES, Journal
@@ -90,7 +91,8 @@ class Scheduler:
                     return None
                 unsettled = {stem: t for stem, t in candidates.items() if stem not in settled} | self.flying
                 ordered = parallel_order(ready, authored, unsettled)
-                selected, counts = fill_slots(ordered, self.flying.values(), 1, parallel.shared_paths, self.skips)
+                rerun = {stem for stem in candidates.keys() | self.flying.keys() if conflict_reruns(events, stem) > 0}
+                selected, counts = fill_slots(ordered, self.flying.values(), 1, parallel.shared_paths, self.skips, rerun)
                 for stem, count in counts.items():
                     if count > self.skips.get(stem, 0):
                         self.log("dispatch_skip", stem=stem, count=count)
