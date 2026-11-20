@@ -6,7 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-- none
+- serve-dispatch-returns-on-slot
 
 ## Context
 - clutch/roadmap.py::merged
