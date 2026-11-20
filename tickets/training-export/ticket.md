@@ -71,7 +71,7 @@ Why: the plan's flywheel starts here. Everything after it (`training-eval`, the 
 - observable change: `Git.merged_tickets(dir)` returns `(sha, stem)` for each first-parent commit of `HEAD` whose final trailer paragraph has one `clutch-ticket: <stem>` line, oldest first; commits without it are omitted.
 - compatibility: `merged_subjects` and every other `Git` method are unchanged; the new method adds no second path for trailer parsing beyond `git log --format=%(trailers:key=clutch-ticket,valueonly)`, which `merged_subjects` already uses.
 - acceptance: criterion 10.
-- tests: tests/integration/test_git_merged_tickets.py
+- tests: tests/unit/test_git_merged_tickets_parse.py (a fake `ProcessExec` returning canned `git log` output) and tests/integration/test_git_merged_tickets.py (a real repository)
 - post-merge source of truth: clutch/git.py
 
 ### Command surface
@@ -86,7 +86,7 @@ Why: the plan's flywheel starts here. Everything after it (`training-eval`, the 
 
 ## Scope in / Scope out
 Scope in:
-- New `clutch/training.py` holding the pure record building, labelling, scrub and holdout logic. It takes the store, a git object with `merged_tickets` and `diff`, the redactor and the `TrainingData` as parameters and does no I/O of its own beyond them; a `render` helper returns the file contents as bytes.
+- New `clutch/training.py` holding the pure record building, labelling, scrub and holdout logic. It takes the store, a git object with `merged_tickets` and `diff`, the redactor and the `TrainingData` as parameters and does no I/O of its own beyond them; a `render` helper returns the file contents as bytes, and `report(counts) -> list[str]` returns the output lines (the notice, then the counts line) that the handler only prints.
 - Prompt and spec for an attempt: the first `implement` call (lowest `(attempt, call)`) of the manifest's `call_keys`, read through `read_record(key, "start")` and `get_blob(start.prompt.blob)`. For a merged stem it is the implement call with the highest `(run_seq, attempt, call)` among `call_keys(f"llm/{stem}/")`, where `run_seq` strings that are not integers are ignored. A `SKIP` record is ignored.
 - Merged diff: `git.diff(repo, f"{sha}^", sha)`.
 - `EvidenceStore.attempts()` in `clutch/evidence/store.py`, `Git.merged_tickets` in `clutch/git.py`.
@@ -112,11 +112,12 @@ Merge order: the confirmed unmerged tickets `parallel-enable-repo-config` (fence
 - tests/unit/test_training_export.py
 - tests/unit/test_evidence_attempts_listing.py
 - tests/unit/test_main_training_group.py
+- tests/unit/test_git_merged_tickets_parse.py
 - tests/integration/test_git_merged_tickets.py
 
 ## Acceptance criteria
 1. With `training_data.enabled` false, `clutch training export --out DIR` exits 2, prints a message containing `set training_data.enabled: true`, and `DIR` holds no file; it does not exit 0 with empty files; checked by `./dev.py test tests/unit/test_training_export.py`.
-2. A successful export prints the provider-terms notice exactly once, before the counts line, and the counts line names records written per kind, dropped, skipped and held-out stems; checked by `./dev.py test tests/unit/test_training_export.py`.
+2. `training.report(counts)` returns the provider-terms notice exactly once, as its first line and before the counts line, and the counts line names records written per kind, dropped, skipped and held-out stems; the handler prints those lines and nothing else on success; checked by `./dev.py test tests/unit/test_training_export.py`.
 3. A manifest whose findings include code `logic` yields an `implement` record labelled `negative`; a manifest whose findings are only `rma` or empty yields `neutral`, never `negative`; checked by `./dev.py test tests/unit/test_training_export.py`.
 4. A merged ticket yields an `implement` record labelled `merged` whose target is `git.diff(repo, f"{sha}^", sha)` and whose prompt is the implement call with the highest `run_seq`, not an earlier one; a merged stem with no implement call is skipped and counted, not written with an empty prompt; checked by `./dev.py test tests/unit/test_training_export.py`.
 5. A stem with a `negative` manifest and a merged commit yields one `preference` record with `chosen` equal to the merged diff, `rejected` equal to the manifest diff and `reason` equal to the joined finding messages; a stem with only a `neutral` manifest, or with no merged commit, yields no `preference` record; checked by `./dev.py test tests/unit/test_training_export.py`.
@@ -124,13 +125,13 @@ Merge order: the confirmed unmerged tickets `parallel-enable-repo-config` (fence
 7. `--holdout 50` over 20 stems writes `holdout.txt` listing exactly the held-out stems, sorted, none of those stems appears in `sft.jsonl` or `preference.jsonl`, and two runs hold out the same stems; `--holdout 0` writes no `holdout.txt`; `--holdout 100` writes no record; checked by `./dev.py test tests/unit/test_training_export.py`.
 8. `--kinds preference` writes `preference.jsonl` and no `sft.jsonl`; two exports of the same sources produce byte-identical files; checked by `./dev.py test tests/unit/test_training_export.py`.
 9. `EvidenceStore.attempts()` returns the sorted triples of every written manifest, and `[]` for a state directory with no `evidence/attempts/`, not an error; checked by `./dev.py test tests/unit/test_evidence_attempts_listing.py`.
-10. `Git.merged_tickets` in a repository with two first-parent commits carrying `clutch-ticket: a` and `clutch-ticket: b` trailers and one commit without a trailer returns `[(sha_a, "a"), (sha_b, "b")]` in that order and omits the third; checked by `./dev.py test tests/integration/test_git_merged_tickets.py`.
+10. `Git.merged_tickets` in a repository with two first-parent commits carrying `clutch-ticket: a` and `clutch-ticket: b` trailers and one commit without a trailer returns `[(sha_a, "a"), (sha_b, "b")]` in that order and omits the third, both with a fake `ProcessExec` returning canned `git log --first-parent` output and in a real repository; checked by `./dev.py test tests/unit/test_git_merged_tickets_parse.py tests/integration/test_git_merged_tickets.py`.
 11. `training export` parses with `--out` required (`clutch training export` without it exits 2), `--kinds` limited to `implement` and `preference`, and `--holdout` an integer from 0 to 100; every `training` command has a description and examples; the verb tables in `clutch/docs/host-running.md` match the parser; checked by `./dev.py test tests/unit/test_main_training_group.py tests/unit/test_main_help.py tests/unit/test_host_running.py`.
 12. `docs/roadmap.md` still parses after the two rows are added; checked by `uv run clutch roadmap status`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_training_export.py tests/unit/test_evidence_attempts_listing.py tests/unit/test_main_training_group.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_roadmap_status.py
+./dev.py test tests/unit/test_training_export.py tests/unit/test_evidence_attempts_listing.py tests/unit/test_main_training_group.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_roadmap_status.py tests/unit/test_git_merged_tickets_parse.py
 ./dev.py test tests/integration/test_git_merged_tickets.py tests/integration/test_main_verb_groups.py
 uv run clutch roadmap status
 ```
