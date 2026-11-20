@@ -13,7 +13,7 @@ import json
 import math
 import os
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -22,7 +22,11 @@ from typing import TYPE_CHECKING, Literal
 from urllib.parse import quote
 from uuid import uuid4
 
+from pydantic import ValidationError
+
 from clutch.config import Config, ConfigSnapshot, Provider, snapshot_config
+from clutch.evidence import claude, codex, gemini
+from clutch.evidence.schema import Event
 from clutch.evidence.store import EvidenceStore
 from clutch.git import Git
 from clutch.journal import EventType, last_transition, render_ts
@@ -320,6 +324,26 @@ class Parsed:
     model: str | None = None
 
 
+def parsed_from_events(events: list[Event], read_blob: Callable[[str], bytes]) -> Parsed:
+    closing = next((i for i in range(len(events) - 1, -1, -1) if events[i].kind in ("result", "usage") and events[i].status is not None), None)
+    if closing is None:
+        error = next((e for e in reversed(events) if e.kind == "error" and e.text_blob is not None), None)
+        prefix = read_blob(error.text_blob).decode() + ": " if error else ""
+        raise ValueError(prefix + "no terminal result event in the stream")
+    event = events[closing]
+    if event.status == "error":
+        raise ValueError(f"{event.status}: {read_blob(event.text_blob).decode() if event.text_blob is not None else ''}")
+    if event.text_blob is None:
+        raise ValueError("success result has no text blob")
+    tokens = event.tokens
+    if tokens is None and closing and events[closing - 1].kind == "usage" and events[closing - 1].native_type == event.native_type:
+        tokens = events[closing - 1].tokens
+    tokens = tokens if isinstance(tokens, dict) else {}
+    inputs = [tokens.get(k) for k in ("input_uncached", "input_cache_read", "input_cache_write")]
+    known = [n for n in inputs if n is not None]
+    return Parsed(read_blob(event.text_blob).decode(), sum(known) if known else None, tokens.get("output_total"), event.usd, event.model)
+
+
 CLAUDE_ALIASES = ("haiku", "sonnet", "opus", "fable")
 
 
@@ -382,7 +406,18 @@ class CliAdapter:
 
     def parse(self, out: str) -> Parsed:
         """Raise `ValueError` naming the failure when the stream carries no successful result."""
-        raise NotImplementedError
+        blobs = {}
+
+        def put_blob(value: bytes) -> str:
+            key = str(len(blobs))
+            blobs[key] = value
+            return key
+
+        try:
+            events = self.normalizer(out.encode(), None, put_blob)
+        except (KeyError, TypeError, AttributeError, ValidationError) as exc:
+            raise ValueError(f"stream could not be normalized: {exc}") from exc
+        return parsed_from_events(events, blobs.__getitem__)
 
     def within_budget(self, req: LLMRequest) -> bool:
         budget = req.budget_usd
@@ -666,6 +701,7 @@ def _events(out: str) -> list[dict]:
 
 
 class ClaudeAdapter(CliAdapter):
+    normalizer = staticmethod(claude.normalize)
     TIER_LABELS = {"low": "haiku", "medium": "sonnet", "high": "opus", "max": "fable"}
     PACKAGE = "@anthropic-ai/claude-code"
     binary = "claude"
@@ -699,24 +735,9 @@ class ClaudeAdapter(CliAdapter):
         grant = ["--permission-mode", "bypassPermissions"] if writes else ["--tools", "Read", "Grep", "Glob", "LS", "--permission-mode", "dontAsk"]
         return [self.binary, "-p", "--output-format", "stream-json", "--verbose", "--model", model, *grant]
 
-    def parse(self, out: str) -> Parsed:
-        result = next((e for e in reversed(_events(out)) if e.get("type") == "result"), None)
-        if result is None:
-            raise ValueError("no terminal `result` event in the stream")
-        if result.get("is_error") or result.get("subtype") != "success":
-            raise ValueError(f"result event reports failure: {result.get('subtype')}: {result.get('result')!r}")
-        usage = result.get("usage") or {}
-        inputs = [usage.get(k) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")]
-        known = [n for n in inputs if isinstance(n, int)]
-        return Parsed(
-            text=str(result.get("result", "")),
-            input_tokens=sum(known) if known else None,
-            output_tokens=usage.get("output_tokens"),
-            usd=result.get("total_cost_usd"),
-        )
-
 
 class CodexAdapter(CliAdapter):
+    normalizer = staticmethod(codex.normalize)
     PACKAGE = "@openai/codex"
     binary = "codex"
     reports_cost = False
@@ -740,26 +761,6 @@ class CodexAdapter(CliAdapter):
         grant = ["--dangerously-bypass-approvals-and-sandbox"] if writes else ["--sandbox", "read-only", "-c", "approval_policy=never"]
         # Trailing `-`: the prompt is read from stdin.
         return [self.binary, "exec", "--json", "-m", model, "-c", f"model_reasoning_effort={CODEX_EFFORT[effort]}", *grant, "-"]
-
-    def parse(self, out: str) -> Parsed:
-        text = None
-        input_tokens = output_tokens = None
-        for e in _events(out):
-            kind = e.get("type")
-            # codex exits 0 on a failed turn: these events, not the exit code, are the failure signal.
-            if kind == "turn.failed":
-                raise ValueError(f"turn.failed: {(e.get('error') or {}).get('message')!r}")
-            if kind == "error":
-                raise ValueError(f"error event: {e.get('message')!r}")
-            item = e.get("item") or {}
-            if kind == "item.completed" and item.get("type") == "agent_message":
-                text = str(item.get("text", ""))
-            if kind == "turn.completed":
-                usage = e.get("usage") or {}
-                input_tokens, output_tokens = usage.get("input_tokens"), usage.get("output_tokens")
-        if text is None:
-            raise ValueError("no `agent_message` item in the stream")
-        return Parsed(text=text, input_tokens=input_tokens, output_tokens=output_tokens, usd=None)
 
 
 class QwenAdapter(ClaudeAdapter):
@@ -807,6 +808,7 @@ class QwenAdapter(ClaudeAdapter):
 
 
 class GeminiAdapter(CliAdapter):
+    normalizer = staticmethod(gemini.normalize)
     PACKAGE = "@google/gemini-cli"
     binary = "gemini"
     reports_cost = False
@@ -824,25 +826,6 @@ class GeminiAdapter(CliAdapter):
     def call_env(self, writes: bool) -> dict[str, str]:
         name = "gemini-write.json" if writes else "gemini-readonly.json"
         return {**super().call_env(writes), "GEMINI_CLI_SYSTEM_SETTINGS_PATH": str((Path(__file__).parent / name).resolve())}
-
-    def parse(self, out: str) -> Parsed:
-        events = _events(out)
-        result = next((e for e in reversed(events) if e.get("type") == "result"), None)
-        if result is None:
-            raise ValueError("no terminal result event in the stream")
-        if result.get("status") != "success":
-            error = result.get("error") or {}
-            last_error = next((e for e in reversed(events) if e.get("type") == "error"), {})
-            raise ValueError(f"result event reports failure: {error.get('message') or last_error.get('message') or result.get('status')}")
-        stats = result.get("stats") or {}
-        models = stats.get("models") or {}
-        return Parsed(
-            text="".join(e.get("content", "") for e in events if e.get("type") == "message" and e.get("role") == "assistant"),
-            input_tokens=stats.get("input_tokens"),
-            output_tokens=stats.get("output_tokens"),
-            usd=None,
-            model=next(iter(models)) if len(models) == 1 else None,
-        )
 
 
 ADAPTERS: dict[str, type[CliAdapter]] = {"claude": ClaudeAdapter, "codex": CodexAdapter, "qwen": QwenAdapter, "gemini": GeminiAdapter}

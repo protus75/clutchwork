@@ -71,7 +71,7 @@ class ProbeExec:
         if model in self.refused:
             return 1, "", f"refused {model}"
         event = {"type": "result", "subtype": "success", "result": "ok", "total_cost_usd": 1} if argv[0] == "claude" else {"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}}
-        return 0, json.dumps(event), ""
+        return 0, json.dumps(event) + ("\n" + json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1, "output_tokens": 1}}) if argv[0] == "codex" else ""), ""
 
 
 @pytest.mark.asyncio
@@ -111,7 +111,13 @@ async def test_abort_kills_all_concurrent_groups_and_calls_remove_them():
             if len(self.groups) == 2:
                 self.started.set()
             await self.release.wait()
-            return 0, json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}}), ""
+            return (
+                0,
+                json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}})
+                + "\n"
+                + json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1, "output_tokens": 1}}),
+                "",
+            )
 
         def kill_group(self, group):
             self.killed.append(group)

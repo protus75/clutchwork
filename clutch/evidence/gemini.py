@@ -12,6 +12,8 @@ TOOL_CLASSES = {"read_file": "read", "write_file": "write", "run_shell_command":
 def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[bytes], str]) -> list[Event]:
     events = []
     tools = {}
+    chunks = []
+    last_error = None
     for seq, line in enumerate(stdout.decode("utf-8", errors="replace").splitlines()):
         try:
             native = json.loads(line)
@@ -26,6 +28,8 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
             kind = "session_start"
         elif native_type == "message":
             kind = "message"
+            if native.get("role") == "assistant":
+                chunks.append(native["content"])
             data = {"role": native["role"], "text_blob": put_blob(native["content"].encode())}
             native = {k: v for k, v in native.items() if k != "content"}
         elif native_type == "tool_use":
@@ -42,11 +46,18 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
             native = {k: v for k, v in native.items() if k != "output"}
         elif native_type == "error":
             kind = "error"
+            last_error = native.get("message")
+            data = {"text_blob": put_blob(str(last_error).encode())}
         elif native_type == "result":
             kind = "result"
             stats = native.get("stats") or {}
+            models = stats.get("models") or {}
+            success = native.get("status") == "success"
+            message = "".join(chunks) if success else (native.get("error") or {}).get("message") or last_error or native.get("status")
             data = {
-                "status": native.get("status"),
+                "status": "success" if success else "error",
+                "text_blob": put_blob(str(message).encode()),
+                "model": next(iter(models)) if len(models) == 1 else None,
                 "tokens": {
                     "input_uncached": stats.get("input"),
                     "input_cache_read": stats.get("cached"),

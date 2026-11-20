@@ -51,7 +51,7 @@ def test_usage():
     absent = normalize(stream({"type": "turn.completed", "usage": {}}), None, blob)[0]
     assert absent.tokens["input_uncached"] is None
     missing_cache = normalize(stream({"type": "turn.completed", "usage": {"input_tokens": 100}}), None, blob)[0]
-    assert missing_cache.tokens["input_uncached"] == (None if INPUT_INCLUDES_CACHED else 100)
+    assert missing_cache.tokens["input_uncached"] == 100
     full = normalize(
         stream({"type": "turn.completed", "usage": {"input_tokens": 9, "cached_input_tokens": 2, "cache_write_input_tokens": 3, "output_tokens": 4, "reasoning_output_tokens": 1}}), None, blob
     )[0]
@@ -74,8 +74,8 @@ def test_unknown_lines():
         ({"type": "item.completed", "item": {"type": "reasoning", "text": "thinking"}}, "reasoning", "summary", "sha256:thinking"),
         ({"type": "item.completed", "item": {"type": "reasoning"}}, "reasoning", "count_only", None),
         ({"type": "item.completed", "item": {"type": "file_change", "changes": ["x"]}}, "file_change", None, None),
-        ({"type": "turn.failed", "error": {"message": "bad"}}, "error", None, None),
-        ({"type": "error", "message": "bad"}, "error", None, None),
+        ({"type": "turn.failed", "error": {"message": "bad"}}, "error", None, "sha256:bad"),
+        ({"type": "error", "message": "bad"}, "error", None, "sha256:bad"),
     ],
 )
 def test_other_mappings(event, kind, visibility, text_blob):
@@ -83,5 +83,5 @@ def test_other_mappings(event, kind, visibility, text_blob):
     assert (result.kind, result.visibility, result.text_blob) == (kind, visibility, text_blob)
     if kind == "message":
         assert result.role == "assistant"
-    if text_blob:
+    if text_blob and kind != "error":
         assert "text" not in result.native["item"]

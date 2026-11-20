@@ -27,7 +27,7 @@ class LatestExec(ProbeExec):
         if model == "one":
             return 1, "", "refused one"
         event = {"type": "result", "subtype": "success", "result": "ok", "total_cost_usd": 1} if argv[0] == "claude" else {"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}}
-        return 0, json.dumps(event), ""
+        return 0, json.dumps(event) + ("\n" + json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1, "output_tokens": 1}}) if argv[0] == "codex" else ""), ""
 
 
 @pytest.mark.asyncio

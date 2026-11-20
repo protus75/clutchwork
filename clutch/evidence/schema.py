@@ -163,6 +163,8 @@ class Event(Record):
     status: str | None = None
     output_blob: str | None = None
     text_blob: str | None = None
+    usd: float | None = None
+    model: str | None = None
     tokens: dict[str, Any] | int | None = None
     visibility: Literal["text", "summary", "count_only", "none"] | None = None
     native_type: str

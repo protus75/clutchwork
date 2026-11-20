@@ -57,7 +57,7 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
             emit("reasoning", "system/thinking_tokens", native, visibility="count_only", tokens=native.get("estimated_tokens"))
         elif typ == "system" and native.get("subtype") == "permission_denied":
             emit("permission_denied", "system/permission_denied", native)
-        elif typ in ("assistant", "user") and isinstance(native.get("message", {}).get("content"), list):
+        elif typ in ("assistant", "user") and isinstance(native.get("message"), dict) and isinstance(native["message"].get("content"), list):
             for block in native["message"]["content"]:
                 block_type = block.get("type") if isinstance(block, dict) else None
                 native_type = f"{typ}/{block_type}"
@@ -69,12 +69,12 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
                         emit("message", native_type, payload, role="assistant", text_blob=blob)
                     else:
                         emit("reasoning", native_type, payload, visibility="text", text_blob=blob)
-                elif typ == "assistant" and block_type == "tool_use":
+                elif typ == "assistant" and block_type == "tool_use" and all(k in block for k in ("id", "name", "input")):
                     name = block["name"]
                     cls = _TOOL_CLASSES.get(name, "mcp" if name.startswith("mcp__") else "other")
                     payload = {**native, "message": {**native["message"], "content": [block]}}
                     emit("tool_call", native_type, payload, tool={"id": block["id"], "class": cls, "native": name}, args=block["input"])
-                elif typ == "user" and block_type == "tool_result":
+                elif typ == "user" and block_type == "tool_result" and "tool_use_id" in block:
                     content = block.get("content", "")
                     output = content if isinstance(content, str) else "\n".join(part.get("text", "") for part in content if part.get("type") == "text")
                     payload = {k: v for k, v in native.items() if k != "tool_use_result"}
@@ -108,7 +108,14 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
                     "tokenizer": "anthropic",
                 },
             )
-            emit("result", typ, payload)
+            emit(
+                "result",
+                typ,
+                payload,
+                status="success" if native.get("subtype") == "success" and not native.get("is_error") else "error",
+                text_blob=put_blob(str(native.get("result", "")).encode()),
+                usd=native.get("total_cost_usd"),
+            )
         else:
             emit("unknown", typ, native)
     return events

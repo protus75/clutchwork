@@ -11,6 +11,9 @@ INPUT_INCLUDES_CACHED = True
 
 def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[bytes], str]) -> list[Event]:
     events = []
+    last_text = None
+    last_error = None
+    failed = False
     for seq, line in enumerate(stdout.decode("utf-8", errors="replace").splitlines()):
         try:
             native = json.loads(line)
@@ -35,7 +38,8 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
             kind = "file_change"
         elif native_type == "item.completed" and item_type == "agent_message":
             kind = "message"
-            data = {"role": "assistant", "text_blob": put_blob(item["text"].encode())}
+            last_text = put_blob(str(item.get("text", "")).encode())
+            data = {"role": "assistant", "text_blob": last_text}
         elif native_type == "item.completed" and item_type == "reasoning":
             kind = "reasoning"
             if "text" in item:
@@ -46,8 +50,10 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
             kind = "usage"
             usage = native.get("usage") or {}
             total, cached = usage.get("input_tokens"), usage.get("cached_input_tokens")
-            uncached = total if not INPUT_INCLUDES_CACHED else (total - cached if total is not None and cached is not None else None)
+            uncached = total if not INPUT_INCLUDES_CACHED else (total - (cached or 0) if total is not None else None)
             data = {
+                "status": "error" if failed else "success",
+                "text_blob": last_error if failed else last_text,
                 "tokens": {
                     "input_uncached": uncached,
                     "input_cache_read": cached,
@@ -55,10 +61,14 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
                     "output_total": usage.get("output_tokens"),
                     "output_reasoning": usage.get("reasoning_output_tokens"),
                     "tokenizer": "openai-o200k",
-                }
+                },
             }
         elif native_type in ("turn.failed", "error"):
             kind = "error"
+            failed = True
+            message = (native.get("error") or {}).get("message") if native_type == "turn.failed" else native.get("message")
+            last_error = put_blob(str(message).encode())
+            data = {"text_blob": last_error}
         if kind in ("tool_call", "tool_result", "message", "reasoning"):
             native = {**native, "item": {k: v for k, v in item.items() if k not in ("aggregated_output", "text")}}
         events.append(
