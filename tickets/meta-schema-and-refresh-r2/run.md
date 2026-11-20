@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Refresh preserves non-empty relates values, including manually supplied values, to honor the ticket's preservation requirement; generated values use tracked paths only. Focused mutation checks covered the parser, hash, placement, findings, ordering, and idempotence.
+Refresh preserves non-empty authored relates and owner values; generated relates are limited to tracked paths. Mutation checks caught a missing invalid-schema test, which was added.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket budget was 25 minutes expected and 50 minutes stuck; actual elapsed time was not measured.
 
