@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b4fb5b399ac35e2455445b188c9ea402dc258feb",
+  "produced_at_sha": "16a9971637d29256d5ec0fc8ac7533e1eab27dda",
   "stem": "meta-schema-and-refresh-r2",
-  "attempt": 3,
+  "attempt": 4,
   "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "abandon-human",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "The only finding is tests/integration/test_testguard.py::test_budget_and_slowest hitting the quarantine cap. The diff touches no testguard code, and the stage log shows 3519 passed. Treat this as a gate or environment cause outside the ticket fence.",
-    "A human should look at the current test quarantines and why test_budget_and_slowest failed in this run. It is a budget and timing test and may be flaky under load. Fix or release the existing quarantines, or fix the test, before rerunning this ticket.",
-    "Before rerunning, check test_budget_and_slowest on the base commit with plain `./dev.py test tests/integration/test_testguard.py`. Do not rerun the ticket until it passes and call that a fix; a flaky failure needs its own ticket that runs before this one.",
-    "If rerun after the fix, redo the same scope from the merge base. Review found these parts sound: clutch/meta.py, the Meta model in config.py, the meta group in __main__.py, the docs edits and the five unit test files. The diff was 429 lines, well under the 1499-line budget."
+    "In clutch/meta.py, make the Python block parser read exactly len(KEYS)+1 lines (schema plus six keys) after '# clutch:meta'. Each line must start with '# ', or the block is malformed. Treat every later line, including '# section' or '# noqa' comments, as body.",
+    "Add a test to tests/unit/test_meta_refresh.py for a Python file whose body starts with a '# comment' line, both after a docstring and with no docstring. Refresh it, assert parse succeeds, then assert a second refresh returns ([], []).",
+    "In clutch/__main__.py, change the meta refresh malformed refusal to 'clutch meta refresh: <path>: malformed -- fix or remove the block so it has schema plus the six keys with a valid kind, then rerun clutch meta refresh'. This follows docs/how-clutch-works.md section 2.",
+    "In the clutch/docs/host-running.md verb table (Verb | Works while serve runs? | What it does), add two rows with three cells each: 'meta refresh' | No | ... (takes the writer lock), and 'meta check' | Yes | ... (read-only).",
+    "Review found the rest sound: shared parser and hash, Meta config, the meta group with _run_meta and handle_meta, and docs rows. Redo all of it from the merge base, run the full ## Verification, and keep the diff under 1500 inserted lines."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
