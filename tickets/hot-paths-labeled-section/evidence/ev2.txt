@@ -1,0 +1,4 @@
+Observed in the extension Tickets view (2026-11-20): two bare lines above the ticket rows, no heading, drawn like error text:
+  clutch/__main__.py: 2
+  docs/how-clutch-works.md: 2
+Cause: vscode-clutchwork/media/view.js lines 82-91 build hot-path rows and verdict-decision rows as el('div', 'status', ...), the same class used for a ticket's status text (e.g. "invalid: ..."), and prepend them to the list with no label. vscode-clutchwork/media/view.css .status (line 67) is the ticket status style.
