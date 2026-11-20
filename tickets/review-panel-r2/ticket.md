@@ -4,7 +4,7 @@ kind: feature
 agent_tier: medium
 agent_effort: medium
 source: box:roadmap_row
-state: draft
+state: confirmed
 ---
 
 ## Depends on
