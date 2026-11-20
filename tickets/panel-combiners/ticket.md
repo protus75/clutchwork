@@ -34,19 +34,20 @@ Rules the code implements, all from the panels plan:
 - observable change: new importable pure functions `findings_union`, `majority_verdict`, `best_of_n` and the model `PanelFacts`; no CLI, config, journal, or file change
 - compatibility: nothing imports the module, so no existing behavior or artifact shape changes; `ReviewVerdict`, `DiagnosisReply` and `TriageReply` are used unchanged
 - acceptance: each combiner's rule and tie-break is pinned by a unit test that fails on the wrong result; the combined review reply always validates as a `ReviewVerdict`
-- tests: `tests/unit/test_panel_combiners.py`
+- tests: `tests/unit/test_panel_combiners.py`, `tests/integration/test_panel_purity.py`
 - post-merge source of truth: clutch/panel.py
 - closest existing: `clutch/artifacts.py::ReviewVerdict`, `clutch/artifacts.py::DiagnosisReply` and `clutch/triage.py::TriageReply` model one reply and merge nothing; `clutch/scorecard.py` counts catches for one reviewer and chooses no reply
 - earning reason: several production consumers (review, requisition review, diagnosis, triage, `doc-review-runner`, `implement-best-of-n`, the graphics judge) need one merge rule; the roadmap decision 14 forbids a second fan-out in any plan
 
 ## Scope in / Scope out
-Scope in: create `clutch/panel.py` with the three combiners, the two tie-break orders, and `PanelFacts` (with its member, dropped-member and merged-finding sub-models), built on `FrozenModel` and `NonBlank` imported from `clutch/artifacts.py`. The module is pure: no I/O, no clock, no logging, and no import of the driver, providers, config or journal. Create `tests/unit/test_panel_combiners.py`.
+Scope in: create `clutch/panel.py` with the three combiners, the two tie-break orders, and `PanelFacts` (with its member, dropped-member and merged-finding sub-models), built on `FrozenModel` and `NonBlank` imported from `clutch/artifacts.py`. The module is pure: no I/O, no clock, no logging, and no import of the driver, providers, config or journal. Create `tests/unit/test_panel_combiners.py` for behavior and `tests/integration/test_panel_purity.py` for the import-set check, which reads `clutch/panel.py` through a `Path(__file__)` anchor.
 
 Scope out: the `Route.panel` key, config validation and the surface-fit refusal (`panel-routing-config`); the driver fan-out, member effect keys, the `panel_facts` journal write and any documentation of the signal (`review-panel`); the scorecard attribution (`panel-scorecard`); best-of-N worktrees, running Check on candidates and counting inserted lines (`implement-best-of-n`); the `review_visual` surface, which has no reply model yet. No documentation changes: the module has no caller, so nothing documented is false, and `review-panel` documents the mechanism when it wires it.
 
 ## Scope fence
 - clutch/panel.py
 - tests/unit/test_panel_combiners.py
+- tests/integration/test_panel_purity.py
 
 ## Acceptance criteria
 1. Two `ReviewVerdict` members, one `approve` and one `snag`, combine to verdict `snag`, not `approve`; with an `rma` member present the verdict is `rma`, not `snag`: `./dev.py test tests/unit/test_panel_combiners.py`.
@@ -56,12 +57,13 @@ Scope out: the `Route.panel` key, config validation and the surface-fit refusal 
 5. `majority_verdict` over three `DiagnosisReply` members with verdicts `retry`, `escalate`, `escalate` returns the first `escalate` member's reply, not the first member's; a 1-1 tie of `retry` and `escalate` with the diagnosis order returns `escalate`, not `retry`; the same tie shape for triage returns `declined`, not `author`; a tie containing a verdict absent from the order raises `ValueError`: `./dev.py test tests/unit/test_panel_combiners.py`.
 6. `best_of_n` keeps the passing candidate with fewest soft findings, then fewest inserted lines, then lowest index; it keeps a passing candidate with more soft findings over a failing one with fewer; it keeps none, not candidate 0, when none passed; every non-kept index is listed as retired: `./dev.py test tests/unit/test_panel_combiners.py`.
 7. `PanelFacts` reports `agreement_kind` `samples` when all surviving members share one provider and model and `models` otherwise, lists dropped members with their failure class, counts verdicts, and rejects an unknown combiner name or extra field: `./dev.py test tests/unit/test_panel_combiners.py`.
-8. `clutch/panel.py` imports none of `clutch.driver`, `clutch.providers`, `clutch.config`, `clutch.journal`, `clutch.seams`, and performs no file or process access: the unit test parses the module with `ast` and asserts the import set, and `./dev.py test tests/unit/test_panel_combiners.py` passes.
+8. `clutch/panel.py` imports none of `clutch.driver`, `clutch.providers`, `clutch.config`, `clutch.journal`, `clutch.seams`, and performs no file or process access: the integration test parses the module with `ast` and asserts the import set: `./dev.py test tests/integration/test_panel_purity.py`.
 9. The full suite and the closed-set scans still pass with the new module (`FrozenModel` and `NonBlank` are imported, not redefined): `./dev.py test tests/integration/test_closed_sets_single_owner.py tests/integration/test_closed_sets_remaining.py tests/integration/test_vocabularies.py`.
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_panel_combiners.py
+./dev.py test tests/integration/test_panel_purity.py
 ./dev.py test tests/integration/test_closed_sets_single_owner.py tests/integration/test_closed_sets_remaining.py tests/integration/test_vocabularies.py
 ```
 
