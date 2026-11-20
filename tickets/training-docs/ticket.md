@@ -31,7 +31,7 @@ Roadmap row 61, section 5 of `docs/training-data-plan.md`. Today a host learns a
 - observable change: `clutch host docs` prints a sixth line, `.../clutch/docs/host-training.md  training data export`, after the `gemini` line; the five existing lines are unchanged
 - compatibility: the five existing guide lines and their order are unchanged; the new guide is appended last
 - acceptance: `tests/unit/test_docs_verb.py` and `tests/integration/test_cli.py::test_docs_reports_installed_guides` expect six guides ending with `training`
-- tests: tests/unit/test_docs_verb.py and tests/integration/test_cli.py::test_docs_reports_installed_guides
+- tests: tests/unit/test_docs_verb.py, tests/unit/test_main_host_group.py and tests/integration/test_cli.py::test_docs_reports_installed_guides
 - post-merge source of truth: clutch/__main__.py::handle_docs
 
 ### Training host guide
@@ -56,14 +56,15 @@ Scope in:
   - `## Provider terms`: model outputs come from third-party providers whose terms may restrict training other models on them; the host checks each provider's terms before training; `export` prints that notice each run (`clutch/training.py::NOTICE`) and clutch decides nothing for the host.
   - `## Privacy`: everything stays under `state_dir`, clutch never uploads or trains, redaction beyond configured secrets is best effort, and a host with regulated data keeps `enabled: false` or excludes those paths.
 - `clutch/__main__.py`: add `("training", "training data export")` as the last tuple in `handle_docs`'s guide list.
-- `tests/unit/test_docs_verb.py` and `tests/integration/test_cli.py`: the `host docs` assertions expect six guides ending with `training` (the name tuple and `len(lines) == 5` become six).
+- `tests/unit/test_docs_verb.py`, `tests/unit/test_main_host_group.py` (`test_docs_and_doctor_need_no_config`, its name tuple on line 39) and `tests/integration/test_cli.py`: the `host docs` assertions expect six guides ending with `training` (the name tuple and `len(lines) == 5` become six).
 - `README.md`: add one bullet under its guide list, `- [Training data guide](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-training.md).`, after the Gemini bullet.
-Scope out: `clutch training eval` and any text naming it, because it has no verb yet; it is `training-eval`, which adds its own paragraph here when it merges. Also out: the how-it-works doc, the contract and run guides (their training rows are already true), `clutch/help.py` (it describes extension surfaces), the extension directory, the roadmap (the driver strikes row 61 on merge), and any code behavior change. The only `tests/integration/test_cli.py` edit is the `host docs` test named above, which the new guide forces.
+Scope out: `clutch training eval` and any text naming it, because it has no verb yet; it is `training-eval`, which adds its own paragraph here when it merges. Also out: the how-it-works doc, the contract and run guides (their training rows are already true), `clutch/help.py` (it describes extension surfaces), the extension directory, the roadmap (the driver strikes row 61 on merge), and any code behavior change. The only edits in `tests/integration/test_cli.py` and `tests/unit/test_main_host_group.py` are the `host docs` assertions named above, which the new guide forces.
 
 ## Scope fence
 - clutch/docs/host-training.md
 - clutch/__main__.py
 - tests/unit/test_docs_verb.py
+- tests/unit/test_main_host_group.py
 - tests/integration/test_cli.py
 - README.md
 
