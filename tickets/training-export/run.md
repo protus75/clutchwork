@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Used the implement start record for spec identity and call ordering; the logic-label mutation was checked, but mutation checks were not completed for every assertion.
+The final sequential verification pass and all hard host checks passed. The skipped-count regression was mutation-checked, but mutation checks were not completed for every assertion.
 
 ## Dead ends
 
-The first commit attempt omitted the required CommitLock clock; the corrected attempt succeeded.
+none
 
 ## Second problems filed
 
