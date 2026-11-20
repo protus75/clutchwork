@@ -59,7 +59,7 @@ Scope out: no new finding code, no reply schema change, no lint or gate code, no
 2. `clutch/specs/review.md` parses with `load_spec`, carries the next minor version, and the `spec_version` assertion in `tests/integration/test_stages.py` matches it; checked by `./dev.py test tests/integration/test_stages.py`.
 3. `tests/integration/test_boundary_contract_spec_rules.py` asserts that the Implement spec text names `premise_failed` for an omitted material contract choice, and that the Review spec text names undeclared boundaries and parallel ownership as `snag` cases; the test fails on the unedited main versions of both specs, checked by `./dev.py test tests/integration/test_boundary_contract_spec_rules.py`.
 4. The Review spec's finding code list is unchanged: `lint_spec` on `clutch/specs/review.md` reports no finding and the new test asserts no new code string appears in its code list, checked by `./dev.py test tests/integration/test_boundary_contract_spec_rules.py`.
-5. The Implement reply schema is unchanged: the four outcome names appear in `clutch/specs/implement.md` and `premise_failed` still requires at least one finding, checked by `./dev.py test tests/unit/test_specs.py`.
+5. The Implement reply schema is unchanged: the four outcome names appear in `clutch/specs/implement.md` and `premise_failed` still requires at least one finding, checked by `./dev.py test tests/integration/test_boundary_contract_spec_rules.py`, which fails if an outcome name is dropped from the Output format of `clutch/specs/implement.md` or the sentence saying `premise_failed` carries at least one finding is removed.
 
 ## Verification
 ```
