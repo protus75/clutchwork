@@ -58,3 +58,9 @@ drain:
 caps:
   premise_bounce: 2  # a fixed ticket.md re-offers a premise park without an operator keep; the second bounce still needs one
 engine_plane_safety_inventory: [clutch/specs/, clutch/gates.py, clutch/config.py, clutch/providers.py, config.yaml, test-gate.toml]
+
+meta:
+  paths:
+    - {root: docs/, kind: plan}
+    - {root: clutch/docs/, kind: guide}
+    - {root: tests/, kind: test}

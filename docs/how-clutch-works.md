@@ -39,6 +39,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 
 | Verb | Lock | What it does |
 |---|---|---|
+| `meta refresh [paths]` | yes | Insert or refresh metadata blocks under configured roots. |
+| `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection (section 10.3). Read-only. |
@@ -838,6 +840,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `snapshot_merged_limit` | Merged rows included by `view snapshot` (default 100), unless `--all-merged` is passed. |
 | `evidence.max_gb` | Evidence blob retention bound in GB; defaults to 20. |
+| `meta.paths` | Roots and kinds for file metadata; defaults to an empty list. |
 | `training_data` | Experimental training switch (off by default) and additional exclusion globs. |
 | `release` | Upload authorization and PyPI token environment variable name; uploads default to off. |
 | `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks |

@@ -154,6 +154,7 @@ Config:
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
     evidence: {max_gb: 20}
     training_data: {enabled: false, exclude: []}
+    meta: {paths: []}
     scheduler: {max_unmerged: 2, parallel: {enabled: false, max_runs: 2, shared_paths: []}}
     caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
@@ -176,6 +177,12 @@ Calibration:
 Evidence:
   required: []
   defaults: {max_gb: 20}
+Meta:
+  required: []
+  defaults: {paths: []}
+MetaPath:
+  required: [root, kind]
+  defaults: {}
 TrainingData:
   required: []
   defaults: {enabled: false, exclude: []}

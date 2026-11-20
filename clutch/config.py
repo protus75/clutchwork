@@ -272,6 +272,18 @@ class Evidence(StrictModel):
     max_gb: Count = 20
 
 
+MetaKind = Literal["doc", "guide", "spec", "test", "fixture", "plan"]
+
+
+class MetaPath(StrictModel):
+    root: Annotated[str, Field(min_length=1)]
+    kind: MetaKind
+
+
+class Meta(StrictModel):
+    paths: list[MetaPath] = []
+
+
 class TrainingData(StrictModel):
     enabled: bool = False
     exclude: list[Annotated[str, Field(min_length=1)]] = []
@@ -304,6 +316,7 @@ class Config(StrictModel):
     release: Release = Release()
     evidence: Evidence = Evidence()
     training_data: TrainingData = TrainingData()
+    meta: Meta = Meta()
     scheduler: Scheduler = Scheduler()
     caps: Caps = Caps()
     circuit_breaker: CircuitBreaker = CircuitBreaker()

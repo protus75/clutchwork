@@ -603,6 +603,27 @@ def _parser() -> argparse.ArgumentParser:
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
     issue_parser.add_argument("title")
     issue_parser.add_argument("--body", type=Path, required=True)
+    meta_parser = sub.add_parser(
+        "meta",
+        help="maintain file metadata",
+        description="Maintain metadata on configured files.",
+        epilog="Examples:\nclutch meta check\n  Check configured files.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    meta_sub = meta_parser.add_subparsers(dest="meta_verb", required=True)
+    for verb in ("refresh", "check"):
+        command = _command(
+            meta_sub,
+            verb,
+            summary=f"{verb} file metadata",
+            does=f"{verb.capitalize()} metadata on configured files.",
+            reads="Config, tracked files and HEAD.",
+            writes="Metadata blocks." if verb == "refresh" else "Nothing; prints findings.",
+            lock="Writer lock." if verb == "refresh" else "None.",
+            exits="0 on success; 1 for findings; 2 on refusal.",
+            examples=[f"clutch meta {verb} tests/"],
+        )
+        command.add_argument("paths", nargs="*")
     roadmap = sub.add_parser(
         "roadmap",
         help="maintain roadmap tickets",
@@ -1012,6 +1033,22 @@ def _parser() -> argparse.ArgumentParser:
     return ap
 
 
+def _run_meta(verb, config, root, fs, tracked, sha, paths=()):
+    from clutch import meta
+
+    if verb == "refresh":
+        changed, malformed = meta.refresh(config, root, fs, tracked, sha, paths)
+        for path in changed:
+            print(path)
+        for path in malformed:
+            _fail("meta refresh", f"{path}: malformed -- fix or remove the block so it has schema plus the six keys with a valid kind, then rerun clutch meta refresh")
+        return 2 if malformed else 0
+    findings = meta.check(config, root, fs, tracked, sha, paths)
+    for path, reason in findings:
+        print(f"{path}: {reason}")
+    return 1 if findings else 0
+
+
 def main(
     argv: Sequence[str] | None = None,
     *,
@@ -1367,6 +1404,20 @@ def main(
         return 0
 
     # Lock holders
+    def handle_meta():
+        async def run():
+            async def execute():
+                files = await checkout.git.ls_files(repo)
+                sha = await checkout.git.rev_parse(repo, "HEAD")
+                return _run_meta(args.meta_verb, config, repo, checkout.fs, files, sha, args.paths)
+
+            if args.meta_verb == "refresh":
+                async with _locked(config.state_dir, "meta refresh", instance_id=await checkout.git.describe(repo), clock=clock):
+                    return await execute()
+            return await execute()
+
+        return asyncio.run(run())
+
     def handle_roadmap():
         from clutch import roadmap
 
@@ -1572,6 +1623,7 @@ def main(
         return 0
 
     handlers = {
+        "meta": handle_meta,
         "training": handle_training,
         "host": lambda: {"core": handle_core, "docs": handle_docs, "doctor": handle_doctor}[args.host_verb](),
         "coverage": lambda: {"map": handle_covmap, "gate": handle_covgate}[args.coverage_verb](),
