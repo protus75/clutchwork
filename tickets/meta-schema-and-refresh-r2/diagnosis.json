@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "51e6719db00ebcba07e6ef69fb125ebe76780594",
+  "stem": "meta-schema-and-refresh-r2",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "split",
+  "lessons": [
+    "Split: diff was 5512 inserted lines vs the 1500 budget; ~4900 came from blocks on ~600 files. First stem: clutch/meta.py, config.py Meta, __main__.py meta group, 5 tests/unit/test_meta_*.py and test_main_meta_group.py, docs verb rows; about 550 lines.",
+    "Annotation stems follow, each under 1500 lines and depending on the code stem. Shard config.yaml meta.paths: docs/ plus clutch/docs/ (~50 files x9 lines) as one stem; tests/ (~560 files x8 lines, ~4500) in at least 4 stems, e.g. tests/unit/, tests/integration/, tests/ top-level+harness+fixtures.",
+    "AC9 needs meta check exit 0, so empty_purpose must be cleared, but refresh inserts purpose empty. Attempt 1 filled purpose from file names. Each annotation stem must state how purpose gets filled, since meta fill is scope-out.",
+    "Attempt 1 edited docs/annotations-index-plan.md beyond its block (6 +- lines); Scope out forbids editing it. Exclude it from meta.paths, or let it take only its block, and say which in the split ticket.",
+    "Attempt 1 added a lint exemption for long single-line Python relates lists. The split tickets should state the relates line-length policy so review doesn't treat an unstated exemption as scope creep."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
