@@ -835,6 +835,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `snapshot_merged_limit` | Merged rows included by `view snapshot` (default 100), unless `--all-merged` is passed. |
 | `evidence.max_gb` | Evidence blob retention bound in GB; defaults to 20. |
+| `training_data` | Experimental training switch (off by default) and additional exclusion globs. |
 | `release` | Upload authorization and PyPI token environment variable name; uploads default to off. |
 | `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks |
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |

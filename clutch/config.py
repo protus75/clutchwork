@@ -258,6 +258,21 @@ class Evidence(StrictModel):
     max_gb: Count = 20
 
 
+class TrainingData(StrictModel):
+    enabled: bool = False
+    exclude: list[Annotated[str, Field(min_length=1)]] = []
+
+    def effective_exclude(self) -> list[str]:
+        return list(dict.fromkeys((*_TRAINING_EXCLUDE, *self.exclude)))
+
+    def require_enabled(self) -> None:
+        if not self.enabled:
+            raise ValueError("set training_data.enabled: true; only attempts after that carry a diff")
+
+
+_TRAINING_EXCLUDE = (".env*", "*.pem", "*.key", "id_*")
+
+
 class Graphics(StrictModel):
     judge_samples: Annotated[int, Field(ge=1, le=3)] = 1
 
@@ -274,6 +289,7 @@ class Config(StrictModel):
     merge: Merge
     release: Release = Release()
     evidence: Evidence = Evidence()
+    training_data: TrainingData = TrainingData()
     scheduler: Scheduler = Scheduler()
     caps: Caps = Caps()
     circuit_breaker: CircuitBreaker = CircuitBreaker()
