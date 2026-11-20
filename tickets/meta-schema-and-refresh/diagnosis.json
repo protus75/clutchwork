@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f1e210f21a046feca0fd18d0baabfffc1fa22be5",
+  "stem": "meta-schema-and-refresh",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket is internally inconsistent. Goal / Why says 'six-key clutch.meta/1.0 block' and Definition of rejected forbids 'a seventh block key', yet the block example and Rules list seven keys: schema, kind, purpose, relates, owner, verified, hash.",
+    "Revise tickets/meta-schema-and-refresh/ticket.md so the count matches the list. Either say seven keys and reject an eighth, or say schema is the version line and the six keys are kind, purpose, relates, owner, verified, hash.",
+    "The implementation was not the problem. The run says the seven listed keys were built and the full Verification command passed 36 tests. A later attempt should redo that same design in clutch/meta.py, config.py and __main__.py once the key count is fixed.",
+    "After revising, run `clutch ticket lint meta-schema-and-refresh` and `clutch ticket review meta-schema-and-refresh` until it approves. The review should check that every key-count phrase (Goal, Rules, criterion 6, Definition of rejected) matches the block example."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
