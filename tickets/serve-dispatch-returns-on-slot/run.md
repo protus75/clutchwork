@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The same full verification command passed on the untouched base commit; the candidate failure also reproduced when the safety scenario ran alone. Instrumentation showed dispatch repeatedly reaching an idle point with tickets pending, then finding an exclusive admission section held or waiting after supervision. The ticket requires supervision before dispatch and prohibits selection during exclusive admission, but permits no admission arbitration change. The changes remain uncommitted.
+Admission state is sampled once per loop to preserve idle supervision order; retaining the old await was rejected because it serializes runs.
 
 ## Dead ends
 
-Changing the dispatch guard to recheck exclusive admission after supervision preserved the required exclusion but left selection starved in the admission scenarios.
+Corrected a coroutine-shaped cleanup fake and an accidental settlement wait in the migrated cancellation test before final verification.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.20
 
 ## Predicted vs actual
 
-Expected 55 minutes; work stopped before completion.
+55 minutes expected; approximately 12 minutes actual.
 
