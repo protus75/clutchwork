@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 
 from clutch import runner
 from clutch.artifacts import Finding, Harvest
+from clutch.config import TrainingData
 from clutch.redact import Redactor
 
 SECRET = "unique-secret-value"
@@ -14,7 +15,7 @@ def test_harvest_json_carries_no_configured_secret(monkeypatch):
     root = Path("/nonexistent-harvest-redaction-test")
     writes = []
     ctx = SimpleNamespace(
-        config=SimpleNamespace(state_dir=root / "state"),
+        config=SimpleNamespace(training_data=TrainingData(), state_dir=root / "state"),
         repo=root / "repo",
         worktree=lambda stem: root / "worktrees" / stem,
         git=SimpleNamespace(diff_stat=AsyncMock(return_value=f" clutch/{SECRET}.py | 1 +")),

@@ -373,7 +373,7 @@ After any other non-ok terminal, `runner.drive` does, in order:
 
 `attempts/<n>/harvest.json` records the stage, terminal, findings, diff stat, the last 4,000
 characters of the stage logs and of the provider event stream, time, and cost. It is lifted as
-`clutch(<stem>): harvest` and feeds the next attempt's "Prior attempts" block. A harvest failure is
+`clutch(<stem>): harvest` and feeds the next attempt's "Prior attempts" block. When training data is enabled, harvest also writes a `clutch.evidence.attempt/1.0` manifest with the filtered diff and check output blobs under `evidence/attempts/<stem>/<run_seq>/<attempt>.json`. A harvest failure is
 journaled and never blocks the terminal.
 
 ### 6.3 Diagnosis
@@ -748,7 +748,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
 | `spools/` | Per-attempt prompts, outputs, and command output. |
-| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
+| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |
@@ -783,7 +783,7 @@ and notifications are Effects, so a crash never repeats one.
 
 ### 10.4 Evidence records
 
-Each keyed provider call leaves a record under `<state_dir>/evidence/` with redacted stdout and stderr and an envelope of call facts. `CliAdapter.invoke` is the only writer. The only engine reader is harvest's provider event tail (section 6.2): `latest_stdout` takes stdout from the newest `end.json` by `clock.wall_end` whose key starts with `llm/<stem>/`. The journal, gates and dispatch do not read the store.
+Each keyed provider call leaves a record under `<state_dir>/evidence/` with redacted stdout and stderr and an envelope of call facts. `CliAdapter.invoke` writes call records; harvest reads their start records for attempt manifests and reads the provider event tail (section 6.2): `latest_stdout` takes stdout from the newest `end.json` by `clock.wall_end` whose key starts with `llm/<stem>/`. The journal, gates and dispatch do not read the store.
 
 `invoke` writes a record only with a `CallCapture`. `ProviderLLM.admitted_call` builds it from the journal Effect key passed by `llm_call` (section 10.2): `llm/<group>/<run_seq>/<surface>/<attempt>/<call>`. The group is the ticket stem, or the surface name for a ticketless call. Keyless calls leave no record: these include preflight's probe calls (section 8.1), calls made by the probe verb in section 2.1, and calls through the raw `ProviderLLM.call` seam. A key with a completed Effect replays its result without calling the provider or writing a record. Every call, keyed or not, writes its redacted prompt to a temporary file under `evidence/scratch/` as the CLI's stdin; the file and temporary index are removed when the call ends.
 

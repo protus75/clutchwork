@@ -169,5 +169,22 @@ class Event(Record):
     native: dict[str, Any]
 
 
+class Attempt(Record):
+    schema_: Literal["clutch.evidence.attempt/1.0"] = Field(alias="schema")
+    stem: str
+    run_seq: int
+    attempt: int
+    base_sha: str
+    head_sha: str
+    diff_blob: str
+    check_outputs: dict[str, str]
+    call_keys: list[str]
+    outcome: str
+    reason: str | None
+    findings: list[dict[str, Any]]
+    engine_versions: list[str]
+    spec_versions: dict[str, str]
+
+
 def json_schema(record: Literal["start", "end", "event"]) -> dict[str, Any]:
     return {"start": Start, "end": End, "event": Event}[record].model_json_schema()

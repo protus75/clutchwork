@@ -6,6 +6,7 @@ import pytest
 
 from clutch import runner
 from clutch.artifacts import Cost, Harvest, StageResult
+from clutch.config import TrainingData
 from clutch.redact import Redactor
 
 
@@ -21,7 +22,7 @@ def test_old_harvest_has_unknown_source():
 def test_harvest_last_llm_cost(tmp_path, monkeypatch, provider, estimated, capable):
     writes = []
     ctx = SimpleNamespace(
-        config=SimpleNamespace(state_dir=tmp_path / "state", providers=[SimpleNamespace(name="codex"), SimpleNamespace(name="claude")]),
+        config=SimpleNamespace(training_data=TrainingData(), state_dir=tmp_path / "state", providers=[SimpleNamespace(name="codex"), SimpleNamespace(name="claude")]),
         repo=tmp_path / "repo",
         worktree=lambda stem: tmp_path / stem,
         git=SimpleNamespace(diff_stat=AsyncMock(return_value="changed")),

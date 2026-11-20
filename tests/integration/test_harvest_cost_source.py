@@ -7,6 +7,7 @@ import pytest
 
 from clutch import runner
 from clutch.artifacts import Cost, StageResult
+from clutch.config import TrainingData
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
 from tests.integration.test_harvest_orphans import invoke, orphan
@@ -18,7 +19,7 @@ from tests.integration.test_terminal import repo  # noqa: F401
 def test_failed_harvest_writes_cost_source(tmp_path, monkeypatch, provider, estimated, capable):
     fs = LocalFileSystem()
     ctx = SimpleNamespace(
-        config=SimpleNamespace(state_dir=tmp_path / "state", providers=[SimpleNamespace(name=provider)]),
+        config=SimpleNamespace(training_data=TrainingData(), state_dir=tmp_path / "state", providers=[SimpleNamespace(name=provider)]),
         repo=tmp_path,
         worktree=lambda stem: tmp_path / "worktree",
         git=SimpleNamespace(diff_stat=AsyncMock(return_value="changed")),

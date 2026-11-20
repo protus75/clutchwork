@@ -4,8 +4,11 @@ single-writer lockfile, and the stage-dispatch seam, all in the one process hold
 Exit codes: 0 merged, 1 a non-ok ticket terminal, 2 an engine-plane refusal.
 """
 
+import ast
 import asyncio
+import fnmatch
 import os
+import re
 import sys
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
@@ -23,7 +26,7 @@ from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.driver import Driver
 from clutch.effects import Effects
 from clutch.enginelog import engine_log
-from clutch.evidence.store import EvidenceStore
+from clutch.evidence.store import SKIP, EvidenceStore
 from clutch.git import Git, GitError
 from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, run_seq
 from clutch.journal import Dispatch as JournalDispatch
@@ -515,6 +518,25 @@ async def failure_terminal(
     return "rejected" if split else outcome
 
 
+def _filtered_diff(diff: str, patterns: list[str]) -> str:
+    sections = re.split(r"(?=^diff --git )", diff, flags=re.MULTILINE)
+    kept = []
+    header = re.compile(r'^diff --git ("(?:\\.|[^"\\])*"|a/.*?) ("(?:\\.|[^"\\])*"|b/.*)$')
+    for section in sections:
+        if not section:
+            continue
+        match = header.fullmatch(section.splitlines()[0])
+        if not match:
+            raise ValueError("unrecognized git diff header")
+        paths = []
+        for part in match.groups():
+            path = ast.literal_eval("b" + part).decode("utf-8", "surrogateescape") if part.startswith('"') else part
+            paths.append(path[2:])
+        if not any(fnmatch.fnmatchcase(path, pattern) or fnmatch.fnmatchcase(Path(path).name, pattern) for path in paths for pattern in patterns):
+            kept.append(section)
+    return "".join(kept)
+
+
 async def harvest(
     ctx: StageContext,
     stem: str,
@@ -559,6 +581,35 @@ async def harvest(
     )
     path = ctx.worktree(stem) / harvest_path(stem, attempt)
     ctx.fs.write(path, (ctx.driver.redactor.scrub(artifact.model_dump_json(indent=2)) + "\n").encode())
+    if ctx.config.training_data.enabled:
+        try:
+            store = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub)
+            keys = store.call_keys(f"llm/{stem}/{attempt}/")
+            starts = [store.read_record(key, "start") for key in keys]
+            starts = [start for start in starts if start is not SKIP]
+            diff = _filtered_diff(await ctx.git.diff(ctx.repo, "main", stem), ctx.config.training_data.effective_exclude())
+            check = spool / "check"
+            outputs = {str(p.relative_to(check)): store.put_blob(ctx.fs.read_bytes(p)) for p in sorted(check.rglob("*")) if p.is_file()} if check.is_dir() else {}
+            store.write_attempt(
+                {
+                    "schema": "clutch.evidence.attempt/1.0",
+                    "stem": stem,
+                    "run_seq": attempt,
+                    "attempt": attempt,
+                    "base_sha": await ctx.git.rev_parse(ctx.repo, "main"),
+                    "head_sha": await ctx.git.rev_parse(ctx.repo, stem),
+                    "diff_blob": store.put_blob(diff.encode("utf-8", "surrogateescape")),
+                    "check_outputs": outputs,
+                    "call_keys": keys,
+                    "outcome": terminal,
+                    "reason": reason,
+                    "findings": [finding.model_dump() for finding in findings],
+                    "engine_versions": sorted({start.engine.version for start in starts}),
+                    "spec_versions": {start.engine.spec: start.engine.spec_version for start in starts},
+                }
+            )
+        except Exception as exc:
+            ctx.driver.journal.append(EventType.SIGNAL, {"signal": "harvest_failed", "error": ctx.driver.redactor.scrub(f"{type(exc).__name__}: {exc}")}, ticket=stem)
     await lift_outbox(ctx, stem, kind, attempt=attempt, only=f"attempts/{attempt}/{HARVEST_FILE}")
 
 

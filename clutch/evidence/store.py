@@ -11,7 +11,7 @@ from urllib.parse import quote, unquote
 
 from pydantic import BaseModel
 
-from clutch.evidence.schema import End, Start
+from clutch.evidence.schema import Attempt, End, Start
 from clutch.seams import FileSystem
 
 
@@ -106,6 +106,23 @@ class EvidenceStore:
         data["schema"] = "clutch.evidence.call/1.0"
         model = {"start": Start, "end": End}[kind]
         return model.model_validate(_ignore_unknown(model, data))
+
+    def write_attempt(self, data: dict) -> None:
+        record = Attempt.model_validate(data)
+        path = self.root / "attempts" / record.stem / str(record.run_seq) / f"{record.attempt}.json"
+        self.fs.publish(path, self.redact(record.model_dump_json(by_alias=True)).encode())
+
+    def read_attempt(self, stem: str, run_seq: int, attempt: int) -> Attempt | SkipRecord:
+        path = self.root / "attempts" / stem / str(run_seq) / f"{attempt}.json"
+        data = json.loads(self.read_bytes(path))
+        match = re.fullmatch(r"clutch\.evidence\.attempt/(\d+)\.(\d+)", data["schema"])
+        if not match or match.group(1) != "1":
+            return SKIP
+        data["schema"] = "clutch.evidence.attempt/1.0"
+        return Attempt.model_validate(_ignore_unknown(Attempt, data))
+
+    def call_keys(self, prefix: str) -> list[str]:
+        return sorted(key for entry in self.fs.entries(self.root / "calls") if (key := unquote(entry)).startswith(prefix))
 
     def latest_stdout(self, prefix: str) -> str:
         calls = self.root / "calls"
