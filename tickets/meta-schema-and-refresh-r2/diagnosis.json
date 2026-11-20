@@ -1,23 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "15ae83568045a39e9f0b739c218351566505581f",
+  "produced_at_sha": "b4fb5b399ac35e2455445b188c9ea402dc258feb",
   "stem": "meta-schema-and-refresh-r2",
-  "attempt": 2,
+  "attempt": 3,
   "terminal": "gate_failed",
-  "stage": "review",
-  "verdict": "retry",
+  "stage": "check",
+  "verdict": "abandon-human",
   "lessons": [
-    "clutch/meta.py block lookup: match the block only at the insertion offset (byte 0, right after the closing frontmatter fence, or right after the Python docstring) with an anchored match. Never search the whole file. Any marker elsewhere is body text and must not raise Malformed.",
-    "Add a unit test in tests/unit/test_meta_refresh.py: a Markdown file with a valid example block inside a fenced code sample in its body (like docs/annotations-index-plan.md lines 35-43). check must report it `missing`, and refresh must insert a top block and leave the example unchanged.",
-    "Add a test for a Python file whose string literal contains a line-start `# clutch:meta`. It must not be parsed as the block or raise Malformed. Place the real block after the docstring, as the ticket's Block shapes say.",
-    "Python relates: for ast.ImportFrom, resolve `module.alias` for each name to `<path>.py` or `<path>/__init__.py` in the tracked list. Fall back to the package path only when no submodule matches. `from clutch import meta` must yield clutch/meta.py, not clutch/__init__.py.",
-    "Cover `from clutch import foo` relates and owner in tests/unit/test_meta_refresh.py. Redo the rest of the attempt-2 scope, which review found sound: config Meta model, the meta group with _run_meta/handle_meta, docs rows, config.yaml roots and the 160-char relates cap. Keep the diff under 1500"
+    "The only finding is tests/integration/test_testguard.py::test_budget_and_slowest hitting the quarantine cap. The diff touches no testguard code, and the stage log shows 3519 passed. Treat this as a gate or environment cause outside the ticket fence.",
+    "A human should look at the current test quarantines and why test_budget_and_slowest failed in this run. It is a budget and timing test and may be flaky under load. Fix or release the existing quarantines, or fix the test, before rerunning this ticket.",
+    "Before rerunning, check test_budget_and_slowest on the base commit with plain `./dev.py test tests/integration/test_testguard.py`. Do not rerun the ticket until it passes and call that a fix; a flaky failure needs its own ticket that runs before this one.",
+    "If rerun after the fix, redo the same scope from the merge base. Review found these parts sound: clutch/meta.py, the Meta model in config.py, the meta group in __main__.py, the docs edits and the five unit test files. The diff was 429 lines, well under the 1499-line budget."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    4
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
