@@ -1,4 +1,12 @@
 """Carried reproducer for provider captures across process restarts."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for provider captures across process restarts.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 7deb1c81534904480caef71bdc135b25767dfd17873c44cbfa93677e9cd8d83a
 
 import contextlib
 import json

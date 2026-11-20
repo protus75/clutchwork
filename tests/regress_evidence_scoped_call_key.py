@@ -1,4 +1,12 @@
 """Carried reproducer for scoped provider evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for scoped provider evidence.
+# relates: [clutch/effects.py, clutch/llmeffect.py, clutch/redact.py, tests/unit/test_evidence_envelope.py]
+# owner: engine
+# verified: d7719818
+# hash: fb3e3330ac6901bd242c83ccf5391552f14b36da949c96b2bd06eed84ffe8ff2
 
 import asyncio
 import json

@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Journal SQL refactor plan
+relates: []
+owner: engine
+verified: d7719818
+hash: bb21613df7ceeb24c776cb762d6fba717b4b9d71f153c6e3992331d88bf7b203
+-->
 # Journal SQL refactor plan
 
 Change journal readers so history is bulk-loaded into an in-memory DuckDB once per process, only appended lines are read after that, and journal queries are SQL instead of Python loops over events.

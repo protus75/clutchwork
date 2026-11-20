@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Upstream issue verb: plan
+relates: []
+owner: engine
+verified: d7719818
+hash: 9dd625228a6d9fc958e98450363e52c9e3a1379a8113a748493d219659e03944
+-->
 # Upstream issue verb: plan
 
 Give a host a paved road for reporting a **critical** clutch bug to the clutch project's GitHub issue tracker: a `clutch issue` verb that prints a prefilled new-issue link, a host-shared rule that tells sessions when and how to use it, and the documentation that keeps it apart from the Suggestion Box.

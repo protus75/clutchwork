@@ -1,4 +1,12 @@
 """Carried reproducer for lint accepting a stuck budget above the drain ceiling."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for lint accepting a stuck budget above the drain ceiling.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: a2335c0029c04834028cd2d4a293d959549e8d3c24db3b70615e5fd86059f798
 
 import contextlib
 import json

@@ -1,4 +1,12 @@
 """Reproduce a review that forgets the preceding recorded finding."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce a review that forgets the preceding recorded finding.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py]
+# owner: engine
+# verified: d7719818
+# hash: bacf3b50ad115a3474cd2ccb259ee154f244291e13f46f89cd50d0913ab8d946
 
 import contextlib
 import io

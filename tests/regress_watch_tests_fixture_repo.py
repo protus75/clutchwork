@@ -1,4 +1,12 @@
 """Reproduce snapshot tests running outside the checkout."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce snapshot tests running outside the checkout.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 7869094fa5bbc8a6a16ed86ff65bbf41ea8fa8e3949a5b58688c096aa086264a
 
 import json
 import subprocess

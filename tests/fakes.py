@@ -1,4 +1,12 @@
 """Small in-memory implementations of the engine's test seams."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Small in-memory implementations of the engine's test seams.
+# relates: [clutch/journal.py]
+# owner: clutch/journal.py
+# verified: d7719818
+# hash: 1b1ae30e696dd8f8d696995f708f10f169381ff68b7431308ce9543a90e493f7
 
 import asyncio
 import time

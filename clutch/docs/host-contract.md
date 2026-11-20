@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: guide
+purpose: Host contract
+relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
+owner: engine
+verified: d7719818
+hash: 4afa81effd3124f2972a78bb3d296284e0cca44499424d135f35a1379abf5e0f
+-->
 # Host contract
 
 The installed engine owns process; the host owns project content, tickets and

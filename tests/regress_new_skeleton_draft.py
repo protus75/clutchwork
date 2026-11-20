@@ -1,4 +1,12 @@
 """Carried reproducer for the new skeleton draft state."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the new skeleton draft state.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 5c7c1835e819142812f1c5d6e55895b65ccac8742236ee73fbf98cd3f3f90cb4
 
 import contextlib
 import json

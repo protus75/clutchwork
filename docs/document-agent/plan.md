@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Document agent: plan
+relates: [CHANGELOG.md, clutch/docs/host-authoring.md, clutch/docs/host-running.md, clutch/specs/doc/facets/type/roadmap.md, docs/boundary-contract-plan.md, docs/document-agent/audience/ai.md, docs/document-agent/audience/developer.md, docs/document-agent/audience/non-technical.md, docs/document-agent/audience/student.md, docs/document-agent/audience/technical.md, docs/document-agent/audience/user.md, docs/document-agent/format/html.md, docs/document-agent/format/markdown.md, docs/document-agent/format/pdf.md, docs/document-agent/review/AutomatableReview.md, docs/document-agent/review/BuildItReview.md, docs/document-agent/review/CompressionReview.md, docs/document-agent/review/CutReview.md, docs/document-agent/review/KillReview.md, docs/document-agent/review/evidence/OutcomeReview.md, docs/document-agent/review/evidence/SeedPlanDiagnosis.md, docs/document-agent/theme/dark.css, docs/document-agent/theme/dark.md, docs/document-agent/theme/light.css, docs/document-agent/theme/light.md, docs/document-agent/tone/default.md, docs/document-agent/tone/examples.md, docs/document-agent/type/api.md, docs/document-agent/type/architecture.md, docs/document-agent/type/blog.md, docs/document-agent/type/overview.md, docs/document-agent/type/plan.md, docs/document-agent/type/release-notes.md, docs/document-agent/type/seed.md, docs/document-agent/type/spec.md, docs/document-agent/type/whitepaper.md, docs/evidence-trail-plan.md, docs/how-clutch-works.md, docs/roadmap.md, docs/training-data-plan.md]
+owner: engine
+verified: d7719818
+hash: a61870a3d584f6cbc89165ac107f84c05afbc8622ab876883c7450a08110f806
+-->
 # Document agent: plan
 
 A document agent for clutch that creates, reviews, and transforms documents. Each request picks one value from six dimensions: **Type**, **Audience**, **Format**, **Review**, **Tone**, and **Theme**. Each dimension is a list of files that can be extended. One canonical Markdown document (usually a Plan) is the source, and versions for other audiences and formats are derived from it. When a derived version is edited, the edit is folded back into the canonical document and then passed on to the other derived versions, so the set does not drift apart. Reviews run as isolated agent panels with a synthesis that checks the findings against the document, following the owner's existing review prompts.

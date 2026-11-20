@@ -1,4 +1,12 @@
 """Carried reproducer for suggestions invisible until intake."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for suggestions invisible until intake.
+# relates: [clutch/box.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: d7719818
+# hash: 7275df5adbcbc74d0967e88b624497d114cce04d6a71c26c7a8f7c7a60564256
 
 import contextlib
 import io

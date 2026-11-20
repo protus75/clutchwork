@@ -1,4 +1,12 @@
 """Carried reproducer for verification commands naming branch-only paths."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for verification commands naming branch-only paths.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 723d5f896ccca88d20f3b2eaea4fa6bf4cda6afa15bc9ee6cd32280484ae98d4
 
 import contextlib
 import json

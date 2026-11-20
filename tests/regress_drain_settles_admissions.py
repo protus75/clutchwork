@@ -1,4 +1,12 @@
 """Carried reproducer for drain admission settlement."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for drain admission settlement.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 23ba991cf5d5a4e973432105f40db962d66d365a000b80b1a3ef133c58094670
 
 import contextlib
 import json

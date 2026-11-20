@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: What this tests and why
+relates: []
+owner: engine
+verified: d7719818
+hash: 19b608c3b1b112fe1f32bbd0c1e7ba39fbf0d86dcb191515287df35d68af661c
+-->
 # What this tests and why
 This review finds what the design document at <PLAN_PATH> specifies without justification. The stance is adversarial in the direction reviews usually are not: every feature is assumed unjustified until it traces to a goal the document states. Gold plating, premature generality, and misordered effort survive adversarial reading because they are defects of value, not correctness -- nothing is wrong, there is just more plan than the goal requires, or the right plan in the wrong order. One caveat is structural: a missing-item finding is falsified by the document, but a removal finding is falsified by the future -- no reviewer can prove a feature will never be needed. This review therefore produces candidates with steelmen, not verdicts of waste; the owner decides. Designed to re-run as the document evolves; on a lean document, few findings is a valid outcome, not a failed run.
 

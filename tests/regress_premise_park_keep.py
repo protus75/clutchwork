@@ -1,4 +1,12 @@
 """Reproduce an operator keep failing to release a premise park."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce an operator keep failing to release a premise park.
+# relates: [clutch/drain.py, clutch/journal.py]
+# owner: engine
+# verified: d7719818
+# hash: a8bda5fbb03b1d3d9369d2f5efe0c9005002fb725ad31f8591cdb091f48fef2b
 
 import json
 

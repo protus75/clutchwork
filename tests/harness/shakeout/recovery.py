@@ -1,4 +1,12 @@
 """Fault-injection member for reconcile-on-entry recovery."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection member for reconcile-on-entry recovery.
+# relates: [clutch/journal.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py, tests/harness/shakeout/stages.py]
+# owner: engine
+# verified: d7719818
+# hash: c2d690034d319499ce9430b381bd821e39156154a15d835a596c7798609df348
 
 import json
 

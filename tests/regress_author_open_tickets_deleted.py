@@ -1,4 +1,12 @@
 """Carried reproducer for an indexed ticket deleted from the working tree."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for an indexed ticket deleted from the working tree.
+# relates: [clutch/author.py]
+# owner: clutch/author.py
+# verified: d7719818
+# hash: a4ab8d1286753900a0c9956f465d1d742cebf90dcbccc26df5a3881e7b0e9cb9
 
 import asyncio
 import json

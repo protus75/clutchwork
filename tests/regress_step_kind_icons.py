@@ -1,4 +1,12 @@
 """Carried reproducer for the Recent Steps icon vocabulary."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the Recent Steps icon vocabulary.
+# relates: [clutch/observe.py]
+# owner: clutch/observe.py
+# verified: d7719818
+# hash: ea40a0fee974a0a630b3503b8d74f1b8f901edb3e4b7dcece583b29a6312e5b0
 
 import json
 import subprocess

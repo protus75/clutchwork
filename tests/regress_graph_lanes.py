@@ -1,4 +1,12 @@
 """Carried reproducer for the Tickets view graph layout (duplicate lanes, blocked-to-queued lanes, rotation colors)."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the Tickets view graph layout (duplicate lanes, blocked-to-queued lanes, rotation colors).
+# relates: [clutch/graph.py]
+# owner: clutch/graph.py
+# verified: d7719818
+# hash: 6ec2a4af1d014fe83f5012858d0f48458eba742282574459c262e196c36a1e41
 
 import json
 import sys

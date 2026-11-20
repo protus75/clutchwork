@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: seed
+relates: []
+owner: engine
+verified: d7719818
+hash: 417cc847e7266b4dab221b0e9e9f427b78bd83cf16d76070032a8dfbab814125
+-->
 
 Write a seed for the person or agent who will author tickets. Work from the canonical plan and supplied repository evidence. A proposed decomposition from an Automatable review is input only when the owner has accepted it. The deliverable is a Markdown seed.
 

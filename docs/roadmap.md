@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: clutch roadmap
+relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
+owner: engine
+verified: d7719818
+hash: 869935ba01d5880a6fd8448839c2cb96d6770f2bba2e7cfa2b0e0803e745db66
+-->
 # clutch roadmap
 
 The one place that orders clutch's planned work. Each plan under `docs/` owns its own design; this document owns what the plans share: priority, release slot, cross-plan ordering, shared budgets, and the decisions that settle where plans overlap or contradict. It also carries the audit of the code and documents that the ordering rests on: what is duplicated, what is missing, and where the documents have drifted from the code.

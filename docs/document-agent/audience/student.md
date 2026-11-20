@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: student
+relates: []
+owner: engine
+verified: d7719818
+hash: feaab2c0db855511fafebd95894161c1900f6336a1eef61301bc314329d251a8
+-->
 
 Assume the prerequisites stated in the source. Introduce one unfamiliar idea at the point where it explains the next step. Show a small sourced example from initial conditions through action to result. Explain why each transition follows. If the evidence supports an illustrative hypothetical, label it so the reader can distinguish it from a recorded run.
 

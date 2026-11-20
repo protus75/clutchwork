@@ -1,4 +1,12 @@
 """Condition waits for tests that share the machine with other pytest workers."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Condition waits for tests that share the machine with other pytest workers.
+# relates: [clutch/seams.py]
+# owner: clutch/seams.py
+# verified: d7719818
+# hash: 2f9b5010960515f67aed65871d3d88de6dff6979d652c532782e6372cda2fd27
 
 import asyncio
 import os

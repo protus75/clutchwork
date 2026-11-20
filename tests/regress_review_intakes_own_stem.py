@@ -1,4 +1,12 @@
 """Reproduce review intaking another pending ticket."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce review intaking another pending ticket.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py]
+# owner: engine
+# verified: d7719818
+# hash: 6151951b031c99a19f717a4da437488845799140d3daf79283efa08a8fe88f03
 
 import contextlib
 import io

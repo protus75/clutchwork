@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: spec
+relates: []
+owner: engine
+verified: d7719818
+hash: bb951deeb5ff2b939467bb0a47c057d6c09aa3f8eb1d7df63aaf8b2b4bd16787
+-->
 
 Produce specification-form Markdown for an implementer. Choose the structure according to the operation.
 

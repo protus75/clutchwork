@@ -1,4 +1,12 @@
 """Deterministic production soak harness."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Deterministic production soak harness.
+# relates: [clutch/artifacts.py, clutch/audit.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
+# owner: engine
+# verified: d7719818
+# hash: 05cdd5c17ec55a08b3a0ae7caa5edc89f00514654c51851776e33815c501d3bb
 
 import asyncio
 import json

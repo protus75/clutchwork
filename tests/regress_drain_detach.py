@@ -1,4 +1,12 @@
 """Carried reproducer for drain detachment at the engine verb."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for drain detachment at the engine verb.
+# relates: [clutch/__main__.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: d7719818
+# hash: 800ca46264cfc291188c609b497032dc90fd46c1971808459ddfb4958826bfae
 
 import contextlib
 import io

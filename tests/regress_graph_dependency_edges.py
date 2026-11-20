@@ -1,4 +1,12 @@
 """Reproduce implicit queue-order edges in the Tickets graph."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce implicit queue-order edges in the Tickets graph.
+# relates: [clutch/graph.py]
+# owner: clutch/graph.py
+# verified: d7719818
+# hash: 4b81e713c37692977a9fc8a5e961f5850b4732b2fbe91c1617d99414b8952774
 
 import json
 import sys

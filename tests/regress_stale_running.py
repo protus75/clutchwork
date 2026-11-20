@@ -1,4 +1,12 @@
 """Carried reproducer for rejecting an interrupted run."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for rejecting an interrupted run.
+# relates: [clutch/__main__.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: d7719818
+# hash: fb05d5ea7ca6f2b9b0d910cebc6b220996f9b54102cb516889c23aabb74d655b
 
 import contextlib
 import io

@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: MCP server: design notes
+relates: []
+owner: engine
+verified: d7719818
+hash: e7a607ed36682308d783cb2256e844b27f361a7f80ac8831cab56cdcf884119a
+-->
 # MCP server: design notes
 
 Status: exploratory notes from a chat on 2026-11-19. Nothing is decided, ticketed, or built. Not on the roadmap.

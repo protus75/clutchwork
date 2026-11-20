@@ -1,4 +1,12 @@
 """Carried reproducer for lint reading the main journal from a worktree."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for lint reading the main journal from a worktree.
+# relates: [clutch/__main__.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_lint_verb.py]
+# owner: engine
+# verified: d7719818
+# hash: 4b3bebae206f66fef30735cba1094e52010607e17f6fa127cdc024d9bcf18527
 
 import contextlib
 import io

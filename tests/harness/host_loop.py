@@ -1,4 +1,12 @@
 """Supervised disposable host evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Supervised disposable host evidence.
+# relates: [clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/git.py, clutch/journal.py, clutch/stages.py]
+# owner: engine
+# verified: d7719818
+# hash: 8c385d0f621eab521fa3b5e0f0eaedfe251be5cd19837ae50dce2c109878a19a
 
 import asyncio
 import json

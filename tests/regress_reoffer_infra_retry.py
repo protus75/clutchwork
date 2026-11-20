@@ -1,4 +1,12 @@
 """Carried reproducer for infra re-offers consuming retry."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for infra re-offers consuming retry.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: fd31f0cddff0dac3f3214445ed253bd42b1a99bcdc33f62f912f5d966af71f35
 
 import contextlib
 import json

@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: What this tests and why
+relates: [docs/document-agent/review/CutReview.md]
+owner: docs/document-agent/review/CutReview.md
+verified: d7719818
+hash: 4e90d27fd117c15338078e52a509c4801efe7320ab8a11cb3d41f8b98c16b2d2
+-->
 # What this tests and why
 
 A design document that survives every reading-and-writing review can still fail the only test that counts: being built. BuildItReview measures self-containment under writing, CutReview measures scope under skepticism, KillReview measures viability under attack -- all against the TEXT. This review measures the text against REALITY: it compares local evidence from N runs seeded from generations of the same plan, extracts what each run actually paid for (interventions, churn, stalls) and what it got (merges, phases exited, subsystems exercised), and converts the comparison into plan edits. Convergence is the signal, as in the document reviews, but here it is empirical: a failure mode independently exhibited by k of N runs is STRUCTURAL -- a property of the plan or method -- while a failure mode in one run is incidental until a second run reproduces it. The review's second product is the EVIDENCE OVERLAY: a rule for reconciling document-only findings (a CutReview synthesis) with run evidence, because the two can disagree and one of them is data. Designed to re-run whenever a new run finishes or stalls; two runs are enough to start, and each additional run sharpens every convergence count.

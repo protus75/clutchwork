@@ -1,4 +1,12 @@
 """Carried reproducer for requisition findings missing from the drain report."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for requisition findings missing from the drain report.
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: d7719818
+# hash: 8ce8839cb021b354121c8b94cf457b6906884f5d52a75f56776dc9e20be312e3
 
 import contextlib
 import io

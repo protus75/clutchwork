@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: dispatch settle
+# relates: [tests/fakes.py]
+# owner: tests/fakes.py
+# verified: d7719818
+# hash: edd6c15d8051b8be69897b759b31c94e9f0d6a3b207043fd485b381a7bfcff7e
 from tests.fakes import turn
 
 

@@ -1,4 +1,12 @@
 """Fault-injection members for the production terminal handler."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection members for the production terminal handler.
+# relates: [clutch/journal.py, clutch/llm.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py, tests/harness/shakeout/stages.py]
+# owner: engine
+# verified: d7719818
+# hash: 7a564082d972867d4c9f8209db578293e5f9771e6d827cac54e8e1db861452f6
 
 import json
 

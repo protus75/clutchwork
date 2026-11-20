@@ -1,4 +1,12 @@
 """Disposable production composition for the shakeout battery."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Disposable production composition for the shakeout battery.
+# relates: [clutch/__main__.py, clutch/config.py, clutch/drain.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/providers.py]
+# owner: engine
+# verified: d7719818
+# hash: 995c79cfd92d86b9972ba015ba6db0a2494aa9b45507f957694edd878e811b7b
 
 import asyncio
 import os

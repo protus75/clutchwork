@@ -1,4 +1,12 @@
 """Reproduce acceptance of an Implement premise finding without a path."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce acceptance of an Implement premise finding without a path.
+# relates: [clutch/stages.py]
+# owner: clutch/stages.py
+# verified: d7719818
+# hash: 0f89d5b25a5c46a758da9aa5b11dbbfc075a0331c0e5d624f181617c9fa50539
 
 import json
 

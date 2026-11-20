@@ -1,4 +1,12 @@
 """Detect settled journal rows remaining in status."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Detect settled journal rows remaining in status.
+# relates: [clutch/journal.py, clutch/status.py]
+# owner: engine
+# verified: d7719818
+# hash: 7bb4a53b69bff4714f34de749f7171db93c329334c77560372122dffae56f8f1
 
 import json
 import sys

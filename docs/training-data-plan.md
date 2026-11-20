@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Training data capture: plan
+relates: [clutch/runner.py]
+owner: clutch/runner.py
+verified: d7719818
+hash: 7ed7fefda4afad491c571053ff65508852868f30962b7729b6bf1f67f699c9de
+-->
 # Training data capture: plan
 
 Turn what clutch's model runs produce into training records. The evidence store (`docs/evidence-trail-plan.md`) already keeps every model call; this plan adds the attempt-level record (the full diff before a worktree is deleted), an export verb that turns the journal, git history, and the store into labelled training records, and an eval verb that scores a local model against held-out records. A host that runs clutch on its own project accumulates examples of its own work: tickets, attempts, rejections, review findings, fixes, and the code that finally merged. With those it can train or tune a local model that takes over part of its future work.

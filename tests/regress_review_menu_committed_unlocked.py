@@ -1,4 +1,12 @@
 """Carried reproducer for reviewing a committed ticket during a drain."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for reviewing a committed ticket during a drain.
+# relates: [clutch/observe.py, tests/unit/test_menu_admission.py]
+# owner: engine
+# verified: d7719818
+# hash: ad80ba49a3cbb0cc7dd9ce91af813f2520d7c24ed608430f88b5fbb6ed454890
 
 import json
 import sys

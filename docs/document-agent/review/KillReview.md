@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: What this tests and why
+relates: []
+owner: engine
+verified: d7719818
+hash: 0ef7ae87af282726c3905073bdea3962c0b806e064f4c8634c4d6498cd132771
+-->
 # What this tests and why
 This review decides whether the design document at <PLAN_PATH> should be built as written. The stance is adversarial: the plan is assumed flawed until the text proves otherwise, and the reviewer's job is to find what sinks it, not to reassure. Independent replication separates real defects from one reviewer's taste: a problem found by two or more isolated reviewers is real, a single-reviewer finding is a lead. Designed to re-run as the document evolves; on a mature document, few findings is a valid outcome, not a failed review.
 

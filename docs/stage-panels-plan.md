@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Stage panels: plan
+relates: [clutch/driver.py]
+owner: clutch/driver.py
+verified: d7719818
+hash: 18220713e1b27c17dfbb0cfb4ea1b19cb5271be4d6e4bfb7cf28527ac609b70f
+-->
 # Stage panels: plan
 
 Run a ticket lifecycle stage as several independent model calls at once and combine their results before the next stage sees them. Two reviewers instead of one, with every finding either of them raised; three diagnoses with the majority verdict; several implementations with the best one kept. One mechanism, declared per routing row, with a closed set of combiners, used by both ticket stages and the document agent's review lenses.

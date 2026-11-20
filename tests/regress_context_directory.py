@@ -1,4 +1,12 @@
 """Carried reproducer for a directory accepted as ticket Context."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for a directory accepted as ticket Context.
+# relates: [clutch/tickets.py, tests/integration/test_tickets.py]
+# owner: engine
+# verified: d7719818
+# hash: 5d38aeea0d3bd121163051ac51cbc3f9a8ea9b1a658de356edbf002119983439
 
 import json
 import sys

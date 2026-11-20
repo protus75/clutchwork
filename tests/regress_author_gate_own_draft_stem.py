@@ -1,4 +1,12 @@
 """Carried reproducer for an author gate rejecting its own draft stem."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for an author gate rejecting its own draft stem.
+# relates: [clutch/author.py]
+# owner: clutch/author.py
+# verified: d7719818
+# hash: b583af815dbfeb15ca62c50bc70d88967d553f579188aefe107bfcd930940b57
 
 import json
 import sys

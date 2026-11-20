@@ -1,4 +1,12 @@
 """Carried reproducer for serve's Reject-queue re-offer selection."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for serve's Reject-queue re-offer selection.
+# relates: [clutch/scheduler.py, tests/integration/test_scheduler.py]
+# owner: engine
+# verified: d7719818
+# hash: 2b32cb85bcac258244898a026fb71ce0243f5afd5562489b1f1f1fd631806162
 
 import asyncio
 import inspect

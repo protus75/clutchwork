@@ -1,4 +1,12 @@
 """Reproduce peak-memory measurements from a large pytest worker."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce peak-memory measurements from a large pytest worker.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 2c6b2497fa5f48b20b95d5a135b43d7d9df756baefa0ad94f0c60055d8e2f951
 
 import contextlib
 import json

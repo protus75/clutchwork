@@ -1,4 +1,12 @@
 """Carried reproducer for the incomplete Implement reply."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the incomplete Implement reply.
+# relates: [clutch/stages.py]
+# owner: clutch/stages.py
+# verified: d7719818
+# hash: 667fae2b9cb9d76801dbd22a4d5d095ea4c502aae4c5eb2b994dc43256e1429f
 
 import json
 import sys

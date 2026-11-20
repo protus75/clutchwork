@@ -1,4 +1,12 @@
 """Carried reproducer for watch surface capability display."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for watch surface capability display.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 5674e27927dcddabba15179cb25fd7aa1a3d0647f1ab82001d88e1b8832ad48f
 
 import contextlib
 import json

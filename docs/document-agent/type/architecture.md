@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: architecture
+relates: []
+owner: engine
+verified: d7719818
+hash: 5c428d917ed1a712c0ff90b78c331d662f8ad7fd291a569da86bbf6e245fe3c0
+-->
 
 Write an architecture document that lets a maintainer locate a change and predict which consumers it affects. Use exact component and artifact names from the source. Label proposed components as proposed.
 

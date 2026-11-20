@@ -1,4 +1,12 @@
 """Fault-injection members for the shared LLM-stage driver."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection members for the shared LLM-stage driver.
+# relates: [clutch/journal.py, clutch/llm.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py, tests/harness/shakeout/stages.py]
+# owner: engine
+# verified: d7719818
+# hash: 5ad43a11ed19fc24ac2d51117f21ae12d4b48c6addb06cbd9c8ed7abcc35e39f
 
 import json
 

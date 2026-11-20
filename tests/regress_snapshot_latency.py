@@ -1,4 +1,12 @@
 """One-time end-to-end snapshot latency and completeness check."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: One-time end-to-end snapshot latency and completeness check.
+# relates: [tests/snapshot_scale_fixture.py]
+# owner: tests/snapshot_scale_fixture.py
+# verified: d7719818
+# hash: 5921e8a09a738a2856c137f55265fc4c53087bf9a34d0d7abfedd45eded7c3b8
 
 import json
 import os

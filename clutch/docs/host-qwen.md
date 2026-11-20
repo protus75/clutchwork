@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: guide
+purpose: Local qwen provider setup
+relates: []
+owner: engine
+verified: d7719818
+hash: d52c37488240f2fbefdbdbf1c9f2989032d48c7d5ae28113bf831c6d49d25eec
+-->
 # Local qwen provider setup
 
 ## What it is

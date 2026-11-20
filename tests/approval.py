@@ -1,4 +1,12 @@
 """Record the approval for the ticket content that intake will commit."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Record the approval for the ticket content that intake will commit.
+# relates: [clutch/config.py, clutch/journal.py, clutch/tickets.py]
+# owner: engine
+# verified: d7719818
+# hash: b792345f0b51f14ef2383ddf0d253edf5bf93d796ac4e78b98b1053cb196c2d5
 
 import hashlib
 from datetime import datetime

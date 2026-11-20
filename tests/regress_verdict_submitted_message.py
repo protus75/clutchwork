@@ -1,4 +1,12 @@
 """Carried reproducer for the live verdict submission message."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the live verdict submission message.
+# relates: [clutch/__main__.py, clutch/control.py, clutch/lockfile.py, clutch/runner.py]
+# owner: engine
+# verified: d7719818
+# hash: 0731c3e02de220cc91c3a9b1889151d5cf6c4600c0a7500fe9013816996dc468
 
 import asyncio
 import contextlib

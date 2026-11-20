@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: File annotations and the project index: plan
+relates: []
+owner: engine
+verified: d7719818
+hash: ba973ffe9ea667b864ebe75a1c82a0c83ec6dd3fd6a0e582e8d53c37945dbdef
+-->
 # File annotations and the project index: plan
 
 Give every file that has no parser (documents, tests, fixtures, guides) a small, closed metadata block: what the file is for, what it relates to, who owns it, and a hash that says whether the block still matches the content. Generate the deterministic fields; let a model fill the one or two judgment fields, and only for blocks that are missing or drifted. Build one index over those blocks, the structure a parser already gives source files, and the records the evidence and journal stores already hold, in DuckDB with vector search, so an agent can find the right file, section, or past ticket without reading the whole project. The index feeds ticket authoring (which files belong in `## Context`), the Implement prompt, the document agent's drafting, and the training export, from one store instead of each keeping its own.

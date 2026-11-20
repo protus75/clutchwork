@@ -1,4 +1,12 @@
 """Detect a queued ticket whose Reject menu disagrees with verdict admission."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Detect a queued ticket whose Reject menu disagrees with verdict admission.
+# relates: [clutch/box.py, clutch/observe.py, tests/unit/test_menu_admission.py]
+# owner: engine
+# verified: d7719818
+# hash: 9510c8c613786f8d9d9a0736fa9a763955d06a24ded75dde6f72599eea82e318
 
 import json
 from pathlib import Path

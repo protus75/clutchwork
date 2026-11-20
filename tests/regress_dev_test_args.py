@@ -1,4 +1,12 @@
 """Carried reproducer for leading pytest options in the dev command."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for leading pytest options in the dev command.
+# relates: [dev.py]
+# owner: dev.py
+# verified: d7719818
+# hash: 864696a47e4d0db8e8ac04369bbe75544499639690e8302ad42114c3838251a8
 
 import contextlib
 import io

@@ -1,4 +1,12 @@
 """Carried reproducer for host-inaccessible engine text."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for host-inaccessible engine text.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 3b5ac27e28fe3b31abfbd218ad481103fb2772a28b1e02759384ba9b984522a1
 
 import json
 import os

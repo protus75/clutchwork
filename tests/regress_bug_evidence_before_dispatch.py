@@ -1,4 +1,12 @@
 """Carried reproducer for bug evidence before dispatch."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for bug evidence before dispatch.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 089e1bcdee4741bf50d71517204b2a2a642928db5f632081245bbe2b1b490982
 
 import contextlib
 import json

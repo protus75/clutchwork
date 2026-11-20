@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: What this tests and why
+relates: []
+owner: engine
+verified: d7719818
+hash: ffbfb27a8972f65d81f2c7317303e9bcf09019185ba74f0ea821a7e16deea85a
+-->
 # What this tests and why
 A design document that claims to be self-contained -- an implementer needs no other document -- can pass any number of adversarial READINGS and still fail the first WRITING: reviewers evaluate arguments, implementers consume decisions, and only the second exposes what the text does not determine. This exercise tests the claim under writing. Fresh agents with no project context role-play the implementer for <PHASE_SCOPE> and must produce skeletons from the document at <PLAN_PATH> alone. Every decision the document forces them to invent is a measured self-containment gap. Convergence is the signal: a decision independently invented by two or more isolated agents is a real spec gap, not one agent's taste. Designed to re-run as the document evolves -- rescope <PHASE_SCOPE> to the earliest unbuilt phases each time -- and a near-empty ledger is a valid outcome, not a failed run.
 

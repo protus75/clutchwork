@@ -1,4 +1,12 @@
 """Carried reproducer for phase rows sharing a kind in Recent Steps."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for phase rows sharing a kind in Recent Steps.
+# relates: [clutch/observe.py]
+# owner: clutch/observe.py
+# verified: d7719818
+# hash: 96fa227405fe8cb85fec132e3282982bfe49e6f5c59e86be8db78e8a32df71e6
 
 import json
 import sys

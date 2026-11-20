@@ -1,4 +1,12 @@
 """Schema-valid evidence fixtures shared by harvest and envelope tests."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Schema-valid evidence fixtures shared by harvest and envelope tests.
+# relates: [clutch/evidence/store.py, clutch/seams.py]
+# owner: engine
+# verified: d7719818
+# hash: dc46bc365cdc5ec5048c4876d569f0bb4b9dc1dd1ea09339fc68d06234d7a8fc
 
 from clutch.evidence.store import EvidenceStore
 from clutch.seams import LocalFileSystem

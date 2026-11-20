@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: guide
+purpose: Gemini provider setup
+relates: []
+owner: engine
+verified: d7719818
+hash: c0c2eee995fbc856d7231df03e7981a246e53e5269a8c813967e19c24e72d9c7
+-->
 # Gemini provider setup
 
 ## What it is

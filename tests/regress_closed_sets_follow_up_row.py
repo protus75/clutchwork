@@ -1,4 +1,12 @@
 """Reproduce the roadmap follow-up row failure."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce the roadmap follow-up row failure.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 79822b0174cb7a2c74c9257c05926a6204da41bc69f64b0332ac3633521dbb3e
 
 import json
 import subprocess

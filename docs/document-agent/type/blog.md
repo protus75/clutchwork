@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: blog
+relates: []
+owner: engine
+verified: d7719818
+hash: 1b5a7adcc3f7d01b9e05eba1a27308175b2566a10dfd94cde2905eb522603d3b
+-->
 
 Write a post around one question the selected audience cares about. Pick a real incident, design decision, or worked example from the supplied material. Let the requested Tone facet shape the voice. Use descriptive headings suited to this story and follow the order below.
 

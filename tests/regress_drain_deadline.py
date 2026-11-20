@@ -1,4 +1,12 @@
 """Carried reproducer for the drain deadline across a self-upgrade."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the drain deadline across a self-upgrade.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 2145c9f823af81dbd0b2b8e2c52b54aeb15d67498b9cb826ef8a2524d1168449
 
 import contextlib
 import json

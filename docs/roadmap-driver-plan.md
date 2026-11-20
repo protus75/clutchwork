@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Roadmap driver: plan
+relates: [clutch/author.py, clutch/caps.py, clutch/release.py, clutch/rework.py, clutch/runner.py, clutch/serve.py, clutch/status.py, tests/integration/test_ladder.py]
+owner: engine
+verified: d7719818
+hash: 5909036ef15a570e7f6cc98ce4185db7765c59f0b3f8ef68aded2d0645de551a
+-->
 # Roadmap driver: plan
 
 Run `docs/roadmap.md` unattended. The driver authors the next few roadmap rows when their dependencies have merged, never further ahead than that, so every ticket is written against the source as it is. When an eligible ticket is held for a person, the driver's supervisor step (rows 89 and 96) reads the diagnosis, edits the ticket within the supervising rules, has the edit reviewed, and keeps the ticket, a bounded number of times; before that step the operator did this by hand. When a release's rows are all merged and its gate passes, the driver bumps and tags the version through `clutch/release.py::release`, uploads to PyPI only when `release.publish` is set, and keeps the VS Code package for the owner's Marketplace upload (decision 20, row 108). Nothing waits on a person; the only outside input is a missing provider credential (section 7).

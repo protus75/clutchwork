@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: regress journal incremental read
+# relates: [clutch/journal.py]
+# owner: clutch/journal.py
+# verified: d7719818
+# hash: 7896adcdd13d3669d6e9007bc9cb1d8e09b441e54643d417aff65aa2b3abc2e6
 import json
 import tempfile
 from datetime import UTC, datetime

@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Cross-provider evidence trail: plan
+relates: [clutch/llmeffect.py]
+owner: clutch/llmeffect.py
+verified: d7719818
+hash: 577886843f2b58fd6a6cf2de6c9a5c3a0772e038948340fb8747a9ec845bea0a
+-->
 # Cross-provider evidence trail: plan
 
 Every model call clutch makes leaves one evidence record with the same shape, whichever provider served it. The record keeps the provider's raw output byte for byte, wraps it in an envelope of facts only clutch knows (what was asked, by which route, against which tree, at what time), and adds a normalized event view that a versioned normalizer derives from the raw bytes. The schema is versioned and open for extension. Because the raw bytes are always kept, any field a later schema version needs can be recovered from records written before anyone knew to ask for it.

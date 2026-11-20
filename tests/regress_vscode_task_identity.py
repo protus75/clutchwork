@@ -1,4 +1,12 @@
 """Carried reproducer for VS Code task identity across clutch actions."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for VS Code task identity across clutch actions.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: d669930c6e1bf00c6d238ec90497d3c9d7e86796146bfb97d22106d94f04dd33
 
 import json
 import subprocess

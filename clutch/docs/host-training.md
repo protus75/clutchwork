@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: guide
+purpose: Training data export and evaluation
+relates: [clutch/config.py, clutch/docs/host-contract.md, clutch/docs/host-running.md, clutch/training.py]
+owner: engine
+verified: d7719818
+hash: 12e6b2711579c0ceafadf6567e2c9ee4b3e1153cb1b4bb6768f51bf13b6e76ad
+-->
 # Training data export and evaluation
 
 ## Retrieval first

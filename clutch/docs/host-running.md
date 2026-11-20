@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: guide
+purpose: Running ClutchWork on a host
+relates: [clutch/docs/host-contract.md]
+owner: clutch/docs/host-contract.md
+verified: d7719818
+hash: b83280e8c0bf23534db5bc6ba85530991b9dab11485f1c4fd31d0a80a66b14cd
+-->
 # Running ClutchWork on a host
 
 From the host checkout root, with clutch [installed](host-contract.md#install) and `config.yaml` set up as in the [host contract](host-contract.md), run:

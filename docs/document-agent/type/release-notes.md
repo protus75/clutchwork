@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: release notes
+relates: []
+owner: engine
+verified: d7719818
+hash: 312d37052a1d7ae6a70bdc4ed3b21a1204522e54871b2dff13be0061154c196b
+-->
 
 Write release notes for the selected audience using the supplied local release evidence. Establish which changes belong to the release before writing. Use the changelog and merged work within the release range to find candidates. Check the resulting behavior against its owning help, contract, or implementation. A roadmap entry or ticket goal alone cannot establish delivery.
 

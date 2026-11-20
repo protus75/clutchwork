@@ -1,4 +1,12 @@
 """Carried reproducer for signals that terminate a drain without a kill."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for signals that terminate a drain without a kill.
+# relates: [clutch/__main__.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: d7719818
+# hash: b3107154e2a1b1e0d5e80207a1cc0c08dac43d149aa87fcffa2b31bf3e30b81a
 
 import asyncio
 import contextlib

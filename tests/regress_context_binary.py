@@ -1,4 +1,12 @@
 """Carried reproducer for a binary file accepted as ticket Context."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for a binary file accepted as ticket Context.
+# relates: [clutch/tickets.py, tests/integration/test_tickets.py]
+# owner: engine
+# verified: d7719818
+# hash: 2d917572b843ceeea9991323e5f0d6bd43c299e68dcb5b592dffdf4565f964f5
 
 import json
 import sys

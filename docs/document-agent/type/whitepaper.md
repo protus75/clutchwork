@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: whitepaper
+relates: []
+owner: engine
+verified: d7719818
+hash: 6f07d2c8209f97bcffa5c9a872ee2006294d81688f9f8c035cb92b7a1ea04d5a
+-->
 
 Write for a reader assessing whether a claim holds and where it applies. Use the supplied sources and preserve the distinction between observations, design proposals, and interpretations. In a derivation, trace each material claim to the canonical sections used.
 

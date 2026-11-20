@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: plan
+relates: []
+owner: engine
+verified: d7719818
+hash: 9e583030ddbd6528cdb249dc138867347aeab5eb571f12f00c5b7ca576dbbb6e
+-->
 
 Write the canonical plan so an owner can decide whether to build it and an implementer can take on one named phase. Keep headings stable as the plan evolves. When deriving from an existing document, carry forward decisions at their original strength.
 

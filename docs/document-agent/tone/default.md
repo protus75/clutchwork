@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: default
+relates: []
+owner: engine
+verified: d7719818
+hash: 2d47cb27ada008756c0809886a650ab3f1f2b9594a8b6960853d4ceed692bca1
+-->
 
 Lead with the outcome or claim the section exists to communicate. Give actions an actor, guarantees a condition, and failures a consequence. Prefer stable project names where they help the reader locate the owner. Use a short example when it settles a distinction that prose leaves unclear.
 

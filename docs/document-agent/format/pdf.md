@@ -6,6 +6,15 @@ aliases: []
 applies_to: [render]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: pdf
+relates: []
+owner: engine
+verified: d7719818
+hash: 5e1796569a54d97d028efdb00edff31bd79d57f93e4e10a97fced60c0a992f07
+-->
 
 Use the same document revision and themed HTML as the HTML format. Pass that HTML through the host’s documents.render.pdf argv using the exec seam and the host-command lock when available. Preserve the order of headings, body text, tables, and code across page breaks.
 

@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: guide
+purpose: Host ticket authoring
+relates: [clutch/docs/host-running.md]
+owner: clutch/docs/host-running.md
+verified: d7719818
+hash: 44fd2f9a0b567008fcc162e3ddfc1363b36c43abf0498a1c2faaed220b1c607e
+-->
 # Host ticket authoring
 
 What to put in a clutch ticket, and the rules the code cannot explain on its own. The ticket

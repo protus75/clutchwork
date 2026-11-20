@@ -1,4 +1,12 @@
 """Reproduce journal rereads when completed retro proposals are replayed."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce journal rereads when completed retro proposals are replayed.
+# relates: [clutch/config.py, clutch/git.py, clutch/journal.py, clutch/retro.py, clutch/seams.py]
+# owner: engine
+# verified: d7719818
+# hash: 73804fbb5908a4e016178e27c7e59cb2573cf590a0a23b0700cb75f418f270c0
 
 import asyncio
 import json

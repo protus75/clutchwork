@@ -1,4 +1,12 @@
 """Detect verdict decisions left visible after an applied verdict."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Detect verdict decisions left visible after an applied verdict.
+# relates: [clutch/journal.py, clutch/status.py]
+# owner: engine
+# verified: d7719818
+# hash: 1728e4531feedc8821c7747ee769eafa479a498de2ff69eb0cd373aaef5f00d5
 
 import json
 import sys

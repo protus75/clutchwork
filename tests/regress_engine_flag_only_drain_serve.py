@@ -1,4 +1,12 @@
 """Carried reproducer for a non-engine lock holder showing the Stop button."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for a non-engine lock holder showing the Stop button.
+# relates: [clutch/observe.py, tests/unit/test_menu_admission.py]
+# owner: engine
+# verified: d7719818
+# hash: 147632c5deef4ee8bfec61e5f28d5c584aee8fcf721def25e2b9a89d3d5db9f0
 
 import json
 import sys

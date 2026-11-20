@@ -1,4 +1,12 @@
 """Carried reproducer for the triage author invocation boundary across a self-upgrade."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the triage author invocation boundary across a self-upgrade.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: e6c8d39c0ae93467b2dd20a78a41696a96f040d1d3627d52ca1bb71d48dcd3e3
 
 import contextlib
 import json

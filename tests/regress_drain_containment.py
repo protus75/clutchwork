@@ -1,4 +1,12 @@
 """Carried reproducer for the dispatch exception containment."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the dispatch exception containment.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 7931b55c79db6d6db4a6fe4ee181894fc848dfe5f46ad947d8440136beab05c5
 
 import contextlib
 import json

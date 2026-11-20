@@ -1,4 +1,12 @@
 """Carried reproducer for the shared content hold."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for the shared content hold.
+# relates: [clutch/drain.py, clutch/observe.py]
+# owner: engine
+# verified: d7719818
+# hash: c9780e51475c4f61f706ef56d7d1209bb5fe7e43a10b215a191775fe0febff46
 
 import json
 import sys

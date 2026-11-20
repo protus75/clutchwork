@@ -1,4 +1,12 @@
 """Reproduce the missing requisition stage events with a real engine log."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce the missing requisition stage events with a real engine log.
+# relates: [clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py]
+# owner: engine
+# verified: d7719818
+# hash: a717754213adf7a1a4037f76dc087c43027eccbbebd034bcf144da50dd9c94d3
 
 import asyncio
 import json

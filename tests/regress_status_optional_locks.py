@@ -1,4 +1,12 @@
 """Carried reproducer for status taking an optional index lock."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for status taking an optional index lock.
+# relates: [clutch/git.py, tests/integration/test_git.py]
+# owner: engine
+# verified: d7719818
+# hash: 74f5601f648afbaa8c0805c159f33fa2d68016b856207aeaaf8102df5d70288a
 
 import asyncio
 import json

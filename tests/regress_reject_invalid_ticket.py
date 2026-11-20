@@ -1,4 +1,12 @@
 """Carried reproducer for rejecting with an invalid confirmed ticket."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for rejecting with an invalid confirmed ticket.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 776634cda7e67039f42bd31a12cad68f74840274b7447f78a86c5fd15a3f3075
 
 import contextlib
 import json

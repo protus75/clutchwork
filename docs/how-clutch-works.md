@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: How ClutchWork works
+relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
+owner: engine
+verified: d7719818
+hash: 439286500a9ab2237c3c02d21c6cfefd3c3b73642877ae17993168e78df17f4f
+-->
 # How ClutchWork works
 
 This document describes ClutchWork as the code behaves today. It is maintained: a ticket that changes

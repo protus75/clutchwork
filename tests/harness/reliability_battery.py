@@ -1,4 +1,12 @@
 """Closed, disposable production provider battery."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Closed, disposable production provider battery.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/hostfiles.py]
+# owner: engine
+# verified: d7719818
+# hash: d6319fdce2975c413c5bd949d7c20ef77244dcfeb6c70d7415ad9324e2736e51
 
 import asyncio
 import json

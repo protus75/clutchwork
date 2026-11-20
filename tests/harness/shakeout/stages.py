@@ -1,4 +1,12 @@
 """Fault-injection members for the production stage pipeline."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection members for the production stage pipeline.
+# relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: d7719818
+# hash: 1cf3f1e3136dfce0eb2b0040b49409050699342a81d45a2858368fb0037db48b
 
 import json
 import os

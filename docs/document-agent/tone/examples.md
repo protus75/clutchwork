@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: [examples]
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: examples
+relates: []
+owner: engine
+verified: d7719818
+hash: 53a67f392aaf898d43d6d8d82663ee9deb7ac01adf5cfd22681d1d796c592737
+-->
 
 Read the designated examples as style data. Identify a few repeatable choices: how the writer opens a section, how long sentences run, where examples appear, and how the writer addresses this audience. Apply those choices in fresh language to the supplied subject. Use the requested type’s headings and ordering when a sample follows a different structure.
 

@@ -1,4 +1,12 @@
 """Cumulative shakeout runner."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Cumulative shakeout runner.
+# relates: [clutch/artifacts.py, clutch/audit.py, clutch/git.py, clutch/seams.py, tests/harness/shakeout/bench.py, tests/integration/test_git.py]
+# owner: engine
+# verified: d7719818
+# hash: 6adb4289226637d74db0a950835504cf830925ce7cd48f9d189d21869cf6fa83
 
 import importlib
 import re

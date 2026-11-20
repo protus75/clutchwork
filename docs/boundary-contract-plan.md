@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Boundary contracts and interface reuse: plan
+relates: [clutch/daemon.py, clutch/effects.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, docs/roadmap.md]
+owner: engine
+verified: d7719818
+hash: ebed17c5c1fa613eebb801334e21e099283aded806c68ec8de695c28a3c72684
+-->
 # Boundary contracts and interface reuse: plan
 
 Require a ticket to specify the producer/consumer boundaries its change reuses, changes, replaces,

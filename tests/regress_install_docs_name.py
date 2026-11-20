@@ -1,4 +1,12 @@
 """Carried reproducer for incorrect distribution names in install docs."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for incorrect distribution names in install docs.
+# relates: []
+# owner: engine
+# verified: d7719818
+# hash: 9d0cb87949065dcfedd72003f82f1260e8e45ba85b6b9559aa61b36dfd06f306
 
 import json
 import re

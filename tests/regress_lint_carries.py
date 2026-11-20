@@ -1,4 +1,12 @@
 """Carried reproducer for lint accepting an implementation path."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for lint accepting an implementation path.
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: d7719818
+# hash: a7a2ee5523d1fafccd0eea049da42301c77749db0dd515bd755356784bfe7ba8
 
 import json
 import re

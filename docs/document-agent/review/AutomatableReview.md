@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: What this tests and why
+relates: []
+owner: engine
+verified: d7719818
+hash: 7bfb38ee95106f492c195aea4c6351a46f1b16cf2268a358db775465c2f290db
+-->
 # What this tests and why
 A design document can be self-contained -- every decision determined, BuildItReview clean -- and still not be buildable by an AI pipeline, because determining a decision is not the same as being able to carry it out and verify it unattended. This exercise tests the document under automated execution. Fresh agents with no project context role-play the ticket author of an AI build pipeline for <PHASE_SCOPE> and must express the work as tickets in the pipeline's format, from the document at <PLAN_PATH> and the authoring contract at <GUIDE_PATH> alone. Every step they cannot hand to an agent, every criterion no machine can decide, and every place their decompositions diverge is a measured automation gap. Convergence is the signal: a gate or missing oracle independently found by two or more isolated agents is real, not one agent's caution. Run BuildItReview first; this review assumes the decisions are settled and measures whether they can be executed. Designed to re-run as the document evolves; an empty gate ledger is a valid outcome, not a failed run.
 

@@ -6,6 +6,15 @@ aliases: []
 applies_to: [create, derive]
 requires: []
 ---
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: api
+relates: []
+owner: engine
+verified: d7719818
+hash: fdda281a49b6e05c9ca4533fc3e14b970efaadd4ec8b14c088e6ede80411a9e1
+-->
 
 Write an API reference from the supplied material. A reader implementing the producer and a reader implementing a consumer must be able to work independently from this document and agree on the observable result.
 

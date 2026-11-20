@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Seed-plan diagnosis — prompt
+relates: []
+owner: engine
+verified: d7719818
+hash: cfef366dc6711ac4269fa4e0d08130b9b0a66d3c3f5afeda649e83baf22e1bf5
+-->
 # Seed-plan diagnosis — prompt
 
 ## What this tests and why

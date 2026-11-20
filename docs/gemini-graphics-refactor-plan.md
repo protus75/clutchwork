@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Gemini provider and graphics ticket kind: refactor plan
+relates: []
+owner: engine
+verified: d7719818
+hash: a56c9f6fdc548bddc6f2810de7cba06a72274b265a82c8d1a5d24f61cfb16490
+-->
 # Gemini provider and graphics ticket kind: refactor plan
 
 Add Google's Gemini CLI as a fourth provider beside `claude`, `codex`, and `qwen` (Ollama), and add a `graphics` ticket kind for two kinds of visual work: output that code renders (web pages, SVG, flowcharts, charts) and images an image model generates or edits. The Gemini provider exists for the second kind: its image models take several input images in one prompt and return an image, which no other routed CLI does. Graphics tickets are graded in three layers: deterministic checks with no model, a vision-model judge on a rubric, and best-of-N selection where only cases the judge is unsure about park.

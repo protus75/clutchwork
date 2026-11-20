@@ -1,4 +1,12 @@
 """Fault-injection members for classified provider failures and redaction."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection members for classified provider failures and redaction.
+# relates: [clutch/config.py, clutch/journal.py, clutch/providers.py, clutch/seams.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py]
+# owner: engine
+# verified: d7719818
+# hash: c3d7508ea846573d83219dca9d436802095ea0e251db1d278f9f9df9c6880eea
 
 import json
 from collections.abc import Callable, Mapping, Sequence

@@ -1,4 +1,12 @@
 """Fault-injection member for merge admission's refused-rebase cleanup."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection member for merge admission's refused-rebase cleanup.
+# relates: [clutch/git.py, clutch/journal.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py, tests/harness/shakeout/stages.py]
+# owner: engine
+# verified: d7719818
+# hash: f43a99537abbe80b8c6e2f2039cea1027c72a232d21e50c81dde1b5ff551cf09
 
 import json
 import subprocess

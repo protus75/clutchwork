@@ -1,4 +1,12 @@
 """Construct an incident-sized, deterministic snapshot host."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Construct an incident-sized, deterministic snapshot host.
+# relates: [clutch/box.py, clutch/git.py, clutch/seams.py, tests/integration/test_config.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: d7719818
+# hash: 495527e89de65abb6dbd287bf8508554887c777ffefd996bccf9428227793a51
 
 import json
 import subprocess

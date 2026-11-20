@@ -1,4 +1,12 @@
 """Fault-injection members for the production drain."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: fixture
+# purpose: Fault-injection members for the production drain.
+# relates: [clutch/caps.py, clutch/journal.py, clutch/stages.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py]
+# owner: engine
+# verified: d7719818
+# hash: 87905feddeba983e88ac9956c4b366da7d00fc79606ae5e9244ec3ef6ef9d551
 
 import json
 

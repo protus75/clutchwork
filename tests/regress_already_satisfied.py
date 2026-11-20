@@ -1,4 +1,12 @@
 """Carried reproducer for settled terminals with historical Reject routing."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for settled terminals with historical Reject routing.
+# relates: [clutch/journal.py, clutch/status.py]
+# owner: engine
+# verified: d7719818
+# hash: ea2ddf4d03d7a8c373672f02f8dcb9aea324a39a6b7e3a3903b29ebd441fd529
 
 import json
 import sys

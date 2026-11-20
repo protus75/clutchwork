@@ -1,4 +1,12 @@
 """Carried reproducer for Reject-queue reoffers."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for Reject-queue reoffers.
+# relates: [clutch/config.py, clutch/drain.py]
+# owner: engine
+# verified: d7719818
+# hash: 205c97d234ccafbcdf076017324c0da4549111e8c6066aad51703328f58ab569
 
 import json
 import sys

@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: Parallel ticket runs: plan
+relates: [clutch/tickets.py]
+owner: clutch/tickets.py
+verified: d7719818
+hash: c6e6cabea96589777fc87c9c193b5a1e1b61e6a66567e11b5f3a07d3ed198948
+-->
 # Parallel ticket runs: plan
 
 Let `serve` run more than one ticket at a time, behind an experimental config switch. Tickets run together only when their scope fences do not overlap. The merge queue admits them one at a time and resolves conflicts in three steps: a mechanical merge strategy, then a model for small conflicts, then discarding the later ticket's branch and running it again. Authoring rules move new tests and fixtures out of the few large shared files that would otherwise force nearly every pair of tickets to run one after the other.

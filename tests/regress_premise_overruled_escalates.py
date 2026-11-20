@@ -1,4 +1,12 @@
 """Reproduce an overruled premise being incorrectly parked."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce an overruled premise being incorrectly parked.
+# relates: [clutch/drain.py, clutch/journal.py]
+# owner: engine
+# verified: d7719818
+# hash: 84b58639bb7ab111a35508da0c68216edc9fe3aaf50dcef34ad52c9e132b66bf
 
 import json
 import sys

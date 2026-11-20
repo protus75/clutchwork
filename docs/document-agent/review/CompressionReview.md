@@ -1,3 +1,12 @@
+<!-- clutch:meta
+schema: clutch.meta/1.0
+kind: plan
+purpose: What this tests and why
+relates: []
+owner: engine
+verified: d7719818
+hash: 2722d2b0ba720e33d36b7713bddbea1ea89eecc3ed5fcd08c0c91468c763125c
+-->
 # What this tests and why
 A design document accretes prose: rationale and rhetoric earn their keep during review rounds, but the document's standing audience is the implementer, and prose taxes them -- every sentence of motivation is a sentence they must read to confirm it contains no requirement. This exercise compresses the document at <PLAN_PATH> to specification form: every technical fact survives at full strength, everything addressed to a reviewer rather than an implementer goes. It is designed to be re-run whenever prose has accreted; on an already-compressed document the correct outcome is little or no change, and that is a valid result, not a failed run. Compression is only trustworthy if loss is measured, so an independent agent audits the result against the original. The compressor changes how things are said, never what is specified.
 

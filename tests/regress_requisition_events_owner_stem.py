@@ -1,4 +1,12 @@
 """Reproduce nested requisition events attributed to a proposal."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce nested requisition events attributed to a proposal.
+# relates: [clutch/config.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py]
+# owner: engine
+# verified: d7719818
+# hash: 5b1fd3803ced387dfe2bb8da5ba80ba6532daaa35bed2ffe9fbed87e0f0a3542
 
 import asyncio
 import json

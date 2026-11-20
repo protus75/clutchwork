@@ -1,4 +1,12 @@
 """Carried reproducer for a provider install with a broken binary."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Carried reproducer for a provider install with a broken binary.
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: d7719818
+# hash: 7c2e0ccfa126ce108707be7d566a51ec394a4e471d0471bc4be4a0b110a187c6
 
 import contextlib
 import io
