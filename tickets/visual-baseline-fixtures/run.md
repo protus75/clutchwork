@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The configured panel was codex/gpt-6.1-terra and the judge was claude/claude-opus-5-5. The first generate case was redrawn with a base image and explicit placement criterion after the panel returned unsure. The report measured GO at 0.95 overall; placement, identity, lighting, unchanged, artifacts, and both generate-specific criteria were below 0.85. Ticket verification, 3,491 integration tests, lint, and format passed. The coverage gate was skipped because no measured production file changed. The engine owns run.md, so these details are recorded here instead.
+Panel: codex/gpt-6.1-terra; judge: claude/claude-opus-5-5. Case 20 was redrawn after the panel returned an invalid rubric ID. The measured verdict is NO_GO with 0.55 overall agreement. Rows below 0.85 are the generated placement criterion, identity, placement, lighting, unchanged, artifacts, and the blue, green, orange, teal, brown, and alternate brown command criteria. The fixture checks cover missing labels, panel independence, label balance, generated rows, and report shape.
 
 ## Dead ends
 
-The initial generate case lacked a base image and placement request, leaving fixed rubric rows undecidable; adding the base and criterion produced definite labels.
+The initial case 20 panel reply used an invalid rubric ID, so its case was redrawn and labeled through the harness.
 
 ## Second problems filed
 
