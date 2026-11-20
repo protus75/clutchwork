@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "4f4627f9c5b89e0dd196b215c0f24dac20a85dad",
+  "stem": "serve-dispatch-returns-on-slot",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The premise holds. The starvation came from the guard this attempt added, which re-checks exclusive_pending() after supervision. Base clutch/serve.py::Serve.dispatch calls dispatch_next right after supervise() in the same iteration. Keep that path exactly as it is.",
+    "Read admission.busy() and admission.exclusive_pending() once at the top of each Serve.dispatch iteration, after scheduler.raise_failure(). Do not read them again later in the iteration.",
+    "When busy() is false and serve is not stopping or paused, run check_upgrade, supervise and then dispatch_next, with no exclusive re-check between them, as tests/unit/test_supervise_idle_hooks.py pins. When busy() is true, call dispatch_next only if exclusive_pending() was false at the top of the",
+    "A created run task already waits in DaemonAdmission._acquire_run behind exclusive holders and waiters (clutch/daemon.py:587), so admission ordering is unchanged. Do not touch admission arbitration; the ticket allows only the exclusive_pending() accessor.",
+    "Redo every Scope item from the merge base. Before reporting, run the full ## Verification command and confirm that tests/integration/test_serve_admission.py's test_serve_admission_holds_and_cleanup red-streak case and the precheck, safety and integration scenarios pass."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
