@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "docs/how-clutch-works.md",
+      "line": 821,
+      "message": "The new schema verb makes the statement that no command exposes JSON Schema false, but the ticket permits only four new table rows and no other changes to this document.",
+      "paved_road": "Allow the ticket to update this statement along with the four verb table rows.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "docs/how-clutch-works.md",
+      "line": 825,
+      "message": "Renormalization creates normalized directories, contradicting the existing statement that no call record has one; the ticket forbids changing this text.",
+      "paved_road": "Allow the ticket to update this statement along with the four verb table rows.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The ticket requires evidence commands while forbidding the documentation changes needed to describe them accurately.\",\"surprises\":\"The current documentation says no command exposes the schemas and no call has a normalized directory; both statements would become false.\",\"second_problems\":[],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"docs/how-clutch-works.md\",\"line\":821,\"message\":\"The new schema verb makes the statement that no command exposes JSON Schema false, but the ticket permits only four new table rows and no other changes to this document.\",\"paved_road\":\"Allow the ticket to update this statement along with the four verb table rows.\"},{\"code\":\"premise\",\"path\":\"docs/how-clutch-works.md\",\"line\":825,\"message\":\"Renormalization creates normalized directories, contradicting the existing statement that no call record has one; the ticket forbids changing this text.\",\"paved_road\":\"Allow the ticket to update this statement along with the four verb table rows.\"}]}",
+  "events_tail": "rmalize`, `coverage`. |\\ndocs/how-clutch-works.md:825:The Claude normalizer is verified only for `claude`, so qwen's Claude-shaped stream is unverified. Codex `input_tokens` includes cached tokens, so `input_uncached` is `input_tokens` minus `cached_input_tokens`. Each normalizer has a golden fixture under `tests/fixtures/evidence/<provider>/`. `CliAdapter.parse` and `CallMeter` read normalized events from the adapter’s normalizer. Claude assistant lines with usage also yield an `assistant/usage` event. The last `result` or `usage` event with a non-null status closes the call; it carries the outcome, final text blob, optional USD cost and optional model. Claude’s preceding usage event carries its tokens. `Event` provides optional `usd` and `model` fields. No call record has a `normalized/` directory.\\ndocs/annotations-index-plan.md:59:| `schema` | generator | `clutch.meta/<major>.<minor>`; strict writer, tolerant reader, as the evidence schemas |\\ndocs/document-agent/review/evidence/OutcomeReview.md:37:- CONTRADICTED -- the run evidence shows the opposite: the \\\"unjustified\\\" feature is part of the only configuration that succeeded, or the cut would change a variable correlated with success. REJECT the cluster regardless of its convergence count, and record the rejected experiment in the plan's open-decisions section with its falsification condition -- document logic proposes, evidence disposes.\\n  mechanical:\\n    - code: unit\\n      argv: [clutch, coverage, gate, --, uv, run, python, -m, pytest, tests/unit, -p, clutch.testguard, -p, clutch.testreport, --clutch-results, .clutch/results/unit.json, --cov=clutch, --cov-branch, --cov-report=json:coverage.json, -n, auto]\\n      trigger: always\\n      severity: hard\\n      results: .clutch/results/unit.json\\n      coverage: coverage.json\\n      flake_coverage_argv: [uv, run, python, -m, pytest, --cov=clutch, --cov-branch, --cov-report=json:coverage.json, -n, \\\"0\\\"]\\n    - code: integration\\n      argv: [uv, run, python, -m, pytest, tests/integration, -p, clutch.testreport, --clutch-results, .clutch/results/integration.json, -n, auto]\\n      trigger: always\\n      severity: hard\\n      results: .clutch/results/integration.json\\n    - {code: lint, argv: [uv, run, ruff, check, .], trigger: always, severity: hard}\\n    - {code: format, argv: [uv, run, ruff, format, --check, .], trigger: always, severity: hard}\\n  coverage_map:\\n    argv: [uv, run, pytest, -q, --cov=clutch, --cov=eval, --cov-context=test, --cov-report=json:.clutch/coverage.json, --cov-config=coverage-map.toml]\\n    report: .clutch/coverage.json\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The ticket requires evidence commands while forbidding the documentation changes needed to describe them accurately.\\\",\\\"surprises\\\":\\\"The current documentation says no command exposes the schemas and no call has a normalized directory; both statements would become false.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"docs/how-clutch-works.md\\\",\\\"line\\\":821,\\\"message\\\":\\\"The new schema verb makes the statement that no command exposes JSON Schema false, but the ticket permits only four new table rows and no other changes to this document.\\\",\\\"paved_road\\\":\\\"Allow the ticket to update this statement along with the four verb table rows.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"docs/how-clutch-works.md\\\",\\\"line\\\":825,\\\"message\\\":\\\"Renormalization creates normalized directories, contradicting the existing statement that no call record has one; the ticket forbids changing this text.\\\",\\\"paved_road\\\":\\\"Allow the ticket to update this statement along with the four verb table rows.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":174610,\"cached_input_tokens\":139264,\"cache_write_input_tokens\":0,\"output_tokens\":808,\"reasoning_output_tokens\":203}}\n",
+  "wall_seconds": 24.545598,
+  "usd": 1.0,
+  "run_record": "tickets/evidence-verbs/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
