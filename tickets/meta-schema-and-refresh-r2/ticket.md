@@ -112,12 +112,13 @@ Scope out: `meta fill`, a `meta` model surface, the `meta_drift` gate, Check-tim
 6. `relates` entries that do not exist in the tracked file list are dropped, and `kind` follows the root with `fixture` under `fixtures/` or `harness/` in `tests/`. Check: `./dev.py test tests/unit/test_meta_refresh.py`.
 7. `Config` with no `meta` key has `meta.paths == []`, and a `kind` outside the closed six is refused. Check: `./dev.py test tests/unit/test_meta_config.py`.
 8. `clutch meta` appears in the help group list with description and examples for both subcommands. Check: `./dev.py test tests/unit/test_main_meta_group.py tests/unit/test_main_help.py`.
-9. In the repo, every tracked `.md` and `.py` file under `docs/`, `clutch/docs/` and `tests/` has a valid block with a matching hash and no `missing` or `drifted` finding, no block exists under `clutch/specs/`, and `docs/roadmap.md` still parses with `parse` and `choose`. Check: `./dev.py test tests/integration/test_meta_repo_blocks.py tests/integration/test_roadmap_table.py`.
+9. After `uv run clutch meta refresh` has run once on this ticket's tree, `uv run clutch meta check` exits 0: every tracked `.md` and `.py` file under `docs/`, `clutch/docs/` and `tests/` has a valid block with a matching hash. This is a one-time check of this ticket's own output, not a standing test: no permanent test asserts repo-wide freshness, because Check-time refresh and the `meta_drift` gate belong to a later plan ticket and a standing test would fail the next ticket that edits those roots. `docs/roadmap.md` still parses with `parse` and `choose`. Check: `uv run clutch meta check` and `./dev.py test tests/integration/test_roadmap_table.py`.
 10. Every shipped spec still loads: `./dev.py test tests/unit/test_specs.py`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_meta_block.py tests/unit/test_meta_refresh.py tests/unit/test_meta_cli.py tests/unit/test_meta_config.py tests/unit/test_main_meta_group.py tests/unit/test_main_help.py tests/unit/test_specs.py tests/integration/test_meta_repo_blocks.py tests/integration/test_roadmap_table.py
+./dev.py test tests/unit/test_meta_block.py tests/unit/test_meta_refresh.py tests/unit/test_meta_cli.py tests/unit/test_meta_config.py tests/unit/test_main_meta_group.py tests/unit/test_main_help.py tests/unit/test_specs.py tests/integration/test_roadmap_table.py
+uv run clutch meta check
 ./dev.py test
 ```
 
