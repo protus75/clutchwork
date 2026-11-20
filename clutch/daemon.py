@@ -630,6 +630,9 @@ class DaemonAdmission:
     def busy(self) -> bool:
         return bool(self._holding or self._exclusive or self._exclusive_waiters)
 
+    def exclusive_pending(self) -> bool:
+        return self._exclusive or bool(self._exclusive_waiters)
+
     def idle(self) -> bool:
         return not self.occupied() and self.mutating is None
 

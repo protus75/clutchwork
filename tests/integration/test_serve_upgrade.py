@@ -195,10 +195,8 @@ async def test_upgrade_waits_between_selection_and_admission(root, monkeypatch):
     ticket = parse_ticket("selected", (root / "tickets/selected/ticket.md").read_text(), root)
     rig.owner.core.scheduler.update(ticket)
     async with rig.owner.core.admission.exclusive():
-        dispatch = asyncio.create_task(rig.owner.core.scheduler.dispatch_next())
+        await rig.owner.core.scheduler.dispatch_next()
         await until(rig, lambda: rig.owner.core.scheduler.occupied() and "selected" not in rig.owner.core.scheduler.pending)
         assert rig.owner.core.admission.idle()
         assert not rig.owner.upgrade_idle()
-        dispatch.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await dispatch
+        await rig.owner.core.scheduler.close()

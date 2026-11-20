@@ -1,4 +1,4 @@
-"""Single-flight dispatch projection."""
+"""Slot-limited dispatch projection and run task ownership."""
 
 import asyncio
 from collections.abc import Awaitable, Callable, Iterable, Set
@@ -41,6 +41,8 @@ class Scheduler:
         self.pending: dict[str, Ticket] = {}
         self.flying: dict[str, Ticket] = {}
         self.skips: dict[str, int] = {}
+        self.tasks: set[asyncio.Task] = set()
+        self.failures: list[BaseException] = []
         self.parallel: Callable[[], Parallel] = Parallel
         self.log: Callable[..., None] = lambda *args, **kwargs: None
         self._slot = asyncio.Lock()
@@ -49,7 +51,19 @@ class Scheduler:
         self.select: Callable[[Ticket, str], bool] = lambda _ticket, _stage: True
 
     def occupied(self) -> bool:
-        return self._slot.locked()
+        return self._slot.locked() or bool(self.flying) or bool(self.failures)
+
+    def raise_failure(self) -> None:
+        if self.failures:
+            raise self.failures.pop(0)
+
+    async def close(self) -> None:
+        tasks = tuple(self.tasks)
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        self.flying.clear()
+        self.raise_failure()
 
     def update(self, ticket: Ticket) -> None:
         self.pending[ticket.stem] = ticket
@@ -58,12 +72,16 @@ class Scheduler:
         self.pending.pop(stem, None)
 
     async def dispatch_next(self) -> Ticket | None:
-        """Concurrent requests wait for completion, then select from current projections."""
+        """Select from current projections and return once a run occupies a slot."""
+        self.raise_failure()
         async with self._slot:
             events = self.journal.read()
             last = last_states(events)
             held = self.quarantined() | self.drought_parked()
             if self.completed_unmerged() >= self.max_unmerged:
+                return None
+            parallel = self.parallel()
+            if (not parallel.enabled and self.flying) or (parallel.enabled and len(self.flying) >= parallel.max_runs):
                 return None
             from clutch.rework import settled_dependencies, supersedes_maps
 
@@ -85,10 +103,7 @@ class Scheduler:
             ]
             if not ready:
                 return None
-            parallel = self.parallel()
             if parallel.enabled:
-                if len(self.flying) >= parallel.max_runs:
-                    return None
                 unsettled = {stem: t for stem, t in candidates.items() if stem not in settled} | self.flying
                 ordered = parallel_order(ready, authored, unsettled)
                 rerun = {stem for stem in candidates.keys() | self.flying.keys() if conflict_reruns(events, stem) > 0}
@@ -107,8 +122,14 @@ class Scheduler:
             write_queue(self.state_dir, self.fs, self.clock, ordered)
             self.remove(ticket.stem)
             self.flying[ticket.stem] = ticket
-            try:
-                await self.dispatch(ticket)
-            finally:
+            task = asyncio.create_task(self.dispatch(ticket))
+            self.tasks.add(task)
+
+            def done(task: asyncio.Task) -> None:
+                self.tasks.remove(task)
                 del self.flying[ticket.stem]
+                if not task.cancelled() and (error := task.exception()) is not None:
+                    self.failures.append(error)
+
+            task.add_done_callback(done)
             return ticket

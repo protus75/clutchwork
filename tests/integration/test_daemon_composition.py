@@ -356,10 +356,10 @@ async def test_production_core_reprioritizes_without_preemption(tmp_path, new_ti
     rig = CoreRig(tmp_path, prepare=prepare)
     for stem, priority in (("active", "P0"), ("normal", "P1"), ("urgent", "P3")):
         await rig.add(stem, priority)
-    first = asyncio.create_task(rig.core.scheduler.dispatch_next())
+    first = await rig.core.scheduler.dispatch_next()
     await started.wait()
     owned = next(iter(rig.core.admission.runs.values()))
-    waiter = asyncio.create_task(rig.core.scheduler.dispatch_next())
+    waiter = await rig.core.scheduler.dispatch_next()
     stem = "new-urgent" if new_ticket else "urgent"
     rig.files[stem] = text("P0")
     rig.core.watcher.change(stem)
@@ -372,11 +372,13 @@ async def test_production_core_reprioritizes_without_preemption(tmp_path, new_ti
     assert rig.core.scheduler.pending[stem].frontmatter.priority == "P0"
     release.set()
     await cleaning.wait()
-    assert calls == ["active"] and not first.done() and not waiter.done()
+    assert calls == ["active"] and first.stem == "active" and waiter is None
     assert "active" in rig.core.admission.runs
     assert next(iter(rig.core.admission.runs.values())) is owned and not owned.done()
     finish.set()
-    assert (await first).stem == "active" and (await waiter).stem == stem
+    while rig.core.scheduler.flying:
+        await turn()
+    assert (await dispatch_settled(rig.core.scheduler)).stem == stem
     assert calls == ["active", stem] and owned.done()
     assert_idle(rig.core.admission)
     assert not rig.core.admission.occupied()
@@ -445,23 +447,23 @@ async def test_production_core_preserves_eligibility_order_and_backpressure(tmp_
         caps.consume(rig.journal, "reject-held", "retry", "old")
     rig.quarantine.add("quarantine")
     rig.drought.add("drought")
-    assert await rig.core.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.core.scheduler) is None
     rig.transition("parent", "merged")
-    assert await rig.core.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.core.scheduler) is None
     rig.transition("noop", "already_satisfied")
-    assert await rig.core.scheduler.dispatch_next() is child
-    assert await rig.core.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.core.scheduler) is child
+    assert await dispatch_settled(rig.core.scheduler) is None
     rig.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "machine"}, ticket="reject-held")
-    assert await rig.core.scheduler.dispatch_next() is None
+    assert await dispatch_settled(rig.core.scheduler) is None
     rig.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "keep", "actor": "operator"}, ticket="reject-held")
-    assert (await rig.core.scheduler.dispatch_next()).stem == "reject-held"
+    assert (await dispatch_settled(rig.core.scheduler)).stem == "reject-held"
     await rig.add("budget-left")
     rig.transition("budget-left", "gate_failed", routed="reject_queue")
-    assert (await rig.core.scheduler.dispatch_next()).stem == "budget-left"
+    assert (await dispatch_settled(rig.core.scheduler)).stem == "budget-left"
     rig.quarantine.clear()
-    assert (await rig.core.scheduler.dispatch_next()).stem == "quarantine"
+    assert (await dispatch_settled(rig.core.scheduler)).stem == "quarantine"
     rig.drought.clear()
-    assert (await rig.core.scheduler.dispatch_next()).stem == "drought"
+    assert (await dispatch_settled(rig.core.scheduler)).stem == "drought"
     rig.calls.clear()
     for stem, priority in (("zzz-old", "P2"), ("aaa-new", "P2"), ("aaa-missing", "P2"), ("bbb-missing", "P2"), ("urgent", "P0"), ("low", "P3"), ("mid", "P1"), ("tie-aa", "P2"), ("tie-bb", "P2")):
         await rig.add(stem, priority)
@@ -475,20 +477,22 @@ async def test_production_core_preserves_eligibility_order_and_backpressure(tmp_
     rig.intake("tie-aa")
     for count in (2, 3):
         rig.unmerged = count
-        assert await rig.core.scheduler.dispatch_next() is None
+        assert await dispatch_settled(rig.core.scheduler) is None
     rig.unmerged = 1
     await rig.drain()
     assert rig.calls == ["urgent", "mid", "zzz-old", "aaa-new", "tie-aa", "tie-bb", "aaa-missing", "bbb-missing", "low"]
     await rig.add("pressure-aa")
     await rig.add("pressure-bb")
-    first = asyncio.create_task(rig.core.scheduler.dispatch_next())
+    first = await rig.core.scheduler.dispatch_next()
     await started.wait()
-    waiting = asyncio.create_task(rig.core.scheduler.dispatch_next())
+    waiting = await rig.core.scheduler.dispatch_next()
     release.set()
-    assert (await first).stem == "pressure-aa"
-    assert await waiting is None
+    assert first.stem == "pressure-aa" and waiting is None
+    while rig.core.scheduler.flying:
+        await turn()
+    assert await rig.core.scheduler.dispatch_next() is None
     rig.unmerged = 0
-    assert (await rig.core.scheduler.dispatch_next()).stem == "pressure-bb"
+    assert (await dispatch_settled(rig.core.scheduler)).stem == "pressure-bb"
     assert all(e.ticket == "reject-held" for e in rig.journal.read() if e.type == EventType.CAP_CONSUMED)
 
 
@@ -592,44 +596,41 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
     monkeypatch.setattr(cli, "load_config", load)
     monkeypatch.setattr(cli, "replace", bind)
     if failure == "cancel":
-        first = asyncio.create_task(rig.core.scheduler.dispatch_next())
+        assert await rig.core.scheduler.dispatch_next() is first_ticket
         await started.wait()
         owned = next(iter(rig.core.admission.runs.values()))
-        waiter = asyncio.create_task(rig.core.scheduler.dispatch_next())
-        await turn()
-        waiter.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await waiter
+        assert await rig.core.scheduler.dispatch_next() is None
         assert calls == [first_ticket] and len(prepared) == 1
         assert not owned.cancelling()
-        first.cancel()
+        closing = asyncio.create_task(rig.core.scheduler.close())
         await cleaning.wait()
-        second = asyncio.create_task(rig.core.scheduler.dispatch_next())
-        await turn()
+        assert await rig.core.scheduler.dispatch_next() is None
         assert first_ticket.stem in rig.core.admission.runs
-        assert next(iter(rig.core.admission.runs.values())) is owned and not second.done()
+        assert next(iter(rig.core.admission.runs.values())) is owned and not closing.done()
         failing = False
         release.set()
-        with pytest.raises(asyncio.CancelledError):
-            await first
+        await closing
         assert owned.done() and owned.cancelled() and owned not in asyncio.all_tasks()
-        assert await second is second_ticket
+        assert await dispatch_settled(rig.core.scheduler) is second_ticket
     elif failure == "callback":
-        first = asyncio.create_task(rig.core.scheduler.dispatch_next())
+        assert await rig.core.scheduler.dispatch_next() is first_ticket
         await cleaning.wait()
         owned = next(iter(rig.core.admission.runs.values()))
-        second = asyncio.create_task(rig.core.scheduler.dispatch_next())
-        await turn()
-        assert calls == [first_ticket] and len(prepared) == 1 and not second.done()
+        assert await rig.core.scheduler.dispatch_next() is None
+        assert calls == [first_ticket] and len(prepared) == 1
         assert first_ticket.stem in rig.core.admission.runs
         assert next(iter(rig.core.admission.runs.values())) is owned and not owned.done()
         failing = False
         release.set()
+        while rig.core.scheduler.flying:
+            await turn()
         with pytest.raises(ValueError) as caught:
-            await first
+            await rig.core.scheduler.dispatch_next()
         assert caught.value is error and owned.done()
-        assert await second is second_ticket
+        assert await dispatch_settled(rig.core.scheduler) is second_ticket
     else:
+        if failure == "bind":
+            await dispatch_settled(rig.core.scheduler)
         with pytest.raises(ValueError) as caught:
             await rig.core.scheduler.dispatch_next()
         assert caught.value is error
@@ -637,7 +638,7 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
         assert not rig.core.admission.occupied()
         assert prepared == []
         failing = False
-        assert await rig.core.scheduler.dispatch_next() is (first_ticket if failure == "load" else second_ticket)
+        assert await dispatch_settled(rig.core.scheduler) is (first_ticket if failure == "load" else second_ticket)
     assert_idle(rig.core.admission)
     assert not rig.core.admission.occupied() and calls[-1] is (first_ticket if failure == "load" else second_ticket)
 

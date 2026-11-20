@@ -394,39 +394,44 @@ class Serve:
     async def dispatch(self) -> None:
         response = self.responses[0]
         while True:
+            self.core.scheduler.raise_failure()
+            busy = self.core.admission.busy()
+            exclusive_pending = self.core.admission.exclusive_pending()
             self.control.poll()
             if self.control.projection.kill_requested:
                 self.stop()
-            if not self.stopping and self.control.projection.pause_id is None and not self.core.admission.busy():
-                await response.wait(self.check_upgrade())
-                if self.upgrade_idle() and not self.control.projection.stop_requested:
+            if not self.stopping and self.control.projection.pause_id is None:
+                if not busy:
+                    await response.wait(self.check_upgrade())
+                    if self.upgrade_idle() and not self.control.projection.stop_requested:
 
-                    async def supervise():
-                        async with self.mutations():
-                            self.control.poll()
-                            if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested or self.control.projection.pause_id is not None:
-                                return
+                        async def supervise():
+                            async with self.mutations():
+                                self.control.poll()
+                                if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested or self.control.projection.pause_id is not None:
+                                    return
 
-                            async def make_ctx():
-                                return (await self.prepare(replace(self.checkout, config=snapshot_config(self.control.load_config())))).ctx
+                                async def make_ctx():
+                                    return (await self.prepare(replace(self.checkout, config=snapshot_config(self.control.load_config())))).ctx
 
-                            async def run_triage(ids):
-                                from clutch.__main__ import _preflighted_llm
-                                from clutch.box import UnknownBoxId
+                                async def run_triage(ids):
+                                    from clutch.__main__ import _preflighted_llm
+                                    from clutch.box import UnknownBoxId
 
-                                try:
-                                    llm = await _preflighted_llm(self.checkout, self.control.providers)
-                                    await triage.triage_pass(self.checkout, llm, frozenset(ids))
-                                except UnknownBoxId as exc:
-                                    self.log.event("triage_refused", reason=str(exc))
-                                    raise
+                                    try:
+                                        llm = await _preflighted_llm(self.checkout, self.control.providers)
+                                        await triage.triage_pass(self.checkout, llm, frozenset(ids))
+                                    except UnknownBoxId as exc:
+                                        self.log.event("triage_refused", reason=str(exc))
+                                        raise
 
-                            await self.control.inbox.settle_triage(run_triage)
-                            await supervise_idle(self.checkout, make_ctx)
-                            calibrate_when_due(self.checkout)
+                                await self.control.inbox.settle_triage(run_triage)
+                                await supervise_idle(self.checkout, make_ctx)
+                                calibrate_when_due(self.checkout)
 
-                    await response.wait(supervise())
-                await response.wait(self.core.scheduler.dispatch_next())
+                        await response.wait(supervise())
+                if not busy or not exclusive_pending:
+                    await response.wait(self.core.scheduler.dispatch_next())
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
     async def apply_verdict(self, stem, verb, key, actor, reason=None):
@@ -509,6 +514,7 @@ class Serve:
     async def cleanup(self) -> None:
         await self.ready.wait()
         abort_error = None
+        errors = []
         try:
             await self.stopper.stop(replace(self.control.projection, kill_requested=True))
         except BaseException as exc:
@@ -516,9 +522,13 @@ class Serve:
         finally:
             # Even a failed abort has unwound before worker cleanup. It cannot earn kill_applied.
             await _protected_cleanup(_stop_workers(self.workers))
+            try:
+                await self.core.scheduler.close()
+            except Exception as exc:
+                errors.append(exc)
             await _protected_cleanup(asyncio.create_task(self.notifications.close()))
         results = await asyncio.gather(self.background, self.observation, return_exceptions=True)
-        errors = [task.exception() for task in self.workers if not task.cancelled()]
+        errors += [task.exception() for task in self.workers if not task.cancelled()]
         errors += [r for r in results if isinstance(r, BaseException)]
         for writer in self.writers.values():
             writer.continuations.clear()

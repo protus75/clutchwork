@@ -257,7 +257,7 @@ class _Member:
             finally:
                 wait.cancel()
                 await asyncio.gather(wait, return_exceptions=True)
-            dispatch = asyncio.create_task(self.core.scheduler.dispatch_next())
+            dispatch = asyncio.create_task(dispatch_settled(self.core.scheduler))
             try:
                 # A turn count is not a time bound under load.
                 deadline = time.monotonic() + 60

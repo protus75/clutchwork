@@ -147,14 +147,16 @@ async def test_single_flight_dispatch(rig):
         rig.active = None
 
     rig.scheduler.dispatch = dispatch
-    first = asyncio.create_task(rig.scheduler.dispatch_next())
+    first = await rig.scheduler.dispatch_next()
     await started.wait()
-    second = asyncio.create_task(rig.scheduler.dispatch_next())
+    second = await rig.scheduler.dispatch_next()
     await turn()
-    assert rig.calls == ["aa"] and not first.done() and not second.done()
+    assert rig.calls == ["aa"] and first.stem == "aa" and second is None
     assert rig.active.stem == "aa"
     release.set()
-    assert [t.stem for t in await asyncio.gather(first, second)] == ["aa", "bb"]
+    while rig.scheduler.flying:
+        await turn()
+    assert (await dispatch_settled(rig.scheduler)).stem == "bb"
     assert active == 0 and rig.active is None
 
 
@@ -168,6 +170,7 @@ async def test_dispatch_failure_and_cancellation_release_slot(rig):
         raise ValueError("dispatch failed")
 
     rig.scheduler.dispatch = fail
+    await dispatch_settled(rig.scheduler)
     with pytest.raises(ValueError, match="dispatch failed"):
         await rig.scheduler.dispatch_next()
     assert rig.active is None
@@ -182,20 +185,14 @@ async def test_dispatch_failure_and_cancellation_release_slot(rig):
             rig.active = None
 
     rig.scheduler.dispatch = block
-    running = asyncio.create_task(rig.scheduler.dispatch_next())
+    assert (await rig.scheduler.dispatch_next()).stem == "bb"
     await started.wait()
-    waiter = asyncio.create_task(rig.scheduler.dispatch_next())
-    await turn()
-    waiter.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await waiter
+    assert await rig.scheduler.dispatch_next() is None
     assert rig.active.stem == "bb"
-    running.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await running
+    await rig.scheduler.close()
     assert rig.active is None
     rig.scheduler.dispatch = rig.dispatch
-    assert (await rig.scheduler.dispatch_next()).stem == "cc"
+    assert (await dispatch_settled(rig.scheduler)).stem == "cc"
 
 
 @pytest.mark.asyncio
@@ -283,15 +280,17 @@ async def test_max_unmerged_backpressure(rig):
         rig.unmerged = 2
 
     rig.scheduler.dispatch = dispatch
-    first = asyncio.create_task(rig.scheduler.dispatch_next())
+    first = await rig.scheduler.dispatch_next()
     await started.wait()
-    second = asyncio.create_task(rig.scheduler.dispatch_next())
+    second = await rig.scheduler.dispatch_next()
     release.set()
-    assert (await first).stem == "aa"
-    assert await second is None  # Re-read after the previous dispatch finishes.
+    assert first.stem == "aa" and second is None
+    while rig.scheduler.flying:
+        await turn()
+    assert await rig.scheduler.dispatch_next() is None  # Re-read after the previous dispatch finishes.
     rig.unmerged = 0
     rig.scheduler.dispatch = rig.dispatch
-    assert (await rig.scheduler.dispatch_next()).stem == "bb"
+    assert (await dispatch_settled(rig.scheduler)).stem == "bb"
 
 
 @pytest.mark.asyncio
@@ -344,17 +343,18 @@ async def test_watcher_reprioritizes_without_preemption(rig, new_ticket):
             await release.wait()
 
     rig.scheduler.dispatch = dispatch
-    running = asyncio.create_task(rig.scheduler.dispatch_next())
+    running = await rig.scheduler.dispatch_next()
     await started.wait()
-    waiting = asyncio.create_task(rig.scheduler.dispatch_next())
+    waiting = await rig.scheduler.dispatch_next()
     stem = "new-urgent" if new_ticket else "urgent"
     rig.files[stem] = text("P0")
     await rig.publish(stem)
-    assert rig.calls == ["active"] and not running.done() and not waiting.done()
+    assert rig.calls == ["active"] and running.stem == "active" and waiting is None
     assert rig.active.stem == "active"
     release.set()
-    assert (await running).stem == "active"
-    assert (await waiting).stem == stem
+    while rig.scheduler.flying:
+        await turn()
+    assert (await dispatch_settled(rig.scheduler)).stem == stem
     assert rig.calls == ["active", stem]
     await rig.watcher.close()
 

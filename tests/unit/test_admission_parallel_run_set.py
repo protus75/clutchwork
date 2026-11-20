@@ -183,7 +183,9 @@ async def test_scheduler_occupied_during_dispatch(monkeypatch, tmp_path):
     )
     ticket = SimpleNamespace(stem="a", frontmatter=SimpleNamespace(state="confirmed", priority="P2"), depends=(), runs_before=())
     scheduler.update(ticket)
-    task = asyncio.create_task(scheduler.dispatch_next())
+    from tests.dispatch_settle import dispatch_settled
+
+    task = asyncio.create_task(dispatch_settled(scheduler))
     await entered.wait()
     assert scheduler.occupied()
     release.set()

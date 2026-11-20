@@ -119,8 +119,9 @@ async def test_shared_path_and_dispatch_failure_cleanup():
         raise ValueError("dispatch")
 
     obj.dispatch = fail
+    await dispatch_settled(obj)
     with pytest.raises(ValueError, match="dispatch"):
-        await dispatch_settled(obj)
+        await obj.dispatch_next()
     assert calls == [candidate] and obj.skips == {} and logs == []
     assert obj.flying == {"busy": busy}
 
