@@ -4,8 +4,8 @@ import asyncio
 from collections.abc import Awaitable, Callable, Iterable, Set
 from pathlib import Path
 
-from clutch.config import Caps
-from clutch.drain import authored_at, eligible, order_tickets, parked_blob, reofferable, write_queue
+from clutch.config import Caps, Parallel
+from clutch.drain import authored_at, eligible, fill_slots, order_tickets, parallel_order, parked_blob, reofferable, write_queue
 from clutch.journal import TERMINAL_STATES, Journal
 from clutch.seams import Clock, FileSystem
 from clutch.status import last_states
@@ -38,6 +38,10 @@ class Scheduler:
         self.completed_unmerged = completed_unmerged
         self.max_unmerged = max_unmerged
         self.pending: dict[str, Ticket] = {}
+        self.flying: dict[str, Ticket] = {}
+        self.skips: dict[str, int] = {}
+        self.parallel: Callable[[], Parallel] = Parallel
+        self.log: Callable[..., None] = lambda *args, **kwargs: None
         self._slot = asyncio.Lock()
         self.continuations: Callable[[], Iterable[Ticket]] = lambda: ()
         self.next_stage: Callable[[Ticket], str] = lambda _: "implement"
@@ -80,9 +84,29 @@ class Scheduler:
             ]
             if not ready:
                 return None
-            ordered = order_tickets(ready, authored)
+            parallel = self.parallel()
+            if parallel.enabled:
+                if len(self.flying) >= parallel.max_runs:
+                    return None
+                unsettled = {stem: t for stem, t in candidates.items() if stem not in settled} | self.flying
+                ordered = parallel_order(ready, authored, unsettled)
+                selected, counts = fill_slots(ordered, self.flying.values(), 1, parallel.shared_paths, self.skips)
+                for stem, count in counts.items():
+                    if count > self.skips.get(stem, 0):
+                        self.log("dispatch_skip", stem=stem, count=count)
+                self.skips = counts
+                if not selected:
+                    return None
+                ticket = selected[0]
+                ordered = [ticket, *(t for t in ordered if t.stem != ticket.stem)]
+            else:
+                ordered = order_tickets(ready, authored)
+                ticket = ordered[0]
             write_queue(self.state_dir, self.fs, self.clock, ordered)
-            ticket = ordered[0]
             self.remove(ticket.stem)
-            await self.dispatch(ticket)
+            self.flying[ticket.stem] = ticket
+            try:
+                await self.dispatch(ticket)
+            finally:
+                del self.flying[ticket.stem]
             return ticket

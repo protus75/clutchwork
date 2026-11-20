@@ -525,6 +525,7 @@ def daemon_core(
     max_runs: int = 1,
     before_dispatch: Callable[[], Awaitable[None]] | None = None,
     control: PauseConsumer | None = None,
+    log: Callable[..., None] | None = None,
 ) -> DaemonCore:
     admission = DaemonAdmission(snapshot_dispatch(load, bind), max_runs=max_runs, before_dispatch=before_dispatch)
     scheduler = Scheduler(
@@ -540,6 +541,9 @@ def daemon_core(
         completed_unmerged=completed_unmerged,
         max_unmerged=max_unmerged,
     )
+    scheduler.parallel = lambda: load().scheduler.parallel
+    if log is not None:
+        scheduler.log = log
     watcher = Watcher(
         repo,
         journal=journal,

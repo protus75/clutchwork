@@ -180,6 +180,7 @@ class Serve:
             drought_parked=lambda: set(),
             completed_unmerged=lambda: len(self.queue.pending) if self.queue is not None else 0,
             prepare=prepared,
+            log=self.log.event,
         )
         publication: dict[str, str] = {}
 

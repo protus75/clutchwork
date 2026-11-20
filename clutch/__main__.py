@@ -151,6 +151,7 @@ def build_daemon_core(
     drought_parked: Callable[[], Set[str]],
     completed_unmerged: Callable[[], int],
     prepare: Callable[[runner.Checkout], Awaitable[runner.Dispatch]] = runner.prepare_pipeline,
+    log: Callable[..., None] | None = None,
 ) -> DaemonCore:
     """Compose the production core without starting consumers or preparing a dispatch."""
     consumer = checkout.control or build_control(checkout)
@@ -196,6 +197,7 @@ def build_daemon_core(
         max_runs=_admission_max_runs(checkout.config.scheduler.parallel),
         before_dispatch=consumer.checkpoint,
         control=consumer,
+        log=log,
     )
     timers = consumer.providers.timers
     restart = Restart(checkout, timers=timers, owned=lambda: core.admission.occupied())

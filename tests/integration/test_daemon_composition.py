@@ -636,9 +636,9 @@ async def test_production_core_unwinds_errors_and_cancellation(tmp_path, monkeyp
         assert not rig.core.admission.occupied()
         assert prepared == []
         failing = False
-        assert await rig.core.scheduler.dispatch_next() is second_ticket
+        assert await rig.core.scheduler.dispatch_next() is (first_ticket if failure == "load" else second_ticket)
     assert_idle(rig.core.admission)
-    assert not rig.core.admission.occupied() and calls[-1] is second_ticket
+    assert not rig.core.admission.occupied() and calls[-1] is (first_ticket if failure == "load" else second_ticket)
 
 
 def observe_preparation(monkeypatch):
