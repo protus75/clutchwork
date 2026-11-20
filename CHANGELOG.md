@@ -1,5 +1,87 @@
 # Changelog
 
+## 0.5.0 - 2026-11-20
+- training-attempt-manifest: When `training_data.enabled` is true, every failed or abandoned attempt leaves one attempt manifest in the evidence store before its worktree is removed.
+- serve-dispatch-returns-on-slot: Roadmap row 166, replacing merged row 45.
+- serve-dispatch-returns-on-slot-settle: Prepares roadmap row 166 (`serve-dispatch-returns-on-slot`).
+- parallel-gate-merge-count: The 0.4.0 ship clause in `docs/roadmap.md` section 1 is "parallel serve has merged the next 10 tickets with no conflict-rerun cap hit".
+- retro-conflict-path-proposals: `docs/parallel-tickets-plan.md` section 8 has a retro propose a `merge.strategies` entry or a split for any path that conflicts often, and row 48 (`status-hot-paths`) built only the table.
+- training-config: Roadmap row 57, section 1 of `docs/training-data-plan.md`.
+- docs-truth-after-040: Roadmap row 163.
+- conflict-rerun-runs-alone: Roadmap row 165, replacing merged rows 43 and 159.
+- graphics-select-waits-go: Roadmap row 169; Gemini graphics plan B7 and roadmap decision 17 say every graphics ticket parks until a `visual_baseline` GO is recorded for the current judge.
+- visual-baseline-fixtures: Roadmap row 170 (Gemini plan B7).
+- serve-parallel-fill-slots: Roadmap row 164.
+- graphics-review-spec-blocks: Roadmap row 171, gemini-graphics-refactor-plan B8.
+- visual-review-baseline: Roadmap row 55 (Gemini plan B7).
+- image-embed-presence: Plan B4 defers the embedding presence check: when a ticket asks for `presence: embedding`, the `image_quality` gate scores CLIP similarity between an `input:` image and the output instead of counting ORB keypoint matches.
+- requisition-review-stand-in-closure: Requisition review approves tickets whose Scope in makes production code read an attribute that hand-built test stand-ins lack.
+- image-candidates-select-r1: Roadmap row 54, Gemini plan B6 (Layer 3).
+- status-hot-paths: Roadmap row 48, parallel plan section 8.
+- image-quality-gate-wiring: Today a `kind: graphics` ticket has no mechanical image check at Check.
+- visual-review-surface: Roadmap row 53, Layer 2 of the graphics grading.
+- image-quality-checks: Today clutch has no code that decodes or scores an image, so a `kind: graphics` ticket cannot get a mechanical image check at Check.
+- image-quality-gate-r1: Roadmap row 52, first of two parts (the dependency half; the gate code is delivered by `image-quality-checks` and `image-quality-gate-wiring`).
+- projection-leftovers: Roadmap row 146, the part of row 125 that `projection-helpers-single-owner` left out.
+- storm-producer-one-builder: Roadmap section 2.1 item 10, left out of row 125.
+- graphics-render-check: Roadmap row 50 (gemini plan B2).
+- conflict-rerun-swap: This is part 3 of 3 of the conflict discard-and-rerun work (parts 1 and 2 are `conflict-discard-rerun-r1`, which added `lift_prior_diff` and the Prior attempt prompt section, and `conflict-rerun-accounting`, which added `CONFLICT_RERUN_LIMIT`, `conflict_reruns` and `conflict_rerun_spent` in `clutch/caps.py`).
+- requisition-review-whole-value-closure: Requisition review approved `unit-coverage-drop-test-contexts` twice (spec 3.22) while `tests/integration/test_fixture_host.py`, outside the fence, asserted `cfg.review.mechanical[0].model_dump() == {...}` exactly.
+- route-kinds-filter-r1: Roadmap row 51 (Gemini plan B3).
+- dispatch-during-driver-pass: `clutch engine serve` no longer holds up ticket dispatch while the roadmap driver pass runs.
+- provider-install-commit-workspace-file: `clutch provider install` runs `pnpm add -D --allow-build=<package>`, and pnpm records that approval in `pnpm-workspace.yaml` (`allowBuilds`).
+- dispatch-during-driver-pass-drain: `clutch engine drain` no longer holds up the next ticket while the roadmap driver pass runs.
+- ticket-frontmatter-tolerant-reader: Roadmap row 144 (`docs/roadmap.md` §2.3, the bullet "Ticket metadata still read outside the owner", left out of row 125 by `projection-helpers-single-owner`).
+- graphics-kind: A ticket can be `kind: graphics`.
+- dispatch-during-driver-pass-gate: Every write the roadmap driver makes to the main checkout, and every merge admission step that reads or changes that checkout, takes one in-process lock, `Git.main_write()`.
+- conflict-rerun-accounting: This is part 2 of 3 of roadmap row 47 (docs/roadmap.md, plan docs/parallel-tickets-plan.md section 5 step 3).
+- box-issue-process-gap-class: A host session can send a clutch process gap upstream through `clutch box issue --class process-gap`.
+- host-loop-scenarios-concurrent: The module fixture `production` in `tests/integration/test_host_loop.py` runs the five scenarios in `hosts.fixture.scaffold.SCENARIOS` one after another.
+- snapshot-merged-history-cap: Owner design, 2026-11-19.
+- harvest-usd-source-flags: A failed attempt's `harvest.json` says whether `usd` was reported by the provider or is the flat `limits.est_cost_per_call_usd`, whether the provider can enforce a budget cap, and which provider and model ran the attempt.
+- integration-test-repo-isolation: Integration tests could read the live checkout through the process working directory, and nothing stopped them.
+- unit-coverage-drop-test-contexts: The `unit` check stops recording per-test coverage contexts on every run.
+- core-rule-duckdb-not-sqlite: Every host's managed `clutch:core` block carries one rule: embedded databases use DuckDB, never SQLite.
+- view-events-stream: Roadmap row 161, owner request 2026-11-19.
+- snapshot-from-duckdb-cache: Owner design, 2026-11-19.
+- journal-duckdb-cache: Owner request, 2026-11-19.
+- admission-facts-precomputed: `clutch view snapshot` takes about 40 s on this repo's journal.
+- watch-tests-fixture-repo: Three integration tests in `tests/integration/test_watch.py` run `clutch view snapshot` against the live clutch checkout instead of a fixture.
+- plan-ticket-drain-small-window: An operator running `clutch prompt plan-ticket-drain` writes roadmap tickets at the last minute, at most a few ahead (3, or 2 after a drift failure), authored while a ticket is implemented, so each is based on current main.
+- document-agent-roadmap-prompt: Give an operator on Clutch itself or an independently installed host one prompt to create or maintain docs/roadmap.md from local plans, ready for clutch prompt plan-ticket-drain.
+- plan-ticket-drain-author-ahead-parallel: An operator running `clutch prompt plan-ticket-drain` authors the next roadmap rows in parallel while a ticket is implemented, so the engine's driver never has to author a row inline and the next confirmed ticket is never kept waiting behind authoring.
+- parallel-dispatch-eligible-r1: `Scheduler.dispatch_next` and `_Drain._select` each hand-write the same shared candidate filter: the ticket is confirmed, its last state is not in `CLOSED`, it is not in `supersedes_maps`, and `set(t.depends) <= settled`.
+- conflict-discard-rerun-r1: This is part 1 of 3 of roadmap row 47 (docs/roadmap.md), the inputs a conflict rerun reads.
+- author-gate-scope-out-deferral: The Author gate refuses a roadmap-row draft whose Scope out defers row work to "separate tickets" or a "follow-up" that does not exist, so a merge cannot strike the row and drop that work.
+- parallel-dispatch-run-context: Three things are true after this ticket that are not true now, and each removes a single-flight assumption so several serve runs can coexist (docs/parallel-tickets-plan.md section 4):
+- serve-parallel-dispatch-r2: When `scheduler.parallel.enabled` is true, `DaemonAdmission` holds a run set of up to `max_runs` tickets, each with its own task, instead of one `_slot` lock, one `active` ticket and one `task`.
+- reject-terminal-carries-rework-findings: When Diagnose or Rework splits a ticket and the replacement tickets fail review, `failure_terminal` sets verdict `reject` and parks the run, but it journals only the original failure's finding codes.
+- merge-model-resolve: When the mechanical step (`merge.strategies`) cannot resolve a rebase conflict in the serve merge queue, a model now tries a bounded repair before the existing hand-off to Rework.
+- requisition-review-stated-preconditions: Today, requisition review approved ticket `boundary-contract-required` although its Goal stated a precondition that was false on HEAD: two open tickets "must already carry a valid ## Boundary contract section when this ticket runs".
+- release-audit-040-r1: At the end of 0.4.0, `docs/roadmap.md` sections 2-4 describe the code as it was at the 0.3.0 audit commit, and the 0.5.0 `gate` block checks no section 1 ship clause.
+- chain-order: Roadmap row 44, parallel plan ticket 5.
+- fence-overlap: Roadmap row 43, parallel plan ticket 4.
+- parallel-config: Roadmap row 42, parallel plan ticket 3.
+- roadmap-release-audit-last: A release's audit row becomes ready only after every other row of its release is merged or struck.
+- operator-reject-reason-refile: After this ticket, `clutch ticket reject --reason TEXT <stem>` records TEXT on the operator `reject_verdict` kill signal on both paths: the direct writer-lock path, and the running engine's inbox path.
+- reply-parse-prose-before-json: A model reply that opens with prose and then holds exactly one top-level JSON object parses on the first call, with no schema retry.
+- exec-seam-unwind-capture: When `SubprocessExec.run` unwinds on a timeout or outer cancellation with no line-consumer failure, the raised exception carries `process_capture` = (stdout, stderr), holding the bytes already read plus the drained remainder from `_kill_and_wait`.
+- roadmap-refile-waits-for-depends: After this ticket, `author_ahead` re-files a rejected roadmap row only when every stem in the row's Depends on is done, by the same test `choose` applies.
+- boundary-contract-required: Roadmap row 154, boundary plan phase 2 follow-up.
+- boundary-contract-authoring: Roadmap row 151, boundary plan Phase 1.
+- provider-install-verifies-binary: After `clutch provider install <name>` exits 0, the installed provider CLI runs.
+- author-slice-needs-follow-up-row: The Author gate refuses a roadmap-row draft whose Goal calls the work a slice of the row (the word `slice`, as both row 128 drafts wrote `Roadmap row 128, first slice:`) but whose Scope fence omits `docs/roadmap.md`, so the remaining work cannot silently drop.
+- boundary-contract-trial: Roadmap row 150.
+- specs-explain-quoted-delimiter: Every rendered stage prompt tells the model that `[clutch-data:` inside a data block stands for the real data-block delimiter in the file on disk.
+- author-stem-claimed-recheck: Author never overwrites a ticket file that appeared after the gate checked the stem.
+- box-triage-via-inbox: While `clutch engine drain` or `clutch engine serve` holds the writer lock, `clutch box triage [<id>...]` exits 2 with a `LockHeld` refusal.
+- intake-keeps-human-draft: After this ticket, intake of a new human ticket that carries an explicit `state: draft` line keeps it `draft` and stamps only `source: human`.
+- authoring-no-standing-document-content-tests: Authoring and requisition review both refuse a ticket criterion that adds a standing test of the current text of the roadmap or a plan document: live roadmap rows, gate-block commands, or plan section phrases.
+- review-spec-rma-all-ticket-codes: `clutch/specs/review.md` and the reply validator agree on what an `rma` reply may contain.
+- cli-group-coverage: Roadmap row 140 (`cli-group-coverage`), group `coverage`.
+- admission-slot-busy-probe: A kill sent during a retro is never ignored or delayed because of a lost admission-slot race.
+- unit-gate-uses-engine-clutch: The `unit` mechanical check in `config.yaml` runs the gate through the ticket worktree's own source (`uv run python -m clutch covgate -- ...`).
+
 ## 0.4.2 - 2026-11-17
 
 ## 0.4.1 - 2026-11-17
