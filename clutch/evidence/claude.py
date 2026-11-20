@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 from clutch.evidence.schema import Event
 
-NORMALIZER_ID = "claude-stream/1"
+NORMALIZER_ID = "claude-stream/2"
 VERIFIED_PROVIDERS = frozenset({"claude"})
 
 _TOOL_CLASSES = {
@@ -49,6 +49,25 @@ def normalize(stdout: bytes, times_ns: list[int] | None, put_blob: Callable[[byt
                         **data,
                     }
                 )
+            )
+
+        message = native.get("message")
+        if typ == "assistant" and isinstance(message, dict) and isinstance(message.get("usage"), dict) and isinstance(message.get("id"), str):
+            usage = message["usage"]
+            details = usage.get("output_tokens_details") or {}
+            emit(
+                "usage",
+                "assistant/usage",
+                native,
+                tokens={
+                    "message_id": message["id"],
+                    "input_uncached": usage.get("input_tokens"),
+                    "input_cache_read": usage.get("cache_read_input_tokens"),
+                    "input_cache_write": usage.get("cache_creation_input_tokens"),
+                    "output_total": usage.get("output_tokens"),
+                    "output_reasoning": details.get("thinking_tokens"),
+                    "tokenizer": "anthropic",
+                },
             )
 
         if typ == "system" and native.get("subtype") == "init":

@@ -384,8 +384,8 @@ async def test_meter_ignores_non_object_event_fields(tmp_path):
     meter.complete()
     assert result.text == "done" and result.usd == 0.42
     assert observed == [json.loads(line) for line in stream.splitlines()]
-    assert rig.detector.call.tools == {"tool-1", "tool-2"}
-    assert rig.detector.call.usage["msg-1"] == {"input_tokens": 10, "output_tokens": 7}
+    assert rig.detector.call.tools == {"tool-1"}
+    assert rig.detector.call.usage["msg-1"] == {"input_uncached": 10, "output_total": 7}
     assert rig.detector.tokens == 122
     assert rig.detector.total_usd == rig.detector.spend == 0.42
     assert rig.detector.bases == {("claude", served.model): 0.42}

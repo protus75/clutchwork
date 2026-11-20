@@ -102,4 +102,18 @@ def test_other_lines_and_blocks():
     assert events[3].native == unknown and events[4].native == {"line": "not json"}
     assert events[5].native["message"]["content"] == [{"type": "future", "data": 4}]
     assert events[6].native == {"line": "42"}
-    assert NORMALIZER_ID == "claude-stream/1" and VERIFIED_PROVIDERS == frozenset({"claude"})
+    assert NORMALIZER_ID == "claude-stream/2" and VERIFIED_PROVIDERS == frozenset({"claude"})
+
+
+def test_assistant_usage_and_sequence():
+    assistant = {"type": "assistant", "message": {"id": "m1", "content": [{"type": "text", "text": "hello"}], "usage": {"input_tokens": 10, "output_tokens": 7}}}
+    user = message("user", {"type": "tool_result", "tool_use_id": "tool", "content": "done"})
+    events, _ = run(assistant, user)
+    usage = next(event for event in events if event.kind == "usage")
+    assert usage.native_type == "assistant/usage" and usage.status is None
+    assert (usage.tokens["message_id"], usage.tokens["input_uncached"], usage.tokens["output_total"]) == ("m1", 10, 7)
+    assert events[-1].seq == 2
+    without_usage = {"type": "assistant", "message": {"id": "m1", "content": []}}
+    without_id = {"type": "assistant", "message": {"content": [], "usage": {"input_tokens": 10}}}
+    assert run(without_usage)[0] == []
+    assert run(without_id)[0] == []

@@ -1,7 +1,10 @@
 """Watched LLM execution and run-local spend/progress detection."""
 
 import asyncio
+import json
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+
+from pydantic import ValidationError
 
 from clutch.providers import ADAPTERS, ProviderSetupError, Served
 from clutch.seams import Clock, Sleep
@@ -66,6 +69,7 @@ class CallMeter(EventConsumer):
         self.identity = (served.provider.name, served.model)
         estimate = served.provider.limits.est_cost_per_call_usd
         self.reports_cost = ADAPTERS[served.provider.name].reports_cost
+        self.normalizer = ADAPTERS[served.provider.name].normalizer
         if not self.reports_cost and estimate is None:
             raise ProviderSetupError("stream reports no cost; declare limits.est_cost_per_call_usd")
         self.basis = detector.bases.get(self.identity, estimate)
@@ -82,29 +86,18 @@ class CallMeter(EventConsumer):
     def _consume(self, event: dict) -> None:
         d = self.detector
         d.observe_progress()
-        kind = event.get("type")
-        message = event.get("message")
-        if not isinstance(message, dict):
-            message = {}
-        if kind == "assistant":
-            content = message.get("content")
-            if isinstance(content, list):
-                self.tools.update(block["id"] for block in content if isinstance(block, dict) and block.get("type") == "tool_use" and "id" in block)
-        item = event.get("item")
-        if not isinstance(item, dict):
-            item = {}
-        if kind in {"item.started", "item.updated", "item.completed"} and item.get("type") in {"command_execution", "file_change", "mcp_tool_call", "web_search"} and "id" in item:
-            self.tools.add(item["id"])
-        if kind == "tool_use" and "tool_id" in event:
-            self.tools.add(event["tool_id"])
-        usage = event.get("usage") if kind in {"result", "turn.completed"} else message.get("usage")
-        if kind == "result" and usage is None:
-            usage = event.get("stats")
-        if isinstance(usage, dict):
-            key = "terminal" if kind in {"result", "turn.completed"} else message.get("id")
-            if key is not None:
+        try:
+            events = self.normalizer(json.dumps(event).encode(), None, lambda data: "")
+        except KeyError, TypeError, AttributeError, ValidationError:
+            events = []
+        for normalized in events:
+            if normalized.kind in ("tool_call", "tool_result") and normalized.tool is not None:
+                self.tools.add(normalized.tool.id)
+            usage = normalized.tokens
+            if isinstance(usage, dict):
+                key = usage.get("message_id", "terminal")
                 previous = self.usage.setdefault(key, {})
-                for field in ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"):
+                for field in ("input_uncached", "input_cache_read", "input_cache_write", "output_total"):
                     value = usage.get(field)
                     if isinstance(value, int):
                         previous[field] = max(previous.get(field, 0), value)
@@ -113,17 +106,17 @@ class CallMeter(EventConsumer):
                 if any(self.usage.values()):
                     d.tokens = (d.tokens or 0) + count - self.tokens
                 self.tokens = count
-        if kind == "result" and event.get("total_cost_usd") is not None:
-            total = event["total_cost_usd"]
-            previous = self.metered if self.metered is not None else 0.0
-            delta = max(0.0, total - previous)
-            if self.metered is None:
-                d.total_usd -= self.estimate
-                if self.epoch == d.progress_epoch:
-                    d.spend -= self.estimate
-            d.spend += delta
-            d.total_usd += delta
-            self.metered = max(previous, total)
+            if normalized.kind == "result" and normalized.usd is not None:
+                total = normalized.usd
+                previous_cost = self.metered if self.metered is not None else 0.0
+                delta = max(0.0, total - previous_cost)
+                if self.metered is None:
+                    d.total_usd -= self.estimate
+                    if self.epoch == d.progress_epoch:
+                        d.spend -= self.estimate
+                d.spend += delta
+                d.total_usd += delta
+                self.metered = max(previous_cost, total)
         d.decide()
 
     def complete(self) -> None:

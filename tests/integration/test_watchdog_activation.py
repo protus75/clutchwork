@@ -389,7 +389,7 @@ async def test_production_hard_timeout_group_kill_is_harvested(root, monkeypatch
     script = (
         "import subprocess, sys, signal\n"
         f'subprocess.Popen([sys.executable, "-c", {descendant!r}])\n'
-        'print(\'{"type":"item.started","item":{"id":"tool","type":"command_execution"}}\', flush=True)\n'
+        'print(\'{"type":"item.started","item":{"id":"tool","type":"command_execution","command":"pwd"}}\', flush=True)\n'
         "signal.pause()\n"
     )
     trace = []
