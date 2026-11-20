@@ -140,6 +140,10 @@ Frontmatter fields that drive behavior:
   starting model capability (section 6.4). `gate_bypass` softens named engine gates for this
   ticket (section 5.3).
 
+Non-settled tickets must carry a `## Boundary contract` section; tickets with state `merged` or
+`rejected` are exempt. Intake and `clutch ticket lint` check its presence and basic shape. The
+[authoring guide](../clutch/docs/host-authoring.md) owns its fields, dispositions and `none` reasons.
+
 ### 3.2 Intake
 
 `engine drain` and `engine serve` intake every pending ticket; `ticket review`, `engine run`, `ticket confirm`, and `ticket reject` intake only the named stem, including before verdict handoff to a running engine:

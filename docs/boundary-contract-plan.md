@@ -13,7 +13,7 @@ over-specific one is speculative abstraction throughout every host repository.
 
 ## Status
 
-Proposed on 2026-11-18 from an owner design discussion. The retrospective trial is done. The optional ticket section, shape lint, authoring guide, author and requisition review specs, and core paragraph are in place. Requiring the section and the later lint and implementation review remain pending.
+Proposed on 2026-11-18 from an owner design discussion. The retrospective trial is done. The authoring rollout and `boundary-contract-required` merged (rows 150, 151, 154). `boundary-contract-lint` (row 152) remains provisional, to be promoted only on evidence from deployed reviews; `boundary-contract-implementation-review` (row 153) is authored and not merged.
 
 ## Roadmap
 

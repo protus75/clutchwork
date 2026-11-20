@@ -4,7 +4,7 @@ Add Google's Gemini CLI as a fourth provider beside `claude`, `codex`, and `qwen
 
 ## Status
 
-The Gemini provider, including `GeminiAdapter` in `clutch/providers.py`, has merged (roadmap row 32). The graphics ticket kind and visual review remain planned (rows 49–55). Written 2026-11-13 at commit `c7f8d6c1`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`; revised 2026-11-14 at commit `009c211d` after the owner decided Part B's scope, routing, sign-off, grading, and dependencies (`docs/roadmap.md` §6, decisions 15-18).
+The Gemini provider, including `GeminiAdapter` in `clutch/providers.py`, has merged (roadmap row 32). The graphics ticket kind and visual review merged (rows 49–55), as did `graphics-select-waits-go` (row 169). A `visual_baseline` GO remains to be recorded; until then every graphics ticket parks at B6. Written 2026-11-13 at commit `c7f8d6c1`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`; revised 2026-11-14 at commit `009c211d` after the owner decided Part B's scope, routing, sign-off, grading, and dependencies (`docs/roadmap.md` §6, decisions 15-18).
 
 ## Roadmap
 
