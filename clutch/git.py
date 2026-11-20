@@ -137,6 +137,16 @@ class Git:
                 result.append(subject)
         return result
 
+    async def merged_tickets(self, dir: Path) -> list[tuple[str, str]]:
+        out = await self._run(dir, "log", "--first-parent", "--reverse", "--format=%H%x00%(trailers:key=clutch-ticket,valueonly)%x1e", "HEAD")
+        result = []
+        for record in out.split("\x1e"):
+            sha, separator, trailer = record.strip("\n").partition("\0")
+            lines = trailer.strip().splitlines()
+            if separator and len(lines) == 1 and re.fullmatch(r"\S+", lines[0]):
+                result.append((sha, lines[0]))
+        return result
+
     async def tag(self, dir: Path, name: str, message: str, target: str) -> None:
         await self._run(dir, "tag", "-a", _ref(name), "-m", message, _ref(target))
 

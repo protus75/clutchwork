@@ -121,6 +121,17 @@ class EvidenceStore:
         data["schema"] = "clutch.evidence.attempt/1.0"
         return Attempt.model_validate(_ignore_unknown(Attempt, data))
 
+    def attempts(self) -> list[tuple[str, int, int]]:
+        root = self.root / "attempts"
+        return sorted(
+            (stem, int(run), int(name[:-5]))
+            for stem in self.fs.entries(root)
+            for run in self.fs.entries(root / stem)
+            if run.isdecimal()
+            for name in self.fs.entries(root / stem / run)
+            if name.endswith(".json") and name[:-5].isdecimal()
+        )
+
     def call_keys(self, prefix: str) -> list[str]:
         return sorted(key for entry in self.fs.entries(self.root / "calls") if (key := unquote(entry)).startswith(prefix))
 
