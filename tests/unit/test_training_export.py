@@ -60,7 +60,7 @@ def manifest(code="logic"):
 
 
 def export(store, git=None, kinds=("implement", "preference"), holdout=0, redactor=None):
-    return asyncio.run(training.render(store, git or Git(), Path("/repo"), redactor or Redactor({}), TrainingData(enabled=True), kinds, holdout))
+    return asyncio.run(training.render(store, git or Git(), Path("/repo"), redactor or Redactor({}), TrainingData(enabled=True), lambda path: b"", kinds, holdout))
 
 
 def test_records_and_pairing():
@@ -115,7 +115,7 @@ def test_missing_and_skipped():
 
 
 def test_report_and_disabled(tmp_path, capsys, monkeypatch):
-    lines = training.report(dict(implement=1, preference=2, dropped=3, skipped=4, heldout=5))
+    lines = training.report(dict(implement=1, preference=2, review=0, diagnosis=0, conflict_skipped=0, dropped=3, skipped=4, heldout=5))
     assert lines[0] == training.NOTICE and len(lines) == 2 and all(str(i) in lines[1] for i in range(1, 6))
     config = NS(state_dir=tmp_path / "state", training_data=TrainingData(), providers=[], release=NS(pypi_token="TOKEN"))
     monkeypatch.setattr(entry, "load_config", lambda *args, **kwargs: config)
@@ -139,6 +139,6 @@ def test_handler_success(tmp_path, capsys, monkeypatch):
     out = tmp_path / "out"
     assert entry.main(["training", "export", "--out", str(out)], cwd=tmp_path, env={}) == 0
     stdout, stderr = capsys.readouterr()
-    assert stdout.splitlines() == training.report(dict(implement=0, preference=0, dropped=0, skipped=0, heldout=0))
+    assert stdout.splitlines() == training.report(dict(implement=0, preference=0, review=0, diagnosis=0, conflict_skipped=0, dropped=0, skipped=0, heldout=0))
     assert stderr == ""
-    assert {p.name: p.read_bytes() for p in out.iterdir()} == {"sft.jsonl": b"", "preference.jsonl": b""}
+    assert {p.name: p.read_bytes() for p in out.iterdir()} == {"sft.jsonl": b"", "preference.jsonl": b"", "review.jsonl": b"", "diagnosis.jsonl": b""}

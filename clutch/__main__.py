@@ -15,7 +15,7 @@ import time
 from collections.abc import Awaitable, Callable, Mapping, Sequence, Set
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import replace
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -728,10 +728,21 @@ def _parser() -> argparse.ArgumentParser:
         writes="Requested JSONL files and optional holdout list under --out, replaced whole.",
         lock="None.",
         exits="0 on success; 2 when disabled or refused.",
-        examples=["clutch training export --out training-data --no-trajectory"],
+        examples=["clutch training export --out training-data --kinds review diagnosis --since 2026-11-10"],
     )
     export.add_argument("--out", type=Path, required=True)
-    export.add_argument("--kinds", nargs="+", choices=("implement", "preference"), default=["implement", "preference"])
+
+    def export_date(value):
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                raise ValueError(value)
+            date.fromisoformat(value)
+            return value
+        except ValueError:
+            raise argparse.ArgumentTypeError("expected a valid YYYY-MM-DD date") from None
+
+    export.add_argument("--kinds", nargs="+", choices=("implement", "preference", "review", "diagnosis"), default=["implement", "preference", "review", "diagnosis"])
+    export.add_argument("--since", type=export_date, metavar="DATE", help="include calls on or after YYYY-MM-DD")
     export.add_argument("--no-trajectory", action="store_false", dest="trajectory", help="omit implement tool-call trajectories")
     export.add_argument("--holdout", type=int, choices=range(101), default=0, metavar="PCT")
     coverage = sub.add_parser(
@@ -1517,7 +1528,7 @@ def main(
             raise runner.Refusal("training export is off", str(e)) from None
         redactor = Redactor.from_config(config, env)
         store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
-        files, counts = asyncio.run(training.render(store, checkout.git, repo, redactor, config.training_data, args.kinds, args.holdout, args.trajectory))
+        files, counts = asyncio.run(training.render(store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, args.kinds, args.holdout, args.trajectory, args.since))
         for name, data in files.items():
             checkout.fs.write(args.out / name, data)
         for line in training.report(counts):

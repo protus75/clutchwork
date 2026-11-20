@@ -10,6 +10,7 @@ from pathlib import PurePosixPath
 from clutch.evidence import claude, codex, gemini
 from clutch.evidence.store import SKIP
 from clutch.git import GitError
+from clutch.tickets import DIAGNOSIS_FILE, artifact_path
 
 NOTICE = "Notice: model outputs come from third-party providers whose terms may restrict training other models on them. Check each provider's terms before training on this export."
 _SECRET = re.compile(r"AKIA[A-Z0-9]{16}|-----BEGIN [^\n]*PRIVATE KEY-----|Bearer\s+[A-Za-z0-9._~+/=-]{20,}")
@@ -17,7 +18,13 @@ _NEGATIVE = {"logic", "acceptance", "scope", "leak"}
 
 
 def report(counts):
-    return [NOTICE, f"implement: {counts['implement']}, preference: {counts['preference']}, dropped: {counts['dropped']}, skipped: {counts['skipped']}, held-out stems: {counts['heldout']}"]
+    return [
+        NOTICE,
+        (
+            f"implement: {counts['implement']}, preference: {counts['preference']}, review: {counts['review']}, diagnosis: {counts['diagnosis']}, conflict skipped: {counts['conflict_skipped']}, "
+            f"dropped: {counts['dropped']}, skipped: {counts['skipped']}, held-out stems: {counts['heldout']}"
+        ),
+    ]
 
 
 def _safe(record, diffs, redactor, config):
@@ -65,14 +72,14 @@ def _trajectory(store, key, start, config):
     return result
 
 
-def _calls(store, keys):
+def _calls(store, keys, surface="implement"):
     calls = []
     for key in keys:
         try:
             start = store.read_record(key, "start")
         except FileNotFoundError:
             continue
-        if start is not SKIP and start.surface == "implement":
+        if start is not SKIP and start.surface == surface:
             try:
                 run = int(start.run_seq)
             except ValueError:
@@ -96,12 +103,15 @@ def _identity(start, keys, stem, label, kind):
     )
 
 
-async def render(store, git, repo, redactor, config, kinds=("implement", "preference"), holdout=0, trajectory=True):
-    counts = dict(implement=0, preference=0, dropped=0, skipped=0, heldout=0)
+async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None):
+    counts = dict(implement=0, preference=0, review=0, diagnosis=0, conflict_skipped=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
     attempts = store.attempts()
-    stems = set(merged) | {stem for stem, _, _ in attempts}
+    keys = store.call_keys("llm/")
+    call_stems = {parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] in ("diagnose", "resolve")}
+    stems = set(merged) | {stem for stem, _, _ in attempts} | call_stems
+    counts["conflict_skipped"] = len({parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] == "resolve"})
     held = sorted(stem for stem in stems if int(hashlib.sha256(stem.encode()).hexdigest(), 16) % 100 < holdout)
     counts["heldout"] = len(held)
     held_set = set(held)
@@ -119,6 +129,8 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
                 if not calls:
                     raise ValueError("missing call")
                 _, _, _, key, start = calls[-1]
+                if since and start.clock.wall_start[:10] < since:
+                    continue
                 prompt = store.get_blob(start.prompt.blob).decode()
                 record = {**_identity(start, [key], stem, "merged", "implement"), "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": diff}]}
                 if trajectory and (events := _trajectory(store, key, start, config)) is not None:
@@ -133,12 +145,36 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
         manifest = None
         try:
             manifest = store.read_attempt(stem, run, attempt)
+            if manifest is not SKIP and "review" in records:
+                calls = _calls(store, manifest.call_keys, "review")
+                if calls:
+                    _, _, _, key, start = calls[-1]
+                    if not since or start.clock.wall_start[:10] >= since:
+                        prompt = store.get_blob(start.prompt.blob).decode()
+                        label = "negative" if any(f.get("code") in _NEGATIVE for f in manifest.findings) else "neutral"
+                        content = json.dumps({"outcome": manifest.outcome, "findings": manifest.findings}, sort_keys=True)
+                        record = {
+                            **_identity(start, manifest.call_keys, stem, label, "review"),
+                            "run_seq": run,
+                            "attempt": attempt,
+                            "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": content}],
+                        }
+                        records["review"].append((record, []))
+        except FileNotFoundError, ValueError, UnicodeError:
+            counts["skipped"] += int("review" in records)
+        if not ({"implement", "preference"} & records.keys()):
+            continue
+        manifest = None
+        try:
+            manifest = store.read_attempt(stem, run, attempt)
             if manifest is SKIP:
                 continue
             calls = _calls(store, manifest.call_keys)
             if not calls:
                 raise ValueError("missing call")
             _, _, _, key, start = min(calls, key=lambda item: item[1:3])
+            if since and start.clock.wall_start[:10] < since:
+                continue
             prompt = store.get_blob(start.prompt.blob).decode()
             diff = store.get_blob(manifest.diff_blob).decode()
             if not diff:
@@ -172,6 +208,24 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
             counts["skipped"] += int("implement" in records)
             if "preference" in records and stem in merged and (manifest is None or any(f.get("code") in _NEGATIVE for f in manifest.findings)):
                 counts["skipped"] += 1
+    if "diagnosis" in records:
+        for stem in sorted(stems - held_set):
+            calls = _calls(store, store.call_keys(f"llm/{stem}/"), "diagnose")
+            if not calls:
+                continue
+            _, _, _, key, start = calls[-1]
+            if since and start.clock.wall_start[:10] < since:
+                continue
+            try:
+                prompt = store.get_blob(start.prompt.blob).decode()
+                content = read_bytes(repo / artifact_path(stem, DIAGNOSIS_FILE)).decode()
+                record = {
+                    **_identity(start, [key], stem, "merged" if stem in merged else "neutral", "diagnosis"),
+                    "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": content}],
+                }
+                records["diagnosis"].append((record, []))
+            except FileNotFoundError, ValueError, UnicodeError:
+                counts["skipped"] += 1
     files = {}
     for kind, items in records.items():
         lines = []
@@ -181,7 +235,7 @@ async def render(store, git, repo, redactor, config, kinds=("implement", "prefer
                 counts[kind] += 1
             else:
                 counts["dropped"] += 1
-        files["sft.jsonl" if kind == "implement" else "preference.jsonl"] = "".join(lines).encode()
+        files["sft.jsonl" if kind == "implement" else f"{kind}.jsonl"] = "".join(lines).encode()
     if holdout:
         files["holdout.txt"] = "".join(stem + "\n" for stem in held).encode()
     return files, counts

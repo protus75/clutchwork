@@ -51,7 +51,9 @@ def event(seq, args, kind="tool_call"):
 
 
 def render(store, **kwargs):
-    files, counts = asyncio.run(training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True, exclude=["private/*"]), **kwargs))
+    files, counts = asyncio.run(
+        training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True, exclude=["private/*"]), lambda path: b"", kinds=("implement", "preference"), **kwargs)
+    )
     return [json.loads(line) for line in files["sft.jsonl"].splitlines()], counts
 
 
