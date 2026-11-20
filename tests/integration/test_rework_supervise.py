@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test rework supervise
+# relates: [clutch/artifacts.py, clutch/daemon.py, clutch/llm.py, clutch/rework.py, clutch/specs/__init__.py, tests/integration/test_mergequeue.py]
+# owner: engine
+# verified: 96e46658
+# hash: 6238c2aed3ceb8f3d0d7bbc6ae4e7e983dd492e91910375aeb68baff0d103fc4
 import pytest
 
 from clutch import daemon

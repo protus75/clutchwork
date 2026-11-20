@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test watch
+# relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
+# owner: engine
+# verified: 96e46658
+# hash: 7e4a9c966aebdcc21e8e173b8f97dd1bf3a74ae9365a9ed9aa1041028311bc9c
 import json
 import os
 import subprocess

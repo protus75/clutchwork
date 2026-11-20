@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test shared fakes adoption
+# relates: [tests/fakes.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_driver.py, tests/integration/test_effects.py]
+# owner: engine
+# verified: 96e46658
+# hash: c93b96d73bf49ef86196707cb395343c4cbaf21eb6d48d19e03393e5b327228f
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 

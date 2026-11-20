@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stats
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/stats.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 96e46658
+# hash: f774289b687495ef16258e961639968eb81578f83768faa385d60de60d4b555a
 import json
 from datetime import timedelta
 from types import SimpleNamespace

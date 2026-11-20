@@ -1,4 +1,12 @@
 """Component behavior and production CLI reachability evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Component behavior and production CLI reachability evidence.
+# relates: [clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py]
+# owner: engine
+# verified: 96e46658
+# hash: ba44433b18fb84350c28e69123cb859582a39602ff6f26198d0716b65396e096
 
 import ast
 import asyncio

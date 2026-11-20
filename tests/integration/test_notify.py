@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test notify
+# relates: [clutch/__main__.py, clutch/config.py, clutch/effects.py, clutch/enginelog.py, clutch/journal.py, clutch/notify.py, clutch/redact.py]
+# owner: engine
+# verified: 96e46658
+# hash: e953daf538618e80396b9deb364f8e61189597910ce34eaf1ffec2f39f53a781
 import json
 import sys
 from types import SimpleNamespace

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test open tickets closed
+# relates: [clutch/author.py, clutch/box.py, clutch/journal.py, clutch/llm.py, tests/integration/test_drain.py, tests/integration/test_triage.py]
+# owner: engine
+# verified: 96e46658
+# hash: c675a250ddfd1d1f71b6668a5f3c1f82ca11ebbcfb8986495075ffb333af6356
 import asyncio
 
 from clutch.author import list_open_tickets

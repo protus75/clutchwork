@@ -1,4 +1,12 @@
 """Serve lifecycle integration tests."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Serve lifecycle integration tests.
+# relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: 690c92bb49bd34c750b0ecd15c26aedb70a910209c564ca9c43a9bc529e8072f
 
 import asyncio
 import json

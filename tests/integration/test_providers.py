@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test providers
+# relates: [clutch/__main__.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5b415054eea80d6e1cc15c0560cc0064a437a4ac841e51a9a6a98a0f578cef3b
 import asyncio
 import json
 import os

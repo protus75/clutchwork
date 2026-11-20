@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test precondition rules
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 96e46658
+# hash: 877ed43b7fea72954548b4e4541ced46e0b0169cfebfb138d575a0d66d410c26
 from pathlib import Path
 
 import pytest

@@ -1,4 +1,12 @@
 """Small committed host repository for snapshot integration tests."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Small committed host repository for snapshot integration tests.
+# relates: [tests/integration/test_config.py]
+# owner: tests/integration/test_config.py
+# verified: 96e46658
+# hash: d85e0a44fc5c0cba42b7a1742080417762c4a994f3a191639eb128d7b1267fac
 
 import subprocess
 from pathlib import Path

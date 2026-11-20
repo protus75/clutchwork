@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test repo config parallel
+# relates: [clutch/config.py]
+# owner: clutch/config.py
+# verified: 96e46658
+# hash: d5620681bf631fecd224c5e19fc8139f74004fda9d40ba536e8a8b7013588963
 from pathlib import Path
 
 from clutch.config import load_config

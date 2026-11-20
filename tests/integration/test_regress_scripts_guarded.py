@@ -1,4 +1,12 @@
 """Regression scripts are inert when imported and remain executable."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Regression scripts are inert when imported and remain executable.
+# relates: []
+# owner: engine
+# verified: 96e46658
+# hash: 1d159f8ccdde0e352a791e200d9ddb8c3c82ce15f1d36d75a0c467684b1c69b0
 
 import importlib.util
 import json

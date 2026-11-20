@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test spec sibling tickets
+# relates: [clutch/specs/__init__.py, tests/integration/test_requisition.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5ac9f31a55518704d054c14bd0e05fcacf6c29352fa786910e8c4de3b973cfd6
 from clutch.specs import load_spec
 from tests.integration.test_requisition import SPECS, TICKET, reply, run, setup
 

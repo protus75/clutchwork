@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test provider capture overwrite
+# relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llmeffect.py, clutch/redact.py, clutch/seams.py, tests/integration/test_providers.py]
+# owner: engine
+# verified: 96e46658
+# hash: 3e46cb1ea4e9c34cf73a47fbd817f687e196dea0ff215dbcdbd63f9df31c5570
 import asyncio
 from dataclasses import replace
 

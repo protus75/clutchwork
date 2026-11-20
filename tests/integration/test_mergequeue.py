@@ -1,4 +1,12 @@
 """Queue admission with injected seams and disposable real repositories."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Queue admission with injected seams and disposable real repositories.
+# relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/git.py, clutch/journal.py]
+# owner: engine
+# verified: 96e46658
+# hash: 014aa863cd3352bb16a7cea760aeff1d4edff50af8d4ff4c52c35aa3a8d77e9d
 
 import ast
 import asyncio

@@ -1,4 +1,12 @@
 """Completed production receipts travel through the existing consumer and admission."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Completed production receipts travel through the existing consumer and admission.
+# relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
+# owner: engine
+# verified: 96e46658
+# hash: 11825d7be238aae700b280e1ae5484e91e2232524942581b0f32b1936c432633
 
 import asyncio
 import hashlib

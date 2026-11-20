@@ -1,4 +1,12 @@
 """The production terminal path publishes reviewed edits or lifts refused proposals."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The production terminal path publishes reviewed edits or lifts refused proposals.
+# relates: [clutch/audit.py, clutch/caps.py, clutch/drain.py, clutch/journal.py, clutch/status.py, tests/approval.py]
+# owner: engine
+# verified: 96e46658
+# hash: 83d99795a00370ff28fb54f403685f47d35bcc9547321cad06c02613c5822091
 
 import asyncio
 import json

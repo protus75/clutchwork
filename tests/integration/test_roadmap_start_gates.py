@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap start gates
+# relates: [clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/seams.py]
+# owner: engine
+# verified: 96e46658
+# hash: d0d6579a1ce5ef292350bfcfc1a8a3874653e68c2f3b16ecd48bb44014d443f3
 import asyncio
 import shlex
 import sys

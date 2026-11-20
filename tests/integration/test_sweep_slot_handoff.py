@@ -1,4 +1,12 @@
 """The orphan sweep skips a slot handed to a queued operation."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The orphan sweep skips a slot handed to a queued operation.
+# relates: [clutch/daemon.py]
+# owner: clutch/daemon.py
+# verified: 96e46658
+# hash: d0d3fbadddea57c3f9a9aa2786eb77c99f9c75fa04551ffeb8a6d9f2eeb65834
 
 import asyncio
 

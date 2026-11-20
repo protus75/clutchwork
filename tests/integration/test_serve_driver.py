@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test serve driver
+# relates: [clutch/roadmap.py, tests/integration/serve_rig.py, tests/integration/test_cli.py, tests/integration/test_scheduler.py]
+# owner: engine
+# verified: 96e46658
+# hash: 008213d5e6849b881a3fa00c7f705227563ec04c06d65febc25891382cecd795
 import asyncio
 
 import pytest

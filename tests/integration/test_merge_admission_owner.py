@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test merge admission owner
+# relates: [clutch/artifacts.py, clutch/journal.py, clutch/merge.py, clutch/mergequeue.py, clutch/stages.py, tests/integration/test_mergequeue.py]
+# owner: engine
+# verified: 96e46658
+# hash: b7beb92f689b8a7aa8cef292924bbd9c5f61f8f8c62a0474de7bdd3044ebde00
 import asyncio
 
 import pytest

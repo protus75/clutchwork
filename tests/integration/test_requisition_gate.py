@@ -1,4 +1,12 @@
 """Dispatch reviews committed ticket content before creating an implementation workspace."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Dispatch reviews committed ticket content before creating an implementation workspace.
+# relates: [clutch/__main__.py, clutch/caps.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/runner.py, clutch/scheduler.py]
+# owner: engine
+# verified: 96e46658
+# hash: 6156a63764de728b8612e50920f3e6d6fd258ac581fe7359aae6b70306f002e1
 
 import asyncio
 import json

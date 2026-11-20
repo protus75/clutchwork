@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test paved roads
+# relates: [clutch/box.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_retro.py]
+# owner: engine
+# verified: 96e46658
+# hash: 48de50d5594726e91cd24fd075ab48f137dfef39af3584b6b44db95d059b8472
 import asyncio
 from datetime import timedelta
 

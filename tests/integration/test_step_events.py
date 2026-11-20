@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test step events
+# relates: [clutch/runner.py, clutch/stages.py, clutch/tickets.py, tests/integration/test_merge.py, tests/integration/test_stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: 0761e900f7c682f2bcb42157a52e785cd058d4a6d71b7524109929848ce90cc2
 import asyncio
 import json
 

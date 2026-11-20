@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/seams.py]
+# owner: engine
+# verified: 96e46658
+# hash: 03101c5d4dc66388e75a1d6fc4799e502b71c7f02c24f5df97a1fef8a60bde97
 import asyncio
 import json
 from datetime import UTC, datetime

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test lockfile
+# relates: [clutch/lockfile.py, tests/integration/test_git.py]
+# owner: engine
+# verified: 96e46658
+# hash: 115862bda4a4df0428d0d7e058afc59132622e893637dffb0e940774684ec1be
 import json
 import os
 import socket

@@ -1,4 +1,12 @@
 """Closed evidence, production faults and existing checks custody for the battery."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Closed evidence, production faults and existing checks custody for the battery.
+# relates: [clutch/artifacts.py, clutch/audit.py, clutch/git.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 96e46658
+# hash: 85e0fd818a5ebd6bbc709951bfd5f317565d39603934e0fd4b56f711d1858c1e
 
 import asyncio
 import copy

@@ -1,4 +1,12 @@
 """Identity-bound holds through the production bootstrap CLI and drain composition."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Identity-bound holds through the production bootstrap CLI and drain composition.
+# relates: [clutch/__main__.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py]
+# owner: engine
+# verified: 96e46658
+# hash: e60778237a12902ba19963e6c22616e9f405715acc663e74f5f7da2efffd7cee
 
 import asyncio
 import json

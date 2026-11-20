@@ -1,4 +1,12 @@
 """Shakeout report custody and cumulative double gate."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Shakeout report custody and cumulative double gate.
+# relates: [clutch/journal.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/drain.py, tests/harness/shakeout/driver.py]
+# owner: engine
+# verified: 96e46658
+# hash: 6af553d859b253e1d55b78a2378d5dfe611f036f0db261eed26fd64e0ad3dca9
 
 import asyncio
 import json

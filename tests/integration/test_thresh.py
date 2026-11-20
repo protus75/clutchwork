@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test thresh
+# relates: [clutch/config.py, clutch/effects.py, clutch/journal.py, clutch/llmeffect.py, clutch/providers.py, clutch/seams.py, clutch/thresh.py]
+# owner: engine
+# verified: 96e46658
+# hash: d0c716c215a26a7c3a80b130a5028a7c82b9b51df152e48db82e839e9a98ccf8
 import ast
 import asyncio
 from datetime import UTC, datetime, timedelta

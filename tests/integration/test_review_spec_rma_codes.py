@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test review spec rma codes
+# relates: [clutch/artifacts.py]
+# owner: clutch/artifacts.py
+# verified: 96e46658
+# hash: 01be1cc2cb5e9b62a2bbbf1cd2e62a5fcc27759c8ed33a7d5328946fd98678ce
 from pathlib import Path
 
 import pytest

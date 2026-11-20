@@ -1,4 +1,12 @@
 """Real git proves the release preserves unrelated staged and unstaged edits."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Real git proves the release preserves unrelated staged and unstaged edits.
+# relates: [clutch/__main__.py, clutch/git.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: 3b1758914524a03d4310172c1354e7bf837d107b2a4ca746bf5ac71c79c4742b
 
 import asyncio
 from datetime import UTC, datetime

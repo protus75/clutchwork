@@ -1,4 +1,12 @@
 """Implement replies file second problems through the production run command."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Implement replies file second problems through the production run command.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: ddd1678959e814749794a4e6affc81a450ac67db2fad0e2e20f4bbbce64e1808
 
 import json
 from pathlib import Path

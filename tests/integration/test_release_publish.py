@@ -1,4 +1,12 @@
 """Exercise publishing through the CLI and real git."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Exercise publishing through the CLI and real git.
+# relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, dev.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: ca42a60d3a1e8df0f11b2db2b7d3e36003f443b0dcab09bf50306d10b6c627a7
 
 import asyncio
 from unittest.mock import Mock

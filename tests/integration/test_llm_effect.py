@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test llm effect
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
+# owner: engine
+# verified: 96e46658
+# hash: a8f776c4bf109b5bb99819a8f9d61d0f317a642ad397f51b133f882f4f1f20e0
 import asyncio
 import json
 import textwrap

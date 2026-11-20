@@ -1,4 +1,12 @@
 """On-demand review uses the committed ticket and records its verdict."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: On-demand review uses the committed ticket and records its verdict.
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/reconcile.py, clutch/requisition.py, clutch/status.py]
+# owner: engine
+# verified: 96e46658
+# hash: aa97a9455f49c61066e3bf6d155f2de3b54c07ce26a9ce8c7b2be61b13ac30c1
 
 import json
 

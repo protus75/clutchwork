@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test tickets
+# relates: [clutch/__init__.py, clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
+# owner: engine
+# verified: 96e46658
+# hash: 7995b213518d14ffa586af1fa6d067751df98adca2167e4870ead17a4f146fe8
 import asyncio
 import re
 import subprocess

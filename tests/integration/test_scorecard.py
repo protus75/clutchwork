@@ -1,4 +1,12 @@
 """Scorecard entry obligations over real invoices and the production retro composition."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Scorecard entry obligations over real invoices and the production retro composition.
+# relates: [clutch/artifacts.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/retro.py, clutch/scorecard.py, clutch/stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: 8a9bf69ec4760532c128c21bccd115cd7e591628cf0c620e6b801bb056373548
 
 import asyncio
 import json

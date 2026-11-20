@@ -1,4 +1,12 @@
 """Status surfaces confirmed policy classes using write-free queue and journal reads."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Status surfaces confirmed policy classes using write-free queue and journal reads.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/effects.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
+# owner: engine
+# verified: 96e46658
+# hash: a7f23da6967b0a1c26cf4bdc5763a9cacd92a12b0b17abafc7e050db5d209c34
 
 import asyncio
 import re

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test watchdog
+# relates: [clutch/driver.py, clutch/effects.py, clutch/enginelog.py, clutch/journal.py, clutch/notify.py, clutch/providers.py, clutch/redact.py]
+# owner: engine
+# verified: 96e46658
+# hash: f6c4c3fe863e8eb741fb9ca013247297f0cf4271e4b43918e53e1e1cb53d5080
 import asyncio
 import json
 import os

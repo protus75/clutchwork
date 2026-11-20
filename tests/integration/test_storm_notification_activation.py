@@ -1,4 +1,12 @@
 """Production storm escalation, producer identities, and write-ahead crash recovery."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Production storm escalation, producer identities, and write-ahead crash recovery.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/flake.py, clutch/journal.py]
+# owner: engine
+# verified: 96e46658
+# hash: a1b2adc9bc0cccc94a2a6f68ba73d3a106bf6a92f54ffb67ac137a7d62655a47
 
 import asyncio
 import hashlib

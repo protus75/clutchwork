@@ -1,4 +1,12 @@
 """Real rebase/index and serve admission with scripted model replies."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Real rebase/index and serve admission with scripted model replies.
+# relates: [clutch/artifacts.py, clutch/llm.py, clutch/mergequeue.py, clutch/runner.py, clutch/stages.py, tests/integration/test_daemon_composition.py]
+# owner: engine
+# verified: 96e46658
+# hash: c4cb27b9437b6b4bf3ea407c83d6c2d044447433186dc1f3d99f171d3360b25e
 
 import asyncio
 import json

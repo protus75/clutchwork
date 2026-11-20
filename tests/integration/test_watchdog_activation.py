@@ -1,4 +1,12 @@
 """Watchdog evidence through the CLI core, serving graph, and actual eval callers."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Watchdog evidence through the CLI core, serving graph, and actual eval callers.
+# relates: [clutch/__main__.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/providers.py, clutch/requisition.py, clutch/runner.py]
+# owner: engine
+# verified: 96e46658
+# hash: 4f693435bc46e1686c02faf292196372e072d6a11bebf83299b1179c42c9859c
 
 import asyncio
 import json

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap merged
+# relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: 781ad9696c4a9677f062f3a58429c5f1a9c2dac321872ce2f89536bcb86f7604
 import asyncio
 from datetime import UTC, datetime
 

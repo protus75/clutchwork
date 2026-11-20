@@ -1,4 +1,12 @@
 """Merge admission against a temp repo (CLUTCH_PLAN.md sections 7, 9, 10; 19.P1)."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Merge admission against a temp repo (CLUTCH_PLAN.md sections 7, 9, 10; 19.P1).
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
+# owner: engine
+# verified: 96e46658
+# hash: dc5c567404c09730eb80e0867a530edd04419e77e1ef2e11eca0d7054c0b7f0b
 
 import asyncio
 import dataclasses

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test projection helpers source
+# relates: []
+# owner: engine
+# verified: 96e46658
+# hash: 7d3a7fa9195d5141ef31bcc3998a1f74c98b197db819b7f335979a7093c928b8
 import ast
 import re
 from pathlib import Path

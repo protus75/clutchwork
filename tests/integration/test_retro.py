@@ -1,4 +1,12 @@
 """Production evidence, report effects, and lock-held retro invocation."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Production evidence, report effects, and lock-held retro invocation.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
+# owner: engine
+# verified: 96e46658
+# hash: b929a89f44c9c7c80eceafe64a4f1b423052d12243864d0aea90edd3f3828b1a
 
 import asyncio
 import json

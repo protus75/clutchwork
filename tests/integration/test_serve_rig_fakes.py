@@ -1,4 +1,12 @@
 """The serve rig uses the shared polling helpers without changing their contract."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The serve rig uses the shared polling helpers without changing their contract.
+# relates: [clutch/serve.py, tests/fakes.py, tests/integration/serve_rig.py]
+# owner: engine
+# verified: 96e46658
+# hash: 7e33726c5d790f743f75d70795281a6c45eaa9ff20298849fc5804685930f16b
 
 import inspect
 from datetime import timedelta

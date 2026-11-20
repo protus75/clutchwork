@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test retro conflict spec
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 96e46658
+# hash: 7f1e3d9efe93d4b9329ca54f694bacf6447c0739507662d1a475fc3f46b81ca1
 from pathlib import Path
 
 from clutch.specs import lint_spec, load_spec

@@ -1,4 +1,12 @@
 """Production CLI composition with a scripted provider and a real ticket-plane checkout."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Production CLI composition with a scripted provider and a real ticket-plane checkout.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
+# owner: engine
+# verified: 96e46658
+# hash: 83d77ad207894af284519c090913726eb080f9f165d7c6c4a9731d1a2b5450d1
 
 import asyncio
 import json

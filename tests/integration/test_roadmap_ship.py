@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap ship
+# relates: [clutch/config.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: f4ee22a77cc5b07fdec2ebbcac1d09cbb72cab175bae81c028acc794e3f7ae84
 import asyncio
 import shlex
 import sys

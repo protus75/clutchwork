@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test serve driver overlap
+# relates: [clutch/roadmap.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py, tests/integration/test_scheduler.py]
+# owner: engine
+# verified: 96e46658
+# hash: 9d3d4b00b26ade4393b2879c5b3fadf1ff6768eccaa77770239f5badab312fd4
 import asyncio
 
 import pytest

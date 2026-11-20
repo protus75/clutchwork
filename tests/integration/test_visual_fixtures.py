@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test visual fixtures
+# relates: [clutch/config.py, clutch/policy.py, eval/visual_harness.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5fc756bf6cee8a1995b9a2885e54c0db5bd8e1f83631f4e611352e324d7b15ce
 import json
 from collections import Counter
 

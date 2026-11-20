@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test tolerant reader callers
+# relates: [clutch/observe.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5a1fa4ec414376c2e26877cdc85a683c847c38eeea7b1203d70669df80e18054
 from pathlib import Path
 from types import SimpleNamespace
 

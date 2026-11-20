@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test snapshot cache facts
+# relates: [clutch/git.py, clutch/observe.py, clutch/seams.py, clutch/status.py, tests/integration/test_config.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 96e46658
+# hash: 1e587df55afe320168a37b5ddd55f6b19c3ddf21d93dde8e10a56fa263433d66
 import json
 import os
 from datetime import datetime

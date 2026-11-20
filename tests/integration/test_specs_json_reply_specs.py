@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test specs json reply specs
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 96e46658
+# hash: a0b0170125335f737673a8159f74e9327608b8414c6cc703164bfe0b7f1fbe42
 from pathlib import Path
 
 from clutch.specs import lint_spec

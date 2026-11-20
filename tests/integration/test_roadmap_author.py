@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap author
+# relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/policy.py, clutch/roadmap.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5de81640758f65beeb78dde814d3437062fef245b6236e95d209454ce09e2f76
 from clutch.__main__ import main
 from clutch.config import load_config
 from clutch.journal import EventType, Journal

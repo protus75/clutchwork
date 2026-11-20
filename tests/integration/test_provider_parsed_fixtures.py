@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test provider parsed fixtures
+# relates: [clutch/providers.py]
+# owner: clutch/providers.py
+# verified: 96e46658
+# hash: 9d972313ff7bf1b7afea41e0b72e2fb1e4f2ac8330979163cdc66617fb275105
 import json
 from pathlib import Path
 

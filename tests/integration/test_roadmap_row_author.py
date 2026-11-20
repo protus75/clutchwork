@@ -1,4 +1,12 @@
 """Recorded roadmap verdict travels through Author with its evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Recorded roadmap verdict travels through Author with its evidence.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/policy.py, clutch/seams.py, clutch/specs/__init__.py]
+# owner: engine
+# verified: 96e46658
+# hash: 8b0435e021b7411d5e511c55bbefab9d95c70df3fc0c5fb954b31a2edfc87966
 
 import json
 from pathlib import Path

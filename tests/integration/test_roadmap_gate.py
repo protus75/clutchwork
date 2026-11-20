@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap gate
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: eea30487e765954d4e503abe9a44f5e2f52083c169ee87d8858c5006a7db5f50
 import shlex
 import sys
 from datetime import UTC, datetime

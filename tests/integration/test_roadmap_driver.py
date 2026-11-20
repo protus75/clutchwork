@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap driver
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/roadmap.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
+# owner: engine
+# verified: 96e46658
+# hash: 7cbd490d165c1b1e9b9d126dc771b194cbd5125592032b2b0b9ed780f5291887
 import asyncio
 import sys
 

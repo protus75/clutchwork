@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition review stand in closure
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 96e46658
+# hash: b10630788a7cdeac03641d1e2ad69f3a9475a3414c9acffe20dd5dd443ca51a9
 from pathlib import Path
 
 from clutch.specs import load_spec, render

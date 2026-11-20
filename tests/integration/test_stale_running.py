@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test stale running
+# relates: [clutch/__main__.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/runner.py, clutch/seams.py]
+# owner: engine
+# verified: 96e46658
+# hash: 9ecc45fa2445379f70b07ba3562641fec81f955899ae148ba29a0cee1576988f
 import asyncio
 
 import pytest

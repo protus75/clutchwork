@@ -1,4 +1,12 @@
 """Serve notify integration tests."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Serve notify integration tests.
+# relates: [clutch/__main__.py, clutch/journal.py, clutch/mergequeue.py, clutch/notify.py, clutch/status.py, tests/integration/serve_rig.py]
+# owner: engine
+# verified: 96e46658
+# hash: 53ef4179c281d7e0e3db3b066d46d49f48dcec80f7903b5b65b04440dcf9be88
 
 import asyncio
 import json

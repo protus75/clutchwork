@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test reconcile
+# relates: [clutch/audit.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: db637fbaeb40de9b3535c293470aa5cc942ca177eb1cd293984cd307658002ed
 import asyncio
 from dataclasses import asdict
 from pathlib import Path

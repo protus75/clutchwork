@@ -1,4 +1,12 @@
 """Closed promoted journal vocabularies (CLUTCH_PLAN.md section 6.2)."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Closed promoted journal vocabularies (CLUTCH_PLAN.md section 6.2).
+# relates: [clutch/journal.py]
+# owner: clutch/journal.py
+# verified: 96e46658
+# hash: 8dd11bbd5ba9f94964bea659257f937043e13e9e24b3df12dcc0db84f8fdbdee
 
 import ast
 from datetime import UTC, datetime

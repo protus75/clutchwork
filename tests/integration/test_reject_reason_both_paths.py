@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test reject reason both paths
+# relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/runner.py]
+# owner: engine
+# verified: 96e46658
+# hash: ea7380f14fa1aecaa72990a9538412e2be214ca4a672641d458c3b7d38871374
 import asyncio
 from pathlib import Path
 

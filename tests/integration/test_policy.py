@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test policy
+# relates: [clutch/baseline.py, clutch/config.py, clutch/journal.py, clutch/policy.py]
+# owner: engine
+# verified: 96e46658
+# hash: f648d693723d678eb81dc67cf46ac534428208f59669af6af0bb6c91cf477d04
 import textwrap
 from pathlib import Path
 from types import SimpleNamespace

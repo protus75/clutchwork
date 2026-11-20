@@ -1,4 +1,12 @@
 """Reject arrival, release verbs, and premise accounting through the CLI."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reject arrival, release verbs, and premise accounting through the CLI.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
+# owner: engine
+# verified: 96e46658
+# hash: 3ace4783aa6b608c9f1c59aa56d74b60fa810a20d909ec52f21970d9e9956dbf
 
 import asyncio
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test roadmap refile
+# relates: [clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: d423e2cf15311dbbfea3b54cb22e77040147ac6f34f9d86d39860013afd7410e
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace

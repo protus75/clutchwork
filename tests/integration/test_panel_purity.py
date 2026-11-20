@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test panel purity
+# relates: []
+# owner: engine
+# verified: 96e46658
+# hash: cea0f0378913f3dfd0df5c08cc4f4c67218d606e8e4e421b6431524539bdfd29
 import ast
 from pathlib import Path
 

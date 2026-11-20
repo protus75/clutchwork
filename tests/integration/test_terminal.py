@@ -3,6 +3,14 @@
 A non-ok terminal journals the run's single terminal transition and exits 1, leaving ticket and branch in
 place; an engine-plane refusal exits 2 with nothing dispatched. Retry, diagnosis, and harvest are Phase 2.
 """
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Non-ok terminal handling behind `run <stem>` (CLUTCH_PLAN.md sections 11.2, 18, 19.P1).
+# relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: 477a3e823b421237399cab87c75a7789e242ecd4ade3e5b58951aced947f5ab2
 
 import json
 from datetime import UTC, datetime

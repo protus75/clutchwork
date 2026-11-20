@@ -1,4 +1,12 @@
 """Source shape guards and real CLI refusal paths for the shared verb plumbing."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Source shape guards and real CLI refusal paths for the shared verb plumbing.
+# relates: [clutch/__main__.py, clutch/lockfile.py, clutch/runner.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5ece80d993fe972c0360ccf24ba06180c0929354790763f3942c0b77be19ae2d
 
 import ast
 import json

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test snapshot merged cap
+# relates: [clutch/__main__.py, clutch/config.py, tests/integration/test_config.py, tests/integration/test_drain.py, tests/snapshot_scale_fixture.py]
+# owner: engine
+# verified: 96e46658
+# hash: 4e90b4a565f543ce2aea7a44cfc5818de1c2b1a483dbef3538a0f799d92bd213
 import json
 import os
 

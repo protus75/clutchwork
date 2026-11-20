@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test lint verb
+# relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: f1df04c3a7c24fe5ef6ce179c417cf373af598ab4c6e59a25eb8aa8b3a34056b
 import asyncio
 import multiprocessing
 from pathlib import Path

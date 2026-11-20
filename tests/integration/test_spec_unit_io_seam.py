@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test spec unit io seam
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 96e46658
+# hash: 65697932836405772963272e9da3ddefc0277bd418a933733f435cc11aadb752
 from pathlib import Path
 
 from clutch.specs import load_spec

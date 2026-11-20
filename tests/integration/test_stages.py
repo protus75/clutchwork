@@ -1,4 +1,12 @@
 """Implement -> Check -> Review stage transitions with the scripted fake (CLUTCH_PLAN.md sections 4, 5, 19.P1)."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Implement -> Check -> Review stage transitions with the scripted fake (CLUTCH_PLAN.md sections 4, 5, 19.P1).
+# relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
+# owner: engine
+# verified: 96e46658
+# hash: d20a03a95befc5c21e0dd58c309dbace1ad0b574402f6d5a32463dcd66471df4
 
 import asyncio
 import json

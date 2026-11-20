@@ -1,4 +1,12 @@
 """Direct dormant arrival wiring and preservation of the production composition."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Direct dormant arrival wiring and preservation of the production composition.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
+# owner: engine
+# verified: 96e46658
+# hash: b3933024424e359d221f6cbff4f2b92c503f175cdc5829e1110e6d6129902e8c
 
 import json
 from dataclasses import asdict

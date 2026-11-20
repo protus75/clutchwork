@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test requisition review whole value closure
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 96e46658
+# hash: af321548e290dcd50af283b440cff2cee2722b96cb9b93bfbe1cab7121c08df1
 from pathlib import Path
 
 from clutch.specs import load_spec

@@ -1,4 +1,12 @@
 """Direct construction evidence; activation must migrate the dormancy assertion."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Direct construction evidence; activation must migrate the dormancy assertion.
+# relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
+# owner: engine
+# verified: 96e46658
+# hash: 2992daa8f9136165e186717f563e037ca8528ca687955f6c5b25fd294ac39143
 
 import asyncio
 import hashlib

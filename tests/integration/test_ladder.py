@@ -1,4 +1,12 @@
 """Deterministic capability and Reject routing through the production drain."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Deterministic capability and Reject routing through the production drain.
+# relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py]
+# owner: engine
+# verified: 96e46658
+# hash: e79c51d7fcad9b175e07753ea0ecf3e47b9e3b21ac67ca5e4738887479789bf4
 
 import json
 

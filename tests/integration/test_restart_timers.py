@@ -1,4 +1,12 @@
 """Lock-held production restart, recovery custody and durable deadline evidence."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Lock-held production restart, recovery custody and durable deadline evidence.
+# relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/mergequeue.py]
+# owner: engine
+# verified: 96e46658
+# hash: f4bb38c5ce2c5721f91bde3c29541238a2978ca1074c09664d1e5e4aee727592
 
 import ast
 import asyncio

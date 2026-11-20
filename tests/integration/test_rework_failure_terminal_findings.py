@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test rework failure terminal findings
+# relates: [clutch/artifacts.py, clutch/journal.py, clutch/runner.py, tests/integration/test_daemon_composition.py, tests/integration/test_mergequeue.py]
+# owner: engine
+# verified: 96e46658
+# hash: 0c887a676b226fe9f4426bf3ad61ef50f2d8e007cd1d110eeaf121711111398b
 import pytest
 
 from clutch import runner

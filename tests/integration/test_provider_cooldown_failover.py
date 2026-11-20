@@ -1,4 +1,12 @@
 """Activation evidence through the existing production composition and injected seams."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Activation evidence through the existing production composition and injected seams.
+# relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/drain.py]
+# owner: engine
+# verified: 96e46658
+# hash: 5fb789d49cc0a4100354217ca4c9aabfe5db6b71f2715c7f92cef192978030be
 
 import asyncio
 import json

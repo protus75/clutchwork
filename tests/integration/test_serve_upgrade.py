@@ -1,4 +1,12 @@
 """Drive the CLI's continuous graph with disposable repositories and injected time."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Drive the CLI's continuous graph with disposable repositories and injected time.
+# relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
+# owner: engine
+# verified: 96e46658
+# hash: 9075c1d31f62e7dfa0a4f7b9541211eee4f1137dd561a6b1505bb7820cdbd1db
 
 import asyncio
 import json

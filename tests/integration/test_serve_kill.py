@@ -1,4 +1,12 @@
 """Serve kill integration tests."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Serve kill integration tests.
+# relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 96e46658
+# hash: c2832ce3b81e9bea62377cfc16cb90f086fbc16589c65338ab2f70660594a674
 
 import asyncio
 import json

@@ -1,4 +1,12 @@
 """The installed authoring guide states the lint rules."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The installed authoring guide states the lint rules.
+# relates: []
+# owner: engine
+# verified: 96e46658
+# hash: 54bea857dd8eeadfeb9044d56e76054d46c5087e358a894d77be7a2ec14621b0
 
 from pathlib import Path
 

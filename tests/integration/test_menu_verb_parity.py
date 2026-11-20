@@ -1,4 +1,12 @@
 """The emitted table and real verb inputs agree on the same files and journal."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The emitted table and real verb inputs agree on the same files and journal.
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/reconcile.py]
+# owner: engine
+# verified: 96e46658
+# hash: 592294ef3a6db3961f2f05dedcf22fcba05588d46bf8f2fc6029679aff17eb43
 
 import asyncio
 from types import SimpleNamespace as NS

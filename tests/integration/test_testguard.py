@@ -1,4 +1,12 @@
 """Exercise the plugin in pytest sessions, including the xdist controller."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Exercise the plugin in pytest sessions, including the xdist controller.
+# relates: []
+# owner: engine
+# verified: 96e46658
+# hash: 2b57682e58e0a620c053ba66198d0be35abe5d800a8d9bcdd59c0a36325e9182
 
 import os
 import socket

@@ -1,4 +1,12 @@
 """Executor-before-worker ordering and calibrated production dormancy."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Executor-before-worker ordering and calibrated production dormancy.
+# relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, tests/integration/serve_rig.py]
+# owner: engine
+# verified: 96e46658
+# hash: c3338844a6a28da44934365a60e869c9a467a082f24e190bf3752f2817c9ea90
 
 import asyncio
 from functools import partial

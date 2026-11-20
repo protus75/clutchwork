@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test provider failure surface
+# relates: [clutch/box.py, clutch/providers.py, clutch/seams.py, tests/integration/test_stages.py]
+# owner: engine
+# verified: 96e46658
+# hash: 7681b839060a53a1cd8d0221a7cdec618b60b71b1f98db6f22d9f357e1b5046e
 from clutch.box import BOX_DIR, Box
 from clutch.providers import ProviderCallError
 from clutch.seams import LocalFileSystem

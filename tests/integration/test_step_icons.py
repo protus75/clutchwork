@@ -1,4 +1,12 @@
 """Check the extension against the snapshot's step-kind vocabulary."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Check the extension against the snapshot's step-kind vocabulary.
+# relates: [clutch/observe.py]
+# owner: clutch/observe.py
+# verified: 96e46658
+# hash: 3b837f93c25efbe7f143400493cc7ee7e250141137a5d50690cc8e33926ffb13
 
 import json
 import subprocess

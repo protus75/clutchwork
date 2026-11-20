@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test storm
+# relates: [clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/journal.py, clutch/seams.py, clutch/storm.py]
+# owner: engine
+# verified: 96e46658
+# hash: f73900bac49a1e913058ff5dc2894f169db8b0951ffaf8ebe48dbed0d60b6dd6
 from dataclasses import asdict
 from datetime import timedelta, timezone
 from unittest.mock import Mock

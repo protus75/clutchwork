@@ -1,4 +1,12 @@
 """Exercise errors from the VS Code extension's snapshot command."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Exercise errors from the VS Code extension's snapshot command.
+# relates: []
+# owner: engine
+# verified: 96e46658
+# hash: f1c4df3d1cb535dea42a4bcdb297a6676596b178d14017c8d893ef069f66a076
 
 import json
 import subprocess
