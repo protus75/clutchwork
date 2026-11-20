@@ -1,0 +1,9 @@
+Observed in the extension Tickets view (2026-11-20), 2 draft tickets unsettled:
+  README.md: 1
+  clutch/__main__.py: 1
+  clutch/config.py: 1
+  clutch/docs: 1
+  ... (ten rows, every count 1)
+Source: `uv run clutch view snapshot` -> "hotPaths": [{"path": "README.md", "count": 1}, ...]; built by _hot_paths in clutch/observe.py:669.
+Help text (clutch/help.py TOPICS["hotPaths"]): "Shows the ten paths fenced by the most unsettled tickets."
+A count of 1 means one ticket fences the path: no contention, so the panel lists noise.
