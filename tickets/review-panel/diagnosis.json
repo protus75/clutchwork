@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "1dca6ab0e2eb8a710dc35d547ecbd5290a55b8f4",
+  "stem": "review-panel",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The fence leaves out clutch/providers.py, but line 480 unpacks exactly six effect-key parts, so a `/m<k>` key crashes before any provider call. That file also picks candidates and tracks one active adapter. Re-scope the ticket to fence it, or change the member-key shape.",
+    "A `/m<k>` key also breaks consumers outside the fence: clutch/rework.py:137 parses the last part as an int, clutch/stats.py:86, clutch/scorecard.py:71 and clutch/training.py:115 accept only 6-part keys. Fence them and their tests, or depend on a ticket that does.",
+    "Scope out excludes scorecard changes, yet paneled reviews would drop out of today's scorecard review accounting. The re-scoped ticket must state whether preserving that accounting is in scope or moved to `panel-scorecard` as a dependency.",
+    "Criterion 7 gives tie outcomes only for retry/escalate and author/declined. Diagnosis also allows split, reject and abandon-human, and triage allows tombstone, and the clutch/panel.py combiner raises ValueError on unlisted ties. Specify a full tie order, or the combiner owner must change.",
+    "This ticket covers driver, provider, five consumers and four stage call sites, too many boundaries for a 30m attempt. On re-authoring, consider splitting the member-key/provider fan-out from stage use of combined results."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
