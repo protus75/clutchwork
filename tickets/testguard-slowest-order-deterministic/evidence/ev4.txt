@@ -1,0 +1,23 @@
+Observed 2026-11-20, ticket meta-schema-and-refresh-r2 attempt 3, Check stage (first run of the full suite, spool 3/check/host-02.txt); the bare rerun (host-02-rerun.txt) and the base run (host-02-base.txt) passed 3519 tests:
+            import pytest
+            def test_slowest(): time.sleep(0.2)
+            def test_slower(): time.sleep(0.1)
+            @pytest.mark.parametrize("n", range(10))
+            def test_fast(n): pass
+        """)
+        result = run(pytester)
+        assert result.ret == pytest.ExitCode.TESTS_FAILED
+        lines = result.stdout.str().split("Unit suite took", 1)[1].split("Speed the listed", 1)[0]
+>       assert lines.index("test_slowest") < lines.index("test_slower")
+E       AssertionError: assert 118 < 70
+E        +  where 118 = <built-in method index of str object at 0xf080170>('test_slowest')
+E        +    where <built-in method index of str object at 0xf080170> = ' 6.00s; budget 5s =======================\ntest_budget_and_slowest.py::test_slower: 0.222s\ntest_budget_and_slowest.p..._fast[6]: 0.000s\ntest_budget_and_slowest.py::test_fast[5]: 0.000s\ntest_budget_and_slowest.py::test_fast[8]: 0.000s\n'.index
+E        +  and   70 = <built-in method index of str object at 0xf080170>('test_slower')
+E        +    where <built-in method index of str object at 0xf080170> = ' 6.00s; budget 5s =======================\ntest_budget_and_slowest.py::test_slower: 0.222s\ntest_budget_and_slowest.p..._fast[6]: 0.000s\ntest_budget_and_slowest.py::test_fast[5]: 0.000s\ntest_budget_and_slowest.py::test_fast[8]: 0.000s\n'.index
+
+/home/djp/source/clutch/.clutch/state/worktrees/meta-schema-and-refresh-r2/tests/integration/test_testguard.py:118: AssertionError
+----------------------------- Captured stdout call -----------------------------
+FAILED tests/integration/test_testguard.py::test_budget_and_slowest - Asserti...
+============ 1 failed, 3518 passed, 8 warnings in 67.35s (0:01:07) =============
+
+Gate result: tests/integration/test_testguard.py::test_budget_and_slowest: quarantine-cap crossed; fix and release existing quarantines before admitting another test; the new test remains blocking
