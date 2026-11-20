@@ -329,7 +329,7 @@ def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
     assert isinstance(slip, PackingSlip) and slip.produced_at_sha == head and slip.produced_by_spec_version == 2
     assert isinstance(invoice, Invoice) and invoice.passed and invoice.changed_files == ["clutch/thing.py"]
     assert invoice.produced_at_sha == head
-    assert isinstance(review, ApprovedInvoice) and review.reviewed_sha == head and review.spec_version == "1.8"
+    assert isinstance(review, ApprovedInvoice) and review.reviewed_sha == head and review.spec_version == "1.9"
     assert (review.provider, review.model) == ("fake", "fake")
 
     # One ticket-plane commit per stage terminal, on main, never on the branch.
@@ -338,7 +338,7 @@ def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
     assert read_review((canonical / "review.md").read_text()) == review
     assert Invoice.model_validate_json((canonical / "checks.json").read_text()) == invoice
     run_md = (canonical / "run.md").read_text()
-    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.20" in run_md
+    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.21" in run_md
     assert git(repo, "diff", "--name-only", f"main...{STEM}").split() == ["clutch/thing.py"]
     outbox = config.worktree_root / STEM / "tickets" / STEM
     assert sorted(p.name for p in outbox.iterdir()) == ["ticket.md"]  # lifted and unlinked

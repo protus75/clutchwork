@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.20"
+version: "2.21"
 ---
 ## Role
 
@@ -78,7 +78,7 @@ Three first-class outcomes replace grinding out a bad implementation:
 
 - `already_satisfied` -- every acceptance criterion already holds before you change anything,
   proven by running the `## Verification` commands green on the untouched branch. Commit nothing.
-- `premise_failed` -- the ticket cannot be done as written: the bug does not reproduce, the
+- `premise_failed` -- if a material contract choice (public signature, output variant, error mode, persistence format, or owner) is omitted by the ticket and not decided by an existing canonical owner, name the omitted choice in a finding; never decide it during implementation. Tickets without a `## Boundary contract` section are not required to have one. Also use this outcome when the ticket cannot be done as written: the bug does not reproduce, the
   criteria contradict existing behavior or each other, or meeting them forces an edit outside
   `## Scope fence`. Running out of time, or a change that is only large, is never `premise_failed`. Before replying `premise_failed` for a scope reason, work the change through
   every file the acceptance criteria and `## Verification` commands force, and report each forced

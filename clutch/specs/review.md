@@ -2,7 +2,7 @@
 llm_surface: review
 tier: high
 effort: high
-version: "1.8"
+version: "1.9"
 ---
 ## Role
 
@@ -39,12 +39,14 @@ Snag on any of these, each attached to a line the diff adds or changes:
   lowered coverage threshold or test time budget the ticket does not require.
 - `acceptance`: an acceptance criterion is unmet, partly met, or met only in a test while the
   real code path differs.
+  Snag an undeclared boundary added by the diff, and check changed consumers against the declared owner.
   Also snag if a doc named in the ticket's acceptance criteria or `Scope in / Scope out` is not
   updated to match the diff, or if the diff changes behavior described by a file under `docs/` or
   `README.md` and leaves it stating the old behavior. You may search and read those files to find
   such a statement.
 - `scope`: the diff changes files outside `## Scope fence`, does work `Scope out` excludes, or
-  adds unrequested features, flags, or refactors.
+  adds unrequested features, flags, or refactors. Snag a second owner, parser, or registry for something
+  a declared or existing canonical owner already provides.
 - `leak`: information crosses a boundary it must not -- a secret, key, token, or credential
   written to a log, journal, prompt, error message, artifact, or child-process environment that
   does not need it; private data exposed through a public interface; a solution that reads the
