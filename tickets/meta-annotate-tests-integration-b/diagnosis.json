@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "7a48a2fd4322ce1aa841d7818c783817b7b53148",
+  "produced_at_sha": "edc0685a580c73343163ae4f1056eacaba2703cb",
   "stem": "meta-annotate-tests-integration-b",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "infra_error",
   "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "Cause was a codex transport outage (Responses WebSocket stream disconnected), not the ticket or approach. Retry once provider codex recovers; the attempt was sound and took about 3 minutes.",
-    "Redo from the merge base: run `uv run clutch meta refresh` on exactly the 112 `## Scope fence` paths, then set each empty `purpose` with an uncommitted throwaway script using the ticket's docstring/heading/stem rule, cut to 120 chars.",
-    "The prior approach was 8 inserted lines per file, 896 insertions and no deletions, under the 1499-line cap. Keep every change inside the block and leave relates/owner/kind/verified/hash, pyproject.toml and config.yaml alone.",
-    "Before reporting ok, run all three `## Verification` commands as written: `uv run clutch meta check <112 paths>`, `uv run ruff format --check <112 paths>`, and `./dev.py test`. Then commit only the fenced paths on the ticket branch."
+    "The cause was a codex provider outage (503 on the Responses WebSocket), not the ticket. The work itself succeeded: 112 files, 896 insertions, no deletions, and integration, lint and format checks passed. Retry at the same capability once codex recovers.",
+    "Every attempt starts from the merge base, so redo the full job: run `uv run clutch meta refresh` on exactly the 112 files in `## Scope fence`, then set each `purpose` with a throwaway script that is not committed, following the ticket's purpose rule.",
+    "Purpose rule (from the ticket): for .py files, use the first line of the module docstring, else the file stem with `_` and `-` replaced by spaces. Cut it to at most 120 characters. Never hand-edit `relates`, `owner`, `kind`, `verified` or `hash`.",
+    "Before committing, run every `## Verification` command (`clutch meta check` and `ruff format --check` on the 112 paths, then `./dev.py test`). Confirm `git diff --name-only` equals the fence and each file differs from base only by its block.",
+    "Commit right after verification passes so the work lands before the agent's final message, which is where the last attempt hit the outage."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
