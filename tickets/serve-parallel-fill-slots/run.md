@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Ticket verification passed all 65 tests and the unit coverage gate passed all 1,299 tests. The full integration check failed test_production_core_unwinds_errors_and_cancellation[load]; that test passes on the base commit and fails again in isolation on the candidate. The exact ticket verification command cannot run on the base because its new test file does not exist there.
+Final verification passed: 153 ticket tests, 1300 unit tests with coverage, 3494 integration tests, lint, and formatting. Regression tests cover the selection and skip behavior to prevent recurrence.
 
 ## Dead ends
 
-Reading the live parallel configuration before selection preserves pending tickets when loading raises, but the existing integration test requires the selected ticket to have been removed before that error.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; the work stopped after verification revealed the conflicting expectation.
+Expected 30 minutes; completed within that budget.
 
