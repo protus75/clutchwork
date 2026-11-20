@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - serve-dispatch-returns-on-slot-settle
 
+## Runs before
+- parallel-gate-merge-count
+
 ## Context
 - clutch/scheduler.py::Scheduler
 - clutch/serve.py::Serve.dispatch
