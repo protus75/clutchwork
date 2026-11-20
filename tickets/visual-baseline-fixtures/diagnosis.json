@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b9caf305b78cefaf85233c808a6464907632b2aa",
+  "produced_at_sha": "5fa819ff660305d03f8afe4d6980b43bc5e920b7",
   "stem": "visual-baseline-fixtures",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Criterion 5 runs `git diff --name-only main` (two-dot), which compares against main as it is now. The attempt's base b9caf305 was not main (9f21ef9b), so two out-of-fence ticket files already differed. Reword it to `git diff --name-only main...HEAD` (merge base) before re-offering.",
-    "The out-of-fence differences were in tickets/graphics-review-spec-blocks/ticket.md and tickets/serve-parallel-fill-slots/ticket.md. Both were in the base, not edits by this attempt. Never revert or edit them to satisfy criterion 5, because they are outside the scope fence.",
-    "Redo all work from the merge base. Draw 20-24 Pillow cases under eval/visual/<case>/ (at least 6 generate) with panel codex/gpt-6.1-terra, label them only through `uv run python -m eval.visual_harness label`, then run `./dev.py visual-baseline` once to write eval/visual_report.json.",
-    "Review found this approach sound: each generate case needs a base image plus an explicit placement criterion. A generate case without a base returned unsure from the panel and had to be redrawn.",
-    "Write tests/integration/test_visual_fixtures.py to check criteria 1-4. Take judge_provider from visual_identity(load_config(None, cwd=ROOT))[\"review_visual\"][\"rows\"][\"medium\"][\"provider\"], which resolved to claude. Bound the report's keys and values without pinning the verdict, overall or count."
+    "Review found case-03, case-04 and case-06 to be byte-for-byte copies of case-01 and case-02. Draw at least 6 generate cases under eval/visual/, and give each one its own input.png, base.png, candidate.png and position-and-scale criterion. Run a hash check so no two cases share an image.",
+    "Generate cases need clearly good placements that plainly meet the stated position and scale. They also need several kinds of break: off position, wrong scale, clipped, duplicated and seams. Never keep cases with identical inputs that carry opposite labels, as case-05 vs case-01 did.",
+    "Command cases also need unique candidate images. case-20 reused case-13's candidate.png and only reworded its criterion. Draw each command case as a new image, for example a missing element, an off-position shape or a clipped object.",
+    "Label only through `uv run python -m eval.visual_harness label`. If the panel replies unsure or with an invalid rubric ID, redraw that case. Then run `./dev.py visual-baseline` once over the final distinct set and commit eval/visual_report.json. Record redraws in run.md."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
