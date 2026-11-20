@@ -1,0 +1,72 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "clutch/providers.py",
+      "line": 480,
+      "message": "Evidence capture unpacks exactly six effect-key components, so the required /m<k> suffix raises an exception before a provider call. The same file selects the full route for every call and tracks only one active adapter, preventing the required member assignment and safe concurrent cancellation.",
+      "paved_road": "Add the provider layer to the scope fence and cover member selection, evidence capture, and concurrent cancellation.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "clutch/rework.py",
+      "line": 137,
+      "message": "Rework parses the final component of every requisition-review effect key as an integer; a paneled /m<k> key makes a later rework invocation raise ValueError.",
+      "paved_road": "Add this file to the scope fence and update its requisition-review sequence parsing for member keys.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "clutch/stats.py",
+      "line": 87,
+      "message": "The statistics projection accepts only six-component LLM keys, so paneled stages disappear from its existing timing and review measurements.",
+      "paved_road": "Add the statistics projection and its affected tests to the scope fence and define how panel calls contribute to stage measurements.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "clutch/training.py",
+      "line": 115,
+      "message": "Diagnosis stem discovery excludes seven-component member keys, so panel-only diagnosis evidence can be omitted from training export.",
+      "paved_road": "Add the training exporter and its affected tests to the scope fence and recognize panel member keys.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "clutch/scorecard.py",
+      "line": 72,
+      "message": "The existing scorecard ignores seven-component review keys, so paneled reviews lose their existing review evaluation and catch attribution; the ticket explicitly excludes scorecard changes.",
+      "paved_road": "Include preservation of existing review scorecard accounting in scope, or make this ticket depend on a change that provides it.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tickets/review-panel/ticket.md",
+      "line": null,
+      "message": "The majority tie contract covers retry versus escalate and author versus declined, but diagnosis also permits split, reject, and abandon-human, and triage permits tombstone. The existing combiner raises ValueError for a tie involving an unlisted verdict, and no complete tie order is specified.",
+      "paved_road": "Specify tie outcomes for every valid diagnosis and triage verdict, and include the combiner owner if its orders must change.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The panel contract cannot be implemented within the scope fence without breaking provider execution and existing consumers.\",\"surprises\":\"No files were changed. Prevent this class of failure by checking new effect-key formats against their producers and consumers when authoring the ticket.\",\"second_problems\":[],\"dead_ends\":\"A driver-only fan-out cannot preserve the existing provider admission and evidence behavior: the provider layer owns candidate selection, evidence capture, and active-call cancellation.\",\"predicted_vs_actual\":\"Ticket estimate: 30 minutes; stopped during scope analysis.\",\"findings\":[{\"code\":\"premise\",\"path\":\"clutch/providers.py\",\"line\":480,\"message\":\"Evidence capture unpacks exactly six effect-key components, so the required /m<k> suffix raises an exception before a provider call. The same file selects the full route for every call and tracks only one active adapter, preventing the required member assignment and safe concurrent cancellation.\",\"paved_road\":\"Add the provider layer to the scope fence and cover member selection, evidence capture, and concurrent cancellation.\"},{\"code\":\"premise\",\"path\":\"clutch/rework.py\",\"line\":137,\"message\":\"Rework parses the final component of every requisition-review effect key as an integer; a paneled /m<k> key makes a later rework invocation raise ValueError.\",\"paved_road\":\"Add this file to the scope fence and update its requisition-review sequence parsing for member keys.\"},{\"code\":\"premise\",\"path\":\"clutch/stats.py\",\"line\":87,\"message\":\"The statistics projection accepts only six-component LLM keys, so paneled stages disappear from its existing timing and review measurements.\",\"paved_road\":\"Add the statistics projection and its affected tests to the scope fence and define how panel calls contribute to stage measurements.\"},{\"code\":\"premise\",\"path\":\"clutch/training.py\",\"line\":115,\"message\":\"Diagnosis stem discovery excludes seven-component member keys, so panel-only diagnosis evidence can be omitted from training export.\",\"paved_road\":\"Add the training exporter and its affected tests to the scope fence and recognize panel member keys.\"},{\"code\":\"premise\",\"path\":\"clutch/scorecard.py\",\"line\":72,\"message\":\"The existing scorecard ignores seven-component review keys, so paneled reviews lose their existing review evaluation and catch attribution; the ticket explicitly excludes scorecard changes.\",\"paved_road\":\"Include preservation of existing review scorecard accounting in scope, or make this ticket depend on a change that provides it.\"},{\"code\":\"premise\",\"path\":\"tickets/review-panel/ticket.md\",\"line\":null,\"message\":\"The majority tie contract covers retry versus escalate and author versus declined, but diagnosis also permits split, reject, and abandon-human, and triage permits tombstone. The existing combiner raises ValueError for a tie involving an unlisted verdict, and no complete tie order is specified.\",\"paved_road\":\"Specify tie outcomes for every valid diagnosis and triage verdict, and include the combiner owner if its orders must change.\"}]}",
+  "events_tail": "ckets(repo)}\\n   113\\t    attempts = store.attempts()\\n   114\\t    keys = store.call_keys(\\\"llm/\\\")\\n   115\\t    call_stems = {parts[1] for key in keys if len(parts := key.split(\\\"/\\\")) == 6 and parts[3] in (\\\"diagnose\\\", \\\"resolve\\\")}\\n   116\\t    stems = set(merged) | {stem for stem, _, _ in attempts} | call_stems\\n   117\\t    counts[\\\"conflict_skipped\\\"] = len({parts[1] for key in keys if len(parts := key.split(\\\"/\\\")) == 6 and parts[3] == \\\"resolve\\\"})\\n   118\\t    ticket_calls = {}\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_11\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The panel contract cannot be implemented within the scope fence without breaking provider execution and existing consumers.\\\",\\\"surprises\\\":\\\"No files were changed. Prevent this class of failure by checking new effect-key formats against their producers and consumers when authoring the ticket.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"A driver-only fan-out cannot preserve the existing provider admission and evidence behavior: the provider layer owns candidate selection, evidence capture, and active-call cancellation.\\\",\\\"predicted_vs_actual\\\":\\\"Ticket estimate: 30 minutes; stopped during scope analysis.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/providers.py\\\",\\\"line\\\":480,\\\"message\\\":\\\"Evidence capture unpacks exactly six effect-key components, so the required /m<k> suffix raises an exception before a provider call. The same file selects the full route for every call and tracks only one active adapter, preventing the required member assignment and safe concurrent cancellation.\\\",\\\"paved_road\\\":\\\"Add the provider layer to the scope fence and cover member selection, evidence capture, and concurrent cancellation.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/rework.py\\\",\\\"line\\\":137,\\\"message\\\":\\\"Rework parses the final component of every requisition-review effect key as an integer; a paneled /m<k> key makes a later rework invocation raise ValueError.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update its requisition-review sequence parsing for member keys.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/stats.py\\\",\\\"line\\\":87,\\\"message\\\":\\\"The statistics projection accepts only six-component LLM keys, so paneled stages disappear from its existing timing and review measurements.\\\",\\\"paved_road\\\":\\\"Add the statistics projection and its affected tests to the scope fence and define how panel calls contribute to stage measurements.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/training.py\\\",\\\"line\\\":115,\\\"message\\\":\\\"Diagnosis stem discovery excludes seven-component member keys, so panel-only diagnosis evidence can be omitted from training export.\\\",\\\"paved_road\\\":\\\"Add the training exporter and its affected tests to the scope fence and recognize panel member keys.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"clutch/scorecard.py\\\",\\\"line\\\":72,\\\"message\\\":\\\"The existing scorecard ignores seven-component review keys, so paneled reviews lose their existing review evaluation and catch attribution; the ticket explicitly excludes scorecard changes.\\\",\\\"paved_road\\\":\\\"Include preservation of existing review scorecard accounting in scope, or make this ticket depend on a change that provides it.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tickets/review-panel/ticket.md\\\",\\\"line\\\":null,\\\"message\\\":\\\"The majority tie contract covers retry versus escalate and author versus declined, but diagnosis also permits split, reject, and abandon-human, and triage permits tombstone. The existing combiner raises ValueError for a tie involving an unlisted verdict, and no complete tie order is specified.\\\",\\\"paved_road\\\":\\\"Specify tie outcomes for every valid diagnosis and triage verdict, and include the combiner owner if its orders must change.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":476961,\"cached_input_tokens\":420096,\"cache_write_input_tokens\":0,\"output_tokens\":2336,\"reasoning_output_tokens\":503}}\n",
+  "wall_seconds": 69.87844,
+  "usd": 1.0,
+  "run_record": "tickets/review-panel/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
