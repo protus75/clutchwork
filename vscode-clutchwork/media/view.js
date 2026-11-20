@@ -90,15 +90,18 @@ function render(snap) {
 	focus();
 }
 
+function showError(message) {
+	const link = el('a', 'link', 'Open setup help');
+	link.href = '#';
+	link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+	header.replaceChildren(`${message} `, link);
+}
 window.addEventListener('message', e => {
 	const msg = e.data;
 	if (msg.type === 'data') {
-		render(msg.snap);
+		try { render(msg.snap); } catch (error) { showError(`cannot draw the clutch snapshot: ${error.message}`); }
 	} else if (msg.type === 'error') {
-		const link = el('a', 'link', 'Open setup help');
-		link.href = '#';
-		link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'readme' }); });
-		header.replaceChildren(`snapshot failed: ${msg.message} `, link);
+		showError(`snapshot failed: ${msg.message}`);
 	}
 });
 vscode.postMessage({ type: 'ready' });

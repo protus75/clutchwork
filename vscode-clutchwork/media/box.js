@@ -72,13 +72,18 @@ window.addEventListener('keydown', e => {
 		e.preventDefault(); selected = new Set(snap.box.map(r => r.id)); focus();
 	} else if (e.key === 'Escape') { selected.clear(); pinned = undefined; focus(); }
 });
+function showError(message) {
+	const link = el('a', 'link', 'Open setup help');
+	link.href = '#';
+	link.addEventListener('click', e => { e.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+	header.replaceChildren(`${message} `, link);
+}
 window.addEventListener('message', e => {
-	if (e.data.type === 'data') render(e.data.snap);
+	if (e.data.type === 'data') {
+		try { render(e.data.snap); } catch (error) { showError(`cannot draw the clutch snapshot: ${error.message}`); }
+	}
 	else if (e.data.type === 'error') {
-		const link = el('a', 'link', 'Open setup help');
-		link.href = '#';
-		link.addEventListener('click', event => { event.preventDefault(); vscode.postMessage({ type: 'readme' }); });
-		header.replaceChildren(`snapshot failed: ${e.data.message} `, link);
+		showError(`snapshot failed: ${e.data.message}`);
 	}
 });
 vscode.postMessage({ type: 'ready' });

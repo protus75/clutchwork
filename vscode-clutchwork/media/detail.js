@@ -78,10 +78,17 @@ function boxContent(row, snap) {
 }
 
 window.addEventListener('message', e => {
-	const { snap, focus } = e.data;
-	const box = focus?.kind === 'box' ? snap.box.find(r => r.id === focus.id) : undefined;
-	const stem = focus?.kind === 'ticket' ? focus.id : snap.runningStem;
-	const row = snap.rows.find(r => r.stem === stem);
-	detail.replaceChildren(box ? boxContent(box, snap) : row ? content(row, snap) : el('div', 'detail-meta', 'Nothing running. Hover a ticket or message to see it here; click to pin.'));
+	try {
+		const { snap, focus } = e.data;
+		const box = focus?.kind === 'box' ? snap.box.find(r => r.id === focus.id) : undefined;
+		const stem = focus?.kind === 'ticket' ? focus.id : snap.runningStem;
+		const row = snap.rows.find(r => r.stem === stem);
+		detail.replaceChildren(box ? boxContent(box, snap) : row ? content(row, snap) : el('div', 'detail-meta', 'Nothing running. Hover a ticket or message to see it here; click to pin.'));
+	} catch (error) {
+		const link = el('a', 'link', 'Open setup help');
+		link.href = '#';
+		link.addEventListener('click', event => { event.preventDefault(); vscode.postMessage({ type: 'readme' }); });
+		detail.replaceChildren(`cannot draw the clutch snapshot: ${error.message} `, link);
+	}
 });
 vscode.postMessage({ type: 'ready' });

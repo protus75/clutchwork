@@ -19,3 +19,7 @@ On WSL or Remote-SSH, the extension runs on the remote side, where the repositor
 ## Help
 
 Hover over extension surfaces for help, or use the links in Details under `Next` to learn about available actions. The Help command lists all topics, and settings include their own help. In an error state, the "Open setup help" link opens this README.
+
+## Troubleshooting
+
+If a view says `cannot draw the clutch snapshot`, the installed extension is older than the clutch it reads. In the Extensions view, update the extension from the Marketplace, then reload the window.
