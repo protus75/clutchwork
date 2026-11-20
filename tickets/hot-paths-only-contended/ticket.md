@@ -36,6 +36,8 @@ The extension is unchanged: `vscode-clutchwork/media/view.js` already maps whate
 ## Scope in / Scope out
 In: `_hot_paths` in clutch/observe.py drops entries whose count is below 2, applied before the top-ten cut so ten contended paths are never pushed out by uncontended ones. The `hotPaths` help entry in clutch/help.py (`TOPICS["hotPaths"]`, `what` line) says the list shows paths fenced by two or more unsettled tickets. tests/unit/test_observe_hot_paths.py: `test_counts_order_and_distinct_entries` expects only the `a.py` (3) and `b.py` (2) rows, and `test_outbox_and_top_ten` is rewritten so twelve paths shared by two tickets still cap at ten and a path fenced by one ticket is absent. tests/integration/test_hot_paths_snapshot.py: the `open` ticket shares `open.py` with a second open ticket so the expectation becomes `[{"path": "open.py", "count": 2}]`, and the closed and rejected tickets still add nothing.
 
+Create `tests/regress_hot_paths_contended.py`, the carried reproducer, following the shape of `tests/regress_already_satisfied.py`. It builds two in-memory `Ticket`s whose fences share no path and calls `clutch.observe._hot_paths` (which exists at base). It prints only `{"regression_result": "pass"}` and exits 0 when the result is `[]`; prints `{"regression_result": "defect"}` and exits 1 when any entry has count 1; on an exception prints `{"regression_result": "error"}` to stdout, the traceback to stderr, and exits 2.
+
 Out: the extension JavaScript, `docs/how-clutch-works.md` (it does not describe the field's rows), the snapshot shape, and the unedited-skeleton row that also shows in the view (a separate problem).
 
 ## Scope fence
