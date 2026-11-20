@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "1ef01373d65a40ae240f4bcd3f4725a0879503c4",
+  "stem": "training-attempt-manifest",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Redo the full ticket from the merge base. Review found the Attempt model, write_attempt/read_attempt/call_keys, the harvest hook, the docs edit and the TrainingData() config edits sound. Only the path decoding in the clutch/runner.py diff split failed review.",
+    "In the clutch/runner.py diff splitter, decode git C-quoted header paths as UTF-8 bytes, e.g. ast.literal_eval('b' + part).decode('utf-8', 'surrogateescape'). Plain ast.literal_eval turns \"a/secr\\303\\251t.key\" into Latin-1 mojibake, so non-ASCII exclude globs never match.",
+    "Add a case to tests/unit/test_runner_attempt_manifest.py: with training_data.exclude=['secrét*'] and a diff touching 'secrét.key' plus app.py, the stored blob keeps the app.py section and has neither the secrét.key path, in quoted or plain form, nor its content.",
+    "Match effective_exclude() globs against the decoded full path and its basename. This applies to both a/ and b/ header paths and to rename/new-file lines, so an excluded path's name never reaches the blob (ticket Definition of rejected)."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
