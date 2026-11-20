@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test admission running set
+# relates: [clutch/daemon.py, clutch/scheduler.py, tests/dispatch_settle.py]
+# owner: engine
+# verified: 0a308920
+# hash: 35619069da5b6cb43dbcb55d37131a6e204053b3bf2cc3201f2978999108cee7
 import asyncio
 from types import SimpleNamespace
 

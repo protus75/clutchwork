@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask drain loop
+# relates: [clutch/__main__.py, clutch/ask.py]
+# owner: engine
+# verified: 0a308920
+# hash: b7b8fd595201cf7949e41224aa7a4cdc38c019c040413dbf9ff471154d4b7b42
 from pathlib import Path
 from types import SimpleNamespace
 

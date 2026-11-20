@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test author slice follow up
+# relates: [clutch/author.py]
+# owner: clutch/author.py
+# verified: 0a308920
+# hash: 901d639002e2a566767c1339ce3def7705d406b2eb3f71bfb41d2fda853ff592
 from types import SimpleNamespace
 
 import pytest

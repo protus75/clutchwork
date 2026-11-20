@@ -1,4 +1,12 @@
 """Settled checkpoint windows count distinct terminal ticket stems."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Settled checkpoint windows count distinct terminal ticket stems.
+# relates: [clutch/checkpoint.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: 0751cd3f26301a2897054b9d19975ec963be6f3f6e5e0f055531dd93c62e63dc
 
 from clutch.checkpoint import settled_since_last_push
 from clutch.journal import Event, EventType

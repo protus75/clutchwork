@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git commit
+# relates: [clutch/git.py, clutch/tickets.py]
+# owner: engine
+# verified: 0a308920
+# hash: b0745a6f678812111c011ddf862a43a71f49e5379feba95d2c59e3d9c0a62eb3
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

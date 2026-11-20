@@ -1,4 +1,12 @@
 """Author rechecks ticket ownership after review."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Author rechecks ticket ownership after review.
+# relates: [clutch/author.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
+# owner: engine
+# verified: 0a308920
+# hash: 9d7fea82bc753989a4902f1e95043d684477f1b936c9661687177c46e952bf4d
 
 from pathlib import Path
 from types import SimpleNamespace

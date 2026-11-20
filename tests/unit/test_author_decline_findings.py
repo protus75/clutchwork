@@ -1,4 +1,12 @@
 """Author declines preserve findings across driver calls."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Author declines preserve findings across driver calls.
+# relates: [clutch/artifacts.py, clutch/author.py, clutch/stages.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
+# owner: engine
+# verified: 0a308920
+# hash: 790c6ab26f810e08818dfdb72b0971a66db859d61b3ec44f4591fe162b390b54
 
 from pathlib import Path
 from types import SimpleNamespace

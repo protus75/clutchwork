@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test driver from config journal
+# relates: [clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
+# owner: engine
+# verified: 0a308920
+# hash: 74f50941c12885bb94fa2ecb22f6260abfdfc2bd75e2be71bde323431ca11d82
 from datetime import UTC, datetime
 
 import pytest

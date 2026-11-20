@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test images gate
+# relates: [clutch/images.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 0a308920
+# hash: ab67b3a7de93897c5d1bc69f3fcb379038665cfa5d582d5a1490dba66689963e
 import asyncio
 import json
 from datetime import datetime, timezone

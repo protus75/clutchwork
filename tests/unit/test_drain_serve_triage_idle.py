@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain serve triage idle
+# relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/journal.py, clutch/triage.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: 63cd831aadbd8aebfcc951ac3cb625e67d32add7f8823f9bd833fa402cc0519f
 from unittest.mock import AsyncMock
 
 import pytest

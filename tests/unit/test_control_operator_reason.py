@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test control operator reason
+# relates: [clutch/control.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: 433dc84579da67fd6b21786651543eca1db66bc1d002fcc98dee6f51e5a75c76
 import json
 from pathlib import PurePath
 from types import SimpleNamespace

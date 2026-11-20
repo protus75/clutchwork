@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test dev testguard
+# relates: [dev.py]
+# owner: dev.py
+# verified: 0a308920
+# hash: ed4430a52b1203e79ab71aebb8f431ca63d00984336411d79b6cc0df527bcda9
 from unittest.mock import Mock, call
 
 import pytest

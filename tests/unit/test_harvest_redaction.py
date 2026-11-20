@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test harvest redaction
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: 5277de1fbc0665a3911624d7169dd4bb4a64b717ff06ca6f3d0391df19829efc
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

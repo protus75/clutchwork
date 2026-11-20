@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test driver hooks
+# relates: [clutch/drain.py, clutch/journal.py, clutch/roadmap.py, clutch/serve.py, clutch/triage.py, tests/fakes.py, tests/unit/test_phase_events.py]
+# owner: engine
+# verified: 0a308920
+# hash: 90c5ca6c9a4554736005c4cc701b00799137f1ea2fd96e95c0ad122cde5bee84
 from dataclasses import dataclass
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

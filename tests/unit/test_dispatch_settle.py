@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test dispatch settle
+# relates: [tests/dispatch_settle.py]
+# owner: tests/dispatch_settle.py
+# verified: 0a308920
+# hash: a26c1419a36cb359a29a91c982a017396ade007919d976e1fe8fc3e04fee78ea
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test covgate
+# relates: [clutch/covgate.py]
+# owner: clutch/covgate.py
+# verified: 0a308920
+# hash: e021cb872933bfc105158845cdea7b4aac37f00fdcba9fe762c4974107119bf4
 import pytest
 
 from clutch.covgate import evaluate, parse_gate, percentages

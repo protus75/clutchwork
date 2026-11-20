@@ -1,4 +1,12 @@
 """Keep the host run guide's verb table aligned with the CLI."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Keep the host run guide's verb table aligned with the CLI.
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: 8ecff30912c4128af7d2319d9382032d634762ac673338a1ca564a497aa899b9
 
 import argparse
 import re

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test issue link
+# relates: [clutch/__main__.py, clutch/config.py, clutch/issue.py, clutch/observe.py, clutch/redact.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: a8863829dafedbd335355adb53ced3e90c58963ba8ff473ad11269b2c3360ba6
 import platform
 from types import SimpleNamespace
 from unittest.mock import Mock

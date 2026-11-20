@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test lift decision
+# relates: [clutch/artifacts.py, clutch/stages.py]
+# owner: engine
+# verified: 0a308920
+# hash: d593153ae1fbd3e25a75f0069e81fea27416f1317b56a93c09dcdf8b1bc414ca
 from clutch.artifacts import REVIEW_BASELINE_REPORT
 from clutch.stages import LIFT_MAX_BYTES, _lift_decision
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main coverage group
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: fc7fd408904881220bf9b92e5ac4d1090aa41327620f38bd513ca5e0fa3e112f
 import argparse
 from pathlib import Path
 

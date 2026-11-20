@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test lint ceiling
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: 3733d2e8af4b7e931694403a4be1b927ee50099ae534f8834f92f12d45539a2b
 from clutch.__main__ import stuck_ceiling_finding
 
 

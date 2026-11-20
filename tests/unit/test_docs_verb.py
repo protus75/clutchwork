@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test docs verb
+# relates: [clutch/__init__.py, clutch/__main__.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: c3b015bc31cce9ef94dc89bf6688f23a9968b9d83de3da2cd9bd27c5a919efe0
 from pathlib import Path
 from unittest.mock import Mock
 

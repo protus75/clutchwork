@@ -1,4 +1,12 @@
 """Conflict rerun accounting is separate from failure caps."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Conflict rerun accounting is separate from failure caps.
+# relates: [clutch/caps.py, clutch/config.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: ddce7e4fb6d695bcae0c4f16608c52d6b820fe0568241b4ba862e85516860dd9
 
 import pytest
 

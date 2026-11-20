@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test graph
+# relates: [clutch/graph.py]
+# owner: clutch/graph.py
+# verified: 0a308920
+# hash: 4ed0a8d693e574c72997fdd4c270cd89857bb3c119a50363eacc6eb07ba638d5
 from clutch.graph import layout
 
 

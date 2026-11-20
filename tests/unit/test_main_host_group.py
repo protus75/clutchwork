@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main host group
+# relates: [clutch/__init__.py, clutch/__main__.py, clutch/hostfiles.py]
+# owner: engine
+# verified: 0a308920
+# hash: b038a72a947daf3a355d5ecba3df8da03233deb5b37a3fd97f1bd0e7c0d99418
 import argparse
 from pathlib import Path
 from types import SimpleNamespace

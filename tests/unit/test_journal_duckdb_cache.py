@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal duckdb cache
+# relates: [clutch/journal.py, clutch/journalcache.py, clutch/status.py]
+# owner: engine
+# verified: 0a308920
+# hash: eee68340eda207f5b3451ce02474cfb5eaef46553ac1702748890262cac16723
 import json
 from pathlib import Path
 

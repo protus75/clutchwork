@@ -1,4 +1,12 @@
 """Committed conduct preflight without filesystem or subprocess access."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Committed conduct preflight without filesystem or subprocess access.
+# relates: [clutch/git.py, clutch/hostfiles.py, clutch/providers.py]
+# owner: engine
+# verified: 0a308920
+# hash: 096e5f0f8e04199aa501fc6c7ec17781b5e7cffc1a4b0dc11595020835d979e4
 
 from pathlib import Path
 

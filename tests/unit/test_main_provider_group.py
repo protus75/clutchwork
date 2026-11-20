@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main provider group
+# relates: [clutch/__main__.py, clutch/providers.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 427a5a4393e0d6dd0a9c9187d6211d5f976ac76751ad3ba1167a52db227f7734
 import argparse
 
 import pytest

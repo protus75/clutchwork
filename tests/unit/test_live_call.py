@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test live call
+# relates: [clutch/observe.py]
+# owner: clutch/observe.py
+# verified: 0a308920
+# hash: 6075d0b3a6a92eee21336a5cbd15d9639f2005819cdfe8cc8f847e68b3ab1d55
 import json
 from urllib.parse import quote
 

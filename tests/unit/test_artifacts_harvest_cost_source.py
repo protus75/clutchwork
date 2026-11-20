@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test artifacts harvest cost source
+# relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: 7273ae96f7e6bbdb0960d72c75cc11d4b07bfc095695fa3c4b4a08bdbe8edda3
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

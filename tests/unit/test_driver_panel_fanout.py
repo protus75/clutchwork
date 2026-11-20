@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test driver panel fanout
+# relates: [clutch/driver.py, clutch/llm.py, clutch/panel.py, clutch/providers.py, clutch/redact.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: 9fd272bcb1482beec37963246ca7cdbaf606c2405548b011df1e86c86654f584
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

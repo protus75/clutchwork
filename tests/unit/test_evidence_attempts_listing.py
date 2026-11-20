@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence attempts listing
+# relates: [clutch/evidence/store.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 618064198dafd3a4484bca80faf9af75bbccb2e0105beb29acd2bfffeb4360dc
 from clutch.evidence.store import EvidenceStore
 from clutch.seams import LocalFileSystem
 

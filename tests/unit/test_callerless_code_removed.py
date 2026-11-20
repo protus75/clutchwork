@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test callerless code removed
+# relates: [clutch/effects.py, clutch/git.py, clutch/heartbeat.py, clutch/requisition.py, clutch/timers.py, clutch/watchdog.py]
+# owner: engine
+# verified: 0a308920
+# hash: eb5dddc292e35dfff8b333e0b60d7473e1eecbe09aea81dcf743e96789970a37
 from clutch import effects, git, heartbeat, requisition, timers, watchdog
 
 

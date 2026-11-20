@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main engine calibrate
+# relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: 6320dd3f8bfca23734f5f06698c506f8630c955beb117fb827ab217449c51055
 import argparse
 from types import SimpleNamespace
 

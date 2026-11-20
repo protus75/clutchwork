@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test control triage request
+# relates: [clutch/control.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: 695f43ad1cf473228651a5927690a0ffaed3a3caee0be72b272c23347dc1e2fd
 from dataclasses import asdict
 from pathlib import Path
 

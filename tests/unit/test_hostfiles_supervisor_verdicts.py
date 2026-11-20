@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test hostfiles supervisor verdicts
+# relates: [clutch/hostfiles.py]
+# owner: clutch/hostfiles.py
+# verified: 0a308920
+# hash: 786af26446e25fbf7c1ca7ddc77611bd3a1aed3b151df0177fe4db6720d31ef5
 from clutch.hostfiles import CORE_TEMPLATE
 
 

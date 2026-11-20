@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test artifacts refused
+# relates: [clutch/artifacts.py]
+# owner: clutch/artifacts.py
+# verified: 0a308920
+# hash: 33c4e32f37dd81270fd54c12b73020a4a77aa9843aff2e2746a5c412c3e09c6f
 from clutch.artifacts import Artifact, Cost, Finding, refused
 
 

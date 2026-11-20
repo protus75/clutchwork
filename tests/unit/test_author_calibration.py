@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test author calibration
+# relates: [clutch/author.py, clutch/calibration.py, clutch/journal.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
+# owner: engine
+# verified: 0a308920
+# hash: 9d57f78f76381c7092c19664a310dc848f4e4b007325e2bb33c4a44bd5485349
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

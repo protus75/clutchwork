@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test hostfiles duckdb rule
+# relates: [clutch/hostfiles.py]
+# owner: clutch/hostfiles.py
+# verified: 0a308920
+# hash: 0322ca54506e221b1469dc476deb7291967ab0112bb2a8cfc4405ee3f236c16f
 from clutch.hostfiles import CORE_TEMPLATE
 
 

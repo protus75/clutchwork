@@ -1,4 +1,12 @@
 """Drain admits reports after ticket intake on each loop."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Drain admits reports after ticket intake on each loop.
+# relates: [clutch/drain.py, clutch/triage.py]
+# owner: engine
+# verified: 0a308920
+# hash: 3e2acad1187ced1d99252a7ba6874359b804806074d32edb3107f0f4159bd036
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

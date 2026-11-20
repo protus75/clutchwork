@@ -1,4 +1,12 @@
 """Fence matching and scheduling overlap use the same path boundaries."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Fence matching and scheduling overlap use the same path boundaries.
+# relates: [clutch/stages.py, clutch/tickets.py]
+# owner: engine
+# verified: 0a308920
+# hash: ac389dd3b68f9ebf1b8a7593f809d3a1242f1734eac012fd7360ac3b1d4b569c
 
 import pytest
 

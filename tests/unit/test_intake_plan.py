@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test intake plan
+# relates: [clutch/journal.py, clutch/tickets.py]
+# owner: engine
+# verified: 0a308920
+# hash: fc549b94a268fb34fe5254d343980d6cca1063e351d4748f0383a72f43c5be6f
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

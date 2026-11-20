@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain detach cli
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: debb31fe53c661ca55cc90a0b20fec4b002d290da524a4e4d64ec9ab6e92fca8
 import sys
 from pathlib import Path
 from types import SimpleNamespace

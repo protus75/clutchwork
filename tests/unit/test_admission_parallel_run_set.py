@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test admission parallel run set
+# relates: [clutch/__main__.py, clutch/daemon.py, clutch/scheduler.py, clutch/serve.py, tests/dispatch_settle.py]
+# owner: engine
+# verified: 0a308920
+# hash: 6fe70842fe5f5e7311bc2c2747ad9a9abbdb32d265c9bac97b3681c65023710a
 import asyncio
 from types import SimpleNamespace
 

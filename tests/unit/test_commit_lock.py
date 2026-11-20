@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test commit lock
+# relates: [clutch/__main__.py, clutch/git.py, clutch/lockfile.py]
+# owner: engine
+# verified: 0a308920
+# hash: 5d7177d031caaf31fb1f5ba28ef6108648e3f9b84e5bd99770312efdf07492a8
 import asyncio
 import json
 from datetime import UTC, datetime, timedelta

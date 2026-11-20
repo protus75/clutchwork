@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test key scope
+# relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
+# owner: engine
+# verified: 0a308920
+# hash: b6d3ed39b1379d891850fb301b0020e32c8546e78fee0f40d308165cc3d99549
 import asyncio
 import json
 from datetime import UTC, datetime

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence store
+# relates: [clutch/evidence/store.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 623d336e5fd3b1adf9a4be9b60b000b81c38e5434fa39155bbf9537c6acc3810
 import hashlib
 import json
 

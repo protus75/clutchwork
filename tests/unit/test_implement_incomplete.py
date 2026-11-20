@@ -1,4 +1,12 @@
 """Unfinished implementation is a failed attempt, not a ticket defect."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Unfinished implementation is a failed attempt, not a ticket defect.
+# relates: [clutch/caps.py, clutch/stages.py]
+# owner: engine
+# verified: 0a308920
+# hash: 302783ce7ab7b1f7c9a29cae066f7aeca3c706c12ffa1b1091973010f0be4790
 
 import pytest
 from pydantic import ValidationError

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main training group
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: bfa2ea335df356df30e5e5723d5e2b670f64d026f35872eb271b12fb063ef1f6
 from pathlib import Path
 
 import pytest

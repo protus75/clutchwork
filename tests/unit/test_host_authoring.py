@@ -1,4 +1,12 @@
 """Keep critical ticket-writing guidance in the host authoring guide."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Keep critical ticket-writing guidance in the host authoring guide.
+# relates: []
+# owner: engine
+# verified: 0a308920
+# hash: f89665f72e7080ee76e1719bbb4fab7f429fb4154a13092132a315086158c25c
 
 from pathlib import Path
 

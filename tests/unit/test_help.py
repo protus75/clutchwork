@@ -1,4 +1,12 @@
 """The help registry builds entirely from injected document text."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: The help registry builds entirely from injected document text.
+# relates: [clutch/box.py, clutch/help.py, clutch/observe.py, clutch/stats.py, clutch/status.py]
+# owner: engine
+# verified: 0a308920
+# hash: f7465624251ba52b674c908e4bf3d48e64097ebc320e8284a50c86a58c57135a
 
 from datetime import datetime, timezone
 from typing import get_args

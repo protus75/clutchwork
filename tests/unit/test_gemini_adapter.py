@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test gemini adapter
+# relates: [clutch/__init__.py, clutch/config.py, clutch/providers.py]
+# owner: engine
+# verified: 0a308920
+# hash: 7e520b5765327cddf6fc2857547757402c9132a199ec292c61a26cdfd8bd3cb1
 import asyncio
 import json
 from pathlib import Path

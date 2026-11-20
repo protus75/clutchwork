@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test graphics new
+# relates: [clutch/__main__.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: 70310d38f23289cc83725851632a49baf22626d4dde5e768028395e03dea6cc6
 import pytest
 
 from clutch.__main__ import _new

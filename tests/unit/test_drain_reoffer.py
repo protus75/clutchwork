@@ -1,4 +1,12 @@
 """Re-offer cap draws for terminal outcomes."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Re-offer cap draws for terminal outcomes.
+# relates: [clutch/drain.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: d371dc1bfd0f97046863d074e5191f0a688718d193337ecd41f7b6ad313d0292
 
 import pytest
 

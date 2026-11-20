@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main config group
+# relates: [clutch/__main__.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 857213abd5d6810f37c22440004eb6facc8f30008c611ebd664cb2697f026121
 import argparse
 from pathlib import Path
 

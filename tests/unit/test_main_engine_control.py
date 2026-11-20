@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main engine control
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: ddd6e1202babb59b7f6c8f858bc40e89e6356b9389adc76346b2cb7acc2f9aee
 import argparse
 
 import pytest

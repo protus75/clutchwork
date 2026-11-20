@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test graphics kind
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 0a308920
+# hash: 8c64f09f9fc743aaf70d9a5a801cc9201a6042beeae3693efa066b8be17648c6
 import pytest
 
 from clutch import tickets

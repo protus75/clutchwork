@@ -1,4 +1,12 @@
 """Discarded conflicts use their own accounting and operator release."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Discarded conflicts use their own accounting and operator release.
+# relates: [clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/git.py, clutch/journal.py, clutch/merge.py]
+# owner: engine
+# verified: 0a308920
+# hash: 7b83743db29b573080f9f5a07c93cc8f62e3c01a2835fd8ab979ab093d0d29de
 
 import asyncio
 import json

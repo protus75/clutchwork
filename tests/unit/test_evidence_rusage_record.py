@@ -1,4 +1,12 @@
 """Resource usage survives successful and exceptional provider calls."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Resource usage survives successful and exceptional provider calls.
+# relates: [clutch/evidence/schema.py, clutch/git.py, clutch/providers.py, tests/unit/test_evidence_envelope.py]
+# owner: engine
+# verified: 0a308920
+# hash: 2abbdb350216e18756fd3989cd38212e4bd4cb490a74d6cd03fc2b3306cdc9c6
 
 import asyncio
 

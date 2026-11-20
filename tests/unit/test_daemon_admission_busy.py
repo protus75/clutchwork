@@ -1,4 +1,12 @@
 """Admission detects both a held slot and a queued handoff."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Admission detects both a held slot and a queued handoff.
+# relates: [clutch/daemon.py]
+# owner: clutch/daemon.py
+# verified: 0a308920
+# hash: 4ec0d83110c6fd332e0edae518f2ba7c350573fbdc74648f3342fcbdaff9e906
 
 import asyncio
 

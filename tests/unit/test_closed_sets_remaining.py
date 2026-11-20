@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test closed sets remaining
+# relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/journal.py, clutch/retro.py, clutch/status.py, clutch/tickets.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: 2dd2d4af8a240fa40a0fe8bb8a0d45da5bbb126a5818ec75856d26696e3200bf
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

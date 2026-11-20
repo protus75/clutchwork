@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test images embedding
+# relates: [clutch/images.py, clutch/stages.py]
+# owner: engine
+# verified: 0a308920
+# hash: c91edf4cbf48b0a0ab213f5c8616e8496e57636fea28c4e659d3eb2698ab597e
 import sys
 from contextlib import nullcontext
 from types import SimpleNamespace

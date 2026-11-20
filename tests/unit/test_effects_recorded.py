@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test effects recorded
+# relates: [clutch/effects.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: 67b7a4666b04df37d1cfd3e2f5414571d3d7703b8f43ff836dba8fe6d6fda86b
 from datetime import UTC, datetime
 
 import pytest

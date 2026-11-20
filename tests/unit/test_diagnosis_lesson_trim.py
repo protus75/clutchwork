@@ -1,4 +1,12 @@
 """Diagnosis lesson normalization preserves all other schema checks."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Diagnosis lesson normalization preserves all other schema checks.
+# relates: [clutch/artifacts.py]
+# owner: clutch/artifacts.py
+# verified: 0a308920
+# hash: 67b4d05ca5d8ced08e1e8bb8a6ee4480eaa1409fa5a005e9dd49e4755fbf5822
 
 import pytest
 from pydantic import ValidationError

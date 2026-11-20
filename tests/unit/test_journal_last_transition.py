@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal last transition
+# relates: [clutch/journal.py]
+# owner: clutch/journal.py
+# verified: 0a308920
+# hash: 59f48d07c64064ab546ae92cfd51b6019ed6c7c4ea488e897ccbbea7165839e8
 from datetime import UTC, datetime
 
 import pytest

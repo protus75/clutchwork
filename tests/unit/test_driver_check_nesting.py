@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test driver check nesting
+# relates: [clutch/driver.py]
+# owner: clutch/driver.py
+# verified: 0a308920
+# hash: fb503b2eae8c66a1a46b6f2ccf8b15ef03b15647ba91bea63f5c09b4ac53fab1
 from types import SimpleNamespace
 
 import pytest

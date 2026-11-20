@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main release group
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: 39c2692db99dbb37bfdd139675dd74cf8b8f65df42157c81364ad5194083fd92
 import argparse
 
 import pytest

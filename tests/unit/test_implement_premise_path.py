@@ -1,4 +1,12 @@
 """Implement premise failures must identify the affected file."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Implement premise failures must identify the affected file.
+# relates: [clutch/stages.py]
+# owner: clutch/stages.py
+# verified: 0a308920
+# hash: e965f37342ee3939598a7981f95b049d7a00c5f20e4fc7d42e190f5299dbc018
 
 import pytest
 from pydantic import ValidationError

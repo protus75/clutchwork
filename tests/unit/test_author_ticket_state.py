@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test author ticket state
+# relates: [clutch/author.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: 38449693d7d2d50472ea0e89e2e49ccee8a44aa1bc233a567a1f7f778eb0590a
 import asyncio
 from types import SimpleNamespace
 

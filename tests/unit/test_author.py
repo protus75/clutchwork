@@ -1,4 +1,12 @@
 """Unit coverage for the shared author helpers."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Unit coverage for the shared author helpers.
+# relates: [clutch/artifacts.py, clutch/author.py, clutch/box.py, clutch/git.py, clutch/journal.py, clutch/requisition.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: 190e305ce73ce5887a61aa89077a80ae88cc09e4440e896aa9cb32198ae0074a
 
 import asyncio
 from pathlib import Path

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test images checks
+# relates: [clutch/images.py]
+# owner: clutch/images.py
+# verified: 0a308920
+# hash: de1538520fa5f49a84b408bb0e9c7abf40f4d53d84bd9b3f5a3666afd59aee30
 import builtins
 import importlib
 import sys

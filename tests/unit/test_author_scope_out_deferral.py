@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test author scope out deferral
+# relates: [clutch/author.py]
+# owner: clutch/author.py
+# verified: 0a308920
+# hash: 8798d7014ae2463652b0e8787e77105bc57da9a18c453e92b296ffcfddadcdec
 from types import SimpleNamespace
 
 import pytest

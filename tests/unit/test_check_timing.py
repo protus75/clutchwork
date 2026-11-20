@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test check timing
+# relates: [clutch/config.py, clutch/gates.py, clutch/stages.py, clutch/testreport.py]
+# owner: engine
+# verified: 0a308920
+# hash: 64d1d0dbcf91c70de95018db70a7f9a1473bc76f3fe00adffd301aa612848301
 import asyncio
 from datetime import datetime, timedelta
 from pathlib import Path

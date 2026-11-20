@@ -1,4 +1,12 @@
 """Lint authoring rules against isolated ticket repositories."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Lint authoring rules against isolated ticket repositories.
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 0a308920
+# hash: 170099e77525b38dd821caab67efa70fcd6092dca7f9d500301b64740835d607
 
 import pytest
 

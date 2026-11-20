@@ -1,4 +1,12 @@
 """Plain argument seams for the shared refusal and writer lock plumbing."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Plain argument seams for the shared refusal and writer lock plumbing.
+# relates: [clutch/__main__.py, clutch/lockfile.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: d5f173ad9dabe0b4a542c674f9f02f171cbdc8e0984a87090390d1ea90b49762
 
 import asyncio
 from datetime import UTC, datetime

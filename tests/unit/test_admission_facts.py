@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test admission facts
+# relates: [clutch/journal.py, clutch/observe.py, clutch/reconcile.py, clutch/rework.py, clutch/status.py, clutch/tickets.py]
+# owner: engine
+# verified: 0a308920
+# hash: 0d20093efd124afafef1107f4137a4683a606c867a738db3487ee0e17d69ea77
 from collections.abc import Iterable
 from itertools import product
 from pathlib import Path

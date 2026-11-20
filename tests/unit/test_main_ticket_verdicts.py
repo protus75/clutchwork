@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main ticket verdicts
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: 3146315259daa54872d10b41c773a2f96a9bff5cca3fe63c16ba6c11e614071f
 import argparse
 from types import SimpleNamespace
 from unittest.mock import AsyncMock

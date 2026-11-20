@@ -1,4 +1,12 @@
 """Inbox owners must supply the admission stem rule at construction."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Inbox owners must supply the admission stem rule at construction.
+# relates: [clutch/control.py, clutch/daemon.py]
+# owner: engine
+# verified: 0a308920
+# hash: bc2c89af733b6aa24a03653f0b9d5589377ccbc8bb41a0f89e3b3636d3748bcb
 
 import pytest
 

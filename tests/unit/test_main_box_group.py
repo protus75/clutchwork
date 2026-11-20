@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main box group
+# relates: [clutch/__main__.py, clutch/lockfile.py]
+# owner: engine
+# verified: 0a308920
+# hash: 3a41fd36093a7cc258547925116a342210b198b95f9df497fca87d1633e6661e
 import argparse
 from pathlib import Path
 

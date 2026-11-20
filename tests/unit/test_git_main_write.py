@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git main write
+# relates: [clutch/git.py, clutch/merge.py, clutch/roadmap.py, tests/unit/test_roadmap_table.py]
+# owner: engine
+# verified: 0a308920
+# hash: 53f1afa546e5ebdfb17a4dbe479264aac38e75ea8a897ebd008d26ec20e1bb51
 import asyncio
 from contextlib import asynccontextmanager
 from types import SimpleNamespace as NS

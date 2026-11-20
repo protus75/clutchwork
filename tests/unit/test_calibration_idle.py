@@ -1,4 +1,12 @@
 """Calibration cadence and idle boundaries."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Calibration cadence and idle boundaries.
+# relates: [clutch/calibration.py, clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/serve.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: c0a7d61e6323027acef9e952083a7277c88a7cc2a0dd0792bb12044b14b95312
 
 from pathlib import Path
 from types import SimpleNamespace

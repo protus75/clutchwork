@@ -1,4 +1,12 @@
 """Scoped effect keys retain their identity in evidence records."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Scoped effect keys retain their identity in evidence records.
+# relates: [clutch/effects.py, clutch/llmeffect.py, clutch/redact.py, tests/unit/test_evidence_envelope.py]
+# owner: engine
+# verified: 0a308920
+# hash: 9ead8330cc13a158ae773995e05c3d331c0220c9e47923b135dec5b15c7f49a9
 
 import asyncio
 import json

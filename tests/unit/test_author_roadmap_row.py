@@ -1,4 +1,12 @@
 """Roadmap message and Author policy coverage."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Roadmap message and Author policy coverage.
+# relates: [clutch/author.py, clutch/box.py, clutch/config.py, clutch/policy.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
+# owner: engine
+# verified: 0a308920
+# hash: 6252b47566c63fefb15d8908cc6b45b724f742bd021589711dc827ed49a0f6f4
 
 from types import SimpleNamespace
 

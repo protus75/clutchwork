@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test baseline visual
+# relates: [clutch/baseline.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: dcbf11632382db7181b0250729a5b666fd582a7e965ab226305347dccc68b6e5
 from types import SimpleNamespace
 
 import pytest

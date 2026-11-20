@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test fs seam mkdir remove
+# relates: [clutch/enginelog.py, clutch/journal.py, clutch/redact.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: b4f251e8e6601602d100c30ec015b5f562d696d75e3e051e3be02a91afd5b868
 from datetime import UTC, datetime
 
 from clutch.enginelog import EngineLog

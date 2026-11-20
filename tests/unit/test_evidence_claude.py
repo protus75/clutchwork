@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence claude
+# relates: [clutch/evidence/claude.py, clutch/evidence/schema.py]
+# owner: engine
+# verified: 0a308920
+# hash: dc4c11b9f16b69636b1c30739c62b63954e30bd9e79e7b2290c2b207afdf8d95
 import json
 
 import pytest

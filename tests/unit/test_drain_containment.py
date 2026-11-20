@@ -1,4 +1,12 @@
 """Exercise dispatch containment using an in-memory journal and tasks."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Exercise dispatch containment using an in-memory journal and tasks.
+# relates: [clutch/drain.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: a8d9b15a10ec87280d9f416df13c570a4465a3c4b38e048e3d96cb91884da373
 
 import asyncio
 from types import SimpleNamespace

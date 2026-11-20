@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test closed sets single owner
+# relates: [clutch/artifacts.py, clutch/author.py, clutch/baseline.py, clutch/box.py, clutch/git.py, clutch/inbox.py, clutch/llm.py, clutch/tickets.py]
+# owner: engine
+# verified: 0a308920
+# hash: 23c46e21e70b8bf42e73e8437ebc6949aab7850bb792f024b435ac06d9028b73
 import pytest
 from pydantic import TypeAdapter, ValidationError
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test boundary contract shape
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 0a308920
+# hash: 9dd64d4df07da19d287bbfc293146a7c8f013e572b86e8495eb1d2a2cb3a54c2
 from pathlib import Path
 
 import pytest

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test changelog
+# relates: [clutch/changelog.py]
+# owner: clutch/changelog.py
+# verified: 0a308920
+# hash: 88bbd178a8c4e4da8e5bc785708b94bf7f33faa6da99534bcdcede9a56639214
 from clutch.changelog import insert_section, parse_subject
 
 

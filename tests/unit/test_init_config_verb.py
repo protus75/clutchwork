@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test init config verb
+# relates: [clutch/__main__.py, clutch/config.py, clutch/providers.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 5bc164f088eb4981f82c5df69f53554eafdf90ff167c317e65b5fce9b3d4b51f
 import json
 from pathlib import Path
 from unittest.mock import Mock

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain deadline
+# relates: [clutch/__main__.py, clutch/drain.py]
+# owner: engine
+# verified: 0a308920
+# hash: f20aff444b2e8d4131a54b22d3317159513e2fad4ab4f4e40840da47b7175fe5
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 

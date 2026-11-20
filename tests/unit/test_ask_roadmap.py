@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask roadmap
+# relates: [clutch/__main__.py]
+# owner: clutch/__main__.py
+# verified: 0a308920
+# hash: 2e10b7e8316c1a63ed23df4454804bcaa85825062bc05612db5f6089147ab717
 from pathlib import Path
 from types import SimpleNamespace
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test graphics presence grammar
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 0a308920
+# hash: d420c30b05a7d229da069140c17317373c7919821df8a111dad22d352a0988cc
 from clutch.tickets import parse_render
 
 

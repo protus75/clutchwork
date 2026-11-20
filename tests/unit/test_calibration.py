@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test calibration
+# relates: [clutch/calibration.py, clutch/journal.py, tests/fakes.py]
+# owner: engine
+# verified: 0a308920
+# hash: ed9c1de99a6454b317fbee4d3b983981b8942229c895613ce73fa5e2feaa4285
 from pathlib import Path
 
 from clutch.calibration import calibrate, implement_runs, render

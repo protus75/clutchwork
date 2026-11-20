@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test issue process gap
+# relates: [clutch/__main__.py, clutch/issue.py, clutch/observe.py]
+# owner: engine
+# verified: 0a308920
+# hash: e0188304035b07afcba78fa6ec24c4c0f042656d95769769be5c8982c25c5470
 from types import SimpleNamespace
 from unittest.mock import Mock
 from urllib.parse import parse_qs, urlsplit

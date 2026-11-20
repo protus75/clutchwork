@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal ts under lock
+# relates: [clutch/audit.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: 0595c3e0208ddfee40e32a41cd9708590dca97fd828454a5d54b90f9e5a1884e
 import fcntl
 import os
 from datetime import UTC, datetime, timedelta

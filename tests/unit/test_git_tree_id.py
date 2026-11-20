@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git tree id
+# relates: [clutch/git.py]
+# owner: clutch/git.py
+# verified: 0a308920
+# hash: 984a4affc991f96ede21a02fa9c0980a8fd923c10808c5d640c2983c850682ec
 import asyncio
 from pathlib import Path
 

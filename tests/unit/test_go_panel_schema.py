@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test go panel schema
+# relates: [clutch/artifacts.py, eval/harness.py]
+# owner: engine
+# verified: 0a308920
+# hash: a5f4783e0f1197b7ad15906242b1606850935f37c7b10cc55655d846f1c5807b
 import pytest
 from pydantic import ValidationError
 

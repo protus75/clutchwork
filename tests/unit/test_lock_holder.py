@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test lock holder
+# relates: [clutch/__main__.py, clutch/lockfile.py, clutch/runner.py]
+# owner: engine
+# verified: 0a308920
+# hash: d18d2f2fb19f3c3f35909f9eb04b0f3caa22c6176ec7239a62bb88127b824fc0
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

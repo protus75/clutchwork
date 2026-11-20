@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain eligible
+# relates: [clutch/drain.py, clutch/journal.py, clutch/scheduler.py, tests/dispatch_settle.py]
+# owner: engine
+# verified: 0a308920
+# hash: bd69927db7672473c3fb06a825e635f95bd8f4162fd709903f97b7a9721c1880
 import json
 from datetime import UTC, datetime
 from pathlib import Path

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test images scores
+# relates: [clutch/images.py]
+# owner: clutch/images.py
+# verified: 0a308920
+# hash: 0f72e57662df75f8cb39aeca65a8aac0766080266b4791fcebfb58d515dfa348
 from unittest.mock import patch
 
 from clutch import images

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test help snapshot
+# relates: [clutch/help.py, clutch/observe.py, clutch/stats.py, clutch/status.py]
+# owner: engine
+# verified: 0a308920
+# hash: 9a1ab90c202d1098d389ed4e5c52b45f15b0826fde78e1fbd051fa37d0f2b7dc
 from datetime import datetime, timezone
 
 from clutch.help import TOPICS, topic_text

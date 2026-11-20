@@ -1,4 +1,12 @@
 """Requisition parks do not consume the failed-attempt budget."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Requisition parks do not consume the failed-attempt budget.
+# relates: [clutch/caps.py, clutch/config.py, clutch/journal.py]
+# owner: engine
+# verified: 0a308920
+# hash: 867747ec07217e96cf7f8efcf4e92be98c8bf4f1b867a403c16ad15d9c6c5550
 
 from clutch.caps import failed_attempt, failed_attempts, spent
 from clutch.config import Caps

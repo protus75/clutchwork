@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test artifacts
+# relates: [clutch/artifacts.py]
+# owner: clutch/artifacts.py
+# verified: 0a308920
+# hash: 365bd28a0e24e61ef63a06aea16b53fe5459611f443fab2a0b7f28ef2c9c3f7d
 from types import SimpleNamespace
 
 import pytest

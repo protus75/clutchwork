@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test journal incremental
+# relates: [clutch/journal.py]
+# owner: clutch/journal.py
+# verified: 0a308920
+# hash: 2666c2a3edbe3c98f500b72b97b496191b9ce937ae18231ab14ba4fae43bc057
 from pathlib import Path
 
 import pytest

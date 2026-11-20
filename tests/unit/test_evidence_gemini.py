@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence gemini
+# relates: [clutch/evidence/gemini.py, clutch/evidence/schema.py]
+# owner: engine
+# verified: 0a308920
+# hash: 6b3d44bc86700d9e954afc995d2c6d7d4ff1835ad1d563a1365d30550780d159
 import json
 
 from clutch.evidence.gemini import NORMALIZER_ID, normalize

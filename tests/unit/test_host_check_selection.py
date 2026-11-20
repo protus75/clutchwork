@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test host check selection
+# relates: [clutch/daemon.py, clutch/gates.py, clutch/mergequeue.py, clutch/stages.py]
+# owner: engine
+# verified: 0a308920
+# hash: df63927fcfbe7450ec900da7f2e980d0b0e451ed276322e4e773ca2df864bbc5
 import asyncio
 import json
 from datetime import datetime

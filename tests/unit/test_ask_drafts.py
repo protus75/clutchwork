@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask drafts
+# relates: [clutch/__main__.py, clutch/ask.py, clutch/observe.py]
+# owner: engine
+# verified: 0a308920
+# hash: c833ed99de80384cdc33c15da08f5ac7261ef788184ac79c5baaa084949953a6
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock

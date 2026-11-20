@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test evidence schema
+# relates: [clutch/evidence/schema.py, clutch/evidence/store.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 16d1a42df6c13cae1119a97ae1a5ccf934b53af043f2f4be57d95f4f6382ca86
 import pytest
 from pydantic import ValidationError
 

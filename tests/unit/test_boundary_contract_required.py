@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test boundary contract required
+# relates: [clutch/tickets.py]
+# owner: clutch/tickets.py
+# verified: 0a308920
+# hash: c70d93697ff8d9f90459069b2669f372951598abbe838dfff7f51e65f98d8cc2
 import pytest
 
 from clutch.tickets import TicketInvalid, validate_ticket

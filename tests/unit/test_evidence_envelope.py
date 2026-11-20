@@ -1,4 +1,12 @@
 """Envelope contracts with distinct fake git answers and a deterministic clock."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Envelope contracts with distinct fake git answers and a deterministic clock.
+# relates: [clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/evidence/store.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
+# owner: engine
+# verified: 0a308920
+# hash: 575d5ca7f1412bc0f75ab7827698cdfc993f6484643207ab6c168e010e633e30
 
 import asyncio
 import hashlib

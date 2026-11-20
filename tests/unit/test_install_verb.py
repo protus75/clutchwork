@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test install verb
+# relates: [clutch/__main__.py, clutch/providers.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: 92834df2ddb078cbb7d06110fcf3cfdb82d71703c7cf1988cc895338b77d9bab
 import asyncio
 from pathlib import Path
 from unittest.mock import Mock

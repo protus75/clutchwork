@@ -1,4 +1,12 @@
 """Conflict reruns cannot use shared paths to bypass overlapping fences."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Conflict reruns cannot use shared paths to bypass overlapping fences.
+# relates: [clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/scheduler.py, clutch/tickets.py, tests/dispatch_settle.py]
+# owner: engine
+# verified: 0a308920
+# hash: da7c81cbd062528ed3d8dcae7b052af1f0a9c4c89b55e61dae8939198215739f
 
 from datetime import UTC, datetime
 from pathlib import Path

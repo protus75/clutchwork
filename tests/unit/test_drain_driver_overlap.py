@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test drain driver overlap
+# relates: [clutch/drain.py, clutch/roadmap.py, clutch/triage.py, tests/fakes.py, tests/unit/test_phase_events.py]
+# owner: engine
+# verified: 0a308920
+# hash: 3654f89f1bfb10bfbea6dadcd74412198491f9584393412b5c606b19c2e662c9
 import asyncio
 from datetime import datetime, timedelta
 from types import SimpleNamespace

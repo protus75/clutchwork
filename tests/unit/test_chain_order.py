@@ -1,4 +1,12 @@
 """Parallel ordering and conflict-aware slot selection."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Parallel ordering and conflict-aware slot selection.
+# relates: [clutch/drain.py, clutch/tickets.py]
+# owner: engine
+# verified: 0a308920
+# hash: 557548f74e03acc5344f854abf2318e21090564bdad29d4e8e97236ac1bdc496
 
 from clutch.drain import SKIP_LIMIT, chain, fill_slots, order_tickets, parallel_order
 from clutch.tickets import Frontmatter, GateBypass, Ticket

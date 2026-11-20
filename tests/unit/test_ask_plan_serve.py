@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test ask plan serve
+# relates: [clutch/__main__.py, clutch/ask.py]
+# owner: engine
+# verified: 0a308920
+# hash: 5b907bb64cf9383e34de9da3dde1eedefc3844e494ae08a1f86dc53681c3e789
 from pathlib import Path
 from types import SimpleNamespace
 

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test git merged tickets parse
+# relates: [clutch/git.py]
+# owner: clutch/git.py
+# verified: 0a308920
+# hash: 9b04027917851f8e89b8f06cdd9642137546fe839af7e920f9fc1d8d401fcd48
 import asyncio
 from pathlib import Path
 

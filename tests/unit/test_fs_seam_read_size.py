@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test fs seam read size
+# relates: [clutch/evidence/store.py, clutch/seams.py]
+# owner: engine
+# verified: 0a308920
+# hash: afbc508ba8b9d8ffd6e1caebd33c4b4376d43667d560a3f63dcf70fedeb45bba
 import json
 
 import pytest

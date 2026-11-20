@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: test main help
+# relates: [clutch/__main__.py, clutch/ask.py]
+# owner: engine
+# verified: 0a308920
+# hash: 796271097f3c8e7506031f50431bcf2adbbdb0307d9bd68545acbd589977c2ba
 import argparse
 import shlex
 
