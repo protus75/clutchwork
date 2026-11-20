@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0e8c00a59ad362eea45c233aad06960698401743",
+  "stem": "training-export",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Redo the full ticket from the merge base. Review found the export core, EvidenceStore.attempts(), Git.merged_tickets, the training CLI group and the doc and roadmap rows sound. The only finding was the skipped count in clutch/training.py.",
+    "When a manifest's implement call, blob or diff is missing, count implement as skipped only if implement was requested. Count preference only if it was requested, the manifest is negative and the stem has a merged commit. Never add len(records) for every requested kind.",
+    "In tests/unit/test_training_export.py::test_missing_and_skipped, assert the correct skipped count. Stem b has no merged commit, so it adds no preference skip (2 in the reviewed fixture, not 3). Mutation-check that this assertion fails against the over-count."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
