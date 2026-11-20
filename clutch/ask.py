@@ -8,7 +8,7 @@ from clutch.config import Config
 from clutch.runner import SPECS_DIR
 from clutch.tickets import ticket_path
 
-KINDS = ("diagnose", "running", "review", "box", "drafts", "drain-loop", "plan-ticket-drain", "author", "roadmap")
+KINDS = ("diagnose", "running", "review", "box", "drafts", "drain-loop", "plan-ticket-drain", "plan-ticket-serve", "author", "roadmap")
 
 
 def render(kind: str, stem: str, config: Config, repo: Path) -> str:
@@ -30,7 +30,7 @@ def render(kind: str, stem: str, config: Config, repo: Path) -> str:
         facet = (SPECS_DIR / "doc" / "facets" / "type" / "roadmap.md").read_text()
         template = Template((SPECS_DIR / "ask" / "roadmap.md").read_text())
         result = template.substitute(facet=facet)
-    elif kind in ("drain-loop", "plan-ticket-drain"):
+    elif kind in ("drain-loop", "plan-ticket-drain", "plan-ticket-serve"):
         template = Template((SPECS_DIR / "ask" / f"{kind}.md").read_text())
         result = template.substitute(state_dir=str(state_dir))
     elif kind == "drafts":

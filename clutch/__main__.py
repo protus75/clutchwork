@@ -437,11 +437,12 @@ def _parser() -> argparse.ArgumentParser:
         "drafts": "Assess committed drafts awaiting a verdict.",
         "drain-loop": "Print the supervising drain-loop prompt.",
         "plan-ticket-drain": "Print the unattended roadmap kickoff prompt.",
+        "plan-ticket-serve": "Print the unattended roadmap serve kickoff prompt.",
         "author": "Author a ticket from its roadmap row or request.",
         "roadmap": "Print the roadmap creation and maintenance prompt.",
     }
     for kind in ask.KINDS:
-        example = f"clutch prompt {kind}" + ("" if kind in ("drafts", "drain-loop", "plan-ticket-drain", "roadmap") else " example")
+        example = f"clutch prompt {kind}" + ("" if kind in ("drafts", "drain-loop", "plan-ticket-drain", "plan-ticket-serve", "roadmap") else " example")
         command = _command(
             prompt_sub,
             kind,
@@ -1283,7 +1284,7 @@ def main(
         return _new(repo, args.stem, args.kind, args.evidence or (), args.reference or (), args.input or ())
 
     def handle_prompt():
-        if args.kind in ("drain-loop", "plan-ticket-drain", "roadmap"):
+        if args.kind in ("drain-loop", "plan-ticket-drain", "plan-ticket-serve", "roadmap"):
             if args.stems:
                 raise runner.Refusal(f"{args.kind} takes no stem", f"run clutch prompt {args.kind} with no stems")
             print(ask.render(args.kind, "", config, repo), end="")
