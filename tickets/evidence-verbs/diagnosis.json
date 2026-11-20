@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c6ed3cdd35ae26ee9feec2e0f970af1a39f4954f",
+  "produced_at_sha": "47dc4f826b47d57fb71faf0125c613be24705173",
   "stem": "evidence-verbs",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Premise contradiction confirmed: docs/how-clutch-works.md:821 says json_schema has 'no command exposes it yet' and :825 says 'No call record has a normalized/ directory'; both become false once evidence schema and renormalize ship, yet criterion 7 allows only four new table rows.",
-    "Fix the ticket: change criterion 7 and Scope in so docs/how-clutch-works.md may also rewrite the line 821 sentence (name `clutch evidence schema`) and the line 825 sentence (renormalize writes normalized/<escaped id>.json), besides the four verb rows.",
-    "Keep the 'exactly four rows, nothing else' limit for clutch/docs/host-running.md only, unless an author check finds a similar now-false statement there; grep it for 'normalized' and 'schema' before relinting.",
-    "After the ticket is fixed, redo the full implementation from the merge base: the provider codex/gpt-6.1-terra attempt stopped at the premise check and produced an empty diff, so no earlier code exists to reuse."
+    "In clutch/__main__.py `renormalize`, wrap each call's `store.get_blob` reads of `end.raw.stdout_times` and `end.raw.stdout` in `try/except FileNotFoundError`. On that error, add 1 to `skipped` and continue. A pruned call must not abort the run with exit 2.",
+    "Reason: `EvidenceStore.prune` deletes raw blobs of older calls but keeps start.json/end.json (docs/how-clutch-works.md section 10), so a missing blob is the normal state of an old call. Treat it like a missing end.json: skip it, count it, and print the normalized/skipped summary.",
+    "Add a test in tests/unit/test_evidence_normalized_store.py or tests/integration/test_evidence_verbs.py. Store a call, delete its stdout blob, run `renormalize`, and assert exit 0, the call counted as skipped, and the other calls still normalized.",
+    "Review found the rest sound; rebuild it from the merge base. That means the four-verb `evidence` group with `_command` help, clutch/evidence/views.py, store write_normalized/read_normalized, VERIFIED_PROVIDERS in codex.py and gemini.py, and the doc rows and two section 10 sentences.",
+    "host-running.md verb table rows take command names without arguments (found by the gate on attempt 1). Unit tests must cover views.py and the store methods from inline JSONL bytes; only tests/integration reads tests/fixtures/evidence/codex/stream.jsonl."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
