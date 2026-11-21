@@ -5,6 +5,7 @@ import json
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -27,6 +28,10 @@ RETRO_FAILED = "retro_failed"
 # The retro_check phase outcome for drain and serve.
 RetroCheckOutcome = Literal["due", "not_due", "failed"]
 _REPORT = re.compile(r"retro/([0-9]+)\Z")
+
+
+def window_scratch_path(state_dir: Path, sequence: int, call_seq: int) -> Path:
+    return state_dir / "scratch" / "retro" / str(sequence) / f"call-{call_seq:02d}" / "window.jsonl"
 
 
 class RetroConstructionError(ValueError):
@@ -454,10 +459,10 @@ class Retro:
                         return prompt
                 except RenderOverBound:
                     pass
-                name = f"retro/call-{call_seq:02d}/window.jsonl"
-                stem = f"retro/{window.sequence}"
-                driver.spool.write(stem, 1, name, "".join(json.dumps(event, sort_keys=True) + "\n" for event in material["events"]))
-                on_demand = {"events_path": str((driver.spool.root / stem / "1" / name).resolve()), "measurements": material["measurements"], "provenance": material["provenance"]}
+                path = window_scratch_path(c.config.state_dir, window.sequence, call_seq)
+                text = "".join(json.dumps(event, sort_keys=True) + "\n" for event in material["events"])
+                driver.spool._fs.write(path, driver.redactor.scrub(text).encode())
+                on_demand = {"events_path": str(path.resolve()), "measurements": material["measurements"], "provenance": material["provenance"]}
                 return render(spec, {"window": json.dumps(on_demand, sort_keys=True), "prior_findings": json.dumps(prior, sort_keys=True), "retry_findings": retries})
 
             async def review_recurrences(artifact, call_seq):

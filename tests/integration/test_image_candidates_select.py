@@ -92,8 +92,9 @@ def test_check_selects_or_parks(repo, tie):
             return await stages.check(ctx, ticket, slip, attempt=0)
 
     result = asyncio.run(run())
-    spool = ctx.driver.spool.root / STEM / "0/render/a0"
-    assert all((spool / f"cand-{k}.png.side-by-side.png").is_file() and (spool / f"cand-{k}.png.heatmap.png").is_file() for k in (0, 1))
+    render = ctx.config.state_dir / "scratch" / STEM / "0/render/a0"
+    assert not (ctx.driver.spool.root / STEM / "0/render").exists()
+    assert all((render / f"cand-{k}.png.side-by-side.png").is_file() and (render / f"cand-{k}.png.heatmap.png").is_file() for k in (0, 1))
     if tie:
         assert [f.code for f in result.findings] == ["visual_undecided"]
         assert git(repo, "rev-parse", STEM).strip() == before

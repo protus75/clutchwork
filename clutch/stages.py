@@ -948,6 +948,10 @@ def _names_branch_only_path(argv: Sequence[str], in_branch: Callable[[str], bool
     return any(in_branch(path) and not in_base(path) for token in argv if not token.startswith("-") for path in [token.split("::", 1)[0]])
 
 
+def render_scratch_dir(state_dir: Path, stem: str, attempt: int) -> Path:
+    return state_dir / "scratch" / stem / str(attempt) / "render"
+
+
 async def gather_evidence(
     ctx: StageContext,
     ticket: Ticket,
@@ -1025,7 +1029,7 @@ async def gather_evidence(
         )
     bug, bug_findings = await _gather_bug(ctx, ticket, evidence, attempt=attempt, stage=stage) if ticket.frontmatter.kind == "bug" else (None, [])
     render_fields, _ = parse_render(ticket.sections.get("Render", ""), str(ticket_path(stem))) if stage == "check" and evidence.is_graphics else ({}, [])
-    render_dir = str(ctx.driver.spool.root / stem / str(attempt) / "render") if render_fields.get("mode") == ["command"] else ""
+    render_dir = str(render_scratch_dir(ctx.config.state_dir, stem, attempt)) if render_fields.get("mode") == ["command"] else ""
     return evidence.model_copy(
         update={
             "verification": results,
@@ -1356,7 +1360,7 @@ async def check_render(ctx, ticket, attempt):
             return fail(f"{path}: {problem}")
         artifacts.append((path, data))
     for path, data in artifacts:
-        ctx.fs.write(ctx.driver.spool.root / ticket.stem / str(attempt) / "render" / path, data)
+        ctx.fs.write(render_scratch_dir(ctx.config.state_dir, ticket.stem, attempt) / path, data)
     return [_report("render", [])], []
 
 
@@ -1636,7 +1640,7 @@ async def check_candidates(ctx, ticket, attempt):
             )
         ]
     inputs = [worktree / p for p in fields.get("input", [])]
-    spool = ctx.driver.spool.root / stem / str(attempt) / "render"
+    render_dir = render_scratch_dir(ctx.config.state_dir, stem, attempt)
     ticket_text = ctx.fs.read_bytes(ctx.repo / ticket_path(stem)).decode()
     spec = _spec(ctx, "review_visual")
     selected = []
@@ -1657,7 +1661,7 @@ async def check_candidates(ctx, ticket, attempt):
                 data = ctx.fs.read_bytes(source)
             except OSError:
                 continue
-            candidate = spool / relative
+            candidate = render_dir / relative
             ctx.fs.write(candidate, data)
             if images.judge(candidate, inputs, **({"embedding": True} if fields.get("presence") == ["embedding"] else {})):
                 continue
@@ -1714,7 +1718,7 @@ async def check_candidates(ctx, ticket, attempt):
     if undecided:
         return [Finding(code="visual_undecided", message=f"visual selection undecided: {', '.join(undecided)}", paved_road="retry with fresh candidates")]
     for artifact, i, winner, _ in selected:
-        candidate = spool / f"a{i}" / f"cand-{winner}{Path(artifact).suffix}"
+        candidate = render_dir / f"a{i}" / f"cand-{winner}{Path(artifact).suffix}"
         ctx.fs.write(worktree / artifact, ctx.fs.read_bytes(candidate))
     body = "\n".join(f"{artifact}: candidate {winner}, evidence {key}" for artifact, _, winner, key in selected)
     await ctx.git.commit(worktree, f"clutch({stem}): select\n\n{body}", only=artifacts)

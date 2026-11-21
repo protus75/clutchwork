@@ -110,7 +110,8 @@ def test_window_over_headroom_is_read_on_demand(tmp_path, monkeypatch, size):
         assert "events" not in material
         path = Path(material["events_path"])
         assert path in writes
-        assert path == driver.spool.root / "retro/1/1/retro/call-01/window.jsonl"
+        assert path == (c.config.state_dir / "scratch/retro/1/call-01/window.jsonl").resolve()
+        assert not list(driver.spool.root.rglob("window.jsonl"))
         assert [json.loads(line) for line in path.read_text().splitlines()] == expected
     (completion,) = [e for e in c.journal.read() if e.key == "retro/1" and e.type == EventType.EFFECT_COMPLETION]
     assert completion.body == {"result": result}

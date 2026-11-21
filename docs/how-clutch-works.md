@@ -767,6 +767,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
 | `spools/` | Per-attempt prompts, outputs, and command output. |
+| `scratch/` | Graphics render directories and retro window files read by agents by path, distinct from `evidence/scratch/`. |
 | `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |

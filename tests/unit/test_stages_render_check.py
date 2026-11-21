@@ -69,7 +69,12 @@ def setup(monkeypatch, tmp_path, paths, *, kind="graphics", mode="command", rc=0
         provider_wait=lambda *args: 0,
     )
     ctx = SimpleNamespace(
-        driver=driver, env={}, config=SimpleNamespace(review=SimpleNamespace(autofix=[])), exec_=SimpleNamespace(run=run), worktree=lambda stem: tmp_path / "worktree", fs=LocalFileSystem()
+        driver=driver,
+        env={},
+        config=SimpleNamespace(state_dir=tmp_path, review=SimpleNamespace(autofix=[])),
+        exec_=SimpleNamespace(run=run),
+        worktree=lambda stem: tmp_path / "worktree",
+        fs=LocalFileSystem(),
     )
     render = "```\npython tests/render/do.py\n```\n- mode: command\n- artifact: output/a.png\n- carries: tests/render"
     if mode == "generate":
@@ -84,7 +89,8 @@ def test_success_and_error(monkeypatch, tmp_path):
     ctx.fs.write(ctx.worktree("work") / "output/a.png", data)
     reports, hard = asyncio.run(stages.check_render(ctx, ticket, 4))
     assert not hard and reports[0].verdict == "pass"
-    assert (ctx.driver.spool.root / "work/4/render/output/a.png").read_bytes() == data
+    assert (tmp_path / "scratch/work/4/render/output/a.png").read_bytes() == data
+    assert not (tmp_path / "spools/work/4/render").exists()
     assert calls == [("python", "tests/render/do.py")]
 
 
@@ -94,7 +100,7 @@ def test_bad_paths_and_sets(monkeypatch, tmp_path, paths):
     ctx.fs.read_bytes = Mock(side_effect=AssertionError("must not read"))
     reports, hard = asyncio.run(stages.check_render(ctx, ticket, 4))
     assert reports[0].verdict == "fail" and hard[0].paved_road
-    assert not (ctx.driver.spool.root / "work/4/render").exists()
+    assert not (tmp_path / "scratch/work/4/render").exists()
 
 
 @pytest.mark.parametrize("kind,mode", [("feature", "command"), ("graphics", "generate")])

@@ -44,7 +44,7 @@ def fixture(monkeypatch, replies, artifacts=("out.png",), changed=()):
         return StageResult(outcome="ok", artifact=visual.Reply(rows=rows, verdict=verdict, reason="observed"), findings=[], cost=Cost(attempts=attempts))
 
     driver = SimpleNamespace(run=run, journal=SimpleNamespace(read=lambda: []), spool=SimpleNamespace(root=root / "spool"))
-    ctx = SimpleNamespace(repo=root, worktree=lambda _: work, fs=fs, git=git, driver=driver, config=SimpleNamespace(graphics=SimpleNamespace(judge_samples=1)), specs_dir=None)
+    ctx = SimpleNamespace(repo=root, worktree=lambda _: work, fs=fs, git=git, driver=driver, config=SimpleNamespace(state_dir=root, graphics=SimpleNamespace(judge_samples=1)), specs_dir=None)
     ticket = SimpleNamespace(
         stem="work",
         sections={"Render": "- mode: generate\n" + "".join(f"- artifact: {a}\n" for a in artifacts), "Acceptance criteria": "", "Goal / Why": "goal"},

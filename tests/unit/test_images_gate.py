@@ -87,7 +87,7 @@ def test_gather_stage_and_mode(tmp_path, monkeypatch):
 def test_check_runs_render_before_gate(tmp_path, monkeypatch):
     monkeypatch.setattr(stages, "child_env", lambda env, config: dict(env))
     work = tmp_path / "work"
-    render = tmp_path / "spool/work/2/render"
+    render = stages.render_scratch_dir(tmp_path, "work", 2)
     item = evidence(is_graphics=True, render_dir=str(render), render={"artifact": ["out.png"]})
     driver = SimpleNamespace(
         clock=lambda: datetime(2020, 1, 1, tzinfo=timezone.utc),
@@ -95,7 +95,7 @@ def test_check_runs_render_before_gate(tmp_path, monkeypatch):
         redactor=SimpleNamespace(scrub=lambda text: text),
         provider_wait=lambda *args: 0,
     )
-    ctx = SimpleNamespace(driver=driver, env={}, config=SimpleNamespace(review=SimpleNamespace(autofix=[])), worktree=lambda stem: work, fs=LocalFileSystem())
+    ctx = SimpleNamespace(driver=driver, env={}, config=SimpleNamespace(state_dir=tmp_path, review=SimpleNamespace(autofix=[])), worktree=lambda stem: work, fs=LocalFileSystem())
     ticket = SimpleNamespace(
         stem="work",
         stuck_minutes=3,
