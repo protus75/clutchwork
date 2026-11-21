@@ -1,5 +1,5 @@
 ---
-state: draft
+state: confirmed
 source: human
 priority: P3
 kind: chore
