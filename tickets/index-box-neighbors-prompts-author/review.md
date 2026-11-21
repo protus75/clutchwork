@@ -1,6 +1,6 @@
 # Review: approve
 
-The diff adds the `exclude_refs` keyword and calls the shared helper once in `author` after `context_block`, so the early declines never reach it; it adds the quoted `neighbors` spec block and Task sentence, bumps the version to 1.11 with both pins, adds the 9.3 doc sentence, and its two new tests cover every acceptance criterion inside the fence.
+The diff adds the `exclude_refs` keyword, calls `neighbors_block` once in `author` after `context_block` with the right query and exclusions, adds the quoted `neighbors` spec block, Task sentence and 1.11 version bump, updates section 9.3 and both version pins, and adds tests covering every acceptance criterion, all within the scope fence.
 
 ## Findings
 
@@ -12,10 +12,10 @@ none
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "572be1d2093c60ef0528519d7bca3705de4954b3",
+  "produced_at_sha": "e6d3e301704870dc92393722217f7dbba3944605",
   "stem": "index-box-neighbors-prompts-author",
-  "reviewed_sha": "572be1d2093c60ef0528519d7bca3705de4954b3",
-  "summary": "The diff adds the `exclude_refs` keyword and calls the shared helper once in `author` after `context_block`, so the early declines never reach it; it adds the quoted `neighbors` spec block and Task sentence, bumps the version to 1.11 with both pins, adds the 9.3 doc sentence, and its two new tests cover every acceptance criterion inside the fence.",
+  "reviewed_sha": "e6d3e301704870dc92393722217f7dbba3944605",
+  "summary": "The diff adds the `exclude_refs` keyword, calls `neighbors_block` once in `author` after `context_block` with the right query and exclusions, adds the quoted `neighbors` spec block, Task sentence and 1.11 version bump, updates section 9.3 and both version pins, and adds tests covering every acceptance criterion, all within the scope fence.",
   "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
