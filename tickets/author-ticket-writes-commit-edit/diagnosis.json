@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "3daed32a240ce8c6797168381d99b520d2b6e5da",
+  "stem": "author-ticket-writes-commit-edit",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "clutch/author.py around line 506: keep the roadmap evidence `ls-files` listing and the `copied = {p: read_bytes()}` snapshot outside the lock, but put them inside the try around `driver.effects.run(commit, ...)`. A GitError or OSError must run cleanup and then `failure_declined(\"commit failed:",
+    "Before the change, the evidence listing ran inside commit() within the publication try, so its failure cleared `author_gate.copied`, removed the gate-copied evidence and declined the message. Moving the preparation out of the lock must keep exactly that behavior (acceptance criterion 2).",
+    "In tests/unit/test_ticket_write_consumers_author.py, add a case where the evidence listing raises GitError. Assert that Author declines through failure_declined, removes the owned copied evidence and clears author_gate.copied. Add a similar case where reading a copied file raises OSError.",
+    "Review found the rest sound: publication and compensation inside one Git.commit_edit callback, commit_record taking the record bytes for failure_declined, triage._record and the existing-record recommit, and the non-reentrant fake lock. Redo all of it from the merge base, because no earlier diff"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    3
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
