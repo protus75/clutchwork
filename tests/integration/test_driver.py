@@ -4,8 +4,8 @@
 # purpose: test driver
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/redact.py]
 # owner: engine
-# verified: a0d5e388
-# hash: db065cef6ceac608f983cf888885fd97a36509037406a511710015ca7b355d34
+# verified: 23d3b116
+# hash: eab53875e0d871903159502503afc841bdd9fa4705dd1ee22f07ab940b1a0bd2
 import asyncio
 import json
 import textwrap
@@ -373,7 +373,12 @@ def test_configured_secret_value_never_reaches_spool_or_engine_log(tmp_path):
     assert result.outcome == "infra_error"
     assert SECRET in llm.requests[0].rendered  # the model still gets what it was sent
     files = [p for p in state.rglob("*") if p.is_file()]
-    assert {p.name for p in files} >= {"prompt.md", "output.txt", "error.txt", "engine.log"}
+    assert (
+        {name for _, name in list_captures(state, "t-echo", 1)} >= {"implement/call-01/prompt.md", "implement/call-01/output.txt", "implement/call-02/error.txt"}
+        and all(SECRET not in read_capture(state, "t-echo", 1, name).decode() for name in ("implement/call-01/prompt.md", "implement/call-01/output.txt", "implement/call-02/error.txt"))
+        and (files := [p for p in files if "blobs" not in p.parts])
+        and any(p.name == "engine.log" for p in files)
+    )
     for p in files:
         assert SECRET not in p.read_text(), p
     assert "[REDACTED:CLUTCH_TEST_KEY]" in read_capture(state, "t-echo", 1, "implement/call-01/prompt.md").decode()

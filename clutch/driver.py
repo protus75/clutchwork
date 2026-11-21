@@ -23,6 +23,7 @@ from clutch.artifacts import Cost, Finding, Outcome, StageResult
 from clutch.config import Config, ConfigSnapshot, Severity
 from clutch.effects import Effects
 from clutch.enginelog import EngineLog, engine_log
+from clutch.evidence.store import EvidenceStore, capture_key
 from clutch.gates import Gate, GateReport, merge_severity, run_gates
 from clutch.journal import Journal
 from clutch.journal import run_seq as journal_run_seq
@@ -69,15 +70,15 @@ class LlmStage:
 
 
 class Spool:
-    """Per-attempt capture at `<root>/<stem>/<attempt>/`; every byte passes the redactor."""
+    """Store redacted per-attempt captures."""
 
-    def __init__(self, root: Path, redactor: Redactor, fs: FileSystem) -> None:
-        self.root = root
+    def __init__(self, state_dir: Path, redactor: Redactor, fs: FileSystem) -> None:
+        self._store = EvidenceStore(state_dir, fs, fs.read_bytes, fs.size, redactor.scrub)
         self._redactor = redactor
         self._fs = fs
 
     def write(self, stem: str, attempt: int, name: str, text: str) -> None:
-        self._fs.write(self.root / stem / str(attempt) / name, self._redactor.scrub(text).encode())
+        self._store.put_capture(*capture_key(stem, attempt, name), self._redactor.scrub(text).encode())
 
 
 class _StuckBudget(Exception):
@@ -213,7 +214,7 @@ class Driver:
             llm=llm,
             journal=journal,
             redactor=redactor,
-            spool=Spool(config.state_dir / "spools", redactor, fs or LocalFileSystem()),
+            spool=Spool(config.state_dir, redactor, fs or LocalFileSystem()),
             log=engine_log(config, redactor, clock),
             clock=clock,
             sleep=sleep,

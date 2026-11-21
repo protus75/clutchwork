@@ -26,7 +26,7 @@ from clutch.config import Config, ConfigSnapshot, snapshot_config
 from clutch.driver import Driver
 from clutch.effects import Effects
 from clutch.enginelog import engine_log
-from clutch.evidence.store import SKIP, EvidenceStore
+from clutch.evidence.store import SKIP, CaptureNotFound, CaptureUnreadable, EvidenceStore
 from clutch.git import Git, GitError
 from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, run_seq
 from clutch.journal import Dispatch as JournalDispatch
@@ -553,14 +553,20 @@ async def harvest(
     kind: str = "harvest",
 ) -> None:
     """Extract the allowlisted failed-run record and lift it through the one outbox lane."""
-    spool = ctx.config.state_dir / "spools" / stem / str(attempt)
-    errors = list(spool.rglob("error.txt")) if spool.is_dir() else []
-    newest_error = max(errors, key=lambda p: (p.stat().st_mtime_ns, str(p))) if errors else None
-    reason = None if findings else (newest_error.read_text(errors="replace") if newest_error else terminal)
+    store = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub)
+    captures = {}
+    for _, name in store.captures(stem, attempt):
+        if re.match(r"run-[0-9]+/", name):
+            continue
+        try:
+            captures[name] = store.get_capture(stem, attempt, name)
+        except CaptureNotFound, CaptureUnreadable, OSError:
+            continue
+    errors = [name for name in captures if name.split("/")[-1] == "error.txt"]
+    reason = None if findings else (captures[errors[-1]].decode("utf-8", errors="replace") if errors else terminal)
     # Prompts are inputs, not stage logs: Review's prompt carries the unreviewed code diff.
-    logs = sorted(p for p in spool.rglob("*") if p.is_file() and p.name != "prompt.md") if spool.is_dir() else []
-    stage_log_tail = "".join(p.read_text(errors="replace") for p in logs)[-HARVEST_TAIL_CHARS:]
-    events_tail = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub).latest_stdout(f"llm/{stem}/")[-HARVEST_TAIL_CHARS:]
+    stage_log_tail = "".join(data.decode("utf-8", errors="replace") for name, data in captures.items() if name.split("/")[-1] != "prompt.md")[-HARVEST_TAIL_CHARS:]
+    events_tail = store.latest_stdout(f"llm/{stem}/")[-HARVEST_TAIL_CHARS:]
     record = artifact_path(stem, RUN_FILE)
     llm_cost = next((r.cost for r in reversed(results) if r.cost.provider is not None), None)
     provider = next((p for p in ctx.config.providers if p.name == llm_cost.provider), None) if llm_cost else None
@@ -587,13 +593,11 @@ async def harvest(
     ctx.fs.write(path, (ctx.driver.redactor.scrub(artifact.model_dump_json(indent=2)) + "\n").encode())
     if ctx.config.training_data.enabled:
         try:
-            store = EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub)
             keys = store.call_keys(f"llm/{stem}/{attempt}/")
             starts = [store.read_record(key, "start") for key in keys]
             starts = [start for start in starts if start is not SKIP]
             diff = _filtered_diff(await ctx.git.diff(ctx.repo, "main", stem), ctx.config.training_data.effective_exclude())
-            check = spool / "check"
-            outputs = {str(p.relative_to(check)): store.put_blob(ctx.fs.read_bytes(p)) for p in sorted(check.rglob("*")) if p.is_file()} if check.is_dir() else {}
+            outputs = {name.removeprefix("check/"): store.put_blob(data) for name, data in captures.items() if name.startswith("check/")}
             store.write_attempt(
                 {
                     "schema": "clutch.evidence.attempt/1.0",

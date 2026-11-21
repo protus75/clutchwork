@@ -4,8 +4,8 @@
 # purpose: test route kinds filter
 # relates: [clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/providers.py, clutch/redact.py, clutch/seams.py]
 # owner: engine
-# verified: 1828fb1b
-# hash: 2a217dc804dea311d3334f86c91b70246189f6a2ebb1407f49c94106dd9b8c00
+# verified: 23d3b116
+# hash: 1823eb349ec0f44bfc2f177a82e9bed30df2306879ecf0e66c888265d6bcdae5
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -101,7 +101,7 @@ def test_driver_and_provider_propagate_kind(tmp_path):
         llm=llm,
         journal=Journal(tmp_path, clock),
         redactor=redactor,
-        spool=Spool(tmp_path / "spool", redactor, LocalFileSystem()),
+        spool=Spool(tmp_path, redactor, LocalFileSystem()),
         log=EngineLog(tmp_path / "log", redactor, clock),
         clock=clock,
         sleep=sleep,

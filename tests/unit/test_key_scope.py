@@ -4,8 +4,8 @@
 # purpose: test key scope
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: 11213934
-# hash: df5c421ad9118df9ce90a1ece94656243b4e0ad26ccc9552b2f032602d5dfb70
+# verified: 23d3b116
+# hash: ad9836b48b651a7745407b57b9fb6ebe3a1b04136521a9885c0d211a34d7c661
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -57,7 +57,7 @@ def test_driver_scoped_effect_and_integer_sequence(tmp_path):
         llm=llm,
         journal=journal,
         redactor=redactor,
-        spool=Spool(tmp_path / "spool", redactor, LocalFileSystem()),
+        spool=Spool(tmp_path, redactor, LocalFileSystem()),
         log=EngineLog(tmp_path / "log", redactor, clock),
         clock=clock,
         sleep=sleep,

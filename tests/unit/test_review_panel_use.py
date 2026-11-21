@@ -4,8 +4,8 @@
 # purpose: Verify review stage panel behavior.
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/llm.py, clutch/panel.py, clutch/providers.py, clutch/redact.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: bc3109c5
-# hash: 71e07a1d8388bd5338d573a7119c862ae51c7c2967ea7168003a0b9719efe798
+# verified: 23d3b116
+# hash: c5a551c50c58a41285caa565bef9beaedaed2867d3747e3a20035621193c61c8
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -242,9 +242,7 @@ async def test_effect_keys_and_provider_failures(setup, tmp_path, size):
     async def sleep(_):
         await asyncio.Event().wait()
 
-    driver = Driver(
-        llm=llm, journal=FakeJournal(clock), redactor=redactor, spool=Spool(tmp_path / "spools", redactor, LocalFileSystem()), log=Log(), clock=clock, sleep=sleep, severity={}, retry_cap=0
-    )
+    driver = Driver(llm=llm, journal=FakeJournal(clock), redactor=redactor, spool=Spool(tmp_path, redactor, LocalFileSystem()), log=Log(), clock=clock, sleep=sleep, severity={}, retry_cap=0)
     ctx = build(driver, size)
     result = await stages.review(ctx, ticket, None, attempt=1)
     assert result.outcome == "gate_failed"
@@ -268,7 +266,7 @@ async def test_all_provider_calls_fail(setup, tmp_path):
         llm=FakeLLM([failure, failure]),
         journal=FakeJournal(clock),
         redactor=redactor,
-        spool=Spool(tmp_path / "spools", redactor, LocalFileSystem()),
+        spool=Spool(tmp_path, redactor, LocalFileSystem()),
         log=Log(),
         clock=clock,
         sleep=sleep,

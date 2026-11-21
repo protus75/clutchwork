@@ -4,8 +4,8 @@
 # purpose: test requisition
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/seams.py]
 # owner: engine
-# verified: 96e46658
-# hash: 03101c5d4dc66388e75a1d6fc4799e502b71c7f02c24f5df97a1fef8a60bde97
+# verified: 23d3b116
+# hash: 60c73f746fc74a5d1d3843400f2c5d179a1703770c5c6447cb59362646165d9f
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -110,7 +110,7 @@ def run(driver: Driver, repo: Path, text: str = TICKET, stem: str = "one-thing",
             specs_dir=SPECS,
             coverage_map=coverage_map,
             tier="high",
-            stem_slot="s",
+            stem_slot="slot",
             run_seq=0,
             attempt=1,
             call_seq=1,
@@ -184,7 +184,7 @@ def test_approve_and_effect_key(tmp_path):
     assert len(llm.requests) == 1
     assert "<<clutch-data:begin context>>" not in llm.requests[0].rendered
     assert llm.requests[0].surface == "requisition_review"
-    assert any(e.key == "llm/s/0/requisition_review/1/1" for e in driver.journal.read())
+    assert any(e.key == "llm/slot/0/requisition_review/1/1" for e in driver.journal.read())
 
 
 def test_snag_and_invalid_reply(tmp_path):
@@ -200,7 +200,7 @@ def test_snag_and_invalid_reply(tmp_path):
             specs_dir=SPECS,
             coverage_map=None,
             tier="high",
-            stem_slot="s",
+            stem_slot="slot",
             run_seq=0,
             attempt=1,
             call_seq=2,
@@ -225,7 +225,7 @@ def test_invalid_reply_is_reprompted_then_accepted(tmp_path):
     assert "Invalid JSON" in llm.requests[1].rendered
     assert "only the JSON object" in llm.requests[1].rendered
     keys = [e.key for e in driver.journal.read() if e.type == "effect_completion" and e.key and "/requisition_review/" in e.key]
-    assert keys == ["llm/s/0/requisition_review/1/1", "llm/s/0/requisition_review/1/2"]
+    assert keys == ["llm/slot/0/requisition_review/1/1", "llm/slot/0/requisition_review/1/2"]
 
 
 def test_invalid_ticket_and_reserved_stem_spend_no_call(tmp_path):

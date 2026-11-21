@@ -4,8 +4,8 @@
 # purpose: test driver panel fanout
 # relates: [clutch/driver.py, clutch/llm.py, clutch/panel.py, clutch/providers.py, clutch/redact.py, tests/fakes.py]
 # owner: engine
-# verified: e3a6f154
-# hash: dea77aafbeb2928708ad6ecbcc20dd28272fcf8dcab9e99aeee1ff963e781d97
+# verified: 23d3b116
+# hash: ed9918ee46f38b9ecc657f571cc1cef2aeb1325dc79e03b2c4c58bb997611399
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -42,9 +42,7 @@ async def sleep(_):
 def rig(script, state_dir):
     clock, redactor = FakeClock(), Redactor({})
     llm = FakeLLM(script)
-    driver = Driver(
-        llm=llm, journal=FakeJournal(clock), redactor=redactor, spool=Spool(state_dir / "spools", redactor, LocalFileSystem()), log=Log(), clock=clock, sleep=sleep, severity={}, retry_cap=0
-    )
+    driver = Driver(llm=llm, journal=FakeJournal(clock), redactor=redactor, spool=Spool(state_dir, redactor, LocalFileSystem()), log=Log(), clock=clock, sleep=sleep, severity={}, retry_cap=0)
     stage = LlmStage("review", Reply, [], lambda *_: "prompt")
     args = dict(ticket="item", attempt=1, workspace=Path("/repo"), tier="medium", effort="low", stuck_budget=100, expected_budget=30, scope_fence=())
     return driver, stage, args, clock, llm

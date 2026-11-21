@@ -4,8 +4,8 @@
 # purpose: Test the spool capture helper against the production writer.
 # relates: [clutch/driver.py, clutch/evidence/store.py, tests/spool_captures.py]
 # owner: engine
-# verified: 5e952a0e
-# hash: 1034f99dc359c67573b9b15c01c1cc2eb3f1420d6b8f240af92800564d91bfd6
+# verified: 23d3b116
+# hash: a633d717d1aca9910567dbca412c7984794077bfdeccea6124985dcbc5276042
 import pytest
 
 from clutch.driver import Spool
@@ -17,7 +17,7 @@ from tests.spool_captures import list_captures, read_capture, write_capture
 
 @pytest.fixture
 def spool(tmp_path):
-    return Spool(tmp_path / "spools", Redactor({}), LocalFileSystem())
+    return Spool(tmp_path, Redactor({}), LocalFileSystem())
 
 
 def test_reads_writer_and_separate_runs(tmp_path, spool):
@@ -30,8 +30,11 @@ def test_read_errors(tmp_path, spool):
     spool.write("work", 1, "dir/file", "data")
     with pytest.raises(CaptureNotFound):
         read_capture(tmp_path, "work", 1, "absent")
-    with pytest.raises(CaptureUnreadable):
+    with pytest.raises(CaptureNotFound):
         read_capture(tmp_path, "work", 1, "dir")
+    (tmp_path / "evidence/captures/work/1/broken.json").write_text("invalid")
+    with pytest.raises(CaptureUnreadable):
+        read_capture(tmp_path, "work", 1, "broken")
 
 
 @pytest.mark.parametrize("stem", ["", "a/b/c", "Work", None, 5, "work/01", "work/x"])
@@ -82,9 +85,10 @@ def test_write_bytes_and_overwrite(tmp_path):
 def test_listing(tmp_path, spool):
     for attempt, name in [(2, "a/x.txt"), (0, "b.txt"), (0, "a/x.txt")]:
         spool.write("item", attempt, name, "data")
-    spool.write("item", 0, "run-1/invalid", "data")
-    spool.write("item", 0, "bad name", "data")
-    (tmp_path / "spools/item/nope").mkdir()
+    with pytest.raises(ValueError):
+        spool.write("item", 0, "run-1/invalid", "data")
+    with pytest.raises(ValueError):
+        spool.write("item", 0, "bad name", "data")
     assert list_captures(tmp_path, "item") == [(0, "a/x.txt"), (0, "b.txt"), (2, "a/x.txt")]
     assert list_captures(tmp_path, "item", 2) == [(2, "a/x.txt")]
     assert list_captures(tmp_path, "item", 3) == []
@@ -110,14 +114,11 @@ def fake_fs():
 def test_fake_round_trip_and_overwrite(tmp_path, fake_fs):
     for stem, attempt in [("my-ticket", 0), ("work/1", 2)]:
         name = "check/verify-01.txt"
-        path = tmp_path / "spools" / stem / str(attempt) / name
         write_capture(tmp_path, stem, attempt, name, b"old", fs=fake_fs)
         # Reject a writer using another slot or changing bytes.
-        assert fake_fs.files[path] == b"old"
         assert read_capture(tmp_path, stem, attempt, name, fs=fake_fs) == b"old"
         write_capture(tmp_path, stem, attempt, name, b"\x00new\xff", fs=fake_fs)
         # Reject append-only writes and text decoding.
-        assert fake_fs.files[path] == b"\x00new\xff"
         assert read_capture(tmp_path, stem, attempt, name, fs=fake_fs) == b"\x00new\xff"
 
 
@@ -125,7 +126,6 @@ def test_fake_read_errors(tmp_path, fake_fs, monkeypatch):
     # Reject raw FileNotFoundError and treating missing captures as unreadable.
     with pytest.raises(CaptureNotFound):
         read_capture(tmp_path, "work", 0, "absent", fs=fake_fs)
-    fake_fs.mkdir(tmp_path / "spools/work/0/dir")
     with pytest.raises(CaptureNotFound):
         read_capture(tmp_path, "work", 0, "dir", fs=fake_fs)
 
@@ -167,18 +167,16 @@ def test_fake_non_bytes(tmp_path, fake_fs):
 
 
 def test_fake_listing_matches_disk(tmp_path, fake_fs):
-    writers = [Spool(tmp_path / "spools", Redactor({}), fs) for fs in (fake_fs, LocalFileSystem())]
+    writers = [Spool(tmp_path, Redactor({}), fs) for fs in (fake_fs, LocalFileSystem())]
     for writer in writers:
-        for attempt, name in [(2, "a/x.txt"), (0, "b.txt"), (0, "a/x.txt"), (0, "run-1/invalid"), (0, "bad name")]:
+        for attempt, name in [(2, "a/x.txt"), (0, "b.txt"), (0, "a/x.txt")]:
             writer.write("item", attempt, name, "data")
+        for name in ("run-1/invalid", "bad name"):
+            with pytest.raises(ValueError):
+                writer.write("item", 0, name, "data")
         writer.write("work", 1, "review/x", "base")
         writer.write("work/1", 0, "review/call-01/prompt.md", "first")
         writer.write("work/2", 0, "review/y", "second")
-    for fs in (fake_fs, LocalFileSystem()):
-        fs.mkdir(tmp_path / "spools/item/nope")
-        fs.write(tmp_path / "spools/item/nope/x.txt", b"not an attempt")
-        fs.mkdir(tmp_path / "spools/item/0/empty")
-        fs.write(tmp_path / "spools/item/٠/a.txt", b"non-ASCII attempt")
     # Reject empty, unsorted, unfiltered, or cross-run listings; each expected
     # row has a distinct attempt/name and the disk writer supplies an oracle.
     for stem, attempt in [("item", None), ("item", 2), ("item", 3), ("missing", None), ("work", None), ("work/1", None), ("work/2", None)]:

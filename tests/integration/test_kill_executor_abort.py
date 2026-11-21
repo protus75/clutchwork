@@ -5,8 +5,8 @@
 # purpose: Executor unwind ordering and its activation through the production drain.
 # relates: [clutch/daemon.py, clutch/llm.py, tests/integration/test_cli.py, tests/integration/test_driver.py, tests/integration/test_kill_cli_activation.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 578f20cd83c0ed73192969b56707260604806e3aab2dcb03ec4abc62cd61355a
+# verified: 23d3b116
+# hash: 84bf41c1bf92dd52b2e47cb4444929e53b2db6ca410ebc19b21e395919602043
 
 import asyncio
 from dataclasses import replace
@@ -91,7 +91,7 @@ class Timer:
 
 def invoke(driver, stage=ECHO, *, attempt=1):
     return driver.run(
-        stage, Stub(text="hi"), ticket="t-echo", attempt=attempt, workspace=driver.spool.root.parent, tier="medium", effort="low", stuck_budget=600, expected_budget=300.0, scope_fence=()
+        stage, Stub(text="hi"), ticket="t-echo", attempt=attempt, workspace=driver.spool._store.root.parent, tier="medium", effort="low", stuck_budget=600, expected_budget=300.0, scope_fence=()
     )
 
 
