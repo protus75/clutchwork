@@ -1,21 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "3daed32a240ce8c6797168381d99b520d2b6e5da",
+  "produced_at_sha": "2ea69f8b1f2f28247280d5223ef26e06873af790",
   "stem": "author-ticket-writes-commit-edit",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "clutch/author.py around line 506: keep the roadmap evidence `ls-files` listing and the `copied = {p: read_bytes()}` snapshot outside the lock, but put them inside the try around `driver.effects.run(commit, ...)`. A GitError or OSError must run cleanup and then `failure_declined(\"commit failed:",
-    "Before the change, the evidence listing ran inside commit() within the publication try, so its failure cleared `author_gate.copied`, removed the gate-copied evidence and declined the message. Moving the preparation out of the lock must keep exactly that behavior (acceptance criterion 2).",
-    "In tests/unit/test_ticket_write_consumers_author.py, add a case where the evidence listing raises GitError. Assert that Author declines through failure_declined, removes the owned copied evidence and clears author_gate.copied. Add a similar case where reading a copied file raises OSError.",
-    "Review found the rest sound: publication and compensation inside one Git.commit_edit callback, commit_record taking the record bytes for failure_declined, triage._record and the existing-record recommit, and the non-reentrant fake lock. Redo all of it from the merge base, because no earlier diff"
+    "Review approved everything except one site: in clutch/author.py around line 560, the rmdir loop over (directory / \"evidence\", directory) runs after the compensation commit_edit returns, so it runs without main_write and commit.lock. Move that loop into the compensate callback, after the unlinks.",
+    "Inside compensate, remove a directory only when it exists and is empty. Never call add, restore or commit in the callback, and ignore only NothingToCommit, as the ticket's Scope in requires. Then an OSError from a concurrent writer cannot escape into author() and skip failure_declined.",
+    "In tests/unit/test_ticket_write_consumers_author.py, assert that the empty-directory removal happens while the fake git's locked flag is true. Keep the non-reentrant fake lock, which raises on a recursive acquire, and the success, partial-publication and compensation cases.",
+    "Redo the full ticket from the merge base. Move publication's read, validate and write into one commit_edit callback, and move the evidence listing and snapshot inside the publication try. Have commit_record take the record bytes. Update triage._record only at the write and at the existing-record"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0,
     3
   ],
   "spec_version": "1.9",
