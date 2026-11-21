@@ -66,7 +66,7 @@ Scope in:
 - `clutch/docs/host-running.md` and `docs/how-clutch-works.md`: add one `evidence captures` row after the `evidence coverage` row in the verb table of each (section 2 in the latter). In `docs/how-clutch-works.md` section 10.1, append one sentence to the `evidence/` state-dir row naming `captures/<stem>/<attempt>/<escaped name>.json` pointers to blobs. No other text in either document changes.
 - `tests/unit/test_main_evidence_group.py`: the one expectation that changes is the exact verb set, which gains `captures`; add a `captures` row (`["captures", "my-ticket", "--attempt", "2", "--name", "a/b.txt"]`) to the parse table and `["captures"]` and `["captures", "my-ticket", "--attempt", "x"]` to the invalid list. Nothing else there changes.
 - New `tests/unit/test_evidence_captures_store.py` (uses `memory_store` from `tests/unit/test_evidence_views.py` and `tmp_path`) and new `tests/integration/test_evidence_captures_verb.py` (uses `CONFIG` from `tests/integration/test_cli.py` like `tests/integration/test_evidence_verbs.py`).
-- Unit tests cover the new `store.py` lines; the new `__main__.py` lines are run by the integration test through `main([...], cwd=tmp_path)`.
+- New `tests/unit/test_main_evidence_captures.py` runs every new `handle_evidence` line (the `__main__.py` unit-coverage floor needs it): it writes `config.yaml` (the `CONFIG` text from `tests/integration/test_cli.py`) into `tmp_path`, stores a capture through `EvidenceStore` with `LocalFileSystem` under `tmp_path`, and calls `main(["evidence", "captures", ...], cwd=tmp_path)` for `listed`, `empty`, `printed` and one `refused-input` case. The full outcome-to-exit-code matrix stays in the integration test. Unit tests cover the new `store.py` lines.
 
 Scope out:
 - `Spool`, `clutch/driver.py`, harvest, `clutch/runner.py`, every writer or reader of `spools/`, and the diagnose and running ask prompt specs: `spools-onto-evidence-store` (roadmap row 63) moves them and swaps their `spools/` paths for this verb. Naming the verb in a spec now would point at a store nothing writes.
@@ -81,6 +81,7 @@ Scope out:
 - docs/how-clutch-works.md
 - tests/unit/test_main_evidence_group.py
 - tests/unit/test_evidence_captures_store.py
+- tests/unit/test_main_evidence_captures.py
 - tests/integration/test_evidence_captures_verb.py
 
 ## Acceptance criteria
@@ -91,11 +92,12 @@ Scope out:
 5. The same file shows `prune` with a tiny `max_bytes` after a capture whose bytes equal a pruned call's stdout blob keeps the blob and `get_capture` still returns it, not `FileNotFoundError`; and that a blob only an old call references is still pruned.
 6. `./dev.py test tests/integration/test_evidence_captures_verb.py` shows each outcome maps to its exit code: `listed` and `empty` and `printed` exit 0 with the expected stdout (the `empty` line is `no captures for <stem>`, not an empty string); `refused-input` (`--name` alone, and an invalid stem `Bad Stem`), `refused-missing` and `refused-unreadable` (a pointer file holding `{"schema": "bad"}`, and a pointer whose blob file was deleted) each exit 2 with stderr containing ` -- ` and `clutch evidence captures`, and no `Traceback`. It also shows the verb writes no new file and no journal event for any outcome.
 7. `./dev.py test tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py` shows the evidence group accepts exactly `show`, `schema`, `renormalize`, `coverage` and `captures`, rejects `captures` with no stem and `--attempt x`, and `captures` carries Reads, Writes, Lock and Exit codes help and an epilog example.
-8. `uv run clutch help evidence` lists `captures`; a one-time review check confirms each of `clutch/docs/host-running.md` and `docs/how-clutch-works.md` gained exactly one `evidence captures` table row, that `docs/how-clutch-works.md` also gained exactly one sentence in the section 10.1 `evidence/` row, and no other text in either file changed.
+8. `./dev.py test tests/unit/test_main_evidence_captures.py` shows `main(["evidence", "captures", "my-ticket"], cwd=tmp_path)` prints one `<attempt> <name>` line and exits 0 for a stored capture, prints `no captures for my-ticket` and exits 0 for none, `--attempt 1 --name a.txt` prints the stored text, and `--name a.txt` alone exits 2, not 0.
+9. `uv run clutch help evidence` lists `captures`; a one-time review check confirms each of `clutch/docs/host-running.md` and `docs/how-clutch-works.md` gained exactly one `evidence captures` table row, that `docs/how-clutch-works.md` also gained exactly one sentence in the section 10.1 `evidence/` row, and no other text in either file changed.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_evidence_captures_store.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/integration/test_evidence_captures_verb.py tests/integration/test_evidence_verbs.py
+./dev.py test tests/unit/test_evidence_captures_store.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/unit/test_main_evidence_captures.py tests/integration/test_evidence_captures_verb.py tests/integration/test_evidence_verbs.py
 ```
 
 ## Definition of rejected
