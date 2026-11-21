@@ -4,8 +4,8 @@ kind: plan
 purpose: Boundary contracts and interface reuse: plan
 relates: [clutch/daemon.py, clutch/effects.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, docs/roadmap.md]
 owner: engine
-verified: 8e7d48f5
-hash: 4586cf7675844316641c4c5f287001d081d8956d1161e8f5ef5ae6581a8fba82
+verified: cf33b912
+hash: c2a94f84385f1ac32ae6db8bf7f9216f6a9a467dc8ebeed036c7a78130a27ce4
 -->
 # Boundary contracts and interface reuse: plan
 
@@ -22,7 +22,7 @@ over-specific one is speculative abstraction throughout every host repository.
 
 ## Status
 
-Merged roadmap rows: 150 (`boundary-contract-trial`), 151 (`boundary-contract-authoring`), 153 (`boundary-contract-implementation-review`), 154 (`boundary-contract-required`), 163 (`docs-truth-after-040`). Open roadmap rows: 152, 208. Proposed on 2026-11-18 from an owner design discussion.
+Merged roadmap rows: 150 (`boundary-contract-trial`), 151 (`boundary-contract-authoring`), 153 (`boundary-contract-implementation-review`), 154 (`boundary-contract-required`), 163 (`docs-truth-after-040`), 208 (`boundary-contract-outcome-compare`). Open roadmap rows: 152. Proposed on 2026-11-18 from an owner design discussion.
 
 ## Roadmap
 
@@ -852,6 +852,36 @@ removal and migration, rather than merely describe the new command. `journal-las
 shows why naming the existing inline owners and the preserved lookup result matters when a shared
 boundary is created. These are historical risks the form would surface, not assertions that the
 merged implementations failed.
+
+
+### Outcome comparison
+
+Row 153 merged as `adf7d00b` at 2026-11-20T05:08:40Z. The qualitative trial baseline above
+has no counts; the before window is the intended quantitative reference. The commands
+`clutch view stats --window 33h --json` and `clutch view stats --window 201h --json` printed,
+respectively, start and end times of 2026-11-20T05:23:14.523369+00:00 to
+2026-11-21T14:23:14.523369+00:00 and 2026-11-13T05:23:14.828256+00:00 to
+2026-11-21T14:23:14.828256+00:00. The longer window minus the after window would provide the
+before reference, subject to the small difference between the commands' end times.
+
+The configured state directory is absent in this ticket worktree, so the commands cannot read the
+journal here; their empty projections do not measure either period. All quantities below are
+therefore not measurable for both periods, including raw counts and counts per merged ticket:
+
+| Quantity | Before | After |
+|---|---|---|
+| Merged tickets | Not measurable | Not measurable |
+| Implement and requisition premise failures | Not measurable | Not measurable |
+| Rework updates, splits and escalations | Not measurable | Not measurable |
+| Review snags mean | Not measurable | Not measurable |
+| First-pass yield | Not measurable | Not measurable |
+| Duplicate-owner findings | Not measurable | Not measurable |
+
+Even with journal data, before-period means and yields cannot be obtained by subtracting window
+aggregates. Duplicate-owner findings are not separable by an existing verb: review findings use
+only the existing `acceptance` and `scope` codes. These unavailable measurements cannot establish
+whether the outcomes listed in Measures of success improved, and the windows would not establish
+causation.
 
 ## Measures of success
 
