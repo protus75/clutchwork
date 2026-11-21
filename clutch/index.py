@@ -11,6 +11,7 @@ from typing import Protocol
 import duckdb
 
 from clutch import meta
+from clutch.box import BOX_DIR, Box, BoxError, parse_record
 from clutch.evidence.store import SKIP
 from clutch.git import GitError
 from clutch.seams import ExecutableNotFound
@@ -104,6 +105,15 @@ def _extract(path, data):
     return kind, purpose, relates, owner, chunks
 
 
+def _write_entry(conn, path, files_row, chunks, has_embeddings):
+    for table in ("files", "chunks") + (("embeddings",) if has_embeddings else ()):
+        conn.execute(f"DELETE FROM {table} WHERE path = ?", [path])
+    if files_row is not None:
+        conn.execute("INSERT INTO files VALUES (?, ?, ?, ?, ?, ?, ?)", files_row)
+        for chunk in chunks:
+            conn.execute("INSERT INTO chunks VALUES (?, ?, ?, ?)", chunk)
+
+
 async def _embed(conn, config, root, fs, exec_, env):
     exists = _exists(conn, "embeddings")
     length = None
@@ -161,6 +171,7 @@ async def build(config, root, *, fs, git, exec_, env, store, creator, connect=du
         extension_findings.extend(loaded)
         fts = not loaded
         findings = []
+        box_finding = []
         conn.execute("CREATE TABLE IF NOT EXISTS files (path VARCHAR, kind VARCHAR, purpose VARCHAR, relates VARCHAR, owner VARCHAR, hash VARCHAR, size BIGINT)")
         conn.execute("CREATE TABLE IF NOT EXISTS chunks (path VARCHAR, selector VARCHAR, text VARCHAR, tokens BIGINT)")
         conn.execute("CREATE TABLE IF NOT EXISTS touches (ticket VARCHAR, commit_sha VARCHAR, path VARCHAR)")
@@ -174,23 +185,58 @@ async def build(config, root, *, fs, git, exec_, env, store, creator, connect=du
         else:
             if not config.index.embed:
                 conn.execute("DROP TABLE IF EXISTS embeddings")
-            paths = sorted(p for p in paths if Path(p).suffix in (".md", ".py") and not p.startswith("tickets/"))
+            paths = sorted(p for p in paths if Path(p).suffix in (".md", ".py") and (not p.startswith("tickets/") or (Path(p).parent == Path("tickets/decisions") and Path(p).suffix == ".md")))
             old = dict(conn.execute("SELECT path, hash FROM files").fetchall())
             has_embeddings = vss and _exists(conn, "embeddings")
-            for path in sorted(set(old) - set(paths)):
-                for table in ("files", "chunks") + (("embeddings",) if has_embeddings else ()):
-                    conn.execute(f"DELETE FROM {table} WHERE path = ?", [path])
+            try:
+                messages = {f"box:{message.id}": message for message in Box(config.state_dir / BOX_DIR, fs).messages()}
+            except BoxError as exc:
+                box_finding = [f"box_unreadable: {exc}"]
+                messages = {}
+            keep = set(paths) | set(messages)
+            if box_finding:
+                keep |= {path for path in old if path.startswith("box:")}
+            for path in sorted(set(old) - keep):
+                _write_entry(conn, path, None, [], has_embeddings)
             for path in paths:
                 data = fs.read_bytes(root / path)
                 digest = hashlib.sha256(data).hexdigest()
                 if old.get(path) == digest:
                     continue
-                for table in ("files", "chunks") + (("embeddings",) if has_embeddings else ()):
-                    conn.execute(f"DELETE FROM {table} WHERE path = ?", [path])
-                kind, purpose, relates, owner, chunks = _extract(path, data)
-                conn.execute("INSERT INTO files VALUES (?, ?, ?, ?, ?, ?, ?)", [path, kind, purpose, json.dumps(relates), owner, digest, len(data)])
-                for chunk in chunks:
-                    conn.execute("INSERT INTO chunks VALUES (?, ?, ?, ?)", chunk)
+                if Path(path).parent == Path("tickets/decisions"):
+                    kind, purpose, relates, owner, chunks = "decision", "", [], "", []
+                    try:
+                        record, body = parse_record(data.decode("utf-8"))
+                    except UnicodeDecodeError, BoxError:
+                        pass
+                    else:
+                        purpose = next((line.strip() for line in body.splitlines() if line.strip()), "")
+                        if body.strip():
+                            chunks.append((path, f"{path}#{record.id}", body, len(body.split())))
+                else:
+                    kind, purpose, relates, owner, chunks = _extract(path, data)
+                    if path == "docs/roadmap.md":
+                        # roadmap leads to runner and merge, which can import index.
+                        from clutch import roadmap
+
+                        if path != roadmap.ROADMAP:
+                            continue
+                        try:
+                            rows = roadmap.parse(data.decode("utf-8"))
+                        except roadmap.Refusal, ValueError, UnicodeDecodeError:
+                            pass
+                        else:
+                            for row in rows:
+                                text = f"{row.stem}: {row.content}"
+                                chunks.append((path, f"{path}#row {row.number}", text, len(text.split())))
+                _write_entry(conn, path, [path, kind, purpose, json.dumps(relates), owner, digest, len(data)], chunks, has_embeddings)
+            for path, message in messages.items():
+                data = message.summary.encode("utf-8")
+                digest = hashlib.sha256(data).hexdigest()
+                if old.get(path) == digest:
+                    continue
+                chunks = [(path, f"{path}#summary", message.summary, len(message.summary.split()))]
+                _write_entry(conn, path, [path, "box", message.summary.splitlines()[0].strip(), "[]", message.origin, digest, len(data)], chunks, has_embeddings)
             if vss:
                 findings.extend(await _embed(conn, config, root, fs, exec_, env))
         try:
@@ -225,6 +271,7 @@ async def build(config, root, *, fs, git, exec_, env, store, creator, connect=du
                 "INSERT INTO calls VALUES (?, ?, ?, ?, ?, ?)",
                 [key, start.stem or "", start.surface, start.repo.tree_before if start.repo else "", end.repo.tree_after if end.repo else "", end.repo.changed_paths if end.repo else []],
             )
+        findings.extend(box_finding)
         findings.extend(extension_findings)
         if vss and git_available and _exists(conn, "embeddings"):
             findings.extend(creator.create(conn, "vss"))
