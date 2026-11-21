@@ -14,7 +14,7 @@ none
 - tickets/merge-dirty-checkout-never-blocks/evidence/ev5.txt
 
 ## Goal / Why
-The owner keeps uncommitted local edits in `config.yaml` (routing, scheduler, their own tuning). Today the merge gate's `dirty_checkout` finding rejects a ticket that changes `config.yaml` while that edit exists: on 2026-11-21 `review-cost-sonnet-instance` passed Implement, Check and Review and then went to the Reject queue for it. An edit the owner makes to `config.yaml` must never affect whether a ticket merges.
+The owner keeps uncommitted local edits in `config.yaml` (routing, scheduler, their own tuning). Today the merge gate's `dirty_checkout` finding rejects a ticket that changes `config.yaml` while that edit exists: on 2026-11-21 `review-cost-sonnet-instance` passed Implement, Check and Review and then went to the Reject queue for it. An edit the owner makes to `config.yaml` must never affect whether a ticket merges, because `config.yaml` is the owner's live configuration and tickets change its future settings.
 
 After this ticket `config.yaml` is exempt from the `dirty_checkout` finding, and the squash keeps the owner's working copy: after the merge, `config.yaml` in the checkout holds the owner's local edit applied on top of the merged file, and where both changed the same lines the owner's lines win. Every other path keeps today's `dirty_checkout` behavior.
 
