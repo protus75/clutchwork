@@ -5,8 +5,8 @@
 # purpose: Verify idle poll admission and work detection.
 # relates: [clutch/daemon.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: 89042420
-# hash: 5f374812404680f3729281257abde49b2a07ebebf4bb2f5e0bf21cea473de3be
+# verified: fc08bb14
+# hash: c0b983ac2da07dcb10042fd539042235c65e41309a23b5619955d85fdb72a513
 
 import hashlib
 from contextlib import asynccontextmanager
@@ -102,8 +102,8 @@ async def test_scan_inputs_and_own_writes(owner, monkeypatch):
     assert owner.entries == []
     owner.checkout.git.rev_parse.return_value = "merged-head"
     await owner.scan()
-    # Ignoring HEAD would miss intake validation unblocked by a merge.
-    assert owner.entries == ["mutations", "exclusive"]
+    # With no pending ticket, a merge does not unblock intake validation.
+    assert owner.entries == []
     owner.entries.clear()
     owner.checkout.fs.write(owner.checkout.repo / "tickets/new/ticket.md", b"new")
     owner.stems = lambda: ["new"]

@@ -292,8 +292,8 @@ class Serve:
             listing = tuple(c.fs.entries(directory))
             files = tuple((stem, self.read(stem)) for stem in sorted(self.stems()))
             status = await c.git.status_porcelain(c.repo, "--", "tickets/")
-            head = await c.git.rev_parse(c.repo, "main")
             pending = _pending(c.repo, _porcelain(status))
+            head = await c.git.rev_parse(c.repo, "main") if pending else None
             states = last_states(c.journal.read()) if pending else {}
             return listing, files, status, head, tuple((stem, states.get(stem)) for stem in sorted(pending))
         except OSError, GitError:
