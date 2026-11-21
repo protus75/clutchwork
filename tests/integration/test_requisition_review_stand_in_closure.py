@@ -4,8 +4,8 @@
 # purpose: test requisition review stand in closure
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 96e46658
-# hash: b10630788a7cdeac03641d1e2ad69f3a9475a3414c9acffe20dd5dd443ca51a9
+# verified: 512e4a26
+# hash: 61e9f8e3fa4f2ea8b8e14d7dd641c5311f3d56c8145d6a464918fb5e55990959
 from pathlib import Path
 
 from clutch.specs import load_spec, render
@@ -18,7 +18,7 @@ def test_stand_in_closure_and_existing_task_bullets():
     task = rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0]
     bullets = [line for line in task.splitlines() if line.startswith("- ")]
     # A missing bullet, or a replacement instead of an addition, must fail.
-    assert len(bullets) == 18
+    assert len(bullets) == 19
     # Each prior first sentence rules out replacing or rewording that existing rule.
     prior_sentences = [
         (
