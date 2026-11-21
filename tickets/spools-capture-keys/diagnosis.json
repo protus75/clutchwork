@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "08b9e387040fb3fad46e190771217ada6e1c77ea",
+  "stem": "spools-capture-keys",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "The code was fine: all 92 verification tests and lint passed. The check failed only on `ruff format --check`: the engine's meta refresh (`meta.refresh` in clutch/stages.py) stamped `# purpose: ` with a trailing space into 3 test files that lacked a purpose.",
+    "Redo the work from the merge base: change the stem and attempt rules in store.py, add `capture_key`, update the `captures` help text, update the test files, and add tests/unit/test_evidence_capture_keys.py.",
+    "In each touched test file, write the meta header yourself with a non-empty one-line `# purpose:` so refresh never renders an empty one: tests/unit/test_evidence_capture_keys.py, tests/unit/test_evidence_captures_store.py, tests/integration/test_evidence_captures_verb.py.",
+    "If a touched file still ends up with an empty purpose, run `uv run clutch meta fill <path>`, the paved road for empty_purpose named in clutch/stages.py. Then run `uv run ruff format --check .` after the meta commit and before you finish.",
+    "Engine cause, outside this fence: `meta._render` in clutch/meta.py writes `key: ` with a trailing space when a value is empty, and ruff format rejects it. This needs its own engine fix and should not be folded into this ticket."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
