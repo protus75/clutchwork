@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a789f69533e0a882c18da60049fd2d8c5b8797e4",
+  "stem": "release-audit-050",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Redo the full audit from the merge base: re-run the six passes and make the section 2-4 edits again. Review accepted these removals: rows 9 and 10 (serve-parallel-dispatch-r2, storm-producer-one-builder), section 2.4 (one-parser-per-provider*), the worker-pool row and the micro-rework row",
+    "Keep the section 3.3 row 'Triage-dedup real-model eval'. No merged change fixed it: tickets/training-eval/ticket.md:29 accepts only the `review` surface, and row 176 (training-export-kinds) says triage waits for a real label source.",
+    "Fix that row's Decision cell: training-eval merged with only the `review` lens, and the triage lens is still a follow-up waiting for a label source. End the row with '(recurred in 0.5.0)'.",
+    "Before removing any item in sections 2-4, name the merged ticket that fixed it. If you cannot name one, keep the item and mark it 'recurred in 0.5.0'. This is acceptance criterion 3 and the Definition of rejected.",
+    "Keep the gate prose from the earlier attempt: no merged verb records whether feature tickets run during the window, so name that clause as unchecked in the line directly above the 0.6.0 gate block. Append the release-audit-060 row as the last 0.6.0 row, using an unused row number."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
