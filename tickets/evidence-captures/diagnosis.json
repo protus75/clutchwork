@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "2ea9c4f1821a42a65c8dd80b9b9754be74463fac",
+  "stem": "evidence-captures",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "AC6 contradicts the scope: Scope in says to raise runner.Refusal for every refused-* outcome, but clutch/__main__.py:88 `_fail` prints `clutch {verb}: {message}`, so stderr starts `clutch evidence: `, never `no capture` or `unreadable capture`.",
+    "Fix the ticket, not the renderer: change AC6 so the refusal message after the `clutch evidence: ` prefix starts with `no capture` or `unreadable capture`, and have the integration test check that text, not the start of stderr.",
+    "Keep `_fail` and the shared `runner.Refusal` handler in clutch/__main__.py unchanged. Changing them would affect every verb, and the ticket allows only the `captures` parser entry and its handle_evidence branch in that file.",
+    "Reuse the sound parts of the earlier attempt but redo them in full: the store.py methods, the `captures` subcommand, the two doc table rows, the section 10.1 sentence, the group-test edits, and the three new test files. No earlier diff survives."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
