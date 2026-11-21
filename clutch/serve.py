@@ -1,6 +1,7 @@
 """Continuous foreground lifetime."""
 
 import asyncio
+import hashlib
 import os
 import re
 import sys
@@ -12,6 +13,7 @@ from pathlib import Path
 from clutch import git, roadmap, runner, triage
 from clutch.calibration import calibrate_when_due
 from clutch.config import ConfigError, snapshot_config
+from clutch.control import _ID, decisions
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
 from clutch.effects import Effects
@@ -26,10 +28,10 @@ from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
 from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
-from clutch.status import CLOSED
+from clutch.status import CLOSED, last_states
 from clutch.storm import StormLedger
 from clutch.supervise_idle import supervise_idle
-from clutch.tickets import Ticket, TicketInvalid, intake, parse_ticket, ticket_path
+from clutch.tickets import Ticket, TicketInvalid, _pending, _porcelain, intake, parse_ticket, ticket_path
 
 SERVE_POLL_S = 0.1
 
@@ -104,6 +106,10 @@ class Serve:
         self.writers: dict[str, TicketWriter] = {}
         self.published: dict[str, tuple[Ticket, str]] = {}
         self.queue = None
+        self.scan_snapshot = None
+        self.scanned = {}
+        self.report_arrivals = set()
+        self.report_retry = None
         self.stopping = False
         self.served_retro_id = None
         self.retro_due = False
@@ -278,13 +284,35 @@ class Serve:
         async with self.core.admission.mutations():
             yield
 
+    async def intake_snapshot(self):
+        """Only intake inputs, never journal activity from an implementing run."""
+        c = self.checkout
+        try:
+            directory = c.repo / "tickets"
+            listing = tuple(c.fs.entries(directory))
+            files = tuple((stem, self.read(stem)) for stem in sorted(self.stems()))
+            status = await c.git.status_porcelain(c.repo, "--", "tickets/")
+            head = await c.git.rev_parse(c.repo, "main")
+            pending = _pending(c.repo, _porcelain(status))
+            states = last_states(c.journal.read()) if pending else {}
+            return listing, files, status, head, tuple((stem, states.get(stem)) for stem in sorted(pending))
+        except OSError, GitError:
+            # Unknown is work; leave intake to report its normal error under the gate.
+            return None
+
     async def scan(self) -> dict[str, str | None]:
+        snapshot = await self.intake_snapshot()
+        if snapshot is not None and snapshot == self.scan_snapshot:
+            return self.scanned
         async with self.mutations():
             if self.stopping:
                 return {}
             c = self.checkout
             await intake(c.repo, c.git, c.journal, c.fs, stems=None)
-            return {stem: self.read(stem) for stem in self.stems()}
+            self.scanned = {stem: self.read(stem) for stem in self.stems()}
+            # Intake's own stamps and commits must not manufacture another work poll.
+            self.scan_snapshot = await self.intake_snapshot()
+            return self.scanned
 
     async def watch(self) -> None:
         response = self.responses[3]
@@ -293,6 +321,9 @@ class Serve:
             previous = {}
             while True:
                 current = await response.wait(self.scan())
+                if current == previous:
+                    await response.wait(self.checkout.sleep(SERVE_POLL_S))
+                    continue
                 # Hold admission through parsing/publication, including debounce unwind.
                 gate = self.core.admission.exclusive()
                 await response.wait(gate.__aenter__())
@@ -442,10 +473,44 @@ class Serve:
             self.core.scheduler.update(self.published[stem][0])
         return result
 
+    def merge_work(self) -> bool:
+        """Accepted inbox decisions survive dispatch consuming their request files."""
+        events = self.checkout.journal.read()
+        completed = {e.key for e in events if e.type == EventType.EFFECT_COMPLETION}
+        decided = list(decisions(events))
+        for event in decided:
+            body = event.body
+            if body["decision"] == "accepted" and body["verb"] in ("confirm", "reject") and body["hold_id"] is None:
+                if f"ticket-plane/{body['stem']}/{body['verb']}/{body['request_id']}" not in completed:
+                    return True
+        identities = {e.body["request_id"] for e in decided}
+        try:
+            if any(p.suffix == ".json" and _ID.fullmatch(p.stem) and p.stem not in identities for p in self.control.inbox.files()):
+                return True
+        except OSError:
+            return True
+        projection = self.control.projection
+        if projection.stop_requested or projection.kill_requested:
+            return True
+        queue = self.queue
+        if queue is None:
+            return False
+        released = queue.paused and queue.hold_id in projection.released_hold_ids
+        return bool(
+            queue.active is not None
+            or released
+            or (queue.pending and not queue.paused)
+            or any(stem not in self.core.admission.runs and not w.continuations and stem not in queue.pending for stem, w in self.writers.items())
+        )
+
     async def merge(self) -> None:
         response = self.responses[1]
 
         async def poll():
+            if self.queue is not None:
+                await self.check_upgrade()
+            if not self.merge_work():
+                return
             async with self.mutations():
                 self.control.poll()
                 if self.stopping or self.control.projection.kill_requested:
@@ -466,7 +531,6 @@ class Serve:
                         self.core.scheduler.update(ticket)
                     if ticket.stem not in self.queue.pending:
                         self.queue.contexts.pop(ticket.stem, None)
-                await self.check_upgrade()
                 for stem, writer in tuple(self.writers.items()):
                     if stem not in self.core.admission.runs and not writer.continuations and stem not in self.queue.pending:
                         del self.writers[stem]
@@ -475,14 +539,39 @@ class Serve:
             await response.wait(poll())
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
+    def box_work(self) -> bool:
+        """New reports are immediate; failed arrivals retry on the injected clock."""
+        config = self.control.load_config()
+        if config.report_inbox is None:
+            return False
+        try:
+            expected, recorded, _ = self.storm._evidence()
+            origins = {m.origin for m in self.box.messages()} if expected else set()
+            if any(identity not in recorded or "storm-breaker/" + identity not in origins for identity in expected):
+                return True
+            pending = set()
+            for path in config.report_inbox.glob("*.json"):
+                arrival = hashlib.sha256(str(path.resolve()).encode()).hexdigest()
+                if "consumed" not in self.checkout.fs.entries(self.box.root / "custody" / arrival):
+                    pending.add(arrival)
+            now = self.checkout.clock()
+            return bool(pending - self.report_arrivals or pending and (self.report_retry is None or (now - self.report_retry).total_seconds() >= 30))
+        except OSError:
+            return True
+
     async def box_intake(self) -> None:
         response = self.responses[2]
 
         async def poll():
+            if not self.box_work():
+                return
             async with self.mutations():
                 if self.stopping:
                     return
                 c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
+                self.report_retry = c.clock()
+                if c.config.report_inbox is not None:
+                    self.report_arrivals.update(hashlib.sha256(str(path.resolve()).encode()).hexdigest() for path in c.config.report_inbox.glob("*.json"))
                 triage.report_intake(c)
 
         while True:
