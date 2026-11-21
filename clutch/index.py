@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
@@ -17,6 +18,7 @@ from clutch.git import GitError
 from clutch.seams import ExecutableNotFound
 
 EMBED_TIMEOUT_S = 60
+KINDS = ("box", "roadmap", "decision")
 _FLOAT_MAX = 3.4028234663852886e38
 
 
@@ -114,6 +116,30 @@ def _write_entry(conn, path, files_row, chunks, has_embeddings):
             conn.execute("INSERT INTO chunks VALUES (?, ?, ?, ?)", chunk)
 
 
+async def _embed_vector(config, root, fs, exec_, env, text, length):
+    temp = config.state_dir / "index-embed-input.tmp"
+    fs.write(temp, text.encode())
+    try:
+        try:
+            rc, stdout, _ = await exec_.run(config.index.embed, cwd=root, env=env, timeout=EMBED_TIMEOUT_S, stdin_path=temp)
+            reason = f"exit {rc}" if rc else None
+        except (ExecutableNotFound, TimeoutError, OSError) as exc:
+            reason = f"exec {type(exc).__name__}"
+    finally:
+        fs.remove(temp)
+    if reason is None:
+        try:
+            vector = json.loads(stdout)
+        except ValueError, TypeError:
+            reason = "not json"
+        else:
+            if not isinstance(vector, list) or not vector or any(type(x) not in (int, float) or abs(x) > _FLOAT_MAX or not math.isfinite(x) for x in vector):
+                reason = "not a vector"
+            elif length is not None and len(vector) != length:
+                reason = f"length {len(vector)} != {length}"
+    return (vector if reason is None else None), reason
+
+
 async def _embed(conn, config, root, fs, exec_, env):
     exists = _exists(conn, "embeddings")
     length = None
@@ -124,26 +150,7 @@ async def _embed(conn, config, root, fs, exec_, env):
     if exists:
         query += " WHERE NOT EXISTS (SELECT 1 FROM embeddings e WHERE e.path = chunks.path AND e.selector = chunks.selector)"
     for path, selector, text in conn.execute(query).fetchall():
-        temp = config.state_dir / "index-embed-input.tmp"
-        fs.write(temp, text.encode())
-        try:
-            try:
-                rc, stdout, _ = await exec_.run(config.index.embed, cwd=root, env=env, timeout=EMBED_TIMEOUT_S, stdin_path=temp)
-                reason = f"exit {rc}" if rc else None
-            except (ExecutableNotFound, TimeoutError, OSError) as exc:
-                reason = f"exec {type(exc).__name__}"
-        finally:
-            fs.remove(temp)
-        if reason is None:
-            try:
-                vector = json.loads(stdout)
-            except ValueError, TypeError:
-                reason = "not json"
-            else:
-                if not isinstance(vector, list) or not vector or any(type(x) not in (int, float) or abs(x) > _FLOAT_MAX or not math.isfinite(x) for x in vector):
-                    reason = "not a vector"
-                elif length is not None and len(vector) != length:
-                    reason = f"length {len(vector)} != {length}"
+        vector, reason = await _embed_vector(config, root, fs, exec_, env, text, length)
         if reason:
             conn.execute("DROP TABLE IF EXISTS embeddings")
             return [f"embed_failed: {selector}: {reason}"]
@@ -152,6 +159,111 @@ async def _embed(conn, config, root, fs, exec_, env):
             conn.execute(f"CREATE TABLE embeddings (path VARCHAR, selector VARCHAR, vec FLOAT[{length}])")
         conn.execute("INSERT INTO embeddings VALUES (?, ?, ?)", [path, selector, vector])
     return []
+
+
+@dataclass(frozen=True)
+class Hit:
+    kind: str
+    ref: str
+    selector: str
+    text: str
+    score: float
+
+
+@dataclass(frozen=True)
+class Neighbors:
+    outcome: str
+    mode: str = ""
+    hits: tuple[Hit, ...] = ()
+    findings: tuple[str, ...] = ()
+
+
+async def neighbors(config, root, text, *, fs, exec_, env, creator, limit=5, kinds=KINDS, exclude=(), connect=duckdb.connect):
+    """Find indexed box messages, roadmap rows and decisions."""
+    if not isinstance(text, str):
+        error = "text: not a string"
+    elif not text.strip():
+        error = "text: blank"
+    elif len(text) > 8000:
+        error = "text: longer than 8000 characters"
+    elif type(limit) is not int or not 1 <= limit <= 50:
+        error = "limit: not an integer in 1..50"
+    elif not isinstance(kinds, (list, tuple, set, frozenset)) or not kinds or any(k not in KINDS for k in kinds) or len(set(kinds)) != len(kinds):
+        error = "kinds: not a non-empty collection of distinct members of box, roadmap, decision"
+    elif not isinstance(exclude, (list, tuple, set, frozenset)) or len(exclude) > 50 or any(not isinstance(x, str) or not x for x in exclude):
+        error = "exclude: not a collection of at most 50 non-empty strings"
+    else:
+        error = None
+    if error:
+        return Neighbors("invalid_input", findings=(f"invalid_input: {error}",))
+    path = config.state_dir / "index.duckdb"
+    try:
+        fs.size(path)
+    except FileNotFoundError:
+        return Neighbors("no_index")
+    except OSError as exc:
+        return Neighbors("index_unreadable", findings=(f"index_unreadable: {exc}",))
+    try:
+        conn = connect(str(path), read_only=True)
+    except Exception as exc:
+        return Neighbors("index_unreadable", findings=(f"index_unreadable: {exc}",))
+    try:
+        try:
+            # roadmap leads to runner and merge, which can import index.
+            from clutch import roadmap
+
+            # Check both required tables even if the search has no candidates.
+            conn.execute("SELECT path, kind FROM files LIMIT 0")
+            conn.execute("SELECT path, selector, text FROM chunks LIMIT 0")
+            findings = []
+            mode = "fulltext"
+            if config.index.embed:
+                loaded = creator.load(conn, "vss")
+                if loaded:
+                    reason = loaded[0]
+                elif not _exists(conn, "embeddings"):
+                    reason = "embeddings table missing"
+                else:
+                    typename = conn.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'embeddings' AND column_name = 'vec'").fetchone()[0]
+                    length = int(re.search(r"\[(\d+)\]$", typename).group(1))
+                    vector, reason = await _embed_vector(config, root, fs, exec_, env, text.strip(), length)
+                if reason:
+                    findings.append(f"embed_failed: {reason}")
+                else:
+                    mode = "embedding"
+            if mode == "fulltext":
+                loaded = creator.load(conn, "fts")
+                if loaded:
+                    return Neighbors("fulltext_unavailable", findings=tuple(findings + list(loaded)))
+                if not conn.execute("SELECT count(*) FROM information_schema.schemata WHERE schema_name = 'fts_main_chunks'").fetchone()[0]:
+                    return Neighbors("fulltext_unavailable", findings=tuple(findings + ["fts unavailable: index missing"]))
+                sql = "SELECT c.path, c.selector, c.text, f.kind, fts_main_chunks.match_bm25(c.selector, ?) FROM chunks c JOIN files f ON c.path = f.path"
+                params = [text.strip()]
+            else:
+                sql = (
+                    f"SELECT c.path, c.selector, c.text, f.kind, 1 - array_cosine_distance(e.vec, CAST(? AS FLOAT[{length}])) "
+                    "FROM chunks c JOIN files f ON c.path = f.path JOIN embeddings e ON c.path = e.path AND c.selector = e.selector"
+                )
+                params = [vector]
+            hits = []
+            for path, selector, chunk, kind, score in conn.execute(sql, params).fetchall():
+                if kind == "box" and selector == f"{path}#summary" and path.startswith("box:"):
+                    hit_kind, ref = "box", path[4:]
+                elif path == roadmap.ROADMAP and selector.startswith(f"{path}#row "):
+                    hit_kind, ref = "roadmap", selector[len(path) + 1 :]
+                elif kind == "decision":
+                    hit_kind, ref = "decision", path
+                else:
+                    continue
+                if hit_kind in kinds and ref not in exclude and score is not None and math.isfinite(score):
+                    hits.append(Hit(hit_kind, ref, selector, chunk, float(score)))
+            hits.sort(key=lambda hit: (-hit.score, hit.selector))
+            hits = tuple(hits[:limit])
+            return Neighbors("found" if hits else "no_match", mode, hits, tuple(findings))
+        except duckdb.Error as exc:
+            return Neighbors("index_unreadable", findings=(f"index_unreadable: {exc}",))
+    finally:
+        conn.close()
 
 
 async def build(config, root, *, fs, git, exec_, env, store, creator, connect=duckdb.connect):
