@@ -4,8 +4,8 @@
 # purpose: test main help
 # relates: [clutch/__main__.py, clutch/ask.py]
 # owner: engine
-# verified: 0a308920
-# hash: 796271097f3c8e7506031f50431bcf2adbbdb0307d9bd68545acbd589977c2ba
+# verified: a5584821
+# hash: f8c1193b54d608ad7c67dd3fb7115731bc9eb390328216408b19b716f1a356a8
 import argparse
 import shlex
 
@@ -102,3 +102,11 @@ def test_command_helper_requires_every_field(missing):
     del fields[missing]
     with pytest.raises(TypeError):
         _command(argparse.ArgumentParser().add_subparsers(), "example", **fields)
+
+
+@pytest.mark.parametrize(("verb", "lock"), [("refresh", "Commit lock only."), ("fill", "Writer lock."), ("check", "None.")])
+def test_meta_lock_help(verb, lock, tmp_path, capsys):
+    code, out, err = invoke(["help", "meta", verb], tmp_path, capsys)
+    assert code == 0
+    assert not err
+    assert f"Lock: {lock}" in out

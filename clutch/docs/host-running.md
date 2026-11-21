@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 8107f6ac
-hash: 4760e49bd3f220b34cf6407f4e6b8b03ca49abedb53f7e3ea7f7049379934a38
+verified: a5584821
+hash: 4d44ba578a5031da6a0c1f9d8ff7eebe6b6ffddc09895e2b857fa4765627a645
 -->
 # Running ClutchWork on a host
 
@@ -47,7 +47,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submits nothing. |
 | `context suggest` | Yes | Suggest files and sections for a ticket from the index; `--require` exits 1 when none are suggested. |
 | `index build` | No | Build or refresh the project index under the writer lock. |
-| `meta refresh` | No | Insert or refresh configured file metadata under the writer lock. |
+| `meta refresh` | Yes | Insert or refresh configured file metadata under the commit lock. |
 | `meta check` | Yes | Report metadata findings without writing. |
 | `meta fill` | No | Fill metadata using a read-only model under the writer lock. |
 | `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. With `--parallel`, `roadmap merged` counts only merges whose run overlapped another run and fails when any such ticket spent its conflict-rerun limit. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `engine drain` and `engine serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |

@@ -663,7 +663,7 @@ def _parser() -> argparse.ArgumentParser:
             does=f"{verb.capitalize()} metadata on configured files.",
             reads="Config, tracked files and HEAD.",
             writes="Metadata blocks." if verb in ("refresh", "fill") else "Nothing; prints findings.",
-            lock="Writer lock." if verb in ("refresh", "fill") else "None.",
+            lock={"refresh": "Commit lock only.", "fill": "Writer lock.", "check": "None."}[verb],
             exits="0 on success; 1 for findings; 2 on refusal.",
             examples=[f"clutch meta {verb} tests/"],
         )
@@ -1616,7 +1616,10 @@ def main(
                         await session.close()
                 return await _run_meta(args.meta_verb, config, repo, checkout.fs, files, sha, args.paths)
 
-            if args.meta_verb in ("refresh", "fill"):
+            if args.meta_verb == "refresh":
+                async with CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep):
+                    return await execute()
+            if args.meta_verb == "fill":
                 async with _locked(config.state_dir, f"meta {args.meta_verb}", instance_id=await checkout.git.describe(repo), clock=clock):
                     return await execute()
             return await execute()

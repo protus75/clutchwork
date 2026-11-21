@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 407dfd0f
-hash: 5197080b83e6f809cba1cd8d9a790ddf38a039198790d766f1044c8cabb2f721
+verified: a5584821
+hash: 4a3761a93115c6068ebe4e022c97a7dc3b2754d245a9f39aba7a1079fa354f69
 -->
 # How ClutchWork works
 
@@ -50,7 +50,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 |---|---|---|
 | `context suggest <stem>` | no | Suggest ticket context from the index. |
 | `index build` | yes | Build or refresh the project index. |
-| `meta refresh [paths]` | yes | Insert or refresh metadata blocks under configured roots. |
+| `meta refresh [paths]` | commit only | Insert or refresh metadata blocks under configured roots. |
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks. |
 | `meta fill [paths]` | yes | Fill metadata using a read-only model. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
