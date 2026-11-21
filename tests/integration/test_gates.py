@@ -176,7 +176,8 @@ def test_gate_lint_rejects_report_code_mismatch(tmp_path):
 
 def test_default_severity_is_all_hard_over_engine_codes():
     assert set(DEFAULT_GATE_SEVERITY) == ENGINE_GATE_CODES
-    assert set(DEFAULT_GATE_SEVERITY.values()) == {"hard"}
+    assert {code for code, severity in DEFAULT_GATE_SEVERITY.items() if severity == "soft"} == {"meta_drift"}
+    assert all(severity == "hard" for code, severity in DEFAULT_GATE_SEVERITY.items() if code != "meta_drift")
     assert merge_severity(None) == DEFAULT_GATE_SEVERITY
 
 

@@ -15,6 +15,7 @@ from clutch.config import Config, ConfigSnapshot, Severity
 
 ENGINE_GATE_CODES: frozenset[str] = frozenset(
     {
+        "meta_drift",
         "ticket_schema",
         "scope_fence",
         "verification",
@@ -29,8 +30,8 @@ ENGINE_GATE_CODES: frozenset[str] = frozenset(
     }
 )
 
-# Shipped MERGE-context default: every engine-shipped code is hard at merge.
-DEFAULT_GATE_SEVERITY: Mapping[str, Severity] = {code: "hard" for code in ENGINE_GATE_CODES}
+SOFT_GATE_DEFAULTS = {"meta_drift"}
+DEFAULT_GATE_SEVERITY: Mapping[str, Severity] = {code: "soft" if code in SOFT_GATE_DEFAULTS else "hard" for code in ENGINE_GATE_CODES}
 
 
 class GateContractError(Exception):
@@ -108,7 +109,7 @@ class GateRunResult:
 
 
 def merge_severity(config: Config | ConfigSnapshot | None) -> dict[str, Severity]:
-    """The merge-context severity map: shipped all-hard default overlaid by `review.gate_severity`."""
+    """The merge-context severity map: shipped defaults overlaid by `review.gate_severity`."""
     overrides = config.review.gate_severity if config is not None else {}
     return {**DEFAULT_GATE_SEVERITY, **overrides}
 

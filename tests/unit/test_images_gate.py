@@ -95,7 +95,9 @@ def test_check_runs_render_before_gate(tmp_path, monkeypatch):
         redactor=SimpleNamespace(scrub=lambda text: text),
         provider_wait=lambda *args: 0,
     )
-    ctx = SimpleNamespace(driver=driver, env={}, config=SimpleNamespace(state_dir=tmp_path, review=SimpleNamespace(autofix=[])), worktree=lambda stem: work, fs=LocalFileSystem())
+    ctx = SimpleNamespace(
+        driver=driver, env={}, config=SimpleNamespace(state_dir=tmp_path, meta=SimpleNamespace(paths=[]), review=SimpleNamespace(autofix=[])), worktree=lambda stem: work, fs=LocalFileSystem()
+    )
     ticket = SimpleNamespace(
         stem="work",
         stuck_minutes=3,

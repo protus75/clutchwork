@@ -71,7 +71,7 @@ def setup(monkeypatch, tmp_path, paths, *, kind="graphics", mode="command", rc=0
     ctx = SimpleNamespace(
         driver=driver,
         env={},
-        config=SimpleNamespace(state_dir=tmp_path, review=SimpleNamespace(autofix=[])),
+        config=SimpleNamespace(state_dir=tmp_path, meta=SimpleNamespace(paths=[]), review=SimpleNamespace(autofix=[])),
         exec_=SimpleNamespace(run=run),
         worktree=lambda stem: tmp_path / "worktree",
         fs=LocalFileSystem(),

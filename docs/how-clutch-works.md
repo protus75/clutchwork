@@ -211,7 +211,7 @@ skips symlinks without error, and refuses a file over 256 KB.
 | `diagnosis` | `diagnosis.json` |
 | `rework-proposal` | `rework.md` (the supervisor's refused or escalated edit) |
 
-Other engine commits on `main`: `ticket` (intake), `confirmed`, `rejected`, `rework`, `clutch(decisions): <id>` (a triage decision record), `clutch: retro NNNNNN`, `clutch(<stem>): undo refused rework`, and the squash merge itself. Check's `clutch(<stem>): autofix` commit lands on the ticket branch, not on `main`.
+Other engine commits on `main`: `ticket` (intake), `confirmed`, `rejected`, `rework`, `clutch(decisions): <id>` (a triage decision record), `clutch: retro NNNNNN`, `clutch(<stem>): undo refused rework`, and the squash merge itself. Check's `clutch(<stem>): autofix` and `clutch(<stem>): meta` commits land on the ticket branch, not on `main`.
 
 ## 4. A ticket's run
 
@@ -263,7 +263,7 @@ the Suggestion Box as a `suggestion`.
 
 ### 4.3 Check
 
-1. When Implement replied `ok` and `review.autofix` is nonempty, runs configured autofix commands on existing changed files outside `tickets/` matching each entry's `files` patterns and commits changes.
+1. When Implement replied `ok` and `review.autofix` is nonempty, runs configured autofix commands on existing changed files outside `tickets/` matching each entry's `files` patterns and commits changes. Refreshes metadata for changed files under `meta.paths` and commits rewrites before reporting blocks needing review.
 2. For graphics `generate` tickets, Check returns `visual_undecided` before judging unless the latest `visual_baseline` is GO for the current judge routing and spec major. Otherwise, Check judges candidates separately per artifact and commits all selected images in one select commit, or returns `visual_undecided` without a select commit.
 3. Runs each `## Verification` command in the worktree (provider keys removed from the
    environment, timeout = the ticket's stuck budget, output spooled to `check/verify-NN.txt`).
@@ -308,12 +308,13 @@ conflict is simply refused.
 
 ### 5.1 Engine gates
 
-Every engine gate is hard by default.
+`meta_drift` is soft by default; every other engine gate is hard.
 
 **Check gates** (on the branch head):
 
 | Code | Fails when |
 |---|---|
+| `meta_drift` | Changed metadata is malformed, has an empty purpose, or its purpose needs review after drift. |
 | `scope_fence` | A changed file is outside `## Scope fence` (the stem's own outbox is exempt, except `ticket.md`). |
 | `verification` | A Verification command fails and was green at the base; or `already_satisfied` came with a diff; or a required report is missing or invalid. |
 | `run_record` | `run.md` is missing, or lacks its six fixed sections in order, or has an unknown outcome. |

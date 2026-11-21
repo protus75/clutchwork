@@ -157,6 +157,7 @@ def test_enginelog_closed_sets_and_constants():
 
 def test_gates_closed_sets_and_constants():
     assert dict(gates.DEFAULT_GATE_SEVERITY) == {
+        "meta_drift": "soft",
         "bug_evidence": "hard",
         "image_quality": "hard",
         "core_drift": "hard",
@@ -170,7 +171,20 @@ def test_gates_closed_sets_and_constants():
         "verification": "hard",
     }
     assert gates.ENGINE_GATE_CODES == frozenset(
-        {"bug_evidence", "image_quality", "core_drift", "correctness_review", "diff_budget", "post_rebase_regate", "requisition_review", "run_record", "scope_fence", "ticket_schema", "verification"}
+        {
+            "meta_drift",
+            "bug_evidence",
+            "image_quality",
+            "core_drift",
+            "correctness_review",
+            "diff_budget",
+            "post_rebase_regate",
+            "requisition_review",
+            "run_record",
+            "scope_fence",
+            "ticket_schema",
+            "verification",
+        }
     )
 
 

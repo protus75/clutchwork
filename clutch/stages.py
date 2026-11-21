@@ -24,7 +24,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, TypeAdapter, model_validator
 
-from clutch import git, images, visual
+from clutch import git, images, meta, visual
 from clutch.artifacts import (
     OUTCOMES,
     REVIEW_BASELINE_REPORT,
@@ -843,6 +843,7 @@ class Evidence(FrozenModel):
     render_failed: bool = False
     bug_evidence: BugEvidence | None = None
     bug_findings: list[Finding] = []
+    meta_findings: list[Finding] = []
 
 
 def regression_result(stdout: str, rc: int | None) -> Literal["pass", "defect", "error"] | None:
@@ -1509,6 +1510,15 @@ class DiffBudgetGate:
         )
 
 
+class MetaDriftGate:
+    """Report metadata that needs human review after refresh."""
+
+    code = "meta_drift"
+
+    def check(self, artifact: Evidence, workspace: Path) -> GateReport:
+        return _report(self.code, artifact.meta_findings)
+
+
 class BugEvidenceGate:
     """A new test proves a defect only when its carried reproducer reaches the defect on base."""
 
@@ -1576,6 +1586,9 @@ CHECK_GATES: tuple[ScopeFenceGate | VerificationGate | RunRecordGate | DiffBudge
 )
 
 
+CHECK_ONLY_GATES = (MetaDriftGate(),)
+
+
 def check_severity(ctx: StageContext, ticket: Ticket) -> dict[str, Severity]:
     """Config severity with the ticket's `gate_bypass` valve applied: a bypassed code is soft for this ticket."""
     severity = dict(ctx.driver.severity)
@@ -1609,6 +1622,35 @@ async def check_autofix(ctx, ticket, attempt):
     if changed:
         await ctx.git.commit(worktree, f"clutch({ticket.stem}): autofix", only=changed)
     return reports, []
+
+
+async def check_meta(ctx, ticket) -> list[Finding]:
+    worktree = ctx.worktree(ticket.stem)
+    files = [
+        path
+        for path in await ctx.git.diff_names(ctx.repo, MAIN, ticket.stem)
+        if not in_fence(path, [TICKETS_DIR]) and (worktree / path).is_file() and any(path.startswith(entry.root.rstrip("/") + "/") for entry in ctx.config.meta.paths)
+    ]
+    if not files:
+        return []
+    tracked = await ctx.git.ls_files(worktree)
+    sha = await ctx.git.rev_parse(ctx.repo, ticket.stem)
+    before = set(meta.check(ctx.config, worktree, ctx.fs, tracked, sha, files))
+    changed, malformed = meta.refresh(ctx.config, worktree, ctx.fs, tracked, sha, files)
+    after = set(meta.check(ctx.config, worktree, ctx.fs, tracked, sha, files))
+    if changed:
+        await ctx.git.commit(worktree, f"clutch({ticket.stem}): meta", only=changed)
+    roads = {
+        "malformed": "fix or remove the block so it has the schema and six keys with a valid kind",
+        "empty_purpose": "run clutch meta fill {path} or write the one-line purpose",
+        "purpose_unverified": "reread the purpose against the new content and rerun clutch meta fill {path} if it is stale",
+    }
+    findings = []
+    for path in files:
+        reason = "malformed" if path in malformed else "empty_purpose" if (path, "empty_purpose") in after else "purpose_unverified" if (path, "drifted") in before else None
+        if reason:
+            findings.append(Finding(code="meta_drift", path=path, message=f"{path}: {reason}", paved_road=roads[reason].format(path=path)))
+    return findings
 
 
 async def check_candidates(ctx, ticket, attempt):
@@ -1736,13 +1778,14 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
 
     outbox = ctx.worktree(stem) / TICKETS_DIR / stem
     autofix_reports, autofix_hard = await check_autofix(ctx, ticket, attempt) if slip.outcome == "ok" and ctx.config.review.autofix else ([], [])
+    meta_findings = await check_meta(ctx, ticket) if ctx.config.meta.paths else []
     candidate_findings = await check_candidates(ctx, ticket, attempt)
     if candidate_findings:
         return refused(candidate_findings, Cost(seconds=active_seconds()))
     evidence = await gather_evidence(ctx, ticket, slip.outcome, attempt=attempt)
     render_reports, render_hard = await check_render(ctx, ticket, attempt)
-    evidence = evidence.model_copy(update={"render_failed": bool(render_hard)})
-    gated = run_gates(CHECK_GATES, evidence, ctx.worktree(stem), severity=check_severity(ctx, ticket))
+    evidence = evidence.model_copy(update={"render_failed": bool(render_hard), "meta_findings": meta_findings})
+    gated = run_gates((*CHECK_GATES, *CHECK_ONLY_GATES), evidence, ctx.worktree(stem), severity=check_severity(ctx, ticket))
     if evidence.is_graphics and evidence.render_dir and not evidence.render_failed and any(r.code == "image_quality" and r.verdict == "pass" for r in gated.reports):
         write_image_previews(ctx.fs, evidence, ctx.worktree(stem))
     host_reports, host_hard = await check_hosts(ctx, ticket, evidence.changed_files, attempt)
@@ -1776,7 +1819,7 @@ async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt
         changed_files=evidence.changed_files,
         inserted_lines=evidence.inserted_lines,
         bypassed=sorted({b.code for b in ticket.frontmatter.gate_bypass}),
-        reports=[*autofix_reports, *gated.reports, *host_reports, *([required_report] if required_report is not None else [])],
+        reports=[*autofix_reports, *(r for r in gated.reports if ctx.config.meta.paths or r.code != "meta_drift"), *host_reports, *([required_report] if required_report is not None else [])],
         verification=evidence.verification,
     )
     ctx.fs.write(ctx.worktree(stem) / artifact_path(stem, CHECKS_FILE), (invoice.model_dump_json(indent=2) + "\n").encode())
