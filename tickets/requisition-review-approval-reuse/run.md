@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The ticket verification passed on the candidate, and the unit coverage gate passed. The full integration check produced numerous dispatch failures and was interrupted after worker timeouts. Representative failing tests passed on the base commit. The exact ticket verification could not run on the base because its three new test files do not exist there.
+The final ticket verification passed 190 tests. The candidate full integration gate had 15 failures; the same gate passed all 3,601 tests on the base. Five out-of-fence failures also reproduced individually. The exact ticket verification could not run on the base because its three new test files do not exist there.
 
 ## Dead ends
 
-Shared fixtures record approvals without an input identity because their configurations omit a requisition-review route; the new conservative rule correctly requires a fresh review, but their scripted responses expect Implement first.
+Refreshing shared fixture approvals did not resolve the out-of-fence scripted review failures.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-30 minutes expected; not measured.
+The ticket expected 30 minutes; implementation and diagnosis remain unfinished.
 
