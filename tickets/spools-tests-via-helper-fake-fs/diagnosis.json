@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "3e4b2a64ab938d745d608b8639dcf19660216fa2",
+  "stem": "spools-tests-via-helper-fake-fs",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The premise failure is false. A 'drifted' hash in a fenced file you change is expected: after Implement, clutch/stages.py::check_meta runs meta.refresh on changed files and commits 'clutch(<stem>): meta'. Do not edit any header yourself, and do not report premise_failed for it.",
+    "meta_drift is in SOFT_GATE_DEFAULTS (clutch/gates.py:33), so 'drifted'/'purpose_unverified' from a manual `clutch meta check` does not block. Untouched-file meta findings are pre-existing and already filed as box-000924; ignore them.",
+    "Redo the full work from the merge base. Add keyword-only `fs=None` to read_capture, write_capture and list_captures in tests/spool_captures.py. The fs branch uses fs.read_bytes/write/entries, and both branches share one private filter function. Leave the real-disk path unchanged.",
+    "Only append to tests/unit/test_spool_captures.py, using FakeFileSystem and Spool(Path, Redactor({}), fake). Route the 5 Goal sites in test_watchdog_activation.py and test_provider_cooldown_failover.py through the helper with fs=. Line 461 needs the positive control on stem 'work', attempt 0.",
+    "Report outcome done once both Verification commands pass and `grep -n spools` on the two integration files prints nothing. The previous attempt's verification passed; only the false header premise stopped it."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
