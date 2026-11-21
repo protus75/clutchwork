@@ -1,0 +1,73 @@
+Observed 2026-11-21 (owner P0 complaint): serve runs one ticket at a time although scheduler.parallel max_runs is 2.
+Timeline: the owner's confirm submitted 10:58:51Z was applied only at 11:05Z; no second ticket started while the first ran.
+
+== clutch/serve.py Serve.scan ==
+303:    async def scan(self) -> dict[str, str | None]:
+304:        snapshot = await self.intake_snapshot()
+305:        if snapshot is not None and snapshot == self.scan_snapshot:
+306:            return self.scanned
+307:        async with self.mutations():
+308:            if self.stopping:
+309:                return {}
+310:            c = self.checkout
+311:            await intake(c.repo, c.git, c.journal, c.fs, stems=None)
+312:            self.scanned = {stem: self.read(stem) for stem in self.stems()}
+313:            # Intake's own stamps and commits must not manufacture another work poll.
+314:            self.scan_snapshot = await self.intake_snapshot()
+315:            return self.scanned
+
+== clutch/serve.py Serve.watch ==
+317:    async def watch(self) -> None:
+318:        response = self.responses[3]
+319:
+320:        async def changes():
+321:            previous = {}
+322:            while True:
+323:                current = await response.wait(self.scan())
+324:                if current == previous:
+325:                    await response.wait(self.checkout.sleep(SERVE_POLL_S))
+326:                    continue
+327:                # Hold admission through parsing/publication, including debounce unwind.
+328:                gate = self.core.admission.exclusive()
+329:                await response.wait(gate.__aenter__())
+330:                try:
+331:                    for stem in sorted(previous.keys() | current.keys()):
+332:                        if stem not in previous or previous.get(stem) != current.get(stem):
+333:                            yield stem
+334:                    await response.wait(asyncio.gather(*self.core.watcher._waits.values()))
+335:                finally:
+336:                    await gate.__aexit__(None, None, None)
+337:                previous = current
+338:                await response.wait(self.checkout.sleep(SERVE_POLL_S))
+339:
+340:        await self.core.watcher.run(changes())
+
+== clutch/daemon.py DaemonAdmission._acquire_run and exclusive ==
+596:    async def _acquire_run(self) -> None:
+597:        async with self._condition:
+598:            await self._condition.wait_for(lambda: not self._exclusive and not self._exclusive_waiters and self._holding < self.max_runs)
+599:            self._holding += 1
+600:
+601:    async def _release_run(self) -> None:
+602:        async with self._condition:
+603:            self._holding -= 1
+604:            self._condition.notify_all()
+605:
+606:    @asynccontextmanager
+607:    async def exclusive(self):
+608:        async with self._condition:
+609:            self._exclusive_waiters += 1
+610:            try:
+611:                await self._condition.wait_for(lambda: not self._exclusive and self._holding == 0)
+612:                self._exclusive = True
+613:            finally:
+614:                self._exclusive_waiters -= 1
+615:                self._condition.notify_all()
+616:        try:
+617:            yield
+618:        finally:
+619:            self._exclusive = False
+620:            if self._condition.locked():
+621:                await _protected_cleanup(asyncio.create_task(self._release_exclusive()))
+622:            else:
+623:                await self._release_exclusive()
