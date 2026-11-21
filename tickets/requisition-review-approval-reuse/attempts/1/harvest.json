@@ -1,0 +1,45 @@
+{
+  "attempt": 1,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_stages.py",
+      "line": 100,
+      "message": "The shared test configuration has no requisition-review route, so fixture approvals have no identity and dispatch tests fail on the candidate.",
+      "paved_road": "Fence and update the shared configuration and any affected scripts for identity-aware review.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_cli.py",
+      "line": 37,
+      "message": "The shared CLI test configuration has no requisition-review route, causing identity-less fixture approvals and failures in CLI and serve integration tests.",
+      "paved_road": "Fence and update the shared configuration and affected scripts for identity-aware review.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/harness/shakeout/bench.py",
+      "line": 32,
+      "message": "The shakeout bench configuration has no requisition-review route, so its fixture approval cannot authorize dispatch and shakeout integration tests fail.",
+      "paved_road": "Fence and update the shakeout bench configuration and affected scripts for identity-aware review.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The approval-reuse change exposes required integration-fixture updates outside the ticket’s scope fence, so it cannot pass the host checks as written.\",\"surprises\":\"The ticket verification passed on the candidate, and the unit coverage gate passed. The full integration check produced numerous dispatch failures and was interrupted after worker timeouts. Representative failing tests passed on the base commit. The exact ticket verification could not run on the base because its three new test files do not exist there.\",\"second_problems\":[],\"dead_ends\":\"Shared fixtures record approvals without an input identity because their configurations omit a requisition-review route; the new conservative rule correctly requires a fresh review, but their scripted responses expect Implement first.\",\"predicted_vs_actual\":\"30 minutes expected; not measured.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_stages.py\",\"line\":100,\"message\":\"The shared test configuration has no requisition-review route, so fixture approvals have no identity and dispatch tests fail on the candidate.\",\"paved_road\":\"Fence and update the shared configuration and any affected scripts for identity-aware review.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_cli.py\",\"line\":37,\"message\":\"The shared CLI test configuration has no requisition-review route, causing identity-less fixture approvals and failures in CLI and serve integration tests.\",\"paved_road\":\"Fence and update the shared configuration and affected scripts for identity-aware review.\"},{\"code\":\"premise\",\"path\":\"tests/harness/shakeout/bench.py\",\"line\":32,\"message\":\"The shakeout bench configuration has no requisition-review route, so its fixture approval cannot authorize dispatch and shakeout integration tests fail.\",\"paved_road\":\"Fence and update the shakeout bench configuration and affected scripts for identity-aware review.\"}]}",
+  "events_tail": " yaml.safe_dump(self.config.model_dump(mode=\\\"json\\\", exclude_none=True)).encode())\\ntests/harness/shakeout/bench.py:129:        approve(self.repo, stem, self.clock)\\ntests/integration/test_serve_parallel_admission.py:34:    path = root / \\\"config.yaml\\\"\\ntests/integration/test_diagnose.py:28:from tests.integration.test_providers import CONFIG as ROUTING_CONFIG\\ntests/integration/test_diagnose.py:64:    (tmp_path / \\\"config.yaml\\\").write_text(ROUTING_CONFIG)\\ntests/integration/test_diagnose.py:70:    (tmp_path / \\\"config.yaml\\\").write_text(\\ntests/integration/test_diagnose.py:71:        ROUTING_CONFIG.replace(\\\"- {tier: medium, surface: review,\\\", \\\"- {tier: medium, surface: diagnose, candidates: [{provider: codex}]}\\\\n  - {tier: medium, surface: review,\\\")\\ntests/integration/test_diagnose.py:142:        path = repo / \\\"config.yaml\\\"\\ntests/integration/serve_rig.py:62:    approve(root, stem, Clock())\\ntests/integration/serve_rig.py:292:    path = root / \\\"config.yaml\\\"\\ntests/integration/serve_rig.py:304:    path = root / \\\"config.yaml\\\"\\ntests/integration/serve_rig.py:359:    rig.owner.argv = (\\\"--config\\\", \\\"config.yaml\\\", \\\"serve\\\")\\ntests/integration/serve_rig.py:373:    config = root / \\\"config.yaml\\\"\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_52\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove /tmp/clutch-reuse-base-4296219 && git worktree prune'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_52\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove /tmp/clutch-reuse-base-4296219 && git worktree prune'\",\"aggregated_output\":\"\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_53\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The approval-reuse change exposes required integration-fixture updates outside the ticket’s scope fence, so it cannot pass the host checks as written.\\\",\\\"surprises\\\":\\\"The ticket verification passed on the candidate, and the unit coverage gate passed. The full integration check produced numerous dispatch failures and was interrupted after worker timeouts. Representative failing tests passed on the base commit. The exact ticket verification could not run on the base because its three new test files do not exist there.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Shared fixtures record approvals without an input identity because their configurations omit a requisition-review route; the new conservative rule correctly requires a fresh review, but their scripted responses expect Implement first.\\\",\\\"predicted_vs_actual\\\":\\\"30 minutes expected; not measured.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_stages.py\\\",\\\"line\\\":100,\\\"message\\\":\\\"The shared test configuration has no requisition-review route, so fixture approvals have no identity and dispatch tests fail on the candidate.\\\",\\\"paved_road\\\":\\\"Fence and update the shared configuration and any affected scripts for identity-aware review.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_cli.py\\\",\\\"line\\\":37,\\\"message\\\":\\\"The shared CLI test configuration has no requisition-review route, causing identity-less fixture approvals and failures in CLI and serve integration tests.\\\",\\\"paved_road\\\":\\\"Fence and update the shared configuration and affected scripts for identity-aware review.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/harness/shakeout/bench.py\\\",\\\"line\\\":32,\\\"message\\\":\\\"The shakeout bench configuration has no requisition-review route, so its fixture approval cannot authorize dispatch and shakeout integration tests fail.\\\",\\\"paved_road\\\":\\\"Fence and update the shakeout bench configuration and affected scripts for identity-aware review.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":7932832,\"cached_input_tokens\":7838208,\"cache_write_input_tokens\":0,\"output_tokens\":13421,\"reasoning_output_tokens\":1764}}\n",
+  "wall_seconds": 640.910553,
+  "usd": 1.0,
+  "run_record": "tickets/requisition-review-approval-reuse/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
