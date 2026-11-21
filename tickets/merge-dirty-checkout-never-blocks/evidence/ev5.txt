@@ -1,0 +1,6 @@
+2026-11-21 ~10:50Z: ticket review-cost-sonnet-instance passed Implement, full suite (3575), ruff, verification and review (approve).
+Merge gate then refused: finding dirty_checkout, "main checkout has local changes to config.yaml that the squash would overwrite".
+diagnosis.json: terminal gate_failed, stage merge, verdict abandon-human -> Reject queue.
+Main checkout had the owner's uncommitted edit to config.yaml (the same two requisition_review routes the ticket adds).
+Code: clutch/merge.py ~lines 245-275 (overlap of `git status` dirty paths with `diff_names(main, stem)`; staged paths also a finding).
+Rule from owner: an uncommitted edit in the main checkout must never block or reject a ticket.
