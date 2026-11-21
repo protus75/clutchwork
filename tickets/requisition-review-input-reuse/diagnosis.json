@@ -1,21 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "9466c652ebb489f0548ec043dbe5b16aa6bb0869",
+  "produced_at_sha": "f551b0644827af459c94a7d4818dd4527241def4",
   "stem": "requisition-review-input-reuse",
-  "attempt": 1,
-  "terminal": "premise_failed",
+  "attempt": 2,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "split",
   "lessons": [
-    "The fence is missing files the change forces. clutch/author.py:452 and clutch/rework.py:196 call review_ticket, and the ticket requires both to move to review_with_identity. Tests outside the fence monkeypatch module.review_ticket, so they break once the import goes.",
-    "Add to the Scope fence: tests/integration/test_author.py (lines 180, 215), tests/unit/test_author.py:143, tests/unit/test_author_roadmap_row.py:184, tests/unit/test_author_stem_claimed.py:48 and tests/unit/test_key_scope.py:174. Each one patches author/rework review_ticket and must patch",
-    "Do not keep an unused review_ticket import in author.py or rework.py so the old patches still resolve. The ticket forbids parallel legacy paths, and the wrapper calls requisition.review_ticket, so those patches would silently stop intercepting the call.",
-    "Class fix: when a ticket migrates a call site, its author must grep for monkeypatch.setattr(<module>, \"<name>\") across tests/ and fence every match. Today these five files were found only at Implement, which cost an attempt."
+    "Attempts 0 and 2 both ended incomplete at implement with an empty diff, after about 2 minutes each. The ticket fences 23 files across two boundaries, four verdict writers, a shared fixture, the ladder scripts and docs. That is too much for one attempt, so split it.",
+    "Part A (identity provenance): input_identity and review_input_identity in clutch/requisition.py, plus the RequisitionVerdict.input_identity field. Add review_with_identity and move the Author, Rework, CLI and dispatch writers onto it. Also update tests/approval.py, the seven review_ticket patch",
+    "Part B (reuse decision), which depends on part A: latest-verdict approval selection in clutch/requisition.py, used by __main__.py::_review before provider preflight and by runner.py::drive in place of the ticket-SHA-only bypass. Includes test_review_reuse_cli/dispatch, test_requisition_reuse,",
+    "The test_ladder.py failures read 'assert None is not None where LLMRequest(surface=requisition_review).worktree'. The extra requisition review took a scripted agent() response. Insert a verdict() approve before the next agent() wherever the effective reviewer tier changes, including retry-wall and"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    1
+    1,
+    2,
+    3
   ],
   "spec_version": "1.9",
   "provider": "claude",
