@@ -24,12 +24,17 @@ if TYPE_CHECKING:
     from clutch.daemon import PauseConsumer
     from clutch.mergequeue import MergeQueue
 
+import duckdb
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from clutch import index
 from clutch.artifacts import Artifact, Cost, Finding, NonBlank, StageResult, refused
+from clutch.enginelog import engine_log
+from clutch.evidence.store import EvidenceStore
 from clutch.gates import GateReport, run_gates
 from clutch.git import GitError
 from clutch.journal import Event, EventType
+from clutch.providers import child_env
 from clutch.stages import (
     KNOWN_ARTIFACTS,
     MAIN,
@@ -291,6 +296,49 @@ async def merge(ctx: StageContext, ticket: Ticket, *, attempt: int) -> StageResu
     )
 
 
+class _MergeCreator:
+    def load(self, connection, kind):
+        try:
+            connection.execute(f"LOAD {kind}")
+        except duckdb.Error as exc:
+            return [f"{kind} unavailable: {exc}"]
+        return []
+
+    def create(self, connection, kind):
+        return []
+
+
+MERGE_CREATOR = _MergeCreator()
+
+
+async def refresh_index(ctx) -> None:
+    try:
+        try:
+            ctx.fs.size(ctx.config.state_dir / "index.duckdb")
+        except FileNotFoundError:
+            return
+        findings = await index.build(
+            ctx.config,
+            ctx.repo,
+            fs=ctx.fs,
+            git=ctx.git,
+            exec_=ctx.exec_,
+            env=child_env(ctx.env, ctx.config),
+            store=EvidenceStore(ctx.config.state_dir, ctx.fs, ctx.fs.read_bytes, ctx.fs.size, ctx.driver.redactor.scrub),
+            creator=MERGE_CREATOR,
+        )
+        log = engine_log(ctx.config, ctx.driver.redactor, ctx.driver.clock)
+        if findings:
+            log.event("index_refresh", outcome="built_with_findings", findings=findings)
+        else:
+            log.event("index_refresh", outcome="built")
+    except Exception as exc:
+        try:
+            engine_log(ctx.config, ctx.driver.redactor, ctx.driver.clock).event("index_refresh", outcome="failed", error=type(exc).__name__, detail=str(exc))
+        except Exception:
+            pass
+
+
 async def write_squash(ctx: StageContext, ticket: Ticket, reviewed: str, *, attempt: int) -> Admission:
     """The shared admission Effect and sole merged terminal; retirement follows tree validation."""
     stem = ticket.stem
@@ -325,6 +373,7 @@ async def write_squash(ctx: StageContext, ticket: Ticket, reviewed: str, *, atte
     body = {"to": "merged", "commit": commit, "reviewed_sha": reviewed}
     if not any(e.type == EventType.STATE_TRANSITION and e.ticket == stem and e.body == body for e in ctx.driver.journal.read()):
         ctx.driver.journal.append(EventType.STATE_TRANSITION, body, ticket=stem)
+    await refresh_index(ctx)
     return Admission(produced_by_spec_version=MERGE_SPEC_VERSION, produced_at_sha=commit or await ctx.git.rev_parse(ctx.repo, MAIN), stem=stem, commit=commit, reviewed_sha=reviewed)
 
 
