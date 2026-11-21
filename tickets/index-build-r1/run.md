@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The config model and its documentation inventory have uncommitted partial edits.
+The partial changes have not been tested or committed.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 30 minutes; elapsed work time was not measured.
 
