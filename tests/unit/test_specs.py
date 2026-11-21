@@ -4,8 +4,8 @@
 # purpose: test specs
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 11318b79
-# hash: c15e5ffc2da3201178e825ab2290ca7b6bbd8023d0e6ceb66324f79bf0240729
+# verified: a0d5e388
+# hash: fb54fd1466ff0b3a4980332e0e93c4c53702707357c6acf514b6b1ac2e6a7f77
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.22"), ("requisition_review", "3.26"), ("diagnose", "1.9")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.23"), ("requisition_review", "3.26"), ("diagnose", "1.9")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -134,13 +134,13 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.22"
+    assert spec.meta.version == "2.23"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",
         "effort": "medium",
     }
-    assert spec.inputs == ("ticket", "context", "retry_findings")
+    assert spec.inputs == ("ticket", "context", "related_files", "retry_findings")
     assert tuple(line[3:] for line in spec.body.splitlines() if line.startswith("## ")) == SPEC_SECTIONS
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())

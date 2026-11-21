@@ -4,8 +4,8 @@
 # purpose:
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 8f823851
-# hash: e0359c2f1f93185b5767c73cf32fdda9d1eee33525381a65f628bb71eb522860
+# verified: a0d5e388
+# hash: 6919b9cfeaecb3630dfdb8c47ca2e4193924e95dfa920192b5bdcd6762277f3e
 from pathlib import Path
 
 import pytest
@@ -33,4 +33,4 @@ def test_implement_spec_requires_generated_meta_headers(clause):
 def test_implement_spec_meta_header_version():
     text = (Path(__file__).resolve().parents[2] / "clutch/specs/implement.md").read_text()
     # The previous spec version would leave consumers unable to identify the new rule.
-    assert load_spec(text).meta.version == "2.22"
+    assert load_spec(text).meta.version == "2.23"

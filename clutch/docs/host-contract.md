@@ -4,8 +4,8 @@ kind: guide
 purpose: Host contract
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: d7719818
-hash: 4afa81effd3124f2972a78bb3d296284e0cca44499424d135f35a1379abf5e0f
+verified: a0d5e388
+hash: acf5e83d302af9054954243d7be859d980858285ec28325a1dc8310d2285800c
 -->
 # Host contract
 
@@ -164,7 +164,7 @@ Config:
     evidence: {max_gb: 20}
     training_data: {enabled: false, exclude: []}
     meta: {paths: []}
-    index: {embed: null}
+    index: {embed: null, implement_hint: false}
     scheduler: {max_unmerged: 2, parallel: {enabled: false, max_runs: 2, shared_paths: []}}
     caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
@@ -192,7 +192,7 @@ Meta:
   defaults: {paths: []}
 Index:
   required: []
-  defaults: {embed: unset}
+  defaults: {embed: unset, implement_hint: false}
 MetaPath:
   required: [root, kind]
   defaults: {}

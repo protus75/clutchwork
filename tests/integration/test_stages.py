@@ -5,8 +5,8 @@
 # purpose: Implement -> Check -> Review stage transitions with the scripted fake (CLUTCH_PLAN.md sections 4, 5, 19.P1).
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 11318b79
-# hash: 8b89ed4b264ef7b5934b3b3f031959dbb4d12e0864466a17594e6ba3ca941b52
+# verified: a0d5e388
+# hash: 3bc1a6749b6c5c95c416dfcbbd6d7fef479b68d77efbe0d0f9b55e59bf23c044
 
 import asyncio
 import json
@@ -347,7 +347,7 @@ def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
     assert read_review((canonical / "review.md").read_text()) == review
     assert Invoice.model_validate_json((canonical / "checks.json").read_text()) == invoice
     run_md = (canonical / "run.md").read_text()
-    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.22" in run_md
+    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.23" in run_md
     assert git(repo, "diff", "--name-only", f"main...{STEM}").split() == ["clutch/thing.py"]
     outbox = config.worktree_root / STEM / "tickets" / STEM
     assert sorted(p.name for p in outbox.iterdir()) == ["ticket.md"]  # lifted and unlinked

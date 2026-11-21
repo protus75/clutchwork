@@ -2,6 +2,9 @@
 
 import re
 from collections import defaultdict
+from pathlib import Path
+
+import duckdb
 
 from clutch.tickets import context_path, in_fence
 
@@ -41,3 +44,20 @@ def suggest(conn, stem, fence, context, goal) -> tuple[list[tuple[str, str]], li
             matches.append((selector, found))
     matches.sort(key=lambda item: (-len(item[1]), item[0]))
     return result_files, [(selector, "matches " + ", ".join(found[:5])) for selector, found in matches[:5]]
+
+
+def hint_block(state_dir: Path, stem, fence, context, text, *, connect=duckdb.connect) -> str:
+    try:
+        if not text.strip():
+            return "none"
+        path = state_dir / "index.duckdb"
+        if not path.exists():
+            return "unavailable: no_index (run clutch index build)"
+        conn = connect(str(path), read_only=True)
+        try:
+            files, sections = suggest(conn, stem, fence, context, text)
+            return "\n".join(("- " + " ".join(selector.split()) + "  # " + " ".join(reason.split()))[:300] for selector, reason in [*files, *sections]) or "none"
+        finally:
+            conn.close()
+    except Exception:
+        return "unavailable: index_unreadable"

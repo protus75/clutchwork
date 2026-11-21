@@ -286,6 +286,7 @@ class Meta(StrictModel):
 
 class Index(StrictModel):
     embed: Argv | None = None
+    implement_hint: bool = False
 
 
 class TrainingData(StrictModel):

@@ -45,6 +45,7 @@ from clutch.artifacts import (
 )
 from clutch.baseline import resolve_visual_baseline
 from clutch.config import Config, ConfigSnapshot, Severity
+from clutch.context import hint_block
 from clutch.driver import Driver, LlmStage
 from clutch.enginelog import engine_log_path
 from clutch.gates import BugEvidence, GateReport, RegressionRun, run_gates
@@ -56,7 +57,7 @@ from clutch.llmeffect import llm_key, scoped_seq
 from clutch.panel import DIAGNOSIS_ORDER, PanelMember, findings_union, majority_verdict
 from clutch.providers import ProviderSetupError, child_env, panel_members
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
-from clutch.specs import RenderOverBound, Spec, load_spec, render
+from clutch.specs import RENDER_BOUND_CHARS, RenderOverBound, Spec, load_spec, render
 from clutch.storm import arrival_id
 from clutch.tickets import (
     _HEADING,
@@ -637,14 +638,31 @@ async def lift_prior_diff(ctx: StageContext, stem: str, *, attempt: int, diff: s
 # --- Implement ----------------------------------------------------------------------------------
 
 
-def implement_inputs(repo: Path, ticket_text: str, ticket: Ticket, context_files: Sequence[Path]) -> dict[str, str]:
+def implement_inputs(repo: Path, ticket_text: str, ticket: Ticket, context_files: Sequence[Path], *, related_files: str = "none") -> dict[str, str]:
     """The production Implement inputs, also used to measure a ticket at authoring."""
     paths = list(dict.fromkeys([*ticket.context, *(str(p) for p in context_files)]))
     context = "\n\n".join(f"### {p}\n{render_context(repo, p) if p in ticket.context else (repo / p).read_text()}" for p in paths) or "none"
     return {
         "ticket": ticket_text,
         "context": context,
+        "related_files": related_files,
     }
+
+
+HINT_TIMEOUT_S = 5.0
+HINT_HEADROOM_CHARS = 50_000
+
+
+async def related_files(config, ticket, *, hint=hint_block) -> str:
+    try:
+        if not config.index.implement_hint:
+            return "none"
+        text = ticket.sections["Goal / Why"] + "\n" + ticket.sections.get("Scope in / Scope out", "")
+        return await asyncio.wait_for(asyncio.to_thread(hint, config.state_dir, ticket.stem, list(ticket.scope_fence), list(ticket.context), text), HINT_TIMEOUT_S)
+    except TimeoutError:
+        return "unavailable: timeout"
+    except Exception:
+        return "unavailable: index_unreadable"
 
 
 def _one_line(text: str) -> str:
@@ -744,12 +762,14 @@ def _in_criteria_position(ticket_text: str, block: str) -> str:
     return ticket_text.rstrip("\n") + "\n\n" + block + "\n"
 
 
-def implement_stage(ctx: StageContext, ticket: Ticket, worktree: Path) -> tuple[LlmStage, Spec]:
+def implement_stage(ctx: StageContext, ticket: Ticket, worktree: Path, related_files: str = "none") -> tuple[LlmStage, Spec]:
     spec = _spec(ctx, "implement")
     ticket_text = (ctx.repo / ticket_path(ticket.stem)).read_text()
     if (prior := prior_attempts(ctx, ticket.stem)) is not None:
         ticket_text = _in_criteria_position(ticket_text, prior)
-    inputs = implement_inputs(worktree, ticket_text, ticket, ctx.config.context_files)
+    inputs = implement_inputs(worktree, ticket_text, ticket, ctx.config.context_files, related_files=related_files)
+    if len(inputs["ticket"]) + len(inputs["context"]) > RENDER_BOUND_CHARS - HINT_HEADROOM_CHARS:
+        inputs["related_files"] = "none"
 
     def render_ticket(_: Ticket, findings: list[Finding]) -> str:
         return render(spec, {**inputs, "retry_findings": findings_text(findings)})
@@ -773,7 +793,18 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
     """Teardown-and-create the worktree, run the implement spec in it, and write + lift the run record."""
     stem = ticket.stem
     worktree = await prepare_worktree(ctx, stem)
-    stage, spec = implement_stage(ctx, ticket, worktree)
+    no_room = False
+    try:
+        if ctx.config.index.implement_hint:
+            ticket_text = (ctx.repo / ticket_path(stem)).read_text()
+            if (prior := prior_attempts(ctx, stem)) is not None:
+                ticket_text = _in_criteria_position(ticket_text, prior)
+            inputs = implement_inputs(worktree, ticket_text, ticket, ctx.config.context_files)
+            no_room = len(inputs["ticket"]) + len(inputs["context"]) > RENDER_BOUND_CHARS - HINT_HEADROOM_CHARS
+    except Exception:
+        pass  # The normal stage construction retains responsibility for input failures.
+    related = "none" if no_room else await related_files(ctx.config, ticket)
+    stage, spec = implement_stage(ctx, ticket, worktree, related)
     try:
         result = await ctx.driver.run(
             stage,

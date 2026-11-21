@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: fc08bb14
-hash: 95e11c3122c10c6b77e444688171d9e75e5160f578485c479e764c5c09783b27
+verified: a0d5e388
+hash: 66e6a7302b1f286921366bc7f0223c4edd57cc895b9cb2456c957099bad651e0
 -->
 # How ClutchWork works
 
@@ -907,7 +907,7 @@ The review-baseline report (`review-baseline-report.json`, written by `eval/harn
 
 ## 14. Project index
 
-The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never read by a gate or dispatch. Its five tables are `files` (tracked file metadata), `chunks` (sections and definitions), `embeddings` (vectors), `touches` (ticket changes), and `calls` (evidence records). With `index.embed` unset, there is no `embeddings` table. A merge refreshes an existing index file.
+The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never read by a gate or dispatch. Its five tables are `files` (tracked file metadata), `chunks` (sections and definitions), `embeddings` (vectors), `touches` (ticket changes), and `calls` (evidence records). With `index.embed` unset, there is no `embeddings` table. A merge refreshes an existing index file. With `index.implement_hint: true` the Implement prompt carries a `related_files` block of at most 10 lines and 3,000 characters, `none` or `unavailable: ...` when the index has nothing or cannot be read in 5 seconds, never failing or delaying Implement.
 
 `clutch index build` creates or refreshes the index under the writer lock. Its outcomes are:
 
