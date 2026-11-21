@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The full unit suite reported six failures across three out-of-fence files because their Git stand-ins lack main_write; 1,785 tests passed. Partial edits remain uncommitted in clutch/git.py and clutch/tickets.py.
+The shared decision-record commit function is also called by triage, whose record write currently happens before the commit call.
 
 ## Dead ends
 
-The required intake lock order was implemented far enough to identify the affected fixtures; completing the ticket requires expanding the fence.
+Inspected the existing publication paths and their test doubles; made no edits or commits.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 30 minutes; stopped after identifying the scope conflict.
+none
 
