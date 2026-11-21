@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "70f2c6be694a5a00a9daab7097510979df5940c3",
+  "produced_at_sha": "b8bc14344376f3d391f39ea5e2dd5bc08e356582",
   "stem": "merge-dirty-checkout-never-blocks",
-  "attempt": 3,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 4,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "The fence is missing a file the change needs: the serve-admission rig in tests/integration/test_daemon_composition.py (ScriptFS at line 47, config.yaml written at line 220) keeps ctx.fs files in memory, while its git calls run on the real checkout.",
-    "Scope in requires write_squash to save, restore and merge-file the owner's config.yaml. With ctx.fs on the rig's in-memory ScriptFS, those steps fail for a tracked dirty config.yaml, and a serve-admission test that passes on the base commit fails.",
-    "Re-author the ticket in one of two ways. Either fence tests/integration/test_daemon_composition.py so its fs seam and git act on the same checkout, or rewrite Scope in so all config.yaml save, temp and merge files are handled by git commands alone, never by ctx.fs.",
-    "Sound parts to redo: dirty_overlap skips config.yaml; status_porcelain gates the save; the stand-in in test_merge_index_hook.py gets status_porcelain=AsyncMock(return_value=''). Rejected simpler approach: restoring the whole saved file, which drops non-conflicting ticket changes.",
-    "Only act when porcelain shows a tracked modification of config.yaml. Treating any non-empty status output as a config edit misclassified the fixture's scripted responses in attempt 3."
+    "Review found two fixable oversights in an approach that was otherwise sound. Redo the whole change from the merge base: the config.yaml exemption in dirty_overlap, plus the save, restore-to-HEAD, merge_squash and merge-file --ours reapply in write_squash in clutch/merge.py.",
+    "In write_squash, if the merge-file reapply raises after merge_squash, write the owner's original config.yaml bytes back before re-raising, as the merge_squash failure branch does. Or remove the saved merge-config-local only after the reapply succeeds. Never lose the owner's edit.",
+    "In tests/unit/test_merge_config_local.py, add a case where the fake merge-file raises. Assert that config.yaml afterwards equals the owner's original bytes.",
+    "In tests/unit/test_merge_config_local.py, assert the full merge-file argv: (\"merge-file\", \"--ours\", str(state/merge-config-local), str(state/merge-config-base), str(config)). This pins the owner-wins flag and the current/base/other order, not just the command names.",
+    "Keep the parts review found sound: act only when status_porcelain shows a tracked modification of config.yaml; give the test_merge_index_hook.py stand-in only status_porcelain=AsyncMock(return_value=''); add no tests to test_daemon_composition.py."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
