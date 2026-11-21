@@ -5,8 +5,8 @@
 # purpose: Author rechecks ticket ownership after review.
 # relates: [clutch/author.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 0a308920
-# hash: 9d7fea82bc753989a4902f1e95043d684477f1b936c9661687177c46e952bf4d
+# verified: d3624866
+# hash: 0a32f189a8c53bb197320454efddd037ae1733cf3a2972e95af44d4df952ea87
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -28,6 +28,10 @@ async def test_author_rechecks_stem_after_gate(tmp_path, monkeypatch, claim):
     reply = author.AuthorReply(stem="sample-row", ticket="authored ticket")
     decline = AsyncMock(return_value=author.AuthorOutcome(declined="declined-claim"))
     commit = AsyncMock(return_value="commit-sha")
+
+    async def commit_edit(repo, msg, *, only, edit):
+        await edit()
+        return await commit(repo, msg, only=only)
 
     async def run(stage, *args, **kwargs):
         await stage.review(reply, 1)
@@ -53,7 +57,7 @@ async def test_author_rechecks_stem_after_gate(tmp_path, monkeypatch, claim):
     monkeypatch.setattr(author, "start_state", lambda *args, **kwargs: "draft")
     checkout = SimpleNamespace(
         repo=tmp_path,
-        git=SimpleNamespace(ls_files=AsyncMock(return_value=[]), commit=commit),
+        git=SimpleNamespace(ls_files=AsyncMock(return_value=[]), commit_edit=commit_edit),
         fs=LocalFileSystem(),
         journal=FakeJournal(),
         config=SimpleNamespace(state_dir=tmp_path, review=SimpleNamespace(coverage_map=None), routing_default_tier="medium"),

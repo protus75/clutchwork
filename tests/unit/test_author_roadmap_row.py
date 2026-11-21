@@ -5,8 +5,8 @@
 # purpose: Roadmap message and Author policy coverage.
 # relates: [clutch/author.py, clutch/box.py, clutch/config.py, clutch/policy.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 93253297
-# hash: 654a807a8afc80ede8dd3d23159b5b741ebfc7a52d5f8e26dcbcb6617a010595
+# verified: d3624866
+# hash: daccc3febaadd17293cab3f565574f593e22eff167adb9446ebb58f10fabd637
 
 from types import SimpleNamespace
 
@@ -163,6 +163,10 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
         commits.append(only)
         return "sha"
 
+    async def commit_edit(repo, msg, *, only, edit):
+        await edit()
+        return await commit(repo, msg, only=only)
+
     async def run(stage, *args, **kwargs):
         reply = author.AuthorReply(stem="sample-row", ticket="ticket")
         await stage.review(reply, 1)
@@ -188,7 +192,7 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
     monkeypatch.setattr(author, "resolve_baseline", lambda *args, **kwargs: SimpleNamespace(binds=False))
     checkout = SimpleNamespace(
         repo=tmp_path,
-        git=SimpleNamespace(ls_files=ls_files, _run=git_run, commit=commit),
+        git=SimpleNamespace(ls_files=ls_files, _run=git_run, commit_edit=commit_edit),
         fs=LocalFileSystem(),
         journal=FakeJournal(),
         config=SimpleNamespace(

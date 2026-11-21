@@ -16,7 +16,7 @@ from clutch.baseline import resolve_baseline
 from clutch.box import BOX_DIR, Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
 from clutch.driver import Driver, LlmStage, unwrap_fence
 from clutch.gates import GateReport
-from clutch.git import GitError
+from clutch.git import GitError, NothingToCommit, blob_sha
 from clutch.inbox import CAPS, bounded, report_data
 from clutch.journal import EventType
 from clutch.policy import policy_row, start_state
@@ -123,6 +123,7 @@ class AuthorGate:
         self.message_class = message_class
         self.message: Message | None = None
         self.copied: dict[str, list[str]] = {}
+        self.copied_bytes: dict[str, bytes] = {}
         self.passed_stems: set[str] = set()
         self._remove = remove
 
@@ -132,6 +133,8 @@ class AuthorGate:
             directory = self.checkout.repo / "tickets" / stem
             if directory.exists():
                 self._remove(directory)
+            for path in self.copied[stem]:
+                self.copied_bytes.pop(path, None)
             del self.copied[stem]
 
     def check(self, artifact: BaseModel, workspace: Path) -> GateReport:
@@ -158,10 +161,13 @@ class AuthorGate:
                         data = bounded(self.checkout.config.state_dir / BOX_DIR, source, kind)
                         target = f"tickets/{artifact.stem}/evidence/" + ("replay.json" if kind == "replay" else "log.txt")
                         self.checkout.fs.write(self.checkout.repo / target, data)
+                        self.copied_bytes[target] = data
                         if target not in paths:
                             paths.append(target)
                 report_path = f"tickets/{artifact.stem}/evidence/report.json"
-                self.checkout.fs.write(self.checkout.repo / report_path, message.report.report.model_dump_json().encode())
+                data = message.report.report.model_dump_json().encode()
+                self.checkout.fs.write(self.checkout.repo / report_path, data)
+                self.copied_bytes[report_path] = data
                 if report_path not in paths:
                     paths.append(report_path)
             candidate = artifact.ticket
@@ -278,11 +284,14 @@ async def list_open_tickets(checkout: Checkout) -> str:
     return "\n".join(lines)
 
 
-async def commit_record(checkout: Checkout, driver: Driver, record_id: str) -> None:
+async def commit_record(checkout: Checkout, driver: Driver, record_id: str, data: bytes) -> None:
     path = record_path(record_id)
 
+    async def edit() -> None:
+        checkout.fs.write(checkout.repo / path, data)
+
     async def commit() -> None:
-        await checkout.git.commit(checkout.repo, f"clutch(decisions): {record_id}", only=[str(path)])
+        await checkout.git.commit_edit(checkout.repo, f"clutch(decisions): {record_id}", only=[str(path)], edit=edit)
 
     await driver.effects.run(commit, key=f"ticket-plane/decisions/{record_id}", ticket=None)
 
@@ -291,8 +300,7 @@ async def failure_declined(checkout: Checkout, driver: Driver, box: Box, message
     record_id = f"declined-{message.id}"
     record = DecisionRecord(id=record_id, kind="declined", link=message.id, reopen_after_days=30)
     body = f"Author could not produce a ticket.\n\nEvidence: {evidence}\n"
-    checkout.fs.write(checkout.repo / record_path(record_id), render_record(record, body).encode())
-    await commit_record(checkout, driver, record_id)
+    await commit_record(checkout, driver, record_id, render_record(record, body).encode())
     box.resolve(message.id, Resolution(kind="declined", link=record_id))
     return AuthorOutcome(declined=record_id)
 
@@ -501,35 +509,63 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
     text = reviewed_text
     path = ticket_path(reply.stem)
 
-    async def commit() -> str:
-        paths = [path, *author_gate.copied.get(reply.stem, [])]
-        if roadmap is not None:
-            evidence = await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"tickets/{reply.stem}/evidence/")
-            paths.extend(p for p in evidence.split("\0") if p)
-        return await checkout.git.commit(checkout.repo, f"clutch({reply.stem}): ticket", only=paths)
+    paths = [path, *author_gate.copied.get(reply.stem, [])]
+    prior: dict[str, bytes | None] = {}
+    published: dict[str, bytes] = {}
+    copied: dict[str, bytes] = {}
 
-    if (checkout.repo / path).exists() and reply.stem not in author_gate.copied:
-        author_gate.cleanup()
-        return await failure_declined(checkout, driver, box, message, f"stem {reply.stem!r} was claimed since the gate check")
+    async def publish() -> None:
+        target = checkout.repo / path
+        if target.exists() and reply.stem not in author_gate.copied:
+            raise ValueError(f"stem {reply.stem!r} was claimed since the gate check")
+        validate_ticket(reply.stem, text, checkout.repo)
+        prior[path] = target.read_bytes() if target.exists() else None
+        published[path] = text.encode()
+        checkout.fs.write(target, published[path])
+
+    async def commit() -> str:
+        return await checkout.git.commit_edit(checkout.repo, f"clutch({reply.stem}): ticket", only=paths, edit=publish)
+
+    async def compensate() -> None:
+        # A landed commit survives a failed SHA read or Effects completion.
+        for name, output in {**copied, **published}.items():
+            target = checkout.repo / name
+            if not target.exists() or target.read_bytes() != output:
+                continue
+            committed_sha = (await checkout.git._run(checkout.repo, "ls-tree", "--format=%(objectname)", "HEAD", "--", name)).strip()
+            if committed_sha == blob_sha(output):
+                continue
+            before = prior.get(name)
+            if before is None:
+                target.unlink()
+            else:
+                checkout.fs.write(target, before)
+        directory = checkout.repo / "tickets" / reply.stem
+        for folder in (directory / "evidence", directory):
+            if folder.exists() and not any(folder.iterdir()):
+                folder.rmdir()
 
     try:
-        checkout.fs.write(checkout.repo / path, text.encode())
+        # Private evidence preparation must retain publication's failure handling.
+        for name in author_gate.copied.get(reply.stem, []):
+            copied[name] = author_gate.copied_bytes[name]
+            if (checkout.repo / name).read_bytes() != copied[name]:
+                raise ValueError(f"evidence {name!r} changed since the gate check")
+        if roadmap is not None:
+            evidence = await checkout.git._run(checkout.repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"tickets/{reply.stem}/evidence/")
+            paths.extend(p for p in evidence.split("\0") if p and p not in paths)
         sha = await driver.effects.run(commit, key=f"ticket-plane/{reply.stem}/author", ticket=None)
     except BaseException as exc:
-        if reply.stem in author_gate.copied:
-            paths = [path, *author_gate.copied[reply.stem]]
-            # Restore from HEAD: remove new index entries, but retain a commit
-            # that landed before the Effects completion or SHA read failed.
-            indexed = set(await checkout.git.ls_files(checkout.repo))
-            staged = [p for p in paths if p in indexed]
-            if staged:
-                await checkout.git.restore(checkout.repo, staged, source="HEAD")
+        # Gate output identifies owned bytes even when snapshot reads fail.
+        for name in author_gate.copied.get(reply.stem, []):
+            if name not in copied:
+                copied[name] = author_gate.copied_bytes[name]
+        if copied or published:
             try:
-                await checkout.git.rev_parse(checkout.repo, f"HEAD:{path}")
-            except GitError:
-                author_gate.cleanup()
-            else:
-                author_gate.copied.clear()
+                await checkout.git.commit_edit(checkout.repo, f"clutch({reply.stem}): compensate author", only=paths, edit=compensate)
+            except NothingToCommit:
+                pass
+        author_gate.copied.clear()
         if not isinstance(exc, Exception):
             raise
         return await failure_declined(checkout, driver, box, message, f"commit failed: {type(exc).__name__}: {exc}")

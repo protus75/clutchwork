@@ -5,8 +5,8 @@
 # purpose: Author integration: triage drives the one ticket-plane authoring path.
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: bce07f02
-# hash: cd6ef25cc6d4bc6f77b78f4f4ad9882112c3c1db81a462f77f851dbcc611669c
+# verified: d3624866
+# hash: 5d19b42c0626877430ac247dd51c746c72db1a6f11acb9e509a202cb7d262562
 
 import asyncio
 import json
@@ -309,7 +309,7 @@ def test_report_failed_publication_cleans_candidate(tmp_path, monkeypatch, failu
     arrival(root)
     config = root / "config.yaml"
     config.write_text(config.read_text() + "report_inbox: inbox\n")
-    write, commit = LocalFileSystem.write, Git.commit
+    write, commit = LocalFileSystem.write, Git._commit
 
     def writing(self, path, data):
         target = root / "tickets/failed/evidence/log.txt" if failure == "copy" else root / "tickets/failed/ticket.md"
@@ -323,7 +323,7 @@ def test_report_failed_publication_cleans_candidate(tmp_path, monkeypatch, failu
         return await commit(self, repo, message, **kwargs)
 
     monkeypatch.setattr(LocalFileSystem, "write", writing)
-    monkeypatch.setattr(Git, "commit", committing)
+    monkeypatch.setattr(Git, "_commit", committing)
     candidates = [bug_reply("failed")] * 7 if failure == "copy" else [bug_reply("failed"), requisition_reply("approve")]
     assert _run(root, monkeypatch, FakeLLM([reply("author"), *candidates])) == 0
     assert not (root / "tickets/failed").exists()

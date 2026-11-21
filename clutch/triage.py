@@ -70,8 +70,7 @@ async def _record(
     record_id = f"{kind}-{message_id}"
     assert reply.reopen_after_days is not None
     record = DecisionRecord(id=record_id, kind=kind, link=link, reopen_after_days=reply.reopen_after_days)
-    checkout.fs.write(checkout.repo / record_path(record_id), render_record(record, _body(reply, message_id, raw_summary)).encode())
-    await commit_record(checkout, driver, record_id)
+    await commit_record(checkout, driver, record_id, render_record(record, _body(reply, message_id, raw_summary)).encode())
     box.resolve(message_id, Resolution(kind=kind, link=record_id))
     return f"{message_id}: {kind} -> {record_id}"
 
@@ -240,7 +239,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
         existing = next((r for r, _ in registry if r.id in {f"declined-{message.id}", f"tombstone-{message.id}"}), None)
         if existing is not None:
             if not await committed(checkout, record_path(existing.id)):
-                await commit_record(checkout, driver, existing.id)
+                await commit_record(checkout, driver, existing.id, (checkout.repo / record_path(existing.id)).read_bytes())
             box.resolve(message.id, Resolution(kind=existing.kind, link=existing.id))
             lines.append((message.id, f"{message.id}: {existing.kind} -> {existing.id}"))
             continue
