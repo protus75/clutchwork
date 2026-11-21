@@ -32,7 +32,7 @@ kind: feature
 ## Scope in / Scope out
 Scope in:
 - clutch/__main__.py `handle_meta`: for `refresh`, wrap `execute()` in `async with CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep):` instead of `_locked(...)`; `fill` keeps `_locked`. In `_parser`, the meta subcommand help `lock=` text becomes `"Commit lock only."` for refresh, `"Writer lock."` for fill and `"None."` for check.
-- clutch/docs/host-running.md `meta refresh` row: replace "under the writer lock" with "under the commit lock; runs while an engine is live".
+- clutch/docs/host-running.md `meta refresh` row: change its "Works while serve runs?" cell from `No` to `Yes`, and replace "under the writer lock" with "under the commit lock".
 - docs/how-clutch-works.md section 2 `meta refresh [paths]` row: change its lock column from `yes` to `commit only`, matching the `ticket review` row.
 - New tests/integration/test_meta_refresh_commit_lock.py.
 Scope out:
@@ -49,6 +49,7 @@ Scope out:
 1. `./dev.py test tests/integration/test_meta_refresh_commit_lock.py` proves that with the writer lock held by another `Lockfile` holder in the same state dir, `main(["meta", "refresh", <file>])` in a temporary repo exits 0 and rewrites the file's metadata block, not exit 2 with a lock-held refusal.
 2. `./dev.py test tests/integration/test_meta_refresh_commit_lock.py` proves that with the writer lock held, `main(["meta", "fill", ...])` still exits 2 naming the lock holder, so fill keeps the writer lock.
 3. `./dev.py test tests/unit/test_main_help.py` passes with the per-subcommand lock text.
+4. In `clutch/docs/host-running.md` (a one-time review check) the `meta refresh` row reads `| `meta refresh` | Yes | ... under the commit lock. |` and the `meta fill` row is unchanged.
 
 ## Verification
 ```
