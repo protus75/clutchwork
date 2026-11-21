@@ -1,0 +1,12 @@
+Observed 2026-11-21 (UTC) on /home/djp/source/clutch with serve running, config.yaml scheduler.parallel {enabled: true, max_runs: 2}, after serve-polls-block-parallel-runs merged. Found by auditing ticket serve-verdicts-wait-for-runs (second finding), checked against the code.
+
+Mechanism (clutch/serve.py at HEAD f2aaac07):
+- `Serve.intake_snapshot` (lines 287-301) is built from ticket file contents (`self.read(stem)` for every stem), `git status` of `tickets/`, the sha of `main`, and the last journal state of pending stems.
+- `Serve.scan` (303-315): when the snapshot differs from the last one it enters `async with self.mutations():`, which is `admission.exclusive()` (clutch/daemon.py 596-601). `exclusive()` waits until no run holds a slot (`_holding == 0`) and, while it waits, `_acquire_run` (daemon.py 585-588) refuses every new run.
+- `Serve.watch` (317-343): when `scan()` returns a changed ticket set it holds `self.core.admission.exclusive()` ("Hold admission through parsing/publication") around publishing the changed stems to the watcher.
+
+Every commit to main changes the sha of main and, for a ticket-plane commit, a ticket file, so every ticket-plane commit (an operator's `ticket review`, a confirm, a roadmap link or strike commit by the driver) makes the next scan and the next publication wait for every running implementation, and blocks admission of a ready ticket while they wait. The engine log of 2026-11-21 shows ticket-plane and roadmap commits every few minutes, so with max_runs 2 the engine runs one implementation at a time for much of the time.
+
+Relevant existing tests that pin the exclusion: tests/unit/test_admission_parallel_run_set.py `test_watch_publication_excludes_runs`; tests/unit/test_serve_idle_poll.py (scan and watch cases that count entries into mutations() and exclusive()).
+
+Safe-to-rely-on facts (clutch/git.py): `Git.commit` holds `CommitLock` for `update-index` plus `commit --only`; `Git.merge_squash` holds `main_write()` plus `CommitLock`; `Git.main_write()` is the lock that serializes merges into main.
