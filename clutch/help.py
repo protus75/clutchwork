@@ -157,6 +157,14 @@ _add(
 )
 
 _add(
+    "step",
+    {"meta": "Fills file metadata with a read-only model."},
+    "2. Commands",
+    "Check configured files for metadata findings.",
+    "Inspect the filled metadata blocks.",
+)
+
+_add(
     "box",
     {
         "suggestion": "A suggestion proposes work or an idea.",

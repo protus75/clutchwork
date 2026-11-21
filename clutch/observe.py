@@ -62,6 +62,7 @@ from clutch.tickets import (
 WATCH_STATE_GLOB = f"{{journal/*.jsonl,queue.json,{ENGINE_LOG_FILE},box/*.json}}"
 
 STEP_NAMES = {
+    "meta": "Meta",
     "acceptance": "Acceptance",
     "requisition_review": "Requisition",
     "implement": "Implement",

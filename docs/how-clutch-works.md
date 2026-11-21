@@ -50,6 +50,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 |---|---|---|
 | `meta refresh [paths]` | yes | Insert or refresh metadata blocks under configured roots. |
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks. |
+| `meta fill [paths]` | yes | Fill metadata using a read-only model. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection (section 10.3). Read-only. |

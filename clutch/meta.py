@@ -126,6 +126,37 @@ def _files(config, tracked, paths):
                 break
 
 
+def generated(fields, body, path, kind, tracked, sha):
+    """Compute deterministic fields without writing the file."""
+    new = fields is None
+    fields = dict(fields) if fields is not None else dict(schema="clutch.meta/1.0", kind=kind, purpose="", relates=[], owner="", verified="", hash="")
+    fields["relates"] = [p for p in fields["relates"] if p in tracked]
+    generated_relates = not fields["relates"]
+    if generated_relates:
+        fields["relates"] = _relates(body, path, set(tracked))
+    if generated_relates and path.endswith(".py"):
+        # Use the composed block's bounded list when deriving the default owner.
+        _, fields = compose(fields, body, _offset(body, ".py"), ".py", trim=True)
+    if not fields["owner"]:
+        counts = {p: fields["relates"].count(p) for p in fields["relates"]}
+        fields["owner"] = next((p for p, n in counts.items() if n > len(fields["relates"]) / 2), "engine")
+    current_hash = digest(body)
+    if new or fields["hash"] != current_hash:
+        fields["verified"] = sha[:8]
+        fields["hash"] = current_hash
+    return fields, generated_relates
+
+
+def compose(fields, body, offset, suffix, *, trim=False):
+    """Compose a block using the same generated-relates limit for both verbs."""
+    fields = dict(fields)
+    fields["relates"] = list(fields["relates"])
+    if trim and suffix == ".py":
+        while len("# relates: [" + ", ".join(fields["relates"]) + "]") > 160:
+            fields["relates"].pop()
+    return body[:offset] + _render(fields, suffix) + body[offset:], fields
+
+
 def refresh(config, root, fs, tracked, sha, paths=()):
     changed, malformed = [], []
     for path, kind in _files(config, tracked, paths):
@@ -136,23 +167,8 @@ def refresh(config, root, fs, tracked, sha, paths=()):
         except Malformed:
             malformed.append(path)
             continue
-        new = fields is None
-        if new:
-            fields = dict(schema="clutch.meta/1.0", kind=kind, purpose="", relates=[], owner="", verified="", hash="")
-        fields["relates"] = [p for p in fields["relates"] if p in tracked]
-        if not fields["relates"]:
-            fields["relates"] = _relates(body, path, set(tracked))
-            if suffix == ".py":
-                while len("# relates: [" + ", ".join(fields["relates"]) + "]") > 160:
-                    fields["relates"].pop()
-        if not fields["owner"]:
-            counts = {p: fields["relates"].count(p) for p in fields["relates"]}
-            fields["owner"] = next((p for p, n in counts.items() if n > len(fields["relates"]) / 2), "engine")
-        current_hash = digest(body)
-        if new or fields["hash"] != current_hash:
-            fields["verified"] = sha[:8]
-            fields["hash"] = current_hash
-        result = body[:offset] + _render(fields, suffix) + body[offset:]
+        fields, generated_relates = generated(fields, body, path, kind, tracked, sha)
+        result, _ = compose(fields, body, offset, suffix, trim=generated_relates)
         if result != text:
             fs.write(root / path, result.encode())
             changed.append(path)

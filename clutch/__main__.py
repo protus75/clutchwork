@@ -606,20 +606,20 @@ def _parser() -> argparse.ArgumentParser:
     meta_parser = sub.add_parser(
         "meta",
         help="maintain file metadata",
-        description="Maintain metadata on configured files.",
-        epilog="Examples:\nclutch meta check\n  Check configured files.",
+        description="Maintain metadata on configured files. Subcommands: refresh, check, fill.",
+        epilog="Examples:\nclutch meta check\n  Check configured files.\nclutch meta fill tests/\n  Fill metadata.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     meta_sub = meta_parser.add_subparsers(dest="meta_verb", required=True)
-    for verb in ("refresh", "check"):
+    for verb in ("refresh", "check", "fill"):
         command = _command(
             meta_sub,
             verb,
             summary=f"{verb} file metadata",
             does=f"{verb.capitalize()} metadata on configured files.",
             reads="Config, tracked files and HEAD.",
-            writes="Metadata blocks." if verb == "refresh" else "Nothing; prints findings.",
-            lock="Writer lock." if verb == "refresh" else "None.",
+            writes="Metadata blocks." if verb in ("refresh", "fill") else "Nothing; prints findings.",
+            lock="Writer lock." if verb in ("refresh", "fill") else "None.",
             exits="0 on success; 1 for findings; 2 on refusal.",
             examples=[f"clutch meta {verb} tests/"],
         )
@@ -1088,7 +1088,7 @@ def _parser() -> argparse.ArgumentParser:
     return ap
 
 
-def _run_meta(verb, config, root, fs, tracked, sha, paths=()):
+async def _run_meta(verb, config, root, fs, tracked, sha, paths=(), ask=None):
     from clutch import meta
 
     if verb == "refresh":
@@ -1098,6 +1098,18 @@ def _run_meta(verb, config, root, fs, tracked, sha, paths=()):
         for path in malformed:
             _fail("meta refresh", f"{path}: malformed -- fix or remove the block so it has schema plus the six keys with a valid kind, then rerun clutch meta refresh")
         return 2 if malformed else 0
+    if verb == "fill":
+        from clutch import metafill
+        from clutch.runner import SPECS_DIR
+        from clutch.specs import load_spec
+
+        spec = load_spec((SPECS_DIR / "meta.md").read_text())
+        changed, rejected = await metafill.fill(config, root, fs, tracked, sha, spec, ask, paths)
+        for path in changed:
+            print(path)
+        for path, reason in rejected:
+            _fail("meta fill", f"{path}: {reason}")
+        return 2 if any(reason in ("malformed", "infra_error", "timeout", "render_over_bound") for _, reason in rejected) else 1 if rejected else 0
     findings = meta.check(config, root, fs, tracked, sha, paths)
     for path, reason in findings:
         print(f"{path}: {reason}")
@@ -1464,10 +1476,25 @@ def main(
             async def execute():
                 files = await checkout.git.ls_files(repo)
                 sha = await checkout.git.rev_parse(repo, "HEAD")
-                return _run_meta(args.meta_verb, config, repo, checkout.fs, files, sha, args.paths)
+                if args.meta_verb == "fill":
+                    from clutch import metafill
+                    from clutch.driver import Driver
+                    from clutch.runner import SPECS_DIR
+                    from clutch.specs import load_spec
 
-            if args.meta_verb == "refresh":
-                async with _locked(config.state_dir, "meta refresh", instance_id=await checkout.git.describe(repo), clock=clock):
+                    session = build_control(checkout).providers
+                    try:
+                        llm = await _preflighted_llm(checkout, session)
+                        driver = Driver.from_config(config, journal=checkout.journal, llm=llm, env=env, clock=clock, sleep=checkout.sleep, fs=checkout.fs)
+                        spec = load_spec((SPECS_DIR / "meta.md").read_text())
+                        ask = metafill.make_ask(driver, spec, repo, len(checkout.journal.read()))
+                        return await _run_meta(args.meta_verb, config, repo, checkout.fs, files, sha, args.paths, ask)
+                    finally:
+                        await session.close()
+                return await _run_meta(args.meta_verb, config, repo, checkout.fs, files, sha, args.paths)
+
+            if args.meta_verb in ("refresh", "fill"):
+                async with _locked(config.state_dir, f"meta {args.meta_verb}", instance_id=await checkout.git.describe(repo), clock=clock):
                     return await execute()
             return await execute()
 
