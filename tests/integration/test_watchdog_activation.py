@@ -5,8 +5,8 @@
 # purpose: Watchdog evidence through the CLI core, serving graph, and actual eval callers.
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/providers.py, clutch/requisition.py, clutch/runner.py]
 # owner: engine
-# verified: 96e46658
-# hash: 4f693435bc46e1686c02faf292196372e072d6a11bebf83299b1179c42c9859c
+# verified: 5e952a0e
+# hash: 030b9956eb90f7d5139fe3f45d2f443ff804046775e44be4bd2d5853052ae5f3
 
 import asyncio
 import json
@@ -30,6 +30,7 @@ from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_providers import CONFIG, PythonProviderExec, claude_ok
 from tests.integration.test_requisition import TICKET
 from tests.integration.test_scheduler import text, turn
+from tests.spool_captures import list_captures
 
 SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 WATCH_CONFIG = CONFIG.replace(
@@ -158,7 +159,7 @@ async def test_every_production_driver_surface_is_watched(tmp_path, monkeypatch)
     assert seen[-1][0].surface == "requisition_review" and seen[-1][1] is calls[0]
     assert seen[-1][0].worktree is None
     assert any(e.key == "llm/author/8/requisition_review/0/1" for e in rig.journal.read())
-    assert (rig.checkout.config.state_dir / "spools/author/8/0/requisition_review/call-01/prompt.md") in rig.fs.files
+    assert (0, "requisition_review/call-01/prompt.md") in list_captures(rig.checkout.config.state_dir, "author/8", fs=rig.fs)
 
     # Provider-cap time is excluded using its existing admission record, without activating Thresh.
     d = calls[0]
@@ -304,7 +305,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
         assert req.ticket == f"baseline-{fixture.name}" and req.worktree is None
         assert (d.expected_seconds, d.stuck_seconds, d.observe.fence) == (600, 1200, ())
         assert any(e.key == f"llm/baseline-{fixture.name}/0/review/{attempt}/1" for e in rig.journal.read())
-        assert rig.checkout.config.state_dir / f"spools/baseline-{fixture.name}/{attempt}/review/call-01/prompt.md" in rig.fs.files
+        assert (attempt, "review/call-01/prompt.md") in list_captures(rig.checkout.config.state_dir, f"baseline-{fixture.name}", fs=rig.fs)
         assert rig.checkout.config.state_dir / "evidence" / "calls" / quote(f"llm/baseline-{fixture.name}/0/review/{attempt}/1", safe="") / "end.json" in rig.fs.files
         if attempt == 1:
             assert observed[0][1] is observed[1][1]
@@ -332,7 +333,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
         assert req.ticket == f"diagnose-eval-{case.name}" and req.worktree is None
         assert (d.expected_seconds, d.stuck_seconds, d.observe.fence) == (budget / 2, budget, ())
         assert any(e.key == f"llm/diagnose-eval-{case.name}/0/diagnose/1/1" for e in rig.journal.read())
-        assert rig.checkout.config.state_dir / f"spools/diagnose-eval-{case.name}/1/diagnose/call-01/prompt.md" in rig.fs.files
+        assert (1, "diagnose/call-01/prompt.md") in list_captures(rig.checkout.config.state_dir, f"diagnose-eval-{case.name}", fs=rig.fs)
 
     # Actual eval entry points keep their unchanged hard timeout even for silent calibration calls.
     for mode, budget in (("baseline", 1200), ("diagnosis", 400)):
@@ -458,7 +459,9 @@ async def test_production_hard_timeout_group_kill_is_harvested(root, monkeypatch
         with pytest.raises(ProcessLookupError):
             os.kill(process.pgids[-1], 0)
         assert ctx.driver._active is None and ctx.driver.llm._active is None
-        assert not list(ctx.config.state_dir.glob("spools/work/**/output.txt"))
+        captures = list_captures(ctx.config.state_dir, "work", 0, fs=ctx.fs)
+        assert (0, "implement/call-01/prompt.md") in captures
+        assert not any(name.endswith("output.txt") for _, name in captures)
     finally:
         await finish(rig, run)
         if writer is not None:

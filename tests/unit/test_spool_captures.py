@@ -4,8 +4,8 @@
 # purpose: Test the spool capture helper against the production writer.
 # relates: [clutch/driver.py, clutch/evidence/store.py, tests/spool_captures.py]
 # owner: engine
-# verified: e3a6f154
-# hash: da7c9d383a44b195b6b7d5ade3cb9e30b4751e2f984b6f6d6f5fc1a771bd9d2a
+# verified: 5e952a0e
+# hash: 1034f99dc359c67573b9b15c01c1cc2eb3f1420d6b8f240af92800564d91bfd6
 import pytest
 
 from clutch.driver import Spool
@@ -98,3 +98,109 @@ def test_listing_overlapping_runs(tmp_path, spool):
     assert list_captures(tmp_path, "work") == [(1, "review/x")]
     assert list_captures(tmp_path, "work/1") == [(0, "review/call-01/prompt.md")]
     assert list_captures(tmp_path, "work/2") == [(0, "review/y")]
+
+
+@pytest.fixture
+def fake_fs():
+    from tests.fakes import FakeFileSystem
+
+    return FakeFileSystem()
+
+
+def test_fake_round_trip_and_overwrite(tmp_path, fake_fs):
+    for stem, attempt in [("my-ticket", 0), ("work/1", 2)]:
+        name = "check/verify-01.txt"
+        path = tmp_path / "spools" / stem / str(attempt) / name
+        write_capture(tmp_path, stem, attempt, name, b"old", fs=fake_fs)
+        # Reject a writer using another slot or changing bytes.
+        assert fake_fs.files[path] == b"old"
+        assert read_capture(tmp_path, stem, attempt, name, fs=fake_fs) == b"old"
+        write_capture(tmp_path, stem, attempt, name, b"\x00new\xff", fs=fake_fs)
+        # Reject append-only writes and text decoding.
+        assert fake_fs.files[path] == b"\x00new\xff"
+        assert read_capture(tmp_path, stem, attempt, name, fs=fake_fs) == b"\x00new\xff"
+
+
+def test_fake_read_errors(tmp_path, fake_fs, monkeypatch):
+    # Reject raw FileNotFoundError and treating missing captures as unreadable.
+    with pytest.raises(CaptureNotFound):
+        read_capture(tmp_path, "work", 0, "absent", fs=fake_fs)
+    fake_fs.mkdir(tmp_path / "spools/work/0/dir")
+    with pytest.raises(CaptureNotFound):
+        read_capture(tmp_path, "work", 0, "dir", fs=fake_fs)
+
+    def unreadable(path):
+        raise PermissionError(path)
+
+    monkeypatch.setattr(fake_fs, "read_bytes", unreadable)
+    # Reject leaking other OS errors or translating them to missing.
+    with pytest.raises(CaptureUnreadable):
+        read_capture(tmp_path, "work", 0, "denied", fs=fake_fs)
+
+
+@pytest.mark.parametrize(
+    "stem, attempt, name",
+    [(stem, 0, "x") for stem in ["", "a/b/c", "Work", None, 5, "work/01", "work/x"]]
+    + [("work", attempt, "x") for attempt in [-1, True, "0", 1.0]]
+    + [("work", 0, name) for name in ["", "/a", "run-1/a.txt"]],
+)
+def test_fake_invalid_keys(tmp_path, fake_fs, stem, attempt, name):
+    # Reject bypassing capture_key on any seam branch.
+    with pytest.raises(ValueError):
+        read_capture(tmp_path, stem, attempt, name, fs=fake_fs)
+    with pytest.raises(ValueError):
+        write_capture(tmp_path, stem, attempt, name, b"data", fs=fake_fs)
+    if name == "x":
+        with pytest.raises(ValueError):
+            list_captures(tmp_path, stem, attempt, fs=fake_fs)
+    # Reject filesystem access that creates files or directories before validation.
+    assert fake_fs.files == {}
+    assert fake_fs.directories == set()
+
+
+def test_fake_non_bytes(tmp_path, fake_fs):
+    with pytest.raises(ValueError):
+        write_capture(tmp_path, "work", 0, "x", "text", fs=fake_fs)
+    # Reject storing text or creating parents before data validation.
+    assert fake_fs.files == {}
+    assert fake_fs.directories == set()
+
+
+def test_fake_listing_matches_disk(tmp_path, fake_fs):
+    writers = [Spool(tmp_path / "spools", Redactor({}), fs) for fs in (fake_fs, LocalFileSystem())]
+    for writer in writers:
+        for attempt, name in [(2, "a/x.txt"), (0, "b.txt"), (0, "a/x.txt"), (0, "run-1/invalid"), (0, "bad name")]:
+            writer.write("item", attempt, name, "data")
+        writer.write("work", 1, "review/x", "base")
+        writer.write("work/1", 0, "review/call-01/prompt.md", "first")
+        writer.write("work/2", 0, "review/y", "second")
+    for fs in (fake_fs, LocalFileSystem()):
+        fs.mkdir(tmp_path / "spools/item/nope")
+        fs.write(tmp_path / "spools/item/nope/x.txt", b"not an attempt")
+        fs.mkdir(tmp_path / "spools/item/0/empty")
+        fs.write(tmp_path / "spools/item/٠/a.txt", b"non-ASCII attempt")
+    # Reject empty, unsorted, unfiltered, or cross-run listings; each expected
+    # row has a distinct attempt/name and the disk writer supplies an oracle.
+    for stem, attempt in [("item", None), ("item", 2), ("item", 3), ("missing", None), ("work", None), ("work/1", None), ("work/2", None)]:
+        assert list_captures(tmp_path, stem, attempt, fs=fake_fs) == list_captures(tmp_path, stem, attempt)
+
+
+def test_local_filesystem_matches_default(tmp_path):
+    fs = LocalFileSystem()
+    write_capture(tmp_path, "work/2", 3, "review/out", b"default")
+    # Reject a seam reader deriving another layout.
+    assert read_capture(tmp_path, "work/2", 3, "review/out", fs=fs) == b"default"
+    write_capture(tmp_path, "work/2", 3, "review/out", b"seam", fs=fs)
+    assert read_capture(tmp_path, "work/2", 3, "review/out") == b"seam"
+    # Reject treating NotADirectoryError from entries(file) as an empty listing.
+    assert list_captures(tmp_path, "work/2", fs=fs) == list_captures(tmp_path, "work/2") == [(3, "review/out")]
+
+
+def test_seam_requires_methods(tmp_path):
+    # Reject helper-specific type checks or silently falling back to disk.
+    with pytest.raises(AttributeError):
+        read_capture(tmp_path, "work", 0, "x", fs=object())
+    with pytest.raises(AttributeError):
+        write_capture(tmp_path, "work", 0, "x", b"data", fs=object())
+    with pytest.raises(AttributeError):
+        list_captures(tmp_path, "work", fs=object())
