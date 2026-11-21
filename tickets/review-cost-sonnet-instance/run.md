@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The full integration suite passed 3,575 tests; lint, format, and the final ticket verification passed. The coverage gate was skipped because neither changed file is measured. Explicit routes are the minimum change; the separate policy and context changes remain outside this ticket.
+The configuration already contained both requested Sonnet routes. The final ticket verification passed all 12 cases; the integration suite passed 3,585 tests, and lint and format checks passed. The coverage gate was skipped because the diff changes no measured production file.
 
 ## Dead ends
 
-Metadata fill initially skipped the untracked test; staging it allowed the generated header to be added.
+none
 
 ## Second problems filed
 
-- box-000946-dcc58924: Metadata checks report existing missing, drifted, or empty-purpose headers in unrelated files; neither changed file is reported.
+- box-000949-86acd30a: The metadata check reported existing findings on files outside the ticket fence; it reported none on the added test.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ Metadata fill initially skipped the untracked test; staging it allowed the gener
 
 ## Predicted vs actual
 
-Expected 5 minutes; completed within that budget.
+The ticket budget was 5 minutes; the work completed within that budget.
 
