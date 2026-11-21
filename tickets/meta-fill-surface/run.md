@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Preserved refresh behavior for existing long Python relates lists while applying the length limit to model-supplied lists.
+Kept existing nonempty relates unchanged during refresh; model-supplied Python relates use the shared length trim. The simpler approach of writing generated blocks before asking the model was rejected because invalid replies must leave files byte-identical.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 25 minutes; elapsed time was not measured.
+none
 
