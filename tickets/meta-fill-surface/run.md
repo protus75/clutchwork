@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-All three verification commands and hard host checks passed: 1,500 unit tests, 3,529 integration tests, coverage, lint and format; 74 mutation checks confirmed regression protection. Working tree is clean.
+Preserved refresh behavior for existing long Python relates lists while applying the length limit to model-supplied lists.
 
 ## Dead ends
 
-Calling refresh before model validation was rejected because rejected files must remain byte-identical; generated fields stay in memory instead.
+none
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6.1-terra
 - spec: implement 2.21
 
 ## Predicted vs actual
 
-Expected 25 minutes; completed in approximately 13 minutes.
+The ticket budget was 25 minutes; elapsed time was not measured.
 
