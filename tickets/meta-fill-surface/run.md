@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Kept existing nonempty relates unchanged during refresh; model-supplied Python relates use the shared length trim. The simpler approach of writing generated blocks before asking the model was rejected because invalid replies must leave files byte-identical.
+The shared composition helper also determines the trimmed relationship list before refresh derives its default owner. All ticket verification commands and host checks passed.
 
 ## Dead ends
 
-none
+Refreshing files before validating model replies was rejected because it could change a rejected file.
 
 ## Second problems filed
 
