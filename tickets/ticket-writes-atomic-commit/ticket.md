@@ -49,6 +49,7 @@ Scope in:
 - The reusable review provenance sibling touches review_candidate and verdict metadata. This ticket changes only final commit() publication closures in Author and publish()/restore_publication() in apply_rework, plus decision-record publication; it leaves review_candidate and every review_ticket/review_with_identity argument and returned provenance untouched. Runs before names the preferred order without depending on that sibling's code; both orders preserve its approval-recording criteria.
 - Migrate Author's final ticket write and ticket commit, its decision-record write/commit, and daemon.apply_rework publication and compensation through the same owner. Prepare model output and private evidence before entering; hold no lock across Author/requisition model calls. Preserve existing failure compensation and exact reviewed-byte checks. Read-only preparation is not a replacement for protected final read/validate/write.
 - In clutch/tickets.py::intake, wrap its existing entire async with git._commit_lock body in async with git.main_write(), so intake takes main_write then commit.lock around status/read/validation/stamp/_commit. Add an explicit intake-order test in test_ticket_write_serialization.py; preserve the existing commit-lock span. Do not nest the new helper inside intake. Merge squash already takes main_write then commit.lock and remains unchanged.
+- The intake lock-order change reaches the hand-built Git stand-ins in tests/unit/test_git_commit.py (around line 82 and line 124), tests/unit/test_intake_plan.py (FakeGit, around line 27) and tests/unit/test_menu_admission.py (around line 262), which define _commit_lock but no main_write. Give each stand-in a fake main_write async context manager and keep their assertions unchanged.
 - Inventory the engine-owned ticket.md stamp/write/commit sites in the run record and name the canonical owner covering each. This is a one-time accounting of these evidenced consumers, not a new lint/enforcement system. Preserve artifact-only writes in independent ticket worktrees.
 - In each edit callback, use filesystem reads/writes/removes and read-only _run/rev_parse only. In daemon.apply_rework compensation, replace the existing add/restore/commit sequence with commit_edit whose callback restores pre-publication bytes (or removes an owned new file) after checking current bytes still equal this publication's output; do not call add, restore or commit inside the callback. Ignore only NothingToCommit when restoration leaves no Git delta. Preserve another writer's later bytes rather than undo them. Author failure compensation follows the same owner and owned-byte check. Add test_callback_never_reenters_writer_lock to test_ticket_write_consumers.py using a non-reentrant fake lock that raises on recursive acquire, exercising success, partial publication and compensation.
 - Unit tests use in-memory fake lock objects, fake process exec and injected filesystem operations or tmp_path, not real fcntl or repository files. Real flock, real Git and committed-fixture races belong only in tests/integration/test_ticket_write_serialization.py.
@@ -72,9 +73,11 @@ Scope out:
 - tests/unit/test_verdict_extension.py
 - tests/unit/test_reject_reason_paths.py
 - tests/integration/test_author.py
-
 - tests/unit/test_author_roadmap_row.py
 - tests/unit/test_key_scope.py
+- tests/unit/test_git_commit.py
+- tests/unit/test_intake_plan.py
+- tests/unit/test_menu_admission.py
 - tests/integration/test_ladder.py
 - tests/integration/test_drain.py
 - tests/integration/test_daemon_composition.py
@@ -87,7 +90,7 @@ Scope out:
 
 ## Verification
 ```
-./dev.py test tests/unit/test_git_commit_edit.py tests/unit/test_ticket_write_consumers.py tests/integration/test_ticket_write_serialization.py tests/unit/test_commit_lock.py tests/unit/test_verdict_menu_parity.py tests/unit/test_verdict_extension.py tests/unit/test_reject_reason_paths.py tests/integration/test_author.py tests/unit/test_author_roadmap_row.py tests/unit/test_key_scope.py tests/integration/test_ladder.py tests/integration/test_drain.py tests/integration/test_daemon_composition.py
+./dev.py test tests/unit/test_git_commit_edit.py tests/unit/test_ticket_write_consumers.py tests/integration/test_ticket_write_serialization.py tests/unit/test_commit_lock.py tests/unit/test_verdict_menu_parity.py tests/unit/test_verdict_extension.py tests/unit/test_reject_reason_paths.py tests/integration/test_author.py tests/unit/test_author_roadmap_row.py tests/unit/test_key_scope.py tests/unit/test_git_commit.py tests/unit/test_intake_plan.py tests/unit/test_menu_admission.py tests/integration/test_ladder.py tests/integration/test_drain.py tests/integration/test_daemon_composition.py
 ```
 
 ## Definition of rejected
