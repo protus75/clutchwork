@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "eb73db6f1b8295a825ba15a99676e5b10c094bbf",
+  "produced_at_sha": "7320b75a56a1614883cd1cb5180896949e7cbb73",
   "stem": "serve-polls-block-parallel-runs",
-  "attempt": 1,
-  "terminal": "incomplete",
-  "stage": "implement",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "retry",
   "lessons": [
-    "Attempt 1 quit after 63s with no diff, against a 30m estimate. Redo all of it: the work checks for scan, watch, merge and box_intake in clutch/serve.py, the section 7.2 sentence in docs/how-clutch-works.md, and the 3 new test files. Run the Verification command before reporting.",
-    "Fix for the dead end: record the scan snapshot after intake finishes, still inside mutations(). It covers the tickets/ listing and mtimes, git status of tickets/, main HEAD sha, and last_states of pending stems. Then intake's own writes and commits do not trigger the next poll.",
-    "Watch loop: skip the admission.exclusive() gate at clutch/serve.py line 297 when scan found no change. Compare only owner.responses, owner.scan and owner.core, so test_watch_publication_excludes_runs in tests/unit/test_admission_parallel_run_set.py passes unchanged.",
-    "Merge work check must match settle_admissions (clutch/control.py lines 310-323): accepted confirm/reject, hold_id none, no completed ticket-plane effect. Pending items in a paused queue (clutch/mergequeue.py line 127) are not work. Run check_upgrade outside mutations(), after the queue is None",
-    "box_intake: retry a failed unconsumed arrival at most once per 30s of the injected clock, and count box.recover() work. tests/regress_serve_parallel_admission.py must print defect and exit non-zero on the merge base: hold one slot, run an idle poll, and assert a second run is admitted."
+    "The only failure was the format gate: `ruff format --check .` flagged a trailing space after the empty `# purpose:` header on line 5 of all three new test files. Tests, regression and verification already passed.",
+    "Fill in a real one-line `# purpose:` value in the headers of tests/unit/test_serve_idle_poll.py, tests/integration/test_serve_parallel_admission.py and tests/regress_serve_parallel_admission.py, and leave no trailing whitespace.",
+    "Before committing, run `uv run ruff format --check .` and `uv run ruff format` on the fenced files, then confirm the check exits 0. The run record claimed formatting passed, but it was checked before the final header edits.",
+    "Redo the approach review found sound: check each poll's work condition without a lock before calling mutations(), skip the watch gate when current == previous, run check_upgrade outside mutations(), and treat an accepted confirm/reject control_decision with no completed effect as merge work. Leave"
   ],
   "mechanical": null,
   "trimmed_lessons": [
