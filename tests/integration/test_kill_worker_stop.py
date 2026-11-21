@@ -5,8 +5,8 @@
 # purpose: Executor-before-worker ordering and calibrated production dormancy.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: a0d5e388
-# hash: abf3533e0066381e3ccb5b53cd7253e7b66346f391235ecc64f40d61aea2c014
+# verified: 8107f6ac
+# hash: 6c1df2ef477c92a20e999210e457aa3be87956a7c98a5f02de187303d72c2016
 
 import asyncio
 from functools import partial
@@ -81,7 +81,7 @@ async def test_executor_unwinds_before_worker_cancel(tmp_path):
     writer.driver = driver
     timer = Timer()
     driver.sleep = timer
-    peers = [Worker(), Worker()]
+    peers = [Worker(), Worker(), Worker()]
     dispatch_entered, dispatch_cleaning, dispatch_release = (asyncio.Event() for _ in range(3))
 
     async def dispatch():
@@ -92,7 +92,7 @@ async def test_executor_unwinds_before_worker_cancel(tmp_path):
             dispatch_cleaning.set()
             await dispatch_release.wait()
 
-    owner = daemon.DaemonTasks(watcher=dispatch, merge_queue=peers[0].run, box_consumer=peers[1].run)
+    owner = daemon.DaemonTasks(watcher=dispatch, merge_queue=peers[0].run, box_consumer=peers[1].run, verdict_consumer=peers[2].run)
     run = asyncio.create_task(owner.run())
     stop = None
     tasks = ()
@@ -125,7 +125,7 @@ async def test_executor_unwinds_before_worker_cancel(tmp_path):
         await cancelled(run)
         assert owner.tasks == () and all(task.done() for task in tasks)
         assert all(not task._log_traceback for task in tasks)
-        assert [worker.cancellations for worker in peers] == [1, 1]
+        assert [worker.cancellations for worker in peers] == [1, 1, 1]
         assert driver.journal.read() == rig.journal.read() == before
         names = [name for _, name in list_captures(state, "t-echo", 1)]
         assert "implement/call-01/prompt.md" in names

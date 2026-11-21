@@ -5,8 +5,8 @@
 # purpose: Consumer ownership, serve activation, and preserved bootstrap dormancy.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/daemon.py, clutch/journal.py, clutch/mergequeue.py, clutch/runner.py, clutch/triage.py]
 # owner: engine
-# verified: 148a8874
-# hash: fb6c1939b19e9d50cdee304095738ec6f7472c471d551f77c0440c863380364f
+# verified: 8107f6ac
+# hash: 6e7c7328f723e4fb0763bf70832d17e7cda7948eb28dd920b9c8fa5f35e93abd
 
 import asyncio
 import gc
@@ -29,12 +29,12 @@ from tests.integration.test_scheduler import turn
 
 class Consumers:
     def __init__(self):
-        self.entered = [asyncio.Event() for _ in range(3)]
-        self.release = [asyncio.Event() for _ in range(3)]
-        self.cleaning = [asyncio.Event() for _ in range(3)]
+        self.entered = [asyncio.Event() for _ in range(4)]
+        self.release = [asyncio.Event() for _ in range(4)]
+        self.cleaning = [asyncio.Event() for _ in range(4)]
         self.cleaned = []
         self.cleanup_release = asyncio.Event()
-        self.calls = [0, 0, 0]
+        self.calls = [0, 0, 0, 0]
         self.cleanup_errors = {}
 
     def callback(self, index):
@@ -55,7 +55,7 @@ class Consumers:
         return consume
 
     def owner_for(self, first=None):
-        self.owner = DaemonTasks(watcher=first or self.callback(0), merge_queue=self.callback(1), box_consumer=self.callback(2))
+        self.owner = DaemonTasks(watcher=first or self.callback(0), merge_queue=self.callback(1), box_consumer=self.callback(2), verdict_consumer=self.callback(3))
         return self.owner
 
     async def all_entered(self):
@@ -73,29 +73,29 @@ async def test_construction_is_idle():
         raise AssertionError("callback or awaitable created during construction")
 
     before = asyncio.all_tasks()
-    owner = DaemonTasks(watcher=forbidden, merge_queue=forbidden, box_consumer=forbidden)
+    owner = DaemonTasks(watcher=forbidden, merge_queue=forbidden, box_consumer=forbidden, verdict_consumer=forbidden)
     assert owner.tasks == () and asyncio.all_tasks() == before
 
 
 @pytest.mark.asyncio
-async def test_run_owns_three_concurrent_consumers():
+async def test_run_owns_four_concurrent_consumers():
     consumers = Consumers()
     owner = consumers.owner_for()
     run = asyncio.create_task(owner.run())
     await consumers.all_entered()
     tasks = owner.tasks
-    assert len(tasks) == len(set(tasks)) == 3 and run not in tasks
-    assert consumers.calls == [1, 1, 1]
+    assert len(tasks) == len(set(tasks)) == 4 and run not in tasks
+    assert consumers.calls == [1, 1, 1, 1]
     consumers.cleanup_release.set()
-    for index in range(3):
+    for index in range(4):
         consumers.release[index].set()
         await consumers.cleaning[index].wait()
         await turn()
-        if index < 2:
+        if index < 3:
             assert not run.done() and owner.tasks == tasks
             assert not any(task.cancelling() for task in tasks)
     assert await run is None
-    assert consumers.cleaned == [0, 1, 2]
+    assert consumers.cleaned == [0, 1, 2, 3]
     assert_finished(owner, tasks)
 
 
@@ -130,7 +130,7 @@ async def test_consumer_failure_cancels_and_awaits_siblings(failure):
         fail.set()
         await asyncio.gather(*(event.wait() for event in consumers.cleaning[1:]))
         assert not run.done() and owner.tasks == tasks and consumers.cleaned == []
-        assert consumers.calls == [1, 1, 1]
+        assert consumers.calls == [1, 1, 1, 1]
         # A cleanup exception must also be observed, without replacing the original failure.
         consumers.cleanup_release.set()
         with pytest.raises(type(error)) as caught:
@@ -165,7 +165,7 @@ async def test_run_cancellation_awaits_all_cleanup():
     consumers.cleanup_release.set()
     with pytest.raises(asyncio.CancelledError):
         await run
-    assert sorted(consumers.cleaned) == [0, 1, 2]
+    assert sorted(consumers.cleaned) == [0, 1, 2, 3]
     assert all(task.cancelled() for task in tasks)
     assert_finished(owner, tasks)
 
@@ -192,7 +192,7 @@ async def test_watcher_debounce_tasks_do_not_outlive_owner(tmp_path):
     async def wait():
         await asyncio.Event().wait()
 
-    owner = DaemonTasks(watcher=lambda: rig.core.watcher.run(changes()), merge_queue=wait, box_consumer=wait)
+    owner = DaemonTasks(watcher=lambda: rig.core.watcher.run(changes()), merge_queue=wait, box_consumer=wait, verdict_consumer=wait)
     run = asyncio.create_task(owner.run())
     await sleeping.wait()
     tasks = owner.tasks
@@ -248,7 +248,7 @@ async def test_overlapping_run_is_refused_until_cleanup_finishes(ending):
     await cleaning.wait()
     with pytest.raises(ValueError, match="finish or cancel and await the existing"):
         await owner.run()
-    assert consumers.calls == [1, 1, 1] and owner.tasks == tasks
+    assert consumers.calls == [1, 1, 1, 1] and owner.tasks == tasks
     if ending != "success":
         await asyncio.gather(*(event.wait() for event in consumers.cleaning[1:]))
     consumers.cleanup_release.set()
@@ -262,7 +262,7 @@ async def test_overlapping_run_is_refused_until_cleanup_finishes(ending):
     for event in consumers.release:
         event.set()
     assert await owner.run() is None
-    assert consumers.calls == [2, 2, 2] and owner.tasks == ()
+    assert consumers.calls == [2, 2, 2, 2] and owner.tasks == ()
 
 
 @pytest.mark.asyncio
@@ -301,7 +301,7 @@ async def test_merge_results_remain_consumer_owned(admission_context, monkeypatc
     async def watcher():
         return "consumer-owned value"
 
-    owner = DaemonTasks(watcher=watcher, merge_queue=merge_consumer, box_consumer=box_consumer)
+    owner = DaemonTasks(watcher=watcher, merge_queue=merge_consumer, box_consumer=box_consumer, verdict_consumer=watcher)
     assert await owner.run() is None
     assert len(received) == len(handled) == 1 and handled[0] is received[0][0]
     if outcome == "ok":
@@ -320,7 +320,7 @@ def test_background_consumers_are_dormant(root, tmp_path, monkeypatch, verb):
     async def noop():
         pass
 
-    dormant = DaemonTasks(watcher=noop, merge_queue=noop, box_consumer=noop)
+    dormant = DaemonTasks(watcher=noop, merge_queue=noop, box_consumer=noop, verdict_consumer=noop)
 
     async def run_probe(self):
         raise AssertionError("background run wired")
@@ -370,7 +370,7 @@ def test_background_consumers_are_dormant(root, tmp_path, monkeypatch, verb):
     monkeypatch.setattr(DaemonTasks, "__init__", construction_probe)
 
     def deliberately_construct(checkout):
-        DaemonTasks(watcher=noop, merge_queue=noop, box_consumer=noop)
+        DaemonTasks(watcher=noop, merge_queue=noop, box_consumer=noop, verdict_consumer=noop)
 
     with pytest.raises(AssertionError, match="background construction wired"):
         cli.main(argv, cwd=root, env=ENV, clock=Clock(), pipeline=deliberately_construct)
@@ -397,4 +397,4 @@ async def test_background_consumers_are_active_in_serve(root, monkeypatch):
     from tests.integration.serve_rig import activated_graph
 
     rig = await activated_graph(root, monkeypatch)
-    assert len(rig.owner.workers) == 4 and rig.owner.tasks.tasks == ()
+    assert len(rig.owner.workers) == 5 and rig.owner.tasks.tasks == ()

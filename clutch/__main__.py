@@ -1005,7 +1005,7 @@ def _parser() -> argparse.ArgumentParser:
                 if verb == "confirm"
                 else "Named ticket pending edits through intake, then a clutch(<stem>): rejected commit, reject_verdict kill with optional --reason and rejected events and dependent box messages; "
             )
-            + "with drain or serve running, a verdict request to that engine instead.",
+            + "with drain or serve running, submit a verdict request instead. Acceptance is not completion; serve applies ticket verdicts during active Check or model work.",
             lock="Writer lock; publish to a running drain or serve holding it, refuse any other holder.",
             exits="0 when applied or submitted; 1 when the prompt is not answered y; 2 on refusal.",
             examples=[f"clutch ticket {verb} add-widget", f"clutch ticket {verb} --yes add-widget"] + (['clutch ticket reject --yes --reason "scope too wide" add-widget'] if verb == "reject" else []),

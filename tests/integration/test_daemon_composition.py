@@ -5,8 +5,8 @@
 # purpose: Drive the production CLI core through injected delivery, process, filesystem and time seams.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 11213934
-# hash: bbffc4a8b55abb7f3a3bee1816b6b0105c061fd2574d6ff561f9bc61e375d9fc
+# verified: 8107f6ac
+# hash: 392fcacc642b6d87e98e7ed65cf1db74a8b29a0826cb269c5994382ddc01ac9e
 
 import ast
 import asyncio
@@ -171,7 +171,7 @@ async def test_production_watchdog_shares_active_executor(root, monkeypatch):
     try:
         await until(serving, lambda: bool(terminals(serving, "continuous")))
         assert contexts[-1].exec_ is serving.checkout.exec_
-        assert len(serving.owner.workers) == 4 and len(serving.owner.tasks.tasks) == 3
+        assert len(serving.owner.workers) == 5 and len(serving.owner.tasks.tasks) == 4
         assert serving.owner.notifications.compose(serving.checkout.config).exec_ is not contexts[-1].exec_
     finally:
         await finish(serving, run)
@@ -2082,7 +2082,7 @@ async def test_production_serve_graph_is_reachable(root, monkeypatch):
     try:
         await until(rig, owner.ready.is_set)
         assert owner.stopper.workers == owner.observer.workers == owner.workers
-        assert len(owner.tasks.tasks) == 3 and len(owner.workers) == 4
+        assert len(owner.tasks.tasks) == 4 and len(owner.workers) == 5
         assert owner.checkpoint.journal is owner.checkpoint.effects._journal is rig.journal
         assert "clutch.serve" in import_closure(sources())
     finally:

@@ -5,8 +5,8 @@
 # purpose: Verify parallel serve admission and control requests.
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/llm.py, clutch/scheduler.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 89042420
-# hash: cd04ad1c40dbacb2e1d692225152a168f492ba961a8c5e874be3715d090d1bc0
+# verified: 8107f6ac
+# hash: c92b542ba74a74a22331b377b14d9ae947b44c51cef513e148e604b36319ad26
 
 import asyncio
 import json
@@ -135,9 +135,9 @@ async def test_dispatch_consumed_confirm_and_stop(root, monkeypatch):
 
         rig.owner.control.poll = dispatch_consumes
         await until(rig, consumed.is_set)
-        await until(rig, rig.owner.core.admission.exclusive_pending)
-        # Real maintenance must wait for the held implementation.
-        assert "state: draft" in path.read_text()
+        await until(rig, lambda: "state: confirmed" in path.read_text())
+        # The verdict commits while the implementation remains held.
+        assert not release.is_set()
         request(rig, "stop", "stop-held")
         await until(rig, lambda: rig.owner.control.projection.stop_requested)
         release.set()

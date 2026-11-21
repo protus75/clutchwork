@@ -5,8 +5,8 @@
 # purpose: Serve kill integration tests.
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 96e46658
-# hash: c2832ce3b81e9bea62377cfc16cb90f086fbc16589c65338ab2f70660594a674
+# verified: 8107f6ac
+# hash: c2543c399fe7e2a332595082deabb3d213ef2fe2b70e51ad88d5c43603a32b35
 
 import asyncio
 import json
@@ -41,7 +41,7 @@ async def test_serve_worker_failure_and_kill_suppression(root, monkeypatch, endi
         if ending == "cancel":
             raise cancellation
 
-    rig.owner.tasks._consumers = (bad, rig.owner.merge, rig.owner.box_intake)
+    rig.owner.tasks._consumers = (bad, rig.owner.merge, rig.owner.box_intake, rig.owner.verdicts)
     run = asyncio.create_task(rig.owner.run())
     await until(rig, entered.is_set)
     if ending == "kill":
@@ -135,7 +135,7 @@ async def test_serve_kill_unwinds_executor_before_workers(root, monkeypatch):
     request(rig, "kill", "stop-again")
     llm.release.set()
     await finish(rig, run)
-    assert order == ["worker"] * 4 and failures == []
+    assert order == ["worker"] * 5 and failures == []
     assert {e.body["request_id"] for e in rig.journal.read() if e.body.get("kind") == "kill_applied"} == {"stop", "stop-again"}
     assert not terminals(rig, "work")
     assert rig.checkout.config.worktree_root.joinpath("work").exists()

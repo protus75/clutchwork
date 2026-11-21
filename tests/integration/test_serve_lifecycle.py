@@ -5,8 +5,8 @@
 # purpose: Serve lifecycle integration tests.
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
 # owner: engine
-# verified: 96e46658
-# hash: 690c92bb49bd34c750b0ecd15c26aedb70a910209c564ca9c43a9bc529e8072f
+# verified: 8107f6ac
+# hash: 2f32029cbe82bd341b07ac63a45ad6c77416238582dcba993d65ec30ad773dc9
 
 import asyncio
 import json
@@ -90,8 +90,8 @@ async def test_report_consumer_is_sequential(root, monkeypatch):
         await until(rig, heartbeat.exists)
         stamp = heartbeat.stat().st_mtime_ns
         await until(rig, lambda: heartbeat.stat().st_mtime_ns != stamp)
-        assert len(rig.owner.workers) == 4
-        assert len(rig.owner.tasks._consumers) == 3
+        assert len(rig.owner.workers) == 5
+        assert len(rig.owner.tasks._consumers) == 4
         assert {m.summary for m in rig.owner.box.pending()} == {"Observed scoring defect", "Another material defect"}
         assert calls == []
     finally:
@@ -116,7 +116,7 @@ def test_serve_cli_uses_production_composition(root, monkeypatch):
     monkeypatch.setattr(serve.Serve, "run", run)
     monkeypatch.setattr(cli, "_engine_signals", lambda stop: (stop(), lambda: None)[1])
     assert cli.main(["engine", "serve"], cwd=root, env=ENV) == 0
-    assert len(built) == 1 and len(built[0].workers) == 4
+    assert len(built) == 1 and len(built[0].workers) == 5
     assert "clutch.serve" in import_closure(sources())
 
 
@@ -421,3 +421,21 @@ async def test_serve_control_stop_lifecycle_log(root, monkeypatch):
     assert await run == 0
     assert [(e["event"], e["verb"], e["pid"], e.get("outcome")) for e in released] == [("engine_start", "serve", os.getpid(), None), ("engine_stop", "serve", os.getpid(), "stopped")]
     assert all("engine_start" not in str((e.type, e.body)) and "engine_stop" not in str((e.type, e.body)) for e in rig.journal.read())
+
+
+@pytest.mark.asyncio
+async def test_verdict_consumer_failure_is_observed_and_joined(root, monkeypatch):
+    failures = []
+    rig = await graph(root, monkeypatch, failure=failures.append)
+    error = ValueError("verdict worker failed")
+
+    async def failed():
+        raise error
+
+    rig.owner.tasks._consumers = (rig.owner.watch, rig.owner.merge, rig.owner.box_intake, failed)
+    run = asyncio.create_task(rig.owner.run())
+    await until(rig, run.done)
+    assert await run == 1
+    assert failures == [error]
+    assert rig.owner.workers[4].exception() is error
+    assert all(task.done() for task in rig.owner.workers)

@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: ee052b47
-hash: e1258fb1a79bd8eea4c8b1ebc1368af5078103bf3839bf7ee72a06108565091b
+verified: 8107f6ac
+hash: 4760e49bd3f220b34cf6407f4e6b8b03ca49abedb53f7e3ea7f7049379934a38
 -->
 # Running ClutchWork on a host
 
@@ -67,8 +67,8 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket new` | Yes | Create and lint a ticket skeleton. |
 | `ticket order` | Yes | Validate and edit a ticket's priority or runs-before ordering. |
 | `engine run` | No | Intake the named ticket and run it through the pipeline; other pending tickets are left untouched. |
-| `ticket confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. |
-| `ticket reject` | Yes | Intake the named ticket, then apply or publish a reject verdict with an optional `--reason` after interactive confirmation; other pending tickets are left untouched. |
+| `ticket confirm` | Yes | Intake the named ticket, then apply or publish a keep verdict after interactive confirmation; other pending tickets are left untouched. Submission is not applied completion; serve applies ticket verdicts during active Check or model work. |
+| `ticket reject` | Yes | Intake the named ticket, then apply or publish a reject verdict with an optional `--reason` after interactive confirmation; other pending tickets are left untouched. Submission is not applied completion; serve applies ticket verdicts during active Check or model work. |
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 

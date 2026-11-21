@@ -13,7 +13,6 @@ from pathlib import Path
 from clutch import git, roadmap, runner, triage
 from clutch.calibration import calibrate_when_due
 from clutch.config import ConfigError, snapshot_config
-from clutch.control import _ID, decisions
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
 from clutch.effects import Effects
@@ -125,7 +124,7 @@ class Serve:
         self.background: asyncio.Task | None = None
         self.observation: asyncio.Task | None = None
         self.stopper = self.observer = self.checkpoint = None
-        self.responses = tuple(Responsiveness() for _ in range(4))
+        self.responses = tuple(Responsiveness() for _ in range(5))
         self.log = engine_log(checkout.config, Redactor.from_config(checkout.config, checkout.env), checkout.clock)
         self.failure = failure or (lambda exc: self.log.event("worker_failure", error=str(exc)))
         self.notifications = build_notifications(checkout, config_path=config_path, log=self.log)
@@ -212,13 +211,13 @@ class Serve:
         self.core.scheduler.select = self.select
         self.core.admission.resume = self.resume
         self.core.restart.owned = lambda: self.core.admission.occupied() or any(w.continuations for w in self.writers.values())
-        self.tasks = DaemonTasks(watcher=self.watch, merge_queue=self.merge, box_consumer=self.box_intake)
+        self.tasks = DaemonTasks(watcher=self.watch, merge_queue=self.merge, box_consumer=self.box_intake, verdict_consumer=self.verdicts)
         self.heartbeat = HeartbeatCycle(
             heartbeat=Heartbeat(state_dir=checkout.config.state_dir, fs=checkout.fs),
             workers=lambda: self.healthy(0),
             merge_queue=lambda: self.healthy(1),
             box_consumer=lambda: self.healthy(2),
-            watcher=lambda: self.healthy(3),
+            watcher=lambda: self.healthy(3) and self.healthy(4),
         )
 
     def publish(self, ticket: Ticket, text: str) -> None:
@@ -474,21 +473,6 @@ class Serve:
         return result
 
     def merge_work(self) -> bool:
-        """Accepted inbox decisions survive dispatch consuming their request files."""
-        events = self.checkout.journal.read()
-        completed = {e.key for e in events if e.type == EventType.EFFECT_COMPLETION}
-        decided = list(decisions(events))
-        for event in decided:
-            body = event.body
-            if body["decision"] == "accepted" and body["verb"] in ("confirm", "reject") and body["hold_id"] is None:
-                if f"ticket-plane/{body['stem']}/{body['verb']}/{body['request_id']}" not in completed:
-                    return True
-        identities = {e.body["request_id"] for e in decided}
-        try:
-            if any(p.suffix == ".json" and _ID.fullmatch(p.stem) and p.stem not in identities for p in self.control.inbox.files()):
-                return True
-        except OSError:
-            return True
         projection = self.control.projection
         if projection.stop_requested or projection.kill_requested:
             return True
@@ -515,7 +499,6 @@ class Serve:
                 self.control.poll()
                 if self.stopping or self.control.projection.kill_requested:
                     return
-                await self.control.inbox.settle_admissions(self.apply_verdict)
                 if self.queue is None:
                     return
                 self.queue.deliveries = []
@@ -537,6 +520,14 @@ class Serve:
 
         while True:
             await response.wait(poll())
+            await response.wait(self.checkout.sleep(SERVE_POLL_S))
+
+    async def verdicts(self) -> None:
+        response = self.responses[4]
+        while True:
+            self.control.poll()
+            if not self.stopping and not self.control.projection.kill_requested:
+                await response.wait(self.control.inbox.settle_admissions(self.apply_verdict))
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
     def box_work(self) -> bool:
@@ -698,7 +689,7 @@ class Serve:
 
             def bind(tasks):
                 self.workers = (worker, *tasks)
-                self.health_tasks = (worker, tasks[1], tasks[2], tasks[0])
+                self.health_tasks = (worker, tasks[1], tasks[2], tasks[0], tasks[3])
                 self.stopper = WorkerStop(lifecycle_id=self.control.projection.lifecycle_id, abort=self.abort, workers=self.workers)
                 self.observer = WorkerFailureObserver(lifecycle_id=self.control.projection.lifecycle_id, workers=self.workers, projection=lambda: self.control.projection, failure=observed_failure)
                 self.observation = asyncio.create_task(self.observer.observe())

@@ -333,8 +333,15 @@ class StartupBoundary:
 class DaemonTasks:
     """Explicit lifetime owner for background consumers."""
 
-    def __init__(self, *, watcher: Callable[[], Awaitable[object]], merge_queue: Callable[[], Awaitable[object]], box_consumer: Callable[[], Awaitable[object]]) -> None:
-        self._consumers = (watcher, merge_queue, box_consumer)
+    def __init__(
+        self,
+        *,
+        watcher: Callable[[], Awaitable[object]],
+        merge_queue: Callable[[], Awaitable[object]],
+        box_consumer: Callable[[], Awaitable[object]],
+        verdict_consumer: Callable[[], Awaitable[object]],
+    ) -> None:
+        self._consumers = (watcher, merge_queue, box_consumer, verdict_consumer)
         self.tasks: tuple[asyncio.Task, ...] = ()
         self.started: Callable[[tuple[asyncio.Task, ...]], None] = lambda _: None
 

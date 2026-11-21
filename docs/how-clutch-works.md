@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 595b9e84
-hash: 8713975dfc2f88e36aacf59ed478df75a7128fc57429e4ac17cac6bf08c3dc4a
+verified: 8107f6ac
+hash: f47521309b2df4c00ac09a5590e9b1d7156cf49306664079db3bdf5a15f53c28
 -->
 # How ClutchWork works
 
@@ -530,7 +530,7 @@ Both verbs use `uv run --project <engine checkout> python -m clutch` followed by
 ### 7.2 `serve`
 
 The continuous daemon. On start it takes the lock, reconciles and rebuilds timers,
-publishes `state_dir/control/active.json`, and runs four loops (every 0.1s):
+publishes `state_dir/control/active.json`, and runs five loops (every 0.1s):
 
 - **Watcher:** runs intake and re-reads tickets, debounced, skipping stems settled or rejected in the journal; a ticket that fails to parse keeps
   its last good version.
@@ -542,6 +542,7 @@ publishes `state_dir/control/active.json`, and runs four loops (every 0.1s):
   Admission permits up to `scheduler.parallel.max_runs` slot-holding runs when enabled (one otherwise); the scheduler returns once a ticket occupies a slot and each run is its own task, with parallel off holding one in flight. Runs waiting for merge retain ownership but release their slot. A poll with work excludes running implementations until it finishes; an idle poll takes no exclusive section. Startup and sweeps also exclude slot-holding runs; intake and watch publication proceed beside running implementations. Idle checks include every owned run.
 - **Merge queue:** serial admission (section 7.2.1).
 - **Box intake:** ingests host bug reports into the Suggestion Box and never triages.
+- **Verdicts:** applies accepted confirm and reject requests independently of merge polling and active Check or model work, using the ticket writer transaction.
 
 Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
 (`state_dir/heartbeat` mtime), notification replay, and checkpoint pushes. If any loop dies,
@@ -602,7 +603,7 @@ For each candidate, in pick order:
 
 `ticket confirm` and `ticket reject` publish verdict requests to the running drain or serve, which applies them.
 
-The engine decides each published verdict request later. A verdict decision row marked `stale` or
+Submission and acceptance do not mean application is complete. Serve applies accepted ticket verdicts while unrelated Check or model work continues, waiting for conflicting checkout writes only. The engine decides each published verdict request later. A verdict decision row marked `stale` or
 `rejected` was not applied; its reason says why. Fix that cause and run `ticket confirm` or `ticket reject` again
 for the stem. The row disappears once the stem is resolved.
 

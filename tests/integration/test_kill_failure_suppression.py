@@ -5,8 +5,8 @@
 # purpose: Worker notification suppression and preserved bootstrap dormancy.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 91488648ce14cd3d3b8ef060937bf2c0f1ae329a2479411a50ae50decb3314ec
+# verified: 8107f6ac
+# hash: b379fdcab0d8e659796f6e4b2e5828cdcfbc83b31b562db9e4235ace4097ee60
 
 import asyncio
 import json
@@ -37,8 +37,8 @@ async def owned(workers):
         return "consumer-owned success"
 
     callbacks = [worker.run for worker in workers]
-    callbacks.extend([finished] * (3 - len(callbacks)))
-    owner = daemon.DaemonTasks(watcher=callbacks[0], merge_queue=callbacks[1], box_consumer=callbacks[2])
+    callbacks.extend([finished] * (4 - len(callbacks)))
+    owner = daemon.DaemonTasks(watcher=callbacks[0], merge_queue=callbacks[1], box_consumer=callbacks[2], verdict_consumer=callbacks[3])
     run = asyncio.create_task(owner.run())
     tasks = ()
     try:
@@ -185,7 +185,7 @@ async def test_kill_suppression_observes_all_worker_outcomes(tmp_path):
             before = rig.journal.read()
             stop = asyncio.create_task(stopper.stop(rig.reconstruct().recover()))
             await turn()
-            assert not stop.done() and all(not task.done() for task in tasks[1:])
+            assert not stop.done() and all(not task.done() for task in tasks[1 : len(workers)])
             workers[1].release.set()
             await turn()
             assert all(not waiter.done() for waiter in observations)
@@ -230,7 +230,7 @@ async def test_kill_suppression_waiter_cancellation_awaits_cleanup(tmp_path):
                 await turn()
                 assert not waiters[0].done() and not stop.done()
                 assert all(worker.cancellations == 1 for worker in workers)
-                assert all(not task.done() for task in tasks)
+                assert all(not task.done() for task in tasks[: len(workers)])
             for worker in workers:
                 worker.release.set()
             await cancelled(waiters[0])

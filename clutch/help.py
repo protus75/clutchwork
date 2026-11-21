@@ -67,7 +67,9 @@ COMMANDS.update(
 for _verb in ("drain", "serve", "stop", "kill", "status", "retro", "review", "lint", "run", "confirm", "reject", "order", "triage", "dismiss"):
     TOPICS[f"verb.{_verb}"] = dict(
         before="Choose the action for the current state.",
-        after="Inspect the result.",
+        after="Inspect the applied result; a submitted request is not yet completion. Serve applies ticket verdicts during active Check or model work."
+        if _verb in {"confirm", "reject"}
+        else "Inspect the result.",
         doc="host-running.md",
         verb=f"ticket {_verb}"
         if _verb in {"review", "lint", "order", "confirm", "reject"}

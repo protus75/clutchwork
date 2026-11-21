@@ -5,8 +5,8 @@
 # purpose: Production soak evidence, false-green refusal, and owned lifetime cleanup.
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 77c3dad9
-# hash: 6351b26d9c8c507534596a4d9dce12566446adb485b696e74854301a3733f7f2
+# verified: 8107f6ac
+# hash: d6bba8032982a37f7688996c46994e3e1e89a3b27198fbb40fe2b38b51c1786d
 
 import asyncio
 import json
@@ -130,7 +130,7 @@ async def test_daemon_soak_runs_production_serve(tmp_path, monkeypatch):
     assert len(built) == 4  # One interrupted worker lifetime, its restart, and two fault members.
     assert [(stem, attempt) for _, stem, attempt in offers] == [("worker", 1), ("mechanical", 0), ("unresolved", 0), ("unresolved", 1), ("semantic", 0)]
     assert consumed == [("worker", 1), ("mechanical", 0), ("unresolved", 0), ("unresolved", 1), ("semantic", 0)]
-    assert all(len(o.workers) == 4 and all(t.done() for t in o.workers) for o in built)
+    assert all(len(o.workers) == 5 and all(t.done() for t in o.workers) for o in built)
 
 
 def test_daemon_soak_advances_each_member_24_hours(evidence):
