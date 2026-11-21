@@ -88,6 +88,10 @@ class Refusal(Exception):
         super().__init__(f"{message} -- {paved_road}")
 
 
+class _NoTicketEdit(Exception):
+    pass
+
+
 @dataclass(frozen=True)
 class Checkout:
     """The composed seams one invocation runs against; the stage pipeline is built from it."""
@@ -707,8 +711,13 @@ async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension
         print(f"rejected {stem}" if changed else f"already rejected {stem}")
         return EXIT_MERGED
     if draft:
-        checkout.fs.write(path, stamp(path.read_text(), "state", "confirmed").encode())
-        sha = await checkout.git.commit(checkout.repo, f"clutch({stem}): confirmed", only=[rel])
+
+        async def confirm_edit():
+            if not path.is_file() or _ticket_state(path) != "draft":
+                raise Refusal(f"{stem} is no longer a draft", "retry the verdict")
+            checkout.fs.write(path, stamp(path.read_text(), "state", "confirmed").encode())
+
+        sha = await checkout.git.commit_edit(checkout.repo, f"clutch({stem}): confirmed", only=[rel], edit=confirm_edit)
         checkout.journal.append(EventType.SIGNAL, {"signal": "draft_confirmed", "commit": sha}, ticket=stem)
         print(f"confirmed draft {stem}")
         return EXIT_MERGED
@@ -736,8 +745,16 @@ async def reject_ticket(stem: str, checkout: Checkout, *, reason: str | None = N
     path = checkout.repo / rel
     last = last_states(checkout.journal.read()).get(stem)
     if path.is_file() and _ticket_state(path) != "rejected":
-        checkout.fs.write(path, stamp(path.read_text(), "state", "rejected").encode())
-        await checkout.git.commit(checkout.repo, f"clutch({stem}): rejected", only=[rel])
+
+        async def reject_edit():
+            if not path.is_file() or _ticket_state(path) == "rejected":
+                raise _NoTicketEdit
+            checkout.fs.write(path, stamp(path.read_text(), "state", "rejected").encode())
+
+        try:
+            await checkout.git.commit_edit(checkout.repo, f"clutch({stem}): rejected", only=[rel], edit=reject_edit)
+        except _NoTicketEdit:
+            pass
     if last != "rejected":
         checkout.journal.append(EventType.SIGNAL, {"signal": "reject_verdict", "verdict": "kill", "actor": "operator", **({"reason": reason} if reason is not None else {})}, ticket=stem)
         checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket=stem)
@@ -815,13 +832,23 @@ async def apply_admission(stem, verb, key, actor, c, *, reason=None):
     signals = [e for e in since if e.ticket == stem]
     path = c.repo / ticket_path(stem)
     if baselines and len(intents) > 1 and path.is_file() and await c.git.rev_parse(c.repo, "HEAD") == base:
-        try:
-            committed = await c.git._run(c.repo, "show", f"{base}:{ticket_path(stem)}")
-        except GitError:
-            committed = None
         state = "rejected" if verb == "reject" else "confirmed"
-        if committed is not None and path.read_text() != committed and path.read_text() == stamp(committed, "state", state):
-            await c.git.commit(c.repo, f"clutch({stem}): {state}", only=[str(ticket_path(stem))])
+
+        async def repair_edit():
+            if not path.is_file() or await c.git.rev_parse(c.repo, "HEAD") != base:
+                raise _NoTicketEdit
+            try:
+                committed = await c.git._run(c.repo, "show", f"{base}:{ticket_path(stem)}")
+            except GitError:
+                raise _NoTicketEdit from None
+            text = path.read_text()
+            if text == committed or text != stamp(committed, "state", state):
+                raise _NoTicketEdit
+
+        try:
+            await c.git.commit_edit(c.repo, f"clutch({stem}): {state}", only=[str(ticket_path(stem))], edit=repair_edit)
+        except _NoTicketEdit:
+            pass
     if verb == "confirm":
         applied = any(e.body.get("signal") in ("draft_confirmed", "reject_verdict") and (e.body.get("signal") != "reject_verdict" or e.body.get("verdict") == "keep") for e in signals)
         if not applied:

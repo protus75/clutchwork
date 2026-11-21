@@ -4,8 +4,8 @@
 # purpose: test verdict menu parity
 # relates: [clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/reconcile.py, clutch/runner.py, tests/unit/test_menu_admission.py]
 # owner: engine
-# verified: 9a610809
-# hash: 3d1afdbf756b3d43997c977620499ed73ce70e37d7d8747ce3539cde1355e84b
+# verified: 2dd7da28
+# hash: 25fbd77f36e9ceafe73761232321fefc38b87d41702d8dde7a33e3eaa8b5b4d9
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -37,11 +37,12 @@ def world(monkeypatch):
         def write(self, path, content):
             files[path] = content.decode()
 
-    async def commit(repo, message, only):
+    async def commit_edit(repo, message, *, only, edit):
+        await edit()
         commits.append((message, list(only), files[root / only[0]]))
         return "commit-sha"
 
-    git = SimpleNamespace(describe=AsyncMock(return_value="id"), rev_parse=AsyncMock(return_value="head-sha"), commit=commit, _run=AsyncMock(return_value=""))
+    git = SimpleNamespace(describe=AsyncMock(return_value="id"), rev_parse=AsyncMock(return_value="head-sha"), commit_edit=commit_edit, _run=AsyncMock(return_value=""))
     journal = SimpleNamespace(read=lambda: list(events), append=append)
     checkout = SimpleNamespace(repo=root, config=SimpleNamespace(state_dir=root / "state"), journal=journal, git=git, fs=FS(), clock=None)
     ctx = observe.Context(root, root / "state", root / "config.yaml", None, None, None)
