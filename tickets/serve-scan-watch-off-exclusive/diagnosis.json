@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "eaed50e270579cc3cb68fb8f9e872fd337008cc6",
+  "stem": "serve-scan-watch-off-exclusive",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "tests/unit/test_serve_scan_watch_locks.py and tests/integration/test_serve_scan_watch_overlap.py must each start with exactly one clutch:meta header. Delete the duplicate stale block (lines 11-18), then run `uv run clutch meta refresh <file>` and edit only `purpose` by hand.",
+    "tests/regress_serve_scan_watch_off_exclusive.py: do not copy the header or docstring from tests/regress_serve_parallel_admission.py. Run `clutch meta refresh` and write a purpose and docstring saying a changed-snapshot scan must not wait on a held run slot.",
+    "Criterion 2 in test_serve_scan_watch_overlap.py: after the stop is projected, assert that no new implementation starts. Then set release, await run.done() without calling owner.stop(), and check the exit code and active.json as finish does.",
+    "Criterion 3 in test_serve_scan_watch_locks.py: hold a real run slot before the changed scan, either through a DaemonAdmission dispatch blocked on an event or by marking the fixture admission as holding. Then assert scan completes, owner.entries == [] and the reads ran under main_write().",
+    "Review found the serve.py scan/watch change (scan unlocked intake plus main_write around the reads, watch under scheduler._slot), the doc 7.2 edit and the updated existing tests sound. Redo the same approach from the merge base."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
