@@ -8,7 +8,7 @@ from typing import Annotated, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from clutch.artifacts import NonBlank
+from clutch.artifacts import Cost, NonBlank, StageResult
 from clutch.author import author, commit_record, committed, failure_declined, is_rejected, list_open_tickets, neighbors_block, recover_retro_ticket
 from clutch.box import BOX_DIR, Box, DecisionRecord, RereportJournal, Resolution, UnknownBoxId, Verdict, read_registry, record_path, render_record
 from clutch.driver import Driver, LlmStage
@@ -16,10 +16,12 @@ from clutch.git import GitError
 from clutch.inbox import ingest, report_data
 from clutch.journal import EventType
 from clutch.llm import LLM
+from clutch.panel import TRIAGE_ORDER, majority_verdict
+from clutch.providers import ProviderSetupError, panel_members
 from clutch.runner import SPECS_DIR, Checkout
 from clutch.seams import ExecutableNotFound
 from clutch.specs import load_spec, render
-from clutch.stages import findings_text
+from clutch.stages import _panel_combine, findings_text
 from clutch.status import dismiss_admission, last_states, triage_admission
 from clutch.tickets import CHECKS_FILE, REVIEW_FILE, artifact_path, ticket_path
 
@@ -300,9 +302,13 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
         def render_message(_consumed: object, findings: list) -> str:
             return render(spec, {**inputs, "retry_findings": findings_text(findings)})
 
-        result = await driver.run(
-            LlmStage(surface="triage", emits=TriageReply, gates=[], render=render_message),
-            message,
+        stage = LlmStage(surface="triage", emits=TriageReply, gates=[], render=render_message)
+        try:
+            selected = panel_members(checkout.config, checkout.config.routing_default_tier, "triage")
+        except ProviderSetupError:
+            selected = ()
+        size = len(selected) or 1
+        kwargs = dict(
             ticket=None,
             run_seq=message.seq,
             attempt=pass_no,
@@ -313,6 +319,20 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
             expected_budget="surface",
             scope_fence=(),
         )
+        if size == 1:
+            result = await driver.run(stage, message, **kwargs)
+        else:
+            panel = await driver.run_panel(stage, message, size=size, **kwargs)
+            if not panel.members:
+                result = StageResult("infra_error", None, [], Cost())
+            elif bad := next((member for member in panel.members if member.outcome != "ok"), None):
+                result = bad
+            else:
+                replies, members, _ = _panel_combine(panel, selected)
+                assert all(isinstance(reply, TriageReply) for reply in replies)
+                reply, facts = majority_verdict(replies, TRIAGE_ORDER, members, panel.dropped)
+                result = StageResult("ok", reply, [], Cost())
+                driver.log.event("panel_facts", box_id=message.id, attempt=pass_no, surface="triage", **facts.model_dump())
         if result.outcome != "ok":
             line = f"{message.id}: {result.outcome}; remains pending"
         else:

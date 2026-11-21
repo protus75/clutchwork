@@ -4,8 +4,8 @@
 # purpose: test triage tombstone rejected
 # relates: [clutch/triage.py]
 # owner: clutch/triage.py
-# verified: 9a610809
-# hash: 7403d2dd664a3b67558cdc61695872b49323135c16e3502a9acc8460418dea9d
+# verified: b1bfcbf6
+# hash: 39b8bd549882b42a04b91465f1ec7ab16458b9a4dcc0de856e234d2a8fcf80ac
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -37,7 +37,7 @@ async def test_tombstone_rejected(monkeypatch, rejected, expected, tmp_path):
         report=None,
     )
     box = SimpleNamespace(pending=lambda: [message], messages=lambda: [message], root=tmp_path)
-    checkout = SimpleNamespace(repo=tmp_path, config=SimpleNamespace(routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=tmp_path, config=SimpleNamespace(routing_default_tier="medium", routing=[]))
     response = triage.TriageReply(verdict="tombstone", link="target", summary="summary", rationale="reason", evidence=["original"], reopen_after_days=30)
     driver = SimpleNamespace(run=AsyncMock(return_value=SimpleNamespace(outcome="ok", artifact=response)))
     monkeypatch.setattr(triage, "recover_retro_ticket", AsyncMock(return_value=None))

@@ -4,8 +4,8 @@
 # purpose: Triage neighbors data block outcomes
 # relates: [clutch/author.py, clutch/index.py, clutch/triage.py]
 # owner: clutch/author.py
-# verified: dd604324
-# hash: a2d6b4b2be0bf1e13708598580a11060822338244709360649caa3bef0e5decc
+# verified: b1bfcbf6
+# hash: e1bb09c57dbc534444a4f3d42d778c1704d679a27c401d5b78b0ce016cef2ce0
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -117,7 +117,7 @@ async def test_settle_reuses_block(tmp_path, monkeypatch, existing, block):
         report=None,
     )
     box = SimpleNamespace(pending=lambda: [message], root=tmp_path, resolve=lambda *args: None)
-    c = SimpleNamespace(repo=tmp_path, config=SimpleNamespace(routing_default_tier="medium"))
+    c = SimpleNamespace(repo=tmp_path, config=SimpleNamespace(routing_default_tier="medium", routing=[]))
     captures = []
 
     async def run(stage, *args, **kwargs):

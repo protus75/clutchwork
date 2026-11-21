@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: bce07f02
-hash: 9185e83b84e42f9433fa5bfa6cf2964dae90e9cda9051b59d414ff98f4f61cec
+verified: b1bfcbf6
+hash: f8bceb3fbf800ec7163c8763cd4dd09b612fb65163e45de4492a9cb2afc38d7f
 -->
 # How ClutchWork works
 
@@ -656,7 +656,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 `routing` rows map `(tier, surface)` to an ordered list of candidates. An optional `kinds` list restricts a row to those ticket kinds; matching kind rows precede unrestricted rows for the requested surface and then review. A surface with no row
 falls back to the `(tier, review)` row. The model is the candidate's `model` or the provider's
-`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review, requisition review, and diagnose fan out, while the other surfaces do not yet.
+`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review, requisition review, diagnose, and triage fan out, while the other surfaces do not yet.
 
 ### 8.3 Admission, breakers, droughts
 
@@ -716,7 +716,7 @@ Problems found while working are filed, not fixed in the current diff. Classes: 
   re-report reopens it. Retro recurrences use the same re-report rule.
 - `declined`: record a decision in `tickets/decisions/<id>.md`.
 
-The Triage prompt embeds a `neighbors` block of nearest indexed box messages, roadmap rows and decision records; `unavailable: ...` or `none` indicates no usable neighbor evidence, never a failure.
+The Triage prompt embeds a `neighbors` block of nearest indexed box messages, roadmap rows and decision records; `unavailable: ...` or `none` indicates no usable neighbor evidence, never a failure. A `majority-verdict` panel on the triage route runs N member calls per message and settles from the majority verdict, breaking ties in the order `declined`, `tombstone`, `author` so a tie never authors; a non-`ok` member leaves the message pending, while infrastructure failures are dropped as in diagnosis.
 
 `box dismiss <id> ...` records operator decisions without a model call; unknown IDs refuse before any message is settled.
 
