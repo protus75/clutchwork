@@ -1,21 +1,25 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "3cf5adc0cffb52fb10775a4ffc8eae307b4698a7",
+  "produced_at_sha": "2174a13dc8bd5767aac08b6c1ddcca3c3f0d5816",
   "stem": "index-build-r1",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "split",
   "lessons": [
-    "Split it. The ticket has 5 boundaries, 18 fenced files, 7 new test files and 13 criteria. The attempt used 543k input tokens on impact analysis, made only partial edits to clutch/config.py and host-contract.md, and committed nothing.",
-    "Child 1: the `index` config block with `embed` (clutch/config.py, clutch/docs/host-contract.md, tests/unit/test_index_config.py, criterion 7) and the Git ticket-touch reader (clutch/git.py, tests/unit/test_git_ticket_touches.py, criterion 8). Neither needs clutch/index.py.",
-    "Child 2: clutch/index.py build with the IndexCreator seam, embed via ProcessExec stdin_path, digest-keyed incremental build, and tests/unit/test_index_build.py plus tests/integration/test_index_extensions.py (criteria 1-6, 12a). It depends on child 1.",
-    "Child 3: the merge-path hook in clutch/merge.py, called after the `to: merged` journal append at both write_squash sites in clutch/mergequeue.py (_finish and the inline branch of _admit), and tests/unit/test_index_merge_hook.py (criteria 10-11). It depends on child 2.",
-    "Child 4: the `index build` verb group in clutch/__main__.py, the doc rows in host-running.md, README.md and how-clutch-works.md (new section appended last), test_index_verb.py and test_index_cli.py (criteria 9, 12b, 13). It depends on child 2."
+    "Attempt 1 (codex gpt-6.1-terra) stopped after about 45s with no findings. It had only made untested edits to clutch/config.py, clutch/docs/host-contract.md and clutch/git.py. The ticket has 5 boundaries, 18 fenced files and 13 criteria, which is too much for one attempt.",
+    "Split 1: the index config block in clutch/config.py and clutch/docs/host-contract.md (criterion 7, tests/unit/test_index_config.py), plus the Git ticket-touch reader in clutch/git.py (criterion 8, tests/unit/test_git_ticket_touches.py). Use the fake-runner pattern from",
+    "Split 2: clutch/index.py with the build, the IndexCreator seam, embeddings and incremental digests (criteria 1-6, 12 for extensions). Tests: tests/unit/test_index_build.py and tests/integration/test_index_extensions.py. This depends on split 1.",
+    "Split 3: the `index build` verb in clutch/__main__.py, built with _command, plus its rows in clutch/docs/host-running.md, README.md and docs/how-clutch-works.md section 2, and a new last numbered section. Covers criteria 9, 12 (CLI) and 13. Tests: tests/unit/test_index_verb.py and",
+    "Split 4: the merge hook in clutch/merge.py (load-only creator, no embed, swallows all errors). Call it at both write_squash sites in clutch/mergequeue.py, after the `to: merged` transition is journaled. Covers criteria 10-11 in tests/unit/test_index_merge_hook.py, copying the rig from"
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1,
+    3,
+    4
+  ],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
