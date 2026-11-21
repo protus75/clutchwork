@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Class prevention is covered by tests checking every generated line for trailing whitespace; the smaller change of stripping rendered field lines avoided changing Check order.
+The smaller fix is to trim each rendered field line; existing parsing and check behavior remain unchanged. Ticket verification, mutation checks, unit coverage, integration, lint, format, and metadata checks passed.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 10 minutes; completed within that budget.
+Expected 10 minutes; completed within the budget.
 
