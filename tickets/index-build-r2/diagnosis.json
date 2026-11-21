@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0ba3cd4a28887f3c2a6bab0e454677afd31b70d4",
+  "stem": "index-build-r2",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket Goal adds a `files.imports` column (JSON text list, `.py` only) but never says what an entry is. docs/annotations-index-plan.md#5. The index lists files columns without `imports`, so no owner settles it. The ticket must define it, or drop the column, before another attempt.",
+    "If `imports` stays, the ticket Goal must say what one entry is: a dotted module name, an imported symbol, or a resolved tracked repo path. It must also say how `import a.b as c` and `from x import y` are written.",
+    "The ticket must also cover relative imports (`from . import y`, `from ..pkg import z`), imports of external or untracked modules, duplicates, and ordering (for example: unique, sorted), so the stored JSON is deterministic.",
+    "Criterion 1 asserts exact `files` rows, so add a worked example: one fixture `.py` source and its expected `imports` value. Then the unit test in tests/unit/test_index_build.py can pin it.",
+    "The simplest fix is to drop `imports` from the `files` columns in this ticket, since the plan's files row omits it and no consumer here reads it. Its later consumer would add it with a defined contract."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
