@@ -1,11 +1,10 @@
 # Review: snag
 
-The three earlier findings are fixed: one shared compose helper, the .py trim applied to model-supplied relates, and blank owners rejected. Two smaller defects remain: the README sentence the diff edited is now garbled, and the review_reply test cannot catch an 'extra' finding that leaves out its path.
+Both earlier findings are fixed and the fill pipeline is correct, but criterion 5 is only partly met: `tests/unit/test_main_meta_fill.py` never checks that `meta check` and `meta refresh` output stays the same for the same inputs.
 
 ## Findings
 
-- [acceptance] README.md:20 The edited sentence lost its comma and now reads 'Use `clutch meta refresh` to update configured file metadata `clutch meta check` to report missing, empty or drifted blocks, and ...'. It runs two verbs together, so the README no longer states correctly what `meta refresh` and `meta check` do. (do instead: Restore the list punctuation: 'Use `clutch meta refresh` to update configured file metadata, `clutch meta check` to report missing, empty or drifted blocks, and `clutch meta fill` to fill them using a read-only model.')
-- [logic] tests/unit/test_meta_fill.py:87 The check `all(any(p in f.message for f in report.findings) for p in ("a", "b"))` uses the one-letter path "a", and "a" is a substring of the label "extra". The assertion still passes if the extra-path finding leaves out the path, or if the missing and extra findings are swapped. Criterion 4 requires the failing report to name the offending path, and this test cannot fail when it doesn't. (do instead: Use path names that cannot appear in the labels (e.g. "docs/asked.md" and "docs/added.md"). Assert on the exact finding messages, such as {f.message for f in report.findings} == {"missing: docs/asked.md", "extra: docs/added.md"}.)
+- [acceptance] tests/unit/test_main_meta_fill.py:13 Criterion 5 requires `tests/unit/test_main_meta_fill.py` to prove that `asyncio.run(_run_meta("fill", ..., ask=fake))` exits 0 or 1, and that `meta check` and `meta refresh` outputs for the same inputs are unchanged. This file only tests the fill exit code and the parser. No test here runs `_run_meta("check", ...)` or `_run_meta("refresh", ...)` against the async `_run_meta` and asserts on their stdout and return values, so the second half of the criterion is unproven in the file the criterion names. (do instead: In tests/unit/test_main_meta_fill.py, add a test that runs `asyncio.run(_run_meta("check", ...))` and `asyncio.run(_run_meta("refresh", ...))` on a MemoryFS input. Assert the exact return codes and captured stdout, for example check prints `docs/a.md: missing` and returns 1, refresh prints the changed path and returns 0, and a later check prints `empty_purpose`. That proves the async signature left both verbs' output unchanged.)
 
 ## Record
 
@@ -13,26 +12,17 @@ The three earlier findings are fixed: one shared compose helper, the .py trim ap
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f8dc3325748bf7fe13d2cccf6d0dc00e44e0d60f",
+  "produced_at_sha": "f9e953e72e796536fcc5838294cd174c377380a0",
   "stem": "meta-fill-surface",
-  "reviewed_sha": "f8dc3325748bf7fe13d2cccf6d0dc00e44e0d60f",
-  "summary": "The three earlier findings are fixed: one shared compose helper, the .py trim applied to model-supplied relates, and blank owners rejected. Two smaller defects remain: the README sentence the diff edited is now garbled, and the review_reply test cannot catch an 'extra' finding that leaves out its path.",
+  "reviewed_sha": "f9e953e72e796536fcc5838294cd174c377380a0",
+  "summary": "Both earlier findings are fixed and the fill pipeline is correct, but criterion 5 is only partly met: `tests/unit/test_main_meta_fill.py` never checks that `meta check` and `meta refresh` output stays the same for the same inputs.",
   "findings": [
     {
       "code": "acceptance",
-      "path": "README.md",
-      "line": 20,
-      "message": "The edited sentence lost its comma and now reads 'Use `clutch meta refresh` to update configured file metadata `clutch meta check` to report missing, empty or drifted blocks, and ...'. It runs two verbs together, so the README no longer states correctly what `meta refresh` and `meta check` do.",
-      "paved_road": "Restore the list punctuation: 'Use `clutch meta refresh` to update configured file metadata, `clutch meta check` to report missing, empty or drifted blocks, and `clutch meta fill` to fill them using a read-only model.'",
-      "kind": null,
-      "unit": null
-    },
-    {
-      "code": "logic",
-      "path": "tests/unit/test_meta_fill.py",
-      "line": 87,
-      "message": "The check `all(any(p in f.message for f in report.findings) for p in (\"a\", \"b\"))` uses the one-letter path \"a\", and \"a\" is a substring of the label \"extra\". The assertion still passes if the extra-path finding leaves out the path, or if the missing and extra findings are swapped. Criterion 4 requires the failing report to name the offending path, and this test cannot fail when it doesn't.",
-      "paved_road": "Use path names that cannot appear in the labels (e.g. \"docs/asked.md\" and \"docs/added.md\"). Assert on the exact finding messages, such as {f.message for f in report.findings} == {\"missing: docs/asked.md\", \"extra: docs/added.md\"}.",
+      "path": "tests/unit/test_main_meta_fill.py",
+      "line": 13,
+      "message": "Criterion 5 requires `tests/unit/test_main_meta_fill.py` to prove that `asyncio.run(_run_meta(\"fill\", ..., ask=fake))` exits 0 or 1, and that `meta check` and `meta refresh` outputs for the same inputs are unchanged. This file only tests the fill exit code and the parser. No test here runs `_run_meta(\"check\", ...)` or `_run_meta(\"refresh\", ...)` against the async `_run_meta` and asserts on their stdout and return values, so the second half of the criterion is unproven in the file the criterion names.",
+      "paved_road": "In tests/unit/test_main_meta_fill.py, add a test that runs `asyncio.run(_run_meta(\"check\", ...))` and `asyncio.run(_run_meta(\"refresh\", ...))` on a MemoryFS input. Assert the exact return codes and captured stdout, for example check prints `docs/a.md: missing` and returns 1, refresh prints the changed path and returns 0, and a later check prints `empty_purpose`. That proves the async signature left both verbs' output unchanged.",
       "kind": null,
       "unit": null
     }
