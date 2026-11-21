@@ -17,6 +17,7 @@ kind: feature
 - clutch/__main__.py::_review
 - clutch/caps.py::capability
 - clutch/journal.py::Journal.append
+- clutch/providers.py::_route
 - tests/approval.py
 - tests/integration/test_requisition_gate.py
 - tests/unit/test_requisition_prior_review.py
@@ -45,6 +46,7 @@ Scope in:
 - Dispatch in runner.drive replaces the ticket-SHA-only approval check with the same decision at capability(ticket, history)[0]. Keep admission refusal precedence, provisional unmerged-dependency behavior, the real dependency gates and failure routing.
 - Different effective reviewer tiers intentionally invalidate reuse. In tests/integration/test_ladder.py, insert a fresh requisition `verdict()` approve response before the next `agent()` in every script where the effective reviewer tier changes, including the retry-wall, rework-escalation, escalation-rung and operator-confirm reset cases (currently failing with `assert None is not None` on `LLMRequest(surface='requisition_review').worktree` when unadjusted). Preserve the Implement ladder assertions.
 - Update the existing gate test in tests/integration/test_requisition_gate.py whose legacy SHA-only approval previously bypassed review.
+- Shared fixture configs: `tests/approval.py::approve` records `input_identity` from `review_input_identity`, which is None when `providers._route` finds no review route at the fixture's dispatch tier, so those fixture approvals no longer authorize dispatch. Add the review route at the tier each fixture dispatches at to the shared configs `CONFIG` in tests/integration/test_stages.py, `CONFIG` in tests/integration/test_cli.py and `_CONFIG` in tests/harness/shakeout/bench.py, and adjust tests/integration/serve_rig.py and tests/integration/test_serve_parallel_admission.py (which rewrite config.yaml from the test_cli root) only where their scripts still fail. Do not make `review_input_identity` tolerate a missing route; identity composition is scope-out.
 - Add fake-driven unit tests for the selection logic and each entry point with injected seams, and integration tests for both entry points using zero-call assertions.
 - Update the CLI review help text, the `clutch/docs/host-running.md` verb row, and the requisition section of docs/how-clutch-works.md to explain the recorded identity, conservative reuse and invalidation. Update the clutch/help.py extension entry if its ticket-review description states the superseded behavior.
 Scope out:
@@ -61,6 +63,11 @@ Scope out:
 - tests/integration/test_requisition_reuse.py
 - tests/integration/test_requisition_gate.py
 - tests/integration/test_ladder.py
+- tests/integration/test_stages.py
+- tests/integration/test_cli.py
+- tests/integration/serve_rig.py
+- tests/integration/test_serve_parallel_admission.py
+- tests/harness/shakeout/bench.py
 - clutch/docs/host-running.md
 - docs/how-clutch-works.md
 
@@ -69,14 +76,15 @@ Scope out:
 2. `./dev.py test tests/integration/test_requisition_reuse.py tests/integration/test_requisition_gate.py` proves changes to code, Context bytes, sibling material, coverage, specs or substantive ticket text force a new review, and that legacy approvals without identity and approvals followed by a newer snag/rma cannot authorize reuse.
 3. `./dev.py test tests/unit/test_review_reuse_cli.py tests/unit/test_review_reuse_dispatch.py tests/integration/test_requisition_reuse.py` proves both entry points preserve provisional and admission-refusal behavior; unit tests reach the changed IO composition with injected seams.
 4. `./dev.py test tests/integration/test_ladder.py tests/integration/test_requisition_reuse.py` proves a CLI default-tier approval is reused by dispatch when tiers match, a reviewer-tier change forces exactly one new review, and tracked working-tree edits can be approved and reused until their bytes change.
+5. `./dev.py test tests/integration/test_stages.py tests/integration/test_cli.py tests/integration/test_serve_parallel_admission.py tests/integration/test_shakeout.py` proves fixture approvals from the shared configs record a non-null identity and still authorize dispatch.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_review_reuse_cli.py tests/unit/test_review_reuse_dispatch.py tests/integration/test_requisition_reuse.py tests/integration/test_requisition_gate.py tests/integration/test_ladder.py tests/unit/test_requisition_input_identity.py tests/integration/test_review_command.py tests/unit/test_requisition_prior_review.py
+./dev.py test tests/unit/test_review_reuse_cli.py tests/unit/test_review_reuse_dispatch.py tests/integration/test_requisition_reuse.py tests/integration/test_requisition_gate.py tests/integration/test_ladder.py tests/unit/test_requisition_input_identity.py tests/integration/test_review_command.py tests/unit/test_requisition_prior_review.py tests/integration/test_stages.py tests/integration/test_cli.py tests/integration/test_serve_parallel_admission.py tests/integration/test_shakeout.py
 ```
 
 ## Definition of rejected
-Removing required checks without evidence, keeping the ticket-SHA-only bypass or any second production reuse authority, adding speculative settings, or changing files outside the fence.
+Removing required checks without evidence, keeping the ticket-SHA-only bypass or any second production reuse authority, adding speculative settings, making `review_input_identity` tolerate a missing route, or changing files outside the fence.
 
 ## Time budget
 - expected: 30m
