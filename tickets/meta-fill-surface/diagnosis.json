@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "9db3fae04a404c60c8f537bce36fa40abe45343d",
+  "stem": "meta-fill-surface",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Fix the review finding at clutch/metafill.py:111. Do not rebuild the block with body[:offset] + meta._render(...) + body[offset:]. In clutch/meta.py, one shared helper composes the block from fields and body, including the .py relates trim. Refresh/generated and fill both call it, and fill calls it",
+    "Model-supplied relates for a .py file must go through the same 160-character `# relates: [...]` trim that the generator applies, inside the shared helper. Add a test in tests/unit/test_meta_fill.py: a long model relates list on a .py file is trimmed exactly as refresh would trim it.",
+    "Reject an entry whose owner is blank or whitespace-only after strip, or keep the default `engine` when the reply's owner is blank. A filled file must be stable under `meta refresh`. Add a blank-owner test case to tests/unit/test_meta_fill.py.",
+    "Review found the rest sound: batches of at most 20, review_reply on path sets, async _run_meta, the meta surface, spec and docs. All verification commands passed. Redo that work from the merge base, then apply the three fixes above."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
