@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 99c2ebc3
-hash: 5656f0f80e6975e5b9f92ee6619878cc902a9791c2b606c7d47ab1f21fa51195
+verified: be8ec7c3
+hash: 8016f54e98d4d9dc142a89346e904174d9e122c6aee48bce25e56a2e83380bdb
 -->
 # How ClutchWork works
 
@@ -48,6 +48,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 
 | Verb | Lock | What it does |
 |---|---|---|
+| `context suggest <stem>` | no | Suggest ticket context from the index. |
 | `index build` | yes | Build or refresh the project index. |
 | `meta refresh [paths]` | yes | Insert or refresh metadata blocks under configured roots. |
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks. |
@@ -914,3 +915,5 @@ The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never re
 | `refused` | 2 | Config is invalid or the writer lock is held. |
 
 Findings `git_failed`, `embed_failed`, `call_unreadable`, `box_unreadable`, `vss unavailable`, and `fts unavailable` exit 1; `db_open_failed` exits 2.
+
+`clutch context suggest <stem>` reads a draft and the index without a lock, returning up to five co-changed files and five matching sections. It prints `context suggest: suggested` and lines `- <selector>  # <reason>`, or `context suggest: none` when empty (both exit 0). Invalid input or config is `refused`; a missing index is `no_index` (run `clutch index build`); an unreadable index is `index_unreadable` (retry after the running refresh finishes, or run `clutch index build` if a table is missing). These refusals exit 2 on stderr. Remove the reason tail before pasting a selector into Context.

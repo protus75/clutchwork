@@ -19,8 +19,10 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from uuid import uuid4
 
+import duckdb
+
 import clutch
-from clutch import ask, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, triage
+from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, tickets, triage
 from clutch.box import BOX_DIR, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
@@ -605,6 +607,26 @@ def _parser() -> argparse.ArgumentParser:
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
     issue_parser.add_argument("title")
     issue_parser.add_argument("--body", type=Path, required=True)
+    context_parser = sub.add_parser(
+        "context",
+        help="suggest ticket context",
+        description="Suggest ticket context. Subcommands: suggest.",
+        epilog="Examples:\nclutch context suggest my-ticket\n  Suggest ticket context.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    context_sub = context_parser.add_subparsers(dest="context_verb", required=True)
+    context_suggest = _command(
+        context_sub,
+        "suggest",
+        summary="suggest ticket context",
+        does="Suggest files and sections for a ticket.",
+        reads="The ticket file and <state_dir>/index.duckdb.",
+        writes="Nothing; prints suggestions.",
+        lock="None; read-only, works while serve runs.",
+        exits="0 suggested or none; 2 refused, no_index or index_unreadable.",
+        examples=["clutch context suggest my-ticket"],
+    )
+    context_suggest.add_argument("stem")
     index_parser = sub.add_parser(
         "index",
         help="build the project index",
@@ -1121,6 +1143,42 @@ def _parser() -> argparse.ArgumentParser:
     ap.epilog = "\n".join(lines) + "\n\nRun clutch help <command> for command help."
     ap.formatter_class = argparse.RawDescriptionHelpFormatter
     return ap
+
+
+def _run_context_suggest(config, root, stem, *, fs, connect=duckdb.connect):
+    if not tickets.STEM.fullmatch(stem) or stem in tickets.RESERVED_STEMS:
+        return _fail("context suggest", "refused: invalid stem -- choose a valid ticket stem")
+    path = root / ticket_path(stem)
+    try:
+        body = fs.read_bytes(path).decode("utf-8")
+    except OSError, UnicodeDecodeError:
+        return _fail("context suggest", "refused: ticket is missing or unreadable UTF-8 -- create a readable ticket")
+    sections, _ = tickets._sections(body, str(path))
+    for name in ("Goal / Why", "Scope fence"):
+        if not sections.get(name, "").strip():
+            return _fail("context suggest", f"refused: missing or blank {name} -- fill in ## {name}")
+    fence, _ = tickets._bullets(sections["Scope fence"], "Scope fence", str(path))
+    entries, _ = tickets._bullets(sections.get("Context", ""), "Context", str(path))
+    database = config.state_dir / "index.duckdb"
+    try:
+        fs.size(database)
+    except FileNotFoundError:
+        return _fail("context suggest", "no_index -- run clutch index build")
+    except OSError:
+        return _fail("context suggest", "index_unreadable -- retry after the running refresh finishes, or run clutch index build if the index lacks a table")
+    try:
+        conn = connect(str(database), read_only=True)
+        try:
+            files, chunks = context.suggest(conn, stem, fence, entries, sections["Goal / Why"])
+        finally:
+            conn.close()
+    except duckdb.Error:
+        return _fail("context suggest", "index_unreadable -- retry after the running refresh finishes, or run clutch index build if the index lacks a table")
+    lines = files + chunks
+    print("context suggest: suggested" if lines else "context suggest: none")
+    for selector, reason in lines:
+        print(f"- {selector}  # {reason}")
+    return 0
 
 
 async def _run_index(config, root, *, fs, git, exec_, env, store, creator, build=index.build):
@@ -1845,7 +1903,11 @@ def main(
             print(line)
         return 0
 
+    def handle_context():
+        return _run_context_suggest(config, repo, args.stem, fs=checkout.fs)
+
     handlers = {
+        "context": handle_context,
         "index": handle_index,
         "meta": handle_meta,
         "training": handle_training,

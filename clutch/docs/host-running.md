@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 99c2ebc3
-hash: cc259ec93647673fbeb8c81d33ee8db79105e1d036c090730bf65f2ef5124c93
+verified: be8ec7c3
+hash: 5f0b4fadcba42e44c43994fde9d5b795e7b8c1d94aff6e713280722fb4be4cba
 -->
 # Running ClutchWork on a host
 
@@ -45,6 +45,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `box suggest` | Yes | File an idea into the Suggestion Box. |
 | `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submits nothing. |
+| `context suggest` | Yes | Suggest files and sections for a ticket from the index. |
 | `index build` | No | Build or refresh the project index under the writer lock. |
 | `meta refresh` | No | Insert or refresh configured file metadata under the writer lock. |
 | `meta check` | Yes | Report metadata findings without writing. |
