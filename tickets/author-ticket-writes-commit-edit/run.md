@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Author publication and compensation are owned by Git.commit_edit; decision writes from failure_declined, triage._record, and triage’s existing-record recommit are owned by author.commit_record through Git.commit_edit. Private evidence preparation remains outside the lock. The compensation byte-comparison mutation was detected by the new tests.
+AuthorGate owns private evidence copies; Git.commit_edit owns final ticket publication and compensation; commit_record owns Author and triage decision-record writes. The final ticket verification passed 124 tests, the unit coverage gate passed 1,804 tests, and the integration gate passed 3,585 tests; lint and format passed.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000951-07f7157b: Metadata checks report existing findings in untouched files, reproduced on the base commit.
+- box-000954-61f95d36: clutch meta check reports missing, drifted, or empty metadata on untouched files outside the scope fence; none of the changed files is reported.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 30 minutes; completed within the budget.
+Ticket estimate: 30 minutes; actual time was not measured.
 
