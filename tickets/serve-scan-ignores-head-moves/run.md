@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-Updated the head-only expectation in test_scan_inputs_and_own_writes and refreshed its generated metadata. The final verification passed 57 tests; the full unit and integration suites, coverage gate, lint, and formatting passed.
+The full metadata check reported findings in untouched files; none of the changed files was reported.
 
 ## Dead ends
 
-The integration rig required its in-memory ticket directory listing to be seeded to match its real files.
+The first retry fixture duplicated the Context section and was corrected before verification.
 
 ## Second problems filed
 
-- box-000936-436455d4: Repository-wide metadata checking reports pre-existing missing, drifted, and empty-purpose headers outside the changed files.
+- box-000940-9ec2ef88: The repository-wide metadata check reports missing, drifted, or empty-purpose metadata in files outside the ticket scope.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ The integration rig required its in-memory ticket directory listing to be seeded
 
 ## Predicted vs actual
 
-Expected 20 minutes; actual time was not measured.
+The ticket estimated 20 minutes; elapsed time was not measured.
 
