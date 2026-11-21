@@ -1,11 +1,10 @@
 # Review: snag
 
-The production changes in requisition.py, driver.py, panel.py and rework.py implement every outcome in the ticket correctly, but the tests for criteria 1 and 4 check only some of the exact values those criteria require.
+The implementation follows the ticket and fixes both earlier test findings, but the criterion-6 test does not check two values the criterion names.
 
 ## Findings
 
-- [acceptance] tests/unit/test_requisition_panel.py:98 Criterion 1 requires the size-0 and size-1 runs to record exactly the expected values written out in the test: the full `llm_call` keyword arguments, the `begin_watch` arguments and the returned `RequisitionVerdict`. `test_single` checks only `(run_seq, call_seq)` pairs, the spool names, verdict/calls and the watch count. A regression in the other `llm_call` keywords (ticket, stem, attempt, the request surface) or in the `begin_watch` arguments on the unchanged path would pass this test. (do instead: Assert the full recorded `llm_call` kwargs (excluding only the opaque effects/llm/redactor objects, or compare them to the stand-ins), the full `begin_watch` kwargs dict, and the stage_start/stage_end event payloads as exact expected values.)
-- [acceptance] tests/unit/test_requisition_panel.py:120 Criterion 4 requires the `panel_facts` event of the snag/approve case to equal the worked example exactly. The test checks only member_count, verdict_counts, agreement_kind, merged agreement/members and dropped. It never checks `combiner == "findings-union"`, `kept_index is None`, the `members` entries, or the event_context fields (`stem`, `attempt`, `run_seq`, `surface="requisition_review"`) that the ticket says the event carries. (do instead: Compare the whole `panel_facts` kwargs dict against an exact expected dict built from the worked example, including combiner, kept_index, members and the stem/attempt/run_seq/surface context.)
+- [acceptance] tests/unit/test_requisition_panel.py:202 Criterion 6 says the member-failing case has `member_count` 2 and `merged[0].members == [0]`, but `test_failures` checks neither. It checks `dropped`, `members[0].provider` and `merged[0].agreement`, and only checks that the combined verdict is `snag`, not that it equals member 1's. A regression in either value, such as one that reports `member_count` as the number of survivors or gives merged findings original member indexes, would still pass. (do instead: In the member-failing case, also assert `events[1]["member_count"] == 2` and `events[1]["merged"][0]["members"] == [0]`, and compare the returned verdict's `verdict`, `summary` and `findings` with member 1's reply (`snag`, `bad`, `[finding()]`).)
 
 ## Record
 
@@ -13,26 +12,17 @@ The production changes in requisition.py, driver.py, panel.py and rework.py impl
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "cedb74ca0a02eafb4db833772418ca4818fad910",
+  "produced_at_sha": "92ffcc644d0b0bda79e95bc3f081dd329fa01c25",
   "stem": "review-panel-stage-use-requisition",
-  "reviewed_sha": "cedb74ca0a02eafb4db833772418ca4818fad910",
-  "summary": "The production changes in requisition.py, driver.py, panel.py and rework.py implement every outcome in the ticket correctly, but the tests for criteria 1 and 4 check only some of the exact values those criteria require.",
+  "reviewed_sha": "92ffcc644d0b0bda79e95bc3f081dd329fa01c25",
+  "summary": "The implementation follows the ticket and fixes both earlier test findings, but the criterion-6 test does not check two values the criterion names.",
   "findings": [
     {
       "code": "acceptance",
       "path": "tests/unit/test_requisition_panel.py",
-      "line": 98,
-      "message": "Criterion 1 requires the size-0 and size-1 runs to record exactly the expected values written out in the test: the full `llm_call` keyword arguments, the `begin_watch` arguments and the returned `RequisitionVerdict`. `test_single` checks only `(run_seq, call_seq)` pairs, the spool names, verdict/calls and the watch count. A regression in the other `llm_call` keywords (ticket, stem, attempt, the request surface) or in the `begin_watch` arguments on the unchanged path would pass this test.",
-      "paved_road": "Assert the full recorded `llm_call` kwargs (excluding only the opaque effects/llm/redactor objects, or compare them to the stand-ins), the full `begin_watch` kwargs dict, and the stage_start/stage_end event payloads as exact expected values.",
-      "kind": null,
-      "unit": null
-    },
-    {
-      "code": "acceptance",
-      "path": "tests/unit/test_requisition_panel.py",
-      "line": 120,
-      "message": "Criterion 4 requires the `panel_facts` event of the snag/approve case to equal the worked example exactly. The test checks only member_count, verdict_counts, agreement_kind, merged agreement/members and dropped. It never checks `combiner == \"findings-union\"`, `kept_index is None`, the `members` entries, or the event_context fields (`stem`, `attempt`, `run_seq`, `surface=\"requisition_review\"`) that the ticket says the event carries.",
-      "paved_road": "Compare the whole `panel_facts` kwargs dict against an exact expected dict built from the worked example, including combiner, kept_index, members and the stem/attempt/run_seq/surface context.",
+      "line": 202,
+      "message": "Criterion 6 says the member-failing case has `member_count` 2 and `merged[0].members == [0]`, but `test_failures` checks neither. It checks `dropped`, `members[0].provider` and `merged[0].agreement`, and only checks that the combined verdict is `snag`, not that it equals member 1's. A regression in either value, such as one that reports `member_count` as the number of survivors or gives merged findings original member indexes, would still pass.",
+      "paved_road": "In the member-failing case, also assert `events[1][\"member_count\"] == 2` and `events[1][\"merged\"][0][\"members\"] == [0]`, and compare the returned verdict's `verdict`, `summary` and `findings` with member 1's reply (`snag`, `bad`, `[finding()]`).",
       "kind": null,
       "unit": null
     }
