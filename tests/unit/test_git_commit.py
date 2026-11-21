@@ -4,8 +4,8 @@
 # purpose: test git commit
 # relates: [clutch/git.py, clutch/tickets.py]
 # owner: engine
-# verified: 0a308920
-# hash: b0745a6f678812111c011ddf862a43a71f49e5379feba95d2c59e3d9c0a62eb3
+# verified: cd8a8d84
+# hash: 06dc4b72023f6ac1455541b5958360f64a8ff1fa6d18fbeaf31df063ac7a59e2
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -82,6 +82,9 @@ def test_intake_skips_concurrent_commit(monkeypatch):
             self.held = False
 
     class FakeGit:
+        def main_write(self):
+            return FakeLock()
+
         def __init__(self):
             self._commit_lock = CountingLock()
 
@@ -121,6 +124,9 @@ def test_intake_stem_scope(monkeypatch, stems, expected):
     calls = []
 
     class FakeGit:
+        def main_write(self):
+            return FakeLock()
+
         _commit_lock = FakeLock()
 
         async def status_porcelain(self, repo):

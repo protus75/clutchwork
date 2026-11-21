@@ -3,7 +3,7 @@
 import asyncio
 import hashlib
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from pathlib import Path
 
 from clutch.lockfile import CommitLock
@@ -107,6 +107,18 @@ class Git:
     async def commit(self, dir: Path, message: str, *, only: Sequence[str] = ()) -> str:
         async with self._commit_lock:
             return await self._commit(dir, message, only=only)
+
+    async def commit_edit(self, dir: Path, message: str, *, only: Sequence[str], edit: Callable[[], Awaitable[None]]) -> str:
+        """Edit and commit exact paths under both locks.
+
+        The callback must not call a lock-taking Git writer, invoke a model, or run checks.
+        """
+        if not only:
+            raise ValueError("commit_edit requires exact paths")
+        async with self.main_write():
+            async with self._commit_lock:
+                await edit()
+                return await self._commit(dir, message, only=only)
 
     async def _commit(self, dir: Path, message: str, *, only: Sequence[str] = ()) -> str:
         if only:

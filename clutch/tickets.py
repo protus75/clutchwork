@@ -960,42 +960,43 @@ async def intake_pending(repo, git, entries):
 async def intake(repo: Path, git: Git, journal: Journal, fs: FileSystem, *, stems: Collection[str] | None) -> IntakeResult:
     """Validate pending hand-authored ticket files and ticket-plane-commit each clean one.
 
-    Intake holds the commit lock across status, the stray check and commits; its git work needs no engine lock.
+    Intake holds main_write and the commit lock across status, the stray check and commits.
     A refused ticket stays on disk, uncommitted, untouched.
     """
-    async with git._commit_lock:
-        entries = _porcelain(await git.status_porcelain(repo))
-        pending, evidence, stray = await intake_pending(repo, git, entries)
-        if stray:
-            from clutch.status import intake_stray_admission
+    async with git.main_write():
+        async with git._commit_lock:
+            entries = _porcelain(await git.status_porcelain(repo))
+            pending, evidence, stray = await intake_pending(repo, git, entries)
+            if stray:
+                from clutch.status import intake_stray_admission
 
-            admission = intake_stray_admission(stray)
-            raise IntakeRefused(_f(admission.message, admission.paved_road))
-        from clutch.status import last_states
+                admission = intake_stray_admission(stray)
+                raise IntakeRefused(_f(admission.message, admission.paved_road))
+            from clutch.status import last_states
 
-        states = last_states(journal.read())
-        committed: list[str] = []
-        refused: dict[str, list[Finding]] = {}
-        for stem in sorted(pending):
-            if stems is not None and stem not in stems:
-                continue
-            rel = ticket_path(stem)
-            text, stamped, decision = _intake_plan_stem(repo, stem, pending[stem], evidence[stem], states.get(stem))
-            if isinstance(decision, list):
-                refused[stem] = decision
-                continue
-            fm = decision.frontmatter
-            if stamped != text:
-                fs.write(repo / rel, stamped.encode())
-            paths = [rel, *evidence[stem]]
-            # Pathspec-limited: a refused ticket must never ride along in another stem's commit.
-            try:
-                sha = await git._commit(repo, f"clutch({stem}): ticket", only=paths)
-            except NothingToCommit:
-                continue
-            journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL, "source": fm.source, "state": fm.state, "new": pending[stem], "commit": sha}, ticket=stem)
-            committed.append(stem)
-        return IntakeResult(committed=tuple(committed), refused=refused)
+            states = last_states(journal.read())
+            committed: list[str] = []
+            refused: dict[str, list[Finding]] = {}
+            for stem in sorted(pending):
+                if stems is not None and stem not in stems:
+                    continue
+                rel = ticket_path(stem)
+                text, stamped, decision = _intake_plan_stem(repo, stem, pending[stem], evidence[stem], states.get(stem))
+                if isinstance(decision, list):
+                    refused[stem] = decision
+                    continue
+                fm = decision.frontmatter
+                if stamped != text:
+                    fs.write(repo / rel, stamped.encode())
+                paths = [rel, *evidence[stem]]
+                # Pathspec-limited: a refused ticket must never ride along in another stem's commit.
+                try:
+                    sha = await git._commit(repo, f"clutch({stem}): ticket", only=paths)
+                except NothingToCommit:
+                    continue
+                journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL, "source": fm.source, "state": fm.state, "new": pending[stem], "commit": sha}, ticket=stem)
+                committed.append(stem)
+            return IntakeResult(committed=tuple(committed), refused=refused)
 
 
 # --- new ----------------------------------------------------------------------------------------

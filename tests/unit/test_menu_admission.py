@@ -4,8 +4,8 @@
 # purpose: test menu admission
 # relates: [clutch/__main__.py, clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/runner.py, clutch/status.py, clutch/tickets.py, clutch/triage.py]
 # owner: engine
-# verified: 9a610809
-# hash: 79f87a7be458c55cc161e04c10ebb388bbf0b5e14cc62f4a69e70cf66f2f4ab9
+# verified: cd8a8d84
+# hash: 48740a6fe262b9d0762c99a4f5efec4daa779e10e40881478387ab469568ac3d
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -259,7 +259,9 @@ def test_intake_and_snapshot_share_pending_plan(monkeypatch, settled):
     monkeypatch.setattr(tickets, "lint_findings", lambda *a: [])
     monkeypatch.setattr(tickets, "evidence_findings", lambda *a, **kw: [])
     listing = f" M {rel}\nA  tickets/item/evidence/log\n"
-    git = NS(_commit_lock=Lock(), status_porcelain=AsyncMock(return_value=listing), _run=AsyncMock(return_value="tickets/item/evidence/log\0"), _commit=AsyncMock(return_value="committed"))
+    git = NS(
+        _commit_lock=Lock(), main_write=Lock, status_porcelain=AsyncMock(return_value=listing), _run=AsyncMock(return_value="tickets/item/evidence/log\0"), _commit=AsyncMock(return_value="committed")
+    )
     history = [event("already_satisfied")] if settled else []
     journal = NS(read=lambda: history, append=lambda *a, **kw: None)
     plans = []
