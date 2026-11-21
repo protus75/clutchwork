@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "bca1366084add234e6de8dfcdaeca7f96a5730a9",
+  "produced_at_sha": "3a0d10ef269e9ebe3662e377223b0d04b6a8c4e8",
   "stem": "spools-capture-keys",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "abandon-human",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Root cause is in the engine, not the ticket. The only finding is ruff format failing on a `# purpose: ` line with a trailing space in two test files. The `_render` function in clutch/meta.py writes `f\"{key}: {value}\"`, so an empty purpose ends in a trailing space.",
-    "Base main has no clutch:meta header in tests/unit/test_evidence_captures_store.py. The header lines (which relate clutch/seams.py, outside this diff) were added by the meta refresh on the rebased candidate, not by the implementer. Its own format check passed.",
-    "A human should fix the clutch/meta.py `_render` empty-value case, which is out of this ticket's fence, and order that fix ahead of this ticket. Then rerun without changing the ticket. The implementation passed the verification command, lint and 3535 tests.",
-    "Next attempt: redo the work as the ticket states. Add `capture_key` with one shared `_STEM` pattern, attempt floor 0, the `captures` skip at `< 0`, the help text, and the three test files. Check the input name for a `run-<digits>/` prefix before folding, as the earlier approach did."
+    "Review found the store code, capture_key, help text and the other tests sound. Redo all of that work from the merge base: _validate_capture rules, the captures skip `< 0`, capture_key in clutch/evidence/store.py, the captures `does` text, and the test edits listed in Scope in.",
+    "In tests/unit/test_evidence_capture_keys.py, each criterion-4 refused case must call `capture_key(slot, attempt, name)` alone inside `pytest.raises(ValueError)`. Never wrap it in `store.put_capture(*capture_key(...))`, because then the store's own refusal also makes the test pass.",
+    "After each refused capture_key call, assert that memory_store (from tests/unit/test_evidence_views.py) has no files, as in `not store.fs.files`. Or drop the store from that test, since capture_key does no I/O.",
+    "Cover every criterion-4 input directly through capture_key. Spool stem: \"\", \"a/b/c\", \"/8\", \"Work/1\", None, 5. Run seq: \"author/\", \"work/01\", \"work/-1\", \"work/x\", \"work/1234567890\", a non-ASCII digit. Attempt: -1, True, \"0\". Name: \"\", \"/a\", a 200-char name under work/1, and \"run-1/a.txt\" under work."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
