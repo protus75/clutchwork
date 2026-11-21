@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d8700f171a9814ba25e94bad4be432c71ad7c9ed",
+  "produced_at_sha": "82425cac36a43663fe3a938a1176690570a60f90",
   "stem": "requisition-review-approval-reuse",
-  "attempt": 2,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 3,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Fence is incomplete: identity-based reuse correctly forces fresh requisition reviews in out-of-fence scripts. Base gate passed 3,601 tests; the candidate had 15 failures, and 5 out-of-fence ones reproduced on their own. Add those files to Scope fence and Scope in.",
-    "Add tests/integration/test_diagnose.py (infra-cap test edits tracked config after its fixture approval) and tests/integration/test_drain_reentry.py (re-entry scripts lack a fresh review) to the fence. Insert a requisition verdict() approve before the affected agent() calls.",
-    "Add tests/integration/test_drain.py (rework and split scripts) to the fence. It is a hot file, but this change forces the edit there. Also add tests/integration/test_merge_model_resolve.py and tests/integration/test_retro_box.py, and update their scripted review sequences.",
-    "Before refiling, run the full integration gate on a candidate to list all 15 failing tests. Add every file this change forces to the fence, not just these 5. Refreshing shared fixture approvals did not fix the scripted-review failures, so each script needs its own verdict.",
-    "Keep the rest of the ticket's design: one selection function in clutch/requisition.py, called from __main__._review and runner.drive. Remove the SHA-only bypass. Do not make review_input_identity tolerate a missing route. Add the new files to ## Verification."
+    "Review found the CLI and dispatch reuse logic correct. Redo it the same way: one selector in clutch/requisition.py, called by __main__._review and runner.drive. Also rewrite the docs/how-clutch-works.md section 3 sentence that says drive skips review when an approval exists 'for that blob'.",
+    "Criterion 1: in tests/integration/test_requisition_reuse.py, approve a draft with `ticket review`, run `ticket confirm`, then review or dispatch again. Assert no new requisition_review request and no new verdict event. Do not mock the identity gatherer.",
+    "Criterion 2: in test_requisition_reuse.py, add one case per input changed after approval: a Context file, an overlapping sibling ticket, coverage-map.json, a spec file, and ticket body text beyond state. Assert exactly one new requisition_review each. Add a newer-rma case beside the newer-snag case.",
+    "Criterion 3: in tests/unit/test_review_reuse_cli.py and test_review_reuse_dispatch.py, pair a matching recorded approval with an unmerged dependency (provisional review still runs, nothing journaled) and with a refused admission (still refused, no reuse, no model call). Cover both entry points.",
+    "Criterion 4: in test_requisition_reuse.py, approve through `ticket review` at routing_default_tier, then drain at the same tier and assert zero requisition_review requests. Then change the effective tier (e.g. an escalation rung) and assert exactly one new requisition_review request."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
