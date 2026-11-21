@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "659ea5eb7e704a03f38962961211cbf5bde4c961",
+  "produced_at_sha": "7b961cb95798a810cbb94e9499856e98a1209177",
   "stem": "meta-fill-surface",
-  "attempt": 3,
+  "attempt": 4,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Before writing, check a nonblank reply `owner` in clutch/metafill.py with the same rule as `purpose`. Reject the entry with reason `invalid owner` if it contains `\\n`, `\\r` or `-->`. Still skip a blank or whitespace-only owner so the file keeps `engine`.",
-    "Add a case to tests/unit/test_meta_fill.py where the reply owner is `x\\n-->\\nanything` on a .md file and also on a .py file. Assert the file stays byte-identical, is listed as rejected, and a valid sibling in the same batch is still written.",
-    "Redo the full ticket from the merge base. Review accepted this approach: a shared compose helper in clutch/meta.py used by both refresh and fill, async fill plus review_reply plus the ask factory in clutch/metafill.py, and asyncio.run(_run_meta(...)) in tests. Keep criterion 5's _run_meta",
-    "Check every model-supplied string that reaches meta._render, not only purpose. A `relates` entry must be a tracked path, and the .py `# relates:` trim must go through the shared compose helper. No reply value may be able to end the block or add lines to it."
+    "In clutch/metafill.py, when the driver returns any outcome other than ok, reject the batch's paths with the bare outcome as the reason, not 'provider failure: <outcome>'.",
+    "In _run_meta in clutch/__main__.py, return 2 only for outcomes that are provider failures: infra_error and timeout, the outcomes clutch/driver.py treats as infra. invalid_artifact or gate_failed are rejections, so return 1 for them. Pin exit 1 for gate_failed in tests/unit/test_main_meta_fill.py.",
+    "In clutch/meta.py, put the .py '# relates: [...]' 160-character trim only in the shared compose helper. Both refresh and fill must call it so it trims generated and model relates alike. Remove the copy from the generated-field function. Keep tests/unit/test_meta_refresh.py and the fill trim test",
+    "Every attempt starts from the merge base, so redo all ticket work. Review found these parts sound: the help and docs edits, the closed-set, step and icon edits, spec meta.md, and owner handling where a blank reply owner keeps engine. Write files only after their entry validates."
   ],
   "mechanical": null,
   "trimmed_lessons": [
