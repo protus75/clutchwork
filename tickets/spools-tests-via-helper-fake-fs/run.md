@@ -1,26 +1,26 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The full integration check passed 3,559 tests; repository-wide lint and format checks passed. The coverage gate was skipped because it measures no changed file. The meta check also reported findings on untouched files. Updating computed headers whenever covered file bodies change prevents this class of drift.
+Metadata check reports expected drift in changed files; headers remain untouched for Check’s refresh. Unrelated metadata findings were reproduced on the base commit. Coverage was skipped because no measured production files changed.
 
 ## Dead ends
 
-None.
+none
 
 ## Second problems filed
 
-- box-000924-078b42cc: The meta check reports existing findings on untouched files, including drifted, missing, and empty-purpose headers.
+- box-000925-859d966c: Existing metadata findings outside the scope fence remain on the base commit, already tracked as box-000924.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.22
 
 ## Predicted vs actual
 
-The ticket budget was 20 minutes expected and 40 minutes stuck; elapsed time was not measured.
+Completed within the 20-minute expected budget.
 
