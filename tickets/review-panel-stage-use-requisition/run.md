@@ -1,18 +1,18 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The repository-wide metadata check also reported existing findings in files outside the ticket fence; the changed files passed metadata checks.
+The repository-wide metadata check reports existing findings outside the ticket fence; metadata for all changed files is clean. Replay-sequence and per-member retry tests guard against recurrence.
 
 ## Dead ends
 
-A mutation of the RMA combiner setting did not fail its targeted test; cached Python bytecode may have affected that check, but it was not conclusively resolved.
+Adapting Driver.run_panel would require a second result shape, so the requisition review loop uses the existing combiner directly.
 
 ## Second problems filed
 
-none
+- box-000926-4296d893: The repository-wide metadata check reports missing, drifted, or empty-purpose metadata in unrelated files outside the scope fence.
 
 ## Resolved engine/model
 
