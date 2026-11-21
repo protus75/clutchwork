@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "13750fd7bbc0f0e6d34373a7facb86cd071ce142",
+  "stem": "index-box-neighbors-query",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review found the neighbors implementation in clutch/index.py matched the spec. Redo it the same way from the merge base. The only gaps were missing assertions in tests/unit/test_index_neighbors.py.",
+    "Criterion 5: test two separate creators. The first fails only load(conn, \"vss\") and asserts findings == (\"embed_failed: vss unavailable: x\", \"fts unavailable: index missing\"). The second fails only load(conn, \"fts\") with an embed failure present and asserts findings[1] == \"fts unavailable: y\".",
+    "Criterion 5: for the vss-unavailable, fts-load-failure and embeddings-table-missing cases, assert the full (outcome, mode, hits, findings) tuple: fulltext_unavailable, \"\", (), and the exact findings. The earlier attempt did this only for the exec-reply cases.",
+    "Criterion 4: for the database with no chunks table, assert outcome == \"index_unreadable\" and findings[0].startswith(\"index_unreadable: \"). Do the same for the connect-raises case and the not-a-database case.",
+    "Before finishing, go through criteria 1-9 clause by clause and check that each named case has its own assert on every field the criterion lists. Do not combine failure modes in one fixture."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
