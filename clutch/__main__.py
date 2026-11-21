@@ -857,8 +857,8 @@ def _parser() -> argparse.ArgumentParser:
         training_sub,
         "export",
         summary="export training records",
-        does="Export labelled training records, including ticket and conflict records and implement tool-call trajectories unless --no-trajectory is given.",
-        reads="Config, evidence and first-parent git commits.",
+        does="Export labelled training records, including implement trajectories unless --no-trajectory is given and file_purposes when indexed paths match.",
+        reads="Config, evidence, first-parent git commits and the optional index.",
         writes="Requested JSONL files and optional holdout list under --out, replaced whole.",
         lock="None.",
         exits="0 on success; 2 when disabled or refused.",
@@ -1896,7 +1896,10 @@ def main(
 
             print(training.report_eval(asyncio.run(evaluation())))
             return 0
-        files, counts = asyncio.run(training.render(store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, args.kinds, args.holdout, args.trajectory, args.since))
+        index = training.index_files(config.state_dir / "index.duckdb", checkout.fs.size)
+        files, counts = asyncio.run(
+            training.render(store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, args.kinds, args.holdout, args.trajectory, args.since, index=index)
+        )
         for name, data in files.items():
             checkout.fs.write(args.out / name, data)
         for line in training.report(counts):

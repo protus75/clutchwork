@@ -7,6 +7,7 @@ import re
 import shlex
 from pathlib import PurePosixPath
 
+import duckdb
 from pydantic import TypeAdapter, ValidationError
 
 from clutch.driver import unwrap_fence
@@ -30,6 +31,40 @@ def report(counts):
             f"dropped: {counts['dropped']}, skipped: {counts['skipped']}, held-out stems: {counts['heldout']}"
         ),
     ]
+
+
+def index_files(database, size, connect=duckdb.connect):
+    """Read the optional index without changing it."""
+    try:
+        size(database)
+        conn = connect(str(database), read_only=True)
+    except OSError, duckdb.Error:
+        return {}
+    try:
+        files = conn.execute("SELECT path, purpose FROM files WHERE path IS NOT NULL").fetchall()
+        touches = conn.execute("SELECT path, ticket FROM touches WHERE path IS NOT NULL AND ticket IS NOT NULL").fetchall()
+        tickets = {}
+        for path, ticket in touches:
+            tickets.setdefault(path, set()).add(ticket)
+        return {path: (purpose or "", frozenset(tickets.get(path, ()))) for path, purpose in files}
+    except duckdb.Error:
+        return {}
+    finally:
+        conn.close()
+
+
+def _file_purposes(diff, stem, index):
+    paths = set()
+    for line in diff.splitlines():
+        if not line.startswith("diff --git "):
+            continue
+        try:
+            parts = shlex.split(line)
+        except ValueError:
+            continue
+        if len(parts) == 4 and parts[:2] == ["diff", "--git"] and parts[2].startswith("a/") and parts[3].startswith("b/"):
+            paths.add(parts[3][2:])
+    return [{"path": path, "purpose": index[path][0], "touches": len(index[path][1] - {stem})} for path in sorted(paths) if path in index]
 
 
 def _safe(record, diffs, redactor, config):
@@ -125,7 +160,7 @@ def _identity(start, keys, stem, label, kind):
     )
 
 
-async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None, *, only=None):
+async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None, *, only=None, index=None):
     counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
@@ -173,6 +208,8 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
                 record = {**_identity(start, [key], stem, "merged", "implement"), "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": diff}]}
                 if trajectory and (events := _trajectory(store, key, start, config)) is not None:
                     record["trajectory"] = events
+                if index and (purposes := _file_purposes(diff, stem, index)):
+                    record["file_purposes"] = purposes
                 records["implement"].append((record, [diff]))
         except FileNotFoundError, ValueError, UnicodeError, GitError:
             if "implement" in records:
@@ -227,6 +264,8 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
                 }
                 if trajectory and (events := _trajectory(store, key, start, config)) is not None:
                     record["trajectory"] = events
+                if index and (purposes := _file_purposes(diff, stem, index)):
+                    record["file_purposes"] = purposes
                 records["implement"].append((record, [diff]))
             if label == "negative" and stem in merged and "preference" in records:
                 if stem not in diffs:

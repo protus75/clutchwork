@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: dd604324
-hash: fe86e7c362c94537eacea167930ecef09a003f48d8994000656c98e1302a324c
+verified: 63fea83e
+hash: 9257bb66231cf5a84fab2bc0b6d2e9206b50da3fad9aa50425de92f516068240
 -->
 # How ClutchWork works
 
@@ -64,7 +64,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `evidence renormalize` | no | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
 | `evidence coverage` | no | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | no | List ticket captures or print one by attempt and name. |
-| `training export --out DIR [--kinds implement, preference, review, diagnosis, ticket, conflict ...] [--since DATE] [--holdout PCT] [--no-trajectory]` | no | Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set. |
+| `training export --out DIR [--kinds implement, preference, review, diagnosis, ticket, conflict ...] [--since DATE] [--holdout PCT] [--no-trajectory]` | no | Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |

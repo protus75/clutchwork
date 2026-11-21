@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: be8ec7c3
-hash: 5f0b4fadcba42e44c43994fde9d5b795e7b8c1d94aff6e713280722fb4be4cba
+verified: 63fea83e
+hash: 7bab89a47df2c7f5a8afc26c66db8ad361fa9c2b42c70a00198fcf6a68f92933
 -->
 # Running ClutchWork on a host
 
@@ -60,7 +60,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `evidence renormalize` | Yes | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
 | `evidence coverage` | Yes | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | Yes | List ticket captures or print one by attempt and name. |
-| `training export` | Yes | With `--kinds` choose implement, preference, review, diagnosis, ticket, or conflict; `--since DATE` filters by call date. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set. |
+| `training export` | Yes | With `--kinds` choose implement, preference, review, diagnosis, ticket, or conflict; `--since DATE` filters by call date. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
 | `training eval` | Yes | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
 | `coverage map` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate` | Yes | Run a unit command and check its coverage report. |
