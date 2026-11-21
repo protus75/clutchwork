@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "77e12d234147eb09fb33a9e0d7384e8fbbaa4df4",
+  "stem": "spools-test-helper",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review found the helper, reroutes and tests sound, with all Verification passing. The only defect: the clutch:meta headers in tests/spool_captures.py and tests/unit/test_spool_captures.py lacked the `verified` and `hash` lines, so clutch/meta.py::parse raised Malformed.",
+    "Write each new file's header as `# clutch:meta` followed by exactly seven `# key: value` lines in clutch/meta.py KEYS order: schema (clutch.meta/1.0), kind, purpose, relates, owner, verified, hash. Or run `uv run clutch meta fill tests/spool_captures.py tests/unit/test_spool_captures.py`.",
+    "After writing the headers, confirm each one parses: `uv run clutch meta fill` (or the meta refresh) must not report either new file as `malformed`, and `purpose` must be a non-empty single line as Scope in requires. Leave the headers of existing fenced files untouched.",
+    "Redo the full work from the merge base as the ticket states: tests/spool_captures.py (read/write/list_captures via capture_key, one `\"spools\"` site), tests/unit/test_spool_captures.py with Spool-written fixtures, and the reroutes in test_driver_panel_fanout, test_stages_render_check,"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    3
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
