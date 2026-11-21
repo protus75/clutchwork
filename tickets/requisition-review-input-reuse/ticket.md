@@ -60,6 +60,7 @@ Scope in:
 - Record the identity on completed CLI, dispatch, Author and Rework verdicts, migrating all four existing requisition_verdict writers. Update the shared synchronous tests/approval.py fixture to invoke the production async gatherer and emit matching identity through the pure composer; it must also work when called inside an existing event loop, using a small test-only worker-thread bridge in that fixture rather than calling asyncio.run in the running loop or duplicating the identity algorithm; update the Rework exact event-body assertion and the RequisitionVerdict equality fixture to carry the new provenance. Legacy records remain readable and cause a fresh review. Choose the latest verdict for the stem, never search past a newer snag/rma to resurrect an approval. Preserve the current real dependency gates and failure routing.
 - Add fake-driven unit tests for new pure identity/selection logic and integration tests for both entry points, using zero-call assertions. Update the existing gate test whose legacy SHA-only approval previously bypassed review. In tests/integration/test_ladder.py, insert a fresh requisition approve response in every script at a changed effective reviewer tier, including retry-wall and operator-confirm reset cases; reviewer-tier escalation intentionally invalidates prior approval even when ticket text is unchanged. Preserve the Implement ladder assertions.
 - Update the CLI review help text, affected host guide verb row and requisition documentation to explain conservative reuse and invalidation. Update extension help if its existing ticket-review description states the superseded behavior.
+- Seven test files patch `review_ticket` on `clutch.author` or `clutch.rework`: `tests/integration/test_author.py` (line 215), `tests/unit/test_author.py` (143), `tests/unit/test_author_roadmap_row.py` (188), `tests/unit/test_author_stem_claimed.py` (52), `tests/unit/test_key_scope.py` (178), `tests/unit/test_ticket_write_consumers_author.py` (129), and `tests/integration/test_rework.py` (128, 175, already fenced). After Author and Rework call `review_with_identity`, each patch targets the call the site now makes, and only the patched name changes; no unused `review_ticket` import stays in `clutch/author.py` or `clutch/rework.py` to keep an old patch resolving.
 Scope out:
 - No time-based approval expiry, new config flag, cache service, learned dependency tracker, speculative delta-review framework, or reuse of a changed ticket beyond confirmation state. Context packing is delivered by `requisition-review-compact-context`.
 
@@ -79,6 +80,12 @@ Scope out:
 - tests/integration/test_requisition_reuse.py
 - tests/integration/test_requisition_gate.py
 - tests/integration/test_ladder.py
+- tests/integration/test_author.py
+- tests/unit/test_author.py
+- tests/unit/test_author_roadmap_row.py
+- tests/unit/test_author_stem_claimed.py
+- tests/unit/test_key_scope.py
+- tests/unit/test_ticket_write_consumers_author.py
 - clutch/docs/host-running.md
 - docs/how-clutch-works.md
 
