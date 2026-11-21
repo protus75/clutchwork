@@ -1,0 +1,54 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/spool_captures.py",
+      "line": 8,
+      "message": "The required meta check reports this changed file as drifted; clearing it requires changing its computed header.",
+      "paved_road": "Allow refreshing the computed meta header for this changed file.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_spool_captures.py",
+      "line": 8,
+      "message": "The required meta check reports this changed file as drifted, but refreshing its header would violate the criterion that its diff contain only added lines.",
+      "paved_road": "Allow the computed header lines to be refreshed while keeping all existing tests unchanged.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_watchdog_activation.py",
+      "line": 9,
+      "message": "The required meta check reports this changed file as drifted, but the ticket explicitly requires its header to remain untouched.",
+      "paved_road": "Allow refreshing the computed meta header for this changed file.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_provider_cooldown_failover.py",
+      "line": 9,
+      "message": "The required meta check reports this changed file as drifted, but the ticket explicitly requires its header to remain untouched.",
+      "paved_road": "Allow refreshing the computed meta header for this changed file.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"verdict\": \"approve\", \"summary\": \"The prior review raised no findings, so there is nothing to rule cleared or standing. Since that review, only the frontmatter `state` changed from draft to confirmed, so no new findings can be raised against changed text. A re-check for defects that would make a criterion or Verification command impossible found none. `tests/spool_captures.py` exists at HEAD, which the `spools-test-helper` dependency is meant to deliver. A grep for `spools` in the two fenced integration files finds exactly the five sites the Goal lists (`test_watchdog_activation.py` lines 161, 307, 335 and 461; `test_provider_cooldown_failover.py` line 267). That means criterion 1 can be met by routing those sites through the helper. The fence covers the helper, its unit test and both integration files. No coverage dependents or overlapping siblings are listed.\", \"dependents\": [], \"findings\": []}{\"outcome\":\"premise_failed\",\"summary\":\"The implementation and ticket verification pass, but the required meta check reports all four changed files as drifted, and the ticket prohibits the header edits needed to clear those findings.\",\"surprises\":\"The full integration check passed 3,559 tests; repository-wide lint and format checks passed. The coverage gate was skipped because it measures no changed file. The meta check also reported findings on untouched files. Updating computed headers whenever covered file bodies change prevents this class of drift.\",\"second_problems\":[{\"summary\":\"The meta check reports existing findings on untouched files, including drifted, missing, and empty-purpose headers.\"}],\"dead_ends\":\"None.\",\"predicted_vs_actual\":\"The ticket budget was 20 minutes expected and 40 minutes stuck; elapsed time was not measured.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/spool_captures.py\",\"line\":8,\"message\":\"The required meta check reports this changed file as drifted; clearing it requires changing its computed header.\",\"paved_road\":\"Allow refreshing the computed meta header for this changed file.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_spool_captures.py\",\"line\":8,\"message\":\"The required meta check reports this changed file as drifted, but refreshing its header would violate the criterion that its diff contain only added lines.\",\"paved_road\":\"Allow the computed header lines to be refreshed while keeping all existing tests unchanged.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_watchdog_activation.py\",\"line\":9,\"message\":\"The required meta check reports this changed file as drifted, but the ticket explicitly requires its header to remain untouched.\",\"paved_road\":\"Allow refreshing the computed meta header for this changed file.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_provider_cooldown_failover.py\",\"line\":9,\"message\":\"The required meta check reports this changed file as drifted, but the ticket explicitly requires its header to remain untouched.\",\"paved_road\":\"Allow refreshing the computed meta header for this changed file.\"}]}",
+  "events_tail": "nd_execution\",\"command\":\"/bin/bash -lc \\\"rg -n 'drifted|def check|hash' clutch/meta.py | head -45; sed -n '60,85p' config.yaml; git status --short\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_16\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"rg -n 'drifted|def check|hash' clutch/meta.py | head -45; sed -n '60,85p' config.yaml; git status --short\\\"\",\"aggregated_output\":\"4:import hashlib\\n11:KEYS = (\\\"schema\\\", \\\"kind\\\", \\\"purpose\\\", \\\"relates\\\", \\\"owner\\\", \\\"verified\\\", \\\"hash\\\")\\n76:    return hashlib.sha256(text.encode()).hexdigest()\\n132:    fields = dict(fields) if fields is not None else dict(schema=\\\"clutch.meta/1.0\\\", kind=kind, purpose=\\\"\\\", relates=[], owner=\\\"\\\", verified=\\\"\\\", hash=\\\"\\\")\\n143:    current_hash = digest(body)\\n144:    if new or fields[\\\"hash\\\"] != current_hash:\\n146:        fields[\\\"hash\\\"] = current_hash\\n178:def check(config, root, fs, tracked, sha, paths=()):\\n192:            if fields[\\\"hash\\\"] != digest(body):\\n193:                findings.append((path, \\\"drifted\\\"))\\nengine_plane_safety_inventory: [clutch/specs/, clutch/gates.py, clutch/config.py, clutch/providers.py, config.yaml, test-gate.toml]\\n\\nmeta:\\n  paths:\\n    - {root: docs/, kind: plan}\\n    - {root: clutch/docs/, kind: guide}\\n    - {root: tests/, kind: test}\\n M tests/integration/test_provider_cooldown_failover.py\\n M tests/integration/test_watchdog_activation.py\\n M tests/spool_captures.py\\n M tests/unit/test_spool_captures.py\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_17\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The implementation and ticket verification pass, but the required meta check reports all four changed files as drifted, and the ticket prohibits the header edits needed to clear those findings.\\\",\\\"surprises\\\":\\\"The full integration check passed 3,559 tests; repository-wide lint and format checks passed. The coverage gate was skipped because it measures no changed file. The meta check also reported findings on untouched files. Updating computed headers whenever covered file bodies change prevents this class of drift.\\\",\\\"second_problems\\\":[{\\\"summary\\\":\\\"The meta check reports existing findings on untouched files, including drifted, missing, and empty-purpose headers.\\\"}],\\\"dead_ends\\\":\\\"None.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket budget was 20 minutes expected and 40 minutes stuck; elapsed time was not measured.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/spool_captures.py\\\",\\\"line\\\":8,\\\"message\\\":\\\"The required meta check reports this changed file as drifted; clearing it requires changing its computed header.\\\",\\\"paved_road\\\":\\\"Allow refreshing the computed meta header for this changed file.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_spool_captures.py\\\",\\\"line\\\":8,\\\"message\\\":\\\"The required meta check reports this changed file as drifted, but refreshing its header would violate the criterion that its diff contain only added lines.\\\",\\\"paved_road\\\":\\\"Allow the computed header lines to be refreshed while keeping all existing tests unchanged.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_watchdog_activation.py\\\",\\\"line\\\":9,\\\"message\\\":\\\"The required meta check reports this changed file as drifted, but the ticket explicitly requires its header to remain untouched.\\\",\\\"paved_road\\\":\\\"Allow refreshing the computed meta header for this changed file.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_provider_cooldown_failover.py\\\",\\\"line\\\":9,\\\"message\\\":\\\"The required meta check reports this changed file as drifted, but the ticket explicitly requires its header to remain untouched.\\\",\\\"paved_road\\\":\\\"Allow refreshing the computed meta header for this changed file.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1724782,\"cached_input_tokens\":1677568,\"cache_write_input_tokens\":0,\"output_tokens\":5721,\"reasoning_output_tokens\":766}}\n",
+  "wall_seconds": 218.650505,
+  "usd": 1.0,
+  "run_record": "tickets/spools-tests-via-helper-fake-fs/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
