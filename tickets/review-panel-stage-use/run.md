@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The final ticket verification passed 89 tests; the unit coverage gate passed 1,700 tests, the integration suite passed 3,546 tests, and lint and formatting passed. Mutation checks covered representative routing, aggregation, cost, failure, and logging errors; they did not individually cover every assertion.
+The single-call routing mutation was checked and detected; individual mutation checks were not completed for every assertion.
 
 ## Dead ends
 
-A restored mutation initially left stale Python bytecode; clearing the generated cache restored the passing verification result.
+The metadata refresh initially skipped the untracked test file; staging it allowed the header to be generated.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; actual elapsed time was not recorded.
+The ticket estimated 30 minutes; elapsed time was not measured.
 
