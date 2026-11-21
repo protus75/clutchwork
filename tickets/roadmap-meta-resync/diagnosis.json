@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "1fe4908c7a1348c3c3cf67b3393d3fdbeb50b65f",
+  "stem": "roadmap-meta-resync",
+  "attempt": 0,
+  "terminal": "timeout",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Attempt timed out at 363s against a 6m stuck budget. Most of that time went to full pytest runs (3595 tests on a /tmp base copy, then tests/integration again on the candidate). This metadata-only chore does not need them, so skip the full suites.",
+    "Redo the whole job from the merge base: in the worktree run `uv run clutch meta refresh docs/roadmap.md`, then commit docs/roadmap.md only. Per the ticket, only the clutch:meta block's `verified:` and `hash:` lines may change.",
+    "Verify only with the ticket's `## Verification` command, `uv run clutch meta check docs/roadmap.md`, which must exit 0 with no drifted finding. Also check that `git diff main -- docs/roadmap.md` shows only the `verified:` and `hash:` lines.",
+    "Do not chase integration flakes (test_host_loop.py, test_serve_admission.py) or set up a base-commit copy. They are outside the docs/roadmap.md fence. If you see a real failure, file it with `clutch box suggest` and finish this ticket."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
