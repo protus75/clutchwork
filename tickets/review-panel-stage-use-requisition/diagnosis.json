@@ -1,22 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "8f8238518ba43b1a887876bc4060e043ee974f2d",
+  "produced_at_sha": "cedb74ca0a02eafb4db833772418ca4818fad910",
   "stem": "review-panel-stage-use-requisition",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Criterion 11 contradicts the host rule that a tests/unit/ test never reads a repo file (clutch/docs/host-authoring.md; tests/integration/test_unit_io_rule.py:24). An ast check of clutch/requisition.py inside tests/unit/test_requisition_panel.py cannot be written, and inspect.getsource also reads",
-    "Ticket fix: move the criterion 11 single-call-site check into a new tests/integration/test_requisition_llm_call_site.py. It reads clutch/requisition.py through a Path(__file__) anchor, like criterion 13's test_rework_review_seq_call_site.py. Add the file to the Scope fence, Verification and",
-    "Ticket fix: also add tests/unit/test_rework_review_seq.py and tests/integration/test_rework_review_seq_call_site.py to ## Verification. Criteria 12 and 13 name them, but the Verification block leaves them out.",
-    "The rest of the premise held. The codex attempt implemented the work, and the full host suite passed (3553 passed). After the ticket is repaired, redo all of it from the merge base: review_ticket member loop, Driver.panel_members, the findings_union rma_code keyword, next_review_seq, and the"
+    "Review approved the production code in clutch/requisition.py, driver.py, panel.py and rework.py. Redo it the same way: from the merge base, with one llm_call site, member keys m<k>-<run_seq>, findings_union(rma_code=None), and next_review_seq.",
+    "Criterion 1 in tests/unit/test_requisition_panel.py: for both the () and single-member stand-ins, compare each recorded llm_call kwargs dict to a literal expected dict. Every key must match, and the effects/llm/redactor objects must be the stand-ins. Do the same for the full begin_watch kwargs.",
+    "Criterion 1 also needs the stage_start/stage_end event payloads asserted as exact literal dicts (stage_end calls=2), plus the whole returned RequisitionVerdict and its fields. Partial checks like (run_seq, call_seq) pairs plus a watch count were the finding.",
+    "Criterion 4: compare the whole panel_facts event kwargs to one literal dict from the ticket's worked example. Include event, stem, attempt, run_seq, surface=requisition_review, combiner findings-union, member_count 2, verdict_counts, merged, the members entries, dropped [], kept_index None and",
+    "Before committing, delete each exact-value assertion for criteria 1 and 4 one at a time and confirm the test fails (a mutation check). Then run the ticket's ## Verification commands as written."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0,
-    1,
     3
   ],
   "spec_version": "1.9",
