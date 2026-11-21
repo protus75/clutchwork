@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "a9ca54bc2d616335a0f1ed2230f56a81ccf16178",
+  "produced_at_sha": "0414a3543b2f9c5cf8e4e0b944906e8405110355",
   "stem": "serve-scan-ignores-head-moves",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Write a one-line `purpose:` in the clutch:meta header of tests/unit/test_serve_scan_head.py, tests/integration/test_serve_scan_head.py and tests/regress_serve_scan_head.py. An empty purpose makes clutch/meta.py `check` report `empty_purpose`, which fails criterion 7.",
-    "After editing each purpose line, run `uv run clutch meta refresh <file>` on that file so the hash matches. Then run `uv run clutch meta check` on exactly those three files and confirm it exits 0 before committing.",
-    "The stage log shows tests/regress_serve_scan_head.py printed `{\"regression_result\": \"pass\"}` with exit 0 in the .regression-base worktree. On the merge base it must print `defect` and exit non-zero, or criterion 5 and Definition of rejected fail.",
-    "Build the reproducer so it detects the old behavior: call clutch/serve.py `intake_snapshot` with no pending ticket file and a stand-in `rev_parse` that returns `a` then `b`. Print `defect` and exit 1 when the tuples differ, and `pass` when they are equal.",
-    "Review found the clutch/serve.py `intake_snapshot` conditional (head only when `pending` is non-empty) and the tests for criteria 1-4 and 6 sound. Redo the same approach, including the expectation change in test_scan_inputs_and_own_writes in tests/unit/test_serve_idle_poll.py."
+    "Review approved the logic but each new test file had two `# clutch:meta` blocks. Write each of tests/unit/test_serve_scan_head.py, tests/integration/test_serve_scan_head.py and tests/regress_serve_scan_head.py with exactly one header, made by `uv run clutch meta refresh <file>`.",
+    "After `clutch meta refresh`, edit only the purpose line by hand. Never paste in a second header block. Before committing, open lines 1-20 of each new file to confirm there is one `# clutch:meta` block. Then run `uv run clutch meta check` on those three files (criterion 7).",
+    "Redo the clutch/serve.py `intake_snapshot` change. Compute `pending` first. Set `head` to `await c.git.rev_parse(c.repo, \"main\")` only when `pending` is non-empty, else None. Keep the `except OSError, GitError: return None` path. Review found this approach sound.",
+    "Criterion 5 requires tests/regress_serve_scan_head.py to print the defect result on the merge base. The stage log shows a `pass` result with exit 0 right after the regression-base worktree was built. Run the reproducer on a base-commit worktree and make it detect the head-triggered rescan there."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
