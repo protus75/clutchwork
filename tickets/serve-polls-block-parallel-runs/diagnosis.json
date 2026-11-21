@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0b5e1808e7ab79e55434742f0edb15d41e67567d",
+  "stem": "serve-polls-block-parallel-runs",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The previous attempt stopped after about 57s with no commit or tests. Redo all of Scope in: work checks made without a lock for scan, the watch gate, merge and box_intake in clutch/serve.py; the section 7.2 sentence; tests/unit/test_serve_idle_poll.py,",
+    "Box retry timing: a new unread host report is always work. For failed arrivals with no consumed receipt, keep one last-retry time in Serve from the injected clock and call it due when 30s have passed. This meets the ticket's limit of at most one retry per 30s without per-arrival bookkeeping.",
+    "merge work check: mirror settle_admissions (clutch/control.py lines 310-323) exactly, using accepted confirm/reject, hold_id None and no completed effect. Also count an undecided inbox file, a pending stop or kill, unpaused mergequeue work, or an ended writer to prune. Run check_upgrade outside",
+    "scan/watch: snapshot the tickets dir mtimes, git status of tickets/ and main HEAD sha, plus last_states of pending stems only when such stems exist. Skip mutations() and the watch exclusive() gate (clutch/serve.py line 297) when the snapshot is unchanged. Never trigger on a journal append alone.",
+    "Before reporting, run the full ## Verification command and the ## Regression reproducer. The reproducer must exit non-zero with 'defect' on the merge base. Add nothing to tests/integration/serve_rig.py; only import it."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    2
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
