@@ -5,8 +5,8 @@
 # purpose: Deterministic capability and Reject routing through the production drain.
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py]
 # owner: engine
-# verified: 96e46658
-# hash: e79c51d7fcad9b175e07753ea0ecf3e47b9e3b21ac67ca5e4738887479789bf4
+# verified: 11213934
+# hash: 89bfd8b4854d44c5c9b63e6c88d6ff415e135f40a24e1ef14980c42df7ee342d
 
 import json
 
@@ -227,7 +227,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
     if failure in {"commit", "partial"}:
         from clutch.git import Git
 
-        commit = Git.commit
+        commit = Git._commit
 
         async def refuse(self, root, message, **kwargs):
             if message.endswith(": rework"):
@@ -236,7 +236,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
                 raise RuntimeError("publication refused")
             return await commit(self, root, message, **kwargs)
 
-        monkeypatch.setattr(Git, "commit", refuse)
+        monkeypatch.setattr(Git, "_commit", refuse)
     script = [agent({"clutch/thing.py": "ok\n"}), verdict("snag", [SNAG]), diagnosis("split"), split, requisition("rma") if failure == "review" else requisition()]
     if failure != "review":
         script.append(requisition())

@@ -5,8 +5,8 @@
 # purpose: Idle supervision selects operator lineages without producing another terminal.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/rework.py, clutch/runner.py, clutch/supervise_idle.py]
 # owner: engine
-# verified: 9a610809
-# hash: 114422910f533bb09103aae214ab67ba223d8ec5807b168ce8d57afda0e92348
+# verified: 11213934
+# hash: 670ed0ba803e05e65dcfb9ab2953d3407741938736dc2f74f8b1b8f1ad02907b
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, call
@@ -212,7 +212,12 @@ async def test_real_publication_effect_is_scoped(tmp_path, monkeypatch):
 
     ctx.driver.effects = SimpleNamespace(run=effect)
     ctx.git._run = AsyncMock(side_effect=["old", "new"])
-    ctx.git.commit = AsyncMock(return_value="commit")
+
+    async def commit_edit(*args, edit, **kwargs):
+        await edit()
+        return "commit"
+
+    ctx.git.commit_edit = AsyncMock(side_effect=commit_edit)
     monkeypatch.setattr(daemon, "apply_rework", real_apply)
     monkeypatch.setattr(idle, "parse_ticket", lambda *args: ticket)
     monkeypatch.setattr(daemon, "parse_ticket", lambda *args: ticket)

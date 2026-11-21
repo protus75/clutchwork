@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: The `drain` scaffold verb (CLUTCH_PLAN.md sections 9, 11.2, 18, 19.P1) against a temp checkout.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 148a8874
-# hash: 2b2dc1b16a93dc7adb56977d16cde6c2edf7af8ad8b603d29979eba6cd4b6da7
+# verified: 11213934
+# hash: 34a9fe0f90e1233779435668fd5f127fa25851982a11231df9b77ada9764d094
 
 import asyncio
 import json
@@ -772,14 +772,14 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
         return order("escalate") if action != "refusal" else order("update", [(STEM, "invalid")])
 
     if action == "publication":
-        commit = Git.commit
+        commit = Git._commit
 
         async def failed(self, root, message, **kwargs):
             if message.endswith(": rework"):
                 raise RuntimeError("publication failed")
             return await commit(self, root, message, **kwargs)
 
-        monkeypatch.setattr(Git, "commit", failed)
+        monkeypatch.setattr(Git, "_commit", failed)
     script = [] if action == "missing" else [reply]
     if action in {"split", "publication"}:
         script += [requisition(), requisition()]

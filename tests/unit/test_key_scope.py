@@ -4,8 +4,8 @@
 # purpose: test key scope
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: a5708f10
-# hash: 13d27e60620e49912dcce1ef76d343a9ce79400f48d3de6b9ff509db37bcadca
+# verified: 11213934
+# hash: df5c421ad9118df9ce90a1ece94656243b4e0ad26ccc9552b2f032602d5dfb70
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -115,7 +115,11 @@ def test_apply_rework_scoped_publication(tmp_path, monkeypatch):
         scopes.append(kwargs["key_scope"])
         return result
 
-    git = SimpleNamespace(_run=AsyncMock(side_effect=["old", "new", "old", "new", "old"]), rev_parse=AsyncMock(return_value="abc"), commit=AsyncMock(return_value="sha"))
+    async def commit_edit(*args, edit, **kwargs):
+        await edit()
+        return "sha"
+
+    git = SimpleNamespace(_run=AsyncMock(side_effect=["old", "new", "old", "new", "old"]), rev_parse=AsyncMock(return_value="abc"), commit_edit=AsyncMock(side_effect=commit_edit))
     ctx = SimpleNamespace(
         repo=tmp_path,
         worktree=lambda _: tmp_path,
@@ -135,7 +139,7 @@ def test_apply_rework_scoped_publication(tmp_path, monkeypatch):
     asyncio.run(run())
     assert keys == ["ticket-plane/item/sup-0/rework", "ticket-plane/item/0/rework", "ticket-plane/item/0/rework"]
     assert scopes == ["sup", None, None]
-    assert git.commit.await_count == 2
+    assert git.commit_edit.await_count == 2
 
 
 def test_rework_scopes_review_and_tree(tmp_path, monkeypatch):

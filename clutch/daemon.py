@@ -16,7 +16,7 @@ from clutch.control import CONTROL_DECISION, ControlInbox, ControlProjection, wr
 from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.flake import Flake
-from clutch.git import Git
+from clutch.git import Git, NothingToCommit
 from clutch.heartbeat import Heartbeat
 from clutch.journal import EventType, Journal
 from clutch.llmeffect import scoped_seq
@@ -387,28 +387,39 @@ async def apply_rework(ctx: StageContext, ticket: Ticket, findings: list[Finding
         if order.action == "escalate":
             return result
         paths = [ticket_path(p.stem) for p in order.tickets]
-        before = await ctx.git.rev_parse(ctx.repo, "HEAD")
+        original_bytes: dict[str, bytes | None] = {}
 
         async def restore_publication() -> None:
-            # Restore also removes added successors from the index and worktree. Stage any
-            # files left by a write/add failure so they belong to that same restore lane.
-            written = [path for path in paths if (ctx.repo / path).is_file()]
-            if written:
-                await ctx.git.add(ctx.repo, written)
-            indexed = set(await ctx.git.ls_files(ctx.repo))
-            restorable = [path for path in paths if path in indexed]
-            if restorable:
-                await ctx.git.restore(ctx.repo, restorable, source=before)
-            # A commit can land before its caller fails or exact-byte verification refuses.
-            # Compensate only its proposal paths, preserving unrelated staged work.
-            committed = (await ctx.git._run(ctx.repo, "diff", "--name-only", before, "HEAD", "--", *paths)).splitlines()
-            if committed:
-                await ctx.git.commit(ctx.repo, f"clutch({ticket.stem}): undo refused rework", only=committed)
+            restore_paths = paths.copy()
+
+            async def edit() -> None:
+                for proposal, path in zip(order.tickets, paths, strict=True):
+                    target = ctx.repo / path
+                    if path not in original_bytes or not target.is_file() or ctx.fs.read_bytes(target) != proposal.ticket.encode():
+                        continue
+                    prior = original_bytes[path]
+                    if prior is None:
+                        ctx.fs.remove(target)
+                    else:
+                        ctx.fs.write(target, prior)
+                indexed = set((await ctx.git._run(ctx.repo, "ls-files", "--", *paths)).splitlines())
+                restore_paths[:] = [path for path in paths if path in indexed or (ctx.repo / path).is_file()]
+                if not restore_paths:
+                    raise NothingToCommit([], 0, "", "")
+
+            try:
+                await ctx.git.commit_edit(ctx.repo, f"clutch({ticket.stem}): undo refused rework", only=restore_paths, edit=edit)
+            except NothingToCommit:
+                pass
 
         async def publish() -> dict:
-            for proposal, path in zip(order.tickets, paths, strict=True):
-                ctx.fs.write(ctx.repo / path, proposal.ticket.encode())
-            sha = await ctx.git.commit(ctx.repo, f"clutch({ticket.stem}): rework", only=paths)
+            async def edit() -> None:
+                for proposal, path in zip(order.tickets, paths, strict=True):
+                    target = ctx.repo / path
+                    original_bytes[path] = ctx.fs.read_bytes(target) if target.is_file() else None
+                    ctx.fs.write(target, proposal.ticket.encode())
+
+            sha = await ctx.git.commit_edit(ctx.repo, f"clutch({ticket.stem}): rework", only=paths, edit=edit)
             for proposal, path in zip(order.tickets, paths, strict=True):
                 if await ctx.git._run(ctx.repo, "show", f"HEAD:{path}") != proposal.ticket:
                     raise ValueError(f"committed {path} differs from the reviewed proposal")

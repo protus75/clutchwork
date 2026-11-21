@@ -5,8 +5,8 @@
 # purpose: Drive the production CLI core through injected delivery, process, filesystem and time seams.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 77c3dad9
-# hash: 07b9f49597344744d6f3b77d2a713cdb872252608f786d6462d0309adf5343e3
+# verified: 11213934
+# hash: bbffc4a8b55abb7f3a3bee1816b6b0105c061fd2574d6ff561f9bc61e375d9fc
 
 import ast
 import asyncio
@@ -1278,7 +1278,7 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
 
         monkeypatch.setattr(ctx.fs, "write", failed_write)
     if failure in {"add", "commit", "partial", "incomplete", "all-commits"}:
-        commit = ctx.git.commit
+        commit = ctx.git._commit
 
         async def failed(root, message, **kwargs):
             if message.endswith(": rework") or failure == "all-commits":
@@ -1289,7 +1289,7 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
                 raise RuntimeError("publication failed")
             return await commit(root, message, **kwargs)
 
-        monkeypatch.setattr(ctx.git, "commit", failed)
+        monkeypatch.setattr(ctx.git, "_commit", failed)
     if failure == "spent":
         for _ in range(ctx.config.caps.retry):
             caps.consume(ctx.driver.journal, ticket.stem, "retry", "old")
