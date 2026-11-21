@@ -1,20 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f8dc3325748bf7fe13d2cccf6d0dc00e44e0d60f",
+  "produced_at_sha": "f9e953e72e796536fcc5838294cd174c377380a0",
   "stem": "meta-fill-surface",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Review found the design sound: one shared compose helper in clutch/meta.py used by both refresh and fill, the .py trim applied to model-supplied relates, and blank model owners rejected. Redo all of that from the merge base. Only two small defects remain.",
-    "README.md line ~20: keep the list punctuation. Write it as: 'Use `clutch meta refresh` to update configured file metadata, `clutch meta check` to report missing, empty or drifted blocks, and `clutch meta fill` to fill them using a read-only model.'",
-    "tests/unit/test_meta_fill.py review_reply test: don't use one-letter paths like \"a\", since \"a\" is a substring of the label \"extra\". Use paths such as \"docs/asked.md\" and \"docs/added.md\", and assert the exact set of finding messages so that a missing or swapped path fails the test (criterion 4).",
-    "Before committing, reread every doc sentence you edited (README.md, docs/how-clutch-works.md section 2, clutch/docs/host-running.md). Make sure the existing meta refresh and meta check wording is still intact and correctly punctuated."
+    "Review found everything sound except criterion 5's second half. In tests/unit/test_main_meta_fill.py, add a test that runs asyncio.run(_run_meta(\"check\", ...)) and asyncio.run(_run_meta(\"refresh\", ...)) on a MemoryFS input. Assert exact return codes and captured stdout.",
+    "Compare against concrete expected outputs that match today's check/refresh behavior: check prints `<path>: missing` and returns 1 before refresh; refresh prints the changed path and returns 0; a later check prints `<path>: empty_purpose`. Check the expected strings against clutch/meta.py and",
+    "Redo all ticket work from the merge base. Review found the earlier design sound: fill computes generated fields in memory and does not call refresh before validation, so rejected files stay byte-identical. Keep that design, the async _run_meta signature and the asyncio.run edits in test_meta_cli.py.",
+    "Before finishing, check each acceptance criterion (1-8) against a test in the file that criterion names, not in another file. Then run all three ## Verification commands as written."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1
+  ],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
