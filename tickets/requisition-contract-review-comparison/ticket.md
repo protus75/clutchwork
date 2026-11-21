@@ -1,121 +1,117 @@
 ---
-state: confirmed
+state: draft
 source: human
 priority: P0
 kind: feature
 ---
 
 ## Depends on
-- requisition-review-compact-context
-- plan-subagents-explicit-sonnet
+- none
 
 ## Context
 - clutch/requisition.py
-- clutch/ask.py
-- clutch/config.py::Config
+- clutch/driver.py::Driver.panel_members
+- clutch/stages.py::implement_inputs
 - tests/integration/test_requisition.py
-- tests/unit/test_requisition_dependents.py
-- tests/unit/test_requisition_panel.py
-- tests/integration/test_ask_plan_drain.py
-- tests/integration/test_ask_plan_serve.py
-- clutch/docs/host-authoring.md
-- docs/how-clutch-works.md#3. Tickets
+- tests/unit/test_requisition_stage_events.py
+- tests/unit/test_callerless_code_removed.py
+- docs/how-clutch-works.md#8. AI providers and prompts
 
 ## On-demand
 - clutch/specs/requisition_review.md
 - clutch/specs/ask/plan-ticket-drain.md
 - clutch/specs/ask/plan-ticket-serve.md
-- clutch/specs/ask/author.md
-- clutch/specs/ask/review.md
 
 ## Goal / Why
-Owner decision, November 21: routine tickets receive one short Sonnet check; full buildability investigation and extra auditors run only when explicitly requested. The owner withdrew the proposed cost-comparison study. This stem now delivers that decision instead of an experiment. Current plan prompts require a separate adversarial audit for every authored row, while requisition review directs exhaustive caller/test investigation and repeated full dependent accounting. Stop that blanket cost. Retain mechanical authoring checks, the short ticket check, implemented-code review and existing run gates. Explicit full review uses the existing clutch prompt review STEM procedure; no new command, mode flag, classifier, benchmark or configuration framework is introduced.
+Owner decision, 2026-11-21: normal ticket review is one short Sonnet check. Today `review_ticket` sends the ticket plus the whole Implement prompt, tells the model to trace callers, importers and every test, makes it account for every coverage dependent (and fails a sound ticket on "extra dependent", box-000955), fans out to a panel, and re-prompts on a bad reply. The plan prompts also launch a separate adversarial audit agent per row. After this ticket a normal review is one model call over the ticket, its selected Context and the prior review, checking only the ticket's own statements; the per-row audit agent is gone. The full audit stays available as `clutch prompt review <stem>` when the owner asks for it.
 
 ## Boundary contract
 ### Routine ticket check
 - disposition: replace
-- owner: clutch/requisition.py and clutch/specs/requisition_review.md
-- consumers: CLI ticket review, Author, Rework and dispatch through their existing review_ticket calls
-- observable change: the automatic requisition check is a concise review of the supplied ticket and declared contracts, criteria and selected Context; it does not launch independent reviewers, perform exhaustive repository closure searches or redo full dependent accounting. The existing verdict vocabulary and JSON reply remain.
-- compatibility: preserve ticket parsing/lint, render feasibility, provider failure handling, provisional-review rules and implemented-code review. Existing full-investigation assertions migrate to the explicit audit owner. No automatic fallback to full review is permitted after a short-check snag.
-- acceptance: a normal ticket check uses one reviewer invocation with no model-panel fanout or schema-repair model retry inside that invocation; invalid replies return a concrete snag. A routine snag is repaired through the existing authoring process without adding auditors.
+- owner: clutch/requisition.py::review_ticket and clutch/specs/requisition_review.md
+- consumers: CLI `ticket review`, Author, Rework and dispatch, all through `review_with_identity`
+- observable change: one model call per review with prompt inputs `ticket`, `context` and `prior_review`; no coverage-dependent accounting, no panel, no re-prompt; an unparseable reply is a `snag` with `mechanical="invalid reply"`
+- compatibility: `RequisitionReply` and `RequisitionVerdict` are unchanged (`dependents` stays in the schema and the spec asks for `[]`); `review_ticket` and `review_with_identity` keep their signatures; ticket-lint and render-headroom snags still spend no model call; provider failure handling and stage events are unchanged
+- acceptance: criteria 1 to 3
 - tests: tests/unit/test_requisition_brief_check.py and tests/integration/test_requisition_brief_check.py
 - post-merge source of truth: clutch/requisition.py and clutch/specs/requisition_review.md
 
-### Explicit full investigation
-- disposition: reuse
-- owner: clutch/specs/ask/review.md
-- consumers: an operator explicitly requesting clutch prompt review STEM
-- observable change: the full adversarial procedure remains available on request; routine plan-ticket-drain and plan-ticket-serve workflows no longer invoke it for every row
-- compatibility: preserve its read-only checks and report-to-owner behavior, and preserve Sonnet selection for any Claude children an explicitly requested audit launches; no automatic size/tier/risk classifier chooses a full investigation
-- acceptance: rendered plan prompts require one short check and do not require a separate per-ticket audit; the explicit audit still exposes the detailed checks
-- tests: tests/integration/test_requisition_brief_check.py and tests/integration/test_ask_plan_brief_review.py
-- post-merge source of truth: clutch/specs/ask/review.md and the two shipped plan prompts
+### Driver panel accessor
+- disposition: replace
+- owner: clutch/driver.py
+- consumers: clutch/requisition.py::review_ticket only
+- observable change: `Driver.panel_members` is deleted with its only caller; the identity gatherer keeps using `providers.panel_members`
+- compatibility: no other production caller exists
+- acceptance: criterion 4
+- tests: tests/unit/test_callerless_code_removed.py
+- post-merge source of truth: clutch/driver.py
+
+### Plan prompts
+- disposition: extend
+- owner: clutch/specs/ask/plan-ticket-drain.md and clutch/specs/ask/plan-ticket-serve.md
+- consumers: operators running `clutch prompt plan-ticket-drain` and `clutch prompt plan-ticket-serve`
+- observable change: the per-row "separate agent with `clutch prompt review <stem>` for adversarial audit" step is removed; each prompt says to run `clutch prompt review <stem>` only when the owner asks for a full audit
+- compatibility: authoring, lint, `clutch ticket review` and confirm steps stay; the Sonnet subagent rule stays as written
+- acceptance: criterion 5
+- tests: tests/integration/test_requisition_brief_check.py
+- post-merge source of truth: the two plan prompts
 
 ## Scope in / Scope out
 Scope in:
-- Replace the routine requisition instructions with a short supplied-material check for clear contradictions, missing declared interface decisions, scope/criteria mismatches and impossible named verification. Treat a declared contract as the design input to check for contradictions, not permission to re-design it. Do not instruct the routine model to browse every caller, importer, test, sibling or dependent. Keep the existing reply schema; routine dependents is an empty list and no exhaustive dependents-accounting gate may force an investigation or another model call.
-- Keep mechanical lint and full Implement render feasibility checks. Remove coverage-dependent discovery/accounting from the automatic check; keep explicit full-audit checks in their existing ask/review.md owner. Delete private helpers that become production-callerless rather than maintaining a dormant second path. Keep sibling information only as the already bounded supplied overlap summary, not an instruction to investigate every sibling.
-- Run the routine requisition check as one member and one invocation, using the existing route and current Sonnet routing. Preserve provider drought/auth failure handling; malformed model output yields a snag instead of another automatic model call. Do not change the provider request schema or add a second LLM call site. Full review is the already-existing operator audit procedure, not a hidden engine escalation.
-- In both plan prompts remove the mandatory separate adversarial agent and any unconditional full re-audit before confirmation. Keep authoring, lint, one short ticket review and confirmation, plus existing release-phase acceptance. In ask/author.md describe the short check and preserve the existing bounded repair procedure. Explicit full audit requires an owner request; ticket size, a snag, the implementing model tier and agent preference do not authorize it.
-- Bump requisition_review.md to the next minor above main. Migrate existing assertions that pin exhaustive checks to the explicit ask/review.md owner, retaining their substantive checks there. Adjust direct full-investigation fixtures and panel/dependent tests to the new routine semantics; add new tests in separate files. Keep contract/criterion checks in the brief prompt, and verify the moved full checks remain available explicitly.
-- Update the authoring guide workflow and review descriptions in README, the host-running verb row, how-clutch-works, CLI help and the extension's existing review help to state the brief default and explicitly requested full audit. Preserve the mandatory ticket-review command in the managed conduct rules; this ticket changes its default depth, not that HARD rule. Do not edit the managed conduct block or its template.
-- The dependency's new context-pack tests that assert unchanged full dependent-accounting policy must now assert brief behavior; preserve their lossless material and no-duplicate-ticket assertions. The dependency's shared review identity continues to bind the selected brief spec and actual supplied inputs.
+- `clutch/specs/requisition_review.md`: bump `version` to the next minor above main. Replace the `## Task` bullet list with only these checks of the ticket's own text: a stated repo-state precondition not delivered by `## Depends on` (keep the existing precondition bullet verbatim); a boundary contract whose meaning or `none`/`create` reason is untrue; a `## Scope fence` or `## Verification` path that does not exist and that Scope in does not create (keep that bullet verbatim); a criterion or Definition-of-rejected clause that contradicts merged behavior, or two criteria that cannot both hold; two statements that cannot both hold; a stated invariant with no test obligation; the `no-reproduction-exit` bullet; the `## Regression` protocol bullet. Keep the graphics paragraph, the delimiter note in `## Role`, the `rma` paragraph and the prior-review paragraph (rule each prior finding `cleared` or `standing`; new findings only against changed text unless a criterion is impossible) verbatim. Delete every other Task bullet (sibling interfaces, tool-output scratch runs, reference-closure tracing, set/registry grep, whole-value grep, stand-in grep, roadmap-pin, dependents accounting, coverage floor, unit-test repo-file and disk placement), the "Redo dependents accounting" sentence and the "invalid requisition review reply ... transitive import" sentence. Add one sentence: judge only the supplied ticket and Context; do not search the repository for callers, importers, tests, siblings or dependents. Inputs become `ticket`, `context` (the ticket's selected Context) and `prior_review`; delete the `render`, `coverage_dependents`, `sibling_tickets` and `retry_findings` blocks. The output format keeps the same JSON keys and says `dependents` is always `[]`. Delete the `## On-failure` retry sentence about `retry_findings`; keep the insufficient-evidence and `rma` sentences.
+- `clutch/requisition.py::review_ticket`: keep the lint snag and the `_base_render` headroom snag. Take `context` from `implement_inputs(repo, text, ticket, ())["context"]` (the same reader `_base_render` uses; no second Context reader). Delete coverage-map reading, the data-file test scan, `expected_dependents`, the sibling block computation, the panel loop and the schema re-prompt loop. Make exactly one `llm_call` at `call_seq` with `key_scope` as given; on `ValidationError` return the existing `invalid reply` snag; otherwise return the reply's verdict. Keep stage events, watch, spool writes, timeout, drought, `ProviderCallError` re-raise and other-exception snag behavior. Keep the `coverage_map` keyword of `review_ticket`: `review_with_identity` passes it to `review_input_identity`, and removing it would change every caller and about fifteen tests for no behavior gain. Delete `dependent_errors` and `test_sources`, which have no other caller. Keep `sibling_tickets_block`; `review_input_identity` still uses it.
+- `clutch/driver.py`: delete `Driver.panel_members`.
+- Tests: delete tests/unit/test_requisition_panel.py and tests/unit/test_requisition_dependents.py (they test only the panel and dependent accounting). Delete tests/integration/test_spec_sibling_tickets.py, tests/integration/test_requisition_review_stand_in_closure.py, tests/integration/test_requisition_review_tool_output_evidence.py and tests/integration/test_requisition_review_whole_value_closure.py (each pins only a deleted Task bullet). In tests/integration/test_requisition.py, tests/unit/test_specs.py, tests/integration/test_precondition_rules.py, tests/integration/test_authoring_document_test_rule.py, tests/integration/test_fence_closure_registries.py and tests/integration/test_spec_unit_io_seam.py remove only the assertions or tests that pin deleted spec text or removed behavior (coverage-dependent prompt blocks, invalid coverage map snag, re-prompt then accept, sibling rule, spec `inputs` tuple, which becomes `("ticket", "context", "prior_review")`); keep their host-authoring guide, diagnose-spec and other assertions. Update the `requisition_review` version pin in tests/unit/test_specs.py and tests/integration/test_specs_delimiter_note.py. In tests/unit/test_requisition_sibling_tickets.py keep the `sibling_tickets_block` tests and delete the test asserting siblings reach the review prompt. Give the hand-built tickets in tests/unit/test_key_scope.py, tests/unit/test_requisition_stage_events.py and tests/unit/test_requisition_sibling_tickets.py whatever `context` they need to reach the new `implement_inputs` read (for example `context=()`), and nothing else. Add `(requisition, "dependent_errors")`, `(requisition, "test_sources")` and `(driver.Driver, "panel_members")` to the removed list in tests/unit/test_callerless_code_removed.py.
+- New tests: tests/unit/test_requisition_brief_check.py drives `review_ticket` with a fake driver and fake LLM under `tmp_path`; tests/integration/test_requisition_brief_check.py reads the shipped spec and plan prompts through a `Path(__file__)` anchor.
+- Plan prompts: in both files, replace "then a separate agent with `clutch prompt review <stem>` for adversarial audit; carry out its Recommendation," with nothing, and add one sentence to the same bullet: "Run `clutch prompt review <stem>` for a full audit only when the owner asks for one."
+- docs/how-clutch-works.md: in section 8 drop "requisition review" from the surfaces that fan out to a panel, and rewrite the `requisition_review.md` row of the spec table to describe the short check of the ticket and its Context. Nothing else in the document changes.
 Scope out:
-- No study, synthetic corpus, live evaluation calls, new training command, experiment report, automatic policy promotion, extra subagents, risk score, new config knob or removal of implemented-code review/tests.
+- Approval reuse, context packing beyond the `context` input above, `review_input_identity` composition, `RequisitionReply`/`RequisitionVerdict` schema, the full-audit and Author prompt specs, the managed conduct block, config, and review of implemented code.
 
 ## Scope fence
 - clutch/requisition.py
+- clutch/driver.py
 - clutch/specs/requisition_review.md
 - clutch/specs/ask/plan-ticket-drain.md
 - clutch/specs/ask/plan-ticket-serve.md
-- clutch/specs/ask/author.md
-- clutch/specs/ask/review.md
-- clutch/__main__.py
-- clutch/help.py
-- clutch/docs/host-authoring.md
-- clutch/docs/host-running.md
 - docs/how-clutch-works.md
-- README.md
 - tests/unit/test_requisition_brief_check.py
 - tests/integration/test_requisition_brief_check.py
-- tests/integration/test_ask_plan_brief_review.py
 - tests/integration/test_requisition.py
 - tests/unit/test_requisition_panel.py
 - tests/unit/test_requisition_dependents.py
-- tests/unit/test_requisition_context_pack.py
-- tests/integration/test_requisition_context_pack.py
 - tests/unit/test_requisition_sibling_tickets.py
 - tests/unit/test_requisition_stage_events.py
 - tests/unit/test_key_scope.py
 - tests/unit/test_callerless_code_removed.py
 - tests/unit/test_specs.py
 - tests/integration/test_specs_delimiter_note.py
+- tests/integration/test_precondition_rules.py
+- tests/integration/test_authoring_document_test_rule.py
+- tests/integration/test_fence_closure_registries.py
+- tests/integration/test_spec_unit_io_seam.py
+- tests/integration/test_spec_sibling_tickets.py
+- tests/integration/test_requisition_review_stand_in_closure.py
+- tests/integration/test_requisition_review_tool_output_evidence.py
+- tests/integration/test_requisition_review_whole_value_closure.py
 - tests/integration/test_ask_plan_drain.py
 - tests/integration/test_ask_plan_serve.py
-- tests/integration/test_authoring_document_test_rule.py
-- tests/integration/test_requisition_review_whole_value_closure.py
-- tests/integration/test_requisition_review_tool_output_evidence.py
-- tests/integration/test_requisition_review_stand_in_closure.py
-- tests/integration/test_spec_unit_io_seam.py
-- tests/integration/test_precondition_rules.py
-- tests/integration/test_fence_closure_registries.py
-- tests/integration/test_spec_sibling_tickets.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_requisition_brief_check.py tests/integration/test_requisition_brief_check.py` proves routine review performs one short reviewer invocation and no panel or schema-repair invocation; malformed replies snag without fallback to full investigation, and mechanical lint/render failures still use no model.
-2. `./dev.py test tests/integration/test_ask_plan_brief_review.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py` proves both workflows retain lint, short review and confirmation while requiring an explicit owner request for a full audit or extra reviewer; phase acceptance remains.
-3. `./dev.py test tests/integration/test_requisition_brief_check.py` proves the brief prompt omits exhaustive closure and repeated dependent-accounting obligations while the explicit ask/review.md audit retains those detailed checks; no tier, ticket size or model preference silently selects full review.
-4. `./dev.py test tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py tests/integration/test_requisition.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py` proves the dependency's lossless context/no-duplication behavior and the existing verdict and feasibility contracts remain after switching default review depth.
+1. `./dev.py test tests/unit/test_requisition_brief_check.py` proves an approving review makes exactly one LLM request (not two or more), and a reply that is not valid JSON returns `verdict="snag"` with `mechanical="invalid reply"` and `calls == 1`, not a second request.
+2. `./dev.py test tests/unit/test_requisition_brief_check.py` proves a reply listing dependents for a ticket with no coverage dependents returns `approve`, not a snag containing `extra dependent` (box-000955), and that the rendered prompt holds the ticket's selected Context bytes once and no `render`, `coverage_dependents`, `sibling_tickets` or `retry_findings` block.
+3. `./dev.py test tests/integration/test_requisition.py` proves a ticket failing lint and a ticket over render headroom still return a snag with zero LLM requests.
+4. `./dev.py test tests/unit/test_callerless_code_removed.py` proves `requisition.dependent_errors`, `requisition.test_sources` and `Driver.panel_members` no longer exist, not merely that they are unused.
+5. `./dev.py test tests/integration/test_requisition_brief_check.py` proves the shipped `requisition_review.md` Task has no "dependents", "Trace the reference closure" or "grep `tests/`" instruction, and that neither rendered plan prompt contains "for adversarial audit" while both still contain `clutch ticket review` and `clutch prompt review <stem>` tied to an owner request.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_requisition_brief_check.py tests/integration/test_requisition_brief_check.py tests/integration/test_ask_plan_brief_review.py tests/integration/test_requisition.py tests/unit/test_requisition_panel.py tests/unit/test_requisition_dependents.py tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_stage_events.py tests/unit/test_key_scope.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py
+./dev.py test tests/unit/test_requisition_brief_check.py tests/integration/test_requisition_brief_check.py tests/integration/test_requisition.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_stage_events.py tests/unit/test_key_scope.py tests/unit/test_callerless_code_removed.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_precondition_rules.py tests/integration/test_authoring_document_test_rule.py tests/integration/test_fence_closure_registries.py tests/integration/test_spec_unit_io_seam.py tests/integration/test_graphics_review_spec_blocks.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_plan_subagent_models.py tests/integration/test_author.py tests/integration/test_rework.py
 ```
 
 ## Definition of rejected
-A routine check silently runs full investigation or adds an auditor; a comparison study or new review framework is built; required mechanical checks or implemented-code review disappear; or an owner request is replaced by an automatic risk classifier.
+A routine review makes more than one model call, keeps dependent accounting or a panel, adds a fallback to a fuller review, adds a config knob, mode flag or new command, or changes files outside the fence.
 
 ## Time budget
-- expected: 30m
-- stuck: 60m
+- expected: 25m
+- stuck: 50m
