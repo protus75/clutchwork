@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "325c9c8ff8053bf077914370e38ae0b3e2f7af23",
+  "stem": "serve-confirm-during-check",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket fence omits a forced file: tests/integration/test_serve_kill.py:44 sets rig.owner.tasks._consumers = (bad, rig.owner.merge, rig.owner.box_intake), a 3-tuple. The required appended verdict_consumer makes serve expect 4, so the test hangs. Add the file to ## Scope fence and ## Context.",
+    "Once fenced, change only that tuple to (bad, rig.owner.merge, rig.owner.box_intake, rig.owner.verdicts) and keep its 'owned serve consumer returned unexpectedly' assertion. Add no compat path that accepts 3 consumers, because the ticket forbids optional branches.",
+    "A grep of tests/ for DaemonTasks( and _consumers = finds only test_daemon_tasks.py, test_kill_failure_suppression.py, test_kill_worker_stop.py (fenced) and test_serve_kill.py (unfenced). Adding the one file is enough; no further fence gap was found.",
+    "After the fence fix, redo all the work from the merge base: Serve.verdicts worker, appended DaemonTasks verdict_consumer, merge_work verdict-row removal, the new tests and tests/regress_serve_confirm_during_check.py. The held-Check test passed last time, so that approach was sound.",
+    "Keep docs/engine-state-db-plan.md out of this diff. Its stale verdict-in-merge text was filed as box-000962 and should not be folded in."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
