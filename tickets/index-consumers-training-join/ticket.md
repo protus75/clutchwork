@@ -46,7 +46,7 @@ Docs. The `training export` row and help text say implement records carry `file_
 - consumers: `clutch training export` (`clutch/__main__.py::handle_training`) and the people and tools reading `sft.jsonl`
 - observable change: `render` takes a keyword-only `index` mapping (default `None`) and adds `file_purposes` to implement records as defined above; a new `index_files(database, size, connect=duckdb.connect)` returns `{path: (purpose, frozenset(tickets))}` or `{}` on any failure; `handle_training` passes it for `export` only
 - compatibility: with `index=None` or `{}` every record, count and file is unchanged; the `eval` verb and its `render(... only=...)` call pass no index; no record key is renamed or removed
-- acceptance: criteria 1-5
+- acceptance: criteria 1-6
 - tests: tests/unit/test_training_index_join.py
 - post-merge source of truth: clutch/training.py and the Export section of clutch/docs/host-training.md
 
@@ -56,7 +56,7 @@ Docs. The `training export` row and help text say implement records carry `file_
 - consumers: `clutch roadmap` readers and the authors of rows 194 and 195
 - observable change: row 74 is renamed to this ticket's stem; two new rows are added
 - compatibility: the roadmap still parses and its gate commands stay valid; no other row changes
-- acceptance: criterion 6
+- acceptance: criterion 7
 - tests: tests/unit/test_roadmap_gate.py (existing)
 - post-merge source of truth: docs/roadmap.md
 
@@ -83,8 +83,9 @@ Scope out: `clutch/index.py` and the tables (unchanged); `doc draft --from` and 
 2. `./dev.py test tests/unit/test_training_index_join.py` asserts that with `index=None`, with `{}`, and with an index containing no changed path, the implement record has no `file_purposes` key and equals the record produced without the keyword, not an empty list.
 3. `./dev.py test tests/unit/test_training_index_join.py` asserts `index_files` returns `{}`, without raising, for a missing file, a directory in place of the file, a database lacking `touches`, and a connect function raising `duckdb.IOException`, not an exception.
 4. `./dev.py test tests/unit/test_training_index_join.py` asserts a preference record and a review record built from the same stems carry no `file_purposes` key, and that a purpose containing a configured secret drops the record and counts it in `dropped`, not writes the secret.
-5. `./dev.py test tests/unit/test_training_export.py tests/unit/test_training_trajectory.py tests/unit/test_training_export_kinds.py tests/unit/test_main_help.py` passes unchanged, so no existing record or help assertion flipped.
-6. `./dev.py test tests/unit/test_roadmap_gate.py` passes and review reads `docs/roadmap.md` rows 74, 194 and 195 as parsed table rows with the stems above and no other row changed; no test pins their text.
+5. `./dev.py test tests/unit/test_training_index_join.py` runs `entry.main(["training", "export", "--out", ...])` as `test_training_export.py::test_handler_success` does (monkeypatched `load_config` and `Git`), with the worked-example index at `<config.state_dir>/index.duckdb` under tmp_path and `training.render` monkeypatched to record its keyword arguments and return empty files and zero counts; it asserts `render` received `index` equal to the loaded mapping for `clutch/a.py`, and that with no index file `render` received `{}` and the exit code is 0, not `index=None` and not a refusal.
+6. `./dev.py test tests/unit/test_training_export.py tests/unit/test_training_trajectory.py tests/unit/test_training_export_kinds.py tests/unit/test_main_help.py` passes unchanged, so no existing record or help assertion flipped.
+7. `./dev.py test tests/unit/test_roadmap_gate.py` passes and review reads `docs/roadmap.md` rows 74, 194 and 195 as parsed table rows with the stems above and no other row changed; no test pins their text.
 
 ## Verification
 ```
