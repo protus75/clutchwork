@@ -74,7 +74,7 @@ Validation by rule (every field and input):
 - observable change: `review_ticket` reads the panel size for its tier and, above 1 and with `key_scope` unset, runs N member reviews with keys `llm/<stem_slot>/m<k>-<run_seq>/requisition_review/<attempt>/<call_seq>` and returns one combined `RequisitionVerdict`, writing one `panel_facts` log event. Inputs: the same arguments; outputs: the same `RequisitionVerdict` shape; failure: each outcome in Goal; side effects: member spools under `requisition_review/m<k>/`, one `panel_facts` log line; ordering: lint and headroom checks, then members in index order; persistence: effect keys and spools only, no new journal event type
 - compatibility: size 1, an unset panel or a set `key_scope` gives the same calls, keys, spool writes and verdict as before (criterion 1); six-part member keys are what `review-panel-r2` merged; `calls` is the total, which only advances the callers' next `call_seq` by at least what any member used; the requisition review prompt spec is unchanged, so no version bump
 - acceptance: criteria 1 to 11
-- tests: tests/unit/test_requisition_panel.py
+- tests: tests/unit/test_requisition_panel.py and tests/integration/test_requisition_llm_call_site.py
 - post-merge source of truth: clutch/requisition.py
 
 ### Rework review sequence scan
@@ -108,7 +108,7 @@ Validation by rule (every field and input):
 - post-merge source of truth: clutch/panel.py
 
 ## Scope in / Scope out
-The implementer creates the new test file's meta header with `uv run clutch meta refresh tests/unit/test_requisition_panel.py` and then edits only the `# purpose:` line to a non-empty one-line statement; the header is never written by hand.
+The implementer creates each new test file's meta header with `uv run clutch meta refresh <path>` (for tests/unit/test_requisition_panel.py, tests/unit/test_rework_review_seq.py, tests/integration/test_rework_review_seq_call_site.py and tests/integration/test_requisition_llm_call_site.py) and then edits only the `# purpose:` line to a non-empty one-line statement; the header is never written by hand.
 
 Scope in:
 - clutch/requisition.py, in `review_ticket` only: compute `size` (and force 1 when `key_scope` is not `None`); run the existing loop once per member with the member key scope, member spool segment and per-member retry count; combine with `findings_union(..., rma_code=None)`; log `panel_facts`; re-raise the last `ProviderCallError` when every member is dropped. The size-1 path keeps one `llm_call` site; `llm_call` is called from exactly one place in the file (criterion 11). Import `PanelMember`, `DroppedMember`, `findings_union` as needed. Early returns before the loop (lint, render, coverage map) are not changed.
@@ -118,7 +118,8 @@ Scope in:
 - clutch/panel.py: `findings_union` gains `rma_code` and the type-of-first-reply result; no other function changes.
 - tests/unit/test_requisition_stage_events.py, tests/unit/test_requisition_dependents.py, tests/unit/test_key_scope.py, tests/unit/test_requisition_sibling_tickets.py: each hand-built driver stand-in that reaches `review_ticket` gains `panel_members=lambda tier, surface: ()`; no other line changes.
 - docs/how-clutch-works.md: section 8.2 (line ending "review fans out, while the other surfaces do not yet") says review and requisition review fan out and the rest do not yet; no other section changes.
-- tests/unit/test_requisition_panel.py: new file holding every new test, built on fakes and monkeypatched `llm_call` as in tests/unit/test_requisition_stage_events.py.
+- tests/unit/test_requisition_panel.py: new file holding every new behavior test, built on fakes and monkeypatched `llm_call` as in tests/unit/test_requisition_stage_events.py. It reads no repository file (a `tests/unit/` test never reads a repo file, including through `inspect.getsource`; see tests/integration/test_unit_io_rule.py).
+- tests/integration/test_requisition_llm_call_site.py: new file holding only the criterion 11 source check; it reads `clutch/requisition.py` through a `Path(__file__)` anchor, like tests/integration/test_rework_review_seq_call_site.py.
 
 Scope out:
 - Diagnosis and triage (`review-panel-stage-use-majority`, row 192), per-member scorecard attribution (row 68), a shared stuck budget (Suggestion Box), the requisition review prompt spec (unchanged, no version bump), `clutch/runner.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py`, `clutch/config.py`.
@@ -132,6 +133,7 @@ Scope out:
 - tests/unit/test_rework_review_seq.py
 - tests/integration/test_rework_review_seq_call_site.py
 - tests/unit/test_requisition_panel.py
+- tests/integration/test_requisition_llm_call_site.py
 - tests/unit/test_requisition_stage_events.py
 - tests/unit/test_requisition_dependents.py
 - tests/unit/test_key_scope.py
@@ -149,21 +151,21 @@ Scope out:
 8. `findings_union` keyword: with `ReviewVerdict` replies and no `rma_code`, the results of the existing cases are unchanged (`./dev.py test tests/unit/test_panel_combiners.py` still passes unedited); with `rma_code=None` and `RequisitionReply` replies, the result is a `RequisitionReply`, not a `ReviewVerdict`, and an `rma` result keeps a finding coded `requisition_review`, which the default would drop; checked by `./dev.py test tests/unit/test_requisition_panel.py tests/unit/test_panel_combiners.py`.
 9. `Driver.panel_members`: a driver with `_notify_config=(config, {})` and a `requisition_review` row `panel: {size: 2, combine: findings-union}` over two candidates returns two `Served`, the second candidate's provider second; a directly built `Driver` returns `()`; a config with no `requisition_review` row and no `review` row returns `()` (the `ProviderSetupError` is swallowed); a config whose `review` row has a panel and no `requisition_review` row returns at most one member, not two; checked by `./dev.py test tests/unit/test_requisition_panel.py`.
 10. Real combination path: the panel test drives `review_ticket` with the real `findings_union` (not a stub) and with a real `RequisitionReply` parsed from a JSON string that carries `dependents`, so a member whose reply lists dependents does not fail `dependent_errors` and the combined verdict has no dependents field; checked by `./dev.py test tests/unit/test_requisition_panel.py`.
-11. Single call site: a source check in the test parses `clutch/requisition.py` with `ast` and finds exactly one call to `llm_call`, inside `review_ticket`, so the size-1 path and the member path share it; checked by `./dev.py test tests/unit/test_requisition_panel.py`.
+11. Single call site: `tests/integration/test_requisition_llm_call_site.py` reads `clutch/requisition.py` through a `Path(__file__)` anchor, parses it with `ast` and finds exactly one call to `llm_call`, inside `review_ticket`, so the size-1 path and the member path share it; no `tests/unit/` file reads `clutch/requisition.py`; checked by `./dev.py test tests/integration/test_requisition_llm_call_site.py`.
 12. Existing behavior holds: checked by `./dev.py test tests/unit/test_requisition_stage_events.py tests/unit/test_requisition_dependents.py tests/unit/test_key_scope.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_prior_review.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py tests/integration/test_requisition.py tests/integration/test_rework.py`.
 13. `tests/unit/test_rework_review_seq.py` asserts `next_review_seq` on in-memory history lists of objects with a `.key`: no keys gives `0`; the plain keys `llm/t/2/requisition_review/2/1` and `.../2` give `2`; only member keys `llm/t/m0-2/requisition_review/2/1`, `llm/t/m1-2/requisition_review/2/1` give `1`, not `0` (the old scan returned `0` for them, which is the replay hazard); both families mixed give the larger `call_seq`; a member key of another key_attempt (`llm/t/m0-12/requisition_review/2/5` for key_attempt `2`) and of another stem or attempt is ignored. Check: `./dev.py test tests/unit/test_rework_review_seq.py`. A second file, `tests/integration/test_rework_review_seq_call_site.py`, reads `clutch/rework.py` through a `Path(__file__)` anchor, parses it with `ast` and asserts exactly one call of `next_review_seq` and no remaining inline scan over the prefix `llm/{ticket.stem}/{key_attempt}/requisition_review/{attempt}/`. Check: `./dev.py test tests/integration/test_rework_review_seq_call_site.py`.
-14. The new files' headers are valid: `uv run clutch meta check tests/unit/test_requisition_panel.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py` exits 0.
+14. The new files' headers are valid: `uv run clutch meta check tests/unit/test_requisition_panel.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py tests/integration/test_requisition_llm_call_site.py` exits 0.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_requisition_panel.py tests/unit/test_panel_combiners.py tests/unit/test_requisition_stage_events.py tests/unit/test_requisition_dependents.py tests/unit/test_key_scope.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_prior_review.py tests/unit/test_review_panel_use.py tests/integration/test_requisition.py tests/integration/test_rework.py
-uv run clutch meta check tests/unit/test_requisition_panel.py
+./dev.py test tests/unit/test_requisition_panel.py tests/integration/test_requisition_llm_call_site.py tests/unit/test_panel_combiners.py tests/unit/test_requisition_stage_events.py tests/unit/test_requisition_dependents.py tests/unit/test_key_scope.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_prior_review.py tests/unit/test_review_panel_use.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py tests/integration/test_requisition.py tests/integration/test_rework.py
+uv run clutch meta check tests/unit/test_requisition_panel.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py tests/integration/test_requisition_llm_call_site.py
 ```
 
 ## Definition of rejected
-A size-1, unset-panel or scoped (`key_scope` set) review whose `llm_call` arguments, spool writes, stage events or returned verdict differ from today's; a second `llm_call` call site; a member key that is not `m<k>-<run_seq>` in the third part; a requisition panel that reads a `review` row's panel; a `panel_facts` record written to the journal; a swallowed `ProviderCallError` when every member failed; any edit to `clutch/runner.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py` or the requisition review prompt spec, or to `clutch/rework.py` beyond extracting `next_review_seq` and its one call site; a `getattr` fallback on the driver.
+A size-1, unset-panel or scoped (`key_scope` set) review whose `llm_call` arguments, spool writes, stage events or returned verdict differ from today's; a second `llm_call` call site; a member key that is not `m<k>-<run_seq>` in the third part; a requisition panel that reads a `review` row's panel; a `panel_facts` record written to the journal; a swallowed `ProviderCallError` when every member failed; a `tests/unit/` test that reads a repository file; any edit to `clutch/runner.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py` or the requisition review prompt spec, or to `clutch/rework.py` beyond extracting `next_review_seq` and its one call site; a `getattr` fallback on the driver.
 
 ## Time budget
 - expected: 30m
 - stuck: 60m
-- reason: one function restructured in `clutch/requisition.py`, a small accessor in `clutch/driver.py`, one keyword in `clutch/panel.py`, two new test files, a small extracted function in `clutch/rework.py`, four one-line stand-in edits and one doc sentence; the merged `findings_union`, member keys and `panel_members` carry the mechanism, and diagnosis, triage and the shared stuck budget are separate rows or suggestions.
+- reason: one function restructured in `clutch/requisition.py`, a small accessor in `clutch/driver.py`, one keyword in `clutch/panel.py`, three new test files plus one small integration source check, a small extracted function in `clutch/rework.py`, four one-line stand-in edits and one doc sentence; the merged `findings_union`, member keys and `panel_members` carry the mechanism, and diagnosis, triage and the shared stuck budget are separate rows or suggestions.
