@@ -1,0 +1,235 @@
+"""Incremental, rebuildable project index."""
+
+import ast
+import hashlib
+import json
+import math
+import re
+from pathlib import Path
+from typing import Protocol
+
+import duckdb
+
+from clutch import meta
+from clutch.evidence.store import SKIP
+from clutch.git import GitError
+from clutch.seams import ExecutableNotFound
+
+EMBED_TIMEOUT_S = 60
+_FLOAT_MAX = 3.4028234663852886e38
+
+
+class IndexCreator(Protocol):
+    def load(self, connection, kind: str) -> list[str]: ...
+
+    def create(self, connection, kind: str) -> list[str]: ...
+
+
+class _Creator:
+    def load(self, connection, kind):
+        try:
+            connection.execute(f"INSTALL {kind}")
+            connection.execute(f"LOAD {kind}")
+        except duckdb.Error as exc:
+            return [f"{kind} unavailable: {exc}"]
+        return []
+
+    def create(self, connection, kind):
+        try:
+            if kind == "vss":
+                connection.execute("SET hnsw_enable_experimental_persistence = true")
+                connection.execute("CREATE INDEX IF NOT EXISTS embeddings_hnsw ON embeddings USING HNSW (vec)")
+            else:
+                connection.execute("PRAGMA create_fts_index('chunks', 'selector', 'text', overwrite=1)")
+        except duckdb.Error as exc:
+            return [f"{kind} unavailable: {exc}"]
+        return []
+
+
+default_creator = _Creator()
+
+
+def _exists(conn, table):
+    return bool(conn.execute("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name = ?", [table]).fetchone()[0])
+
+
+def _extract(path, data):
+    kind, purpose, relates, owner = "", "", [], ""
+    chunks = []
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return kind, purpose, relates, owner, chunks
+    suffix = Path(path).suffix
+    try:
+        fields, _, _ = meta.parse(text, suffix)
+    except meta.Malformed:
+        fields = None
+    tree = None
+    if suffix == ".py":
+        try:
+            tree = ast.parse(text)
+        except SyntaxError:
+            pass
+        if tree is not None:
+            doc = ast.get_docstring(tree)
+            if doc:
+                purpose = doc.splitlines()[0]
+    if fields is not None:
+        kind, purpose, relates, owner = (fields[k] for k in ("kind", "purpose", "relates", "owner"))
+    if suffix == ".md":
+        headings = []
+        offset = 0
+        fenced = False
+        for line in text.splitlines(keepends=True):
+            if line.strip().startswith("```"):
+                fenced = not fenced
+            elif not fenced and (heading := re.match(r"^#{1,6}[ \t]+(.*?)[ \t]*$", line.rstrip("\r\n"))):
+                title = re.sub(r"[ \t]+#+[ \t]*$", "", heading.group(1)).strip()
+                headings.append((offset, title))
+            offset += len(line)
+        for i, (start, title) in enumerate(headings):
+            chunk = text[start : headings[i + 1][0] if i + 1 < len(headings) else len(text)]
+            chunks.append((path, f"{path}#{title}", chunk, len(chunk.split())))
+    elif tree is not None:
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                segment = ast.get_source_segment(text, node)
+                chunks.append((path, f"{path}::{node.name}", segment, len(segment.split())))
+                if isinstance(node, ast.ClassDef):
+                    for method in node.body:
+                        if isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            segment = ast.get_source_segment(text, method)
+                            chunks.append((path, f"{path}::{node.name}.{method.name}", segment, len(segment.split())))
+    return kind, purpose, relates, owner, chunks
+
+
+async def _embed(conn, config, root, fs, exec_, env):
+    exists = _exists(conn, "embeddings")
+    length = None
+    if exists:
+        typename = conn.execute("SELECT data_type FROM information_schema.columns WHERE table_name = 'embeddings' AND column_name = 'vec'").fetchone()[0]
+        length = int(re.search(r"\[(\d+)\]$", typename).group(1))
+    query = "SELECT path, selector, text FROM chunks"
+    if exists:
+        query += " WHERE NOT EXISTS (SELECT 1 FROM embeddings e WHERE e.path = chunks.path AND e.selector = chunks.selector)"
+    for path, selector, text in conn.execute(query).fetchall():
+        temp = config.state_dir / "index-embed-input.tmp"
+        fs.write(temp, text.encode())
+        try:
+            try:
+                rc, stdout, _ = await exec_.run(config.index.embed, cwd=root, env=env, timeout=EMBED_TIMEOUT_S, stdin_path=temp)
+                reason = f"exit {rc}" if rc else None
+            except (ExecutableNotFound, TimeoutError, OSError) as exc:
+                reason = f"exec {type(exc).__name__}"
+        finally:
+            fs.remove(temp)
+        if reason is None:
+            try:
+                vector = json.loads(stdout)
+            except ValueError, TypeError:
+                reason = "not json"
+            else:
+                if not isinstance(vector, list) or not vector or any(type(x) not in (int, float) or abs(x) > _FLOAT_MAX or not math.isfinite(x) for x in vector):
+                    reason = "not a vector"
+                elif length is not None and len(vector) != length:
+                    reason = f"length {len(vector)} != {length}"
+        if reason:
+            conn.execute("DROP TABLE IF EXISTS embeddings")
+            return [f"embed_failed: {selector}: {reason}"]
+        if length is None:
+            length = len(vector)
+            conn.execute(f"CREATE TABLE embeddings (path VARCHAR, selector VARCHAR, vec FLOAT[{length}])")
+        conn.execute("INSERT INTO embeddings VALUES (?, ?, ?)", [path, selector, vector])
+    return []
+
+
+async def build(config, root, *, fs, git, exec_, env, store, creator, connect=duckdb.connect):
+    """Build the index and return closed-outcome findings."""
+    try:
+        conn = connect(str(config.state_dir / "index.duckdb"))
+    except Exception as exc:
+        return [f"db_open_failed: {exc}"]
+    try:
+        extension_findings = []
+        vss = False
+        if config.index.embed:
+            loaded = creator.load(conn, "vss")
+            extension_findings.extend(loaded)
+            vss = not loaded
+        loaded = creator.load(conn, "fts")
+        extension_findings.extend(loaded)
+        fts = not loaded
+        findings = []
+        conn.execute("CREATE TABLE IF NOT EXISTS files (path VARCHAR, kind VARCHAR, purpose VARCHAR, relates VARCHAR, owner VARCHAR, hash VARCHAR, size BIGINT)")
+        conn.execute("CREATE TABLE IF NOT EXISTS chunks (path VARCHAR, selector VARCHAR, text VARCHAR, tokens BIGINT)")
+        conn.execute("CREATE TABLE IF NOT EXISTS touches (ticket VARCHAR, commit_sha VARCHAR, path VARCHAR)")
+        conn.execute("CREATE TABLE IF NOT EXISTS calls (key VARCHAR, stem VARCHAR, surface VARCHAR, tree_before VARCHAR, tree_after VARCHAR, changed_paths VARCHAR[])")
+        git_available = True
+        try:
+            paths = await git.ls_files(root)
+        except GitError as exc:
+            git_available = False
+            findings.append(f"git_failed: {exc}")
+        else:
+            if not config.index.embed:
+                conn.execute("DROP TABLE IF EXISTS embeddings")
+            paths = sorted(p for p in paths if Path(p).suffix in (".md", ".py") and not p.startswith("tickets/"))
+            old = dict(conn.execute("SELECT path, hash FROM files").fetchall())
+            has_embeddings = vss and _exists(conn, "embeddings")
+            for path in sorted(set(old) - set(paths)):
+                for table in ("files", "chunks") + (("embeddings",) if has_embeddings else ()):
+                    conn.execute(f"DELETE FROM {table} WHERE path = ?", [path])
+            for path in paths:
+                data = fs.read_bytes(root / path)
+                digest = hashlib.sha256(data).hexdigest()
+                if old.get(path) == digest:
+                    continue
+                for table in ("files", "chunks") + (("embeddings",) if has_embeddings else ()):
+                    conn.execute(f"DELETE FROM {table} WHERE path = ?", [path])
+                kind, purpose, relates, owner, chunks = _extract(path, data)
+                conn.execute("INSERT INTO files VALUES (?, ?, ?, ?, ?, ?, ?)", [path, kind, purpose, json.dumps(relates), owner, digest, len(data)])
+                for chunk in chunks:
+                    conn.execute("INSERT INTO chunks VALUES (?, ?, ?, ?)", chunk)
+            if vss:
+                findings.extend(await _embed(conn, config, root, fs, exec_, env))
+        try:
+            touches = await git.ticket_touches(root)
+        except GitError as exc:
+            findings.append(f"git_failed: {exc}")
+        else:
+            existing = set(conn.execute("SELECT DISTINCT ticket, commit_sha FROM touches").fetchall())
+            for ticket, sha, paths in touches:
+                if (ticket, sha) not in existing:
+                    for path in paths:
+                        conn.execute("INSERT INTO touches VALUES (?, ?, ?)", [ticket, sha, path])
+                    existing.add((ticket, sha))
+        existing_calls = {row[0] for row in conn.execute("SELECT key FROM calls").fetchall()}
+        for key in store.call_keys(""):
+            if key in existing_calls:
+                continue
+            try:
+                start = store.read_record(key, "start")
+                if start is SKIP:
+                    continue
+                try:
+                    end = store.read_record(key, "end")
+                except FileNotFoundError:
+                    continue
+                if end is SKIP:
+                    continue
+            except Exception:
+                findings.append(f"call_unreadable: {key}")
+                continue
+            conn.execute(
+                "INSERT INTO calls VALUES (?, ?, ?, ?, ?, ?)",
+                [key, start.stem or "", start.surface, start.repo.tree_before if start.repo else "", end.repo.tree_after if end.repo else "", end.repo.changed_paths if end.repo else []],
+            )
+        findings.extend(extension_findings)
+        if vss and git_available and _exists(conn, "embeddings"):
+            findings.extend(creator.create(conn, "vss"))
+        elif fts:
+            findings.extend(creator.create(conn, "fts"))
+        return findings
+    finally:
+        conn.close()
