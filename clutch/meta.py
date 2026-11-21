@@ -107,7 +107,7 @@ def _relates(text, path, tracked):
 
 def _render(fields, suffix):
     values = {**fields, "relates": "[" + ", ".join(fields["relates"]) + "]"}
-    lines = [f"{key}: {values[key]}" for key in KEYS]
+    lines = [f"{key}: {values[key]}".rstrip() for key in KEYS]
     if suffix == ".md":
         return "<!-- clutch:meta\n" + "\n".join(lines) + "\n-->\n"
     return "# clutch:meta\n" + "".join(f"# {line}\n" for line in lines)

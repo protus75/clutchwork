@@ -4,8 +4,8 @@
 # purpose: test meta cli
 # relates: [clutch/__main__.py, tests/unit/test_meta_refresh.py]
 # owner: engine
-# verified: 9a610809
-# hash: e12bbe71f10a62398c827fe220c7f83917c78a9a331eb8d3c2d3582ecbc40bf3
+# verified: bba3321b
+# hash: 16cb24db7dafb8ee103858b84ab64d9c67000c7638bebb2d48a6664ace013837
 import asyncio
 from pathlib import Path
 
@@ -22,7 +22,7 @@ def test_check_and_refusal(capsys):
     assert asyncio.run(_run_meta("check", *args)) == 1
     assert "empty_purpose" in capsys.readouterr().out
     path = Path("/repo/docs/a.md")
-    fs.files[path] = fs.files[path].replace(b"purpose: \n", b"purpose: useful\n")
+    fs.files[path] = fs.files[path].replace(b"purpose:\n", b"purpose: useful\n")
     assert asyncio.run(_run_meta("check", *args)) == 0
     fs.files[path] += b"changed\n"
     assert asyncio.run(_run_meta("check", *args)) == 1

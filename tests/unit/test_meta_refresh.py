@@ -4,8 +4,8 @@
 # purpose: test meta refresh
 # relates: [clutch/meta.py]
 # owner: clutch/meta.py
-# verified: 9a610809
-# hash: 4aa1f31bb53dcda249c4593291f3dd5cc8c3a3682e8c89fb44f8045e648ec29c
+# verified: bba3321b
+# hash: 4cc8b11b2b6e5beb0915bee694dfad2e990004996ade11719cfadc642e211c5d
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -66,7 +66,7 @@ def test_generation_and_preservation():
     text = fs.read_bytes(path).decode()
     fields, _, _ = meta.parse(text, ".py")
     assert fields["kind"] == "fixture" and fields["relates"] == ["clutch/foo.py"] and fields["owner"] == "clutch/foo.py"
-    fs.files[path] = text.replace("# purpose: \n", "# purpose: useful\n").encode()
+    fs.files[path] = text.replace("# purpose:\n", "# purpose: useful\n").encode()
     assert run(fs, files)[0] == []
     assert b"purpose: useful" in fs.read_bytes(path)
 
