@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The existing renderer prefixes refusal stderr with "clutch evidence: ", while the ticket requires stderr itself to start with "no capture" or "unreadable capture" and limits changes in clutch/__main__.py to the parser and handle_evidence branch.
+Used the existing two-word verb-table format for the new documentation rows. The simpler approach of retaining blobs only through call references was rejected because pruning a call could delete a captured blob.
 
 ## Dead ends
 
-The ticket verification exposed the prefix conflict in the missing and unreadable capture cases; no changes were committed.
+The first unit gate exposed a three-word documentation row incompatible with the existing verb-table check; the row was corrected.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 20 minutes; actual timing not recorded.
 
