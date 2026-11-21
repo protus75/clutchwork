@@ -284,6 +284,10 @@ class Meta(StrictModel):
     paths: list[MetaPath] = []
 
 
+class Index(StrictModel):
+    embed: Argv | None = None
+
+
 class TrainingData(StrictModel):
     enabled: bool = False
     exclude: list[Annotated[str, Field(min_length=1)]] = []
@@ -317,6 +321,7 @@ class Config(StrictModel):
     evidence: Evidence = Evidence()
     training_data: TrainingData = TrainingData()
     meta: Meta = Meta()
+    index: Index = Index()
     scheduler: Scheduler = Scheduler()
     caps: Caps = Caps()
     circuit_breaker: CircuitBreaker = CircuitBreaker()

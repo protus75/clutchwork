@@ -164,6 +164,7 @@ Config:
     evidence: {max_gb: 20}
     training_data: {enabled: false, exclude: []}
     meta: {paths: []}
+    index: {embed: null}
     scheduler: {max_unmerged: 2, parallel: {enabled: false, max_runs: 2, shared_paths: []}}
     caps: {diagnosis: 3, retry: 3, premise_bounce: 1, infra: 3, attempts: 5, quarantine: 5, supervise: 2}
     circuit_breaker: {k: 3, cooldown_minutes: 10}
@@ -189,6 +190,9 @@ Evidence:
 Meta:
   required: []
   defaults: {paths: []}
+Index:
+  required: []
+  defaults: {embed: unset}
 MetaPath:
   required: [root, kind]
   defaults: {}

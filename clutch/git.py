@@ -147,6 +147,24 @@ class Git:
                 result.append((sha, lines[0]))
         return result
 
+    async def ticket_touches(self, dir: Path) -> list[tuple[str, str, list[str]]]:
+        out = await self._run(dir, "log", "--first-parent", "--reverse", "--format=%x1e%H%x00%(trailers:key=clutch-ticket,valueonly)%x00", "--name-only", "-z", "HEAD")
+        result = []
+        for record in out.split("\x1e"):
+            parts = record.split("\0")
+            if len(parts) < 3:
+                continue
+            sha, trailer = parts[:2]
+            lines = trailer.strip().splitlines()
+            if len(lines) == 1 and re.fullmatch(r"\S+", lines[0]):
+                paths = parts[2:]
+                if paths and paths[0] == "":
+                    paths = paths[1:]
+                if paths and paths[0].startswith("\n"):
+                    paths[0] = paths[0][1:]
+                result.append((lines[0], sha, [path for path in paths if path]))
+        return result
+
     async def tag(self, dir: Path, name: str, message: str, target: str) -> None:
         await self._run(dir, "tag", "-a", _ref(name), "-m", message, _ref(target))
 
