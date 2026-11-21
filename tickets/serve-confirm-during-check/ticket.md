@@ -98,7 +98,7 @@ Confirmation still waits for unrelated run release; only its acceptance message 
 
 ## Regression
 ```
-.venv/bin/python tests/regress_serve_confirm_during_check.py
+uv run python tests/regress_serve_confirm_during_check.py
 ```
 - carries: tests/regress_serve_confirm_during_check.py
 - carries: tests/integration/test_serve_confirm_during_check.py
