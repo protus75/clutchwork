@@ -1,18 +1,20 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The merge tests and unit coverage gate passed, and the regression reproducer reported the defect on the merge base. The full integration run exposed a shared fixture whose filesystem fake does not contain the real checkout files used by its Git seam. The affected serve-admission test passed on the base commit and failed on the candidate. The simpler approach of restoring the owner’s entire saved file was rejected because it would discard nonconflicting ticket changes.
+The final ticket verification passed 266 tests; the unit coverage gate passed 1,815 tests. Watchdog and host-loop checks passed 8 tests on both candidate and base. The regression reproducer passed on the candidate and reported the defect on the base. Lint and format passed. The full integration run timed out in the serve-admission safety case, which passed alone; the subsequent ticket verification passed. Restoring the saved config wholesale was rejected because it would discard non-conflicting ticket changes. The new tests guard this preservation behavior.
 
 ## Dead ends
 
-Treating any nonempty status output as a configuration edit also misclassified fixture responses; matching porcelain records did not resolve the shared filesystem fixture mismatch.
+none
 
 ## Second problems filed
 
-- box-001009-707a106e: docs/how-clutch-works.md describes dirty-checkout behavior that would become stale after this change, but the ticket explicitly excludes documentation.
+- box-001010-220843ef: The full integration suite timed out in serve-admission cases: safety and precheck on the candidate, and integration on the base.
+- box-001011-51b7d4bc: docs/how-clutch-works.md describes the dirty-checkout rule without the new config.yaml exemption and is outside the scope fence.
+- box-001012-29d0ac19: The repository-wide metadata check reports docs/roadmap.md as drifted and tests/unit/test_training_triage_records.py with an empty purpose; neither file was changed.
 
 ## Resolved engine/model
 
@@ -22,5 +24,5 @@ Treating any nonempty status output as a configuration edit also misclassified f
 
 ## Predicted vs actual
 
-The ticket estimated 25 minutes; investigation and verification took longer because the integration gate exposed the fixture mismatch.
+none
 
