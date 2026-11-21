@@ -41,7 +41,7 @@ Named outcomes of `write_capture`:
 - `refused-input`: raises `ValueError` from `capture_key` for an invalid `spool_stem`, `attempt` or `name`, or `TypeError`-free `ValueError` when `data` is not `bytes`, before any filesystem access, so nothing is created.
 
 Named outcomes of `list_captures`:
-- `listed`: returns the pairs sorted by attempt number, then name.
+- `listed`: returns the pairs sorted by attempt number, then name. Like `EvidenceStore.captures`, it skips a directory whose name is not a positive-or-zero integer and a file whose name fails the name rule of `capture_key` (the rule is applied through `capture_key`, never copied); a skipped entry is never an error.
 - `empty`: returns `[]` when the slot directory is absent or holds no file.
 - `refused-input`: raises `ValueError`, as above, before any filesystem access.
 
@@ -98,7 +98,7 @@ Scope out:
 - All production code: `clutch/driver.py`, `clutch/runner.py`, `clutch/evidence/store.py`, every doc and prompt spec. Row 63 flips `Spool` and the helper body.
 - Every integration test that asserts a `spools/` path: row 190 (`spools-tests-via-helper`).
 - The five files listed under "left alone" in the Goal, and every hot test file the repo conduct file lists (none is edited here).
-- Merge order: `index-build-verb-r1` is running and fences the CLI entry module, the run guide, the README, the architecture document and its two index tests, none of which this ticket touches. Confirmed, unmerged tickets that also fence a file edited here (`meta-annotate-tests-unit-a` and `-b`, `training-attempt-manifest`, and the daemon-soak tickets `commit-lock`, `checkpoint-counts-settled`, `active-slot-single-owner`, `closed-sets-single-owner`, `ticket-budget-limits`, `evidence-rusage-capture`, `eval-move-soak-battery-host-loop`, `serve-parallel-dispatch-r2`, `meta-annotate-docs-support`, `integration-test-repo-isolation`) edit header lines or code at other lines of those files; none edits the lines named above, so either merge order leaves both applicable. `spools-onto-evidence-store-r2` fences `tests/spool_captures.py` and depends on this ticket's merge.
+- Merge order: `index-build-verb-r1` has merged. Confirmed, unmerged tickets that also fence a file edited here (`meta-annotate-tests-unit-a` and `-b`, `training-attempt-manifest`, and the daemon-soak tickets `commit-lock`, `checkpoint-counts-settled`, `active-slot-single-owner`, `closed-sets-single-owner`, `ticket-budget-limits`, `evidence-rusage-capture`, `eval-move-soak-battery-host-loop`, `serve-parallel-dispatch-r2`, `meta-annotate-docs-support`, `integration-test-repo-isolation`) edit header lines or code at other lines of those files; none edits the lines named above, so either merge order leaves both applicable. `spools-onto-evidence-store-r2` fences `tests/spool_captures.py` and depends on this ticket's merge.
 
 ## Scope fence
 - tests/spool_captures.py
