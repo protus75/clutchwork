@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: de6f600b
-hash: e435d2abb614c847ebd45616f15ae4fe2512ba38f0e302d2936b4d4fb4ec50c7
+verified: 188365c9
+hash: 3652c53f492ea17e2941e4fac157ca5f1c48c8f2a40561ad94a9b4ed6efefd4b
 -->
 # How ClutchWork works
 
@@ -913,7 +913,7 @@ The review-baseline report (`review-baseline-report.json`, written by `eval/harn
 
 ## 14. Project index
 
-The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never read by a gate or dispatch. Its five tables are `files` (tracked file metadata), `chunks` (sections and definitions), `embeddings` (vectors), `touches` (ticket changes), and `calls` (evidence records). With `index.embed` unset, there is no `embeddings` table. A merge refreshes an existing index file. With `index.implement_hint: true` the Implement prompt carries a `related_files` block of at most 10 lines and 3,000 characters, `none` or `unavailable: ...` when the index has nothing or cannot be read in 5 seconds, never failing or delaying Implement.
+The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never read by dispatch. Its five tables are `files` (tracked file metadata), `chunks` (sections and definitions), `embeddings` (vectors), `touches` (ticket changes), and `calls` (evidence records). With `index.embed` unset, there is no `embeddings` table. A merge refreshes an existing index file. With `index.implement_hint: true` the Implement prompt carries a `related_files` block of at most 10 lines and 3,000 characters, `none` or `unavailable: ...` when the index has nothing or cannot be read in 5 seconds, never failing or delaying Implement.
 
 `clutch index build` creates or refreshes the index under the writer lock. Its outcomes are:
 
@@ -927,4 +927,4 @@ The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never re
 
 Findings `git_failed`, `embed_failed`, `call_unreadable`, `box_unreadable`, `vss unavailable`, and `fts unavailable` exit 1; `db_open_failed` exits 2.
 
-`clutch context suggest <stem>` reads a draft and the index without a lock, returning up to five co-changed files and five matching sections. It prints `context suggest: suggested` and lines `- <selector>  # <reason>`, or `context suggest: none` when empty (both exit 0). Invalid input or config is `refused`; a missing index is `no_index` (run `clutch index build`); an unreadable index is `index_unreadable` (retry after the running refresh finishes, or run `clutch index build` if a table is missing). These refusals exit 2 on stderr. Remove the reason tail before pasting a selector into Context.
+`clutch context suggest <stem>` reads a draft and the index without a lock, returning up to five co-changed files and five matching sections. It prints `context suggest: suggested` and lines `- <selector>  # <reason>`, or `context suggest: none` when empty (both exit 0 by default; `--require` makes an empty result exit 1). Invalid input or config is `refused`; a missing index is `no_index` (run `clutch index build`); an unreadable index is `index_unreadable` (retry after the running refresh finishes, or run `clutch index build` if a table is missing). These refusals exit 2 on stderr. Remove the reason tail before pasting a selector into Context.

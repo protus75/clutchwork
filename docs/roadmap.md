@@ -4,8 +4,8 @@ kind: plan
 purpose: clutch roadmap
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 75d75946
-hash: 1ba82af86035640a34f98424fd953af10be4f31b06bcce129f35f432d856cdf7
+verified: 188365c9
+hash: c5147629dad9a2fb6b4bbc62512b6548d2251d9c051af7d706c1f16d3a7d7363
 -->
 # clutch roadmap
 
@@ -455,10 +455,13 @@ uv run clutch roadmap accept 0.4.0
 | 207 | `meta-context-ship-gate` | roadmap | feature | P1 | | | **Authored** (`tickets/meta-context-ship-gate/`). The roadmap section 1 0.5.0 ship clause (filled meta blocks in this repo's docs and tests, and context suggest returning selectors for a real ticket) has no gate command (docs/roadmap.md#0.5.0), and six tests files still have an empty purpose; fill them and add gate commands running clutch meta check and a context suggest that fails on no selectors. |
 | 209 | ~~`plan-status-after-050`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/plan-status-after-050/`). The 0.5.0 merges left plan Status sections stale: training-data, stage-panels and annotations-index plans say nothing is in effect, evidence-trail-plan.md#Status calls rows 62-64 planned, and boundary-contract-plan.md#Status calls row 153 unmerged; each Status names what merged and what remains. |
 
-The 0.5.0 ship clauses remain unchecked: `training export` producing every record kind from this repo's journal; `training eval` scoring one lens; a two-member review panel reviewing the next 10 tickets with its unique-catch count in the retro report; and filled meta blocks in this repo's docs and tests together with `context suggest` returning selectors for a real ticket. No merged verb records these conditions.
+The gate checks filled meta blocks in docs and tests and that `context suggest` returns selectors for a real ticket. The remaining 0.5.0 ship clauses are unchecked: `training export` producing every record kind from this repo's journal; `training eval` scoring one lens; and a two-member review panel reviewing the next 10 tickets with its unique-catch count in the retro report.
 
 ```gate
 uv run clutch roadmap merged --release 0.5.0
+uv run clutch meta check docs clutch/docs tests
+uv run clutch index build
+uv run clutch context suggest context-suggest --require
 ./dev.py test
 uv run clutch roadmap accept 0.5.0
 ```

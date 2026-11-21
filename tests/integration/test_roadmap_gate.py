@@ -4,8 +4,8 @@
 # purpose: test roadmap gate
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 96e46658
-# hash: eea30487e765954d4e503abe9a44f5e2f52083c169ee87d8858c5006a7db5f50
+# verified: 188365c9
+# hash: 2d778b26b559fe9db61018657ab05ceb6e12f29c1bfd47352dbe104edfa55e03
 import shlex
 import sys
 from datetime import UTC, datetime
@@ -62,7 +62,7 @@ def test_real_roadmap_gate_blocks():
         assert commands[0] == ("uv", "run", "clutch", "roadmap", "merged", "--release", release)
         assert commands[-2:] == (("./dev.py", "test"), ("uv", "run", "clutch", "roadmap", "accept", release))
         assert all(command[:3] == ("uv", "run", "clutch") for command in commands[1:-2])
-        if release != "0.4.0":
+        if release not in ("0.4.0", "0.5.0"):
             assert len(commands) == 3
     for release, commands in blocks.items():
         assert commands[-1] == ("uv", "run", "clutch", "roadmap", "accept", release)

@@ -623,10 +623,11 @@ def _parser() -> argparse.ArgumentParser:
         reads="The ticket file and <state_dir>/index.duckdb.",
         writes="Nothing; prints suggestions.",
         lock="None; read-only, works while serve runs.",
-        exits="0 suggested or none; 2 refused, no_index or index_unreadable.",
-        examples=["clutch context suggest my-ticket"],
+        exits="0 suggested or none; 1 none with --require; 2 refused, no_index or index_unreadable.",
+        examples=["clutch context suggest my-ticket", "clutch context suggest my-ticket --require"],
     )
     context_suggest.add_argument("stem")
+    context_suggest.add_argument("--require", action="store_true", help="Exit 1 when no selectors are suggested.")
     index_parser = sub.add_parser(
         "index",
         help="build the project index",
@@ -1145,7 +1146,7 @@ def _parser() -> argparse.ArgumentParser:
     return ap
 
 
-def _run_context_suggest(config, root, stem, *, fs, connect=duckdb.connect):
+def _run_context_suggest(config, root, stem, *, fs, connect=duckdb.connect, require=False):
     if not tickets.STEM.fullmatch(stem) or stem in tickets.RESERVED_STEMS:
         return _fail("context suggest", "refused: invalid stem -- choose a valid ticket stem")
     path = root / ticket_path(stem)
@@ -1178,7 +1179,7 @@ def _run_context_suggest(config, root, stem, *, fs, connect=duckdb.connect):
     print("context suggest: suggested" if lines else "context suggest: none")
     for selector, reason in lines:
         print(f"- {selector}  # {reason}")
-    return 0
+    return 1 if require and not lines else 0
 
 
 async def _run_index(config, root, *, fs, git, exec_, env, store, creator, build=index.build):
@@ -1907,7 +1908,7 @@ def main(
         return 0
 
     def handle_context():
-        return _run_context_suggest(config, repo, args.stem, fs=checkout.fs)
+        return _run_context_suggest(config, repo, args.stem, fs=checkout.fs, require=args.require)
 
     handlers = {
         "context": handle_context,
