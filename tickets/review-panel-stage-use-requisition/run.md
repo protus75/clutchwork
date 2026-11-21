@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-With an inactive driver and one invalid reply followed by a valid reply, the existing review loop calls begin_watch twice, once per attempt, with the same arguments. The in-progress changes are uncommitted.
+The repository-wide metadata check also reported existing findings in files outside the ticket fence; the changed files passed metadata checks.
 
 ## Dead ends
 
-The focused verification run exposed a stand-in missing the new panel_members method; that stand-in was updated, but the contradictory watch-count requirement remains unresolved.
+A mutation of the RMA combiner setting did not fail its targeted test; cached Python bytecode may have affected that check, but it was not conclusively resolved.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket expected 30 minutes; work stopped before completion when the contradiction was identified.
+none
 
