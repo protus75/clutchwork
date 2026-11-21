@@ -1,12 +1,11 @@
 # Review: snag
 
-The `neighbors` implementation matches the spec, but the unit tests leave parts of criteria 4 and 5 unasserted.
+All three earlier findings are fixed and the code matches the spec, but the integration test never checks that the real vss/HNSW embedding path returns the nearest chunk, and the unit tie test would pass with no hits at all.
 
 ## Findings
 
-- [acceptance] tests/unit/test_index_neighbors.py:134 Criterion 5 asks for two separate cases. In the first, a creator whose `load(conn, "vss")` returns `["vss unavailable: x"]` gives `findings[1] == "fts unavailable: index missing"`. In the second, a creator whose `load(conn, "fts")` fails gives `findings[1] == "fts unavailable: y"`. The test combines both failures in one creator, so the vss-only case with `fts unavailable: index missing` is never asserted. (do instead: Split the case into two creators. The first fails only `("load", "vss")` and asserts `findings == ("embed_failed: vss unavailable: x", "fts unavailable: index missing")`. The second fails only `("load", "fts")` while an embed failure is present and asserts `findings[1] == "fts unavailable: y"`.)
-- [acceptance] tests/unit/test_index_neighbors.py:135 Criterion 5 says every fallback case returns outcome `fulltext_unavailable`, mode `""` and `hits == ()`. Only the five exec-reply cases at line 130 assert outcome, mode and hits. The vss-unavailable, fts-load-failure and embeddings-table-missing cases (lines 135 and 145) assert only `findings`. (do instead: In those cases, assert the full `(outcome, mode, hits, findings)` tuple, as line 130 does.)
-- [acceptance] tests/unit/test_index_neighbors.py:121 Criterion 4 asks for `index_unreadable` with a finding starting `index_unreadable: ` for a database with no `chunks` table. The test checks only the outcome, not the finding prefix. (do instead: Keep the result and assert `result.outcome == "index_unreadable" and result.findings[0].startswith("index_unreadable: ")`, as lines 117-118 do for the other cases.)
+- [acceptance] tests/integration/test_index_neighbors_fulltext.py:43 Criterion 7 requires the real embedding path, with the real `vss` extension and a persisted HNSW index, to return the nearest chunk. The rebuild uses the default `Exec`, which gives every chunk and the query the same vector `[1,2,3]`, so every candidate scores 1.0 and no chunk is nearer than another. The test only asserts `result.hits` is non-empty, so a ranking that ignores the vectors would still pass. (do instead: Rebuild with an exec that returns a vector based on the text it reads from `stdin_path`, so the flaky box message gets a vector different from the others. Then query with that vector and assert `result.hits[0].ref == flaky` and `result.hits[0].score > result.hits[1].score` in `embedding` mode.)
+- [logic] tests/unit/test_index_neighbors.py:114 The tie-order check only asserts that `result.hits` is in `selector` order. It never checks that any hits came back, so an empty result passes and the check proves nothing about how ties are broken. (do instead: Before the sortedness check, assert `result.outcome == "found"` and that the three tied hits (box, roadmap, decision, each scoring 0.0) are returned in `selector` ascending order.)
 
 ## Record
 
@@ -14,35 +13,26 @@ The `neighbors` implementation matches the spec, but the unit tests leave parts 
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "13750fd7bbc0f0e6d34373a7facb86cd071ce142",
+  "produced_at_sha": "4c8869b7192bd50b2b8777f97a00a05e41314aac",
   "stem": "index-box-neighbors-query",
-  "reviewed_sha": "13750fd7bbc0f0e6d34373a7facb86cd071ce142",
-  "summary": "The `neighbors` implementation matches the spec, but the unit tests leave parts of criteria 4 and 5 unasserted.",
+  "reviewed_sha": "4c8869b7192bd50b2b8777f97a00a05e41314aac",
+  "summary": "All three earlier findings are fixed and the code matches the spec, but the integration test never checks that the real vss/HNSW embedding path returns the nearest chunk, and the unit tie test would pass with no hits at all.",
   "findings": [
     {
       "code": "acceptance",
-      "path": "tests/unit/test_index_neighbors.py",
-      "line": 134,
-      "message": "Criterion 5 asks for two separate cases. In the first, a creator whose `load(conn, \"vss\")` returns `[\"vss unavailable: x\"]` gives `findings[1] == \"fts unavailable: index missing\"`. In the second, a creator whose `load(conn, \"fts\")` fails gives `findings[1] == \"fts unavailable: y\"`. The test combines both failures in one creator, so the vss-only case with `fts unavailable: index missing` is never asserted.",
-      "paved_road": "Split the case into two creators. The first fails only `(\"load\", \"vss\")` and asserts `findings == (\"embed_failed: vss unavailable: x\", \"fts unavailable: index missing\")`. The second fails only `(\"load\", \"fts\")` while an embed failure is present and asserts `findings[1] == \"fts unavailable: y\"`.",
+      "path": "tests/integration/test_index_neighbors_fulltext.py",
+      "line": 43,
+      "message": "Criterion 7 requires the real embedding path, with the real `vss` extension and a persisted HNSW index, to return the nearest chunk. The rebuild uses the default `Exec`, which gives every chunk and the query the same vector `[1,2,3]`, so every candidate scores 1.0 and no chunk is nearer than another. The test only asserts `result.hits` is non-empty, so a ranking that ignores the vectors would still pass.",
+      "paved_road": "Rebuild with an exec that returns a vector based on the text it reads from `stdin_path`, so the flaky box message gets a vector different from the others. Then query with that vector and assert `result.hits[0].ref == flaky` and `result.hits[0].score > result.hits[1].score` in `embedding` mode.",
       "kind": null,
       "unit": null
     },
     {
-      "code": "acceptance",
+      "code": "logic",
       "path": "tests/unit/test_index_neighbors.py",
-      "line": 135,
-      "message": "Criterion 5 says every fallback case returns outcome `fulltext_unavailable`, mode `\"\"` and `hits == ()`. Only the five exec-reply cases at line 130 assert outcome, mode and hits. The vss-unavailable, fts-load-failure and embeddings-table-missing cases (lines 135 and 145) assert only `findings`.",
-      "paved_road": "In those cases, assert the full `(outcome, mode, hits, findings)` tuple, as line 130 does.",
-      "kind": null,
-      "unit": null
-    },
-    {
-      "code": "acceptance",
-      "path": "tests/unit/test_index_neighbors.py",
-      "line": 121,
-      "message": "Criterion 4 asks for `index_unreadable` with a finding starting `index_unreadable: ` for a database with no `chunks` table. The test checks only the outcome, not the finding prefix.",
-      "paved_road": "Keep the result and assert `result.outcome == \"index_unreadable\" and result.findings[0].startswith(\"index_unreadable: \")`, as lines 117-118 do for the other cases.",
+      "line": 114,
+      "message": "The tie-order check only asserts that `result.hits` is in `selector` order. It never checks that any hits came back, so an empty result passes and the check proves nothing about how ties are broken.",
+      "paved_road": "Before the sortedness check, assert `result.outcome == \"found\"` and that the three tied hits (box, roadmap, decision, each scoring 0.0) are returned in `selector` ascending order.",
       "kind": null,
       "unit": null
     }
