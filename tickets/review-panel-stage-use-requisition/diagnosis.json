@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "63fea83ed44524bee724de066c49b7e042334539",
+  "produced_at_sha": "3e4b2a64ab938d745d608b8639dcf19660216fa2",
   "stem": "review-panel-stage-use-requisition",
-  "attempt": 2,
-  "terminal": "premise_failed",
+  "attempt": 3,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "Criterion 1 contradicts the code. In clutch/requisition.py::review_ticket (lines 257-270), begin_watch runs on every call while driver._active is None. Driver.race resets _active after each call, so the invalid-then-approve size-1 run calls begin_watch twice, not once.",
-    "Amend criterion 1 to require two begin_watch calls with identical arguments, one per call, which is today's behavior. Do not change the size-1 path to call it once: Definition of rejected forbids any size-1 change to calls or side effects.",
-    "Criterion 3 also says one begin_watch for three member calls. Under the same per-call rule there would be three calls with identical arguments. Restate it as one begin_watch per llm_call with the same identity. Driver.begin_watch (clutch/driver.py:553-557) returns early for a repeated identity.",
-    "Goal's 'one watch' means one watch identity (owner, run_seq, surface, attempt), which Driver.begin_watch already deduplicates. It does not mean one begin_watch call. Have the author state this so later attempts don't read it as a call count."
+    "Attempt 3 (codex gpt-6.1-terra) made no commit, although the record says the fence was complete and the tests passed. Redo the full fence from the merge base, run the two Verification commands, then commit. Being unsure about the mutation check is not a reason to stop without a commit.",
+    "The ticket's mutation check covers only the exact-value assertions for criteria 1 and 4 in tests/unit/test_requisition_panel.py. Remove each one in turn, confirm the test still catches a broken implementation, then restore it. Do not try to mutation-check every assertion.",
+    "For criteria 4 and 8 (m0 approve, m1 rma with a finding coded requisition_review), compare the whole returned verdict to a literal that includes that finding. Then a change to the rma_code=None call in review_ticket, such as the default 'ticket', drops the finding and the test fails.",
+    "When you change source to check a mutation, run pytest in a fresh process with PYTHONDONTWRITEBYTECODE=1 or after deleting __pycache__, so stale .pyc files cannot hide the change. Restore the source and rerun before you commit.",
+    "Only run `uv run clutch meta check` on the four new test files named in Verification. The repo-wide run's findings are in files outside the fence, so leave them alone and do not let them block the commit."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
