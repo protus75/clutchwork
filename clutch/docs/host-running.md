@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 63fea83e
-hash: 7bab89a47df2c7f5a8afc26c66db8ad361fa9c2b42c70a00198fcf6a68f92933
+verified: 0c49d7b5
+hash: 15fda19a76599fe958dff02baf3b7e3a507f2cd807009b2e85e626e9903d9a31
 -->
 # Running ClutchWork on a host
 
@@ -29,7 +29,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `engine calibrate` | Yes | Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
 | `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure. |
-| `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
+| `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
 | `host core` | Yes | Refresh managed conduct files. |
 | `provider probe` | Yes | Probe declared providers and models. |
 | `provider install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |

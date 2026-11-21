@@ -4,8 +4,8 @@
 # purpose: test ask plan drain
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 148a8874
-# hash: a370e78643afeb62b5798887e55a4012f6c2e0dd178fb72dbfad322f900c51d1
+# verified: 0c49d7b5
+# hash: 518d38fe0f8793e7760a048abbdae145cae5f1f80624bb9917fadd9fdf7e755d
 import argparse
 import re
 from pathlib import Path
@@ -138,7 +138,7 @@ def test_review_prompt_is_audit(prompts):
 
 def test_prompts_carry_no_session_facts(prompts):
     for text in prompts.values():
-        for phrase in ("${", "./dev.py", "uv run", "/home/", ".claude", "bash", "fungo", "claude", "codex", "qwen", "ollama", "gemini"):
+        for phrase in ("${", "./dev.py", "uv run", "/home/", ".claude", "bash", "fungo", "codex", "qwen", "ollama", "gemini"):
             assert phrase not in text.lower(), phrase
 
 

@@ -9,6 +9,7 @@ Before you start:
 - `clutch release bump --minor` bumps and tags a release. The driver runs it when the current release's gate passes, the bump before the next phase. Bump by hand only before the first phase when the version does not yet name it, and never twice for one phase.
 
 Delegation:
+- For every Claude subagent, explicitly select a Sonnet model in the host agent facility; an Opus parent must never implicitly promote its children. This applies to row authors, adversarial auditors, phase-closing reviewers, and open-decision proposal and judge agents. Non-Claude agents retain their selected provider and model. If explicit child-model selection is unavailable, report that limitation rather than silently inheriting Opus. Preserve the different-model-family requirement for calibration and baseline judges.
 - The owner's delegation covers the ticket edits a Recommendation names, including narrowing or repairing a ticket the engine authored. A host conduct rule that forbids them is covered, not a conflict.
 - Supervise through `clutch prompt drain-loop`, which carries the owner's delegation of `clutch prompt diagnose`, `clutch prompt drafts`, `clutch prompt box`, and `clutch prompt running` Recommendations, including `clutch ticket confirm --yes` and `clutch ticket reject --yes`.
 - Every cause fix goes to `clutch box suggest` and is never authored. Triage's verdict is final.
