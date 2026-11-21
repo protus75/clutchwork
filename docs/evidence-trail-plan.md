@@ -4,8 +4,8 @@ kind: plan
 purpose: Cross-provider evidence trail: plan
 relates: [clutch/llmeffect.py]
 owner: clutch/llmeffect.py
-verified: d7719818
-hash: 577886843f2b58fd6a6cf2de6c9a5c3a0772e038948340fb8747a9ec845bea0a
+verified: 8e7d48f5
+hash: 96c32b116bd7fe6e8d9712105cb728e1f61bdf09b8cfeb0090c31e855e0c6b0d
 -->
 # Cross-provider evidence trail: plan
 
@@ -15,7 +15,7 @@ This is the lower layer of `docs/training-data-plan.md`. That plan's attempt man
 
 ## Status
 
-The evidence store, envelope, and Codex, Claude, and Gemini normalizers have merged (roadmap rows 28–31 and 33). Resource usage capture has merged as `evidence-rusage-capture` (roadmap row 123); the evidence verbs, per-attempt spool move, and parser consolidation remain planned (rows 62–64). Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
+Merged roadmap rows: 28 (`evidence-store`), 29 (`evidence-envelope`), 30 (`evidence-normalize-codex`), 31 (`evidence-normalize-claude`), 33 (`evidence-normalize-gemini`), 62 (`evidence-verbs`), 63 (`spools-onto-evidence-store-r2`), 64 (`one-parser-per-provider`), 123 (`evidence-rusage-capture`), 149 (`evidence-record-doc-section`), 183 (`spools-scratch-dir`), 184 (`evidence-captures`), 185 (`spools-capture-keys`), 186 (`spools-evidence-docs`), 189 (`spools-test-helper`), 190 (`spools-tests-via-helper`), 194 (`spools-tests-via-helper-driver`), 195 (`spools-tests-via-helper-fake-fs`). No roadmap rows remain open for this plan. Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
 
 ## Roadmap
 

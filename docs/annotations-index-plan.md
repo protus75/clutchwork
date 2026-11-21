@@ -4,8 +4,8 @@ kind: plan
 purpose: File annotations and the project index: plan
 relates: []
 owner: engine
-verified: d7719818
-hash: ba973ffe9ea667b864ebe75a1c82a0c83ec6dd3fd6a0e582e8d53c37945dbdef
+verified: 8e7d48f5
+hash: 13b76961d080cff26246760c79f7106588735cce48659a04d22dd7313602ce37
 -->
 # File annotations and the project index: plan
 
@@ -13,7 +13,7 @@ Give every file that has no parser (documents, tests, fixtures, guides) a small,
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-14 at commit `0ef95269` for `docs/roadmap.md`.
+Merged roadmap rows: 69 (`meta-schema-and-refresh-r2`), 70 (`meta-fill-surface`), 71 (`meta-drift-lint`), 72 (`index-build-r2`), 73 (`context-suggest`), 74 (`index-consumers-training-join`), 110 (`index-box-neighbors`), 180 (`index-config-touches`), 181 (`index-merge-hook`), 182 (`index-build-verb-r1`), 187 (`index-box-neighbors-query`), 188 (`index-box-neighbors-prompts`), 191 (`context-suggest-author-block`), 197 (`index-consumers-implement-hint`), 198 (`index-box-neighbors-prompts-author`). Open roadmap rows: 206. Written 2026-11-14 at commit `0ef95269` for `docs/roadmap.md`.
 
 ## Roadmap
 

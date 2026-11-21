@@ -4,8 +4,8 @@ kind: plan
 purpose: Training data capture: plan
 relates: [clutch/runner.py]
 owner: clutch/runner.py
-verified: d7719818
-hash: 7ed7fefda4afad491c571053ff65508852868f30962b7729b6bf1f67f699c9de
+verified: 8e7d48f5
+hash: 04f42933d153fc8702c7ff66fd8024eb894a6f0241408dfaa3201e6ab76424da
 -->
 # Training data capture: plan
 
@@ -15,7 +15,7 @@ The aim is a flywheel, not a replacement model. A few hundred tickets will not t
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
+Merged roadmap rows: 57 (`training-config`), 58 (`training-attempt-manifest`), 59 (`training-export`), 60 (`training-eval`), 61 (`training-docs`), 175 (`training-export-trajectory`), 176 (`training-export-kinds`), 177 (`training-export-conflict`), 178 (`training-export-ticket`). Open roadmap rows: 201, 202. Written 2026-11-13 at commit `0895b5d4`; revised 2026-11-13 at commit `80b76d5d` for `docs/roadmap.md`.
 
 ## Roadmap
 

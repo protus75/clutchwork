@@ -4,8 +4,8 @@ kind: plan
 purpose: Boundary contracts and interface reuse: plan
 relates: [clutch/daemon.py, clutch/effects.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, docs/roadmap.md]
 owner: engine
-verified: d7719818
-hash: ebed17c5c1fa613eebb801334e21e099283aded806c68ec8de695c28a3c72684
+verified: 8e7d48f5
+hash: 4586cf7675844316641c4c5f287001d081d8956d1161e8f5ef5ae6581a8fba82
 -->
 # Boundary contracts and interface reuse: plan
 
@@ -22,7 +22,7 @@ over-specific one is speculative abstraction throughout every host repository.
 
 ## Status
 
-Proposed on 2026-11-18 from an owner design discussion. The retrospective trial is done. The authoring rollout and `boundary-contract-required` merged (rows 150, 151, 154). `boundary-contract-lint` (row 152) remains provisional, to be promoted only on evidence from deployed reviews; `boundary-contract-implementation-review` (row 153) is authored and not merged.
+Merged roadmap rows: 150 (`boundary-contract-trial`), 151 (`boundary-contract-authoring`), 153 (`boundary-contract-implementation-review`), 154 (`boundary-contract-required`), 163 (`docs-truth-after-040`). Open roadmap rows: 152, 208. Proposed on 2026-11-18 from an owner design discussion.
 
 ## Roadmap
 

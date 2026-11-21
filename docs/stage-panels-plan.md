@@ -4,8 +4,8 @@ kind: plan
 purpose: Stage panels: plan
 relates: [clutch/driver.py]
 owner: clutch/driver.py
-verified: d7719818
-hash: 18220713e1b27c17dfbb0cfb4ea1b19cb5271be4d6e4bfb7cf28527ac609b70f
+verified: 8e7d48f5
+hash: 1e02aa4e2b055b02bee09975bc284cd702a18f8266213e29f1a333e606d6ee3d
 -->
 # Stage panels: plan
 
@@ -13,7 +13,7 @@ Run a ticket lifecycle stage as several independent model calls at once and comb
 
 ## Status
 
-Draft plan. Nothing in it is in effect and no ticket is authored. Written 2026-11-14 at commit `0ef95269` for `docs/roadmap.md`.
+Merged roadmap rows: 65 (`panel-combiners`), 66 (`panel-routing-config`), 67 (`review-panel-r2`), 68 (`panel-scorecard`), 179 (`review-panel-stage-use`), 192 (`review-panel-stage-use-majority`), 193 (`review-panel-stage-use-requisition`), 199 (`review-panel-stage-use-triage`). Open roadmap rows: 87. Written 2026-11-14 at commit `0ef95269` for `docs/roadmap.md`.
 
 ## Roadmap
 
