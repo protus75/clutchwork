@@ -10,7 +10,7 @@ from typing import Literal
 
 from clutch.journal import Event, EventType, total_spend
 from clutch.retro import Window, project_window
-from clutch.scorecard import Scorecard, project_scorecard
+from clutch.scorecard import Scorecard, panel_lines, project_scorecard
 from clutch.tickets import INTAKE_SIGNAL
 
 # A no-op proof settles a stem just as a merge does.
@@ -283,6 +283,7 @@ def render(status: Status) -> str:
         table.append(
             f"| {surface} | {row.evaluated_tickets} | {row.catches} | {row.escapes} | {row.bypass_count} | {row.catch_rate:.4f} | {row.escape_rate:.4f} | {str(row.prune_candidate).lower()} |"
         )
+    table.extend(panel_lines(card))
     return (
         "\n\n".join(
             (

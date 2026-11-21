@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: b1bfcbf6
-hash: f8bceb3fbf800ec7163c8763cd4dd09b612fb65163e45de4492a9cb2afc38d7f
+verified: fc08bb14
+hash: 95e11c3122c10c6b77e444688171d9e75e5160f578485c479e764c5c09783b27
 -->
 # How ClutchWork works
 
@@ -753,6 +753,7 @@ scorecard, proposals) and files new proposals as `retro_finding` messages. It su
 
 - The **scorecard** counts, per gate and review surface, catches, escapes, and bypasses, and flags
   a surface with 25+ evaluations and no catch and no escape as a prune candidate.
+- The **panel scorecard** folds journaled review replies and costs by member slot, counting unique findings confirmed by a later merge per 100 reviews and the total cost relative to the lowest present slot. Its outcomes are `no_panel_reviews`, `no_cost_data`, and `measured`.
 - The **review baseline** is a GO / NO_GO verdict recorded by the eval harness
   (`eval/harness.py`). GO counts only while the recorded review and author models and spec
   versions still match the config. It gates Author starting state only.

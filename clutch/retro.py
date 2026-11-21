@@ -273,7 +273,7 @@ def render_report(window: Window, evidence: dict, provenance: dict, tombstones: 
         "proposals": artifact.model_dump(exclude_defaults=True)["proposals"],
     }
     record["tombstone_reopens"] = [e.body for e in window.events if e.type == EventType.SIGNAL and e.body.get("kind") == "tombstone_auto_reopened"]
-    from clutch.scorecard import project_scorecard
+    from clutch.scorecard import panel_lines, project_scorecard
 
     card = project_scorecard(window)
     table = [
@@ -287,6 +287,7 @@ def render_report(window: Window, evidence: dict, provenance: dict, tombstones: 
         table.append(
             f"| {surface} | {row.evaluated_tickets} | {row.catches} | {row.escapes} | {row.bypass_count} | {row.catch_rate:.4f} | {row.escape_rate:.4f} | {str(row.prune_candidate).lower()} |"
         )
+    table.extend(panel_lines(card))
     return "# Retro receipt\n\n```json\n" + json.dumps(record, indent=2, sort_keys=True) + "\n```\n\n" + "\n".join(table) + "\n"
 
 
