@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "08b9e387040fb3fad46e190771217ada6e1c77ea",
+  "produced_at_sha": "bca1366084add234e6de8dfcdaeca7f96a5730a9",
   "stem": "spools-capture-keys",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "retry",
+  "verdict": "abandon-human",
   "lessons": [
-    "The code was fine: all 92 verification tests and lint passed. The check failed only on `ruff format --check`: the engine's meta refresh (`meta.refresh` in clutch/stages.py) stamped `# purpose: ` with a trailing space into 3 test files that lacked a purpose.",
-    "Redo the work from the merge base: change the stem and attempt rules in store.py, add `capture_key`, update the `captures` help text, update the test files, and add tests/unit/test_evidence_capture_keys.py.",
-    "In each touched test file, write the meta header yourself with a non-empty one-line `# purpose:` so refresh never renders an empty one: tests/unit/test_evidence_capture_keys.py, tests/unit/test_evidence_captures_store.py, tests/integration/test_evidence_captures_verb.py.",
-    "If a touched file still ends up with an empty purpose, run `uv run clutch meta fill <path>`, the paved road for empty_purpose named in clutch/stages.py. Then run `uv run ruff format --check .` after the meta commit and before you finish.",
-    "Engine cause, outside this fence: `meta._render` in clutch/meta.py writes `key: ` with a trailing space when a value is empty, and ruff format rejects it. This needs its own engine fix and should not be folded into this ticket."
+    "Root cause is in the engine, not the ticket. The only finding is ruff format failing on a `# purpose: ` line with a trailing space in two test files. The `_render` function in clutch/meta.py writes `f\"{key}: {value}\"`, so an empty purpose ends in a trailing space.",
+    "Base main has no clutch:meta header in tests/unit/test_evidence_captures_store.py. The header lines (which relate clutch/seams.py, outside this diff) were added by the meta refresh on the rebased candidate, not by the implementer. Its own format check passed.",
+    "A human should fix the clutch/meta.py `_render` empty-value case, which is out of this ticket's fence, and order that fix ahead of this ticket. Then rerun without changing the ticket. The implementation passed the verification command, lint and 3535 tests.",
+    "Next attempt: redo the work as the ticket states. Add `capture_key` with one shared `_STEM` pattern, attempt floor 0, the `captures` skip at `< 0`, the help text, and the three test files. Check the input name for a `run-<digits>/` prefix before folding, as the earlier approach did."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
