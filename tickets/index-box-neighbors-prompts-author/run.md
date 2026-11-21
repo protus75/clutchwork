@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The simpler approach reuses the existing neighbors helper; the required row exclusion is the only helper extension. Ticket verification passed 190 tests, the unit coverage gate passed 1,761 tests, and the integration gate passed 3,563 tests. Metadata is clean for all changed files.
+Reused the existing helper to preserve its bounds and fallback behavior; the required row exclusion was the only helper extension. Ticket verification passed 190 tests, the unit coverage gate passed 1,766 tests, and the integration gate passed 3,564 tests. Changed-file metadata is clean.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000932-8d83906a: The repository-wide metadata check reports missing, drifted, or empty-purpose metadata in untouched files outside the ticket fence.
+- box-000935-5de42a55: Repository-wide metadata checking reports missing, drifted, or empty-purpose metadata in untouched files; the prior attempt recorded this as box-000932-8d83906a.
 
 ## Resolved engine/model
 
