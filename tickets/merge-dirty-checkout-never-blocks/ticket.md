@@ -30,13 +30,14 @@ After this ticket `config.yaml` is exempt from the `dirty_checkout` finding, and
 - post-merge source of truth: clutch/merge.py
 
 ## Scope in / Scope out
-Scope in: in `clutch/merge.py` make `dirty_overlap` ignore `config.yaml`, and have the squash save the owner's working `config.yaml`, restore it to HEAD before `merge_squash`, then reapply the owner's edit on top of the merged file (a 3-way merge, owner's lines winning on conflict). The implementer reads `write_squash` and `Git.merge_squash` and names in the run record the simpler approach rejected. `write_squash` calls git for `config.yaml` (`status_porcelain` to learn it is dirty, then `_run` for `show`, `checkout` and `merge-file`) only after `status_porcelain` reports that path dirty; a clean tree adds no call beyond today's, so the stand-in in `tests/unit/test_merge_index_hook.py` keeps working unedited, and a unit case pins that. New tests start with a `clutch:meta` header created by `uv run clutch meta refresh <file>` with only `purpose` edited: `tests/unit/test_merge_config_local.py`, `tests/integration/test_merge_config_local.py`, and the reproducer `tests/regress_merge_config_local.py`.
+Scope in: in `clutch/merge.py` make `dirty_overlap` ignore `config.yaml`, and have the squash save the owner's working `config.yaml`, restore it to HEAD before `merge_squash`, then reapply the owner's edit on top of the merged file (a 3-way merge, owner's lines winning on conflict). The implementer reads `write_squash` and `Git.merge_squash` and names in the run record the simpler approach rejected. `write_squash` calls `ctx.git.status_porcelain` to learn whether `config.yaml` is dirty, and only then `_run` for `show`, `checkout` and `merge-file`. The stand-in in `tests/unit/test_merge_index_hook.py` gets `status_porcelain=AsyncMock(return_value='')` and nothing else. New tests start with a `clutch:meta` header created by `uv run clutch meta refresh <file>` with only `purpose` edited: `tests/unit/test_merge_config_local.py`, `tests/integration/test_merge_config_local.py`, and the reproducer `tests/regress_merge_config_local.py`.
 
 Scope out: every other path's dirty check, the merge queue, runner, diagnosis, docs, and `config.yaml` itself.
 
 ## Scope fence
 - clutch/merge.py
 - tests/unit/test_merge_dirty.py
+- tests/unit/test_merge_index_hook.py
 - tests/unit/test_merge_config_local.py
 - tests/integration/test_merge_config_local.py
 - tests/regress_merge_config_local.py
