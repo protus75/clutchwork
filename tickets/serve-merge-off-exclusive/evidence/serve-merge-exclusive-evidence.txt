@@ -1,0 +1,50 @@
+Observed 2026-11-21 on this repo's serve (scheduler.parallel max_runs 2). Source: .clutch/state/engine.log.
+
+Timeline (UTC):
+17:36:33.176  stage_start  serve-scan-watch-off-exclusive  surface merge
+17:36:36.053  stage_end    serve-scan-watch-off-exclusive  surface merge outcome ok          (2.9 s: no implementation held a slot)
+17:36:54.208  stage_start  requisition-review-approval-reuse attempt 2 surface implement      (holds a slot)
+17:46:20.643  stage_start  plan-prompts-priority-order     attempt 0 surface merge            (review ok at 17:46:20.381)
+17:51:19.275  stage_end    requisition-review-approval-reuse attempt 2 surface implement ok   (14 m 25 s)
+17:51:19.728  stage_start  requisition-review-approval-reuse attempt 2 surface diagnose
+17:51:28.924  stage_start  requisition-review-approval-reuse attempt 2 surface rework
+17:52:55.994  stage_end    requisition-review-approval-reuse attempt 2 surface rework ok
+17:53:01.770  stage_end    plan-prompts-priority-order     attempt 0 surface merge outcome ok (6 m 41 s after merge started)
+
+Result: the merge of plan-prompts-priority-order took 6 m 41 s, of which about 5 s was queue processing and delivery;
+the rest was waiting for requisition-review-approval-reuse's run to release its slot. The merge that found no
+implementation in flight took 3 s. While the merge poll waited, serve admitted no new run.
+
+Code read (clutch/serve.py, Serve.merge, lines 506-516):
+    async def merge(self) -> None:
+        ...
+        async def poll():
+            if self.queue is not None:
+                await self.check_upgrade()
+            if not self.merge_work():
+                return
+            async with self.mutations():
+                self.control.poll()
+                ...
+                await self.queue.process()
+
+clutch/serve.py lines 282-285: Serve.mutations() is `async with self.core.admission.mutations(): yield`.
+
+clutch/daemon.py DaemonAdmission:
+    596-599  _acquire_run waits `not self._exclusive and not self._exclusive_waiters and self._holding < self.max_runs`
+    606-615  exclusive(): `_exclusive_waiters += 1`, `wait_for(lambda: not self._exclusive and self._holding == 0)`
+    629-636  mutations() is exclusive() plus `self.mutating = asyncio.current_task()`
+    641-642  busy() is `bool(self._holding or self._exclusive or self._exclusive_waiters)`
+    647-648  idle() is `not self.occupied() and self.mutating is None`
+
+So a merge poll with work waits for `_holding == 0`, and while it waits `_exclusive_waiters` is nonzero, which makes
+`_acquire_run` refuse every new run. With one implementation running, the merge waits for it and no second
+implementation starts. The wait is the merge-wide implementation wait named in docs/engine-state-db-plan.md
+sections 6 and 7 (row 2, `state-merge-queue`).
+
+Locks that already serialize the merge's main-checkout writes:
+    clutch/git.py 231-235   merge_squash: `async with self.main_write(): async with self._commit_lock:` merge --squash, then _commit
+    clutch/git.py 111-121   commit_edit: both locks held across the edit callback and the commit
+    clutch/merge.py 245     dirty_overlap: `async with ctx.git.main_write():` around git status and the overlap check
+    clutch/stages.py 82,875 HOST_COMMAND_LOCK = asyncio.Semaphore(1) held around every host command (Check and both merge tiers)
+    clutch/scheduler.py 77  dispatch_next holds Scheduler._slot across selection
