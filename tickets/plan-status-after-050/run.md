@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The ticket verification, integration suite, lint, and format checks passed; the coverage gate was skipped because the diff changes no measured files.
+The ticket verification, integration suite, lint and format checks passed; the coverage gate was skipped because no measured code changed.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-000976-e4cf5461: The repository-wide metadata check reports existing missing, drifted, and empty-purpose metadata outside the five changed documents.
+- box-000977-f02cff9e: The repository-wide metadata check reports missing, drifted or empty-purpose metadata in files outside the scope fence.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 15 minutes; the work took less than 15 minutes.
+Expected 15 minutes; completed within that budget.
 
