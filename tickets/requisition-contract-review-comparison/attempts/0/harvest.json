@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_author.py",
+      "line": 442,
+      "message": "The author review test expects a second requisition call after an invalid reply, contradicting the required single-call behavior and causing verification to fail.",
+      "paved_road": "Add this file to the scope fence and update the test for a single invalid-reply snag.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_rework.py",
+      "line": 230,
+      "message": "The split review test expects an invalid reply to be retried and the split to succeed, contradicting the required single-call behavior and causing verification to fail.",
+      "paved_road": "Add this file to the scope fence and update the test for the invalid-reply snag and resulting split outcome.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required single-call behavior makes two verification tests fail because they expect an invalid review reply to be retried; both tests are outside the scope fence.\",\"surprises\":\"The full verification command on the base commit could not collect tests because the two new test files do not exist there. Both affected tests passed when run separately on the base, and both failed on the candidate in isolation and in the repeated full verification run. No changes were committed.\",\"second_problems\":[],\"dead_ends\":\"None.\",\"predicted_vs_actual\":\"The ticket estimated 25 minutes; elapsed time was not recorded.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_author.py\",\"line\":442,\"message\":\"The author review test expects a second requisition call after an invalid reply, contradicting the required single-call behavior and causing verification to fail.\",\"paved_road\":\"Add this file to the scope fence and update the test for a single invalid-reply snag.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_rework.py\",\"line\":230,\"message\":\"The split review test expects an invalid reply to be retried and the split to succeed, contradicting the required single-call behavior and causing verification to fail.\",\"paved_road\":\"Add this file to the scope fence and update the test for the invalid-reply snag and resulting split outcome.\"}]}",
+  "events_tail": "_BOUND_CHARS if candidate.stem == \\\"piece-one\\\" else base_render(repo, candidate, text, specs)\\n            )\\n            ctx.driver.retry_cap = 0\\n            script = [order(\\\"split\\\", proposals), requisition()]\\n        else:\\n            script = [order(\\\"split\\\", proposals), \\\"invalid\\\", requisition(), requisition()]\\n        result, requests = await invoke(ctx, ticket, text, script)\\n        keys = [e.key for e in ctx.driver.journal.read() if e.type == EventType.EFFECT_COMPLETION and e.key and \\\"/requisition_review/\\\" in e.key]\\n        if headroom:\\n            assert result.outcome == \\\"gate_failed\\\"\\n            assert [key.rsplit(\\\"/\\\", 1)[-1] for key in keys] == [\\\"2\\\"]\\n            assert len([r for r in requests if r.surface == \\\"requisition_review\\\"]) == 1\\n        else:\\n>           assert result.outcome == \\\"ok\\\"\\nE           AssertionError: assert 'infra_error' == 'ok'\\nE             \\nE             - ok\\nE             + infra_error\\n\\n/home/djp/source/clutch/.clutch/state/worktrees/requisition-contract-review-comparison/tests/integration/test_rework.py:252: AssertionError\\n=========================== short test summary info ============================\\nFAILED tests/integration/test_author.py::test_author_reviews_keep_unique_keys_when_one_reasks\\nFAILED tests/integration/test_rework.py::test_split_reviews_keep_unique_keys_when_one_reasks[False]\\n2 failed, 225 passed in 5.35s\\ndev: `uv run pytest -q tests/unit/test_requisition_brief_check.py tests/integration/test_requisition_brief_check.py tests/integration/test_requisition.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_stage_events.py tests/unit/test_key_scope.py tests/unit/test_callerless_code_removed.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_precondition_rules.py tests/integration/test_authoring_document_test_rule.py tests/integration/test_fence_closure_registries.py tests/integration/test_spec_unit_io_seam.py tests/integration/test_graphics_review_spec_blocks.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_plan_subagent_models.py tests/integration/test_author.py tests/integration/test_rework.py` failed\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_17\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required single-call behavior makes two verification tests fail because they expect an invalid review reply to be retried; both tests are outside the scope fence.\\\",\\\"surprises\\\":\\\"The full verification command on the base commit could not collect tests because the two new test files do not exist there. Both affected tests passed when run separately on the base, and both failed on the candidate in isolation and in the repeated full verification run. No changes were committed.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"None.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket estimated 25 minutes; elapsed time was not recorded.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_author.py\\\",\\\"line\\\":442,\\\"message\\\":\\\"The author review test expects a second requisition call after an invalid reply, contradicting the required single-call behavior and causing verification to fail.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update the test for a single invalid-reply snag.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_rework.py\\\",\\\"line\\\":230,\\\"message\\\":\\\"The split review test expects an invalid reply to be retried and the split to succeed, contradicting the required single-call behavior and causing verification to fail.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update the test for the invalid-reply snag and resulting split outcome.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1312748,\"cached_input_tokens\":1260160,\"cache_write_input_tokens\":0,\"output_tokens\":8334,\"reasoning_output_tokens\":350}}\n",
+  "wall_seconds": 201.877884,
+  "usd": 1.0,
+  "run_record": "tickets/requisition-contract-review-comparison/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
