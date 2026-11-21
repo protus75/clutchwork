@@ -4,16 +4,17 @@ ok
 
 ## Surprises / judgment calls
 
-Retro, supervise, box intake, maintenance, startup, and verdict settlement retain exclusive admission because their ownership is outside this ticket; verdict settlement is assigned to serve-confirm-during-check. The existing locks were sufficient, so no new lock was added. Ticket verification passed all 58 tests, the unit coverage gate passed 1,823 tests, and a full integration run passed 3,601 tests. A later full integration run timed out in one admission test; it passed alone and the subsequent full ticket verification passed. The exact base verification command could not collect because the two new test files do not exist on the base; the affected test passed alone there. The regression reproducer reported defect on the base and pass on the candidate. Mutation checking confirmed the original scan and watcher implementations fail the new lock assertions; individual mutations were not completed for every assertion.
+The final ticket verification passed all 58 tests. The unit coverage gate passed; the full integration gate passed twice, then had one intermittent host-red timeout that passed both in isolation and in the final ticket verification. Regression passed on the candidate and reported defect on the base. Retro, supervision, box intake, maintenance, startup, and verdict settlement retain exclusive sections because their ownership is outside this ticket. Lock and overlap tests guard against recurrence; retaining the old admission gate would continue to block parallel runs.
 
 ## Dead ends
 
-The first mutation run used the original watcher implementation and left its test waiting after an assertion failure; the test was adjusted to expose that failure without hanging.
+none
 
 ## Second problems filed
 
-- box-000983-96a0ff93: The precheck admission integration test timed out intermittently during the full integration suite, then passed in isolation and in the subsequent ticket verification.
-- box-000984-64d4b65f: The repository-wide metadata check reports pre-existing drift in docs/roadmap.md and an empty purpose in tests/unit/test_training_triage_records.py, both also present on the base commit.
+- box-000985-584adc0d: The full integration gate intermittently timed out in test_serve_admission_refusal_keeps_main_green[host-red]; it passed on the base verification, alone on the candidate, and in the subsequent candidate verification.
+- box-000986-9d4b6377: docs/engine-state-db-plan.md describes scan and watch admission exclusion, which this change makes stale and which is outside the scope fence.
+- box-000987-32be8c75: The base metadata check reports docs/roadmap.md as drifted and tests/unit/test_training_triage_records.py with an empty purpose.
 
 ## Resolved engine/model
 
@@ -23,5 +24,5 @@ The first mutation run used the original watcher implementation and left its tes
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; the work took less than that.
+The ticket estimated 30 minutes; elapsed time was not measured.
 
