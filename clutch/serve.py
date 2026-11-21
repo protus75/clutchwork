@@ -304,11 +304,11 @@ class Serve:
         snapshot = await self.intake_snapshot()
         if snapshot is not None and snapshot == self.scan_snapshot:
             return self.scanned
-        async with self.mutations():
-            if self.stopping:
-                return {}
-            c = self.checkout
-            await intake(c.repo, c.git, c.journal, c.fs, stems=None)
+        if self.stopping:
+            return {}
+        c = self.checkout
+        await intake(c.repo, c.git, c.journal, c.fs, stems=None)
+        async with c.git.main_write():
             self.scanned = {stem: self.read(stem) for stem in self.stems()}
             # Intake's own stamps and commits must not manufacture another work poll.
             self.scan_snapshot = await self.intake_snapshot()
@@ -324,8 +324,8 @@ class Serve:
                 if current == previous:
                     await response.wait(self.checkout.sleep(SERVE_POLL_S))
                     continue
-                # Hold admission through parsing/publication, including debounce unwind.
-                gate = self.core.admission.exclusive()
+                # Hold selection through parsing/publication, including debounce unwind.
+                gate = self.core.scheduler._slot
                 await response.wait(gate.__aenter__())
                 try:
                     for stem in sorted(previous.keys() | current.keys()):

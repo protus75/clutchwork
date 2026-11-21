@@ -5,8 +5,8 @@
 # purpose: Reproduce idle poll blocking parallel admission.
 # relates: [clutch/daemon.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: 89042420
-# hash: c3593b9553cdc2191735e351f653c2713e8474e625019b181bebe61609990572
+# verified: 4296219b
+# hash: 936e7758f629e13c101fe5982c0dd892fdd023adc275925ac1af5102f03dfb6a
 
 import asyncio
 import json
@@ -42,7 +42,7 @@ async def reproduce():
             repo=Path(directory),
             fs=FakeFileSystem(),
             journal=FakeJournal(),
-            git=SimpleNamespace(status_porcelain=AsyncMock(return_value=""), rev_parse=AsyncMock(return_value="head")),
+            git=SimpleNamespace(status_porcelain=AsyncMock(return_value=""), rev_parse=AsyncMock(return_value="head"), main_write=asyncio.Lock),
         )
         with patch("clutch.serve.intake", AsyncMock()):
             await owner.scan()

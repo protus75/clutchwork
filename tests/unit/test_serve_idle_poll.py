@@ -5,9 +5,10 @@
 # purpose: Verify idle poll admission and work detection.
 # relates: [clutch/daemon.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: fc08bb14
-# hash: c0b983ac2da07dcb10042fd539042235c65e41309a23b5619955d85fdb72a513
+# verified: 4296219b
+# hash: 90bc8abd16d6eaef9b8023d0ac0a7835376d30fe8dba47ac631d1a37f7db8e2e
 
+import asyncio
 import hashlib
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
@@ -42,7 +43,7 @@ def owner(tmp_path):
     s = Serve.__new__(Serve)
     fs, clock = LocalFileSystem(), FakeClock()
     journal = FakeJournal(clock)
-    git = SimpleNamespace(status_porcelain=AsyncMock(return_value=""), rev_parse=AsyncMock(return_value="head"))
+    git = SimpleNamespace(status_porcelain=AsyncMock(return_value=""), rev_parse=AsyncMock(return_value="head"), main_write=asyncio.Lock)
     s.checkout = Checkout(repo=tmp_path, config=None, env={}, exec_=None, fs=fs, clock=clock, journal=journal, git=git, sleep=stop_poll)
     s.scan_snapshot, s.scanned = None, {}
     s.report_arrivals, s.report_retry = set(), None
@@ -78,7 +79,7 @@ def owner(tmp_path):
             yield
 
     admission.exclusive, admission.mutations = exclusive, mutations
-    s.core = SimpleNamespace(admission=admission)
+    s.core = SimpleNamespace(admission=admission, scheduler=SimpleNamespace(_slot=asyncio.Lock()))
     return s
 
 
@@ -109,7 +110,7 @@ async def test_scan_inputs_and_own_writes(owner, monkeypatch):
     owner.stems = lambda: ["new"]
     await owner.scan()
     # Dropping ticket inputs from the snapshot misses this new stem.
-    assert owner.entries == ["mutations", "exclusive"]
+    assert owner.entries == []
     owner.entries.clear()
     await owner.scan()
     # Forgetting the post-intake snapshot re-enters on intake's own writes.
@@ -125,7 +126,7 @@ async def test_pending_stem_state_retries_intake(owner, monkeypatch):
     owner.checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="refused")
     await owner.scan()
     # Omitting pending stems' last states leaves a refusal permanently cached.
-    assert owner.entries == ["mutations", "exclusive"]
+    assert owner.entries == []
 
 
 @pytest.mark.asyncio
@@ -161,7 +162,7 @@ async def test_watch_changed_publication_enters_once(owner):
     owner.core.watcher = Watcher()
     await owner.watch()
     # Omitting publication or its gate changes this pair.
-    assert (published, owner.entries) == (["changed"], ["exclusive"])
+    assert (published, owner.entries) == (["changed"], [])
 
 
 @pytest.mark.asyncio

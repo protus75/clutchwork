@@ -4,8 +4,8 @@
 # purpose: test admission parallel run set
 # relates: [clutch/__main__.py, clutch/daemon.py, clutch/scheduler.py, clutch/serve.py, tests/dispatch_settle.py]
 # owner: engine
-# verified: 0a308920
-# hash: 6fe70842fe5f5e7311bc2c2747ad9a9abbdb32d265c9bac97b3681c65023710a
+# verified: 4296219b
+# hash: 3742a285db2e81636eb82fb44c3668eada99f532ee1d5a86b6ea9e67d48ac4f4
 import asyncio
 from types import SimpleNamespace
 
@@ -202,7 +202,7 @@ async def test_scheduler_occupied_during_dispatch(monkeypatch, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_watch_publication_excludes_runs():
+async def test_watch_publication_allows_runs():
     from clutch.serve import Serve
 
     publishing, release, started = (asyncio.Event() for _ in range(3))
@@ -229,7 +229,7 @@ async def test_watch_publication_excludes_runs():
         return {"changed": "text"}
 
     admission = DaemonAdmission(dispatch)
-    owner = SimpleNamespace(responses=[None, None, None, Response()], scan=scan, core=SimpleNamespace(admission=admission, watcher=Watcher()))
+    owner = SimpleNamespace(responses=[None, None, None, Response()], scan=scan, core=SimpleNamespace(admission=admission, watcher=Watcher(), scheduler=SimpleNamespace(_slot=asyncio.Lock())))
     watch = asyncio.create_task(Serve.watch(owner))
     await publishing.wait()
     attempted = asyncio.Event()
@@ -242,11 +242,10 @@ async def test_watch_publication_excludes_runs():
     admission._acquire_run = tracked_acquire
     run = asyncio.create_task(admission.dispatch(SimpleNamespace(stem="later")))
     await attempted.wait()
-    await asyncio.sleep(0)
-    assert not started.is_set()
+    await asyncio.wait_for(started.wait(), 1)
+    assert await run == "later"
     release.set()
     await watch
-    assert await run == "later"
 
 
 @pytest.mark.asyncio

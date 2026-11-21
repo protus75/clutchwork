@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: ee052b47
-hash: 0a189495e9f362a221e29a223d75f7c36b8e436d909f9220196eb42e2ad3bf46
+verified: 4296219b
+hash: de791a0cabe0cb1bb9037b66859d1a66cff232421585c90b871002f87046ead2
 -->
 # How ClutchWork works
 
@@ -539,7 +539,7 @@ publishes `state_dir/control/active.json`, and runs four loops (every 0.1s):
   while a stem is held (Reject queue awaiting an operator, storm, drought, or a premise or diff-budget park at unchanged ticket content). After a failed terminal, serve puts the ticket back for the re-offer rule and draws `retry` on re-offer as drain does, subject to the exclusions in section 6.6. Each fresh dispatch reviews committed content without an existing approval before Implement. Among eligible tickets,
   `## Runs before` orders named stems after the ticket naming them; priority, authored age,
   and stem break ties. Edges to ineligible stems never block dispatch. With parallel enabled, `parallel_order` prioritizes P0 then the longest unsettled chain; candidates overlapping an in-flight fence are skipped and logged as `dispatch_skip`, a ticket rerun after a conflict discard and a candidate overlapping one ignore `shared_paths`, and a candidate skipped `SKIP_LIMIT` times blocks later candidates.
-  Admission permits up to `scheduler.parallel.max_runs` slot-holding runs when enabled (one otherwise); the scheduler returns once a ticket occupies a slot and each run is its own task, with parallel off holding one in flight. Runs waiting for merge retain ownership but release their slot. A poll with work excludes running implementations until it finishes; an idle poll takes no exclusive section. Startup, sweeps and changed watch publication also exclude slot-holding runs; idle checks include every owned run.
+  Admission permits up to `scheduler.parallel.max_runs` slot-holding runs when enabled (one otherwise); the scheduler returns once a ticket occupies a slot and each run is its own task, with parallel off holding one in flight. Runs waiting for merge retain ownership but release their slot. A poll with work excludes running implementations until it finishes; an idle poll takes no exclusive section. Startup and sweeps also exclude slot-holding runs; intake and watch publication proceed beside running implementations. Idle checks include every owned run.
 - **Merge queue:** serial admission (section 7.2.1).
 - **Box intake:** ingests host bug reports into the Suggestion Box and never triages.
 
