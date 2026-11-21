@@ -1,18 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "19a8d326a2af36712f80634b7fd67d2ece27ca9a",
+  "produced_at_sha": "b2eb03ee720a859d29e0c22268d00116a1f0b09a",
   "stem": "requisition-contract-review-comparison",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "The ticket can't pass as written. It requires one model call with no re-prompt, but its own Verification runs tests/integration/test_author.py and tests/integration/test_rework.py, which pin re-prompt behavior after an invalid reply. Neither file is in the Scope fence.",
-    "tests/integration/test_author.py::test_author_reviews_keep_unique_keys_when_one_reasks (about line 442) expects a second requisition_review call after an 'invalid' reply. Fence this file and rewrite the test for one call that returns the 'invalid reply' snag.",
-    "tests/integration/test_rework.py::test_split_reviews_keep_unique_keys_when_one_reasks[False] (about line 230) scripts 'invalid' then requisition() and expects outcome 'ok'. Fence this file and assert the outcome after one invalid-reply snag.",
-    "Before re-confirming, grep tests/ for other scripts that feed an 'invalid' requisition reply followed by another requisition() (re-ask/reasks tests). Fence every hit, and add each to the Scope in list of tests to update.",
-    "Base measurement: the agent ran the affected tests individually on base (they passed) and both failed on the candidate. The full Verification could not be collected on base because the two new test files don't exist there yet. This is a fence gap, not a base failure."
+    "Review found the implementation sound: one-call review_ticket, spec trim, plan-prompt edits, Driver.panel_members removal, test updates. Redo all of that work from the merge base. The only finding is a weak criterion-5 assertion in tests/integration/test_requisition_brief_check.py.",
+    "In tests/integration/test_requisition_brief_check.py, slice the `## Task` section of clutch/specs/requisition_review.md. Assert it contains neither \"Account for every listed dependent\" nor \"`dependents`\" (backticked). Checking for \"dependents accounting\" alone cannot fail.",
+    "Keep the new Task sentence (judge only the supplied ticket and Context; do not search for callers, importers, tests, siblings or dependents) without backticks around dependents, so the backticked-field assertion still passes. Keep the \"Trace the reference closure\" and \"grep `tests/`\" absence checks.",
+    "In the same test, assert that neither rendered plan prompt contains \"for adversarial audit\". Assert that both contain `clutch ticket review` and `clutch prompt review <stem>`, and that the second appears in the sentence saying to run it only when the owner asks."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
