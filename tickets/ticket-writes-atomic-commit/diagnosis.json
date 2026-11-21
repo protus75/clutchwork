@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ebb770cb94e46611b8ca98a755b485213a2e07a1",
+  "stem": "ticket-writes-atomic-commit",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket fence omits files the required intake change forces: wrapping clutch/tickets.py::intake in git.main_write() breaks Git stand-ins lacking main_write. Add tests/unit/test_git_commit.py, tests/unit/test_intake_plan.py and tests/unit/test_menu_admission.py to ## Scope fence.",
+    "Add those three files to ## Verification too, then rerun clutch ticket lint and review. Next attempt: give each stand-in (test_git_commit.py:82, test_intake_plan.py:27 FakeGit, test_menu_admission.py:262) a fake main_write async context manager; keep the assertions as they are.",
+    "Before re-filing, grep tests/ for every Git stand-in that intake, verdict_locked, reject_ticket, apply_admission, Author commit or apply_rework reaches, and fence any that lacks main_write or commit_edit. Partial unit runs missed these; the full ./dev.py test tests/unit found 6 failures."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
