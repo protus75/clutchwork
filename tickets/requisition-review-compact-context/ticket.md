@@ -6,7 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-- requisition-review-input-reuse
+- requisition-review-approval-reuse
 
 ## Context
 - clutch/requisition.py
