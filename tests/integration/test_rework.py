@@ -5,8 +5,8 @@
 # purpose: Direct construction evidence; activation must migrate the dormancy assertion.
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: 5bffe6c64fbca5e39ea4ca7918b28a3bf82e83dcfe42bbb3047a37bb3782b9e3
+# verified: 595b9e84
+# hash: 4cc76d3935d6b212ab087631621f995a02bde7dcdf6a23b976dc86aad7044ecd
 
 import asyncio
 import hashlib
@@ -241,7 +241,8 @@ def test_split_reviews_keep_unique_keys_when_one_reasks(ctx, monkeypatch, headro
             ctx.driver.retry_cap = 0
             script = [order("split", proposals), requisition()]
         else:
-            script = [order("split", proposals), "invalid", requisition(), requisition()]
+            ctx.driver.retry_cap = 0
+            script = [order("split", proposals), "invalid", requisition()]
         result, requests = await invoke(ctx, ticket, text, script)
         keys = [e.key for e in ctx.driver.journal.read() if e.type == EventType.EFFECT_COMPLETION and e.key and "/requisition_review/" in e.key]
         if headroom:
@@ -249,9 +250,9 @@ def test_split_reviews_keep_unique_keys_when_one_reasks(ctx, monkeypatch, headro
             assert [key.rsplit("/", 1)[-1] for key in keys] == ["2"]
             assert len([r for r in requests if r.surface == "requisition_review"]) == 1
         else:
-            assert result.outcome == "ok"
-            assert [key.rsplit("/", 1)[-1] for key in keys] == ["1", "2", "3"]
-            assert len([r for r in requests if r.surface == "requisition_review"]) == 3
+            assert result.outcome == "gate_failed"
+            assert [key.rsplit("/", 1)[-1] for key in keys] == ["1", "2"]
+            assert len([r for r in requests if r.surface == "requisition_review"]) == 2
 
     run(scenario())
 

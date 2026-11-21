@@ -4,9 +4,9 @@
 # purpose: test callerless code removed
 # relates: [clutch/effects.py, clutch/git.py, clutch/heartbeat.py, clutch/requisition.py, clutch/timers.py, clutch/watchdog.py]
 # owner: engine
-# verified: 0a308920
-# hash: eb5dddc292e35dfff8b333e0b60d7473e1eecbe09aea81dcf743e96789970a37
-from clutch import effects, git, heartbeat, requisition, timers, watchdog
+# verified: 595b9e84
+# hash: 8298a81877b7ffd40a1d59ce35fc7c57ee0ec11cefc78bc361a6a194395cce64
+from clutch import driver, effects, git, heartbeat, requisition, timers, watchdog
 
 
 def test_removed_and_retained_symbols():
@@ -15,6 +15,9 @@ def test_removed_and_retained_symbols():
         (timers.Timers, "wait_next"),
         (git.Git, "branch"),
         (effects, "effect"),
+        (requisition, "dependent_errors"),
+        (requisition, "test_sources"),
+        (driver.Driver, "panel_members"),
         (requisition, "RequisitionGate"),
         (requisition, "base_render_chars"),
         (watchdog.Detector, "watch"),

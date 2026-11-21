@@ -4,8 +4,8 @@
 # purpose: test requisition stage events
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/providers.py, clutch/requisition.py, clutch/tickets.py]
 # owner: engine
-# verified: a5708f10
-# hash: 38e04443ac0ec1c88243af924518933eabea9d5592b8e154328cfb5d92248df7
+# verified: 595b9e84
+# hash: c3e2b5cf9d3c161dd529a1b145ebb74bd165d51b4254daac37b8ead42fd3d52f
 import asyncio
 import json
 from types import SimpleNamespace
@@ -34,7 +34,7 @@ class MemoryPath:
 def test_stage_events(monkeypatch, case, outcome, active):
     events = []
     watches = []
-    monkeypatch.setattr(requisition, "review_target", lambda *args: SimpleNamespace(scope_fence=()))
+    monkeypatch.setattr(requisition, "review_target", lambda *args: SimpleNamespace(scope_fence=(), context=()))
     monkeypatch.setattr(requisition, "_base_render", lambda *args: "base")
     monkeypatch.setattr(requisition, "load_spec", lambda text: SimpleNamespace(meta=SimpleNamespace(version="1.0", effort="high")))
     monkeypatch.setattr(requisition, "render", lambda *args: "prompt")

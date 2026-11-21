@@ -4,8 +4,8 @@
 # purpose: test requisition
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/seams.py]
 # owner: engine
-# verified: 23d3b116
-# hash: 60c73f746fc74a5d1d3843400f2c5d179a1703770c5c6447cb59362646165d9f
+# verified: 595b9e84
+# hash: faf6af310ce331fc22a740a1b91018497e7f225dfb612dd657c437d4cf217b5f
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -135,11 +135,8 @@ def test_spec_loads_and_names_finding_keys():
     for path in SPECS.glob("*.md"):
         load_spec(path.read_text())
     assert spec.meta.llm_surface == "requisition_review"
-    assert spec.inputs == ("ticket", "render", "coverage_dependents", "sibling_tickets", "prior_review", "retry_findings")
+    assert spec.inputs == ("ticket", "context", "prior_review")
     assert all(key in source for key in ("`code`", "`message`", "`paved_road`"))
-    assert "Account for every listed dependent exactly once" in source
-    assert "named tests must run the new lines in each floored file" in source
-    assert "A dependent the change breaks outside the fence is a `snag` finding naming it" in source
     # A stale-path rule must exempt paths created by the ticket or written only as outputs.
     for phrase in (
         "does not exist at the review commit",
@@ -151,23 +148,7 @@ def test_spec_loads_and_names_finding_keys():
     assert "Two statements anywhere in the ticket cannot both hold, for example a declared signature and a call to it, or a named fixture and the result a criterion expects from it." in source
     assert "Report every finding in this one reply; never stop at the first." in source
     # The changed-text-only rule must not apply after a schema-invalid review.
-    assert "A prior review reporting an invalid requisition review reply clears nothing" in source
     assert "The first character of your reply is `{` and the last is `}`" in source
-    assert "re-emit the same verdict as bare JSON" in source
-
-
-def test_requisition_review_spec_snags_unit_test_disk_read():
-    source = (SPECS / "requisition_review.md").read_text()
-    task = " ".join(load_spec(source).body.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
-    # Omitting any condition would miss a required snag or flag an exempt test.
-    for phrase in (
-        "a criterion or `## Verification` line names a `tests/unit/` file whose test the ticket adds or newly requires to read a named repo file",
-        "raise a `snag` finding: place that test under `tests/integration/` and fence that file",
-        "A test reading only `tmp_path` is not a hit.",
-        "A test reaching a repo file only through an injected seam or fake is not a hit.",
-        "Updating a pinned value in an existing unit test that already reads the file is not a hit.",
-    ):
-        assert phrase in task
 
 
 @pytest.mark.parametrize("kind", [None, "authoring_error"])
@@ -182,7 +163,6 @@ def test_approve_and_effect_key(tmp_path):
     assert verdict.verdict == "approve" and verdict.findings == []
     assert verdict.mechanical is None
     assert len(llm.requests) == 1
-    assert "<<clutch-data:begin context>>" not in llm.requests[0].rendered
     assert llm.requests[0].surface == "requisition_review"
     assert any(e.key == "llm/slot/0/requisition_review/1/1" for e in driver.journal.read())
 
@@ -209,23 +189,10 @@ def test_snag_and_invalid_reply(tmp_path):
         )
     )
     assert invalid.verdict == "snag" and invalid.mechanical == "invalid reply"
-    assert invalid.calls == 1 + driver.retry_cap
-    assert len(llm.requests) == 2 + driver.retry_cap
+    assert invalid.calls == 1
+    assert len(llm.requests) == 2
     with pytest.raises(Exception):
         RequisitionReply.model_validate_json(reply("approve", [FINDING]))
-
-
-def test_invalid_reply_is_reprompted_then_accepted(tmp_path):
-    valid = reply("snag", [FINDING])
-    repo, driver, llm = setup(tmp_path, ["Here is the review: snag", valid])
-    verdict = run(driver, repo)
-    assert verdict.verdict == "snag" and verdict.mechanical is None
-    assert verdict.findings[0].message == "missing file"
-    assert verdict.calls == 2 and len(llm.requests) == 2
-    assert "Invalid JSON" in llm.requests[1].rendered
-    assert "only the JSON object" in llm.requests[1].rendered
-    keys = [e.key for e in driver.journal.read() if e.type == "effect_completion" and e.key and "/requisition_review/" in e.key]
-    assert keys == ["llm/slot/0/requisition_review/1/1", "llm/slot/0/requisition_review/1/2"]
 
 
 def test_invalid_ticket_and_reserved_stem_spend_no_call(tmp_path):
@@ -279,19 +246,27 @@ def test_implement_reads_context_from_its_worktree(tmp_path):
     assert "### context.txt\ncontext\n" not in prompt
 
 
-def test_review_render_over_bound_is_mechanical_snag(tmp_path, monkeypatch):
+def test_review_render_over_bound_is_mechanical_snag(tmp_path):
     repo, driver, llm = setup(tmp_path, [])
-    import clutch.requisition as requisition
-    import clutch.specs as specs
-
-    # The base Implement render fits the bound; the review render, which embeds it, does not.
-    base = len(requisition._base_render(repo, review_target(repo, "one-thing", TICKET), TICKET, SPECS))
-    monkeypatch.setattr(specs, "RENDER_BOUND_CHARS", base + 1)
-    monkeypatch.setattr(requisition, "RENDER_BOUND_CHARS", 2 * base)
-    verdict = run(driver, repo)
+    verdict = asyncio.run(
+        review_ticket(
+            driver,
+            repo=repo,
+            stem="one-thing",
+            text=TICKET,
+            specs_dir=SPECS,
+            coverage_map=None,
+            tier="high",
+            stem_slot="slot",
+            run_seq=0,
+            attempt=1,
+            call_seq=1,
+            expected_budget="surface",
+            prior="x" * (RENDER_BOUND_CHARS + 1),
+        )
+    )
     assert verdict.verdict == "snag" and verdict.mechanical == "review render over bound"
-    assert verdict.findings[0].code == "requisition_review"
-    assert llm.requests == []
+    assert verdict.calls == 0 and llm.requests == []
 
 
 def test_base_render_matches_implement_and_gate(tmp_path):
@@ -302,57 +277,6 @@ def test_base_render_matches_implement_and_gate(tmp_path):
     from clutch.requisition import _base_render
 
     assert _base_render(repo, ticket, TICKET, SPECS) == production
-
-
-def test_coverage_dependents_in_prompt(tmp_path):
-    repo, driver, llm = setup(tmp_path, [reply("approve", dependents=[{"path": "tests/outside.py", "status": "unaffected", "reason": "test:1 remains true"}])])
-    map_path = repo / "map.json"
-    map_path.write_text(
-        json.dumps(
-            {
-                "files": {
-                    "thing.py": ["tests/outside.py", "tests/in_fence/test_inside.py"],
-                    "other.py": ["tests/unrelated.py"],
-                }
-            }
-        )
-    )
-    ticket = TICKET.replace("- thing.py\n\n## Acceptance", "- thing.py\n- tests/in_fence\n\n## Acceptance")
-    assert run(driver, repo, text=ticket, coverage_map=map_path).verdict == "approve"
-    prompt = llm.requests[0].rendered
-    block = prompt.split("<<clutch-data:begin coverage_dependents>>")[1].split("<<clutch-data:end coverage_dependents>>")[0]
-    assert block.strip() == "tests/outside.py: runs thing.py"
-
-
-def test_missing_coverage_dependent_is_retried(tmp_path):
-    first = {"path": "tests/a.py", "status": "unaffected", "reason": "tests/a.py:4 still holds"}
-    second = {"path": "tests/b.py", "status": "unaffected", "reason": "tests/b.py:8 still holds"}
-    repo, driver, llm = setup(tmp_path, [reply("approve", dependents=[first]), reply("approve", dependents=[first, second])])
-    map_path = repo / "map.json"
-    map_path.write_text(json.dumps({"files": {"thing.py": ["tests/a.py", "tests/b.py"]}}))
-    verdict = run(driver, repo, coverage_map=map_path)
-    assert verdict.verdict == "approve" and verdict.calls == 2
-    assert "missing dependent: tests/b.py" in llm.requests[1].rendered
-
-
-@pytest.mark.parametrize("contents", [None, "not json", '{"files": []}'])
-def test_invalid_coverage_map_snags_before_model(tmp_path, contents):
-    repo, driver, llm = setup(tmp_path, [])
-    map_path = repo / "map.json"
-    if contents is not None:
-        map_path.write_text(contents)
-    verdict = run(driver, repo, coverage_map=map_path)
-    assert verdict.verdict == "snag"
-    assert verdict.findings[0].code == "coverage_map"
-    assert verdict.findings[0].paved_road == "run `clutch coverage map`"
-    assert verdict.calls == 0 and llm.requests == []
-
-
-def test_no_coverage_map_renders_notice(tmp_path):
-    repo, driver, llm = setup(tmp_path, [reply("approve")])
-    assert run(driver, repo).verdict == "approve"
-    block = llm.requests[0].rendered.split("<<clutch-data:begin coverage_dependents>>")[1].split("<<clutch-data:end coverage_dependents>>")[0]
-    assert block.strip() == "no coverage map configured"
 
 
 def test_context_section_renders_only_the_section(tmp_path):
@@ -389,14 +313,6 @@ def test_requisition_stage_events_in_engine_log(tmp_path):
     stages = [e for e in events if e.get("surface") == "requisition_review" and e["event"] in ("stage_start", "stage_end")]
     assert [(e["event"], e["stem"], e["attempt"], e["run_seq"]) for e in stages] == [("stage_start", "one-thing", 3, 7), ("stage_end", "one-thing", 3, 7)]
     assert stages[1]["outcome"] == "ok"
-
-
-def test_missing_map_has_no_requisition_stage_events(tmp_path):
-    repo, driver, _ = setup(tmp_path, [])
-    assert run(driver, repo, coverage_map=tmp_path / "missing.json").mechanical == "invalid coverage map"
-    log = tmp_path / ".state/engine.log"
-    events = [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
-    assert not [e for e in events if e.get("surface") == "requisition_review"]
 
 
 def test_committed_ticket_lint_snags_without_provider(tmp_path):

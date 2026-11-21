@@ -4,8 +4,8 @@
 # purpose: test fence closure registries
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 148a8874
-# hash: 6ebd5e69035c6e3f41d12e041eea193253734058a189c1a7db5aea069b78c2e9
+# verified: 595b9e84
+# hash: a3029d8007fc77553d07984672a791fb80b6dca57aed822ff11cf3252dc5f8ea
 from pathlib import Path
 
 from clutch.specs import load_spec, render
@@ -23,14 +23,6 @@ PHRASES = (
     "asserts against the changed set or hardcodes the moved path",
     "A mere textual mention, a path built under `tmp_path`, or a historical form the ticket keeps valid is not a hit.",
 )
-
-
-def test_requisition_review_spec_traces_in_code_collections():
-    spec = load_spec((ROOT / "clutch/specs/requisition_review.md").read_text())
-    rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
-    task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
-    for phrase in PHRASES:
-        assert phrase in task
 
 
 def test_authoring_guide_traces_in_code_collections():

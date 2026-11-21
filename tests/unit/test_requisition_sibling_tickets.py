@@ -4,8 +4,8 @@
 # purpose: test requisition sibling tickets
 # relates: [clutch/requisition.py, clutch/tickets.py]
 # owner: engine
-# verified: a5708f10
-# hash: 3dd258870c18c1c52462bc8275e0a4a6a1526ae330e54a1e12539a891e8c42fa
+# verified: 595b9e84
+# hash: 9b312845761047b431864121d386fcfc9a531c620a09ca0cc140e10665da8bb8
 import asyncio
 import json
 from types import SimpleNamespace
@@ -68,58 +68,3 @@ class MemoryPath:
 
     def read_text(self):
         return self.files.get(self.name, "spec")
-
-
-def test_review_renders_siblings_and_skips_bad_ticket(monkeypatch):
-    own, other = ticket("own"), ticket("other")
-    monkeypatch.setattr(requisition, "review_target", lambda *args: own)
-    monkeypatch.setattr(requisition, "_base_render", lambda *args: "base")
-    monkeypatch.setattr(requisition, "load_spec", lambda text: SimpleNamespace(meta=SimpleNamespace(version="1.0", effort="high")))
-    captured = []
-    monkeypatch.setattr(requisition, "render", lambda spec, values: captured.append(values.copy()) or "prompt")
-
-    def parse(stem, text, repo):
-        if text == "broken":
-            raise TicketInvalid([])
-        return other
-
-    monkeypatch.setattr(requisition, "parse_ticket", parse)
-
-    async def call(*args, **kwargs):
-        return dict(text=json.dumps(dict(verdict="approve", summary="reviewed", findings=[])), input_tokens=1, output_tokens=1, provider="fake", model="m", usd=0.0)
-
-    async def race(fn, timeout):
-        return await fn()
-
-    monkeypatch.setattr(requisition, "llm_call", call)
-    driver = SimpleNamespace(
-        journal=SimpleNamespace(read=lambda: []),
-        panel_members=lambda tier, surface: (),
-        retry_cap=0,
-        spool=SimpleNamespace(write=lambda *args: None),
-        _active=True,
-        race=race,
-        effects=None,
-        watched_llm=lambda: None,
-        redactor=None,
-    )
-    for files in ({"tickets/other/ticket.md": "valid", "tickets/bad/ticket.md": "broken"}, {}):
-        asyncio.run(
-            requisition.review_ticket(
-                driver,
-                repo=MemoryPath(files=files),
-                stem="own",
-                text="ticket",
-                specs_dir=MemoryPath(),
-                coverage_map=None,
-                tier="high",
-                stem_slot="s",
-                run_seq=1,
-                attempt=1,
-                call_seq=1,
-                expected_budget="surface",
-                prior="none",
-            )
-        )
-    assert "other" in captured[0]["sibling_tickets"]
-    assert captured[1]["sibling_tickets"] == "none"

@@ -4,8 +4,8 @@
 # purpose: test key scope
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: 9ccc8ea7108d98d732fde59b44f29455093e332361936e8080c5916adba3bc61
+# verified: 595b9e84
+# hash: 326d91bf51c40fe0c88a7da32cfc386ee1762dd2b93e921abac808dc7ee17959
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -192,7 +192,7 @@ def test_requisition_passes_scoped_sequence(tmp_path, monkeypatch):
 
     (tmp_path / "requisition_review.md").write_text("unused")
     spec = SimpleNamespace(meta=SimpleNamespace(version="1.0", effort="low"))
-    ticket = SimpleNamespace(scope_fence=(), depends=(), stem="item")
+    ticket = SimpleNamespace(scope_fence=(), depends=(), stem="item", context=())
     monkeypatch.setattr(requisition, "load_spec", lambda _: spec)
     monkeypatch.setattr(requisition, "review_target", lambda *args: ticket)
     monkeypatch.setattr(requisition, "_base_render", lambda *args: "base")

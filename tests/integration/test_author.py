@@ -5,8 +5,8 @@
 # purpose: Author integration: triage drives the one ticket-plane authoring path.
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: de3945b67ab58f40ab2e0cb56d7271cf464e68d0b6d156fcd44f1d56afbf1cc2
+# verified: 595b9e84
+# hash: 8129102f467f04f0484d70b1706e35faaf674a0d178b6eebd7c1dac133f199c6
 
 import asyncio
 import json
@@ -443,10 +443,10 @@ def test_author_reviews_keep_unique_keys_when_one_reasks(tmp_path, monkeypatch):
     root = make_root(tmp_path)
     _routes(root)
     _failure(_box(root))
-    llm = FakeLLM([reply("author"), author_reply("first"), "invalid", requisition_reply("snag", [SNAG]), author_reply("second"), requisition_reply("approve")])
+    llm = FakeLLM([reply("author"), author_reply("first"), "invalid", author_reply("second"), requisition_reply("approve")])
     assert _run(root, monkeypatch, llm) == 0
     keys = [e.key for e in _events(root) if e.type == EventType.EFFECT_COMPLETION and e.key and "/requisition_review/" in e.key]
-    assert [key.rsplit("/", 1)[-1] for key in keys] == ["1", "2", "3"]
+    assert [key.rsplit("/", 1)[-1] for key in keys] == ["1", "2"]
     assert (root / "tickets/second/ticket.md").exists()
 
 

@@ -4,8 +4,8 @@
 # purpose: test precondition rules
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 96e46658
-# hash: 877ed43b7fea72954548b4e4541ced46e0b0169cfebfb138d575a0d66d410c26
+# verified: 595b9e84
+# hash: 1df2b3235cf6ed72df78b15e035b85c3c0dbff9360a30a3bfc7d6d8af5ab6e98
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,6 @@ def task_section():
         "fence the file and put the edit in Scope in",
         "A precondition delivered by a declared `## Depends on` is not a snag.",
         "For a `tickets/` path, use `## Depends on`, never fence the file for Implement to edit.",
-        "When a listed sibling's Scope in changes an interface",
         "A path in `## Scope fence` or a `## Verification` command does not exist at the review commit",
     ],
 )

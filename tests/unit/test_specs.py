@@ -4,8 +4,8 @@
 # purpose: test specs
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: a0d5e388
-# hash: fb54fd1466ff0b3a4980332e0e93c4c53702707357c6acf514b6b1ac2e6a7f77
+# verified: 595b9e84
+# hash: 0fc7b247af32e92d0320b394c5ef1d703b3dc267e395d1731b430d578af462aa
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.23"), ("requisition_review", "3.26"), ("diagnose", "1.9")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.23"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -88,9 +88,6 @@ def test_requisition_review_spec_snags_non_protocol_regression():
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
-    # The old spec omitted set membership; an unlimited grep would fence loose mentions.
-    assert "adds, removes, renames, or moves a member of a set" in task
-    assert "asserts against the changed set or hardcodes the moved path" in task
     for phrase in (
         "If the ticket has `## Regression`",
         "only one JSON object with exactly the `regression_result` key",

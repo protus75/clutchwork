@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 4296219b
-hash: de791a0cabe0cb1bb9037b66859d1a66cff232421585c90b871002f87046ead2
+verified: 595b9e84
+hash: 8713975dfc2f88e36aacf59ed478df75a7128fc57429e4ac17cac6bf08c3dc4a
 -->
 # How ClutchWork works
 
@@ -656,7 +656,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 `routing` rows map `(tier, surface)` to an ordered list of candidates. An optional `kinds` list restricts a row to those ticket kinds; matching kind rows precede unrestricted rows for the requested surface and then review. A surface with no row
 falls back to the `(tier, review)` row. The model is the candidate's `model` or the provider's
-`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review, requisition review, diagnose, and triage fan out, while the other surfaces do not yet.
+`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review, diagnose, and triage fan out, while the other surfaces do not yet.
 
 ### 8.3 Admission, breakers, droughts
 
@@ -680,7 +680,7 @@ Every model call goes through one driver (`clutch/driver.py`) using a prompt spe
 | `review.md` | judging the diff | approve / snag / rma |
 | `diagnose.md` | explaining a failure | retry / escalate / split / reject / abandon-human + lessons |
 | `rework.md` | rewriting or splitting a ticket | update / split / escalate |
-| `requisition_review.md` | checking an authored ticket is buildable, including one-by-one accounting for coverage dependents and data-file consumers outside its fence, and the unit coverage floor check; a missing or invalid configured map snags | approve / snag / rma |
+| `requisition_review.md` | short check of an authored ticket and its Context | approve / snag / rma |
 | `author.md` | writing a ticket from a Suggestion Box message | stem + ticket |
 | `triage.md` | settling a Suggestion Box message | author / tombstone / declined |
 | `retro.md` | proposing prompt-spec changes | proposals |
