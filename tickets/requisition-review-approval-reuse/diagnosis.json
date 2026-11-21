@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "42cd567addfb634ffc24600c8de5b25507571e41",
+  "stem": "requisition-review-approval-reuse",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Attempt 0 stopped incomplete with nothing committed (empty diff_stat). It ran the whole integration suite, which the ticket never asks for. Run only the ticket's ## Verification command, read any failure and fix it, then commit. Another worktree's test process is not a reason to stop.",
+    "Redo from the merge base: add one approval-selection function in clutch/requisition.py. It reads only the latest requisition_verdict for the stem and reuses it only if it is an approval whose input_identity matches review_input_identity. A missing, null or mismatched identity means a fresh review.",
+    "In clutch/__main__.py::_review, call the selector with config.routing_default_tier before the provider is built or preflighted. In clutch/runner.py::drive, replace the ticket-SHA-only check with the same selector at capability(ticket, history)[0]. Keep admission refusal and provisional precedence.",
+    "In tests/integration/test_ladder.py, insert a requisition verdict() approve before the next agent() wherever the reviewer tier changes: retry-wall, rework-escalation, escalation-rung and operator-confirm reset. Also update the SHA-only bypass test in tests/integration/test_requisition_gate.py.",
+    "Add tests/unit/test_review_reuse_cli.py, tests/unit/test_review_reuse_dispatch.py and tests/integration/test_requisition_reuse.py with zero-provider-call assertions. Update the help text, the clutch/docs/host-running.md verb row and docs/how-clutch-works.md section 3."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
