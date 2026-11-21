@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+premise_failed
 
 ## Surprises / judgment calls
 
-The focused verification passed, but the full integration run overlapped another worktree’s test process and was interrupted after reporting failures; those failures have not been diagnosed or compared with the base commit.
+The ticket verification passed on the candidate, and the unit coverage gate passed. The full integration check produced numerous dispatch failures and was interrupted after worker timeouts. Representative failing tests passed on the base commit. The exact ticket verification could not run on the base because its three new test files do not exist there.
 
 ## Dead ends
 
-An overlapping integration run could not establish reliable gate results.
+Shared fixtures record approvals without an input identity because their configurations omit a requisition-review route; the new conservative rule correctly requires a fresh review, but their scripted responses expect Implement first.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; work stopped before completion.
+30 minutes expected; not measured.
 
