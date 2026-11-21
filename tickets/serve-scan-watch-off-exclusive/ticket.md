@@ -8,6 +8,9 @@ kind: bug
 ## Depends on
 none
 
+## Runs before
+- serve-confirm-during-check
+
 ## Context
 - clutch/serve.py::Serve.scan
 - clutch/serve.py::Serve.watch
@@ -34,7 +37,7 @@ What each section does and what it can race, from the code:
 
 After this ticket neither section waits for a running implementation or counts as an exclusive waiter. The intake commit stays serialized by the locks it already takes, the post-intake read takes `main_write()`, and publication holds `_slot`.
 
-Left exclusive on purpose and out of scope: verdict settlement in the merge poll (`settle_admissions`/`apply_verdict`, which is what applies a confirm; the earlier ticket `serve-verdicts-wait-for-runs` is rejected), retro, supervise/triage/calibrate, box intake, maintenance and startup. The implementer names in the run record that these still take `mutations()` and why this ticket leaves them.
+Out of scope: verdict settlement in the merge poll (`settle_admissions`/`apply_verdict`, which is what applies a confirm) belongs to the confirmed ticket `serve-confirm-during-check`, which this ticket runs before; retro, supervise/triage/calibrate, box intake, maintenance and startup keep `mutations()`/`exclusive()`. The implementer names in the run record which of these still take an exclusive section and why this ticket leaves them.
 
 ## Boundary contract
 ### Serve watcher intake and publication
@@ -50,7 +53,7 @@ Left exclusive on purpose and out of scope: verdict settlement in the merge poll
 ### Admission exclusion for other serve sections
 - disposition: reuse
 - owner: clutch/daemon.py::DaemonAdmission
-- consumers: verdict settlement, retro, supervise, box intake, maintenance, startup
+- consumers: retro, supervise, box intake, maintenance, startup, and verdict settlement until `serve-confirm-during-check` moves it
 - observable change: none; `exclusive()` and `mutations()` are unchanged
 - compatibility: every other caller keeps today's exclusion, and `clutch/daemon.py` is not edited
 - acceptance: criterion 5
@@ -65,7 +68,7 @@ Scope in:
 - Existing tests forced by the change: in `tests/unit/test_serve_idle_poll.py` the `owner` fixture gains a `main_write` lock on `git` and `core.scheduler` with a `_slot` lock, `test_scan_inputs_and_own_writes` and `test_pending_stem_state_retries_intake` expect `owner.entries == []` where they expect `["mutations", "exclusive"]` today, and `test_watch_changed_publication_enters_once` expects `[]` where it expects `["exclusive"]`; the other cases of that file, including the merge and box cases, are unchanged. `tests/unit/test_admission_parallel_run_set.py::test_watch_publication_excludes_runs` is replaced by the new behavior (a dispatch starts while publication is held) and its `owner` gains `core.scheduler`; its other cases are unchanged. `tests/regress_serve_parallel_admission.py` builds `owner.checkout.git` with only `status_porcelain` and `rev_parse`, so it gains a `main_write` lock; its assertion is unchanged.
 - New tests, each starting with a `clutch:meta` header from `uv run clutch meta refresh <file>` with only `purpose` edited by hand (if the serve lock blocks the refresh, the implementer creates the header): `tests/unit/test_serve_scan_watch_locks.py`, `tests/integration/test_serve_scan_watch_overlap.py` and the reproducer `tests/regress_serve_scan_watch_off_exclusive.py`. Import `tests/integration/serve_rig.py` and change nothing in it.
 
-Scope out: verdict settlement, retro, supervise, box intake, maintenance and startup keep `mutations()`/`exclusive()`; `clutch/daemon.py`, `clutch/scheduler.py`, `clutch/tickets.py`, `clutch/git.py`, `clutch/runner.py`; what intake does to a ticket; `tests/integration/test_serve_parallel_admission.py::test_dispatch_consumed_confirm_and_stop`, which pins the verdict-settlement wait this ticket keeps. The existing `tests/integration/test_serve_scan_head.py` is not edited. If the implementer finds a site that cannot be safe without exclusion, keep that one site exclusive, name it and the reason in the run record, and the criteria still hold for every other site.
+Scope out: verdict settlement (owned by `serve-confirm-during-check`), retro, supervise, box intake, maintenance and startup are not changed here; `clutch/daemon.py`, `clutch/scheduler.py`, `clutch/tickets.py`, `clutch/git.py`, `clutch/runner.py`; what intake does to a ticket; the `test_merge_work` decision rows and `tests/integration/test_serve_parallel_admission.py::test_dispatch_consumed_confirm_and_stop`, which pin verdict settlement and are `serve-confirm-during-check`'s to change. The existing `tests/integration/test_serve_scan_head.py` is not edited. If the implementer finds a site that cannot be safe without exclusion, keep that one site exclusive, name it and the reason in the run record, and the criteria still hold for every other site.
 
 ## Scope fence
 - clutch/serve.py
@@ -82,7 +85,7 @@ Scope out: verdict settlement, retro, supervise, box intake, maintenance and sta
 2. `./dev.py test tests/integration/test_serve_scan_watch_overlap.py` also edits a ticket file while a run is held and shows the scheduler's pending set holds the new content, and that a stop request made then is still honored, not dropped.
 3. `./dev.py test tests/unit/test_serve_scan_watch_locks.py` shows with one run holding a slot that a changed-snapshot `scan` enters `mutations()` and `exclusive()` 0 times and reads tickets while `main_write()` is held, that `watch` publication holds `core.scheduler._slot` and enters `exclusive()` 0 times, and that a stand-in `dispatch_next` selection and a publication never interleave. Wrong results ruled out: one entry into either gate, or a read outside `main_write()`.
 4. `./dev.py test tests/unit/test_serve_scan_watch_locks.py` shows `scan` returns `{}` without calling `intake` when `stopping` is set, not an intake commit after a stop.
-5. `./dev.py test tests/unit/test_serve_idle_poll.py tests/unit/test_admission_parallel_run_set.py tests/integration/test_serve_parallel_admission.py tests/integration/test_serve_scan_head.py tests/integration/test_serve_admission.py` passes, with only the cases named in Scope in changed; the merge, box and verdict-settlement cases still enter `mutations()` and `exclusive()`.
+5. `./dev.py test tests/unit/test_serve_idle_poll.py tests/unit/test_admission_parallel_run_set.py tests/integration/test_serve_parallel_admission.py tests/integration/test_serve_scan_head.py tests/integration/test_serve_admission.py` passes, with only the cases named in Scope in changed; the merge and box cases of `tests/unit/test_serve_idle_poll.py` are not edited by this ticket.
 6. `uv run python tests/regress_serve_scan_watch_off_exclusive.py` prints `{"regression_result": "pass"}` and exits 0 on the fixed branch, and prints `{"regression_result": "defect"}` with a non-zero exit on the merge base.
 7. `uv run clutch meta check tests/unit/test_serve_scan_watch_locks.py tests/integration/test_serve_scan_watch_overlap.py tests/regress_serve_scan_watch_off_exclusive.py docs/how-clutch-works.md` exits 0.
 
