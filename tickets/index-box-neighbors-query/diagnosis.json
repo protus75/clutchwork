@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "13750fd7bbc0f0e6d34373a7facb86cd071ce142",
+  "produced_at_sha": "4c8869b7192bd50b2b8777f97a00a05e41314aac",
   "stem": "index-box-neighbors-query",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Review found the neighbors implementation in clutch/index.py matched the spec. Redo it the same way from the merge base. The only gaps were missing assertions in tests/unit/test_index_neighbors.py.",
-    "Criterion 5: test two separate creators. The first fails only load(conn, \"vss\") and asserts findings == (\"embed_failed: vss unavailable: x\", \"fts unavailable: index missing\"). The second fails only load(conn, \"fts\") with an embed failure present and asserts findings[1] == \"fts unavailable: y\".",
-    "Criterion 5: for the vss-unavailable, fts-load-failure and embeddings-table-missing cases, assert the full (outcome, mode, hits, findings) tuple: fulltext_unavailable, \"\", (), and the exact findings. The earlier attempt did this only for the exec-reply cases.",
-    "Criterion 4: for the database with no chunks table, assert outcome == \"index_unreadable\" and findings[0].startswith(\"index_unreadable: \"). Do the same for the connect-raises case and the not-a-database case.",
-    "Before finishing, go through criteria 1-9 clause by clause and check that each named case has its own assert on every field the criterion lists. Do not combine failure modes in one fixture."
+    "Redo the full ticket from the merge base: in clutch/index.py add KINDS, Hit, Neighbors and neighbors, and move _embed's exec-and-validate block into one helper that both _embed and neighbors call. Review found that approach sound and the code matching the spec.",
+    "Criterion 7, tests/integration/test_index_neighbors_fulltext.py: the default Exec gives every text [1,2,3], so all scores tie. For the embedding rebuild, use an exec that picks the vector from the text it reads at stdin_path, so the flaky box message gets a distinct vector.",
+    "Criterion 7, real vss/HNSW path: query with the flaky message's vector, then assert outcome found, mode embedding, hits[0].ref is the flaky box id, and hits[0].score > hits[1].score. A ranking that ignores the vectors must fail this test.",
+    "Criterion 2 tie test, tests/unit/test_index_neighbors.py: before checking sort order, assert outcome == 'found' and that the three tied hits (box, roadmap, decision, each scoring 0.0) come back in selector ascending order. An empty result must fail the test.",
+    "The claim that `uv run clutch meta check` fails the same way on the base commit is unproven. Re-run it once, exactly as written, in a base-commit git worktree with full history. Run `uv run clutch meta refresh` on both new test files so each has a non-empty `# purpose:` line."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
