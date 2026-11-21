@@ -13,90 +13,108 @@ kind: feature
 - clutch/requisition.py
 - clutch/ask.py
 - clutch/config.py::Config
-- clutch/__main__.py::main
-- clutch/training.py::evaluate
-- clutch/evidence/schema.py
-- eval/diagnose.py
-- eval/harness.py
-- docs/boundary-contract-plan.md
-- clutch/docs/host-training.md
-- tests/unit/test_main_help.py
-- tests/unit/test_main_training_group.py
+- tests/integration/test_requisition.py
+- tests/unit/test_requisition_dependents.py
+- tests/unit/test_requisition_panel.py
+- tests/integration/test_ask_plan_drain.py
+- tests/integration/test_ask_plan_serve.py
+- clutch/docs/host-authoring.md
+- docs/how-clutch-works.md#3. Tickets
 
 ## On-demand
+- clutch/specs/requisition_review.md
+- clutch/specs/ask/plan-ticket-drain.md
+- clutch/specs/ask/plan-ticket-serve.md
+- clutch/specs/ask/author.md
 - clutch/specs/ask/review.md
 
 ## Goal / Why
-Measure whether explicit interface/boundary design contracts let a single Sonnet reviewer replace the full buildability review plus independent audit without losing defect detection. Compare against independently labeled fixture truth, not agreement with Opus. The owner's November 21 observation is a hypothesis, not a premise that contracts guarantee correctness: include explicit-but-wrong contracts, contract/implementation mismatches, missing forced callers and missing test obligations. The document-agent BuildIt design panel is distinct from the separate ticket auditor; this comparison measures the latter as an incremental expense, not an assumed requirement. Deliver the bounded comparison and a recommendation; do not silently change the production review policy. This ticket uses the compact production material and explicit Sonnet child policy delivered by its dependencies.
+Owner decision, November 21: routine tickets receive one short Sonnet check; full buildability investigation and extra auditors run only when explicitly requested. The owner withdrew the proposed cost-comparison study. This stem now delivers that decision instead of an experiment. Current plan prompts require a separate adversarial audit for every authored row, while requisition review directs exhaustive caller/test investigation and repeated full dependent accounting. Stop that blanket cost. Retain mechanical authoring checks, the short ticket check, implemented-code review and existing run gates. Explicit full review uses the existing clutch prompt review STEM procedure; no new command, mode flag, classifier, benchmark or configuration framework is introduced.
 
 ## Boundary contract
-### Review comparison operator command
-- disposition: extend
-- owner: clutch/__main__.py training group
-- consumers: owner and bounded evaluation runner
-- observable change: add clutch training review-compare --fixtures DIR --out PATH under the existing training group, dispatching to a review-comparison module through existing provider/driver seams
-- compatibility: existing training export/eval behavior and their enablement guard are unchanged; dispatch the synthetic comparison before that export/eval guard so it does not require enabling private training capture; no production review route or approval is changed
-- acceptance: help states reads, writes, lock, costs, exit codes and examples; the command produces a complete or explicitly inconclusive report with bounded calls and budget
-- tests: tests/unit/test_review_compare_cli.py and tests/integration/test_review_compare_cli.py
-- post-merge source of truth: clutch/__main__.py training group
+### Routine ticket check
+- disposition: replace
+- owner: clutch/requisition.py and clutch/specs/requisition_review.md
+- consumers: CLI ticket review, Author, Rework and dispatch through their existing review_ticket calls
+- observable change: the automatic requisition check is a concise review of the supplied ticket and declared contracts, criteria and selected Context; it does not launch independent reviewers, perform exhaustive repository closure searches or redo full dependent accounting. The existing verdict vocabulary and JSON reply remain.
+- compatibility: preserve ticket parsing/lint, render feasibility, provider failure handling, provisional-review rules and implemented-code review. Existing full-investigation assertions migrate to the explicit audit owner. No automatic fallback to full review is permitted after a short-check snag.
+- acceptance: a normal ticket check uses one reviewer invocation with no model-panel fanout or schema-repair model retry inside that invocation; invalid replies return a concrete snag. A routine snag is repaired through the existing authoring process without adding auditors.
+- tests: tests/unit/test_requisition_brief_check.py and tests/integration/test_requisition_brief_check.py
+- post-merge source of truth: clutch/requisition.py and clutch/specs/requisition_review.md
 
-### Review comparison report
-- disposition: create
-- owner: clutch/reviewcompare.py
-- closest existing: eval/harness.py scores implemented diffs; clutch/training.py::evaluate replays recorded diff-review labels; neither measures authored-ticket buildability with contract-stratified truth and a separate audit cost.
-- earning reason: a persisted evaluation artifact is the process boundary needed to decide whether this owner's costly full-review workflow can be replaced; reuse existing provider invocation and evidence owners instead of creating another model runner.
-- consumers: training review-compare command and clutch/reviewcompare.py::verify_report
-- observable change: expose pure `verify_report(report: Mapping[str, object], cases: Sequence[Mapping[str, object]]) -> list[str]`, returning an empty list exactly when identities, expected cases, totals, scores and recommendation recompute from the supplied labeled cases and recorded outputs; verification makes no model or filesystem call. A JSON report names corpus/spec/model identities, each arm's verdicts and caught/missed defects, false snags, invalid replies, call counts, cache/uncached/output tokens, reported USD and wall time, with contract-present/legacy strata.
-- compatibility: no new journal signal, live ticket verdict, approval cache entry, training record format or production prompt authority.
-- acceptance: scores recompute from labeled cases; missing or budget-stopped calls remain inconclusive, never zero-cost success; recommendation retains full review when quality evidence is insufficient.
-- tests: tests/unit/test_review_compare.py tests verify_report with hand-built in-memory reports, tampered totals/labels, incomplete cases and zero additional catches; tests/integration/test_review_compare_cli.py loads and lints the committed corpus
-- post-merge source of truth: clutch/reviewcompare.py report schema and eval/requisition_compare/ labeled fixtures
+### Explicit full investigation
+- disposition: reuse
+- owner: clutch/specs/ask/review.md
+- consumers: an operator explicitly requesting clutch prompt review STEM
+- observable change: the full adversarial procedure remains available on request; routine plan-ticket-drain and plan-ticket-serve workflows no longer invoke it for every row
+- compatibility: preserve its read-only checks and report-to-owner behavior, and preserve Sonnet selection for any Claude children an explicitly requested audit launches; no automatic size/tier/risk classifier chooses a full investigation
+- acceptance: rendered plan prompts require one short check and do not require a separate per-ticket audit; the explicit audit still exposes the detailed checks
+- tests: tests/integration/test_requisition_brief_check.py and tests/integration/test_ask_plan_brief_review.py
+- post-merge source of truth: clutch/specs/ask/review.md and the two shipped plan prompts
 
 ## Scope in / Scope out
 Scope in:
-- Add a narrow grouped operator command and module for this single comparison. The required --fixtures directory is explicit so the installed command never assumes the clutch source repository or reads its tickets implicitly; missing/invalid fixture input refuses before any provider call. Use the existing read-only provider-session pattern, injected clock/process/filesystem seams and existing evidence capture. Keep model call records in evidence but do not journal requisition_verdict or allow evaluation approval to release a real ticket. Model requests run against isolated synthetic fixture repositories through existing Git/workspace wrappers.
-- Commit exactly 12 deterministic authored-ticket fixture cases in eval/requisition_compare: three defective and three clean with explicit boundary/interface contracts, and three defective and three clean without explicit interface entries (use a valid Boundary contract none/private-implementation declaration; never omit a required ticket section). Label expected verdict and defect location/reason independently from reviewer output. Include plausible incorrect contracts and wrong/missing caller/test migration. Parse real tickets and run real authoring lint for fixture validity; label buildability defects separately from mechanical lint errors. Labels stay outside model-visible material.
-- All model replies use the existing RequisitionReply JSON contract (verdict, summary, dependents, findings). For the audit, reuse the adversarial checks owned by clutch/specs/ask/review.md, rendered through clutch.ask.render("review", stem, config, fixture_repo), but adapt only its output presentation to this schema; retain its read-only and verified-evidence constraints, and include this adaptation in report provenance. The deterministic scorer counts a defective case as caught only when a blocking verdict includes a finding overlapping the independently labeled path and inclusive line range; an unrelated snag is not a catch. A blocking verdict on a clean case is a false snag. No model judge or synthesis call is added.
-- For every case, candidate arm is one explicitly selected Sonnet review with a concise contract-first instruction: check interface obligations, contradictions, forced callers, scope and named verification; perform read-only lookup when needed. Baseline arm is a fresh full production requisition review on Opus plus a separate fresh Sonnet adversarial audit using clutch/specs/ask/review.md through clutch.ask.render("review", stem, config, fixture_repo). The baseline combined result rejects when either reviewer finds a real blocker; record both component outputs so extra false snags remain visible. Match input repository/ticket bytes between arms, and do not feed either arm the other's output or expected labels. An independent audit means a separate provider invocation, not an additional agent team or hidden synthesis call.
-- Before invocation, bound the run to 36 scored calls and a 20 USD reported-spend stop threshold, with the provider's per-call remaining-budget support and existing timeout seams. Count any preflight probes separately in the report overhead. Pass the remaining budget on every scored invocation, stop starting calls when reported cumulative spend reaches 20 USD, and report any indivisible last-call overshoot rather than claiming a strict token-meter cap. Stop on exhausted budget or provider quota; keep partial output as inconclusive and do not repeatedly retry it to manufacture completeness.
-- Evaluate economic value explicitly: map every verified finding to its labeled defect location, identify overlap and duplicate reports, count defects caught by the full-review-plus-audit baseline that single Sonnet misses (and the reverse), and report incremental measured cost per additional true catch. With zero additional catches, report that fact and null for the ratio rather than divide by zero or imply the added review paid for itself. Include false-snag cost and the separately recorded full-review/audit contributions. Do not invent prevented-run savings: a synthetic defect catch is not evidence of the time or tokens an implementation failure would have consumed.
-- Report totals and per-stratum caught defects, false snags, invalid replies, calls, token categories, reported cost and elapsed time. Do not interpret raw cached token totals as quota. All three contract-bearing defects must be caught and no contract-bearing clean case falsely snagged before recommending removal of full review on that stratum; this is a bounded pilot, not proof of general safety. Report weaker or inconclusive evidence honestly without requiring the cheaper arm to win for this ticket to complete.
-- Run the bounded comparison once through the new clutch verb and commit eval/requisition_compare_report.json plus docs/requisition-review-comparison.md with the actual results, limitations and recommendation. If provider quota prevents completion, commit the actual partial report and a clearly inconclusive recommendation; fake-only scores do not count as the live experiment.
-- Unit tests use only in-memory or tmp_path-built fixture cases and fake model replies; they never load the committed corpus. The integration test reads eval/requisition_compare through a Path(__file__) anchor, runs real ticket parsing/lint on those committed cases, and validates the report against those labels with verify_report.
-- Add fake-driven unit coverage of scoring, cold/warm token accounting, arm isolation, label withholding, budget stop, zero-additional-catch accounting and recommendation logic, plus CLI/help/composition integration coverage. Extend the training group description and CLI help; update README, training guide, host-running verb table, how-clutch-works command table, and the extension README's training-command description if it lists those verbs. Add extension help only if an extension surface is actually introduced; this command does not add one.
+- Replace the routine requisition instructions with a short supplied-material check for clear contradictions, missing declared interface decisions, scope/criteria mismatches and impossible named verification. Treat a declared contract as the design input to check for contradictions, not permission to re-design it. Do not instruct the routine model to browse every caller, importer, test, sibling or dependent. Keep the existing reply schema; routine dependents is an empty list and no exhaustive dependents-accounting gate may force an investigation or another model call.
+- Keep mechanical lint and full Implement render feasibility checks. Remove coverage-dependent discovery/accounting from the automatic check; keep explicit full-audit checks in their existing ask/review.md owner. Delete private helpers that become production-callerless rather than maintaining a dormant second path. Keep sibling information only as the already bounded supplied overlap summary, not an instruction to investigate every sibling.
+- Run the routine requisition check as one member and one invocation, using the existing route and current Sonnet routing. Preserve provider drought/auth failure handling; malformed model output yields a snag instead of another automatic model call. Do not change the provider request schema or add a second LLM call site. Full review is the already-existing operator audit procedure, not a hidden engine escalation.
+- In both plan prompts remove the mandatory separate adversarial agent and any unconditional full re-audit before confirmation. Keep authoring, lint, one short ticket review and confirmation, plus existing release-phase acceptance. In ask/author.md describe the short check and preserve the existing bounded repair procedure. Explicit full audit requires an owner request; ticket size, a snag, the implementing model tier and agent preference do not authorize it.
+- Bump requisition_review.md to the next minor above main. Migrate existing assertions that pin exhaustive checks to the explicit ask/review.md owner, retaining their substantive checks there. Adjust direct full-investigation fixtures and panel/dependent tests to the new routine semantics; add new tests in separate files. Keep contract/criterion checks in the brief prompt, and verify the moved full checks remain available explicitly.
+- Update the authoring guide workflow and review descriptions in README, the host-running verb row, how-clutch-works, CLI help and the extension's existing review help to state the brief default and explicitly requested full audit. Preserve the mandatory ticket-review command in the managed conduct rules; this ticket changes its default depth, not that HARD rule. Do not edit the managed conduct block or its template.
+- The dependency's new context-pack tests that assert unchanged full dependent-accounting policy must now assert brief behavior; preserve their lossless material and no-duplicate-ticket assertions. The dependency's shared review identity continues to bind the selected brief spec and actual supplied inputs.
 Scope out:
-- No automatic policy promotion, new training-data export lens, pricing estimator, model leaderboard framework, provider installation, production ticket mutation, or changes to the document-agent pipeline. Read clutch/specs/ask/review.md as the baseline instruction source; its source content is not changed. The candidate reviewer prompt is evaluation-only; there is one production requisition-review path.
-
+- No study, synthetic corpus, live evaluation calls, new training command, experiment report, automatic policy promotion, extra subagents, risk score, new config knob or removal of implemented-code review/tests.
 
 ## Scope fence
-- clutch/reviewcompare.py
+- clutch/requisition.py
+- clutch/specs/requisition_review.md
+- clutch/specs/ask/plan-ticket-drain.md
+- clutch/specs/ask/plan-ticket-serve.md
+- clutch/specs/ask/author.md
 - clutch/specs/ask/review.md
 - clutch/__main__.py
-- eval/requisition_compare/
-- eval/requisition_compare_report.json
-- docs/requisition-review-comparison.md
-- tests/unit/test_review_compare.py
-- tests/unit/test_review_compare_cli.py
-- tests/integration/test_review_compare_cli.py
-- README.md
-- clutch/docs/host-training.md
+- clutch/help.py
+- clutch/docs/host-authoring.md
 - clutch/docs/host-running.md
 - docs/how-clutch-works.md
-- vscode-clutchwork/README.md
+- README.md
+- tests/unit/test_requisition_brief_check.py
+- tests/integration/test_requisition_brief_check.py
+- tests/integration/test_ask_plan_brief_review.py
+- tests/integration/test_requisition.py
+- tests/unit/test_requisition_panel.py
+- tests/unit/test_requisition_dependents.py
+- tests/unit/test_requisition_context_pack.py
+- tests/integration/test_requisition_context_pack.py
+- tests/unit/test_requisition_sibling_tickets.py
+- tests/unit/test_requisition_stage_events.py
+- tests/unit/test_key_scope.py
+- tests/unit/test_callerless_code_removed.py
+- tests/unit/test_specs.py
+- tests/integration/test_specs_delimiter_note.py
+- tests/integration/test_ask_plan_drain.py
+- tests/integration/test_ask_plan_serve.py
+- tests/integration/test_authoring_document_test_rule.py
+- tests/integration/test_requisition_review_whole_value_closure.py
+- tests/integration/test_requisition_review_tool_output_evidence.py
+- tests/integration/test_requisition_review_stand_in_closure.py
+- tests/integration/test_spec_unit_io_seam.py
+- tests/integration/test_precondition_rules.py
+- tests/integration/test_fence_closure_registries.py
+- tests/integration/test_spec_sibling_tickets.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_review_compare.py tests/unit/test_review_compare_cli.py tests/integration/test_review_compare_cli.py tests/unit/test_main_help.py tests/unit/test_main_training_group.py` proves fixture truth is hidden, the arms are isolated, invalid replies are scored as invalid, and both contract-bearing and legacy strata contribute independent detection/false-snag results.
-2. `./dev.py test tests/unit/test_review_compare.py tests/integration/test_review_compare_cli.py` proves capped/failed calls cannot become favorable results, probes and both baseline invocations are counted, cache categories stay separate, and an evaluation never writes production approval signals.
-3. `eval/requisition_compare_report.json` and `docs/requisition-review-comparison.md` record the actual bounded live comparison or an actual budget/quota-stopped inconclusive result, with model/spec/corpus identities, duplicate versus additional true catches, incremental cost per additional catch, false-snag overhead, and a recommendation specifically assessing whether full review earns its cost under the interface-contract hypothesis.
-4. `./dev.py test tests/unit/test_review_compare.py` calls verify_report with in-memory/tampered reports and recomputes the recommendation: the cheaper contract-bearing arm must catch every planted defect and falsely snag no clean contract-bearing case; missing evidence cannot authorize removal of full review.
+1. `./dev.py test tests/unit/test_requisition_brief_check.py tests/integration/test_requisition_brief_check.py` proves routine review performs one short reviewer invocation and no panel or schema-repair invocation; malformed replies snag without fallback to full investigation, and mechanical lint/render failures still use no model.
+2. `./dev.py test tests/integration/test_ask_plan_brief_review.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py` proves both workflows retain lint, short review and confirmation while requiring an explicit owner request for a full audit or extra reviewer; phase acceptance remains.
+3. `./dev.py test tests/integration/test_requisition_brief_check.py` proves the brief prompt omits exhaustive closure and repeated dependent-accounting obligations while the explicit ask/review.md audit retains those detailed checks; no tier, ticket size or model preference silently selects full review.
+4. `./dev.py test tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py tests/integration/test_requisition.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py` proves the dependency's lossless context/no-duplication behavior and the existing verdict and feasibility contracts remain after switching default review depth.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_review_compare.py tests/unit/test_review_compare_cli.py tests/integration/test_review_compare_cli.py tests/unit/test_main_help.py tests/unit/test_main_training_group.py
+./dev.py test tests/unit/test_requisition_brief_check.py tests/integration/test_requisition_brief_check.py tests/integration/test_ask_plan_brief_review.py tests/integration/test_requisition.py tests/unit/test_requisition_panel.py tests/unit/test_requisition_dependents.py tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_stage_events.py tests/unit/test_key_scope.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py
 ```
 
 ## Definition of rejected
-Removing required checks without evidence, introducing a second production authority, adding speculative settings, or changing files outside the fence.
+A routine check silently runs full investigation or adds an auditor; a comparison study or new review framework is built; required mechanical checks or implemented-code review disappear; or an owner request is replaced by an automatic risk classifier.
 
 ## Time budget
 - expected: 30m
