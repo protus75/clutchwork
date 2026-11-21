@@ -1,10 +1,10 @@
 # Review: snag
 
-The commit_edit migration for Author publication, compensation and decision records is correct, but the evidence listing and copied-evidence reads were moved out of the guarded try block, so their failures now bypass compensation and the decline path.
+The prior finding is fixed: the evidence listing and snapshot now run inside the publication try, and the listing and snapshot tests cover them. But compensation still removes the candidate's empty directories after commit_edit returns, outside the writer locks.
 
 ## Findings
 
-- [logic] clutch/author.py:508 The roadmap evidence `ls-files` call (lines 506-509) and the `copied = {p: (checkout.repo / p).read_bytes() ...}` snapshot (line 513) now run before the `try:` around `driver.effects.run(commit, ...)`. Before this diff the listing ran inside `commit()` within that try, so a GitError there went to cleanup and then `failure_declined("commit failed: ...")`. Now a GitError from the listing, or an OSError from reading a copied evidence file, escapes `author()` uncaught. The gate-copied candidate evidence stays on disk, `author_gate.copied` is never cleared, and the message is never declined. This is a regression in publication-failure behavior, which acceptance criterion 2 requires to be preserved. (do instead: Keep this read-only preparation outside the lock, but put the path listing and the copied-bytes snapshot inside the same `try` that handles publication failure, or wrap them in their own handler that runs the same compensation and `failure_declined` path. Add a case to tests/unit/test_ticket_write_consumers_author.py where the evidence listing raises GitError and assert that Author declines and removes the owned evidence.)
+- [logic] clutch/author.py:560 After the compensation `commit_edit` returns, the loop over `(directory / "evidence", directory)` checks whether each folder is empty and then calls `folder.rmdir()`. It does this without holding main_write or commit.lock. This ticket makes ticket-plane writes happen only inside commit_edit, so another writer can be inside its own commit_edit callback at the same time. That writer's `LocalFileSystem.write` creates `tickets/<stem>/` with `mkdir(parents=True)` and then opens a temp file there. If this rmdir runs between those two steps, the other writer's write fails. If the folder gains an entry between the emptiness check and `rmdir`, the rmdir raises OSError, which escapes the `except` handler. Then `author()` raises, and `failure_declined` never runs for the message. That breaks the ticket's rule that compensation changes the tree only inside commit_edit. (do instead: Move the empty-directory removal into the `compensate` callback, after the unlinks, so it runs under both locks. Add a check to tests/unit/test_ticket_write_consumers_author.py that the directory removal happens while `git.locked` is true.)
 
 ## Record
 
@@ -12,17 +12,17 @@ The commit_edit migration for Author publication, compensation and decision reco
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "3daed32a240ce8c6797168381d99b520d2b6e5da",
+  "produced_at_sha": "2ea69f8b1f2f28247280d5223ef26e06873af790",
   "stem": "author-ticket-writes-commit-edit",
-  "reviewed_sha": "3daed32a240ce8c6797168381d99b520d2b6e5da",
-  "summary": "The commit_edit migration for Author publication, compensation and decision records is correct, but the evidence listing and copied-evidence reads were moved out of the guarded try block, so their failures now bypass compensation and the decline path.",
+  "reviewed_sha": "2ea69f8b1f2f28247280d5223ef26e06873af790",
+  "summary": "The prior finding is fixed: the evidence listing and snapshot now run inside the publication try, and the listing and snapshot tests cover them. But compensation still removes the candidate's empty directories after commit_edit returns, outside the writer locks.",
   "findings": [
     {
       "code": "logic",
       "path": "clutch/author.py",
-      "line": 508,
-      "message": "The roadmap evidence `ls-files` call (lines 506-509) and the `copied = {p: (checkout.repo / p).read_bytes() ...}` snapshot (line 513) now run before the `try:` around `driver.effects.run(commit, ...)`. Before this diff the listing ran inside `commit()` within that try, so a GitError there went to cleanup and then `failure_declined(\"commit failed: ...\")`. Now a GitError from the listing, or an OSError from reading a copied evidence file, escapes `author()` uncaught. The gate-copied candidate evidence stays on disk, `author_gate.copied` is never cleared, and the message is never declined. This is a regression in publication-failure behavior, which acceptance criterion 2 requires to be preserved.",
-      "paved_road": "Keep this read-only preparation outside the lock, but put the path listing and the copied-bytes snapshot inside the same `try` that handles publication failure, or wrap them in their own handler that runs the same compensation and `failure_declined` path. Add a case to tests/unit/test_ticket_write_consumers_author.py where the evidence listing raises GitError and assert that Author declines and removes the owned evidence.",
+      "line": 560,
+      "message": "After the compensation `commit_edit` returns, the loop over `(directory / \"evidence\", directory)` checks whether each folder is empty and then calls `folder.rmdir()`. It does this without holding main_write or commit.lock. This ticket makes ticket-plane writes happen only inside commit_edit, so another writer can be inside its own commit_edit callback at the same time. That writer's `LocalFileSystem.write` creates `tickets/<stem>/` with `mkdir(parents=True)` and then opens a temp file there. If this rmdir runs between those two steps, the other writer's write fails. If the folder gains an entry between the emptiness check and `rmdir`, the rmdir raises OSError, which escapes the `except` handler. Then `author()` raises, and `failure_declined` never runs for the message. That breaks the ticket's rule that compensation changes the tree only inside commit_edit.",
+      "paved_road": "Move the empty-directory removal into the `compensate` callback, after the unlinks, so it runs under both locks. Add a check to tests/unit/test_ticket_write_consumers_author.py that the directory removal happens while `git.locked` is true.",
       "kind": null,
       "unit": null
     }
