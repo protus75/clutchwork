@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The index plan names AST imports but does not define their representation; meta._relates resolves tracked repository paths for a different field and is not an owner of the imports column.
+The ticket verification, unit coverage gate, and full integration suite passed, but a direct DuckDB check showed that inserting the valid finite JSON number 1e308 into FLOAT[1] raises ConversionException.
 
 ## Dead ends
 
-Checked the index plan and existing AST import handling; neither defines this column's contract.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget is 30 minutes expected and 60 minutes stuck; investigation stopped after identifying the missing contract.
+none
 
