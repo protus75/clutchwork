@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "db4f813cfb3414fbed5f6357e20c788584d68f34",
+  "stem": "review-cost-sonnet-instance",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "merge",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The implementation passed: Implement, the full suite (3575 passed), ruff, the ticket verification (4 passed) and review (approve) all succeeded. The only failure is the merge gate's dirty_checkout finding on config.yaml.",
+    "A human must commit or revert the uncommitted config.yaml edit in the main checkout at /home/djp/source/clutch (git status shows ' M config.yaml'). The squash would overwrite it. No agent attempt can clear this from inside the ticket worktree.",
+    "Before reverting, check whether the uncommitted config.yaml edit already adds the low/medium requisition_review Sonnet rows. If it does, committing it may overlap this ticket's config.yaml change, so reconcile the two before re-running.",
+    "After the checkout is clean, re-run the same change: add explicit low and medium requisition_review rows selecting claude-sonnet-5-5 to config.yaml, plus tests/integration/test_repo_requisition_sonnet.py anchored via Path(__file__). Review found this approach sound."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
