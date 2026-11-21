@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "61775ed82ef10d1bc82cfa4a657804316d1a4599",
+  "stem": "serve-merge-off-exclusive",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Confirmed: tests/unit/test_git_main_write.py line 33 passes one asynccontextmanager instance, commit_lock(), as Git's commit_lock. merge_squash already enters it, so a second entry from dirty_overlap fails. Criterion 5 requires this file to pass unchanged, so the ticket contradicts itself.",
+    "Re-author: add tests/unit/test_git_main_write.py to the fence and drop 'unchanged' from criterion 5. Its fixture should hand Git a reusable asyncio.Lock(). Keep its assertions on the order of status and diff after main_write and commit.",
+    "Re-author: add tests/unit/test_merge_config_local.py (line 22) and tests/regress_merge_config_local.py (line 18) to the fence. Each builds a git stand-in for dirty_overlap without _commit_lock, so give each fixture _commit_lock=asyncio.Lock(), as the ticket already plans for test_merge_dirty.py.",
+    "Before re-filing, grep tests/ for every caller of merge.dirty_overlap or merge.findings that builds git as a SimpleNamespace or fake Git. Fence each one, so the lock in dirty_overlap forces no edit outside the fence.",
+    "The rest of the design held up: the attempt found no fault in the merging() section in clutch/daemon.py, the swap in Serve.merge, or the docs plan. Keep those parts of the ticket and fix only the fence and criterion 5."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
