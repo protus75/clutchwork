@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: f05aa75d
-hash: 5c6bab55c2ffdcc53e291b4b39e0b0120a3e701508e28caf1e158ee0c43586c4
+verified: 1828fb1b
+hash: 3eb0a0d528a207664eb992b6746876386eba0862bde6919a1e2f0bd08a5e5e1d
 -->
 # How ClutchWork works
 
@@ -285,7 +285,7 @@ findings when it snagged, in a read-only session. It reports every defect in one
 instance of a repeated flaw separately and marking findings that remain open. Verdicts: `approve`, `snag` (findings: `logic`, `acceptance`, `scope`, `leak`), or `rma`
 (the ticket itself is wrong). `review.md` records the verdict and the reviewed branch head
 (`reviewed_sha`). Review also snags a stale or missing doc update. Only `approve` continues;
-`snag` and `rma` end the attempt `gate_failed`.
+`snag` and `rma` end the attempt `gate_failed`. A `findings-union` panel on the review route runs N member reviews and writes one combined `review.md`.
 
 ### 4.5 Merge
 
@@ -654,7 +654,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 `routing` rows map `(tier, surface)` to an ordered list of candidates. An optional `kinds` list restricts a row to those ticket kinds; matching kind rows precede unrestricted rows for the requested surface and then review. A surface with no row
 falls back to the `(tier, review)` row. The model is the candidate's `model` or the provider's
-`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; no stage fans out yet.
+`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review fans out, while the other surfaces do not yet.
 
 ### 8.3 Admission, breakers, droughts
 

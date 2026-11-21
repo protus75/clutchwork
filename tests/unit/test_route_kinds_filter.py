@@ -4,8 +4,8 @@
 # purpose: test route kinds filter
 # relates: [clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/providers.py, clutch/redact.py, clutch/seams.py]
 # owner: engine
-# verified: 9a610809
-# hash: 2675a945e9838ef1c17a820d6a4a84f46536da135836d1517a53506ae71aa604
+# verified: 1828fb1b
+# hash: 2a217dc804dea311d3334f86c91b70246189f6a2ebb1407f49c94106dd9b8c00
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -150,7 +150,7 @@ def test_ticket_stages_pass_kind(tmp_path, monkeypatch):
 
     ticket = SimpleNamespace(stem="hero", frontmatter=SimpleNamespace(kind="bug", agent_tier="medium", agent_effort="low"), expected_minutes=10, stuck_minutes=20, scope_fence=())
     git = SimpleNamespace(rev_parse=AsyncMock(return_value="sha"), diff=AsyncMock(return_value="diff"))
-    ctx = SimpleNamespace(driver=SimpleNamespace(run=capture), worktree=lambda _: tmp_path, repo=tmp_path, git=git)
+    ctx = SimpleNamespace(driver=SimpleNamespace(run=capture), worktree=lambda _: tmp_path, repo=tmp_path, git=git, config=SimpleNamespace(routing=[], providers=[]))
     (tmp_path / "tickets/hero").mkdir(parents=True)
     (tmp_path / "tickets/hero/ticket.md").write_text("ticket")
     monkeypatch.setattr(stages, "_spec", lambda *args: None)

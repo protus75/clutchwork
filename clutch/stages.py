@@ -53,7 +53,8 @@ from clutch.hostfiles import CORE_TEMPLATE, CoreDriftGate, committed_core
 from clutch.journal import EventType, last_transition, run_seq
 from clutch.journal import run_seq as journal_run_seq
 from clutch.llmeffect import llm_key, scoped_seq
-from clutch.providers import child_env
+from clutch.panel import PanelMember, findings_union
+from clutch.providers import ProviderSetupError, child_env, panel_members
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
 from clutch.storm import arrival_id
@@ -1881,26 +1882,58 @@ async def review(ctx: StageContext, ticket: Ticket, invoice: Invoice, *, attempt
     prior_review = findings_text(prior.findings) if isinstance(prior, SnagList) else "none"
     stage, spec = review_stage(ctx, (ctx.repo / ticket_path(stem)).read_text(), diff, prior_review)
     try:
-        # The effective ticket capability applies to every call in this attempt.
-        result = await ctx.driver.run(
-            stage,
-            invoice,
-            ticket=stem,
-            kind=ticket.frontmatter.kind,
-            attempt=attempt,
-            workspace=ctx.worktree(stem),
-            tier=ticket.frontmatter.agent_tier,
-            effort=ticket.frontmatter.agent_effort,
-            stuck_budget=ticket.stuck_minutes * 60.0,
-            expected_budget=ticket.expected_minutes * 60.0,
-            scope_fence=(),
-        )
+        selected = panel_members(ctx.config, ticket.frontmatter.agent_tier, "review", ticket.frontmatter.kind)
+    except ProviderSetupError:
+        selected = ()
+    size = len(selected) or 1
+    kwargs = dict(
+        ticket=stem,
+        kind=ticket.frontmatter.kind,
+        attempt=attempt,
+        workspace=ctx.worktree(stem),
+        tier=ticket.frontmatter.agent_tier,
+        effort=ticket.frontmatter.agent_effort,
+        stuck_budget=ticket.stuck_minutes * 60.0,
+        expected_budget=ticket.expected_minutes * 60.0,
+        scope_fence=(),
+    )
+    try:
+        if size == 1:
+            result = await ctx.driver.run(stage, invoice, **kwargs)
+        else:
+            panel = await ctx.driver.run_panel(stage, invoice, size=size, **kwargs)
     except RenderOverBound as e:
         return StageResult(outcome="premise_failed", artifact=None, findings=[e.finding], cost=Cost())
-    if result.outcome != "ok":
-        return result
-    verdict = result.artifact
-    assert isinstance(verdict, ReviewVerdict)
+    if size == 1:
+        if result.outcome != "ok":
+            return result
+        verdict = result.artifact
+        assert isinstance(verdict, ReviewVerdict)
+    else:
+        if not panel.members:
+            return StageResult(outcome="infra_error", artifact=None, findings=[], cost=Cost())
+        for member in panel.members:
+            if member.outcome != "ok":
+                return member
+        replies = [member.artifact for member in panel.members]
+        assert all(isinstance(reply, ReviewVerdict) for reply in replies)
+        indexes = [i for i in range(size) if i not in {d.index for d in panel.dropped}]
+        members = [
+            PanelMember(provider=member.cost.provider or selected[index].provider.name, model=member.cost.model or selected[index].model, verdict=reply.verdict)
+            for member, reply, index in zip(panel.members, replies, indexes, strict=False)
+        ]
+        verdict, facts = findings_union(replies, members, panel.dropped)
+        ctx.driver.log.event("panel_facts", stem=stem, attempt=attempt, surface="review", **facts.model_dump())
+        costs = [member.cost for member in panel.members]
+        cost = Cost(
+            tokens=sum(c.tokens for c in costs) if all(c.tokens is not None for c in costs) else None,
+            seconds=sum(c.seconds for c in costs),
+            attempts=sum(c.attempts for c in costs),
+            usd=sum(c.usd for c in costs),
+            provider=costs[0].provider,
+            model=costs[0].model,
+        )
+        result = StageResult(outcome="ok", artifact=verdict, findings=[], cost=cost)
     artifact = EMITS_BY_VERDICT[verdict.verdict](
         produced_by_spec_version=_major(spec),
         produced_at_sha=reviewed,
