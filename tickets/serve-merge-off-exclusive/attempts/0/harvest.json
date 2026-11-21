@@ -1,0 +1,45 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/unit/test_git_main_write.py",
+      "line": 33,
+      "message": "The fixture supplies a single-use commit-lock context manager. The additional acquisition makes test_waiting_callers and test_overlapping_pairs fail, contradicting the requirement that this file pass unchanged.",
+      "paved_road": "Add this file to the scope fence and permit its fixture to use a reusable lock.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_merge_config_local.py",
+      "line": 22,
+      "message": "The dirty_overlap fixture has no commit lock, so the required lock acquisition breaks the hard unit-test suite.",
+      "paved_road": "Add this file to the scope fence and provide a commit lock in the fixture.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/regress_merge_config_local.py",
+      "line": 18,
+      "message": "The existing regression script calls dirty_overlap with a fixture that has no commit lock, so the requested change breaks the reproducer.",
+      "paved_road": "Add this file to the scope fence and provide a commit lock in the fixture.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The requested commit-lock change forces edits to three test files outside the scope fence, including a test the ticket explicitly requires to pass unchanged.\",\"surprises\":\"The verification command passed 82 tests and failed two tests in test_git_main_write.py; both failures reproduced in isolation. The exact base verification could not collect the new test files because they do not exist on the base. The existing affected unit tests passed separately on the base. No changes were committed.\",\"second_problems\":[],\"dead_ends\":\"The existing Git test fixture supplies a single-use async context manager, which cannot support the additional lock acquisition; skipping the lock would violate the ticket.\",\"predicted_vs_actual\":\"The ticket estimated 30 minutes; work stopped early after identifying the scope conflict.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/unit/test_git_main_write.py\",\"line\":33,\"message\":\"The fixture supplies a single-use commit-lock context manager. The additional acquisition makes test_waiting_callers and test_overlapping_pairs fail, contradicting the requirement that this file pass unchanged.\",\"paved_road\":\"Add this file to the scope fence and permit its fixture to use a reusable lock.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_merge_config_local.py\",\"line\":22,\"message\":\"The dirty_overlap fixture has no commit lock, so the required lock acquisition breaks the hard unit-test suite.\",\"paved_road\":\"Add this file to the scope fence and provide a commit lock in the fixture.\"},{\"code\":\"premise\",\"path\":\"tests/regress_merge_config_local.py\",\"line\":18,\"message\":\"The existing regression script calls dirty_overlap with a fixture that has no commit lock, so the requested change breaks the reproducer.\",\"paved_road\":\"Add this file to the scope fence and provide a commit lock in the fixture.\"}]}",
+  "events_tail": "y.py tests/unit/test_git_main_write.py tests/integration/test_serve_upgrade.py tests/integration/test_serve_admission.py tests/integration/test_serve_parallel_admission.py tests/integration/test_sweep_slot_handoff.py tests/unit/test_admission_parallel_run_set.py tests/unit/test_admission_running_set.py tests/unit/test_daemon_admission_busy.py tests/unit/test_serve_scheduler_lifecycle.py` failed\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc './dev.py test tests/unit/test_git_main_write.py tests/unit/test_merge_config_local.py'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc './dev.py test tests/unit/test_git_main_write.py tests/unit/test_merge_config_local.py'\",\"aggregated_output\":\"$ uv run pytest -q -p clutch.testguard tests/unit/test_git_main_write.py tests/unit/test_merge_config_local.py\\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\\nbringing up nodes...\\nbringing up nodes...\\n\\n.......                                                                  [100%]\\n7 passed in 1.21s\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_15\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove /tmp/clutch-merge-base-verify'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_15\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove /tmp/clutch-merge-base-verify'\",\"aggregated_output\":\"\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_16\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The requested commit-lock change forces edits to three test files outside the scope fence, including a test the ticket explicitly requires to pass unchanged.\\\",\\\"surprises\\\":\\\"The verification command passed 82 tests and failed two tests in test_git_main_write.py; both failures reproduced in isolation. The exact base verification could not collect the new test files because they do not exist on the base. The existing affected unit tests passed separately on the base. No changes were committed.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"The existing Git test fixture supplies a single-use async context manager, which cannot support the additional lock acquisition; skipping the lock would violate the ticket.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket estimated 30 minutes; work stopped early after identifying the scope conflict.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_git_main_write.py\\\",\\\"line\\\":33,\\\"message\\\":\\\"The fixture supplies a single-use commit-lock context manager. The additional acquisition makes test_waiting_callers and test_overlapping_pairs fail, contradicting the requirement that this file pass unchanged.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and permit its fixture to use a reusable lock.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_merge_config_local.py\\\",\\\"line\\\":22,\\\"message\\\":\\\"The dirty_overlap fixture has no commit lock, so the required lock acquisition breaks the hard unit-test suite.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and provide a commit lock in the fixture.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/regress_merge_config_local.py\\\",\\\"line\\\":18,\\\"message\\\":\\\"The existing regression script calls dirty_overlap with a fixture that has no commit lock, so the requested change breaks the reproducer.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and provide a commit lock in the fixture.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1110921,\"cached_input_tokens\":1066752,\"cache_write_input_tokens\":0,\"output_tokens\":4941,\"reasoning_output_tokens\":242}}\n",
+  "wall_seconds": 151.500774,
+  "usd": 1.0,
+  "run_record": "tickets/serve-merge-off-exclusive/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
