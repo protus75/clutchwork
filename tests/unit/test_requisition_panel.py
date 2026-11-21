@@ -4,8 +4,8 @@
 # purpose: Verify requisition review panel behavior.
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/llm.py, clutch/llmeffect.py, clutch/panel.py, clutch/providers.py, clutch/requisition.py]
 # owner: engine
-# verified: 5110a5cc
-# hash: 2e2abc6a72897b11c40f376f3883b5a124b3a86097755b9853745270244dc8ec
+# verified: 9c24a9bd
+# hash: f0dab959db096f401ac65f32fdd7476920317b1d5091bf27d91566cc196c46fd
 import asyncio
 import json
 from types import SimpleNamespace
@@ -122,6 +122,7 @@ def expected_verdict(**fields):
         ticket_sha="6c967b608333d2eca9225f00eea2447bd8f2a755",
         render_chars=4,
         spec_version="1.0",
+        input_identity=None,
         **fields,
     )
 

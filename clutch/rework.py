@@ -17,7 +17,7 @@ from clutch.git import GitError
 from clutch.journal import Event, EventType
 from clutch.llm import AgentEffort, AgentTier
 from clutch.llmeffect import scoped_seq
-from clutch.requisition import review_ticket
+from clutch.requisition import review_with_identity
 from clutch.specs import RenderOverBound, load_spec, render
 from clutch.stages import StageContext, _major
 from clutch.status import last_states
@@ -193,8 +193,11 @@ async def rework(
                 return GateReport(code="ticket_schema", verdict="fail", findings=errors)
 
             for proposal in artifact.tickets:
-                verdict = await review_ticket(
+                verdict = await review_with_identity(
                     ctx.driver,
+                    git=ctx.git,
+                    config=ctx.config,
+                    history=ctx.driver.journal.read(),
                     repo=tree,
                     stem=proposal.stem,
                     text=proposal.ticket,
@@ -230,6 +233,7 @@ async def rework(
                             "provider": verdict.provider,
                             "model": verdict.model,
                             "spec_version": verdict.spec_version,
+                            "input_identity": verdict.input_identity,
                         },
                         ticket=proposal.stem,
                     )

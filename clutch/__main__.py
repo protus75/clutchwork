@@ -2026,8 +2026,11 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
     try:
         llm = await _preflighted_llm(checkout, session)
         driver = Driver.from_config(checkout.config, journal=checkout.journal, llm=llm, env=checkout.env, clock=checkout.clock, sleep=checkout.sleep, fs=checkout.fs)
-        verdict = await requisition.review_ticket(
+        verdict = await requisition.review_with_identity(
             driver,
+            git=checkout.git,
+            config=checkout.config,
+            history=history,
             repo=checkout.repo,
             stem=stem,
             text=text,
@@ -2057,6 +2060,7 @@ async def _review(checkout: runner.Checkout, stem: str) -> int:
                 "provider": verdict.provider,
                 "model": verdict.model,
                 "spec_version": verdict.spec_version,
+                "input_identity": verdict.input_identity,
             },
             ticket=stem,
         )

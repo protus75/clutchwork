@@ -189,13 +189,16 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None) -> str:
         )
         if not approved:
             from clutch.driver import ProviderDroughtResult
-            from clutch.requisition import prior_review, review_ticket
+            from clutch.requisition import prior_review, review_with_identity
 
             attempt = run_seq(history, ticket.stem)
             text = await ctx.git._run(ctx.repo, "show", f"HEAD:{ticket_path(ticket.stem)}")
             try:
-                review = await review_ticket(
+                review = await review_with_identity(
                     ctx.driver,
+                    git=ctx.git,
+                    config=ctx.config,
+                    history=history,
                     repo=ctx.repo,
                     stem=ticket.stem,
                     text=text,
@@ -227,6 +230,7 @@ async def drive(ctx: StageContext, ticket: Ticket, *, admission=None) -> str:
                         "provider": review.provider,
                         "model": review.model,
                         "spec_version": review.spec_version,
+                        "input_identity": review.input_identity,
                     },
                     ticket=ticket.stem,
                 )

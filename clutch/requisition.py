@@ -1,15 +1,17 @@
 """Read-only authored-ticket feasibility review."""
 
 import difflib
+import hashlib
 import json
 import re
+from collections.abc import Mapping
 from contextlib import ExitStack
 from pathlib import Path
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from clutch import git
+from clutch import git as git_module
 from clutch.artifacts import Artifact, Finding, NonBlank
 from clutch.driver import Driver, _StuckBudget, unwrap_fence
 from clutch.journal import EventType
@@ -61,6 +63,85 @@ class RequisitionVerdict(Artifact):
     spec_version: NonBlank
     provider: str | None
     model: str | None
+    input_identity: str | None = None
+
+
+def input_identity(material: Mapping[str, object]) -> str:
+    """Hash canonical JSON material, representing source bytes by their hex encoding."""
+
+    def encode(value):
+        if isinstance(value, bytes):
+            return value.hex()
+        if isinstance(value, Mapping):
+            return {key: encode(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [encode(item) for item in value]
+        return value
+
+    return hashlib.sha256(json.dumps(encode(material), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+
+
+async def review_input_identity(repo, text, ticket, config, git, specs_dir, coverage_map, history, *, tier: AgentTier) -> str | None:
+    """Gather the substantive inputs to a requisition review through their owners."""
+    from clutch import providers
+    from clutch.config import Config, snapshot_config
+    from clutch.rework import settled_dependencies
+    from clutch.tickets import render_context, stamp
+
+    try:
+        config = snapshot_config(config) if isinstance(config, Config) else config
+        tree = []
+        for path in sorted(await git.ls_files(repo)):
+            if path.startswith("tickets/"):
+                continue
+            try:
+                content = (repo / path).read_bytes()
+            except FileNotFoundError:
+                content = None
+            tree.append((path, content))
+        others = []
+        for path in (repo / "tickets").glob("*/ticket.md"):
+            try:
+                others.append(parse_ticket(path.parent.name, path.read_text(), repo))
+            except TicketInvalid, OSError, UnicodeError:
+                continue
+        route = providers._route(config, tier, "requisition_review", None)
+
+        def served(entries):
+            return [(entry.provider.name, entry.model) for entry in entries]
+
+        material = {
+            "ticket": stamp(text, "state", "identity"),
+            "tree": tree,
+            "context": [(entry, render_context(repo, entry).encode()) for entry in ticket.context],
+            "coverage": coverage_map.read_bytes() if coverage_map is not None else None,
+            "siblings": sibling_tickets_block(ticket, others, settled_dependencies(history)),
+            "review_spec": (specs_dir / "requisition_review.md").read_bytes(),
+            "implement_spec": (specs_dir / "implement.md").read_bytes(),
+            "route": {
+                "tier": tier,
+                "candidates": served(providers.candidates(config, tier, "requisition_review")),
+                "members": served(providers.panel_members(config, tier, "requisition_review")),
+                "panel": (route.panel.size, route.panel.combine) if route.panel is not None and route.surface == "requisition_review" else None,
+            },
+        }
+        return input_identity(material)
+    except OSError, UnicodeError, ValueError, TypeError, AttributeError, git_module.GitError, providers.ProviderSetupError:
+        return None
+
+
+async def review_with_identity(driver, *, git, config, history, **review_kwargs) -> RequisitionVerdict:
+    try:
+        ticket = review_target(review_kwargs["repo"], review_kwargs["stem"], review_kwargs["text"])
+    except TicketInvalid:
+        return await review_ticket(driver, **review_kwargs)
+    args = (review_kwargs["repo"], review_kwargs["text"], ticket, config, git, review_kwargs["specs_dir"], review_kwargs["coverage_map"], history)
+    before = await review_input_identity(*args, tier=review_kwargs["tier"])
+    verdict = await review_ticket(driver, **review_kwargs)
+    if verdict.mechanical == "ticket lint":
+        return verdict
+    after = await review_input_identity(*args, tier=review_kwargs["tier"])
+    return verdict.model_copy(update={"input_identity": before if before is not None and before == after else None})
 
 
 def test_sources(repo: Path) -> dict[str, str]:
@@ -146,7 +227,7 @@ async def review_ticket(
     ticket_bytes = text.encode()
     from clutch.stages import _major
 
-    sha = git.blob_sha(ticket_bytes)
+    sha = git_module.blob_sha(ticket_bytes)
     try:
         ticket = review_target(repo, stem, text)
     except TicketInvalid as exc:

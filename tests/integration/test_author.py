@@ -5,8 +5,8 @@
 # purpose: Author integration: triage drives the one ticket-plane authoring path.
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: d3624866
-# hash: 5d19b42c0626877430ac247dd51c746c72db1a6f11acb9e509a202cb7d262562
+# verified: 9c24a9bd
+# hash: de3945b67ab58f40ab2e0cb56d7271cf464e68d0b6d156fcd44f1d56afbf1cc2
 
 import asyncio
 import json
@@ -177,7 +177,7 @@ def test_bug_report_evidence_ticket_plane_commit(tmp_path, monkeypatch):
     config.write_text(config.read_text() + "report_inbox: inbox\n")
     box = _box(root)
     observed = []
-    validating, policy, review, resolve = module.validate_ticket, module.start_state, module.review_ticket, Box.resolve
+    validating, policy, review, resolve = module.validate_ticket, module.start_state, module.review_with_identity, Box.resolve
 
     def custody():
         folder = root / "tickets/repair-report/evidence"
@@ -212,7 +212,7 @@ def test_bug_report_evidence_ticket_plane_commit(tmp_path, monkeypatch):
 
     monkeypatch.setattr(module, "validate_ticket", validate)
     monkeypatch.setattr(module, "start_state", starting)
-    monkeypatch.setattr(module, "review_ticket", reviewing)
+    monkeypatch.setattr(module, "review_with_identity", reviewing)
     monkeypatch.setattr(Box, "resolve", resolving)
     llm = FakeLLM([reply("author"), author_reply("repair-report"), bug_reply("repair-report"), requisition_reply("approve")])
     assert _run(root, monkeypatch, llm) == 0

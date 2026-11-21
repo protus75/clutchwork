@@ -5,14 +5,23 @@
 # purpose: Record the approval for the ticket content that intake will commit.
 # relates: [clutch/config.py, clutch/journal.py, clutch/tickets.py]
 # owner: engine
-# verified: d7719818
-# hash: b792345f0b51f14ef2383ddf0d253edf5bf93d796ac4e78b98b1053cb196c2d5
+# verified: 9c24a9bd
+# hash: 3ee55cba32fce246c602f60b4aafa330079f39dbf6ccb184e92f3ce5e3424aef
 
+import asyncio
 import hashlib
+import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
+from clutch.caps import capability
 from clutch.config import load_config
+from clutch.git import Git
 from clutch.journal import EventType, Journal
+from clutch.lockfile import CommitLock
+from clutch.requisition import review_input_identity
+from clutch.runner import SPECS_DIR
+from clutch.seams import SubprocessExec
 from clutch.tickets import TicketInvalid, _intake_claims, validate_ticket
 
 
@@ -22,13 +31,31 @@ def approve(repo, stem, clock):
     if findings:
         return
     try:
-        validate_ticket(stem, text, repo)
+        ticket = validate_ticket(stem, text, repo)
     except TicketInvalid:
         return
     data = text.encode()
     sha = hashlib.sha1(f"blob {len(data)}\0".encode() + data).hexdigest()
-    journal = Journal(load_config(None, cwd=repo).state_dir, clock)
+    config = load_config(None, cwd=repo)
+    journal = Journal(config.state_dir, clock)
     events = journal.read()
     last = datetime.fromisoformat(events[-1].ts) if events else clock()
     journal._clock = lambda: max(clock(), last)
-    journal.append(EventType.SIGNAL, {"signal": "requisition_verdict", "verdict": "approve", "ticket_sha": sha, "provider": "fixture", "model": "fixture", "spec_version": "1.0"}, ticket=stem)
+    git = Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=CommitLock(config.state_dir, clock=clock, sleep=asyncio.sleep))
+
+    async def gather():
+        coverage = config.state_dir / "coverage-map.json" if config.review.coverage_map is not None else None
+        return await review_input_identity(repo, text, ticket, config, git, SPECS_DIR, coverage, events, tier=capability(ticket, events)[0])
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        identity = asyncio.run(gather())
+    else:
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            identity = pool.submit(lambda: asyncio.run(gather())).result()
+    journal.append(
+        EventType.SIGNAL,
+        {"signal": "requisition_verdict", "verdict": "approve", "ticket_sha": sha, "provider": "fixture", "model": "fixture", "spec_version": "1.0", "input_identity": identity},
+        ticket=stem,
+    )

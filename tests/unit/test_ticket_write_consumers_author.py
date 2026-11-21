@@ -5,8 +5,8 @@
 # purpose: Verify atomic Author publication, compensation and decision-record writes.
 # relates: [clutch/author.py, clutch/git.py, clutch/seams.py, clutch/triage.py, tests/fakes.py, tests/unit/test_author_roadmap_row.py]
 # owner: engine
-# verified: d3624866
-# hash: 8acbcb86dfd9d74263ce6ff3a6083ea8006d34cf280fa675c138786e9978b23f
+# verified: 9c24a9bd
+# hash: f021b55d91aa8643a86587f9c73873e734693a9de2efb919cf77c54e054f49a9
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -115,7 +115,7 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
 
     async def review(*args, **kwargs):
         assert not git.locked  # Rules out a lock spanning requisition review.
-        return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="review", provider="fake", model="fake", spec_version="1")
+        return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="review", provider="fake", model="fake", spec_version="1", input_identity=None)
 
     async def effect(action, **kwargs):
         return await action()
@@ -126,7 +126,7 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
     monkeypatch.setattr(author, "load_spec", lambda text: SimpleNamespace(meta=SimpleNamespace(effort="medium")))
     monkeypatch.setattr(author, "list_open_tickets", AsyncMock(return_value="none"))
     monkeypatch.setattr(author, "neighbors_block", AsyncMock(return_value="none"))
-    monkeypatch.setattr(author, "review_ticket", review)
+    monkeypatch.setattr(author, "review_with_identity", review)
     decline = AsyncMock(return_value=author.AuthorOutcome(declined="declined"))
     monkeypatch.setattr(author, "failure_declined", decline)
     monkeypatch.setattr(author.AuthorGate, "check", lambda *args: SimpleNamespace(verdict="pass"))

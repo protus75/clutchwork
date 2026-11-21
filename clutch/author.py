@@ -21,7 +21,7 @@ from clutch.inbox import CAPS, bounded, report_data
 from clutch.journal import EventType
 from clutch.policy import policy_row, start_state
 from clutch.providers import child_env
-from clutch.requisition import FIRST_REVIEW, RequisitionVerdict, render_prior_review, review_ticket
+from clutch.requisition import FIRST_REVIEW, RequisitionVerdict, render_prior_review, review_with_identity
 from clutch.runner import SPECS_DIR, Checkout
 from clutch.specs import Spec, load_spec, render
 from clutch.stages import findings_text
@@ -457,8 +457,11 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
         )
         text = stamp(provisional, "state", state)
         start = max(call_seq, next_unused)
-        reviewed = await review_ticket(
+        reviewed = await review_with_identity(
             driver,
+            git=checkout.git,
+            config=checkout.config,
+            history=checkout.journal.read(),
             repo=checkout.repo,
             stem=artifact.stem,
             text=text,
@@ -573,7 +576,15 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
     checkout.journal.append(EventType.SIGNAL, {"signal": "ticket_intake", "source": f"box:{message.message_class}", "state": reviewed_state, "new": True, "commit": sha}, ticket=reply.stem)
     checkout.journal.append(
         EventType.SIGNAL,
-        {"signal": "requisition_verdict", "verdict": "approve", "ticket_sha": reviewed.ticket_sha, "provider": reviewed.provider, "model": reviewed.model, "spec_version": reviewed.spec_version},
+        {
+            "signal": "requisition_verdict",
+            "verdict": "approve",
+            "ticket_sha": reviewed.ticket_sha,
+            "provider": reviewed.provider,
+            "model": reviewed.model,
+            "spec_version": reviewed.spec_version,
+            "input_identity": reviewed.input_identity,
+        },
         ticket=reply.stem,
     )
     record_retro_ticket(checkout.journal, message, reply.stem)

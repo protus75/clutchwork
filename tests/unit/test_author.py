@@ -5,8 +5,8 @@
 # purpose: Unit coverage for the shared author helpers.
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/box.py, clutch/git.py, clutch/journal.py, clutch/requisition.py, tests/fakes.py]
 # owner: engine
-# verified: 0a308920
-# hash: 190e305ce73ce5887a61aa89077a80ae88cc09e4440e896aa9cb32198ae0074a
+# verified: 9c24a9bd
+# hash: e55daa1545fc36e6223ea2c476b7684c3a2231d9bdfdb4b3a30cf0a4cabe923c
 
 import asyncio
 from pathlib import Path
@@ -140,7 +140,7 @@ async def test_author_renders_inputs_and_passes_prior_review(monkeypatch):
     monkeypatch.setattr(module, "load_spec", lambda text: SimpleNamespace(meta=SimpleNamespace(effort="medium")))
     monkeypatch.setattr(module, "render", lambda spec, inputs: inputs_seen.append(inputs) or "rendered")
     monkeypatch.setattr(module, "list_open_tickets", open_tickets)
-    monkeypatch.setattr(module, "review_ticket", review)
+    monkeypatch.setattr(module, "review_with_identity", review)
     monkeypatch.setattr(module.AuthorGate, "check", lambda *args: SimpleNamespace(verdict="pass"))
     monkeypatch.setattr(module, "stamp", lambda text, *args: text)
     monkeypatch.setattr(module, "validate_ticket", lambda *args: SimpleNamespace(scope_fence=(), frontmatter=SimpleNamespace(gate_bypass=False)))

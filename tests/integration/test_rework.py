@@ -5,8 +5,8 @@
 # purpose: Direct construction evidence; activation must migrate the dormancy assertion.
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 857df25ca5500b6a03960db3c47c64d5826ad9bb77ed669ff9582b83a696946d
+# verified: 9c24a9bd
+# hash: 5bffe6c64fbca5e39ea4ca7918b28a3bf82e83dcfe42bbb3047a37bb3782b9e3
 
 import asyncio
 import hashlib
@@ -102,6 +102,7 @@ def test_approved_proposals_journal_requisition_approval(ctx):
                 "provider": "fake",
                 "model": record.body["model"],
                 "spec_version": record.body["spec_version"],
+                "input_identity": record.body["input_identity"],
             }
 
     run(scenario())
@@ -114,7 +115,7 @@ def test_update_order_is_reviewed_without_ticket_mutation(ctx, monkeypatch, sour
         revised = text.replace("`thing.py` holds the word ok.", "Narrowed `thing.py` holds ok.")
         before, head = ticket_bytes(ctx), await ctx.git.rev_parse(ctx.repo, "HEAD")
         validations, reviews = [], []
-        validate, review = module.validate_ticket, module.review_ticket
+        validate, review = module.validate_ticket, module.review_with_identity
 
         def checked(stem, proposal, repo, *args):
             validations.append((stem, repo))
@@ -125,7 +126,7 @@ def test_update_order_is_reviewed_without_ticket_mutation(ctx, monkeypatch, sour
             return await review(*args, **kwargs)
 
         monkeypatch.setattr(module, "validate_ticket", checked)
-        monkeypatch.setattr(module, "review_ticket", reviewed)
+        monkeypatch.setattr(module, "review_with_identity", reviewed)
         result, requests = await invoke(ctx, ticket, text, [order("update", [(ticket.stem, revised)]), requisition()])
         assert result.outcome == "ok", result.findings
         assert isinstance(result.artifact, Artifact) and isinstance(result.artifact, ReworkOrder)
@@ -161,7 +162,7 @@ def test_split_order_requires_fresh_buildable_successors(ctx, monkeypatch, sourc
         proposals = [("piece-one", first), ("piece-two", second)]
         before, head = ticket_bytes(ctx), await ctx.git.rev_parse(ctx.repo, "HEAD")
         reviews = []
-        review = module.review_ticket
+        review = module.review_with_identity
 
         async def reviewed(*args, **kwargs):
             tree = kwargs["repo"]
@@ -172,7 +173,7 @@ def test_split_order_requires_fresh_buildable_successors(ctx, monkeypatch, sourc
             reviews.append(kwargs)
             return await review(*args, **kwargs)
 
-        monkeypatch.setattr(module, "review_ticket", reviewed)
+        monkeypatch.setattr(module, "review_with_identity", reviewed)
         result, requests = await invoke(ctx, ticket, text, [order("split", proposals), requisition(), requisition()])
         assert result.outcome == "ok", result.findings
         assert result.artifact.action == "split" and {p.stem for p in result.artifact.tickets} == {s for s, _ in proposals}

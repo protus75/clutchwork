@@ -5,8 +5,8 @@
 # purpose: Roadmap message and Author policy coverage.
 # relates: [clutch/author.py, clutch/box.py, clutch/config.py, clutch/policy.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: d3624866
-# hash: daccc3febaadd17293cab3f565574f593e22eff167adb9446ebb58f10fabd637
+# verified: 9c24a9bd
+# hash: 76382c26558f341fc43438d95be858db51bef861f3c4cb0992296e8b8fd35d10
 
 from types import SimpleNamespace
 
@@ -176,7 +176,7 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
         return await action()
 
     async def review(*args, **kwargs):
-        return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="sha", provider="fake", model="fake", spec_version="1.0")
+        return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="sha", provider="fake", model="fake", spec_version="1.0", input_identity=None)
 
     async def open_tickets(checkout):
         return "none"
@@ -185,7 +185,7 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "read_text", lambda self: "spec" if self.name in {"author.md", "host-authoring.md"} else read_text(self))
     monkeypatch.setattr(author, "load_spec", lambda text: SimpleNamespace(meta=SimpleNamespace(effort="medium")))
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
-    monkeypatch.setattr(author, "review_ticket", review)
+    monkeypatch.setattr(author, "review_with_identity", review)
     monkeypatch.setattr(author.AuthorGate, "check", lambda *args: SimpleNamespace(verdict="pass"))
     monkeypatch.setattr(author, "stamp", lambda text, *args: text)
     monkeypatch.setattr(author, "validate_ticket", lambda *args: SimpleNamespace(scope_fence=(), frontmatter=SimpleNamespace(gate_bypass=[])))

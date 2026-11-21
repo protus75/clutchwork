@@ -4,8 +4,8 @@
 # purpose: test key scope
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: 23d3b116
-# hash: ad9836b48b651a7745407b57b9fb6ebe3a1b04136521a9885c0d211a34d7c661
+# verified: 9c24a9bd
+# hash: 9ccc8ea7108d98d732fde59b44f29455093e332361936e8080c5916adba3bc61
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -175,7 +175,7 @@ def test_rework_scopes_review_and_tree(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(rework, "load_spec", lambda _: SimpleNamespace(meta=SimpleNamespace(version="1.0")))
     monkeypatch.setattr(rework, "validate_ticket", lambda *args: SimpleNamespace(frontmatter=front))
-    monkeypatch.setattr(rework, "review_ticket", fake_review)
+    monkeypatch.setattr(rework, "review_with_identity", fake_review)
 
     async def run():
         for scope in ("sup", None):

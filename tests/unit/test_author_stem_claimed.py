@@ -5,8 +5,8 @@
 # purpose: Author rechecks ticket ownership after review.
 # relates: [clutch/author.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: d3624866
-# hash: 0a32f189a8c53bb197320454efddd037ae1733cf3a2972e95af44d4df952ea87
+# verified: 9c24a9bd
+# hash: 5cf64f7de2aeaab6446611b45f815ad7e68d660c236bf69049df3610e9670710
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -41,7 +41,7 @@ async def test_author_rechecks_stem_after_gate(tmp_path, monkeypatch, claim):
         return SimpleNamespace(outcome="ok", artifact=reply)
 
     async def review(*args, **kwargs):
-        return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="review-sha", provider="fake", model="fake", spec_version="1")
+        return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="review-sha", provider="fake", model="fake", spec_version="1", input_identity=None)
 
     async def effect(action, **kwargs):
         return await action()
@@ -49,7 +49,7 @@ async def test_author_rechecks_stem_after_gate(tmp_path, monkeypatch, claim):
     monkeypatch.setattr(Path, "read_text", lambda self: "spec")
     monkeypatch.setattr(author, "load_spec", lambda text: SimpleNamespace(meta=SimpleNamespace(effort="medium")))
     monkeypatch.setattr(author, "list_open_tickets", AsyncMock(return_value="none"))
-    monkeypatch.setattr(author, "review_ticket", review)
+    monkeypatch.setattr(author, "review_with_identity", review)
     monkeypatch.setattr(author, "failure_declined", decline)
     monkeypatch.setattr(author, "stamp", lambda text, *args: text)
     monkeypatch.setattr(author, "validate_ticket", lambda *args: SimpleNamespace(scope_fence=(), frontmatter=SimpleNamespace(gate_bypass=[])))
