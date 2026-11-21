@@ -121,7 +121,7 @@ Scope in:
 - tests/unit/test_requisition_panel.py: new file holding every new test, built on fakes and monkeypatched `llm_call` as in tests/unit/test_requisition_stage_events.py.
 
 Scope out:
-- Diagnosis and triage (`review-panel-stage-use-majority`, row 192), per-member scorecard attribution (row 68), a shared stuck budget (Suggestion Box), the requisition review prompt spec (unchanged, no version bump), `clutch/runner.py`, `clutch/rework.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py`, `clutch/config.py`.
+- Diagnosis and triage (`review-panel-stage-use-majority`, row 192), per-member scorecard attribution (row 68), a shared stuck budget (Suggestion Box), the requisition review prompt spec (unchanged, no version bump), `clutch/runner.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py`, `clutch/config.py`.
 - Merge order: `index-box-neighbors-prompts` (fences `clutch/author.py`, `clutch/triage.py`, `docs/how-clutch-works.md`), `index-consumers-training-join` (`clutch/training.py`, `clutch/__main__.py`), `spools-tests-via-helper-fake-fs` (test spool helpers and two integration tests) and `spools-onto-evidence-store-r2` (draft; `clutch/driver.py` `Spool`) share no file with this fence except `docs/how-clutch-works.md` (different section) and `clutch/driver.py` for the draft: that draft's author re-greps `Spool(` and fences nothing here, because the new method touches no `Spool` code; either merge order leaves both ticket's tests passing. Nothing here fences a file those tickets fence, since the test files above are not theirs.
 
 ## Scope fence
@@ -161,7 +161,7 @@ uv run clutch meta check tests/unit/test_requisition_panel.py
 ```
 
 ## Definition of rejected
-A size-1, unset-panel or scoped (`key_scope` set) review whose `llm_call` arguments, spool writes, stage events or returned verdict differ from today's; a second `llm_call` call site; a member key that is not `m<k>-<run_seq>` in the third part; a requisition panel that reads a `review` row's panel; a `panel_facts` record written to the journal; a swallowed `ProviderCallError` when every member failed; any edit to `clutch/runner.py`, `clutch/rework.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py` or the requisition review prompt spec; a `getattr` fallback on the driver.
+A size-1, unset-panel or scoped (`key_scope` set) review whose `llm_call` arguments, spool writes, stage events or returned verdict differ from today's; a second `llm_call` call site; a member key that is not `m<k>-<run_seq>` in the third part; a requisition panel that reads a `review` row's panel; a `panel_facts` record written to the journal; a swallowed `ProviderCallError` when every member failed; any edit to `clutch/runner.py`, `clutch/author.py`, `clutch/__main__.py`, `clutch/providers.py` or the requisition review prompt spec, or to `clutch/rework.py` beyond extracting `next_review_seq` and its one call site; a `getattr` fallback on the driver.
 
 ## Time budget
 - expected: 30m
