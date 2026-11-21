@@ -1,18 +1,18 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The final ticket verification passed, as did 1,715 unit tests with coverage, 3,560 integration tests, lint, and formatting. A mutation check confirmed that the sequence test fails when member-key matching is removed; mutation checks were not completed for every assertion.
+With an inactive driver and one invalid reply followed by a valid reply, the existing review loop calls begin_watch twice, once per attempt, with the same arguments. The in-progress changes are uncommitted.
 
 ## Dead ends
 
-none
+The focused verification run exposed a stand-in missing the new panel_members method; that stand-in was updated, but the contradictory watch-count requirement remains unresolved.
 
 ## Second problems filed
 
-- box-000922-1bc789b7: The repository-wide metadata check reports missing, drifted, or empty-purpose headers on unrelated files outside the ticket fence.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket expected 30 minutes; work stopped before completion when the contradiction was identified.
 
