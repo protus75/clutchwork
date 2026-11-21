@@ -1,21 +1,24 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "04db68bd8552d511524420fbdca0e7982a648495",
+  "produced_at_sha": "30c96b397fac4a3e6b791608f02ada28d10480ec",
   "stem": "index-build-r2",
-  "attempt": 1,
-  "terminal": "premise_failed",
+  "attempt": 2,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "Ticket Goal says embed values are any finite non-bool int/float, but `vec FLOAT[N]` cannot hold finite values outside FLOAT range: inserting 1e308 into FLOAT[1] raised ConversionException. The spec has no rule for these values, so the ticket must be amended first.",
-    "Amend the Goal's embed validation: a value whose magnitude exceeds the FLOAT maximum, or that becomes infinite when converted to FLOAT, is `embed_failed: <selector>: not a vector`. Keep the closed reason list unchanged.",
-    "Add to criterion 5 in tests/unit/test_index_embeddings.py a reply list holding 1e308 that must yield exactly one `not a vector` finding, no `embeddings` table, the other tables written and `create('fts')`.",
-    "On the redo, validate each value before any INSERT into `embeddings`, so a ConversionException never escapes `build`. A failure still drops the table, as the Goal requires for every embed failure.",
-    "Attempt 1 passed the full verification and coverage gate; the only blocker was this premise. After the ticket is amended, redo the full implementation from the merge base, keeping the four-file Scope fence."
+    "Attempt 2 (codex, gpt-6.1-terra) stopped after about 6 min with an empty diff_stat and said acceptance tests were unfinished, even though the 76-test Verification run passed. Use the 30m time budget to finish every criterion 1-12 instead of stopping early.",
+    "Commit clutch/index.py, tests/unit/test_index_build.py, tests/unit/test_index_embeddings.py and tests/integration/test_index_extensions.py on the ticket branch before reporting. Uncommitted work is lost because each attempt restarts from the merge base.",
+    "Before writing tests, map each acceptance criterion 1-11 to a named test. Cover these: every embed_failed reason (exit 2, exec ExceptionClass, not json, the string/object/[]/true/NaN/1e308 replies as not a vector, length 2 != 3), temp-file fs.remove after success and after failure, and create",
+    "Criterion 7 needs a recording connection wrapper passed through connect. It counts INSERT, UPDATE and DELETE statements on files, chunks and embeddings, and the count must be zero on a second build over unchanged files. Criterion 9 uses the same wrapper to show the build issues no INSTALL, LOAD,",
+    "In tests/integration/test_index_extensions.py, run real-DuckDB builds a-c on a reopened database and skip with 'vss/fts extensions unavailable offline'. Add the criterion 11 ast scan of clutch/index.py. Report 'complete' only after all of these tests exist and the Verification command passes."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    2,
+    3
+  ],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
