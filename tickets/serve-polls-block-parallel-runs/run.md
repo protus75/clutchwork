@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The scan snapshot must account for changes made by intake itself, as well as pending ticket state, without causing another exclusive poll during a run.
+DaemonAdmission remains unchanged. Final verification: 58 passed; hard checks: 1544 unit tests, coverage, 3534 integration tests, lint and formatting passed. All 23 mutation checks rejected broken implementations. Reproducer passes on candidate and reports defect on merge base.
 
 ## Dead ends
 
-A preliminary scan snapshot was removed because it would trigger another exclusive poll after intake changed the repository.
+Filesystem-fake-only report detection missed disk arrivals; reused ingestion's listing behavior. Replaced tick-count assertions with exact dispatch probes. Rejected inbox-only merge detection because dispatch can already have consumed requests.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.21
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; the work was not completed.
+30 minutes expected; approximately 20 minutes actual.
 
