@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b8bc14344376f3d391f39ea5e2dd5bc08e356582",
+  "produced_at_sha": "f4d71eb9b2260e28f8c47d79184853c524ac2c1b",
   "stem": "merge-dirty-checkout-never-blocks",
   "passed": true,
   "changed_files": [
@@ -12,7 +12,7 @@
     "tests/unit/test_merge_config_local.py",
     "tests/unit/test_merge_index_hook.py"
   ],
-  "inserted_lines": 169,
+  "inserted_lines": 184,
   "bypassed": [],
   "reports": [
     {
@@ -69,8 +69,8 @@
           "python",
           "tests/regress_merge_config_local.py"
         ],
-        "head_sha": "b8bc14344376f3d391f39ea5e2dd5bc08e356582",
-        "base_sha": "934f97b8b875ea2e4cb6865044f784e9369d34c3",
+        "head_sha": "f4d71eb9b2260e28f8c47d79184853c524ac2c1b",
+        "base_sha": "365b3e3809dd6cc1b5b5cc4fba002efc867ad2ba",
         "overlay_paths": [
           "tests/regress_merge_config_local.py"
         ],
@@ -85,7 +85,7 @@
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/merge-dirty-checkout-never-blocks\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/merge-dirty-checkout-never-blocks\nInstalled 31 packages in 24ms\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/merge-dirty-checkout-never-blocks\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/merge-dirty-checkout-never-blocks\nInstalled 31 packages in 25ms\n"
         }
       }
     },
@@ -107,20 +107,19 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 15.461996,
-        "passed": 1815,
+        "seconds": 15.437159,
+        "passed": 1816,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5125400010001613,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.2106741890165722,
-          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.111459232008201
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4063146710104775,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.1623417100054212
         }
       },
       "coverage": {
-        "percent": 71.75491879043972,
+        "percent": 71.77117711771177,
         "files": {
-          "clutch/merge.py": 49.24012158054711
+          "clutch/merge.py": 50.74626865671642
         }
       }
     },
@@ -158,9 +157,9 @@
         "tests/integration/test_daemon_composition.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_merge_config_local.py tests/integration/test_merge_config_local.py tests/unit/test_merge_dirty.py tests/unit/test_merge_index_hook.py tests/integration/test_merge.py tests/integration/test_mergequeue.py tests/integration/test_daemon_composition.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 27%]\n........................................................................ [ 54%]\n........................................................................ [ 81%]\n..................................................                       [100%]\n266 passed in 8.64s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_merge_config_local.py tests/integration/test_merge_config_local.py tests/unit/test_merge_dirty.py tests/unit/test_merge_index_hook.py tests/integration/test_merge.py tests/integration/test_mergequeue.py tests/integration/test_daemon_composition.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 27%]\n........................................................................ [ 54%]\n........................................................................ [ 81%]\n..................................................                       [100%]\n266 passed in 9.02s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 8.954992
+      "seconds": 10.297456
     }
   ]
 }
