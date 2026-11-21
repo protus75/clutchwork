@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "325c9c8ff8053bf077914370e38ae0b3e2f7af23",
+  "stem": "spools-onto-evidence-store-r2",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: tests/integration/test_driver.py:376 asserts raw prompt.md/output.txt/error.txt files exist under the state dir, yet criterion 6 requires it to pass unedited. Fence that file and change only that assertion to the store layout via tests/spool_captures.py.",
+    "Premise false: the fixture in tests/integration/test_requisition.py:113 passes stem_slot=\"s\", and capture_key rejects that stem, so 7 requisition tests fail. Fence that file and swap in a valid stem in the fixture and any expectation that pins it.",
+    "tests/integration/test_spec_sibling_tickets.py::test_sibling_instruction_and_real_render also failed on the candidate and passed on base. Before refiling, find out whether it pins this ticket's text or the spools layout. If it does, fence it. If not, file it to the Suggestion Box.",
+    "Keep the rest of the design as written: Spool(state_dir, redactor, fs), one EvidenceStore in harvest, the run-<n>/ filter, the greatest sorted error name, and the helper flip. The implementer found no defect in them. Only the fence and criterion 6's 'unedited' list need fixing."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
