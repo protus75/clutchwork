@@ -1,26 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "e2239fac8b0d2f8415876a763d1105f1c46bfc1d",
+  "produced_at_sha": "32fb63c9f05b9391be224dd854868ffd0fd6a702",
   "stem": "serve-merge-off-exclusive",
-  "attempt": 2,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 3,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "retry",
   "lessons": [
-    "The meta_drift gate failed: empty_purpose in tests/integration/test_serve_merge_overlap.py, tests/regress_serve_merge_off_exclusive.py, tests/unit/test_admission_merging_section.py and tests/unit/test_merge_dirty_commit_lock.py. Write a one-line purpose in each header, then run uv run clutch meta",
-    "The full integration gate failed tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[safety]. It ran 67.6s against about 3s for its siblings, which points to an until() timeout. The quarantine cap was full, so the gate cannot quarantine it, and it must pass",
-    "Don't call that timeout flaky. The last attempt saw it time out under full-suite load and on the base ran the full suite only once. The [safety] case holds work at review while main-side merges, so a merge poll now running beside runs may race it there. Reproduce it with the full integration suite",
-    "Before calling the [safety] timeout pre-existing, run the full integration suite several times on the base commit in a git worktree. If the base never times out, find out what in the merging() section, the Serve.merge swap or dirty_overlap's commit lock stalls the safety merge. Fix it in",
-    "Review found the design sound: merging() in DaemonAdmission, the Serve.merge call-site swap, the commit lock in dirty_overlap and the stand-in fixture edits; the ticket verification and reproducer passed. Redo that work from the merge base as Scope in describes. Leave"
+    "Calling this premise_failed was wrong: tests/integration/test_host_loop.py:103 failed twice on the candidate and passed on the base, so the candidate diff caused a regression that was never diagnosed. Redo the full fenced work from the merge base, then find the cause before giving up.",
+    "Reproduce it: run `./dev.py test tests/integration/test_host_loop.py` and the full integration suite. Before deleting the tmp dir, read the merge-bonus member's .clutch engine.log and journal for why its merge was abandoned (merge finding code or hold reason).",
+    "Likely cause: the merge poll now runs beside implementations (merging()). Check whether dirty_overlap reports dirty_checkout on a lift's file under tickets/<stem>/, written before the commit lock (stages.py 597-600, 632). Check status runs under main_write() plus git._commit_lock, the order",
+    "The second run's worker timeout points to a deadlock. Check every path into merging(), exclusive() and dirty_overlap. No caller may take git._commit_lock and then main_write(), or wait on the admission condition while holding a lock that merging() needs. merge_squash takes main_write and then the",
+    "If one merge-poll action is truly unsafe beside a run, the ticket's Scope out lets you keep only that action under mutations() and name it in the run record. Do not edit test_host_loop.py, serve_rig.py, git.py or mergequeue.py."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0,
-    1,
     2,
-    3,
-    4
+    3
   ],
   "spec_version": "1.9",
   "provider": "claude",
