@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f5e58f849eb46c76650e1e572c324cde16423901",
+  "stem": "context-suggest-author-block",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The premise finding is wrong. Check stage `check_meta` (clutch/stages.py) runs meta.refresh on every changed file under meta paths and commits the headers. Do not hand-refresh headers in the six existing test files; make only the version-pin and state_dir edits the ticket allows.",
+    "Drift in the six edited test files is not a blocker. `meta_drift` is in SOFT_GATE_DEFAULTS in clutch/gates.py, and `uv run clutch meta check` exits 0. Read criterion 5 as: no new findings from the guide or docs/how-clutch-works.md once the ticket's `meta refresh` of those two files has run.",
+    "Redo the whole implementation from the merge base. Add context_block to clutch/author.py with its one call site after calibration.render. Add the spec block and bump the version to the next minor above main. Add the guide sentence and the 9.3 clause, and refresh both files' metadata. Then make the",
+    "Create tests/unit/test_author_context_block.py with `uv run clutch meta refresh` and set only its purpose line. Cover criteria 1-3 with a real DuckDB file under tmp_path that has files, chunks and touches tables. Patch render to capture inputs and monkeypatch context_block with a counter.",
+    "Base metadata findings in unrelated files are already filed as box-000912. Do not fix them. Run the full Verification block, report each command's exit code, and return ok."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
