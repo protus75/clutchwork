@@ -14,6 +14,12 @@ none
 - tests/integration/test_serve_driver_overlap.py
 - tests/integration/serve_rig.py
 - tickets/serve-polls-block-parallel-runs/evidence/serve-admission-overlap.txt
+- clutch/control.py
+- clutch/mergequeue.py
+- clutch/inbox.py
+- clutch/triage.py
+- clutch/tickets.py
+- clutch/metafill.py
 
 ## On-demand
 - clutch/daemon.py
@@ -41,13 +47,14 @@ After this ticket, with `max_runs: 2` and two non-overlapping confirmed tickets,
 ## Scope in / Scope out
 Scope in:
 - `clutch/serve.py`: for each of `scan`, the `watch` loop, `merge` and `box_intake`, name the work condition and check it before any exclusive section. Each check reads state without taking the admission condition. When a check cannot tell, it returns true: a false positive costs one exclusive section, never a missed event.
-  - `scan` enters `mutations()` only when something intake reads changed since the last scan: the ticket directory or a ticket file, the git status of `tickets/`, or the sha of main's HEAD (intake also validates a pending ticket against repo files outside `tickets/`, such as context and fence paths, so a refusal caused by a file a merge added under `clutch/` is retried after that merge moves HEAD, not only when `tickets/` changes); and, only while git status shows pending uncommitted ticket files, the last journal state of one of those stems (`intake` reads the journal only for `last_states` of those stems, `clutch/tickets.py` lines 966-983, so a ticket refused for its journal state is retried after that state changes). It never triggers on a journal append alone: every dispatch journals a `running` transition and a running implement keeps appending events, so a journal-wide trigger would re-block the second run on almost every run.
+  - `scan` enters `mutations()` only when something intake reads changed since the last scan: the ticket directory or a ticket file, the git status of `tickets/`, or the sha of main's HEAD (intake also validates a pending ticket against repo files outside `tickets/`, such as context and fence paths, so a refusal caused by a file a merge added under `clutch/` is retried after that merge moves HEAD, not only when `tickets/` changes); and, only while git status shows pending uncommitted ticket files, the last journal state of one of those stems (`intake` reads the journal only for `last_states` of those stems, `clutch/tickets.py` lines 966-983, so a ticket refused for its journal state is retried after that state changes). Record the snapshot after intake finishes, still inside `mutations()`, so intake's own writes and commits do not trigger the next poll. It never triggers on a journal append alone: every dispatch journals a `running` transition and a running implement keeps appending events, so a journal-wide trigger would re-block the second run on almost every run.
   - The `watch` loop takes `self.core.admission.exclusive()` directly after `scan` returns (the gate at `clutch/serve.py` line 297); it skips that gate when `scan` found no change (`current == previous`). The comparison uses only `owner.responses`, `owner.scan` and `owner.core`, so `test_watch_publication_excludes_runs` in `tests/unit/test_admission_parallel_run_set.py` passes unchanged.
   - `merge` enters `mutations()` only when one of these holds: the journal has an accepted confirm or reject `control_decision` whose `ticket-plane/<stem>/<verb>/<request_id>` effect has no completion (the dispatch loop already consumes inbox files through `self.control.poll()` before the merge poll looks, so an inbox-directory check alone misses a confirm); the inbox directory has an undecided request file; a stop or kill is pending; the merge queue has pending or active work; or a writer's run has ended and its entry needs pruning. `check_upgrade` only reads git and sets a field, so it runs outside `mutations()` on every merge poll, after the same `queue is None` early return it has today. This is a deliberate change: an engine-tree change is detected, and `self.upgrade` set, while a run is in flight, so new admission stops (`clutch/serve.py` line 261) before that run ends instead of after, and the upgrade handoff waits for the run as it does now. The merge work condition mirrors `settle_admissions` (`clutch/control.py` lines 310-323) exactly: accepted, verb `confirm` or `reject`, `hold_id` is none, and no completed effect; any looser form would be permanently true. Pending items in a paused merge queue (`clutch/mergequeue.py` line 127) do not count as work, since nothing merges while paused.
-  - `box_intake` enters `mutations()` only when one of these holds: the box has an unread host report; a previously failed arrival has no `consumed` receipt and its retry is due (`clutch/inbox.py` retries a failed arrival every poll today, and `report_intake` in `clutch/triage.py` calls `box.recover()` every poll when `report_inbox` is set, so both are work); or `box.recover()` has something to recover. A retry of a failed arrival is due at most once per 30 seconds of the injected clock, so one permanently bad report cannot keep the poll busy and block parallelism.
+  - `box_intake` enters `mutations()` only when one of these holds: the box has an unread host report; a previously failed arrival has no `consumed` receipt and its retry is due (`clutch/inbox.py` retries a failed arrival every poll today, and `report_intake` in `clutch/triage.py` calls `box.recover()` every poll when `report_inbox` is set, so both are work); or `box.recover()` has something to recover. A retry of a failed arrival is due at most once per 30 seconds of the injected clock, so one permanently bad report cannot keep the poll busy and block parallelism; one last-retry time kept in `Serve` meets this without per-arrival bookkeeping.
 - `clutch/daemon.py`: change `DaemonAdmission` only if the reproduction in the evidence file still fails after the poll change; say in the run record what failed and why.
 - `docs/how-clutch-works.md` section 7.2: replace the sentence that says maintenance excludes slot-holding runs with the rule as built: a poll with work excludes running implementations until it finishes; an idle poll does not.
 - New tests only: `tests/unit/test_serve_idle_poll.py` and `tests/integration/test_serve_parallel_admission.py`, plus the reproducer `tests/regress_serve_parallel_admission.py` that `## Regression` names. Import `tests/integration/serve_rig.py` and change nothing in it.
+- Each of the three new files carries a real one-line `# purpose:` value in its header (as in `tests/fakes.py`), never an empty `# purpose:` line, and no line ends in trailing whitespace; `uv run ruff format --check .` exits 0 after the last header edit, before the commit.
 
 Scope out: `scheduler.py` and `fill_slots` (the evidence shows no `dispatch_skip`, so overlap selection is not the cause); changing what exclusive work excludes, or letting a poll with real work run beside a running implementation; the scan's change detection beyond the work check; `config.yaml`; the roadmap.
 
@@ -70,10 +77,11 @@ Scope out: `scheduler.py` and `fill_slots` (the evidence shows no `dispatch_skip
 ## Verification
 ```
 ./dev.py test tests/unit/test_serve_idle_poll.py tests/integration/test_serve_parallel_admission.py tests/unit/test_admission_parallel_run_set.py tests/integration/test_serve_admission.py tests/integration/test_serve_driver_overlap.py
+uv run ruff format --check .
 ```
 
 ## Definition of rejected
-A poll still enters `mutations()` when it has no work; a poll event (a verdict, merge, box report, stop or kill) can be missed or reordered; two tickets fencing the same file run at the same time; `max_runs` 1 runs two tickets; `max_unmerged` or `fill_slots` change; a test or fixture is added to `tests/integration/serve_rig.py` or another hot test file; the regression reproducer passes on the merge base.
+A poll still enters `mutations()` when it has no work; a poll event (a verdict, merge, box report, stop or kill) can be missed or reordered; two tickets fencing the same file run at the same time; `max_runs` 1 runs two tickets; `max_unmerged` or `fill_slots` change; a test or fixture is added to `tests/integration/serve_rig.py` or another hot test file; the regression reproducer passes on the merge base; a new file has an empty `# purpose:` header or fails `uv run ruff format --check .`.
 
 ## Time budget
 - expected: 30m
