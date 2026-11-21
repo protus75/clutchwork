@@ -1,22 +1,26 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ebd3a5cad5b4466ed515a63ad3e54c68a8cabf0c",
+  "produced_at_sha": "e2239fac8b0d2f8415876a763d1105f1c46bfc1d",
   "stem": "serve-merge-off-exclusive",
-  "attempt": 1,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
   "lessons": [
-    "Confirmed: tests/integration/test_serve_confirm_during_check.py:46 (merged by dependency serve-confirm-during-check) waits on admission.exclusive_pending during a merge poll, which criterion 1 says never becomes true. The file is outside the fence, so the integration gate cannot pass as written.",
-    "Ticket repair: add tests/integration/test_serve_confirm_during_check.py to ## Scope fence and ## Context. In Scope in, replace only line 46's wait with one that sees the merge poll held, e.g. until admission.busy() while merge_work is true. Keep the other assertions, then run uv run clutch meta",
-    "Add that file to criterion 8's meta check list and to ## Verification. Also update Definition of rejected so editing it is allowed, but changing any assertion after line 46 is not.",
-    "Implementer reported the ticket's 93-test verification passed on the candidate, so the daemon/serve/merge approach is sound and can be redone from the merge base as Scope in describes after the fence is fixed.",
-    "The full gate also showed three tests/integration/test_host_loop.py setup errors that passed in isolation on the base. Re-measure on the base with the full gate before calling them pre-existing; their cause is unconfirmed."
+    "The meta_drift gate failed: empty_purpose in tests/integration/test_serve_merge_overlap.py, tests/regress_serve_merge_off_exclusive.py, tests/unit/test_admission_merging_section.py and tests/unit/test_merge_dirty_commit_lock.py. Write a one-line purpose in each header, then run uv run clutch meta",
+    "The full integration gate failed tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[safety]. It ran 67.6s against about 3s for its siblings, which points to an until() timeout. The quarantine cap was full, so the gate cannot quarantine it, and it must pass",
+    "Don't call that timeout flaky. The last attempt saw it time out under full-suite load and on the base ran the full suite only once. The [safety] case holds work at review while main-side merges, so a merge poll now running beside runs may race it there. Reproduce it with the full integration suite",
+    "Before calling the [safety] timeout pre-existing, run the full integration suite several times on the base commit in a git worktree. If the base never times out, find out what in the merging() section, the Serve.merge swap or dirty_overlap's commit lock stalls the safety merge. Fix it in",
+    "Review found the design sound: merging() in DaemonAdmission, the Serve.merge call-site swap, the commit lock in dirty_overlap and the stand-in fixture edits; the ticket verification and reproducer passed. Redo that work from the merge base as Scope in describes. Leave"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    1
+    0,
+    1,
+    2,
+    3,
+    4
   ],
   "spec_version": "1.9",
   "provider": "claude",
