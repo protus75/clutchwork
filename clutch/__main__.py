@@ -792,7 +792,7 @@ def _parser() -> argparse.ArgumentParser:
         evidence_sub,
         "captures",
         summary="list or print ticket captures",
-        does="List captures for a ticket or print one named capture.",
+        does="List captures for a ticket or print one named capture. Attempts start at attempt 0; spool run sequences appear as a leading run-<n>/ name segment.",
         reads="Config and capture pointers and blobs.",
         writes="Stdout only; no journal event.",
         lock="None.",

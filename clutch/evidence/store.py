@@ -13,7 +13,6 @@ from pydantic import BaseModel
 
 from clutch.evidence.schema import Attempt, End, Start
 from clutch.seams import FileSystem
-from clutch.tickets import STEM
 
 
 class SkipRecord:
@@ -29,8 +28,30 @@ class CaptureUnreadable(Exception):
 
 
 SKIP = SkipRecord()
+_STEM = re.compile(r"[a-z0-9][a-z0-9_-]{1,127}\Z")
 _NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,199}\Z")
 _REF = re.compile(r"sha256:[0-9a-f]{64}\Z")
+
+
+def capture_key(spool_stem, attempt, name):
+    """Map a spool slot to a validated evidence capture key."""
+    if not isinstance(spool_stem, str) or spool_stem.count("/") > 1:
+        raise ValueError("invalid spool stem")
+    parts = spool_stem.split("/")
+    stem = parts[0]
+    if not _STEM.fullmatch(stem):
+        raise ValueError("invalid spool stem")
+    if len(parts) == 2 and not re.fullmatch(r"(?:0|[1-9][0-9]{0,8})", parts[1]):
+        raise ValueError("invalid run sequence")
+    if type(attempt) is not int or attempt < 0:
+        raise ValueError("invalid attempt")
+    if not isinstance(name, str) or not _NAME.fullmatch(name) or re.match(r"run-[0-9]+/", name):
+        raise ValueError("invalid capture name")
+    if len(parts) == 2:
+        name = f"run-{parts[1]}/{name}"
+    if not _NAME.fullmatch(name):
+        raise ValueError("invalid capture name")
+    return stem, attempt, name
 
 
 def _refs(value: object) -> set[str]:
@@ -101,9 +122,9 @@ class EvidenceStore:
 
     @staticmethod
     def _validate_capture(stem, attempt=None, name=None):
-        if not isinstance(stem, str) or not STEM.fullmatch(stem):
+        if not isinstance(stem, str) or not _STEM.fullmatch(stem):
             raise ValueError("invalid stem")
-        if attempt is not None and (type(attempt) is not int or attempt < 1):
+        if attempt is not None and (type(attempt) is not int or attempt < 0):
             raise ValueError("invalid attempt")
         if name is not None and (not isinstance(name, str) or not _NAME.fullmatch(name)):
             raise ValueError("invalid capture name")
@@ -142,7 +163,7 @@ class EvidenceStore:
         root = self.root / "captures" / stem
         result = []
         for directory in self.fs.entries(root):
-            if not directory.isascii() or not directory.isdecimal() or int(directory) < 1:
+            if not directory.isascii() or not directory.isdecimal() or int(directory) < 0:
                 continue
             number = int(directory)
             if attempt is not None and number != attempt:

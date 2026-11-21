@@ -1,4 +1,12 @@
 """Capture persistence, validation and retention."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Verify capture persistence and validation.
+# relates: [clutch/evidence/store.py, tests/unit/test_evidence_views.py]
+# owner: engine
+# verified: 8373ae09
+# hash: b3902da33fe178529c091caf00a137557e2d04d8f9b7352ad2378b3e3b9f95a2
 
 import json
 
@@ -20,13 +28,17 @@ def test_put_overwrite_and_listing(tmp_path):
     assert root / "2/implement%2Fprompt.md.json" in store.fs.files
     store.fs.write(root / "abc/a.json", b"{}")
     store.fs.write(root / "0/a.json", b"{}")
+    store.fs.write(root / "-1/a.json", b"{}")
     store.fs.write(root / "2/%20.json", b"{}")
-    assert store.captures("my-ticket") == [(2, "a.txt"), (2, "implement/prompt.md"), (10, "a.txt")]
+    assert store.captures("my-ticket") == [(0, "a"), (2, "a.txt"), (2, "implement/prompt.md"), (10, "a.txt")]
     assert store.captures("my-ticket", 2) == [(2, "a.txt"), (2, "implement/prompt.md")]
 
 
 @pytest.mark.parametrize(
-    "field,value", [("stem", x) for x in ["Bad Stem", "", "../x"]] + [("attempt", x) for x in [0, -1, True, "1"]] + [("name", x) for x in ["", "/a", ".hidden", "a b", "a\nb", "..", "a" * 201]]
+    "field,value",
+    [("stem", x) for x in ["Bad Stem", "", "../x", "a/b", "_x", "-x", "a" * 129]]
+    + [("attempt", x) for x in [-1, True, False, "1", 1.0]]
+    + [("name", x) for x in ["", "/a", ".hidden", "a b", "a\nb", "..", "a" * 201]],
 )
 def test_invalid_fields_never_write(tmp_path, field, value):
     store = memory_store(tmp_path)
@@ -40,6 +52,21 @@ def test_invalid_fields_never_write(tmp_path, field, value):
     if field != "name":
         with pytest.raises(ValueError):
             store.captures(args["stem"], args["attempt"])
+
+
+@pytest.mark.parametrize("stem", ["work", "review_visual", "a" * 100])
+@pytest.mark.parametrize("attempt", [0, 1])
+def test_valid_capture_keys(tmp_path, stem, attempt):
+    store = memory_store(tmp_path)
+    store.put_capture(stem, attempt, "implement/prompt.md", b"payload")
+    assert store.get_capture(stem, attempt, "implement/prompt.md") == b"payload"
+    assert store.captures(stem) == [(attempt, "implement/prompt.md")]
+
+
+def test_existing_pointer_path(tmp_path):
+    store = memory_store(tmp_path)
+    store.put_capture("my-ticket", 1, "implement/prompt.md", b"payload")
+    assert store.root / "captures/my-ticket/1/implement%2Fprompt.md.json" in store.fs.files
 
 
 def test_pointer_validation_and_missing_blob(tmp_path):
