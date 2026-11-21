@@ -13,13 +13,23 @@ from pydantic import BaseModel
 
 from clutch.evidence.schema import Attempt, End, Start
 from clutch.seams import FileSystem
+from clutch.tickets import STEM
 
 
 class SkipRecord:
     """A record version whose major version is not understood."""
 
 
+class CaptureNotFound(LookupError):
+    """No pointer exists for the requested capture."""
+
+
+class CaptureUnreadable(Exception):
+    """A capture pointer or its blob cannot be read."""
+
+
 SKIP = SkipRecord()
+_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,199}\Z")
 _REF = re.compile(r"sha256:[0-9a-f]{64}\Z")
 
 
@@ -84,6 +94,64 @@ class EvidenceStore:
 
     def get_blob(self, ref: str) -> bytes:
         return zstd.decompress(self.read_bytes(self._blob_path(ref)))
+
+    def _capture_path(self, stem: str, attempt: int, name: str) -> Path:
+        self._validate_capture(stem, attempt, name)
+        return self.root / "captures" / stem / str(attempt) / (quote(name, safe="") + ".json")
+
+    @staticmethod
+    def _validate_capture(stem, attempt=None, name=None):
+        if not isinstance(stem, str) or not STEM.fullmatch(stem):
+            raise ValueError("invalid stem")
+        if attempt is not None and (type(attempt) is not int or attempt < 1):
+            raise ValueError("invalid attempt")
+        if name is not None and (not isinstance(name, str) or not _NAME.fullmatch(name)):
+            raise ValueError("invalid capture name")
+
+    def put_capture(self, stem: str, attempt: int, name: str, data: bytes) -> None:
+        # A missing required value is invalid even though listing accepts None.
+        if attempt is None or name is None:
+            raise ValueError("attempt and name are required")
+        path = self._capture_path(stem, attempt, name)
+        ref = self.put_blob(data)
+        self.fs.write(path, json.dumps({"schema": "clutch.evidence.capture/1.0", "blob": ref}).encode())
+
+    def get_capture(self, stem: str, attempt: int, name: str) -> bytes:
+        if attempt is None or name is None:
+            raise ValueError("attempt and name are required")
+        path = self._capture_path(stem, attempt, name)
+        try:
+            raw = self.read_bytes(path)
+        except FileNotFoundError as exc:
+            raise CaptureNotFound(str(path)) from exc
+        try:
+            data = json.loads(raw)
+            if not isinstance(data, dict):
+                raise ValueError("pointer is not an object")
+            schema, ref = data.get("schema"), data.get("blob")
+            if not isinstance(schema, str) or not re.fullmatch(r"clutch\.evidence\.capture/1\.\d+", schema):
+                raise ValueError("invalid capture schema")
+            if not isinstance(ref, str) or not _REF.fullmatch(ref):
+                raise ValueError("invalid capture blob")
+            return self.get_blob(ref)
+        except (ValueError, UnicodeError, FileNotFoundError, zstd.ZstdError) as exc:
+            raise CaptureUnreadable(str(path)) from exc
+
+    def captures(self, stem: str, attempt: int | None = None) -> list[tuple[int, str]]:
+        self._validate_capture(stem, attempt)
+        root = self.root / "captures" / stem
+        result = []
+        for directory in self.fs.entries(root):
+            if not directory.isascii() or not directory.isdecimal() or int(directory) < 1:
+                continue
+            number = int(directory)
+            if attempt is not None and number != attempt:
+                continue
+            for entry in self.fs.entries(root / directory):
+                name = unquote(entry[:-5]) if entry.endswith(".json") else ""
+                if _NAME.fullmatch(name):
+                    result.append((number, name))
+        return sorted(result)
 
     def _record_path(self, key: str, kind: str) -> Path:
         if kind not in ("start", "end"):
@@ -182,6 +250,12 @@ class EvidenceStore:
         calls = self.root / "calls"
         records = []
         counts: Counter[str] = Counter()
+        captures = self.root / "captures"
+        for stem in self.fs.entries(captures):
+            for attempt in self.fs.entries(captures / stem):
+                for name in self.fs.entries(captures / stem / attempt):
+                    if name.endswith(".json"):
+                        counts.update(_refs(json.loads(self.read_bytes(captures / stem / attempt / name))))
         for key in self.fs.entries(calls):
             directory = calls / key
             refs: set[str] = set()

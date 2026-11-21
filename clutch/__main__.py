@@ -736,8 +736,8 @@ def _parser() -> argparse.ArgumentParser:
     evidence = sub.add_parser(
         "evidence",
         help="inspect and normalize captured evidence",
-        description="Inspect always-on evidence capture. Subcommands: show, schema, renormalize, coverage.",
-        epilog="Examples:\nclutch evidence show llm/example/1/implement/0/1\nclutch evidence schema event\nclutch evidence renormalize\nclutch evidence coverage",
+        description="Inspect always-on evidence capture. Subcommands: show, schema, renormalize, coverage, captures.",
+        epilog="Examples:\nclutch evidence show llm/example/1/implement/0/1\nclutch evidence schema event\nclutch evidence renormalize\nclutch evidence coverage\nclutch evidence captures example",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     evidence_sub = evidence.add_subparsers(dest="evidence_verb", required=True)
@@ -788,6 +788,20 @@ def _parser() -> argparse.ArgumentParser:
         exits="0 on success; 2 for an unreadable store.",
         examples=["clutch evidence coverage"],
     )
+    captures = _command(
+        evidence_sub,
+        "captures",
+        summary="list or print ticket captures",
+        does="List captures for a ticket or print one named capture.",
+        reads="Config and capture pointers and blobs.",
+        writes="Stdout only; no journal event.",
+        lock="None.",
+        exits="0 on success; 2 for invalid input or unreadable or missing capture.",
+        examples=["clutch evidence captures example --attempt 1 --name implement/prompt.md"],
+    )
+    captures.add_argument("stem")
+    captures.add_argument("--attempt", type=int)
+    captures.add_argument("--name")
     training = sub.add_parser(
         "training",
         help="export training data and evaluate review routes",
@@ -1671,13 +1685,30 @@ def main(
 
         from clutch.evidence import views
         from clutch.evidence.schema import json_schema
-        from clutch.evidence.store import SKIP, EvidenceStore
+        from clutch.evidence.store import SKIP, CaptureNotFound, CaptureUnreadable, EvidenceStore
 
         if args.evidence_verb == "schema":
             print(json.dumps(json_schema(args.record), indent=2))
             return 0
         redactor = Redactor.from_config(config, env)
         store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
+        if args.evidence_verb == "captures":
+            road = f"list what exists with clutch evidence captures {args.stem}"
+            if args.name is not None and args.attempt is None:
+                raise runner.Refusal("capture name requires an attempt", road)
+            try:
+                if args.name is not None:
+                    print(store.get_capture(args.stem, args.attempt, args.name).decode("utf-8", errors="replace"), end="")
+                else:
+                    pairs = store.captures(args.stem, args.attempt)
+                    print("\n".join(f"{attempt} {name}" for attempt, name in pairs) if pairs else f"no captures for {args.stem}")
+                return 0
+            except ValueError as exc:
+                raise runner.Refusal(f"invalid capture input: {exc}", road) from None
+            except CaptureNotFound:
+                raise runner.Refusal("no capture for the requested attempt and name", road) from None
+            except CaptureUnreadable, OSError:
+                raise runner.Refusal("unreadable capture", road) from None
         try:
             if args.evidence_verb == "show":
                 start = store.read_record(args.call_key, "start")

@@ -61,6 +61,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `evidence schema` | no | Print the JSON Schema for start, end or event records. |
 | `evidence renormalize` | no | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
 | `evidence coverage` | no | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
+| `evidence captures` | no | List ticket captures or print one by attempt and name. |
 | `training export --out DIR [--kinds implement, preference, review, diagnosis, ticket, conflict ...] [--since DATE] [--holdout PCT] [--no-trajectory]` | no | Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set. |
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
@@ -768,7 +769,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
 | `spools/` | Per-attempt prompts, outputs, and command output. |
 | `scratch/` | Graphics render directories and retro window files read by agents by path, distinct from `evidence/scratch/`. |
-| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. |
+| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. Capture pointers to blobs live at `captures/<stem>/<attempt>/<escaped name>.json`. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |
