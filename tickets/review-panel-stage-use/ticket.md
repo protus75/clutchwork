@@ -22,7 +22,6 @@ none
 
 ## On-demand
 - docs/how-clutch-works.md
-- docs/roadmap.md
 
 ## Goal / Why
 Roadmap row 179 as filed holds four call sites (review, diagnosis, triage, requisition review), each with its own artifact model, tie order and tests. That is more than one run, so this ticket takes the first slice, the `review` stage, the surface `docs/stage-panels-plan.md` section 4 names first. After it, a routing row `{tier, surface: review, panel: {size: N, combine: findings-union}}` makes Review run N member reviews through `Driver.run_panel` and use the `findings-union` result as the one `review.md`. Today `Route.panel`, `clutch/panel.py` and `run_panel` are merged but no stage calls them, so a configured panel does nothing. The rest of row 179 moves to two follow-up rows added here (see Scope in): `review-panel-stage-use-majority` (diagnosis and triage, `majority-verdict`, with the full tie order) and `review-panel-stage-use-requisition` (requisition review, `findings-union`, member keys around its own `llm_call`).
@@ -64,7 +63,6 @@ Scope in:
 - clutch/stages.py, in `review` only: compute `size`; build the keyword arguments once in one dict used by both calls; call `ctx.driver.run(stage, invoice, **kwargs)` when size is 1 and `ctx.driver.run_panel(stage, invoice, size=size, **kwargs)` otherwise; combine, build the artifact and cost, write `review.md` once through the one existing write and `lift_outbox` path, and log `panel_facts`. Import `panel_members`, `ProviderSetupError` (if not already imported), `findings_union`, `PanelMember` and `Cost` as needed. `review_stage` and `render_review` are not changed.
 - tests/unit/test_route_kinds_filter.py: the one test whose `ctx` stand-in is `SimpleNamespace(driver=..., worktree=..., repo=..., git=...)` (about line 157) gains `config=SimpleNamespace(routing=[], providers=[])`; no other line changes. Review now reads `ctx.config`, and `routing=[]` makes `panel_members` raise `ProviderSetupError`, so the size-1 path runs and `calls == ["bug", "bug", "bug"]` still holds.
 - docs/how-clutch-works.md: section 4.4 Review gains one sentence saying a `findings-union` panel on the review route runs N member reviews and writes one combined `review.md`; line 657 drops "no stage fans out yet" and says review fans out and the other surfaces do not yet.
-- docs/roadmap.md: edit only row 179's content cell to name review alone and say diagnosis, triage and requisition review move to two new rows appended after the last row of that table: `review-panel-stage-use-majority` (diagnosis and triage call `run_panel` and use `majority-verdict`, with `DIAGNOSIS_ORDER` and `TRIAGE_ORDER` ties; depends `review-panel-stage-use`; files `clutch/stages.py` (diagnose), `clutch/triage.py`) and `review-panel-stage-use-requisition` (requisition review scopes `m<k>` member keys with `scoped_seq` around its own `llm_call` and combines with `findings_union`; depends `review-panel-stage-use`; files `clutch/requisition.py`). Each new row takes a number used by no other row anywhere in `docs/roadmap.md` (`roadmap.parse` refuses a duplicate); renumber nothing; kind feature, priority P2, owner cell exactly `panels plan 5` like row 179 (the cell `roadmap.plan_path` resolves to `docs/stage-panels-plan.md`). Row 68 `panel-scorecard` keeps its dependency on `review-panel-stage-use`.
 - tests/unit/test_review_panel_use.py: new file holding every new test, built on fakes (`FakeLLM`, `FakeClock`, `FakeFileSystem`, `FakeJournal` as in tests/unit/test_driver_panel_fanout.py).
 
 Scope out:
@@ -78,7 +76,6 @@ Scope out:
 - tests/unit/test_route_kinds_filter.py
 - docs/stage-panels-plan.md
 - docs/how-clutch-works.md
-- docs/roadmap.md
 
 ## Acceptance criteria
 1. With `Route.panel` unset for the review route, `review` called on a fake ctx makes exactly one `driver.run` call and zero `run_panel` calls, the written `review.md` text equals the literal expected text for one `snag` reply (hand-written in the test), the returned `StageResult` equals the expected one, the effect key is `llm/<stem>/<seq>/review/<attempt>/1` with no `m<k>` scope, and no `panel_facts` event is logged; the same holds with `panel: {size: 1, combine: findings-union}`; checked by `./dev.py test tests/unit/test_review_panel_use.py`. A test that routes a size-1 panel through `run_panel` fails.
@@ -91,11 +88,10 @@ Scope out:
 8. The stage cost is the member sum: for member costs `(tokens 10, usd 0.5, attempts 1, seconds 2.0)` and `(20, 0.25, 2, 3.0)` the cost is `tokens 30, usd 0.75, attempts 3, seconds 5.0`; with one member's `tokens` `None` the sum is `None`, not a partial sum; checked by `./dev.py test tests/unit/test_review_panel_use.py`.
 9. Route errors: with a ctx whose `config.routing` is `[]`, `review` calls `driver.run` and the `ProviderSetupError` it raises propagates unchanged, not swallowed and not run as a panel; checked by `./dev.py test tests/unit/test_review_panel_use.py`.
 10. The existing size-1 review behavior and the `kind` pass-through still hold; checked by `./dev.py test tests/unit/test_route_kinds_filter.py tests/unit/test_driver_panel_fanout.py tests/integration/test_rework.py`.
-11. The roadmap still parses and its gate commands are valid after the row edits; checked by `./dev.py test tests/integration/test_roadmap_table.py`. That row 179 names review alone and the two new rows exist is a one-time review check, not a test.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_review_panel_use.py tests/unit/test_route_kinds_filter.py tests/unit/test_driver_panel_fanout.py tests/unit/test_panel_combiners.py tests/integration/test_rework.py tests/integration/test_roadmap_table.py
+./dev.py test tests/unit/test_review_panel_use.py tests/unit/test_route_kinds_filter.py tests/unit/test_driver_panel_fanout.py tests/unit/test_panel_combiners.py tests/integration/test_rework.py
 ```
 
 ## Definition of rejected
