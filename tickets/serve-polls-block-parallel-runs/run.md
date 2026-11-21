@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-DaemonAdmission remains unchanged. Final verification: 58 passed; hard checks: 1544 unit tests, coverage, 3534 integration tests, lint and formatting passed. All 23 mutation checks rejected broken implementations. Reproducer passes on candidate and reports defect on merge base.
+The final verification passed: 58 targeted tests, 1,544 unit tests with coverage, 3,534 integration tests, lint, and formatting. The regression reported pass on the candidate and defect on the merge base. Mutation checks covered the four idle poll gates, but were not completed for every assertion.
 
 ## Dead ends
 
-Filesystem-fake-only report detection missed disk arrivals; reused ingestion's listing behavior. Replaced tick-count assertions with exact dispatch probes. Rejected inbox-only merge detection because dispatch can already have consumed requests.
+none
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6.1-terra
 - spec: implement 2.21
 
 ## Predicted vs actual
 
-30 minutes expected; approximately 20 minutes actual.
+The ticket estimated 30 minutes; elapsed time was not measured.
 
