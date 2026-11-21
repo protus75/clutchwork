@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The coverage gate was skipped because the diff changes no files it measures; the full unit and integration suites passed separately.
+The coverage gate was skipped because the diff changes no measured production files; both new metadata headers parse successfully. The simpler approach is a single helper over the existing spool layout, with validation delegated to capture_key.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The work completed within the ticket’s 20-minute expected budget.
+The ticket estimated 20 minutes; implementation and verification completed within that budget.
 
