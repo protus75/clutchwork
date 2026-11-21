@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "8f2d511657f4a5ef2b03657346747e204e1741b8",
+  "stem": "ticket-write-serialization-proof",
+  "attempt": 0,
+  "terminal": "incomplete",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The attempt stopped after about 71s with only a confirm/reject race drafted and nothing committed. Redo all of it from the merge base: the intake races against confirm, reject, Author (clutch/author.py::author) and Rework (clutch/daemon.py::apply_rework) in",
+    "Do not busy-spin a coroutine while it waits for commit.lock. That starved the Git subprocess and the test run hung until KeyboardInterrupt (exit 130). While contended, yield with a short asyncio.sleep or a blocking flock in a thread, and put a timeout on every wait.",
+    "Cover every item in acceptance criteria 1-2: exact committed bytes, no intermediate stamp adopted by clutch/tickets.py::intake, locks released when a callback raises, unchanged request replay, model/check work outside Git.commit_edit, merge squash still serialized on commit.lock, and no",
+    "Build the real Git repo and the .clutch lock paths under tmp_path only. Never read the checkout's tickets/, .clutch/ or journal (Definition of rejected). Make no production code change; send any defect found to the Suggestion Box.",
+    "Add the ticket-write critical section to docs/how-clutch-works.md section 10.2: the lock order (main_write before commit.lock) and the callback restrictions. Then run the full ## Verification command until it passes and commit before reporting the outcome."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    2
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
