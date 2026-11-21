@@ -4,8 +4,8 @@
 # purpose: test training ticket kind
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: 9a610809
-# hash: 6eec77d0a6e45d626af0af09ba4f9493946b8c31caaae0fd28c894786bf91cac
+# verified: ee052b47
+# hash: eae3847d7243b53e6f69b7c96d145082ed95a9b3bdfe094656d596e4ebf0a7bc
 import asyncio
 import json
 from pathlib import Path
@@ -115,7 +115,7 @@ def test_surfaces_and_gemini():
 
 
 def test_report_requires_ticket():
-    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=2, conflict=0, dropped=0, skipped=0, heldout=0)
+    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=2, conflict=0, triage=0, dropped=0, skipped=0, heldout=0)
     assert "ticket: 2" in training.report(counts)[1]
     del counts["ticket"]
     with pytest.raises(KeyError):

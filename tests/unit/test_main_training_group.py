@@ -4,8 +4,8 @@
 # purpose: test main training group
 # relates: [clutch/__main__.py]
 # owner: clutch/__main__.py
-# verified: 0a308920
-# hash: bfa2ea335df356df30e5e5723d5e2b670f64d026f35872eb271b12fb063ef1f6
+# verified: ee052b47
+# hash: 472a97df33fe16d2e62dc7122bb58bef84ee07712fcf0ec8f9fadb6a8cc24d24
 from pathlib import Path
 
 import pytest
@@ -19,6 +19,7 @@ def test_parser():
     assert (args.training_verb, args.kinds, args.holdout) == ("export", ["preference"], 50)
     assert parser.parse_args(["training", "export", "--out", "x", "--kinds", "ticket"]).kinds == ["ticket"]
     assert parser.parse_args(["training", "export", "--out", "x", "--kinds", "conflict"]).kinds == ["conflict"]
+    assert parser.parse_args(["training", "export", "--out", "x", "--kinds", "triage"]).kinds == ["triage"]
     for argv in (
         ["training", "export"],
         ["training", "export", "--out", "x", "--kinds", "bogus"],
@@ -37,7 +38,7 @@ def test_new_options():
     assert args.since == "2026-11-10"
     assert parser.parse_args(["training", "export", "--out", "x"]).kinds == args.kinds
     export = parser._subparsers._group_actions[0].choices["training"]._subparsers._group_actions[0].choices["export"]
-    assert "--since" in export.format_help() and "conflict" in export.format_help()
+    assert "--since" in export.format_help() and "conflict" in export.format_help() and "triage" in export.format_help()
 
 
 def test_eval_parser():

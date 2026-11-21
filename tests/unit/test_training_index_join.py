@@ -4,8 +4,8 @@
 # purpose: verify training export index joins
 # relates: [clutch/__main__.py, clutch/config.py, clutch/redact.py, clutch/training.py, tests/unit/test_training_export.py]
 # owner: engine
-# verified: 63fea83e
-# hash: a34394be3c37d84f2408c6e9c4ba7d4ef9b9f9bf08c350f2295343696d76c325
+# verified: ee052b47
+# hash: 6a1a6a1cb1e42eb4036fa6b02a0ce7a2dd92cacd02faab1ff19951115a524af0
 import asyncio
 import json
 from pathlib import Path
@@ -120,7 +120,7 @@ def test_handler(tmp_path, monkeypatch):
 
     async def capture(*args, **kwargs):
         received.append(kwargs["index"])
-        return {}, dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, dropped=0, skipped=0, heldout=0)
+        return {}, dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, triage=0, dropped=0, skipped=0, heldout=0)
 
     monkeypatch.setattr(training, "render", capture)
     assert entry.main(["training", "export", "--out", str(tmp_path / "out")], cwd=tmp_path, env={}) == 0

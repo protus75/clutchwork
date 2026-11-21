@@ -859,11 +859,11 @@ def _parser() -> argparse.ArgumentParser:
         "export",
         summary="export training records",
         does="Export labelled training records, including implement trajectories unless --no-trajectory is given and file_purposes when indexed paths match.",
-        reads="Config, evidence, first-parent git commits and the optional index.",
+        reads="Config, evidence, first-parent git commits, the optional index and box messages for triage.",
         writes="Requested JSONL files and optional holdout list under --out, replaced whole.",
         lock="None.",
         exits="0 on success; 2 when disabled or refused.",
-        examples=["clutch training export --out training-data --kinds ticket diagnosis --since 2026-11-10"],
+        examples=["clutch training export --out training-data --kinds ticket triage --since 2026-11-10"],
     )
     export.add_argument("--out", type=Path, required=True)
 
@@ -876,7 +876,7 @@ def _parser() -> argparse.ArgumentParser:
         except ValueError:
             raise argparse.ArgumentTypeError("expected a valid YYYY-MM-DD date") from None
 
-    export.add_argument("--kinds", nargs="+", choices=("implement", "preference", "review", "diagnosis", "ticket", "conflict"), default=["implement", "preference", "review", "diagnosis"])
+    export.add_argument("--kinds", nargs="+", choices=("implement", "preference", "review", "diagnosis", "ticket", "conflict", "triage"), default=["implement", "preference", "review", "diagnosis"])
     export.add_argument("--since", type=export_date, metavar="DATE", help="include calls on or after YYYY-MM-DD")
     export.add_argument("--no-trajectory", action="store_false", dest="trajectory", help="omit implement tool-call trajectories")
     export.add_argument("--holdout", type=int, choices=range(101), default=0, metavar="PCT")
@@ -1898,8 +1898,13 @@ def main(
             print(training.report_eval(asyncio.run(evaluation())))
             return 0
         index = training.index_files(config.state_dir / "index.duckdb", checkout.fs.size)
+        from clutch.box import Box
+
+        box_messages = Box(config.state_dir / BOX_DIR, checkout.fs).messages() if "triage" in args.kinds else ()
         files, counts = asyncio.run(
-            training.render(store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, args.kinds, args.holdout, args.trajectory, args.since, index=index)
+            training.render(
+                store, checkout.git, repo, redactor, config.training_data, checkout.fs.read_bytes, args.kinds, args.holdout, args.trajectory, args.since, index=index, box_messages=box_messages
+            )
         )
         for name, data in files.items():
             checkout.fs.write(args.out / name, data)

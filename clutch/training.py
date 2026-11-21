@@ -27,7 +27,7 @@ def report(counts):
         NOTICE,
         (
             f"implement: {counts['implement']}, preference: {counts['preference']}, review: {counts['review']}, diagnosis: {counts['diagnosis']}, ticket: {counts['ticket']}, "
-            f"conflict: {counts['conflict']}, "
+            f"conflict: {counts['conflict']}, triage: {counts['triage']}, "
             f"dropped: {counts['dropped']}, skipped: {counts['skipped']}, held-out stems: {counts['heldout']}"
         ),
     ]
@@ -160,13 +160,15 @@ def _identity(start, keys, stem, label, kind):
     )
 
 
-async def render(store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None, *, only=None, index=None):
-    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, dropped=0, skipped=0, heldout=0)
+async def render(
+    store, git, repo, redactor, config, read_bytes, kinds=("implement", "preference", "review", "diagnosis"), holdout=0, trajectory=True, since=None, *, only=None, index=None, box_messages=()
+):
+    counts = dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, triage=0, dropped=0, skipped=0, heldout=0)
     records = {kind: [] for kind in kinds}
     merged = {stem: sha for sha, stem in await git.merged_tickets(repo)}
     attempts = store.attempts()
     keys = store.call_keys("llm/")
-    call_stems = {parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] in ("diagnose", "resolve")}
+    call_stems = {parts[1] for key in keys if len(parts := key.split("/")) == 6 and parts[3] in ("diagnose", "resolve", "triage")}
     stems = set(merged) | {stem for stem, _, _ in attempts} | call_stems
     ticket_calls = {}
     if "ticket" in records:
@@ -313,6 +315,29 @@ async def render(store, git, repo, redactor, config, read_bytes, kinds=("impleme
                 "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": content}],
             }
             records["ticket"].append((record, []))
+    if "triage" in records and "triage" not in held_set:
+        messages = {message.seq: message for message in box_messages}
+        for run, _, _, key, start in _calls(store, keys, "triage"):
+            if key.split("/")[1] != "triage" or (since and start.clock.wall_start[:10] < since):
+                continue
+            try:
+                reply = _reply_text(store, key, start)
+                verdict = json.loads(reply)["verdict"]
+                if verdict not in ("author", "tombstone", "declined"):
+                    raise ValueError("invalid verdict")
+                prompt = store.get_blob(start.prompt.blob).decode()
+                message = messages.get(run)
+                label = "neutral"
+                if message is not None and message.status == "resolved":
+                    expected = "ticket" if verdict == "author" else verdict
+                    label = "merged" if message.resolution.kind == expected else "negative"
+                record = {
+                    **_identity(start, [key], "triage", label, "triage"),
+                    "messages": [{"role": "user", "content": prompt}, {"role": "assistant", "content": reply}],
+                }
+                records["triage"].append((record, []))
+            except FileNotFoundError, ValueError, UnicodeError, KeyError, IndexError, TypeError:
+                counts["skipped"] += 1
     if "conflict" in records:
         for key in keys:
             parts = key.split("/")

@@ -4,8 +4,8 @@ kind: guide
 purpose: Training data export and evaluation
 relates: [clutch/config.py, clutch/docs/host-contract.md, clutch/docs/host-running.md, clutch/training.py]
 owner: engine
-verified: 63fea83e
-hash: d239149e5a5f92e6ddba9223f1aab0c48cea1d103c9a1170bdf4425a3e6836f0
+verified: ee052b47
+hash: b401ec7178af8223d153f8c7deefef03a331428678570486fe83df40494e02bb
 -->
 # Training data export and evaluation
 
@@ -23,7 +23,7 @@ The fixed always-excluded globs are `.env*`, `*.pem`, `*.key`, and `id_*`; `excl
 
 ## Export
 
-Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, `ticket`, and `conflict`. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Run `clutch index build` first to add `file_purposes` to implement records for indexed changed files; a missing or stale index may omit the field. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
+Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, `ticket`, `conflict`, and `triage`. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Run `clutch index build` first to add `file_purposes` to implement records for indexed changed files; a missing or stale index may omit the field. Triage labels reflect operator overrides of the verdict. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
 
 ## Evaluate a review route
 

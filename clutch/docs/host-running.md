@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 188365c9
-hash: fd21952f27f790244738bd25d0c2f4bce260cd8ed3b82f7613e641c656a84897
+verified: ee052b47
+hash: e1258fb1a79bd8eea4c8b1ebc1368af5078103bf3839bf7ee72a06108565091b
 -->
 # Running ClutchWork on a host
 
@@ -60,7 +60,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `evidence renormalize` | Yes | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
 | `evidence coverage` | Yes | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | Yes | List ticket captures or print one by attempt and name. |
-| `training export` | Yes | With `--kinds` choose implement, preference, review, diagnosis, ticket, or conflict; `--since DATE` filters by call date. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
+| `training export` | Yes | With `--kinds` choose implement, preference, review, diagnosis, ticket, conflict, or triage; `--since DATE` filters by call date. Triage labels reflect operator overrides of the verdict. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
 | `training eval` | Yes | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
 | `coverage map` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate` | Yes | Run a unit command and check its coverage report. |

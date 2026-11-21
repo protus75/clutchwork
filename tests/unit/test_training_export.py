@@ -4,8 +4,8 @@
 # purpose: test training export
 # relates: [clutch/__main__.py, clutch/config.py, clutch/evidence/store.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: 9a610809
-# hash: c827c53b8ba02c50ecec40c9117b944a4dc3c12ba2bf354eaceb677974c562d4
+# verified: ee052b47
+# hash: 2d410b0577e6e1358add0ce0c1915501fae7621b9af2c28ea871c2fbb8641bec
 import asyncio
 import hashlib
 import json
@@ -123,7 +123,7 @@ def test_missing_and_skipped():
 
 
 def test_report_and_disabled(tmp_path, capsys, monkeypatch):
-    lines = training.report(dict(implement=1, preference=2, review=0, diagnosis=0, ticket=0, conflict=0, dropped=3, skipped=4, heldout=5))
+    lines = training.report(dict(implement=1, preference=2, review=0, diagnosis=0, ticket=0, conflict=0, triage=0, dropped=3, skipped=4, heldout=5))
     assert lines[0] == training.NOTICE and len(lines) == 2 and all(str(i) in lines[1] for i in range(1, 6))
     config = NS(state_dir=tmp_path / "state", training_data=TrainingData(), providers=[], release=NS(pypi_token="TOKEN"))
     monkeypatch.setattr(entry, "load_config", lambda *args, **kwargs: config)
@@ -147,6 +147,6 @@ def test_handler_success(tmp_path, capsys, monkeypatch):
     out = tmp_path / "out"
     assert entry.main(["training", "export", "--out", str(out)], cwd=tmp_path, env={}) == 0
     stdout, stderr = capsys.readouterr()
-    assert stdout.splitlines() == training.report(dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, dropped=0, skipped=0, heldout=0))
+    assert stdout.splitlines() == training.report(dict(implement=0, preference=0, review=0, diagnosis=0, ticket=0, conflict=0, triage=0, dropped=0, skipped=0, heldout=0))
     assert stderr == ""
     assert {p.name: p.read_bytes() for p in out.iterdir()} == {"sft.jsonl": b"", "preference.jsonl": b"", "review.jsonl": b"", "diagnosis.jsonl": b""}
