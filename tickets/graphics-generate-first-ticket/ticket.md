@@ -1,5 +1,5 @@
 ---
-state: confirmed
+state: rejected
 source: box:roadmap_row
 priority: P1
 kind: chore
