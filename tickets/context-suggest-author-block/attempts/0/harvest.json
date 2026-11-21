@@ -1,0 +1,72 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_author.py",
+      "line": null,
+      "message": "The required version-pin change causes metadata drift, while the ticket forbids any other change to this file.",
+      "paved_road": "Permit refreshing the file’s metadata header.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_specs_delimiter_note.py",
+      "line": null,
+      "message": "The required version-pin change causes metadata drift, while the ticket forbids any other change to this file.",
+      "paved_road": "Permit refreshing the file’s metadata header.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author_calibration.py",
+      "line": null,
+      "message": "The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.",
+      "paved_road": "Permit refreshing the file’s metadata header.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author_decline_findings.py",
+      "line": null,
+      "message": "The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.",
+      "paved_road": "Permit refreshing the file’s metadata header.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author_roadmap_row.py",
+      "line": null,
+      "message": "The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.",
+      "paved_road": "Permit refreshing the file’s metadata header.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_closed_sets_remaining.py",
+      "line": null,
+      "message": "The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.",
+      "paved_road": "Permit refreshing the file’s metadata header.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "nly one clause is added in 9.3.\"}, {\"path\": \"tests/integration/test_unit_io_rule.py\", \"status\": \"unaffected\", \"reason\": \"It reads the unit-IO rule in both the guide and docs/how-clutch-works.md. Neither rule is edited; the ticket's additions are append-only clauses elsewhere.\"}, {\"path\": \"tests/unit/test_fence_overlap.py\", \"status\": \"unaffected\", \"reason\": \"It reads docs/how-clutch-works.md for the shared-path list. The ticket does not change that list.\"}, {\"path\": \"tests/unit/test_help.py\", \"status\": \"unaffected\", \"reason\": \"It checks that help links resolve to headings in docs/how-clutch-works.md. No heading is renamed or removed; only a clause is added inside 9.3.\"}, {\"path\": \"tests/unit/test_host_authoring.py\", \"status\": \"unaffected\", \"reason\": \"It reads guide sections. Every existing sentence stays, and grep finds no test quoting the Context bullet's Select a Python sentence.\"}, {\"path\": \"tests/unit/test_lint_guide_parity.py\", \"status\": \"unaffected\", \"reason\": \"tests/unit/test_lint_guide_parity.py:61 only uses the path string `clutch/specs/author.md` inside a hand-built fence in TEXT. It does not read the spec's version or Inputs, so the new block and the version bump leave it true.\"}, {\"path\": \"tests/unit/test_parallel_config.py\", \"status\": \"unaffected\", \"reason\": \"It reads the parallel config text in docs/how-clutch-works.md, which the ticket leaves unchanged.\"}, {\"path\": \"tests/unit/test_roadmap_table.py\", \"status\": \"unaffected\", \"reason\": \"It reads the roadmap/doc table structure. Adding one clause to the 9.3 prose changes no table.\"}], \"findings\": []}{\"outcome\":\"premise_failed\",\"summary\":\"The implementation passes the ticket’s test command and formatting check, but the required clean metadata check conflicts with the ticket’s restrictions on existing test files.\",\"surprises\":\"The metadata command exits 0 while reporting drift; the base commit also reports unrelated metadata findings. The candidate adds six drift findings because the required test edits change their metadata hashes.\",\"second_problems\":[{\"summary\":\"The base commit’s metadata check reports existing drift, missing metadata, and empty purposes in unrelated files.\"}],\"dead_ends\":\"Refreshing the six changed test headers would clear their new drift, but the ticket permits only version-pin or state_dir changes in those files.\",\"predicted_vs_actual\":\"Expected 30 minutes; actual time was not measured.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_author.py\",\"line\":null,\"message\":\"The required version-pin change causes metadata drift, while the ticket forbids any other change to this file.\",\"paved_road\":\"Permit refreshing the file’s metadata header.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_specs_delimiter_note.py\",\"line\":null,\"message\":\"The required version-pin change causes metadata drift, while the ticket forbids any other change to this file.\",\"paved_road\":\"Permit refreshing the file’s metadata header.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_author_calibration.py\",\"line\":null,\"message\":\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\",\"paved_road\":\"Permit refreshing the file’s metadata header.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_author_decline_findings.py\",\"line\":null,\"message\":\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\",\"paved_road\":\"Permit refreshing the file’s metadata header.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_author_roadmap_row.py\",\"line\":null,\"message\":\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\",\"paved_road\":\"Permit refreshing the file’s metadata header.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_closed_sets_remaining.py\",\"line\":null,\"message\":\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\",\"paved_road\":\"Permit refreshing the file’s metadata header.\"}]}",
+  "events_tail": "est_evidence_normalized_store.py: missing\\ntests/unit/test_evidence_views.py: missing\\ntests/unit/test_git_ticket_touches.py: missing\\ntests/unit/test_images_gate.py: drifted\\ntests/unit/test_index_config.py: missing\\ntests/unit/test_main_evidence_captures.py: missing\\ntests/unit/test_main_evidence_group.py: missing\\ntests/unit/test_main_meta_fill.py: missing\\ntests/unit/test_main_meta_group.py: drifted\\ntests/unit/test_mergequeue_tree_check.py: empty_purpose\\ntests/unit/test_meta_drift_check.py: missing\\ntests/unit/test_meta_drift_gate.py: missing\\ntests/unit/test_meta_fill.py: missing\\ntests/unit/test_scratch_dir_paths.py: missing\\ntests/unit/test_stages_candidates_select.py: drifted\\ntests/unit/test_stages_render_check.py: drifted\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_19\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove /tmp/clutch-context-base'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_19\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove /tmp/clutch-context-base'\",\"aggregated_output\":\"\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_20\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The implementation passes the ticket’s test command and formatting check, but the required clean metadata check conflicts with the ticket’s restrictions on existing test files.\\\",\\\"surprises\\\":\\\"The metadata command exits 0 while reporting drift; the base commit also reports unrelated metadata findings. The candidate adds six drift findings because the required test edits change their metadata hashes.\\\",\\\"second_problems\\\":[{\\\"summary\\\":\\\"The base commit’s metadata check reports existing drift, missing metadata, and empty purposes in unrelated files.\\\"}],\\\"dead_ends\\\":\\\"Refreshing the six changed test headers would clear their new drift, but the ticket permits only version-pin or state_dir changes in those files.\\\",\\\"predicted_vs_actual\\\":\\\"Expected 30 minutes; actual time was not measured.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_author.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required version-pin change causes metadata drift, while the ticket forbids any other change to this file.\\\",\\\"paved_road\\\":\\\"Permit refreshing the file’s metadata header.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_specs_delimiter_note.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required version-pin change causes metadata drift, while the ticket forbids any other change to this file.\\\",\\\"paved_road\\\":\\\"Permit refreshing the file’s metadata header.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author_calibration.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\\\",\\\"paved_road\\\":\\\"Permit refreshing the file’s metadata header.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author_decline_findings.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\\\",\\\"paved_road\\\":\\\"Permit refreshing the file’s metadata header.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author_roadmap_row.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\\\",\\\"paved_road\\\":\\\"Permit refreshing the file’s metadata header.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_closed_sets_remaining.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required state_dir change causes metadata drift, while the ticket forbids any other change to this file.\\\",\\\"paved_road\\\":\\\"Permit refreshing the file’s metadata header.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1028992,\"cached_input_tokens\":990208,\"cache_write_input_tokens\":0,\"output_tokens\":5786,\"reasoning_output_tokens\":860}}\n",
+  "wall_seconds": 148.078107,
+  "usd": 1.0,
+  "run_record": "tickets/context-suggest-author-block/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
