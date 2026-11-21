@@ -1,10 +1,10 @@
 # Review: snag
 
-Both earlier findings are fixed and the fill pipeline is correct, but criterion 5 is only partly met: `tests/unit/test_main_meta_fill.py` never checks that `meta check` and `meta refresh` output stays the same for the same inputs.
+The prior criterion-5 finding is fixed, but `fill` writes the model's `owner` into the block without checking it, so a reply can corrupt or inject content into a file.
 
 ## Findings
 
-- [acceptance] tests/unit/test_main_meta_fill.py:13 Criterion 5 requires `tests/unit/test_main_meta_fill.py` to prove that `asyncio.run(_run_meta("fill", ..., ask=fake))` exits 0 or 1, and that `meta check` and `meta refresh` outputs for the same inputs are unchanged. This file only tests the fill exit code and the parser. No test here runs `_run_meta("check", ...)` or `_run_meta("refresh", ...)` against the async `_run_meta` and asserts on their stdout and return values, so the second half of the criterion is unproven in the file the criterion names. (do instead: In tests/unit/test_main_meta_fill.py, add a test that runs `asyncio.run(_run_meta("check", ...))` and `asyncio.run(_run_meta("refresh", ...))` on a MemoryFS input. Assert the exact return codes and captured stdout, for example check prints `docs/a.md: missing` and returns 1, refresh prints the changed path and returns 0, and a later check prints `empty_purpose`. That proves the async signature left both verbs' output unchanged.)
+- [logic] clutch/metafill.py:108 `fields["owner"] = entry.owner.strip()` writes the model's owner into the composed block without any check. `meta._render` emits `owner: {value}` verbatim, and the only purpose-style check (no newline, no `\r`, no `-->`) is applied to `purpose` alone. A reply owner such as `x\n-->\nanything` therefore ends a `.md` block early and writes arbitrary text into the file. On a `.py` file it adds lines that are not part of the block, so the next `meta refresh` or `check` reports the file as malformed. That breaks the ticket's rule that the model is never given a way to edit a file, and it leaves a written file corrupt. (do instead: Before writing, validate a nonblank reply owner the same way as `purpose`: reject the entry with a reason such as `invalid owner` when it contains a newline, `\r` or `-->`. Keep the rule that a blank owner is skipped. Add a case to `tests/unit/test_meta_fill.py` showing that such an owner leaves the file byte-identical and lists it as rejected.)
 
 ## Record
 
@@ -12,17 +12,17 @@ Both earlier findings are fixed and the fill pipeline is correct, but criterion 
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f9e953e72e796536fcc5838294cd174c377380a0",
+  "produced_at_sha": "659ea5eb7e704a03f38962961211cbf5bde4c961",
   "stem": "meta-fill-surface",
-  "reviewed_sha": "f9e953e72e796536fcc5838294cd174c377380a0",
-  "summary": "Both earlier findings are fixed and the fill pipeline is correct, but criterion 5 is only partly met: `tests/unit/test_main_meta_fill.py` never checks that `meta check` and `meta refresh` output stays the same for the same inputs.",
+  "reviewed_sha": "659ea5eb7e704a03f38962961211cbf5bde4c961",
+  "summary": "The prior criterion-5 finding is fixed, but `fill` writes the model's `owner` into the block without checking it, so a reply can corrupt or inject content into a file.",
   "findings": [
     {
-      "code": "acceptance",
-      "path": "tests/unit/test_main_meta_fill.py",
-      "line": 13,
-      "message": "Criterion 5 requires `tests/unit/test_main_meta_fill.py` to prove that `asyncio.run(_run_meta(\"fill\", ..., ask=fake))` exits 0 or 1, and that `meta check` and `meta refresh` outputs for the same inputs are unchanged. This file only tests the fill exit code and the parser. No test here runs `_run_meta(\"check\", ...)` or `_run_meta(\"refresh\", ...)` against the async `_run_meta` and asserts on their stdout and return values, so the second half of the criterion is unproven in the file the criterion names.",
-      "paved_road": "In tests/unit/test_main_meta_fill.py, add a test that runs `asyncio.run(_run_meta(\"check\", ...))` and `asyncio.run(_run_meta(\"refresh\", ...))` on a MemoryFS input. Assert the exact return codes and captured stdout, for example check prints `docs/a.md: missing` and returns 1, refresh prints the changed path and returns 0, and a later check prints `empty_purpose`. That proves the async signature left both verbs' output unchanged.",
+      "code": "logic",
+      "path": "clutch/metafill.py",
+      "line": 108,
+      "message": "`fields[\"owner\"] = entry.owner.strip()` writes the model's owner into the composed block without any check. `meta._render` emits `owner: {value}` verbatim, and the only purpose-style check (no newline, no `\\r`, no `-->`) is applied to `purpose` alone. A reply owner such as `x\\n-->\\nanything` therefore ends a `.md` block early and writes arbitrary text into the file. On a `.py` file it adds lines that are not part of the block, so the next `meta refresh` or `check` reports the file as malformed. That breaks the ticket's rule that the model is never given a way to edit a file, and it leaves a written file corrupt.",
+      "paved_road": "Before writing, validate a nonblank reply owner the same way as `purpose`: reject the entry with a reason such as `invalid owner` when it contains a newline, `\\r` or `-->`. Keep the rule that a blank owner is skipped. Add a case to `tests/unit/test_meta_fill.py` showing that such an owner leaves the file byte-identical and lists it as rejected.",
       "kind": null,
       "unit": null
     }
