@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a9ca54bc2d616335a0f1ed2230f56a81ccf16178",
+  "stem": "serve-scan-ignores-head-moves",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Write a one-line `purpose:` in the clutch:meta header of tests/unit/test_serve_scan_head.py, tests/integration/test_serve_scan_head.py and tests/regress_serve_scan_head.py. An empty purpose makes clutch/meta.py `check` report `empty_purpose`, which fails criterion 7.",
+    "After editing each purpose line, run `uv run clutch meta refresh <file>` on that file so the hash matches. Then run `uv run clutch meta check` on exactly those three files and confirm it exits 0 before committing.",
+    "The stage log shows tests/regress_serve_scan_head.py printed `{\"regression_result\": \"pass\"}` with exit 0 in the .regression-base worktree. On the merge base it must print `defect` and exit non-zero, or criterion 5 and Definition of rejected fail.",
+    "Build the reproducer so it detects the old behavior: call clutch/serve.py `intake_snapshot` with no pending ticket file and a stand-in `rev_parse` that returns `a` then `b`. Print `defect` and exit 1 when the tuples differ, and `pass` when they are equal.",
+    "Review found the clutch/serve.py `intake_snapshot` conditional (head only when `pending` is non-empty) and the tests for criteria 1-4 and 6 sound. Redo the same approach, including the expectation change in test_scan_inputs_and_own_writes in tests/unit/test_serve_idle_poll.py."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
