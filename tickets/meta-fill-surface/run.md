@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The existing refresh renderer is shared with fill; targeted mutation checks detected the tested stamping, validation, preservation, batching, and reply-set errors.
+The shared composer trims model-supplied Python relates while preserving existing refresh behavior; blank model owners are rejected. All ticket verification commands and hard host checks passed.
 
 ## Dead ends
 
-The first step-icon choice duplicated an existing icon; the integration test caught it and a distinct icon was selected.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 25 minutes expected, 50 minutes stuck; actual elapsed time was not measured.
+none
 
