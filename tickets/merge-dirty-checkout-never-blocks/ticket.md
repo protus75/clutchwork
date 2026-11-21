@@ -10,6 +10,7 @@ kind: bug
 
 ## Context
 - clutch/merge.py
+- clutch/git.py
 - tests/unit/test_merge_dirty.py
 - tickets/merge-dirty-checkout-never-blocks/evidence/ev5.txt
 
@@ -30,7 +31,7 @@ After this ticket `config.yaml` is exempt from the `dirty_checkout` finding, and
 - post-merge source of truth: clutch/merge.py
 
 ## Scope in / Scope out
-Scope in: in `clutch/merge.py` make `dirty_overlap` ignore `config.yaml`, and have the squash save the owner's working `config.yaml`, restore it to HEAD before `merge_squash`, then reapply the owner's edit on top of the merged file (a 3-way merge, owner's lines winning on conflict). The implementer reads `write_squash` and `Git.merge_squash` and names in the run record the simpler approach rejected. `write_squash` calls `ctx.git.status_porcelain` to learn whether `config.yaml` is dirty, and only then `_run` for `show`, `checkout` and `merge-file`. The stand-in in `tests/unit/test_merge_index_hook.py` gets `status_porcelain=AsyncMock(return_value='')` and nothing else. New tests start with a `clutch:meta` header created by `uv run clutch meta refresh <file>` with only `purpose` edited: `tests/unit/test_merge_config_local.py`, `tests/integration/test_merge_config_local.py`, and the reproducer `tests/regress_merge_config_local.py`.
+Scope in: in `clutch/merge.py` make `dirty_overlap` ignore `config.yaml`, and have the squash save the owner's working `config.yaml`, restore it to HEAD before `merge_squash`, then reapply the owner's edit on top of the merged file (a 3-way merge, owner's lines winning on conflict). The implementer reads `write_squash` and `Git.merge_squash` and names in the run record the simpler approach rejected (restoring the whole saved file drops non-conflicting ticket changes). `write_squash` calls `ctx.git.status_porcelain` to learn whether `config.yaml` is dirty, and acts only when porcelain shows a tracked modification of `config.yaml`, never on any non-empty status output; only then does it call `_run` for `show`, `checkout` and `merge-file`. The stand-in in `tests/unit/test_merge_index_hook.py` gets `status_porcelain=AsyncMock(return_value='')` and nothing else. The serve-admission rig in `tests/integration/test_daemon_composition.py` keeps `ctx.fs` files in memory (`ScriptFS`) while its git calls run on the real checkout; change only that rig so its filesystem seam and its git calls observe the same checkout and temporary files, adding no new test, fixture or helper to that file. Before handoff run `./dev.py test tests/integration/test_watchdog_activation.py tests/integration/test_host_loop.py` on the candidate and once in a base-commit worktree, and record both results in the run record; a failure also present on the base commit is filed with `clutch box suggest`, not edited. New tests start with a `clutch:meta` header created by `uv run clutch meta refresh <file>` with only `purpose` edited: `tests/unit/test_merge_config_local.py`, `tests/integration/test_merge_config_local.py`, and the reproducer `tests/regress_merge_config_local.py`.
 
 Scope out: every other path's dirty check, the merge queue, runner, diagnosis, docs, and `config.yaml` itself.
 
@@ -38,6 +39,7 @@ Scope out: every other path's dirty check, the merge queue, runner, diagnosis, d
 - clutch/merge.py
 - tests/unit/test_merge_dirty.py
 - tests/unit/test_merge_index_hook.py
+- tests/integration/test_daemon_composition.py
 - tests/unit/test_merge_config_local.py
 - tests/integration/test_merge_config_local.py
 - tests/regress_merge_config_local.py
@@ -49,11 +51,11 @@ Scope out: every other path's dirty check, the merge queue, runner, diagnosis, d
 
 ## Verification
 ```
-./dev.py test tests/unit/test_merge_config_local.py tests/integration/test_merge_config_local.py tests/unit/test_merge_dirty.py tests/integration/test_merge.py tests/integration/test_mergequeue.py
+./dev.py test tests/unit/test_merge_config_local.py tests/integration/test_merge_config_local.py tests/unit/test_merge_dirty.py tests/unit/test_merge_index_hook.py tests/integration/test_merge.py tests/integration/test_mergequeue.py tests/integration/test_daemon_composition.py
 ```
 
 ## Definition of rejected
-A dirty `config.yaml` that still refuses or rejects a ticket; the owner's edit lost or overwritten; any other path's dirty check weakened; a regression reproducer passing on the merge base; a test added to `tests/integration/test_merge.py` or `tests/integration/test_mergequeue.py`.
+A dirty `config.yaml` that still refuses or rejects a ticket; the owner's edit lost or overwritten; any other path's dirty check weakened; a regression reproducer passing on the merge base; a test added to `tests/integration/test_merge.py`, `tests/integration/test_mergequeue.py` or `tests/integration/test_daemon_composition.py`.
 
 ## Time budget
 - expected: 25m
