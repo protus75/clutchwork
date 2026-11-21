@@ -1,0 +1,78 @@
+%%{init: {"theme":"dark","themeVariables":{"fontFamily":"Arial","fontSize":"16px","lineColor":"#a5b4c7","edgeLabelBackground":"#111827","primaryTextColor":"#ffffff"},"block":{"padding":8}}}%%
+block-beta
+    %% Purple = model; slate dashed = script; gold = operator.
+    %% Small dots and plain lines are connector junctions, not actions.
+    %% Implement, Check, Review, and Merge failures share the line into Diagnose.
+    %% Parked after an edit, Rework after an update, Diagnose retry, and Verdict confirm
+    %% share the upward return line to Requeue, then Queued.
+    %% Check already_satisfied follows the left line to Settled.
+    %% Queue hold groups dependency, provider drought, and storm holds.
+    columns 17
+    space:6 Author("Author ticket"):3 space:8
+    space:17
+    EarlyReject("Rejected"):3 space:3 Confirm("Confirm / Reject"):3 space:8
+    space:17
+    Hold("Queue hold"):3 space:3 Queue("Queued"):3 space:3 Requeue("Requeue"):3 space R3((" "))
+    space:17
+    space:6 Requisition("Requisition"):3 space:3 Parked("Parked"):3 space R4((" "))
+    space:17
+    space:6 Implement("Implement"):3 space F5((" ")) space Superseded("Superseded"):3 space:2
+    space:17
+    space:4 S6((" ")) space Check("Check"):3 space F6((" ")) space Rework("Rework"):3 space R6((" "))
+    space:17
+    space:4 S7((" ")) space Review("Review"):3 space F7((" ")) space Diagnose("Diagnose"):3 space R7((" "))
+    space:17
+    space:4 S8((" ")) space Merge("Merge"):3 space F8((" ")) space Verdict("Confirm / Reject"):3 space R8((" "))
+    space:17
+    Settled("Settled"):3 space S9((" ")) space Merged("Merged"):3 space:3 Rejected("Rejected"):3 space:2
+
+    Author --> Confirm
+    Confirm -- "confirm" --> Queue
+    Confirm -- "reject" --> EarlyReject
+    Queue --> Requisition
+    Requisition --> Implement
+    Implement --> Check
+    Check --> Review
+    Review --> Merge
+    Merge --> Merged
+
+    Queue --> Hold
+    Hold --> Queue
+    Requisition -- "premise" --> Parked
+    Parked --> R4
+
+    Implement --- F5
+    Check --- F6
+    Merge --- F8
+    F5 --- F8
+    Review -- "fail" --> Diagnose
+
+    Diagnose -- "split" --> Rework
+    Rework -- "replaced" --> Superseded
+    Diagnose -- "escalate" --> Verdict
+    Verdict -- "reject" --> Rejected
+
+    Diagnose --> R7
+    Rework --> R6
+    Verdict --> R8
+    R8 --> R3
+    R3 --- Requeue
+    Requeue --> Queue
+
+    Check --> S6
+    S6 --> S9
+    S9 --- Settled
+
+    classDef model fill:#6d28d9,stroke:#c4b5fd,color:#fff,stroke-width:2px
+    classDef script fill:#1e293b,stroke:#94a3b8,color:#fff,stroke-width:2px,stroke-dasharray:5 3
+    classDef operator fill:#854d0e,stroke:#fde047,color:#fff,stroke-width:2px
+    classDef done fill:#166534,stroke:#86efac,color:#fff,stroke-width:2px
+    classDef terminal fill:#374151,stroke:#9ca3af,color:#fff,stroke-width:2px
+    classDef junction fill:#a5b4c7,stroke:#a5b4c7,color:#a5b4c7
+
+    class Author,Requisition,Implement,Review,Diagnose,Rework model
+    class Queue,Check,Merge,Hold,Parked,Requeue script
+    class Confirm,Verdict operator
+    class Merged,Settled done
+    class EarlyReject,Rejected,Superseded terminal
+    class R3,R4,R6,R7,R8,F5,F6,F7,F8,S6,S7,S8,S9 junction
