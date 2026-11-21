@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The ticket verification tests passed, as did the full unit suite, coverage gate, integration suite, lint, and formatting. The metadata check failed with the same findings on the base commit.
+The targeted suite passed 46 tests; the unit coverage gate passed 1,657 tests, the integration gate passed 3,546 tests, and lint and formatting passed. The metadata check failed identically on the base commit. The query uses a direct scan and shared embedding helper; a separate ranking abstraction was unnecessary.
 
 ## Dead ends
 
-A selector-only ranking mutation initially passed; an additional query-vector assertion now detects it.
+A kind-filter mutation exposed a weak fixture; adding an eligible box candidate made the test reject the mutation.
 
 ## Second problems filed
 
-- box-000909-7515c2b6: The repository-wide metadata check reports pre-existing missing, drifted, and empty-purpose metadata outside the ticket scope.
+- box-000911-5b482373: Repository-wide metadata check reports existing missing, drifted, and empty metadata on the base commit.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ A selector-only ranking mutation initially passed; an additional query-vector as
 
 ## Predicted vs actual
 
-none
+Expected 28 minutes; actual time not measured.
 
