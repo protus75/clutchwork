@@ -4,8 +4,8 @@
 # purpose: test requisition dependents
 # relates: [clutch/requisition.py]
 # owner: clutch/requisition.py
-# verified: 9a610809
-# hash: 60be492a56f853f3fa1b36c8d7a15659574daa7519e3a574635d2730e39da36e
+# verified: a5708f10
+# hash: d1c6702f589ca061031f369a54f18d5063b7226c914d0728b1e92731d05b6bb9
 import asyncio
 import json
 from types import SimpleNamespace
@@ -99,6 +99,7 @@ def test_review_retries_missing_dependent(monkeypatch, data_file):
     monkeypatch.setattr(requisition, "llm_call", call)
     driver = SimpleNamespace(
         journal=SimpleNamespace(read=lambda: []),
+        panel_members=lambda tier, surface: (),
         retry_cap=1,
         spool=SimpleNamespace(write=lambda *args: None),
         _active=True,

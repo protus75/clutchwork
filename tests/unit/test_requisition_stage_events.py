@@ -4,8 +4,8 @@
 # purpose: test requisition stage events
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/providers.py, clutch/requisition.py, clutch/tickets.py]
 # owner: engine
-# verified: 9a610809
-# hash: b779fc8352f7fa9ec1c271da85aa7999936f15e59af811380ccd926cfe66f8cd
+# verified: a5708f10
+# hash: 38e04443ac0ec1c88243af924518933eabea9d5592b8e154328cfb5d92248df7
 import asyncio
 import json
 from types import SimpleNamespace
@@ -56,6 +56,7 @@ def test_stage_events(monkeypatch, case, outcome, active):
 
     driver = SimpleNamespace(
         journal=SimpleNamespace(read=lambda: []),
+        panel_members=lambda tier, surface: (),
         retry_cap=0,
         spool=SimpleNamespace(write=lambda *args: None),
         _active=True if active else None,

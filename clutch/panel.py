@@ -52,7 +52,7 @@ def _facts(combiner, members, dropped, *, merged=None, kept_index=None):
     )
 
 
-def findings_union(replies: Sequence[ReviewVerdict], members: list[PanelMember], dropped: list[DroppedMember] | None = None) -> tuple[ReviewVerdict, PanelFacts]:
+def findings_union(replies: Sequence[ReviewVerdict], members: list[PanelMember], dropped: list[DroppedMember] | None = None, *, rma_code: str | None = "ticket") -> tuple[ReviewVerdict, PanelFacts]:
     """Merge findings in reply order; member indexes refer to the supplied replies."""
     if not replies or len(replies) != len(members):
         raise ValueError("one member is required for each nonempty reply")
@@ -75,8 +75,8 @@ def findings_union(replies: Sequence[ReviewVerdict], members: list[PanelMember],
                     indexes.append(index)
     merged = [MergedFinding(finding=f.model_copy(update={"message": "\n".join(messages)}), agreement=f"{len(indexes)}/{len(replies)}", members=indexes) for f, messages, indexes in groups]
     verdict = max((reply.verdict for reply in replies), key={"approve": 0, "snag": 1, "rma": 2}.get)
-    findings = [item.finding for item in merged if verdict != "rma" or item.finding.code == "ticket"]
-    combined = ReviewVerdict(verdict=verdict, summary="\n".join(reply.summary for reply in replies), findings=findings)
+    findings = [item.finding for item in merged if verdict != "rma" or rma_code is None or item.finding.code == rma_code]
+    combined = type(replies[0])(verdict=verdict, summary="\n".join(reply.summary for reply in replies), findings=findings)
     return combined, _facts("findings-union", members, dropped or [], merged=merged)
 
 

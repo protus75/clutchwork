@@ -29,7 +29,7 @@ from clutch.journal import run_seq as journal_run_seq
 from clutch.llm import LLM, AgentEffort, AgentTier, LLMAborted, LLMRequest, LLMResult
 from clutch.llmeffect import llm_call, llm_key, member_index, scoped_seq
 from clutch.panel import DroppedMember
-from clutch.providers import WRITING_SURFACES, ProviderBudgetExceeded, ProviderCallError, ProviderDrought, ProviderLLM
+from clutch.providers import WRITING_SURFACES, ProviderBudgetExceeded, ProviderCallError, ProviderDrought, ProviderLLM, ProviderSetupError, panel_members
 from clutch.redact import Redactor
 from clutch.seams import Clock, FileSystem, LocalFileSystem, Sleep
 
@@ -222,6 +222,14 @@ class Driver:
         )
         driver._notify_config = (config, env)
         return driver
+
+    def panel_members(self, tier, surface):
+        if self._notify_config is None:
+            return ()
+        try:
+            return panel_members(self._notify_config[0], tier, surface)
+        except ProviderSetupError:
+            return ()
 
     async def run(
         self,

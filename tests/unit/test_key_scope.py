@@ -4,8 +4,8 @@
 # purpose: test key scope
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: 0a308920
-# hash: b6d3ed39b1379d891850fb301b0020e32c8546e78fee0f40d308165cc3d99549
+# verified: a5708f10
+# hash: 13d27e60620e49912dcce1ef76d343a9ce79400f48d3de6b9ff509db37bcadca
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -205,7 +205,15 @@ def test_requisition_passes_scoped_sequence(tmp_path, monkeypatch):
 
     monkeypatch.setattr(requisition, "llm_call", llm_call)
     driver = SimpleNamespace(
-        journal=SimpleNamespace(read=lambda: []), retry_cap=0, spool=SimpleNamespace(write=lambda *args: None), _active=True, race=race, effects=None, watched_llm=lambda: None, redactor=Redactor({})
+        journal=SimpleNamespace(read=lambda: []),
+        panel_members=lambda tier, surface: (),
+        retry_cap=0,
+        spool=SimpleNamespace(write=lambda *args: None),
+        _active=True,
+        race=race,
+        effects=None,
+        watched_llm=lambda: None,
+        redactor=Redactor({}),
     )
 
     async def run():

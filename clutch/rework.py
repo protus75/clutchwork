@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -111,6 +112,11 @@ def review_prior(action, original_stem, original_ticket, snag_list, retry_findin
     )
 
 
+def next_review_seq(history, stem, key_attempt, attempt) -> int:
+    pattern = re.compile(rf"llm/{re.escape(stem)}/(?:m[0-9]+-)?{re.escape(str(key_attempt))}/requisition_review/{attempt}/([0-9]+)\Z")
+    return max((int(match.group(1)) for event in history if event.key is not None and (match := pattern.fullmatch(event.key))), default=0)
+
+
 async def rework(
     ctx: StageContext,
     ticket: Ticket,
@@ -133,8 +139,7 @@ async def rework(
     history = ctx.driver.journal.read()
     identities = {e.ticket for e in history if e.ticket is not None}
     key_attempt = scoped_seq(key_scope, attempt)
-    prefix = f"llm/{ticket.stem}/{key_attempt}/requisition_review/{attempt}/"
-    review_seq = max((int(e.key.rsplit("/", 1)[-1]) for e in history if e.key is not None and e.key.startswith(prefix)), default=0)
+    review_seq = next_review_seq(history, ticket.stem, key_attempt, attempt)
 
     retry_findings: list[Finding] = []
     last_reply: ReworkReply | None = None

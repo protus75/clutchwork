@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 63fea83e
-hash: 9257bb66231cf5a84fab2bc0b6d2e9206b50da3fad9aa50425de92f516068240
+verified: 5110a5cc
+hash: 460b0a55db5c4ef28c710f57be61335f1ea97ad04c3212f9ad45c795403a314f
 -->
 # How ClutchWork works
 
@@ -654,7 +654,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 `routing` rows map `(tier, surface)` to an ordered list of candidates. An optional `kinds` list restricts a row to those ticket kinds; matching kind rows precede unrestricted rows for the requested surface and then review. A surface with no row
 falls back to the `(tier, review)` row. The model is the candidate's `model` or the provider's
-`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review fans out, while the other surfaces do not yet.
+`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review and requisition review fan out, while the other surfaces do not yet.
 
 ### 8.3 Admission, breakers, droughts
 

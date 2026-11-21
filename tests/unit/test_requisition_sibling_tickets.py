@@ -4,8 +4,8 @@
 # purpose: test requisition sibling tickets
 # relates: [clutch/requisition.py, clutch/tickets.py]
 # owner: engine
-# verified: 9a610809
-# hash: 7bf05a24ead784d78012a580244ed75bd77b4a21de4693a446aa584f771934f3
+# verified: a5708f10
+# hash: 3dd258870c18c1c52462bc8275e0a4a6a1526ae330e54a1e12539a891e8c42fa
 import asyncio
 import json
 from types import SimpleNamespace
@@ -93,7 +93,15 @@ def test_review_renders_siblings_and_skips_bad_ticket(monkeypatch):
 
     monkeypatch.setattr(requisition, "llm_call", call)
     driver = SimpleNamespace(
-        journal=SimpleNamespace(read=lambda: []), retry_cap=0, spool=SimpleNamespace(write=lambda *args: None), _active=True, race=race, effects=None, watched_llm=lambda: None, redactor=None
+        journal=SimpleNamespace(read=lambda: []),
+        panel_members=lambda tier, surface: (),
+        retry_cap=0,
+        spool=SimpleNamespace(write=lambda *args: None),
+        _active=True,
+        race=race,
+        effects=None,
+        watched_llm=lambda: None,
+        redactor=None,
     )
     for files in ({"tickets/other/ticket.md": "valid", "tickets/bad/ticket.md": "broken"}, {}):
         asyncio.run(
