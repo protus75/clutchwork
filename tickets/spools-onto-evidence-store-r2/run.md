@@ -1,19 +1,19 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The base commit passed all 5,408 tests; the candidate’s full rerun had 9 failures from two reproducible causes. The format check passed. Keeping the full integration suite as a required gate will catch these fixture and layout assumptions on future storage changes. No changes were committed.
+The existing redaction test excludes compressed blob files from its text scan and reads captures through the helper. The simpler Spool(store, redactor) constructor was rejected because it would force callers to construct stores. Documentation updates remain assigned to spools-evidence-docs.
 
 ## Dead ends
 
-The two representative failing tests were rerun individually and both reproduced; their fixes are outside the fence.
+The first new harvest fixture used an invalid terminal value and malformed diff; correcting the fixture resolved its failures.
 
 ## Second problems filed
 
-- box-000963-e6daf0c3: docs/how-clutch-works.md still describes per-attempt captures as files under spools/, as anticipated by the separate spools-evidence-docs ticket.
-- box-000964-b77f2c02: docs/roadmap.md and docs/training-data-plan.md also contain statements that the per-attempt spools layout remains in use.
+- box-000965-8d73b624: The metadata check reports missing, drifted, and empty-purpose headers on untouched files; the same findings occur on the base commit.
+- box-000966-1de22885: Documentation outside the fence still describes the old spool layout and is assigned to spools-evidence-docs.
 
 ## Resolved engine/model
 
@@ -23,5 +23,5 @@ The two representative failing tests were rerun individually and both reproduced
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; elapsed time was not measured.
+Expected 30 minutes; actual elapsed time was not measured.
 
