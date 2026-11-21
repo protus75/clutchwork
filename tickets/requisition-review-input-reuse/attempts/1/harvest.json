@@ -1,0 +1,63 @@
+{
+  "attempt": 1,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_author.py",
+      "line": 180,
+      "message": "This test inspects and patches Author's review_ticket call site, which the required wrapper migration replaces.",
+      "paved_road": "Add this file to the scope fence so the test can follow review_with_identity.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author.py",
+      "line": 143,
+      "message": "This test patches Author's review_ticket call site, which the required wrapper migration replaces.",
+      "paved_road": "Add this file to the scope fence so the test can patch review_with_identity.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author_roadmap_row.py",
+      "line": 184,
+      "message": "This test patches Author's review_ticket call site, which the required wrapper migration replaces.",
+      "paved_road": "Add this file to the scope fence so the test can patch review_with_identity.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author_stem_claimed.py",
+      "line": 48,
+      "message": "This test patches Author's review_ticket call site, which the required wrapper migration replaces.",
+      "paved_road": "Add this file to the scope fence so the test can patch review_with_identity.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_key_scope.py",
+      "line": 174,
+      "message": "This test patches Rework's review_ticket call site, which the required wrapper migration replaces.",
+      "paved_road": "Add this file to the scope fence so the test can patch review_with_identity.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required migration of Author and Rework to review_with_identity forces changes to five tests outside the scope fence.\",\"surprises\":\"Those tests patch or inspect the existing module-level review_ticket call sites; retaining a compatibility path would conflict with the ticket's requirement to migrate every production caller and avoid parallel legacy paths.\",\"second_problems\":[],\"dead_ends\":\"Inspected all review_ticket references and the affected test call sites; no files were edited.\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_author.py\",\"line\":180,\"message\":\"This test inspects and patches Author's review_ticket call site, which the required wrapper migration replaces.\",\"paved_road\":\"Add this file to the scope fence so the test can follow review_with_identity.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_author.py\",\"line\":143,\"message\":\"This test patches Author's review_ticket call site, which the required wrapper migration replaces.\",\"paved_road\":\"Add this file to the scope fence so the test can patch review_with_identity.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_author_roadmap_row.py\",\"line\":184,\"message\":\"This test patches Author's review_ticket call site, which the required wrapper migration replaces.\",\"paved_road\":\"Add this file to the scope fence so the test can patch review_with_identity.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_author_stem_claimed.py\",\"line\":48,\"message\":\"This test patches Author's review_ticket call site, which the required wrapper migration replaces.\",\"paved_road\":\"Add this file to the scope fence so the test can patch review_with_identity.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_key_scope.py\",\"line\":174,\"message\":\"This test patches Rework's review_ticket call site, which the required wrapper migration replaces.\",\"paved_road\":\"Add this file to the scope fence so the test can patch review_with_identity.\"}]}",
+  "events_tail": " from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |\\n[build-system]\\nrequires = [\\\"uv_build>=0.11.32,<0.12\\\"]\\nbuild-backend = \\\"uv_build\\\"\\n\\n[project]\\nname = \\\"clutchwork\\\"\\nversion = \\\"0.5.0\\\"\\ndescription = \\\"Continuously running orchestration engine that authors and runs tickets against host repos.\\\"\\nreadme = \\\"README.md\\\"\\nlicense = \\\"LicenseRef-Proprietary\\\"\\nlicense-files = [\\\"LICENSE\\\"]\\nrequires-python = \\\">=3.14\\\"\\ndependencies = [\\n    \\\"duckdb>=2.0.0\\\",\\n    \\\"pydantic>=2.13.5\\\",\\n    \\\"pyyaml>=6.0.3\\\",\\n]\\n\\n[project.optional-dependencies]\\nimages = [\\\"pillow\\\", \\\"numpy\\\", \\\"scikit-image\\\", \\\"imagehash\\\", \\\"opencv-python-headless\\\"]\\nimages-embed = [\\\"open-clip-torch\\\", \\\"torch\\\"]\\n\\n[project.urls]\\nRepository = \\\"https://github.com/protus75/clutchwork\\\"\\nChangelog = \\\"https://github.com/protus75/clutchwork/blob/main/CHANGELOG.md\\\"\\n\\n[project.scripts]\\nclutch = \\\"clutch.__main__:main\\\"\\n\\n[tool.uv.build-backend]\\nmodule-root = \\\"\\\"\\n# The distribution is clutchwork; the importable package and the console script are clutch.\\nmodule-name = \\\"clutch\\\"\\n\\n[tool.pytest.ini_options]\\ntestpaths = [\\\"tests\\\"]\\npythonpath = [\\\".\\\"]\\naddopts = \\\"-n auto\\\"\\n# 120s leaves room for the slowest loaded test; thread also stops blocked workers and dumps stacks.\\ntimeout = 120\\ntimeout_method = \\\"thread\\\"\\n\\n[tool.coverage.run]\\ncore = \\\"ctrace\\\"\\n\\n[dependency-groups]\\ndev = [\\n    \\\"pillow\\\",\\n    \\\"numpy\\\",\\n    \\\"scikit-image\\\",\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required migration of Author and Rework to review_with_identity forces changes to five tests outside the scope fence.\\\",\\\"surprises\\\":\\\"Those tests patch or inspect the existing module-level review_ticket call sites; retaining a compatibility path would conflict with the ticket's requirement to migrate every production caller and avoid parallel legacy paths.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Inspected all review_ticket references and the affected test call sites; no files were edited.\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_author.py\\\",\\\"line\\\":180,\\\"message\\\":\\\"This test inspects and patches Author's review_ticket call site, which the required wrapper migration replaces.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence so the test can follow review_with_identity.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author.py\\\",\\\"line\\\":143,\\\"message\\\":\\\"This test patches Author's review_ticket call site, which the required wrapper migration replaces.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence so the test can patch review_with_identity.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author_roadmap_row.py\\\",\\\"line\\\":184,\\\"message\\\":\\\"This test patches Author's review_ticket call site, which the required wrapper migration replaces.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence so the test can patch review_with_identity.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author_stem_claimed.py\\\",\\\"line\\\":48,\\\"message\\\":\\\"This test patches Author's review_ticket call site, which the required wrapper migration replaces.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence so the test can patch review_with_identity.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_key_scope.py\\\",\\\"line\\\":174,\\\"message\\\":\\\"This test patches Rework's review_ticket call site, which the required wrapper migration replaces.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence so the test can patch review_with_identity.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":276696,\"cached_input_tokens\":222976,\"cache_write_input_tokens\":0,\"output_tokens\":1230,\"reasoning_output_tokens\":348}}\n",
+  "wall_seconds": 33.359469,
+  "usd": 1.0,
+  "run_record": "tickets/requisition-review-input-reuse/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
