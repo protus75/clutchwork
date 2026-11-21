@@ -1,0 +1,36 @@
+{
+  "attempt": 1,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/unit/test_author_stem_claimed.py",
+      "line": 56,
+      "message": "The Author publication test supplies only Git.commit and asserts that call; the required commit_edit migration requires a fake that executes the protected callback and updated assertions.",
+      "paved_road": "Add this test file to the scope fence and migrate its fake and assertions to commit_edit.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_supervise_idle_point.py",
+      "line": 215,
+      "message": "The real Rework publication test intercepts Git.commit; after migration it no longer exercises the protected publication path and can silently pass after publication is refused.",
+      "paved_road": "Add this test file to the scope fence and migrate its publication fake to execute the commit_edit callback.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required Author and Rework migrations reach test doubles outside the scope fence, so the ticket cannot be completed without changing those files.\",\"surprises\":\"The shared decision-record commit function is also called by triage, whose record write currently happens before the commit call.\",\"second_problems\":[],\"dead_ends\":\"Inspected the existing publication paths and their test doubles; made no edits or commits.\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/unit/test_author_stem_claimed.py\",\"line\":56,\"message\":\"The Author publication test supplies only Git.commit and asserts that call; the required commit_edit migration requires a fake that executes the protected callback and updated assertions.\",\"paved_road\":\"Add this test file to the scope fence and migrate its fake and assertions to commit_edit.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_supervise_idle_point.py\",\"line\":215,\"message\":\"The real Rework publication test intercepts Git.commit; after migration it no longer exercises the protected publication path and can silently pass after publication is refused.\",\"paved_road\":\"Add this test file to the scope fence and migrate its publication fake to execute the commit_edit callback.\"}]}",
+  "events_tail": "r(i), \\\"short\\\": str(i), \\\"author\\\": \\\"a\\\", \\\"date\\\": \\\"2026-08-01T12:00:00+00:00\\\"} for i in range(5)})\\ntests/unit/test_intake_plan.py:123:    assert git.commits == [(\\\"clutch(done): ticket\\\", [tickets.ticket_path(\\\"done\\\")]), (\\\"clutch(good): ticket\\\", [tickets.ticket_path(\\\"good\\\"), *evidence[\\\"good\\\"]])]\\ntests/unit/test_intake_plan.py:124:    assert journal.events[1] == ((EventType.SIGNAL, {\\\"signal\\\": tickets.INTAKE_SIGNAL, \\\"source\\\": \\\"human\\\", \\\"state\\\": \\\"confirmed\\\", \\\"new\\\": True, \\\"commit\\\": \\\"commit-sha\\\"}), {\\\"ticket\\\": \\\"good\\\"})\\ntests/unit/test_intake_plan.py:131:    assert not git.commits\\ntests/unit/test_key_scope.py:88:        return {\\\"commit\\\": \\\"sha\\\"}\\ntests/unit/test_key_scope.py:118:    git = SimpleNamespace(_run=AsyncMock(side_effect=[\\\"old\\\", \\\"new\\\", \\\"old\\\", \\\"new\\\", \\\"old\\\"]), rev_parse=AsyncMock(return_value=\\\"abc\\\"), commit=AsyncMock(return_value=\\\"sha\\\"))\\ntests/unit/test_key_scope.py:138:    assert git.commit.await_count == 2\\ntests/unit/test_roadmap_fresh_write.py:59:    assert [message for message, _, _ in checkout.git.commits] == [\\\"clutch(roadmap): author old-stem\\\"]\\ntests/unit/test_status_retirement.py:26:    events = [event(EventType.SIGNAL, s, {\\\"signal\\\": \\\"ticket_intake\\\", \\\"source\\\": \\\"human\\\", \\\"state\\\": \\\"confirmed\\\", \\\"commit\\\": s}) for s in (\\\"gone\\\", \\\"done\\\", \\\"same\\\", \\\"live\\\")]\\ntests/unit/test_author_roadmap_row.py:191:        git=SimpleNamespace(ls_files=ls_files, _run=git_run, commit=commit),\\ntests/unit/test_menu_admission.py:213:    monkeypatch.setattr(observe, \\\"committed_ticket_shas\\\", lambda *a: {s: \\\"blob\\\" for s in parsed})\\ntests/unit/test_menu_admission.py:214:    monkeypatch.setattr(observe, \\\"commits\\\", lambda *a: {})\\ntests/unit/test_menu_admission.py:262:    git = NS(_commit_lock=Lock(), status_porcelain=AsyncMock(return_value=listing), _run=AsyncMock(return_value=\\\"tickets/item/evidence/log\\\\0\\\"), _commit=AsyncMock(return_value=\\\"committed\\\"))\\ntests/unit/test_supervise_idle_point.py:215:    ctx.git.commit = AsyncMock(return_value=\\\"commit\\\")\\ntests/integration/test_cli.py:315:    j.append(EventType.SIGNAL, {\\\"signal\\\": \\\"ticket_intake\\\", \\\"source\\\": \\\"human\\\", \\\"state\\\": \\\"confirmed\\\", \\\"new\\\": True, \\\"commit\\\": \\\"abc123\\\"}, ticket=\\\"d\\\")\\ntests/unit/test_author_stem_claimed.py:56:        git=SimpleNamespace(ls_files=AsyncMock(return_value=[]), commit=commit),\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_9\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required Author and Rework migrations reach test doubles outside the scope fence, so the ticket cannot be completed without changing those files.\\\",\\\"surprises\\\":\\\"The shared decision-record commit function is also called by triage, whose record write currently happens before the commit call.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Inspected the existing publication paths and their test doubles; made no edits or commits.\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_author_stem_claimed.py\\\",\\\"line\\\":56,\\\"message\\\":\\\"The Author publication test supplies only Git.commit and asserts that call; the required commit_edit migration requires a fake that executes the protected callback and updated assertions.\\\",\\\"paved_road\\\":\\\"Add this test file to the scope fence and migrate its fake and assertions to commit_edit.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_supervise_idle_point.py\\\",\\\"line\\\":215,\\\"message\\\":\\\"The real Rework publication test intercepts Git.commit; after migration it no longer exercises the protected publication path and can silently pass after publication is refused.\\\",\\\"paved_road\\\":\\\"Add this test file to the scope fence and migrate its publication fake to execute the commit_edit callback.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":468471,\"cached_input_tokens\":409728,\"cache_write_input_tokens\":0,\"output_tokens\":2109,\"reasoning_output_tokens\":815}}\n",
+  "wall_seconds": 52.732951,
+  "usd": 1.0,
+  "run_record": "tickets/ticket-writes-atomic-commit/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
