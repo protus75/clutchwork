@@ -17,7 +17,7 @@ kind: feature
 - tests/unit/test_specs.py
 - tests/integration/test_specs_delimiter_note.py
 - docs/document-agent/review/CompressionReview.md
-- docs/how-clutch-works.md
+- docs/how-clutch-works.md#3. Tickets
 
 ## On-demand
 - clutch/specs/requisition_review.md
@@ -39,9 +39,9 @@ Reduce requisition review input without paying another model to compress it. The
 ## Scope in / Scope out
 Scope in:
 - Keep _base_render as the unchanged production Implement render for feasibility measurement and existing callers; stop embedding that full render in the reviewer prompt. Reuse implement_inputs to obtain the actual ticket-selected Context bytes without introducing a second Context selector or a summarization agent.
-- Replace the reviewer template render slot with a context slot and update its input description. Include the exact authored ticket once and selected Context once; do not rewrite, truncate or summarize source/code/contracts, change commands, weaken obligations, resolve ambiguity, or discard distinct sibling/dependent/prior-review evidence. No compressor or fidelity subagents are launched.
+- Replace the reviewer template render slot with a context slot and update its input description. Include the exact authored ticket once and selected Context once, preserving the existing data-block delimiter escaping (byte-identity assertions compare material before that established quoting transform); do not rewrite, truncate or summarize source/code/contracts, change commands, weaken obligations, resolve ambiguity, or discard distinct sibling/dependent/prior-review evidence. No compressor or fidelity subagents are launched.
 - Preserve full Implement render_chars and existing headroom/mechanical refusal semantics. The deterministic review pack is for reviewer input, not an alternate Implement prompt. Recompute the reuse identity from the actual review inputs using the dependency ticket's canonical owner so changed packing/spec inputs invalidate old approvals.
-- Bump the requisition_review prompt version to the next minor above main. Update its existing input-shape assertion and both version pins; add new unit tests with injected material and integration tests with Path(__file__) anchored shipped specs, including protected commands/code and contradictory contracts that must both survive.
+- Bump the requisition_review prompt version to the next minor above main. Update its existing input-shape assertion and both version pins; adjust the existing review-render-over-bound fixture to exceed the new reviewer pack bound rather than relying on the old duplicated wrapper; add new unit tests with injected material and integration tests with Path(__file__) anchored shipped specs, including protected commands/code and contradictory contracts that must both survive.
 - Update requisition documentation with exactly what is omitted, what remains verbatim and the before/after character measurement. New unit tests exercise new Python statements using fake inputs rather than repository reads.
 Scope out:
 - No changes to review verdict schema, review rigor, tool permissions, Context authoring rules, document-agent compression pipeline, Implement prompt, or provider pricing.
@@ -58,7 +58,7 @@ Scope out:
 - docs/how-clutch-works.md
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py tests/integration/test_requisition.py` proves ticket/Context appear once, protected source bytes survive exactly, divergent requirements remain unreconciled and a representative pack is strictly smaller than the former full-Implement wrapper without an extra LLM call.
+1. `./dev.py test tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py tests/integration/test_requisition.py` proves ticket/Context appear once, protected source bytes survive exactly before existing delimiter escaping, divergent requirements remain unreconciled and a representative pack is strictly smaller than the former full-Implement wrapper without an extra LLM call.
 2. `./dev.py test tests/integration/test_requisition.py tests/unit/test_requisition_context_pack.py tests/integration/test_requisition_context_pack.py` proves Implement render/headroom behavior is preserved and modified Context/spec material invalidates reuse through the shared identity.
 3. `./dev.py test tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/unit/test_requisition_panel.py` passes after migrating the changed prompt-input shape and version pins, retaining verdict/dependent contracts.
 
