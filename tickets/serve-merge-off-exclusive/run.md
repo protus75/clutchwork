@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The verification command passed 82 tests and failed two tests in test_git_main_write.py; both failures reproduced in isolation. The exact base verification could not collect the new test files because they do not exist on the base. The existing affected unit tests passed separately on the base. No changes were committed.
+The ticket verification passed twice with 93 tests. The full integration gate failed because the confirmation test waits for exclusive_pending() during a merge poll; it passed on the base and failed again in isolation on the candidate. The exact ticket verification could not run on the base because the three new test files do not exist there. The full integration gate also reported three host-loop setup errors; the host-loop tests passed separately on the base, so their cause remains unconfirmed.
 
 ## Dead ends
 
-The existing Git test fixture supplies a single-use async context manager, which cannot support the additional lock acquisition; skipping the lock would violate the ticket.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; work stopped early after identifying the scope conflict.
+The expected budget was 30 minutes; the work stopped after identifying the forced out-of-fence test change.
 
