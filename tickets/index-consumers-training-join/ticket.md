@@ -18,7 +18,7 @@ kind: feature
 - tests/unit/test_training_export.py
 
 ## Goal / Why
-Roadmap row 74 (`index-consumers`), ticket 6 of `docs/annotations-index-plan.md`, split in three because its three consumers are separate boundaries: this ticket is the training export join; `index-consumers-doc-draft` (`doc draft --from <topic>`) and `index-consumers-implement-hint` (`index.implement_hint` in the Implement prompt, the hot path of every ticket, so last) are new rows 194 and 195 that this ticket adds to `docs/roadmap.md`. Plan section 6 says the export "joins `files.purpose` and `touches` onto its records so a tuned model sees what each file is for"; the `calls` table is not used, because the plan's join names only `files` and `touches` and no record field needs a call row.
+Roadmap row 74 (`index-consumers`), ticket 6 of `docs/annotations-index-plan.md`, split in three because its three consumers are separate boundaries: this ticket is the training export join; `index-consumers-doc-draft` (`doc draft --from <topic>`) and `index-consumers-implement-hint` (`index.implement_hint` in the Implement prompt, the hot path of every ticket, so last) are new rows 196 and 197 that this ticket adds to `docs/roadmap.md`. Plan section 6 says the export "joins `files.purpose` and `touches` onto its records so a tuned model sees what each file is for"; the `calls` table is not used, because the plan's join names only `files` and `touches` and no record field needs a call row.
 
 After this ticket `clutch training export` adds, to each `implement` record whose diff changes a path the merged index knows, a `file_purposes` list saying what each changed file is for and how often other tickets changed it. A model tuned on `sft.jsonl` then sees purpose text with the diff it learns to write. Today a record carries the prompt and the diff only.
 
@@ -53,7 +53,7 @@ Docs. The `training export` row and help text say implement records carry `file_
 ### Roadmap split rows
 - disposition: extend
 - owner: docs/roadmap.md
-- consumers: `clutch roadmap` readers and the authors of rows 194 and 195
+- consumers: `clutch roadmap` readers and the authors of rows 196 and 197
 - observable change: row 74 is renamed to this ticket's stem; two new rows are added
 - compatibility: the roadmap still parses and its gate commands stay valid; no other row changes
 - acceptance: criterion 7
@@ -65,7 +65,7 @@ Scope in:
 - `clutch/training.py`: add `index_files` (opens read-only, `duckdb` import added) and the `index` keyword to `render`; a small private helper builds `file_purposes` from the diff and is called at the two places that build an implement record (the merged-diff record and the per-attempt record). Add nothing else.
 - `clutch/__main__.py`: in `handle_training`, the export branch builds `index` with `index_files(config.state_dir / "index.duckdb", checkout.fs.size)` and passes `index=`; update the `training export` `_command` `does` and `reads` strings (reads gains the index). The eval branch is untouched.
 - Docs, each only the part the change makes false: the `training export` row in `clutch/docs/host-running.md` and in `docs/how-clutch-works.md` section 2 (add that implement records carry `file_purposes` when the index exists), and the Export paragraph of `clutch/docs/host-training.md`. The top-level readme does not name the verb and is not touched.
-- `docs/roadmap.md`: change row 74's stem to `index-consumers-training-join` with content saying this join is authored from it; add row 194 `index-consumers-doc-draft` (feature, P3, depends on `context-suggest`; `doc draft --from <topic>` resolves source material through the index) and row 195 `index-consumers-implement-hint` (feature, P3, depends on `context-suggest`; `index.implement_hint` adds a `related_files` data block to the Implement prompt, a missing or unreadable index must never fail or delay Implement; author after row 194). Follow the existing rows' column format.
+- `docs/roadmap.md`: change row 74's stem to `index-consumers-training-join` with content saying this join is authored from it; add row 196 `index-consumers-doc-draft` (feature, P3, depends on `context-suggest`; `doc draft --from <topic>` resolves source material through the index) and row 197 `index-consumers-implement-hint` (feature, P3, depends on `context-suggest`; `index.implement_hint` adds a `related_files` data block to the Implement prompt, a missing or unreadable index must never fail or delay Implement; author after row 196). Follow the existing rows' column format.
 - New test file `tests/unit/test_training_index_join.py`. The implementer creates its header with `uv run clutch meta refresh tests/unit/test_training_index_join.py` and then edits only the `# purpose:` line to a non-empty one-line purpose; it never hand-writes the header. Then run `uv run clutch meta refresh` on each edited `.md` file listed above.
 Scope out: `clutch/index.py` and the tables (unchanged); `doc draft --from` and `index.implement_hint` (the rows above); every prompt spec (no spec version changes); the `calls` table; preference and other record kinds; the counts report line; `clutch/config.py` (no key). The existing training unit tests stay unchanged: they pass no index, so their assertions still hold.
 
@@ -85,7 +85,7 @@ Scope out: `clutch/index.py` and the tables (unchanged); `doc draft --from` and 
 4. `./dev.py test tests/unit/test_training_index_join.py` asserts a preference record and a review record built from the same stems carry no `file_purposes` key, and that a purpose containing a configured secret drops the record and counts it in `dropped`, not writes the secret.
 5. `./dev.py test tests/unit/test_training_index_join.py` runs `entry.main(["training", "export", "--out", ...])` as `test_training_export.py::test_handler_success` does (monkeypatched `load_config` and `Git`), with the worked-example index at `<config.state_dir>/index.duckdb` under tmp_path and `training.render` monkeypatched to record its keyword arguments and return empty files and zero counts; it asserts `render` received `index` equal to the loaded mapping for `clutch/a.py`, and that with no index file `render` received `{}` and the exit code is 0, not `index=None` and not a refusal.
 6. `./dev.py test tests/unit/test_training_export.py tests/unit/test_training_trajectory.py tests/unit/test_training_export_kinds.py tests/unit/test_main_help.py` passes unchanged, so no existing record or help assertion flipped.
-7. `./dev.py test tests/unit/test_roadmap_gate.py` passes and review reads `docs/roadmap.md` rows 74, 194 and 195 as parsed table rows with the stems above and no other row changed; no test pins their text.
+7. `./dev.py test tests/unit/test_roadmap_gate.py` passes and review reads `docs/roadmap.md` rows 74, 196 and 197 as parsed table rows with the stems above and no other row changed; no test pins their text.
 
 ## Verification
 ```
