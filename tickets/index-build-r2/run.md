@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-The ticket verification, unit coverage gate, and full integration suite passed, but a direct DuckDB check showed that inserting the valid finite JSON number 1e308 into FLOAT[1] raises ConversionException.
+The ticket verification command passed with 76 tests; the unit coverage gate and full integration suite also passed.
 
 ## Dead ends
 
