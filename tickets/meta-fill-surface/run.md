@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The shared composer trims model-supplied Python relates while preserving existing refresh behavior; blank model owners are rejected. All ticket verification commands and hard host checks passed.
+All three verification commands and hard host checks passed: 1,500 unit tests, 3,529 integration tests, coverage, lint and format; 74 mutation checks confirmed regression protection. Working tree is clean.
 
 ## Dead ends
 
-none
+Calling refresh before model validation was rejected because rejected files must remain byte-identical; generated fields stay in memory instead.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.21
 
 ## Predicted vs actual
 
-none
+Expected 25 minutes; completed in approximately 13 minutes.
 
