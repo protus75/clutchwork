@@ -23,7 +23,7 @@ kind: feature
 - clutch/specs/requisition_review.md
 
 ## Goal / Why
-Reduce requisition review input without paying another model to compress it. The current prompt embeds the ticket once directly and again inside the complete Implement prompt, including execution instructions for a role the reviewer does not perform. Borrow only the simple lossless aspects of compression review: deduplicate exact content, preserve normative requirements and protected bytes, and measure before/after size. Keep buildability checks and the implementation-render feasibility gate; do not infer that interface contracts alone make full review unnecessary. That premise is measured in `requisition-contract-review-comparison`.
+Reduce requisition review input without paying another model to compress it. The current prompt embeds the ticket once directly and again inside the complete Implement prompt, including execution instructions for a role the reviewer does not perform. Borrow only the simple lossless aspects of compression review: deduplicate exact content, preserve normative requirements and protected bytes, and measure before/after size. Keep buildability checks and the implementation-render feasibility gate; do not infer that interface contracts alone make full review unnecessary. Review depth is an owner decision implemented by `requisition-contract-review-comparison`; no comparison study is required.
 
 ## Boundary contract
 ### Requisition prompt material
