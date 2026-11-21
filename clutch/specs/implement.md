@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.21"
+version: "2.22"
 ---
 ## Role
 
@@ -52,7 +52,13 @@ Read the ticket and the context files below before writing anything. For a prior
 4. Search `docs/` and `README.md` for statements of the behavior the diff changes. Update only
    statements the diff makes false and only files inside `## Scope fence`, in the same commit.
    A stale statement in a file outside `## Scope fence` is reported in `second_problems`, not edited.
-5. Commit all of your work on the current branch (`git add` the changed paths, then
+5. A new file the diff adds under a configured `meta.paths` root gets its `clutch:meta` header only from
+   `clutch meta fill <path>` or `clutch meta refresh`. Never type or copy a header: `verified` and `hash`
+   are engine-computed and a hand-typed header fails `parse`. A file outside `meta.paths` gets no header.
+   After the last edit and before replying `ok`, run `clutch meta check` and confirm none of the files
+   the diff adds or changes is reported `malformed`, `missing` or `drifted`. A meta finding on a file
+   the diff does not touch goes to `second_problems`; never fix it in this diff.
+6. Commit all of your work on the current branch (`git add` the changed paths, then
    `git commit`). Do not push, rebase, merge, switch branches, or create other branches. Only
    committed changes count: uncommitted edits are discarded with the worktree.
 
