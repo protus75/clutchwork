@@ -1,19 +1,18 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The ticket verification passed, as did unit coverage, lint, and format checks. The integration suite had three shared-fixture errors that also reproduced on the base commit. Metadata check reports two untouched files with empty purposes; no changed file has a metadata finding. The smaller approach checks the existing render counts after printing the report, without changing the exporter.
+The focused verification passed 34 tests and the unit coverage gate passed 1,829 tests. The base integration suite passed 3,597 tests; on the candidate, an initial full run failed, the affected tests passed individually, one full rerun passed, and a further full run reproduced the host-loop errors and exposed a serve-dispatch failure. The exact ticket verification cannot run on the base because its new test file does not exist there. The minimal implementation checks counts after the existing report; no change to the renderer was needed.
 
 ## Dead ends
 
-The base verification command could not collect the new test file because that file does not exist on the base commit; the full integration check was run on the base for comparison.
+The required full integration gate is not consistently green, and its failing test and fixture surfaces are outside the scope fence.
 
 ## Second problems filed
 
-- box-001036-f367e6f4: The host-loop integration fixture abandons a fixture ticket instead of merging it, causing three setup errors on both the candidate and base commit.
-- box-001037-91379ae2: Metadata check reports empty purposes in tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
+none
 
 ## Resolved engine/model
 
@@ -23,5 +22,5 @@ The base verification command could not collect the new test file because that f
 
 ## Predicted vs actual
 
-Ticket estimate: 25 minutes; actual elapsed time was not measured.
+Ticket estimate: 25 minutes; actual time was under 25 minutes.
 
