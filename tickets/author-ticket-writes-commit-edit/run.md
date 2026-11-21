@@ -4,23 +4,23 @@ ok
 
 ## Surprises / judgment calls
 
-AuthorGate owns private evidence copies; Git.commit_edit owns final ticket publication and compensation; commit_record owns Author and triage decision-record writes. The final ticket verification passed 124 tests, the unit coverage gate passed 1,804 tests, and the integration gate passed 3,585 tests; lint and format passed.
+AuthorGate owns private evidence preparation; Git.commit_edit owns final publication and compensation writes, unlinks and directory removal. commit_record owns writes for failure_declined, triage._record and existing-record recovery. Cached gate bytes support cleanup after snapshot failures. All 21 mutation checks detected their wrong implementations; changed-file metadata checks passed.
 
 ## Dead ends
 
-none
+Replaced exception-based HEAD lookup with ls-tree so compensation propagates Git errors while recognizing absent paths.
 
 ## Second problems filed
 
-- box-000954-61f95d36: clutch meta check reports missing, drifted, or empty metadata on untouched files outside the scope fence; none of the changed files is reported.
+- box-000957-9d056587: Repository-wide metadata checking reports untouched-file findings identical to those reproduced on base commit d3624866.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.23
 
 ## Predicted vs actual
 
-Ticket estimate: 30 minutes; actual time was not measured.
+Completed within the expected 30-minute budget.
 
