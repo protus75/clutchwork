@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The metadata check exited successfully while reporting pre-existing metadata findings. Mutation testing confirmed the score-order check, but was not completed for every assertion.
+The ticket verification tests passed, as did the full unit suite, coverage gate, integration suite, lint, and formatting. The metadata check failed with the same findings on the base commit.
 
 ## Dead ends
 
-The first score-order fixture also matched selector order; a reversed ranking case corrected it.
+A selector-only ranking mutation initially passed; an additional query-vector assertion now detects it.
 
 ## Second problems filed
 
-- box-000904-a90bf395: docs/roadmap.md row 187 still describes open tickets as query results, although this ticket excludes them.
+- box-000909-7515c2b6: The repository-wide metadata check reports pre-existing missing, drifted, and empty-purpose metadata outside the ticket scope.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ The first score-order fixture also matched selector order; a reversed ranking ca
 
 ## Predicted vs actual
 
-The ticket expected 28 minutes; elapsed time was not measured.
+none
 
