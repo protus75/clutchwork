@@ -1,5 +1,5 @@
 ---
-state: draft
+state: confirmed
 priority: P2
 kind: feature
 source: human
