@@ -6,7 +6,7 @@ kind: bug
 ---
 
 ## Depends on
-none
+- requisition-contract-review-comparison
 
 ## Context
 - clutch/merge.py
