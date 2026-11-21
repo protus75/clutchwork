@@ -77,6 +77,16 @@ Validation by rule (every field and input):
 - tests: tests/unit/test_requisition_panel.py
 - post-merge source of truth: clutch/requisition.py
 
+### Rework review sequence scan
+- disposition: extend
+- owner: clutch/rework.py
+- consumers: `rework` itself (the one caller of the new `next_review_seq`), whose `review_ticket(..., call_seq=...)` call feeds the journal's `llm/...` effect keys
+- observable change: the next review `call_seq` is the maximum over the plain keys and the `m<k>-<key_attempt>` member keys, not the plain keys alone, so a rework review after a crash or a second attempt with a panel configured never reuses a completed member key
+- compatibility: identical results when there are no member keys (every host without a requisition panel route), and an unchanged `rework` signature and result
+- acceptance: criterion 13
+- tests: tests/unit/test_rework_review_seq.py and tests/integration/test_rework_review_seq_call_site.py
+- post-merge source of truth: clutch/rework.py
+
 ### Driver panel member accessor
 - disposition: extend
 - owner: clutch/driver.py
@@ -104,7 +114,7 @@ Scope in:
 - clutch/requisition.py, in `review_ticket` only: compute `size` (and force 1 when `key_scope` is not `None`); run the existing loop once per member with the member key scope, member spool segment and per-member retry count; combine with `findings_union(..., rma_code=None)`; log `panel_facts`; re-raise the last `ProviderCallError` when every member is dropped. The size-1 path keeps one `llm_call` site; `llm_call` is called from exactly one place in the file (criterion 11). Import `PanelMember`, `DroppedMember`, `findings_union` as needed. Early returns before the loop (lint, render, coverage map) are not changed.
 - clutch/driver.py: add `Driver.panel_members` and nothing else.
 - clutch/rework.py: the replay hazard. `rework` chooses the next review `call_seq` from a scan of the journal for keys starting `llm/<stem>/<key_attempt>/requisition_review/<attempt>/` (the `review_seq` line before `render_attempt`), then calls `review_ticket(..., call_seq=review_seq + 1)`. A panel member's key has `m<k>-<key_attempt>` in the second part, so that scan never sees member completions: after a crash or a second rework attempt with a panel configured, the review would reuse call number 1 and the journal would replay the old member replies for a different proposal text. Extract that scan into one module-level function `next_review_seq(history, stem, key_attempt, attempt) -> int` in `clutch/rework.py` (the one call site is the line it replaces) that takes the maximum `call_seq` (the last `/` part) over BOTH key families: the plain prefix `llm/<stem>/<key_attempt>/requisition_review/<attempt>/` and the member keys `llm/<stem>/m<k>-<key_attempt>/requisition_review/<attempt>/` for every integer `k` (the member part matches `m\d+-<key_attempt>` exactly, so `m0-2` is a member of key_attempt `2` and `m0-12` is not), or 0 when neither family has a key. Nothing else in `clutch/rework.py` changes.
-- tests/unit/test_rework_review_seq.py (new): see criterion 13.
+- tests/unit/test_rework_review_seq.py and tests/integration/test_rework_review_seq_call_site.py (new): see criterion 13.
 - clutch/panel.py: `findings_union` gains `rma_code` and the type-of-first-reply result; no other function changes.
 - tests/unit/test_requisition_stage_events.py, tests/unit/test_requisition_dependents.py, tests/unit/test_key_scope.py, tests/unit/test_requisition_sibling_tickets.py: each hand-built driver stand-in that reaches `review_ticket` gains `panel_members=lambda tier, surface: ()`; no other line changes.
 - docs/how-clutch-works.md: section 8.2 (line ending "review fans out, while the other surfaces do not yet") says review and requisition review fan out and the rest do not yet; no other section changes.
@@ -120,6 +130,7 @@ Scope out:
 - clutch/panel.py
 - clutch/rework.py
 - tests/unit/test_rework_review_seq.py
+- tests/integration/test_rework_review_seq_call_site.py
 - tests/unit/test_requisition_panel.py
 - tests/unit/test_requisition_stage_events.py
 - tests/unit/test_requisition_dependents.py
@@ -139,9 +150,9 @@ Scope out:
 9. `Driver.panel_members`: a driver with `_notify_config=(config, {})` and a `requisition_review` row `panel: {size: 2, combine: findings-union}` over two candidates returns two `Served`, the second candidate's provider second; a directly built `Driver` returns `()`; a config with no `requisition_review` row and no `review` row returns `()` (the `ProviderSetupError` is swallowed); a config whose `review` row has a panel and no `requisition_review` row returns at most one member, not two; checked by `./dev.py test tests/unit/test_requisition_panel.py`.
 10. Real combination path: the panel test drives `review_ticket` with the real `findings_union` (not a stub) and with a real `RequisitionReply` parsed from a JSON string that carries `dependents`, so a member whose reply lists dependents does not fail `dependent_errors` and the combined verdict has no dependents field; checked by `./dev.py test tests/unit/test_requisition_panel.py`.
 11. Single call site: a source check in the test parses `clutch/requisition.py` with `ast` and finds exactly one call to `llm_call`, inside `review_ticket`, so the size-1 path and the member path share it; checked by `./dev.py test tests/unit/test_requisition_panel.py`.
-12. Existing behavior holds: checked by `./dev.py test tests/unit/test_requisition_stage_events.py tests/unit/test_requisition_dependents.py tests/unit/test_key_scope.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_prior_review.py tests/unit/test_rework_review_seq.py tests/integration/test_requisition.py tests/integration/test_rework.py`.
-13. `tests/unit/test_rework_review_seq.py` asserts `next_review_seq` on in-memory history lists of objects with a `.key`: no keys gives `0`; the plain keys `llm/t/2/requisition_review/2/1` and `.../2` give `2`; only member keys `llm/t/m0-2/requisition_review/2/1`, `llm/t/m1-2/requisition_review/2/1` give `1`, not `0` (the old scan returned `0` for them, which is the replay hazard); both families mixed give the larger `call_seq`; a member key of another key_attempt (`llm/t/m0-12/requisition_review/2/5` for key_attempt `2`) and of another stem or attempt is ignored; and `rework` calls it once (a source check parses `clutch/rework.py` with `ast` and finds exactly one call of `next_review_seq`). Check: `./dev.py test tests/unit/test_rework_review_seq.py`.
-13. The new file's header is valid: `uv run clutch meta check tests/unit/test_requisition_panel.py` exits 0.
+12. Existing behavior holds: checked by `./dev.py test tests/unit/test_requisition_stage_events.py tests/unit/test_requisition_dependents.py tests/unit/test_key_scope.py tests/unit/test_requisition_sibling_tickets.py tests/unit/test_requisition_prior_review.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py tests/integration/test_requisition.py tests/integration/test_rework.py`.
+13. `tests/unit/test_rework_review_seq.py` asserts `next_review_seq` on in-memory history lists of objects with a `.key`: no keys gives `0`; the plain keys `llm/t/2/requisition_review/2/1` and `.../2` give `2`; only member keys `llm/t/m0-2/requisition_review/2/1`, `llm/t/m1-2/requisition_review/2/1` give `1`, not `0` (the old scan returned `0` for them, which is the replay hazard); both families mixed give the larger `call_seq`; a member key of another key_attempt (`llm/t/m0-12/requisition_review/2/5` for key_attempt `2`) and of another stem or attempt is ignored. Check: `./dev.py test tests/unit/test_rework_review_seq.py`. A second file, `tests/integration/test_rework_review_seq_call_site.py`, reads `clutch/rework.py` through a `Path(__file__)` anchor, parses it with `ast` and asserts exactly one call of `next_review_seq` and no remaining inline scan over the prefix `llm/{ticket.stem}/{key_attempt}/requisition_review/{attempt}/`. Check: `./dev.py test tests/integration/test_rework_review_seq_call_site.py`.
+14. The new files' headers are valid: `uv run clutch meta check tests/unit/test_requisition_panel.py tests/unit/test_rework_review_seq.py tests/integration/test_rework_review_seq_call_site.py` exits 0.
 
 ## Verification
 ```
