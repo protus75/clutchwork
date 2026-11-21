@@ -6,7 +6,7 @@ kind: bug
 ---
 
 ## Depends on
-- ticket-writes-atomic-commit
+- ticket-write-serialization-proof
 
 ## Context
 - clutch/serve.py
@@ -14,6 +14,7 @@ kind: bug
 - clutch/control.py::ControlInbox
 - tests/integration/test_serve_parallel_admission.py
 - tests/integration/serve_rig.py
+- tests/integration/test_serve_kill.py
 - tests/unit/test_serve_idle_poll.py
 - tickets/serve-confirm-during-check/evidence/confirm-delay-evidence.json
 - docs/how-clutch-works.md#7.2
@@ -47,6 +48,7 @@ Scope in:
 - Move control.poll and settle_admissions from the merge transaction to a dedicated Serve.verdicts worker. Reuse the current polling interval, Responsiveness and ControlInbox owners; do not create a second request store, an ad hoc timer or another lock. Remove verdict-only entries from merge_work so an accepted confirmation never reserves an exclusive run waiter. The worker uses the prerequisite's already-protected actual ticket writers, never admission.exclusive or mutations.
 - Do not merely move settlement earlier in merge(): that consumer can already be blocked waiting for a run or processing a merge when a request arrives. Verify the new worker still settles a confirmation when merge processing was queued before the request, and while another ticket is held in Check.
 - Extend DaemonTasks with the required appended verdict_consumer argument, migrating Serve and every constructor in tests/integration/test_daemon_tasks.py, test_kill_failure_suppression.py and test_kill_worker_stop.py. Extend Serve responses, health observation and shutdown membership; update worker-count assertions in test_serve_lifecycle.py and test_daemon_tasks.py, without changing the existing component indexes. Add new tests in their own files.
+- `tests/integration/test_serve_kill.py` (line 44): the one assignment `rig.owner.tasks._consumers = (bad, rig.owner.merge, rig.owner.box_intake)` becomes `(bad, rig.owner.merge, rig.owner.box_intake, rig.owner.verdicts)`; its `owned serve consumer returned unexpectedly` assertion stays, and no compatibility path accepts three consumers. Nothing else in that file changes.
 - Update only the two existing worker/task-count assertions in tests/integration/test_daemon_composition.py from four workers/three consumers to five workers/four consumers, and the existing worker-count assertion in tests/integration/test_daemon_soak_runner.py from four to five. The first file is hot: add no test, fixture or helper and change no other behavior there.
 - In test_serve_idle_poll.py migrate only the decision/inbox merge-work rows and necessary worker fixture fields: these no longer request mutations. In test_serve_parallel_admission.py change test_dispatch_consumed_confirm_and_stop to require confirmed before releasing the held run; retain the stop and exactly-once assertions.
 - Add an event-controlled integration test using the existing serve rig without editing it. Hold a real Check stage, submit through publish_request, and observe the committed ticket state plus draft_confirmed and request EFFECT_COMPLETION before release. Exercise a queued merge, reject/refusal, a second eligible disjoint ticket and stop/kill. Use fake clock/events, never a sleep-until-it-passes timing test.
@@ -71,6 +73,7 @@ Scope out:
 - tests/integration/test_daemon_tasks.py
 - tests/integration/test_kill_failure_suppression.py
 - tests/integration/test_kill_worker_stop.py
+- tests/integration/test_serve_kill.py
 
 - tests/integration/test_daemon_composition.py
 - tests/integration/test_daemon_soak_runner.py
