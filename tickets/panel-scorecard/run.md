@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Invalid panel cost data is excluded from the measurement fold so malformed costs do not raise before panel validation. The engine-log approach was rejected because journaled replies survive log rotation.
+The repository-wide metadata check reports findings in untouched files; the changed files pass metadata checks. The existing stage-panels plan has an outdated scorecard description outside the scope fence.
 
 ## Dead ends
 
@@ -12,8 +12,8 @@ none
 
 ## Second problems filed
 
-- box-000929-3c6a17f6: The repository-wide metadata check reports existing findings in untouched files.
-- box-000930-3932a5d2: docs/stage-panels-plan.md still describes the scorecard as covering one reviewer.
+- box-000942-f53844c3: Repository-wide metadata findings in untouched files were previously recorded as box-000929-3c6a17f6.
+- box-000943-cc919eaa: The outdated scorecard description in docs/stage-panels-plan.md was previously recorded as box-000930-3932a5d2.
 
 ## Resolved engine/model
 
