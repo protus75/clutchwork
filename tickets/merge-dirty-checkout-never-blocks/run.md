@@ -1,20 +1,18 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The final ticket verification passed 174 tests; the unit coverage gate passed 1,815 tests. The full integration check had one intermittent serve-dispatch failure; that test passed alone on both base and candidate, and the subsequent ticket verification passed.
+The merge tests and unit coverage gate passed, and the regression reproducer reported the defect on the merge base. The full integration run exposed a shared fixture whose filesystem fake does not contain the real checkout files used by its Git seam. The affected serve-admission test passed on the base commit and failed on the candidate. The simpler approach of restoring the owner’s entire saved file was rejected because it would discard nonconflicting ticket changes.
 
 ## Dead ends
 
-Restoring the owner’s entire file after the squash would discard ticket changes; the three-way reapply preserves nonconflicting changes from both sides.
+Treating any nonempty status output as a configuration edit also misclassified fixture responses; matching porcelain records did not resolve the shared filesystem fixture mismatch.
 
 ## Second problems filed
 
-- box-001006-72d4f6f6: The full integration check intermittently failed test_live_keep_dispatches_again_without_restart.
-- box-001007-c547823e: docs/how-clutch-works.md describes dirty-checkout behavior without the new config.yaml exemption.
-- box-001008-9c3b24c7: The base metadata check reports docs/roadmap.md as drifted and tests/unit/test_training_triage_records.py as having an empty purpose.
+- box-001009-707a106e: docs/how-clutch-works.md describes dirty-checkout behavior that would become stale after this change, but the ticket explicitly excludes documentation.
 
 ## Resolved engine/model
 
@@ -24,5 +22,5 @@ Restoring the owner’s entire file after the squash would discard ticket change
 
 ## Predicted vs actual
 
-The ticket budget was 25 minutes expected and 50 minutes stuck; elapsed time was not measured.
+The ticket estimated 25 minutes; investigation and verification took longer because the integration gate exposed the fixture mismatch.
 
