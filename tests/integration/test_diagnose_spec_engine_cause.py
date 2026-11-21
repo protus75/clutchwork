@@ -1,7 +1,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Diagnose spec handles engine-written failures
 # relates: []
 # owner: engine
 # verified: ceaeffc2

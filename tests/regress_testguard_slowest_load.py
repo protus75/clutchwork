@@ -1,4 +1,12 @@
 """Carried reproducer for load-sensitive testguard duration ordering."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Reproduce load-sensitive testguard duration ordering
+# relates: []
+# owner: engine
+# verified: 75d75946
+# hash: 25ff4780d3c1fb1ec537894728c8a073a4b09b2dea55ad3836f4d9c9e304e6ab
 
 import json
 import os

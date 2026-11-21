@@ -1,7 +1,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Review panel propagates dropped member findings
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/panel.py, clutch/stages.py, tests/unit/test_review_panel_use.py]
 # owner: engine
 # verified: 21d6599d

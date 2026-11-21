@@ -1,4 +1,12 @@
 """Normalized view replacement, coexistence and tolerant version reads."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Normalized evidence versions and replacement
+# relates: [tests/unit/test_evidence_views.py]
+# owner: tests/unit/test_evidence_views.py
+# verified: 75d75946
+# hash: b22756c248beb437d6daf3a7a801b1c08840d3a094d9ed6b9e69a9bc1e7a1aee
 
 from tests.unit.test_evidence_views import CLAUDE, memory_store, stored_view
 

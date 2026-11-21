@@ -2,7 +2,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Tree validation when main moves before squash
 # relates: [clutch/journal.py, clutch/merge.py, clutch/mergequeue.py, tests/integration/test_mergequeue.py]
 # owner: engine
 # verified: fc0ba349

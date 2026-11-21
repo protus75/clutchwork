@@ -4,8 +4,8 @@
 # purpose: test stages candidates select
 # relates: [clutch/artifacts.py, clutch/baseline.py, clutch/llmeffect.py, clutch/stages.py, clutch/visual.py]
 # owner: engine
-# verified: 9a610809
-# hash: 0c1d296ff5d2046a7976c670ffa3308c3b804618bb847b05261ebceb603896cf
+# verified: 75d75946
+# hash: f4309157fc1393c6adffbd3a28f514839c089ff17f6ee7ad1ccd2dc90365783c
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

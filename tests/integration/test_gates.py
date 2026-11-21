@@ -4,8 +4,8 @@
 # purpose: test gates
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 148a8874
-# hash: fffff56970ceba1d778587bcbd86d3a96685be4677ba8f721a0f60380ea0e41c
+# verified: 75d75946
+# hash: 46129118a8bd574716e5b3f6888c81bd18d089112aa2b618f1de4fe27aa3b8ea
 import textwrap
 from dataclasses import FrozenInstanceError
 from pathlib import Path

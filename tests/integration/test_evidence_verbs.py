@@ -1,4 +1,12 @@
 """Evidence commands over real stored calls and the golden Codex stream."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Evidence commands over stored calls and Codex streams
+# relates: [clutch/__main__.py, clutch/evidence/schema.py, clutch/evidence/store.py, clutch/seams.py, tests/evidence_records.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 75d75946
+# hash: 308cb87e3e4d622b1e2d50faf60ce177cead7b8f429af9b6798c640c064822d8
 
 import json
 from pathlib import Path

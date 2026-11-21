@@ -1,7 +1,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Implement spec requires generated metadata headers
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
 # verified: a0d5e388

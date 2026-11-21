@@ -4,8 +4,8 @@ kind: plan
 purpose: clutch roadmap
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: a59190cd
-hash: ebf3e5fa88bb3348403ea613183c5d43c9bce38027e52f2400005ad2ad0d2ca3
+verified: 75d75946
+hash: 1ba82af86035640a34f98424fd953af10be4f31b06bcce129f35f432d856cdf7
 -->
 # clutch roadmap
 

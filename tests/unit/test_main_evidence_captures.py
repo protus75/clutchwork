@@ -1,4 +1,12 @@
 """Exercise capture command through the composition root."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Evidence capture command through the composition root
+# relates: [clutch/__main__.py, clutch/evidence/store.py, clutch/seams.py, tests/integration/test_cli.py]
+# owner: engine
+# verified: 75d75946
+# hash: 73cf0c78760b687f8ebca20c02ef747eb848acc35d112c45dea9fca7a39ed59e
 
 from clutch.__main__ import main
 from clutch.evidence.store import EvidenceStore

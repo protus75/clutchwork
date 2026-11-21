@@ -5,8 +5,8 @@
 # purpose: Exercise the plugin in pytest sessions, including the xdist controller.
 # relates: []
 # owner: engine
-# verified: 96e46658
-# hash: 2b57682e58e0a620c053ba66198d0be35abe5d800a8d9bcdd59c0a36325e9182
+# verified: 75d75946
+# hash: b9464d84bd2adab7ddc5058378cdbf706bca10ce074868e26206ae29ae824687
 
 import os
 import socket

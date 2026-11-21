@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Plan prompts check conduct rules before running verbs
+# relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
+# owner: engine
+# verified: 75d75946
+# hash: 8cc4d3d8f0bf363bc9a05e320376b1a01512672d7ebd97e2fe52892c3895738e
 import pytest
 
 from clutch import ask

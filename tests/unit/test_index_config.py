@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Index configuration defaults and validation
+# relates: [clutch/config.py]
+# owner: clutch/config.py
+# verified: 75d75946
+# hash: 1720f662748d96f2c928e7abbf0820d38de066397ef97829c0599c30452a4e3f
 from pathlib import Path
 
 import pytest

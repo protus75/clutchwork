@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Metadata drift gate severity and bypass
+# relates: [clutch/artifacts.py, clutch/gates.py, clutch/stages.py, clutch/tickets.py]
+# owner: engine
+# verified: 75d75946
+# hash: 0289b3b781c7a279fccdef403e69a2de922112a5ef74bc19d49c5808569b79d5
 from clutch.artifacts import Finding
 from clutch.gates import DEFAULT_GATE_SEVERITY, ENGINE_GATE_CODES, merge_severity, run_gates
 from clutch.stages import Evidence, MetaDriftGate

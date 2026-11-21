@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Metadata refresh and drift findings during check
+# relates: [clutch/gates.py, clutch/meta.py, clutch/seams.py, clutch/stages.py]
+# owner: engine
+# verified: 75d75946
+# hash: f5991c632adceae28701525434be43541380d015511afa03074cd7f7e2649cda
 import asyncio
 from datetime import datetime, timezone
 from types import SimpleNamespace

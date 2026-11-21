@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Metadata fill validation, batching and preservation
+# relates: [clutch/artifacts.py, clutch/meta.py, clutch/metafill.py, clutch/specs/__init__.py, tests/unit/test_meta_refresh.py]
+# owner: engine
+# verified: 75d75946
+# hash: 627ab99e9060a025108eedd7dcb7f053e5329a7b4a70c190e6878557e338bd72
 import asyncio
 import json
 from pathlib import Path

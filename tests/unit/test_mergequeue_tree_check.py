@@ -2,7 +2,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Merge tree validation accepts ticket-plane differences
 # relates: [clutch/git.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
 # verified: fc0ba349

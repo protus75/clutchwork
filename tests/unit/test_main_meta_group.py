@@ -4,8 +4,8 @@
 # purpose: test main meta group
 # relates: [clutch/__main__.py]
 # owner: clutch/__main__.py
-# verified: 0a308920
-# hash: 5a1b2121d5d7014315be5a6dd7cc18cd13164cfcef889bbb50658d32da51fa25
+# verified: 75d75946
+# hash: bd50135eac595372330360b2d0bcb2d756c44c04c0a8d405e97974e91f055eec
 from clutch.__main__ import _parser
 
 

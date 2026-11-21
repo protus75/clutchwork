@@ -1,7 +1,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Repository provider routing by tier and surface
 # relates: [clutch/config.py, clutch/providers.py]
 # owner: engine
 # verified: 530e3e82

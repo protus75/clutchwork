@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Metadata fill spec inputs and rendering
+# relates: [clutch/specs/__init__.py]
+# owner: clutch/specs/__init__.py
+# verified: 75d75946
+# hash: 1ff080b1dee35fdb21c8aeee2c50a5e9f6ef875bdd4a5b3a5cdbe35ae8ab13b7
 from pathlib import Path
 
 from clutch.specs import load_spec, render

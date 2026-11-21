@@ -1,4 +1,12 @@
 """Pure views built from inline streams and an in-memory evidence store."""
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Evidence views from streams and an in-memory store
+# relates: [clutch/evidence/claude.py, clutch/evidence/codex.py, clutch/evidence/schema.py, clutch/evidence/store.py, clutch/evidence/views.py, tests/fakes.py]
+# owner: engine
+# verified: 75d75946
+# hash: 3085f90ad6f7b74f045d82237681527457264ebaf5bfbd659b3492e9ed80e7e5
 
 import json
 

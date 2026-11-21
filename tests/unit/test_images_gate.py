@@ -4,8 +4,8 @@
 # purpose: test images gate
 # relates: [clutch/images.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 0a308920
-# hash: ab67b3a7de93897c5d1bc69f3fcb379038665cfa5d582d5a1490dba66689963e
+# verified: 75d75946
+# hash: 69fe12e4cf502404898d077533e579e36f99b602f7998451d52cccd4f57166bf
 import asyncio
 import json
 from datetime import datetime, timezone

@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Parse ticket touches from a single git log call
+# relates: [clutch/git.py]
+# owner: clutch/git.py
+# verified: 75d75946
+# hash: 93dadafa7882f4a9482e778292a33ddcd6dbfae2b7ef679850b33aee8bde87b2
 import asyncio
 from pathlib import Path
 
