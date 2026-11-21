@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "165da47567f5cf898e2c190b6b6adb60bc52af4a",
+  "stem": "meta-render-empty-purpose-no-trailing-space",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "Redo the fix: in clutch/meta.py::_render, rstrip each `f\"{key}: {values[key]}\"` line. Update the `purpose: \\n` expectation to `purpose:\\n` in tests/unit/test_meta_refresh.py and tests/unit/test_meta_cli.py. Review found that approach sound, and the verification command passed.",
+    "Cause: Check's check_meta runs the engine's installed, pre-fix meta.py. It inserted a meta block with `# purpose: ` (trailing space) into the new test file, which had none. So `ruff format --check` failed at tests/unit/test_meta_render_no_trailing_space.py:4.",
+    "Commit tests/unit/test_meta_render_no_trailing_space.py with its meta block already present. Run `uv run clutch meta refresh` on it in the worktree, then fill in a non-empty purpose (e.g. `# purpose: guards meta render against trailing whitespace`) so check_meta keeps the block instead of rewriting",
+    "Before committing, run `uv run clutch meta check` and `uv run ruff format --check .` in the worktree. Confirm the new test file has a valid, non-drifted block with no trailing whitespace on any line."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
