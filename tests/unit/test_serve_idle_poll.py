@@ -5,8 +5,8 @@
 # purpose: Verify idle poll admission and work detection.
 # relates: [clutch/daemon.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: 97f8130d0cac878006221f21c455ad0de37f88b98698854c5a417970949fe13a
+# verified: 407dfd0f
+# hash: 476ad6b2301ea5c18f40f9852bb434405dda87a7b2578e09a3f96c0acf288216
 
 import asyncio
 import hashlib
@@ -78,6 +78,15 @@ def owner(tmp_path):
         async with admission.exclusive():
             yield
 
+    real_merging = admission.merging
+
+    @asynccontextmanager
+    async def merging():
+        s.entries.append("merging")
+        async with real_merging():
+            yield
+
+    admission.merging = merging
     admission.exclusive, admission.mutations = exclusive, mutations
     s.core = SimpleNamespace(admission=admission, scheduler=SimpleNamespace(_slot=asyncio.Lock()))
     return s
@@ -199,7 +208,7 @@ async def test_merge_work(owner, work):
         owner.queue.active = "merging"
     await poll(owner, "merge")
     # Each row isolates one admission reason; completed/held/stale decisions are idle.
-    assert owner.entries == ([] if work in {"idle", "paused", "decision", "completed", "held-decision", "stale", "inbox"} else ["mutations", "exclusive"])
+    assert owner.entries == ([] if work in {"idle", "paused", "decision", "completed", "held-decision", "stale", "inbox"} else ["merging"])
 
 
 @pytest.mark.asyncio

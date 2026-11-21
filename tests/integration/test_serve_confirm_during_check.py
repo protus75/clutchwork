@@ -5,13 +5,14 @@
 # purpose: Integration tests that serve applies confirm and reject verdict effects, and refuses a reject on a running ticket, while an unrelated Check holds its run slot, without blocking disjoint admission.
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: 6e70848919a306863a6265f56389b75f9bbcaae5fe808a5051eb9f81451e5ca2
+# verified: 407dfd0f
+# hash: 746142c3da2e766b76118a2501b1ac80f0853f0fee875b9fa14430b4cead3084
 
 # The generated metadata purpose can exceed the line length limit.
 # ruff: noqa: E501
 
 import asyncio
+from contextlib import asynccontextmanager
 
 import pytest
 
@@ -43,7 +44,17 @@ async def test_confirmation_during_queued_merge_and_check(root, monkeypatch):
     try:
         await until(rig, entered.is_set)
         rig.owner.merge_work = lambda: True
-        await until(rig, rig.owner.core.admission.exclusive_pending)
+        merging = rig.owner.core.admission.merging
+        entries = []
+
+        @asynccontextmanager
+        async def counted_merging():
+            async with merging():
+                entries.append(True)
+                yield
+
+        monkeypatch.setattr(rig.owner.core.admission, "merging", counted_merging)
+        await until(rig, lambda: len(entries) >= 1)
         publish_request(rig.checkout.config.state_dir, AdmissionRequest("confirm-two", rig.owner.control.projection.lifecycle_id, "confirm", "two", None, "operator"), rig.fs)
         key = "ticket-plane/two/confirm/confirm-two"
         try:

@@ -4,8 +4,8 @@
 # purpose: verify local config survives squash merges
 # relates: [clutch/merge.py]
 # owner: clutch/merge.py
-# verified: 365b3e38
-# hash: bf3367d6ad63007d51e6f9c4082eeebe9c99efc02f1dc49472c0ee35244616e7
+# verified: 407dfd0f
+# hash: fcb40e25e8bf7e74f9a8a4be473384a778dbe7f7c81040cbdf8c74f7faf84166
 import asyncio
 import json
 from types import SimpleNamespace
@@ -15,7 +15,7 @@ from clutch.merge import dirty_overlap
 
 
 async def main():
-    git = SimpleNamespace(main_write=asyncio.Lock, status_porcelain=AsyncMock(return_value=" M config.yaml\0"), diff_names=AsyncMock(return_value=["config.yaml"]))
+    git = SimpleNamespace(main_write=asyncio.Lock, _commit_lock=asyncio.Lock(), status_porcelain=AsyncMock(return_value=" M config.yaml\0"), diff_names=AsyncMock(return_value=["config.yaml"]))
     return not await dirty_overlap(SimpleNamespace(git=git, repo="repo"), "work")
 
 

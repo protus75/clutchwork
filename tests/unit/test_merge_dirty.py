@@ -4,8 +4,8 @@
 # purpose: test merge dirty
 # relates: [clutch/merge.py]
 # owner: clutch/merge.py
-# verified: 9a610809
-# hash: 94ab11eae99d8a04bb6e0695758af1d8e4b46227552897bec098eecbe791a6f6
+# verified: 407dfd0f
+# hash: ff8e54188b0de2d17afd0d456469a5e86e62d9266df0a9b25f6b8a17f24a1bfc
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -14,7 +14,7 @@ from clutch.merge import dirty_overlap
 
 
 def findings(status):
-    git = SimpleNamespace(main_write=asyncio.Lock, status_porcelain=AsyncMock(return_value=status), diff_names=AsyncMock(return_value=["branch.py"]))
+    git = SimpleNamespace(main_write=asyncio.Lock, _commit_lock=asyncio.Lock(), status_porcelain=AsyncMock(return_value=status), diff_names=AsyncMock(return_value=["branch.py"]))
     return asyncio.run(dirty_overlap(SimpleNamespace(git=git, repo="repo"), "ticket"))
 
 

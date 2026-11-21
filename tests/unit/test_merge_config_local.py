@@ -4,8 +4,8 @@
 # purpose: verify local config survives squash merges
 # relates: [clutch/git.py, clutch/merge.py, clutch/seams.py]
 # owner: clutch/merge.py
-# verified: 365b3e38
-# hash: 24c254e56ba1f597b37067ed368844facaf7fa9640100acee8ce532cbb8abc66
+# verified: 407dfd0f
+# hash: eeefe9098af94a6bf69c7c62ad14a5660c94f9b4110a45dcacbf8668134e0004
 import asyncio
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
@@ -19,7 +19,9 @@ from clutch.seams import LocalFileSystem
 
 @pytest.mark.asyncio
 async def test_dirty_config_exempt():
-    git = NS(main_write=asyncio.Lock, status_porcelain=AsyncMock(return_value="M  config.yaml\0 M other.py\0"), diff_names=AsyncMock(return_value=["config.yaml", "other.py"]))
+    git = NS(
+        main_write=asyncio.Lock, _commit_lock=asyncio.Lock(), status_porcelain=AsyncMock(return_value="M  config.yaml\0 M other.py\0"), diff_names=AsyncMock(return_value=["config.yaml", "other.py"])
+    )
     findings = await dirty_overlap(NS(git=git, repo="repo"), "work")
     assert len(findings) == 1 and "other.py" in findings[0].message and "config.yaml" not in findings[0].message
 

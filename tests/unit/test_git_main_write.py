@@ -4,10 +4,9 @@
 # purpose: test git main write
 # relates: [clutch/git.py, clutch/merge.py, clutch/roadmap.py, tests/unit/test_roadmap_table.py]
 # owner: engine
-# verified: 0a308920
-# hash: 53f1afa546e5ebdfb17a4dbe479264aac38e75ea8a897ebd008d26ec20e1bb51
+# verified: 407dfd0f
+# hash: c98ab00c810c2809cae3f63938cdb0398650716986114e5e3ab00ff732f3bbae
 import asyncio
-from contextlib import asynccontextmanager
 from types import SimpleNamespace as NS
 
 from clutch import merge, roadmap
@@ -24,13 +23,8 @@ class Exec:
         return 0, "sha\n", ""
 
 
-@asynccontextmanager
-async def commit_lock():
-    yield
-
-
 def make_git(events):
-    return Git(Exec(events), env={}, timeout=None, commit_lock=commit_lock())
+    return Git(Exec(events), env={}, timeout=None, commit_lock=asyncio.Lock())
 
 
 def test_lock_is_per_instance():

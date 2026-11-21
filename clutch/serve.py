@@ -495,7 +495,7 @@ class Serve:
                 await self.check_upgrade()
             if not self.merge_work():
                 return
-            async with self.mutations():
+            async with self.core.admission.merging():
                 self.control.poll()
                 if self.stopping or self.control.projection.kill_requested:
                     return

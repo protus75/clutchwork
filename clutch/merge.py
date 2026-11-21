@@ -243,7 +243,8 @@ async def main_code_unchanged(ctx: StageContext, reviewed: str) -> bool:
 
 async def dirty_overlap(ctx: StageContext, stem: str) -> list[Finding]:
     async with ctx.git.main_write():
-        records = iter((await ctx.git.status_porcelain(ctx.repo, "-z")).split("\0"))
+        async with ctx.git._commit_lock:
+            records = iter((await ctx.git.status_porcelain(ctx.repo, "-z")).split("\0"))
         dirty, staged = set(), set()
         for record in records:
             if not record:

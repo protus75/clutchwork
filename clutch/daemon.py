@@ -596,6 +596,7 @@ class DaemonAdmission:
         self._condition = asyncio.Condition()
         self._holding = 0
         self._exclusive = False
+        self._merging = False
         self._exclusive_waiters = 0
         self.mutating: asyncio.Task | None = None
         self.resume: Callable[[Ticket], Dispatch | None] = lambda _: None
@@ -615,7 +616,7 @@ class DaemonAdmission:
         async with self._condition:
             self._exclusive_waiters += 1
             try:
-                await self._condition.wait_for(lambda: not self._exclusive and self._holding == 0)
+                await self._condition.wait_for(lambda: not self._exclusive and not self._merging and self._holding == 0)
                 self._exclusive = True
             finally:
                 self._exclusive_waiters -= 1
@@ -634,6 +635,22 @@ class DaemonAdmission:
             self._condition.notify_all()
 
     @asynccontextmanager
+    async def merging(self):
+        async with self._condition:
+            await self._condition.wait_for(lambda: not self._exclusive and not self._merging)
+            self._merging = True
+            self.mutating = asyncio.current_task()
+        try:
+            yield
+        finally:
+            self._merging = False
+            self.mutating = None
+            if self._condition.locked():
+                await _protected_cleanup(asyncio.create_task(self._release_exclusive()))
+            else:
+                await self._release_exclusive()
+
+    @asynccontextmanager
     async def mutations(self):
         async with self.exclusive():
             self.mutating = asyncio.current_task()
@@ -646,7 +663,7 @@ class DaemonAdmission:
         return bool(self.runs)
 
     def busy(self) -> bool:
-        return bool(self._holding or self._exclusive or self._exclusive_waiters)
+        return bool(self._holding or self._exclusive or self._merging or self._exclusive_waiters)
 
     def exclusive_pending(self) -> bool:
         return self._exclusive or bool(self._exclusive_waiters)
