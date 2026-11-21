@@ -1,21 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f9e953e72e796536fcc5838294cd174c377380a0",
+  "produced_at_sha": "659ea5eb7e704a03f38962961211cbf5bde4c961",
   "stem": "meta-fill-surface",
-  "attempt": 2,
+  "attempt": 3,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "Review found everything sound except criterion 5's second half. In tests/unit/test_main_meta_fill.py, add a test that runs asyncio.run(_run_meta(\"check\", ...)) and asyncio.run(_run_meta(\"refresh\", ...)) on a MemoryFS input. Assert exact return codes and captured stdout.",
-    "Compare against concrete expected outputs that match today's check/refresh behavior: check prints `<path>: missing` and returns 1 before refresh; refresh prints the changed path and returns 0; a later check prints `<path>: empty_purpose`. Check the expected strings against clutch/meta.py and",
-    "Redo all ticket work from the merge base. Review found the earlier design sound: fill computes generated fields in memory and does not call refresh before validation, so rejected files stay byte-identical. Keep that design, the async _run_meta signature and the asyncio.run edits in test_meta_cli.py.",
-    "Before finishing, check each acceptance criterion (1-8) against a test in the file that criterion names, not in another file. Then run all three ## Verification commands as written."
+    "Before writing, check a nonblank reply `owner` in clutch/metafill.py with the same rule as `purpose`. Reject the entry with reason `invalid owner` if it contains `\\n`, `\\r` or `-->`. Still skip a blank or whitespace-only owner so the file keeps `engine`.",
+    "Add a case to tests/unit/test_meta_fill.py where the reply owner is `x\\n-->\\nanything` on a .md file and also on a .py file. Assert the file stays byte-identical, is listed as rejected, and a valid sibling in the same batch is still written.",
+    "Redo the full ticket from the merge base. Review accepted this approach: a shared compose helper in clutch/meta.py used by both refresh and fill, async fill plus review_reply plus the ask factory in clutch/metafill.py, and asyncio.run(_run_meta(...)) in tests. Keep criterion 5's _run_meta",
+    "Check every model-supplied string that reaches meta._render, not only purpose. A `relates` entry must be a tracked path, and the .py `# relates:` trim must go through the shared compose helper. No reply value may be able to end the block or add lines to it."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    1
+    2
   ],
   "spec_version": "1.8",
   "provider": "claude",
