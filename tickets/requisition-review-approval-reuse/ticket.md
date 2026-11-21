@@ -44,7 +44,7 @@ Scope in:
 - Add one approval-selection function in clutch/requisition.py that takes the stem's journal history and the current identity from the existing `review_input_identity` gatherer and returns the reusable approval or None: it looks only at the latest requisition_verdict for the stem, never searching past a newer snag/rma/provisional to resurrect an approval; a missing, null or mismatching identity, or a null current identity, means fresh review.
 - CLI `_review` calls that decision with config.routing_default_tier before constructing or preflighting the provider; on reuse it reports the reused approval and makes no provider call or new verdict event.
 - Dispatch in runner.drive replaces the ticket-SHA-only approval check with the same decision at capability(ticket, history)[0]. Keep admission refusal precedence, provisional unmerged-dependency behavior, the real dependency gates and failure routing.
-- Different effective reviewer tiers intentionally invalidate reuse. In tests/integration/test_ladder.py, insert a fresh requisition `verdict()` approve response before the next `agent()` in every script where the effective reviewer tier changes, including the retry-wall, rework-escalation, escalation-rung and operator-confirm reset cases (currently failing with `assert None is not None` on `LLMRequest(surface='requisition_review').worktree` when unadjusted). Preserve the Implement ladder assertions.
+- Different effective reviewer tiers and changed review inputs intentionally invalidate reuse. In every scripted integration test where the effective reviewer tier or the review inputs change between the fixture approval and the next `agent()` call, insert a fresh requisition `verdict()` approve response before that `agent()`. This covers tests/integration/test_ladder.py (retry-wall, rework-escalation, escalation-rung and operator-confirm reset cases, currently failing with `assert None is not None` on `LLMRequest(surface='requisition_review').worktree` when unadjusted), tests/integration/test_diagnose.py (the infra-cap test edits tracked config after its fixture approval), tests/integration/test_drain_reentry.py (re-entry scripts), tests/integration/test_drain.py (rework and split scripts), tests/integration/test_merge_model_resolve.py and tests/integration/test_retro_box.py. Refreshing shared fixture approvals does not fix these scripts; each needs its own scripted verdict. Preserve the Implement ladder and each script's existing assertions.
 - Update the existing gate test in tests/integration/test_requisition_gate.py whose legacy SHA-only approval previously bypassed review.
 - Shared fixture configs: `tests/approval.py::approve` records `input_identity` from `review_input_identity`, which is None when `providers._route` finds no review route at the fixture's dispatch tier, so those fixture approvals no longer authorize dispatch. Add the review route at the tier each fixture dispatches at to the shared configs `CONFIG` in tests/integration/test_stages.py, `CONFIG` in tests/integration/test_cli.py and `_CONFIG` in tests/harness/shakeout/bench.py, and adjust tests/integration/serve_rig.py and tests/integration/test_serve_parallel_admission.py (which rewrite config.yaml from the test_cli root) only where their scripts still fail. Do not make `review_input_identity` tolerate a missing route; identity composition is scope-out.
 - Add fake-driven unit tests for the selection logic and each entry point with injected seams, and integration tests for both entry points using zero-call assertions.
@@ -67,6 +67,11 @@ Scope out:
 - tests/integration/test_cli.py
 - tests/integration/serve_rig.py
 - tests/integration/test_serve_parallel_admission.py
+- tests/integration/test_diagnose.py
+- tests/integration/test_drain_reentry.py
+- tests/integration/test_drain.py
+- tests/integration/test_merge_model_resolve.py
+- tests/integration/test_retro_box.py
 - tests/harness/shakeout/bench.py
 - clutch/docs/host-running.md
 - docs/how-clutch-works.md
@@ -77,10 +82,11 @@ Scope out:
 3. `./dev.py test tests/unit/test_review_reuse_cli.py tests/unit/test_review_reuse_dispatch.py tests/integration/test_requisition_reuse.py` proves both entry points preserve provisional and admission-refusal behavior; unit tests reach the changed IO composition with injected seams.
 4. `./dev.py test tests/integration/test_ladder.py tests/integration/test_requisition_reuse.py` proves a CLI default-tier approval is reused by dispatch when tiers match, a reviewer-tier change forces exactly one new review, and tracked working-tree edits can be approved and reused until their bytes change.
 5. `./dev.py test tests/integration/test_stages.py tests/integration/test_cli.py tests/integration/test_serve_parallel_admission.py tests/integration/test_shakeout.py` proves fixture approvals from the shared configs record a non-null identity and still authorize dispatch.
+6. `./dev.py test tests/integration/test_diagnose.py tests/integration/test_drain_reentry.py tests/integration/test_drain.py tests/integration/test_merge_model_resolve.py tests/integration/test_retro_box.py` proves scripts whose review inputs or reviewer tier change after the fixture approval pass with one scripted fresh requisition review each and keep their existing assertions.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_review_reuse_cli.py tests/unit/test_review_reuse_dispatch.py tests/integration/test_requisition_reuse.py tests/integration/test_requisition_gate.py tests/integration/test_ladder.py tests/unit/test_requisition_input_identity.py tests/integration/test_review_command.py tests/unit/test_requisition_prior_review.py tests/integration/test_stages.py tests/integration/test_cli.py tests/integration/test_serve_parallel_admission.py tests/integration/test_shakeout.py
+./dev.py test tests/unit/test_review_reuse_cli.py tests/unit/test_review_reuse_dispatch.py tests/integration/test_requisition_reuse.py tests/integration/test_requisition_gate.py tests/integration/test_ladder.py tests/unit/test_requisition_input_identity.py tests/integration/test_review_command.py tests/unit/test_requisition_prior_review.py tests/integration/test_stages.py tests/integration/test_cli.py tests/integration/test_serve_parallel_admission.py tests/integration/test_shakeout.py tests/integration/test_diagnose.py tests/integration/test_drain_reentry.py tests/integration/test_drain.py tests/integration/test_merge_model_resolve.py tests/integration/test_retro_box.py
 ```
 
 ## Definition of rejected
