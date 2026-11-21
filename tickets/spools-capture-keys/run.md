@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The mapper validates the input name before folding because validating only the folded name would accept invalid input. The ticket verification, full unit coverage gate, full integration suite, lint, and format checks passed.
+The final verification passed all 91 tests; the full unit and integration suites, coverage gate, lint, and format checks also passed.
 
 ## Dead ends
 
-A mutation check exposed a test that relied on store validation instead of checking the mapper directly; the test was corrected.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket estimate: 15 minutes; work completed within the stated budget.
+Expected 15 minutes; completed within the ticket budget.
 
