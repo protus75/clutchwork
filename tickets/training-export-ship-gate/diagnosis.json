@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "67f3c36276cc806b4e0828ee788d9ba353926c69",
+  "stem": "training-export-ship-gate",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The diff did not cause the gate failure. tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck] runs a synthetic serve_rig repo with its own config.yaml and never reads anything this diff touches: __main__ training export, config.yaml training_data,",
+    "Human: run test_serve_admission_refusal_keeps_main_green[precheck] alone and in the full integration suite, on the base commit 8f0df3d1, in a worktree with full history. Find out if it is a base failure or flaky, then fix it in its own P0 ticket listing training-export-ship-gate under Runs before.",
+    "Human: the same run had 3 setup errors in tests/integration/test_host_loop.py, which the implementer reproduced on base (box-001036-f367e6f4). Check whether that shared-fixture breakage also causes the precheck failure or a related one. Fix it before re-dispatching.",
+    "Do not re-dispatch this ticket hoping the test passes on rerun. The implementation met criteria 1-5 and its Verification passed: 34 tests passed and lint exited 0. Once the external test is green, redo the same seven-file change inside the fence."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
