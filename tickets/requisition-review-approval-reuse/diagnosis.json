@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "42cd567addfb634ffc24600c8de5b25507571e41",
+  "produced_at_sha": "4296219b5ff2ca15441004ebe3ad562f19d83b38",
   "stem": "requisition-review-approval-reuse",
-  "attempt": 0,
-  "terminal": "incomplete",
+  "attempt": 1,
+  "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "retry",
+  "verdict": "reject",
   "lessons": [
-    "Attempt 0 stopped incomplete with nothing committed (empty diff_stat). It ran the whole integration suite, which the ticket never asks for. Run only the ticket's ## Verification command, read any failure and fix it, then commit. Another worktree's test process is not a reason to stop.",
-    "Redo from the merge base: add one approval-selection function in clutch/requisition.py. It reads only the latest requisition_verdict for the stem and reuses it only if it is an approval whose input_identity matches review_input_identity. A missing, null or mismatched identity means a fresh review.",
-    "In clutch/__main__.py::_review, call the selector with config.routing_default_tier before the provider is built or preflighted. In clutch/runner.py::drive, replace the ticket-SHA-only check with the same selector at capability(ticket, history)[0]. Keep admission refusal and provisional precedence.",
-    "In tests/integration/test_ladder.py, insert a requisition verdict() approve before the next agent() wherever the reviewer tier changes: retry-wall, rework-escalation, escalation-rung and operator-confirm reset. Also update the SHA-only bypass test in tests/integration/test_requisition_gate.py.",
-    "Add tests/unit/test_review_reuse_cli.py, tests/unit/test_review_reuse_dispatch.py and tests/integration/test_requisition_reuse.py with zero-provider-call assertions. Update the help text, the clutch/docs/host-running.md verb row and docs/how-clutch-works.md section 3."
+    "Fence is missing forced files. tests/approval.py::approve records input_identity from review_input_identity, which returns None when providers._route finds no requisition_review or review row at the tier. Shared fixture configs lack that row, so their approvals now need a fresh review.",
+    "Re-scope: fence tests/integration/test_stages.py (CONFIG near line 100), tests/integration/test_cli.py (CONFIG near line 37) and tests/harness/shakeout/bench.py (line 32). Add a review route at the tier these fixtures dispatch at, so approve() records a non-null identity.",
+    "The author must check every other approve() caller and config writer for the same missing route, then fence each one that fails: tests/integration/serve_rig.py and test_serve_parallel_admission.py both write config.yaml. Run the full integration suite on the candidate, not only ## Verification.",
+    "Do not work around this inside the fence by making review_input_identity tolerate a missing route. Identity composition is scope-out (owned by requisition-review-input-identity), and an identity without a route would weaken the checked reviewer provenance.",
+    "Attempt 1 passed ## Verification and the unit coverage gate. The selection rule, the removal of the SHA-only bypass and the test_ladder.py re-review insertions can be redone as the ticket describes once the fence covers the shared fixture configs."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
