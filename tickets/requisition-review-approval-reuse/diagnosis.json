@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "4296219b5ff2ca15441004ebe3ad562f19d83b38",
+  "produced_at_sha": "d8700f171a9814ba25e94bad4be432c71ad7c9ed",
   "stem": "requisition-review-approval-reuse",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "premise_failed",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Fence is missing forced files. tests/approval.py::approve records input_identity from review_input_identity, which returns None when providers._route finds no requisition_review or review row at the tier. Shared fixture configs lack that row, so their approvals now need a fresh review.",
-    "Re-scope: fence tests/integration/test_stages.py (CONFIG near line 100), tests/integration/test_cli.py (CONFIG near line 37) and tests/harness/shakeout/bench.py (line 32). Add a review route at the tier these fixtures dispatch at, so approve() records a non-null identity.",
-    "The author must check every other approve() caller and config writer for the same missing route, then fence each one that fails: tests/integration/serve_rig.py and test_serve_parallel_admission.py both write config.yaml. Run the full integration suite on the candidate, not only ## Verification.",
-    "Do not work around this inside the fence by making review_input_identity tolerate a missing route. Identity composition is scope-out (owned by requisition-review-input-identity), and an identity without a route would weaken the checked reviewer provenance.",
-    "Attempt 1 passed ## Verification and the unit coverage gate. The selection rule, the removal of the SHA-only bypass and the test_ladder.py re-review insertions can be redone as the ticket describes once the fence covers the shared fixture configs."
+    "Fence is incomplete: identity-based reuse correctly forces fresh requisition reviews in out-of-fence scripts. Base gate passed 3,601 tests; the candidate had 15 failures, and 5 out-of-fence ones reproduced on their own. Add those files to Scope fence and Scope in.",
+    "Add tests/integration/test_diagnose.py (infra-cap test edits tracked config after its fixture approval) and tests/integration/test_drain_reentry.py (re-entry scripts lack a fresh review) to the fence. Insert a requisition verdict() approve before the affected agent() calls.",
+    "Add tests/integration/test_drain.py (rework and split scripts) to the fence. It is a hot file, but this change forces the edit there. Also add tests/integration/test_merge_model_resolve.py and tests/integration/test_retro_box.py, and update their scripted review sequences.",
+    "Before refiling, run the full integration gate on a candidate to list all 15 failing tests. Add every file this change forces to the fence, not just these 5. Refreshing shared fixture approvals did not fix the scripted-review failures, so each script needs its own verdict.",
+    "Keep the rest of the ticket's design: one selection function in clutch/requisition.py, called from __main__._review and runner.drive. Remove the SHA-only bypass. Do not make review_input_identity tolerate a missing route. Add the new files to ## Verification."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
