@@ -1,20 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c95d39e188ae0216a4161fbe86e7afa43e4e25cd",
+  "produced_at_sha": "29183c812a618184ec197da8dfde74d7beba9fff",
   "stem": "ticket-writes-atomic-commit",
-  "attempt": 1,
-  "terminal": "premise_failed",
+  "attempt": 2,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "split",
   "lessons": [
-    "The scope fence misses test files the commit_edit migration forces: tests/unit/test_author_stem_claimed.py:56 fakes only Git.commit for Author publication. Add it to the scope fence and migrate its fake to run the commit_edit callback, keeping its assertions.",
-    "tests/unit/test_supervise_idle_point.py:215 stubs ctx.git.commit for the Rework publication path. After migration that stub never runs, so the test could pass even when publication is refused. Add the file to the scope fence and switch the stub to commit_edit.",
-    "author.py::commit_record (decision records) is also called by clutch/triage.py:74 and :243, and triage writes the record before that call. Moving the record write into commit_edit forces triage.py. Fence it, or scope the change so triage is untouched.",
-    "Before re-filing, grep tests for Git stand-ins that expose commit= or _commit_lock and that reach the Author, Rework, runner verdict or intake paths. Check at least test_rework.py, test_triage.py and test_requisition.py, and fence every file the migration forces."
+    "Attempt 2 ended incomplete after 99s and about 868k input tokens. It had edited Author but not Rework compensation, tests, fixtures or verification. With 6 engine modules, ~17 test files and many consumers in one fence, the ticket exceeds a single attempt.",
+    "Child 1: add Git.commit_edit in clutch/git.py (main_write, then commit.lock, await edit, then _commit). Wrap intake in clutch/tickets.py in main_write. Add fake main_write to the stand-ins in test_git_commit.py, test_intake_plan.py and test_menu_admission.py. Add tests/unit/test_git_commit_edit.py.",
+    "Child 2 (depends on child 1): move runner.verdict_locked confirm, reject_ticket and apply_admission replay-repair onto commit_edit. Update test_verdict_menu_parity.py, test_verdict_extension.py and test_reject_reason_paths.py fakes. Add the runner cases in test_ticket_write_consumers.py.",
+    "Child 3 (depends on child 1): move Author commit and compensation, author.commit_record (passes bytes) and triage._record callers onto commit_edit. Update test_author.py, test_author_roadmap_row.py, test_author_stem_claimed.py and test_key_scope.py fakes.",
+    "Child 4 (depends on child 1): move daemon.apply_rework publish/restore_publication onto commit_edit with an owned-bytes check and ignore only NothingToCommit. Update the hooks in test_supervise_idle_point.py, test_ladder.py, test_drain.py and test_daemon_composition.py. Then add"
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    4
+  ],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5"
