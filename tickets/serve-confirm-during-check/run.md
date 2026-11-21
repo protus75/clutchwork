@@ -1,18 +1,20 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The held-Check test passed, but the full ticket verification was not completed successfully. An isolated run of the out-of-fence lifecycle test hung after its three-consumer fixture caused serve startup to fail.
+The worker also needed to mark active verdicts as live during orphan recovery; regression tests cover that race. Moving settlement earlier in merge was rejected because merge can already be blocked. Final verification passed: 259 ticket tests, 1,812 unit tests, 3,593 integration tests, lint, and format; the carried regression passed at head and reported defect on base.
 
 ## Dead ends
 
-The existing test replaces the consumer tuple with three callbacks; preserving that fixture would require a compatibility path that the ticket explicitly forbids.
+An initial recovery guard covered idle verdict polls and suppressed orphan sweeps; narrowing it to active verdict application restored sweep behavior.
 
 ## Second problems filed
 
-- box-000962-55e5afa7: docs/engine-state-db-plan.md describes verdict settlement as part of merge admission and would become stale after this change.
+- box-001000-3f13802e: docs/roadmap.md has pre-existing metadata drift.
+- box-001001-7aec85cd: tests/unit/test_training_triage_records.py has a pre-existing empty metadata purpose.
+- box-001002-4d7f7003: docs/engine-state-db-plan.md still describes verdict settlement inside merge; this was previously filed as box-000962.
 
 ## Resolved engine/model
 
