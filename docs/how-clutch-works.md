@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 1828fb1b
-hash: 3eb0a0d528a207664eb992b6746876386eba0862bde6919a1e2f0bd08a5e5e1d
+verified: dd604324
+hash: fe86e7c362c94537eacea167930ecef09a003f48d8994000656c98e1302a324c
 -->
 # How ClutchWork works
 
@@ -713,6 +713,8 @@ Problems found while working are filed, not fixed in the current diff. Classes: 
 - `tombstone`: the message is already covered by a merged or committed ticket. A third
   re-report reopens it. Retro recurrences use the same re-report rule.
 - `declined`: record a decision in `tickets/decisions/<id>.md`.
+
+The Triage prompt embeds a `neighbors` block of nearest indexed box messages, roadmap rows and decision records; `unavailable: ...` or `none` indicates no usable neighbor evidence, never a failure.
 
 `box dismiss <id> ...` records operator decisions without a model call; unknown IDs refuse before any message is settled.
 

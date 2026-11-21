@@ -10,7 +10,7 @@ import duckdb
 import yaml
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from clutch import calibration, context
+from clutch import calibration, context, index
 from clutch.artifacts import Finding, NonBlank
 from clutch.baseline import resolve_baseline
 from clutch.box import BOX_DIR, Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
@@ -20,6 +20,7 @@ from clutch.git import GitError
 from clutch.inbox import CAPS, bounded, report_data
 from clutch.journal import EventType
 from clutch.policy import policy_row, start_state
+from clutch.providers import child_env
 from clutch.requisition import FIRST_REVIEW, RequisitionVerdict, render_prior_review, review_ticket
 from clutch.runner import SPECS_DIR, Checkout
 from clutch.specs import Spec, load_spec, render
@@ -44,6 +45,37 @@ def context_block(state_dir: Path, text: str, stem: str, *, connect=duckdb.conne
             return "\n".join(f"- {selector}  # {reason}" for selector, reason in sections) or "none"
         finally:
             conn.close()
+    except Exception:
+        return "unavailable: index_unreadable"
+
+
+async def neighbors_block(checkout, text, exclude_id, *, neighbors=index.neighbors) -> str:
+    try:
+        if not isinstance(text, str) or not text.strip():
+            return "none"
+        result = await neighbors(
+            checkout.config,
+            checkout.repo,
+            text.strip()[:8000],
+            fs=checkout.fs,
+            exec_=checkout.exec_,
+            env=child_env(checkout.env, checkout.config, serving=None),
+            creator=index.default_creator,
+            limit=5,
+            exclude=(exclude_id, f"tickets/decisions/declined-{exclude_id}.md", f"tickets/decisions/tombstone-{exclude_id}.md"),
+        )
+        if result.outcome == "no_match":
+            return "none"
+        if result.outcome == "no_index":
+            return "unavailable: no_index (run clutch index build)"
+        if result.outcome != "found":
+            return f"unavailable: {result.outcome}"
+
+        def bounded(value, limit):
+            value = " ".join(value.split())
+            return value if len(value) <= limit else value[: limit - 3] + "..."
+
+        return "\n".join([f"mode: {result.mode}"] + [f"- {hit.kind} {bounded(hit.ref, 100)} (score {hit.score:.3f}): {bounded(hit.text, 200)}" for hit in result.hits[:5]])
     except Exception:
         return "unavailable: index_unreadable"
 

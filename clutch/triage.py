@@ -9,7 +9,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from clutch.artifacts import NonBlank
-from clutch.author import author, commit_record, committed, failure_declined, is_rejected, list_open_tickets, recover_retro_ticket
+from clutch.author import author, commit_record, committed, failure_declined, is_rejected, list_open_tickets, neighbors_block, recover_retro_ticket
 from clutch.box import BOX_DIR, Box, DecisionRecord, RereportJournal, Resolution, UnknownBoxId, Verdict, read_registry, record_path, render_record
 from clutch.driver import Driver, LlmStage
 from clutch.git import GitError
@@ -271,6 +271,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
             continue
 
         open_tickets = await list_open_tickets(checkout)
+        neighbors = await neighbors_block(checkout, message.summary, message.id)
         inputs = {
             "message": json.dumps(
                 {
@@ -293,6 +294,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
             "open_tickets": open_tickets,
             "merged": "\n".join(merged),
             "decisions": "\n".join(f"{r.id}: {r.kind}, link={r.link}, {body.splitlines()[0] if body else ''}" for r, body in registry),
+            "neighbors": neighbors,
         }
 
         def render_message(_consumed: object, findings: list) -> str:
