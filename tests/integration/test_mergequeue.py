@@ -5,8 +5,8 @@
 # purpose: Queue admission with injected seams and disposable real repositories.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/git.py, clutch/journal.py]
 # owner: engine
-# verified: 96e46658
-# hash: 014aa863cd3352bb16a7cea760aeff1d4edff50af8d4ff4c52c35aa3a8d77e9d
+# verified: 77c3dad9
+# hash: 22c932c4a3478608fa8d5d1d5d019e70cac900dc764971ed2a5781490e6419b8
 
 import ast
 import asyncio
@@ -35,6 +35,7 @@ from clutch.stages import ApprovedInvoice, CommandResult, StageContext, render_r
 from clutch.tickets import validate_ticket
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
+from tests.spool_captures import list_captures, read_capture
 
 run = asyncio.run
 
@@ -360,9 +361,9 @@ def test_verification_uses_rebased_worktree(ctx, base_red):
         await commit(ctx, ctx.repo, ["clutch/other.py"])
         result = await admission(ctx, ticket)
         assert result.outcome == "ok", result.findings
-        spool = ctx.config.state_dir / "spools" / ticket.stem / "0/merge-integration"
-        assert (spool / "verify-01.txt").is_file()
-        assert (spool / "verify-01-base.txt").exists() == base_red
+        names = [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0)]
+        assert "merge-integration/verify-01.txt" in names
+        assert ("merge-integration/verify-01-base.txt" in names) == base_red
         messages = Box(ctx.config.state_dir / BOX_DIR, ctx.fs).messages()
         assert bool(messages) == base_red
         assert not (ctx.config.worktree_root / ".base" / ticket.stem).exists()
@@ -386,7 +387,7 @@ def test_queue_skips_unchanged_code(ctx, monkeypatch, stale):
         assert result.outcome == ("gate_failed" if stale else "ok")
         if stale:
             assert any(f.code == "correctness_review" for f in result.findings)
-        assert not list((ctx.config.state_dir / "spools" / ticket.stem / "0").rglob("*.txt"))
+        assert [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0) if name.endswith(".txt")] == []
 
     run(scenario())
 
@@ -408,8 +409,7 @@ def test_always_hard_host_checks_run_before_squash(ctx, monkeypatch):
         monkeypatch.setattr(ctx.git, "merge_squash", squash)
         result = await admission(ctx, ticket)
         assert result.outcome == "ok"
-        spools = ctx.config.state_dir / "spools" / ticket.stem / "0"
-        assert sorted(p.relative_to(spools).as_posix() for p in spools.rglob("host-*")) == [
+        assert [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0) if name.rsplit("/", 1)[-1].startswith("host-")] == [
             "merge-integration/host-01.txt",
             "merge-integration/host-03.txt",
             "merge-safety/host-01.txt",
@@ -454,8 +454,7 @@ def test_host_check_environment_timeout_and_redaction(ctx, monkeypatch, safety):
         assert len(results[0].tail) <= stages.OUTPUT_TAIL_CHARS
         assert SECRET not in reports[0].findings[0].message and reports[0].code == "../unsafe-code"
         name = "safety" if safety else "integration"
-        spool = ctx.config.state_dir / "spools" / ticket.stem / f"4/merge-{name}/host-01.txt"
-        text = spool.read_text()
+        text = read_capture(ctx.config.state_dir, ticket.stem, 4, f"merge-{name}/host-01.txt").decode()
         assert SECRET not in text and "[exit 7]" in text and "--- stdout" in text and "--- stderr" in text
         assert not facts(ctx)
 
@@ -829,8 +828,7 @@ def test_strategy_resolution_still_regates(ctx, monkeypatch):
             "post_rebase_regate",
             "correctness_review",
         ]
-        spool = ctx.config.state_dir / "spools" / ticket.stem / "0/merge-integration/verify-01.txt"
-        assert spool.is_file() and "exit 0" in spool.read_text()
+        assert "exit 0" in read_capture(ctx.config.state_dir, ticket.stem, 0, "merge-integration/verify-01.txt").decode()
         assert facts(ctx)[0].body == {
             "kind": CONFLICT_FACTS,
             "conflicted_paths": [path],

@@ -5,8 +5,8 @@
 # purpose: Merge admission against a temp repo (CLUTCH_PLAN.md sections 7, 9, 10; 19.P1).
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: engine
-# verified: 96e46658
-# hash: dc5c567404c09730eb80e0867a530edd04419e77e1ef2e11eca0d7054c0b7f0b
+# verified: 77c3dad9
+# hash: 34da6756643260fcdcbadad1199447c7386629a8413684afce481674f45e6ac0
 
 import asyncio
 import dataclasses
@@ -30,6 +30,7 @@ from clutch.tickets import validate_ticket
 from tests.integration.test_cli import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
+from tests.spool_captures import list_captures
 
 
 @pytest.fixture(autouse=True)
@@ -529,9 +530,7 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
             assert trace.count((stem, "remove")) == trace.count((stem, "delete")) == 1
             assert rig.owner.queue.ctx is local
             assert not rig.owner.queue.paused
-            assert "merge-integration/verify-01.txt" in [
-                str(p.relative_to(local.config.state_dir / f"spools/{stem}/{attempt}")) for p in (local.config.state_dir / f"spools/{stem}/{attempt}").rglob("*.txt")
-            ]
+            assert "merge-integration/verify-01.txt" in [name for _, name in list_captures(local.config.state_dir, stem, attempt)]
             await evidence(local, ticket, attempt, admission, tree)
         finally:
             await finish(rig, run)

@@ -5,8 +5,8 @@
 # purpose: Drive the CLI's continuous graph with disposable repositories and injected time.
 # relates: [clutch/audit.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 96e46658
-# hash: e05de2d2700f2fa5891dedf545d0d603d7b2f328726088cb27ab36bc130d4b66
+# verified: 77c3dad9
+# hash: 31e9d5cebe87ee06004e1b6ae895be838c0e9e0b29608880c02e30414896aec4
 
 import asyncio
 import json
@@ -39,6 +39,7 @@ from tests.integration.serve_rig import (
 )
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
+from tests.spool_captures import list_captures, read_capture
 
 
 @pytest.mark.asyncio
@@ -152,9 +153,8 @@ async def test_serve_admission_rebases_regates_and_retires(root, monkeypatch):
         assert effect.body == {"result": {"commit": merged.body["commit"]}}
         assert not rig.checkout.config.worktree_root.joinpath("work").exists()
         assert not (await rig.checkout.git._run(root, "branch", "--list", "work")).strip()
-        spools = rig.checkout.config.state_dir / "spools/work/1"
         for path in ("merge-integration/verify-01.txt", "merge-safety/host-01.txt", "merge-integration/host-01.txt"):
-            assert "exit 0" in (spools / path).read_text()
+            assert "exit 0" in read_capture(rig.checkout.config.state_dir, "work", 1, path).decode()
         assert [r.surface for llm in rig.models for r in llm.requests].count("review") == 3
     finally:
         await finish(rig, run)
@@ -449,11 +449,11 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
         assert ("work" in offers) == (failure != "precheck")
         assert len(terminals(rig, "work")) == 1
         assert (root / "tickets/work/attempts/0/harvest.json").is_file()
-        spools = rig.checkout.config.state_dir / "spools/work/0"
-        assert (spools / "merge-integration/verify-01.txt").exists() == (failure in {"integration", "host-red"})
+        names = [name for _, name in list_captures(rig.checkout.config.state_dir, "work", 0)]
+        assert ("merge-integration/verify-01.txt" in names) == (failure in {"integration", "host-red"})
         if failure == "host-red":
             # Ticket base-red remains attributable, while an always-hard host failure still refuses.
-            assert (spools / "merge-integration/verify-01-base.txt").is_file()
+            assert "merge-integration/verify-01-base.txt" in names
             assert not rig.checkout.config.worktree_root.joinpath(".base/work").exists()
         assert rig.owner.queue.red_stems == (["work"] if failure in {"integration", "host-red"} else [])
         # A fresh producing candidate proceeds; the old refused branch never reaches main.
@@ -563,7 +563,7 @@ async def test_serve_conflict_rerun_runs_after_admission_unwinds(root, monkeypat
                 "correctness_review",
             ]
             for tier in ("safety", "integration"):
-                assert "exit 0" in (rig.checkout.config.state_dir / f"spools/work/0/merge-{tier}/host-01.txt").read_text()
+                assert "exit 0" in read_capture(rig.checkout.config.state_dir, "work", 0, f"merge-{tier}/host-01.txt").decode()
             assert terminal.body["reviewed_sha"] == rig.pinned
         else:
             assert rig.returns == [("work", "gate_failed")] and chronology == ["abort", "unwind", "rerun"]

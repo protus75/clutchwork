@@ -5,8 +5,8 @@
 # purpose: Drive the production CLI core through injected delivery, process, filesystem and time seams.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 148a8874
-# hash: f8d38b328462a60743fb99edd83ed600ce2660a2c6c2dedfa9bfbba23f9ddcfa
+# verified: 77c3dad9
+# hash: 07b9f49597344744d6f3b77d2a713cdb872252608f786d6462d0309adf5343e3
 
 import ast
 import asyncio
@@ -41,6 +41,7 @@ from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready
 from tests.integration.test_providers import CONFIG, ENV, claude_ok, codex_ok, jsonl
 from tests.integration.test_scheduler import Time, import_closure, text, turn
+from tests.spool_captures import list_captures
 
 
 class ScriptFS:
@@ -1085,7 +1086,7 @@ async def test_composed_merge_queue_admits_reviewed_candidate(admission_context,
     [facts] = [e for e in events if e.type == EventType.SIGNAL and e.body.get("kind") == CONFLICT_FACTS]
     assert facts.ticket == ticket.stem and facts.key is None
     assert facts.body == {"kind": CONFLICT_FACTS, "conflicted_paths": [], "resolving_rung": "none", "strategy_paths": [], "integration_red_paths": []}
-    assert (ctx.config.state_dir / "spools" / ticket.stem / "7/merge-integration/verify-01.txt").is_file()
+    assert "merge-integration/verify-01.txt" in [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 7)]
     assert not ctx.worktree(ticket.stem).exists()
     assert await ctx.git._run(ctx.repo, "branch", "--list", ticket.stem) == ""
     assert queue.pending == {} and queue.active is None

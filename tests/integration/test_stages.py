@@ -5,8 +5,8 @@
 # purpose: Implement -> Check -> Review stage transitions with the scripted fake (CLUTCH_PLAN.md sections 4, 5, 19.P1).
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 96e46658
-# hash: d20a03a95befc5c21e0dd58c309dbace1ad0b574402f6d5a32463dcd66471df4
+# verified: 77c3dad9
+# hash: 838542a6c2a88316e60da6912bc5dfe5b9504f7a80154457c85756a6f072422d
 
 import asyncio
 import json
@@ -44,6 +44,7 @@ from clutch.stages import (
 )
 from clutch.tickets import TicketInvalid, validate_ticket
 from tests.integration.test_git import commit_lock
+from tests.spool_captures import list_captures, read_capture
 
 SAMPLE_REPORT = "sample-report.json"
 
@@ -479,7 +480,7 @@ def test_base_red_command_is_recorded_and_filed_without_failing_check(repo, monk
     assert len(messages) == 1
     assert (messages[0].message_class, messages[0].outcome, messages[0].origin) == ("failure_report", "base_red", STEM)
     assert "grep -q ok clutch/thing.py" in messages[0].summary
-    assert (config.state_dir / "spools" / STEM / str(result.attempt) / "check" / "verify-01-base.txt").is_file()
+    assert "check/verify-01-base.txt" in [name for _, name in list_captures(config.state_dir, STEM, result.attempt)]
     assert not (config.worktree_root / ".base" / STEM).exists()
 
 
@@ -533,7 +534,7 @@ def test_invalid_review_reply_is_reprompted_with_its_validation_finding(repo):
 def test_verification_children_never_inherit_a_provider_key(repo):
     result, _, config = run(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
-    spool = (config.state_dir / "spools" / STEM / str(result.attempt) / "check" / "verify-02.txt").read_text()
+    spool = read_capture(config.state_dir, STEM, result.attempt, "check/verify-02.txt").decode()
     assert f"PATH={Path(sys.executable).parent}{os.pathsep}/usr/bin:/bin" in spool and "FAKE_KEY" not in spool and SECRET not in spool
 
 
@@ -662,7 +663,7 @@ def test_full_gather_evidence_reuses_safety_gatherer(repo, monkeypatch):
         assert gathered[0] == result.model_copy(update={"verification": []})
         assert result.verification[0].base_red
         assert result.verification[1].rc == 0
-        assert (ctx.config.state_dir / "spools" / STEM / "4/check/verify-01-base.txt").is_file()
+        assert "check/verify-01-base.txt" in [name for _, name in list_captures(ctx.config.state_dir, STEM, 4)]
         assert not (ctx.config.worktree_root / ".base" / STEM).exists()
 
     asyncio.run(scenario())

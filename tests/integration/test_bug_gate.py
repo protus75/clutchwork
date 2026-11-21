@@ -5,8 +5,8 @@
 # purpose: Regression custody and admission proofs with disposable real Git repositories.
 # relates: [clutch/gates.py, clutch/merge.py, clutch/mergequeue.py, clutch/redact.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
 # owner: engine
-# verified: 148a8874
-# hash: a6006d4840510434b85a0361ee41e38fe951d2eecc6bff30825766bf77d1430c
+# verified: 77c3dad9
+# hash: b2cf54a6cf02e9c7b82d444d14ca739bb7aed3aaa3813bff5e07a3b55f03ed96
 
 import asyncio
 import dataclasses
@@ -22,6 +22,7 @@ from clutch.seams import ExecutableNotFound
 from clutch.tickets import validate_ticket
 from tests.integration.test_mergequeue import approve, commit, ctx, ready
 from tests.integration.test_stages import SECRET, STEM, TICKET
+from tests.spool_captures import read_capture
 
 run = asyncio.run
 PRODUCER = "tests/reproducer.py"
@@ -333,7 +334,7 @@ def test_bug_gate_base_cleanup(ctx, monkeypatch, failure):
         assert any(op[:2] == ["worktree", "remove"] for op in operations)
         assert ["worktree", "prune"] in operations
         for name in ("head", "base"):
-            text = (ctx.config.state_dir / f"spools/{STEM}/0/merge-integration/regression-{name}.txt").read_text()
+            text = read_capture(ctx.config.state_dir, STEM, 0, f"merge-integration/regression-{name}.txt").decode()
             assert SECRET not in text and "stdout" in text and "stderr" in text
         assert SECRET not in report.model_dump_json()
 

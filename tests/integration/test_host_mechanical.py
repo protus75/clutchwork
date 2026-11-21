@@ -5,8 +5,8 @@
 # purpose: Host checks through production Check and inline admission.
 # relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/merge.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 148a8874
-# hash: cc4356e63046c95a0f7717cd36da80739530b56d95f319c153a930a16cd41281
+# verified: 77c3dad9
+# hash: 50df0251b3c87339bed27ee50e6970164b32ec462e3e5d8c7dc41bc96d2ee627
 
 import asyncio
 
@@ -17,6 +17,7 @@ from clutch.box import BOX_DIR, Box
 from clutch.seams import ExecutableNotFound
 from tests.integration.test_mergequeue import approve, commit, ctx, host, ready, scripted
 from tests.integration.test_stages import SECRET
+from tests.spool_captures import list_captures, read_capture
 
 
 async def checked(ctx, ticket):
@@ -32,7 +33,7 @@ def test_triggered_entries_run_at_check(ctx, monkeypatch):
         result = await checked(ctx, ticket)
         assert result.outcome == "ok" and [c[0][1] for c in calls] == ["always", "path"]
         assert [r.code for r in result.artifact.reports[-2:]] == ["always", "path"]
-        assert (ctx.config.state_dir / f"spools/{ticket.stem}/0/check/host-02.txt").exists()
+        assert "check/host-02.txt" in [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0)]
 
     asyncio.run(run())
 
@@ -45,7 +46,7 @@ def test_untriggered_entry_never_runs(ctx, monkeypatch):
         result = await checked(ctx, ticket)
         assert result.outcome == "ok" and not calls
         assert "skip" not in [r.code for r in result.artifact.reports]
-        assert not list((ctx.config.state_dir / f"spools/{ticket.stem}/0").rglob("host-*"))
+        assert [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0) if name.rsplit("/", 1)[-1].startswith("host-")] == []
 
     asyncio.run(run())
 
@@ -95,7 +96,7 @@ def test_timeout_and_missing_executable_fail_closed(ctx, monkeypatch, failure):
         result = await checked(ctx, ticket)
         assert result.outcome == "gate_failed" and "FAKE_KEY" not in calls[0][1]["env"]
         assert SECRET not in result.findings[-1].message
-        assert SECRET not in (ctx.config.state_dir / f"spools/{ticket.stem}/0/check/host-01.txt").read_text()
+        assert SECRET not in read_capture(ctx.config.state_dir, ticket.stem, 0, "check/host-01.txt").decode()
 
     asyncio.run(run())
 
@@ -111,7 +112,7 @@ def test_inline_merge_reruns_triggered_hard_entries(ctx, monkeypatch):
         result = await merge.merge(ctx, ticket, attempt=0)
         assert result.outcome == "gate_failed" and [c[0][1] for c in calls] == ["red"]
         assert await ctx.git.rev_parse(ctx.repo, "main") == before
-        assert (ctx.config.state_dir / f"spools/{ticket.stem}/0/merge/host-01.txt").exists()
+        assert "merge/host-01.txt" in [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0)]
 
     asyncio.run(run())
 
@@ -129,7 +130,7 @@ def test_inline_merge_skips_unchanged_code(ctx, monkeypatch, stale):
         assert result.outcome == ("gate_failed" if stale else "ok")
         if stale:
             assert any(f.code == "correctness_review" for f in result.findings)
-        assert not list((ctx.config.state_dir / f"spools/{ticket.stem}/0/merge").glob("*"))
+        assert [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0) if name.startswith("merge/")] == []
 
     asyncio.run(run())
 
@@ -346,7 +347,7 @@ def test_results_detection_and_replay(ctx, monkeypatch):
             assert (await checked(ctx, ticket)).outcome == "ok"
         assert len([e for e in ctx.driver.journal.read() if e.body.get("kind") == "flake_detected"]) == 1
         assert len(Box(ctx.config.state_dir / BOX_DIR, ctx.fs).messages()) == 1
-        assert (ctx.config.state_dir / f"spools/{ticket.stem}/0/check/host-01-rerun.txt").exists()
+        assert "check/host-01-rerun.txt" in [name for _, name in list_captures(ctx.config.state_dir, ticket.stem, 0)]
 
     asyncio.run(run())
 

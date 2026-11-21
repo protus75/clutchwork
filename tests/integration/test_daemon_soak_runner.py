@@ -5,8 +5,8 @@
 # purpose: Production soak evidence, false-green refusal, and owned lifetime cleanup.
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 148a8874
-# hash: 0da31c081787c3cc7990e0a7fa86387a6adc294648ac64be53bd309b8cb30b10
+# verified: 77c3dad9
+# hash: 6351b26d9c8c507534596a4d9dce12566446adb485b696e74854301a3733f7f2
 
 import asyncio
 import json
@@ -31,6 +31,7 @@ from clutch.tickets import parse_ticket, ticket_path
 from tests.harness import daemon_soak as soak
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS
 from tests.integration.test_git import commit_lock
+from tests.spool_captures import read_capture, write_capture
 
 
 @pytest.mark.asyncio
@@ -189,10 +190,10 @@ def test_daemon_soak_semantic_red_preserves_main(evidence):
     assert (member.root / "a.txt").read_bytes() == b"0\n"
     assert [e.body["to"] for e in member.terminals("semantic")] == ["gate_failed"]
     assert member.harvest("semantic", 0).stage == "merge"
-    spool = member.checkout.config.state_dir / "spools/semantic/0/merge-integration/verify-01.txt"
-    assert "[exit 1]" in spool.read_text() and "AssertionError" in spool.read_text()
+    spool = read_capture(member.checkout.config.state_dir, "semantic", 0, "merge-integration/verify-01.txt").decode()
+    assert "[exit 1]" in spool and "AssertionError" in spool
     [message] = [m for m in member.owner.box.messages() if m.origin == "semantic"]
-    assert message.outcome == "gate_failed" and spool.read_text() in message.summary
+    assert message.outcome == "gate_failed" and spool in message.summary
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -233,6 +234,7 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
     member = members[index]
     original_events = member.journal.read()
     file = None
+    capture_stem = None
     if field in {"cycles", "sweeps", "checkpoints", "interrupted"}:
         monkeypatch.setattr(member, field, None if field == "interrupted" else [])
     elif field == "health":
@@ -262,12 +264,15 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
             "main": "a.txt",
             "harvest": f"tickets/{stem}/attempts/0/harvest.json",
             "review": f"tickets/{stem}/review.md",
-            "integration": ".clutch/state/spools/semantic/0/merge-integration/verify-01.txt",
-            "regating": ".clutch/state/spools/mechanical/0/merge-integration/verify-01.txt",
-        }[field]
-        file = member.root / relative
-        before = file.read_bytes()
-        member.fs.write(file, b"2\n" if field == "main" else b"{}")
+        }
+        if field in {"integration", "regating"}:
+            capture_stem = {"integration": "semantic", "regating": "mechanical"}[field]
+            before = read_capture(member.checkout.config.state_dir, capture_stem, 0, "merge-integration/verify-01.txt")
+            write_capture(member.checkout.config.state_dir, capture_stem, 0, "merge-integration/verify-01.txt", b"{}")
+        else:
+            file = member.root / relative[field]
+            before = file.read_bytes()
+            member.fs.write(file, b"2\n" if field == "main" else b"{}")
     else:
         run = (("worker", 1), ("mechanical", 0), ("semantic", 0))[index]
 
@@ -303,6 +308,8 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
     finally:
         if file is not None:
             member.fs.write(file, before)
+        if capture_stem is not None:
+            write_capture(member.checkout.config.state_dir, capture_stem, 0, "merge-integration/verify-01.txt", before)
 
 
 @pytest.mark.asyncio
