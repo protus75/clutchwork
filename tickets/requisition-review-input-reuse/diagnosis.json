@@ -1,20 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "53484e4740d4c38a2cae9e3e9e00a9e09b28232f",
+  "produced_at_sha": "9466c652ebb489f0548ec043dbe5b16aa6bb0869",
   "stem": "requisition-review-input-reuse",
-  "attempt": 0,
-  "terminal": "incomplete",
+  "attempt": 1,
+  "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "retry",
+  "verdict": "reject",
   "lessons": [
-    "Redo the work from the merge base and finish it: add input_identity, review_input_identity and review_with_identity in clutch/requisition.py, then move the CLI, runner.drive, author.author and rework.rework onto review_with_identity. Commit before you report.",
-    "Fixture with no reviewer route: per the Scope in, review_input_identity returns None when an input cannot be established. That verdict gets a fresh review and records no reusable identity. Do not raise or fail, so existing tests that do not need reuse still pass.",
-    "Rework tests that patch the old review_ticket call site: update tests/integration/test_rework.py (in the fence) to patch the call site review_with_identity actually uses. Also update the exact requisition_verdict body assertion to include input_identity.",
-    "Run the full Verification command before you stop, including test_ladder.py with a fresh approve response at each changed reviewer tier. If a forced edit falls outside the fence (e.g. an Author test monkeypatching review_ticket), name that file in the run record."
+    "The fence is missing files the change forces. clutch/author.py:452 and clutch/rework.py:196 call review_ticket, and the ticket requires both to move to review_with_identity. Tests outside the fence monkeypatch module.review_ticket, so they break once the import goes.",
+    "Add to the Scope fence: tests/integration/test_author.py (lines 180, 215), tests/unit/test_author.py:143, tests/unit/test_author_roadmap_row.py:184, tests/unit/test_author_stem_claimed.py:48 and tests/unit/test_key_scope.py:174. Each one patches author/rework review_ticket and must patch",
+    "Do not keep an unused review_ticket import in author.py or rework.py so the old patches still resolve. The ticket forbids parallel legacy paths, and the wrapper calls requisition.review_ticket, so those patches would silently stop intercepting the call.",
+    "Class fix: when a ticket migrates a call site, its author must grep for monkeypatch.setattr(<module>, \"<name>\") across tests/ and fence every match. Today these five files were found only at Implement, which cost an attempt."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1
+  ],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5"
