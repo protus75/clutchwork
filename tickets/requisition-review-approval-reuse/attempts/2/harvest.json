@@ -1,0 +1,63 @@
+{
+  "attempt": 2,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_diagnose.py",
+      "line": null,
+      "message": "The infra-cap test changes tracked configuration after its fixture approval, causing the new identity rule to require a review that its script does not provide.",
+      "paved_road": "Fence this test and update its fixture approval or scripted review.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_drain_reentry.py",
+      "line": null,
+      "message": "Re-entry scripts expect implementation without providing the fresh requisition review required by changed inputs.",
+      "paved_road": "Fence this file and update the affected scripts for identity-based review.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_drain.py",
+      "line": null,
+      "message": "Rework and split scripts omit reviews required when approval identities change.",
+      "paved_road": "Fence this file and update the affected scripted verdicts.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_merge_model_resolve.py",
+      "line": null,
+      "message": "The merge-resolution integration script fails under the new review decision and requires an adjustment outside the fence.",
+      "paved_road": "Fence this test and update its scripted review sequence.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_retro_box.py",
+      "line": null,
+      "message": "The retro integration script's provider responses no longer match the review calls made under identity-based reuse.",
+      "paved_road": "Fence this test and update its scripted review sequence.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The approval-reuse change passes the ticket verification suite, but the full integration gate requires test updates outside the scope fence.\",\"surprises\":\"The final ticket verification passed 190 tests. The candidate full integration gate had 15 failures; the same gate passed all 3,601 tests on the base. Five out-of-fence failures also reproduced individually. The exact ticket verification could not run on the base because its three new test files do not exist there.\",\"second_problems\":[],\"dead_ends\":\"Refreshing shared fixture approvals did not resolve the out-of-fence scripted review failures.\",\"predicted_vs_actual\":\"The ticket expected 30 minutes; implementation and diagnosis remain unfinished.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_diagnose.py\",\"line\":null,\"message\":\"The infra-cap test changes tracked configuration after its fixture approval, causing the new identity rule to require a review that its script does not provide.\",\"paved_road\":\"Fence this test and update its fixture approval or scripted review.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_drain_reentry.py\",\"line\":null,\"message\":\"Re-entry scripts expect implementation without providing the fresh requisition review required by changed inputs.\",\"paved_road\":\"Fence this file and update the affected scripts for identity-based review.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_drain.py\",\"line\":null,\"message\":\"Rework and split scripts omit reviews required when approval identities change.\",\"paved_road\":\"Fence this file and update the affected scripted verdicts.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_merge_model_resolve.py\",\"line\":null,\"message\":\"The merge-resolution integration script fails under the new review decision and requires an adjustment outside the fence.\",\"paved_road\":\"Fence this test and update its scripted review sequence.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_retro_box.py\",\"line\":null,\"message\":\"The retro integration script's provider responses no longer match the review calls made under identity-based reuse.\",\"paved_road\":\"Fence this test and update its scripted review sequence.\"}]}",
+  "events_tail": "id\":\"item_58\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"uv run python - <<'PY'\\nimport asyncio, os\\nfrom datetime import UTC, datetime\\nfrom pathlib import Path\\nfrom clutch.git import Git\\nfrom clutch.lockfile import CommitLock\\nfrom clutch.seams import SubprocessExec\\nrepo=Path.cwd()\\ngit=Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=CommitLock(repo / '.clutch/state', sleep=asyncio.sleep, clock=lambda: datetime.now(UTC)))\\nasyncio.run(git.worktree_remove(repo, Path('/tmp/clutch-requisition-base-review')))\\nPY\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_58\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"uv run python - <<'PY'\\nimport asyncio, os\\nfrom datetime import UTC, datetime\\nfrom pathlib import Path\\nfrom clutch.git import Git\\nfrom clutch.lockfile import CommitLock\\nfrom clutch.seams import SubprocessExec\\nrepo=Path.cwd()\\ngit=Git(SubprocessExec(), env=os.environ, timeout=30, commit_lock=CommitLock(repo / '.clutch/state', sleep=asyncio.sleep, clock=lambda: datetime.now(UTC)))\\nasyncio.run(git.worktree_remove(repo, Path('/tmp/clutch-requisition-base-review')))\\nPY\\\"\",\"aggregated_output\":\"warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_59\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The approval-reuse change passes the ticket verification suite, but the full integration gate requires test updates outside the scope fence.\\\",\\\"surprises\\\":\\\"The final ticket verification passed 190 tests. The candidate full integration gate had 15 failures; the same gate passed all 3,601 tests on the base. Five out-of-fence failures also reproduced individually. The exact ticket verification could not run on the base because its three new test files do not exist there.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Refreshing shared fixture approvals did not resolve the out-of-fence scripted review failures.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket expected 30 minutes; implementation and diagnosis remain unfinished.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_diagnose.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The infra-cap test changes tracked configuration after its fixture approval, causing the new identity rule to require a review that its script does not provide.\\\",\\\"paved_road\\\":\\\"Fence this test and update its fixture approval or scripted review.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_drain_reentry.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"Re-entry scripts expect implementation without providing the fresh requisition review required by changed inputs.\\\",\\\"paved_road\\\":\\\"Fence this file and update the affected scripts for identity-based review.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_drain.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"Rework and split scripts omit reviews required when approval identities change.\\\",\\\"paved_road\\\":\\\"Fence this file and update the affected scripted verdicts.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_merge_model_resolve.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The merge-resolution integration script fails under the new review decision and requires an adjustment outside the fence.\\\",\\\"paved_road\\\":\\\"Fence this test and update its scripted review sequence.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_retro_box.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The retro integration script's provider responses no longer match the review calls made under identity-based reuse.\\\",\\\"paved_road\\\":\\\"Fence this test and update its scripted review sequence.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":11299957,\"cached_input_tokens\":11185408,\"cache_write_input_tokens\":0,\"output_tokens\":17492,\"reasoning_output_tokens\":3204}}\n",
+  "wall_seconds": 865.066103,
+  "usd": 1.0,
+  "run_record": "tickets/requisition-review-approval-reuse/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
