@@ -32,7 +32,7 @@ Duplicate-owner findings: no verb counts them. Review findings use only the exis
 
 The subsection states: the merge commit and time above, the two window specs used and each printed `window.start` and `window.end`, a table of before and after values for each measurable quantity, the figures marked not measurable with their reason, and one sentence reading the result against the plan's `## Measures of success` list without claiming causation from two windows. The before figures come from tickets that predate row 153 and the plan's trial baseline has no counts, so say that the trial baseline is qualitative and the before window is the quantitative reference.
 
-Also edit `## Status`: in its sentence naming open roadmap rows, drop row 208 from the open list and name row 208 (`boundary-contract-outcome-compare`) as merged only if the same sentence already lists merged rows that way; otherwise leave the sentence unchanged apart from the open list. After the edit run `clutch meta refresh docs/boundary-contract-plan.md`; it may change only that file's metadata header (`verified` and `hash`), never other header fields.
+Also edit `## Status`: move 208 (`boundary-contract-outcome-compare`) from its open rows list to its merged rows list, leaving the other rows and the rest of the sentence unchanged. After the edit run `clutch meta refresh docs/boundary-contract-plan.md`; it may change only that file's metadata header (`verified` and `hash`), never other header fields.
 
 Scope out: no code, tests, other documents, roadmap edits or changes to `clutch/specs/`. No standing test or criterion pinning the plan's text. Row 152 stays open and is not touched.
 
