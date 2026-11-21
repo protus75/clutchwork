@@ -4,17 +4,17 @@ ok
 
 ## Surprises / judgment calls
 
-The worker also needed to mark active verdicts as live during orphan recovery; regression tests cover that race. Moving settlement earlier in merge was rejected because merge can already be blocked. Final verification passed: 259 ticket tests, 1,812 unit tests, 3,593 integration tests, lint, and format; the carried regression passed at head and reported defect on base.
+The carried regression reported pass on the candidate and defect on base. The metadata check found two pre-existing issues outside the scope fence.
 
 ## Dead ends
 
-An initial recovery guard covered idle verdict polls and suppressed orphan sweeps; narrowing it to active verdict application restored sweep behavior.
+The metadata generator repeatedly produced an overlong purpose line, so the new integration test uses a file-level Ruff E501 exemption.
 
 ## Second problems filed
 
-- box-001000-3f13802e: docs/roadmap.md has pre-existing metadata drift.
-- box-001001-7aec85cd: tests/unit/test_training_triage_records.py has a pre-existing empty metadata purpose.
-- box-001002-4d7f7003: docs/engine-state-db-plan.md still describes verdict settlement inside merge; this was previously filed as box-000962.
+- box-001003-03fe8286: docs/roadmap.md has drifted metadata on the base commit.
+- box-001004-50a9ff40: tests/unit/test_training_triage_records.py has an empty metadata purpose on the base commit.
+- box-001005-ea72dc18: docs/engine-state-db-plan.md retains stale descriptions of verdict settlement under the merge gate; this was previously filed as box-000962.
 
 ## Resolved engine/model
 
@@ -24,5 +24,5 @@ An initial recovery guard covered idle verdict polls and suppressed orphan sweep
 
 ## Predicted vs actual
 
-none
+Ticket budget: 25 minutes expected, 50 minutes stuck; actual elapsed time was not measured.
 
