@@ -5,8 +5,8 @@
 # purpose: Drive the production CLI core through injected delivery, process, filesystem and time seams.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: 392fcacc642b6d87e98e7ed65cf1db74a8b29a0826cb269c5994382ddc01ac9e
+# verified: 365b3e38
+# hash: dde51a2d9cc831f5e322af238656e74a388a0fcebf61a793992a2d2cc15b09c7
 
 import ast
 import asyncio
@@ -46,6 +46,8 @@ from tests.spool_captures import list_captures
 
 class ScriptFS:
     def read_bytes(self, path):
+        if path.name in {"config.yaml", "merge-config-local", "merge-config-base"} and path.is_file():
+            return path.read_bytes()
         if path not in self.files:
             raise FileNotFoundError(path)
         return self.files[path]

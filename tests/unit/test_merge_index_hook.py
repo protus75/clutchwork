@@ -5,8 +5,8 @@
 # purpose: merge-path index refresh outcomes
 # relates: [clutch/evidence/store.py, clutch/merge.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 8c543cf0
-# hash: e6785e45a1fe0ae1dfeb52937c54b0afb5bd42db7a4aee313e3827380c1e79bc
+# verified: 365b3e38
+# hash: 97ec0526f760ba56fa0b6647d7b97bc2af914d4f139c05efee50f59c568e5e36
 
 import asyncio
 import json
@@ -111,7 +111,7 @@ async def test_squash_order_and_failure(tmp_path, monkeypatch):
         return await fn()
 
     ctx.driver.effects = NS(run=run)
-    ctx.git = NS(diff_names=AsyncMock(return_value=["a"]), merge_squash=AsyncMock(return_value="commit"), rev_parse=AsyncMock(return_value="head"))
+    ctx.git = NS(status_porcelain=AsyncMock(return_value=""), diff_names=AsyncMock(return_value=["a"]), merge_squash=AsyncMock(return_value="commit"), rev_parse=AsyncMock(return_value="head"))
     ticket = NS(stem="work", frontmatter=NS(source="human"), sections={"Goal / Why": "goal"})
     original = merge.refresh_index
 

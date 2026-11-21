@@ -252,6 +252,7 @@ async def dirty_overlap(ctx: StageContext, stem: str) -> list[Finding]:
                 paths = {record[3:]}
                 if "R" in record[:2] or "C" in record[:2]:
                     paths.add(next(records))
+                paths.discard("config.yaml")
                 dirty.update(paths)
                 if record[0] not in " ?":
                     staged.update(paths)
@@ -350,7 +351,34 @@ async def write_squash(ctx: StageContext, ticket: Ticket, reviewed: str, *, atte
             if not await lifted_report_paths(ctx, stem, attempt) or await dirty_code(ctx, stem):
                 raise ValueError("report admission requires current checks-lift custody and a clean code tree; rerun Check with a registered Verification report")
             return {"commit": None}
-        return {"commit": await ctx.git.merge_squash(ctx.repo, stem, squash_message(ticket, reviewed))}
+        status = (await ctx.git.status_porcelain(ctx.repo, "-z")).split("\0")
+        modified = any(record[3:] == "config.yaml" and "M" in record[:2] for record in status)
+        if not modified:
+            return {"commit": await ctx.git.merge_squash(ctx.repo, stem, squash_message(ticket, reviewed))}
+        config = ctx.repo / "config.yaml"
+        base = ctx.config.state_dir / "merge-config-base"
+        local = ctx.config.state_dir / "merge-config-local"
+        original = ctx.fs.read_bytes(config)
+        ctx.fs.mkdir(ctx.config.state_dir)
+        ctx.fs.write(local, original)
+        try:
+            ctx.fs.write(base, (await ctx.git._run(ctx.repo, "show", "HEAD:config.yaml")).encode())
+            await ctx.git._run(ctx.repo, "checkout", "HEAD", "--", "config.yaml")
+            try:
+                commit = await ctx.git.merge_squash(ctx.repo, stem, squash_message(ticket, reviewed))
+                try:
+                    await ctx.git._run(ctx.repo, "merge-file", "--ours", str(local), str(base), str(config))
+                except GitError as exc:
+                    if not 0 < exc.rc < 128:
+                        raise
+                ctx.fs.write(config, ctx.fs.read_bytes(local))
+            except BaseException:
+                ctx.fs.write(config, original)
+                raise
+            return {"commit": commit}
+        finally:
+            ctx.fs.remove(local)
+            ctx.fs.remove(base)
 
     commit = (await ctx.driver.effects.run(squash, key="/".join(("merge", stem, str(attempt))), ticket=stem))["commit"]
     if bridge is not None and commit is not None and (checked_tree is None or await ctx.git.rev_parse(ctx.repo, "main^{tree}") == checked_tree):
