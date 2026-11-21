@@ -1,24 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "30c96b397fac4a3e6b791608f02ada28d10480ec",
+  "produced_at_sha": "7df94815ce50ee9ab0d4c94641d5d0ec8749a8b2",
   "stem": "index-build-r2",
-  "attempt": 2,
-  "terminal": "incomplete",
-  "stage": "implement",
+  "attempt": 3,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "retry",
   "lessons": [
-    "Attempt 2 (codex, gpt-6.1-terra) stopped after about 6 min with an empty diff_stat and said acceptance tests were unfinished, even though the 76-test Verification run passed. Use the 30m time budget to finish every criterion 1-12 instead of stopping early.",
-    "Commit clutch/index.py, tests/unit/test_index_build.py, tests/unit/test_index_embeddings.py and tests/integration/test_index_extensions.py on the ticket branch before reporting. Uncommitted work is lost because each attempt restarts from the merge base.",
-    "Before writing tests, map each acceptance criterion 1-11 to a named test. Cover these: every embed_failed reason (exit 2, exec ExceptionClass, not json, the string/object/[]/true/NaN/1e308 replies as not a vector, length 2 != 3), temp-file fs.remove after success and after failure, and create",
-    "Criterion 7 needs a recording connection wrapper passed through connect. It counts INSERT, UPDATE and DELETE statements on files, chunks and embeddings, and the count must be zero on a second build over unchanged files. Criterion 9 uses the same wrapper to show the build issues no INSTALL, LOAD,",
-    "In tests/integration/test_index_extensions.py, run real-DuckDB builds a-c on a reopened database and skip with 'vss/fts extensions unavailable offline'. Add the criterion 11 ast scan of clutch/index.py. Report 'complete' only after all of these tests exist and the Verification command passes."
+    "Redo the work as the ticket states: clutch/index.py plus the three fenced test files. The attempt's code passed the full Verification command (84 passed) and the full suite. The only failure was ruff format on line 5 of the three new test files.",
+    "Cause: Check's check_meta ran the engine's pre-fix meta.py. It inserted a clutch.meta block with `# purpose: ` (trailing space) into each new test file, which had no block, and `ruff format --check .` then failed. This is the unmerged meta-render-empty-purpose-no-trailing-space bug.",
+    "Commit each new file (tests/unit/test_index_build.py, tests/unit/test_index_embeddings.py, tests/integration/test_index_extensions.py, clutch/index.py) with its meta block already present: run `uv run clutch meta refresh` in the worktree, then fill in a non-empty purpose.",
+    "After filling purposes, rerun `uv run clutch meta refresh` so the hash matches. Then confirm that `uv run clutch meta check` reports no drifted or malformed file and that `uv run ruff format --check .` exits 0. No line in the four files may end in whitespace before you commit."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    2,
-    3
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.8",
   "provider": "claude",
   "model": "claude-opus-5-5"
