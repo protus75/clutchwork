@@ -43,7 +43,7 @@ Scope out: every other path's dirty check, the merge queue, runner, diagnosis, d
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_merge_config_local.py` shows a reviewed ticket that changes `config.yaml` merges while the main checkout has an uncommitted edit to `config.yaml`: the merge commit has the ticket's change and the checkout's `config.yaml` afterwards holds both the ticket's change and the owner's edit.
-2. The same test shows a ticket that does not touch `config.yaml` merges and leaves the owner's edit unchanged, and a dirty other path (`clutch/thing.py`) still refuses with `dirty_checkout`; `./dev.py test tests/unit/test_merge_dirty.py tests/unit/test_merge_config_local.py` passes.
+2. `./dev.py test tests/unit/test_merge_config_local.py` runs the new `write_squash` save, restore and 3-way-reapply lines with a fake `ctx.git` and a `tmp_path` working copy (owner's lines win on conflict; no edit means no change), and `dirty_overlap` ignores `config.yaml`. The integration test shows a ticket that does not touch `config.yaml` merges and leaves the owner's edit unchanged, and a dirty other path (`clutch/thing.py`) still refuses with `dirty_checkout`; `./dev.py test tests/unit/test_merge_dirty.py tests/unit/test_merge_config_local.py` passes.
 3. `uv run python tests/regress_merge_config_local.py` prints `{"regression_result": "pass"}` and exits 0 on the fixed branch and `{"regression_result": "defect"}` with a non-zero exit on the merge base; `uv run clutch meta check tests/unit/test_merge_config_local.py tests/integration/test_merge_config_local.py tests/regress_merge_config_local.py` exits 0.
 
 ## Verification
