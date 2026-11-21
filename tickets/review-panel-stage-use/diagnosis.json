@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "18681be6db1341d2457478919c9a7656afb6c304",
+  "stem": "review-panel-stage-use",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review approved the stages.py code: wiring, combining, cost sum and panel_facts logging. Redo it as the ticket describes. Two criterion-1 test gaps caused the snag, and both are in tests/unit/test_review_panel_use.py.",
+    "In test_single, parametrize over an unset route.panel and panel(route, 1). For both cases, assert that the whole result equals a hand-written StageResult(\"gate_failed\", <expected SnagList>, [finding()], <expected Cost>). Checking only outcome, findings and artifact type does not satisfy criterion 1.",
+    "Parametrize test_single_effect_key over an unset route.panel and panel(route, 1). In both cases, assert that the only effect key is llm/item/0/review/1/1, with no m<k> scope. Criterion 1 requires the effect key check under a size-1 panel too.",
+    "Before finishing, check each clause of acceptance criterion 1 against a test that runs both the unset and size-1 cases: one driver.run call, zero run_panel calls, literal review.md text, full StageResult equality, effect key, and no panel_facts event."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.8",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
