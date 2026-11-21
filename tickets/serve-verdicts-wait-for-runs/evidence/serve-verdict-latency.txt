@@ -1,0 +1,19 @@
+Observed 2026-11-21 (UTC) on /home/djp/source/clutch, serve running with config.yaml scheduler.parallel {enabled: true, max_runs: 2}, after ticket serve-polls-block-parallel-runs merged.
+
+1. A confirm submitted during a running implementation waits for that implementation:
+   - `clutch ticket confirm --yes index-box-neighbors-prompts` printed "confirm submitted" at 07:09:24Z (inbox file mtime .clutch/state/control/inbox/b32588d5224f4dcfbf8d3da62710ed3f.json).
+   - The `clutch(index-box-neighbors-prompts): confirmed` commit (bb4b1248) is at 07:15Z, when the running ticket spools-tests-via-helper finished its run. About 6 minutes.
+   - During that wait the engine started no second ticket: only one implement was in flight from 07:02 to 07:15 while three confirmed tickets with disjoint fences were queued (.clutch/state/queue.json at 07:17:28Z listed review-panel-stage-use, index-box-neighbors-prompts, index-consumers-training-join).
+
+2. Mechanism (clutch/serve.py `merge`, lines 506-536 at HEAD 1c748cea): the merge poll does
+       if not self.merge_work(): return
+       async with self.mutations():
+           self.control.poll()
+           ...
+           await self.control.inbox.settle_admissions(self.apply_verdict)
+           ... self.queue.process() and delivery ...
+   `merge_work()` (serve.py 476-) returns True for an accepted, not yet completed confirm or reject decision. `mutations()` is `admission.exclusive()` (clutch/daemon.py 596-601), which waits until no run holds a slot (`_holding == 0`) and, while it waits, makes `_acquire_run` refuse new runs. So a verdict waits for every running implementation and blocks admission while it waits.
+
+3. Why that exclusivity is wider than needed: `apply_verdict` -> `runner.apply_admission` (clutch/runner.py 803-848) commits the ticket-plane change to the main checkout (`c.git.commit(c.repo, "clutch(<stem>): confirmed", only=[ticket path])`) and appends journal signals. That must not overlap the merge queue's squash and delivery, which also commit to main. It does not touch any implementation: an implementation runs in its own worktree.
+
+Cost: with an operator confirming tickets every few minutes, max_runs 2 behaves like 1 for much of the time. Related earlier fix: ticket serve-polls-block-parallel-runs (idle polls no longer take the exclusive section) left this case, a poll with real work, waiting for running implementations by design.
