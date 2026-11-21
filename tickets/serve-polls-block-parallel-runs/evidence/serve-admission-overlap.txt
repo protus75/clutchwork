@@ -1,0 +1,16 @@
+Observed 2026-11-21 on /home/djp/source/clutch with config.yaml scheduler.parallel {enabled: true, max_runs: 2, shared_paths: [docs/how-clutch-works.md]}.
+
+1. Journal-wide: .clutch/state/engine.log holds 1659 implement runs (stage_start/stage_end, surface implement). Pairing each run's start and end and testing every pair for time overlap on different stems gives 0 overlapping pairs. Two implementations have never run at the same time.
+
+2. Live: meta-fill-surface implemented alone from 01:24Z to 02:39Z (six attempts) while index-config-touches sat confirmed and listed second in .clutch/state/queue.json (01:34Z). engine.log has 0 dispatch_skip events, so fill_slots overlap is not the cause. A confirm for spools-scratch-dir submitted at 01:37Z was not applied until the running ticket ended.
+
+3. Unit reproduction against the real class (clutch.daemon.DaemonAdmission, max_runs=2), output:
+
+   1 run started: ['a']
+   no waiter  -> started: ['a', 'b']
+   with poll waiting -> started: ['c'] | poll done: False
+   after release -> started: ['c', 'd']
+
+   Script: one run "c" holds a slot; a task does `async with adm.mutations(): pass` (what serve's scan, merge poll and box-intake poll do every SERVE_POLL_S=0.1s, clutch/serve.py lines 278-282, 380, 449, 482); then run "d" is dispatched. "d" is not admitted and the poll itself does not finish until "c" ends.
+
+Cause: DaemonAdmission.exclusive() (clutch/daemon.py:596-601) waits for _holding == 0 and counts as an exclusive waiter; _acquire_run (daemon.py:585-588) refuses admission while _exclusive_waiters > 0. dispatch() holds its slot for the whole run (daemon.py:648-677), lent only while a run waits for merge. Every serve poll takes mutations() whether or not it has work, so with one run in flight a waiter exists almost always: no second run is admitted, and verdicts, merges and box intake wait for the run to end.
