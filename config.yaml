@@ -18,9 +18,11 @@ routing:
   - {tier: low, surface: implement, candidates: [{provider: codex}]}
   - {tier: low, surface: author, candidates: [{provider: claude}]}
   - {tier: low, surface: review, candidates: [{provider: claude, model: claude-opus-5-5}]}
+  - {tier: low, surface: requisition_review, candidates: [{provider: claude, model: claude-sonnet-5-5}]}
   - {tier: medium, surface: implement, candidates: [{provider: codex}]}
   - {tier: medium, surface: author, candidates: [{provider: claude}]}
   - {tier: medium, surface: review, candidates: [{provider: claude, model: claude-opus-5-5}]}
+  - {tier: medium, surface: requisition_review, candidates: [{provider: claude, model: claude-sonnet-5-5}]}  
   - {tier: high, surface: implement, candidates: [{provider: codex}]}
   - {tier: high, surface: author, candidates: [{provider: claude}]}
   - {tier: high, surface: review, candidates: [{provider: claude, model: claude-opus-5-5}]}
