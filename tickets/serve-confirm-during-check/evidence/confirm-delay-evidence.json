@@ -1,0 +1,14 @@
+{
+  "observed_on": "2026-11-21",
+  "request_id": "d91857f953f847dba89d9cc0dd47558f",
+  "stem": "review-cost-sonnet-instance",
+  "accepted_utc": "2026-11-21T10:33:19.255347+00:00",
+  "applied_utc": "2026-11-21T10:36:22.402180+00:00",
+  "accepted_to_applied_seconds": 183.146833,
+  "concurrent_check": {
+    "stem": "spools-tests-via-helper-driver",
+    "start_utc": "2026-11-21T10:32:26.710308+00:00",
+    "end_utc": "2026-11-21T10:36:07.652436+00:00"
+  },
+  "evidence_source": "local journal control_decision and effect_completion records; engine.log stage_start/stage_end; live heartbeat observed during delay"
+}
