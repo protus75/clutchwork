@@ -1,18 +1,19 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The final ticket verification passed 190 tests. The candidate full integration gate had 15 failures; the same gate passed all 3,601 tests on the base. Five out-of-fence failures also reproduced individually. The exact ticket verification could not run on the base because its three new test files do not exist there.
+Metadata refresh left empty-purpose findings on the three new tests; meta fill generated purpose lines exceeding the lint limit. No changed file is malformed, missing metadata, or drifted. Reusing the existing identity gatherer and one shared selector avoided a separate cache or legacy SHA-only path.
 
 ## Dead ends
 
-Refreshing shared fixture approvals did not resolve the out-of-fence scripted review failures.
+Meta fill generated overlong purpose lines, so the new headers were regenerated with meta refresh.
 
 ## Second problems filed
 
-none
+- box-000992-cddc84b1: The base commit has drifted metadata in docs/roadmap.md.
+- box-000993-a6cec97c: The base commit has an empty metadata purpose in tests/unit/test_training_triage_records.py.
 
 ## Resolved engine/model
 
@@ -22,5 +23,5 @@ none
 
 ## Predicted vs actual
 
-The ticket expected 30 minutes; implementation and diagnosis remain unfinished.
+30 minutes expected; under 30 minutes actual.
 
