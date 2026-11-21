@@ -1,12 +1,12 @@
 # Review: snag
 
-The serve.py change and the tests meet criteria 1 to 6, but all three new files have an empty `purpose:` meta line, so `clutch meta check` reports `empty_purpose` and criterion 7 fails.
+The serve.py change and the tests meet the criteria, but each of the three new test files has a stale second `clutch:meta` block left over from an earlier header that was never removed.
 
 ## Findings
 
-- [acceptance] tests/unit/test_serve_scan_head.py:5 The clutch:meta `purpose:` line is empty. `clutch/meta.py` `check` reports `empty_purpose` for an empty purpose, so `uv run clutch meta check` on this file exits non-zero and criterion 7 fails. Scope in says the purpose line is the one line to edit by hand. (do instead: Write a one-line purpose, e.g. `purpose: Verify the intake snapshot ignores main moves unless a ticket file is pending.`, then rerun `uv run clutch meta refresh` on the file so the hash matches.)
-- [acceptance] tests/integration/test_serve_scan_head.py:5 The clutch:meta `purpose:` line is empty, so `clutch meta check` reports `empty_purpose` for this file and criterion 7 fails. (do instead: Write a one-line purpose, e.g. `purpose: Verify main-only commits do not block parallel admission and refused tickets retry after a merge.`, then rerun `uv run clutch meta refresh`.)
-- [acceptance] tests/regress_serve_scan_head.py:5 The clutch:meta `purpose:` line is empty, so `clutch meta check` reports `empty_purpose` for the regression reproducer and criterion 7 fails. (do instead: Write a one-line purpose, e.g. `purpose: Reproduce an intake snapshot changed by a main move with no pending ticket.`, then rerun `uv run clutch meta refresh`.)
+- [acceptance] tests/unit/test_serve_scan_head.py:11 The file has two `# clutch:meta` blocks. `clutch/meta.py` `parse` reads only the first block, so the second block (lines 11-18) is part of the body: a stale header with its own unused purpose and a hash that matches nothing. Scope in asks for one header made by `clutch meta refresh`, with only the purpose line edited by hand. (do instead: Delete the second `# clutch:meta` block (lines 11-18) and its blank separator, keep the first block's purpose, then rerun `uv run clutch meta refresh tests/unit/test_serve_scan_head.py` so the hash matches the body.)
+- [acceptance] tests/integration/test_serve_scan_head.py:11 The file has two `# clutch:meta` blocks. The second block (lines 11-18) is stale metadata that `parse` treats as body text: a duplicate header with a hash that matches nothing. Scope in asks for one header made by `clutch meta refresh`. (do instead: Delete the second `# clutch:meta` block (lines 11-18) and the blank line before it, then rerun `uv run clutch meta refresh tests/integration/test_serve_scan_head.py`.)
+- [acceptance] tests/regress_serve_scan_head.py:11 The file has two `# clutch:meta` blocks. The second block (lines 11-18) is a stale header whose purpose differs from the first and whose hash matches nothing. `parse` reads only the first block, so the second is dead metadata in the body. Scope in asks for one header made by `clutch meta refresh`. (do instead: Delete the second `# clutch:meta` block (lines 11-18) and the blank line before it, then rerun `uv run clutch meta refresh tests/regress_serve_scan_head.py`.)
 
 ## Record
 
@@ -14,35 +14,35 @@ The serve.py change and the tests meet criteria 1 to 6, but all three new files 
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "a9ca54bc2d616335a0f1ed2230f56a81ccf16178",
+  "produced_at_sha": "0414a3543b2f9c5cf8e4e0b944906e8405110355",
   "stem": "serve-scan-ignores-head-moves",
-  "reviewed_sha": "a9ca54bc2d616335a0f1ed2230f56a81ccf16178",
-  "summary": "The serve.py change and the tests meet criteria 1 to 6, but all three new files have an empty `purpose:` meta line, so `clutch meta check` reports `empty_purpose` and criterion 7 fails.",
+  "reviewed_sha": "0414a3543b2f9c5cf8e4e0b944906e8405110355",
+  "summary": "The serve.py change and the tests meet the criteria, but each of the three new test files has a stale second `clutch:meta` block left over from an earlier header that was never removed.",
   "findings": [
     {
       "code": "acceptance",
       "path": "tests/unit/test_serve_scan_head.py",
-      "line": 5,
-      "message": "The clutch:meta `purpose:` line is empty. `clutch/meta.py` `check` reports `empty_purpose` for an empty purpose, so `uv run clutch meta check` on this file exits non-zero and criterion 7 fails. Scope in says the purpose line is the one line to edit by hand.",
-      "paved_road": "Write a one-line purpose, e.g. `purpose: Verify the intake snapshot ignores main moves unless a ticket file is pending.`, then rerun `uv run clutch meta refresh` on the file so the hash matches.",
+      "line": 11,
+      "message": "The file has two `# clutch:meta` blocks. `clutch/meta.py` `parse` reads only the first block, so the second block (lines 11-18) is part of the body: a stale header with its own unused purpose and a hash that matches nothing. Scope in asks for one header made by `clutch meta refresh`, with only the purpose line edited by hand.",
+      "paved_road": "Delete the second `# clutch:meta` block (lines 11-18) and its blank separator, keep the first block's purpose, then rerun `uv run clutch meta refresh tests/unit/test_serve_scan_head.py` so the hash matches the body.",
       "kind": null,
       "unit": null
     },
     {
       "code": "acceptance",
       "path": "tests/integration/test_serve_scan_head.py",
-      "line": 5,
-      "message": "The clutch:meta `purpose:` line is empty, so `clutch meta check` reports `empty_purpose` for this file and criterion 7 fails.",
-      "paved_road": "Write a one-line purpose, e.g. `purpose: Verify main-only commits do not block parallel admission and refused tickets retry after a merge.`, then rerun `uv run clutch meta refresh`.",
+      "line": 11,
+      "message": "The file has two `# clutch:meta` blocks. The second block (lines 11-18) is stale metadata that `parse` treats as body text: a duplicate header with a hash that matches nothing. Scope in asks for one header made by `clutch meta refresh`.",
+      "paved_road": "Delete the second `# clutch:meta` block (lines 11-18) and the blank line before it, then rerun `uv run clutch meta refresh tests/integration/test_serve_scan_head.py`.",
       "kind": null,
       "unit": null
     },
     {
       "code": "acceptance",
       "path": "tests/regress_serve_scan_head.py",
-      "line": 5,
-      "message": "The clutch:meta `purpose:` line is empty, so `clutch meta check` reports `empty_purpose` for the regression reproducer and criterion 7 fails.",
-      "paved_road": "Write a one-line purpose, e.g. `purpose: Reproduce an intake snapshot changed by a main move with no pending ticket.`, then rerun `uv run clutch meta refresh`.",
+      "line": 11,
+      "message": "The file has two `# clutch:meta` blocks. The second block (lines 11-18) is a stale header whose purpose differs from the first and whose hash matches nothing. `parse` reads only the first block, so the second is dead metadata in the body. Scope in asks for one header made by `clutch meta refresh`.",
+      "paved_road": "Delete the second `# clutch:meta` block (lines 11-18) and the blank line before it, then rerun `uv run clutch meta refresh tests/regress_serve_scan_head.py`.",
       "kind": null,
       "unit": null
     }
