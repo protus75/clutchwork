@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "323085c4a16e38ccd88114bfd346b01fdc77cdb7",
+  "stem": "merge-dirty-checkout-never-blocks",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "Check failed only on tests/integration/test_watchdog_activation.py::test_production_hard_timeout_group_kill_is_harvested, which covers an Implement hard timeout and group kill, not merge. Its failure is not traced to the merge.py diff, so redo the same approach.",
+    "Redo the work from the merge base: dirty_overlap ignores config.yaml; write_squash calls ctx.git.status_porcelain, and only if config.yaml is dirty does it run show, checkout to HEAD, merge_squash, then merge-file with the owner's lines winning. The stub in test_merge_index_hook.py gets only",
+    "Before handoff, run `./dev.py test tests/integration/test_watchdog_activation.py tests/integration/test_host_loop.py` on the candidate. Then run it once in a base-commit git worktree with full history and no env overrides, and record both results in run.md.",
+    "If the watchdog test or the test_host_loop.py errors also fail on the base commit, file them with `clutch box suggest` and do not edit them; both files are outside the fence. If they fail only on the candidate, find which new git call in write_squash reaches that path."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
