@@ -26,6 +26,8 @@ After this ticket a `dirty_checkout` finding defers the merge instead of refusin
 - disposition: extend
 - owner: clutch/merge.py (`dirty_overlap`) and clutch/mergequeue.py (`_admit`, `process`)
 - consumers: the merge queue's admission, `clutch engine serve` and `engine drain`, the diagnosis stage (no longer reached for this finding)
+- deferral shape: `_admit` returns `StageResult(outcome="deferred", artifact=None)`; `process()` puts a deferred ticket back in `pending` for the next poll and appends nothing to `results` or `deliveries`, so the serve boundary future stays unresolved until a later poll admits it; inline `merge()` (run and drain) returns the same deferred result and the runner journals no failure and spends no attempt, leaving the ticket reviewed and retried by the next merge call
+- once-per-wait: the `merge_waiting_dirty` marker is an in-memory set on `MergeQueue` keyed by stem, cleared when the stem is admitted or its overlap goes away; a serve restart signals again, and a second wait after the first clears signals again
 - observable change: an overlapping or staged-outside-branch edit defers admission and journals `merge_waiting_dirty`; it no longer returns a `dirty_checkout` refusal
 - compatibility: every other merge refusal, the squash itself, ordering of pending tickets and the main checkout's contents stay as today; a deferred ticket does not block other pending tickets from being admitted
 - acceptance: criteria 1 to 4
@@ -53,7 +55,7 @@ Scope out: the squash and write paths, other refusals, untracked-file handling, 
 - tests/regress_merge_dirty_defer.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/integration/test_merge_dirty_defer.py` shows a reviewed ticket whose changed file has an uncommitted edit in the main checkout is not merged, is not refused, spends no attempt, is not sent to diagnosis, and has exactly one `merge_waiting_dirty` signal after three polls.
+1. `./dev.py test tests/integration/test_merge_dirty_defer.py` shows a reviewed ticket whose changed file has an uncommitted edit in the main checkout is not merged, is not refused, spends no attempt, is not sent to diagnosis, and has exactly one `merge_waiting_dirty` signal after three polls, and that a second wait after the first clears signals again.
 2. `./dev.py test tests/integration/test_merge_dirty_defer.py` shows that after the edit is committed the next poll admits the ticket and main contains both the owner's commit and the ticket's change; the owner's edit is never lost.
 3. `./dev.py test tests/integration/test_merge_dirty_defer.py` shows a second pending ticket with no overlap is admitted while the first waits.
 4. `./dev.py test tests/unit/test_merge_dirty_defer.py tests/unit/test_merge_dirty.py` passes; `uv run python tests/regress_merge_dirty_defer.py` prints `{"regression_result": "pass"}` and exits 0 on the fixed branch and `{"regression_result": "defect"}` with a non-zero exit on the merge base.
