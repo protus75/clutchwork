@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Refreshed generated metadata for the changed documentation and new test; the simpler engine-log approach was rejected because journaled replies survive log rotation.
+Invalid panel cost data is excluded from the measurement fold so malformed costs do not raise before panel validation. The engine-log approach was rejected because journaled replies survive log rotation.
 
 ## Dead ends
 
