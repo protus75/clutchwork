@@ -4,8 +4,8 @@ kind: guide
 purpose: Host contract
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: a0d5e388
-hash: acf5e83d302af9054954243d7be859d980858285ec28325a1dc8310d2285800c
+verified: de6f600b
+hash: f08deb93467899e9e942d1afdd9d36afee61d2d4ad79523f70c9fb82ba90a051
 -->
 # Host contract
 
@@ -139,7 +139,7 @@ inventory sends a ticket that would lower a threshold to a human.
 ## Operating facts
 
 The configured `state_dir` holds the journal, box queue, quarantine ledgers,
-attempt spools, engine log and heartbeat. Relative paths resolve from the selected
+evidence captures, engine log and heartbeat. Relative paths resolve from the selected
 config file's directory. `<state_dir>/clutch.lock` uses an advisory flock for
 engine writes; `<state_dir>/commit.lock` serializes git writes. If a lock is held,
 wait for or stop its holder; never delete the lockfile. To upgrade or rollback,
@@ -451,7 +451,7 @@ restarts itself when its `clutch/` tree changes.
 pid, host, state_dir, started_at and verb. The verb determines whether the holder consumes control requests. Kernel release on
 process death governs correctness, never stale-pid adoption. On LockHeld wait
 for or stop the holder; never delete the lockfile. Child descriptors do not pin it. Git writes take `<state_dir>/commit.lock` with a 60-second wait.
-State dir owns journal, box queue, quarantine ledgers, attempt spools, engine
+State dir owns journal, box queue, quarantine ledgers, evidence captures, engine
 log and heartbeat. Decisions and tombstones are committed under
 `tickets/decisions/`, so dedup memory travels with the repo. Config is re-read at
 each dispatch cycle: watcher/debounce in daemon, re-parsing in scaffold verbs;

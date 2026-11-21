@@ -113,7 +113,7 @@ Every rule below is behavioral (no gate checks it yet): the prose is the only en
   Why: fake-driven tests and group-kill guarantees exist only at the seam. (section 15)
 - **Fenced by gates, not jailed.** v1 does not sandbox executed code; never rely on its goodwill. Never pass a provider key to a process that does not need it.
   Why: gates and review are the trust boundary. (section 16)
-- **The journal is the record, never a debug log.** Diagnostics go to the engine log and attempt spools. Configured secret values are redacted from every captured stream at the write seam.
+- **The journal is the record, never a debug log.** Diagnostics go to the engine log and captures. Configured secret values are redacted from every captured stream at the write seam.
   Why: the journal is folded for truth; noise and secrets in it are permanent. (section 6)
 - **Phase order.** Do not start a phase until the previous phase's exit is met.
   Why: later phases build on earlier exits as proven ground. (section 19)

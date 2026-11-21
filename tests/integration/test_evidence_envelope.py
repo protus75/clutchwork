@@ -5,8 +5,8 @@
 # purpose: Real metadata/source and the composed in-memory filesystem boundary.
 # relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llm.py, clutch/llmeffect.py, clutch/providers.py, clutch/redact.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: 148a8874
-# hash: 7cc6f50b851f04eb622db653fb56eb4333126cea7134fdf19856ab7ed4d11686
+# verified: de6f600b
+# hash: e639dc2e261f67eb7015e5985f7cbc24d8839a8681c58bd35bd63b2204b3f211
 
 import asyncio
 import importlib.metadata
@@ -49,4 +49,4 @@ def test_old_capture_path_is_gone():
     assert [str(path) for path in (ROOT / "clutch").rglob("*.py") if re.search(r'"spools"\s*/\s*"(providers|probe)"', path.read_text())] == []
     rows = (ROOT / "docs/how-clutch-works.md").read_text().splitlines()
     assert any(row.startswith("| `evidence/` |") for row in rows)
-    assert next(row for row in rows if row.startswith("| `spools/` |")) == "| `spools/` | Per-attempt prompts, outputs, and command output. |"
+    assert not any(row.startswith("| `spools/` |") for row in rows)

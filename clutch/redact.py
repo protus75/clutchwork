@@ -1,7 +1,7 @@
 """Redaction seam: one shared filter every captured-stream writer is built with.
 
 Writer-site checklist (extend in the same change that adds a writer of a captured stream):
-- attempt-spool writer: clutch/driver.py `Spool`
+- attempt capture writer: clutch/driver.py `Spool` writes to the evidence store
 - engine-log writer: clutch/enginelog.py `EngineLog`
 - evidence writer: clutch/evidence/store.py `EvidenceStore.put_blob` (prompt, stdout, stderr and arrival-time blobs from clutch/providers.py `CliAdapter.invoke`)
 - harvest writer: clutch/runner.py `harvest` (attempts/<n>/harvest.json)

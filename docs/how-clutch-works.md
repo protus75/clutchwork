@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 3d8c0329
-hash: 90100ea6806b1e88a21a52096664977956153cf1b88aa4823547368538d3c150
+verified: de6f600b
+hash: e435d2abb614c847ebd45616f15ae4fe2512ba38f0e302d2936b4d4fb4ec50c7
 -->
 # How ClutchWork works
 
@@ -689,13 +689,13 @@ Every model call goes through one driver (`clutch/driver.py`) using a prompt spe
 Specs always load from the engine's `clutch/specs/`, never from the host. Host material is injected only
 inside `<<clutch-data:...>>` blocks; a rendered prompt over 400,000 characters is refused. The
 driver re-prompts with findings when a reply is invalid or fails a gate, up to `caps.retry`
-times; each call is spooled under `state_dir/spools/`. `Driver.run_panel` runs members in turn under one stuck budget and returns their results and dropped members; member spools include `m<k>` beneath the surface.
+times; each call is captured in the evidence store. `Driver.run_panel` runs members in turn under one stuck budget and returns their results and dropped members; member spools include `m<k>` beneath the surface.
 
 ### 8.5 Spend and redaction
 
 - Spend is the sum of each call's journaled cost (the stream's reported USD, else the provider's
   `est_cost_per_call_usd`). `view status` prints the total.
-- Configured secret values are replaced with `[REDACTED:NAME]` in spools, the engine log,
+- Configured secret values are replaced with `[REDACTED:NAME]` in captures, the engine log,
   the evidence store's blobs, notifications, retro reports, and harvests (`attempts/<n>/harvest.json`). The journal itself is not scrubbed; model
   results are scrubbed before they are journaled.
 
@@ -775,9 +775,8 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `drain.out` | Output appended by `engine drain --detach`. |
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
-| `spools/` | Per-attempt prompts, outputs, and command output. |
 | `scratch/` | Graphics render directories and retro window files read by agents by path, distinct from `evidence/scratch/`. |
-| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. Capture pointers to blobs live at `captures/<stem>/<attempt>/<escaped name>.json`. |
+| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. Per-attempt prompts, outputs, and command output are captures. Capture pointers to blobs live at `captures/<stem>/<attempt>/<escaped name>.json`. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |
