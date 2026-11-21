@@ -49,7 +49,7 @@ def context_block(state_dir: Path, text: str, stem: str, *, connect=duckdb.conne
         return "unavailable: index_unreadable"
 
 
-async def neighbors_block(checkout, text, exclude_id, *, neighbors=index.neighbors) -> str:
+async def neighbors_block(checkout, text, exclude_id, *, neighbors=index.neighbors, exclude_refs: tuple[str, ...] = ()) -> str:
     try:
         if not isinstance(text, str) or not text.strip():
             return "none"
@@ -62,7 +62,7 @@ async def neighbors_block(checkout, text, exclude_id, *, neighbors=index.neighbo
             env=child_env(checkout.env, checkout.config, serving=None),
             creator=index.default_creator,
             limit=5,
-            exclude=(exclude_id, f"tickets/decisions/declined-{exclude_id}.md", f"tickets/decisions/tombstone-{exclude_id}.md"),
+            exclude=(exclude_id, f"tickets/decisions/declined-{exclude_id}.md", f"tickets/decisions/tombstone-{exclude_id}.md", *exclude_refs),
         )
         if result.outcome == "no_match":
             return "none"
@@ -410,6 +410,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
             "roadmap_row": roadmap.model_dump_json() if roadmap is not None else "none",
             "plan": plan,
             "context_suggest": suggestions,
+            "neighbors": neighbor_block,
             "files": files,
             "open_tickets": open_tickets,
             "retry_findings": findings_text(findings),
@@ -420,6 +421,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
     open_tickets = await list_open_tickets(checkout)
     estimates = calibration.render(calibration.latest(checkout.journal.read()))
     suggestions = context_block(checkout.config.state_dir, roadmap.content if roadmap is not None else message.summary + "\n" + message.verdict.rationale, roadmap.stem if roadmap is not None else "")
+    neighbor_block = await neighbors_block(checkout, roadmap.content if roadmap is not None else message.summary, message.id, exclude_refs=(f"row {roadmap.number}",) if roadmap is not None else ())
     previous_reply: str | None = None
     next_unused = 1
     reviewed: RequisitionVerdict | None = None

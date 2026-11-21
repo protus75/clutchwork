@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: d262e447
-hash: 5b722db2a7aeba9f26ca774dbc2719e5e0b34861e52a7351e8a5333fa639f8db
+verified: bce07f02
+hash: 9185e83b84e42f9433fa5bfa6cf2964dae90e9cda9051b59d414ff98f4f61cec
 -->
 # How ClutchWork works
 
@@ -726,7 +726,7 @@ A `retro_finding` naming a spec path the repository does not track is declined b
 
 For a `roadmap_row` message, Author embeds the row and its plan, whole under 40,000 characters and otherwise the Target design and Where each piece lives sections. The ticket uses the row’s stem, kind, and priority; existing evidence under `tickets/<stem>/evidence/` is committed with it.
 
-The Author prompt embeds the authoring guide, the skeletons, and the latest `estimate_calibration` table (`engine calibrate`, section 2.1; `none` before the first), and a `context_suggest` block of index-matched section selectors (`none` or `unavailable: ...` without a usable index, never a decline), and each re-prompt carries the last parsed ticket in `previous_reply`. Each later review receives the previous review and the diff from the text it judged. The Author stage writes `tickets/<stem>/ticket.md` with `source: box:<class>`, has
+The Author prompt embeds the authoring guide, the skeletons, and the latest `estimate_calibration` table (`engine calibrate`, section 2.1; `none` before the first), and a `context_suggest` block of index-matched section selectors (`none` or `unavailable: ...` without a usable index, never a decline), a `neighbors` block of the nearest indexed box messages, roadmap rows and decision records (same `none` or `unavailable: ...` forms, never a decline), and each re-prompt carries the last parsed ticket in `previous_reply`. Each later review receives the previous review and the diff from the text it judged. The Author stage writes `tickets/<stem>/ticket.md` with `source: box:<class>`, has
 `requisition_review` check it, and commits it. Its state is `draft` (needs `ticket confirm`) if the
 message was reopened, the review baseline is not GO (except for `roadmap_row`), `engine_plane_safety_inventory` is empty or
 touched by the ticket's fence, or the ticket carries a `gate_bypass`. Otherwise `box_policy`
