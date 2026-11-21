@@ -27,15 +27,15 @@ Roadmap row 183, the first of the two slices that precede `spools-onto-evidence-
 - observable change: the two path prefixes above move from `<state_dir>/spools/` to `<state_dir>/scratch/`; file names, contents, redaction of the window file, and the `render_dir` and `events_path` values' form (an absolute path string) are unchanged
 - compatibility: a render directory or window file already under `spools/` is a stale capture; nothing reads it, no migration, no dual read
 - acceptance: the unit test below asserts the new paths and that the old ones are absent
-- tests: `tests/unit/test_scratch_dir_paths.py`, `tests/unit/test_stages_render_check.py`, `tests/integration/test_image_candidates_select.py`, `tests/integration/test_retro.py`
+- tests: `tests/unit/test_scratch_dir_paths.py`, `tests/unit/test_stages_render_check.py`, `tests/unit/test_stages_candidates_select.py`, `tests/unit/test_images_gate.py`, `tests/integration/test_image_candidates_select.py`, `tests/integration/test_retro.py`
 - post-merge source of truth: `clutch/stages.py::render_scratch_dir` and `clutch/retro.py::window_scratch_path`
 
 ## Scope in / Scope out
 Scope in:
-- `clutch/stages.py`: add `render_scratch_dir(state_dir: Path, stem: str, attempt: int) -> Path` returning `state_dir / "scratch" / stem / str(attempt) / "render"`. Use it at the three places that build the `.../render` path today: `gather_evidence`'s `render_dir` value, the artifact copy in `check_render`, and the `spool` variable in `check_candidates`, which holds the render directory (rename that variable to `render`). Nothing else changes in this file.
+- `clutch/stages.py`: add `render_scratch_dir(state_dir: Path, stem: str, attempt: int) -> Path` returning `state_dir / "scratch" / stem / str(attempt) / "render"`. Use it, passing `ctx.config.state_dir`, at the three places that build the `.../render` path today: `gather_evidence`'s `render_dir` value, the artifact copy in `check_render`, and the `spool` variable in `check_candidates`, which holds the render directory (rename that variable to `render`). Nothing else changes in this file.
 - `clutch/retro.py`: add `window_scratch_path(state_dir: Path, sequence: int, call_seq: int) -> Path` returning `state_dir / "scratch" / "retro" / str(sequence) / f"call-{call_seq:02d}" / "window.jsonl"`. In `render_input`, write the window file there with `driver.spool._fs.write(path, driver.redactor.scrub(text).encode())` (the form `commit_report` already uses, so the redaction stays) instead of `driver.spool.write`, and set `events_path` to `str(path.resolve())`. Nothing else changes in this file.
 - `docs/how-clutch-works.md`: add one `scratch/` row to the state-dir table (section 10.1, after `spools/`) naming the graphics render directory and the retro window file, as files agents read by path, distinct from `evidence/scratch/`.
-- Tests: `tests/unit/test_stages_render_check.py` and `tests/integration/test_image_candidates_select.py` assert the render path under `state_dir / "scratch"`; `tests/integration/test_retro.py` asserts the window file under `state_dir / "scratch/retro/1/call-01/window.jsonl"` and that no `window.jsonl` exists under `spools/`. A new `tests/unit/test_scratch_dir_paths.py` covers both helpers (their floors in `test-gate.toml` need a fenced unit test) with `tmp_path`.
+- Tests: the unit `ctx` stand-ins gain `state_dir=<tmp>` on their `config` SimpleNamespace and nothing else (no getattr fallback): `tests/unit/test_stages_render_check.py`, `tests/unit/test_stages_candidates_select.py`, and `tests/unit/test_images_gate.py::test_check_runs_render_before_gate`, whose `render` path becomes `stages.render_scratch_dir(<state_dir>, "work", 2)`. `tests/unit/test_stages_render_check.py` and `tests/integration/test_image_candidates_select.py` assert the render path under `state_dir / "scratch"`; `tests/integration/test_retro.py` asserts the window file under `state_dir / "scratch/retro/1/call-01/window.jsonl"` and that no `window.jsonl` exists under `spools/`. A new `tests/unit/test_scratch_dir_paths.py` covers both helpers (their floors in `test-gate.toml` need a fenced unit test) with `tmp_path`.
 
 Scope out: `Spool`, `clutch/driver.py`, harvest, the evidence store, `evidence/scratch/`, every other `spools/` writer, reader, test, and doc line (`spools-onto-evidence-store` moves those), any cleanup of `scratch/` (state-dir files are not pruned today; nothing here adds pruning). The roadmap row is not edited; the driver rewrites it.
 
@@ -47,6 +47,8 @@ Merge order: many confirmed tickets fence `clutch/stages.py`, `clutch/retro.py`,
 - docs/how-clutch-works.md
 - tests/unit/test_scratch_dir_paths.py
 - tests/unit/test_stages_render_check.py
+- tests/unit/test_stages_candidates_select.py
+- tests/unit/test_images_gate.py
 - tests/integration/test_image_candidates_select.py
 - tests/integration/test_retro.py
 
@@ -59,7 +61,7 @@ Merge order: many confirmed tickets fence `clutch/stages.py`, `clutch/retro.py`,
 
 ## Verification
 ```
-./dev.py test tests/unit/test_scratch_dir_paths.py tests/unit/test_stages_render_check.py tests/integration/test_image_candidates_select.py tests/integration/test_retro.py
+./dev.py test tests/unit/test_scratch_dir_paths.py tests/unit/test_stages_render_check.py tests/unit/test_stages_candidates_select.py tests/unit/test_images_gate.py tests/integration/test_image_candidates_select.py tests/integration/test_retro.py
 ```
 
 ## Definition of rejected
