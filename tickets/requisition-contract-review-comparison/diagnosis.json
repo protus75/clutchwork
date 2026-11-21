@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "19a8d326a2af36712f80634b7fd67d2ece27ca9a",
+  "stem": "requisition-contract-review-comparison",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket can't pass as written. It requires one model call with no re-prompt, but its own Verification runs tests/integration/test_author.py and tests/integration/test_rework.py, which pin re-prompt behavior after an invalid reply. Neither file is in the Scope fence.",
+    "tests/integration/test_author.py::test_author_reviews_keep_unique_keys_when_one_reasks (about line 442) expects a second requisition_review call after an 'invalid' reply. Fence this file and rewrite the test for one call that returns the 'invalid reply' snag.",
+    "tests/integration/test_rework.py::test_split_reviews_keep_unique_keys_when_one_reasks[False] (about line 230) scripts 'invalid' then requisition() and expects outcome 'ok'. Fence this file and assert the outcome after one invalid-reply snag.",
+    "Before re-confirming, grep tests/ for other scripts that feed an 'invalid' requisition reply followed by another requisition() (re-ask/reasks tests). Fence every hit, and add each to the Scope in list of tests to update.",
+    "Base measurement: the agent ran the affected tests individually on base (they passed) and both failed on the candidate. The full Verification could not be collected on base because the two new test files don't exist there yet. This is a fence gap, not a base failure."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
