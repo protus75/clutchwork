@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "325c9c8ff8053bf077914370e38ae0b3e2f7af23",
+  "produced_at_sha": "6f73b9d72e377e16e7778f34d6a993bd7f8d16d7",
   "stem": "serve-confirm-during-check",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "abandon-human",
   "lessons": [
-    "Ticket fence omits a forced file: tests/integration/test_serve_kill.py:44 sets rig.owner.tasks._consumers = (bad, rig.owner.merge, rig.owner.box_intake), a 3-tuple. The required appended verdict_consumer makes serve expect 4, so the test hangs. Add the file to ## Scope fence and ## Context.",
-    "Once fenced, change only that tuple to (bad, rig.owner.merge, rig.owner.box_intake, rig.owner.verdicts) and keep its 'owned serve consumer returned unexpectedly' assertion. Add no compat path that accepts 3 consumers, because the ticket forbids optional branches.",
-    "A grep of tests/ for DaemonTasks( and _consumers = finds only test_daemon_tasks.py, test_kill_failure_suppression.py, test_kill_worker_stop.py (fenced) and test_serve_kill.py (unfenced). Adding the one file is enough; no further fence gap was found.",
-    "After the fence fix, redo all the work from the merge base: Serve.verdicts worker, appended DaemonTasks verdict_consumer, merge_work verdict-row removal, the new tests and tests/regress_serve_confirm_during_check.py. The held-Check test passed last time, so that approach was sound.",
-    "Keep docs/engine-state-db-plan.md out of this diff. Its stale verdict-in-merge text was filed as box-000962 and should not be folded in."
+    "Implement's diff was sound: the Verification suite passed (259 tests), and the full suite, lint and format passed. The head regression printed pass. Only the base run of the bug_evidence check failed. A rerun of the same ticket fails the same way.",
+    "Root cause: the base regression run raised `[Errno 2] No such file or directory: '.venv/bin/python'`, so it exited with no code. The ticket's own reproducer never ran on base, so this proves nothing about the defect.",
+    "Engine defect, outside the fence: clutch/stages.py `_base_worktree` creates a fresh detached worktree with no .venv. `execute()` then runs the relative argv `.venv/bin/python` with cwd=base_worktree. The head worktree only has a .venv because Implement ran uv there.",
+    "A human should fix the engine so the base run gets the same interpreter as head (e.g. resolve against the engine venv; stages.py:872 already derives engine_bin from sys.executable). Or a human changes this ticket's ## Regression command to a form that runs in a fresh worktree.",
+    "The same `.venv/bin/python tests/regress_*` form is in ~88 ticket.md files under tickets/. Check whether other bug tickets fail bug_evidence the same way, and add a lint or gate so a regression interpreter that is missing at base is caught before Check."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
