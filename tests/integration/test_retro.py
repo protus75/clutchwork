@@ -5,8 +5,8 @@
 # purpose: Production evidence, report effects, and lock-held retro invocation.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
 # owner: engine
-# verified: 96e46658
-# hash: b929a89f44c9c7c80eceafe64a4f1b423052d12243864d0aea90edd3f3828b1a
+# verified: a0d5e388
+# hash: e2400307f6b1617be0889acb7600bf7bd1cf0c27c2320b363e5e28c8e4171c5b
 
 import asyncio
 import json
@@ -26,6 +26,7 @@ from clutch.llm import FakeLLM, LLMResult
 from clutch.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report, select_trigger
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root, pause_checkout
+from tests.spool_captures import list_captures
 
 
 def rig(tmp_path, script=()):
@@ -105,13 +106,17 @@ def test_window_over_headroom_is_read_on_demand(tmp_path, monkeypatch, size):
     assert material["measurements"] == json.loads(json.dumps(evidence))
     if size == 100:
         assert material["events"] == expected and "events_path" not in material
-        assert not list(driver.spool.root.rglob("window.jsonl"))
+        names = [name for _, name in list_captures(c.config.state_dir, "retro/1", 1)]
+        assert "retro/call-01/prompt.md" in names
+        assert not [name for name in names if name.endswith("window.jsonl")]
     else:
         assert "events" not in material
         path = Path(material["events_path"])
         assert path in writes
         assert path == (c.config.state_dir / "scratch/retro/1/call-01/window.jsonl").resolve()
-        assert not list(driver.spool.root.rglob("window.jsonl"))
+        names = [name for _, name in list_captures(c.config.state_dir, "retro/1", 1)]
+        assert "retro/call-01/prompt.md" in names
+        assert not [name for name in names if name.endswith("window.jsonl")]
         assert [json.loads(line) for line in path.read_text().splitlines()] == expected
     (completion,) = [e for e in c.journal.read() if e.key == "retro/1" and e.type == EventType.EFFECT_COMPLETION]
     assert completion.body == {"result": result}

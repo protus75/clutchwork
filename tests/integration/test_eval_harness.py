@@ -5,8 +5,8 @@
 # purpose: Review-baseline harness (CLUTCH_PLAN.md 19.P1), offline: scripted fake LLM, temp journal.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/specs/__init__.py, eval/harness.py]
 # owner: engine
-# verified: 148a8874
-# hash: c541edc210ca549fd485d9e52eeaa01bf6e0bc362f814c7cb710e35bedd2ae5f
+# verified: a0d5e388
+# hash: 4e0d81a9a7bf68721fd6f2740e33e601e05dbbb44abdbf33c9f7aaf58cebb132
 
 import asyncio
 import json
@@ -25,6 +25,7 @@ from clutch.llm import FakeLLM
 from clutch.specs import lint_spec
 from eval import harness
 from eval.harness import Expected, Fixture, FixtureError, Scored
+from tests.spool_captures import read_capture
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -326,9 +327,8 @@ def test_go_grade_fixture_author_identity_comes_from_call(tmp_path, monkeypatch)
     assert any(e.body.get("signal") == "author_invoked" for e in events)
     completed = [e.body["result"] for e in events if e.type == EventType.EFFECT_COMPLETION and (e.key or "").startswith("llm/")]
     assert [(r["provider"], r["model"]) for r in completed] == [("codex", "x-high")]
-    captured = cfg.state_dir / "spools/fixture-logic-pagination/1/author/call-01"
-    assert captured.joinpath("output.txt").read_text() == json.dumps(authored)
-    assert "fixture" in captured.joinpath("prompt.md").read_text()
+    assert read_capture(cfg.state_dir, "fixture-logic-pagination", 1, "author/call-01/output.txt").decode() == json.dumps(authored)
+    assert "fixture" in read_capture(cfg.state_dir, "fixture-logic-pagination", 1, "author/call-01/prompt.md").decode()
     snapshots = {p: p.read_bytes() for p in cfg.state_dir.rglob("*") if p.is_file()}
     with pytest.raises(FixtureError, match="different"):
         # c-max is the actual selected author model at max and the review model.

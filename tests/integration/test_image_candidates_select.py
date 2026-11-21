@@ -4,8 +4,8 @@
 # purpose: test image candidates select
 # relates: [clutch/caps.py, clutch/config.py, clutch/drain.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: 148a8874
-# hash: 05bcbb7c18d1d2039fbe15187c590e74924ccb07e31e1f84b06697ed1c3bcb3a
+# verified: a0d5e388
+# hash: 059d9bc04f49b01448d6aadc95280f21bb5fb8107c7344d15cafe35c1a78f26c
 import asyncio
 import json
 from dataclasses import replace
@@ -27,6 +27,7 @@ from clutch.stages import PackingSlip, StageContext
 from clutch.tickets import validate_ticket
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import ENV, SPECS, STEM, author, git, repo  # noqa: F401
+from tests.spool_captures import list_captures
 
 
 def reply(verdict, passes):
@@ -93,7 +94,9 @@ def test_check_selects_or_parks(repo, tie):
 
     result = asyncio.run(run())
     render = ctx.config.state_dir / "scratch" / STEM / "0/render/a0"
-    assert not (ctx.driver.spool.root / STEM / "0/render").exists()
+    names = [name for _, name in list_captures(ctx.config.state_dir, STEM, 0)]
+    assert "review_visual/call-01/prompt.md" in names
+    assert not [name for name in names if name.startswith("render/")]
     assert all((render / f"cand-{k}.png.side-by-side.png").is_file() and (render / f"cand-{k}.png.heatmap.png").is_file() for k in (0, 1))
     if tie:
         assert [f.code for f in result.findings] == ["visual_undecided"]
@@ -177,4 +180,5 @@ def test_missing_visual_baseline_parks(repo):
     assert [f.code for f in result.findings] == ["visual_undecided"]
     assert git(repo, "rev-parse", STEM).strip() == before
     assert not (ctx.worktree(STEM) / "output.png").exists()
-    assert not (ctx.driver.spool.root / STEM / "0/render").exists()
+    names = [name for _, name in list_captures(ctx.config.state_dir, STEM, 0)]
+    assert not [name for name in names if name.startswith("render/")]

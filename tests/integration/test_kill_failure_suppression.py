@@ -5,8 +5,8 @@
 # purpose: Worker notification suppression and preserved bootstrap dormancy.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
 # owner: engine
-# verified: 148a8874
-# hash: 3074bad84f3ffc6408e0c16a9953332ec1bdb883656d16b2acb802d21952f4be
+# verified: a0d5e388
+# hash: 91488648ce14cd3d3b8ef060937bf2c0f1ae329a2479411a50ae50decb3314ec
 
 import asyncio
 import json
@@ -28,6 +28,7 @@ from tests.integration.test_kill_signal_journal import Rig, decision
 from tests.integration.test_kill_worker_stop import Worker, accepted, boundary, release_all
 from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready
+from tests.spool_captures import list_captures
 
 
 @asynccontextmanager
@@ -94,7 +95,9 @@ async def test_post_kill_worker_failures_are_suppressed(tmp_path):
             assert tasks[1].exception() is workers[1].failure
             assert all(task.done() and not task._log_traceback for task in tasks)
             assert rig.journal.read() == driver.journal.read() == before
-            assert not (state / "spools/t-echo/1/implement/call-01/output.txt").exists()
+            names = [name for _, name in list_captures(state, "t-echo", 1)]
+            assert "implement/call-01/prompt.md" in names
+            assert not [name for name in names if name == "implement/call-01/output.txt"]
     finally:
         writer.release.set()
         if not invocation.done():

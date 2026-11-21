@@ -5,8 +5,8 @@
 # purpose: Production CLI composition with a scripted provider and a real ticket-plane checkout.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: dd604324
-# hash: b2ae90338b3a675371e144cff96917581f06d87d44c8b035649d89b5927fc6a3
+# verified: a0d5e388
+# hash: 2ca75893b9a4f77d609390ff2f65542a0565f68206b283eb8e42f22eb1cf3b71
 
 import asyncio
 import json
@@ -22,6 +22,7 @@ from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+from tests.spool_captures import read_capture
 
 
 def test_triage_spec_places_reopen_condition_in_json():
@@ -172,8 +173,8 @@ def test_three_verdicts_and_second_pass_and_stale_author(tmp_path, monkeypatch, 
     keys = {e.key for e in events(root) if e.type == EventType.EFFECT_COMPLETION and e.key.startswith("llm/")}
     assert keys == {f"llm/triage/{m.seq}/triage/0/1" for m in messages} | {f"llm/author/0/author/{messages[2].seq}/1", f"llm/author/0/requisition_review/{messages[2].seq}/1"}
     for m in messages:
-        spool = root / ".clutch" / "state" / "spools" / "triage" / str(m.seq) / "0" / "triage" / "call-01"
-        assert (spool / "prompt.md").exists() and (spool / "output.txt").exists()
+        read_capture(root / ".clutch" / "state", f"triage/{m.seq}", 0, "triage/call-01/prompt.md")
+        read_capture(root / ".clutch" / "state", f"triage/{m.seq}", 0, "triage/call-01/output.txt")
     stale_id = enqueue(box, "stale concern")
     box.record_verdict(stale_id, Verdict(verdict="author", produced_by_spec_version="0.9", rationale="old"))
     assert run(root, monkeypatch, llm) == 0

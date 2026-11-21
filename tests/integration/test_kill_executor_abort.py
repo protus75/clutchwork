@@ -5,8 +5,8 @@
 # purpose: Executor unwind ordering and its activation through the production drain.
 # relates: [clutch/daemon.py, clutch/llm.py, tests/integration/test_cli.py, tests/integration/test_driver.py, tests/integration/test_kill_cli_activation.py]
 # owner: engine
-# verified: 148a8874
-# hash: 249754a5dd151c142f79bc72551294ddc97110981833c2f5be8547c2d212d184
+# verified: a0d5e388
+# hash: 578f20cd83c0ed73192969b56707260604806e3aab2dcb03ec4abc62cd61355a
 
 import asyncio
 from dataclasses import replace
@@ -16,8 +16,9 @@ import pytest
 from clutch import daemon
 from clutch.llm import FakeLLM, LLMAborted
 from tests.integration.test_cli import root
-from tests.integration.test_driver import ECHO, Stub, build, echo_json, log_events, spool
+from tests.integration.test_driver import ECHO, Stub, build, echo_json, log_events
 from tests.integration.test_kill_signal_journal import Rig, decision
+from tests.spool_captures import list_captures
 
 
 async def turn():
@@ -132,7 +133,9 @@ async def test_executor_abort_stops_writer_before_cancellation(tmp_path):
     assert driver._active is None and driver.journal.read() == before
     assert before[0].key == "llm/t-echo/0/implement/1/1"
     assert before[-1].body == decision("kill")
-    assert not (spool(state) / "implement/call-01/output.txt").exists()
+    names = [name for _, name in list_captures(state, "t-echo", 1)]
+    assert "implement/call-01/prompt.md" in names
+    assert not [name for name in names if name == "implement/call-01/output.txt"]
 
 
 @pytest.mark.asyncio
@@ -236,7 +239,9 @@ async def test_external_abort_does_not_reprompt_or_report_success(tmp_path, revi
     assert driver.journal.read() == before
     assert [e.type for e in before] == (["effect_intent", "effect_completion"] if review_wait else ["effect_intent"])
     assert not any(e["event"] in {"stage_end", "llm_error", "review_error", "gate_failed"} for e in log_events(state))
-    assert not (spool(state) / "implement/call-02").exists()
+    names = [name for _, name in list_captures(state, "t-echo", 1)]
+    assert "implement/call-01/prompt.md" in names
+    assert not [name for name in names if name.startswith("implement/call-02/")]
     assert driver._active is None
 
 

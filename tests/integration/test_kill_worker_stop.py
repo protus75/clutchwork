@@ -5,8 +5,8 @@
 # purpose: Executor-before-worker ordering and calibrated production dormancy.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 96e46658
-# hash: c3338844a6a28da44934365a60e869c9a467a082f24e190bf3752f2817c9ea90
+# verified: a0d5e388
+# hash: abf3533e0066381e3ccb5b53cd7253e7b66346f391235ecc64f40d61aea2c014
 
 import asyncio
 from functools import partial
@@ -22,6 +22,7 @@ from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert
 from tests.integration.test_driver import build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn
 from tests.integration.test_kill_signal_journal import Rig, decision
+from tests.spool_captures import list_captures
 
 
 def accepted(state):
@@ -126,7 +127,9 @@ async def test_executor_unwinds_before_worker_cancel(tmp_path):
         assert all(not task._log_traceback for task in tasks)
         assert [worker.cancellations for worker in peers] == [1, 1]
         assert driver.journal.read() == rig.journal.read() == before
-        assert not (state / "spools/t-echo/1/implement/call-01/output.txt").exists()
+        names = [name for _, name in list_captures(state, "t-echo", 1)]
+        assert "implement/call-01/prompt.md" in names
+        assert not [name for name in names if name == "implement/call-01/output.txt"]
     finally:
         writer.release.set()
         dispatch_release.set()

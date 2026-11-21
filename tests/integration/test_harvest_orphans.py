@@ -5,8 +5,8 @@
 # purpose: Reconcile-on-entry harvest through the production run composition.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: 148a8874
-# hash: d9b3567a14c8a9eeca27f44ffb40f4c76915968efed02bfdb6b9765d190bc0a4
+# verified: a0d5e388
+# hash: ca26ccc3baa281ed17fa2d51dc89fdaf78f48f0b6dc0d57d01a593adccc52e16
 
 from pathlib import Path
 
@@ -19,6 +19,7 @@ from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS
 from tests.integration.test_stages import ENV, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
+from tests.spool_captures import write_capture
 
 
 def history(repo: Path):
@@ -46,9 +47,7 @@ def orphan(repo: Path, attempt: int = 0) -> Path:
     (path / "clutch" / "thing.py").write_text("orphan edit\n")
     git(path, "add", "clutch/thing.py")
     git(path, "commit", "-m", "interrupted work")
-    spool = repo / ".clutch" / "state" / "spools" / STEM / str(attempt) / "implement"
-    spool.mkdir(parents=True)
-    (spool / "error.txt").write_text("provider died with useful detail")
+    write_capture(repo / ".clutch" / "state", STEM, attempt, "implement/error.txt", b"provider died with useful detail")
     return path
 
 

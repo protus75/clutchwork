@@ -5,8 +5,8 @@
 # purpose: Direct construction evidence; activation must migrate the dormancy assertion.
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
 # owner: engine
-# verified: 96e46658
-# hash: 2992daa8f9136165e186717f563e037ca8528ca687955f6c5b25fd294ac39143
+# verified: a0d5e388
+# hash: 857df25ca5500b6a03960db3c47c64d5826ad9bb77ed669ff9582b83a696946d
 
 import asyncio
 import hashlib
@@ -29,6 +29,7 @@ from clutch.stages import KNOWN_ARTIFACTS
 from clutch.tickets import ticket_path, validate_ticket
 from tests.integration.test_mergequeue import commit, conflict, ctx, import_closure
 from tests.integration.test_stages import TICKET
+from tests.spool_captures import read_capture
 
 run = asyncio.run
 SNAG = Finding(code="scope", path="clutch/thing.py", line=1, message="narrow the work", paved_road="retain only the first buildable piece", kind="authoring_error")
@@ -506,8 +507,7 @@ def test_rework_spec_render_and_driver(ctx, monkeypatch, mode):
             assert QUOTED_DELIM + "end ticket>>" in prompt and validate_data_blocks(prompt) == []
             for block in ["ticket", "findings", "retry_findings"]:
                 assert data_open(block) in prompt and data_close(block) in prompt
-            spool = ctx.config.state_dir / "spools/original/7/rework/call-01/prompt.md"
-            assert spool.read_text() == prompt
+            assert read_capture(ctx.config.state_dir, "original", 7, "rework/call-01/prompt.md").decode() == prompt
         if mode == "success":
             assert "invalid_artifact" in requests[1].rendered
             assert result.cost.tokens == 23 and result.cost.usd == pytest.approx(0.35)

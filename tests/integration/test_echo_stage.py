@@ -6,8 +6,8 @@ emits one -- runs end to end under the driver with the fake LLM."""
 # purpose: Phase 0 exit read (CLUTCH_PLAN.md 19.P0): a toy echo stage -- consumes a stub artifact,
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 148a8874
-# hash: d0cf82a6aae3615f61f01cf3ac68b15ebc88f73d29f0d7195e75d1cf57f8bfb2
+# verified: a0d5e388
+# hash: 67e5a769d3ca5f40017cfd44edccfc2a363a84edd381141e3647627a6cfd54a9
 
 import asyncio
 import json
@@ -21,6 +21,7 @@ from clutch.driver import Driver, LlmStage
 from clutch.gates import GateReport
 from clutch.journal import Journal
 from clutch.llm import FakeLLM
+from tests.spool_captures import read_capture
 
 CONFIG = textwrap.dedent(
     """\
@@ -107,9 +108,8 @@ def test_echo_stage_runs_end_to_end(tmp_path):
     assert result.findings == []
     assert result.cost.attempts == 1
     assert llm.requests[0].worktree is None  # echo is not a writing surface
-    call = state / "spools" / "t-echo" / "1" / "echo" / "call-01"
-    assert (call / "prompt.md").read_text() == llm.requests[0].rendered
-    assert "hello" in (call / "output.txt").read_text()
+    assert read_capture(state, "t-echo", 1, "echo/call-01/prompt.md").decode() == llm.requests[0].rendered
+    assert "hello" in read_capture(state, "t-echo", 1, "echo/call-01/output.txt").decode()
     events = [json.loads(line)["event"] for line in (state / "engine.log").read_text().splitlines()]
     assert events == ["stage_start", "llm_call", "stage_end"]
 
