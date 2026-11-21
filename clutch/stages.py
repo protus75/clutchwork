@@ -1911,7 +1911,7 @@ async def review(ctx: StageContext, ticket: Ticket, invoice: Invoice, *, attempt
         assert isinstance(verdict, ReviewVerdict)
     else:
         if not panel.members:
-            return StageResult(outcome="infra_error", artifact=None, findings=[], cost=Cost())
+            return StageResult(outcome="infra_error", artifact=None, findings=panel.dropped_findings, cost=Cost())
         for member in panel.members:
             if member.outcome != "ok":
                 return member

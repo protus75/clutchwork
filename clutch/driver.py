@@ -93,6 +93,7 @@ class ProviderDroughtResult(StageResult):
 class PanelResult:
     members: list[StageResult]
     dropped: list[DroppedMember]
+    dropped_findings: list[Finding] = field(default_factory=list)
 
 
 @dataclass
@@ -305,6 +306,7 @@ class Driver:
         started = self.clock()
         members: list[StageResult] = []
         dropped: list[DroppedMember] = []
+        dropped_findings: list[Finding] = []
         for index in range(size):
             remaining = stuck_budget - (self.clock() - started).total_seconds()
             if remaining <= 0:
@@ -330,11 +332,12 @@ class Driver:
                 break
             if result.outcome == "infra_error":
                 dropped.append(DroppedMember(index=index, failure_class="infra_error"))
+                dropped_findings.extend(result.findings)
                 continue
             members.append(result)
             if result.outcome != "ok":
                 break
-        return PanelResult(members, dropped)
+        return PanelResult(members, dropped, dropped_findings)
 
     async def _run(
         self,
