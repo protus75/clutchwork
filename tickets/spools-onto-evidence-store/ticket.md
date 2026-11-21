@@ -1,5 +1,5 @@
 ---
-state: draft
+state: rejected
 source: box:roadmap_row
 priority: P3
 kind: chore
