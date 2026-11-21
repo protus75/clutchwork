@@ -56,7 +56,7 @@ Scope in:
 - `tests/integration/test_roadmap_gate.py`: the `len(commands) == 3` assertion exempts `0.4.0` today; it exempts `0.5.0` too (the one edit the longer block forces). Nothing else there changes.
 - `docs/how-clutch-works.md` (section 2 `training eval` row) and `clutch/docs/host-running.md` (`training eval` row): add that eval exits 2 when it scored no held-out record. `clutch/docs/host-training.md` "Evaluate a review route": same sentence, and change "zero for no records" to say the run then exits 2.
 - A new unit test file `tests/unit/test_training_eval_scored_exit.py` with a `clutch:meta` header from `uv run clutch meta refresh` (edit only `purpose`; refresh needs the engine lock, so run it when serve is stopped, or the implementing worktree runs it).
-Scope out: `config.yaml` (enabling `training_data` is row 203), `clutch/training.py`, the triage lens, any `training export` change.
+Scope out: `tests/integration/test_roadmap_table.py` (reads the real roadmap only for its table, not the gate block, so it is unchanged) and `tests/unit/test_supervise_idle_hooks.py` (touches `docs/roadmap.md` as an empty file and runs no eval, so it is unchanged); `config.yaml` (enabling `training_data` is row 203), `clutch/training.py`, the triage lens, any `training export` change.
 
 ## Scope fence
 - clutch/__main__.py
