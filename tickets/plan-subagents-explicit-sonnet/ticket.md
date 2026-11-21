@@ -42,7 +42,7 @@ Scope in:
 - Update the existing test that forbids all provider-name mentions in these prompts to allow the deliberately introduced Claude/Sonnet model policy while continuing to reject workspace paths, shell commands and session facts. Add new rendered-prompt coverage in its own integration file.
 - Update the plan prompt descriptions in the host run guide and command table to mention the model-selection behavior.
 Scope out:
-- No new enforcement rule, agent conduct edit, config schema, parallelism setting, provider probing, or removal of adversarial audits. The measured cheaper-review comparison is delivered separately by `requisition-contract-review-comparison`.
+- No new enforcement rule, agent conduct edit, config schema, parallelism setting, provider probing, or removal of adversarial audits. The brief-default and explicit-full-audit policy is delivered separately by `requisition-contract-review-comparison`.
 
 ## Scope fence
 - clutch/specs/ask/plan-ticket-drain.md
