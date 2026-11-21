@@ -55,7 +55,7 @@ Why: the plan's narrow, high-volume surfaces (triage, review, ticket) are the fl
 Scope in:
 - `clutch/training.py`: the `triage` kind, `box_messages` keyword, the label rule, the `triage` count, and the `report` line.
 - `clutch/__main__.py`: add `triage` to the `--kinds` choices (not the default), read box messages when requested, pass them, and add `triage` to the `export` help text and example.
-- `tests/unit/test_training_export.py`: update only the two `training.report(dict(...))` calls so their dict carries `triage=0` (the new count key).
+- `tests/unit/test_training_export.py` (the two `training.report(dict(...))` calls), `tests/unit/test_training_ticket_kind.py` (the counts dict at line 118) and `tests/unit/test_training_index_join.py` (the stubbed `render` counts dict at line 123): add only `triage=0` to each hand-built counts dict, the new key `report` reads.
 - `tests/unit/test_main_training_group.py`: add `triage` to the accepted-kinds assertions only.
 - `clutch/docs/host-running.md` (`training export` row), `docs/how-clutch-works.md` (section 2 `training export` row) and `clutch/docs/host-training.md` (the kinds sentence): add `triage` to the kinds list and one clause that the label is the operator override of the verdict.
 - The plan document stays unedited (owner-revised); the `override_report` linkage gap is stated in Goal.
@@ -69,6 +69,8 @@ Scope out: a box field linking override_report messages to triaged messages; a `
 - clutch/docs/host-training.md
 - docs/how-clutch-works.md
 - tests/unit/test_training_export.py
+- tests/unit/test_training_ticket_kind.py
+- tests/unit/test_training_index_join.py
 - tests/unit/test_main_training_group.py
 - tests/unit/test_training_triage_records.py
 
@@ -81,7 +83,7 @@ Scope out: a box field linking override_report messages to triaged messages; a `
 
 ## Verification
 ```
-./dev.py test tests/unit/test_training_triage_records.py tests/unit/test_training_export.py tests/unit/test_main_training_group.py tests/unit/test_training_export_kinds.py tests/unit/test_training_export_conflict.py tests/unit/test_training_ticket_kind.py tests/unit/test_main_help.py tests/unit/test_host_running.py
+./dev.py test tests/unit/test_training_triage_records.py tests/unit/test_training_export.py tests/unit/test_main_training_group.py tests/unit/test_training_export_kinds.py tests/unit/test_training_export_conflict.py tests/unit/test_training_ticket_kind.py tests/unit/test_training_index_join.py tests/unit/test_main_help.py tests/unit/test_host_running.py
 ```
 
 ## Definition of rejected
