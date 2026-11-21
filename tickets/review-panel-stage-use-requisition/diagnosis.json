@@ -1,23 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "cedb74ca0a02eafb4db833772418ca4818fad910",
+  "produced_at_sha": "63fea83ed44524bee724de066c49b7e042334539",
   "stem": "review-panel-stage-use-requisition",
-  "attempt": 1,
-  "terminal": "gate_failed",
-  "stage": "review",
-  "verdict": "retry",
+  "attempt": 2,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
   "lessons": [
-    "Review approved the production code in clutch/requisition.py, driver.py, panel.py and rework.py. Redo it the same way: from the merge base, with one llm_call site, member keys m<k>-<run_seq>, findings_union(rma_code=None), and next_review_seq.",
-    "Criterion 1 in tests/unit/test_requisition_panel.py: for both the () and single-member stand-ins, compare each recorded llm_call kwargs dict to a literal expected dict. Every key must match, and the effects/llm/redactor objects must be the stand-ins. Do the same for the full begin_watch kwargs.",
-    "Criterion 1 also needs the stage_start/stage_end event payloads asserted as exact literal dicts (stage_end calls=2), plus the whole returned RequisitionVerdict and its fields. Partial checks like (run_seq, call_seq) pairs plus a watch count were the finding.",
-    "Criterion 4: compare the whole panel_facts event kwargs to one literal dict from the ticket's worked example. Include event, stem, attempt, run_seq, surface=requisition_review, combiner findings-union, member_count 2, verdict_counts, merged, the members entries, dropped [], kept_index None and",
-    "Before committing, delete each exact-value assertion for criteria 1 and 4 one at a time and confirm the test fails (a mutation check). Then run the ticket's ## Verification commands as written."
+    "Criterion 1 contradicts the code. In clutch/requisition.py::review_ticket (lines 257-270), begin_watch runs on every call while driver._active is None. Driver.race resets _active after each call, so the invalid-then-approve size-1 run calls begin_watch twice, not once.",
+    "Amend criterion 1 to require two begin_watch calls with identical arguments, one per call, which is today's behavior. Do not change the size-1 path to call it once: Definition of rejected forbids any size-1 change to calls or side effects.",
+    "Criterion 3 also says one begin_watch for three member calls. Under the same per-call rule there would be three calls with identical arguments. Restate it as one begin_watch per llm_call with the same identity. Driver.begin_watch (clutch/driver.py:553-557) returns early for a repeated identity.",
+    "Goal's 'one watch' means one watch identity (owner, run_seq, surface, attempt), which Driver.begin_watch already deduplicates. It does not mean one begin_watch call. Have the author state this so later attempts don't read it as a call count."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    3
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5"
