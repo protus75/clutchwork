@@ -6,7 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-- none
+- training-export-ship-gate
 
 ## Context
 - clutch/training.py::evaluate
