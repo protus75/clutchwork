@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+premise_failed
 
 ## Surprises / judgment calls
 
-A targeted test run found that an existing integration fixture has no reviewer route, so it cannot produce reusable provenance under the requested conservative rule; several Rework tests also still target the old call site.
+Those tests patch or inspect the existing module-level review_ticket call sites; retaining a compatibility path would conflict with the ticket's requirement to migrate every production caller and avoid parallel legacy paths.
 
 ## Dead ends
 
-None.
+Inspected all review_ticket references and the affected test call sites; no files were edited.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; the work remains unfinished.
+none
 
