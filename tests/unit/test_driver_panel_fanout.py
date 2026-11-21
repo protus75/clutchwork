@@ -4,8 +4,8 @@
 # purpose: test driver panel fanout
 # relates: [clutch/driver.py, clutch/llm.py, clutch/panel.py, clutch/providers.py, clutch/redact.py, tests/fakes.py]
 # owner: engine
-# verified: 0a308920
-# hash: 9fd272bcb1482beec37963246ca7cdbaf606c2405548b011df1e86c86654f584
+# verified: e3a6f154
+# hash: dea77aafbeb2928708ad6ecbcc20dd28272fcf8dcab9e99aeee1ff963e781d97
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,7 +18,9 @@ from clutch.llm import HANG, FakeLLM
 from clutch.panel import DroppedMember
 from clutch.providers import ProviderCallError, ProviderDrought
 from clutch.redact import Redactor
-from tests.fakes import FakeClock, FakeFileSystem, FakeJournal, turn
+from clutch.seams import LocalFileSystem
+from tests.fakes import FakeClock, FakeJournal, turn
+from tests.spool_captures import list_captures
 
 
 class Reply(BaseModel):
@@ -37,25 +39,27 @@ async def sleep(_):
     await asyncio.Event().wait()
 
 
-def rig(script):
-    clock, fs, redactor = FakeClock(), FakeFileSystem(), Redactor({})
+def rig(script, state_dir):
+    clock, redactor = FakeClock(), Redactor({})
     llm = FakeLLM(script)
-    driver = Driver(llm=llm, journal=FakeJournal(clock), redactor=redactor, spool=Spool(Path("/spool"), redactor, fs), log=Log(), clock=clock, sleep=sleep, severity={}, retry_cap=0)
+    driver = Driver(
+        llm=llm, journal=FakeJournal(clock), redactor=redactor, spool=Spool(state_dir / "spools", redactor, LocalFileSystem()), log=Log(), clock=clock, sleep=sleep, severity={}, retry_cap=0
+    )
     stage = LlmStage("review", Reply, [], lambda *_: "prompt")
     args = dict(ticket="item", attempt=1, workspace=Path("/repo"), tier="medium", effort="low", stuck_budget=100, expected_budget=30, scope_fence=())
-    return driver, stage, args, fs, clock, llm
+    return driver, stage, args, clock, llm
 
 
 @pytest.mark.asyncio
-async def test_member_keys_spools_and_single_member():
-    d, stage, args, fs, _, llm = rig(['{"text":"one"}', '{"text":"two"}'])
+async def test_member_keys_spools_and_single_member(tmp_path):
+    d, stage, args, _, llm = rig(['{"text":"one"}', '{"text":"two"}'], tmp_path)
     result = await d.run_panel(stage, None, size=2, **args)
     assert [x.artifact.text for x in result.members] == ["one", "two"]
     assert [e.key for e in d.journal.read() if e.type == "effect_completion"] == ["llm/item/m0-0/review/1/1", "llm/item/m1-0/review/1/1"]
-    assert {p for p in fs.files if p.name == "prompt.md"} == {Path("/spool/item/1/review/m0/call-01/prompt.md"), Path("/spool/item/1/review/m1/call-01/prompt.md")}
+    assert {name for _, name in list_captures(tmp_path, "item", 1) if name.endswith("prompt.md")} == {"review/m0/call-01/prompt.md", "review/m1/call-01/prompt.md"}
     assert len(llm.requests) == 2
-    panel, stage, args, _, _, panel_llm = rig(['{"text":"one"}'])
-    single, _, _, _, _, single_llm = rig(['{"text":"one"}'])
+    panel, stage, args, _, panel_llm = rig(['{"text":"one"}'], tmp_path)
+    single, _, _, _, single_llm = rig(['{"text":"one"}'], tmp_path)
     await panel.run_panel(stage, None, size=1, **args)
     await single.run(stage, None, **args)
     assert [e.key for e in panel.journal.read() if e.type == "effect_completion"] == [e.key for e in single.journal.read() if e.type == "effect_completion"] == ["llm/item/0/review/1/1"]
@@ -68,8 +72,8 @@ def failure():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("all_fail", [False, True])
-async def test_dropped(all_fail):
-    d, stage, args, _, _, _ = rig([failure(), failure() if all_fail else '{"text":"survivor"}'])
+async def test_dropped(all_fail, tmp_path):
+    d, stage, args, _, _ = rig([failure(), failure() if all_fail else '{"text":"survivor"}'], tmp_path)
     result = await d.run_panel(stage, None, size=2, **args)
     assert result.dropped == [DroppedMember(index=i, failure_class="infra_error") for i in range(2 if all_fail else 1)]
     assert [m.artifact.text for m in result.members] == ([] if all_fail else ["survivor"])
@@ -77,8 +81,8 @@ async def test_dropped(all_fail):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("elapsed", [30, 100])
-async def test_budget(elapsed):
-    d, stage, args, _, clock, llm = rig([])
+async def test_budget(elapsed, tmp_path):
+    d, stage, args, clock, llm = rig([], tmp_path)
 
     def first(_):
         clock.advance(elapsed)
@@ -100,9 +104,9 @@ async def test_budget(elapsed):
 
 
 @pytest.mark.asyncio
-async def test_drought_stops():
+async def test_drought_stops(tmp_path):
     refusal = SimpleNamespace(providers=["fake"], waited_seconds=2, open_until=None, paved_road="wait")
-    d, stage, args, _, _, llm = rig([ProviderDrought("medium", "review", refusal), '{"text":"unexpected"}'])
+    d, stage, args, _, llm = rig([ProviderDrought("medium", "review", refusal), '{"text":"unexpected"}'], tmp_path)
     result = await d.run_panel(stage, None, size=2, **args)
     assert len(result.members) == 1 and isinstance(result.members[0], ProviderDroughtResult)
     assert result.members[0].provider_drought == {"tier": "medium", "surface": "review", "providers": ["fake"]}
@@ -110,8 +114,8 @@ async def test_drought_stops():
 
 
 @pytest.mark.asyncio
-async def test_abort_stops():
-    d, stage, args, _, _, llm = rig([HANG, '{"text":"unexpected"}'])
+async def test_abort_stops(tmp_path):
+    d, stage, args, _, llm = rig([HANG, '{"text":"unexpected"}'], tmp_path)
     task = asyncio.create_task(d.run_panel(stage, None, size=2, **args))
     while not llm.requests:
         await turn()

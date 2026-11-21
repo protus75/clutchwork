@@ -5,8 +5,8 @@
 # purpose: Deterministic production soak harness.
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: d7719818
-# hash: 05cdd5c17ec55a08b3a0ae7caa5edc89f00514654c51851776e33815c501d3bb
+# verified: e3a6f154
+# hash: f00c8990c106070f0ffd17c970d38e14f478e549d8fee888f58a5d4b3cf7459a
 
 import asyncio
 import json
@@ -24,6 +24,7 @@ from clutch import caps, runner, serve
 from clutch.artifacts import Artifact, FrozenModel, Harvest, NonBlank, _check_ordered_members, _check_producing_run
 from clutch.audit import audit_journal
 from clutch.config import load_config
+from clutch.evidence.store import CaptureNotFound
 from clutch.git import Git
 from clutch.hostfiles import render
 from clutch.journal import TERMINAL_STATES, EventType, Journal
@@ -34,6 +35,15 @@ from clutch.reconcile import RECOVERY_ALERT
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import Invoice, read_review
 from tests.integration.test_git import commit_lock
+from tests.spool_captures import read_capture
+
+
+def capture_text(state_dir, stem, attempt, name):
+    try:
+        return read_capture(state_dir, stem, attempt, name).decode()
+    except CaptureNotFound:
+        return None
+
 
 DAEMON_SOAK_SPEC_VERSION = 1
 DAEMON_SOAK_MEMBERS = (
@@ -462,8 +472,8 @@ class _Member:
             self.publish("semantic", {"a.txt": "1\n"})
             await self.settled("semantic")
             harvest = self.harvest("semantic", 0)
-            spool = self.checkout.config.state_dir / "spools/semantic/0/merge-integration/verify-01.txt"
-            await self.file_fault("semantic", 0, "semantic-integration-red", "gate_failed", spool.read_text() + "; " + harvest.terminal + "; " + "; ".join(f.message for f in harvest.findings))
+            spool = read_capture(self.checkout.config.state_dir, "semantic", 0, "merge-integration/verify-01.txt").decode()
+            await self.file_fault("semantic", 0, "semantic-integration-red", "gate_failed", spool + "; " + harvest.terminal + "; " + "; ".join(f.message for f in harvest.findings))
         await self.recurring()
 
     async def recurring(self):
@@ -639,10 +649,9 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
         need(first == reviews["unresolved", 0].reviewed_sha and first != fresh and fresh == reviews["unresolved", 1].reviewed_sha, "corrected candidate reused approval")
         merged("mechanical", 0)
         for stem, seq in (("mechanical", 0), ("unresolved", 1)):
-            spool = m.checkout.config.state_dir / f"spools/{stem}/{seq}"
             need(
                 all(
-                    (spool / p).is_file() and "[exit 0]" in (spool / p).read_text()
+                    "[exit 0]" in (capture_text(m.checkout.config.state_dir, stem, seq, p) or "")
                     for p in ("check/verify-01.txt", "merge-safety/host-01.txt", "merge-integration/verify-01.txt", "merge-integration/host-01.txt")
                 ),
                 f"{stem} fresh Check/mechanical regating missing",
@@ -668,8 +677,8 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
         # Ticket-plane harvest/triage commits may move HEAD; compare the actual input tree at refusal.
         need((m.root / "a.txt").read_text() == "0\n" and (m.root / "b.txt").read_text() == "1\n", "semantic candidate changed main")
         need(await m.git._run(m.root, "show", "semantic:a.txt") == "1\n" and await m.git._run(m.root, "show", "semantic:b.txt") == "1\n", "refused candidate evidence not retained")
-        spool = m.checkout.config.state_dir / "spools/semantic/0/merge-integration/verify-01.txt"
-        need(spool.is_file() and "[exit 1]" in spool.read_text() and "AssertionError" in spool.read_text(), "real integration Verification red spool missing")
+        spool = capture_text(m.checkout.config.state_dir, "semantic", 0, "merge-integration/verify-01.txt")
+        need(spool is not None and "[exit 1]" in spool and "AssertionError" in spool, "real integration Verification red spool missing")
         harvest = m.harvest("semantic", 0)
         need(harvest.stage == "merge" and harvest.terminal == "gate_failed" and any(f.code == "verification" for f in harvest.findings), "semantic production harvest missing")
         need(not any(e.key == "merge/semantic/0" for e in events), "refused candidate reached merge")

@@ -4,8 +4,8 @@
 # purpose: test stages render check
 # relates: [clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: 21b0017eb0206730c1c3097b5c4973d3f27fb8cbbf0d7d280b7b8a071bda97d9
+# verified: e3a6f154
+# hash: 6742084df9ca5002d524ac5dd0c7d6c624661fdee259caa82c8e6efbf008e513
 import asyncio
 import json
 from datetime import datetime, timezone
@@ -16,6 +16,7 @@ import pytest
 
 from clutch import stages
 from clutch.seams import LocalFileSystem
+from tests.spool_captures import list_captures
 
 
 @pytest.mark.parametrize(
@@ -90,7 +91,7 @@ def test_success_and_error(monkeypatch, tmp_path):
     reports, hard = asyncio.run(stages.check_render(ctx, ticket, 4))
     assert not hard and reports[0].verdict == "pass"
     assert (tmp_path / "scratch/work/4/render/output/a.png").read_bytes() == data
-    assert not (tmp_path / "spools/work/4/render").exists()
+    assert not any(name.startswith("render/") for _, name in list_captures(tmp_path, "work", 4))
     assert calls == [("python", "tests/render/do.py")]
 
 

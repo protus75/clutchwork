@@ -4,8 +4,8 @@
 # purpose: test runner attempt manifest
 # relates: [clutch/config.py, clutch/evidence/store.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/unit/test_evidence_schema.py]
 # owner: engine
-# verified: 9a610809
-# hash: 7c014508be1b309c3e2bab2ca633c1095141b68e88226a9c55c4abe372e31063
+# verified: e3a6f154
+# hash: 7f2e2bc8e3e343bfe596b86ae1b0b7ae81f933024c584ff0838bb250d8fb898f
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -17,6 +17,7 @@ from clutch.config import TrainingData
 from clutch.evidence.store import EvidenceStore
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
+from tests.spool_captures import write_capture
 from tests.unit.test_evidence_schema import start
 
 
@@ -42,8 +43,7 @@ def test_manifest_harvest(tmp_path, monkeypatch, terminal):
     store = EvidenceStore(config.state_dir, fs, fs.read_bytes, fs.size, lambda s: s)
     for run_seq in (0, 1):
         store.write_record(f"llm/sample/{run_seq}/implement/0/0", "start", start())
-    check_file = config.state_dir / "spools/sample/1/check/output.txt"
-    fs.write(check_file, b"check failure")
+    write_capture(config.state_dir, "sample", 1, "check/output.txt", b"check failure")
     asyncio.run(run(1))
     asyncio.run(run(2))
     store = EvidenceStore(config.state_dir, fs, fs.read_bytes, fs.size, lambda s: s)
