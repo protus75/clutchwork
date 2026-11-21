@@ -1,0 +1,312 @@
+diff --git a/clutch/retro.py b/clutch/retro.py
+index 5d9c68b8..d5465b0d 100644
+--- a/clutch/retro.py
++++ b/clutch/retro.py
+@@ -273,7 +273,7 @@ def render_report(window: Window, evidence: dict, provenance: dict, tombstones:
+         "proposals": artifact.model_dump(exclude_defaults=True)["proposals"],
+     }
+     record["tombstone_reopens"] = [e.body for e in window.events if e.type == EventType.SIGNAL and e.body.get("kind") == "tombstone_auto_reopened"]
+-    from clutch.scorecard import project_scorecard
++    from clutch.scorecard import panel_lines, project_scorecard
+ 
+     card = project_scorecard(window)
+     table = [
+@@ -287,6 +287,7 @@ def render_report(window: Window, evidence: dict, provenance: dict, tombstones:
+         table.append(
+             f"| {surface} | {row.evaluated_tickets} | {row.catches} | {row.escapes} | {row.bypass_count} | {row.catch_rate:.4f} | {row.escape_rate:.4f} | {str(row.prune_candidate).lower()} |"
+         )
++    table.extend(panel_lines(card))
+     return "# Retro receipt\n\n```json\n" + json.dumps(record, indent=2, sort_keys=True) + "\n```\n\n" + "\n".join(table) + "\n"
+ 
+ 
+diff --git a/clutch/scorecard.py b/clutch/scorecard.py
+index 1d30e021..b83d4160 100644
+--- a/clutch/scorecard.py
++++ b/clutch/scorecard.py
+@@ -10,6 +10,8 @@ from clutch.artifacts import ReviewVerdict
+ from clutch.driver import unwrap_fence
+ from clutch.gates import ENGINE_GATE_CODES
+ from clutch.journal import EventType
++from clutch.llmeffect import member_index
++from clutch.panel import PanelMember, findings_union
+ from clutch.retro import Window, measurements
+ 
+ 
+@@ -25,6 +27,25 @@ class SurfaceScorecardRow:
+     prune_candidate: bool
+ 
+ 
++PANEL_OUTCOMES = ("no_panel_reviews", "no_cost_data", "measured")
++
++
++@dataclass(frozen=True)
++class PanelSlotRow:
++    slot: int
++    reviews: int
++    unique_catches: int
++    unique_per_100: float
++
++
++@dataclass(frozen=True)
++class PanelScorecard:
++    outcome: str
++    panel_reviews: int
++    slots: tuple[PanelSlotRow, ...]
++    cost_multiplier: float | None
++
++
+ @dataclass(frozen=True)
+ class Scorecard:
+     boundary: str
+@@ -34,6 +55,7 @@ class Scorecard:
+     signal_counts: Mapping[str, int]
+     gate_failure_count: int
+     surfaces: tuple[SurfaceScorecardRow, ...]
++    panel: PanelScorecard
+ 
+ 
+ def project_scorecard(window: Window) -> Scorecard:
+@@ -42,6 +64,7 @@ def project_scorecard(window: Window) -> Scorecard:
+     evaluated, caught, bypasses, pending, used_bypasses = {}, {}, {}, {}, {}
+     seen = set()
+     escapes = {}
++    groups, merges = {}, {}
+ 
+     def observe(surface, ticket, failed=False, bypassed=False):
+         evaluated.setdefault(surface, set()).add(ticket)
+@@ -50,7 +73,7 @@ def project_scorecard(window: Window) -> Scorecard:
+         if failed and not bypassed:
+             pending.setdefault(ticket, set()).add(surface)
+ 
+-    for event in window.events:
++    for index, event in enumerate(window.events):
+         stem, body = event.ticket, event.body
+         if event.type == EventType.EFFECT_COMPLETION:
+             if event.key in seen:
+@@ -69,14 +92,33 @@ def project_scorecard(window: Window) -> Scorecard:
+                     bypasses[code] += 1
+                     used.add((ticket, code))
+             parts = (event.key or "").split("/")
++            slot = member_index(event.key)
++            if slot is not None and parts[3] == "review" and stem and isinstance(body, dict):
++                cost = body.get("cost")
++                usd = 0.0 if "cost" not in body else cost.get("usd") if isinstance(cost, dict) else None
++                if isinstance(usd, (int, float)) and not isinstance(usd, bool):
++                    group = groups.setdefault((stem, parts[2].split("-")[1], parts[4]), {"last": index, "slots": {}})
++                    group["last"] = index
++                    member = group["slots"].setdefault(slot, {"cost": 0.0, "reply": None, "seq": -1})
++                    member["cost"] += usd
++                    try:
++                        text = body["result"]["text"]
++                        reply = ReviewVerdict.model_validate_json(unwrap_fence(text))
++                    except KeyError, TypeError, AttributeError, ValidationError:
++                        pass
++                    else:
++                        if int(parts[5]) > member["seq"]:
++                            member["reply"], member["seq"] = reply, int(parts[5])
+             if len(parts) == 6 and parts[0] == "llm" and parts[3] == "review" and stem:
+                 try:
+                     verdict = ReviewVerdict.model_validate_json(unwrap_fence(body["result"]["text"]))
+-                except KeyError, ValidationError:
++                except KeyError, TypeError, AttributeError, ValidationError:
+                     continue  # Schema-invalid calls are spend, not a review verdict.
+                 observe("review", stem, verdict.verdict in {"snag", "rma"})
+         elif event.type == EventType.STATE_TRANSITION and stem:
+             state = body.get("to")
++            if state == "merged":
++                merges.setdefault(stem, []).append(index)
+             if state == "gate_failed":
+                 # A gate terminal's reason is the runner's comma-separated finding codes.
+                 for code in body.get("reason", "").split(","):
+@@ -86,6 +128,28 @@ def project_scorecard(window: Window) -> Scorecard:
+                 for surface in pending.get(stem, ()):
+                     caught[surface].add(stem)
+ 
++    counts, panel_reviews, total_cost, baseline = {}, 0, 0.0, 0.0
++    for (stem, _run, _attempt), group in sorted(groups.items(), key=lambda item: item[1]["last"]):
++        slots = group["slots"]
++        present = sorted(slot for slot, member in slots.items() if member["reply"] is not None)
++        if len(present) < 2:
++            continue
++        panel_reviews += 1
++        total_cost += sum(slots[slot]["cost"] for slot in present)
++        baseline += slots[present[0]]["cost"]
++        for slot in present:
++            counts.setdefault(slot, [0, 0])[0] += 1
++        replies = [slots[slot]["reply"] for slot in present]
++        members = [PanelMember(provider="unknown", model="unknown", verdict=reply.verdict) for reply in replies]
++        _, facts = findings_union(replies, members)
++        if any(position > group["last"] for position in merges.get(stem, ())):
++            for finding in facts.merged:
++                if len(finding.members) == 1:
++                    counts[present[finding.members[0]]][1] += 1
++    panel_rows = tuple(PanelSlotRow(slot, reviews, catches, 100 * catches / reviews) for slot, (reviews, catches) in sorted(counts.items()))
++    outcome = "no_panel_reviews" if not panel_reviews else "no_cost_data" if not baseline else "measured"
++    panel = PanelScorecard(outcome, panel_reviews, panel_rows, total_cost / baseline if baseline else None)
++
+     rows = []
+     for surface in sorted(evaluated.keys() | escapes.keys()):
+         count, catches = len(evaluated.get(surface, ())), len(caught.get(surface, ()))
+@@ -95,4 +159,22 @@ def project_scorecard(window: Window) -> Scorecard:
+         )
+     tokens = MappingProxyType({direction: MappingProxyType(dict(evidence[f"{direction}_tokens"])) for direction in ("input", "output")})
+     signals = MappingProxyType(dict(evidence["spikes"]))
+-    return Scorecard(window.boundary, evidence["merged_count"], evidence["usd"], tokens, signals, signals["gate-failure"], tuple(rows))
++    return Scorecard(window.boundary, evidence["merged_count"], evidence["usd"], tokens, signals, signals["gate-failure"], tuple(rows), panel)
++
++
++def panel_lines(card: Scorecard) -> list[str]:
++    panel = card.panel
++    if panel.outcome == "no_panel_reviews":
++        return []
++    multiplier = f"{panel.cost_multiplier:.2f}" if panel.cost_multiplier is not None else "n/a"
++    lines = [
++        "",
++        "## Panel scorecard",
++        "",
++        f"Panel reviews: {panel.panel_reviews}; cost multiplier: {multiplier}",
++        "",
++        "| Slot | Reviews | Unique catches | Unique catches per 100 reviews |",
++        "| ---: | ---: | ---: | ---: |",
++    ]
++    lines.extend(f"| {row.slot} | {row.reviews} | {row.unique_catches} | {row.unique_per_100:.2f} |" for row in panel.slots)
++    return lines
+diff --git a/clutch/status.py b/clutch/status.py
+index 7de649b2..1592482f 100644
+--- a/clutch/status.py
++++ b/clutch/status.py
+@@ -10,7 +10,7 @@ from typing import Literal
+ 
+ from clutch.journal import Event, EventType, total_spend
+ from clutch.retro import Window, project_window
+-from clutch.scorecard import Scorecard, project_scorecard
++from clutch.scorecard import Scorecard, panel_lines, project_scorecard
+ from clutch.tickets import INTAKE_SIGNAL
+ 
+ # A no-op proof settles a stem just as a merge does.
+@@ -283,6 +283,7 @@ def render(status: Status) -> str:
+         table.append(
+             f"| {surface} | {row.evaluated_tickets} | {row.catches} | {row.escapes} | {row.bypass_count} | {row.catch_rate:.4f} | {row.escape_rate:.4f} | {str(row.prune_candidate).lower()} |"
+         )
++    table.extend(panel_lines(card))
+     return (
+         "\n\n".join(
+             (
+diff --git a/tests/unit/test_panel_scorecard.py b/tests/unit/test_panel_scorecard.py
+new file mode 100644
+index 00000000..162c59a2
+--- /dev/null
++++ b/tests/unit/test_panel_scorecard.py
+@@ -0,0 +1,112 @@
++"""Panel attribution from journaled review replies."""
++# clutch:meta
++# schema: clutch.meta/1.0
++# kind: test
++# purpose: Verify panel scorecard attribution and rendering.
++# relates: [clutch/journal.py, clutch/retro.py, clutch/scorecard.py, clutch/status.py]
++# owner: engine
++# verified: 5110a5cc
++# hash: 07f6349b13936ada94b607505b14fb53882fa8134bfb409c4cda368d07a5ff22
++
++import json
++
++from clutch.journal import Event, EventType
++from clutch.retro import RetroArtifact, measurements, project_window, render_report
++from clutch.scorecard import PANEL_OUTCOMES, panel_lines, project_scorecard
++from clutch.status import Status, render
++
++
++def call(slot, attempt, seq, findings=(), *, cost=1.0, stem="a", text=None):
++    verdict = {"verdict": "snag" if findings else "approve", "summary": "review", "findings": list(findings)}
++    body = {"result": {"text": json.dumps(verdict) if text is None else text, "provider": " ", "model": " "}}
++    if cost is not None:
++        body["cost"] = {"usd": cost}
++    return Event(1, EventType.EFFECT_COMPLETION, "2026-01-01T00:00:00+00:00", stem, f"llm/{stem}/m{slot}-0/review/{attempt}/{seq}", body)
++
++
++def finding(path, line):
++    return {"code": "logic", "path": path, "line": line, "message": "problem", "paved_road": "fix it"}
++
++
++def merge(stem="a"):
++    return Event(1, EventType.STATE_TRANSITION, "2026-01-01T00:00:01+00:00", stem, None, {"to": "merged"})
++
++
++def worked():
++    shared, unique = finding("a.py", 3), finding("b.py", 9)
++    return [call(1, 0, 0, [shared, unique], cost=0.5), call(0, 0, 0, [shared]), call(0, 1, 0), call(1, 1, 0, cost=0.5), merge()]
++
++
++def test_worked_and_rendering(monkeypatch):
++    window = project_window(worked())
++    card = project_scorecard(window)
++    assert PANEL_OUTCOMES == ("no_panel_reviews", "no_cost_data", "measured")
++    assert card.panel.outcome == "measured" and card.panel.panel_reviews == 2
++    assert [(r.slot, r.reviews, r.unique_catches, r.unique_per_100) for r in card.panel.slots] == [(0, 2, 0, 0.0), (1, 2, 1, 50.0)]
++    assert card.panel.cost_multiplier == 1.5
++    lines = [
++        "",
++        "## Panel scorecard",
++        "",
++        "Panel reviews: 2; cost multiplier: 1.50",
++        "",
++        "| Slot | Reviews | Unique catches | Unique catches per 100 reviews |",
++        "| ---: | ---: | ---: | ---: |",
++        "| 0 | 2 | 0 | 0.00 |",
++        "| 1 | 2 | 1 | 50.00 |",
++    ]
++    assert panel_lines(card) == lines
++    status = Status(merged=(), in_flight=(), blocked=(), intake=(), spend_usd=0.0, scorecard=card)
++    assert render(status).endswith("\n".join(lines) + "\n")
++    assert render_report(window, measurements(window), {}, [], RetroArtifact(proposals=[])).endswith("\n".join(lines) + "\n")
++    empty = project_window([call(0, 0, 0)])
++    empty_card = project_scorecard(empty)
++    empty_status = Status(merged=(), in_flight=(), blocked=(), intake=(), spend_usd=0.0, scorecard=empty_card)
++    report = render_report(empty, measurements(empty), {}, [], RetroArtifact(proposals=[]))
++    status_text = render(empty_status)
++    monkeypatch.setattr("clutch.scorecard.panel_lines", lambda card: [])
++    monkeypatch.setattr("clutch.status.panel_lines", lambda card: [])
++    assert report == render_report(empty, measurements(empty), {}, [], RetroArtifact(proposals=[]))
++    assert status_text == render(empty_status)
++    assert report.endswith("| review | 1 | 0 | 0 | 0 | 0.0000 | 0.0000 | false |\n")
++    assert status_text.endswith("| review | 1 | 0 | 0 | 0 | 0.0000 | 0.0000 | false |\n")
++
++
++def test_confirmation_and_missing_slot():
++    events = [call(1, 0, 0), call(2, 0, 0, [finding("b.py", 9)])]
++    unmerged = project_scorecard(project_window(events)).panel
++    assert [(r.slot, r.unique_catches) for r in unmerged.slots] == [(1, 0), (2, 0)]
++    merged = project_scorecard(project_window(events + [merge()])).panel
++    assert [(r.slot, r.unique_catches) for r in merged.slots] == [(1, 0), (2, 1)]
++    before = project_scorecard(project_window([merge()] + events)).panel
++    assert before.slots[1].unique_catches == 0
++
++
++def test_invalid_reprompts_cost_and_empty():
++    invalid = call(1, 0, 0, text="bad", cost=0.25)
++    valid = call(1, 0, 1, [finding("b.py", 9)], cost=0.5)
++    events = [call(0, 0, 0, cost=1), invalid, valid, valid, merge()]
++    panel = project_scorecard(project_window(events)).panel
++    assert panel.panel_reviews == 1 and panel.cost_multiplier == 1.75
++    assert [(r.reviews, r.unique_catches) for r in panel.slots] == [(1, 0), (1, 1)]
++    for events in (
++        [call(0, 0, 0), invalid],
++        [Event(1, EventType.EFFECT_COMPLETION, "2026-01-01T00:00:00+00:00", "a", "llm/a/0/review/0/0", {"result": {"text": '{"verdict":"approve","summary":"ok","findings":[]}'}})],
++    ):
++        card = project_scorecard(project_window(events))
++        assert card.panel.outcome == "no_panel_reviews" and card.panel.slots == () and card.panel.cost_multiplier is None
++        assert panel_lines(card) == []
++    card = project_scorecard(project_window([call(0, 0, 0, cost=None), call(1, 0, 0, cost=1)]))
++    assert card.panel.outcome == "no_cost_data" and card.panel.cost_multiplier is None
++    assert len(card.panel.slots) == 2 and "cost multiplier: n/a" in panel_lines(card)[3]
++
++
++def test_invalid_shapes_and_highest_valid_sequence():
++    old = call(2, 0, 0, [finding("old.py", 2)], cost=0.2)
++    new = call(2, 0, 2, [finding("new.py", 3), finding("other.py", 4)], cost=0.3)
++    invalid = call(2, 0, 3, text="invalid", cost=0.4)
++    bad_key = Event(1, EventType.EFFECT_COMPLETION, old.ts, "a", "llm/a/m3-x/review/0/0", old.body)
++    empty_ticket = Event(1, EventType.EFFECT_COMPLETION, old.ts, "", "llm/a/m4-0/review/0/0", old.body)
++    card = project_scorecard(project_window([call(1, 0, 0), new, old, invalid, bad_key, empty_ticket, merge()]))
++    assert [(r.slot, r.unique_catches) for r in card.panel.slots] == [(1, 0), (2, 2)]
++    assert card.panel.cost_multiplier == 1.9
