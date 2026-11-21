@@ -7,8 +7,8 @@ from pydantic import Field
 
 from clutch.artifacts import Finding, FrozenModel, NonBlank, ReviewVerdict
 
-DIAGNOSIS_ORDER = ("escalate", "retry")
-TRIAGE_ORDER = ("declined", "author")
+DIAGNOSIS_ORDER = ("escalate", "abandon-human", "split", "reject", "retry")
+TRIAGE_ORDER = ("declined", "tombstone", "author")
 
 
 class PanelMember(FrozenModel):

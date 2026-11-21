@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 5110a5cc
-hash: 460b0a55db5c4ef28c710f57be61335f1ea97ad04c3212f9ad45c795403a314f
+verified: d262e447
+hash: 5b722db2a7aeba9f26ca774dbc2719e5e0b34861e52a7351e8a5333fa639f8db
 -->
 # How ClutchWork works
 
@@ -409,6 +409,8 @@ and replies with a verdict and 1-5 lessons:
 - `split`: Rework the ticket into smaller ones.
 - `reject`, `abandon-human`: send it to the Reject queue.
 
+A `majority-verdict` panel on the diagnose route runs N member diagnoses and writes one `diagnosis.json` from the majority verdict, breaking ties by `escalate`, `abandon-human`, `split`, `reject`, `retry`.
+
 An over-long lesson is trimmed at a word boundary and its index recorded in `diagnosis.json` `trimmed_lessons` rather than refused.
 
 If a cap is already spent or the worktree is gone, the verdict is a mechanical `abandon-human`
@@ -654,7 +656,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 
 `routing` rows map `(tier, surface)` to an ordered list of candidates. An optional `kinds` list restricts a row to those ticket kinds; matching kind rows precede unrestricted rows for the requested surface and then review. A surface with no row
 falls back to the `(tier, review)` row. The model is the candidate's `model` or the provider's
-`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review and requisition review fan out, while the other surfaces do not yet.
+`models_by_tier[tier]`. An optional `panel` declares a size and surface-compatible combiner; review, requisition review, and diagnose fan out, while the other surfaces do not yet.
 
 ### 8.3 Admission, breakers, droughts
 

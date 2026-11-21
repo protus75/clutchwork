@@ -53,7 +53,7 @@ from clutch.hostfiles import CORE_TEMPLATE, CoreDriftGate, committed_core
 from clutch.journal import EventType, last_transition, run_seq
 from clutch.journal import run_seq as journal_run_seq
 from clutch.llmeffect import llm_key, scoped_seq
-from clutch.panel import PanelMember, findings_union
+from clutch.panel import DIAGNOSIS_ORDER, PanelMember, findings_union, majority_verdict
 from clutch.providers import ProviderSetupError, child_env, panel_members
 from clutch.seams import ExecutableNotFound, FileSystem, ProcessExec
 from clutch.specs import RenderOverBound, Spec, load_spec, render
@@ -471,11 +471,34 @@ async def write_diagnosis(
     return record
 
 
+def _panel_combine(panel, selected):
+    replies = [member.artifact for member in panel.members]
+    indexes = [i for i in range(len(selected)) if i not in {d.index for d in panel.dropped}]
+    members = [
+        PanelMember(provider=member.cost.provider or selected[index].provider.name, model=member.cost.model or selected[index].model, verdict=reply.verdict)
+        for member, reply, index in zip(panel.members, replies, indexes, strict=False)
+    ]
+    costs = [member.cost for member in panel.members]
+    cost = Cost(
+        tokens=sum(c.tokens for c in costs) if all(c.tokens is not None for c in costs) else None,
+        seconds=sum(c.seconds for c in costs),
+        attempts=sum(c.attempts for c in costs),
+        usd=sum(c.usd for c in costs),
+        provider=costs[0].provider,
+        model=costs[0].model,
+    )
+    return replies, members, cost
+
+
 async def diagnose(ctx: StageContext, ticket: Ticket, material: DiagnosisMaterial, *, attempt: int) -> Diagnosis:
     spec = _spec(ctx, "diagnose")
-    result = await ctx.driver.run(
-        diagnose_stage(spec, material),
-        material,
+    stage = diagnose_stage(spec, material)
+    try:
+        selected = panel_members(ctx.config, ticket.frontmatter.agent_tier, "diagnose", ticket.frontmatter.kind)
+    except ProviderSetupError:
+        selected = ()
+    size = len(selected) or 1
+    kwargs = dict(
         ticket=ticket.stem,
         kind=ticket.frontmatter.kind,
         attempt=attempt,
@@ -486,6 +509,22 @@ async def diagnose(ctx: StageContext, ticket: Ticket, material: DiagnosisMateria
         expected_budget=ticket.expected_minutes * 60.0,
         scope_fence=(),
     )
+    if size == 1:
+        result = await ctx.driver.run(stage, material, **kwargs)
+    else:
+        panel = await ctx.driver.run_panel(stage, material, size=size, **kwargs)
+        if not panel.members:
+            result = StageResult("infra_error", None, [], Cost())
+        elif bad := next((member for member in panel.members if member.outcome != "ok"), None):
+            result = bad
+        else:
+            replies, members, cost = _panel_combine(panel, selected)
+            assert all(isinstance(reply, DiagnosisReply) for reply in replies)
+            reply, facts = majority_verdict(replies, DIAGNOSIS_ORDER, members, panel.dropped)
+            winner = next(i for i, candidate in enumerate(replies) if candidate is reply)
+            cost = Cost(tokens=cost.tokens, seconds=cost.seconds, attempts=cost.attempts, usd=cost.usd, provider=members[winner].provider, model=members[winner].model)
+            result = StageResult("ok", reply, [], cost)
+            ctx.driver.log.event("panel_facts", stem=ticket.stem, attempt=attempt, surface="diagnose", **facts.model_dump())
     reply = result.artifact
     if result.outcome == "ok" and isinstance(reply, DiagnosisReply):
         return await write_diagnosis(
@@ -1915,24 +1954,10 @@ async def review(ctx: StageContext, ticket: Ticket, invoice: Invoice, *, attempt
         for member in panel.members:
             if member.outcome != "ok":
                 return member
-        replies = [member.artifact for member in panel.members]
+        replies, members, cost = _panel_combine(panel, selected)
         assert all(isinstance(reply, ReviewVerdict) for reply in replies)
-        indexes = [i for i in range(size) if i not in {d.index for d in panel.dropped}]
-        members = [
-            PanelMember(provider=member.cost.provider or selected[index].provider.name, model=member.cost.model or selected[index].model, verdict=reply.verdict)
-            for member, reply, index in zip(panel.members, replies, indexes, strict=False)
-        ]
         verdict, facts = findings_union(replies, members, panel.dropped)
         ctx.driver.log.event("panel_facts", stem=stem, attempt=attempt, surface="review", **facts.model_dump())
-        costs = [member.cost for member in panel.members]
-        cost = Cost(
-            tokens=sum(c.tokens for c in costs) if all(c.tokens is not None for c in costs) else None,
-            seconds=sum(c.seconds for c in costs),
-            attempts=sum(c.attempts for c in costs),
-            usd=sum(c.usd for c in costs),
-            provider=costs[0].provider,
-            model=costs[0].model,
-        )
         result = StageResult(outcome="ok", artifact=verdict, findings=[], cost=cost)
     artifact = EMITS_BY_VERDICT[verdict.verdict](
         produced_by_spec_version=_major(spec),
