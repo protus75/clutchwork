@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "30f12ae4dbe82636d07299ba034e5a36aea74864",
+  "stem": "visual-baseline-go-gate",
+  "attempt": 3,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: Scope in requires clutch/baseline.py to print `run ./dev.py visual-baseline ...`, but tests/integration/test_engine_text_verbs.py:28-30 fails on any 'dev.py' text anywhere under clutch/. That test is outside the fence, so the ticket cannot pass as written.",
+    "Re-author the paved road so it names no dev.py. Options: add an engine-owned `clutch` verb that records the visual_baseline signal, or fence and revise test_engine_text_verbs.py with an explicit rule. Either way the change needs a decision from the ticket author.",
+    "Acceptance criterion 3 also pins the `./dev.py visual-baseline` line. Update it together with Scope in so that the criteria and the engine-text check agree. CLAUDE.md B 'Command surface' says a missing engine task becomes a `clutch` verb.",
+    "The rest of the approach was sound: a baseline.py function that wraps resolve_visual_baseline(...).binds and returns (ok, lines), the roadmap `visual-baseline` subcommand via _command, and the doc rows. The ticket's verification passed with 60 tests. Keep that design when refiling."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
