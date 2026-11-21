@@ -4,11 +4,11 @@ incomplete
 
 ## Surprises / judgment calls
 
-Report intake retries all unconsumed arrivals together, so enforcing a per-arrival retry interval requires care when new reports arrive.
+The scan snapshot must account for changes made by intake itself, as well as pending ticket state, without causing another exclusive poll during a run.
 
 ## Dead ends
 
-A watch-only change would leave the other idle polls blocking admission, so it was removed.
+A preliminary scan snapshot was removed because it would trigger another exclusive poll after intake changed the repository.
 
 ## Second problems filed
 
