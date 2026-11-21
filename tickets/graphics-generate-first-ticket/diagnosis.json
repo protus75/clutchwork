@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "7d52e388b0ed6817c030f59c104dc7914328f94c",
+  "stem": "graphics-generate-first-ticket",
+  "attempt": 2,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false: clutch/merge.py write_squash calls git.merge_squash with squash_message, giving subject `clutch(<stem>): <Goal line>`. Check's `clutch(<stem>): select` commit stays on the ticket branch, so it is never reachable from HEAD after a normal merge.",
+    "Re-author the contract around evidence that survives the squash merge. The ticket does not say what durable merge provenance records a select, such as a trailer in squash_message or an artifact lifted to main, so the author must name it first.",
+    "If the fix adds a select trailer to clutch/merge.py squash_message, or makes Check lift a select record to main, fence that file and its tests. Otherwise, write a separate ticket that runs before this one and makes the change.",
+    "Acceptance criteria 1-3 use a fake history with a `clutch(art): select` commit on HEAD, which real merges never produce. Rewrite them against the chosen durable provenance so the tests match the real merge path."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
