@@ -24,7 +24,7 @@ none
 - docs/how-clutch-works.md
 
 ## Goal / Why
-Roadmap row 179 as filed holds four call sites (review, diagnosis, triage, requisition review), each with its own artifact model, tie order and tests. That is more than one run, so this ticket takes the first slice, the `review` stage, the surface `docs/stage-panels-plan.md` section 4 names first. After it, a routing row `{tier, surface: review, panel: {size: N, combine: findings-union}}` makes Review run N member reviews through `Driver.run_panel` and use the `findings-union` result as the one `review.md`. Today `Route.panel`, `clutch/panel.py` and `run_panel` are merged but no stage calls them, so a configured panel does nothing. The rest of row 179 moves to two follow-up rows added here (see Scope in): `review-panel-stage-use-majority` (diagnosis and triage, `majority-verdict`, with the full tie order) and `review-panel-stage-use-requisition` (requisition review, `findings-union`, member keys around its own `llm_call`).
+Roadmap row 179 as filed holds four call sites (review, diagnosis, triage, requisition review), each with its own artifact model, tie order and tests. That is more than one run, so this ticket takes the first slice, the `review` stage, the surface `docs/stage-panels-plan.md` section 4 names first. After it, a routing row `{tier, surface: review, panel: {size: N, combine: findings-union}}` makes Review run N member reviews through `Driver.run_panel` and use the `findings-union` result as the one `review.md`. Today `Route.panel`, `clutch/panel.py` and `run_panel` are merged but no stage calls them, so a configured panel does nothing. The rest of row 179 moves to two follow-up roadmap rows that already exist (rows 192 and 193): `review-panel-stage-use-majority` (diagnosis and triage, `majority-verdict`, with the full tie order) and `review-panel-stage-use-requisition` (requisition review, `findings-union`, member keys around its own `llm_call`).
 
 Design, read from the merged code:
 - Size comes from `len(providers.panel_members(ctx.config, tier, "review", kind))`: it is `Route.panel.size` for a row whose surface is `review`, and 1 otherwise. Config load already refuses any combiner but `findings-union` on a `review` row, so Review never reads `combine`; there is one combiner for this surface.
@@ -36,7 +36,7 @@ Outcomes, each by name:
 - **All members ok**: every member's artifact is a `ReviewVerdict`; `panel.findings_union(replies, members, dropped)` combines them.
 - **Member failing**: a member whose provider call fails is in `PanelResult.dropped`; the surviving members are combined. `panel_facts.dropped` records it (`index` is the member's original index, `failure_class` `infra_error`).
 - **One member left**: a size-2 panel with one dropped member combines one reply. The verdict, summary and findings equal that member's, `agreement` reads `1/1`, `member_count` is 2.
-- **All members failing**: `PanelResult.members` is empty; Review returns `StageResult(outcome="infra_error", artifact=None, findings=[], cost=Cost())`. The `quota_exhausted` finding of the dropped calls is not carried (`PanelResult` has no findings); the driver's own notification still fires. This is the dropped-findings gap filed to the Suggestion Box, not fixed here.
+- **All members failing, or the stuck budget exhausted before any member finished** (`run_panel` stops silently when the budget runs out, so `PanelResult.members` holds fewer members than `size`, and none when it ran out at the start): `PanelResult.members` is empty; Review returns `StageResult(outcome="infra_error", artifact=None, findings=[], cost=Cost())`. The `quota_exhausted` finding of the dropped calls is not carried (`PanelResult` has no findings); the driver's own notification still fires. This is the dropped-findings gap filed to the Suggestion Box, not fixed here.
 - **Member not ok**: if any member in `PanelResult.members` has an outcome other than `ok` (a `timeout`, a `budget_exceeded`, a `ProviderDroughtResult`), Review returns the first such result unchanged, as the single call does today, and writes no `review.md`.
 - **Tie**: `findings_union` has no tie; the verdict is the worst any member gave (`rma` over `snag` over `approve`). A two-member `snag`/`approve` panel is `snag`; `approve`/`approve` is `approve` with no findings.
 - **Over-bound render**: `RenderOverBound` raised while rendering returns `premise_failed` exactly as today, for either path (render happens before the first member call).
@@ -68,13 +68,12 @@ Scope in:
 Scope out:
 - Diagnosis, triage and requisition review (the two follow-up rows above), the `majority-verdict` tie order, `clutch/driver.py` and `PanelResult` (a dropped member's findings stay lost, filed to the Suggestion Box), per-member scorecard attribution (row 68), best-of-N, and any prompt spec.
 - The review prompt spec: unchanged, so no version bump and no spec pin test.
-- Merge order: `spools-onto-evidence-store-r2` (draft) also edits `clutch/stages.py` but in `run_host_command` and the regression writer, not `review`; either order merges. `spools-test-helper` (running) fences tests/unit/test_route_kinds_filter.py for its own `Spool` lines only; this ticket edits a different line there, so either order merges.
+- Merge order: this ticket's new test builds a `Driver` through the `rig` of `tests/unit/test_driver_panel_fanout.py`, which constructs `Spool(...)`; `spools-onto-evidence-store-r2` (draft, reworked after the `spools-test-helper` chain merges) will change how `Spool` is built, so that ticket's author re-greps `Spool(` over `tests/` against main and fences this ticket's test file if it constructs one; this ticket does not depend on it. `spools-test-helper` (running) lists `tests/unit/test_route_kinds_filter.py` as left alone, so no running ticket fences it; the config stand-in edit here is one line. `spools-onto-evidence-store-r2` edits `clutch/stages.py` in `run_host_command` and the regression writer, not `review`.
 
 ## Scope fence
 - clutch/stages.py
 - tests/unit/test_review_panel_use.py
 - tests/unit/test_route_kinds_filter.py
-- docs/stage-panels-plan.md
 - docs/how-clutch-works.md
 
 ## Acceptance criteria
@@ -98,6 +97,6 @@ Scope out:
 A size-1 or unset panel that calls `run_panel`, or any change to its `review.md` bytes, `StageResult` or effect keys; a second `review.md` write path; two driver call sites that build their keyword arguments separately; a `panel_facts` record written to the journal; any edit to `clutch/driver.py`, `clutch/panel.py`, the review prompt spec or a diagnosis, triage or requisition file.
 
 ## Time budget
-- expected: 25m
-- stuck: 50m
+- expected: 30m
+- stuck: 60m
 - reason: one function in `clutch/stages.py`, one new test file and three small doc edits; the other three call sites are split into the two follow-up rows, and the merged `run_panel`, `findings_union` and `panel_members` carry the mechanism.
