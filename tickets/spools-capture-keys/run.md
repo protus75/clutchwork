@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification passed all 91 tests; the full unit and integration suites, coverage gate, lint, and format checks also passed.
+The ticket verification passed; the full unit coverage gate, integration suite, lint, and format checks also passed. Deliberate faults in key validation, folding, listing, and pointer paths were detected by the tests.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 15 minutes; completed within the ticket budget.
+Expected 15 minutes; actual time was not measured.
 
