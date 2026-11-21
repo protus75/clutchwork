@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The index removes an existing embeddings table when embedding is disabled. The new tests cover incremental updates, embedding failures, recovery, and extension loading.
+With embedding disabled, the build removes an existing embeddings table. The simpler alternative of rebuilding every file was rejected because the ticket requires unchanged rows to remain untouched.
 
 ## Dead ends
 
-A mutation check exposed a gap in the SQL statement recorder; the recorder was corrected and the mutation was caught.
+none
 
 ## Second problems filed
 
-- box-000891-0fdf4294: docs/annotations-index-plan.md describes embedding files.purpose, while this ticket explicitly embeds only chunk text; that document is outside the scope fence.
+- box-000892-547a27c7: docs/annotations-index-plan.md describes embedding file purposes, while this ticket embeds only chunk text; this was previously filed as box-000891-0fdf4294.
 
 ## Resolved engine/model
 
