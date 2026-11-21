@@ -2,7 +2,7 @@
 llm_surface: diagnose
 tier: high
 effort: medium
-version: "1.8"
+version: "1.9"
 ---
 ## Role
 
@@ -18,7 +18,7 @@ Read the material and choose exactly one next-action verdict:
 - `escalate`: the approach was sound but needs more capability. Recommend escalation without naming a tier, effort, or model.
 - `split`: the ticket is too large for one attempt, because of diff budget, render size, or too many boundaries.
 - `reject`: the ticket cannot succeed as written because its premise is false or criteria contradict or cannot be satisfied.
-- `abandon-human`: only a human can unblock it, such as credentials, external environment, or a cause unreadable from this material.
+- `abandon-human`: only a human can unblock it, such as credentials, external environment, or a cause unreadable from this material. Choose this verdict when the run record or checks show that an engine step wrote the failing lines onto the candidate after Implement and the cause is engine code outside the fence. Name the engine file and the defect in the lessons. Never choose `retry` with a lesson asking the implementer to pre-empt the engine output. When the implementer's diff produced the failing content, keep the normal verdicts: `retry`, `escalate`, `split` or `reject`.
 
 Write concrete lessons for a later attempt: what to do or avoid. Each lesson answers a finding the
 material carries and cites the ticket or merged code that answers it. Never name a record, field,
