@@ -1,16 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ebb770cb94e46611b8ca98a755b485213a2e07a1",
+  "produced_at_sha": "c95d39e188ae0216a4161fbe86e7afa43e4e25cd",
   "stem": "ticket-writes-atomic-commit",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "premise_failed",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Ticket fence omits files the required intake change forces: wrapping clutch/tickets.py::intake in git.main_write() breaks Git stand-ins lacking main_write. Add tests/unit/test_git_commit.py, tests/unit/test_intake_plan.py and tests/unit/test_menu_admission.py to ## Scope fence.",
-    "Add those three files to ## Verification too, then rerun clutch ticket lint and review. Next attempt: give each stand-in (test_git_commit.py:82, test_intake_plan.py:27 FakeGit, test_menu_admission.py:262) a fake main_write async context manager; keep the assertions as they are.",
-    "Before re-filing, grep tests/ for every Git stand-in that intake, verdict_locked, reject_ticket, apply_admission, Author commit or apply_rework reaches, and fence any that lacks main_write or commit_edit. Partial unit runs missed these; the full ./dev.py test tests/unit found 6 failures."
+    "The scope fence misses test files the commit_edit migration forces: tests/unit/test_author_stem_claimed.py:56 fakes only Git.commit for Author publication. Add it to the scope fence and migrate its fake to run the commit_edit callback, keeping its assertions.",
+    "tests/unit/test_supervise_idle_point.py:215 stubs ctx.git.commit for the Rework publication path. After migration that stub never runs, so the test could pass even when publication is refused. Add the file to the scope fence and switch the stub to commit_edit.",
+    "author.py::commit_record (decision records) is also called by clutch/triage.py:74 and :243, and triage writes the record before that call. Moving the record write into commit_edit forces triage.py. Fence it, or scope the change so triage is untouched.",
+    "Before re-filing, grep tests for Git stand-ins that expose commit= or _commit_lock and that reach the Author, Rework, runner verdict or intake paths. Check at least test_rework.py, test_triage.py and test_requisition.py, and fence every file the migration forces."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
