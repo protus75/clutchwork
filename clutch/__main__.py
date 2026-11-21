@@ -20,7 +20,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import clutch
-from clutch import ask, control, drain, hostfiles, issue, observe, requisition, runner, seams, serve, triage
+from clutch import ask, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, triage
 from clutch.box import BOX_DIR, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
@@ -75,6 +75,8 @@ from clutch.tickets import (
 from clutch.timers import Timers
 
 GIT_TIMEOUT_S = 30.0
+
+INDEX_FINDING_EXITS = {"db_open_failed": 2, "git_failed": 1, "embed_failed": 1, "call_unreadable": 1, "box_unreadable": 1, "vss unavailable": 1, "fts unavailable": 1}
 
 
 def _config_reloader(path, repo):
@@ -603,6 +605,25 @@ def _parser() -> argparse.ArgumentParser:
     issue_parser.add_argument("--class", dest="issue_class", default=None, help=", ".join(issue.CLASSES))
     issue_parser.add_argument("title")
     issue_parser.add_argument("--body", type=Path, required=True)
+    index_parser = sub.add_parser(
+        "index",
+        help="build the project index",
+        description="Build the project index. Subcommands: build.",
+        epilog="Examples:\nclutch index build\n  Build the project index.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    index_sub = index_parser.add_subparsers(dest="index_verb", required=True)
+    _command(
+        index_sub,
+        "build",
+        summary="build the project index",
+        does="Build or refresh the project index.",
+        reads="Config, tracked files, git history, evidence store, Suggestion Box and index.embed command output.",
+        writes="<state_dir>/index.duckdb.",
+        lock="Writer lock.",
+        exits="0 built; 1 built with findings; 2 not built or refused.",
+        examples=["clutch index build"],
+    )
     meta_parser = sub.add_parser(
         "meta",
         help="maintain file metadata",
@@ -1102,6 +1123,24 @@ def _parser() -> argparse.ArgumentParser:
     return ap
 
 
+async def _run_index(config, root, *, fs, git, exec_, env, store, creator, build=index.build):
+    try:
+        findings = await build(config, root, fs=fs, git=git, exec_=exec_, env=child_env(env, config, serving=None), store=store, creator=creator)
+    except Exception as exc:
+        return _fail("index build", f"build raised {type(exc).__name__}: {exc} -- resolve the error and retry clutch index build")
+    exits = [INDEX_FINDING_EXITS.get(f.partition(": ")[0], 2) if ": " in f else 2 for f in findings]
+    if 2 in exits:
+        finding = next(f for f, code in zip(findings, exits) if code == 2)
+        return _fail("index build", f"{finding} -- resolve the finding and retry clutch index build")
+    if findings:
+        print("index build: built_with_findings")
+        for finding in findings:
+            print(finding)
+        return 1
+    print("index build: built")
+    return 0
+
+
 async def _run_meta(verb, config, root, fs, tracked, sha, paths=(), ask=None):
     from clutch import meta
 
@@ -1485,6 +1524,17 @@ def main(
         return 0
 
     # Lock holders
+    def handle_index():
+        from clutch.evidence.store import EvidenceStore
+
+        async def run():
+            async with _locked(config.state_dir, "index build", instance_id=await checkout.git.describe(repo), clock=clock):
+                redactor = Redactor.from_config(config, env)
+                store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
+                return await _run_index(config, repo, fs=checkout.fs, git=checkout.git, exec_=exec_, env=env, store=store, creator=index.default_creator)
+
+        return asyncio.run(run())
+
     def handle_meta():
         async def run():
             async def execute():
@@ -1796,6 +1846,7 @@ def main(
         return 0
 
     handlers = {
+        "index": handle_index,
         "meta": handle_meta,
         "training": handle_training,
         "evidence": handle_evidence,

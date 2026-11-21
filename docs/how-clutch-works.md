@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 89042420
-hash: 9161f32d9d62e23cd7ac0a6a334dde7f68d911799c01badc80dae31e361965de
+verified: 99c2ebc3
+hash: 5656f0f80e6975e5b9f92ee6619878cc902a9791c2b606c7d47ab1f21fa51195
 -->
 # How ClutchWork works
 
@@ -48,6 +48,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 
 | Verb | Lock | What it does |
 |---|---|---|
+| `index build` | yes | Build or refresh the project index. |
 | `meta refresh [paths]` | yes | Insert or refresh metadata blocks under configured roots. |
 | `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks. |
 | `meta fill [paths]` | yes | Fill metadata using a read-only model. |
@@ -897,3 +898,19 @@ The block carries only process rules that hold for every host; codebase rules be
 ## 13. Eval report artifacts
 
 The review-baseline report (`review-baseline-report.json`, written by `eval/harness.py`) is the only registered report artifact.
+
+## 14. Project index
+
+The project index at `<state_dir>/index.duckdb` is a rebuildable cache, never read by a gate or dispatch. Its five tables are `files` (tracked file metadata), `chunks` (sections and definitions), `embeddings` (vectors), `touches` (ticket changes), and `calls` (evidence records). With `index.embed` unset, there is no `embeddings` table. A merge refreshes an existing index file.
+
+`clutch index build` creates or refreshes the index under the writer lock. Its outcomes are:
+
+| Outcome | Exit | Meaning |
+|---|---|---|
+| `built` | 0 | Build completed without findings. |
+| `built_with_findings` | 1 | Build completed with findings. |
+| `not_built` | 2 | The database could not open or a finding is unrecognized. |
+| `failed` | 2 | The build raised an exception. |
+| `refused` | 2 | Config is invalid or the writer lock is held. |
+
+Findings `git_failed`, `embed_failed`, `call_unreadable`, `box_unreadable`, `vss unavailable`, and `fts unavailable` exit 1; `db_open_failed` exits 2.

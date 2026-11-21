@@ -4,8 +4,8 @@ kind: guide
 purpose: Running ClutchWork on a host
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: d7719818
-hash: b83280e8c0bf23534db5bc6ba85530991b9dab11485f1c4fd31d0a80a66b14cd
+verified: 99c2ebc3
+hash: cc259ec93647673fbeb8c81d33ee8db79105e1d036c090730bf65f2ef5124c93
 -->
 # Running ClutchWork on a host
 
@@ -45,6 +45,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `ticket review` | Yes | Only the named ticket's pending edits are committed through intake before reviewing the committed ticket. |
 | `box suggest` | Yes | File an idea into the Suggestion Box. |
 | `box issue` | Yes | Print a prefilled GitHub new-issue link for a critical clutch bug or a process gap; submits nothing. |
+| `index build` | No | Build or refresh the project index under the writer lock. |
 | `meta refresh` | No | Insert or refresh configured file metadata under the writer lock. |
 | `meta check` | Yes | Report metadata findings without writing. |
 | `meta fill` | No | Fill metadata using a read-only model under the writer lock. |
@@ -70,7 +71,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 
-Stop serve before `roadmap author`, `box dismiss`, `release bump`, `release publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `index build`, `roadmap author`, `box dismiss`, `release bump`, `release publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
 ## Reporting a clutch problem upstream
 
