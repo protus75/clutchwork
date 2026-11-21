@@ -175,6 +175,16 @@ class MergeQueue:
         source = admission.commit if completed and admission.commit is not None else "main"
         main_tree = await self.ctx.git.rev_parse(self.ctx.repo, source + "^{tree}")
         if main_tree != checked_tree:
+            from clutch import roadmap
+
+            try:
+                paths = (await self.ctx.git._run(self.ctx.repo, "diff", "--name-only", checked_tree, main_tree)).splitlines()
+                matches = all(path.startswith(TICKETS_DIR + "/") or path == roadmap.ROADMAP for path in paths)
+            except GitError:
+                matches = False
+        else:
+            matches = True
+        if not matches:
             self._hold(ticket.stem, {"kind": TREE_MISMATCH, "checked_tree": checked_tree, "main_tree": main_tree})
             raise TreeMismatch(f"{ticket.stem}: checked tree {checked_tree} differs from main tree {main_tree}")
         await merge.retire(self.ctx, ticket.stem)
