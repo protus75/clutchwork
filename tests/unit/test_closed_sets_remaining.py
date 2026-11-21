@@ -4,8 +4,8 @@
 # purpose: test closed sets remaining
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/journal.py, clutch/retro.py, clutch/status.py, clutch/tickets.py, tests/fakes.py]
 # owner: engine
-# verified: 0a308920
-# hash: 2dd2d4af8a240fa40a0fe8bb8a0d45da5bbb126a5818ec75856d26696e3200bf
+# verified: 93253297
+# hash: 2d2317966be2c0cfdcc7a50ee79a168d4b108276b9d6313e6baa08c6b03c84a6
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -50,7 +50,7 @@ def test_author_skeletons_follow_kinds(monkeypatch):
     monkeypatch.setattr(author, "render", lambda spec, values: inputs.append(values) or "rendered")
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "template", lambda kind: f"template for {kind}")
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=Path("/state"), routing_default_tier="medium"))
     item = message().model_copy(update={"verdict": SimpleNamespace(rationale="observed")})
     with pytest.raises(Done):
         asyncio.run(author.author(checkout, SimpleNamespace(run=run), SimpleNamespace(root=Path("/box")), item, 1))

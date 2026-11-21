@@ -5,8 +5,8 @@
 # purpose: Roadmap message and Author policy coverage.
 # relates: [clutch/author.py, clutch/box.py, clutch/config.py, clutch/policy.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 0a308920
-# hash: 6252b47566c63fefb15d8908cc6b45b724f742bd021589711dc827ed49a0f6f4
+# verified: 93253297
+# hash: 654a807a8afc80ede8dd3d23159b5b741ebfc7a52d5f8e26dcbcb6617a010595
 
 from types import SimpleNamespace
 
@@ -125,7 +125,7 @@ async def test_author_embeds_row_and_plan(tmp_path, monkeypatch):
     monkeypatch.setattr(author, "render", lambda spec, inputs: inputs)
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "failure_declined", decline)
-    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"))
     box = SimpleNamespace(root=tmp_path / "box")
     original = message().model_copy(update={"message_class": "roadmap_row", "roadmap_row": row(), "verdict": SimpleNamespace(rationale="row")})
     with pytest.raises(StopAsyncIteration):

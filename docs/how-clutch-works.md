@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: be8ec7c3
-hash: 8016f54e98d4d9dc142a89346e904174d9e122c6aee48bce25e56a2e83380bdb
+verified: f05aa75d
+hash: 5c6bab55c2ffdcc53e291b4b39e0b0120a3e701508e28caf1e158ee0c43586c4
 -->
 # How ClutchWork works
 
@@ -722,7 +722,7 @@ A `retro_finding` naming a spec path the repository does not track is declined b
 
 For a `roadmap_row` message, Author embeds the row and its plan, whole under 40,000 characters and otherwise the Target design and Where each piece lives sections. The ticket uses the row’s stem, kind, and priority; existing evidence under `tickets/<stem>/evidence/` is committed with it.
 
-The Author prompt embeds the authoring guide, the skeletons, and the latest `estimate_calibration` table (`engine calibrate`, section 2.1; `none` before the first), and each re-prompt carries the last parsed ticket in `previous_reply`. Each later review receives the previous review and the diff from the text it judged. The Author stage writes `tickets/<stem>/ticket.md` with `source: box:<class>`, has
+The Author prompt embeds the authoring guide, the skeletons, and the latest `estimate_calibration` table (`engine calibrate`, section 2.1; `none` before the first), and a `context_suggest` block of index-matched section selectors (`none` or `unavailable: ...` without a usable index, never a decline), and each re-prompt carries the last parsed ticket in `previous_reply`. Each later review receives the previous review and the diff from the text it judged. The Author stage writes `tickets/<stem>/ticket.md` with `source: box:<class>`, has
 `requisition_review` check it, and commits it. Its state is `draft` (needs `ticket confirm`) if the
 message was reopened, the review baseline is not GO (except for `roadmap_row`), `engine_plane_safety_inventory` is empty or
 touched by the ticket's fence, or the ticket carries a `gate_bypass`. Otherwise `box_policy`

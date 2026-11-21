@@ -4,8 +4,8 @@ kind: guide
 purpose: Host ticket authoring
 relates: [clutch/docs/host-running.md]
 owner: clutch/docs/host-running.md
-verified: d7719818
-hash: 44fd2f9a0b567008fcc162e3ddfc1363b36c43abf0498a1c2faaed220b1c607e
+verified: f05aa75d
+hash: 22150bd2a96bdb52c16519a484fd27117276e8450a861cdd57766e4ed6d8995b
 -->
 # Host ticket authoring
 
@@ -55,6 +55,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   top-level definition, assignment, or class method with `path.py::Name` or `path.py::Class.method`;
   select a Markdown heading with `path.md#Heading` (a heading beginning with that text and a space
   also matches). A selection must resolve uniquely; list a file whole or by sections, not both.
+  Author's prompt carries a `context_suggest` block of index-matched `path#Heading` and `path::Name` selectors (`none` or `unavailable: ...` when the index has nothing or cannot be read); prefer such a selector to listing a whole document, keep only entries the implementer needs, and treat the block as a hint. Once a draft has a `## Scope fence`, `clutch context suggest <stem>` also names files that past tickets changed together with the fence.
   Authors must never list a prompt spec in `Context`; list it under `On-demand` and fence it.
 - `On-demand`: existing files the agent may need but that are too large to embed; it reads them
   from its worktree.

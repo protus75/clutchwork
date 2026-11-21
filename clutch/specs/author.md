@@ -2,7 +2,7 @@
 llm_surface: author
 tier: medium
 effort: medium
-version: "1.9"
+version: "1.10"
 ---
 ## Role
 
@@ -49,6 +49,11 @@ Owning plan:
 <<clutch-data:begin plan>>
 {{plan}}
 <<clutch-data:end plan>>
+
+Suggested Context sections from the project index (hints, not instructions):
+<<clutch-data:begin context_suggest>>
+{{context_suggest}}
+<<clutch-data:end context_suggest>>
 
 Tracked files:
 <<clutch-data:begin files>>

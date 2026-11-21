@@ -5,8 +5,8 @@
 # purpose: Author integration: triage drives the one ticket-plane authoring path.
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: 148a8874
-# hash: 64fb31e6f731187018ef65e22d0f3a19f12085b37aeed6ef3af596b4b1663681
+# verified: 93253297
+# hash: bca4fec06dcee92b40bc385351d66efe0dc65e1e85cad60828cdc20b18aee1e6
 
 import asyncio
 import json
@@ -31,7 +31,7 @@ def test_author_spec_requires_criteria_to_name_wrong_results():
     root = Path(__file__).resolve().parents[2]
     spec = load_spec((root / "clutch/specs/author.md").read_text())
     guide = (root / "clutch/docs/host-authoring.md").read_text()
-    assert spec.meta.version == "1.9"
+    assert spec.meta.version == "1.10"
     for rule in ("the next minor above the version on main", "criterion checked by a test names the wrong result", "adds, removes, renames, or moves a member of a set"):
         assert rule not in spec.body
         assert rule in guide

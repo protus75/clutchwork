@@ -5,8 +5,8 @@
 # purpose: Author declines preserve findings across driver calls.
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/stages.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 0a308920
-# hash: 790c6ab26f810e08818dfdb72b0971a66db859d61b3ec44f4591fe162b390b54
+# verified: 93253297
+# hash: b4489258f9b311a17ebbe868ca0bb891c1ed983b40167dfda9aa831483363891
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -46,7 +46,7 @@ async def test_decline_collects_distinct_findings_in_order(monkeypatch, tmp_path
     monkeypatch.setattr(author, "render", lambda spec, inputs: "prompt")
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "failure_declined", decline)
-    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"))
     item = message().model_copy(update={"verdict": SimpleNamespace(rationale="repair")})
     await author.author(checkout, SimpleNamespace(run=run), SimpleNamespace(root=tmp_path), item, 1)
     assert evidence[0] == findings_text([first, last])

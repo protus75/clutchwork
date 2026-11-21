@@ -6,10 +6,11 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
+import duckdb
 import yaml
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from clutch import calibration
+from clutch import calibration, context
 from clutch.artifacts import Finding, NonBlank
 from clutch.baseline import resolve_baseline
 from clutch.box import BOX_DIR, Box, BoxError, DecisionRecord, Message, Resolution, record_path, render_record
@@ -28,6 +29,23 @@ from clutch.tickets import KINDS, TicketInvalid, split_frontmatter, stamp, stem_
 
 AUTHOR_STUCK_S = 900.0
 PLAN_WHOLE_CHARS = 40_000
+
+
+def context_block(state_dir: Path, text: str, stem: str, *, connect=duckdb.connect) -> str:
+    try:
+        if not text.strip():
+            return "none"
+        path = state_dir / "index.duckdb"
+        if not path.exists():
+            return "unavailable: no_index (run clutch index build)"
+        conn = connect(str(path), read_only=True)
+        try:
+            _, sections = context.suggest(conn, stem, [], [], text)
+            return "\n".join(f"- {selector}  # {reason}" for selector, reason in sections) or "none"
+        finally:
+            conn.close()
+    except Exception:
+        return "unavailable: index_unreadable"
 
 
 def plan_excerpt(text: str) -> str:
@@ -359,6 +377,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
             "request": request,
             "roadmap_row": roadmap.model_dump_json() if roadmap is not None else "none",
             "plan": plan,
+            "context_suggest": suggestions,
             "files": files,
             "open_tickets": open_tickets,
             "retry_findings": findings_text(findings),
@@ -368,6 +387,7 @@ async def author(checkout: Checkout, driver: Driver, box: Box, message: Message,
 
     open_tickets = await list_open_tickets(checkout)
     estimates = calibration.render(calibration.latest(checkout.journal.read()))
+    suggestions = context_block(checkout.config.state_dir, roadmap.content if roadmap is not None else message.summary + "\n" + message.verdict.rationale, roadmap.stem if roadmap is not None else "")
     previous_reply: str | None = None
     next_unused = 1
     reviewed: RequisitionVerdict | None = None

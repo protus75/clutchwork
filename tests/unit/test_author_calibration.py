@@ -4,8 +4,8 @@
 # purpose: test author calibration
 # relates: [clutch/author.py, clutch/calibration.py, clutch/journal.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 0a308920
-# hash: 9d57f78f76381c7092c19664a310dc848f4e4b007325e2bb33c4a44bd5485349
+# verified: 93253297
+# hash: 87b4551a6446b6e3cd156b037cd809b4a8a222e66ec751ecde8baef4dd34472b
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -60,7 +60,7 @@ def test_author_prompt_carries_the_latest_table(monkeypatch, has_calibration, ex
     monkeypatch.setattr(author, "render", lambda spec, values: inputs.append(values) or "rendered")
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "template", lambda kind: f"template for {kind}")
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files), journal=journal, config=SimpleNamespace(routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files), journal=journal, config=SimpleNamespace(state_dir=Path("/state"), routing_default_tier="medium"))
     item = message().model_copy(update={"verdict": SimpleNamespace(rationale="observed")})
     with pytest.raises(Done):
         asyncio.run(author.author(checkout, SimpleNamespace(run=run), SimpleNamespace(root=Path("/box")), item, 1))
