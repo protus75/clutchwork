@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 0c49d7b5
-hash: 09f84486de1b46dbd81f52e1651be5df5bd83cf81a09638d831832bae0d9d2fe
+verified: 3d8c0329
+hash: 90100ea6806b1e88a21a52096664977956153cf1b88aa4823547368538d3c150
 -->
 # How ClutchWork works
 
@@ -797,6 +797,13 @@ The journal is the record of truth: append-only JSON lines, fsynced per event. A
 An **Effect** is an action keyed so it happens once: a key with a recorded completion replays
 the recorded result instead of acting again. Model calls, ticket-plane commits, merges, pushes,
 and notifications are Effects, so a crash never repeats one.
+
+Ticket-plane edits use a narrow critical section: `main_write` is acquired before
+`commit.lock`, and the edit callback and exact-path commit run under both. Intake
+holds the same locks across its status read, stray check, stamping, and commits;
+merge squash also takes them in that order. Callbacks must not invoke a model,
+run checks, or call a lock-taking Git writer. Model and check work run outside
+this section; the commit lock is not held for a run lifetime.
 
 ### 10.3 `view status`
 
