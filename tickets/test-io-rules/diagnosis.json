@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f7f3ff88a816af26f3d263f227cc029db82d7f29",
+  "stem": "test-io-rules",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The premise is false: the scope fence is missing files the required implement 2.25->2.26 bump forces to change. tests/integration/test_implement_spec_mutation_check.py:22 pins \"2.25\", so `./dev.py test` (AC4) fails. The fence has to change before a retry.",
+    "Add tests/integration/test_implement_spec_mutation_check.py to the Scope fence and Scope in, and update its version pin to the bumped implement version.",
+    "tests/integration/test_stages.py:350 pins \"spec: implement 2.25\". The bump makes it wrong even though the test is skipped. Add it to the fence, or have the ticket justify leaving it. CLAUDE.md allows fencing that hot file only when the change forces an edit there, and this bump does.",
+    "Before re-filing, grep tests/ for every pin of the implement and retro versions. Today they are test_specs.py, test_specs_delimiter_note.py, test_implement_spec_meta_headers.py, test_implement_spec_mutation_check.py and test_stages.py. Fence all of them.",
+    "Last attempt's spec and pin edits passed the focused verification commands. Redo them as Scope in states, starting from the merge base."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
