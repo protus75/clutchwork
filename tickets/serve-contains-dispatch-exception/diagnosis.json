@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e77de8122623ab2f18006d8fabe6bd74f085ab7d",
+  "stem": "serve-contains-dispatch-exception",
+  "attempt": 2,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: tests/integration/conftest.py DISK_IO_SKIP lists test_drain_containment.py and test_serve_kill.py, and matches by filename, so the ## Verification command skips criteria 3 and 4 (and the unit test_drain_containment.py) instead of checking them.",
+    "Premise false: the ticket requires the new test to use tests/integration/serve_rig.py, but that rig builds a real repo, and the I/O guard (clutch/ioguard.py IntegrationIOBlocked) blocks it in any test file not listed in REAL_IO_TESTS. The rig is out of fence and must not be edited.",
+    "Ordering is inverted: ## Runs before lists shared-serve-rig-config and disk-io-skip-per-file, but this ticket needs them merged first. Move them to ## Depends on, or allow an in-memory serve fixture built on tests/fakes.py inside the fence.",
+    "Rewrite criteria 3 and 4 and ## Verification so each named test actually runs (not skipped) once its prerequisites land. Otherwise they cannot prove 'unchanged' or 'still stops serve'."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
