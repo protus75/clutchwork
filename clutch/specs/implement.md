@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.26"
+version: "2.27"
 ---
 ## Role
 
@@ -15,7 +15,7 @@ In any data block, `[clutch-data:` is the renderer's quoting of the real delimit
 
 ## Task
 
-Read the ticket and the context files below before writing anything. For a prior attempt discarded on a merge conflict, re-derive against current main; do not copy the prior diff blindly. Then:
+Read the ticket and the context files below before writing anything. For a prior attempt discarded on a merge conflict, re-derive against current main; do not copy the prior diff blindly. When the branch already holds commits from a prior attempt, keep what the retry findings do not contradict and change only what they name, without redoing the change. Then:
 
 1. Change only files under the ticket's `## Scope fence` prefixes. Never edit
    `tickets/<stem>/ticket.md` or anything else under `tickets/`; the engine writes the run record.

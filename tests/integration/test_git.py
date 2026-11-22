@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test git
+# purpose: Tests the Git wrapper's argv construction, ref refusals, rebase, worktree, commit-lock, trailer parsing and process-group kill behavior against fakes and real repositories
 # relates: [clutch/git.py, clutch/lockfile.py, clutch/seams.py, tests/waiting.py]
 # owner: engine
-# verified: 148a8874
-# hash: 4a201e135a062d9c23d7c525951f2ee9f79b52bb3c10131d8c697b4530d3d9f6
+# verified: 52843322
+# hash: 2ce6d827986cbf1c65dd398f1d9d824098bcaa40982dc16de9f0de692544dae5
 import asyncio
 import os
 import sys
@@ -610,3 +610,28 @@ def test_commit_waits_for_lock(tmp_path):
         assert sha == await g.rev_parse(repo, "HEAD") and sha != before
 
     asyncio.run(run())
+
+
+def test_worktree_attach_preserves_existing_branch_head(tmp_path):
+    main, original, attached = (tmp_path / name for name in ("main", "original", "attached"))
+    main.mkdir()
+    env = {**os.environ, "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    g = Git(SubprocessExec(), env=env, timeout=30.0, commit_lock=commit_lock(tmp_path / ".clutch/state"))
+
+    async def scenario():
+        await g.init(main, branch="main")
+        (main / "file").write_text("base")
+        await g.add(main, ["file"])
+        await g.commit(main, "base")
+        await g.worktree_add(main, original, "feature", "main")
+        (original / "file").write_text("feature")
+        await g.add(original, ["file"])
+        await g.commit(original, "feature")
+        head = await g.rev_parse(main, "feature")
+        await g.worktree_remove(main, original)
+        await g.worktree_attach(main, attached, "feature")
+        assert await g.rev_parse(attached, "HEAD") == head
+        assert await g.rev_parse(main, "feature") == head
+        assert (attached / "file").read_text() == "feature"
+
+    run(scenario())

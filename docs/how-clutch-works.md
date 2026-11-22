@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: b201c27c
-hash: 455d0423b18fa522f3f62e009745b944ae32f0bdc78d0d1aa38f16da49e47393
+verified: 52843322
+hash: f07111a51297c84c90781678c309f5dba1f87bca7e46ae4929c41c6cc7030d76
 -->
 # How ClutchWork works
 
@@ -222,9 +222,10 @@ Other engine commits on `main`: `ticket` (intake), `confirmed`, `rejected`, `rew
 
 ### 4.1 Worktree
 
-Each attempt gets a fresh worktree at `<worktree_root>/<stem>` (default
-`<state_dir>/worktrees/<stem>`) on branch `<stem>`, cut from `main`. Any old worktree and branch
-of that stem are removed first. Scratch worktrees under `.base/` and `.regression-base/` are
+Each attempt gets a worktree at `<worktree_root>/<stem>` (default
+`<state_dir>/worktrees/<stem>`) on branch `<stem>`. A retry after a Check or Review failure
+reuses the branch rebased onto `main`; if the rebase fails, it starts fresh. Every other attempt
+starts fresh from `main`, removing any old worktree and branch first. Scratch worktrees under `.base/` and `.regression-base/` are
 created at the merge base for base-red reruns and the bug gate, and removed after.
 
 ### 4.2 Implement

@@ -4,8 +4,8 @@
 # purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text and version pins
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 593bc2df
-# hash: ff6f42af8eb4da7e35cec9dadb55545e7a0f3c59a79558a8492df3b712950660
+# verified: 52843322
+# hash: 9fd3b458f24bc145ddf06490045802453be7315b39fff4d0863413f14d5f38fe
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.26"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.27"), ("requisition_review", "3.27"), ("diagnose", "1.10")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -114,7 +114,7 @@ def test_diagnose_spec_lesson_length_guidance():
 
 def test_diagnose_spec_states_attempt_starting_point():
     text = (Path(__file__).resolve().parents[2] / "clutch/specs/diagnose.md").read_text()
-    assert "Every attempt starts from the merge base" in text
+    assert "After a Check or Review failure the next attempt starts from the failed branch rebased onto main" in text
     spec = load_spec(text)
     rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
     task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
@@ -131,7 +131,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.26"
+    assert spec.meta.version == "2.27"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",

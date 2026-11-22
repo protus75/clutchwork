@@ -549,8 +549,8 @@ def _short(result: StageResult, outcome: Outcome, findings: list[Finding], artif
     return StageResult(outcome=outcome, artifact=artifact, findings=findings, cost=result.cost)
 
 
-async def prepare_worktree(ctx: StageContext, stem: str) -> Path:
-    """TEARDOWN-AND-CREATE: remove any worktree and branch a prior run left, then branch from main."""
+async def prepare_worktree(ctx: StageContext, stem: str, *, keep: bool = False) -> Path:
+    """Reuse a failed branch when requested, otherwise create a fresh branch from main."""
     path = ctx.worktree(stem)
     if path.exists():
         await ctx.git.worktree_remove(ctx.repo, path)
@@ -561,6 +561,15 @@ async def prepare_worktree(ctx: StageContext, stem: str) -> Path:
     except GitError:
         pass  # no leftover branch
     else:
+        if keep:
+            ctx.fs.mkdir(path.parent)
+            await ctx.git.worktree_attach(ctx.repo, path, stem)
+            try:
+                await ctx.git.rebase(path, MAIN)
+            except GitError:
+                await ctx.git.worktree_remove(ctx.repo, path)
+            else:
+                return path
         await ctx.git.branch_delete(ctx.repo, stem)
     ctx.fs.mkdir(path.parent)
     await ctx.git.worktree_add(ctx.repo, path, stem, MAIN)
@@ -790,9 +799,18 @@ def run_record(reply: ImplementReply | None, cost: Cost, spec: Spec, second_prob
 
 
 async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> StageResult:
-    """Teardown-and-create the worktree, run the implement spec in it, and write + lift the run record."""
+    """Prepare the worktree, run the implement spec in it, and write + lift the run record."""
     stem = ticket.stem
-    worktree = await prepare_worktree(ctx, stem)
+    from clutch.journal import run_terminals
+
+    history = ctx.driver.journal.read()
+    terminals = run_terminals(history, stem)
+    terminal = terminals[-1] if terminals else None
+    keep = bool(terminal and terminal.body.get("to") == "gate_failed" and terminal.body.get("stage") in {"check", "review"})
+    if keep:
+        after_terminal = history[next(i for i, event in enumerate(history) if event is terminal) + 1 :]
+        keep = not any(e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "merge_conflict_rerun" for e in after_terminal)
+    worktree = await prepare_worktree(ctx, stem, keep=keep)
     no_room = False
     try:
         if ctx.config.index.implement_hint:

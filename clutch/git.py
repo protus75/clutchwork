@@ -186,6 +186,9 @@ class Git:
     async def worktree_add(self, dir: Path, path: Path, branch: str, start: str) -> None:
         await self._run(dir, "worktree", "add", "-b", _ref(branch), str(path), _ref(start))
 
+    async def worktree_attach(self, dir: Path, path: Path, branch: str) -> None:
+        await self._run(dir, "worktree", "add", str(path), _ref(branch))
+
     async def worktree_add_detached(self, dir: Path, path: Path, rev: str) -> None:
         await self._run(dir, "worktree", "add", "--detach", str(path), _ref(rev))
 
