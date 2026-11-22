@@ -1,6 +1,6 @@
 # Supervisor Rework escalated
 
-- trigger: retry cap spent
+- trigger: premise_failed
 - outcome: ok
 - action: escalate
 
