@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- operator-deferral-snag
+
 ## Context
 - clutch/tickets.py::lint_findings
 - clutch/tickets.py::_regression
