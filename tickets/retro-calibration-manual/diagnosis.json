@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "45340ab10c02a1e627f0ac0691087764db53aa66",
+  "stem": "retro-calibration-manual",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The scope fence is missing three tests that pin names the ticket removes. Re-author the ticket to add tests/unit/test_serve_retro_check_site.py, tests/unit/test_serve_no_roadmap.py and tests/unit/test_drain_no_roadmap.py to the fence and to the Scope in test-update list.",
+    "tests/unit/test_serve_retro_check_site.py:24 asserts that Serve.run calls check_retro. The ticket deletes check_retro, so the revised ticket must say to delete this test file, as it already does for test_serve_retro_check_once.py.",
+    "tests/unit/test_serve_no_roadmap.py:48 and tests/unit/test_drain_no_roadmap.py:57 monkeypatch serve.calibrate_when_due and drain.calibrate_when_due. The revised Scope in must say to drop those monkeypatches only, because the imports are being deleted.",
+    "Before re-filing, grep tests/ for check_retro, calibrate_when_due, retro_due, retro_checked and retro_terminal_count, and fence every hit. The Retro(forced=False), due_trigger and select_trigger uses in test_retro.py, test_retro_box.py and test_retro_due_owner.py stay valid and need no fence.",
+    "Implement filed docs/roadmap-driver-plan.md and docs/roadmap.md as stale (box-001130, box-001131). If those docs describe current behavior rather than a frozen plan, the revised ticket should fence them and edit the false sentences."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
