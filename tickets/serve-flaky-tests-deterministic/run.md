@@ -4,16 +4,16 @@ ok
 
 ## Surprises / judgment calls
 
-The first combined verification run failed intermittently: its journal showed startup reconciliation abandoning a ticket while confirmation was in progress, after the preceding serve stopped cleanly. Base verification, isolated candidate reruns, and the required full candidate rerun passed. The carried reproducer caught both restored deadlines. Full integration passed 3,595 tests; lint and format passed. The coverage gate was skipped because the diff changes no files it measures. A suggestion for assessing deadline lint was filed as box-000001-0a56d8ae.
+The final ticket verification passed, as did all 3,595 integration tests and the format check. The first combined verification encountered an intermittent startup reconciliation race; base verification, isolated candidate tests, and the required full candidate rerun passed. Coverage was skipped because the diff changes no measured production files. Suggestions were filed for deadline lint, the reconciliation race, and the existing lint failure.
 
 ## Dead ends
 
-Raising timeout values was rejected because it would only move the load threshold at which the failures recur.
+Raising timeout values was rejected because it would only move the load threshold for the failures.
 
 ## Second problems filed
 
-- box-001057-8010d6da: Startup reconciliation can race with draft confirmation and mark a ticket abandoned, as observed in the first candidate verification run.
-- box-001058-099e50c3: Two admission cases hit the global test timeout during the first combined run, then passed in isolation and on the required full rerun.
+- box-001062-cbf86391: Startup reconciliation can mark a ticket abandoned while draft confirmation is in progress.
+- box-001063-34871813: Repository-wide Ruff lint fails on an overlong line in tests/unit/test_driver_check_nesting.py; the same failure occurs on the base commit.
 
 ## Resolved engine/model
 
@@ -23,5 +23,5 @@ Raising timeout values was rejected because it would only move the load threshol
 
 ## Predicted vs actual
 
-Ticket estimate: 25 minutes expected, 50 minutes stuck; work completed within the expected budget.
+The ticket estimated 25 minutes expected and 50 minutes stuck; elapsed time was not measured.
 
