@@ -9,6 +9,9 @@ kind: feature
 - training-triage-records
 - serve-live-keep-single-verdict
 
+## Runs before
+- drain-retro-check-once-per-settle
+
 ## Context
 - clutch/training.py::report
 - clutch/__main__.py::_parser
