@@ -1,0 +1,54 @@
+{
+  "attempt": 2,
+  "stage": "check",
+  "terminal": "gate_failed",
+  "findings": [
+    {
+      "code": "integration",
+      "path": null,
+      "line": null,
+      "message": "tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart: quarantine-cap crossed; fix and release existing quarantines before admitting another test; the new test remains blocking",
+      "paved_road": "fix and release existing quarantines before admitting this test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "integration",
+      "path": null,
+      "line": null,
+      "message": "tests/integration/test_host_loop.py::test_host_loop_drives_supervised_fixture_serve failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "integration",
+      "path": null,
+      "line": null,
+      "message": "tests/integration/test_host_loop.py::test_host_loop_report_regression_and_escape failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "integration",
+      "path": null,
+      "line": null,
+      "message": "tests/integration/test_host_loop.py::test_host_loop_requires_member_auditor_green failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": " tests/fakes.py                            | 10 ++--\n tests/harness/host_loop.py                | 22 +++++----\n tests/integration/serve_rig.py            |  8 +--\n tests/integration/test_host_loop.py       | 25 ++++++----\n tests/integration/test_serve_rig_fakes.py | 12 +++--\n tests/regress_serve_flaky_waits.py        | 82 +++++++++++++++++++++++++++++++\n 6 files changed, 127 insertions(+), 32 deletions(-)\n",
+  "stage_log_tail": "havior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n  \n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart\n============ 1 failed, 3594 passed, 9 warnings in 85.74s (0:01:25) =============\n\n--- stderr\n$ uv run ruff check .\n[exit 1]\n--- stdout\nE501 Line too long (202 > 200)\n --> tests/unit/test_driver_check_nesting.py:4:201\n  |\n2 | …\n3 | …\n4 | …stores the outer stage, and rejects any nesting under other surfaces\n  |                                                                    ^^\n5 | …\n6 | …\n  |\n\nFound 1 error.\n\n--- stderr\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.base/serve-flaky-tests-deterministic\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.base/serve-flaky-tests-deterministic\nInstalled 31 packages in 22ms\n$ uv run ruff check .\n[exit 1]\n--- stdout\nE501 Line too long (202 > 200)\n --> tests/unit/test_driver_check_nesting.py:4:201\n  |\n2 | …\n3 | …\n4 | …stores the outer stage, and rejects any nesting under other surfaces\n  |                                                                    ^^\n5 | …\n6 | …\n  |\n\nFound 1 error.\n\n--- stderr\n$ uv run ruff format --check .\n[exit 0]\n--- stdout\n767 files already formatted\n\n--- stderr\n$ uv run python tests/regress_serve_flaky_waits.py\n[exit 1]\n--- stdout\n{\"regression_result\": \"defect\"}\n\n--- stderr\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/serve-flaky-tests-deterministic\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/serve-flaky-tests-deterministic\nInstalled 31 packages in 22ms\n$ uv run python tests/regress_serve_flaky_waits.py\n[exit 0]\n--- stdout\n{\"regression_result\": \"pass\"}\n\n--- stderr\n$ uv run python tests/regress_serve_flaky_waits.py\n[exit 0]\n--- stdout\n{\"regression_result\": \"pass\"}\n\n--- stderr\n$ ./dev.py test tests/integration/test_host_loop.py tests/integration/test_serve_admission.py tests/integration/test_gates.py tests/unit/test_shared_fakes.py tests/integration/test_serve_rig_fakes.py\n[exit 0]\n--- stdout\n$ uv run pytest -q tests/integration/test_host_loop.py tests/integration/test_serve_admission.py tests/integration/test_gates.py tests/unit/test_shared_fakes.py tests/integration/test_serve_rig_fakes.py\nbringing up nodes...\nbringing up nodes...\n\n.........................................................                [100%]\n57 passed in 14.12s\n\n--- stderr\n{\"outcome\":\"ok\",\"summary\":\"Removed the specified wall-clock deadlines from serve test waits and committed the changes as b92a9537.\",\"surprises\":\"The final ticket verification passed, as did all 3,595 integration tests and the format check. The first combined verification encountered an intermittent startup reconciliation race; base verification, isolated candidate tests, and the required full candidate rerun passed. Coverage was skipped because the diff changes no measured production files. Suggestions were filed for deadline lint, the reconciliation race, and the existing lint failure.\",\"second_problems\":[{\"summary\":\"Startup reconciliation can mark a ticket abandoned while draft confirmation is in progress.\"},{\"summary\":\"Repository-wide Ruff lint fails on an overlong line in tests/unit/test_driver_check_nesting.py; the same failure occurs on the base commit.\"}],\"dead_ends\":\"Raising timeout values was rejected because it would only move the load threshold for the failures.\",\"predicted_vs_actual\":\"The ticket estimated 25 minutes expected and 50 minutes stuck; elapsed time was not measured.\",\"findings\":[]}",
+  "events_tail": "suggest 'Assess a repo-wide lint for wall-clock deadlines in test waits.'\\nuv run clutch box suggest 'Startup reconciliation can mark a ticket abandoned while draft confirmation is in progress.'\\nuv run clutch box suggest 'Repository-wide ruff check fails on an overlong line in tests/unit/test_driver_check_nesting.py.'\\ngit diff --stat\\ngit status --short\\\"\",\"aggregated_output\":\"suggest: filed box-000001-15eeebb7\\nsuggest: filed box-000002-1d84e07b\\nsuggest: filed box-000003-6876e93d\\n tests/fakes.py                            |  4 ++--\\n tests/harness/host_loop.py                | 16 ++++++++++------\\n tests/integration/serve_rig.py            |  2 +-\\n tests/integration/test_host_loop.py       | 19 +++++++++++++------\\n tests/integration/test_serve_rig_fakes.py |  6 ++++--\\n 5 files changed, 30 insertions(+), 17 deletions(-)\\n M tests/fakes.py\\n M tests/harness/host_loop.py\\n M tests/integration/serve_rig.py\\n M tests/integration/test_host_loop.py\\n M tests/integration/test_serve_rig_fakes.py\\n?? tests/regress_serve_flaky_waits.py\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_27\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"git add tests/fakes.py tests/harness/host_loop.py tests/integration/serve_rig.py tests/integration/test_host_loop.py tests/integration/test_serve_rig_fakes.py tests/regress_serve_flaky_waits.py && git commit -m 'Remove wall-clock deadlines from serve test waits'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_27\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"git add tests/fakes.py tests/harness/host_loop.py tests/integration/serve_rig.py tests/integration/test_host_loop.py tests/integration/test_serve_rig_fakes.py tests/regress_serve_flaky_waits.py && git commit -m 'Remove wall-clock deadlines from serve test waits'\\\"\",\"aggregated_output\":\"[serve-flaky-tests-deterministic b92a9537] Remove wall-clock deadlines from serve test waits\\n 6 files changed, 104 insertions(+), 17 deletions(-)\\n create mode 100644 tests/regress_serve_flaky_waits.py\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_28\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove --force /tmp/clutch-serve-flaky-base'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_28\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove --force /tmp/clutch-serve-flaky-base'\",\"aggregated_output\":\"\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_29\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"ok\\\",\\\"summary\\\":\\\"Removed the specified wall-clock deadlines from serve test waits and committed the changes as b92a9537.\\\",\\\"surprises\\\":\\\"The final ticket verification passed, as did all 3,595 integration tests and the format check. The first combined verification encountered an intermittent startup reconciliation race; base verification, isolated candidate tests, and the required full candidate rerun passed. Coverage was skipped because the diff changes no measured production files. Suggestions were filed for deadline lint, the reconciliation race, and the existing lint failure.\\\",\\\"second_problems\\\":[{\\\"summary\\\":\\\"Startup reconciliation can mark a ticket abandoned while draft confirmation is in progress.\\\"},{\\\"summary\\\":\\\"Repository-wide Ruff lint fails on an overlong line in tests/unit/test_driver_check_nesting.py; the same failure occurs on the base commit.\\\"}],\\\"dead_ends\\\":\\\"Raising timeout values was rejected because it would only move the load threshold for the failures.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket estimated 25 minutes expected and 50 minutes stuck; elapsed time was not measured.\\\",\\\"findings\\\":[]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":2535897,\"cached_input_tokens\":2495488,\"cache_write_input_tokens\":0,\"output_tokens\":6545,\"reasoning_output_tokens\":372}}\n",
+  "wall_seconds": 1091.227002,
+  "usd": 1.0,
+  "run_record": "tickets/serve-flaky-tests-deterministic/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
