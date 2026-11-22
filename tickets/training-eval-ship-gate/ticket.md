@@ -29,7 +29,7 @@ Section 1 of `docs/roadmap.md` ships 0.5.0 only when `training eval` scores one 
 
 When this is done, `training eval` exits 2 with a Refusal when no held-out review record received a parsed verdict (agree plus disagree equals 0), still printing the report first, and exits 0 only when at least one did. The 0.5.0 `gate` block gains two commands before `./dev.py test`: an export of the review kind with a holdout split into `.clutch/training-eval` (gitignored), then the review-lens eval reading that holdout file. The pair passes only when a held-out review record was scored.
 
-Blocker to flag: `training export` and `training eval` both refuse unless `training_data.enabled: true`, and `config.yaml` has no `training_data` entry (disabled). No existing verb satisfies the row with training data off. Enabling it in `config.yaml` is owned by row 203 `training-export-ship-gate` (no ticket exists for that stem yet, so `## Depends on` cannot name it). This gate cannot pass in the live checkout until row 203 merges; the live gate run, not this ticket's tests, depends on it. Row 203 edits the same 0.5.0 `gate` block, so expect a trivial merge conflict in `docs/roadmap.md`.
+Precondition: `training export` and `training eval` both refuse unless `training_data.enabled: true`. Row 203 `training-export-ship-gate` is a declared dependency; it has merged, set `training_data: {enabled: true}` in `config.yaml`, and added its command to the 0.5.0 `gate` block, so this ticket adds its commands to that block after row 203's.
 
 ## Boundary contract
 ### training eval exit contract
