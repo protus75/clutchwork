@@ -1,20 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ec1fcf2d5cae8f26da0f4a8ae3ce31f52443ac09",
+  "produced_at_sha": "bf062c4c72caeec112fb8071f9918134ffc5a671",
   "stem": "retro-calibration-manual",
-  "attempt": 3,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 5,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Ticket Verification and Scope in name tests/unit/test_drain_driver_overlap.py and tests/unit/test_driver_hooks.py, but neither file exists on main, so pytest collects no tests and the unit Verification command can never exit 0 as written.",
-    "Re-author the ticket: remove both missing paths from ## Verification, ## Scope fence and the Scope in edit list. Do not create placeholder test files to satisfy the command.",
-    "Attempt 3's diff (commit 9b89edc50) passed 86 unit tests with those two paths left out. It can be reused once the ticket is corrected; the integration command exited 0 but every test was skipped.",
-    "The integration Verification skips all 263 tests through the disk_io_skip policy, and it skipped all of them on base too (box-001133). Criteria 5, 8 and 9 rely on those tests, so the re-authored ticket must state how they actually run."
+    "Premise false: tests/unit/test_drain_driver_overlap.py and tests/unit/test_driver_hooks.py do not exist on main, yet Verification line 1 names both, so the unit command collects nothing and exits 1. Remove both from Verification, Scope fence and the Scope in existing-test update list.",
+    "Grep of tests/ on main finds calibrate_when_due or _run_retro(forced=...) only in test_drain_no_roadmap, test_serve_no_roadmap, test_supervise_idle_hooks, test_phase_events, test_calibration_idle, test_drain_report_intake and the two retro_once_per_settle files. Re-derive the test update list from",
+    "test_serve_dispatch_containment.py is in the update list but has no calibrate_when_due or _run_retro(forced) hit. Check which removed name it pins (check_retro, retro_due or retro_pending) before keeping it in the list.",
+    "Implement reports that the integration Verification line skipped all 270 tests (disk_io_skip) on both branch and base, so ACs 5, 8 and 9 go unchecked. Filed as box-001136-71491e78. Fix that or say how the integration tests run before the next attempt."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
