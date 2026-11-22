@@ -1,20 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "32bee32578f6410f2fd6c7feafb769317818860e",
+  "produced_at_sha": "c2c11c261723c373f53ef9996c0e226ab575cd70",
   "stem": "io-helpers-loop",
-  "attempt": 1,
-  "terminal": "premise_failed",
+  "attempt": 2,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "escalate",
   "lessons": [
-    "Premise is false: tests/stage_replies.py defines only requisition_reply, review_verdict, implement_reply and script. It has no triage verdict builder (test_triage.py::reply) and no authored-ticket builder (test_triage.py::author_reply).",
-    "Scope in says the reply shapes for reply and author_reply come from tests/stage_replies.py with no copy. Scope out forbids editing that file. Those two rules cannot both hold, so the ticket fails as written.",
-    "Fix the ticket in one of two ways: (a) a prerequisite ticket adds triage and author reply builders to tests/stage_replies.py, listed in ## Depends on; or (b) limit the reuse rule to requisition_reply and move reply and author_reply into tests/loop_helpers.py unchanged.",
-    "Keep the rest of the ticket: the 48 import lines, the hub definitions moving to tests/loop_helpers.py, and the GitFake/FakeExec rewrites of repo, repository, escape_rig, admission_graph and notify_command were not disputed."
+    "Attempt 2 stopped as incomplete after 147s with an empty diff and nothing committed. The next attempt starts from main, so redo the whole move: create tests/loop_helpers.py with all 26 Scope-in names, repoint the 48 fenced importers' import lines, and make each hub import the names back.",
+    "Do not let tests/loop_helpers.py import from tests.integration.test_author (bug_reply) or tests.integration.test_inbox (arrival). The last attempt's rg found both. They are skipped integration files; inline only what a moved name needs, or take it from tests/stage_replies.py or tests/*_helpers.py.",
+    "repository, admission_graph, escape_rig, enable_upgrade and repo must use tests/git_fake.py::GitFake, FakeExec and FakeFileSystem in place of SubprocessExec, LocalFileSystem and git(). notify_command returns an in-process command that FakeExec runs, not sys.executable. Criterion 4's grep must print",
+    "Edit with the editor, not chained Python str.replace/index scripts. The last attempt patched files with brittle one-shot replaces and never checked the result. After the edits, run criteria 2-4's grep commands and ./dev.py test tests/unit/test_loop_helpers.py before running the full suites.",
+    "Write tests/unit/test_loop_helpers.py with one test per moved name, as acceptance criterion 1 requires. Record the base-commit and candidate integration pass/skip counts in run.md (criterion 5), then commit on the ticket branch."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    2
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
