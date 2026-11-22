@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The targeted verification passed with 49 tests; the full integration suite exposed two additional version pins.
+The final Verification command passed with 109 tests; the full unit and integration suites and format check passed. Repository-wide lint failed on an unchanged metadata line, which also fails on the base commit.
 
 ## Dead ends
 
-The coverage gate was stopped because the diff changes no file it measures; the full integration suite then identified the out-of-fence failures.
+The first coverage command could not find clutch on PATH; running the installed worktree virtual environment executable succeeded.
 
 ## Second problems filed
 
-- box-001056-fa0a047d: docs/how-clutch-works.md still says Implement runs hard always-trigger checks and coverage gates, which the requested prompt change makes stale.
+- box-001061-e1c775ab: Repository-wide Ruff lint reports E501 on the pre-existing metadata line in tests/unit/test_driver_check_nesting.py:4; preventing recurrence requires correcting the metadata generation or lint handling that produced it.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ The coverage gate was stopped because the diff changes no file it measures; the 
 
 ## Predicted vs actual
 
-8 minutes expected; actual time not measured.
+Expected 8 minutes; completed within the ticket’s time budget.
 
