@@ -9,13 +9,9 @@ kind: feature
 - none
 
 ## Context
-- tests/integration/test_stages.py::implement_reply
-- tests/integration/test_stages.py::verdict
 - tests/integration/test_requisition.py::reply
 - tests/integration/test_requisition_gate.py::reply
-- tests/integration/test_author.py::requisition_reply
 - tests/integration/test_triage.py::requisition_reply
-- tests/integration/test_review_command.py::reply
 - tests/integration/test_shared_fakes_adoption.py
 - clutch/llm.py::FakeLLM
 
