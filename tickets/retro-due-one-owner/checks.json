@@ -1,12 +1,15 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "aae1ef08c50c746556745a9f811ca3f69689cbfd",
+  "produced_at_sha": "9abde9de6dff9db6abb76d72e8847501b3489144",
   "stem": "retro-due-one-owner",
   "passed": true,
   "changed_files": [
+    "clutch/docs/host-contract.md",
     "clutch/retro.py",
     "clutch/serve.py",
+    "docs/how-clutch-works.md",
+    "tests/integration/test_retro.py",
     "tests/regress_serve_retro_check_once.py",
     "tests/unit/test_phase_events.py",
     "tests/unit/test_retro_check_vocabulary.py",
@@ -14,7 +17,7 @@
     "tests/unit/test_serve_retro_check_once.py",
     "tests/unit/test_serve_retro_check_site.py"
   ],
-  "inserted_lines": 118,
+  "inserted_lines": 154,
   "bypassed": [],
   "reports": [
     {
@@ -83,17 +86,30 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.445089,
-        "passed": 2054,
+        "seconds": 20.48127,
+        "passed": 2118,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.1731402230507229,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.092453871970065
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 2.2691279119753744,
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.9633961849904153,
+          "tests/unit/test_images_checks.py::test_previews_are_png_and_do_not_write": 1.4531950749806128,
+          "tests/unit/test_images_checks.py::test_no_inputs_and_blank": 1.3983705729770008,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.3777483550074976,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.3680175460176542,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2870350049925037,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.261736930027837,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.2566074230126105,
+          "tests/unit/test_index_build.py::test_incremental_and_deletion": 1.1300625860167202,
+          "tests/unit/test_index_embeddings.py::test_failure_and_recovery[reply6-not a vector]": 1.1077577699907124,
+          "tests/unit/test_evidence_rusage_record.py::test_missing_report_remains_null": 1.0560250239796005,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.0483380770019721,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[True]": 1.0290935419907328,
+          "tests/unit/test_provider_live_native_ids.py::test_no_id_stays_null": 1.026288289023796
         }
       },
       "coverage": {
-        "percent": 75.08981517551832,
+        "percent": 76.51041220327363,
         "files": {
           "clutch/retro.py": 77.14884696016772,
           "clutch/serve.py": 56.09756097560975
@@ -106,15 +122,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 12.755659,
+        "seconds": 10.664856,
         "passed": 297,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8307808240060695,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.203001105983276,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1369816870137583,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0031902219634503
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.93563081100001,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1092750979878474,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0881633139797486,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0035555360082071
         }
       }
     },
@@ -147,9 +163,20 @@
         "tests/unit/test_serve_retro_check_once.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_retro_check_once.py\nbringing up nodes...\nbringing up nodes...\n\n...........................................                              [100%]\n43 passed in 1.38s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_retro_check_once.py\nbringing up nodes...\nbringing up nodes...\n\n............................................                             [100%]\n44 passed in 1.54s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 3.779959
+      "seconds": 4.301415
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_retro.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_retro.py\nbringing up nodes...\nbringing up nodes...\n\nsssssssssssssssssssssssssssssss                                          [100%]\n31 skipped in 1.15s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.311618
     }
   ]
 }
