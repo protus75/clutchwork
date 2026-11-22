@@ -6,7 +6,7 @@ kind: chore
 ---
 
 ## Depends on
-- check-meta-fill-nested-stage
+- none
 
 ## Runs before
 - supervisor-orders-by-depends
