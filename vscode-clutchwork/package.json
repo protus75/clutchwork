@@ -2,7 +2,7 @@
 	"name": "vscode-clutchwork",
 	"displayName": "ClutchWork tickets",
 	"description": "VS Code extension for the ClutchWork ticket system (https://pypi.org/project/clutchwork/): tickets as an SCM-style dependency graph: blocked, queued, running, merged.",
-	"version": "0.4.4",
+	"version": "0.4.6",
 	"publisher": "chunkydragon",
 	"icon": "media/marketplace-icon.png",
 	"extensionKind": [
