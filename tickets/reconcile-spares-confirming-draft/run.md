@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification passed with three tests passed and two existing tests skipped; the reproducer reported defect on the merge base and pass on the branch.
+The merge-base worktree reported defect with exit 1; the branch reported pass with exit 0. Final verification passed with three tests passed and two skipped. The existing ownership guard and regression coverage prevent this race from recurring.
 
 ## Dead ends
 
