@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 - none
 
+## Runs before
+- extension-provider-update-action
+
 ## Context
 - vscode-clutchwork/extension.js
 - tests/vscode_step_icons.js
