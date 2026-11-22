@@ -54,7 +54,7 @@ Scope out: hub files and helper modules, `tests/fakes.py`, `tests/git_fake.py`, 
 1. `grep -lx "pytestmark = pytest.mark.disk_io_skip" tests/integration/test_*.py tests/unit/test_*.py` lists none of `test_testreport`, `test_testreport_subprocess`, `test_thresh`, `test_thresh_active`, `test_ticket_write_serialization`, and `tests/integration/conftest.py` adds only `test_testreport_subprocess.py` and `test_ticket_write_serialization.py` to `REAL_IO_TESTS`.
 2. `./dev.py test tests/unit/test_testreport.py tests/unit/test_thresh.py tests/integration/test_thresh_active.py tests/integration/test_testreport_subprocess.py tests/integration/test_ticket_write_serialization.py --durations=0` passes, and `run.md` records the durations output showing no test over 1.0 s except those in the two `REAL_IO_TESTS` files (real process or real git), whose times are recorded.
 3. `./dev.py test <the final paths of criterion 2> --collect-only -q` collects 68 tests, equal to the base-commit count of the three original files (19, 42, 7), both recorded in `run.md`; 16 + 3 for the testreport split and 41 + 1 for the thresh split.
-4. `tests/unit/test_thresh.py` defines no `Time` class and builds no real `Journal`, checked by `grep -n "class Time\|Journal(" tests/unit/test_thresh.py` printing nothing.
+4. `tests/unit/test_thresh.py` defines no `Time` class and builds no real `Journal`, checked by `grep -nE "class Time|(^|[^A-Za-z])Journal\(" tests/unit/test_thresh.py` printing nothing.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0.
 
 ## Verification
