@@ -183,7 +183,11 @@ class Driver:
     @contextmanager
     def stage(self, *, stem, attempt, surface, **start_fields):
         previous = self._open_stage
-        if previous is not None and not ((previous == (stem, "merge") and surface in {"resolve", "review"}) or (previous == (stem, "check") and surface == "review_visual")):
+        if previous is not None and not (
+            (previous == (stem, "merge") and surface in {"resolve", "review"})
+            or (previous == (stem, "check") and surface == "review_visual")
+            or (previous[1] == "check" and (stem, surface) == ("meta", "meta"))
+        ):
             raise ValueError(f"stage already open: stem={self._open_stage[0]}, surface={self._open_stage[1]}")
         self._open_stage = (stem, surface)
         try:
