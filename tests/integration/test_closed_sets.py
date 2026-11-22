@@ -8,11 +8,11 @@ plan change first (the owning section names the set), then a deliberate edit her
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Closed sets are invariants (plan 19.I).
+# purpose: Pins every closed vocabulary, enumerated set and shipped engine constant by exact value, and checks the seams refuse values outside those sets
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/author.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: ae07764b041e7269b6dc902a4cfac137dab827e528a895fe24b5c2e19d8c64a2
+# verified: a6482110
+# hash: fc79d240525d525ec9040a9d41545782bd3a55732134c271b9089d98b9569784
 
 import typing
 from typing import get_args
@@ -210,6 +210,7 @@ def test_journal_closed_sets_and_constants():
             "drain_halted",
             "drain_handoff",
             "serve_handoff",
+            "serve_upgrade_pending",
             "flake_detected",
             "flake_released",
             "hardening_round",

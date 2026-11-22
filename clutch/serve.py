@@ -372,6 +372,7 @@ class Serve:
                 return
             if trees != self.trees:
                 self.upgrade = trees
+                self.checkout.journal.append(EventType.SIGNAL, {"signal": "serve_upgrade_pending", "clutch": trees[0]})
 
     def upgrade_idle(self):
         return (

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test view events
+# purpose: Unit tests for view events: journal and engine-log changes after a silent baseline, filtering noise, engine lifecycle and lost-engine lines, and the stream's sleep and write loop
 # relates: [clutch/events.py]
 # owner: clutch/events.py
-# verified: 9a610809
-# hash: 57c4e1039d7ff4f88a6bb67c1f3ebabebee3fab53abdd224cee56c04ab551072
+# verified: a6482110
+# hash: 567cacfe4ed7e05c6b7fe6dbcdc71c98759a8752739d4bae0dc849bffb573d1f
 import json
 import os
 
@@ -64,7 +64,7 @@ def test_journal_deltas_and_noise(tmp_path):
     seen, lines = events.poll(tmp_path, seen)
     assert lines == ["reject_release beta -- clutch view status"]  # Noise or a missing release differs.
     assert events.poll(tmp_path, seen)[1] == []  # Repeating the release differs.
-    assert events.EVENTS == ("start", "settle", "reject_queue", "reject_release", "draft", "gate", "release", "engine_start", "engine_stop", "engine_lost")
+    assert events.EVENTS == ("start", "settle", "reject_queue", "reject_release", "draft", "gate", "release", "upgrade", "engine_start", "engine_stop", "engine_lost")
     segment.write_text("")
     assert events.poll(tmp_path, seen)[1] == []  # Replaying after truncation differs.
 

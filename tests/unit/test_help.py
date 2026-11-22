@@ -5,8 +5,8 @@
 # purpose: Unit tests that the help registry builds from injected document text, covers every snapshot vocabulary value and raises on unresolved links
 # relates: [clutch/box.py, clutch/help.py, clutch/observe.py, clutch/stats.py, clutch/status.py]
 # owner: engine
-# verified: 9d19a72e
-# hash: 1f9af826fb480ec3ef7ac7ea146d0567dc0b284487d0f49270e60dc601ce0045
+# verified: a6482110
+# hash: 7b0cc69c3c8d9ebb8ae360d515273d25ec7858e860d79732efb1f2f1e2a99082
 
 from datetime import datetime, timezone
 from typing import get_args
@@ -46,7 +46,23 @@ def test_topic_shape():
 def test_vocabularies_covered():
     expected = {
         "section": {"blocked", "queued", "running", "merged"},
-        "status": {"invalid", "new", "draft", "held_change", "held_operator", "waits_on", "not_eligible", "interrupted", "retry_pending", "after", "ready", "running", "merged", "already_satisfied"}
+        "status": {
+            "invalid",
+            "new",
+            "draft",
+            "held_change",
+            "held_operator",
+            "waits_on",
+            "not_eligible",
+            "interrupted",
+            "retry_pending",
+            "upgrade_hold",
+            "after",
+            "ready",
+            "running",
+            "merged",
+            "already_satisfied",
+        }
         | SETTLED,
         "step": set(STEP_KINDS.values()),
         "box": set(get_args(MessageClass)),

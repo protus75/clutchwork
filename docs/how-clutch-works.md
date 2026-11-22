@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: a8fa2c67
-hash: c4baa7040a6b30e8622473ebad91fcf1a2f6d1a7911470d57dc343e34bca6a49
+verified: a6482110
+hash: 58b1c7d4d8446128d1102c75a27cf68d7b4b161013373cb6e4eeecf1aae65c34
 -->
 # How ClutchWork works
 
@@ -556,7 +556,7 @@ With `docs/roadmap.md` present, the roadmap driver (section 7.5) runs in the bac
 At each idle dispatch point, after supervising held stems, serve calibrates estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1).
 
 A git-checkout engine records its `clutch` tree at startup and checks it before
-admission and on every merge poll, including while implementations run. A change stops new admissions; after running tickets,
+admission and on every merge poll, including while implementations run. A change journals `serve_upgrade_pending` and stops new admissions; queued rows show the upgrade hold until `serve_handoff`. After running tickets,
 pending or active merges, and any running roadmap pass finish, serve journals `serve_handoff`, cleans up, closes the journal,
 releases the lock, and replaces its process in place with the new serve. A pending kill wins. An accepted stop waits for the same idle condition and exits without spawning. Non-git engines do not watch.
 

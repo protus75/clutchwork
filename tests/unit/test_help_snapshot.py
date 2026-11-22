@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test help snapshot
+# purpose: Unit tests that every snapshot status key has a help topic and that stats tree rows carry their help tooltips
 # relates: [clutch/help.py, clutch/observe.py, clutch/stats.py, clutch/status.py]
 # owner: engine
-# verified: 0a308920
-# hash: 9a1ab90c202d1098d389ed4e5c52b45f15b0826fde78e1fbd051fa37d0f2b7dc
+# verified: a6482110
+# hash: 62ada2c3fb90bab7f12e619926cef841bfb37026975e539899bf1bd947281eca
 from datetime import datetime, timezone
 
 from clutch.help import TOPICS, topic_text
@@ -25,6 +25,7 @@ def test_status_keys_covered():
         "not_eligible",
         "interrupted",
         "retry_pending",
+        "upgrade_hold",
         "after",
         "ready",
         "running",

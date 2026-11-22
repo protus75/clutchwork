@@ -104,6 +104,7 @@ _add(
         "waits_on": "The ticket waits for dependencies to settle.",
         "not_eligible": "The ticket is not eligible to run.",
         "interrupted": "The engine stopped during the ticket's run.",
+        "upgrade_hold": "The ticket is held for an engine upgrade until serve re-execs on the new code.",
         "retry_pending": "The ticket is waiting for another attempt.",
         "after": "The ticket is ordered after other tickets.",
         "ready": "The ticket is ready for dispatch.",

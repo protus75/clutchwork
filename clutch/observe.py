@@ -87,7 +87,23 @@ STEP_KINDS: dict[str, str] = {
 }
 
 
-STATUS_KEYS = ("invalid", "new", "draft", "held_change", "held_operator", "waits_on", "not_eligible", "interrupted", "retry_pending", "after", "ready", "running", "merged", "already_satisfied")
+STATUS_KEYS = (
+    "invalid",
+    "new",
+    "draft",
+    "held_change",
+    "held_operator",
+    "waits_on",
+    "not_eligible",
+    "interrupted",
+    "retry_pending",
+    "after",
+    "ready",
+    "upgrade_hold",
+    "running",
+    "merged",
+    "already_satisfied",
+)
 
 
 def repository_url() -> str:
@@ -361,6 +377,23 @@ def last_bodies(history) -> dict[str, dict]:
     return {stem: {**e.body, "ts": e.ts} for stem, e in latest_transitions(history).items()}
 
 
+UPGRADE_HOLD = "held: engine upgrade pending; starts after serve restarts on new code"
+
+
+def upgrade_pending(state, events):
+    since = lock_holder(state)
+    if since is None:
+        return False
+    for event in reversed(events):
+        if event.get("type") == "signal":
+            signal = event.get("body", {}).get("signal")
+            if signal == "serve_handoff":
+                return False
+            if signal == "serve_upgrade_pending":
+                return datetime.fromisoformat(event["ts"]) >= since
+    return False
+
+
 def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str], held_stems: set[str]) -> list[tuple[str, str, str]]:
     """Every confirmed ticket not yet settled, rejected, or running: (priority, stem, why it is waiting)."""
     done = CLOSED
@@ -370,6 +403,7 @@ def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str
     # A dependency is met when it, or every leaf of the split that superseded it, settled: the drain's own test.
     settled = settled_dependencies(history)
     rows = []
+    upgrade = upgrade_pending(ctx.state, events)
     for path in sorted((ctx.root / "tickets").glob("*/ticket.md")):
         stem, meta = path.parent.name, frontmatter(path)
         last = last_state.get(stem, {}).get("to")
@@ -389,6 +423,8 @@ def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str
             why = "ready, not run yet"
         else:
             why = f"retry pending (last: {last})"
+        if upgrade and (why == "ready, not run yet" or why.startswith("retry pending (")):
+            why = UPGRADE_HOLD
         rows.append((meta.get("priority", "P2"), stem, why))
     rows.sort()
     try:
@@ -780,9 +816,13 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
         waits = [d for d in t.depends if d not in settled]
         return ("waits on " + ", ".join(waits), "waits_on") if waits else ("not eligible", "not_eligible")
 
+    upgrade = upgrade_pending(state, events)
+
     def why_queued(t) -> tuple[str, str]:
         if to(t.stem) == "running":
             return "interrupted: the engine stopped mid-run; reruns when it restarts", "interrupted"
+        if upgrade:
+            return UPGRADE_HOLD, "upgrade_hold"
         if to(t.stem) is not None:
             return f"retry pending (last: {to(t.stem)})", "retry_pending"
         waits = [d for d in t.depends if d not in settled]

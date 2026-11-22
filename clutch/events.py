@@ -4,13 +4,13 @@ from clutch import observe, status
 from clutch.enginelog import engine_log_path
 
 POLL_SECONDS = 5
-EVENTS = ("start", "settle", "reject_queue", "reject_release", "draft", "gate", "release", "engine_start", "engine_stop", "engine_lost")
+EVENTS = ("start", "settle", "reject_queue", "reject_release", "draft", "gate", "release", "upgrade", "engine_start", "engine_stop", "engine_lost")
 
 
 def changes(seen, events, log, state):
     queue = status.reject_queue(observe.as_events(events))
     rows = sorted(observe.recent_steps(state, log, len(log)), key=lambda row: row["ts"])
-    rows = [row for row in rows if row["kind"] in EVENTS[7:]]
+    rows = [row for row in rows if row["kind"] in ("engine_start", "engine_stop", "engine_lost")]
     keys = {(row["kind"], row["ts"]) for row in rows}
     current = (len(events), set(queue), keys if seen is None else seen[2] | keys)
     if seen is None or len(events) < seen[0]:
@@ -28,7 +28,9 @@ def changes(seen, events, log, state):
                 lines.append(f"settle {stem} {target} -- clutch roadmap status")
         elif event.get("type") == "signal":
             signal = body.get("signal")
-            if signal == "ticket_intake" and body.get("state") == "draft" and body.get("source", "").startswith("box:"):
+            if signal == "serve_upgrade_pending":
+                lines.append("upgrade - engine code changed; no new tickets start until running work finishes and serve restarts -- clutch view watch")
+            elif signal == "ticket_intake" and body.get("state") == "draft" and body.get("source", "").startswith("box:"):
                 lines.append(f"draft {stem} {body['source']} -- clutch prompt drafts")
             elif signal == "roadmap_gate":
                 result = "passed" if body["passed"] else "failed"
