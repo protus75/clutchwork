@@ -1,0 +1,25 @@
+engine.log: engine_start and preflight phase_start lines (one preflight per ticket dispatch, not once per engine start)
+{"ts": "2026-11-21T23:29:56.091875+00:00", "event": "engine_start", "verb": "drain", "pid": 4162897}
+{"ts": "2026-11-21T23:29:56.429351+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-21T23:48:18.798402+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T00:00:26.115491+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T00:10:01.103153+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T00:19:54.620701+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T00:28:46.921979+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T00:39:18.064067+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T00:57:13.180264+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T01:16:06.252572+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T01:24:04.433848+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T01:39:56.862986+00:00", "event": "engine_start", "verb": "drain", "pid": 528712}
+{"ts": "2026-11-22T01:39:57.206369+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T02:30:03.178614+00:00", "event": "engine_start", "verb": "serve", "pid": 1443225}
+{"ts": "2026-11-22T02:30:21.413715+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T02:30:27.521854+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T02:30:36.650208+00:00", "event": "phase_end", "phase": "preflight", "outcome": "ok"}
+{"ts": "2026-11-22T02:30:39.514529+00:00", "event": "phase_end", "phase": "preflight", "outcome": "failed"}
+{"ts": "2026-11-22T02:30:39.575690+00:00", "event": "engine_stop", "verb": "serve", "pid": 1443225, "outcome": "stopped"}
+{"ts": "2026-11-22T02:32:18.891216+00:00", "event": "engine_start", "verb": "serve", "pid": 1451257}
+{"ts": "2026-11-22T02:32:36.429948+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T02:32:43.714001+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T02:32:54.625659+00:00", "event": "phase_end", "phase": "preflight", "outcome": "ok"}
+{"ts": "2026-11-22T02:32:58.727609+00:00", "event": "phase_end", "phase": "preflight", "outcome": "ok"}
