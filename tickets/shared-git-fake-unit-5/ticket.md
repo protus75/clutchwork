@@ -36,6 +36,8 @@ tests/unit/test_ticket_lint_rules.py (1)
 tests/unit/test_ticket_write_consumers_author.py (1)
 tests/unit/test_ticket_write_consumers_runner.py (2)
 
+Importers that drive a migrated helper's git (no stand-in of their own), updated to the migrated helper and nothing else: `tests/unit/test_serve_scan_head.py` sets `owner.checkout.git.status_porcelain.return_value` and `owner.checkout.git.rev_parse.return_value` on `owner` from `tests/unit/test_serve_idle_poll.py`; these become `GitFake` overrides. `tests/unit/test_supervise_idle_hooks.py` asserts `ctx.git.mock_calls == []` on `rig` from `tests/unit/test_supervise_idle_point.py`; this becomes `fake.calls == []`. Each keeps its test names and assertion strength.
+
 Out: production code under `clutch/`; `tests/git_fake.py` (when a stand-in needs a capability `GitFake` lacks, give the fake the capability through an override callable in the test, and name the gap in the run record); `tests/fakes.py`; the five `tests/regress_*.py` files; every file not listed above.
 
 ## Scope fence
@@ -53,6 +55,8 @@ Out: production code under `clutch/`; `tests/git_fake.py` (when a stand-in needs
 - tests/unit/test_ticket_lint_rules.py
 - tests/unit/test_ticket_write_consumers_author.py
 - tests/unit/test_ticket_write_consumers_runner.py
+- tests/unit/test_serve_scan_head.py
+- tests/unit/test_supervise_idle_hooks.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_git_fake_adoption.py` passes: the 13 files named in Scope in have zero matches for the three patterns and are absent from `PENDING`, and the test fails (not passes) when a `PENDING` entry has no remaining match or an unlisted file contains `git = SimpleNamespace(`.
