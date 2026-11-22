@@ -4,8 +4,8 @@
 # purpose: Tests that the roadmap driver step authors rows and sends a digest notification, and that drain calls the driver at start and after each settle
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/roadmap.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: clutch/roadmap.py
-# verified: 7ad3c1c2
-# hash: 4934a446bad8daf77e9aa7e83a401e123a698e130f3ff45e4cd996ed69434890
+# verified: 79efeedb
+# hash: 30283378b8e49d8adf1e1e4a4a599254329a9491337106f0475db7ac4898b018
 import asyncio
 import sys
 
@@ -19,7 +19,7 @@ from clutch.llm import FakeLLM
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, Script, commit_ticket, confirmed, make_root, pause_checkout
 from tests.integration.test_roadmap_author import setup_repo
-from tests.integration.test_triage import author_reply, requisition_reply
+from tests.loop_helpers import author_reply, requisition_reply
 from tests.unit.test_phase_events import RecordingLog
 
 pytestmark = pytest.mark.disk_io_skip

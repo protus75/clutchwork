@@ -4,8 +4,8 @@
 # purpose: Runs `clutch roadmap author` end to end: it authors confirmed tickets for open rows, links and strikes rows, and changes nothing when it refuses
 # relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/policy.py, clutch/roadmap.py]
 # owner: clutch/roadmap.py
-# verified: 7ad3c1c2
-# hash: 36b0a337cf40d8f6b32f6999424ab5bfcdce1c69739c685489c10e499377c019
+# verified: 79efeedb
+# hash: 6865d998005d52d90489661fe036873b155206cf366ea2472d8ea78578c70657
 import pytest
 
 from clutch.__main__ import main
@@ -17,7 +17,7 @@ from clutch.roadmap import parse
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, make_root
 from tests.integration.test_author import _routes
-from tests.integration.test_triage import author_reply, requisition_reply
+from tests.loop_helpers import author_reply, requisition_reply
 from tests.unit.test_roadmap_table import document, row
 
 pytestmark = pytest.mark.disk_io_skip

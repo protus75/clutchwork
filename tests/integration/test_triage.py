@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider. Covers verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution.
+# purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/triage.py
-# verified: 0a4d026b
-# hash: c31e16d54799bf916ed0e13b3ae4e1878847a1d6fc3199363975a2b8519427d5
+# verified: 79efeedb
+# hash: ab3860f5b8b1f0f00f72d4a85e736c6586f5a4d2a654f13a559b844508024ee3
 
 import asyncio
 import json
@@ -22,8 +22,8 @@ from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
+from tests.loop_helpers import author_reply, enqueue, escape_report, escape_rig, reply, requisition_reply, root_with_box, run
 from tests.spool_captures import read_capture
-from tests.stage_replies import requisition_reply
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -32,90 +32,6 @@ def test_triage_spec_places_reopen_condition_in_json():
     spec = (Path(__file__).resolve().parents[2] / "clutch/specs/triage.md").read_text()
     assert "Nothing may appear before or after the object, including prose and code fences" in spec
     assert "put the reopen condition inside `rationale`" in spec
-
-
-def root_with_box(tmp_path: Path) -> tuple[Path, Box]:
-    root = make_root(tmp_path)
-    config = root.joinpath("config.yaml")
-    config.write_text(
-        config.read_text().replace(
-            "  - {tier: medium, surface: implement, candidates: [{provider: claude}]}",
-            """  - {tier: medium, surface: implement, candidates: [{provider: claude}]}
-  - {tier: low, surface: author, candidates: [{provider: claude}]}
-  - {tier: medium, surface: author, candidates: [{provider: claude}]}
-  - {tier: high, surface: author, candidates: [{provider: claude}]}
-  - {tier: max, surface: author, candidates: [{provider: claude}]}
-  - {tier: low, surface: review, candidates: [{provider: claude}]}
-  - {tier: medium, surface: review, candidates: [{provider: claude}]}
-  - {tier: high, surface: review, candidates: [{provider: claude}]}
-  - {tier: max, surface: review, candidates: [{provider: claude}]}
-""",
-        )
-    )
-    return root, Box(root / ".clutch" / "state" / "box", LocalFileSystem())
-
-
-def enqueue(box: Box, summary: str) -> str:
-    return box.enqueue(message_class="suggestion", origin="test", summary=summary)[0]
-
-
-def reply(verdict: str, *, link=None, summary="Triage's own summary", evidence=None, days=30) -> str:
-    return json.dumps(
-        {"verdict": verdict, "link": link, "summary": summary, "rationale": "Observed and classified", "evidence": evidence or [], "reopen_after_days": None if verdict == "author" else days}
-    )
-
-
-def author_reply(stem: str) -> str:
-    return json.dumps(
-        {
-            "stem": stem,
-            "ticket": """---
-priority: P2
-kind: feature
----
-
-## Depends on
-- none
-
-## Context
-- clutch/thing.py
-
-## Goal / Why
-`clutch/thing.py` is repaired.
-
-## Boundary contract
-none
-- reason: unchanged behavior
-
-## Scope in / Scope out
-- In: `clutch/thing.py`.
-- Out: unrelated files.
-
-## Scope fence
-- clutch/thing.py
-
-## Acceptance criteria
-- `uv run pytest` exits 0.
-
-## Verification
-```
-uv run pytest
-```
-
-## Definition of rejected
-- `clutch/thing.py` cannot be changed safely.
-
-## Time budget
-- expected: 10m
-- stuck: 20m
-""",
-        }
-    )
-
-
-def run(root: Path, monkeypatch, llm: FakeLLM) -> int:
-    monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
-    return main(["box", "triage"], cwd=root, env=ENV, clock=Clock())
 
 
 def test_triage_preflight_failure_refuses(tmp_path, monkeypatch, capsys):
@@ -403,61 +319,6 @@ def test_reopened_message_bypasses_its_tombstone(tmp_path, monkeypatch, recorded
     assert (root / "tickets/reconsidered/ticket.md").is_file()
     count = len(llm.requests)
     assert run(root, monkeypatch, llm) == 0 and len(llm.requests) == count
-
-
-async def escape_rig(tmp_path):
-    from clutch import runner, stages
-    from clutch.tickets import validate_ticket
-    from tests.drain_helpers import pause_checkout
-    from tests.stages_helpers import implement_reply
-
-    root, box = root_with_box(tmp_path)
-    c = pause_checkout(root)
-    writer = runner.bind(c, FakeLLM([implement_reply()]))
-    text = confirmed().replace("uv run pytest", "true").replace("kind: feature", "kind: feature\ngate_bypass:\n  - {code: scope_fence, reason: witnessed fixture}")
-    commit_ticket(root, "candidate", text)
-    ticket = validate_ticket("candidate", text, root)
-    slip = (await stages.implement(writer.ctx, ticket, attempt=0)).artifact
-    wt = writer.ctx.worktree(ticket.stem)
-    for path in ("clutch/thing.py", "outside.py"):
-        c.fs.write(wt / path, b"changed\n")
-    await c.git.add(wt, ["clutch/thing.py", "outside.py"])
-    await c.git.commit(wt, "code")
-    checked = (await stages.check(writer.ctx, ticket, slip, attempt=0)).artifact
-    assert checked.passed and "scope_fence" in checked.bypassed
-    writer.stages.driver.llm = FakeLLM([requisition_reply("approve")])
-    review = (await stages.review(writer.ctx, ticket, checked, attempt=0)).artifact
-    # A process commit forces the production admission's clean-rebase approval carry.
-    c.fs.write(root / "tickets/process/note.md", b"process\n")
-    await c.git.add(root, ["tickets/process/note.md"])
-    await c.git.commit(root, "process")
-    writer.queue.offer(ticket, attempt=0)
-    [admitted] = await writer.queue.process()
-    assert admitted.outcome == "ok", admitted.findings
-    assert admitted.artifact.reviewed_sha == review.reviewed_sha == checked.produced_at_sha
-    return c, writer, box, checked, admitted.artifact
-
-
-async def escape_report(c, *, commit, paths=(), stem="repair"):
-    from dataclasses import replace
-
-    from clutch import triage
-    from tests.integration.test_author import bug_reply
-    from tests.integration.test_inbox import arrival
-
-    arrival(c.repo, app_commit=commit, implicated_paths=list(paths))
-    config = c.repo / "config.yaml"
-    config.write_text(config.read_text() + "report_inbox: inbox\n")
-    from clutch.config import load_config
-
-    c = replace(c, config=load_config(None, cwd=c.repo))
-    llm = FakeLLM([reply("author"), bug_reply(stem), requisition_reply("approve")])
-    await triage.triage_pass(c, llm)
-    box = Box(c.config.state_dir / "box", c.fs)
-    [message] = box.messages()
-    assert message.resolution == Resolution(kind="ticket", link=stem)
-    assert message.report and message.report.custody.replay
-    return c, message, llm
 
 
 def attribution(c):

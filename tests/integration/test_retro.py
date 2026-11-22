@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests and test timing and coverage aggregation
+# purpose: Tests the retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests, and aggregation of test timing and coverage
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
 # owner: clutch/retro.py
-# verified: 7ad3c1c2
-# hash: 1f18680d7b34206a60d89354cba95939b80914967bf28c3c0369446d4bc99084
+# verified: 79efeedb
+# hash: a25c8fb9f393ec832172c15476f8c0fa9729fcde4f14964d41ef83b865ef0b18
 
 import asyncio
 import json
@@ -396,7 +396,7 @@ def test_escape_report_projection(tmp_path, monkeypatch):
     from clutch.scorecard import project_scorecard
     from clutch.status import project
     from clutch.status import render as render_status
-    from tests.integration.test_triage import escape_report, escape_rig
+    from tests.loop_helpers import escape_report, escape_rig
 
     async def scenario():
         c, writer, box, checked, admitted = await escape_rig(tmp_path)

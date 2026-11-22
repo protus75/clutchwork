@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that the approval fixture, CLI review, drain dispatch, Author and Rework all record the same 64-hex requisition_verdict input_identity
+# purpose: Checks that the approval fixture, CLI review, drain dispatch, Author and Rework all record the same 64-hex input_identity on requisition_verdict
 # relates: [clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_author.py]
 # owner: clutch/requisition.py
-# verified: 38957300
-# hash: 925f36b7d1373aab517ddaf0ce362a1a6bc61d8f654178875dc96104cf753f05
+# verified: 79efeedb
+# hash: c6761e2c869c3712be79b53ee3f330da33d3764cf687106ec3faefdee89b4665
 
 import asyncio
 import re
@@ -71,7 +71,7 @@ def test_cli_dispatch_and_fixture_share_identity(tmp_path, monkeypatch):
 def test_author_records_identity(tmp_path, monkeypatch):
     from clutch.llm import FakeLLM
     from tests.integration.test_author import _box, _events, _failure, _routes, _run, requisition_reply
-    from tests.integration.test_triage import author_reply, reply
+    from tests.loop_helpers import author_reply, reply
 
     root = make_root(tmp_path)
     _routes(root)

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the Suggestion Box: signature recipe, enqueue dedup and validation, durability, decision registry format, tombstone re-report reopening and crash replay, and sequence claims
+# purpose: Tests the Suggestion Box: the signature recipe, enqueue dedup and validation, durability, the decision registry format, reopening a tombstone after re-reports and its crash replay, and sequence claims
 # relates: [clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, tests/integration/test_drain.py]
-# owner: engine
-# verified: 7ad3c1c2
-# hash: 0b10c144dbe82965e5b59d2bbd9778bf274f4540148cf378b8ef9b28a5d53a76
+# owner: clutch/box.py
+# verified: 79efeedb
+# hash: a8ce41e1d1235b93525b599a8e2c4bacbad3b8bc5c2469161562a1dd343b8433
 import asyncio
 import hashlib
 import json
@@ -155,7 +155,7 @@ def test_tombstone_rereports_reopen_at_threshold(tmp_path, monkeypatch):
     from clutch.journal import EventType, Journal
     from clutch.llm import FakeLLM
     from tests.drain_helpers import Clock, commit_ticket, confirmed
-    from tests.integration.test_triage import reply, root_with_box, run
+    from tests.loop_helpers import reply, root_with_box, run
 
     root, _ = root_with_box(tmp_path)
     clock = Clock()

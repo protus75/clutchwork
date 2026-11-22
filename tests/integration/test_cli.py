@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for the clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
+# purpose: Integration tests for clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
-# owner: engine
-# verified: 38957300
-# hash: cfd336f9d08ac5991c5090a3cde5a684415285c7f588005ece5bb6331492672a
+# owner: clutch/__main__.py
+# verified: 79efeedb
+# hash: a4415dc50c4b01384824723a91c9fe7ab14c9d1577347ee5eb26f98a19db821f
 import asyncio
 import os
 import subprocess
@@ -196,7 +196,7 @@ def test_status_escape_projection(tmp_path, monkeypatch, capsys):
     from clutch.__main__ import _status
     from clutch.retro import RetroArtifact, production_evidence, project_window, render_report
     from clutch.status import render
-    from tests.integration.test_triage import escape_report, escape_rig
+    from tests.loop_helpers import escape_report, escape_rig
 
     async def setup():
         c, _, _, _, admitted = await escape_rig(tmp_path)

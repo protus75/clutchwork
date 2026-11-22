@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared rig for continuous serve graph integration tests: builds the serve graph, scripts stages and model replies, and provides admission, control, notify, upgrade and retro scenario helpers
+# purpose: Shared rig for integration tests of the continuous serve graph: builds the serve graph, scripts stages and model replies, and provides helpers for admission, control requests, notify, upgrade and retro scenarios
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 82d23237
-# hash: 12bd3b04dea56093784fc9a8637c27ec91b0ff78d0af4f83e42e121a498d6a2c
+# verified: 79efeedb
+# hash: 9089ce9fe8af8b6f89efc46a0b1aac15e719a438777db7433fa565d3c3de8688
 
 import asyncio
 import json
@@ -30,8 +30,7 @@ from tests.cli_helpers import write as write_ticket
 from tests.config_fixture import amend_config
 from tests.fakes import turn
 from tests.integration.test_restart_timers import repository
-from tests.integration.test_triage import reply
-from tests.loop_helpers import text
+from tests.loop_helpers import reply, text
 
 
 async def until(rig, predicate):

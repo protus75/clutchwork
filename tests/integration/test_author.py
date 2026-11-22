@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for triage-driven Author: prompt contents, review/reprompt loops, bug-report evidence custody, baseline-resolved start state, decline records and crash recovery
+# purpose: Integration tests for the Author stage that triage drives: prompt contents, review and reprompt loops, custody of bug-report evidence, start state chosen from the review baseline, decline records and crash recovery
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
-# owner: engine
-# verified: 7ad3c1c2
-# hash: 1eb28c85f51e0cce2be60d3479ba9852f0ba6a9060becb0368eb6884a4cc10eb
+# owner: clutch/author.py
+# verified: 79efeedb
+# hash: 3dbc09f63f30fb1e423e4899afd0ca95afae200cbb03db786ee7085be5663679
 
 import asyncio
 import json
@@ -24,7 +24,7 @@ from clutch.tickets import template, validate_ticket
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root, pause_checkout
 from tests.integration.test_git import commit_lock
-from tests.integration.test_triage import author_reply, reply
+from tests.loop_helpers import author_reply, reply
 from tests.stage_replies import requisition_reply
 
 pytestmark = pytest.mark.disk_io_skip
