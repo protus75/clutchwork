@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "b8404eb3274c0538607b16d4fd0f8a2e7b539a4a",
+  "stem": "shared-git-fake-unit-4",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "Check failed in the full tests/unit run: tests/unit/test_roadmap_accept.py:29 does `from tests.unit.test_roadmap_author import FakeGit`, and the diff deleted class FakeGit. test_roadmap_accept.py is outside the Scope fence, so do not edit it.",
+    "Keep an importable name `FakeGit` in tests/unit/test_roadmap_author.py as a factory `def FakeGit(repo)` that returns a tests/git_fake.py GitFake. The adoption PATTERN matches only `class FakeGit`, so a def does not count as a stand-in.",
+    "test_roadmap_accept.py reads and sets checkout.git.dirty, .files and .commits (lines 143-406). The factory must set those as instance attributes and pass status_porcelain/_run/commit overrides that read them and append (message, only, roadmap text) to .commits, as the old class did.",
+    "Before committing, run the full unit gate `./dev.py test tests/unit` as well as the two Verification commands. Both of those passed, but they skip the modules that import from the migrated files. Also grep tests/ for imports from all 13 migrated files."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
