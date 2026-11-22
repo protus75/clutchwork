@@ -17,7 +17,7 @@ kind: feature
 - tests/unit/test_stages_flake_coverage.py
 
 ## Goal / Why
-When one test fails at random in a Check host command (the integration suite takes about 85 s), Check reruns the whole command (`check/host-NN-rerun.txt`), and when the report still fails it runs the whole command again on the merge base (`check/host-NN-base.txt`). On 2026-11-21 Check went from about 110 s to 300–390 s per ticket. The suite itself did not slow down: `roadmap-meta-resync`, a 2-line change, spent 2 min on the first run, 1.5 min rerunning all 3595 integration tests because `test_serve_admission_refusal_keeps_main_green` timed out, and 2.7 min on the base run. After this ticket the rerun executes only the test ids that failed on the first run, so a random failure costs seconds instead of a second full suite. The base run is unchanged.
+When one test fails at random in a Check host command (the integration suite takes about 85 s), Check reruns the whole command (`check/host-NN-rerun.txt`), and when the report still fails it runs the whole command again on the merge base (`check/host-NN-base.txt`). On 2026-11-21 Check went from about 110 s to 300–390 s per ticket. The suite itself did not slow down: `roadmap-meta-resync`, a 2-line change, spent 2 min on the first run, 1.5 min rerunning all 3595 integration tests because `test_serve_admission_refusal_keeps_main_green` timed out, and 2.7 min on the base run. After this ticket the rerun of a host entry with no `coverage` field executes only the test ids that failed on the first run, so a random integration failure costs seconds instead of a second full suite. Entries with `coverage` keep the full rerun, because `clutch coverage gate` skips its thresholds when tests fail (`clutch/covgate.py` `run_gate`) and only the full rerun checks them. The base run is unchanged.
 
 ## Boundary contract
 ### Test selection option
@@ -34,8 +34,8 @@ When one test fails at random in a Check host command (the integration suite tak
 - disposition: extend
 - owner: clutch/stages.py `_check_host_results`
 - consumers: every ticket's Check stage for host entries with a `results` file
-- observable change: the rerun appends `--clutch-select <results path with suffix .select.json>` holding the first run's failed node ids to `entry.argv`; capture names, flake detection, quarantine, the base run in `check_hosts` and `base_red` rules are unchanged
-- compatibility: timing and coverage still come from the first run
+- observable change: for host entries with a `results` file and no `coverage` field, the rerun appends `--clutch-select <results path with suffix .select.json>` holding the first run's failed node ids to `entry.argv`; entries with `coverage` rerun `entry.argv` unchanged; capture names, flake detection, quarantine, the base run in `check_hosts` and `base_red` rules are unchanged
+- compatibility: the line `if result.rc != 0 and "failed" not in last.values(): findings.extend(report.findings)` stays; the quarantine-release loop reads `{**first, **last}` so a passing quarantined test is still released when an unrelated test triggers a selected rerun
 - acceptance: criteria 2 and 3
 - tests: tests/integration/test_check_rerun_failed_only.py
 - post-merge source of truth: clutch/stages.py
@@ -43,8 +43,7 @@ When one test fails at random in a Check host command (the integration suite tak
 ## Scope in / Scope out
 Scope in:
 - clutch/testreport.py: add `--clutch-select` as above.
-- clutch/stages.py `_check_host_results`: give `run(name)` an optional list of node ids (`run(name, selected=None)`); when given, write them as JSON with `ctx.fs.write` to `path.with_suffix(".select.json")` (where `path` is the results file `run` already reads) and append `["--clutch-select", str(that path)]` to `entry.argv`. The rerun passes the first run's failed ids. The function's signature and return value are unchanged.
-- tests/unit/test_stages_flake_coverage.py `test_check_flake_coverage`: its ctx fake `fs=NS(remove=...)` gains `write=lambda path, data: path.write_bytes(data)` so the selection-file write succeeds. Its final `calls` assertion changes so the second (rerun) call is `["test", "--clutch-select", str(tmp_path / "results.select.json")]` instead of `["test"]`; the first call and the `["flake", test]` call are unchanged.
+- clutch/stages.py `_check_host_results`: give `run(name)` an optional list of node ids (`run(name, selected=None)`); when given, write them as JSON with `ctx.fs.write` to `path.with_suffix(".select.json")` (where `path` is the results file `run` already reads) and append `["--clutch-select", str(that path)]` to `entry.argv`. The rerun passes the first run's failed ids only when `entry.coverage is None`. Keep the rerun rc-findings line. The quarantine-release loop checks `{**first, **last}`. The function's signature and return value are unchanged.
 - New tests/unit/test_check_rerun_select.py runs the changed lines with fakes under `tmp_path`: `pytest_collection_modifyitems` with stand-in items and config, and `_check_host_results` with a recording exec and a results file written by the fake.
 - New tests/integration/test_testreport_select.py runs pytest in a `tmp_path` project with `-p clutch.testreport --clutch-select`, and new tests/integration/test_check_rerun_failed_only.py drives Check with a recording exec.
 Scope out:
@@ -54,18 +53,16 @@ Scope out:
 - clutch/testreport.py
 - clutch/stages.py
 - tests/unit/test_check_rerun_select.py
-- tests/unit/test_stages_flake_coverage.py
 - tests/integration/test_testreport_select.py
 - tests/integration/test_check_rerun_failed_only.py
-- tests/integration/test_host_mechanical.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/integration/test_testreport_select.py` proves that with `--clutch-select` naming one of three tests, pytest runs exactly that one and the `--clutch-results` file lists only it, not all three.
 2. `./dev.py test tests/integration/test_check_rerun_failed_only.py` proves that when the first run records one failed id among many, the rerun argv is `entry.argv + ["--clutch-select", <path>]` and that file holds exactly that id, not the full command again.
 3. `./dev.py test tests/integration/test_check_rerun_failed_only.py` proves a selected test that fails again on the rerun still produces the `failed on rerun` finding, and one that passes is treated as flaky exactly as before.
 4. `./dev.py test tests/unit/test_check_rerun_select.py` proves the selection hook keeps only listed node ids and the rerun argv carries `--clutch-select`, without starting a process.
-5. `./dev.py test tests/integration/test_host_mechanical.py` passes, including its `check/host-01-rerun.txt` capture assertion.
-6. `./dev.py test tests/unit/test_stages_flake_coverage.py` passes for all three `test_check_flake_coverage` cases, with the rerun call asserted as `["test", "--clutch-select", str(tmp_path / "results.select.json")]`.
+5. `./dev.py test tests/integration/test_host_mechanical.py tests/unit/test_stages_flake_coverage.py` passes with both files unchanged, including the `test_results_fail_closed` case `[(1, {"a": "failed"}), (1, {"a": "passed"}), (0, {})]` and the `check/host-01-rerun.txt` capture assertion.
+6. `./dev.py test tests/integration/test_check_rerun_failed_only.py` proves an entry with `coverage` set reruns exactly `entry.argv` with no `--clutch-select`, and that a quarantined test that passed on the first run is still released when an unrelated test triggers a selected rerun.
 
 ## Verification
 ```
