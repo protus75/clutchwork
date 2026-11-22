@@ -4,8 +4,8 @@ kind: plan
 purpose: Training data backup to Google Drive: plan
 relates: [clutch/training.py, clutch/evidence/store.py, clutch/config.py]
 owner: clutch/training.py
-verified: 2d2eba6f
-hash: 2eb580a418ecddad1a9303bc7628cec9f24f63d8b005392bcdacbe9dfccff784
+verified: 0bb2f0ee
+hash: a0c35dd9bb6458725d00832105ad7214f1e974639a9c0927128b3ee0e731bdf9
 -->
 # Training data backup: plan
 
@@ -15,7 +15,7 @@ Owner request, 2026-11-22: a backup of the export to Google Drive; a configurabl
 
 ## Status
 
-Draft, 2026-11-22. No roadmap rows yet; rows are added after the owner approves this plan. Related: `evidence-never-prunes` (ticket, 2026-11-22) stops the evidence store from silently deleting call outputs, which this plan's `--evidence` option would otherwise back up only partially.
+Draft, 2026-11-22. Not scheduled: the four tickets in "Ticket breakdown" are needed to deliver this plan, but no roadmap row or ticket exists until the owner chooses to add backup. Nothing is authored automatically. Related: `evidence-never-prunes` (ticket, 2026-11-22) stops the evidence store from silently deleting call outputs, which this plan's `--evidence` option would otherwise back up only partially.
 
 ## Requirements
 
@@ -73,7 +73,7 @@ A new top-level `backup` group, modelled on `clutch provider install` / `clutch 
 - Scheduling. Backups run by hand or from a host's own job.
 - Other targets. S3 or any rclone remote works by changing `backup.remote`; nothing here is Drive-specific except the setup verb.
 
-## Ticket breakdown (after approval)
+## Ticket breakdown (authored when the owner schedules backup)
 
 1. `backup-rclone-seam`: `clutch/rclone.py` argv wrapper, the `clutch[backup]` extra, the `backup` config block (`remote`, `project`, `rclone_config`), clone ID, project-name default, and the `backup` group with `install`, `setup` and `probe`, plus the doctor row.
 2. `backup-records`: `backup run` for records: export to temp, key filter, batch and index upload, local index cache, counts, `--dry-run`, last-backup marker and status line.
