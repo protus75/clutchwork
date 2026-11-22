@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "fef52b8084732d68aedf86e81e59cb2a557f752f",
+  "stem": "evidence-never-prunes",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "reject",
+  "lessons": [
+    "Fence gap: tests/unit/test_main_view_group.py::test_dispatch_and_optional_locks fakes load_config as SimpleNamespace(state_dir, providers, snapshot_merged_limit) with no `evidence`; the new handle_status evidence line forces a fake edit there. Add that test file to ## Scope fence and ## Context.",
+    "After refencing, add evidence=SimpleNamespace(warn_gb=20) to that fake config. Keep `view status` output exactly 'rendered projection\\n' for an empty store under tmp_path; print no evidence line under the threshold.",
+    "tests/unit/test_host_running.py::test_verb_table_matches_parser needs each host-running.md verb cell to be exactly `group verb`. Write the row as | `evidence prune` | No | ... |, with no `--to-gb N` inside the backticks, and add no duplicate rows.",
+    "Fix the row in clutch/docs/host-running.md, which is already fenced. Before handing off, run `./dev.py test tests/unit/test_host_running.py tests/unit/test_main_view_group.py` and the full `./dev.py test` (criterion 8), not just the ## Verification files."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
