@@ -1,12 +1,34 @@
 ---
 state: confirmed
 source: human
-priority: P2
+priority: P0
 kind: bug
 ---
 
 ## Depends on
 - none
+
+## Runs before
+- shared-fakes-guard
+- shared-git-fake-integration
+- shared-git-fake-unit-6
+- shared-git-fake-unit-5
+- shared-git-fake-unit-4
+- shared-git-fake-unit-3
+- shared-git-fake-unit-2
+- shared-git-fake
+- shared-serve-rig-config
+- shared-review-script
+- check-rerun-failed-only
+- serve-flaky-tests-deterministic
+- reconcile-spares-confirming-draft
+- flake-fix-jumps-queue
+- preflight-once-per-session
+- serve-contains-dispatch-exception
+- check-meta-fill-nested-stage
+- supervisor-orders-by-depends
+- gemini-provider-configured
+- retry-keeps-prior-branch
 
 ## Context
 - clutch/control.py::ControlInbox
