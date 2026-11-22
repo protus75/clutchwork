@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification command passed all 41 tests; targeted mutations confirmed the new assertions detect the relevant regressions. The direct context-manager move was simpler than introducing a separate single-caller helper.
+The final verification passed all 41 tests, and lint passed on the changed Python files. An inner coroutine keeps every normal return under one stage end without reindenting the full Check implementation.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket estimate: 20 minutes; actual elapsed time was not measured.
+Ticket budget: 20 minutes expected, 40 minutes stuck; completed within the expected budget.
 
