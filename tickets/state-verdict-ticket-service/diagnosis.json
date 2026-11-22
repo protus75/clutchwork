@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0e3595f66ed265806092a4d3bfb0cbe353930566",
+  "stem": "state-verdict-ticket-service",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The fence omits clutch/drain.py, which the change forces. `_Drain._scan` (clutch/drain.py:590) reads committed ticket.md files and `_sha` reads HEAD blobs for dispatch, without checking checkpoint or conflict status. That breaks criteria 5, 6 and 10. Add clutch/drain.py to the scope fence.",
+    "Re-author with a requirement that drain selection and dispatch (`_Drain._scan`, `_sha`, `_offer_material`) dispatch only revisions whose checkpoint commit exists, and skip tickets held for an editor conflict. Use the clutch/state.py service for both checks.",
+    "Fix the Goal and Scope in to match the code. The implementer reports that Serve.scan, Serve.watch and verdict settlement no longer enter the admission-wide wait. clutch/serve.py now has only one `admission.exclusive()` entry, at line 641. Read it and keep criterion 4 only where the wait is still",
+    "Check the fence for every test that pins drain's dispatch behavior, and add them. Put new drain tests in a new tests/unit/test_<module>_<behavior>.py file, not in tests/integration/test_drain.py, which is a hot file."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
