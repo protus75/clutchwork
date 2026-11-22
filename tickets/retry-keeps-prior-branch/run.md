@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The integration I/O guard blocks subprocesses and disk writes unless the test file is explicitly allowlisted.
+Journal event order determines whether a merge-conflict signal is newer than the latest terminal; targeted mutation checks detected the incorrect behaviors tested.
 
 ## Dead ends
 
-Checked the integration guard and its allowlist; the required test is not exempt.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 20 minutes; actual time was not measured.
 
