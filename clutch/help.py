@@ -190,7 +190,7 @@ _add(
         "ladder": "Summarizes escalations and their outcomes.",
         "failures": "Summarizes terminal failures and diagnoses.",
         "holds": "Summarizes holds and operator keeps.",
-        "spend": "Summarizes provider costs and token usage.",
+        "usage": "Summarizes token usage and calls per provider; tokens are never summed across providers because they are not the same unit.",
     },
     "2.1 Verbs",
 )

@@ -7,7 +7,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
 from clutch.help import TOPICS, topic_text
-from clutch.journal import EventType, total_spend
+from clutch.journal import EventType
 from clutch.status import CLOSED
 from clutch.tickets import KINDS
 
@@ -130,18 +130,32 @@ def project_stats(events, kinds, checks, *, now, window):
         return dict(Counter(b[field] for b in signals if b.get("signal") == signal and b.get(field) is not None))
 
     costs = [e for e in selected if e.type == EventType.EFFECT_COMPLETION and isinstance(e.body.get("cost"), dict)]
-    usd = total_spend(selected)
-    surfaces = defaultdict(float)
-    for e in costs:
-        parts = (e.key or "").split("/")
-        if len(parts) == 6 and parts[0] == "llm":
-            surfaces[parts[3]] += e.body["cost"].get("usd", 0.0)
     providers = {}
+
+    def provider_row(name):
+        return providers.setdefault(name, {"calls": 0, "failures": 0, "input_tokens": 0, "output_tokens": 0})
+
     for b in signals:
         if b.get("signal") == "provider_call_outcome":
-            row = providers.setdefault(b["provider"], {"calls": 0, "failures": 0})
+            row = provider_row(b["provider"])
             row["calls"] += 1
             row["failures"] += b.get("failure_class") is not None
+    surfaces = {}
+    for e in costs:
+        cost = e.body["cost"]
+        provider = cost.get("provider") or "unknown"
+        row = provider_row(provider)
+        parts = (e.key or "").split("/")
+        surface_row = None
+        if len(parts) == 6 and parts[0] == "llm":
+            surface_row = surfaces.setdefault(parts[3], {}).setdefault(provider, {"input_tokens": 0, "output_tokens": 0})
+        for direction in ("input_tokens", "output_tokens"):
+            value = cost.get(direction) or 0
+            row[direction] += value
+            if surface_row is not None:
+                surface_row[direction] += value
+    for row in providers.values():
+        row["output_tokens_per_merge"] = row["output_tokens"] / states["merged"] if states["merged"] else None
     return {
         "window": {"spec": window, "start": start.isoformat(), "end": now.isoformat(), "events": len(selected)},
         "throughput": {
@@ -172,13 +186,7 @@ def project_stats(events, kinds, checks, *, now, window):
             "abandoned": sum(e.body.get("to") == "abandoned" for e in terminals),
             "droughts": sum(e.body.get("reason") == "provider_drought" for e in terminals),
         },
-        "spend": {
-            "usd": usd,
-            "usd_per_merge": usd / states["merged"] if states["merged"] else None,
-            "by_surface": dict(surfaces),
-            "tokens": {direction: sum(e.body["cost"].get(f"{direction}_tokens") or 0 for e in costs) for direction in ("input", "output")},
-            "provider_calls": providers,
-        },
+        "usage": {"by_provider": providers, "by_surface": surfaces},
     }
 
 

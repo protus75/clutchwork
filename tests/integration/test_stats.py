@@ -4,8 +4,8 @@
 # purpose: Tests the stats projection (windows, stage durations, cycles, ladder, verification timings), the `view stats` JSON and tree output, and refusal of a bad window.
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/stats.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: clutch/stats.py
-# verified: 7ad3c1c2
-# hash: 51307d331cce6a568beee8d8770d34d0f19c6e28392557d041790bf78dd2fc35
+# verified: 4024355c
+# hash: cd9ba44282cc4dd5305839427e62a67df5b60a261d518a6f21f03d02bb471fc3
 import json
 from datetime import timedelta
 from types import SimpleNamespace
@@ -75,7 +75,7 @@ def test_cli_json_refusal_and_no_write(tmp_path, capsys):
     journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="done")
     before = {p: p.read_bytes() for p in journal.dir.glob("*")}
     assert main(["view", "stats", "--json"], cwd=root, env=ENV, clock=clock) == 0
-    assert list(json.loads(capsys.readouterr().out)) == ["window", "throughput", "durations", "verification", "cycles", "ladder", "failures", "holds", "spend"]
+    assert list(json.loads(capsys.readouterr().out)) == ["window", "throughput", "durations", "verification", "cycles", "ladder", "failures", "holds", "usage"]
     assert {p: p.read_bytes() for p in journal.dir.glob("*")} == before
     assert main(["view", "stats", "--window", "0d"], cwd=root, env=ENV, clock=clock) == 2
     assert capsys.readouterr().err == "clutch view: bad window 0d -- use <N>h, <N>d, or <N>t\n"
