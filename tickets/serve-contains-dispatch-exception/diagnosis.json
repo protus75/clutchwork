@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "e77de8122623ab2f18006d8fabe6bd74f085ab7d",
+  "produced_at_sha": "7c7189becf0da508e5ead127dbf6be32e4ace96c",
   "stem": "serve-contains-dispatch-exception",
-  "attempt": 2,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 3,
+  "terminal": "gate_failed",
+  "stage": "merge",
+  "verdict": "retry",
   "lessons": [
-    "Premise false: tests/integration/conftest.py DISK_IO_SKIP lists test_drain_containment.py and test_serve_kill.py, and matches by filename, so the ## Verification command skips criteria 3 and 4 (and the unit test_drain_containment.py) instead of checking them.",
-    "Premise false: the ticket requires the new test to use tests/integration/serve_rig.py, but that rig builds a real repo, and the I/O guard (clutch/ioguard.py IntegrationIOBlocked) blocks it in any test file not listed in REAL_IO_TESTS. The rig is out of fence and must not be edited.",
-    "Ordering is inverted: ## Runs before lists shared-serve-rig-config and disk-io-skip-per-file, but this ticket needs them merged first. Move them to ## Depends on, or allow an in-memory serve fixture built on tests/fakes.py inside the fence.",
-    "Rewrite criteria 3 and 4 and ## Verification so each named test actually runs (not skipped) once its prerequisites land. Otherwise they cannot prove 'unchanged' or 'still stops serve'."
+    "Merge gate failed in tests/integration/test_git_fake_adoption.py: shared-git-fake (b6bb18a7) merged first, and its PATTERN flags new tests/unit/test_serve_dispatch_containment.py for a hand-built Git stand-in such as `git = MagicMock(`, `git = SimpleNamespace(` or `spec=Git`.",
+    "In tests/unit/test_serve_dispatch_containment.py, build the git stand-in as `GitFake(...)` from tests/git_fake.py (class GitFake, __init__(**overrides)) so no line matches `git = (SimpleNamespace|NS|Mock|MagicMock|AsyncMock)(`, `class FakeGit`, `spec=Git` or `create_autospec(Git`.",
+    "Do not add the new test file to PENDING in tests/integration/test_git_fake_adoption.py. That file is outside the fence, and PENDING only tracks files that existed before the migration.",
+    "Keep the rest of the approved diff unchanged: runner.dispatch_exception_terminal, the drain and serve callers, the regress script and the docs. Then rerun the `## Verification` commands and `./dev.py test tests/integration/test_git_fake_adoption.py`, and confirm both exit 0."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
