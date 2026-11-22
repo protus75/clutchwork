@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Cancellation waits for the already-satisfied worktree removal.
+# purpose: Checks that cancelling runner.drive waits for the already-satisfied worktree removal to finish, after the single terminal transition is journaled.
 # relates: [clutch/journal.py, clutch/runner.py]
 # owner: engine
-# verified: 9a610809
-# hash: d7fdd92bd9410c3582ebe91819ad1f9b1c32095d02d7da66275376dcef0003be
+# verified: 73ec5da9
+# hash: 4f361567cb216112299f843c6b5f5c4bebdc6922f95ac98c4c3e81e2a704f680
 
 import asyncio
 from pathlib import Path
@@ -17,6 +17,7 @@ import pytest
 
 from clutch import runner
 from clutch.journal import EventType
+from tests.git_fake import GitFake
 
 
 @pytest.mark.asyncio
@@ -35,19 +36,24 @@ async def test_terminal_removal_finishes_before_cancellation(monkeypatch):
     completed = []
     events_at_start = []
 
-    class Git:
-        async def worktree_remove(self, repo, worktree):
-            events_at_start.extend(events)
-            started.set()
-            await release.wait()
-            paths.remove(worktree)
-            completed.append((repo, worktree))
+    async def worktree_remove(repo, worktree):
+        events_at_start.extend(events)
+        started.set()
+        await release.wait()
+        paths.remove(worktree)
+        completed.append((repo, worktree))
 
     class Journal:
         def append(self, kind, body, *, ticket):
             events.append((kind, body, ticket))
 
-    ctx = SimpleNamespace(repo=Path("/fake/repo"), git=Git(), worktree=lambda stem: path, driver=SimpleNamespace(journal=Journal()), boundary=SimpleNamespace(run=object(), next_stage=None))
+    ctx = SimpleNamespace(
+        repo=Path("/fake/repo"),
+        git=GitFake(worktree_remove=worktree_remove),
+        worktree=lambda stem: path,
+        driver=SimpleNamespace(journal=Journal()),
+        boundary=SimpleNamespace(run=object(), next_stage=None),
+    )
     ticket = SimpleNamespace(stem="work")
     result = SimpleNamespace(outcome="already_satisfied")
     monkeypatch.setattr(runner, "run_stages", AsyncMock(return_value=SimpleNamespace(last=("implement", result), ticket_sha="sha")))

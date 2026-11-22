@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test stages conflict rerun inputs
+# purpose: Checks that prior_attempts shows merge-conflict rerun context: the run record, prior diff and review. Also checks that lift_prior_diff drops conflicted file sections before committing.
 # relates: [clutch/artifacts.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: 6e3232dffc80b16a26d02eab36e502180de76a03b8e306f1a254a70be4610341
+# verified: 73ec5da9
+# hash: 62ad97583ba3d33f4b25284a24a012617182812ee8f50d7ef773dcb6ac4fc33e
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -15,6 +15,7 @@ from clutch.artifacts import Finding
 from clutch.journal import Event, EventType
 from clutch.seams import LocalFileSystem
 from clutch.stages import ApprovedInvoice, lift_prior_diff, prior_attempts, render_review
+from tests.git_fake import GitFake
 
 
 def event(stem, attempt):
@@ -47,12 +48,12 @@ async def test_lift_excludes_conflicted_sections(tmp_path):
         assert (key, ticket) == ("ticket-plane/item/3/prior-diff", "item")
         return await action()
 
-    git = SimpleNamespace(commit=AsyncMock(return_value="commit-sha"))
+    git = GitFake(commit="commit-sha")
     ctx = SimpleNamespace(repo=tmp_path, fs=LocalFileSystem(), git=git, driver=SimpleNamespace(effects=SimpleNamespace(run=effect)))
     diff = "diff --git a/bad b/bad\n--- a/bad\n+++ b/bad\n@@ -1 +1 @@\n-old\n+conflicted\ndiff --git a/good b/good\n--- a/good\n+++ b/good\n@@ -1 +1 @@\n-old\n+retained\n"
     sha = await lift_prior_diff(ctx, "item", attempt=3, diff=diff, conflicted=["bad"])
     saved = (tmp_path / "tickets/item/attempts/3/prior.diff").read_text()
     assert sha == "commit-sha"
     assert saved == diff[diff.index("diff --git a/good") :]
-    git.commit.assert_awaited_once_with(tmp_path, "clutch(item): prior-diff", only=["tickets/item/attempts/3/prior.diff"])
+    assert [call for call in git.calls if call[0] == "commit"] == [("commit", (tmp_path, "clutch(item): prior-diff"), {"only": ["tickets/item/attempts/3/prior.diff"]})]
     assert await lift_prior_diff(ctx, "item", attempt=3, diff=diff, conflicted=["bad", "good"]) is None

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify atomic Author publication, compensation and decision-record writes.
+# purpose: Checks that Author publication, compensating rollback after a failure, and decision-record writes all happen inside the atomic Git commit_edit writer lock.
 # relates: [clutch/author.py, clutch/git.py, clutch/seams.py, clutch/triage.py, tests/fakes.py, tests/unit/test_author_roadmap_row.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: f021b55d91aa8643a86587f9c73873e734693a9de2efb919cf77c54e054f49a9
+# verified: 73ec5da9
+# hash: ed1047fe589071bcd9d55e8ba7b0623d67cbe801c6f66efb13b99cd5a9f5f11a
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +18,7 @@ from clutch import author, triage
 from clutch.git import GitError, NothingToCommit, blob_sha
 from clutch.seams import LocalFileSystem
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_author_roadmap_row import row
 from tests.unit.test_retro_recurrence import message
 
@@ -35,47 +36,41 @@ class Lock:
         self.locked = False
 
 
-class Git:
-    def __init__(self, repo, failure):
-        self.repo, self.failure = repo, failure
-        self.lock = Lock()
-        self.commits = []
-        self.head = {}
+def git_fake(repo, failure):
+    state = SimpleNamespace(lock=Lock(), commits=[], head={})
 
-    @property
-    def locked(self):
-        return self.lock.locked
-
-    async def ls_files(self, repo):
+    async def ls_files(repo):
         return ["docs/sample-plan.md"]
 
-    async def _run(self, repo, *args):
+    async def run(repo, *args):
         if args[0] == "ls-tree":
-            return blob_sha(self.head[args[-1]]) if args[-1] in self.head else ""
-        if self.failure == "listing":
+            return blob_sha(state.head[args[-1]]) if args[-1] in state.head else ""
+        if failure == "listing":
             raise GitError(["git"], 1, "", "listing refused")
         return ""
 
-    async def commit_edit(self, repo, msg, *, only, edit):
-        async with self.lock:
+    async def commit_edit(repo, msg, *, only, edit):
+        async with state.lock:
             await edit()
             if msg == "clutch(sample-row): ticket":
-                if self.failure in {"commit", "later", "landed", "prior"}:
-                    if self.failure == "later":
+                if failure in {"commit", "later", "landed", "prior"}:
+                    if failure == "later":
                         (repo / only[0]).write_bytes(b"later writer")
-                    if self.failure == "landed":
-                        self.head = {name: (repo / name).read_bytes() for name in only}
+                    if failure == "landed":
+                        state.head = {name: (repo / name).read_bytes() for name in only}
                     raise OSError("commit refused")
             if "compensate" in msg:
                 raise NothingToCommit(["git"], 0, "", "")
-            self.commits.append((msg, only))
+            state.commits.append((msg, only))
             return "sha"
+
+    return GitFake(ls_files=ls_files, _run=run, commit_edit=commit_edit), state
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["none", "commit", "partial", "later", "landed", "listing", "snapshot", "prior"])
 async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
-    git = Git(tmp_path, failure)
+    git, state = git_fake(tmp_path, failure)
     ticket = tmp_path / "tickets/sample-row/ticket.md"
     evidence = ticket.parent / "evidence/report.json"
     evidence.parent.mkdir(parents=True)
@@ -87,24 +82,24 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
     read_bytes, rmdir = Path.read_bytes, Path.rmdir
 
     def reading(path):
-        if failure == "snapshot" and path == evidence and not git.locked:
+        if failure == "snapshot" and path == evidence and not state.lock.locked:
             raise OSError("snapshot refused")
         return read_bytes(path)
 
     def removing(path):
-        assert git.locked  # Rules out directory removal after commit_edit returns.
+        assert state.lock.locked  # Rules out directory removal after commit_edit returns.
         removals.append(path)
         return rmdir(path)
 
     class FS(LocalFileSystem):
         def write(self, path, data):
-            assert git.locked  # Rules out pre-lock publication and restoration.
+            assert state.lock.locked  # Rules out pre-lock publication and restoration.
             super().write(path, data)
             if path == ticket and failure == "partial":
                 raise OSError("write completed then failed")
 
     async def run(stage, *args, **kwargs):
-        assert not git.locked  # Rules out a lock spanning the Author call.
+        assert not state.lock.locked  # Rules out a lock spanning the Author call.
         gate = stage.gates[0]
         gate.copied["sample-row"] = [str(evidence.relative_to(tmp_path))]
         gate.copied_bytes[str(evidence.relative_to(tmp_path))] = b"owned evidence"
@@ -114,7 +109,7 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
         return SimpleNamespace(outcome="ok", artifact=reply)
 
     async def review(*args, **kwargs):
-        assert not git.locked  # Rules out a lock spanning requisition review.
+        assert not state.lock.locked  # Rules out a lock spanning requisition review.
         return SimpleNamespace(verdict="approve", findings=[], calls=1, ticket_sha="review", provider="fake", model="fake", spec_version="1", input_identity=None)
 
     async def effect(action, **kwargs):
@@ -137,7 +132,7 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
     def validate(*args):
         validations.append(args)
         if len(validations) > 1:
-            assert git.locked  # Rules out final validation before the writer lock.
+            assert state.lock.locked  # Rules out final validation before the writer lock.
         return SimpleNamespace(scope_fence=(), frontmatter=SimpleNamespace(gate_bypass=[]))
 
     monkeypatch.setattr(author, "validate_ticket", validate)
@@ -153,7 +148,7 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
     # A no-op implementation cannot satisfy the distinct success/failure tree states.
     if failure == "none":
         assert result.stem == "sample-row" and ticket.read_bytes() == b"reviewed ticket"
-        assert git.commits == [("clutch(sample-row): ticket", ["tickets/sample-row/ticket.md", "tickets/sample-row/evidence/report.json"])]
+        assert state.commits == [("clutch(sample-row): ticket", ["tickets/sample-row/ticket.md", "tickets/sample-row/evidence/report.json"])]
         decline.assert_not_awaited()
     else:
         assert result.declined == "declined"
@@ -174,12 +169,12 @@ async def test_publication_and_compensation(tmp_path, monkeypatch, failure):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("caller", ["direct", "failure", "triage"])
 async def test_decision_record_writes_under_lock(tmp_path, caller):
-    git = Git(tmp_path, "none")
+    git, state = git_fake(tmp_path, "none")
     writes, effects = [], []
 
     class FS(LocalFileSystem):
         def write(self, path, data):
-            assert git.locked  # Rules out writing at either caller before commit_record.
+            assert state.lock.locked  # Rules out writing at either caller before commit_record.
             writes.append((path, data))
             super().write(path, data)
 
@@ -201,5 +196,5 @@ async def test_decision_record_writes_under_lock(tmp_path, caller):
         await triage._record(checkout, driver, box, item.id, "declined", item.id, reply, "raw")
     assert len(writes) == 1  # Rules out both caller and callback writing.
     assert (b"distinct record bytes" if caller == "direct" else b"distinct failure" if caller == "failure" else b"distinct triage") in writes[0][1]
-    assert git.commits == [(f"clutch(decisions): {record_id}", [str(author.record_path(record_id))])]
+    assert state.commits == [(f"clutch(decisions): {record_id}", [str(author.record_path(record_id))])]
     assert effects == [{"key": f"ticket-plane/decisions/{record_id}", "ticket": None}]

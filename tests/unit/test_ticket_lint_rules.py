@@ -2,17 +2,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Authoring checks against parsed tickets with an in-memory repository.
+# purpose: Checks ticket lint rules against an in-memory repo: regression carried-file and fence rules, file coverage floors that need a unit test, an invalid test-gate.toml, command path matching, and the output of the lint verb.
 # relates: [clutch/__main__.py, clutch/tickets.py]
 # owner: engine
-# verified: 9a610809
-# hash: 5c3f4393c6a59d810752966dab83d931a7be3896492838b6a716cb1117536fe8
+# verified: 73ec5da9
+# hash: 069992339a351d15b808e90e01083fb8b0c602fe230c614395649f4a9caddb77
 
 from pathlib import Path
 
 import pytest
 
 from clutch import tickets
+from tests.git_fake import GitFake
 
 TEXT = """---
 state: confirmed
@@ -153,7 +154,7 @@ def test_lint_verb_prints_carried_file_finding(repo, monkeypatch, capsys):
     checkout = SimpleNamespace(
         repo=root,
         config=SimpleNamespace(state_dir=root / ".state", drain=SimpleNamespace(max_ticket_minutes=90)),
-        git=SimpleNamespace(git_common_dir=common_dir, status_porcelain=status, _run=run),
+        git=GitFake(git_common_dir=common_dir, status_porcelain=status, _run=run),
         journal=SimpleNamespace(read=lambda: []),
     )
     # Wiring lint to validation alone would silently accept this parsed bug ticket.

@@ -4,8 +4,8 @@
 # purpose: Checks that runner verdict confirm, reject and admission repair write ticket.md only inside the Git.commit_edit callback, and that a draft refusal is raised before any commit.
 # relates: [clutch/journal.py, clutch/runner.py]
 # owner: engine
-# verified: 2dd7da28
-# hash: eac980381693f305a66459e33c07503de7637fe1b248c7f361a975bc333406b8
+# verified: 73ec5da9
+# hash: 3f8fe6b0051e2197f5f2b0ee0a55d23d71848322106f069bb69a4001a17c5e27
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,6 +15,7 @@ import pytest
 
 from clutch import runner
 from clutch.journal import EventType
+from tests.git_fake import GitFake
 
 
 class Journal:
@@ -69,7 +70,7 @@ def test_ticket_edit_waits_for_commit_callback(monkeypatch, branch):
             SimpleNamespace(type=EventType.EFFECT_COMPLETION, key="key/baseline", ticket="sample", body={"result": "base"}),
         ]
     journal = Journal(events)
-    checkout = SimpleNamespace(repo=root, fs=FS(), journal=journal, git=SimpleNamespace(commit_edit=commit_edit, rev_parse=AsyncMock(return_value="base"), _run=run))
+    checkout = SimpleNamespace(repo=root, fs=FS(), journal=journal, git=GitFake(commit_edit=commit_edit, rev_parse="base", _run=run))
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "read_text", lambda p, *a, **kw: files[p])
     monkeypatch.setattr(runner, "intake", AsyncMock(return_value=SimpleNamespace(refused={})))
@@ -95,11 +96,11 @@ def test_ticket_edit_waits_for_commit_callback(monkeypatch, branch):
 
 def test_draft_refusal_precedes_commit(monkeypatch):
     path = Path("/fake/tickets/sample/ticket.md")
-    checkout = SimpleNamespace(repo=Path("/fake"), journal=Journal(), git=SimpleNamespace(commit_edit=AsyncMock()), fs=None)
+    checkout = SimpleNamespace(repo=Path("/fake"), journal=Journal(), git=GitFake(), fs=None)
     monkeypatch.setattr(Path, "is_file", lambda p: p == path)
     monkeypatch.setattr(Path, "read_text", lambda p, *a, **kw: "---\nstate: draft\n---\n")
     monkeypatch.setattr(runner, "intake", AsyncMock(return_value=SimpleNamespace(refused={})))
     monkeypatch.setattr(runner, "verdict_refusal", lambda *a: ("refused first", "resolve it"))
     with pytest.raises(runner.Refusal, match="refused first"):
         asyncio.run(runner.verdict_locked("sample", checkout, kill=False))
-    checkout.git.commit_edit.assert_not_awaited()
+    assert not [call for call in checkout.git.calls if call[0] == "commit_edit"]

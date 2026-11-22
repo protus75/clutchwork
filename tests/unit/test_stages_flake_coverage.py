@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test stages flake coverage
+# purpose: Checks how flaky tests are matched to edited lines through coverage, the config check that flake_coverage_argv needs coverage, and how host-results checks run the flake coverage command.
 # relates: [clutch/config.py, clutch/daemon.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: 676c2fe661e8c6c493b0c4fb1569ac43ea1914036f9cb7a11a4eb75bc14809e2
+# verified: 73ec5da9
+# hash: 6032c1f6664282159da9ab8b0dba103a52dcda2c0341c450dcf28e9ab163906e
 import asyncio
 import json
 from datetime import datetime
@@ -16,6 +16,7 @@ from pydantic import ValidationError
 
 from clutch import daemon, stages
 from clutch.config import MechanicalCheck
+from tests.git_fake import GitFake
 
 
 def test_flake_covered():
@@ -56,7 +57,7 @@ def test_check_flake_coverage(tmp_path, monkeypatch, case):
     ctx = NS(
         worktree=lambda stem: tmp_path,
         repo=tmp_path,
-        git=NS(diff=diff),
+        git=GitFake(diff=diff),
         fs=NS(remove=lambda path: path.unlink(missing_ok=True)),
         config=NS(state_dir=tmp_path, providers=[]),
         env={},

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify spool storage and harvest behavior.
+# purpose: Checks that Spool writes redacted, stem-validated captures into the EvidenceStore. Also checks that harvest picks error reasons and check logs and skips unreadable captures.
 # relates: [clutch/config.py, clutch/driver.py, clutch/evidence/store.py, clutch/redact.py, clutch/runner.py, clutch/seams.py]
 # owner: engine
-# verified: 23d3b116
-# hash: 9827162de1e5f7111e6d6d0228db615f129b89a6613bb638c3b7912a06d65beb
+# verified: 73ec5da9
+# hash: 3e3d2ff80dbec41e9d1aeda3c3f9523b3f064eb55fdcf05cfe6f99431a75c6ab
 import asyncio
 import json
 from types import SimpleNamespace
@@ -19,6 +19,7 @@ from clutch.driver import Spool
 from clutch.evidence.store import EvidenceStore
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 
 
 def test_writer_stores_redacted_and_validated_captures(tmp_path):
@@ -69,7 +70,7 @@ def test_harvest_filters_and_skips_unreadable(tmp_path, monkeypatch):
         worktree=lambda stem: tmp_path / "work",
         fs=fs,
         driver=SimpleNamespace(redactor=redactor, journal=SimpleNamespace(append=lambda *args, **kwargs: None)),
-        git=SimpleNamespace(diff_stat=AsyncMock(return_value="stat"), diff=AsyncMock(return_value=""), rev_parse=AsyncMock(return_value="sha")),
+        git=GitFake(diff_stat="stat", diff="", rev_parse="sha"),
     )
     monkeypatch.setattr(runner, "lift_outbox", AsyncMock())
 

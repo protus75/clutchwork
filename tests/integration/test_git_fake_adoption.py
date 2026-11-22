@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tracks migration to GitFake: fails when a test file builds its own Git stand-in without being on the PENDING list, or when a PENDING entry is stale or missing
+# purpose: Tracks the move to GitFake. Fails when a test file builds its own Git stand-in but is not on the PENDING list, or when a PENDING entry is stale or missing.
 # relates: [tests/git_fake.py, tests/unit/test_git_fake.py]
 # owner: engine
-# verified: df236100
-# hash: fb9b7042c97cb5f16d4f4db95fdc5bba1325f8911286be1982b87f477b6486d2
+# verified: 73ec5da9
+# hash: 60fdbb01faf0bc2ccd25a595a26f49ee6e2c6ce9d448df144f22fc19d2ccebbd
 
 import re
 from pathlib import Path
@@ -23,21 +23,8 @@ PENDING = (
     "tests/integration/test_retry_keeps_branch.py",
     "tests/integration/test_serve_verdict_orphan_sweep.py",
     "tests/unit/test_check_meta_fill.py",
-    "tests/unit/test_runner_attempt_manifest.py",
-    "tests/unit/test_runner_terminal_removal_shield.py",
     "tests/unit/test_runner_verdict_reread.py",
-    "tests/unit/test_serve_idle_poll.py",
     "tests/unit/test_serve_verdict_owned.py",
-    "tests/unit/test_spool_store_switch.py",
-    "tests/unit/test_stages_candidates_select.py",
-    "tests/unit/test_stages_conflict_rerun_inputs.py",
-    "tests/unit/test_stages_flake_coverage.py",
-    "tests/unit/test_stale_running.py",
-    "tests/unit/test_supervise_idle_point.py",
-    "tests/unit/test_supervisor_trigger.py",
-    "tests/unit/test_ticket_lint_rules.py",
-    "tests/unit/test_ticket_write_consumers_author.py",
-    "tests/unit/test_ticket_write_consumers_runner.py",
     "tests/unit/test_training_eval.py",
     "tests/unit/test_training_export.py",
     "tests/unit/test_training_export_conflict.py",

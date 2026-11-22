@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Supervisor effects precede the terminal; only successful keeps follow it.
+# purpose: Checks that supervisor Rework runs before the failure terminal and that only a successful keep draws the cap after it. A refusal lifts a redacted rework.md. Covers skip conditions and that diagnosis lessons are unique and scoped to the lineage.
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/rework.py, clutch/runner.py, clutch/status.py]
 # owner: engine
-# verified: 9a610809
-# hash: 66169352bd5853f7ad37c669c745940021d83fcc3a90438df17c61f6b3bd2e99
+# verified: 73ec5da9
+# hash: d615f15ace68965c5ad3a84b4e797cbb0e3714b94c41b4fef34d40320069d7e4
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,6 +21,7 @@ from clutch.config import Caps
 from clutch.journal import Event, EventType
 from clutch.rework import ReworkOrder, ReworkReply, Supervise, TicketProposal
 from clutch.status import reject_queue
+from tests.git_fake import GitFake
 from tests.unit.test_premise_overruled import MemoryJournal
 
 
@@ -51,7 +52,7 @@ def rig(monkeypatch, result=None, *, exists=True, history=None, caps=None):
         repo=Path("/fake/repo"),
         config=SimpleNamespace(caps=caps or Caps()),
         worktree=lambda _: workspace,
-        git=SimpleNamespace(rev_parse=AsyncMock(return_value="new-sha"), worktree_remove=AsyncMock()),
+        git=GitFake(rev_parse="new-sha"),
         fs=SimpleNamespace(write=Mock()),
         driver=SimpleNamespace(journal=journal, redactor=SimpleNamespace(scrub=Mock(side_effect=lambda text: text.replace("SECRET", "[redacted]")))),
     )
@@ -86,7 +87,7 @@ async def test_keep_follows_the_terminal(monkeypatch):
     assert draw.type == EventType.CAP_CONSUMED and draw.body == {"cap": "supervise", "ticket_sha": "new-sha"}  # Wrong: keep without drawing, or use the old blob.
     assert keep.type == EventType.SIGNAL and keep.body == {"signal": "reject_verdict", "verdict": "keep", "actor": "supervisor", "ticket_sha": "new-sha"}
     assert "work" not in reject_queue(events) and spent(Caps(), events, "work") is None  # Wrong: keep before terminal or machine keep fails to reset lineage.
-    ctx.git.rev_parse.assert_awaited_once_with(ctx.repo, "HEAD:tickets/work/ticket.md")
+    assert [call for call in ctx.git.calls if call[0] == "rev_parse"] == [("rev_parse", (ctx.repo, "HEAD:tickets/work/ticket.md"), {})]
     lift.assert_not_called()  # Wrong: lift an approved edit as a refusal.
 
 

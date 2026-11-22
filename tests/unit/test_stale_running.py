@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test stale running
+# purpose: Checks stale running tickets. A dead engine shows them as interrupted in status, reap abandons them and harvests them, and locked verbs reap after taking the lock. The order and status verbs check whether the engine is alive.
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/retro.py, clutch/runner.py, clutch/specs/__init__.py, clutch/status.py]
 # owner: engine
-# verified: 9a610809
-# hash: 1953b93e86e3a20c69bdce0ef9a2fbf7dbb5a8da41be83d40b6a52973c0261a9
+# verified: 73ec5da9
+# hash: 61c5188c973b2d27ff1b4a89334a3ff9e6aafb3ec20d331ff65abd99a50939a7
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock
 
 from clutch import runner, status
 from clutch.journal import EventType
+from tests.git_fake import GitFake
 
 
 def event(kind, body, ticket="x", key=None):
@@ -50,12 +51,12 @@ def test_reap_reconciles_with_harvest(monkeypatch):
     monkeypatch.setattr(Path, "exists", lambda path: path.name == "exists")
     harvest = AsyncMock()
     monkeypatch.setattr(runner, "harvest_orphan", harvest)
-    git = SimpleNamespace(worktree_remove=AsyncMock(), worktree_prune=AsyncMock())
+    git = GitFake()
     checkout = SimpleNamespace(config=SimpleNamespace(worktree_root=Path("/work")), journal=Journal(), git=git, repo=Path("/repo"))
     assert asyncio.run(runner.reap(checkout)) == ["exists", "missing"]
     harvest.assert_awaited_once_with(checkout, "exists", 0)
-    git.worktree_remove.assert_awaited_once_with(Path("/repo"), Path("/work/exists"))
-    git.worktree_prune.assert_awaited_once_with(Path("/repo"))
+    assert [call for call in git.calls if call[0] == "worktree_remove"] == [("worktree_remove", (Path("/repo"), Path("/work/exists")), {})]
+    assert [call for call in git.calls if call[0] == "worktree_prune"] == [("worktree_prune", (Path("/repo"),), {})]
     assert [e.ticket for e in events if e.type == EventType.STATE_TRANSITION and e.body["to"] == "abandoned"] == ["exists", "missing"]
 
 
@@ -82,7 +83,7 @@ def test_verdict_reaps_before_verdict_locked(monkeypatch):
     monkeypatch.setattr(runner, "Lockfile", Lock)
     monkeypatch.setattr(runner, "reap", reap)
     monkeypatch.setattr(runner, "verdict_locked", verdict)
-    checkout = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state")), git=SimpleNamespace(describe=AsyncMock(return_value="id")), repo=Path("/repo"), clock=object())
+    checkout = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state")), git=GitFake(describe="id"), repo=Path("/repo"), clock=object())
     assert asyncio.run(runner.verdict("xx", checkout, kill=True)) == 7
     assert calls == ["acquire", "reap", "verdict", "release"]
 
@@ -146,7 +147,7 @@ def test_status_verb_passes_alive(monkeypatch):
     monkeypatch.setattr(retro, "production_evidence", AsyncMock())
     checkout = SimpleNamespace(
         journal=SimpleNamespace(read=lambda: []),
-        git=SimpleNamespace(rev_parse=AsyncMock(return_value="sha")),
+        git=GitFake(rev_parse="sha"),
         repo=Path("/repo"),
         clock=lambda: datetime(2026, 1, 1, tzinfo=UTC),
         config=SimpleNamespace(state_dir=Path("/state"), box_policy=None),
@@ -179,24 +180,14 @@ def test_locked_verbs_reap_after_acquire(monkeypatch):
         def release(self):
             calls.append("release")
 
-    class Git:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        async def describe(self, repo):
-            return "id"
-
-        async def status_porcelain(self, *args):
-            return "dirty"
-
     async def reap(checkout):
         calls.append("reap")
         raise Stop
 
     monkeypatch.setattr(entry, "Lockfile", Lock)
-    monkeypatch.setattr(entry, "Git", Git)
+    monkeypatch.setattr(entry, "Git", lambda *args, **kwargs: GitFake(describe="id", status_porcelain="dirty"))
     monkeypatch.setattr(runner, "reap", reap)
-    checkout = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state")), git=Git(), repo=Path("/repo"), clock=object(), control=None)
+    checkout = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state")), git=GitFake(describe="id", status_porcelain="dirty"), repo=Path("/repo"), clock=object(), control=None)
     for call in (lambda: asyncio.run(entry._retro(checkout, None)),):
         calls.clear()
         with pytest.raises(Stop):

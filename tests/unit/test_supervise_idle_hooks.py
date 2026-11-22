@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Serve and drain supervise only at idle boundaries, with lazy preparation.
+# purpose: Verify that serve and drain run idle supervision only at idle boundaries, inside the lock and after retro/driver, and prepare context only when eligible work exists.
 # relates: [clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/serve.py, clutch/triage.py, tests/unit/test_supervise_idle_point.py]
 # owner: engine
-# verified: 9a610809
-# hash: bec2746806f3c02505acf5b775c600d00179c12eba4d3b3ab9c3338fa2f371a7
+# verified: 53cd7139
+# hash: 735819881e70359e89851696dc80ab43f7c6e49396bea7d45c3f5e67d197eee1
 
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -189,4 +189,4 @@ async def test_drain_lazy_context(tmp_path, monkeypatch, prepared, eligible):
     if not prepared:
         # Wrong: journal attempt or create worktree even though make_ctx returned None.
         assert c.journal.read() == before
-        assert ctx.git.mock_calls == []
+        assert ctx.git.calls == []

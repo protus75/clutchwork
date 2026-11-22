@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify idle poll admission and work detection.
+# purpose: Checks that Serve's idle scan, watch, merge and box-intake polls detect real work without taking the admission gates while idle.
 # relates: [clutch/daemon.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: 407dfd0f
-# hash: 476ad6b2301ea5c18f40f9852bb434405dda87a7b2578e09a3f96c0acf288216
+# verified: 73ec5da9
+# hash: 393910c92d1ba17e101379217c285c7a35d6e25f4172a9807dfdb145f25e9948
 
 import asyncio
 import hashlib
@@ -23,6 +23,7 @@ from clutch.runner import Checkout
 from clutch.seams import LocalFileSystem
 from clutch.serve import Serve
 from tests.fakes import FakeClock, FakeJournal
+from tests.git_fake import GitFake
 
 
 class PollFinished(Exception):
@@ -43,7 +44,7 @@ def owner(tmp_path):
     s = Serve.__new__(Serve)
     fs, clock = LocalFileSystem(), FakeClock()
     journal = FakeJournal(clock)
-    git = SimpleNamespace(status_porcelain=AsyncMock(return_value=""), rev_parse=AsyncMock(return_value="head"), main_write=asyncio.Lock)
+    git = GitFake(status_porcelain="", rev_parse="head", main_write=asyncio.Lock)
     s.checkout = Checkout(repo=tmp_path, config=None, env={}, exec_=None, fs=fs, clock=clock, journal=journal, git=git, sleep=stop_poll)
     s.scan_snapshot, s.scanned = None, {}
     s.report_arrivals, s.report_retry = set(), None
@@ -100,7 +101,7 @@ async def poll(owner, name):
 @pytest.mark.asyncio
 async def test_scan_inputs_and_own_writes(owner, monkeypatch):
     async def intake_writes(*args, **kwargs):
-        owner.checkout.git.rev_parse.return_value = "intake-committed-head"
+        owner.checkout.git._overrides["rev_parse"] = "intake-committed-head"
 
     monkeypatch.setattr(serve, "intake", AsyncMock(side_effect=intake_writes))
     await owner.scan()
@@ -110,7 +111,7 @@ async def test_scan_inputs_and_own_writes(owner, monkeypatch):
     await owner.scan()
     # A journal-wide invalidation would acquire both gates here.
     assert owner.entries == []
-    owner.checkout.git.rev_parse.return_value = "merged-head"
+    owner.checkout.git._overrides["rev_parse"] = "merged-head"
     await owner.scan()
     # With no pending ticket, a merge does not unblock intake validation.
     assert owner.entries == []
@@ -129,7 +130,7 @@ async def test_scan_inputs_and_own_writes(owner, monkeypatch):
 @pytest.mark.asyncio
 async def test_pending_stem_state_retries_intake(owner, monkeypatch):
     monkeypatch.setattr(serve, "intake", AsyncMock())
-    owner.checkout.git.status_porcelain.return_value = " M tickets/refused/ticket.md\n"
+    owner.checkout.git._overrides["status_porcelain"] = " M tickets/refused/ticket.md\n"
     await owner.scan()
     owner.entries.clear()
     owner.checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="refused")

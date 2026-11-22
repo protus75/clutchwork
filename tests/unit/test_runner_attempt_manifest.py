@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test runner attempt manifest
+# purpose: Checks that runner.harvest writes evidence attempt manifests for each terminal outcome. Each manifest records call keys, check outputs, SHAs and an excluded-path-filtered diff blob. Harvest still runs when training data is disabled or the diff fails.
 # relates: [clutch/config.py, clutch/evidence/store.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/unit/test_evidence_schema.py]
 # owner: engine
-# verified: e3a6f154
-# hash: 7f2e2bc8e3e343bfe596b86ae1b0b7ae81f933024c584ff0838bb250d8fb898f
+# verified: 73ec5da9
+# hash: f646854b514e7013696ddc43103a25f54d324a1af82313de492395307c53fcb6
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -17,6 +17,7 @@ from clutch.config import TrainingData
 from clutch.evidence.store import EvidenceStore
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 from tests.spool_captures import write_capture
 from tests.unit.test_evidence_schema import start
 
@@ -33,7 +34,7 @@ def test_manifest_harvest(tmp_path, monkeypatch, terminal):
         worktree=lambda stem: tmp_path / "work",
         fs=fs,
         driver=SimpleNamespace(redactor=Redactor({}), journal=journal),
-        git=SimpleNamespace(diff_stat=AsyncMock(return_value="stat"), diff=AsyncMock(return_value=diff), rev_parse=AsyncMock(side_effect=lambda repo, ref: {"main": "base", "sample": "head"}[ref])),
+        git=GitFake(diff_stat="stat", diff=diff, rev_parse=lambda repo, ref: {"main": "base", "sample": "head"}[ref]),
     )
     monkeypatch.setattr(runner, "lift_outbox", AsyncMock())
 
@@ -72,7 +73,7 @@ def test_disabled_and_failure_preserve_harvest(tmp_path, monkeypatch):
         worktree=lambda stem: tmp_path / "work",
         fs=fs,
         driver=SimpleNamespace(redactor=Redactor({}), journal=SimpleNamespace(append=lambda *a, **kw: signals.append(a))),
-        git=SimpleNamespace(diff_stat=AsyncMock(return_value="stat"), diff=AsyncMock(side_effect=ValueError("failed"))),
+        git=GitFake(diff_stat="stat", diff=ValueError("failed")),
     )
     lift = AsyncMock()
     monkeypatch.setattr(runner, "lift_outbox", lift)

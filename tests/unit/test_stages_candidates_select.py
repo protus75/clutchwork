@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test stages candidates select
+# purpose: Checks how stages.check_candidates picks graphics candidates per artifact. Covers the evidence commit message, parking an undecided or partial selection, forbidden diff paths, rubric criteria, and the missing-baseline park.
 # relates: [clutch/artifacts.py, clutch/baseline.py, clutch/llmeffect.py, clutch/stages.py, clutch/visual.py]
 # owner: engine
-# verified: 75d75946
-# hash: f4309157fc1393c6adffbd3a28f514839c089ff17f6ee7ad1ccd2dc90365783c
+# verified: 73ec5da9
+# hash: 673df889176e7a2bccc9144585cbbcfdc4037bc9befcefce216e363412cae111
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ from clutch import stages, visual
 from clutch.artifacts import Cost, StageResult
 from clutch.baseline import BaselineResolution
 from clutch.llmeffect import llm_key, scoped_seq
+from tests.git_fake import GitFake
 
 
 def fixture(monkeypatch, replies, artifacts=("out.png",), changed=()):
@@ -34,7 +35,7 @@ def fixture(monkeypatch, replies, artifacts=("out.png",), changed=()):
         return writes.get(path, files.get(path))
 
     fs = SimpleNamespace(read_bytes=read, write=lambda path, data: writes.update({path: data}))
-    git = SimpleNamespace(diff_names=AsyncMock(return_value=list(changed)), commit=AsyncMock())
+    git = GitFake(diff_names=list(changed))
     scopes = []
 
     async def run(stage, consumed, **kwargs):
@@ -66,12 +67,12 @@ def test_select_two_artifacts_and_evidence(monkeypatch):
     assert scopes == ["a0c0s0", "a0c1s0", "a1c0s0", "a1c1s0"]
     assert writes[Path("/virtual/work/one.png")] == b"0-0"
     assert writes[Path("/virtual/work/two.png")] == b"1-1"
-    args, kwargs = ctx.git.commit.await_args
+    [(_, args, kwargs)] = [call for call in ctx.git.calls if call[0] == "commit"]
     message = args[1]
     assert "one.png: candidate 0, evidence " + llm_key("work", scoped_seq("a0c0s0", 0), "review_visual", 0, 2) in message
     assert "two.png: candidate 1, evidence " + llm_key("work", scoped_seq("a1c1s0", 0), "review_visual", 0, 1) in message
     assert kwargs["only"] == ["one.png", "two.png"]
-    assert ctx.git.commit.await_count == 1
+    assert len([call for call in ctx.git.calls if call[0] == "commit"]) == 1
 
 
 @pytest.mark.parametrize("replies", [[("accept", 4, 1), ("accept", 4, 1)], [("accept", 4, 1), ("unsure", 1, 1)]])
@@ -80,7 +81,7 @@ def test_park_without_commit(monkeypatch, replies):
     findings = asyncio.run(stages.check_candidates(ctx, ticket, 0))
     assert [f.code for f in findings] == ["visual_undecided"]
     assert "out.png" in findings[0].message
-    assert not ctx.git.commit.await_count
+    assert not [call for call in ctx.git.calls if call[0] == "commit"]
     assert Path("/virtual/work/out.png") not in writes
 
 
@@ -88,7 +89,7 @@ def test_partial_selection_parks(monkeypatch):
     ctx, ticket, writes, _ = fixture(monkeypatch, [("accept", 4, 1), ("reject", 1, 1), ("accept", 4, 1), ("accept", 4, 1)], ("one.png", "two.png"))
     findings = asyncio.run(stages.check_candidates(ctx, ticket, 0))
     assert "two.png" in findings[0].message and "one.png" not in findings[0].message
-    assert not ctx.git.commit.await_count and Path("/virtual/work/one.png") not in writes
+    assert not [call for call in ctx.git.calls if call[0] == "commit"] and Path("/virtual/work/one.png") not in writes
 
 
 def test_no_survivors_and_forbidden_diff(monkeypatch):
@@ -96,9 +97,9 @@ def test_no_survivors_and_forbidden_diff(monkeypatch):
     monkeypatch.setattr(stages.images, "judge", lambda *args: ["bad"])
     assert asyncio.run(stages.check_candidates(ctx, ticket, 0))[0].code == "visual_undecided"
     for forbidden in ("out.png", ".clutch/renders/work/a0/cand-0.png"):
-        ctx.git.diff_names.return_value = [forbidden]
+        ctx.git._overrides["diff_names"] = [forbidden]
         assert asyncio.run(stages.check_candidates(ctx, ticket, 0))[0].code == "candidate_paths"
-    assert not ctx.git.commit.await_count
+    assert not [call for call in ctx.git.calls if call[0] == "commit"]
 
 
 def test_rubric_uses_numbered_and_continued_criteria_for_each_artifact(monkeypatch):
@@ -123,7 +124,7 @@ def test_missing_baseline_parks_before_judging(monkeypatch):
     findings = asyncio.run(stages.check_candidates(ctx, ticket, 0))
     assert [f.code for f in findings] == ["visual_undecided"]
     assert "visual_baseline" in findings[0].message
-    assert not scopes and not writes and not ctx.git.commit.await_count
+    assert not scopes and not writes and not [call for call in ctx.git.calls if call[0] == "commit"]
 
 
 def test_forbidden_paths_precede_baseline(monkeypatch):
