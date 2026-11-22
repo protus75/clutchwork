@@ -82,7 +82,8 @@ Scope in:
   - `tests/unit/test_calibration_idle.py`: delete the `calibrate_when_due` import, test and the serve and drain monkeypatches of it; keep the `due` test and add a `pending` test.
   - `tests/unit/test_supervise_idle_hooks.py`: drop both `calibrate_when_due` monkeypatches; the drain retro-ordering case sets `retro_id` to an unserved request so the forced retro still precedes supervise, and its `_run_retro` stub takes no `forced` keyword.
   - Integration files, edited but not run (skipped): in `tests/integration/test_drain.py` delete `test_due_retro_waits_for_retry_and_precedes_next_ticket` and the `not-due`, `due` and `phase` automatic scenarios of `_exercise_retro_drain` (with `test_phase_exit_stem_gets_no_forced_retro`) while keeping the requested and killable cases; in `tests/integration/serve_rig.py` and `tests/integration/test_serve_dispatch.py` keep the `requested` and `kill` modes, delete the `automatic`, `disabled` and `failed` modes and their three tests, and drop the `check_retro` wrapper.
-  - `tests/unit/test_serve_dispatch_containment.py` assigns `owner.check_retro` on an instance, which stays valid after removal, so it is not fenced. The `Retro(forced=False)`, `due_trigger` and `select_trigger` uses in `tests/unit/test_retro.py`, `tests/unit/test_retro_box.py`, `tests/unit/test_retro_due_owner.py`, `tests/unit/test_closed_sets_remaining.py` and `tests/integration/test_retro.py` stay valid and are not edited. Create no placeholder test file for a path this list does not name.
+  - `tests/unit/test_serve_dispatch_containment.py` line 58 assigns `owner.check_retro = AsyncMock()` on an instance, which stays valid after removal (`Serve` has no `__slots__`). It is fenced only so a retry branch whose earlier commit deleted that line can restore it byte-for-byte to its main content; the file's final diff against main must be empty, and no other edit to it is allowed. The `Retro(forced=False)`, `due_trigger` and `select_trigger` uses in `tests/unit/test_retro.py`, `tests/unit/test_retro_box.py`, `tests/unit/test_retro_due_owner.py`, `tests/unit/test_closed_sets_remaining.py` and `tests/integration/test_retro.py` stay valid and are not edited. Create no placeholder test file for a path this list does not name.
+- Before finishing, check that the branch diff against main touches only fenced files.
 - Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 
 Scope out:
@@ -122,6 +123,7 @@ Scope out:
 - tests/unit/test_calibration_idle.py
 - tests/unit/test_drain_report_intake.py
 - tests/unit/test_supervise_idle_hooks.py
+- tests/unit/test_serve_dispatch_containment.py
 
 ## Acceptance criteria
 1. With 25 merges and 100 Implement completions in the journal and `retro.merges.every` 25 and `calibration.every` 100, a serve dispatch pass and a drain between-tickets pass construct no `Retro`, append no `estimate_calibration` signal and log no `retro_check` event, and `Serve.select` admits an eligible ticket, not holding it for a retro (`./dev.py test tests/unit/test_no_automatic_retro_calibration.py`).
@@ -134,10 +136,11 @@ Scope out:
 8. A requested retro still holds admission and runs between tickets: with a `retro_id` request, `Serve.retro_pending()` is true and `select` holds, and drain runs `_run_retro()` once before supervise and logs `retro_check` start and end (`./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_phase_events.py tests/unit/test_supervise_idle_hooks.py`).
 9. `config.py` is unchanged (it is outside the fence) and `Config` still loads a mapping naming every retro and calibration field above (`./dev.py test tests/unit/test_manual_retro_calibration_verbs.py`).
 10. The command help of `engine retro`, `engine calibrate`, `view status` and `host doctor` names the manual-only behavior and the overdue report (`./dev.py test tests/unit/test_main_help.py tests/unit/test_help.py`).
+11. `tests/unit/test_serve_dispatch_containment.py` matches main (line 58 `owner.check_retro = AsyncMock()` present) and passes (`./dev.py test tests/unit/test_serve_dispatch_containment.py`).
 
 ## Verification
 ```
-./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_report_intake.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py
+./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_report_intake.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py tests/unit/test_serve_dispatch_containment.py
 ```
 
 ## Definition of rejected
@@ -147,6 +150,7 @@ Scope out:
 - A WARN row that changes the doctor exit code or its `doctor: ok` header.
 - Edits to a hot test file beyond the removals named in Scope in, or any new test placed in one.
 - A placeholder test file created only to make a Verification path exist.
+- Any net diff against main in `tests/unit/test_serve_dispatch_containment.py`.
 
 ## Time budget
 - expected: 60m
