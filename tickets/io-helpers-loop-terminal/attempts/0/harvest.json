@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tickets/io-helpers-loop-terminal/ticket.md",
+      "line": null,
+      "message": "The requirement to move author unchanged contradicts the requirement that the helper starts no process: author calls tests.approval.approve, which runs git.",
+      "paved_road": "Allow author to change so approval uses an in-memory seam, and specify the expected approval behavior for callers.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/approval.py",
+      "line": 20,
+      "message": "Keeping author's body unchanged while eliminating its real git invocation requires changing its approval helper, which is outside the scope fence.",
+      "paved_road": "Fence and specify changes to the approval helper, or permit changing author to use an existing fake-based approval seam.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The ticket requires the unchanged author helper to start no process, but its approval call invokes real git.\",\"surprises\":\"The unchanged author calls tests.approval.approve, which calls review_input_identity and Git.ls_files through SubprocessExec; the base integration run passed with 297 passed and 3341 skipped.\",\"second_problems\":[],\"dead_ends\":\"Confirmed the approval path invokes git even when the fixture has no .git directory; mocking approval only in the unit test would leave the helper's production behavior unchanged.\",\"predicted_vs_actual\":\"The ticket budget was 15 minutes expected and 30 minutes stuck; the contradiction was found during initial investigation.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tickets/io-helpers-loop-terminal/ticket.md\",\"line\":null,\"message\":\"The requirement to move author unchanged contradicts the requirement that the helper starts no process: author calls tests.approval.approve, which runs git.\",\"paved_road\":\"Allow author to change so approval uses an in-memory seam, and specify the expected approval behavior for callers.\"},{\"code\":\"premise\",\"path\":\"tests/approval.py\",\"line\":20,\"message\":\"Keeping author's body unchanged while eliminating its real git invocation requires changing its approval helper, which is outside the scope fence.\",\"paved_road\":\"Fence and specify changes to the approval helper, or permit changing author to use an existing fake-based approval seam.\"}]}",
+  "events_tail": "\"\\\")\\n153-    (root / \\\"config.yaml\\\").write_text(CONFIG)\\n154-    (root / \\\".gitignore\\\").write_text(\\\".clutch/\\\\n\\\")\\n155-    adopt_conduct(root)\\n156-    git_fake(root)\\n157-    return root\\n158-\\n159-\\n160-def author(repo: Path, bypass: str = \\\"\\\") -> None:\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\".venv/bin/python -c 'from pathlib import Path; from tests.stages_helpers import TICKET, STEM; from clutch.tickets import validate_ticket, TicketInvalid, _intake_claims; root=Path(\\\\\\\".clutch/scratch/terminal-premise/repo\\\\\\\").resolve(); text,_=_intake_claims(STEM,TICKET.format(bypass=\\\\\\\"\\\\\\\"),True); print(validate_ticket(STEM,text,root))'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\".venv/bin/python -c 'from pathlib import Path; from tests.stages_helpers import TICKET, STEM; from clutch.tickets import validate_ticket, TicketInvalid, _intake_claims; root=Path(\\\\\\\".clutch/scratch/terminal-premise/repo\\\\\\\").resolve(); text,_=_intake_claims(STEM,TICKET.format(bypass=\\\\\\\"\\\\\\\"),True); print(validate_ticket(STEM,text,root))'\\\"\",\"aggregated_output\":\"Ticket(stem='add-thing', frontmatter=Frontmatter(state='confirmed', source='human', priority='P2', kind='feature', agent_tier='medium', agent_effort='medium', gate_bypass=[]), sections={'Depends on': 'none', 'Context': '- clutch/thing.py', 'Goal / Why': '`thing.py` holds the word ok.', 'Boundary contract': 'none\\\\n- reason: unchanged behavior', 'Scope in / Scope out': 'In: thing. Out: the rest.', 'Scope fence': '- clutch/thing.py', 'Acceptance criteria': '1. `grep -q ok clutch/thing.py` exits 0.', 'Verification': '```\\\\ngrep -q ok clutch/thing.py\\\\nenv\\\\n```', 'Definition of rejected': 'Needs a new dependency.', 'Time budget': '- expected: 10m\\\\n- stuck: 20m'}, depends=(), context=('clutch/thing.py',), on_demand=(), scope_fence=('clutch/thing.py',), verification=(('grep', '-q', 'ok', 'clutch/thing.py'), ('env',)), expected_minutes=10, stuck_minutes=20, runs_before=(), regression=(), carries=())\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_15\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The ticket requires the unchanged author helper to start no process, but its approval call invokes real git.\\\",\\\"surprises\\\":\\\"The unchanged author calls tests.approval.approve, which calls review_input_identity and Git.ls_files through SubprocessExec; the base integration run passed with 297 passed and 3341 skipped.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Confirmed the approval path invokes git even when the fixture has no .git directory; mocking approval only in the unit test would leave the helper's production behavior unchanged.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket budget was 15 minutes expected and 30 minutes stuck; the contradiction was found during initial investigation.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tickets/io-helpers-loop-terminal/ticket.md\\\",\\\"line\\\":null,\\\"message\\\":\\\"The requirement to move author unchanged contradicts the requirement that the helper starts no process: author calls tests.approval.approve, which runs git.\\\",\\\"paved_road\\\":\\\"Allow author to change so approval uses an in-memory seam, and specify the expected approval behavior for callers.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/approval.py\\\",\\\"line\\\":20,\\\"message\\\":\\\"Keeping author's body unchanged while eliminating its real git invocation requires changing its approval helper, which is outside the scope fence.\\\",\\\"paved_road\\\":\\\"Fence and specify changes to the approval helper, or permit changing author to use an existing fake-based approval seam.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":579218,\"cached_input_tokens\":547072,\"cache_write_input_tokens\":0,\"output_tokens\":2071,\"reasoning_output_tokens\":496}}\n",
+  "wall_seconds": 71.090796,
+  "usd": 1.0,
+  "run_record": "tickets/io-helpers-loop-terminal/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
