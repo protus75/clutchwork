@@ -4,8 +4,8 @@
 # purpose: Unit tests for the phase_start and phase_end engine-log events and their outcomes in runner preflight and in the drain and serve retro checks
 # relates: [clutch/drain.py, clutch/runner.py, clutch/serve.py]
 # owner: engine
-# verified: 331196ce
-# hash: 046d5c506f943fb9ded076ab92b5af62015cb0c849a6fd4f37b4951ab12430b6
+# verified: d232b8ba
+# hash: 690bc04675469a3daf30eb7f5c35bc95b87a4cd9c4801f9c894c7311484ab7ca
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +14,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from clutch import drain, runner, serve
+from clutch.journal import EventType
 
 
 class RecordingLog:
@@ -88,14 +89,15 @@ class Checkout:
 async def test_serve_retro_events(monkeypatch, trigger, outcome):
     s = object.__new__(serve.Serve)
     s.log = RecordingLog()
+    s.retro_checked = None
     config = SimpleNamespace(retro=object())
-    s.checkout = Checkout(config, SimpleNamespace(read=lambda: ["journal"]), lambda: "now")
+    s.checkout = Checkout(config, SimpleNamespace(read=lambda: [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]), lambda: "now")
     s.control = SimpleNamespace(load_config=lambda: config)
     s.retro_due = False
     monkeypatch.setattr(serve, "snapshot_config", lambda value: value)
     monkeypatch.setattr(serve, "project_window", lambda value: value)
     monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
-    monkeypatch.setattr(serve, "production_evidence", AsyncMock(return_value="evidence"))
+    monkeypatch.setattr(serve, "measurements", lambda value: "evidence")
     monkeypatch.setattr(serve, "select_trigger", lambda *args, **kwargs: trigger)
     await s.check_retro()
     assert s.retro_due is (trigger is not None)
@@ -107,19 +109,24 @@ async def test_serve_retro_events(monkeypatch, trigger, outcome):
 async def test_serve_retro_failure(monkeypatch, failure):
     s = object.__new__(serve.Serve)
     s.log = RecordingLog()
+    s.retro_checked = None
     config = SimpleNamespace(retro=object())
 
     def read():
         if failure == "journal":
             raise RuntimeError("journal")
-        return ["journal"]
+        return [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]
 
     s.checkout = Checkout(config, SimpleNamespace(read=read), lambda: "now")
     s.control = SimpleNamespace(load_config=lambda: config)
     monkeypatch.setattr(serve, "snapshot_config", lambda value: value)
     monkeypatch.setattr(serve, "project_window", lambda value: value)
     monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
-    monkeypatch.setattr(serve, "production_evidence", AsyncMock(side_effect=RuntimeError("evidence")))
+
+    def fail_measurements(value):
+        raise RuntimeError("evidence")
+
+    monkeypatch.setattr(serve, "measurements", fail_measurements)
     with pytest.raises(RuntimeError, match=failure):
         await s.check_retro()
-    assert s.log.events == events("retro_check", "failed")
+    assert s.log.events == ([] if failure == "journal" else events("retro_check", "failed"))

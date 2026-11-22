@@ -25,7 +25,7 @@ from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
-from clutch.retro import Retro, RetroCheckOutcome, production_evidence, project_window, select_trigger, suppressing_failure
+from clutch.retro import Retro, RetroCheckOutcome, measurements, project_window, select_trigger, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.status import CLOSED, last_states
 from clutch.storm import StormLedger
@@ -113,6 +113,7 @@ class Serve:
         self.stopping = False
         self.served_retro_id = None
         self.retro_due = False
+        self.retro_checked = None
         self.retro = None
         self.retro_task = None
         self.driver = build_driver()
@@ -386,19 +387,24 @@ class Serve:
         return self.retro_due or request_id is not None and request_id != self.served_retro_id
 
     async def check_retro(self):
+        events = self.checkout.journal.read()
+        count = sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in events)
+        if count == self.retro_checked:
+            return
         self.log.event("phase_start", phase="retro_check")
         try:
             c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
-            window = project_window(c.journal.read())
+            window = project_window(events)
             due = False
             if suppressing_failure(window) is None:
-                evidence = await production_evidence(window, c)
+                evidence = measurements(window)
                 due = select_trigger(window, evidence, c.config.retro, forced=False) is not None
                 if due:
                     self.retro_due = True
         except BaseException:
             self.log.event("phase_end", phase="retro_check", outcome="failed")
             raise
+        self.retro_checked = count
         outcome: RetroCheckOutcome = "due" if due else "not_due"
         self.log.event("phase_end", phase="retro_check", outcome=outcome)
 
