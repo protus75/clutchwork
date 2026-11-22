@@ -1,0 +1,16 @@
+Observed 2026-11-21: tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart fails under `pytest -n auto` with 2 `reject_verdict` keep signals instead of 1 (assert at line ~122); passes alone.
+Reproduced on main with 20 concurrent single-test runs (11 of 60 failed). Journal of stem `work` in a failing run (event type, body, truncated):
+signal {'signal': 'requisition_verdict', 'verdict': 'approve', 'ticket_sha': '72b5d34d2f34a0aef51e57af4e047200647b4fd4', 'provider': 'fix
+signal {'signal': 'ticket_intake', 'source': 'human', 'state': 'confirmed', 'new': True, 'commit': 'fe900783dcb00be7c397e18a5d68b0d2f612d
+state_transition {'to': 'running', 'ticket_sha': '72b5d34d2f34a0aef51e57af4e047200647b4fd4'}
+signal {'signal': 'diagnosis', 'attempt': 0, 'verdict': 'abandon-human', 'lessons': [], 'mechanical': 'workspace gone'}
+state_transition {'to': 'gate_failed', 'stage': 'check', 'reason': 'gate_failed', 'dispatch': 'reject_queue', 'routed': 'reject_queue'}
+effect_intent {}
+effect_intent {}
+effect_completion {'result': 'fe900783dcb00be7c397e18a5d68b0d2f612d37e'}
+signal {'signal': 'reject_verdict', 'verdict': 'keep', 'actor': 'machine'}
+cap_consumed {'cap': 'retry', 'ticket_sha': '72b5d34d2f34a0aef51e57af4e047200647b4fd4'}
+state_transition {'to': 'running', 'ticket_sha': '72b5d34d2f34a0aef51e57af4e047200647b4fd4'}
+signal {'signal': 'reject_verdict', 'verdict': 'keep', 'actor': 'operator', 'ticket_sha': '72b5d34d2f34a0aef51e57af4e047200647b4fd4'}
+effect_completion {'result': {'refusal': None}}
+state_transition {'to': 'already_satisfied', 'stage': 'check', 'reason': 'already_satisfied'}
