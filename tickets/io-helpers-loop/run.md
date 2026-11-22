@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The current checkout has two additional importers of moved serve rig helpers, and both triage and terminal define incompatible functions named run.
+The current importer search found the two paths identified by the prior attempt inside the revised scope fence.
 
 ## Dead ends
 
-none
+Inspected the existing reply builders and helper consumers; implementing the missing reply shapes in the new module would violate the ticket's shared-source requirement.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 30 minutes; stopped during contract inspection.
 
