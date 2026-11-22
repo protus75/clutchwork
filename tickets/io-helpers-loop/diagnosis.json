@@ -1,23 +1,19 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c2c11c261723c373f53ef9996c0e226ab575cd70",
+  "produced_at_sha": "675a222dd52c6eea5263002706f7e38d4ebacec7",
   "stem": "io-helpers-loop",
-  "attempt": 2,
-  "terminal": "incomplete",
+  "attempt": 3,
+  "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "escalate",
+  "verdict": "reject",
   "lessons": [
-    "Attempt 2 stopped as incomplete after 147s with an empty diff and nothing committed. The next attempt starts from main, so redo the whole move: create tests/loop_helpers.py with all 26 Scope-in names, repoint the 48 fenced importers' import lines, and make each hub import the names back.",
-    "Do not let tests/loop_helpers.py import from tests.integration.test_author (bug_reply) or tests.integration.test_inbox (arrival). The last attempt's rg found both. They are skipped integration files; inline only what a moved name needs, or take it from tests/stage_replies.py or tests/*_helpers.py.",
-    "repository, admission_graph, escape_rig, enable_upgrade and repo must use tests/git_fake.py::GitFake, FakeExec and FakeFileSystem in place of SubprocessExec, LocalFileSystem and git(). notify_command returns an in-process command that FakeExec runs, not sys.executable. Criterion 4's grep must print",
-    "Edit with the editor, not chained Python str.replace/index scripts. The last attempt patched files with brittle one-shot replaces and never checked the result. After the edits, run criteria 2-4's grep commands and ./dev.py test tests/unit/test_loop_helpers.py before running the full suites.",
-    "Write tests/unit/test_loop_helpers.py with one test per moved name, as acceptance criterion 1 requires. Record the base-commit and candidate integration pass/skip counts in run.md (criterion 5), then commit on the ticket branch."
+    "Premise confirmed false: tests/fakes.py:19 FakeClock has only __call__/advance; tests/integration/test_scheduler.py:33 Time adds async sleep() with deadline futures that advance() resolves, and Rig passes time.sleep to Watcher. Scope out forbids editing tests/fakes.py.",
+    "File a prerequisite ticket that adds deadline-driven async sleep plus advance-triggered wakeups to tests/fakes.py FakeClock, with a unit test. List it under this ticket's ## Depends on, then make Time a re-export of FakeClock as turn is.",
+    "Alternative fix for the ticket: say explicitly that Time moves into tests/loop_helpers.py unchanged, because it does no I/O and FakeClock lacks sleep. Also exempt it from the 'duplicates a shared fake' rejection rule."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
