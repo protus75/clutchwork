@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "4f1940a128dc48dc197b07681351565559a8929e",
+  "stem": "check-opens-own-stage",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: criterion 2 says to build ctx the way tests/integration/test_host_mechanical.py does. That fixture writes to disk and runs real git, and tests/integration/conftest.py blocks both with its I/O guard. The new test is not in REAL_IO_TESTS, and conftest.py is outside the fence.",
+    "tests/integration/test_host_mechanical.py and test_image_candidates_select.py are in DISK_IO_SKIP in tests/integration/conftest.py, so they are skipped. Criterion 4 counts them as passing evidence but they never run. Replace them with tests that actually run against the moved check stage.",
+    "Rewrite criterion 2 and the integration test: keep a real Driver and FakeLLM, but give stages.check git through GitFake from tests/git_fake.py and use in-memory file seams. The ticket must name the fs seam the meta fill reads from and writes to; if none exists, say so and add it to scope.",
+    "The other option is to put tests/integration/conftest.py in the fence and add the new test to REAL_IO_TESTS. Do that only if the ticket says why real git is required, since DISK_IO_SKIP's paved road is to move tests onto the in-memory fakes.",
+    "The stages.py move and tests/unit/test_check_stage_events.py are sound as written. Only the integration criterion (2) and the evidence list for criterion 4 need revising before the next attempt."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
