@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "418c48429d1c06de32f807ae81cd8318f5a6c153",
+  "stem": "retry-keeps-prior-branch",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false: criteria 1-2 need tests/integration/test_retry_keeps_branch.py to run real git, but tests/integration/conftest.py guards every integration file not named in REAL_IO_TESTS (line 13), and conftest.py is outside the scope fence.",
+    "Re-author the ticket in one of two ways: add tests/integration/conftest.py to the fence and add test_retry_keeps_branch.py to REAL_IO_TESTS, or rewrite criteria 1-2 to drive prepare_worktree through the in-memory fakes in tests/fakes.py.",
+    "Put the real-git check of the new Git.worktree_attach in an allowlisted file such as tests/integration/test_git.py (it is in REAL_IO_TESTS) and fence that file. Test prepare_worktree's keep, rebase and fallback logic with a fake Git.",
+    "The Verification command names test_reconcile.py and test_kill_failure_suppression.py. Both are in DISK_IO_SKIP in tests/integration/conftest.py, so they are skipped and verify nothing. Drop them or name tests that actually run."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
