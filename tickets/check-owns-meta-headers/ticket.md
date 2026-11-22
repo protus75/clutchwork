@@ -27,7 +27,7 @@ Since `clutch:meta` headers became required on files under `docs/`, `clutch/docs
 - disposition: extend
 - owner: clutch/stages.py::check_meta
 - consumers: the Check stage and its `meta_drift` gate
-- observable change: after `meta.refresh`, `check_meta` calls `metafill.fill` once for the changed files whose purpose is empty or whose header was `drifted` before the refresh, using `metafill.make_ask(ctx.driver, the loaded meta spec (as `clutch meta fill` loads it), worktree, len(ctx.driver.journal.read()))`, and commits refreshed and filled files together in its existing `clutch(<stem>): meta` commit; it returns a `meta_drift` finding only for a file that stays malformed or empty after the fill
+- observable change: before `meta.refresh`, `check_meta` calls `metafill.fill` once for the changed files that the existing pre-refresh `meta.check` reports as `empty_purpose`, `missing` or `drifted` (fill selects exactly those through its own `meta.check`, so it must run before refresh repairs them), using `metafill.make_ask(ctx.driver, the loaded meta spec (as `clutch meta fill` loads it), worktree, len(ctx.driver.journal.read()))`, and commits refreshed and filled files together in its existing `clutch(<stem>): meta` commit; it returns a `meta_drift` finding only for a file that stays malformed or empty after the fill
 - compatibility: `meta_drift` severity, finding shape and road texts are unchanged; files outside `meta.paths`, ticket files and deleted files are still ignored; no call is made when no file needs a purpose
 - acceptance: criteria 1 and 2
 - tests: tests/unit/test_check_meta_fill.py and tests/unit/test_meta_drift_check.py
@@ -45,7 +45,7 @@ Since `clutch:meta` headers became required on files under `docs/`, `clutch/docs
 
 ## Scope in / Scope out
 Scope in:
-- clutch/stages.py `check_meta`: add the fill step as stated, importing `metafill` and `load_spec` where `check_meta` needs them. A fill that returns no reply leaves those files' findings in place.
+- clutch/stages.py `check_meta`: add the fill step before the existing `meta.refresh` call, then run `refresh` as today for every changed file. Import `metafill` and `load_spec` inside `check_meta` (`clutch.metafill` imports `findings_text` from `clutch.stages`, so a module-level import would be circular); call it as `metafill.make_ask(...)` and `metafill.fill(...)` so tests can monkeypatch `clutch.metafill.make_ask`. A fill that returns no reply leaves those files' findings in place.
 - clutch/specs/implement.md: replace rule 5 as stated and bump `version` to the next minor above main.
 - tests/integration/test_implement_spec_meta_headers.py: replace the clause list with the new rule's clauses and update its version pin; tests/unit/test_specs.py and tests/integration/test_specs_delimiter_note.py: update the `implement` version pin. Nothing else changes in those three files.
 - tests/unit/test_meta_drift_check.py: the expected findings change because empty and drift-flagged purposes are now filled; inject the fill through a fake `ask` (monkeypatch `metafill.make_ask`) and give the stand-in ctx the `driver` the new call reads.
