@@ -4,22 +4,21 @@ ok
 
 ## Surprises / judgment calls
 
-The final ticket verification passed, as did all 3,595 integration tests and the format check. The first combined verification encountered an intermittent startup reconciliation race; base verification, isolated candidate tests, and the required full candidate rerun passed. Coverage was skipped because the diff changes no measured production files. Suggestions were filed for deadline lint, the reconciliation race, and the existing lint failure.
+The final sequential verification passed: the reproducer returned pass and all 57 tests passed. Under concurrent test load, earlier candidate runs timed out on admission cases; the base comparison reproduced the precheck failure and host-loop setup failures. The injected-delay reproducer confirmed that the old stop limit cancels the serve task. A suggestion was filed to assess a broader deadline lint.
 
 ## Dead ends
 
-Raising timeout values was rejected because it would only move the load threshold for the failures.
+Increasing timeout values was rejected because it would only move the load threshold.
 
 ## Second problems filed
 
-- box-001062-cbf86391: Startup reconciliation can mark a ticket abandoned while draft confirmation is in progress.
-- box-001063-34871813: Repository-wide Ruff lint fails on an overlong line in tests/unit/test_driver_check_nesting.py; the same failure occurs on the base commit.
+- box-001071-979fce43: Under concurrent test load, the base precheck admission test exceeds its wall-clock deadline.
 
 ## Resolved engine/model
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.24
+- spec: implement 2.25
 
 ## Predicted vs actual
 
