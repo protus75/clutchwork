@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The merge-base worktree reported defect with exit 1; the branch reported pass with exit 0. Final verification passed with three tests passed and two skipped. The existing ownership guard and regression coverage prevent this race from recurring.
+The final verification passed with 3 tests passed and 2 skipped; the standalone reproducer returned defect with exit 1 on the merge base and pass with exit 0 on the branch. The guard and regression tests prevent this race from recurring. A flag around settlement was the smallest change that preserved unrelated run concurrency.
 
 ## Dead ends
 
-none
+The first base-worktree setup used an unbounded Git process that did not capture the merge-base SHA; using a bounded process resolved it.
 
 ## Second problems filed
 
