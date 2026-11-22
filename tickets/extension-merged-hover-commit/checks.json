@@ -1,0 +1,149 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "6b9765f7393bd29d4806831563c35f5a0cdc0efd",
+  "stem": "extension-merged-hover-commit",
+  "passed": true,
+  "changed_files": [
+    "clutch/observe.py",
+    "tests/integration/test_watch.py",
+    "tests/unit/test_observe_commit_message.py",
+    "tests/unit/test_snapshot_merged_cap.py",
+    "tests/unit/test_snapshot_merged_tooltip.py",
+    "vscode-clutchwork/media/view.js"
+  ],
+  "inserted_lines": 86,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.446423,
+        "passed": 1986,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3007783470093273,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.1570400100026745,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.0114730169880204
+        }
+      },
+      "coverage": {
+        "percent": 74.07648565351391,
+        "files": {
+          "clutch/observe.py": 58.47362514029181
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.148609,
+        "passed": 289,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.786516121996101,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0628397520049475,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039875759975985
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_observe_commit_message.py",
+        "tests/unit/test_snapshot_merged_tooltip.py",
+        "tests/unit/test_snapshot_merged_cap.py",
+        "tests/integration/test_watch.py",
+        "tests/unit/test_help_snapshot.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_observe_commit_message.py tests/unit/test_snapshot_merged_tooltip.py tests/unit/test_snapshot_merged_cap.py tests/integration/test_watch.py tests/unit/test_help_snapshot.py\nbringing up nodes...\nbringing up nodes...\n\nss.sssssssss.sssssss..ssssssssssss.s                                     [100%]\n5 passed, 31 skipped in 1.37s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.771985
+    }
+  ]
+}
