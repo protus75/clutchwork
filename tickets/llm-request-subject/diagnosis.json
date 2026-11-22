@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "6403c2c6ea12cf35c69255abf698d91a0cd8c801",
+  "stem": "llm-request-subject",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The scope fence leaves out files that the rename forces. These read req.ticket or request.ticket: tests/harness/shakeout/driver.py, tests/harness/daemon_soak.py, tests/integration/test_serve_scan_watch_overlap.py and tests/integration/test_serve_parallel_admission.py. AC4's rg check fails unless",
+    "tests/unit/test_stages_helpers.py:112 builds LLMRequest(..., ticket=h.STEM, ...). After the rename the full suite (AC5) fails unless this file is fenced and changed to subject=h.STEM.",
+    "tests/unit/test_roadmap_accept.py:159 checks the exact driver kwargs. Fence it and add subject=release to the expected dict, because clutch/acceptance.py now passes subject=release.",
+    "Before refiling, run the AC4 rg command and an rg for 'ticket=' inside LLMRequest( calls across clutch and tests. Fence every hit and every test that checks exact driver kwargs for the ticketless callers (author, triage, retro, acceptance, metafill)."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
