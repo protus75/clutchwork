@@ -5,8 +5,8 @@
 # purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: clutch/merge.py
-# verified: 7ad3c1c2
-# hash: d6287dfaba4f8b480e874081a384856329d8d03c608d61b3083074fffd33e732
+# verified: 0a4d026b
+# hash: 9f5aa61591d1d95a023808cfab177608215c04bf40941ef83ca483c8417b4389
 
 import asyncio
 import dataclasses
@@ -29,8 +29,8 @@ from clutch.stages import StageContext, run_stages
 from clutch.tickets import validate_ticket
 from tests.cli_helpers import root
 from tests.integration.test_git import commit_lock
-from tests.integration.test_stages import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
 from tests.spool_captures import list_captures
+from tests.stages_helpers import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -488,7 +488,7 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
         assert replay == admission and await ctx.git.rev_parse(root, "main") == before
         assert ctx.driver.journal.read() == events
         # Exercise the actual intake/dependency reader against this producing journal.
-        from tests.integration.test_stages import TICKET
+        from tests.stages_helpers import TICKET
 
         dependent = f"after-{ticket.stem}"
         raw = TICKET.format(bypass="").replace("## Depends on\nnone", f"## Depends on\n- {ticket.stem}")
@@ -672,7 +672,7 @@ async def test_retro_prompt_spec_merge_requires_unique_bridge(repo, monkeypatch,
     from clutch.effects import Effects
     from clutch.merge import write_squash
     from clutch.mergequeue import TreeMismatch
-    from tests.integration.test_stages import implement_reply
+    from tests.stages_helpers import implement_reply
 
     author(repo)
     ctx = context(repo, [implement_reply(), verdict()])

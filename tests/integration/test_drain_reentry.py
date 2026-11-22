@@ -10,8 +10,8 @@ written. The production stage pipeline runs behind a scripted FakeLLM.
 # purpose: Tests that a re-offered ticket renders the prior attempt's review or check findings in criteria position without writing ticket.md.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: e47f20ccaedbd6a8b6a4815aa1ea8b5ecc75a8c5fd2a5b26b95afa3cf2d64f25
+# verified: 0a4d026b
+# hash: 35358855aea79ef2aebb90058d54c7616b86ce7965c72770bffdd03a55c19ce7
 
 from pathlib import Path
 
@@ -28,8 +28,8 @@ from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS
 from tests.drain_helpers import NoChild
 from tests.drain_helpers import reentry_drain as drain
-from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo, transitions  # noqa: F401 -- `repo` is the fixture
+from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

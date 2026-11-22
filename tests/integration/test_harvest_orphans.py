@@ -5,8 +5,8 @@
 # purpose: Tests that run-entry reconcile harvests an orphaned worktree before reaping it, re-renders its reason into the prompt, and still reaps when harvest fails
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 02c43eb87958f60c848b2bedf6a96fe871814cb4997a0d0fb87f9b5926f28075
+# verified: 0a4d026b
+# hash: 02c7a9e883fb3f8f7a58db6ea518e18bbc49013fb1fea1c9fee4164795a09e41
 
 from pathlib import Path
 
@@ -19,9 +19,9 @@ from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS
-from tests.integration.test_stages import ENV, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
 from tests.spool_captures import write_capture
+from tests.stages_helpers import ENV, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

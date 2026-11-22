@@ -4,8 +4,8 @@
 # purpose: Shared in-memory CLI test helpers moved out of tests/integration/test_cli.py: config, env, plan and ticket text, a cli() runner patched onto FakeExec and GitFake, git output, journal and write helpers.
 # relates: [clutch/__main__.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/runner.py, tests/config_fixture.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 81a807089403eb0e313ad39515df8a801c698f4be55f4b38ba17f6ac8b7f8e2f
+# verified: 0a4d026b
+# hash: 3a7b1c09654568934eaa54181da9732046e1238792be89bcbb550b0724904fad
 from pathlib import Path
 from unittest.mock import patch
 
@@ -18,7 +18,6 @@ from tests.config_fixture import build_config
 from tests.fakes import FakeClock as Clock
 from tests.fakes import FakeExec, FakeJournal
 from tests.git_fake import GitFake
-from tests.integration.test_stages import adopt_conduct
 
 ENV = {
     "PATH": "/usr/bin:/bin",
@@ -123,6 +122,8 @@ def root(tmp_path: Path) -> Path:
     (root / "CLUTCH_PLAN.md").write_text(PLAN)
     (root / "config.yaml").write_text(CONFIG)
     (root / ".gitignore").write_text(".clutch/\n")
+    from tests.stages_helpers import adopt_conduct
+
     adopt_conduct(root)
     from clutch.hostfiles import render
 

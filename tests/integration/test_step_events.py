@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that Check and merge write stage_start and stage_end events to the engine log with the right outcome, stem and attempt.
+# purpose: Tests that Check and merge write stage_start and stage_end events to the engine log with the right outcome, stem and attempt
 # relates: [clutch/runner.py, clutch/stages.py, clutch/tickets.py, tests/integration/test_merge.py, tests/integration/test_stages.py]
 # owner: clutch/stages.py
-# verified: d32c32ad
-# hash: 8845d67abe48b5cfc9e657859653421afa8b602fddf0a509af70235c20e4d18a
+# verified: 0a4d026b
+# hash: 268b1371da89d2d412ad97cc21839d8c42665ea8d776cbe18cdfaabd05385abd
 import asyncio
 import json
 
@@ -15,7 +15,7 @@ from clutch import runner
 from clutch.stages import run_stages
 from clutch.tickets import validate_ticket
 from tests.integration.test_merge import context, repo
-from tests.integration.test_stages import STEM, agent, author, verdict
+from tests.stages_helpers import STEM, agent, author, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

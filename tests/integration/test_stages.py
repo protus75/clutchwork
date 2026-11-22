@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts.
+# purpose: Tests the Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: 7ad3c1c2
-# hash: a642a1d84c958785a2e0fcbdb32b88a548fd2518be89597908d16c59712ef10c
+# verified: 0a4d026b
+# hash: ba40fed65e2ad54f0d9ad4039013492b4ddb7cde5c8bc69c07e68b2769194a0d
 
 import asyncio
 import json
@@ -46,16 +46,30 @@ from clutch.tickets import TicketInvalid, validate_ticket
 from tests.config_fixture import build_config
 from tests.integration.test_git import commit_lock
 from tests.spool_captures import list_captures, read_capture
-from tests.stage_replies import implement_reply
-from tests.stage_replies import review_verdict as verdict
+from tests.stages_helpers import (
+    CONFIG,
+    ENV,
+    SAMPLE_REPORT,
+    SECRET,
+    SNAG,
+    SPECS,
+    STEM,
+    TICKET,
+    SampleReport,
+    _report_bytes,
+    adopt_conduct,
+    agent,
+    author,
+    evidence,
+    git,
+    implement_reply,
+    repo,
+    report_context,
+    run,
+    verdict,
+)
 
 pytestmark = pytest.mark.disk_io_skip
-
-SAMPLE_REPORT = "sample-report.json"
-
-
-class SampleReport(Artifact):
-    entries: list[NonBlank]
 
 
 @pytest.fixture(autouse=True)
@@ -80,147 +94,6 @@ def test_retro_driver_access_is_public_and_read_only(repo):
         Retro(checkout, SimpleNamespace()).driver()
 
 
-SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-SECRET = "sk-test-not-for-children"
-ENV = {
-    "PATH": "/usr/bin:/bin",
-    "HOME": "/nonexistent",
-    "GIT_CONFIG_NOSYSTEM": "1",
-    "GIT_AUTHOR_NAME": "t",
-    "GIT_AUTHOR_EMAIL": "t@t",
-    "GIT_COMMITTER_NAME": "t",
-    "GIT_COMMITTER_EMAIL": "t@t",
-    "FAKE_KEY": SECRET,
-}
-
-CONFIG = build_config(
-    providers=[{"name": "fake", "auth": "FAKE_KEY", "models": {"low": "m", "medium": "m", "high": "m", "max": "m"}, "limits": {"concurrency": 1, "est_cost_per_call_usd": 0.5}}],
-    routing=[{"tier": "medium", "surface": "implement", "candidates": [{"provider": "fake"}]}, {"tier": "medium", "surface": "review", "candidates": [{"provider": "fake"}]}],
-)
-
-TICKET = """---
-state: confirmed
-source: human
-priority: P2
-kind: feature
-{bypass}---
-
-## Depends on
-none
-
-## Context
-- clutch/thing.py
-
-## Goal / Why
-`thing.py` holds the word ok.
-
-## Boundary contract
-none
-- reason: unchanged behavior
-
-## Scope in / Scope out
-In: thing. Out: the rest.
-
-## Scope fence
-- clutch/thing.py
-
-## Acceptance criteria
-1. `grep -q ok clutch/thing.py` exits 0.
-
-## Verification
-```
-grep -q ok clutch/thing.py
-env
-```
-
-## Definition of rejected
-Needs a new dependency.
-
-## Time budget
-- expected: 10m
-- stuck: 20m
-"""
-
-STEM = "add-thing"
-
-
-def git(root: Path, *args: str) -> str:
-    return subprocess.run(["git", "-C", str(root), *args], env=ENV, capture_output=True, text=True, check=True).stdout
-
-
-def adopt_conduct(root: Path) -> list[str]:
-    """Render each fixture's actual routes from its own project bytes before committing its base."""
-    from clutch.hostfiles import render
-    from clutch.providers import routed_conduct_paths
-
-    paths = routed_conduct_paths(load_config(None, cwd=root), root)
-    for path in paths:
-        path.write_bytes(render(path.read_bytes() if path.exists() else b""))
-    return [p.relative_to(root).as_posix() for p in paths]
-
-
-@pytest.fixture
-def repo(tmp_path: Path) -> Path:
-    root = tmp_path / "repo"
-    (root / "clutch").mkdir(parents=True)
-    (root / "clutch" / "thing.py").write_text("")
-    (root / "config.yaml").write_text(CONFIG)
-    (root / ".gitignore").write_text(".clutch/\n")
-    adopt_conduct(root)
-    git(root, "init", "-b", "main")
-    git(root, "add", ".")
-    git(root, "commit", "-m", "base")
-    return root
-
-
-def author(repo: Path, bypass: str = "") -> None:
-    path = repo / "tickets" / STEM / "ticket.md"
-    path.parent.mkdir(parents=True)
-    path.write_text(TICKET.format(bypass=bypass))
-    git(repo, "add", "tickets")
-    git(repo, "commit", "-m", f"clutch({STEM}): ticket")
-    from tests.approval import approve
-
-    approve(repo, STEM, lambda: datetime(2026, 10, 5, tzinfo=UTC))
-
-
-def agent(files: dict[str, str], outcome: str = "ok"):
-    """A scripted implementer: edits the worktree, commits on the branch, replies."""
-
-    def act(req: LLMRequest) -> str:
-        assert req.worktree is not None
-        for rel, text in files.items():
-            (req.worktree / rel).parent.mkdir(parents=True, exist_ok=True)
-            (req.worktree / rel).write_text(text)
-        if files:
-            git(req.worktree, "add", *files)
-            git(req.worktree, "commit", "-m", "work")
-        return implement_reply(outcome)
-
-    return act
-
-
-SNAG = {"code": "logic", "path": "clutch/thing.py", "line": 1, "message": "wrong word", "paved_road": "write ok"}
-
-
-def run(repo: Path, script: list, bypass: str = ""):
-    author(repo, bypass)
-    config = load_config(None, cwd=repo)
-    llm = FakeLLM(script)
-    clock = lambda: datetime(2026, 10, 5, tzinfo=UTC)  # noqa: E731
-
-    async def never(seconds: float) -> None:
-        await asyncio.Event().wait()
-
-    exec_ = SubprocessExec()
-    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=llm, env=ENV, clock=clock, sleep=never)
-    ctx = StageContext(
-        repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
-    )
-    ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
-    return asyncio.run(run_stages(ctx, ticket)), llm, config
-
-
 def subjects(repo: Path) -> list[str]:
     return git(repo, "log", "--format=%s", "main").splitlines()[::-1]
 
@@ -229,12 +102,8 @@ def outcomes(result) -> dict[str, str]:
     return {name: r.outcome for name, r in result.results.items()}
 
 
-def _report_bytes() -> str:
-    return SampleReport(produced_by_spec_version=1, produced_at_sha="abc", entries=["one"]).model_dump_json()
-
-
 def _report_ticket(monkeypatch, verification: str) -> None:
-    monkeypatch.setattr(__import__(__name__, fromlist=["TICKET"]), "TICKET", TICKET.replace("env\n", verification + "\n"))
+    monkeypatch.setattr(__import__("tests.stages_helpers", fromlist=["TICKET"]), "TICKET", TICKET.replace("env\n", verification + "\n"))
 
 
 def _write_outbox_report(path: str, body: str):
@@ -525,11 +394,6 @@ def test_a_fresh_run_tears_down_the_prior_worktree_and_branch(repo):
 # --- gates --------------------------------------------------------------------------------------
 
 
-def evidence(**kw) -> Evidence:
-    base = dict(stem=STEM, head_sha="abc", claimed="ok", scope_fence=["clutch/"], changed_files=["clutch/a.py"], inserted_lines=1, verification=[], run_record=None)
-    return Evidence(**{**base, **kw})
-
-
 def test_diff_budget_caps_inserted_lines(tmp_path):
     gate = DiffBudgetGate()
     many_files = evidence(changed_files=[f"clutch/{n}.py" for n in range(31)], inserted_lines=10)
@@ -639,22 +503,6 @@ def test_full_gather_evidence_reuses_safety_gatherer(repo, monkeypatch):
         assert not (ctx.config.worktree_root / ".base" / STEM).exists()
 
     asyncio.run(scenario())
-
-
-async def report_context(repo, *, verification=None, source=None, script=None):
-    """A disposable producer whose report is written by real Verification, never by its agent."""
-    from tests.integration.test_merge import context
-
-    ctx = context(repo, script if script is not None else [agent({}), verdict()])
-    ctx.fs.write(repo / "clutch/thing.py", b"ok\n")
-    ctx.fs.write(repo / "source.json", (source if source is not None else _report_bytes()).encode())
-    command = verification if verification is not None else f"cp source.json tickets/{STEM}/{SAMPLE_REPORT}"
-    raw = TICKET.format(bypass="").replace("grep -q ok clutch/thing.py\nenv", command)
-    ctx.fs.write(repo / f"tickets/{STEM}/ticket.md", raw.encode())
-    await ctx.git.add(repo, ["clutch/thing.py", "source.json", f"tickets/{STEM}/ticket.md"])
-    await ctx.git.commit(repo, "producer fixture")
-    ticket = validate_ticket(STEM, raw, repo)
-    return ctx, ticket
 
 
 @pytest.mark.asyncio

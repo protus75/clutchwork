@@ -5,8 +5,8 @@
 # purpose: Shared in-memory drain test scaffolding: a scripted stage seam, a temp-checkout root builder, a drain runner, committed-ticket helpers, journal queries, a pause checkout and a re-entry drain over FakeLLM.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/runner.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 651f227c580018da8b6598bf58da5be89871b47148c9d1a73ad14ccba7c21b0e
+# verified: 0a4d026b
+# hash: 112727eb52b7bc02cb91432df0264ea72cf2962a168258baa4fc5f78c4624a16
 
 import asyncio
 from dataclasses import replace
@@ -65,7 +65,7 @@ def make_root(tmp_path: Path, caps: str = "") -> Path:
     (root / "CLUTCH_PLAN.md").write_text(PLAN)
     (root / "config.yaml").write_text(CONFIG + caps)
     (root / ".gitignore").write_text(".clutch/\n")
-    from tests.integration.test_stages import adopt_conduct
+    from tests.stages_helpers import adopt_conduct
 
     adopt_conduct(root)
     git_fake(root)._overrides["_run"] = lambda directory, *args: (

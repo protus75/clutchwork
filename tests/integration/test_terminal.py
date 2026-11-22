@@ -6,11 +6,11 @@ place; an engine-plane refusal exits 2 with nothing dispatched. Retry, diagnosis
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests non-ok terminals behind `engine run <stem>`: each journals one terminal transition and exits 1, while engine-plane refusals exit 2 and dispatch nothing.
+# purpose: Tests non-ok terminals behind `engine run <stem>`: each journals one terminal transition and exits 1, while engine-plane refusals exit 2 and dispatch nothing
 # relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_stages.py]
 # owner: clutch/runner.py
-# verified: d32c32ad
-# hash: 9943853a276fdd60948b3b6cce84f557e8f41b0150d847fb00b24d5162624935
+# verified: 0a4d026b
+# hash: 69611652ce315bfffaa20a8fff85286267b6c21138cf4ff3c8f54923bf006603
 
 import json
 from datetime import UTC, datetime
@@ -23,7 +23,7 @@ from clutch.__main__ import main
 from clutch.config import load_config
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
-from tests.integration.test_stages import CONFIG, ENV, SNAG, STEM, TICKET, adopt_conduct, agent, git, implement_reply, verdict
+from tests.stages_helpers import CONFIG, ENV, SNAG, STEM, TICKET, adopt_conduct, agent, git, implement_reply, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

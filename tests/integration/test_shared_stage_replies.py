@@ -1,17 +1,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Guards that migrated integration test files use the shared stage reply builders instead of local copies
+# purpose: Checks that migrated integration test files use the shared stage reply builders instead of local copies
 # relates: [tests/integration/test_stages.py, tests/stage_replies.py]
 # owner: engine
-# verified: 9b76d3e1
-# hash: 6228c12afa870df7ac93c48b4bd425c208d9a534a4518789f2895643d69244d5
+# verified: 0a4d026b
+# hash: 9b57c1539956aaa3577ac7bd18c172061f8b74fadae25b3551f7280ae6e77a8a
 import ast
 from pathlib import Path
 
-from tests.integration.test_stages import implement_reply, verdict
 from tests.stage_replies import implement_reply as shared_implement_reply
 from tests.stage_replies import review_verdict
+from tests.stages_helpers import implement_reply, verdict
 
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATED = ("test_stages.py", "test_requisition.py", "test_requisition_gate.py", "test_author.py", "test_triage.py", "test_review_command.py")

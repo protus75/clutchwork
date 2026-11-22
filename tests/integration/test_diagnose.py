@@ -5,8 +5,8 @@
 # purpose: Tests failure diagnosis through the production run and drain paths: reply schema, routing, cap draws, short-circuits and lesson rendering.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 11ddef293925350b0d3a0652af01fc97c6912402e0da222df09978193062eb75
+# verified: 0a4d026b
+# hash: e26c3e9f0c53a9263a0897a5a348a5c43936c7e5db8823606c1feddea187fd8f
 
 import json
 from pathlib import Path
@@ -26,8 +26,8 @@ from clutch.specs import data_close, data_open
 from clutch.stages import StagesRun
 from tests.drain_helpers import NoChild
 from tests.integration.test_providers import CONFIG as ROUTING_CONFIG
-from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

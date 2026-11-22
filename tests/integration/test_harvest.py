@@ -5,8 +5,8 @@
 # purpose: Tests failed-run harvest records through the production CLI: closed contents, ordering ahead of caps and terminal, soft failure, and quoting in drain re-entry prompts
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 123bd4ad6045c5fac0be4ac842f73e618efacad8df2eadf7f73cd0cd9d39b2fa
+# verified: 0a4d026b
+# hash: 4fd568576d55911b3a09b78a48ea83b23690951482502df3eaa7087c4c391ff2
 
 import json
 from pathlib import Path
@@ -22,8 +22,8 @@ from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS, StagesRun
 from tests.drain_helpers import NoChild
 from tests.evidence_records import seed_end
-from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

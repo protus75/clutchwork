@@ -4,8 +4,8 @@
 # purpose: Tests the artifact and finding contracts, gate lint, the gate runner with severity merging, the core_drift gate and the bug-evidence gate on a fixture host
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 7510b575a3d899b3d39691f3720b9623d46845a1be6d460863448f701d16cc3c
+# verified: 0a4d026b
+# hash: 8ebd89f0844a21bbe2b18cdbbfd6f95dc9c8d980aea186090816a4347eb51720
 import textwrap
 from dataclasses import FrozenInstanceError
 from pathlib import Path
@@ -25,7 +25,7 @@ from clutch.gates import (
     run_gates,
 )
 from tests.integration.test_git import commit_lock
-from tests.integration.test_stages import repo
+from tests.stages_helpers import repo
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -248,7 +248,7 @@ def test_runner_fails_closed_on_paved_road_less_report(tmp_path):
 )
 def test_core_drift_gate_reports(tmp_path, monkeypatch, state, data, road):
     from clutch import hostfiles
-    from tests.integration.test_stages import evidence
+    from tests.stages_helpers import evidence
 
     if data == "render":
         data = hostfiles.render(b"project\xff")
@@ -290,7 +290,7 @@ def test_core_drift_default_hard(repo):
     from clutch.hostfiles import CoreDriftGate
     from clutch.tickets import validate_ticket
     from tests.integration.test_merge import context
-    from tests.integration.test_stages import STEM, author, evidence
+    from tests.stages_helpers import STEM, author, evidence
 
     artifact = evidence(core_files={"AGENTS.md": None})
     assert "core_drift" in ENGINE_GATE_CODES and DEFAULT_GATE_SEVERITY["core_drift"] == "hard"
@@ -313,7 +313,7 @@ async def test_core_activation_committed_conduct():
     from clutch import hostfiles, stages
     from clutch.git import Git
     from clutch.seams import SubprocessExec
-    from tests.integration.test_stages import evidence
+    from tests.stages_helpers import evidence
 
     root = Path(__file__).resolve().parents[2]
     config = load_config(None, cwd=root)

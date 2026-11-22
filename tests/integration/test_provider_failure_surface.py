@@ -1,17 +1,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Check that a provider failure during Implement is reported as an implement infra_error with a matching box failure report
+# purpose: Tests that a provider failure during Implement is reported as an implement infra_error with a matching box failure report
 # relates: [clutch/box.py, clutch/providers.py, clutch/seams.py, tests/integration/test_stages.py]
 # owner: clutch/stages.py
-# verified: d32c32ad
-# hash: 016c4369abf8b6ef750094330ce427f2a7b1eb968833ab9baac401a1ec0a9dee
+# verified: 0a4d026b
+# hash: 1df359521300d7d23bfe701cfd0a8485eeebe8bca795e546383a5e9f78039106
 import pytest
 
 from clutch.box import BOX_DIR, Box
 from clutch.providers import ProviderCallError
 from clutch.seams import LocalFileSystem
-from tests.integration.test_stages import repo, run  # noqa: F401
+from tests.stages_helpers import repo, run  # noqa: F401
 
 pytestmark = pytest.mark.disk_io_skip
 

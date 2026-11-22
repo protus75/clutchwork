@@ -4,8 +4,8 @@
 # purpose: Integration tests for the clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: d99a5b63d76f4f99613c1ede24d72f9b55f9ac334796a4bd9ebd017951384122
+# verified: 0a4d026b
+# hash: ab19a112f4c85239170ed78ed12197d9718576d2297cbaff5016fc25b26678ce
 import asyncio
 import os
 import subprocess
@@ -644,7 +644,7 @@ def test_core_and_gate_share_routed_paths(tmp_path, monkeypatch):
     from clutch import hostfiles, providers
     from clutch.config import load_config
     from tests.integration.test_hostfiles import RecordingFS
-    from tests.integration.test_stages import evidence
+    from tests.stages_helpers import evidence
 
     config_path = core_config(tmp_path, [("medium", "implement", ["codex", "claude", "codex"])])
     config = load_config(config_path, cwd=tmp_path)

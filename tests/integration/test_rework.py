@@ -5,8 +5,8 @@
 # purpose: Tests the Rework stage: update, split and escalate orders are validated and reviewed without changing tickets, along with supersedes recording, dependency folds, timeouts, spec render and reachability from production
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
 # owner: clutch/rework.py
-# verified: d32c32ad
-# hash: 41832c73c7114d3cf8919ce326f9ab0ccf247768ff366672f0c6740a8c1f7d1e
+# verified: 0a4d026b
+# hash: fcc0ea7a6c327e39a67ee404c8c1b5a049f35624e85dca60d2f601863a20f1c8
 
 import asyncio
 import hashlib
@@ -28,8 +28,8 @@ from clutch.specs import DATA_DELIM, QUOTED_DELIM, RENDER_BOUND_CHARS, data_clos
 from clutch.stages import KNOWN_ARTIFACTS
 from clutch.tickets import ticket_path, validate_ticket
 from tests.integration.test_mergequeue import commit, conflict, ctx, import_closure
-from tests.integration.test_stages import TICKET
 from tests.spool_captures import read_capture
+from tests.stages_helpers import TICKET
 
 pytestmark = pytest.mark.disk_io_skip
 

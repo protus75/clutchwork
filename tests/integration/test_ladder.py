@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks capability-ladder escalation, Reject-queue routing with automatic keep, and rework split or escalation through the production drain
+# purpose: Tests capability-ladder escalation, Reject-queue routing with an automatic keep, and rework split or escalation through the production drain
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: acd943a6b60128941c339471b595220c699bff934350a9a4b5f7c6b471553f32
+# verified: 0a4d026b
+# hash: e06a71601aa1542455774fa8e0b9da0bd93f0079ef8de644a039826926e9f7ea
 
 import json
 
@@ -19,8 +19,8 @@ from clutch.config import load_config
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from tests.drain_helpers import NoChild
-from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
+from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests production storm escalation: trip and report creation, closed hold targets, occurrence-id recipes at each producer site, and crash recovery from write-ahead records.
+# purpose: Tests production storm escalation: trip and report creation, closed hold targets, occurrence-id recipes at each producer site, and crash recovery from write-ahead records
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/flake.py, clutch/journal.py]
 # owner: clutch/storm.py
-# verified: 7ad3c1c2
-# hash: 171830710692f04686b06712077570d51740c266d6cbd0bb5a5c2c2f772fb975
+# verified: 0a4d026b
+# hash: 2bb7491ede1bd141af9dd764595369ec75c47a45663ddc42e29cf3806b041906
 
 import asyncio
 import hashlib
@@ -35,9 +35,9 @@ from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_journal import T0, FakeClock
 from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready, scripted
-from tests.integration.test_stages import STEM, agent
 from tests.integration.test_storm import SIG, snapshot
 from tests.integration.test_storm_producer import ARRIVAL, compose
+from tests.stages_helpers import STEM, agent
 
 pytestmark = pytest.mark.disk_io_skip
 

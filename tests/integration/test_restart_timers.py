@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Covers production restart with the lock held: orphan reconciliation and harvest custody, journal-backed timer arm and fire with rearm, and startup failures that never report ready
+# purpose: Tests production restart with the lock held: orphan reconciliation and harvest custody, journal-backed timer arm, fire and rearm, and startup failures that never report ready
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: clutch/restart.py
-# verified: ae1a5a3b
-# hash: 2d45fccfc6550240887055d06dae27af56d7e2c46e600b335f522eac338ed503
+# verified: 0a4d026b
+# hash: c3109339bab319d374dac3a2057efa554c4823525240be8960e38a35ce4d0e11
 
 import ast
 import asyncio
@@ -136,7 +136,7 @@ async def repository(root, monkeypatch, *, prepare=None):
     monkeypatch.setattr(rig.fs, "mkdir", made)
     monkeypatch.setattr(rig.fs, "remove", removed)
     (root / ".gitignore").write_text(".clutch/\nstate/\nrecovery-workspaces/\n")
-    from tests.integration.test_stages import adopt_conduct
+    from tests.stages_helpers import adopt_conduct
 
     conduct = adopt_conduct(root)
     await rig.checkout.git.add(root, ["config.yaml", ".gitignore", "clutch/thing.py", *conduct])

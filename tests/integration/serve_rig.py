@@ -5,8 +5,8 @@
 # purpose: Shared rig for continuous serve graph integration tests: builds the serve graph, scripts stages and model replies, and provides admission, control, notify, upgrade and retro scenario helpers.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 504b52cb4d9d77ae83c001586e3982c925c6c3c6ea2fa008df27dd575fbec491
+# verified: 0a4d026b
+# hash: 3d8966b28752cd6d189804bad34af5429bb730e00344102dde644b5641ae3cea
 
 import asyncio
 import json
@@ -185,7 +185,7 @@ async def active_graph(root, monkeypatch, *, signals=None, failure=None):
 
 async def admission_graph(root, monkeypatch, changes, *, endings=None, settled=None):
     """The merged CoreRig, actual CLI serve composition and real stages with scripted model replies."""
-    from tests.integration.test_stages import SNAG, implement_reply, verdict
+    from tests.stages_helpers import SNAG, implement_reply, verdict
 
     endings = endings if endings is not None else {}
     models, contexts, returns = [], {}, []
@@ -265,7 +265,7 @@ async def admission_graph(root, monkeypatch, changes, *, endings=None, settled=N
 
 
 def admission_ticket(root, stem, *, paths=("clutch/thing.py",), verification="true", depends="none", priority="P2"):
-    from tests.integration.test_stages import TICKET
+    from tests.stages_helpers import TICKET
 
     raw = TICKET.format(bypass="").replace("priority: P2", f"priority: {priority}")
     raw = raw.replace("## Depends on\nnone", f"## Depends on\n{depends}")

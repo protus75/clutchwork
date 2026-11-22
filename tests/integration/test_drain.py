@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: f01bfd0501a708a82aabc45490ccbe2e751277148997dec1a17c40126609b03e
+# verified: 0a4d026b
+# hash: cf2eb463b555b7f02e277f5e565d5306c9f33946674d00406aedcc7bea6960a2
 
 import asyncio
 import json
@@ -33,8 +33,8 @@ from tests.cli_helpers import CONFIG, ENV, PLAN, git_out, ticket, with_retro_dri
 from tests.drain_helpers import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root, mechanical_first, offer_events, pause_checkout, retry_draws, root, tos
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo as admission_repo
-from tests.integration.test_stages import adopt_conduct
 from tests.integration.test_terminal import repo as rework_repo
+from tests.stages_helpers import adopt_conduct
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -58,8 +58,8 @@ def test_already_satisfied_settles_without_diagnosis(rework_repo):
     from clutch import runner
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
-    from tests.integration.test_stages import STEM, agent
     from tests.integration.test_terminal import author, clock
+    from tests.stages_helpers import STEM, agent
 
     repo = rework_repo
     (repo / "clutch/thing.py").write_text("ok base\n")
@@ -492,8 +492,8 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
     from clutch.llm import FakeLLM
     from tests.drain_helpers import NoChild
     from tests.integration.test_rework import order, requisition
-    from tests.integration.test_stages import ENV, SNAG, STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
+    from tests.stages_helpers import ENV, SNAG, STEM, agent, verdict
 
     repo = rework_repo
     author(repo)
@@ -558,8 +558,8 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
     from clutch import runner
     from clutch.llm import FakeLLM
     from tests.integration.test_rework import order, requisition, successors
-    from tests.integration.test_stages import ENV, SNAG, STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
+    from tests.stages_helpers import ENV, SNAG, STEM, agent, verdict
 
     repo = rework_repo
     (repo / "clutch/thing.py").write_text("ok base\n")
@@ -638,8 +638,8 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
     from tests.integration.test_rework import order, requisition, successors
-    from tests.integration.test_stages import ENV, STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
+    from tests.stages_helpers import ENV, STEM, agent, verdict
 
     repo = rework_repo
     author(repo)
@@ -1274,8 +1274,8 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     from clutch import runner, stages
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
-    from tests.integration.test_stages import STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
+    from tests.stages_helpers import STEM, agent, verdict
 
     author(repo)
     original = stages.implement
@@ -1328,8 +1328,8 @@ def test_engine_artifacts_do_not_trigger(rework_repo):
     from clutch import runner
     from clutch.llm import FakeLLM
     from tests.drain_helpers import NoChild
-    from tests.integration.test_stages import STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
+    from tests.stages_helpers import STEM, agent, verdict
 
     repo = rework_repo
     author(repo)

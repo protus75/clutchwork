@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution.
+# purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider. Covers verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/triage.py
-# verified: 7ad3c1c2
-# hash: b96e1dda0719dc363bd6b826caa17ca71c228ba1f4bf1598d6e1df9b3948c06f
+# verified: 0a4d026b
+# hash: c31e16d54799bf916ed0e13b3ae4e1878847a1d6fc3199363975a2b8519427d5
 
 import asyncio
 import json
@@ -409,7 +409,7 @@ async def escape_rig(tmp_path):
     from clutch import runner, stages
     from clutch.tickets import validate_ticket
     from tests.drain_helpers import pause_checkout
-    from tests.integration.test_stages import implement_reply
+    from tests.stages_helpers import implement_reply
 
     root, box = root_with_box(tmp_path)
     c = pause_checkout(root)

@@ -5,8 +5,8 @@
 # purpose: Integration tests for merge queue admission (ordering, safety and integration checks, conflict strategies, squash, holds and resume) using real disposable git repos
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/git.py, clutch/journal.py]
 # owner: clutch/mergequeue.py
-# verified: d32c32ad
-# hash: 7ee5b9920f12eba9eec965533f93a9a50e86f1e2bd116395dedaa839d9d3df2a
+# verified: 0a4d026b
+# hash: 5c4ee2996f2868480286e42d105a12dc7ce2683e56d1324ad18a8303920fa4ba
 
 import ast
 import asyncio
@@ -34,8 +34,8 @@ from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
 from clutch.stages import ApprovedInvoice, CommandResult, StageContext, render_review
 from clutch.tickets import validate_ticket
 from tests.integration.test_git import commit_lock
-from tests.integration.test_stages import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
 from tests.spool_captures import list_captures, read_capture
+from tests.stages_helpers import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
 
 pytestmark = pytest.mark.disk_io_skip
 

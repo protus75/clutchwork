@@ -5,8 +5,8 @@
 # purpose: Tests host mechanical checks through production Check and inline merge: triggers, severity, base-red, autofix commits, results-based flake detection and quarantine, coverage and timing
 # relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/merge.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 742ca6d28b08b99f6786fd3f0d2e13e50bde31434d2d986c67bcaf0db068de71
+# verified: 0a4d026b
+# hash: 0fe93a03d32e87fe51484b585d12362a8a4d4d46b72254d645842d9b3216ff69
 
 import asyncio
 
@@ -16,8 +16,8 @@ from clutch import merge, stages
 from clutch.box import BOX_DIR, Box
 from clutch.seams import ExecutableNotFound
 from tests.integration.test_mergequeue import approve, commit, ctx, host, ready, scripted
-from tests.integration.test_stages import SECRET
 from tests.spool_captures import list_captures, read_capture
+from tests.stages_helpers import SECRET
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 4f8b38912c12817b36b24ec2505198ea2f70b1d60e86479b8ed407833909a848
+# verified: 0a4d026b
+# hash: 775911746b19d8ef48816d2b94ea794f35f332d7e96670fdea3cab6edaba60ea
 
 import ast
 import asyncio
@@ -2024,7 +2024,7 @@ async def test_composed_admission_holds_accept_identity_bound_resume(admission_c
 @pytest.mark.parametrize("verb", ["run", "drain"])
 def test_bootstrap_inline_admission_never_holds(admission_context, monkeypatch, verb):
     from tests.drain_helpers import NoChild
-    from tests.integration.test_stages import STEM, TICKET, agent, verdict
+    from tests.stages_helpers import STEM, TICKET, agent, verdict
 
     source = admission_context
     source.fs.write(source.repo / f"tickets/{STEM}/ticket.md", TICKET.format(bypass="").encode())

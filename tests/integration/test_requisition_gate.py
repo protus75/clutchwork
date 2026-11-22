@@ -5,8 +5,8 @@
 # purpose: Tests that dispatch reviews committed ticket content before creating a workspace, parks a snag before Implement, and releases it when the ticket is edited
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/runner.py, clutch/scheduler.py]
 # owner: clutch/requisition.py
-# verified: 7ad3c1c2
-# hash: b927d5913559688ab2a8f526c2afc75e08ac2d60dc27cf407ec3c19b199e1791
+# verified: 0a4d026b
+# hash: c8b8be84d766934142d7918a024068b43014dce0122adc79958382da1efcf2f8
 
 import asyncio
 import json
@@ -25,8 +25,8 @@ from tests.approval import approve
 from tests.cli_helpers import ENV, git_out
 from tests.dispatch_settle import dispatch_settled
 from tests.drain_helpers import Clock, commit_ticket, confirmed, journal, make_root, pause_checkout
-from tests.integration.test_stages import implement_reply
 from tests.stage_replies import requisition_reply
+from tests.stages_helpers import implement_reply
 
 pytestmark = pytest.mark.disk_io_skip
 

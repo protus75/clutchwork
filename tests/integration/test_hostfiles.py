@@ -5,8 +5,8 @@
 # purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker-corruption refusal, drift classification, project-rule refusals, and the production core_drift gate.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 5f95c50c1b6159379350028781f89c5343a8863096a5cfd82c965f1c19a6a075
+# verified: 0a4d026b
+# hash: 08fe32b85267360ab55946bd4b6076e9e1b737bbd495b8a323d37297a73e5729
 
 import asyncio
 import base64
@@ -21,7 +21,7 @@ from clutch.seams import LocalFileSystem
 from tests.cli_helpers import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo
-from tests.integration.test_stages import agent, verdict
+from tests.stages_helpers import agent, verdict
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -415,7 +415,7 @@ if __name__ == "__main__":
 async def test_committed_core_preserves_raw_bytes(repo, dirty):
     from clutch.config import load_config
     from tests.integration.test_merge import context
-    from tests.integration.test_stages import evidence
+    from tests.stages_helpers import evidence
 
     ctx = context(repo, [])
     raw = hostfiles.render(b"project\xff\r\nno final newline")
@@ -443,7 +443,7 @@ async def test_committed_core_template_extraction_refuses(repo, source):
     from clutch import stages
     from clutch.tickets import validate_ticket
     from tests.integration.test_merge import context
-    from tests.integration.test_stages import STEM, author, evidence
+    from tests.stages_helpers import STEM, author, evidence
 
     author(repo)
     ctx = context(repo, [])
