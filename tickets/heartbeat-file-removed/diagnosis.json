@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e65fe0edafad8ea266b11ab729ed21b761b7046f",
+  "stem": "heartbeat-file-removed",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In clutch/docs/host-contract.md, put \"and\" back before the last item in both state_dir ownership sentences (around lines 142 and 459), so each ends \"evidence captures and engine log.\" This keeps both lists grammatical, as Scope in requires.",
+    "In tests/integration/test_serve_notify.py, restart half of test_serve_reconciles_notifications_at_startup_and_poll: once the restarted owner is built, wrap its maintenance with count_maintenance(rig, monkeypatch).",
+    "Then wait until rig.owner.ready.is_set() and at least one maintenance call has been counted, and only then assert notifications.task is None and the 6 deliveries. ready is set before any maintenance poll runs, so waiting on ready alone does not prove a post-restart poll ran.",
+    "Leave the rest of the branch as it is. Review called the heartbeat removal correct, and the run record shows ./dev.py test passing. Make only these two fixes, then rerun ./dev.py test."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
