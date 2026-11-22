@@ -1,14 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "29cedbd022e9f926d34919eb4ee35757e045e42f",
+  "produced_at_sha": "03d2e50d9382e38ac71936cdc07db2b732f7b5d9",
   "stem": "shared-git-fake-unit-5",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "retry",
+  "verdict": "abandon-human",
   "lessons": [
-    "Do not revert tests/unit/test_serve_scan_head.py or tests/unit/test_supervise_idle_hooks.py. The ticket's `## Scope fence` now lists both, so the scope_fence findings came from the older fence. Re-run Check on the current branch."
+    "The implementer's diff is correct. Both flagged files, tests/unit/test_serve_scan_head.py and tests/unit/test_supervise_idle_hooks.py, are listed in the ticket's `## Scope fence`, and both Verification commands passed (3 and 114 tests). The scope_fence finding is a false positive.",
+    "Engine defect outside the fence: in clutch/stages.py, ScopeFenceGate checks Evidence.scope_fence, which gather_safety_evidence fills from `ticket.scope_fence`. That Ticket object was stale: it held the fence from before the two importer files were added, not the confirmed ticket.md.",
+    "A human should find where the check stage loads the Ticket it passes to gather_safety_evidence (from the branch copy or a cached object instead of main's current tickets/shared-git-fake-unit-5/ticket.md). Fix it to reread the fence, then rerun this stem's check on the existing branch.",
+    "Do not retry Implement and do not revert the two importer edits. The ticket's Scope in requires them, and attempt 2 already committed the full migration of 16 files."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
