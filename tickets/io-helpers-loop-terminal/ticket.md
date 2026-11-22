@@ -72,7 +72,7 @@ Scope out:
 - tests/integration/test_second_problems.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_loop_helpers.py` passes; it checks that `repo(tmp_path)` returns a path under `tmp_path` holding `config.yaml` and `clutch/thing.py` and no `.git` directory, that `author(repo)` writes `tickets/<stem>/ticket.md` under that path, that `diagnosis_reply("a")` returns JSON whose `lessons` is `["a"]`, and that `clock()` returns the fixed 2026-10-05 UTC time.
+1. `./dev.py test tests/unit/test_loop_helpers.py` passes; it checks, through a test that imports the `repo` fixture (with `# noqa: F401`) and takes it as a parameter (`def test_repo(repo, tmp_path)`), that the `repo` fixture yields a path under `tmp_path` holding `config.yaml` and `clutch/thing.py` and no `.git` directory, that `author(repo)` writes `tickets/<stem>/ticket.md` under that path, that `diagnosis_reply("a")` returns JSON whose `lessons` is `["a"]`, and that `clock()` returns the fixed 2026-10-05 UTC time.
 2. `grep -rPzl "from tests\.integration\.test_terminal import" tests --include=*.py` lists no file: no file imports a name from the hub.
 3. `grep -nE "^(async def|def|class) (clock|repo|author|diagnosis_reply|transitions)\b|^(clock|repo|author|diagnosis_reply|transitions) =" tests/integration/test_terminal.py` prints nothing: the hub no longer defines a moved name. The hub's own `run` and `left_in_place` stay because no file imports them.
 4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/loop_helpers.py` prints nothing.
