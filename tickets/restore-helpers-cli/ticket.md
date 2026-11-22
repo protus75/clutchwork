@@ -42,18 +42,19 @@ The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit an
 
 ## Scope in / Scope out
 Scope in:
-- Create `tests/cli_helpers.py` holding these moved names, each rewritten as described, keeping its signature unless a change is named: `CONFIG`, `Clock`, `ENV`, `PLAN`, `Stages`, `TICKET`, `cli`, `core_config`, `git_out`, `journal`, `root`, `ticket`, `with_retro_driver`, `write`.
+- Create `tests/cli_helpers.py` holding these moved names, each rewritten as described, keeping its signature unless a change is named: `CONFIG`, `Clock`, `ENV`, `PLAN`, `Stages`, `TICKET`, `cli`, `core_config`, `git_fake`, `git_out`, `journal`, `root`, `ticket`, `with_retro_driver`, `write`.
   - Constants moved verbatim: `ENV`, `PLAN`, `TICKET`, and `ticket(depends)`. `CONFIG` is the text `tests/config_fixture.py::build_config()` returns with no arguments (byte-identical to the literal in the hub today), never a copy. `Clock` is `tests.fakes.FakeClock`, imported into the module under the name `Clock`. `with_retro_driver(checkout, dispatch)` and `write(root, stem, text)` move unchanged (`write` writes only under the `root` it is given).
   - `Stages` (the scripted stage-dispatch seam) moves with the same behavior; its lock probe writes a lockfile under `checkout.config.state_dir`, which lies under the `tmp_path` repo.
-  - `root` (pytest fixture): creates the same files under `tmp_path / "repo"` (`clutch/thing.py`, the plan file, `config.yaml`, `.gitignore`, the routed conduct files and the agent-rules file the fixture renders) but does not run `git init`, `add` or `commit`; it hands the path back and registers a `GitFake` for it that reports the seeded `base` commit. Read `tests/git_fake.py` in the worktree for the override and `fake.calls` contract.
-  - `git_out(root, *args)` stops running `git` and answers from the `GitFake` registered for `root`: it appends the call to `fake.calls` and returns the override the test registered for those args, `""` when none. Batch tickets register overrides per test.
+  - `git_fake(root) -> GitFake` (one new name, defined here and reused by every later helper module): keeps one `GitFake` per `root` path in a module-level dict, creating it on first use. `tests/git_fake.py::GitFake` (merged by `shared-git-fake`; read it in the worktree) takes `GitFake(**overrides)` keyed by `Git` member name, answers a member with no override from its return annotation, and appends each call to `fake.calls` as `(name, args, kwargs)`.
+  - `root` (pytest fixture): creates the same files under `tmp_path / "repo"` (`clutch/thing.py`, the plan file, `config.yaml`, `.gitignore`, the routed conduct files and the agent-rules file the fixture renders) but does not run `git init`, `add` or `commit`; it returns the path after creating `git_fake(path)`.
+  - `git_out(root, *args)` stops running `git`: it appends `("git_out", args, {})` to `git_fake(root).calls` and returns `""`. A batch ticket whose test asserted real git output asserts on `fake.calls` or on an override of the `Git` member that answers it, and keeps the behavior the test checks.
   - `journal(root)` returns a `tests.fakes.FakeJournal` when it supplies every method the importers call on it (`read`, `append`); if one is missing the run stops as a premise failure naming the method.
   - `cli(root, *argv, stages=None)` keeps calling `clutch.__main__.main` in process with `env=ENV`, `clock=Clock()` and `pipeline=stages or Stages()`.
   - `core_config(root, routes)` moves unchanged (it writes `config.yaml` under the given `root`).
-- In every importer listed in `## Scope fence`, change only the import line (and an in-function import line) from `tests.integration.<hub>` to `tests.cli_helpers` for the moved names; a line that imports a name this ticket does not move is kept and any name it still imports from another hub stays. A `tests.integration` module import (`from tests.integration import <hub>`) is not an importer of a name and stays.
-- Each hub file (`tests/integration/test_cli.py`) deletes its definition of every moved name and imports the name back from `tests.cli_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
+- In every importer listed in `## Scope fence`, change only the import line (also an import line inside a function) so each moved name comes from `tests.cli_helpers`. Every name any file imports from these hubs is moved, except where Scope in says otherwise, so no importer keeps an import from a hub. Names an importer takes from other hubs stay as they are. A module import (`from tests.integration import <hub>`) is not an import of a name and stays.
+- Each hub file (`tests/integration/test_cli.py`) deletes its definition of every moved name it defines and imports the name back from `tests.cli_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
 - Earlier helper modules (none yet; this is the first of the chain) change only where one of them imports a name this ticket moves.
-- Create `tests/unit/test_cli_helpers.py`: one test per moved name that calls it with `tmp_path` and the shared fakes and asserts what it returns or writes, plus one test that every name above is importable from `tests.cli_helpers` and that the module source names no `subprocess` or `SubprocessExec` import.
+- Create `tests/unit/test_cli_helpers.py`: one test per moved name that runs without reading a repo file, calling it with `tmp_path`, in-memory inputs and the shared fakes and asserting what it returns or writes, plus one test that every name above is importable from `tests.cli_helpers`. 
 - `commit_lock` and `adopt_conduct`, which `root` uses today, are imported by the hub from `tests/integration/test_git.py` and `tests/integration/test_stages.py` and move in later steps (`restore-helpers-stages`, `restore-helpers-misc`); `root` needs no commit lock once git is a `GitFake`, and it imports `adopt_conduct` from `tests.integration.test_stages` until `restore-helpers-stages` moves it (that ticket then edits the import).
 - `clutch.__main__.main` builds its own `SubprocessExec` and `Git` (see `clutch/__main__.py`, where `SubprocessExec()` is constructed in each verb branch) and has no parameter for either, so a helper that calls `main` replaces those two names on the `clutch.__main__` module with the shared `FakeExec` and `GitFake` for the duration of the call (a patch inside the helper, never a change under `clutch/`). When a verb a helper drives still reaches a real process after that, the run stops as a premise failure naming the verb and the construction site.
 - `tests/unit/test_main_evidence_captures.py`, `tests/regress_drain_park_findings.py`, `tests/regress_stale_running.py`, `tests/regress_drain_detach.py`, `tests/regress_drain_signals.py`, `tests/regress_lint_worktree_journal.py` and `tests/regress_suggest_lands_in_box.py` run today and import from the hub (some inside a function); they stay green. `tests/integration/test_shared_fakes_adoption.py` asserts `test_cli.Clock is fakes.FakeClock`, so the hub keeps a module attribute `Clock`.
@@ -61,7 +62,7 @@ Scope in:
 Scope out:
 - Restoring any skipped test file (the `restore-io-tests-NN` tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
-- Defining a `Fake*` or stand-in class in `tests/cli_helpers.py`: use the shared fakes. Rewriting any test body in a hub or importer.
+- Defining in `tests/cli_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`: use the shared fakes. A thin subclass is not needed by any moved name. Rewriting any test body in a hub or importer.
 - Skipped importers may still break semantically; their batch ticket fixes that.
 
 ## Scope fence
@@ -164,8 +165,8 @@ Scope out:
 - tests/unit/test_main_evidence_captures.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_cli_helpers.py` passes, and `tests/unit/test_cli_helpers.py` checks that the `root` fixture leaves no `.git` directory under `tmp_path` and that a `git_out(root, "status")` call appears in the registered `GitFake`'s `fake.calls`, not that a real `git` ran (a test that also passes on a real repository checks nothing).
-2. `grep -rnE "from tests\.integration\.(test_cli) import" tests --include=*.py` prints nothing: every importer takes the moved names from `tests.cli_helpers`, and a leftover line names the importer that was missed.
+1. `./dev.py test tests/unit/test_cli_helpers.py` passes, and `tests/unit/test_cli_helpers.py` checks that the `root` fixture leaves no `.git` directory under `tmp_path` and that after `git_out(root, "status")` the list `git_fake(root).calls` ends with `("git_out", ("status",), {})`, so a version that runs real git fails the first check.
+2. `grep -rnE "from tests\.integration\.(test_cli) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
 3. `grep -nE "^(async def|def|class) (CONFIG|ENV|PLAN|TICKET|Stages|cli|core_config|git_out|journal|root|ticket|with_retro_driver|write)\b|^(CONFIG|ENV|PLAN|TICKET|Stages|cli|core_config|git_out|journal|root|ticket|with_retro_driver|write) =" tests/integration/test_cli.py` prints nothing: the hub files no longer define a moved name.
 4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/cli_helpers.py` prints nothing.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
@@ -180,7 +181,7 @@ Scope out:
 
 ## Definition of rejected
 - A test that runs today fails or is skipped, or a skipped test becomes unskipped.
-- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/cli_helpers.py` defines a new `Fake*` or copied reply or config helper.
+- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/cli_helpers.py` defines a class that duplicates a shared fake or a copied reply or config helper.
 - A shared module (`tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py`, `tests/conftest.py`) is edited.
 - An importer changes anything other than its import line, or a hub test is deleted, weakened or restored.
 
