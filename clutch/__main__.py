@@ -863,8 +863,8 @@ def _parser() -> argparse.ArgumentParser:
         reads="Config, evidence, first-parent git commits, the optional index and box messages for triage.",
         writes="Requested JSONL files and optional holdout list under --out, replaced whole.",
         lock="None.",
-        exits="0 on success; 2 when disabled or refused.",
-        examples=["clutch training export --out training-data --kinds ticket triage --since 2026-11-10"],
+        exits="0 on success; 2 when disabled, refused, or --require-records finds a requested kind empty.",
+        examples=["clutch training export --out training-data --kinds ticket triage --since 2026-11-10 --require-records"],
     )
     export.add_argument("--out", type=Path, required=True)
 
@@ -881,6 +881,7 @@ def _parser() -> argparse.ArgumentParser:
     export.add_argument("--since", type=export_date, metavar="DATE", help="include calls on or after YYYY-MM-DD")
     export.add_argument("--no-trajectory", action="store_false", dest="trajectory", help="omit implement tool-call trajectories")
     export.add_argument("--holdout", type=int, choices=range(101), default=0, metavar="PCT")
+    export.add_argument("--require-records", action="store_true", help="refuse if any requested kind has no records")
     evaluation = _command(
         training_sub,
         "eval",
@@ -1914,6 +1915,10 @@ def main(
             checkout.fs.write(args.out / name, data)
         for line in training.report(counts):
             print(line)
+        if args.require_records:
+            missing = [kind for kind in args.kinds if counts[kind] == 0]
+            if missing:
+                raise runner.Refusal(f"no records for requested kinds: {', '.join(missing)}", "run more tickets with training_data.enabled, or drop the kind from --kinds")
         return 0
 
     def handle_context():

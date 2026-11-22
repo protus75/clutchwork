@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: d32c32ad
-hash: 7cf27c001df457ed1683dbd05ce1cedc767d9c370e061703a41436de52e1c0b0
+verified: fd6afe46
+hash: 559f5de57e5f7860eee7c6b4a106696db8d97b4ddeb92b817815e2cfe7c8828f
 -->
 # How ClutchWork works
 
@@ -64,7 +64,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `evidence renormalize` | no | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
 | `evidence coverage` | no | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | no | List ticket captures or print one by attempt and name. |
-| `training export --out DIR [--kinds implement, preference, review, diagnosis, ticket, conflict, triage ...] [--since DATE] [--holdout PCT] [--no-trajectory]` | no | Triage labels reflect operator overrides of the verdict. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
+| `training export --out DIR [--kinds implement, preference, review, diagnosis, ticket, conflict, triage ...] [--since DATE] [--holdout PCT] [--no-trajectory] [--require-records]` | no | With `--require-records`, exit 2 after export if any requested kind has no records. Triage labels reflect operator overrides of the verdict. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |

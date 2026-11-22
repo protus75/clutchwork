@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work across plans: release slots, priorities, cross-plan decisions, owner decisions, the duplication/gap/drift audit and the master ticket table with release gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 5a232ea2
-hash: 2bdcadd954d64f45adaa5adb2e16af127d8b4852d85513a393fee7a2577f8104
+verified: fd6afe46
+hash: 82fff74bcc7310017bfaaad866cdce743c5332b6f77a6d69c64b7c77a12a7d64
 -->
 # clutch roadmap
 
@@ -455,11 +455,12 @@ uv run clutch roadmap accept 0.4.0
 | 207 | ~~`meta-context-ship-gate`~~ | roadmap | feature | P1 | | | **Merged** (`tickets/meta-context-ship-gate/`). The roadmap section 1 0.5.0 ship clause (filled meta blocks in this repo's docs and tests, and context suggest returning selectors for a real ticket) has no gate command (docs/roadmap.md#0.5.0), and six tests files still have an empty purpose; fill them and add gate commands running clutch meta check and a context suggest that fails on no selectors. |
 | 209 | ~~`plan-status-after-050`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/plan-status-after-050/`). The 0.5.0 merges left plan Status sections stale: training-data, stage-panels and annotations-index plans say nothing is in effect, evidence-trail-plan.md#Status calls rows 62-64 planned, and boundary-contract-plan.md#Status calls row 153 unmerged; each Status names what merged and what remains. |
 
-The gate checks filled meta blocks in docs and tests and that `context suggest` returns selectors for a real ticket. The remaining 0.5.0 ship clauses are unchecked: `training export` producing every record kind from this repo's journal; and `training eval` scoring one lens.
+The gate checks filled meta blocks in docs and tests and that `context suggest` returns selectors for a real ticket. The remaining 0.5.0 ship clause is unchecked: `training eval` scoring one lens.
 
 ```gate
 uv run clutch roadmap merged --release 0.5.0
 uv run clutch meta check docs clutch/docs tests
+uv run clutch training export --out .clutch/training-export --kinds implement preference review diagnosis ticket conflict triage --require-records
 uv run clutch index build
 uv run clutch context suggest context-suggest --require
 ./dev.py test

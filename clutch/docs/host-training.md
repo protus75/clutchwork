@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Training data export and evaluation
+purpose: Host guide to training data: enabling capture, fixed exclusions, `training export` kinds and flags, `training eval` agreement scoring, provider terms and privacy
 relates: [clutch/config.py, clutch/docs/host-contract.md, clutch/docs/host-running.md, clutch/training.py]
 owner: engine
-verified: ee052b47
-hash: b401ec7178af8223d153f8c7deefef03a331428678570486fe83df40494e02bb
+verified: fd6afe46
+hash: 6326e11f44fba5a0e191bf8e0d07b4828e5ae5d8f25c75229bd88aaf11f89565
 -->
 # Training data export and evaluation
 
@@ -23,7 +23,7 @@ The fixed always-excluded globs are `.env*`, `*.pem`, `*.key`, and `id_*`; `excl
 
 ## Export
 
-Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, `ticket`, `conflict`, and `triage`. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Run `clutch index build` first to add `file_purposes` to implement records for indexed changed files; a missing or stale index may omit the field. Triage labels reflect operator overrides of the verdict. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
+Run `clutch training export --out DIR`. The kinds are `implement`, `preference`, `review`, `diagnosis`, `ticket`, `conflict`, and `triage`. Use `--require-records` to exit 2 after writing the report and files if any requested kind has no records. Use `--since` to filter by date, `--holdout PCT` to split by ticket and write the held-out stems, and `--no-trajectory` to omit implement trajectories. Run `clutch index build` first to add `file_purposes` to implement records for indexed changed files; a missing or stale index may omit the field. Triage labels reflect operator overrides of the verdict. Ticket records carry `authored_by` (`human` or `author`) so you can filter them. See the [host run guide](host-running.md) for the verb row.
 
 ## Evaluate a review route
 
