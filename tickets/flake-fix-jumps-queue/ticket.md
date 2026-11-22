@@ -1,12 +1,16 @@
 ---
 state: confirmed
 source: human
-priority: P0
+priority: P1
 kind: feature
 ---
 
 ## Depends on
 - none
+
+## Runs before
+- scheduler-ranks-full-priority
+- preflight-once-per-session
 
 ## Context
 - clutch/drain.py::sort_key
