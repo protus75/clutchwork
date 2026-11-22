@@ -1,24 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "32ad8a0d932332e80ed2489c9195543cf2f7140a",
+  "produced_at_sha": "987f760935cf00192d94f51bf6a2d8f3c2a52ca6",
   "stem": "check-rerun-failed-only",
-  "attempt": 3,
-  "terminal": "gate_failed",
-  "stage": "review",
+  "attempt": 5,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "The premise is false. The ticket says 'timing and coverage still come from the first run', but clutch/covgate.py run_gate (lines 146-148) returns pytest's nonzero rc before it checks thresholds. A first run with a failed test never evaluates coverage. Only the old full-suite rerun did.",
-    "The config.yaml unit entry wraps pytest in `clutch coverage gate`. A --clutch-select rerun runs one test, so the gate fails coverage thresholds and exits nonzero even when that test passes. Under this fence, keeping the rerun rc-finding line gives false failures, and dropping it weakens the gate.",
-    "Re-scope before another attempt: fence clutch/covgate.py and tests/unit/test_covgate*.py. Choose one: run_gate evaluates the report even when pytest's rc is nonzero, or Check evaluates the first run's coverage report after a selected rerun clears every failure. State the choice in the Boundary",
-    "Keep the test_host_mechanical.py test_results_fail_closed case [(1, {'a': 'failed'}), (1, {'a': 'passed'}), (0, {})] or an equivalent that still fails closed, and add the missing-results case as an extra parameter. Add a test where the first run fails one test and misses coverage, the selected"
+    "Criterion 1 can't be met as fenced. tests/integration/conftest.py wraps every test not in REAL_IO_TESTS in clutch.ioguard.guard, which blocks the real pytest subprocess that tests/integration/test_testreport_select.py needs. conftest.py is outside the fence.",
+    "Re-scope criterion 1 one of two ways: fence tests/integration/conftest.py and add test_testreport_select.py to REAL_IO_TESTS, since it tests real pytest I/O, or prove --clutch-select in memory with stand-in items and config.",
+    "Criterion 5 and the Verification command name tests/integration/test_host_mechanical.py and test_flake.py. Both are in DISK_IO_SKIP in tests/integration/conftest.py, so they skip and prove nothing. Use tests/unit/test_stages_flake_coverage.py as the unchanged-behavior proof, or fence a migration.",
+    "Criteria 2, 3 and 6 need test_check_rerun_failed_only.py to drive _check_host_results with a recording exec and ctx.fs fakes, writing no real disk, or the guard blocks it. The ticket should say that this file uses only in-memory seams.",
+    "Spent caps: this is attempt 5, and every attempt stopped at Implement on this same fence and I/O-policy conflict. A human must revise the ticket's criteria and fence before any rerun."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    2,
-    3
-  ],
-  "spec_version": "1.9",
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
 }
