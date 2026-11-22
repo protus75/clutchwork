@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test key scope
+# purpose: Checks that scoped run sequences give separate LLM and ticket-plane effect keys across the driver, outbox lift, rework, review and requisition
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: 595b9e84
-# hash: 326d91bf51c40fe0c88a7da32cfc386ee1762dd2b93e921abac808dc7ee17959
+# verified: c015c627
+# hash: 1267f415504e6d510647e1cde9bf485ea7158594c9ce0dcbba0763d4525d1f27
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -24,6 +24,7 @@ from clutch.llm import FakeLLM
 from clutch.llmeffect import llm_key, scoped_seq
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 
 
 def test_scoped_sequence_and_keys():
@@ -119,7 +120,8 @@ def test_apply_rework_scoped_publication(tmp_path, monkeypatch):
         await edit()
         return "sha"
 
-    git = SimpleNamespace(_run=AsyncMock(side_effect=["old", "new", "old", "new", "old"]), rev_parse=AsyncMock(return_value="abc"), commit_edit=AsyncMock(side_effect=commit_edit))
+    values = iter(["old", "new", "old", "new", "old"])
+    git = GitFake(_run=lambda *args: next(values), rev_parse="abc", commit_edit=commit_edit)
     ctx = SimpleNamespace(
         repo=tmp_path,
         worktree=lambda _: tmp_path,
@@ -139,7 +141,7 @@ def test_apply_rework_scoped_publication(tmp_path, monkeypatch):
     asyncio.run(run())
     assert keys == ["ticket-plane/item/sup-0/rework", "ticket-plane/item/0/rework", "ticket-plane/item/0/rework"]
     assert scopes == ["sup", None, None]
-    assert git.commit_edit.await_count == 2
+    assert len([call for call in git.calls if call[0] == "commit_edit"]) == 2
 
 
 def test_rework_scopes_review_and_tree(tmp_path, monkeypatch):
@@ -164,7 +166,7 @@ def test_rework_scopes_review_and_tree(tmp_path, monkeypatch):
     async def add(repo, tree, head):
         trees.append(tree)
 
-    git = SimpleNamespace(rev_parse=AsyncMock(return_value="abc"), worktree_add_detached=add)
+    git = GitFake(rev_parse="abc", worktree_add_detached=add)
     ctx = SimpleNamespace(
         repo=tmp_path,
         specs_dir=tmp_path,

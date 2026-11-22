@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test closed sets remaining
+# purpose: Checks the closed and retired state sets, artifact major-version parsing, author skeletons built from every ticket kind, and that retro settled triggers count rejected tickets
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/journal.py, clutch/retro.py, clutch/status.py, clutch/tickets.py, tests/fakes.py]
 # owner: engine
-# verified: 93253297
-# hash: 2d2317966be2c0cfdcc7a50ee79a168d4b108276b9d6313e6baa08c6b03c84a6
+# verified: c015c627
+# hash: a99935a0658368761f584dd1da79af4a82c798d54506209ec2bbd304e42ad816
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ from clutch.config import Retro, RetroMerges, RetroSettled, RetroSpikes
 from clutch.journal import Event, EventType
 from clutch.retro import Window, select_trigger
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_retro_recurrence import message
 
 
@@ -50,7 +51,7 @@ def test_author_skeletons_follow_kinds(monkeypatch):
     monkeypatch.setattr(author, "render", lambda spec, values: inputs.append(values) or "rendered")
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "template", lambda kind: f"template for {kind}")
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=Path("/state"), routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=Path("/repo"), git=GitFake(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=Path("/state"), routing_default_tier="medium"))
     item = message().model_copy(update={"verdict": SimpleNamespace(rationale="observed")})
     with pytest.raises(Done):
         asyncio.run(author.author(checkout, SimpleNamespace(run=run), SimpleNamespace(root=Path("/box")), item, 1))

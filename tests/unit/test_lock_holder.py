@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test lock holder
+# purpose: Checks that control, verdict and retro requests are published to the engine only when the lock holder is drain or serve, and refused for any other holder
 # relates: [clutch/__main__.py, clutch/lockfile.py, clutch/runner.py]
 # owner: engine
-# verified: 0a308920
-# hash: d18d2f2fb19f3c3f35909f9eb04b0f3caa22c6176ec7239a62bb88127b824fc0
+# verified: c015c627
+# hash: 73219baf0039ed8753e626b80b23302e5f8663cfde47c600ec45cb11828aaac9
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,6 +15,7 @@ import pytest
 from clutch import __main__ as entry
 from clutch import runner
 from clutch.lockfile import LockHeld
+from tests.git_fake import GitFake
 
 
 @pytest.mark.parametrize("holder", [{"verb": "drain"}, {"verb": "serve"}, {"verb": "triage"}, {"verb": "eval"}, {}, None])
@@ -47,7 +48,7 @@ def test_held_lock_routes_only_to_engine(monkeypatch, holder, route):
     checkout = SimpleNamespace(
         repo=FakePath(),
         config=SimpleNamespace(state_dir=Path("state")),
-        git=SimpleNamespace(describe=describe, status_porcelain=status_porcelain),
+        git=GitFake(describe=describe, status_porcelain=status_porcelain),
         clock=None,
         fs=None,
         journal=SimpleNamespace(read=lambda: []),

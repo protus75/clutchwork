@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test intake plan
+# purpose: Checks intake plan decisions for each pending ticket (stamping, lint refusal, settled tickets), stray staged-path refusal, and commits with evidence paths
 # relates: [clutch/journal.py, clutch/tickets.py]
 # owner: engine
-# verified: cd8a8d84
-# hash: 35e16fd76d0f6686ee99ad867269b45bc1216a541848ac9f882d967747855e04
+# verified: c015c627
+# hash: a3a583bc540e3ec77c77461ea9ecbf7df6c6eaf1ded62659cf917d0a569c2fe8
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +14,7 @@ import pytest
 
 from clutch import tickets
 from clutch.journal import EventType
+from tests.git_fake import GitFake
 
 
 class Lock:
@@ -24,27 +25,22 @@ class Lock:
         pass
 
 
-class FakeGit:
-    def main_write(self):
-        return Lock()
+def make_git(entries, evidence):
+    commits = []
 
-    _commit_lock = Lock()
-
-    def __init__(self, entries, evidence):
-        self.entries = entries
-        self.evidence = evidence
-        self.commits = []
-
-    async def status_porcelain(self, repo):
-        return "".join(f"{status} {path}\n" for status, path in self.entries)
-
-    async def _run(self, repo, *args):
+    def run(repo, *args):
         stem = args[-1].split("/")[1]
-        return "\0".join(self.evidence[stem])
+        return "\0".join(evidence[stem])
 
-    async def _commit(self, repo, message, *, only):
-        self.commits.append((message, only))
+    async def commit(repo, message, *, only):
+        commits.append((message, only))
         return "commit-sha"
+
+    git = GitFake(main_write=Lock, status_porcelain=lambda repo: "".join(f"{status} {path}\n" for status, path in entries), _run=run)
+    git._commit_lock = Lock()
+    git._commit = commit
+    git.commits = commits
+    return git
 
 
 class Journal:
@@ -118,7 +114,7 @@ def test_plan_decisions(tmp_path, monkeypatch):
 def test_intake_applies_plan_and_refuses_stray(tmp_path, monkeypatch):
     entries, evidence, finding, _ = setup_plan(tmp_path, monkeypatch)
     decisions = {stem: tickets._intake_plan_stem(tmp_path, stem, stem == "good", paths, "merged" if stem == "done" else None) for stem, paths in evidence.items()}
-    git, journal = FakeGit(entries, evidence), Journal()
+    git, journal = make_git(entries, evidence), Journal()
     result = asyncio.run(tickets.intake(tmp_path, git, journal, FS(), stems=None))
     assert result.committed == ("done", "good")
     assert result.refused == {"bad": decisions["bad"][2]} == {"bad": [finding]}
@@ -127,7 +123,7 @@ def test_intake_applies_plan_and_refuses_stray(tmp_path, monkeypatch):
     assert journal.events[1] == ((EventType.SIGNAL, {"signal": tickets.INTAKE_SIGNAL, "source": "human", "state": "confirmed", "new": True, "commit": "commit-sha"}), {"ticket": "good"})
     stray_entries = entries + [("M ", "outside.py")]
     stray = tickets._intake_stray(tmp_path, stray_entries, evidence)
-    git = FakeGit(stray_entries, evidence)
+    git = make_git(stray_entries, evidence)
     with pytest.raises(tickets.IntakeRefused) as exc:
         asyncio.run(tickets.intake(tmp_path, git, Journal(), FS(), stems={"good"}))
     assert exc.value.finding.message == f"staged changes outside pending ticket files: {', '.join(stray)}"

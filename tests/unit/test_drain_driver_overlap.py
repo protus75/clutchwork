@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test drain driver overlap
+# purpose: Checks that the drain's driver pass runs alongside dispatch, that main_write orders the pass before admission, that only one pass runs at a time, and that the drain waits for the pass and surfaces its errors before exiting
 # relates: [clutch/drain.py, clutch/roadmap.py, clutch/triage.py, tests/fakes.py, tests/unit/test_phase_events.py]
 # owner: engine
-# verified: 0a308920
-# hash: 3654f89f1bfb10bfbea6dadcd74412198491f9584393412b5c606b19c2e662c9
+# verified: c015c627
+# hash: 58c69fb170b06b61128827416d95fc490583ef420ad85471c46bf65b858dc67b
 import asyncio
 from datetime import datetime, timedelta
 from types import SimpleNamespace
@@ -15,6 +15,7 @@ import pytest
 
 from clutch import drain, roadmap, triage
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_phase_events import install_log
 
 
@@ -31,7 +32,7 @@ def rig(tmp_path, monkeypatch):
         env={},
         clock=datetime.now,
         sleep=asyncio.sleep,
-        git=SimpleNamespace(main_write=lambda: state.lock),
+        git=GitFake(main_write=lambda: state.lock),
         fs=None,
         control=SimpleNamespace(inbox=SimpleNamespace(settle_triage=AsyncMock()), projection=SimpleNamespace(stop_requested=False)),
     )

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify diagnosis panel outcomes and aggregation.
+# purpose: Checks diagnosis on a single model and on a majority-verdict panel: verdict aggregation, cost totals, panel facts logging, dropped members and fallback to a no-verdict result
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/panel.py, clutch/stages.py, tests/fakes.py, tests/unit/test_route_kinds_filter.py]
 # owner: engine
-# verified: d262e447
-# hash: 3333517612316ecf0d35f61d6ae6f8a4115d00216bd6d72c65c875f68abf504f
+# verified: c015c627
+# hash: da96650c92e4976f8078dddd4c7afc9f35b019ceb1f3c252d1c220fe801d0dc1
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -16,6 +16,7 @@ from clutch.artifacts import Cost, Diagnosis, DiagnosisReply, Finding, StageResu
 from clutch.driver import PanelResult, ProviderDroughtResult
 from clutch.panel import DroppedMember
 from tests.fakes import FakeFileSystem
+from tests.git_fake import GitFake
 from tests.unit.test_route_kinds_filter import config
 
 
@@ -54,7 +55,7 @@ def setup(tmp_path, monkeypatch):
     material = stages.DiagnosisMaterial("ticket", "failed", "check", None, None)
 
     def build(driver, size=None):
-        return SimpleNamespace(driver=driver, config=cfg(size), repo=tmp_path, worktree=lambda _: tmp_path, git=SimpleNamespace(rev_parse=AsyncMock(return_value="sha")), fs=FakeFileSystem())
+        return SimpleNamespace(driver=driver, config=cfg(size), repo=tmp_path, worktree=lambda _: tmp_path, git=GitFake(rev_parse="sha"), fs=FakeFileSystem())
 
     return ticket, material, build
 

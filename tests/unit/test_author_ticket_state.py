@@ -1,16 +1,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test author ticket state
+# purpose: Checks that the author reads ticket state from frontmatter, detects rejection from the file or the journal, and lists only open tickets
 # relates: [clutch/author.py, clutch/journal.py]
 # owner: engine
-# verified: 0a308920
-# hash: 38449693d7d2d50472ea0e89e2e49ccee8a44aa1bc233a567a1f7f778eb0590a
+# verified: c015c627
+# hash: 1eedc868a4cff2d31387c97aa21ea8d2d7b9c7ed8b8b5700874de09458cee3bc
 import asyncio
 from types import SimpleNamespace
 
 from clutch.author import is_rejected, list_open_tickets, ticket_state
 from clutch.journal import EventType
+from tests.git_fake import GitFake
 
 
 def test_ticket_state():
@@ -42,7 +43,7 @@ def test_rejection_and_open_listing(tmp_path):
         return texts[ref.split("/")[1]]
 
     events = [SimpleNamespace(type=EventType.STATE_TRANSITION, ticket=stem, body={"to": state}) for stem, state in [("jrej", "rejected"), ("sat", "already_satisfied")]]
-    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(rev_parse=rev_parse, _run=run), journal=SimpleNamespace(read=lambda: events))
+    checkout = SimpleNamespace(repo=tmp_path, git=GitFake(rev_parse=rev_parse, _run=run), journal=SimpleNamespace(read=lambda: events))
     for stem, expected in [("rej", True), ("jrej", True), ("live", False), ("sat", False)]:
         assert asyncio.run(is_rejected(checkout, stem)) is expected
     assert asyncio.run(list_open_tickets(checkout)) == "live: live goal"

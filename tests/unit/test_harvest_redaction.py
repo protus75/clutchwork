@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test harvest redaction
+# purpose: Checks that the harvest.json written for a failed attempt redacts configured secret values from the diff stat and findings
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py]
 # owner: engine
-# verified: 0a308920
-# hash: 5277de1fbc0665a3911624d7169dd4bb4a64b717ff06ca6f3d0391df19829efc
+# verified: c015c627
+# hash: e7c6fe8e84cf7e715b67da86c363d21c0badcbf09cf4989770c88b1e3bee7098
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,6 +15,7 @@ from clutch import runner
 from clutch.artifacts import Finding, Harvest
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 SECRET = "unique-secret-value"
 
@@ -26,7 +27,7 @@ def test_harvest_json_carries_no_configured_secret(monkeypatch):
         config=SimpleNamespace(training_data=TrainingData(), state_dir=root / "state"),
         repo=root / "repo",
         worktree=lambda stem: root / "worktrees" / stem,
-        git=SimpleNamespace(diff_stat=AsyncMock(return_value=f" clutch/{SECRET}.py | 1 +")),
+        git=GitFake(diff_stat=f" clutch/{SECRET}.py | 1 +"),
         fs=SimpleNamespace(entries=lambda path: [], read_bytes=lambda path: b"", size=lambda path: 0, write=lambda path, data: writes.append((path, data))),
         driver=SimpleNamespace(redactor=Redactor({"FAKE_KEY": SECRET})),
     )

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test git commit
+# purpose: Checks how Git.commit stages paths and handles nothing-to-commit, squash merges, and how intake handles commit lock, concurrent commits and stem scope
 # relates: [clutch/git.py, clutch/tickets.py]
 # owner: engine
-# verified: cd8a8d84
-# hash: 06dc4b72023f6ac1455541b5958360f64a8ff1fa6d18fbeaf31df063ac7a59e2
+# verified: c015c627
+# hash: ce6b9cc3e5bca9ea9d3af33c5c6a05a9d43d3328203bfef879bb92da3bdc8c63
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +14,7 @@ import pytest
 
 from clutch import tickets
 from clutch.git import Git, GitError, NothingToCommit
+from tests.git_fake import GitFake
 
 
 class FakeLock:
@@ -81,24 +82,14 @@ def test_intake_skips_concurrent_commit(monkeypatch):
         async def __aexit__(self, *args):
             self.held = False
 
-    class FakeGit:
-        def main_write(self):
-            return FakeLock()
+    async def status_porcelain(repo):
+        assert git._commit_lock.held
+        return "?? tickets/one/ticket.md\n"
 
-        def __init__(self):
-            self._commit_lock = CountingLock()
-
-        async def status_porcelain(self, repo):
-            assert self._commit_lock.held
-            return "?? tickets/one/ticket.md\n"
-
-        async def _run(self, repo, *args):
-            return ""
-
-        async def _commit(self, repo, message, *, only):
-            assert self._commit_lock.held
-            calls.append((message, only))
-            raise NothingToCommit(["git"], 0, "", "")
+    async def commit(repo, message, *, only):
+        assert git._commit_lock.held
+        calls.append((message, only))
+        raise NothingToCommit(["git"], 0, "", "")
 
     class Journal:
         def read(self):
@@ -112,7 +103,9 @@ def test_intake_skips_concurrent_commit(monkeypatch):
     monkeypatch.setattr(tickets, "validate_ticket", lambda *args: SimpleNamespace(frontmatter=SimpleNamespace(source="human", state="confirmed")))
     monkeypatch.setattr(tickets, "evidence_findings", lambda *args, **kwargs: [])
     monkeypatch.setattr(tickets, "lint_findings", lambda *args, **kwargs: [])
-    git = FakeGit()
+    git = GitFake(main_write=FakeLock, status_porcelain=status_porcelain)
+    git._commit_lock = CountingLock()
+    git._commit = commit
     result = run(tickets.intake(Path("/repo"), git, Journal(), SimpleNamespace(), stems=None))
     assert git._commit_lock.entries == 1 and not git._commit_lock.held
     assert result.committed == () and result.refused == {}
@@ -123,21 +116,13 @@ def test_intake_skips_concurrent_commit(monkeypatch):
 def test_intake_stem_scope(monkeypatch, stems, expected):
     calls = []
 
-    class FakeGit:
-        def main_write(self):
-            return FakeLock()
+    async def commit(repo, message, *, only):
+        calls.append((message, only))
+        return "sha"
 
-        _commit_lock = FakeLock()
-
-        async def status_porcelain(self, repo):
-            return "?? tickets/one/ticket.md\n?? tickets/two/ticket.md\n"
-
-        async def _run(self, repo, *args):
-            return ""
-
-        async def _commit(self, repo, message, *, only):
-            calls.append((message, only))
-            return "sha"
+    git = GitFake(main_write=FakeLock, status_porcelain="?? tickets/one/ticket.md\n?? tickets/two/ticket.md\n")
+    git._commit_lock = FakeLock()
+    git._commit = commit
 
     class Journal:
         def read(self):
@@ -151,7 +136,7 @@ def test_intake_stem_scope(monkeypatch, stems, expected):
     monkeypatch.setattr(tickets, "validate_ticket", lambda *args: SimpleNamespace(frontmatter=SimpleNamespace(source="human", state="confirmed")))
     monkeypatch.setattr(tickets, "evidence_findings", lambda *args, **kwargs: [])
     monkeypatch.setattr(tickets, "lint_findings", lambda *args, **kwargs: [])
-    result = run(tickets.intake(Path("/repo"), FakeGit(), Journal(), SimpleNamespace(), stems=stems))
+    result = run(tickets.intake(Path("/repo"), git, Journal(), SimpleNamespace(), stems=stems))
     assert calls == [(f"clutch({stem}): ticket", [f"tickets/{stem}/ticket.md"]) for stem in expected]
     assert result.committed == expected
     assert "two" not in result.refused

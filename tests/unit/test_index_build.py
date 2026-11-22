@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Index projection and incremental updates
+# purpose: Checks the DuckDB index build: file, chunk, touch and call rows, metadata parsing, incremental updates and deletion, git and creator failures, and embeddings
 # relates: [clutch/evidence/store.py, clutch/git.py, clutch/index.py, clutch/seams.py]
 # owner: engine
-# verified: 1ce1e32c
-# hash: 3fd99586e706e47f6c97d2f9271d60c7cfe1857fdc997d9806988a3e3bbd7c70
+# verified: c015c627
+# hash: b382be003f06575702c28624321cf6ac604e7bfb1e71860e2bcdd3aa4c489b3d
 
 import hashlib
 from types import SimpleNamespace as NS
@@ -18,6 +18,7 @@ from clutch.evidence.store import SKIP
 from clutch.git import GitError
 from clutch.index import build, default_creator
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 
 
 class FS(LocalFileSystem):
@@ -32,24 +33,6 @@ class FS(LocalFileSystem):
     def remove(self, path):
         self.removed.append(path)
         super().remove(path)
-
-
-class Git:
-    def __init__(self, paths):
-        self.paths = paths
-        self.touches = [("one", "abc", ["a.md", "b.py"])]
-        self.fail_ls = False
-        self.fail_touches = False
-
-    async def ls_files(self, root):
-        if self.fail_ls:
-            raise GitError(["ls"], 1, "", "bad ls")
-        return self.paths
-
-    async def ticket_touches(self, root):
-        if self.fail_touches:
-            raise GitError(["log"], 1, "", "bad log")
-        return self.touches
 
 
 class Store:
@@ -113,7 +96,24 @@ def rig(tmp_path):
     fs.write(tmp_path / "b.py", b'"""Module purpose.\nMore."""\ndef fun():\n    return 1\nclass C:\n    def method(self):\n        return 2\n')
     fs.write(tmp_path / "tickets/x.md", b"# secret\n")
     cfg = NS(state_dir=tmp_path, index=NS(embed=None))
-    return NS(root=tmp_path, fs=fs, config=cfg, git=Git(["a.md", "b.py", "tickets/x.md"]), store=Store(), creator=Creator(), exec=Exec(), statements=[])
+    git = GitFake()
+    git.paths = ["a.md", "b.py", "tickets/x.md"]
+    git.touches = [("one", "abc", ["a.md", "b.py"])]
+    git.fail_ls = False
+    git.fail_touches = False
+
+    def ls_files(root):
+        if git.fail_ls:
+            raise GitError(["ls"], 1, "", "bad ls")
+        return git.paths
+
+    def ticket_touches(root):
+        if git.fail_touches:
+            raise GitError(["log"], 1, "", "bad log")
+        return git.touches
+
+    git._overrides.update(ls_files=ls_files, ticket_touches=ticket_touches)
+    return NS(root=tmp_path, fs=fs, config=cfg, git=git, store=Store(), creator=Creator(), exec=Exec(), statements=[])
 
 
 async def run(rig, connect=None):

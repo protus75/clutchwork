@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test menu admission
+# purpose: Checks the admission rules behind ticket and box menu verbs (order, lint, run, review, triage, dismiss), and that the snapshot and intake share one pending-ticket plan
 # relates: [clutch/__main__.py, clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/runner.py, clutch/status.py, clutch/tickets.py, clutch/triage.py]
 # owner: engine
-# verified: cd8a8d84
-# hash: 48740a6fe262b9d0762c99a4f5efec4daa779e10e40881478387ab469568ac3d
+# verified: c015c627
+# hash: f8dc54c59268de813a6ba68a91486d36adf91c69316c495c51899b7da965f0e7
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -18,6 +18,7 @@ from clutch import observe, runner, status, triage
 from clutch.box import UnknownBoxId
 from clutch.journal import EventType
 from clutch.tickets import TicketInvalid, validate_ticket
+from tests.git_fake import GitFake
 
 SNAPSHOT_INPUTS = observe.ticket_menu_inputs
 
@@ -82,7 +83,7 @@ def test_lint_refusal_and_skip(monkeypatch, capsys):
     monkeypatch.setattr(Path, "iterdir", lambda self: iter([]))
     monkeypatch.setattr(Path, "resolve", lambda self: self)
     monkeypatch.setattr(Path, "is_file", lambda self: self.parent.name == "settled")
-    git = NS(git_common_dir=AsyncMock(return_value=Path("/repo/.git")), status_porcelain=AsyncMock(return_value=""))
+    git = GitFake(git_common_dir=Path("/repo/.git"), status_porcelain="")
     checkout = NS(repo=Path("/repo"), config=NS(state_dir=Path("/state")), journal=NS(read=lambda: [NS(type=EventType.STATE_TRANSITION, ticket="settled", body={"to": "merged"})]), git=git)
     assert asyncio.run(entry._lint(checkout, ["missing", "settled"])) == 2
     output = capsys.readouterr().out
@@ -101,7 +102,7 @@ def fake_snapshot_inputs(ctx, facts, stems, holder, interrupted):
     dirty, new = observe.uncommitted_tickets(ctx)
     decisions = {**parsed, **{stem: [_f(why, "repair")] for stem, why in invalid.items()}}
     listing = "".join(f"{'??' if stem in new else ' M'} tickets/{stem}/ticket.md\n" for stem in dirty)
-    git = NS(status_porcelain=AsyncMock(return_value=listing), _run=AsyncMock(return_value="main text"))
+    git = GitFake(status_porcelain=listing, _run="main text")
 
     def validation(stem, text, repo, **kwargs):
         decision = decisions.get(stem)
@@ -177,7 +178,7 @@ def test_dispatch_verbs_use_admission_refusals(monkeypatch, verb, failure):
 
     monkeypatch.setattr(runner, "validate_ticket", validate)
     monkeypatch.setattr(entry, "validate_ticket", validate)
-    checkout = NS(repo=Path("/fake"), git=NS(_run=AsyncMock(return_value="main text")), journal=NS(read=lambda: events), fs=None)
+    checkout = NS(repo=Path("/fake"), git=GitFake(_run="main text"), journal=NS(read=lambda: events), fs=None)
     expected = getattr(status, verb + "_admission")(
         "item",
         status.admission_facts(events),
@@ -228,13 +229,13 @@ def test_snapshot_reads_one_porcelain_and_shared_graphs(monkeypatch, count, inva
         return parsed[stem]
 
     monkeypatch.setattr(tickets, "parse_ticket", parse)
-    git = NS(status_porcelain=AsyncMock(return_value=""), _run=AsyncMock(return_value="committed main text"))
+    git = GitFake(status_porcelain="", _run="committed main text")
     ctx = observe.Context(root, root / "state", root / "config", None, git, None)
     snap = observe.snapshot(ctx)
     assert len(snap["rows"]) == count  # An empty snapshot would trivially avoid per-stem git calls.
     assert all(r["menu"]["clutchRun"] == ("off" if invalid_disk else "on") for r in snap["rows"])
     assert all(r["menu"]["clutchReview"] == "on" for r in snap["rows"])  # Main validation must not reuse load_tickets' invalid disk set.
-    git.status_porcelain.assert_awaited_once_with(root, "--untracked-files=all")
+    assert [call for call in git.calls if call[0] == "status_porcelain"] == [("status_porcelain", (root, "--untracked-files=all"), {})]
     assert graphs.call_args_list == [((root,),), ((root, "Runs before"),)]  # Two section scans, independent of row count.
 
 
@@ -259,9 +260,9 @@ def test_intake_and_snapshot_share_pending_plan(monkeypatch, settled):
     monkeypatch.setattr(tickets, "lint_findings", lambda *a: [])
     monkeypatch.setattr(tickets, "evidence_findings", lambda *a, **kw: [])
     listing = f" M {rel}\nA  tickets/item/evidence/log\n"
-    git = NS(
-        _commit_lock=Lock(), main_write=Lock, status_porcelain=AsyncMock(return_value=listing), _run=AsyncMock(return_value="tickets/item/evidence/log\0"), _commit=AsyncMock(return_value="committed")
-    )
+    git = GitFake(main_write=Lock, status_porcelain=listing, _run="tickets/item/evidence/log\0")
+    git._commit_lock = Lock()
+    git._commit = AsyncMock(return_value="committed")
     history = [event("already_satisfied")] if settled else []
     journal = NS(read=lambda: history, append=lambda *a, **kw: None)
     plans = []

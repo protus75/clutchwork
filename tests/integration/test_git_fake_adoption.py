@@ -5,8 +5,8 @@
 # purpose: Tracks the move to GitFake: fails when a test file builds its own Git stand-in without being on the pending list, or when a pending entry is stale or missing
 # relates: [tests/git_fake.py, tests/unit/test_git_fake.py]
 # owner: engine
-# verified: bc0baafb
-# hash: 7b440d28cb693710a09eb0da30b0da8d90220f370d2de182942790926c2df1b6
+# verified: c015c627
+# hash: 56867deafe99c2826ff008824c97e9491db0b64ff3237d98a301f1f6755a19ca
 
 import re
 from pathlib import Path
@@ -22,20 +22,7 @@ PENDING = (
     "tests/integration/test_harvest_cost_source.py",
     "tests/integration/test_retry_keeps_branch.py",
     "tests/integration/test_serve_verdict_orphan_sweep.py",
-    "tests/unit/test_author_ticket_state.py",
     "tests/unit/test_check_meta_fill.py",
-    "tests/unit/test_closed_sets_remaining.py",
-    "tests/unit/test_conflict_rerun_swap.py",
-    "tests/unit/test_diagnosis_panel_use.py",
-    "tests/unit/test_drain_driver_overlap.py",
-    "tests/unit/test_git_commit.py",
-    "tests/unit/test_harvest_redaction.py",
-    "tests/unit/test_hostfiles.py",
-    "tests/unit/test_index_build.py",
-    "tests/unit/test_intake_plan.py",
-    "tests/unit/test_key_scope.py",
-    "tests/unit/test_lock_holder.py",
-    "tests/unit/test_menu_admission.py",
     "tests/unit/test_merge_admission_params.py",
     "tests/unit/test_merge_config_local.py",
     "tests/unit/test_merge_dirty.py",

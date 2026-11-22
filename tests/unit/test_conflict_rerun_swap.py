@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Discarded conflicts use their own accounting and operator release.
+# purpose: Discarded merge conflicts use their own accounting and operator release: rerun signals, prior-diff lift, the rerun limit that parks a ticket, and keep verdict release
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/git.py, clutch/journal.py, clutch/merge.py]
 # owner: engine
-# verified: 0a308920
-# hash: 7b83743db29b573080f9f5a07c93cc8f62e3c01a2835fd8ab979ab093d0d29de
+# verified: c015c627
+# hash: 3196b0af03bcdf10e534b3479eaceaad915ed71080cfab9ab4efa602571a2c8c
 
 import asyncio
 import json
@@ -24,6 +24,7 @@ from clutch.daemon import TicketWriter
 from clutch.git import GitError
 from clutch.journal import Event, EventType, _parse_line
 from clutch.status import last_states, reject_queue
+from tests.git_fake import GitFake
 from tests.unit.test_merge_admission_params import rig
 
 
@@ -59,7 +60,7 @@ def test_queue_refusal_aborts_and_records_rerun(monkeypatch):
 
 def writer_rig(monkeypatch):
     journal = MemoryJournal()
-    ctx = SimpleNamespace(repo=Path("/virtual"), driver=SimpleNamespace(journal=journal), git=SimpleNamespace(diff=AsyncMock(return_value="discarded diff")))
+    ctx = SimpleNamespace(repo=Path("/virtual"), driver=SimpleNamespace(journal=journal), git=GitFake(diff="discarded diff"))
     queue = SimpleNamespace(active=None, _slot=asyncio.Lock())
     writer = TicketWriter.__new__(TicketWriter)
     writer.ctx, writer.queue = ctx, queue
