@@ -1,0 +1,148 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "67b3a60f2125aad7dcacd723ef336820a9fb1461",
+  "stem": "implement-skips-full-suites",
+  "passed": true,
+  "changed_files": [
+    "clutch/specs/implement.md",
+    "docs/how-clutch-works.md",
+    "tests/integration/test_implement_spec_meta_headers.py",
+    "tests/integration/test_implement_spec_mutation_check.py",
+    "tests/integration/test_implement_spec_runs.py",
+    "tests/integration/test_specs_delimiter_note.py",
+    "tests/integration/test_stages.py",
+    "tests/unit/test_specs.py"
+  ],
+  "inserted_lines": 73,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 18.444853,
+        "passed": 1828,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.9726716879813466,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.7841348079964519,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.3998209940036759,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.2435229280090425,
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.2372663579881191,
+          "tests/unit/test_index_embeddings.py::test_failure_and_recovery[reply3-exec OSError]": 1.1694704609981272,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[spill]": 1.1222437740070745,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.0655463459988823,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[True]": 1.0438641239888966,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0360731649998343,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[failover]": 1.0222704490006436,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[breaker]": 1.013537393999286
+        }
+      },
+      "coverage": {
+        "percent": 71.78890011864482,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_implement_spec_runs.py",
+        "tests/unit/test_specs.py",
+        "tests/integration/test_specs_delimiter_note.py",
+        "tests/integration/test_implement_spec_meta_headers.py",
+        "tests/integration/test_implement_spec_mutation_check.py",
+        "tests/integration/test_stages.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_implement_spec_runs.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_meta_headers.py tests/integration/test_implement_spec_mutation_check.py tests/integration/test_stages.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 66%]\n.....................................                                    [100%]\n109 passed in 9.07s\n",
+      "base_red": false,
+      "seconds": 11.109391
+    }
+  ]
+}
