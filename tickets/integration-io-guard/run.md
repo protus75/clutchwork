@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-On Python 3.14, tempfile.TemporaryFile() first emits open('/tmp', 'w+', 524866), which has write and creation flags but no O_TMPFILE; only its subsequent open event includes O_TMPFILE. The specified guard must block the first event, so the acceptance test fails before the anonymous file opens.
+The unit plugin intercepts subprocess launches first, so the guard test temporarily restores the subprocess seam to exercise the audit hook. The skipped test_testguard integration test's updated message ends with 'inject the process-exec seam (or a fake) instead'.
 
 ## Dead ends
 
-Implemented the stated audit policy and ran the targeted unit command; the temporary-file case failed at the preliminary open event.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 30 minutes; elapsed time was not measured.
 
