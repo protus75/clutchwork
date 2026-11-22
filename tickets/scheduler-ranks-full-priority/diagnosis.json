@@ -1,17 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "458ab4120a3701b1ccb26bd899eb95046d625c0c",
+  "produced_at_sha": "7b29554be132d3857a0fcdf4f6d94f06559386a4",
   "stem": "scheduler-ranks-full-priority",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
   "lessons": [
-    "Scope fence omits tests/unit/test_scheduler_parallel_fill.py, yet test_order (parallel-enabled case, ~line 70) and test_p0_precedes_chain pin the old cross-priority order; criterion 5 (./dev.py test tests/unit) cannot pass inside the fence.",
-    "Refile: add tests/unit/test_scheduler_parallel_fill.py to ## Scope fence and Scope in, and allow updating both expectations to priority-first order: PRIORITY[priority], then -chain, then sort_key.",
-    "Implementer reported a clean diff otherwise: the drain.py sort-key change, test_chain_order.py expectation, new test_parallel_order_priority.py, and the three doc edits passed the focused verification. Reuse that work on retry after the fence fix.",
-    "Before refiling, grep tests/ for other parallel_order or dispatch-order expectations, such as scheduler and queue.json order tests, so every test that pins the old P0-then-chain rule is fenced."
+    "Attempt 1's only finding was scope_fence on tests/unit/test_scheduler_parallel_fill.py. The rework has since added that file to the ticket's ## Scope fence and Scope in, so keep the existing edit to test_order and test_p0_precedes_chain as is.",
+    "Keep the rest of the attempt-1 diff unchanged: the PRIORITY[priority] sort term in clutch/drain.py parallel_order, the test_chain_order.py expectation, the new tests/unit/test_parallel_order_priority.py, and the three doc edits. Both verification commands passed (1906 unit tests).",
+    "Before committing, check that the diff touches only the seven fenced paths and keeps the existing flake-fix term ahead of priority in parallel_order, as Scope in requires. Then rerun both ## Verification commands exactly as written."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
