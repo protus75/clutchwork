@@ -1,16 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ff71f7d17fcc684a55564a1a9e6afbe408581161",
+  "produced_at_sha": "4d9c5dbee7dfb83e0b010ee9892d165cd4388c68",
   "stem": "serve-flaky-tests-deterministic",
-  "attempt": 4,
-  "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "abandon-human",
-  "lessons": [],
-  "mechanical": "retry cap spent",
+  "attempt": 5,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false now: tests/integration/conftest.py DISK_IO_SKIP (lines 114, 124, 194) lists test_gates.py, test_host_loop.py and test_serve_admission.py, so they are skipped. The flake the Goal describes cannot turn Check red, and acceptance criteria 2, 3 and 5 only pass as skips.",
+    "The branch already has the deadline removal in all 6 fenced files. The reproducer reports pass, and Verification exited 0 with 8 passed and 49 skipped. A re-author should keep that work and not redo it.",
+    "Re-author against the DISK_IO_SKIP policy. Either drop criteria 2, 3 and 5 and keep the reproducer plus test_serve_rig_fakes and test_shared_fakes, or fence conftest.py and the three files and rewrite them onto in-memory fakes. That rewrite is a separate ticket.",
+    "Criterion 2 (the stuck-member case raises LoopRefused) cannot be checked while test_host_loop.py is skipped. Move that check into a test file that is not in DISK_IO_SKIP, or into tests/regress_serve_flaky_waits.py, so the restructured negative case actually runs."
+  ],
+  "mechanical": null,
   "trimmed_lessons": [],
-  "spec_version": "1.9",
-  "provider": null,
-  "model": null
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
 }
