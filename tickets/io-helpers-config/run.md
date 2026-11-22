@@ -4,23 +4,23 @@ premise_failed
 
 ## Surprises / judgment calls
 
-Leaving PythonProviderExec in the provider hub resolves the prior finding, but the separate provider-script FakeExec still needs capabilities absent from the shared fake.
+Base: 2045 unit passed; integration 296 passed, 3339 skipped. Candidate: 2074 unit passed, including 29 helper checks; integration 295 passed, 3339 skipped, one guard failure. The exact integration command passed again in a full-history base worktree. Import checks and mutation checks passed.
 
 ## Dead ends
 
-Re-exporting tests.fakes.FakeExec cannot preserve the provider helper’s signature or behavior: it accepts only one fixed result and lacks spawn and stdout callbacks, structured call records, hanging, and kill_group.
+Moving VALID verbatim, as permitted, triggers both a missing exemption for its new owner and a stale exemption for its former owner; build_config cannot reproduce its review and merge sections byte-for-byte.
 
 ## Second problems filed
 
-none
+- box-001112-ce4cf299: docs/roadmap.md:97–98 would retain stale helper ownership statements after this extraction.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; inspection found a blocking premise before implementation.
+none
 
