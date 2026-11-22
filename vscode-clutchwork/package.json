@@ -2,7 +2,7 @@
 	"name": "vscode-clutchwork",
 	"displayName": "ClutchWork tickets",
 	"description": "VS Code extension for the ClutchWork ticket system (https://pypi.org/project/clutchwork/): tickets as an SCM-style dependency graph: blocked, queued, running, merged.",
-	"version": "0.4.6",
+	"version": "0.4.7",
 	"publisher": "chunkydragon",
 	"icon": "media/marketplace-icon.png",
 	"extensionKind": [
@@ -290,10 +290,17 @@
 		],
 		"menus": {
 			"view/item/context": [
-				{ "command": "clutch.steps.copySession", "when": "view == clutch.steps && viewItem == session" }
+				{
+					"command": "clutch.steps.copySession",
+					"when": "view == clutch.steps && viewItem == session"
+				}
 			],
 			"webview/context": [
-				{ "command": "clutch.ticket.copySession", "when": "webviewId == 'clutch.tickets' && clutchCopySession == 'on'", "group": "1_open@3" },
+				{
+					"command": "clutch.ticket.copySession",
+					"when": "webviewId == 'clutch.tickets' && clutchCopySession == 'on'",
+					"group": "1_open@3"
+				},
 				{
 					"command": "clutch.ticket.copyStem",
 					"when": "webviewId == 'clutch.tickets' && clutchCopyStem == 'on'",
@@ -381,8 +388,14 @@
 				}
 			],
 			"commandPalette": [
-				{ "command": "clutch.steps.copySession", "when": "false" },
-				{ "command": "clutch.ticket.copySession", "when": "false" },
+				{
+					"command": "clutch.steps.copySession",
+					"when": "false"
+				},
+				{
+					"command": "clutch.ticket.copySession",
+					"when": "false"
+				},
 				{
 					"command": "clutch.ticket.copyStem",
 					"when": "false"
