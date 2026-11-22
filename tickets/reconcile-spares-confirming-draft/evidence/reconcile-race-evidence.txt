@@ -1,0 +1,24 @@
+Check of serve-flaky-tests-deterministic attempt 2, integration rerun (capture check/host-02-rerun.txt), 2026-11-22:
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_host_loop.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/djp/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/asyncio/runners.py:205: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/home/djp/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/asyncio/runners.py:128: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/djp/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/asyncio/base_events.py:719: in run_until_complete
+  
+    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/integration/test_host_loop.py::test_host_loop_drives_supervised_fixture_serve
+ERROR tests/integration/test_host_loop.py::test_host_loop_report_regression_and_escape
+ERROR tests/integration/test_host_loop.py::test_host_loop_requires_member_auditor_green
+============ 3592 passed, 9 warnings, 3 errors in 87.50s (0:01:27) =============
+
+Same suite on base commit (check/host-02-base.txt): 3595 passed. First candidate run: test_host_loop.py passed; rerun: all 3 error at setup.
+Implementer saw the same on attempt 2 and filed box-001062-cbf86391: 'Startup reconciliation can mark a ticket abandoned while draft confirmation is in progress.'
