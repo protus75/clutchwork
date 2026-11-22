@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Preserved the existing flake-fix precedence ahead of priority, as required by the merged code and ticket.
+The prior attempt’s implementation and metadata commits were already present; the worktree is clean. Each new ordering test failed under its corresponding incorrect implementation.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 12 minutes; completed within the budget.
+Expected 12 minutes; verification and review took less than 12 minutes.
 
