@@ -1,5 +1,5 @@
 # Instance config (host plane; schema in clutch/docs/host-contract.md). Operator-owned: edit between runs.
-# Both providers are kind: cli on ambient CLI login, so no `auth` and no key export. IMPLEMENT/AUTHOR inherit models_by_tier[tier]; REVIEW pins
+# Claude and codex use ambient CLI login; gemini uses GEMINI_API_KEY. IMPLEMENT/AUTHOR inherit models_by_tier[tier]; REVIEW pins
 # claude's strongest model at every tier (diversity from codex IMPLEMENT is a preference, not a gate).
 schema_version: 1
 state_dir: .clutch/state
@@ -14,6 +14,12 @@ providers:
     package: "@openai/codex"
     models_by_tier: {low: gpt-6-luna, medium: gpt-6.1-terra, high: gpt-6.1-sol, max: gpt-6-astra}
     limits: {concurrency: 2, est_cost_per_call_usd: 1.00}  # stream reports no cost; flat subscription
+  - name: gemini
+    kind: cli
+    package: "@google/gemini-cli"
+    auth: GEMINI_API_KEY
+    models_by_tier: {low: gemini-3.1-flash-lite, medium: gemini-3-flash-preview, high: gemini-3.1-pro-preview, max: gemini-3.1-pro-preview}
+    limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
 routing:
   - {tier: low, surface: implement, candidates: [{provider: codex}]}
   - {tier: low, surface: author, candidates: [{provider: claude}]}
