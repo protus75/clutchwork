@@ -1,0 +1,218 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f4ecfbefdf7111298fb803b3e5c6b48538f1c070",
+  "stem": "shared-git-fake-unit-5",
+  "passed": false,
+  "changed_files": [
+    "tests/integration/test_git_fake_adoption.py",
+    "tests/unit/test_runner_attempt_manifest.py",
+    "tests/unit/test_runner_terminal_removal_shield.py",
+    "tests/unit/test_serve_idle_poll.py",
+    "tests/unit/test_spool_store_switch.py",
+    "tests/unit/test_stages_candidates_select.py",
+    "tests/unit/test_stages_conflict_rerun_inputs.py",
+    "tests/unit/test_stages_flake_coverage.py",
+    "tests/unit/test_stale_running.py",
+    "tests/unit/test_supervise_idle_point.py",
+    "tests/unit/test_supervisor_trigger.py",
+    "tests/unit/test_ticket_lint_rules.py",
+    "tests/unit/test_ticket_write_consumers_author.py",
+    "tests/unit/test_ticket_write_consumers_runner.py"
+  ],
+  "inserted_lines": 136,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_serve_scan_head.py::test_main_moves_only_invalidate_pending_intake[False] failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_serve_scan_head.py::test_main_moves_only_invalidate_pending_intake[True] failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_serve_scan_head.py::test_other_intake_inputs_still_invalidate[state] failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_serve_scan_head.py::test_other_intake_inputs_still_invalidate[status] failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_supervise_idle_hooks.py::test_drain_lazy_context[False-True] failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.110842,
+        "passed": 1881,
+        "failed": 5,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.259046678984305,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.0283532580069732
+        }
+      },
+      "coverage": {
+        "percent": 72.42102503604666,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.076099,
+        "passed": 274,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7705420370039064,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0054220220190473
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_git_fake_adoption.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.05s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.69193
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_runner_attempt_manifest.py",
+        "tests/unit/test_runner_terminal_removal_shield.py",
+        "tests/unit/test_serve_idle_poll.py",
+        "tests/unit/test_spool_store_switch.py",
+        "tests/unit/test_stages_candidates_select.py",
+        "tests/unit/test_stages_conflict_rerun_inputs.py",
+        "tests/unit/test_stages_flake_coverage.py",
+        "tests/unit/test_stale_running.py",
+        "tests/unit/test_supervise_idle_point.py",
+        "tests/unit/test_supervisor_trigger.py",
+        "tests/unit/test_ticket_lint_rules.py",
+        "tests/unit/test_ticket_write_consumers_author.py",
+        "tests/unit/test_ticket_write_consumers_runner.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 63%]\n..........................................                               [100%]\n114 passed in 1.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.764873
+    }
+  ]
+}
