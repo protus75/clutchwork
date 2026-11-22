@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The exact full verification command passed on the base commit; the modified worktree has 22 unit test failures across seven files outside the scope fence. No changes were committed.
+The shared minimal config fixture supplies the required configuration fields; an empty box selection opens nothing because the prompt requires at least one ID.
 
 ## Dead ends
 
-None.
+A schema-version-only config was invalid because required configuration fields were missing; replaced it with the shared minimal config fixture.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 25 minutes expected and 50 minutes stuck; elapsed time was not recorded.
+Expected 35 minutes; completed in less than 35 minutes.
 
