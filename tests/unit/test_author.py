@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit coverage for the shared author helpers.
+# purpose: Unit tests for the shared Author helpers: the committed check, goal extraction, retro-ticket reopen and recovery, the gate's stem ownership, prompt inputs with prior review, and declining untracked retro specs
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/box.py, clutch/git.py, clutch/journal.py, clutch/requisition.py, tests/fakes.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: e55daa1545fc36e6223ea2c476b7684c3a2231d9bdfdb4b3a30cf0a4cabe923c
+# verified: bc0baafb
+# hash: 44d58a6051c9855cb6eb531647d2337fd2351259daf1fb391bbbff32c4b011f4
 
 import asyncio
 from pathlib import Path
@@ -16,6 +16,7 @@ import pytest
 
 from clutch.author import committed, goal
 from clutch.git import GitError
+from tests.git_fake import GitFake
 
 
 def test_committed_true_when_rev_parse_resolves():
@@ -23,7 +24,7 @@ def test_committed_true_when_rev_parse_resolves():
         assert repo == Path("repo") and ref == "HEAD:tickets/live/ticket.md"
         return "abc123"
 
-    checkout = SimpleNamespace(repo=Path("repo"), git=SimpleNamespace(rev_parse=rev_parse))
+    checkout = SimpleNamespace(repo=Path("repo"), git=GitFake(rev_parse=rev_parse))
     assert asyncio.run(committed(checkout, Path("tickets/live/ticket.md"))) is True
 
 
@@ -31,7 +32,7 @@ def test_committed_false_on_git_error():
     async def rev_parse(repo, ref):
         raise GitError(["git", "rev-parse", ref], 1, "", "missing")
 
-    checkout = SimpleNamespace(repo=Path("repo"), git=SimpleNamespace(rev_parse=rev_parse))
+    checkout = SimpleNamespace(repo=Path("repo"), git=GitFake(rev_parse=rev_parse))
     assert asyncio.run(committed(checkout, Path("tickets/missing/ticket.md"))) is False
 
 
@@ -79,7 +80,7 @@ async def test_recovery_ignores_completions_before_reopen(monkeypatch):
     async def show(*args):
         return "ticket"
 
-    checkout = SimpleNamespace(journal=journal, repo=Path("/repo"), git=SimpleNamespace(_run=show))
+    checkout = SimpleNamespace(journal=journal, repo=Path("/repo"), git=GitFake(_run=show))
     resolved = []
     box = SimpleNamespace(resolve=lambda id, resolution: resolved.append(resolution))
     reopened = message(reopen=True)
@@ -149,7 +150,7 @@ async def test_author_renders_inputs_and_passes_prior_review(monkeypatch):
     journal = FakeJournal()
     checkout = SimpleNamespace(
         repo=Path("/repo"),
-        git=SimpleNamespace(ls_files=ls_files),
+        git=GitFake(ls_files=ls_files),
         journal=journal,
         config=SimpleNamespace(state_dir=Path("/state"), review=SimpleNamespace(coverage_map=None), routing_default_tier="medium"),
     )
@@ -185,7 +186,7 @@ async def test_author_declines_untracked_retro_specs(monkeypatch, paths, tracked
         return sentinel
 
     monkeypatch.setattr(module, "failure_declined", decline)
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files))
+    checkout = SimpleNamespace(repo=Path("/repo"), git=GitFake(ls_files=ls_files))
     item = message(proposed_spec_paths=paths, verdict={"verdict": "author", "produced_by_spec_version": "1.0", "rationale": "repair"})
     assert await module.author(checkout, object(), object(), item, 1) is sentinel
     assert "clutch/specs/implement.md" in evidence_seen[0]

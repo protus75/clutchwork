@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test admission facts
+# purpose: Checks that admission decisions built from precomputed AdmissionFacts match the old history-based rules, without recomputing history, and that the ticket menu shares one facts object
 # relates: [clutch/journal.py, clutch/observe.py, clutch/reconcile.py, clutch/rework.py, clutch/status.py, clutch/tickets.py]
 # owner: engine
-# verified: 0a308920
-# hash: 0d20093efd124afafef1107f4137a4683a606c867a738db3487ee0e17d69ea77
+# verified: bc0baafb
+# hash: b19f4c3366daaa54098df87839c855a9ce564e05bdc996bed20a713cd4d13740
 from collections.abc import Iterable
 from itertools import product
 from pathlib import Path
@@ -17,6 +17,7 @@ import pytest
 from clutch import observe, reconcile, rework, status
 from clutch.journal import Event, EventType
 from clutch.status import CLOSED, SETTLED, Admission, last_states, reject_queue
+from tests.git_fake import GitFake
 
 
 # Reference rules copied from status.py before admission facts.
@@ -201,7 +202,7 @@ def test_menu_shares_facts(monkeypatch):
     facts = status.admission_facts([transition("one", "running")])
     spy = Mock(wraps=status.admission_facts)
     monkeypatch.setattr(status, "admission_facts", spy)
-    git = SimpleNamespace(status_porcelain=AsyncMock(return_value=""))
+    git = GitFake(status_porcelain=AsyncMock(return_value=""))
     ctx = SimpleNamespace(root=root, git=git)
     rows, _, _ = observe.ticket_menu_inputs(ctx, facts, stems, None, set())
     spy.assert_not_called()

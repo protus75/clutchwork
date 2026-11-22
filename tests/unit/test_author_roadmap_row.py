@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Roadmap message and Author policy coverage.
+# purpose: Checks the roadmap_row message shape, its start-state policy, the plan excerpt, the gate holding to the row's identity, prompt embedding, and committing row evidence
 # relates: [clutch/author.py, clutch/box.py, clutch/config.py, clutch/policy.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: 76382c26558f341fc43438d95be858db51bef861f3c4cb0992296e8b8fd35d10
+# verified: bc0baafb
+# hash: e7adb396207346f2566be527078dcfb18a0348fdcbfb4c8908d6185498b09643
 
 from types import SimpleNamespace
 
@@ -18,6 +18,7 @@ from clutch.box import Box, Message, RoadmapRow
 from clutch.config import BOX_POLICY_DEFAULTS
 from clutch.seams import LocalFileSystem
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 
 
 def row():
@@ -125,7 +126,7 @@ async def test_author_embeds_row_and_plan(tmp_path, monkeypatch):
     monkeypatch.setattr(author, "render", lambda spec, inputs: inputs)
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "failure_declined", decline)
-    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=tmp_path, git=GitFake(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"))
     box = SimpleNamespace(root=tmp_path / "box")
     original = message().model_copy(update={"message_class": "roadmap_row", "roadmap_row": row(), "verdict": SimpleNamespace(rationale="row")})
     with pytest.raises(StopAsyncIteration):
@@ -192,7 +193,7 @@ async def test_author_commit_carries_row_evidence(tmp_path, monkeypatch):
     monkeypatch.setattr(author, "resolve_baseline", lambda *args, **kwargs: SimpleNamespace(binds=False))
     checkout = SimpleNamespace(
         repo=tmp_path,
-        git=SimpleNamespace(ls_files=ls_files, _run=git_run, commit_edit=commit_edit),
+        git=GitFake(ls_files=ls_files, _run=git_run, commit_edit=commit_edit),
         fs=LocalFileSystem(),
         journal=FakeJournal(),
         config=SimpleNamespace(

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Author rechecks ticket ownership after review.
+# purpose: Checks that Author rechecks ticket-file ownership after review and declines, without overwriting, when someone else has claimed the stem
 # relates: [clutch/author.py, clutch/seams.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: 5cf64f7de2aeaab6446611b45f815ad7e68d660c236bf69049df3610e9670710
+# verified: bc0baafb
+# hash: 939e4f2178abd3ad2bf15c5049fafbb1abea2e51d0f6362bf7aeebb0ba164c7f
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ import pytest
 from clutch import author
 from clutch.seams import LocalFileSystem
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_retro_recurrence import message
 
 
@@ -57,7 +58,7 @@ async def test_author_rechecks_stem_after_gate(tmp_path, monkeypatch, claim):
     monkeypatch.setattr(author, "start_state", lambda *args, **kwargs: "draft")
     checkout = SimpleNamespace(
         repo=tmp_path,
-        git=SimpleNamespace(ls_files=AsyncMock(return_value=[]), commit_edit=commit_edit),
+        git=GitFake(ls_files=AsyncMock(return_value=[]), commit_edit=commit_edit),
         fs=LocalFileSystem(),
         journal=FakeJournal(),
         config=SimpleNamespace(state_dir=tmp_path, review=SimpleNamespace(coverage_map=None), routing_default_tier="medium"),

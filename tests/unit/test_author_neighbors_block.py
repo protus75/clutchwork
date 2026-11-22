@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Author neighbors data block wiring and outcomes
+# purpose: Checks the Author neighbors block: query text, exclusions, rendering of each outcome, short-circuits, cancellation, and a stable block across re-prompts
 # relates: [clutch/author.py, clutch/box.py, clutch/index.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: bce07f02
-# hash: 8ad03d724a4c3bbf72ce49da1725dfb2e56b4b558e805398a61d502be9aa78dd
+# verified: bc0baafb
+# hash: 1e2c322047aaddad40e70063d6efe4352cce78882ddb1c17d861b051043fc873
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,6 +16,7 @@ import pytest
 from clutch import author, index
 from clutch.box import RoadmapRow
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_retro_recurrence import message
 
 HITS = (index.Hit("roadmap", "row 3", "a", "first", 3.412), index.Hit("box", "box-2", "b", "second", 2.108))
@@ -59,9 +60,7 @@ async def drive(tmp_path, monkeypatch, query, *, roadmap=False, missing_fs=False
             "has_repro": True,
         }
     )
-    checkout = SimpleNamespace(
-        repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"), exec_=object(), env={}
-    )
+    checkout = SimpleNamespace(repo=tmp_path, git=GitFake(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"), exec_=object(), env={})
     if not missing_fs:
         checkout.fs = object()
     driver = SimpleNamespace(run=AsyncMock(side_effect=run))

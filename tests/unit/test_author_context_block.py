@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Author context_suggest data block outcomes
+# purpose: Checks every outcome of the Author context_suggest block (its format, ranking, none, unavailable, read-only connection that is always closed) and that it is computed once per request across re-prompts
 # relates: [clutch/author.py, clutch/box.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: f05aa75d
-# hash: 8f6e106728c6e72b6dfc11d22285c08c5e98a907ee13b99d485c859087b2362d
+# verified: bc0baafb
+# hash: 7ae10c94385eefdc63a2a4abb50eb747fc01b6330ac7c3fd3c7e0318168e072b
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,6 +16,7 @@ import pytest
 from clutch import author
 from clutch.box import RoadmapRow
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_retro_recurrence import message
 
 
@@ -164,7 +165,7 @@ def test_author_uses_request_text_and_stem_once_across_reprompt(tmp_path, monkey
             "has_repro": True,
         }
     )
-    checkout = SimpleNamespace(repo=tmp_path, git=SimpleNamespace(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=tmp_path, git=GitFake(ls_files=ls_files), journal=FakeJournal(), config=SimpleNamespace(state_dir=tmp_path, routing_default_tier="medium"))
     with pytest.raises(StopAsyncIteration):
         asyncio.run(author.author(checkout, SimpleNamespace(run=run), SimpleNamespace(root=tmp_path), item, 1))
     text, stem = (row.content, row.stem) if roadmap else (summary + "\n" + rationale, "")

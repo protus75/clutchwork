@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test author calibration
+# purpose: Checks that calibration.latest picks the newest estimate-calibration signal and that the Author prompt carries that table, or none when there is no calibration
 # relates: [clutch/author.py, clutch/calibration.py, clutch/journal.py, tests/fakes.py, tests/unit/test_retro_recurrence.py]
 # owner: engine
-# verified: 93253297
-# hash: 87b4551a6446b6e3cd156b037cd809b4a8a222e66ec751ecde8baef4dd34472b
+# verified: bc0baafb
+# hash: 993d950b612b00c8de3b9b952aed7ea4076cce82d44bd81eea7335cd51446eaf
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,6 +15,7 @@ import pytest
 from clutch import author, calibration
 from clutch.journal import EventType
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_retro_recurrence import message
 
 
@@ -60,7 +61,7 @@ def test_author_prompt_carries_the_latest_table(monkeypatch, has_calibration, ex
     monkeypatch.setattr(author, "render", lambda spec, values: inputs.append(values) or "rendered")
     monkeypatch.setattr(author, "list_open_tickets", open_tickets)
     monkeypatch.setattr(author, "template", lambda kind: f"template for {kind}")
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(ls_files=ls_files), journal=journal, config=SimpleNamespace(state_dir=Path("/state"), routing_default_tier="medium"))
+    checkout = SimpleNamespace(repo=Path("/repo"), git=GitFake(ls_files=ls_files), journal=journal, config=SimpleNamespace(state_dir=Path("/state"), routing_default_tier="medium"))
     item = message().model_copy(update={"verdict": SimpleNamespace(rationale="observed")})
     with pytest.raises(Done):
         asyncio.run(author.author(checkout, SimpleNamespace(run=run), SimpleNamespace(root=Path("/box")), item, 1))

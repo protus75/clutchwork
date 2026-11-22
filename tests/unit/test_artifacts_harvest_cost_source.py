@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test artifacts harvest cost source
+# purpose: Checks that old Harvest records load with unknown cost-source fields and that harvest takes provider, model and estimate flags from the last LLM cost
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py]
 # owner: engine
-# verified: 0a308920
-# hash: 7273ae96f7e6bbdb0960d72c75cc11d4b07bfc095695fa3c4b4a08bdbe8edda3
+# verified: bc0baafb
+# hash: 78a5ca7d2dded4814dd626a37cf51bf08eb1ceadaf2a8f392522dd97bd4908e6
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -16,6 +16,7 @@ from clutch import runner
 from clutch.artifacts import Cost, Harvest, StageResult
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 def test_old_harvest_has_unknown_source():
@@ -33,7 +34,7 @@ def test_harvest_last_llm_cost(tmp_path, monkeypatch, provider, estimated, capab
         config=SimpleNamespace(training_data=TrainingData(), state_dir=tmp_path / "state", providers=[SimpleNamespace(name="codex"), SimpleNamespace(name="claude")]),
         repo=tmp_path / "repo",
         worktree=lambda stem: tmp_path / stem,
-        git=SimpleNamespace(diff_stat=AsyncMock(return_value="changed")),
+        git=GitFake(diff_stat=AsyncMock(return_value="changed")),
         fs=SimpleNamespace(entries=lambda path: [], read_bytes=lambda path: b"", size=lambda path: 0, write=lambda path, data: writes.append(data)),
         driver=SimpleNamespace(redactor=Redactor({})),
     )
