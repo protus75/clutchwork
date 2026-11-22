@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f919b4bf31162b268a947c7a9aea23edfe0a5fb5",
+  "produced_at_sha": "c9af35242402c3e37d9c23b4dbfab70cb892b286",
   "stem": "serve-no-roadmap",
-  "attempt": 1,
-  "terminal": "premise_failed",
+  "attempt": 2,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "escalate",
   "lessons": [
-    "Fence gap confirmed: tests/unit/test_main_release_group.py:33 asserts set(group.choices) == {\"bump\", \"publish\"}, so the required `release ship` subcommand fails `./dev.py test` (AC 8). Add that file to ## Scope fence before rerunning.",
-    "In tests/unit/test_main_release_group.py::test_old_names_refuse, change the expected release subcommand set to {\"bump\", \"publish\", \"ship\"}. Leave the other assertions in that file as they are.",
-    "Scope out says the roadmap table does not name the driver, but docs/roadmap.md (rows 161 and 540) does. box-001125 already tracks this. Correct the Scope out wording so it no longer claims this; don't add docs/roadmap.md to the fence.",
-    "After fixing the fence, grep tests/ for other exact pins of the release subcommand set or the release group help text, such as `bump`/`publish` choice sets in tests/unit/test_main_help.py. Add each forced file to the fence before the run starts from main."
+    "Attempt 2 (codex gpt-6.1-terra) stopped after 145s of a 55m budget with uncommitted partial edits and no tests updated. The ticket must land as one change, so finish every Scope in item and commit before reporting.",
+    "Start from main. Delete the driver from clutch/serve.py (driver_pending, run_driver, wait_driver, driver/driven/driver_task, upgrade_idle clause) and clutch/drain.py (_run_driver, _abort_driver, driver finally, roadmap import). Delete build_driver and DrainDispatch._driver from clutch/__main__.py.",
+    "Move roadmap.ship into a new handle_ship for `clutch release ship` in clutch/__main__.py under _locked: gate, release, journal_release, publish only if release.publish, run_packages. Delete drive/ship_when_queue_low/unsettled/settles and the rejected-row refile from clutch/roadmap.py.",
+    "Delete or rewrite the fenced driver-pinning tests, such as tests/unit/test_drain_driver_overlap.py (it monkeypatches roadmap.settles and sets d.driver). Add the 4 new unit tests from ACs 1-4 and set test_main_release_group's expected release subcommands to {bump, publish, ship}.",
+    "Rewrite the 3 prompt specs and the listed docs according to Scope in. Then run AC 5's grep and all three ## Verification commands, ending with the full `./dev.py test`, before reporting complete."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
