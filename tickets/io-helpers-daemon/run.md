@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The mergequeue helper takes (root, sources), while the scheduler helper used by the daemon composition hub takes one sources argument.
+Renamed private hub reachability helpers to satisfy the definition scan while preserving their assertions; retained composition’s scheduler import_closure. Final sequential verification: 24 helper unit cases, 2032 unit tests, and 296 integration tests passed. Untouched base: 294 integration passes; skips unchanged at 3339. All 26 mutation checks caught their intended defects; lint and formatting passed.
 
 ## Dead ends
 
-Inspected all three hubs and their importers; moving the mergequeue helper under its existing name would replace the scheduler helper required by unchanged hub tests.
+A direct extraction would retain forbidden I/O, so the helpers required fake-seam rewrites.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-none
+30m expected; actual elapsed time was not tracked.
 
