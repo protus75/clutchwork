@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The merged dependency migrated the nine listed unit files, but five other files remain on PENDING and match the existing scan patterns.
+The nine older FakeGit users were already migrated. The covmap and harvest verification command skipped all eight tests; the unit verification passed 81 tests. The adoption command passed on the untouched base but failed on the new temporary-file checks under the integration I/O guard.
 
 ## Dead ends
 
-none
+Attempted the required temporary-file checks in the adoption test; the integration guard blocked their writes.
 
 ## Second problems filed
 
