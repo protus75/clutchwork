@@ -1,18 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d1d9dde8587fcb39e31ff9da44dac7e30e636b1c",
+  "produced_at_sha": "aae1ef08c50c746556745a9f811ca3f69689cbfd",
   "stem": "retro-due-one-owner",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/retro.py",
     "clutch/serve.py",
+    "tests/regress_serve_retro_check_once.py",
     "tests/unit/test_phase_events.py",
     "tests/unit/test_retro_check_vocabulary.py",
     "tests/unit/test_retro_due_owner.py",
+    "tests/unit/test_serve_retro_check_once.py",
     "tests/unit/test_serve_retro_check_site.py"
   ],
-  "inserted_lines": 105,
+  "inserted_lines": 118,
   "bypassed": [],
   "reports": [
     {
@@ -77,79 +79,24 @@
     },
     {
       "code": "unit",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_retro_check_once.py::test_concurrent_calls_log_one_pair failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_retro_check_once.py::test_does_not_call_production_evidence failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_retro_check_once.py::test_failure_retries_same_count failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_retro_check_once.py::test_only_terminal_transition_runs_again[gate_failed-2] failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_retro_check_once.py::test_only_terminal_transition_runs_again[running-1] failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_retro_check_once.py::test_sequential_calls_log_one_pair failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.154409,
-        "passed": 2043,
-        "failed": 6,
+        "seconds": 17.445089,
+        "passed": 2054,
+        "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.43139019201044,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2669663799752016
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.1731402230507229,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.092453871970065
         }
       },
       "coverage": {
-        "percent": 74.87968783871668,
+        "percent": 75.08981517551832,
         "files": {
           "clutch/retro.py": 77.14884696016772,
-          "clutch/serve.py": 55.81395348837209
+          "clutch/serve.py": 56.09756097560975
         }
       }
     },
@@ -159,15 +106,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 10.146791,
-        "passed": 296,
+        "seconds": 12.755659,
+        "passed": 297,
         "failed": 0,
-        "skipped": 3339,
+        "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7804056179884356,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0690739809942897,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0618164770130534,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0030359650263563
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8307808240060695,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.203001105983276,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1369816870137583,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0031902219634503
         }
       }
     },
@@ -196,12 +143,13 @@
         "tests/unit/test_retro_check_vocabulary.py",
         "tests/unit/test_stale_running.py",
         "tests/unit/test_paved_roads.py",
-        "tests/unit/test_serve_dispatch_containment.py"
+        "tests/unit/test_serve_dispatch_containment.py",
+        "tests/unit/test_serve_retro_check_once.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_dispatch_containment.py\nbringing up nodes...\nbringing up nodes...\n\n.....................................                                    [100%]\n37 passed in 1.41s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_retro_check_once.py\nbringing up nodes...\nbringing up nodes...\n\n...........................................                              [100%]\n43 passed in 1.38s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.085399
+      "seconds": 3.779959
     }
   ]
 }
