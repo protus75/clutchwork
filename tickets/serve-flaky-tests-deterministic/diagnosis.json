@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "a7469ec21a455445f28b4f42e10a634bd0ea430f",
+  "produced_at_sha": "96500390d6e9ca2bb91098a2b5e9f36726105e46",
   "stem": "serve-flaky-tests-deterministic",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "reject",
   "lessons": [
-    "Premise confirmed: tests/integration/test_serve_rig_fakes.py::test_until_translates_timeout (line 46) fakes time.monotonic to jump to 61 and expects serve_rig.until to raise the translated AssertionError. The ticket's required unbounded serve_rig.until makes it hang, and Verification runs this file.",
-    "Re-scope the ticket: add tests/integration/test_serve_rig_fakes.py to ## Scope fence and to the Boundary contract consumers of 'Serve rig until'.",
-    "In the re-scoped ticket, rewrite test_until_translates_timeout so it monkeypatches fakes.until to raise AssertionError. It should still assert the message 'production graph did not reach the scripted boundary', with no deadline involved.",
-    "Leave the rest of the ticket's design unchanged: the attempt found the carried reproducer passed with the fix and reported defect when either old deadline was restored. The base-commit verification passed, so only the out-of-fence test conflict blocked it."
+    "Check's first full integration run passed all 3 tests/integration/test_host_loop.py tests. After test_live_keep_dispatches_again_without_restart failed, Check reran the suite and all 3 failed. The candidate already removed every deadline, so the ticket's premise does not explain the abandon.",
+    "The implementer saw the same thing on the candidate: an intermittent startup reconciliation race that abandons a ticket during draft confirmation (box-001062-cbf86391). It filed this as a second problem. Ticket item 1 required it to be named in the run record and fixed.",
+    "Before re-scoping, decode the rerun capture of check/host-02-rerun.txt for attempt 2 and record the LoopRefused body. If it is {'to': 'abandoned'} from clutch/reconcile.py::reconcile during startup, the fix is in serve production code. The fence and Definition of rejected forbid that.",
+    "Re-scope: file the reconcile race (box-001062-cbf86391) as its own P0 ticket that lists this stem in Runs before, or fence clutch/reconcile.py here. Keep the deadline removal, reproducer and test_until_translates_timeout rewrite as the ticket specifies. Its Verification passed.",
+    "Leave out of this ticket: test_live_keep_dispatches_again_without_restart (quarantine-cap finding) belongs to serve-live-keep-single-verdict. The ruff E501 in tests/unit/test_driver_check_nesting.py fails on the base commit too (box-001063-34871813)."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
