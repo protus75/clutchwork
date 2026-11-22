@@ -1,9 +1,9 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "8b64646b5ec5461c6332c52c8997cf829791b32a",
+  "produced_at_sha": "5fe62d637ac75fed55b72d98945da1a32332c903",
   "stem": "llm-request-subject",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/__main__.py",
     "clutch/acceptance.py",
@@ -20,7 +20,6 @@
     "tests/harness/daemon_soak.py",
     "tests/harness/shakeout/drain.py",
     "tests/harness/shakeout/driver.py",
-    "tests/integration/serve_rig.py",
     "tests/integration/test_driver.py",
     "tests/integration/test_fixture_host.py",
     "tests/integration/test_llm_effect.py",
@@ -31,8 +30,8 @@
     "tests/integration/test_serve_parallel_admission.py",
     "tests/integration/test_serve_scan_head.py",
     "tests/integration/test_serve_scan_watch_overlap.py",
-    "tests/integration/test_triage.py",
     "tests/integration/test_watchdog_activation.py",
+    "tests/loop_helpers.py",
     "tests/regress_requisition_events_owner_stem.py",
     "tests/regress_requisition_session_stem.py",
     "tests/unit/test_claude_session_name.py",
@@ -45,7 +44,7 @@
     "tests/unit/test_training_eval.py",
     "tests/unit/test_triage_panel_use.py"
   ],
-  "inserted_lines": 255,
+  "inserted_lines": 231,
   "bypassed": [],
   "reports": [
     {
@@ -68,27 +67,8 @@
     },
     {
       "code": "verification",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "verification",
-          "path": null,
-          "line": null,
-          "message": "`./dev.py test tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py` exited 1: $ uv run pytest -q -p clutch.testguard tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py\nbringing up nodes...\nbringing up nodes...\n\n.....F.                                                                  [100%]\n=================================== FAILURES ===================================\n_________________________ test_no_old_request_contract _________________________\n[gw2] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/.venv/bin/python\n\n    def test_no_old_request_contract():\n        root = Path(__file__).resolve().parents[2]\n        pattern = re.compile(r\"\\breq(?:uest)?\\.\" + r\"ticket\\b\")\n        matches = [(str(p), n) for directory in (\"clutch\", \"tests\") for p in (root / directory).rglob(\"*.py\") for n, line in enumerate(p.read_text().splitlines(), 1) if pattern.search(line)]\n>       assert matches == []\nE       AssertionError: assert [('/home/djp/...bject.py', 4)] == []\nE         \nE         Left contains one more item: ('/home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/tests/unit/test_llm_request_subject.py', 4)\nE         Use -v to get more diff\n\ntests/unit/test_llm_request_subject.py:71: AssertionError\n=========================== short test summary info ============================\nFAILED tests/unit/test_llm_request_subject.py::test_no_old_request_contract\n1 failed, 6 passed in 1.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q -p clutch.testguard tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py` failed",
-          "paved_road": "make `./dev.py test tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py` exit 0 on the branch and commit the fix",
-          "kind": null,
-          "unit": null
-        },
-        {
-          "code": "verification",
-          "path": null,
-          "line": null,
-          "message": "`./dev.py test` exited 1: ...................... [ 78%]\n........................................................................ [ 81%]\n........................................................................ [ 84%]\n........................................................................ [ 88%]\n........................................................................ [ 91%]\n........................................................................ [ 95%]\n........................................................................ [ 98%]\n.................................                                        [100%]\n=================================== FAILURES ===================================\n_________________________ test_no_old_request_contract _________________________\n[gw13] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/.venv/bin/python\n\n    def test_no_old_request_contract():\n        root = Path(__file__).resolve().parents[2]\n        pattern = re.compile(r\"\\breq(?:uest)?\\.\" + r\"ticket\\b\")\n        matches = [(str(p), n) for directory in (\"clutch\", \"tests\") for p in (root / directory).rglob(\"*.py\") for n, line in enumerate(p.read_text().splitlines(), 1) if pattern.search(line)]\n>       assert matches == []\nE       AssertionError: assert [('/home/djp/...bject.py', 4)] == []\nE         \nE         Left contains one more item: ('/home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/tests/unit/test_llm_request_subject.py', 4)\nE         Use -v to get more diff\n\ntests/unit/test_llm_request_subject.py:71: AssertionError\n=========================== short test summary info ============================\nFAILED tests/unit/test_llm_request_subject.py::test_no_old_request_contract\n1 failed, 2120 passed in 8.45s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q -p clutch.testguard tests/unit` failed",
-          "paved_road": "make `./dev.py test` exit 0 on the branch and commit the fix",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false
     },
     {
@@ -129,39 +109,30 @@
     },
     {
       "code": "unit",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_llm_request_subject.py::test_no_old_request_contract failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 16.769148,
-        "passed": 2120,
-        "failed": 1,
+        "seconds": 15.52482,
+        "passed": 2167,
+        "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4141272900160402,
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4074384730192833
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4767509429948404,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.1943613380135503,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0692720619845204
         }
       },
       "coverage": {
-        "percent": 76.52650509548685,
+        "percent": 76.72797262617622,
         "files": {
-          "clutch/__main__.py": 79.80997624703087,
+          "clutch/__main__.py": 79.98812351543943,
           "clutch/acceptance.py": 99.5798319327731,
           "clutch/author.py": 85.53571428571429,
-          "clutch/driver.py": 72.79549718574108,
+          "clutch/driver.py": 72.82809611829944,
           "clutch/llm.py": 89.47368421052632,
           "clutch/metafill.py": 92.72727272727273,
-          "clutch/providers.py": 87.08571428571429,
+          "clutch/providers.py": 87.07093821510297,
           "clutch/requisition.py": 87.20379146919431,
           "clutch/retro.py": 77.14884696016772,
           "clutch/training.py": 93.07359307359307,
@@ -175,14 +146,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 13.227052,
+        "seconds": 10.195381,
         "passed": 297,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7492803689965513,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0946278150076978,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0044012699800078
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0287307629769202,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1282903520041145,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0651444040122442,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.006422498030588
         }
       }
     },
@@ -208,10 +180,10 @@
         "tests/unit/test_llm_request_subject.py",
         "tests/unit/test_claude_session_name.py"
       ],
-      "rc": 1,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py\nbringing up nodes...\nbringing up nodes...\n\n.....F.                                                                  [100%]\n=================================== FAILURES ===================================\n_________________________ test_no_old_request_contract _________________________\n[gw2] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/.venv/bin/python\n\n    def test_no_old_request_contract():\n        root = Path(__file__).resolve().parents[2]\n        pattern = re.compile(r\"\\breq(?:uest)?\\.\" + r\"ticket\\b\")\n        matches = [(str(p), n) for directory in (\"clutch\", \"tests\") for p in (root / directory).rglob(\"*.py\") for n, line in enumerate(p.read_text().splitlines(), 1) if pattern.search(line)]\n>       assert matches == []\nE       AssertionError: assert [('/home/djp/...bject.py', 4)] == []\nE         \nE         Left contains one more item: ('/home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/tests/unit/test_llm_request_subject.py', 4)\nE         Use -v to get more diff\n\ntests/unit/test_llm_request_subject.py:71: AssertionError\n=========================== short test summary info ============================\nFAILED tests/unit/test_llm_request_subject.py::test_no_old_request_contract\n1 failed, 6 passed in 1.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q -p clutch.testguard tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py` failed\n",
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.09s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.050263
+      "seconds": 4.051613
     },
     {
       "argv": [
@@ -223,17 +195,17 @@
       "rc": 0,
       "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.65838
+      "seconds": 4.043357
     },
     {
       "argv": [
         "./dev.py",
         "test"
       ],
-      "rc": 1,
-      "tail": "...................... [ 78%]\n........................................................................ [ 81%]\n........................................................................ [ 84%]\n........................................................................ [ 88%]\n........................................................................ [ 91%]\n........................................................................ [ 95%]\n........................................................................ [ 98%]\n.................................                                        [100%]\n=================================== FAILURES ===================================\n_________________________ test_no_old_request_contract _________________________\n[gw13] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/.venv/bin/python\n\n    def test_no_old_request_contract():\n        root = Path(__file__).resolve().parents[2]\n        pattern = re.compile(r\"\\breq(?:uest)?\\.\" + r\"ticket\\b\")\n        matches = [(str(p), n) for directory in (\"clutch\", \"tests\") for p in (root / directory).rglob(\"*.py\") for n, line in enumerate(p.read_text().splitlines(), 1) if pattern.search(line)]\n>       assert matches == []\nE       AssertionError: assert [('/home/djp/...bject.py', 4)] == []\nE         \nE         Left contains one more item: ('/home/djp/source/clutch/.clutch/state/worktrees/llm-request-subject/tests/unit/test_llm_request_subject.py', 4)\nE         Use -v to get more diff\n\ntests/unit/test_llm_request_subject.py:71: AssertionError\n=========================== short test summary info ============================\nFAILED tests/unit/test_llm_request_subject.py::test_no_old_request_contract\n1 failed, 2120 passed in 8.45s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q -p clutch.testguard tests/unit` failed\n",
+      "rc": 0,
+      "tail": "]\nssssssssssssssssssssssssssssssssssssssss.sssssssssssss.sssssssssss.sssss [ 63%]\nsss.sssssssssssssssss.ss.sssssssssssssssssssssssssssssssssssssssssssssss [ 65%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.ssssssss [ 67%]\nsssssssssss.sssss.ssssssssssssssssss..ssssssssssssssssssssssssssss.sssss [ 69%]\nsssssssssssssss...sssssssss.ssssssssssssssss..ssssssssss.sssssssssssssss [ 71%]\nssss.ss..sssssssssssssss.s.sss.sssssss.sssssssssssssssssssssssss.sssssss [ 73%]\nssssssssss..ssss.ssssssssss.sssssssssss.ss..ssssssssssssssssssssssssssss [ 75%]\nsssssssssssssss.sssssssssssssss.ssssssssss..sssssssssssssss..ssss.ssssss [ 77%]\nssssss.......ssssssssss...ssssss.sss.sssss...ssssssssssssss.ss.sssssss.s [ 79%]\nss.sssssssssssssssssss.ssssssssssss.ssssssssssssssssssssssssssssssssssss [ 81%]\nsssssss.ssssssssssssssss.ssssss.sssssssssssssssssssssssssssss.ssssssssss [ 83%]\nsssssssssssssssssss.ssssssssss.ssssssssssssssssssssssssssssss.ssssss.sss [ 85%]\nsssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nssssssssss.ssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 89%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nssssssssssssssssssss.ssss.sss.s...s.ss.s.sssssssssss.ssssss.ssssssssssss [ 93%]\nsssssssss.ssssssssssssssssssss.sssssssssssssssssss...................sss [ 94%]\nssssss.sssssssssss.....................sssssssssssssssssssssssssssssssss [ 96%]\ns.....ssssssssssss............ssssssssssssssssssssssss.....ss........... [ 98%]\n...ssss...ssssssssssssssssss..........                                   [100%]\n297 passed, 3341 skipped in 6.77s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 14.269159
+      "seconds": 18.069089
     }
   ]
 }
