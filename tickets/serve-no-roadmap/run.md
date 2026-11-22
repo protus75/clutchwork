@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-The base commit passed ./dev.py test; the attempted change failed tests/unit/test_main_release_group.py::test_old_names_refuse because adding ship changes the asserted command set. Partial implementation remains uncommitted.
+The engine hooks and shipping path were changed, but the existing driver and release tests still need to be updated.
 
 ## Dead ends
 
-The initial implementation could not satisfy the existing release-group assertion without changing a file outside the fence.
+none
 
 ## Second problems filed
 
-- box-001125-d48b1c9f: docs/roadmap.md contains current-process statements assigning roadmap authoring and publishing to the driver, although the ticket says that file does not name the driver and excludes it from scope.
+none
 
 ## Resolved engine/model
 
