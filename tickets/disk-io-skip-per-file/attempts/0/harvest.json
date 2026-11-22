@@ -1,0 +1,1647 @@
+{
+  "attempt": 0,
+  "stage": "review",
+  "terminal": "gate_failed",
+  "findings": [
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask.py",
+      "line": 4,
+      "message": "Rewrites the clutch:meta purpose line in a skipped file; the ticket allows only the pytestmark line and `import pytest` to change.",
+      "paved_road": "Put back the base-commit purpose line; keep only the marker, the import, and the verified/hash refresh.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_drafts.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_drain_loop.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_drain_loop_agent.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_conduct_covered.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_drain.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_priority_order.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_read_queue.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_serve.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_shared_paths.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_plan_subagent_models.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_roadmap.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ask_view_events.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_audit.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_author.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_baseline.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_box.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_box_triage_inbox.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_bug_gate.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_caps.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_checkpoint.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_closed_sets.py",
+      "line": 11,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_closed_sets_remaining.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_config.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_conflict_rerun_swap.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_context_suggest_cli.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_control.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_control_cli.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_covgate.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_covmap.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_admission.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_composition.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_config.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_core_queue_seams.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_pause.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_soak.py",
+      "line": 9,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_soak_runner.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_daemon_tasks.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_dev.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_dev_vscode_package_kept.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner from engine to dev.py on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_diagnose.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_diagnose_eval.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_doctor.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain.py",
+      "line": 9,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain_admissions.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain_containment.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain_detach.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain_reentry.py",
+      "line": 10,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain_signals.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_drain_upgrade.py",
+      "line": 9,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_driver.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_echo_stage.py",
+      "line": 6,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_effects.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_eval_harness.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_evidence_captures_verb.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_evidence_envelope.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_evidence_verbs.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_extension_draw_failure.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_fault_injection.py",
+      "line": 12,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_fixture_host.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_flake.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_gates.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_gemini_provider.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_go_ai_panel.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_go_grade.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_handoff_replace.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_harvest.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_harvest_cost_source.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_harvest_orphans.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_heartbeat.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_host_contract.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_host_loop.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_host_mechanical.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_hostfiles.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_hot_paths_snapshot.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_image_candidates_select.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_implement_related_files_prompt.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_inbox.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_index_cli.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_index_extensions.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_index_neighbors_fulltext.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_intake_keeps_draft.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_intake_scope.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_issue_verb.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_kill_cli_activation.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_kill_executor_abort.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_kill_failure_suppression.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_kill_signal_journal.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_kill_worker_stop.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ladder.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_lint_verb.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_llm_effect.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_main_verb_groups.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_menu_verb_parity.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_merge.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_merge_admission_owner.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_merge_config_local.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_merge_model_resolve.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner from engine to clutch/mergequeue.py on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_mergequeue.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner from engine to clutch/mergequeue.py on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_mergequeue_tree_moved.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner from engine to clutch/mergequeue.py on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_meta_refresh_commit_lock.py",
+      "line": 6,
+      "message": "Changes owner from engine to clutch/meta.py, and fills the empty purpose on line 4, in a skipped file.",
+      "paved_road": "Put back the base owner and purpose lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_notify.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner from engine to clutch/notify.py on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_open_tickets_closed.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_paved_roads.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_policy.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_provider_capture_overwrite.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_provider_cooldown_failover.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_provider_failure_surface.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_providers.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_reconcile.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_regress_scripts_guarded.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_reject_queue.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_reject_reason_both_paths.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_release.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_release_publish.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_reliability_battery.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_requisition.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_requisition_brief_check.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_requisition_gate.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_requisition_identity_record.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_restart_timers.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_retro_box.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_review_command.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_rework.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_rework_failure_terminal_findings.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_rework_supervise.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_author.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_driver.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_gate.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_merged.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_named_stem.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_refile.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_row_author.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_ship.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_start_gates.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_status.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_route_kinds_judge_lint.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_scheduler.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_scorecard.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_second_problems.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_admission.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_confirm_during_check.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_dispatch.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_driver.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_driver_overlap.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_kill.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_lifecycle.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_merge_overlap.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_notify.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_parallel_admission.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_scan_head.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_scan_watch_overlap.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_serve_upgrade.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_shakeout.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_snapshot_cache_facts.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_snapshot_merged_cap.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_stale_running.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_stats.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_status.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_step_events.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_step_icons.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_storm.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_storm_hold.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_storm_notification_activation.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_storm_producer.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_supervise_cap_lineage.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_supervisor_rework.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_terminal.py",
+      "line": 9,
+      "message": "Rewrites the meta purpose line, and changes owner on line 11, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_testguard.py",
+      "line": 7,
+      "message": "Changes meta owner from engine to clutch/testguard.py in a skipped file.",
+      "paved_road": "Put back the base owner line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_testreport.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_thresh.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ticket_write_serialization.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_tickets.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_tolerant_reader_callers.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_triage.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_vocabularies.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line in a skipped file.",
+      "paved_road": "Put back the base purpose line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_vscode_command_not_found.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner from engine to vscode-clutchwork on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_watch.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_watch_surface_tier.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_watchdog.py",
+      "line": 4,
+      "message": "Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_watchdog_activation.py",
+      "line": 5,
+      "message": "Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.",
+      "paved_road": "Put back the base purpose and owner lines.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": " docs/how-clutch-works.md                           |   6 +-\n tests/integration/conftest.py                      | 198 +--------------------\n tests/integration/test_ask.py                      |   8 +-\n tests/integration/test_ask_drafts.py               |  10 +-\n tests/integration/test_ask_drain_loop.py           |  10 +-\n tests/integration/test_ask_drain_loop_agent.py     |  10 +-\n tests/integration/test_ask_plan_conduct_covered.py |   8 +-\n tests/integration/test_ask_plan_drain.py           |   8 +-\n tests/integration/test_ask_plan_priority_order.py  |   8 +-\n tests/integration/test_ask_plan_read_queue.py      |   8 +-\n tests/integration/test_ask_plan_serve.py           |  10 +-\n tests/integration/test_ask_plan_shared_paths.py    |   8 +-\n tests/integration/test_ask_plan_subagent_models.py |   8 +-\n tests/integration/test_ask_roadmap.py              |   9 +-\n tests/integration/test_ask_view_events.py          |  10 +-\n tests/integration/test_audit.py                    |  10 +-\n tests/integration/test_author.py                   |   8 +-\n tests/integration/test_baseline.py                 |   8 +-\n tests/integration/test_box.py                      |   8 +-\n tests/integration/test_box_triage_inbox.py         |  10 +-\n tests/integration/test_bug_gate.py                 |   8 +-\n tests/integration/test_caps.py                     |   8 +-\n tests/integration/test_checkpoint.py               |   8 +-\n tests/integration/test_cli.py                      |   6 +-\n tests/integration/test_closed_sets.py              |   8 +-\n tests/integration/test_closed_sets_remaining.py    |  12 +-\n tests/integration/test_config.py                   |   8 +-\n tests/integration/test_conflict_rerun_swap.py      |  10 +-\n tests/integration/test_context_suggest_cli.py      |  10 +-\n tests/integration/test_control.py                  |   8 +-\n tests/integration/test_control_cli.py              |   8 +-\n tests/integration/test_covgate.py                  |   8 +-\n tests/integration/test_covmap.py                   |   8 +-\n tests/integration/test_daemon_admission.py         |   8 +-\n tests/integration/test_daemon_composition.py       |   8 +-\n tests/integration/test_daemon_config.py            |   8 +-\n tests/integration/test_daemon_core_queue_seams.py  |   8 +-\n tests/integration/test_daemon_pause.py             |   8 +-\n tests/integration/test_daemon_soak.py              |   8 +-\n tests/integration/test_daemon_soak_runner.py       |   8 +-\n tests/integration/test_daemon_tasks.py             |   8 +-\n tests/integration/test_dev.py                      |   8 +-\n tests/integration/test_dev_vscode_package_kept.py  |  12 +-\n tests/integration/test_diagnose.py                 |   8 +-\n tests/integration/test_diagnose_eval.py            |   8 +-\n tests/integration/test_disk_io_skip_list.py        |  58 +++---\n tests/integration/test_doctor.py                   |   8 +-\n tests/integration/test_drain.py                    |   8 +-\n tests/integration/test_drain_admissions.py         |   8 +-\n tests/integration/test_drain_containment.py        |  10 +-\n tests/integration/test_drain_detach.py             |  10 +-\n tests/integration/test_drain_reentry.py            |  10 +-\n tests/integration/test_drain_signals.py            |  10 +-\n tests/integration/test_drain_upgrade.py            |   8 +-\n tests/integration/test_driver.py                   |   8 +-\n tests/integration/test_echo_stage.py               |  10 +-\n tests/integration/test_effects.py                  |   8 +-\n tests/integration/test_eval_harness.py             |   8 +-\n tests/integration/test_evidence_captures_verb.py   |   8 +-\n tests/integration/test_evidence_envelope.py        |  10 +-\n tests/integration/test_evidence_verbs.py           |   8 +-\n tests/integration/test_extension_draw_failure.py   |  10 +-\n tests/integration/test_fault_injection.py          |   8 +-\n tests/integration/test_fixture_host.py             |   8 +-\n tests/integration/test_flake.py                    |   8 +-\n tests/integration/test_gates.py                    |   8 +-\n tests/integration/test_gemini_provider.py          |   8 +-\n tests/integration/test_go_ai_panel.py              |   8 +-\n tests/integration/test_go_grade.py                 |   8 +-\n tests/integration/test_handoff_replace.py          |  12 +-\n tests/integration/test_harvest.py                  |   8 +-\n tests/integration/test_harvest_cost_source.py      |   8 +-\n tests/integration/test_harvest_orphans.py          |  10 +-\n tests/integration/test_heartbeat.py                |   8 +-\n tests/integration/test_host_contract.py            |   8 +-\n tests/integration/test_host_loop.py                |   8 +-\n tests/integration/test_host_mechanical.py          |   8 +-\n tests/integration/test_hostfiles.py                |   8 +-\n tests/integration/test_hot_paths_snapshot.py       |  10 +-\n tests/integration/test_image_candidates_select.py  |   8 +-\n .../test_implement_related_files_prompt.py         |  10 +-\n tests/integration/test_inbox.py                    |   8 +-\n tests/integration/test_index_cli.py                |   9 +-\n tests/integration/test_index_extensions.py         |   8 +-\n tests/integration/test_index_neighbors_fulltext.py |   8 +-\n tests/integration/test_intake_keeps_draft.py       |   8 +-\n tests/integration/test_intake_scope.py             |   8 +-\n tests/integration/test_issue_verb.py               |  10 +-\n tests/integration/test_kill_cli_activation.py      |   8 +-\n tests/integration/test_kill_executor_abort.py      |   8 +-\n tests/integration/test_kill_failure_suppression.py |   8 +-\n tests/integration/test_kill_signal_journal.py      |   8 +-\n tests/integration/test_kill_worker_stop.py         |   8 +-\n tests/integration/test_ladder.py                   |   8 +-\n tests/integration/test_lint_verb.py                |   8 +-\n tests/integration/test_llm_effect.py               |   9 +-\n tests/integration/test_main_verb_groups.py         |   8 +-\n tests/integration/test_menu_verb_parity.py         |   8 +-\n tests/integration/test_merge.py                    |   8 +-\n tests/integration/test_merge_admission_owner.py    |   8 +-\n tests/integration/test_merge_config_local.py       |  10 +-\n tests/integration/test_merge_model_resolve.py      |  10 +-\n tests/integration/test_mergequeue.py               |  10 +-\n tests/integration/test_mergequeue_tree_moved.py    |  10 +-\n tests/integration/test_meta_refresh_commit_lock.py |  12 +-\n tests/integration/test_notify.py                   |  10 +-\n tests/integration/test_open_tickets_closed.py      |  12 +-\n tests/integration/test_paved_roads.py              |   8 +-\n tests/integration/test_policy.py                   |  10 +-\n .../integration/test_provider_capture_overwrite.py |  12 +-\n .../integration/test_provider_cooldown_failover.py |  10 +-\n tests/integration/test_provider_failure_surface.py |  12 +-\n tests/integration/test_providers.py                |   8 +-\n tests/integration/test_reconcile.py                |  10 +-\n tests/integration/test_regress_scripts_guarded.py  |  12 +-\n tests/integration/test_reject_queue.py             |  10 +-\n tests/integration/test_reject_reason_both_paths.py |  10 +-\n tests/integration/test_release.py                  |  10 +-\n tests/integration/test_release_publish.py          |  10 +-\n tests/integration/test_reliability_battery.py      |  10 +-\n tests/integration/test_requisition.py              |  10 +-\n tests/integration/test_requisition_brief_check.py  |  10 +-\n tests/integration/test_requisition_gate.py         |  12 +-\n .../test_requisition_identity_record.py            |  12 +-\n tests/integration/test_restart_timers.py           |  10 +-\n tests/integration/test_retro.py                    |   6 +-\n tests/integration/test_retro_box.py                |  10 +-\n tests/integration/test_review_command.py           |  12 +-\n tests/integration/test_rework.py                   |  10 +-\n .../test_rework_failure_terminal_findings.py       |  10 +-\n tests/integration/test_rework_supervise.py         |  10 +-\n tests/integration/test_roadmap_author.py           |  12 +-\n tests/integration/test_roadmap_driver.py           |  10 +-\n tests/integration/test_roadmap_gate.py             |  12 +-\n tests/integration/test_roadmap_merged.py           |  12 +-\n tests/integration/test_roadmap_named_stem.py       |  10 +-\n tests/integration/test_roadmap_refile.py           |  12 +-\n tests/integration/test_roadmap_row_author.py       |  12 +-\n tests/integration/test_roadmap_ship.py             |  10 +-\n tests/integration/test_roadmap_start_gates.py      |  12 +-\n tests/integration/test_roadmap_status.py           |  10 +-\n tests/integration/test_route_kinds_judge_lint.py   |  10 +-\n tests/integration/test_scheduler.py                |   8 +-\n tests/integration/test_scorecard.py                |   8 +-\n tests/integration/test_second_problems.py          |  10 +-\n tests/integration/test_serve_admission.py          |   8 +-\n .../integration/test_serve_confirm_during_check.py |   8 +-\n tests/integration/test_serve_dispatch.py           |   8 +-\n tests/integration/test_serve_driver.py             |   8 +-\n tests/integration/test_serve_driver_overlap.py     |   8 +-\n tests/integration/test_serve_kill.py               |   8 +-\n tests/integration/test_serve_lifecycle.py          |   8 +-\n tests/integration/test_serve_merge_overlap.py      |   8 +-\n tests/integration/test_serve_notify.py             |   8 +-\n tests/integration/test_serve_parallel_admission.py |   8 +-\n tests/integration/test_serve_scan_head.py          |   8 +-\n tests/integration/test_serve_scan_watch_overlap.py |   8 +-\n tests/integration/test_serve_upgrade.py            |   8 +-\n tests/integration/test_shakeout.py                 |   8 +-\n tests/integration/test_snapshot_cache_facts.py     |  10 +-\n tests/integration/test_snapshot_merged_cap.py      |  10 +-\n tests/integration/test_stages.py                   |   6 +-\n tests/integration/test_stale_running.py            |  10 +-\n tests/integration/test_stats.py                    |  12 +-\n tests/integration/test_status.py                   |  10 +-\n tests/integration/test_step_events.py              |  12 +-\n tests/integration/test_step_icons.py               |  10 +-\n tests/integration/test_storm.py                    |  10 +-\n tests/integration/test_storm_hold.py               |  10 +-\n .../test_storm_notification_activation.py          |  10 +-\n tests/integration/test_storm_producer.py           |  10 +-\n tests/integration/test_supervise_cap_lineage.py    |  10 +-\n tests/integration/test_supervisor_rework.py        |  12 +-\n tests/integration/test_terminal.py                 |  10 +-\n tests/integration/test_testguard.py                |   8 +-\n tests/integration/test_testreport.py               |   8 +-\n tests/integration/test_thresh.py                   |  10 +-\n .../integration/test_ticket_write_serialization.py |  10 +-\n tests/integration/test_tickets.py                  |  10 +-\n tests/integration/test_tolerant_reader_callers.py  |  12 +-\n tests/integration/test_triage.py                   |  10 +-\n tests/integration/test_vocabularies.py             |   8 +-\n tests/integration/test_vscode_command_not_found.py |  14 +-\n tests/integration/test_watch.py                    |  10 +-\n tests/integration/test_watch_surface_tier.py       |  10 +-\n tests/integration/test_watchdog.py                 |  10 +-\n tests/integration/test_watchdog_activation.py      |  10 +-\n 187 files changed, 1115 insertions(+), 836 deletions(-)\n",
+  "stage_log_tail": "nes.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_storm_notification_activation.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_storm_producer.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_supervise_cap_lineage.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line in a skipped file.\",\"paved_road\":\"Put back the base purpose line.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_supervisor_rework.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_terminal.py\",\"line\":9,\"message\":\"Rewrites the meta purpose line, and changes owner on line 11, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_testguard.py\",\"line\":7,\"message\":\"Changes meta owner from engine to clutch/testguard.py in a skipped file.\",\"paved_road\":\"Put back the base owner line.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_testreport.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line in a skipped file.\",\"paved_road\":\"Put back the base purpose line.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_thresh.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_ticket_write_serialization.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_tickets.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_tolerant_reader_callers.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_triage.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_vocabularies.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line in a skipped file.\",\"paved_road\":\"Put back the base purpose line.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_vscode_command_not_found.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line, and changes owner from engine to vscode-clutchwork on line 7, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_watch.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_watch_surface_tier.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_watchdog.py\",\"line\":4,\"message\":\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"},\n{\"code\":\"scope\",\"path\":\"tests/integration/test_watchdog_activation.py\",\"line\":5,\"message\":\"Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.\",\"paved_road\":\"Put back the base purpose and owner lines.\"}\n]}\n```",
+  "events_tail": ",\\\"path\\\":\\\"tests/integration/test_vocabularies.py\\\",\\\"line\\\":5,\\\"message\\\":\\\"Rewrites the meta purpose line in a skipped file.\\\",\\\"paved_road\\\":\\\"Put back the base purpose line.\\\"},\\n{\\\"code\\\":\\\"scope\\\",\\\"path\\\":\\\"tests/integration/test_vscode_command_not_found.py\\\",\\\"line\\\":5,\\\"message\\\":\\\"Rewrites the meta purpose line, and changes owner from engine to vscode-clutchwork on line 7, in a skipped file.\\\",\\\"paved_road\\\":\\\"Put back the base purpose and owner lines.\\\"},\\n{\\\"code\\\":\\\"scope\\\",\\\"path\\\":\\\"tests/integration/test_watch.py\\\",\\\"line\\\":4,\\\"message\\\":\\\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\\\",\\\"paved_road\\\":\\\"Put back the base purpose and owner lines.\\\"},\\n{\\\"code\\\":\\\"scope\\\",\\\"path\\\":\\\"tests/integration/test_watch_surface_tier.py\\\",\\\"line\\\":4,\\\"message\\\":\\\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\\\",\\\"paved_road\\\":\\\"Put back the base purpose and owner lines.\\\"},\\n{\\\"code\\\":\\\"scope\\\",\\\"path\\\":\\\"tests/integration/test_watchdog.py\\\",\\\"line\\\":4,\\\"message\\\":\\\"Rewrites the meta purpose line, and changes owner on line 6, in a skipped file.\\\",\\\"paved_road\\\":\\\"Put back the base purpose and owner lines.\\\"},\\n{\\\"code\\\":\\\"scope\\\",\\\"path\\\":\\\"tests/integration/test_watchdog_activation.py\\\",\\\"line\\\":5,\\\"message\\\":\\\"Rewrites the meta purpose line, and changes owner on line 7, in a skipped file.\\\",\\\"paved_road\\\":\\\"Put back the base purpose and owner lines.\\\"}\\n]}\\n```\",\"ttft_ms\":5176,\"type\":\"result\",\"duration_ms\":127512,\"uuid\":\"a004d0ba-f524-4b2d-bf4a-7a001ee58538\",\"ttft_stream_ms\":1300,\"time_to_request_ms\":132,\"time_to_request_phases_ms\":{\"other\":2,\"system_prompt\":16,\"resume_other\":1,\"process_user_input\":2,\"input_attachments\":71,\"input_hooks\":1,\"conversation_append\":0,\"transcript_persist\":18,\"tool_pool_refresh\":0,\"init_message\":3,\"init_frame_send\":2,\"engine_pickup\":1,\"loop_entry\":2,\"message_prep\":1,\"model_config_wait\":0,\"autocompact\":1,\"request_announcements\":4,\"query_setup\":0,\"model_gates\":0,\"tool_schema_build\":3,\"message_normalization\":1,\"client_creation\":0,\"request_build\":3},\"turn_start_resume_kind\":\"none\",\"process_turn_index\":0,\"time_to_request_loop_lag_ms\":5,\"time_to_request_cpu_ms\":216,\"time_to_request_major_faults\":0,\"input_attachments_detail\":{\"slowest_producer\":\"at_mentioned_files\",\"slowest_producer_ms\":52,\"cpu_ms\":123,\"major_faults\":0,\"setup_ms\":0,\"prompt_producers_ms\":56,\"ambient_start_ms\":1,\"ambient_wait_ms\":10,\"render_ms\":0,\"producers\":44,\"token_counts\":0},\"tool_schema_build_detail\":{\"betas_ms\":0,\"waits_ms\":1,\"placement_ms\":0,\"render_ms\":2,\"after_ms\":0,\"other_ms\":0,\"tools\":3,\"new_schemas\":3},\"message_normalization_detail\":{\"before_ms\":0,\"normalize_ms\":1,\"images_ms\":0,\"post_process_ms\":0,\"after_ms\":0,\"other_ms\":0,\"messages\":8,\"wire_messages\":2},\"request_build_detail\":{\"records_ms\":0,\"system_ms\":0,\"headers_ms\":1,\"cache_break_record_ms\":0,\"plans_ms\":0,\"retry_setup_ms\":0,\"sent_build_ms\":1,\"record_attempt_ms\":0,\"other_ms\":1,\"sent_build_safety_context_ms\":0,\"sent_build_cache_breakpoints_ms\":0,\"sent_build_surrogate_scan_ms\":0},\"first_content_frame_ms\":1300,\"queued_turn_count\":0,\"result_index\":0,\"model_usage_since_last_result\":{\"claude-haiku-5-5\":{\"inputTokens\":132980,\"outputTokens\":21,\"cacheReadInputTokens\":0,\"cacheCreationInputTokens\":0,\"webSearchRequests\":0,\"costUSD\":0.06654249999999999,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":0,\"canonicalModel\":\"claude-haiku-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"},\"claude-opus-5-5\":{\"inputTokens\":8,\"outputTokens\":19318,\"cacheReadInputTokens\":446131,\"cacheCreationInputTokens\":144950,\"webSearchRequests\":0,\"costUSD\":1.6352182,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":4379,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":144950,\"canonicalModel\":\"claude-opus-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"credential_expires_at\":\"2026-12-09T14:55:32.575Z\"}\n",
+  "wall_seconds": 838.270822,
+  "usd": 2.7017607,
+  "run_record": "tickets/disk-io-skip-per-file/run.md",
+  "provider": "claude",
+  "model": "claude-opus-5-5",
+  "usd_estimated": false,
+  "budget_capable": true
+}
