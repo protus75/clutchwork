@@ -1,0 +1,178 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ed5d3cce855a265e5afb6dc05512cd778aa0b7fb",
+  "stem": "control-fold-cached",
+  "passed": true,
+  "changed_files": [
+    "clutch/control.py",
+    "tests/regress_control_fold_cached.py",
+    "tests/unit/test_control_fold_cached.py"
+  ],
+  "inserted_lines": 138,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/regress_control_fold_cached.py"
+        ],
+        "head_sha": "ed5d3cce855a265e5afb6dc05512cd778aa0b7fb",
+        "base_sha": "21e6bf018980ab2cb82933acfb6898ad4b089aca",
+        "overlay_paths": [
+          "tests/regress_control_fold_cached.py"
+        ],
+        "evidence_paths": [
+          "tickets/control-fold-cached/evidence/control-fold-evidence.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/control-fold-cached\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/control-fold-cached\nInstalled 31 packages in 23ms\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.081726,
+        "passed": 1837,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.2436751469795126,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.238627913990058,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.1955547319957986
+        }
+      },
+      "coverage": {
+        "percent": 71.88598032326071,
+        "files": {
+          "clutch/control.py": 78.93081761006289
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 10.701326,
+        "passed": 263,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.5984287859755568,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0036813140031882
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_control_fold_cached.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_control_fold_cached.py\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 0.95s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 2.169283
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit"
+      ],
+      "rc": 0,
+      "tail": "............................. [ 15%]\n........................................................................ [ 19%]\n........................................................................ [ 23%]\n........................................................................ [ 27%]\n........................................................................ [ 31%]\n........................................................................ [ 35%]\n........................................................................ [ 39%]\n........................................................................ [ 43%]\n........................................................................ [ 47%]\n........................................................................ [ 50%]\n........................................................................ [ 54%]\n........................................................................ [ 58%]\n........................................................................ [ 62%]\n........................................................................ [ 66%]\n........................................................................ [ 70%]\n........................................................................ [ 74%]\n........................................................................ [ 78%]\n........................................................................ [ 82%]\n........................................................................ [ 86%]\n........................................................................ [ 90%]\n........................................................................ [ 94%]\n........................................................................ [ 97%]\n.....................................                                    [100%]\n1837 passed in 8.37s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 8.893556
+    }
+  ]
+}
