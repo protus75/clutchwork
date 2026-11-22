@@ -47,7 +47,7 @@ After this ticket, an `Exception` raised by one ticket's run under serve ends th
 - consumers: Scheduler (the run task no longer ends with an exception for a contained failure), Serve.run lifetime, operators reading engine.log and status
 - observable change: an `Exception` from `callback(ticket)` in serve's dispatch closure is journaled through the runner function, logged as engine-log event `dispatch_exception` with `stem` and `error`, and the closure returns `"infra_error"`. Its existing `finally` then re-offers the ticket through `scheduler.update` as for any failed terminal. Serve does not stop.
 - compatibility: while serve is stopping (`self.stopping`) the exception is re-raised as today. `BaseException` (including cancellation) is not caught. Consumer failures still stop serve with `worker_failure`.
-- acceptance: criteria 2 and 3
+- acceptance: criteria 2, 3 and 5
 - tests: tests/integration/test_serve_dispatch_containment.py, tests/integration/test_serve_kill.py
 - post-merge source of truth: clutch/serve.py
 
@@ -77,7 +77,8 @@ Scope out: the stage-nesting bug itself (`check-meta-fill-nested-stage`), `Sched
 2. Under serve with two tickets in flight, ticket A's `ValueError("boom")` journals that same single `infra_error` terminal for A, ticket B still reaches its scripted terminal, `serve.run()` keeps running until stopped and then returns 0 (not 1), and engine.log has no `worker_failure` and no `engine_stop` with `error: ValueError`; checked by `./dev.py test tests/integration/test_serve_dispatch_containment.py`.
 3. Serve consumer failures still stop serve with the outcomes pinned today; checked by `./dev.py test tests/integration/test_serve_kill.py`.
 4. Drain containment is unchanged; checked by `./dev.py test tests/unit/test_drain_containment.py tests/integration/test_drain_containment.py`.
-5. `uv run python tests/regress_serve_dispatch_containment.py` prints `{"regression_result": "pass"}` and exits 0 on the branch, and prints `{"regression_result": "defect"}` with a non-zero exit on the merge base.
+5. When the scripted `check` raises `ValueError("boom")` after `serve.stop()` has set `stopping`, ticket A gets no `dispatch_exception` terminal (not an `infra_error` with reason `dispatch_exception`). When the scripted `check` raises `asyncio.CancelledError`, ticket A also gets no `dispatch_exception` terminal and the cancellation is not converted into a return value. Both are checked by `./dev.py test tests/integration/test_serve_dispatch_containment.py`.
+6. `uv run python tests/regress_serve_dispatch_containment.py` prints `{"regression_result": "pass"}` and exits 0 on the branch, and prints `{"regression_result": "defect"}` with a non-zero exit on the merge base.
 
 ## Verification
 ```
