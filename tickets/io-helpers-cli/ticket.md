@@ -31,14 +31,14 @@ The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit an
 ### Shared CLI test helpers
 - disposition: create
 - owner: tests/cli_helpers.py
-- consumers: the 94 test files listed in `## Scope fence` that import from `tests/integration/test_cli.py`, and the later batch tickets that restore the skipped ones
+- consumers: the test files listed in `## Scope fence` that import from `tests/integration/test_cli.py` (96 files at the time of the refile, found by `grep -rnE "from tests\.integration\.test_cli import" tests --include=*.py` plus the module importer `tests/integration/test_shared_fakes_adoption.py`), and the later batch tickets that restore the skipped ones
 - observable change: the names listed under Scope in move from `tests/integration/test_cli.py` into `tests/cli_helpers.py`, rewritten onto the shared fakes; every importer's import line changes to `tests.cli_helpers`; the hub file imports the names back from the new module for its own tests; no production code, CLI, journal or document changes
-- compatibility: every test that runs today still passes and the set of skipped tests is unchanged; a name that a running test reads as a module attribute of the hub (for example `test_cli.Clock` in `tests/integration/test_shared_fakes_adoption.py`) stays reachable under the same name on the hub module
+- compatibility: every test that runs today still passes and the set of skipped tests is unchanged; a name that a running test reads as a module attribute of the hub (for example `test_cli.Clock` in `tests/integration/test_shared_fakes_adoption.py`) stays reachable under the same name on the hub module; an import alias (for example `CONFIG as CLI_CONFIG`) is kept on the changed line
 - acceptance: `tests/unit/test_cli_helpers.py` imports each moved name from `tests.cli_helpers` and exercises it without a process, real git or a write outside `tmp_path`; no importer still imports a moved name from the hub
 - tests: tests/unit/test_cli_helpers.py
 - post-merge source of truth: tests/cli_helpers.py
 - closest existing: `tests/fakes.py` (FakeClock, FakeExec, FakeFileSystem, FakeJournal, `turn`, `until`) and `tests/git_fake.py::GitFake` supply the fake seams but none of the scaffolding below; the hub definitions today do real git and processes, so a skipped file cannot reuse them
-- earning reason: consolidation of evidenced duplicates and shared use: 94 files import these names from `tests/integration/test_cli.py`, and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
+- earning reason: consolidation of evidenced duplicates and shared use: 96 files import these names from `tests/integration/test_cli.py`, and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
 
 ## Scope in / Scope out
 Scope in:
@@ -51,13 +51,13 @@ Scope in:
   - `journal(root)` returns a `tests.fakes.FakeJournal` when it supplies every method the importers call on it (`read`, `append`); if one is missing the run stops as a premise failure naming the method.
   - `cli(root, *argv, stages=None)` keeps calling `clutch.__main__.main` in process with `env=ENV`, `clock=Clock()` and `pipeline=stages or Stages()`.
   - `core_config(root, routes)` moves unchanged (it writes `config.yaml` under the given `root`).
-- In every importer listed in `## Scope fence`, change only the import line (also an import line inside a function) so each moved name comes from `tests.cli_helpers`. Every name any file imports from these hubs is moved, except where Scope in says otherwise, so no importer keeps an import from a hub. Names an importer takes from other hubs stay as they are. A module import (`from tests.integration import <hub>`) is not an import of a name and stays.
+- In every importer listed in `## Scope fence`, change only the import line (also an import line inside a function) so each moved name comes from `tests.cli_helpers`, keeping any `as` alias on that line unchanged. Every name any file imports from these hubs is moved, except where Scope in says otherwise, so no importer keeps an import from a hub. Names an importer takes from other hubs stay as they are. A module import (`from tests.integration import <hub>`) is not an import of a name and stays. A `# relates:` comment that names the hub path is not an import and stays.
 - Each hub file (`tests/integration/test_cli.py`) deletes its definition of every moved name it defines and imports the name back from `tests.cli_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
 - Earlier helper modules (none yet; this is the first of the chain) change only where one of them imports a name this ticket moves.
-- Create `tests/unit/test_cli_helpers.py`: one test per moved name that runs without reading a repo file, calling it with `tmp_path`, in-memory inputs and the shared fakes and asserting what it returns or writes, plus one test that every name above is importable from `tests.cli_helpers`. 
+- Create `tests/unit/test_cli_helpers.py`: one test per moved name that runs without reading a repo file, calling it with `tmp_path`, in-memory inputs and the shared fakes and asserting what it returns or writes, plus one test that every name above is importable from `tests.cli_helpers`.
 - `commit_lock` and `adopt_conduct`, which `root` uses today, are imported by the hub from `tests/integration/test_git.py` and `tests/integration/test_stages.py` and move in later steps (`io-helpers-stages`, `io-helpers-misc`); `root` needs no commit lock once git is a `GitFake`, and it imports `adopt_conduct` from `tests.integration.test_stages` until `io-helpers-stages` moves it (that ticket then edits the import).
 - `clutch.__main__.main` builds its own `SubprocessExec` and `Git` (see `clutch/__main__.py`, where `SubprocessExec()` is constructed in each verb branch) and has no parameter for either, so a helper that calls `main` replaces those two names on the `clutch.__main__` module with the shared `FakeExec` and `GitFake` for the duration of the call (a patch inside the helper, never a change under `clutch/`). When a verb a helper drives still reaches a real process after that, the run stops as a premise failure naming the verb and the construction site.
-- `tests/unit/test_main_evidence_captures.py`, `tests/regress_drain_park_findings.py`, `tests/regress_stale_running.py`, `tests/regress_drain_detach.py`, `tests/regress_drain_signals.py`, `tests/regress_lint_worktree_journal.py` and `tests/regress_suggest_lands_in_box.py` run today and import from the hub (some inside a function); they stay green. `tests/integration/test_shared_fakes_adoption.py` asserts `test_cli.Clock is fakes.FakeClock`, so the hub keeps a module attribute `Clock`.
+- `tests/unit/test_main_evidence_captures.py`, `tests/unit/test_config_fixture.py`, `tests/regress_drain_park_findings.py`, `tests/regress_reconcile_confirming_draft.py`, `tests/regress_stale_running.py`, `tests/regress_drain_detach.py`, `tests/regress_drain_signals.py`, `tests/regress_lint_worktree_journal.py` and `tests/regress_suggest_lands_in_box.py` run today and import from the hub (some inside a function); they stay green and only their import lines change. `tests/regress_reconcile_confirming_draft.py:26` imports `root`; `tests/unit/test_config_fixture.py:17` imports `CONFIG as CLI_CONFIG` and keeps the alias `CLI_CONFIG` so its test body is unchanged. `tests/integration/test_shared_fakes_adoption.py` asserts `test_cli.Clock is fakes.FakeClock`, so the hub keeps a module attribute `Clock`.
 
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
@@ -160,8 +160,10 @@ Scope out:
 - tests/regress_drain_park_findings.py
 - tests/regress_drain_signals.py
 - tests/regress_lint_worktree_journal.py
+- tests/regress_reconcile_confirming_draft.py
 - tests/regress_stale_running.py
 - tests/regress_suggest_lands_in_box.py
+- tests/unit/test_config_fixture.py
 - tests/unit/test_main_evidence_captures.py
 
 ## Acceptance criteria
@@ -170,22 +172,23 @@ Scope out:
 3. `grep -nE "^(async def|def|class) (CONFIG|ENV|PLAN|TICKET|Stages|cli|core_config|git_out|journal|root|ticket|with_retro_driver|write)\b|^(CONFIG|ENV|PLAN|TICKET|Stages|cli|core_config|git_out|journal|root|ticket|with_retro_driver|write) =" tests/integration/test_cli.py` prints nothing: the hub files no longer define a moved name.
 4. `grep -nE "import subprocess|time\.sleep|git -C|SubprocessExec\(" tests/cli_helpers.py` prints nothing: the helper names `SubprocessExec` only as the module attribute it patches, never constructs one.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
-6. `./dev.py test tests/integration/test_shared_fakes_adoption.py tests/integration/test_disk_io_skip_list.py` passes (a running test that reads a moved name as a hub module attribute still sees the shared object).
+6. `./dev.py test tests/integration/test_shared_fakes_adoption.py tests/integration/test_disk_io_skip_list.py tests/unit/test_config_fixture.py tests/regress_reconcile_confirming_draft.py` passes (a running test that reads a moved name as a hub module attribute or under an import alias still sees the shared object).
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_cli_helpers.py
 ./dev.py test tests/unit
 ./dev.py test tests/integration
+./dev.py test tests/unit/test_config_fixture.py tests/regress_reconcile_confirming_draft.py
 ```
 
 ## Definition of rejected
 - A test that runs today fails or is skipped, or a skipped test becomes unskipped.
 - A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/cli_helpers.py` defines a class that duplicates a shared fake or a copied reply or config helper.
 - A shared module (`tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py`, `tests/conftest.py`) is edited.
-- An importer changes anything other than its import line, or a hub test is deleted, weakened or restored.
+- An importer changes anything other than its import line (including dropping an `as` alias), or a hub test is deleted, weakened or restored.
 
 ## Time budget
 - expected: 30m
 - stuck: 60m
-- reason: 94 import lines and the hub definitions move in one change because a name must resolve in every importer at once; splitting by importer leaves a name defined in two places, and the files share one module so they stay together
+- reason: 96 import lines and the hub definitions move in one change because a name must resolve in every importer at once; splitting by importer leaves a name defined in two places, and the files share one module so they stay together
