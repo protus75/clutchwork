@@ -1,6 +1,6 @@
 # Supervisor Rework escalated
 
-- trigger: premise_failed
+- trigger: premise_bounce cap spent
 - outcome: ok
 - action: escalate
 
