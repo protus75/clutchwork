@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d8eff22b25762aaaeda72e7ce5fa9eabe6570187",
+  "stem": "integration-disk-io-skip",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "merge",
+  "verdict": "abandon-human",
+  "lessons": [
+    "The merge lint gate failed on E501 at tests/unit/test_driver_check_nesting.py:4 (202 > 200). That file is not in this diff, which touches only conftest.py, test_disk_io_skip_list.py and how-clutch-works.md. The long line is already on local main.",
+    "A human must shorten the line 4 '# purpose:' comment in tests/unit/test_driver_check_nesting.py on main, or file a P0 fix that runs before this ticket. The file is outside this ticket's Scope fence, so no retry can clear it.",
+    "Prevent recurrence: find out how a ruff E501 violation reached main past the merge lint gate (probably the check-meta-fill-nested-stage merge) and fix that gate gap in the engine.",
+    "The implementation itself was sound: review approved it, integration passed with 263 passed and 3341 skipped, and the run record lists the audit (194 files recorded, 10 exempt, 184 listed). Once main is lint-clean, redo the same work from the merge base."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
