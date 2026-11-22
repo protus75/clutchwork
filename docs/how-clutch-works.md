@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state, config and index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 9be395f4
-hash: 5dde672d9f76c1c4a1268db992a9d393c56724ffc3db7047c8565f707c79b47c
+verified: edd57bac
+hash: 5f516102baa186853ec5999f84443565310745e8b76f4ecd907e71bc5849688c
 -->
 # How ClutchWork works
 
@@ -114,7 +114,7 @@ The repo's one dev command; standard library only, every task through `uv`.
 `./dev.py test` runs the suite in parallel on the available cores by default.
 Each test has a 120-second hard limit.
 Tests live in `tests/unit/` (disk only under `tmp_path`, no network or process; run under `clutch.testguard`) and
-`tests/integration/`. Run one suite with `./dev.py test tests/unit` or
+`tests/integration/`. Integration test files listed in `DISK_IO_SKIP` in `tests/integration/conftest.py` are skipped until rewritten onto in-memory fakes. Run one suite with `./dev.py test tests/unit` or
 `./dev.py test tests/integration`.
 A unit test file may share its name with an integration test file.
 
