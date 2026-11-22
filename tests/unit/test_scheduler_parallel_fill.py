@@ -4,8 +4,8 @@
 # purpose: Unit tests for Scheduler.dispatch_next parallel slot filling: ordering, P0 precedence, overlap skips and barrier, shared paths, dispatch failure cleanup, config failure, and daemon wiring
 # relates: [clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/scheduler.py, clutch/tickets.py, tests/dispatch_settle.py]
 # owner: engine
-# verified: 5a232ea2
-# hash: 1ff623ed874bb8c88c6293123e9f0abf77760bdc27dea9ee1f50631ed5841fdd
+# verified: 62301251
+# hash: 3efc1ae2e227327322e53f668ca5f8f6ba194f5eedb025e6b8f670327e155067
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -106,13 +106,13 @@ async def test_barrier_and_capacity():
     obj, writes, calls, logs = rig([blocked, later], Parallel(enabled=True, max_runs=2))
     obj.flying[busy.stem] = busy
     obj.skips = {"blocked": SKIP_LIMIT}
-    assert await dispatch_settled(obj) is None
-    assert calls == [] and writes == []
+    assert await dispatch_settled(obj) is later
+    assert calls == [later] and writes[0]["order"] == ["later", "blocked"]
     assert obj.skips == {"blocked": SKIP_LIMIT + 1}
     assert logs == [(("dispatch_skip",), {"stem": "blocked", "count": SKIP_LIMIT + 1})]
     obj.flying["other"] = ticket("other")
     assert await dispatch_settled(obj) is None
-    assert obj.skips == {"blocked": SKIP_LIMIT + 1} and len(logs) == 1 and calls == []
+    assert obj.skips == {"blocked": SKIP_LIMIT + 1} and len(logs) == 1 and calls == [later]
 
 
 @pytest.mark.asyncio

@@ -5,8 +5,8 @@
 # purpose: Unit tests for chain length, parallel ordering, single-flight order, and fence-overlap slot filling with skip barrier, shared paths and bypass run-alone
 # relates: [clutch/drain.py, clutch/tickets.py]
 # owner: engine
-# verified: 5a232ea2
-# hash: 3fe9718ac406d1db5a94a069fe767bbc63be9ef9b8b9ced3578b958ecb029cb3
+# verified: 62301251
+# hash: 2943ea7b6e2093a08f1a9f4c4cde09c07ccfa216051a6ee64414b19239f8e794
 
 from clutch.drain import SKIP_LIMIT, chain, fill_slots, order_tickets, parallel_order
 from clutch.tickets import Frontmatter, GateBypass, Ticket
@@ -92,7 +92,7 @@ def test_skips_barrier_and_input_unchanged():
     assert counts == {"other": 2, "blocked": 1}
     assert original == {"other": 2}
     dispatch, counts = fill_slots([blocked, later], [busy], 2, [], {"blocked": SKIP_LIMIT}, set())
-    assert dispatch == []
+    assert stems(dispatch) == ["later"]
     assert counts == {"blocked": 4}
 
 

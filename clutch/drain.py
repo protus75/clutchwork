@@ -186,7 +186,7 @@ def parallel_order(eligible: Iterable[Ticket], authored: Mapping[str, str], unse
 
 
 def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int, shared: Iterable[str], skips: Mapping[str, int], rerun: Collection[str]) -> tuple[list[Ticket], dict[str, int]]:
-    """Select non-overlapping tickets, stopping at a repeatedly skipped barrier."""
+    """Select non-overlapping tickets; barriers block overlapping later candidates."""
     counts = dict(skips)
     dispatch = []
     occupied = list(in_flight)
@@ -198,7 +198,7 @@ def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int
             prior = counts.get(ticket.stem, 0)
             counts[ticket.stem] = prior + 1
             if prior >= SKIP_LIMIT:
-                break
+                occupied.append(ticket)
         else:
             dispatch.append(ticket)
             occupied.append(ticket)

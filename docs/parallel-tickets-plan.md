@@ -4,8 +4,8 @@ kind: plan
 purpose: Plan for experimental parallel ticket runs in serve: fence-overlap dispatch, priority-then-chain ordering, multi-slot admission, three-step merge conflict resolution and contention authoring rules
 relates: [clutch/tickets.py]
 owner: clutch/tickets.py
-verified: 5a232ea2
-hash: 825fc0d8a2569224bd2d0cc3148e4c092b319c46d9547be6b9aa4db557601a00
+verified: 62301251
+hash: f152f28650f231810a61d664842b7c8aafbee88a7244fcf91c9a2d1fa0849149
 -->
 # Parallel ticket runs: plan
 
@@ -73,7 +73,7 @@ New pure function, `clutch/tickets.py::fences_overlap(a, b, shared) -> bool`, be
 - `chain(t)` is the number of unsettled tickets reachable from `t` through incoming `depends` and `runs_before` edges, that is, how much work waits behind `t`. It is a pure function in `clutch/drain.py`. `clutch/graph.py` stays drawing-only.
 - When parallel is on, the eligible list is ordered by `(priority, -chain, age, stem)`. `runs_before` edges are still applied as soft edges, as `order_tickets` applies them now. Priority ranks first at every level, and the longest chain breaks ties within a priority.
 - **Filling slots:** walk the ordered list and dispatch each candidate that does not overlap anything in flight, until `max_runs` slots are full.
-- **Starvation guard:** a candidate skipped for overlap `SKIP_LIMIT` times (an engine constant, 3) becomes a barrier. Nothing new dispatches until it can start. Each skip goes to the engine log, not the journal.
+- **Starvation guard:** a candidate skipped for overlap `SKIP_LIMIT` times (an engine constant, 3) becomes a barrier. Later candidates whose fences overlap the barrier wait until it can start; disjoint candidates can dispatch. Each skip goes to the engine log, not the journal.
 - `write_queue` (`state_dir/queue.json`) writes the order as dispatched, so status and the extension show the real order.
 
 ### 4. Several runs at once in `serve`
