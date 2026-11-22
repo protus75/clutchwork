@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "69b8c195ba476677658d8440b5832226067cd1c5",
+  "produced_at_sha": "d1d9dde8587fcb39e31ff9da44dac7e30e636b1c",
   "stem": "retro-due-one-owner",
-  "attempt": 1,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "reject",
   "lessons": [
-    "AC4 and the fence put an AST scan of clutch/serve.py in tests/unit/test_serve_retro_check_site.py. clutch/specs/implement.md:56 says a unit test never reads a repo file, so no unit test can meet AC4 as written. Rewrite AC4 before any retry.",
-    "Rewrite option 1: move the test to tests/integration/test_serve_retro_check_site.py and read clutch/serve.py through a Path(__file__) anchor, as the CLAUDE.md integration isolation rule allows. Update the fence, Boundary tests, AC4, AC5 and Verification to match.",
-    "Rewrite option 2: keep it in tests/unit but drop the word 'AST'. Scan the compiled code objects of Serve.run, Serve.merge and the dispatch wrapper for check_retro attribute loads (dis or co_names). Importing clutch.serve reads no repo file.",
-    "Attempt 1 left the rest uncommitted but reported it working: due_trigger in clutch/retro.py, Retro.__call__ awaiting production_evidence only after a trigger, and check_retro called only in Serve.run. 37 tests passed and the mutations were caught. Redo that work as described in Scope in."
+    "tests/unit/test_serve_retro_check_once.py monkeypatches serve.measurements and serve.select_trigger (lines 44-45, 81, 85). Once Serve.check_retro calls retro.due_trigger, those names are gone from serve, so 6 tests fail. That file is outside the scope fence.",
+    "The ticket must fence tests/unit/test_serve_retro_check_once.py. Its setup fixture and test_failure_retries_same_count should patch clutch.retro.due_trigger (or retro.measurements) instead of serve.measurements/serve.select_trigger.",
+    "Add tests/unit/test_serve_retro_check_once.py to the Verification and acceptance criterion 5 commands so the local run catches this. The 37-test verification passed only because it left this file out.",
+    "Keeping dead imports of measurements/select_trigger in clutch/serve.py would not work: the test's patches would no longer reach due_trigger, and that is a dual path the rules ban. Fix the fence, not the code."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
