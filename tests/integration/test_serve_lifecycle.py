@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher.
+# purpose: Tests the serve lifecycle: quiescence, report intake, CLI composition, lock holding through cleanup, startup recovery, control ordering, recurring maintenance, the watcher, stop logging and verdict consumer failure
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
 # owner: clutch/serve.py
-# verified: ff6ac88d
-# hash: b405c2b2c3e32e940a74b5a8a07320be7d7e280b8a989de134cac85a107d47ae
+# verified: 5214eb3e
+# hash: ba698150c9184c9e270048b2b055dad52447467a2605ab7ace906d002b404e3d
 
 import asyncio
 import json
@@ -88,10 +88,7 @@ async def test_report_consumer_is_sequential(root, monkeypatch):
     run = asyncio.create_task(rig.owner.run())
     try:
         await until(rig, lambda: len(rig.owner.box.pending()) == 2)
-        heartbeat = rig.checkout.config.state_dir / "heartbeat"
-        await until(rig, heartbeat.exists)
-        stamp = heartbeat.stat().st_mtime_ns
-        await until(rig, lambda: heartbeat.stat().st_mtime_ns != stamp)
+        await until(rig, rig.owner.ready.is_set)
         assert len(rig.owner.workers) == 5
         assert len(rig.owner.tasks._consumers) == 4
         assert {m.summary for m in rig.owner.box.pending()} == {"Observed scoring defect", "Another material defect"}
@@ -252,70 +249,6 @@ async def test_serve_recurring_maintenance_uses_injected_time(root, monkeypatch)
         assert any(e.body.get("kind") == "checkpoint_push_failed" for e in rig.journal.read())
         assert any(e.key == "checkpoint-push/0" and e.type == EventType.EFFECT_COMPLETION and e.body == {"result": {"merged": 0}} for e in rig.journal.read())
         assert not [e for e in rig.journal.read() if e.type == EventType.TIMER_FIRED]
-    finally:
-        await finish(rig, run)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("component", [0, 1, 2, 3, "main"])
-async def test_serve_heartbeat_requires_responsive_components(root, monkeypatch, component):
-    rig = await graph(root, monkeypatch)
-    refreshed = []
-    original = rig.fs.write
-
-    def write_fs(path, data):
-        if path.name == "heartbeat":
-            refreshed.append(rig.time())
-        original(path, data)
-
-    monkeypatch.setattr(rig.fs, "write", write_fs)
-    run = asyncio.create_task(rig.owner.run())
-    try:
-        await until(rig, lambda: len(refreshed) >= 2)
-        release, entered = asyncio.Event(), asyncio.Event()
-        maintenance = rig.owner.maintenance
-        original_wait = None if component == "main" else rig.owner.responses[component].wait
-
-        async def wedge(work=None):
-            entered.set()
-            try:
-                await release.wait()
-                if work is not None:
-                    return await original_wait(work)
-            finally:
-                if work is not None and hasattr(work, "close"):
-                    work.close()
-
-        if component == "main":
-            monkeypatch.setattr(rig.owner, "maintenance", wedge)
-        else:
-            monkeypatch.setattr(rig.owner.responses[component], "wait", wedge)
-        await until(rig, entered.is_set)
-        if component == "main":
-            saved = list(refreshed)
-            for response in rig.owner.responses:
-                response.ask()
-            await until(rig, lambda: all(r.responsive() for r in rig.owner.responses))
-        else:
-            response = rig.owner.responses[component]
-            await until(rig, lambda: response.sent > response.answered)
-            saved = list(refreshed)
-            checked = []
-            cycle = rig.owner.heartbeat.cycle
-
-            def observed_cycle():
-                result = cycle()
-                checked.append(result)
-                return result
-
-            monkeypatch.setattr(rig.owner.heartbeat, "cycle", observed_cycle)
-            await until(rig, lambda: bool(checked))
-            assert checked == [False]
-        assert refreshed == saved
-        if component == "main":
-            monkeypatch.setattr(rig.owner, "maintenance", maintenance)
-        release.set()
-        await until(rig, lambda: len(refreshed) > len(saved))
     finally:
         await finish(rig, run)
 

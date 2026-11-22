@@ -5,8 +5,8 @@
 # purpose: Tests serve escalation notifications: startup and poll reconciliation, the unset warning, failure backoff, restart, and a hung command
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/mergequeue.py, clutch/notify.py, clutch/status.py, tests/integration/serve_rig.py]
 # owner: clutch/notify.py
-# verified: 7abfadd2
-# hash: 26b608bf31e6cbdb49021c70fd85386187ad4b2529d7d172b7cf9392e802eaef
+# verified: 5214eb3e
+# hash: 7a10ca6c6b7f64dc7ac0e8ab97830b9f59f33b8fcdf449c0d5ff25cda900fa57
 
 import asyncio
 import json
@@ -21,6 +21,18 @@ from tests.integration.serve_rig import deliveries, escalation_batch, finish, no
 from tests.loop_helpers import graph, notify_command, terminals
 
 pytestmark = pytest.mark.disk_io_skip
+
+
+def count_maintenance(rig, monkeypatch):
+    completed = []
+    original = rig.owner.maintenance
+
+    async def maintenance():
+        await original()
+        completed.append(True)
+
+    monkeypatch.setattr(rig.owner, "maintenance", maintenance)
+    return completed
 
 
 @pytest.mark.asyncio
@@ -65,11 +77,10 @@ async def test_serve_reconciles_notifications_at_startup_and_poll(root, monkeypa
         await finish(rig, run)
     prior = rig.owner
     rig.owner = cli.build_serve(rig.checkout, read=prior.read, stems=prior.stems)
-    heartbeat = rig.checkout.config.state_dir / "heartbeat"
-    stamp = heartbeat.stat().st_mtime_ns
+    completed = count_maintenance(rig, monkeypatch)
     restarted = asyncio.create_task(rig.owner.run())
     try:
-        await until(rig, lambda: heartbeat.stat().st_mtime_ns != stamp and rig.owner.ready.is_set())
+        await until(rig, lambda: rig.owner.ready.is_set() and len(completed) >= 1)
         assert rig.owner.notifications.task is None
         assert len(deliveries(root)) == len(notify_completions(rig)) == 6
     finally:
@@ -83,13 +94,11 @@ async def test_serve_unset_notify_warns_once_and_preserves_pending(root, monkeyp
 
     rig = await graph(root, monkeypatch)
     identities = escalation_batch(rig, "pending")
+    completed = count_maintenance(rig, monkeypatch)
     status = project(rig.journal.read())
     run = asyncio.create_task(rig.owner.run())
     try:
-        await until(rig, lambda: (rig.checkout.config.state_dir / "heartbeat").exists())
-        heartbeat = rig.checkout.config.state_dir / "heartbeat"
-        stamp = heartbeat.stat().st_mtime_ns
-        await until(rig, lambda: heartbeat.stat().st_mtime_ns != stamp)
+        await until(rig, lambda: len(completed) >= 2)
         warnings = [json.loads(line) for line in rig.owner.log.path.read_text().splitlines() if json.loads(line)["event"] == "notify_unset"]
         assert len(warnings) == 1 and "push is off" in warnings[0]["warning"]
         assert not deliveries(root) and not notify_completions(rig)
@@ -173,18 +182,10 @@ async def test_serve_hung_notify_keeps_maintenance_and_cleanup_responsive(root, 
         return seam
 
     monkeypatch.setattr(rig.owner.notifications, "compose", composed)
-    refreshed = []
-    write_fs = rig.fs.write
-
-    def written(path, data):
-        if path.name == "heartbeat":
-            refreshed.append(rig.time())
-        write_fs(path, data)
-
-    monkeypatch.setattr(rig.fs, "write", written)
+    completed = count_maintenance(rig, monkeypatch)
     run = asyncio.create_task(rig.owner.run())
     try:
-        await until(rig, lambda: entered.is_set() and len(refreshed) >= 2)
+        await until(rig, lambda: entered.is_set() and len(completed) >= 2)
         assert rig.owner.ready.is_set() and not notify_completions(rig)
         request(rig, "pause", "pause-during-notify")
         await until(rig, lambda: rig.owner.control.projection.pause_id == "pause-during-notify")

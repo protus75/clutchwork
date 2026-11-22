@@ -13,12 +13,11 @@ from pathlib import Path
 from clutch import git, runner, triage
 from clutch.calibration import calibrate_when_due
 from clutch.config import ConfigError, snapshot_config
-from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
+from clutch.daemon import DaemonTasks, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
 from clutch.effects import Effects
 from clutch.enginelog import engine_log
 from clutch.git import GitError
-from clutch.heartbeat import Heartbeat
 from clutch.journal import TERMINAL_STATES, EventType, JournalCorruption, last_transition, run_seq
 from clutch.lockfile import Lockfile
 from clutch.merge import AdmissionBoundary
@@ -214,13 +213,6 @@ class Serve:
         self.settling_verdicts = False
         self.core.restart.owned = lambda: self.settling_verdicts or self.core.admission.occupied() or any(w.continuations for w in self.writers.values())
         self.tasks = DaemonTasks(watcher=self.watch, merge_queue=self.merge, box_consumer=self.box_intake, verdict_consumer=self.verdicts)
-        self.heartbeat = HeartbeatCycle(
-            heartbeat=Heartbeat(state_dir=checkout.config.state_dir, fs=checkout.fs),
-            workers=lambda: self.healthy(0),
-            merge_queue=lambda: self.healthy(1),
-            box_consumer=lambda: self.healthy(2),
-            watcher=lambda: self.healthy(3) and self.healthy(4),
-        )
 
     def publish(self, ticket: Ticket, text: str) -> None:
         self.published[ticket.stem] = ticket, git.blob_sha(text.encode())
@@ -626,7 +618,6 @@ class Serve:
             async with self.core.admission.exclusive():
                 self.box.recover()
                 await self.checkpoint.poll()
-        self.heartbeat.cycle()
         self.notifications.poll()
 
     async def run(self) -> int:

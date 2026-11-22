@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 18f3cf87
-hash: ea26234b3b77a509ca473cc1ba494041ef9f5e65aafce5c644fb6216339cfffb
+verified: 5214eb3e
+hash: 0e632ea7701c18d3c0e682972fb4f57168b6dad16e3783e7d227db9a705117d9
 -->
 # How ClutchWork works
 
@@ -549,8 +549,7 @@ publishes `state_dir/control/active.json`, and runs five loops (every 0.1s):
 - **Box intake:** ingests host bug reports into the Suggestion Box and never triages.
 - **Verdicts:** applies accepted confirm and reject requests independently of merge polling and active Check or model work, using the ticket writer transaction.
 
-Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
-(`state_dir/heartbeat` mtime), notification replay, and checkpoint pushes. If any loop dies,
+Maintenance on each loop: control requests, timers, orphan sweeps, notification replay, and checkpoint pushes. If any loop dies,
 `serve` stops; consumer failures remain fatal.
 
 Requested retros and automatic retros due after a ticket settles stop new admission, wait for
@@ -788,7 +787,6 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `box.seq/` | Suggestion Box id reservations. |
 | `box/` | Suggestion Box messages and report custody. |
 | `control/` | `active.json` and the control request inbox. |
-| `heartbeat` | Touched by `serve` while all its loops are healthy. |
 
 ### 10.2 The journal
 

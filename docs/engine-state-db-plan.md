@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Proposed plan to move live engine state into one DuckDB database per user, run by a single service. The goal is to remove the DaemonAdmission.exclusive wait that blocks verdicts and intake while implementations run. The plan covers Git checkpoints, crash recovery, lock retirement and the order of migration tickets.
+purpose: Proposed plan to move live engine state into one per-user DuckDB database owned by a single service, removing the DaemonAdmission.exclusive wait, with Git checkpoints, crash recovery, lock retirement and ordered migration tickets
 relates: [clutch/rework.py]
 owner: clutch/rework.py
-verified: 3d8c0329
-hash: 68c4b15fe2ab578532aab919a6650b2311e1269fb59740ca7fbc03fe425465c8
+verified: 5214eb3e
+hash: 412781f2f8f88c92a0d17063023c1a13463d37e85da4ce6a4977f356464ceb59
 -->
 # Engine state database plan
 
@@ -52,6 +52,8 @@ Keep the append-only journal outside as durable history and audit evidence; keep
 
 Every `clutch` command uses a local authenticated service endpoint for state reads and writes, including commands launched by the VS Code extension and other chats. The extension continues to invoke CLI verbs and render engine snapshots; it never opens the database. Local clients submit project identity, request ID and expected revision, and receive an acknowledged durable result or a specific refusal. Read-only commands use the same service for live state; they do not open DuckDB independently.
 
+The endpoint answers a `ping` request. `clutch engine ping` calls it with a short timeout and exits non-zero if no answer arrives, meaning the engine is hung or dead. This replaces any liveness file; the VS Code extension engine-running indicator uses the verb instead of a file or the writer lock.
+
 If no service runs, a command starts it on demand and waits for recovery and readiness, or reports a clear startup/recovery failure without performing an independent write. A per-user startup ownership lock and endpoint discovery prevent competing services; idle shutdown is allowed only after durable work and checkpoint obligations are settled. Existing long-running serve/drain/run behavior becomes project work hosted by that service. DuckDB's file lock is a last-resort protection against an accidental second opener, not the coordination protocol for clients or multiple writers.
 
 ## 4. Git
@@ -80,11 +82,11 @@ Each row is a proposed small implementation ticket, not an authored ticket. Fenc
 
 | Order | Stem | Kind | Fence summary | Depends |
 |---|---|---|---|---|
-| 1 | `state-verdict-ticket-service` | feature | Service, project identity, DuckDB transactions and endpoint; ticket intake, verdict, watcher, admission and Git checkpoint paths; CLI, extension-facing snapshot, tests and affected guides. Establish durable recovery and conflict handling for this slice. Verdict and ticket changes complete while an implementation runs; remove their admission-wide wait. | none |
+| 1 | `state-verdict-ticket-service` | feature | Service, project identity, DuckDB transactions and endpoint with a `ping` handler; `clutch engine ping` with a short timeout, non-zero exit on no answer, help and doc rows; ticket intake, verdict, watcher, admission and Git checkpoint paths; CLI, extension-facing snapshot, tests and affected guides. Establish durable recovery and conflict handling for this slice. Verdict and ticket changes complete while an implementation runs; remove their admission-wide wait. | none |
 | 2 | `state-merge-queue` | feature | Merge queue state, Git export coordination, merge/admission consumers and tests; remove the remaining merge-wide implementation wait. | `state-verdict-ticket-service` |
 | 3 | `state-scheduler-sets` | feature | Scheduler pending/flying state, selection transactions, recovery and snapshot consumers and tests. | `state-merge-queue` |
 | 4 | `state-holds-pause` | feature | Control inbox, holds, pause and their CLI/snapshot consumers, durable outbox and tests. | `state-scheduler-sets` |
-| 5 | `state-service-handoff` | feature | Remaining writer routing, service lifecycle, startup, crash rebuild, handoff, lock retirement, documentation and integration tests. | `state-holds-pause` |
+| 5 | `state-service-handoff` | feature | Remaining writer routing, service lifecycle, startup, crash rebuild, handoff, lock retirement, extension engine-running indicator switching to `clutch engine ping`, documentation and integration tests. | `state-holds-pause` |
 
 The first slice must include the minimum end-to-end service and checkpoint machinery needed to remove the observed wait, not merely add a database beside the old path. Split its authoring only if the first deliverable still removes that wait without a dual writer. Each slice exercises crash boundaries, cross-project isolation and editor conflicts appropriate to the state moved.
 

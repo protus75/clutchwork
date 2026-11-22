@@ -17,7 +17,6 @@ from clutch.effects import Effects
 from clutch.enginelog import EngineLog
 from clutch.flake import Flake
 from clutch.git import Git, NothingToCommit
-from clutch.heartbeat import Heartbeat
 from clutch.journal import EventType, Journal
 from clutch.llmeffect import scoped_seq
 from clutch.merge import AdmissionBoundary
@@ -55,22 +54,6 @@ def storm_producer_for_config(config: Config, *, fs: FileSystem, journal: Journa
 def flake_detection(*, journal: Journal, box: Box, config: Config, escalate: Callable[[str], None]) -> Flake:
     """Detection/release boundary supplied with the lock holder's existing writers."""
     return Flake(journal=journal, box=box, cap=config.caps.quarantine, escalate=escalate)
-
-
-class HeartbeatCycle:
-    """Explicit main-loop boundary; task owners supply responsiveness."""
-
-    def __init__(self, *, heartbeat: Heartbeat, workers: Callable[[], bool], merge_queue: Callable[[], bool], box_consumer: Callable[[], bool], watcher: Callable[[], bool]) -> None:
-        self.heartbeat = heartbeat
-        self._health = (workers, merge_queue, box_consumer, watcher)
-
-    def cycle(self) -> bool:
-        # Evaluate every component even when an earlier one reports unhealthy.
-        health = tuple(probe() for probe in self._health)
-        if not all(health):
-            return False
-        self.heartbeat.refresh()
-        return True
 
 
 def control_inbox(

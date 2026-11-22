@@ -5,8 +5,8 @@
 # purpose: Deterministic production soak harness that runs serve through worker-kill recovery, conflict-resolution and semantic integration-red members across 24 simulated hours and returns a validated DaemonSoakReport
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: 58c46bba
-# hash: 0294852f4c8ef1268d899e3bf41f3f36676e957de7d2597770d8665e1127613a
+# verified: 5214eb3e
+# hash: 16bcb7db60fadbe6decca7d75db25a38283d5d1e6b6664aa03bdd22c5bcc469e
 
 import asyncio
 import json
@@ -127,17 +127,6 @@ class _Time:
                 future.set_result(None)
 
 
-class _FS(LocalFileSystem):
-    def __init__(self, clock):
-        self.clock = clock
-        self.heartbeats = []
-
-    def write(self, path, data):
-        super().write(path, data)
-        if path.name == "heartbeat":
-            self.heartbeats.append(self.clock())
-
-
 class _Exec:
     """Real Git and Verification; the provider and remote transport are scripted seams."""
 
@@ -210,7 +199,7 @@ class _Member:
     def __init__(self, root: Path, name: str):
         self.root, self.name = root, name
         self.time = _Time()
-        self.fs = _FS(self.time)
+        self.fs = LocalFileSystem()
         self.journal = Journal(root / ".clutch/state", self.time)
         self.exec = _Exec(self)
         self.env = {
@@ -482,12 +471,10 @@ class _Member:
             self.time.advance(6 * 3600)
             owner = self.owner
             previous = tuple(r.answered for r in owner.responses)
-            beats = len(self.fs.heartbeats)
             sweeps, checkpoints = len(self.sweeps), len(self.checkpoints)
             await self.until(
                 lambda: (
                     all(r.answered > old and r.responsive() for r, old in zip(owner.responses, previous))
-                    and len(self.fs.heartbeats) > beats
                     and len(self.sweeps) > sweeps
                     and len(self.checkpoints) > checkpoints
                     and owner.core.admission.mutating is None
@@ -531,7 +518,6 @@ async def _observe(member: _Member) -> DaemonSoakEntry:
         and all(b - a >= timedelta(hours=6) for (a, _), (b, _) in zip(m.cycles, m.cycles[1:])),
         "missing recurring consumer round trips across 24 hours",
     )
-    need(len(m.fs.heartbeats) >= 5 and m.fs.heartbeats[-1] - m.fs.heartbeats[0] >= timedelta(hours=24), "heartbeat did not recur across the soak")
     need(len(list(m.journal.read_segments())) >= 2, "journal age rotation missing")
     need(len(m.sweeps) >= 5 and m.sweeps[-1][0] - m.sweeps[0][0] >= timedelta(hours=24), "idle orphan sweeping did not recur")
     need(len(m.checkpoints) >= 5 and m.checkpoints[-1] - m.checkpoints[0] >= timedelta(hours=24), "checkpoint polling did not recur")

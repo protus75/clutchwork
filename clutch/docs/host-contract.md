@@ -4,8 +4,8 @@ kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 18f3cf87
-hash: 37575e0ba8e6c122cc96c8dcdb5f223b42dba371db3df8485dd5ccf5ff9661ab
+verified: 5214eb3e
+hash: 1021db419b6ef6589aad92a2c102c0374615dbb50b2f858f4006291c6a64cda6
 -->
 # Host contract
 
@@ -139,7 +139,7 @@ inventory sends a ticket that would lower a threshold to a human.
 ## Operating facts
 
 The configured `state_dir` holds the journal, box queue, quarantine ledgers,
-evidence captures, engine log and heartbeat. Relative paths resolve from the selected
+evidence captures and engine log. Relative paths resolve from the selected
 config file's directory. `<state_dir>/clutch.lock` uses an advisory flock for
 engine writes; `<state_dir>/commit.lock` serializes git writes. If a lock is held,
 wait for or stop its holder; never delete the lockfile. To upgrade or rollback,
@@ -455,8 +455,8 @@ restarts itself when its `clutch/` tree changes.
 pid, host, state_dir, started_at and verb. The verb determines whether the holder consumes control requests. Kernel release on
 process death governs correctness, never stale-pid adoption. On LockHeld wait
 for or stop the holder; never delete the lockfile. Child descriptors do not pin it. Git writes take `<state_dir>/commit.lock` with a 60-second wait.
-State dir owns journal, box queue, quarantine ledgers, evidence captures, engine
-log and heartbeat. Decisions and tombstones are committed under
+State dir owns journal, box queue, quarantine ledgers, evidence captures and engine
+log. Decisions and tombstones are committed under
 `tickets/decisions/`, so dedup memory travels with the repo. Config is re-read at
 each dispatch cycle: watcher/debounce in daemon, re-parsing in scaffold verbs;
 routing, severity and ceiling edits take effect without restart.

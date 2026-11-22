@@ -5,8 +5,8 @@
 # purpose: Shared rig for continuous serve graph integration tests: builds the serve graph, scripts stages and model replies, and provides admission, control request, notify, storm trip and retro scenario helpers
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 7abfadd2
-# hash: 223edb5dfdfb4a5fbc4fda212d23af178ec3faf770032e4fb2e9331d84928d5a
+# verified: 5214eb3e
+# hash: a3f859d1677e4e12e9682e76c0537a77b932d001915ec591a56d4f0123055000
 
 import asyncio
 import json
@@ -112,7 +112,7 @@ async def activated_graph(root, monkeypatch):
     rig = await graph(root, monkeypatch)
     run = asyncio.create_task(rig.owner.run())
     try:
-        await until(rig, lambda: (rig.checkout.config.state_dir / "heartbeat").exists())
+        await until(rig, rig.owner.ready.is_set)
     finally:
         await finish(rig, run)
     return rig

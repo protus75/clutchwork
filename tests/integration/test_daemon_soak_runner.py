@@ -5,8 +5,8 @@
 # purpose: Runs the production serve soak harness and checks 24-hour member evidence, worker recovery, conflict rungs, refusal of semantic integration red, false-green refusal, owned lifetime cleanup and reproducible reports
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: engine
-# verified: ff6ac88d
-# hash: b7dba48f669c2db71d72996f2e1754a1a88e7af4d8b4f60f33e04b23134cc2ab
+# verified: 5214eb3e
+# hash: 285c5ffd6b70c094bab7e79dcf7d19c49da460afb31b547eca281e08aced78d8
 
 import asyncio
 import json
@@ -141,7 +141,6 @@ def test_daemon_soak_advances_each_member_24_hours(evidence):
         assert member.time.now - member.time.start >= timedelta(hours=24)
         assert len(member.cycles) == 5 and all(all(health) for _, health in member.cycles)
         assert member.time.steps.count(6 * 3600) == 5 and member.time.sleeps
-        assert member.fs.heartbeats[-1] - member.fs.heartbeats[0] >= timedelta(hours=24)
         assert member.sweeps[-1][0] - member.sweeps[0][0] >= timedelta(hours=24)
         assert member.checkpoints[-1] - member.checkpoints[0] >= timedelta(hours=24)
         segments = list(member.journal.read_segments())
@@ -226,7 +225,7 @@ async def test_soak_uses_candidate_base_regate_receipt(evidence):
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "index,field",
-    [(i, field) for i in range(3) for field in ("cycles", "health", "heartbeats", "sweeps", "checkpoints", "sleeps", "rotation", "main", "checks", "review-custody")]
+    [(i, field) for i in range(3) for field in ("cycles", "health", "sweeps", "checkpoints", "sleeps", "rotation", "main", "checks", "review-custody")]
     + [(0, f) for f in ("alert", "alert-sequence", "abandoned", "interrupted", "removal", "merged", "review")]
     + [(1, f) for f in ("mechanical-facts", "unresolved-facts", "rerun", "mechanical-box", "unresolved-box", "box-outcome", "harvest", "regating", "review", "terminal-stage")]
     + [(2, f) for f in ("inputs", "refusal", "semantic-box", "harvest", "integration", "terminal", "semantic-facts")],
@@ -243,8 +242,6 @@ async def test_daemon_soak_requires_member_local_evidence(evidence, monkeypatch,
         monkeypatch.setattr(member, "cycles", [(moment, (True, False, True, True)) for moment, _ in member.cycles])
     elif field in {"inputs", "refusal"}:
         monkeypatch.setattr(member, {"inputs": "inputs", "refusal": "refusals"}[field], [])
-    elif field == "heartbeats":
-        monkeypatch.setattr(member.fs, "heartbeats", [])
     elif field == "sleeps":
         monkeypatch.setattr(member.time, "sleeps", [])
     elif field == "rotation":

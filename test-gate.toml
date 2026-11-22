@@ -27,7 +27,6 @@ repository = 15
 "clutch/gates.py" = 38
 "clutch/git.py" = 27
 "clutch/graph.py" = 96  # Unit coverage: 98.25%
-"clutch/heartbeat.py" = 32
 "clutch/hostfiles.py" = 17
 "clutch/inbox.py" = 27
 "clutch/journal.py" = 20

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration test checking that an idle maintenance sweep does not abandon or orphan-alert a draft confirmation that is still in progress, and that the confirmation still completes
+# purpose: Checks that an idle maintenance sweep does not abandon or orphan-alert a draft confirmation still in progress, and that the confirmation completes
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/restart.py, clutch/runner.py, clutch/serve.py, tests/fakes.py]
-# owner: engine
-# verified: 18f3cf87
-# hash: 5be12468a45f5315478afcc39175f2b06af5a77b750fdcc54407dccfd097e0d9
+# owner: clutch/serve.py
+# verified: 5214eb3e
+# hash: 4127208f98d90660df21d4e328ec5bb7325ab2a6fba4f6bbc29bd68561c6d578
 
 import asyncio
 from types import SimpleNamespace
@@ -58,7 +58,6 @@ async def test_confirmation_survives_idle_sweep(tmp_path, monkeypatch):
     owner.responses = [Response() for _ in range(5)]
     owner.box = SimpleNamespace(recover=lambda: None)
     owner.checkpoint = SimpleNamespace(poll=AsyncMock())
-    owner.heartbeat = SimpleNamespace(cycle=lambda: None)
     owner.notifications = SimpleNamespace(poll=lambda: None)
     control.poll = lambda: None
     control.inbox = ControlInbox(journal=journal, lifecycle_id="life", holds=lambda: set(), apply=lambda _: None, files=lambda: [], read=lambda _: b"", known=lambda _: True)

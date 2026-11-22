@@ -1,17 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test callerless code removed
-# relates: [clutch/effects.py, clutch/git.py, clutch/heartbeat.py, clutch/requisition.py, clutch/timers.py, clutch/watchdog.py]
+# purpose: Asserts removed callerless symbols stay absent from timers, git, effects, requisition, driver and watchdog while their retained neighbours still exist
+# relates: [clutch/effects.py, clutch/git.py, clutch/requisition.py, clutch/timers.py, clutch/watchdog.py]
 # owner: engine
-# verified: 595b9e84
-# hash: 8298a81877b7ffd40a1d59ce35fc7c57ee0ec11cefc78bc361a6a194395cce64
-from clutch import driver, effects, git, heartbeat, requisition, timers, watchdog
+# verified: 5214eb3e
+# hash: 8595d9eaca280d1111cdf69de599848a27afb29161a34d22984bb959baa01b3a
+from clutch import driver, effects, git, requisition, timers, watchdog
 
 
 def test_removed_and_retained_symbols():
     for owner, name in [
-        (heartbeat, "is_fresh"),
         (timers.Timers, "wait_next"),
         (git.Git, "branch"),
         (effects, "effect"),
