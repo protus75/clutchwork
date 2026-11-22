@@ -78,7 +78,7 @@ Scope in:
   - `calibration.every`: calibration is overdue at `every` Implement calls since the last calibration, and `engine calibrate` still tables the last `every` calls.
 - Command help in `clutch/__main__.py` (the `engine` group description and the `retro` and `calibrate` entries, and the `status` and `doctor` entries) states that these run only when invoked and that status and doctor report overdue.
 - Docs: `docs/how-clutch-works.md` (section 7 serve paragraphs on retro admission and idle calibration, the serve loop step list near "maybe run a retro", the retro paragraph in 9.5 that says "when due", the `retro` and `calibration` config table rows, and the `view status` and `host doctor` verb rows) and `clutch/docs/host-contract.md` (the `Retro` and `Calibration` config text near the `retro:` example, and the closed-set sentence "disables automatic retros"), and `clutch/docs/host-running.md` (the `engine retro`, `engine calibrate`, `view status` and `host doctor` rows). Edit only the sentences made false.
-- Tests: new files `tests/unit/test_no_automatic_retro_calibration.py` (drive `Serve.dispatch` or the serve loop and `_Drain` with fakes over a window past both thresholds; assert no `Retro` construction, no `estimate_calibration` signal, no phase event, and `select` admits while overdue), `tests/unit/test_status_overdue.py`, `tests/unit/test_doctor_overdue.py`, `tests/unit/test_manual_retro_calibration_verbs.py` (`engine calibrate` journals a signal and `engine retro` still commits a report with automatic triggers overdue). Update the fenced existing tests listed below only where an assertion or monkeypatch of a removed name flips: delete `tests/unit/test_serve_retro_check_once.py`, `tests/unit/test_drain_retro_once_per_settle.py`, `tests/unit/test_serve_retro_check_site.py` (its bytecode assertion that `Serve.run` loads `check_retro` pins the removed method), `tests/regress_serve_retro_check_once.py` and `tests/regress_drain_retro_once_per_settle.py` (they pin the removed dedupes); drop only the `serve.calibrate_when_due` monkeypatch in `tests/unit/test_serve_no_roadmap.py` and only the `drain.calibrate_when_due` monkeypatch in `tests/unit/test_drain_no_roadmap.py`, because those imports are deleted; drop the `calibrate_when_due` and `_run_retro(forced=False)` uses in `tests/unit/test_phase_events.py`, `tests/unit/test_calibration_idle.py` (keep its `due` test, add a `pending` test), `tests/unit/test_drain_driver_overlap.py`, `tests/unit/test_drain_report_intake.py`, `tests/unit/test_driver_hooks.py`, `tests/unit/test_supervise_idle_hooks.py` and `tests/unit/test_serve_dispatch_containment.py`; in `tests/integration/test_drain.py` delete `test_due_retro_waits_for_retry_and_precedes_next_ticket` and the `not-due`, `due` and `phase` automatic scenarios of `_exercise_retro_drain` while keeping the requested and killable cases; in `tests/integration/serve_rig.py` and `tests/integration/test_serve_dispatch.py` keep the `requested` and `kill` modes, delete the `automatic`, `disabled` and `failed` modes and their two tests that only cover the automatic path, and drop the `check_retro` wrapper. The `Retro(forced=False)`, `due_trigger` and `select_trigger` uses in `tests/unit/test_retro.py`, `tests/unit/test_retro_box.py` and `tests/unit/test_retro_due_owner.py` stay valid and are not edited.
+- Tests: new files `tests/unit/test_no_automatic_retro_calibration.py` (drive `Serve.dispatch` or the serve loop and `_Drain` with fakes over a window past both thresholds; assert no `Retro` construction, no `estimate_calibration` signal, no phase event, and `select` admits while overdue), `tests/unit/test_status_overdue.py`, `tests/unit/test_doctor_overdue.py`, `tests/unit/test_manual_retro_calibration_verbs.py` (`engine calibrate` journals a signal and `engine retro` still commits a report with automatic triggers overdue). Update the fenced existing tests listed below only where an assertion or monkeypatch of a removed name flips: delete `tests/unit/test_serve_retro_check_once.py`, `tests/unit/test_drain_retro_once_per_settle.py`, `tests/unit/test_serve_retro_check_site.py` (its bytecode assertion that `Serve.run` loads `check_retro` pins the removed method), `tests/regress_serve_retro_check_once.py` and `tests/regress_drain_retro_once_per_settle.py` (they pin the removed dedupes); drop only the `serve.calibrate_when_due` monkeypatch in `tests/unit/test_serve_no_roadmap.py` and only the `drain.calibrate_when_due` monkeypatch in `tests/unit/test_drain_no_roadmap.py`, because those imports are deleted; drop the `calibrate_when_due` and `_run_retro(forced=False)` uses in `tests/unit/test_phase_events.py`, `tests/unit/test_calibration_idle.py` (keep its `due` test, add a `pending` test), `tests/unit/test_drain_report_intake.py` and `tests/unit/test_supervise_idle_hooks.py`; drop only the `owner.check_retro` stub in `tests/unit/test_serve_dispatch_containment.py`, because `check_retro` is removed; in `tests/integration/test_drain.py` delete `test_due_retro_waits_for_retry_and_precedes_next_ticket` and the `not-due`, `due` and `phase` automatic scenarios of `_exercise_retro_drain` while keeping the requested and killable cases; in `tests/integration/serve_rig.py` and `tests/integration/test_serve_dispatch.py` keep the `requested` and `kill` modes, delete the `automatic`, `disabled` and `failed` modes and their two tests that only cover the automatic path, and drop the `check_retro` wrapper. The `Retro(forced=False)`, `due_trigger` and `select_trigger` uses in `tests/unit/test_retro.py`, `tests/unit/test_retro_box.py` and `tests/unit/test_retro_due_owner.py` stay valid and are not edited. Create no placeholder test file for a path this list does not name.
 - Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 
 Scope out:
@@ -87,6 +87,7 @@ Scope out:
 - No change to what a retro report or calibration table contains, to `retro_check` event names, to the control inbox request format, or to the VS Code extension.
 - No automatic action on an overdue warning, and no new verb.
 - Roadmap and plan documents are not edited by this ticket.
+- The integration test skip policy (`disk_io_skip`, box-001136) is not changed by this ticket.
 
 ## Scope fence
 - clutch/serve.py
@@ -115,9 +116,7 @@ Scope out:
 - tests/regress_drain_retro_once_per_settle.py
 - tests/unit/test_phase_events.py
 - tests/unit/test_calibration_idle.py
-- tests/unit/test_drain_driver_overlap.py
 - tests/unit/test_drain_report_intake.py
-- tests/unit/test_driver_hooks.py
 - tests/unit/test_supervise_idle_hooks.py
 - tests/unit/test_serve_dispatch_containment.py
 
@@ -135,7 +134,7 @@ Scope out:
 
 ## Verification
 ```
-./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py
+./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_report_intake.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py
 ./dev.py test tests/integration/test_doctor.py tests/integration/test_serve_dispatch.py tests/integration/test_serve_admission.py tests/integration/test_serve_upgrade.py tests/integration/test_drain.py tests/integration/test_config.py tests/integration/test_retro.py
 ```
 
@@ -145,8 +144,9 @@ Scope out:
 - The overdue computation reads git, calls a provider, or runs a retro measurement that does.
 - A WARN row that changes the doctor exit code or its `doctor: ok` header.
 - Edits to a hot test file beyond the removals named in Scope in, or any new test placed in one.
+- A placeholder test file created only to make a Verification path exist.
 
 ## Time budget
 - expected: 60m
 - stuck: 120m
-- reason: removing the automatic retro and calibration triggers from serve and drain and adding the overdue warnings must land together, or one engine verb would still auto-run while status claims it is manual; the 31-file fence is mostly tests that pin the removed triggers
+- reason: removing the automatic retro and calibration triggers from serve and drain and adding the overdue warnings must land together, or one engine verb would still auto-run while status claims it is manual; the 29-file fence is mostly tests that pin the removed triggers
