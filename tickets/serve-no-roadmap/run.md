@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-All three Verification commands passed sequentially: 14 focused tests, 27 follow-up tests, then 2,153 unit and 315 integration tests (3,317 skipped). Changed-file lint passed. All 61 mutations were caught and sources restored. Implementation remains uncommitted; the ticket is unchanged.
+Partial changes remove the engine roadmap step and add a release ship handler, but the required test updates, mutation checks, and verification remain outstanding.
 
 ## Dead ends
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6.1-terra
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-none
+The ticket budget was 55 minutes; elapsed time was not measured.
 
