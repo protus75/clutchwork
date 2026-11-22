@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final unit verification passed 44 tests. The integration verification exited successfully but skipped all 31 disk-I/O tests. Mutation checks caught the tested wrong implementations.
+The final unit verification passed 45 tests; the integration verification exited successfully but skipped all 31 tests under the existing disk-I/O marker. An in-memory test verifies that report evidence retains override counts.
 
 ## Dead ends
 
