@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The prior scope finding is stale: tests/unit/test_main_view_group.py is included in the current scope fence. The final verification passed 36 tests; the full suite passed 2,088 unit and 297 integration tests, with 3,341 integration tests skipped. Eight representative wrong implementations were detected by the regression tests.
+The full suite passed with 3,341 integration tests skipped; the prior implementation was recovered from unreachable Git objects and checked against current main.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-none
+- box-001119-8c0906c6: Unfenced planning documents docs/evidence-trail-plan.md, docs/training-data-plan.md, and docs/roadmap.md retain statements describing the old evidence.max_gb retention policy.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 30 minutes; this retry took less than 30 minutes.
+none
 
