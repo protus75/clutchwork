@@ -84,6 +84,13 @@ def _ignore_unknown(model: type[BaseModel], data: dict) -> dict:
     return result
 
 
+def size_warning(store, warn_gb):
+    total = store.blob_bytes()
+    if total <= warn_gb * 10**9:
+        return None
+    return f"blob store is {total} bytes, exceeding evidence.warn_gb ({warn_gb} GB); back up with clutch training export --out <dir>, raise evidence.warn_gb, or run clutch evidence prune --to-gb N"
+
+
 class EvidenceStore:
     def __init__(self, state_dir: Path, fs: FileSystem, read_bytes: Callable[[Path], bytes], size: Callable[[Path], int], redact: Callable[[str], str]):
         self.root = state_dir / "evidence"
@@ -260,6 +267,10 @@ class EvidenceStore:
             return self.get_blob(record.raw.stdout).decode(errors="replace")
         except FileNotFoundError:
             return ""
+
+    def blob_bytes(self) -> int:
+        blobs = self.root / "blobs"
+        return sum(self.size(blobs / prefix / name) for prefix in self.fs.entries(blobs) for name in self.fs.entries(blobs / prefix))
 
     def prune(self, max_bytes: int) -> None:
         blobs = self.root / "blobs"

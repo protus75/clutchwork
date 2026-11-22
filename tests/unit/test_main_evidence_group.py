@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Evidence command vocabulary and help
+# purpose: Checks the closed set of evidence subcommands, their argument wiring and their complete command help
 # relates: [clutch/__main__.py]
 # owner: clutch/__main__.py
-# verified: 75d75946
-# hash: 3c411403d4245979c266b2e8f33b578d652cbf9cfc72e09f8cefebbdedf0c90c
+# verified: 2036efdf
+# hash: 6d5c378bd8fb3d35356faa8da8ae401e45fbd27388bdf944aef4a78d1590916d
 
 import pytest
 
@@ -18,7 +18,7 @@ def test_evidence_commands():
     group = _subparsers(parser).choices["evidence"]
     commands = _subparsers(group).choices
     # Rules out missing verbs and accidental extra verbs.
-    assert set(commands) == {"show", "schema", "renormalize", "coverage", "captures"}
+    assert set(commands) == {"show", "schema", "renormalize", "coverage", "captures", "prune"}
     for argv, expected in [
         (["show", "a/b"], ("show", "a/b")),
         (["schema", "start"], ("schema", "start")),

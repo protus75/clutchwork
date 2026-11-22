@@ -273,7 +273,7 @@ class Roadmap(StrictModel):
 
 
 class Evidence(StrictModel):
-    max_gb: Count = 20
+    warn_gb: Count = 20
 
 
 MetaKind = Literal["doc", "guide", "spec", "test", "fixture", "plan"]

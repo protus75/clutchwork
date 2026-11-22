@@ -4,11 +4,13 @@ import fcntl
 from dataclasses import dataclass
 
 from clutch.config import load_config
+from clutch.evidence.store import EvidenceStore, size_warning
 from clutch.git import Git
 from clutch.hostfiles import stale_core
 from clutch.journal import Journal
 from clutch.lockfile import CommitLock, LockHeld, _read_holder
 from clutch.providers import judge_independence_finding, panel_slots_finding
+from clutch.seams import LocalFileSystem
 
 
 @dataclass(frozen=True)
@@ -16,6 +18,7 @@ class Check:
     name: str
     passed: bool
     detail: str
+    warn: bool = False
 
 
 def inspect_lock(state_dir):
@@ -76,6 +79,11 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
             row("core", not messages, "; ".join(messages) if messages else "routed conduct files are current")
         except Exception as exc:
             row("core", False, f"{exc}; install git or fix PATH, then rerun host doctor")
+    if config is not None:
+        fs = LocalFileSystem()
+        store = EvidenceStore(config.state_dir, fs, fs.read_bytes, fs.size, lambda text: text)
+        if message := size_warning(store, config.evidence.warn_gb):
+            results.append(Check("evidence", True, message, warn=True))
     if config is not None and config.scheduler.parallel.enabled:
         route = next((r for r in config.routing if r.tier == config.routing_default_tier and r.surface == "implement"), None)
         if route is not None:
@@ -91,4 +99,4 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
 
 
 def render(results):
-    return "\n".join(["doctor: ok" if all(r.passed for r in results) else "doctor: failed", *(f"{'PASS' if r.passed else 'FAIL'} {r.name}: {r.detail}" for r in results)]) + "\n"
+    return "\n".join(["doctor: ok" if all(r.passed for r in results) else "doctor: failed", *(f"{'WARN' if r.warn else 'PASS' if r.passed else 'FAIL'} {r.name}: {r.detail}" for r in results)]) + "\n"

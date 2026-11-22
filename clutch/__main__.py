@@ -791,8 +791,8 @@ def _parser() -> argparse.ArgumentParser:
     evidence = sub.add_parser(
         "evidence",
         help="inspect and normalize captured evidence",
-        description="Inspect always-on evidence capture. Subcommands: show, schema, renormalize, coverage, captures.",
-        epilog="Examples:\nclutch evidence show llm/example/1/implement/0/1\nclutch evidence schema event\nclutch evidence renormalize\nclutch evidence coverage\nclutch evidence captures example",
+        description="Inspect always-on evidence capture. Subcommands: show, schema, renormalize, coverage, captures, prune.",
+        epilog="Examples:\nclutch evidence show llm/example/1/implement/0/1\nclutch evidence schema event\nclutch evidence renormalize\nclutch evidence coverage\nclutch evidence captures example\nclutch evidence prune --to-gb 1",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     evidence_sub = evidence.add_subparsers(dest="evidence_verb", required=True)
@@ -857,6 +857,18 @@ def _parser() -> argparse.ArgumentParser:
     captures.add_argument("stem")
     captures.add_argument("--attempt", type=int)
     captures.add_argument("--name")
+    prune = _command(
+        evidence_sub,
+        "prune",
+        summary="delete oldest eligible evidence blobs",
+        does="Prune eligible blobs to the requested size and print sizes before and after.",
+        reads="Config, evidence blobs and records.",
+        writes="Deletes eligible evidence blobs; records remain.",
+        lock="Writer lock; refuses while held.",
+        exits="0 on success; 2 for a negative target, held lock or unreadable store.",
+        examples=["clutch evidence prune --to-gb 1"],
+    )
+    prune.add_argument("--to-gb", type=int, required=True, metavar="N")
     training = sub.add_parser(
         "training",
         help="export training data and evaluate review routes",
@@ -1517,7 +1529,13 @@ def main(
         return 0
 
     def handle_status():
+        from clutch.evidence.store import EvidenceStore, size_warning
+
         print(render(asyncio.run(_status(checkout))), end="")
+        fs = checkout.fs
+        store = EvidenceStore(config.state_dir, fs, fs.read_bytes, fs.size, lambda text: text)
+        if message := size_warning(store, config.evidence.warn_gb):
+            print(f"evidence: {message}")
         return 0
 
     # Authoring
@@ -1849,6 +1867,18 @@ def main(
             return 0
         redactor = Redactor.from_config(config, env)
         store = EvidenceStore(config.state_dir, checkout.fs, checkout.fs.read_bytes, checkout.fs.size, redactor.scrub)
+        if args.evidence_verb == "prune":
+            if args.to_gb < 0:
+                raise runner.Refusal("negative evidence target", "supply a nonnegative --to-gb N")
+
+            async def prune_evidence():
+                async with _locked(config.state_dir, "evidence prune", instance_id=await checkout.git.describe(repo), clock=clock):
+                    before = store.blob_bytes()
+                    store.prune(args.to_gb * 10**9)
+                    print(f"evidence blobs: {before} bytes before, {store.blob_bytes()} bytes after")
+
+            asyncio.run(prune_evidence())
+            return 0
         if args.evidence_verb == "captures":
             road = f"list what exists with clutch evidence captures {args.stem}"
             if args.name is not None and args.attempt is None:

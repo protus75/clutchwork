@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host-facing contract: install steps, copyable config.yaml and full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and the cutover
+purpose: Host-facing contract covering install steps, a copyable config.yaml and the full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: f74aec75
-hash: 0abb14fbb91dd5a313bae7c7976ccae5f89801b6dff9cb51a4ab780cf04b38e9
+verified: 2036efdf
+hash: d122208738701c90542d3a8e1b9d14a2dd252e11bd4ef436421b54fbbe4a0f03
 -->
 # Host contract
 
@@ -162,7 +162,7 @@ Config:
     routing_default_tier: medium
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
     roadmap: {ahead: 2}
-    evidence: {max_gb: 20}
+    evidence: {warn_gb: 20}
     training_data: {enabled: false, exclude: []}
     meta: {paths: []}
     index: {embed: null, implement_hint: false}
@@ -188,7 +188,7 @@ Calibration:
   defaults: {every: 100}
 Evidence:
   required: []
-  defaults: {max_gb: 20}
+  defaults: {warn_gb: 20}
 Meta:
   required: []
   defaults: {paths: []}

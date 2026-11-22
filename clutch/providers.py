@@ -662,7 +662,6 @@ class CliAdapter:
                             },
                         },
                     )
-                    store.prune(self._config.evidence.max_gb * 10**9)
             finally:
                 self._fs.remove(prompt)
                 self._fs.remove(index)

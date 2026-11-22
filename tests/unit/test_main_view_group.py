@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test main view group
+# purpose: Checks how view group subcommands parse, that the old ungrouped names are refused, the refusal messages, dispatch output and the optional git lock setting
 # relates: [clutch/__main__.py, clutch/observe.py]
-# owner: engine
-# verified: 9a610809
-# hash: 256b3c0c6aa072a3c7b9da4adfefdf1ddb8379edbf72c0a9bad843740da5fd0b
+# owner: clutch/__main__.py
+# verified: 2036efdf
+# hash: 57f840a250aff070f90636d5ffba4b4d0a0b8a4409c270487e4b12e5fbefe74b
 import argparse
 import json
 from types import SimpleNamespace
@@ -55,7 +55,7 @@ def test_refusals_name_group(tmp_path, capsys):
 
 
 def test_dispatch_and_optional_locks(tmp_path, monkeypatch, capsys):
-    monkeypatch.setattr(entry, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=tmp_path, providers=[], snapshot_merged_limit=7))
+    monkeypatch.setattr(entry, "load_config", lambda *a, **kw: SimpleNamespace(state_dir=tmp_path, providers=[], snapshot_merged_limit=7, evidence=SimpleNamespace(warn_gb=20)))
 
     class Journal:
         def __init__(self, *args):

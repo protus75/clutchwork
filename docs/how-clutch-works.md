@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 5a90be6a
-hash: cb4501073a57ea516889902af9b3542a9061cc00a233e50da2d894a18f469ea9
+verified: 2036efdf
+hash: 751bae4f763f5b565c798c99d5aa403a07e8650c5a8a2b55ee21d8ac545e93d6
 -->
 # How ClutchWork works
 
@@ -55,20 +55,21 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `meta fill [paths]` | yes | Fill metadata using a read-only model. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
-| `view status` | no | Prints the journal projection (section 10.3). Read-only. |
+| `view status` | no | Prints the journal projection and any evidence size warning (section 10.3). Read-only. |
 | `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
 | `view events` | no | Streams actionable engine changes after a silent baseline until Ctrl-C. |
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling and graphics judge independence without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
 | `evidence show` | no | Print call envelopes and stored normalized event lines. |
 | `evidence schema` | no | Print the JSON Schema for start, end or event records. |
 | `evidence renormalize` | no | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
+| `evidence prune --to-gb N` | yes | Take the writer lock and delete oldest eligible blobs to the target; print sizes before and after. |
 | `evidence coverage` | no | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | no | List ticket captures or print one by attempt and name. |
 | `training export --out DIR [--kinds implement, preference, review, diagnosis, ticket, conflict, triage ...] [--since DATE] [--holdout PCT] [--no-trajectory] [--require-records]` | no | With `--require-records`, exit 2 after export if any requested kind has no records. Triage labels reflect operator overrides of the verdict. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; exit 2 if no held-out review record was scored; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Git is not probed if config fails to load. Exit 2 on any failure. |
+| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Warns when evidence exceeds its configured threshold without failing. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
@@ -780,7 +781,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |
 | `queue.json` | Derived pick order, timestamp, `Runs before` hints, and idle free-slot reasons (`waiting`, `hold`) shown as row status in watch and the extension. |
 | `scratch/` | Graphics render directories and retro window files read by agents by path, distinct from `evidence/scratch/`. |
-| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. Per-attempt prompts, outputs, and command output are captures. Capture pointers to blobs live at `captures/<stem>/<attempt>/<escaped name>.json`. |
+| `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. Blobs are retained until an operator runs `evidence prune`; `evidence.warn_gb` sets the warning threshold. Per-attempt prompts, outputs, and command output are captures. Capture pointers to blobs live at `captures/<stem>/<attempt>/<escaped name>.json`. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |
 | `commit.lock` | Serializes git index writes and commits, with a 60-second wait. |
 | `journal.lock` | Short-held exclusive lock for every journal append, covering tail repair, segment roll, and the write. |
@@ -810,7 +811,7 @@ this section; the commit lock is not held for a run lifetime.
 
 ### 10.3 `view status`
 
-`view status` is a write-free projection of the journal:
+`view status` is a write-free projection of the journal, followed by an evidence size warning when over the threshold:
 
 1. The merged count, and stems in flight, interrupted (last `running` with no live engine), or blocked (last state neither `running`, settled, nor rejected).
 2. Intake and verdict refusals for stems not settled or rejected, and reopens for unresolved messages.
@@ -852,7 +853,7 @@ Whenever a start was written, `end.json` is written when the call ends: at exit,
 
 Blobs live at `blobs/<first two hex digits>/<sha256 hex>` and records refer to them as `sha256:<hex>`. `put_blob` redacts UTF-8 text with configured secrets before hashing, so a secret never reaches the store, even as a hash; non-UTF-8 bytes are stored as given. Blobs are compressed with `compression.zstd` and each digest is written once, so identical content such as a prompt re-sent on retry is stored once.
 
-After each `end.json` write, `invoke` calls `prune` with `evidence.max_gb` × 10^9 bytes. If the compressed blob files' on-disk size exceeds that bound, prune walks records with an `end.json` from oldest `clock.wall_end` first. It deletes blobs named by each end (stdout, stderr and arrival times), except those still named by a record not yet walked, including a newer record or one without an end. It stops when size is under the bound. Records are never deleted, and prune never removes a blob named only by a `start.json`, such as a prompt.
+Nothing prunes automatically. The writer-locked `clutch evidence prune --to-gb N` explicitly prunes to N × 10^9 bytes. If the compressed blob files' on-disk size exceeds that bound, prune walks records with an `end.json` from oldest `clock.wall_end` first. It deletes blobs named by each end (stdout, stderr and arrival times), except those still named by a record not yet walked, including a newer record or one without an end. It stops when size is under the bound. Records are never deleted, and prune never removes a blob named only by a `start.json`, such as a prompt.
 
 `write_record` validates records against the strict pydantic `Start` or `End` model (strict types, `extra="forbid"`). `read_record` accepts any `clutch.evidence.call/1.<minor>` record, drops fields unknown to the current model and returns `SKIP` for another major version. `json_schema` generates JSON Schema for `start`, `end` and `event` from the models; `clutch evidence schema` prints it.
 
@@ -874,7 +875,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `snapshot_merged_limit` | Merged rows included by `view snapshot` (default 100), unless `--all-merged` is passed. |
 | `roadmap.ahead` | Roadmap tickets the driver keeps authored ahead (default 2), the default for `roadmap author --ahead`, and the queue size below which the driver runs the release gate: with that many or more confirmed tickets unsettled, the gate waits. |
-| `evidence.max_gb` | Evidence blob retention bound in GB; defaults to 20. |
+| `evidence.warn_gb` | Evidence blob size warning threshold in GB; defaults to 20. |
 | `meta.paths` | Roots and kinds for file metadata; defaults to an empty list. |
 | `training_data` | Experimental training switch (off by default) and additional exclusion globs. |
 | `release` | Upload authorization and PyPI token environment variable name; uploads default to off. |
@@ -902,7 +903,7 @@ The block carries only process rules that hold for every host; codebase rules be
   tells clutch how to run (for example "clutch must ...") is refused.
 - The `core_drift` gate fails a ticket when a routed conduct file's block is not current.
 - `engine serve`, `engine drain` and `engine run` refuse to start when a committed routed conduct block is stale; `host doctor` reports this as a `core` row.
-- `host doctor` checks a host's setup without changing anything.
+- `host doctor` checks a host's setup without changing anything and warns when evidence exceeds `evidence.warn_gb`.
 - The `clutch.testreport` pytest plugin accepts `--clutch-results PATH` and writes JSON with
   `schema_version: 2`, a `tests` map from pytest node IDs to `passed`, `failed`, or `skipped`,
   and a matching `seconds` map of finite nonnegative floats. The reader accepts only schema 2 and refuses schema 1.

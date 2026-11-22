@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: f74aec75
-hash: f42d473e833a2151b5e4441cd1b008d12957b4693219b92087d19a43fd3a6f2e
+verified: 2036efdf
+hash: 9f15da4df0852e1b81feea43b45fb865b47ba17e2a93bf315d005e3d3bf8b9bb
 -->
 # Running ClutchWork on a host
 
@@ -22,13 +22,13 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 |---|---|---|
 | `view watch` | Yes | Show the live text view; `--once` prints one view. |
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
-| `view status` | Yes | Show the journal projection. |
+| `view status` | Yes | Show the journal projection and any evidence size warning. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |
 | `view events` | Yes | Stream actionable engine changes after a silent baseline. |
 | `ticket lint` | Yes | Validate tickets and graphics judge independence without writing. |
 | `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `engine calibrate` | Yes | Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
-| `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure. |
+| `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure and excess evidence size as a warning. |
 | `prompt` | Yes | List prompts with `prompt list` and render host prompts with `prompt host <name> [stem]`; render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
 | `host core` | Yes | Refresh managed conduct files. |
 | `provider probe` | Yes | Probe declared providers and models. |
@@ -58,6 +58,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `evidence show` | Yes | Print call envelopes and stored normalized event lines. |
 | `evidence schema` | Yes | Print the JSON Schema for start, end or event records. |
 | `evidence renormalize` | Yes | Rebuild current normalized views from stored raw stdout, preserving older normalizer ids; count skipped calls. |
+| `evidence prune` | No | Take the writer lock and prune oldest eligible blobs to the target, printing sizes before and after. |
 | `evidence coverage` | Yes | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | Yes | List ticket captures or print one by attempt and name. |
 | `training export` | Yes | With `--require-records`, exit 2 after export if any requested kind has no records. With `--kinds` choose implement, preference, review, diagnosis, ticket, conflict, or triage; `--since DATE` filters by call date. Triage labels reflect operator overrides of the verdict. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
@@ -72,7 +73,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 
-Stop serve before `index build`, `roadmap author`, `box dismiss`, `release bump`, `release publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `evidence prune`, `index build`, `roadmap author`, `box dismiss`, `release bump`, `release publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
 ## Reporting a clutch problem upstream
 
