@@ -4,8 +4,8 @@ kind: plan
 purpose: Stage panels: plan
 relates: [clutch/driver.py]
 owner: clutch/driver.py
-verified: 8e7d48f5
-hash: 1e02aa4e2b055b02bee09975bc284cd702a18f8266213e29f1a333e606d6ee3d
+verified: 1b07e648
+hash: 512dc82ba4bac36075da095e327c7a387725e04e8e059f09fd7a42e5934c9080
 -->
 # Stage panels: plan
 
@@ -14,6 +14,8 @@ Run a ticket lifecycle stage as several independent model calls at once and comb
 ## Status
 
 Merged roadmap rows: 65 (`panel-combiners`), 66 (`panel-routing-config`), 67 (`review-panel-r2`), 68 (`panel-scorecard`), 179 (`review-panel-stage-use`), 192 (`review-panel-stage-use-majority`), 193 (`review-panel-stage-use-requisition`), 199 (`review-panel-stage-use-triage`). Open roadmap rows: 87. Written 2026-11-14 at commit `0ef95269` for `docs/roadmap.md`.
+
+Owner decision, 2026-11-21 (`requisition-contract-review-comparison`, commit `3636bf88`): requisition review is one short model call with no panel. Row 193 merged the requisition panel and that change then removed it; requisition review is no longer a panel surface. `config.py` still accepts `findings-union` on `requisition_review`, but nothing reads it.
 
 ## Roadmap
 
@@ -72,7 +74,7 @@ Combiners take and return the existing artifact models (`ReviewArtifact`, `Diagn
 
 ### 4. Which stages, in which release
 
-- 0.5.0: `review`, `requisition_review`, `diagnose`, `triage`. All read-only, one worktree, no new git.
+- 0.5.0: `review`, `diagnose`, `triage` (`requisition_review` was dropped on 2026-11-21; see Status). All read-only, one worktree, no new git.
 - 0.7.0: `implement` best-of-N, after `serve-parallel-dispatch` gives the engine run slots and a per-candidate worktree name (`<worktree_root>/<stem>.m<k>`).
 - The document agent's lenses and the graphics judge are consumers from the day they land: their plans point here.
 
@@ -87,7 +89,7 @@ The scorecard attributes each catch to the members that raised it. A finding onl
 | Combiners | new `clutch/panel.py` (pure; no I/O) |
 | `Route.panel` and the surface-fit refusal | `clutch/config.py`; `clutch/docs/host-contract.md` inventory |
 | Fan-out, member effect keys, `panel_facts` | `clutch/driver.py` |
-| Review and requisition use | `clutch/stages.py` (review), `clutch/requisition.py` |
+| Review use | `clutch/stages.py` (review); `clutch/requisition.py` makes one call, no panel (2026-11-21) |
 | Diagnosis and triage use | `clutch/runner.py` (diagnosis), `clutch/triage.py` |
 | Scorecard attribution | `clutch/scorecard.py`, `clutch/retro.py` (report) |
 | Best-of-N worktrees | `clutch/stages.py` (implement), `clutch/runner.py` |
