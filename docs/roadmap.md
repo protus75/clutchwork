@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: f2360ef5
-hash: 80015f1d8ff16afb8583c8349e156493474f19aff0e144a432226ec9a0a58a5e
+verified: db25062f
+hash: 12f81cb1c91717e9d8692c9fd37f04492e42e6c5ce1fd565424aeddf67a72065
 -->
 # clutch roadmap
 
@@ -461,7 +461,7 @@ The gate checks filled meta blocks in docs and tests and that `context suggest` 
 uv run clutch roadmap merged --release 0.5.0
 uv run clutch meta check docs clutch/docs tests
 uv run clutch training export --out .clutch/training-export --kinds implement preference review diagnosis ticket conflict triage --require-records
-uv run clutch training export --out .clutch/training-eval --kinds review --holdout 20
+uv run clutch training export --out .clutch/training-eval --kinds review --holdout 100
 uv run clutch training eval --route medium/review --holdout .clutch/training-eval/holdout.txt
 uv run clutch index build
 uv run clutch context suggest context-suggest --require
