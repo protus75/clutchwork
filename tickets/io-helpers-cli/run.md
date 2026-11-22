@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The repository-wide import search found two additional consumers outside the fence; keeping importer discovery synchronized with the fence would prevent this class of omission.
+The hub retains its config-builder import because an existing adoption check requires it. The final integration run and untouched base both reported 285 passed and 3341 skipped. The final verification commands all passed; the smaller choice was to reuse the existing fakes rather than add new fake classes.
 
 ## Dead ends
 
-none
+None.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 30 minutes; elapsed time was not measured.
 
