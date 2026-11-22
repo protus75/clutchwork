@@ -217,9 +217,14 @@ class ControlInbox:
         self.journal, self.lifecycle_id = journal, lifecycle_id
         self.holds, self.apply, self.files, self.read = holds, apply, files, read
         self._applied: ControlProjection | None = None
+        self._fold_result = (set(), ControlProjection(lifecycle_id), False)
+        self._fold_count = -1
         self.known = known
 
     def _fold(self) -> tuple[set[str], ControlProjection, bool]:
+        events = self.journal.read()
+        if len(events) == self._fold_count:
+            return self._fold_result
         decided = set()
         pause = None
         released = set()
@@ -227,7 +232,7 @@ class ControlInbox:
         stopped = False
         retro = None
         accepted = False
-        for event in decisions(self.journal.read()):
+        for event in decisions(events):
             body = event.body
             request_id = body["request_id"]
             decided.add(request_id)
@@ -248,7 +253,9 @@ class ControlInbox:
                 stopped = True
             elif body["verb"] == "retro":
                 retro = request_id
-        return decided, ControlProjection(self.lifecycle_id, pause, frozenset(released), killed, stopped, retro), accepted
+        self._fold_result = decided, ControlProjection(self.lifecycle_id, pause, frozenset(released), killed, stopped, retro), accepted
+        self._fold_count = len(events)
+        return self._fold_result
 
     def recover(self) -> ControlProjection:
         _, projection, accepted = self._fold()
