@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 1b07e648
-hash: 2b02439637e1b807a8f0470a36a7c92f89a705ab9caa990b7c8d9d919324cfe0
+verified: bc0ddbe3
+hash: 01a547b99f68d7b466b8f504624f4588130316478580d36534ab0178ff9e7bfc
 -->
 # clutch roadmap
 
@@ -18,7 +18,7 @@ A plan change that moves a ticket, adds a dependency on another plan, or spends 
 Status reconciled on 2026-11-22 against main HEAD `e1ab1e16c`; the earlier six-pass audit remains a historical snapshot and touched findings are rechecked here. Re-run the audit before each minor release; the section headings are the checklist.
 
 - 877 tickets merged, none in flight. Blocked: `authoring-reading-specs` (premise_failed), `clutch-ruff-reclean` (premise_failed), `evidence-never-prunes` (gate_failed), `host-mechanical-check` (abandoned), `llm-request-subject` (gate_failed), `phase7-continue` (abandoned), `restore-orphan-ticket-stems` (premise_failed), `retro-due-one-owner` (infra_error), and `roadmap-freshen-2026-11-22` (premise_failed on its earlier attempt).
-- Release status: 0.3.0 gate passed. 0.4.0 has 58 rows merged and `roadmap merged --release 0.4.0` passes; its recorded gate failure from 2026-11-20 is stale. 0.5.0 has 50 rows merged; its gate fails at `clutch training eval --route medium/review --holdout .clutch/training-eval/holdout.txt`. 0.6.0 has 1 row merged and 12 blocked; 0.7.0 has 13 blocked.
+- Release status: 0.3.0 gate passed. 0.4.0 has 58 rows merged and `roadmap merged --release 0.4.0` passes; its recorded gate failure from 2026-11-20 is stale. 0.5.0 has 52 rows merged; on 2026-11-22 every gate line passed except `roadmap accept 0.5.0`, whose two findings (rows 215 and 216) were struck as premise false. 0.6.0 has 1 row merged and 12 blocked; 0.7.0 has 13 blocked.
 - Since 2026-11-19, 242 stems merged on main, 160 absent from this roadmap. Merged work outside the roadmap includes integration I/O restoration (`integration-io-guard`, `integration-disk-io-skip`, `disk-io-skip-per-file`, `io-helpers-*`, `restore-helpers-*`, `restore-io-tests-01..39`, `shared-git-fake*`, `shared-fakes-guard`, `test-io-rules`, `test-tmp-in-checkout`); serve and parallel hardening (`serve-*`, retro checks, dispatch and scheduler ordering); requisition review (`requisition-review-*`, `requisition-contract-review-comparison`); meta blocks (`meta-*`, `check-owns-meta-headers`, `check-meta-fill-nested-stage`, `implement-spec-meta-headers-from-verbs`); atomic ticket-write commits and serialization; extension changes (`extension-*`); plan prompts (`plan-prompts-*`, `plan-ticket-serve-prompt`, `plan-subagents-explicit-sonnet`, `host-prompts`); and image quality, provider parser, hot-path and other fixes.
 
 Earlier audit facts, not re-measured:
