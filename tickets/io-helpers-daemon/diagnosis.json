@@ -1,0 +1,26 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "fa7a58e702ba1339486522f485cbf78d712dc519",
+  "stem": "io-helpers-daemon",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The premise finding on test_daemon_composition.py is a misread. Line 43 imports the one-argument import_closure from tests.integration.test_scheduler, and Scope in says to leave that line untouched. The composition hub defines no import_closure, so it must not import one back from",
+    "Move only the two-argument mergequeue function, import_closure(root, sources) at test_mergequeue.py:933, into tests/daemon_helpers.py. Its only importer is test_rework.py:30 (with commit, conflict, ctx). test_mergequeue.py imports it back for its own tests at lines 953 and 960.",
+    "test_daemon_admission.py:222 defines its own one-argument import_closure, and no other file imports it. Acceptance criterion 3 forbids `def import_closure` in that hub. Rename it in place to admission_import_closure and update its one call at line 239, following the scheduler_import_closure pattern",
+    "Renaming the private helper in test_daemon_admission.py is not weakening a hub test, and the hub stays skipped. Do not import the mergequeue import_closure into test_daemon_admission.py or test_daemon_composition.py. Record this decision in run.md under Surprises / judgment calls.",
+    "This attempt started from main and committed nothing, so do the full ticket: create tests/daemon_helpers.py with all 23 names on GitFake, FakeExec, FakeFileSystem and FakeClock; repoint all 38 importer lines; create tests/unit/test_daemon_helpers.py and"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    2,
+    4
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
