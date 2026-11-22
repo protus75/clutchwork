@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification passed: 2,149 unit tests and 297 integration tests passed; the configured runner skipped 3,331 disk-I/O integration tests, including 14 cases in the targeted command. Ticket lint passed.
+The final verification pass passed, but the repository's disk-I/O marker skipped 3,331 integration tests, including the corrected prompt test.
 
 ## Dead ends
 
-An initial help assertion did not detect a missing example; it was tightened and the mutation was caught.
+none
 
 ## Second problems filed
 
-- box-001129-b8700b77: Out-of-scope roadmap and guide documents retain historical driver wording, including docs/roadmap.md and docs/document-agent/plan.md; existing box items track these statements.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ An initial help assertion did not detect a missing example; it was tightened and
 
 ## Predicted vs actual
 
-none
+Ticket budget: 55 minutes; this retry took approximately 2 minutes.
 
