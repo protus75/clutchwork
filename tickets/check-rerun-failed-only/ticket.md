@@ -1,12 +1,15 @@
 ---
 state: confirmed
 source: human
-priority: P0
+priority: P1
 kind: feature
 ---
 
 ## Depends on
 - none
+
+## Runs before
+- flake-fix-jumps-queue
 
 ## Context
 - clutch/stages.py::_check_host_results
