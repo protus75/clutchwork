@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Parallel ticket runs: plan
+purpose: Plan for experimental parallel ticket runs in serve: fence-overlap dispatch, priority-then-chain ordering, multi-slot admission, three-step merge conflict resolution and contention authoring rules
 relates: [clutch/tickets.py]
 owner: clutch/tickets.py
-verified: d7719818
-hash: c6e6cabea96589777fc87c9c193b5a1e1b61e6a66567e11b5f3a07d3ed198948
+verified: 5a232ea2
+hash: 825fc0d8a2569224bd2d0cc3148e4c092b319c46d9547be6b9aa4db557601a00
 -->
 # Parallel ticket runs: plan
 
@@ -71,7 +71,7 @@ New pure function, `clutch/tickets.py::fences_overlap(a, b, shared) -> bool`, be
 ### 3. Ordering: fill free slots by longest chain
 
 - `chain(t)` is the number of unsettled tickets reachable from `t` through incoming `depends` and `runs_before` edges, that is, how much work waits behind `t`. It is a pure function in `clutch/drain.py`. `clutch/graph.py` stays drawing-only.
-- When parallel is on, the eligible list is ordered by `(P0 first, -chain, priority, age, stem)`. `runs_before` edges are still applied as soft edges, as `order_tickets` applies them now. P0 stays first because P0 is the instance-fix lane in the CORE routing rules. Below P0, longest chain wins over priority, so long dependency chains start early and keep the slots full.
+- When parallel is on, the eligible list is ordered by `(priority, -chain, age, stem)`. `runs_before` edges are still applied as soft edges, as `order_tickets` applies them now. Priority ranks first at every level, and the longest chain breaks ties within a priority.
 - **Filling slots:** walk the ordered list and dispatch each candidate that does not overlap anything in flight, until `max_runs` slots are full.
 - **Starvation guard:** a candidate skipped for overlap `SKIP_LIMIT` times (an engine constant, 3) becomes a barrier. Nothing new dispatches until it can start. Each skip goes to the engine log, not the journal.
 - `write_queue` (`state_dir/queue.json`) writes the order as dispatched, so status and the extension show the real order.
@@ -175,6 +175,6 @@ Fence notes for authoring: ticket 6 touches `clutch/scheduler.py`, `clutch/daemo
 Decisions taken on 2026-11-13 are marked; `docs/roadmap.md` §6 is the record.
 
 1. **Serve only, or drain too?** Decided 2026-11-13: serve only. `drain` would need the queue and the conflict steps, which means a second admission path or moving `drain` onto the queue. `remove-merge-hold` already made `serve` usable for day-to-day work.
-2. **Chain order below P0, or below P1 too?** Decided 2026-11-13: below P0 only. The CORE routing sends orchestration-cause fixes as P0 and product-cause fixes as P1. Only P0 has to jump the queue.
+2. **Chain order below P0, or below P1 too?** Decided 2026-11-13: below P0 only. The CORE routing sends orchestration-cause fixes as P0 and product-cause fixes as P1. Only P0 has to jump the queue. Replaced 2026-11-22: chain order applies within each priority, never across priorities, because a long-chain P2 ticket outranked every P1 ticket.
 3. **Rerun cap usage.** Decided 2026-11-13: conflict reruns do not use `retry`; they are capped by `CONFLICT_RERUN_LIMIT = 2`.
 4. **Splitting the existing large test files.** Decided 2026-11-13: section 7's do-not-grow rule lands in 0.3.0 (`contention-authoring-rules`, merged); splitting `test_daemon_composition.py` and the other six is one chore ticket per file during the 0.6.0 window if it runs, else in 0.4.0 before parallel runs start. Not authored by this plan (roadmap decision 4).

@@ -182,7 +182,7 @@ def chain(stem: str, unsettled: Mapping[str, Ticket]) -> int:
 
 def parallel_order(eligible: Iterable[Ticket], authored: Mapping[str, str], unsettled: Mapping[str, Ticket], *, fixes: Set[str] = frozenset()) -> list[Ticket]:
     """Order eligible tickets by urgency and downstream work, respecting soft edges."""
-    return _soft_edges(sorted(eligible, key=lambda t: (t.stem not in fixes, t.frontmatter.priority != "P0", -chain(t.stem, unsettled), *sort_key(t, authored))))
+    return _soft_edges(sorted(eligible, key=lambda t: (t.stem not in fixes, PRIORITY[t.frontmatter.priority], -chain(t.stem, unsettled), *sort_key(t, authored))))
 
 
 def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int, shared: Iterable[str], skips: Mapping[str, int], rerun: Collection[str]) -> tuple[list[Ticket], dict[str, int]]:

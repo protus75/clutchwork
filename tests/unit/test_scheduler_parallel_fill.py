@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test scheduler parallel fill
+# purpose: Unit tests for Scheduler.dispatch_next parallel slot filling: ordering, P0 precedence, overlap skips and barrier, shared paths, dispatch failure cleanup, config failure, and daemon wiring
 # relates: [clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/scheduler.py, clutch/tickets.py, tests/dispatch_settle.py]
 # owner: engine
-# verified: 9a610809
-# hash: cf76f3a7f38c05e2891f2f15f93a504e297a62244fb9f5c44a65a7d5af501314
+# verified: 5a232ea2
+# hash: 1ff623ed874bb8c88c6293123e9f0abf77760bdc27dea9ee1f50631ed5841fdd
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -67,7 +67,7 @@ def rig(items, parallel=Parallel()):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("enabled,expected,order", [(False, "short", ["short", "long"]), (True, "long", ["long", "short"])])
+@pytest.mark.parametrize("enabled,expected,order", [(False, "short", ["short", "long"]), (True, "short", ["short", "long"])])
 async def test_order(enabled, expected, order):
     long, short = ticket("long"), ticket("short", "P1")
     children = [ticket("child1", depends=("long",)), ticket("child2", depends=("long",))]
@@ -84,7 +84,7 @@ async def test_p0_precedes_chain():
     long, short, urgent = ticket("long"), ticket("short", "P1"), ticket("urgent", "P0")
     obj, writes, _, _ = rig([long, short, urgent, ticket("child1", depends=("long",)), ticket("child2", depends=("long",))], Parallel(enabled=True))
     assert await dispatch_settled(obj) is urgent
-    assert writes[0]["order"] == ["urgent", "long", "short"]
+    assert writes[0]["order"] == ["urgent", "short", "long"]
 
 
 @pytest.mark.asyncio

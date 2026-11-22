@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Parallel ordering and conflict-aware slot selection.
+# purpose: Unit tests for chain length, parallel ordering, single-flight order, and fence-overlap slot filling with skip barrier, shared paths and bypass run-alone
 # relates: [clutch/drain.py, clutch/tickets.py]
 # owner: engine
-# verified: 0a308920
-# hash: 557548f74e03acc5344f854abf2318e21090564bdad29d4e8e97236ac1bdc496
+# verified: 5a232ea2
+# hash: 3fe9718ac406d1db5a94a069fe767bbc63be9ef9b8b9ced3578b958ecb029cb3
 
 from clutch.drain import SKIP_LIMIT, chain, fill_slots, order_tickets, parallel_order
 from clutch.tickets import Frontmatter, GateBypass, Ticket
@@ -60,7 +60,7 @@ def test_parallel_priority_chain_and_soft_edges():
     children = [ticket(f"l{i}", depends=("long",)) for i in range(5)]
     children += [ticket(f"m{i}", depends=("middle",)) for i in range(3)]
     unsettled = {t.stem: t for t in [zero, long, middle, short, *children]}
-    assert stems(parallel_order([short, middle, long, zero], {}, unsettled)) == ["zero", "long", "middle", "short"]
+    assert stems(parallel_order([short, middle, long, zero], {}, unsettled)) == ["zero", "long", "short", "middle"]
     x = ticket("x", "P1", before=("y",))
     y = ticket("y", "P0")
     assert stems(parallel_order([y, x], {}, {"x": x, "y": y})) == ["x", "y"]

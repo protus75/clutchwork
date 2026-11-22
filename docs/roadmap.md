@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: clutch roadmap
+purpose: Orders clutch's planned work across plans: release slots, priorities, cross-plan decisions, owner decisions, the duplication/gap/drift audit and the master ticket table with release gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: c6c2af7d
-hash: 130df54448ac8c7895fd1848f7ff82a468daa33d7cb385b75c75cc96eb337a9b
+verified: 5a232ea2
+hash: 2bdcadd954d64f45adaa5adb2e16af127d8b4852d85513a393fee7a2577f8104
 -->
 # clutch roadmap
 
@@ -185,7 +185,7 @@ Decided by the owner in chat on 2026-11-13. Each plan's "Open decisions" section
 2. **P8 `core --check` and start-command file.** Decided: dropped. `doctor`'s `core` row and the start refusal cover drift detection; no host has asked for a start-command file. Both are recorded here as not built on purpose and are tracked nowhere else.
 3. **Settled-ticket archive.** 537 directories under `tickets/`. Decided: nothing until a scan (lint with no stems, intake, the snapshot) is timed and found slow; the timing is filed as evidence when it happens.
 4. **Split the do-not-grow test files.** Decided: the do-not-grow rule lands in 0.3.0 (`contention-authoring-rules`, done; it names seven files, the five measured at `80b76d5d` plus `tests/integration/test_cli.py` and `tests/integration/test_watch.py` measured at `c761b213`); splitting is chore tickets, one per file, during the 0.6.0 window if it runs, else in 0.4.0 before parallel runs start.
-5. **Parallel plan.** Decided: `serve` only; longest-chain ordering below P0 only (P0 keeps the emergency lane); conflict reruns have their own cap `CONFLICT_RERUN_LIMIT = 2` and never draw `retry`.
+5. **Parallel plan.** Decided: `serve` only; longest-chain ordering within each priority (replaced the below-P0-only rule on 2026-11-22); conflict reruns have their own cap `CONFLICT_RERUN_LIMIT = 2` and never draw `retry`.
 6. **Training plan.** Decided: the export includes the full normalized tool-call trajectory (a per-run flag can trim it); Author-written tickets are included, tagged `authored_by: author`.
 7. **Evidence plan.** Decided: providers' own session transcripts are not copied, only their ids are recorded; Claude thinking text is stored as a blob with `visibility: text`.
 8. **Document plan.** Decided: `diverse: false` by default (same model per panel, `--diverse` per run); host-defined lenses and facets allowed as data inside the engine frame; commands only, no `doc` ticket kind in v1.

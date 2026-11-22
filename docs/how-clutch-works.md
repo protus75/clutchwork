@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 1dc2db5a
-hash: 6196493d7fe1cb16058ee5630f74b315004d3f8b7bcd24f0ed5a353bf9b93f76
+verified: 5a232ea2
+hash: 693e72c26917efd1268c6f5eb236e69ccf587907ea219fea4039782334b45b93
 -->
 # How ClutchWork works
 
@@ -539,7 +539,7 @@ publishes `state_dir/control/active.json`, and runs five loops (every 0.1s):
   `scheduler.max_unmerged` (default 2) finished tickets are waiting to merge, while paused, or
   while a stem is held (Reject queue awaiting an operator, storm, drought, or a premise or diff-budget park at unchanged ticket content). After a failed terminal, serve puts the ticket back for the re-offer rule and draws `retry` on re-offer as drain does, subject to the exclusions in section 6.6. Each fresh dispatch reviews committed content without an existing approval before Implement. Among eligible tickets,
   `## Runs before` orders named stems after the ticket naming them; fixes linked from confirmed flake reports lead ahead of priority, chain length, and age; priority, authored age,
-  and stem break ties. Edges to ineligible stems never block dispatch. With parallel enabled, `parallel_order` prioritizes P0 then the longest unsettled chain; candidates overlapping an in-flight fence are skipped and logged as `dispatch_skip`, a ticket rerun after a conflict discard and a candidate overlapping one ignore `shared_paths`, and a candidate skipped `SKIP_LIMIT` times blocks later candidates.
+  and stem break ties. Edges to ineligible stems never block dispatch. With parallel enabled, `parallel_order` ranks by priority, then the longest unsettled chain within a priority; candidates overlapping an in-flight fence are skipped and logged as `dispatch_skip`, a ticket rerun after a conflict discard and a candidate overlapping one ignore `shared_paths`, and a candidate skipped `SKIP_LIMIT` times blocks later candidates.
   Admission permits up to `scheduler.parallel.max_runs` slot-holding runs when enabled (one otherwise); the scheduler returns once a ticket occupies a slot and each run is its own task, with parallel off holding one in flight. Runs waiting for merge retain ownership but release their slot. A merge poll with work excludes the other exclusive sections, permits running implementations and new runs, and marks serve busy until it finishes; an idle poll takes no section. Box intake with work, retro, the idle supervise pass, maintenance, startup and sweeps still exclude slot-holding runs; intake and watch publication proceed beside running implementations. Idle checks include every owned run.
 - **Merge queue:** serial admission (section 7.2.1).
 - **Box intake:** ingests host bug reports into the Suggestion Box and never triages.
