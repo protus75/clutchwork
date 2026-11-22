@@ -1,12 +1,15 @@
 ---
 state: confirmed
 source: human
-priority: P0
+priority: P1
 kind: feature
 ---
 
 ## Depends on
 - none
+
+## Runs before
+- claude-session-names
 
 ## Context
 - tests/integration/test_ask_drain_loop.py
