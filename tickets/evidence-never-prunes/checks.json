@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d9723cfe550780107f6471d89114ddf6d7d369fb",
+  "produced_at_sha": "adfdf9579df20a76597e48d1fee2ca94b9c4bc33",
   "stem": "evidence-never-prunes",
   "passed": false,
   "changed_files": [
@@ -98,16 +98,14 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 21.041175,
+        "seconds": 18.104533,
         "passed": 2088,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3789622009790037,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2896491780120414,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1793035899754614,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.169919042964466,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0154493889713194
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5130925600242335,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.327281980047701,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2303723789809737
         }
       },
       "coverage": {
@@ -127,15 +125,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 9.801359,
+        "seconds": 10.128683,
         "passed": 297,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9170878659933805,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0935662270348985,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0594226899847854,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039486800087616
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8599445650179405,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1110799880116247,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0598005980136804,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.00403106000158
         }
       }
     },
@@ -166,9 +164,9 @@
         "tests/unit/test_help.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_evidence_warn_threshold.py tests/unit/test_evidence_prune_verb.py tests/unit/test_evidence_config.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.89s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_evidence_warn_threshold.py tests/unit/test_evidence_prune_verb.py tests/unit/test_evidence_config.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.97s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.938231
+      "seconds": 4.503754
     }
   ]
 }
