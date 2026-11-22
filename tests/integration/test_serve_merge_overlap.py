@@ -3,9 +3,9 @@
 # kind: test
 # purpose: Tests that a merge and the following rebase complete while another implementation holds its parallel run slot
 # relates: [clutch/config.py, clutch/mergequeue.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: 50c819f723fac2a626ac3aa03393d191640559c754ffa023605b5ad7daf7bce5
+# owner: clutch/serve.py
+# verified: 7abfadd2
+# hash: e77e9670ef01a934e746a008db42ceb6fa780854ef1a596b0a7c946dff449f2b
 import asyncio
 from dataclasses import replace
 
@@ -16,7 +16,8 @@ from clutch.config import load_config
 from clutch.llm import FakeLLM
 from clutch.mergequeue import TREE_MISMATCH
 from tests.cli_helpers import root
-from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, terminals, until
+from tests.integration.serve_rig import admission_ticket, finish, start_admission, until
+from tests.loop_helpers import admission_graph, terminals
 
 pytestmark = pytest.mark.disk_io_skip
 

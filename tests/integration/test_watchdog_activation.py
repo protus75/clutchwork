@@ -5,8 +5,8 @@
 # purpose: Tests that the watchdog runs on every production driver surface and eval caller, with one soft-band notification, eval-owned budgets and a harvested group kill on hard timeout
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/providers.py, clutch/requisition.py, clutch/runner.py]
 # owner: clutch/watchdog.py
-# verified: 82d23237
-# hash: 1f0d085d94364cba48043339aac11a7a750492be7336417bb79d2a25ae629c51
+# verified: 7abfadd2
+# hash: 08b4e565aba32123b85810449ff2704f10462d1cd3bb0cf8da8b27108ca4b561
 
 import asyncio
 import json
@@ -27,10 +27,10 @@ from eval import diagnose, harness
 from tests.cli_helpers import root, write
 from tests.config_helpers import CONFIG, claude_ok
 from tests.daemon_helpers import CoreRig
-from tests.integration.serve_rig import finish, graph, terminals, until
+from tests.integration.serve_rig import finish, until
 from tests.integration.test_providers import PythonProviderExec
 from tests.integration.test_requisition import TICKET
-from tests.loop_helpers import text, turn
+from tests.loop_helpers import graph, terminals, text, turn
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

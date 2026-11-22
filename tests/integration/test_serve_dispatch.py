@@ -5,8 +5,8 @@
 # purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and retro scheduling
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: clutch/serve.py
-# verified: 82d23237
-# hash: 75666ea88d9210e900d143b6ff97b8676f20bd6ad1e78838d7748506d2924217
+# verified: 7abfadd2
+# hash: a67365e08963a4ad151430158aef4bea45057c88ca87962a592d8ed02d8fa401
 
 import asyncio
 import json
@@ -21,24 +21,8 @@ from clutch.lockfile import Lockfile
 from clutch.merge import Admission
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from tests.cli_helpers import ENV, root
-from tests.integration.serve_rig import (
-    UpgradeChild,
-    admission_config,
-    admission_graph,
-    admission_ticket,
-    enable_upgrade,
-    finish,
-    graph,
-    request,
-    retro_scenario,
-    script,
-    start_admission,
-    terminals,
-    trip,
-    until,
-    write,
-)
-from tests.loop_helpers import text, turn
+from tests.integration.serve_rig import admission_ticket, finish, request, retro_scenario, script, start_admission, trip, until, write
+from tests.loop_helpers import UpgradeChild, admission_config, admission_graph, enable_upgrade, graph, terminals, text, turn
 
 pytestmark = pytest.mark.disk_io_skip
 

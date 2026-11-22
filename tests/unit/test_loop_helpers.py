@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for loop_helpers exports, Rig, fake Time clock, ticket text builder, import closure, triage, terminal and restart helpers, and that fixtures write only under tmp_path
+# purpose: Unit tests for the tests/loop_helpers.py exports (Rig, the fake Time clock, the ticket text builder, the scheduler import closure, and the triage, terminal, restart and serve helpers), checking that fixtures write only under tmp_path, never touch real git, and match what serve_rig re-exports
 # relates: [tests/fakes.py, tests/loop_helpers.py]
 # owner: engine
-# verified: 11188936
-# hash: c092bf89d630375c3186089bd4efbba699c8a91731bf86d84afe73d3c0f84258
+# verified: 810808b8
+# hash: c3962b2d4728240d7a45b6bdc6b3d03c3f044be963cc1a24b74be05dc86e95a2
 import asyncio
 from datetime import UTC, datetime, timedelta
 
@@ -405,3 +405,119 @@ async def test_restart_held(tmp_path, monkeypatch):
         assert identity["instance_id"] == "restart-test"
     finally:
         lock.release()
+
+
+def test_serve_exports():
+    from tests.loop_helpers import UpgradeChild, admission_config, admission_graph, enable_upgrade, graph, notify_command, terminals
+
+    assert (UpgradeChild, admission_config, admission_graph, enable_upgrade, graph, notify_command, terminals) == tuple(
+        getattr(loop_helpers, name) for name in ("UpgradeChild", "admission_config", "admission_graph", "enable_upgrade", "graph", "notify_command", "terminals")
+    )
+
+
+def test_serve_notify_command(tmp_path):
+    import yaml
+
+    from tests.config_fixture import build_config
+    from tests.loop_helpers import notify_command
+
+    (tmp_path / "config.yaml").write_text(build_config())
+    notify_command(tmp_path)
+    assert yaml.safe_load((tmp_path / "config.yaml").read_text())["notify"] == ["notify-sink"]
+    notify_command(tmp_path, enabled=False)
+    assert "notify" not in yaml.safe_load((tmp_path / "config.yaml").read_text())
+
+
+def test_serve_admission_config(tmp_path):
+    import yaml
+
+    from tests.config_fixture import build_config
+    from tests.loop_helpers import admission_config
+
+    (tmp_path / "config.yaml").write_text(build_config())
+    admission_config(tmp_path, command=["check"], safety=True, strategies=["specific"])
+    data = yaml.safe_load((tmp_path / "config.yaml").read_text())
+    assert data["review"]["mechanical"][0]["argv"] == ["check"]
+    assert data["merge"] == {"safety_checks": ["combined"], "strategies": ["specific"]}
+
+
+def test_serve_terminals():
+    from types import SimpleNamespace
+
+    from clutch.journal import EventType
+    from tests.loop_helpers import terminals
+
+    journal = fakes.FakeJournal()
+    journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket="a")
+    selected = journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="a")
+    journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="b")
+    journal.append(EventType.SIGNAL, {"signal": "x"}, ticket="a")
+    assert terminals(SimpleNamespace(journal=journal), "a") == [selected]
+
+
+@pytest.mark.asyncio
+async def test_serve_graph(tmp_path, monkeypatch):
+    from tests.git_fake import GitFake
+    from tests.loop_helpers import graph
+
+    rig = await graph(tmp_path, monkeypatch)
+    assert isinstance(rig.checkout.git, GitFake) and isinstance(rig.fs, fakes.FakeFileSystem)
+    assert not (tmp_path / ".git").exists()
+    assert rig.exec.reply == loop_helpers.reply("declined")
+
+
+@pytest.mark.asyncio
+async def test_serve_admission_graph(tmp_path, monkeypatch):
+    from tests.git_fake import GitFake
+    from tests.loop_helpers import admission_graph
+
+    rig = await admission_graph(tmp_path, monkeypatch, {"one": {"a": "changed"}})
+    assert isinstance(rig.checkout.git, GitFake) and isinstance(rig.fs, fakes.FakeFileSystem)
+    assert not (tmp_path / ".git").exists()
+    assert rig.models == [] and rig.returns == [] and callable(rig.prepare)
+
+
+@pytest.mark.asyncio
+async def test_serve_notify_exec(tmp_path, monkeypatch):
+    import clutch.__main__ as cli
+    from tests.loop_helpers import repository
+
+    rig = await repository(tmp_path, monkeypatch)
+    kwargs = dict(cwd=tmp_path, env={}, timeout=1)
+    assert await rig.exec.run(["notify-sink", "first"], **kwargs) == (0, "", "")
+    (tmp_path / "notify-fails").touch()
+    assert await cli.SubprocessExec().run(["notify-sink", "second"], **kwargs) == (1, "", "")
+    assert (tmp_path / "deliveries.jsonl").read_text() == "first\nsecond\n"
+
+
+@pytest.mark.asyncio
+async def test_serve_upgrade_child(tmp_path, monkeypatch):
+    from tests.loop_helpers import UpgradeChild, graph
+
+    rig = await graph(tmp_path, monkeypatch)
+    child = UpgradeChild(rig)
+    assert await child.replace(["clutch", "serve"], cwd=tmp_path, env={"X": "y"}) == 7
+    assert child.calls == [(["clutch", "serve"], tmp_path, {"X": "y"})]
+
+
+@pytest.mark.asyncio
+async def test_serve_enable_upgrade(tmp_path, monkeypatch):
+    from tests.loop_helpers import UpgradeChild, enable_upgrade, graph
+
+    root = tmp_path / "repo"
+    root.mkdir()
+    rig = await graph(root, monkeypatch)
+    engine = tmp_path / "engine"
+    await enable_upgrade(rig, engine)
+    assert (engine / "clutch/specs/base.md").read_text() == "base"
+    assert (rig.owner.engine, rig.owner.argv, type(rig.owner.reexec)) == (engine, ("--config", "config.yaml", "serve"), UpgradeChild)
+    assert rig.checkout.git.calls[-1][0] == "commit"
+
+
+def test_serve_hub_exports():
+    from tests.integration import serve_rig
+
+    assert serve_rig.turn is fakes.turn
+    assert callable(serve_rig.until)
+    for name in ("graph", "admission_graph", "admission_config", "enable_upgrade", "notify_command", "terminals", "UpgradeChild"):
+        assert getattr(serve_rig, name) is getattr(loop_helpers, name)

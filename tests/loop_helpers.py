@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared scaffolding for scheduler, triage, terminal and restart tests: fake clock, ticket text builder, scheduler and watcher Rig, import-closure walker, triage helpers, and repo, repository, orphan and held fixtures
+# purpose: Shared test scaffolding for the scheduler, triage, terminal, restart and serve tests: a fake clock, a ticket text builder, a scheduler and watcher Rig, an import-closure walker, triage escape rigs, repo, repository, orphan and held fixtures, and serve graph, admission, notify and upgrade helpers
 # relates: [clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py, tests/cli_helpers.py]
 # owner: engine
-# verified: 11188936
-# hash: 6c00eb5adeb434500e09af9c6cd816990b9cd6e7bb0cba4f2a771e351baa0435
+# verified: 7abfadd2
+# hash: de3325889b4f653754b0ebb4cbd7bf9176eaf615e30c30a1538e52efebc77e6f
 
 import ast
 import asyncio
@@ -16,16 +16,20 @@ from pathlib import Path
 
 import pytest
 
+from clutch import runner, serve, stages
 from clutch.__main__ import main
 from clutch.box import Box, Resolution
 from clutch.config import Caps
+from clutch.daemon import TicketWriter
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
+from clutch.lockfile import Lockfile
 from clutch.scheduler import Scheduler
 from clutch.seams import LocalFileSystem
 from clutch.tickets import INTAKE_SIGNAL, parse_ticket
 from clutch.watcher import Watcher
 from tests.cli_helpers import ENV, TICKET, git_fake
+from tests.config_fixture import amend_config
 from tests.dispatch_settle import dispatch_settled
 from tests.drain_helpers import Clock, confirmed, make_root
 from tests.fakes import FakeExec, turn
@@ -428,11 +432,16 @@ async def repository(root, monkeypatch, *, prepare=None):
     scripted = rig.exec.run
 
     async def run(argv, **kwargs):
+        if argv[0] == "notify-sink":
+            with (root / "deliveries.jsonl").open("a") as output:
+                output.write(argv[-1] + "\n")
+            return (1 if (root / "notify-fails").exists() else 0, "", "")
         if argv[0] in {"git", "true"}:
             return await process.run(argv, **kwargs)
         return await scripted(argv, **kwargs)
 
     monkeypatch.setattr(rig.exec, "run", run)
+    monkeypatch.setattr("clutch.__main__.Subprocess" + "Exec", lambda: rig.exec)
     (root / ".gitignore").write_text(".clutch/\nstate/\nrecovery-workspaces/\n")
     conduct = adopt_conduct(root)
     await rig.checkout.git.add(root, ["config.yaml", ".gitignore", "clutch/thing.py", *conduct])
@@ -460,3 +469,128 @@ def held(rig):
     lock = Lockfile(rig.checkout.config.state_dir, verb="drain", instance_id="restart-test", clock=rig.time)
     lock.acquire()
     return lock
+
+
+async def graph(root, monkeypatch, **kwargs):
+    rig = await repository(root, monkeypatch)
+    rig.exec.reply = reply("declined")
+    owner = serve.Serve(
+        rig.checkout,
+        read=lambda stem: (root / f"tickets/{stem}/ticket.md").read_text() if (root / f"tickets/{stem}/ticket.md").is_file() else None,
+        stems=lambda: (p.parent.name for p in (root / "tickets").glob("*/ticket.md")),
+        **kwargs,
+    )
+    rig.owner = owner
+    return rig
+
+
+def terminals(rig, stem=None):
+    return [e for e in rig.journal.read() if e.type == EventType.STATE_TRANSITION and e.body.get("to") != "running" and (stem is None or e.ticket == stem)]
+
+
+async def admission_graph(root, monkeypatch, changes, *, endings=None, settled=None):
+    """The merged CoreRig, actual CLI serve composition and real stages with scripted model replies."""
+    from tests.stages_helpers import SNAG, implement_reply, verdict
+
+    endings = endings if endings is not None else {}
+    models, contexts, returns = [], {}, []
+
+    class Model(FakeLLM):
+        async def call(self, req):
+            stem = req.ticket
+            if req.surface == "implement":
+                for path, data in changes.get(stem, {}).items():
+                    rig.fs.write(req.worktree / path, data.encode())
+                if changes.get(stem):
+                    await rig.checkout.git.add(req.worktree, list(changes[stem]))
+                    await rig.checkout.git.commit(req.worktree, "scripted implementation")
+                failed = endings.get(stem) == "implement"
+                value = implement_reply(
+                    "premise_failed" if failed else "already_satisfied" if endings.get(stem) == "noop" else "ok",
+                    [{"code": "premise", "path": f"tickets/{stem}/ticket.md", "message": "scripted premise refusal", "paved_road": "revise this ticket"}] if failed else [],
+                )
+            elif req.surface == "review":
+                value = verdict("snag", [SNAG]) if endings.get(stem) == "review" else verdict()
+            elif req.surface == "diagnose":
+                value = json.dumps({"verdict": "abandon-human", "lessons": ["inspect the admission findings"]})
+            elif req.surface == "rework":
+                value = json.dumps({"action": "escalate", "tickets": []})
+            else:
+                raise AssertionError(f"unexpected scripted surface {req.surface}")
+            self.script.append(value)
+            return await super().call(req)
+
+    async def prepare(local):
+        llm = Model([])
+        models.append(llm)
+        writer = runner.bind(local, llm)
+        return writer
+
+    rig = await graph(root, monkeypatch, prepare=prepare)
+    rig.prepare, rig.models, rig.contexts, rig.returns = prepare, models, contexts, returns
+    rig.fixture_confirm = True
+    rig.held_returns = []
+    review = stages.review
+
+    async def reviewed(ctx, ticket, invoice, *, attempt):
+        result = await review(ctx, ticket, invoice, attempt=attempt)
+        contexts[ticket.stem] = ctx
+        if result.outcome == "ok" and settled is not None:
+            await settled(rig, ctx, ticket, attempt)
+        return result
+
+    monkeypatch.setattr(stages, "review", reviewed)
+    drive = runner.drive
+
+    async def driving(ctx, ticket, **kwargs):
+        result = await drive(ctx, ticket, **kwargs)
+        (rig.held_returns if result == "running" else returns).append((ticket.stem, result))
+        return result
+
+    monkeypatch.setattr(runner, "drive", driving)
+    consume = TicketWriter.consume_result
+
+    async def consumed(writer, ticket, result, *, attempt):
+        live = (ticket.stem, attempt) in writer.admission.results
+        await consume(writer, ticket, result, attempt=attempt)
+        if not live:
+            terminal = terminals(rig, ticket.stem)[-1].body["to"]
+            returns.append((ticket.stem, terminal))
+
+    monkeypatch.setattr(TicketWriter, "consume_result", consumed)
+    return rig
+
+
+def admission_config(root, *, command=None, safety=False, strategies=()):
+    amend_config(
+        root,
+        review={"mechanical": [{"code": "combined", "argv": command or ["true"], "trigger": "always", "severity": "hard"}]},
+        merge={"safety_checks": ["combined"] if safety else [], "strategies": list(strategies)},
+    )
+
+
+def notify_command(root, *, enabled=True):
+    amend_config(root, notify=["notify-sink"] if enabled else None)
+
+
+class UpgradeChild:
+    def __init__(self, rig):
+        self.rig = rig
+        self.calls = []
+
+    async def replace(self, argv, *, cwd, env):
+        lock = Lockfile(self.rig.checkout.config.state_dir, verb="drain", instance_id="probe", clock=self.rig.time)
+        lock.acquire()
+        lock.release()
+        self.calls.append((list(argv), cwd, env))
+        return 7
+
+
+async def enable_upgrade(rig, engine):
+    (engine / "clutch/specs").mkdir(parents=True, exist_ok=True)
+    (engine / "clutch/specs/base.md").write_text("base")
+    await rig.checkout.git.add(engine, ["clutch/specs/base.md"])
+    await rig.checkout.git.commit(engine, "engine trees")
+    rig.owner.engine = engine
+    rig.owner.reexec = UpgradeChild(rig)
+    rig.owner.argv = ("--config", "config.yaml", "serve")

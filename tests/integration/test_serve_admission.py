@@ -5,8 +5,8 @@
 # purpose: Tests serve merge admission: queue routing, rebase and regate, red-streak and tree-mismatch holds, cleanup, refusals and conflict reruns
 # relates: [clutch/audit.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: clutch/mergequeue.py
-# verified: 82d23237
-# hash: 45470727d041960fac47c7d3f107889547dd0f3cdaa7d19bde712bfd687ec8c6
+# verified: 7abfadd2
+# hash: c6f9bbcae4eea1a7505758ea0683406342217a68b32ae8dfc36c79962a8d7c91
 
 import asyncio
 import json
@@ -21,24 +21,8 @@ from clutch.lockfile import Lockfile
 from clutch.merge import Admission
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from tests.cli_helpers import ENV, root
-from tests.integration.serve_rig import (
-    UpgradeChild,
-    admission_config,
-    admission_graph,
-    admission_ticket,
-    enable_upgrade,
-    finish,
-    graph,
-    request,
-    retro_scenario,
-    script,
-    start_admission,
-    terminals,
-    trip,
-    until,
-    write,
-)
-from tests.loop_helpers import text, turn
+from tests.integration.serve_rig import admission_ticket, finish, request, retro_scenario, script, start_admission, trip, until, write
+from tests.loop_helpers import UpgradeChild, admission_config, admission_graph, enable_upgrade, graph, terminals, text, turn
 from tests.spool_captures import list_captures, read_capture
 
 pytestmark = pytest.mark.disk_io_skip

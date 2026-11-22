@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: clutch/daemon.py
-# verified: 11188936
-# hash: 264a621d6407f181c49e121dd2f21eadf96fa3dab9cfa64c252c19f96cf3ecd1
+# verified: 7abfadd2
+# hash: ec9e67eca4d6fb127568b386cc55d739f6c82ccbd6fb6d13e4e83d4467381e05
 
 import ast
 import asyncio
@@ -121,8 +121,8 @@ class ScriptExec:
 async def test_production_watchdog_shares_active_executor(root, monkeypatch):
     from clutch.drain import drain
     from clutch.seams import SubprocessExec
-    from tests.integration.serve_rig import finish, terminals, until
-    from tests.loop_helpers import repository
+    from tests.integration.serve_rig import finish, until
+    from tests.loop_helpers import repository, terminals
 
     contexts = []
 
@@ -1821,7 +1821,8 @@ async def test_admission_control_binding_probe(root, tmp_path, monkeypatch):
 @pytest.mark.asyncio
 async def test_production_serve_graph_is_reachable(root, monkeypatch):
     from clutch.serve import Serve
-    from tests.integration.serve_rig import finish, graph, until
+    from tests.integration.serve_rig import finish, until
+    from tests.loop_helpers import graph
 
     rig = await graph(root, monkeypatch)
     before = asyncio.all_tasks()
@@ -1851,9 +1852,9 @@ async def test_production_boxes_receive_rereport_callback(admission_context, tmp
     from clutch.retro import Retro
     from clutch.triage import triage_pass
     from tests.drain_helpers import NoChild
-    from tests.integration.serve_rig import graph
     from tests.integration.test_retro_box import PROPOSAL
     from tests.integration.test_storm_notification_activation import SITES, exercise_site
+    from tests.loop_helpers import graph
 
     source = admission_context
     checkout, writer = production_writer(source, [])

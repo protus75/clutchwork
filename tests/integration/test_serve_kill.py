@@ -5,8 +5,8 @@
 # purpose: Tests serve worker failure, kill, signal stops, storm-breaker suspension and resume, and restart recovery of suspended runs
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: clutch/serve.py
-# verified: 82d23237
-# hash: c40bf059ba55ebbf21c5c1ffbed03eb5f4e75e0b0ba5df1c6189525d506b8071
+# verified: 7abfadd2
+# hash: 8e82e469bc85abca76ca6f97efd284c7dea1551e0fc25715b1dc21553fbc2973
 
 import asyncio
 import json
@@ -20,8 +20,8 @@ from clutch import serve
 from clutch.audit import audit_journal
 from clutch.daemon import TicketWriter
 from tests.cli_helpers import root
-from tests.integration.serve_rig import active_graph, finish, graph, request, script, terminals, trip, until, write
-from tests.loop_helpers import text, turn
+from tests.integration.serve_rig import active_graph, finish, request, script, trip, until, write
+from tests.loop_helpers import graph, terminals, text, turn
 
 pytestmark = pytest.mark.disk_io_skip
 

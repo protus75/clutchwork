@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker-corruption refusal, drift classification, project-rule refusals, and the production core_drift gate.
+# purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker-corruption refusal, drift classification, project-rule refusals, and the production core_drift gate
 # relates: [clutch/__main__.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
-# owner: engine
-# verified: 38957300
-# hash: 51f89c34bc09b418dc7aeb00f0ace69dc033f3e36f4fc854415fc65c757b15ed
+# owner: clutch/hostfiles.py
+# verified: 7abfadd2
+# hash: 08445dcfaaf8c86a9ebdb18157851944bfeda900232ae207e09b077ca980423e
 
 import asyncio
 import base64
@@ -375,7 +375,8 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
         llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
         assert main(["engine", "run", "work"], cwd=root, env=ENV, clock=Clock(), pipeline=lambda checkout: runner.bind(checkout, llm)) == 0
     else:
-        from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, until
+        from tests.integration.serve_rig import admission_ticket, finish, start_admission, until
+        from tests.loop_helpers import admission_graph
 
         async def queued():
             rig = await admission_graph(root, monkeypatch, {"work": {"clutch/thing.py": "ok\n"}})

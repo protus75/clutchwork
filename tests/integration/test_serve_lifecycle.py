@@ -5,8 +5,8 @@
 # purpose: Tests serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
 # owner: clutch/serve.py
-# verified: 11188936
-# hash: cef23ef3d3a3ce4a3077da05223f6aa1a05d5aab452c55109eb96d782d34d418
+# verified: 7abfadd2
+# hash: 448c7db74082e778338cd8a09681d589ff360f7820264da3792501204cc67991
 
 import asyncio
 import json
@@ -20,8 +20,8 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile, LockHeld
 from tests.cli_helpers import ENV, root
 from tests.daemon_helpers import sources
-from tests.integration.serve_rig import finish, graph, request, script, terminals, until, write
-from tests.loop_helpers import orphan, text, turn
+from tests.integration.serve_rig import finish, request, script, until, write
+from tests.loop_helpers import graph, orphan, terminals, text, turn
 from tests.loop_helpers import scheduler_import_closure as import_closure
 
 pytestmark = pytest.mark.disk_io_skip

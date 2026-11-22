@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Tests that continuous serve admits parallel runs within capacity and fence overlap, and handles control confirm and stop requests during dispatch
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/llm.py, clutch/scheduler.py, tests/integration/serve_rig.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: a90050da7ce1348bf1e4c4e931bbbb9b2e9eed1ce49da50837a893b4231d2ed7
+# owner: clutch/serve.py
+# verified: 7abfadd2
+# hash: 288172e6240cc06ff1ecec5b537daeecf050fac85f058ddd6651a05bf39b2d28
 
 import asyncio
 import json
@@ -21,7 +21,8 @@ from clutch.llm import FakeLLM
 from clutch.scheduler import Scheduler
 from tests.cli_helpers import root
 from tests.config_fixture import amend_config
-from tests.integration.serve_rig import admission_graph, admission_ticket, finish, request, start_admission, terminals, until
+from tests.integration.serve_rig import admission_ticket, finish, request, start_admission, until
+from tests.loop_helpers import admission_graph, terminals
 
 pytestmark = pytest.mark.disk_io_skip
 

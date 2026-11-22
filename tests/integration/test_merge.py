@@ -5,8 +5,8 @@
 # purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: clutch/merge.py
-# verified: 38957300
-# hash: 165a3150223dd541837d723a41ef83519e18f5826d7585f4d0f4ab26a217c769
+# verified: 7abfadd2
+# hash: 03ff82f8310b0bee7d17c393f93d8876338aa377d9002e2b398361557bfbf9d3
 
 import asyncio
 import dataclasses
@@ -356,7 +356,8 @@ def test_outbox_only_admission_records_null_commit_and_retires(root, monkeypatch
     from clutch.effects import Effects
     from clutch.rework import settled_dependencies
     from clutch.stages import lift_outbox
-    from tests.integration.serve_rig import admission_graph, admission_ticket, finish, request, start_admission, until
+    from tests.integration.serve_rig import admission_ticket, finish, request, start_admission, until
+    from tests.loop_helpers import admission_graph
 
     original_writer = owner.write_squash
     admissions, trace = [], []

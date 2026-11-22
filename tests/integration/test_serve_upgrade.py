@@ -5,8 +5,8 @@
 # purpose: Tests serve self-upgrade re-exec after engine changes, waiting for continuations and selection, and suppression by kill, stop or a non-git engine
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: clutch/serve.py
-# verified: 82d23237
-# hash: 67eabad36d20b6f86f634d2e930ac07207d4ee92ab1538f469ed8f5356da184e
+# verified: 7abfadd2
+# hash: 96a91a1bd6c0c59df4273a8d8c96f68066b61539b1558047876620b8d5817c27
 
 import asyncio
 import json
@@ -21,24 +21,8 @@ from clutch.lockfile import Lockfile
 from clutch.merge import Admission
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
 from tests.cli_helpers import ENV, root
-from tests.integration.serve_rig import (
-    UpgradeChild,
-    admission_config,
-    admission_graph,
-    admission_ticket,
-    enable_upgrade,
-    finish,
-    graph,
-    request,
-    retro_scenario,
-    script,
-    start_admission,
-    terminals,
-    trip,
-    until,
-    write,
-)
-from tests.loop_helpers import text, turn
+from tests.integration.serve_rig import admission_ticket, finish, request, retro_scenario, script, start_admission, trip, until, write
+from tests.loop_helpers import UpgradeChild, admission_config, admission_graph, enable_upgrade, graph, terminals, text, turn
 
 pytestmark = pytest.mark.disk_io_skip
 

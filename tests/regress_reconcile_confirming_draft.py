@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Standalone reproducer for the race between draft confirmation and idle recovery; prints pass, defect or error as JSON and exits 0, 1 or 2.
+# purpose: Standalone reproducer for the race between draft confirmation and idle recovery; prints pass, defect or error as JSON and exits 0, 1 or 2
 # relates: [clutch/control.py, clutch/journal.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: d02592631cc7c076fd74e88ae7b326d51761783d74924f4f03233b2eb7792417
+# verified: 7abfadd2
+# hash: 9ee2d40c107ace6547aa75a146265765329dceb1ea6d630b954c63ef17bdef70
 
 import asyncio
 import io
@@ -23,7 +23,8 @@ import pytest
 from clutch.control import AdmissionRequest, publish_request
 from clutch.journal import EventType
 from tests.cli_helpers import root
-from tests.integration.serve_rig import admission_ticket, graph
+from tests.integration.serve_rig import admission_ticket
+from tests.loop_helpers import graph
 
 
 async def scenario(root, monkeypatch):

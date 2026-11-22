@@ -4,8 +4,8 @@
 # purpose: Tests `box triage` submitting to a running drain or serve, refusal while a non-engine verb holds the lock, direct passes without the lock, and that only the requested messages are triaged
 # relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/seams.py]
 # owner: clutch/control.py
-# verified: 79efeedb
-# hash: db3d92fa473979f959eacf56109a3ce82386520862de44abc4b0154fe3d03d64
+# verified: 7abfadd2
+# hash: 19e510b15ff833a0e759a8f9d67c7f7908b5fbb3dadb908be17f23d493017d6f
 from pathlib import Path
 
 import pytest
@@ -69,7 +69,8 @@ def test_lock_free_pass(tmp_path, monkeypatch, capsys):
 def test_serve_processes_only_requested_triage(root, monkeypatch):
     import asyncio
 
-    from tests.integration.serve_rig import finish, graph, until
+    from tests.integration.serve_rig import finish, until
+    from tests.loop_helpers import graph
 
     async def exercise():
         rig = await graph(root, monkeypatch)

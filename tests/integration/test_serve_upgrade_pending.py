@@ -3,9 +3,9 @@
 # kind: test
 # purpose: Tests that serve journals serve_upgrade_pending once on an engine tree change, and before serve_handoff after a merge that changes clutch/
 # relates: [clutch/serve.py, tests/cli_helpers.py, tests/integration/serve_rig.py]
-# owner: engine
-# verified: a6482110
-# hash: 40c461e468a2752612fc279263e3d05c5060c59e534ad071fbff9b0aac5388c5
+# owner: clutch/serve.py
+# verified: 7abfadd2
+# hash: 1cf972a00ccd5bcd0bedc50c37a2d2c605e6255d860ed7e2d8598f33c74a20de
 import asyncio
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock, Mock
@@ -14,7 +14,8 @@ import pytest
 
 from clutch.serve import Serve
 from tests.cli_helpers import root
-from tests.integration.serve_rig import admission_graph, admission_ticket, enable_upgrade, finish, until
+from tests.integration.serve_rig import admission_ticket, finish, until
+from tests.loop_helpers import admission_graph, enable_upgrade
 
 
 @pytest.mark.disk_io_skip
