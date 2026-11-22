@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+premise_failed
 
 ## Surprises / judgment calls
 
-The partial changes remain uncommitted; the shared-fakes adoption and disk-I/O skip-list checks passed.
+A read-only probe confirmed Time.sleep(5) remains pending after advance(4) and completes after advance(1), while FakeClock raises AttributeError for sleep. Verification suites were not run because the ticket explicitly requires stopping for missing shared-fake behavior.
 
 ## Dead ends
 
-none
+Replacing Time with FakeClock cannot preserve its sleep contract, and defining a replacement clock locally conflicts with the shared-fake requirement.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; elapsed time was not measured.
+30m expected; stopped during prerequisite inspection.
 
