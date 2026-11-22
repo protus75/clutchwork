@@ -38,6 +38,8 @@ tests/unit/test_ticket_write_consumers_runner.py (2)
 
 Importers that drive a migrated helper's git (no stand-in of their own), updated to the migrated helper and nothing else: `tests/unit/test_serve_scan_head.py` sets `owner.checkout.git.status_porcelain.return_value` and `owner.checkout.git.rev_parse.return_value` on `owner` from `tests/unit/test_serve_idle_poll.py`; these become `GitFake` overrides. `tests/unit/test_supervise_idle_hooks.py` asserts `ctx.git.mock_calls == []` on `rig` from `tests/unit/test_supervise_idle_point.py`; this becomes `fake.calls == []`. Each keeps its test names and assertion strength.
 
+Retry note: the kept branch already holds the full 16-file migration, and both Verification commands passed on it. Attempts 1 to 3 failed only on `scope_fence` findings for the two importer files above. Those findings were engine false positives: serve resumed the run with the ticket from before those files were added to the fence. Keep the branch's edits, re-run Verification, and do not revert either importer.
+
 Out: production code under `clutch/`; `tests/git_fake.py` (when a stand-in needs a capability `GitFake` lacks, give the fake the capability through an override callable in the test, and name the gap in the run record); `tests/fakes.py`; the five `tests/regress_*.py` files; every file not listed above.
 
 ## Scope fence
