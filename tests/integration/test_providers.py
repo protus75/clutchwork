@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for provider routing, key scoping, redaction, claude and codex CLI adapter contracts, preflight, failure classification and process-group cleanup
+# purpose: Integration tests for provider routing, key scoping, secret redaction, claude and codex CLI adapter contracts, preflight, failure classification, eval budget ceilings and process-group cleanup
 # relates: [clutch/__main__.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: clutch/providers.py
-# verified: ae1a5a3b
-# hash: 5f9f59beab2b940646b6aeab19bb09dcaecfaad7e1fbe0d2506008f335ba20f5
+# verified: f444aaa8
+# hash: aa353ad06aec1a20856ee702ab14c429671650c0f253f7ef66b0e40a85de6959
 import asyncio
 import json
 import os
@@ -263,6 +263,8 @@ def test_claude_implement_gets_the_write_grant_in_the_worktree(tmp_path):
         "c-high",
         "--permission-mode",
         "bypassPermissions",
+        "--name",
+        "Clutch Implement t-1",
     ]
     assert inv["cwd"] == worktree
 
@@ -272,7 +274,7 @@ def test_claude_read_only_surface_gets_the_read_tool_allowlist_and_no_grant(tmp_
     exec_ = FakeExec((0, claude_ok(), ""))
     call(cfg, exec_, tmp_path, req("review", worktree=tmp_path / "wt"))
     inv = exec_.calls[0]
-    assert inv["argv"][-7:] == ["--tools", "Read", "Grep", "Glob", "LS", "--permission-mode", "dontAsk"]
+    assert inv["argv"][inv["argv"].index("--tools") : inv["argv"].index("--name")] == ["--tools", "Read", "Grep", "Glob", "LS", "--permission-mode", "dontAsk"]
     assert "--allowedTools" not in inv["argv"]
     assert "bypassPermissions" not in inv["argv"]
     assert inv["cwd"] == tmp_path / "checkout"

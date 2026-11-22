@@ -454,6 +454,8 @@ class CliAdapter:
         argv = self.argv(model, req.effort, writes)
         if budget is not None and self.reports_cost:
             argv.extend(["--max-budget-usd", str(budget)])
+        if isinstance(self, ClaudeAdapter):
+            argv.extend(["--name", self.session_name(req.surface, req.ticket)])
         if writes and req.worktree is None:
             raise ProviderSetupError(f"surface {req.surface!r} writes the tree but the request carries no worktree")
         prompt = self._config.state_dir / "evidence" / "scratch" / f"{uuid4().hex}.md"
@@ -729,11 +731,31 @@ class ClaudeAdapter(CliAdapter):
     AUTH_MARKERS = ("invalid api key", "please run /login", "not logged in", "oauth token has expired")
     LOGIN_ROAD = "run claude interactively and complete /login, then `clutch engine drain`"
 
+    @staticmethod
+    def session_name(surface: str, ticket: str | None) -> str:
+        name = f"Clutch {surface.replace('_', ' ').title()}"
+        return f"{name} {ticket}" if ticket is not None else name
+
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
         async def resolve(alias):
             rc, out, _ = await exec_.run(
-                [cls.binary, "-p", PROBE_PROMPT, "--output-format", "stream-json", "--verbose", "--model", alias, "--tools", "Read", "--permission-mode", "dontAsk"],
+                [
+                    cls.binary,
+                    "-p",
+                    PROBE_PROMPT,
+                    "--output-format",
+                    "stream-json",
+                    "--verbose",
+                    "--model",
+                    alias,
+                    "--tools",
+                    "Read",
+                    "--permission-mode",
+                    "dontAsk",
+                    "--name",
+                    cls.session_name("preflight", alias),
+                ],
                 cwd=cwd,
                 env=tool_env(env, cwd),
                 timeout=PREFLIGHT_TIMEOUT_S,

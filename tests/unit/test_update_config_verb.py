@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test update config verb
+# purpose: Unit tests for the `clutch config update` verb and the claude, codex and qwen adapter model listings it uses to report served models and stale config model names
 # relates: [clutch/__main__.py, clutch/config.py, clutch/providers.py, clutch/seams.py]
-# owner: engine
-# verified: 9a610809
-# hash: 862f70192e6e45ee371502c3434b1846063d5191b7142040ccc8073ed5a81d2d
+# owner: clutch/__main__.py
+# verified: f444aaa8
+# hash: e7711cdaf35be79b6f3c87b6a2bb70225f30b32cc21284a142c52f3ef9bce6a8
 import asyncio
 import json
 from pathlib import Path
@@ -63,7 +63,22 @@ def test_claude_listing():
     assert result.models == {f: f"claude-{f}-5-5" for f in CLAUDE_ALIASES[:3]}
     assert len(result.problems) == 1 and result.problems[0].startswith("fable: ")
     for (argv, kwargs), alias in zip(exec_.calls, CLAUDE_ALIASES, strict=True):
-        assert argv == ["claude", "-p", PROBE_PROMPT, "--output-format", "stream-json", "--verbose", "--model", alias, "--tools", "Read", "--permission-mode", "dontAsk"]
+        assert argv == [
+            "claude",
+            "-p",
+            PROBE_PROMPT,
+            "--output-format",
+            "stream-json",
+            "--verbose",
+            "--model",
+            alias,
+            "--tools",
+            "Read",
+            "--permission-mode",
+            "dontAsk",
+            "--name",
+            f"Clutch Preflight {alias}",
+        ]
         assert kwargs["env"]["PATH"].startswith("/repo/node_modules/.bin")
         assert kwargs["cwd"] == Path("/repo") and kwargs["timeout"] == 120
     exec_.responses["sonnet"] = (1, "", "boom\n")
