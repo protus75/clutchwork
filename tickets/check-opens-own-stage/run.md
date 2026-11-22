@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The existing host mechanical tests are skipped because they use real disk and Git; the new test fails during fixture setup under the I/O guard. No changes were committed.
+The final verification command passed all 41 tests; targeted mutations confirmed the new assertions detect the relevant regressions. The direct context-manager move was simpler than introducing a separate single-caller helper.
 
 ## Dead ends
 
-Reusing the specified fixture failed because it writes files and starts Git processes.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Ticket estimate: 20 minutes; actual elapsed time was not measured.
 
