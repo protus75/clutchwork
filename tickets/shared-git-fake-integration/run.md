@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The nine older FakeGit users were already migrated. The covmap and harvest verification command skipped all eight tests; the unit verification passed 81 tests. The adoption command passed on the untouched base but failed on the new temporary-file checks under the integration I/O guard.
+The final sequential verification passed: 3, 10, and 81 tests respectively; eight tests in the second command were skipped by the existing integration skip list. The nine older FakeGit users were already migrated.
 
 ## Dead ends
 
-Attempted the required temporary-file checks in the adoption test; the integration guard blocked their writes.
+none
 
 ## Second problems filed
 
-none
+- box-001101-6a71b927: docs/roadmap.md and docs/boundary-contract-plan.md still describe the retired Git fake as living in tests/fakes.py; both are outside the scope fence.
 
 ## Resolved engine/model
 
