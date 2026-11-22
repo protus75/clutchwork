@@ -53,7 +53,7 @@ When done:
 - consumers: `Serve.run` maintenance loop, Recent Steps via the engine log
 - observable change: `check_retro` is no longer called from the dispatch wrapper or `Serve.merge`; the `Serve.run` loop is its only caller, and the terminal-count dedupe from `retro-check-once` keeps it silent when nothing settled
 - compatibility: `retro_check` phase events and outcomes are unchanged; `retro_due` and `retro_pending()` still gate dispatch and start `run_retro` as before
-- acceptance: no `check_retro` call appears inside `Serve.merge` or the dispatch wrapper; its only call site is inside `Serve.run`
+- acceptance: a bytecode scan of the imported `Serve` class finds exactly one `check_retro` attribute load, reachable from `Serve.run`, and none reachable from `Serve.merge` or the dispatch wrapper nested in `Serve.__init__`
 - tests: tests/unit/test_serve_retro_check_site.py
 - post-merge source of truth: clutch/serve.py
 
@@ -63,7 +63,7 @@ Scope in:
 - `Retro.__call__` calls `due_trigger` first, returns early when it is `None`, and only then awaits `production_evidence` for the report.
 - In `clutch/serve.py`, `Serve.check_retro` uses `due_trigger`. Remove the `await self.check_retro()` calls from the dispatch wrapper `finally` and from `Serve.merge`. Call `check_retro` once per iteration of the `Serve.run` loop, immediately before the existing `retro_task` scheduling block.
 - Update `tests/unit/test_phase_events.py` and `tests/unit/test_retro_check_vocabulary.py` where they monkeypatch names this change moves. Touch `tests/unit/test_stale_running.py` and `tests/unit/test_paved_roads.py` only if their monkeypatches of `production_evidence` stop applying.
-- Add `tests/unit/test_retro_due_owner.py` and `tests/unit/test_serve_retro_check_site.py`.
+- Add `tests/unit/test_retro_due_owner.py` and `tests/unit/test_serve_retro_check_site.py`. The site test imports `clutch.serve` and inspects compiled code objects with `dis`; it reads no repository file.
 
 Scope out:
 - Do not edit `tests/integration/serve_rig.py`. Its `observed_check` wrapper keeps working because `check_retro` keeps its name and async signature.
@@ -85,7 +85,7 @@ Scope out:
 1. `Retro.__call__(forced=False)` on a window with no trigger returns `None` without awaiting `production_evidence`. A test monkeypatches it to raise and the call still returns `None`, not an exception (`tests/unit/test_retro_due_owner.py`).
 2. `Retro.__call__(forced=True)` on a window with one merge still awaits `production_evidence` once and selects `forced` (`tests/unit/test_retro_due_owner.py`).
 3. `due_trigger` returns `merges` once a window's merge count reaches `retro.merges.every`, and `None` one merge below it (`tests/unit/test_retro_due_owner.py`).
-4. An AST scan of `clutch/serve.py` finds exactly one `check_retro` call site, inside `Serve.run`, and none in `Serve.merge` or the dispatch wrapper. A second call site fails the test (`tests/unit/test_serve_retro_check_site.py`).
+4. A test imports `clutch.serve` and walks the code objects of every `Serve` function, recursing into nested code objects in `co_consts`, with `dis.get_instructions`. It finds exactly one instruction loading `check_retro`, reachable from `Serve.run`, and none reachable from `Serve.merge` or `Serve.__init__` (which holds the dispatch wrapper). It reads no repository file. A second load site fails the test (`tests/unit/test_serve_retro_check_site.py`).
 5. `./dev.py test tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py` exits 0.
 
 ## Verification
