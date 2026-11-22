@@ -1,12 +1,16 @@
 ---
 state: confirmed
 source: human
-priority: P0
+priority: P1
 kind: chore
 ---
 
 ## Depends on
 - none
+
+## Runs before
+- check-opens-own-stage
+- supervisor-orders-by-depends
 
 ## Context
 - clutch/runner.py::pipeline
