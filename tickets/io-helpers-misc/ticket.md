@@ -10,9 +10,6 @@ kind: chore
 - shared-git-fake-integration
 - shared-review-script
 
-## Runs before
-- shared-git-fake
-
 ## Context
 - tests/fakes.py
 - tests/conftest.py
