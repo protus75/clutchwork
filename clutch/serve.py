@@ -25,7 +25,7 @@ from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
-from clutch.retro import Retro, RetroCheckOutcome, measurements, project_window, select_trigger, suppressing_failure
+from clutch.retro import Retro, RetroCheckOutcome, due_trigger, project_window, suppressing_failure
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.status import CLOSED, last_states
 from clutch.storm import StormLedger
@@ -175,8 +175,6 @@ class Serve:
                     return "infra_error"
                 finally:
                     latest = last_transition(local.journal.read(), ticket.stem) or {}
-                    if latest.get("to") in TERMINAL_STATES:
-                        await self.check_retro()
                     if latest.get("to") in TERMINAL_STATES - CLOSED:
                         self.core.scheduler.update(ticket)
                     if not callback.continuations and not any(context is callback.ctx and stem in callback.queue.pending.keys() for stem, context in callback.queue.contexts.items()):
@@ -398,8 +396,7 @@ class Serve:
             window = project_window(events)
             due = False
             if suppressing_failure(window) is None:
-                evidence = measurements(window)
-                due = select_trigger(window, evidence, c.config.retro, forced=False) is not None
+                due = due_trigger(window, c.config.retro, forced=False) is not None
                 if due:
                     self.retro_due = True
         except BaseException:
@@ -531,8 +528,6 @@ class Serve:
                     self.writers[ticket.stem] = owner
                     await owner.consume_result(ticket, result, attempt=attempt)
                     latest = (last_transition(self.checkout.journal.read(), ticket.stem) or {}).get("to")
-                    if latest in TERMINAL_STATES:
-                        await self.check_retro()
                     if latest in TERMINAL_STATES - CLOSED:
                         self.core.scheduler.update(ticket)
                     if ticket.stem not in self.queue.pending:
@@ -737,6 +732,7 @@ class Serve:
                             upgrade_stop = not self.control.projection.stop_requested
                             self.stop()
                             break
+                    await self.check_retro()
                     if self.retro_task is not None and self.retro_task.done():
                         self.retro_task.result()
                         self.retro_task = None

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests, and aggregation of test timing and coverage
+# purpose: Integration tests for the retro window projection, trigger thresholds, production evidence, receipt commits and replay, failure suppression, tombstone digests, and test timing and coverage aggregation
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
 # owner: clutch/retro.py
-# verified: 79efeedb
-# hash: a25c8fb9f393ec832172c15476f8c0fa9729fcde4f14964d41ef83b865ef0b18
+# verified: 2182d51e
+# hash: a5414fefcd6fcc0de1d1777911f8e2dedd5e7177d78dd6f249299b382280ac1a
 
 import asyncio
 import json
@@ -23,7 +23,7 @@ from clutch.config import Retro as RetroSettings
 from clutch.effects import Effects
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM, LLMResult
-from clutch.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report, select_trigger
+from clutch.retro import Retro, RetroArtifact, due_trigger, measurements, production_evidence, project_window, render_report, select_trigger
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
 from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root, pause_checkout
 from tests.spool_captures import list_captures
@@ -179,8 +179,7 @@ def test_retro_trigger_boundaries(tmp_path, kind):
 
     def due():
         window = project_window(j.read())
-        facts = asyncio.run(production_evidence(window, c))
-        return select_trigger(window, facts, c.config.retro, forced=False)
+        return due_trigger(window, c.config.retro, forced=False)
 
     for n in range(limit - 1):
         operand(n)
@@ -191,7 +190,11 @@ def test_retro_trigger_boundaries(tmp_path, kind):
         j.append(event.type, event.body, ticket=event.ticket, key=event.key)
         assert due() is None
     operand(limit - 1)
-    assert due() == kind
+    assert due() == (None if kind == "override" else kind)
+    if kind == "override":
+        facts = asyncio.run(production_evidence(project_window(j.read()), c))
+        assert facts["spikes"]["override"] == limit
+        assert select_trigger(project_window(j.read()), facts, c.config.retro, forced=False) is None
 
 
 def test_mixed_spikes_do_not_sum_and_new_invocations_do_count(tmp_path):

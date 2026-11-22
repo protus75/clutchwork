@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host-facing contract covering install steps, a copyable config.yaml and the full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
+purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 2036efdf
-hash: d122208738701c90542d3a8e1b9d14a2dd252e11bd4ef436421b54fbbe4a0f03
+verified: 2182d51e
+hash: 5c0c478c59189eefce8e21dd5c1c99230a170bb803a0b1722230581b82cf1c9d
 -->
 # Host contract
 
@@ -298,7 +298,7 @@ environment variable, never a literal secret. Codex, qwen, and gemini report no 
 `est_cost_per_call_usd` at adapter setup; Claude can report actual cost. `base_url` is required for qwen and refused for the other adapters. Estimates
 are nonnegative, count fields are integers at least 1, and retry must not exceed
 diagnosis. Providers, routing, route candidates, argv and strategy paths are
-nonempty lists where declared. Retro uses nested `merges`, `settled`, and `spikes` blocks, each with an `enabled` switch; their thresholds are `every`, `every`, and `count`. `spikes.kinds` is a nonempty allowlist with each kind listed once. If all triggers are disabled, set `retro.enabled: false` or enable a trigger. The master switch disables automatic retros without blocking a forced retro. Notify requires a nonblank executable and
+nonempty lists where declared. Retro uses nested `merges`, `settled`, and `spikes` blocks, each with an `enabled` switch; their thresholds are `every`, `every`, and `count`. `spikes.kinds` is a nonempty allowlist with each kind listed once. Override is measured and reported when a retro runs, but cannot make a retro due. If all triggers are disabled, set `retro.enabled: false` or enable a trigger. The master switch disables automatic retros without blocking a forced retro. Notify requires a nonblank executable and
 NUL-free strings.
 
 `ship` runs each configured package after the tag and names the paths kept by the run.

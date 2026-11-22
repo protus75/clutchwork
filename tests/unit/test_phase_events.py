@@ -4,8 +4,8 @@
 # purpose: Unit tests for the phase_start and phase_end engine-log events and their outcomes in runner preflight and in the drain and serve retro checks
 # relates: [clutch/drain.py, clutch/runner.py, clutch/serve.py]
 # owner: engine
-# verified: d232b8ba
-# hash: 690bc04675469a3daf30eb7f5c35bc95b87a4cd9c4801f9c894c7311484ab7ca
+# verified: 2182d51e
+# hash: 769596fcf8605721451b971ba80c7d542aa6cd850badbb2812a50843ee174448
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -97,8 +97,7 @@ async def test_serve_retro_events(monkeypatch, trigger, outcome):
     monkeypatch.setattr(serve, "snapshot_config", lambda value: value)
     monkeypatch.setattr(serve, "project_window", lambda value: value)
     monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
-    monkeypatch.setattr(serve, "measurements", lambda value: "evidence")
-    monkeypatch.setattr(serve, "select_trigger", lambda *args, **kwargs: trigger)
+    monkeypatch.setattr(serve, "due_trigger", lambda *args, **kwargs: trigger)
     await s.check_retro()
     assert s.retro_due is (trigger is not None)
     assert s.log.events == events("retro_check", outcome)
@@ -123,10 +122,10 @@ async def test_serve_retro_failure(monkeypatch, failure):
     monkeypatch.setattr(serve, "project_window", lambda value: value)
     monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
 
-    def fail_measurements(value):
+    def fail_measurements(*args, **kwargs):
         raise RuntimeError("evidence")
 
-    monkeypatch.setattr(serve, "measurements", fail_measurements)
+    monkeypatch.setattr(serve, "due_trigger", fail_measurements)
     with pytest.raises(RuntimeError, match=failure):
         await s.check_retro()
     assert s.log.events == ([] if failure == "journal" else events("retro_check", "failed"))

@@ -3,9 +3,9 @@
 # kind: test
 # purpose: Unit tests that Serve.check_retro logs one retro_check phase pair per terminal-transition count across sequential and concurrent calls, rechecks only after a new terminal transition, retries after a failure, and never calls production_evidence
 # relates: [clutch/journal.py, clutch/retro.py, clutch/serve.py]
-# owner: engine
-# verified: d232b8ba
-# hash: 3694ca4e8ae3e71318e9b8b11c10ce19bd6d8bb1b184040084186d2965a97bbd
+# owner: clutch/serve.py
+# verified: 2182d51e
+# hash: 0c68ad1932ce07c7f0478cdeb8463a6af879688e11807f170e020feeb6abd418
 import asyncio
 from dataclasses import dataclass
 from types import SimpleNamespace
@@ -41,8 +41,7 @@ def setup(monkeypatch):
     monkeypatch.setattr(serve, "snapshot_config", lambda value: value)
     monkeypatch.setattr(serve, "project_window", lambda value: value)
     monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
-    monkeypatch.setattr(serve, "measurements", lambda value: {})
-    monkeypatch.setattr(serve, "select_trigger", lambda *args, **kwargs: None)
+    monkeypatch.setattr(serve, "due_trigger", lambda *args, **kwargs: None)
     return s, journal, log
 
 
@@ -75,14 +74,14 @@ async def test_only_terminal_transition_runs_again(setup, state, expected):
 async def test_failure_retries_same_count(setup, monkeypatch):
     s, _, log = setup
 
-    def fail(value):
+    def fail(*args, **kwargs):
         raise RuntimeError("measurements")
 
-    monkeypatch.setattr(serve, "measurements", fail)
+    monkeypatch.setattr(serve, "due_trigger", fail)
     with pytest.raises(RuntimeError, match="measurements"):
         await s.check_retro()
     assert s.retro_checked is None
-    monkeypatch.setattr(serve, "measurements", lambda value: {})
+    monkeypatch.setattr(serve, "due_trigger", lambda *args, **kwargs: None)
     await s.check_retro()
     assert log == pair("failed") + pair("not_due")
 

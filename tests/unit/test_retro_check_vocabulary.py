@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test retro check vocabulary
+# purpose: Unit tests that the retro check outcome vocabulary is exactly due, not_due and failed, and that Retro records its due flag and failure reports correctly
 # relates: [clutch/retro.py]
 # owner: clutch/retro.py
-# verified: 9a610809
-# hash: 0201177034371722363973cb10672bfc30c7c4e1455d63b70da5a597ff45f006
+# verified: 2182d51e
+# hash: bf43feeadecdaaab371177e5e85f8e7e59526daeaea239c3c542de47973a82aa
 from types import SimpleNamespace
 from typing import get_args
 from unittest.mock import AsyncMock
@@ -32,7 +32,7 @@ async def test_retro_records_due(monkeypatch, trigger, failure, initial_due, exp
     reports = []
     monkeypatch.setattr(retro, "project_window", lambda events: window)
     monkeypatch.setattr(retro, "production_evidence", AsyncMock(return_value="evidence"))
-    monkeypatch.setattr(retro, "select_trigger", lambda *args, **kwargs: trigger)
+    monkeypatch.setattr(retro, "due_trigger", lambda *args, **kwargs: trigger)
     monkeypatch.setattr(retro, "suppressing_failure", lambda value: failure)
     monkeypatch.setattr(hook, "failure_report", reports.append)
     if expected_due:

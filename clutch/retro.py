@@ -198,7 +198,11 @@ def select_trigger(window: Window, evidence: dict, settings: RetroSettings, *, f
         return "merges"
     if settings.settled.enabled and len({e.ticket for e in window.events if e.ticket is not None and e.type == EventType.STATE_TRANSITION and e.body.get("to") in CLOSED}) >= settings.settled.every:
         return "settled"
-    return next((kind for kind, count in evidence["spikes"].items() if settings.spikes.enabled and kind in settings.spikes.kinds and count >= settings.spikes.count), None)
+    return next((kind for kind, count in evidence["spikes"].items() if settings.spikes.enabled and kind != "override" and kind in settings.spikes.kinds and count >= settings.spikes.count), None)
+
+
+def due_trigger(window: Window, settings: RetroSettings, *, forced: bool) -> str | None:
+    return select_trigger(window, measurements(window), settings, forced=forced)
 
 
 async def production_evidence(window, checkout):
@@ -424,8 +428,7 @@ class Retro:
                 await self.emit_proposals(event.key, event)
         window = project_window(c.journal.read())
         # No selection means no failure capture or writer construction.
-        evidence = await production_evidence(window, c)
-        trigger = select_trigger(window, evidence, c.config.retro, forced=forced)
+        trigger = due_trigger(window, c.config.retro, forced=forced)
         if trigger is None:
             return None
         failure = suppressing_failure(window)
@@ -433,6 +436,7 @@ class Retro:
             self.failure_report(failure.key)
             return None
         self.due = True
+        evidence = await production_evidence(window, c)
         driver = self.driver()
         error_code = None
         try:

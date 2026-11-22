@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Standalone reproducer script that calls Serve.check_retro twice and prints a JSON defect/pass/error result, depending on whether the retro_check phase is logged once or twice for the same journal state
+# purpose: Standalone regression script that calls Serve.check_retro twice and prints a JSON pass/defect/error result based on whether the retro_check phase is logged once or twice for the same journal state
 # relates: [clutch/journal.py, clutch/serve.py]
-# owner: engine
-# verified: d232b8ba
-# hash: 371c84e78c42c527aba6a725c95fd26a32cebde08a8d920fc499fa80634badcf
+# owner: clutch/serve.py
+# verified: 2182d51e
+# hash: 8693c91c8c602b9fa41bd58f794301d7ee8f2e2ccb640a51450a201165c28398
 
 import asyncio
 import json
@@ -15,7 +15,6 @@ import traceback
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
 
 
 def main() -> int:
@@ -41,11 +40,7 @@ def main() -> int:
         serve.snapshot_config = lambda value: value
         serve.project_window = lambda value: value
         serve.suppressing_failure = lambda value: None
-        serve.select_trigger = lambda *args, **kwargs: None
-        if hasattr(serve, "production_evidence"):
-            serve.production_evidence = AsyncMock(return_value={})
-        if hasattr(serve, "measurements"):
-            serve.measurements = lambda value: {}
+        serve.due_trigger = lambda *args, **kwargs: None
 
         async def check():
             await s.check_retro()
