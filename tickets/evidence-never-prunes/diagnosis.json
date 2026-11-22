@@ -1,20 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d9723cfe550780107f6471d89114ddf6d7d369fb",
+  "produced_at_sha": "adfdf9579df20a76597e48d1fee2ca94b9c4bc33",
   "stem": "evidence-never-prunes",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "retry",
+  "verdict": "abandon-human",
   "lessons": [
-    "The scope_fence finding is stale: the ticket's current `## Scope fence` lists tests/unit/test_main_view_group.py, and Scope in requires adding `evidence=SimpleNamespace(warn_gb=20)` there. Keep that edit. Do not revert it.",
-    "The branch already passed ruff, ruff format, Verification and the full `./dev.py test` (297 passed). Make no new code changes. Only confirm that the branch diff matches the 13 fenced files and hand off.",
-    "Keep the clutch/docs/host-running.md row as `| `evidence prune` | No | ... |`. The backticked cell must stay exactly `evidence prune`, as tests/unit/test_host_running.py::test_verb_table_matches_parser requires.",
-    "If Check flags test_main_view_group.py outside the fence again, ScopeFenceGate in clutch/stages.py is reading an old ticket.scope_fence that does not include the widened fence. Reply premise_failed naming that file, and do not revert the edit."
+    "The diff is correct. Ticket lines 21 and 116 list tests/unit/test_main_view_group.py in `## Scope fence`, and Scope in requires the `evidence=SimpleNamespace(warn_gb=20)` edit there. Check still flagged that file in attempts 1 and 2, so the cause is in the engine, not the implementation.",
+    "Engine defect: ScopeFenceGate (clutch/stages.py, the `outside` check near line 1503) compares against Evidence.scope_fence. gather_safety_evidence fills that from `ticket.scope_fence`, and the `Ticket` passed in seems to be an older copy without the widened fence. A human must find where Check",
+    "Do not retry. The implementer cannot clear this finding: reverting test_main_view_group.py breaks test_dispatch_and_optional_locks (attempt 0 failed on it), and keeping the edit trips the stale fence. Rerun Check only after the engine reads the current ticket.md fence.",
+    "Verification passed (36 tests), ruff check and ruff format --check passed, and the run record reports the full suite green. After the engine fix, Check on the existing branch should pass with no changes to the code."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
