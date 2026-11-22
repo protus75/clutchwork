@@ -11,6 +11,8 @@ kind: chore
 ## Context
 - tests/fakes.py
 - tests/git_fake.py
+- tests/approval.py
+- tests/stages_helpers.py
 - clutch/docs/host-authoring.md#Unit and integration tests
 
 ## On-demand
@@ -28,8 +30,8 @@ The helpers follow `clutch/docs/host-authoring.md` section "Unit and integration
 - disposition: extend
 - owner: tests/loop_helpers.py
 - consumers: the 11 test files listed in `## Scope fence` that import `clock`, `repo`, `author`, `diagnosis_reply` and `transitions` from `tests/integration/test_terminal.py`, and the later batch tickets that restore the skipped ones
-- observable change: `clock`, `repo`, `author`, `diagnosis_reply` and `transitions` move from `tests/integration/test_terminal.py` into `tests/loop_helpers.py`; the `repo` fixture stops running git; every importer's import line changes to `tests.loop_helpers`; the hub file imports the names back from the new module for its own tests; no production code, CLI, journal or document changes
-- compatibility: every test that runs today still passes and the set of skipped tests is unchanged; a name that a running test reads as a module attribute of the hub stays reachable under the same name on the hub module
+- observable change: `clock`, `repo`, `author`, `diagnosis_reply` and `transitions` move from `tests/integration/test_terminal.py` into `tests/loop_helpers.py`; the `repo` fixture stops running git; `author` stops calling `tests.approval.approve` (which builds `Git(SubprocessExec())` and runs real git) and only writes the ticket file; every importer's import line changes to `tests.loop_helpers`; the hub file imports the names back from the new module for its own tests; no production code, CLI, journal or document changes
+- compatibility: every test that runs today still passes and the set of skipped tests is unchanged; no running test calls `author` (the hub and all 11 importers carry `pytestmark = pytest.mark.disk_io_skip`), so dropping the approval call changes no running test; a name that a running test reads as a module attribute of the hub stays reachable under the same name on the hub module
 - acceptance: `tests/unit/test_loop_helpers.py` imports each name this ticket moves from `tests.loop_helpers` and exercises it without a process, real git or a write outside `tmp_path`; no importer still imports a moved name from the hub
 - tests: tests/unit/test_loop_helpers.py
 - post-merge source of truth: tests/loop_helpers.py
@@ -39,17 +41,20 @@ The helpers follow `clutch/docs/host-authoring.md` section "Unit and integration
 Scope in:
 - Add to `tests/loop_helpers.py` (create it if the earlier ticket of the chain is not merged yet, which `## Depends on` rules out) the names `clock`, `repo`, `author`, `diagnosis_reply`, `transitions`, each rewritten as described, keeping its signature unless a change is named.
 - `ENV`, `STEM` and `implement_reply` are re-exports of names already in `tests.stages_helpers`: `test_caps.py` imports `ENV` and `STEM`, and `test_reject_queue.py` imports `implement_reply`, from `tests.stages_helpers` instead; `tests/loop_helpers.py` does not define them.
-- The `repo` fixture builds the same tracked files under `tmp_path / "repo"` and drops `git init`, `git add` and `git commit`: it leaves no `.git` directory and starts no process, using no real git. `author` keeps writing the ticket file under the path it is given. `clock`, `diagnosis_reply` and `transitions` move unchanged in body and signature.
+- The `repo` fixture builds the same tracked files under `tmp_path / "repo"` and drops `git init`, `git add` and `git commit`: it leaves no `.git` directory and starts no process, using no real git.
+- `author` keeps its signature `author(repo, stem=STEM, depends="none")` and keeps writing the ticket file under the path it is given, and drops its lazy `from tests.approval import approve` and `approve(repo, stem, clock)` call: `tests/approval.py` builds `Git(SubprocessExec())` for `review_input_identity`, so keeping the call would run real git. Recording the approval event becomes the job of the batch ticket that restores each caller onto the fakes; no running test calls `author` today.
+- `clock`, `diagnosis_reply` and `transitions` move unchanged in body and signature.
 - The hub's `run` and `left_in_place` stay in `tests/integration/test_terminal.py`: no other file imports them, so they are not moved names.
 - Importer files that carry `# noqa: F401` fixture imports (for example `repo`) keep the noqa comment on the changed import line.
 - In every importer listed in `## Scope fence` (the 11 files that import a moved name from `tests/integration/test_terminal.py`), change only the import line (also an import line inside a function) so each moved name comes from `tests.loop_helpers`. Names an importer takes from other hubs stay as they are, and a module import (`from tests.integration import <hub>`) is not an import of a name and stays. A file that is both hub and importer here also changes only its import lines.
 - The hub `tests/integration/test_terminal.py` deletes its definition of every moved name it defines and imports the name back from `tests.loop_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line and every name it defines that no other file imports); the hub module keeps each moved name as a module attribute.
 - Create or extend `tests/unit/test_loop_helpers.py`: one test per moved name, each running without reading a repo file and calling it with `tmp_path`, in-memory inputs and the shared fakes and asserting what it returns or writes, plus one test that every name this ticket moves is importable from `tests.loop_helpers`. Append only; the earlier tickets' tests stay as they are.
-- `tests/loop_helpers.py` starts no process, runs no real git, and calls no real sleep: grep criterion 4 checks it.
-- Record the base-commit and candidate integration pass and skip counts in `run.md` (criterion 5). The run adds no new test to a hot test file: the only edits in `tests/integration/test_cli.py`, `test_drain.py`, `test_daemon_composition.py`, `test_stages.py`, `test_mergequeue.py`, `test_watch.py` or `serve_rig.py` are import lines the move forces.
-- - Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
+- `tests/loop_helpers.py` starts no process, runs no real git, calls no real sleep, and does not reference `tests.approval`: grep criterion 4 checks it.
+- Record the base-commit and candidate integration pass and skip counts in `run.md` (criterion 5; the base measured by the previous attempt was 297 passed, 3341 skipped). The run adds no new test to a hot test file: the only edits in `tests/integration/test_cli.py`, `test_drain.py`, `test_daemon_composition.py`, `test_stages.py`, `test_mergequeue.py`, `test_watch.py` or `serve_rig.py` are import lines the move forces.
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
-- Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged; skipped importers may still break semantically and their batch ticket fixes that.
+- Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged; skipped importers may still break semantically (including tests that relied on `author` journaling an approval) and their batch ticket fixes that.
+- Editing `tests/approval.py` or giving `approve` an injectable git seam: a later batch ticket that restores an `author` caller owns that.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
 - Defining in `tests/loop_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`, or a copied reply or config helper.
 - Names that other hubs own: each of the other four `io-helpers-loop-*` tickets moves its own hub's names, and this ticket leaves their definitions and importers alone.
@@ -75,7 +80,7 @@ Scope out:
 1. `./dev.py test tests/unit/test_loop_helpers.py` passes; it checks, through a test that imports the `repo` fixture (with `# noqa: F401`) and takes it as a parameter (`def test_repo(repo, tmp_path)`), that the `repo` fixture yields a path under `tmp_path` holding `config.yaml` and `clutch/thing.py` and no `.git` directory, that `author(repo)` writes `tickets/<stem>/ticket.md` under that path, that `diagnosis_reply("a")` returns JSON whose `lessons` is `["a"]`, and that `clock()` returns the fixed 2026-10-05 UTC time.
 2. `grep -rPzl "from tests\.integration\.test_terminal import" tests --include=*.py` lists no file: no file imports a name from the hub.
 3. `grep -nE "^(async def|def|class) (clock|repo|author|diagnosis_reply|transitions)\b|^(clock|repo|author|diagnosis_reply|transitions) =" tests/integration/test_terminal.py` prints nothing: the hub no longer defines a moved name. The hub's own `run` and `left_in_place` stay because no file imports them.
-4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/loop_helpers.py` prints nothing.
+4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C|tests\.approval|approve\(" tests/loop_helpers.py` prints nothing.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
 6. `./dev.py test tests/integration/test_shared_fakes_adoption.py tests/integration/test_disk_io_skip_list.py` passes (a running test that reads a moved name as a hub module attribute still sees the shared object).
 
@@ -88,9 +93,9 @@ Scope out:
 
 ## Definition of rejected
 - A test that runs today fails or is skipped, or a skipped test becomes unskipped.
-- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/loop_helpers.py` defines a class that duplicates a shared fake or a copied reply or config helper.
+- A moved name keeps real git, a process, or a write outside `tmp_path`, `author` still calls `tests.approval.approve`, or `tests/loop_helpers.py` defines a class that duplicates a shared fake or a copied reply or config helper.
 - `tests/loop_helpers.py` imports from a `tests/integration/` test file, or a name moved by another of the five tickets is moved here.
-- A shared module (`tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py`, `tests/conftest.py`) is edited.
+- A shared module (`tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py`, `tests/conftest.py`) or `tests/approval.py` is edited.
 - An importer changes anything other than its import line, or a hub test is deleted, weakened or restored.
 
 ## Time budget
