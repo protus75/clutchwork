@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The branch already contained the migration from the prior attempt.
+The two importer files are now inside the scope fence, so their existing committed changes were retained.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 26 minutes; actual time was shorter.
+The ticket budget was 26 minutes; this verification took less than that.
 
