@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The current branch includes a request reader added in tests/loop_helpers.py after the ticket’s earlier attempts.
+The final verification passed: 2,167 unit tests and 297 integration tests passed; 3,341 integration tests were skipped. The simpler rename alone would leave ticketless driver calls unnamed, so the driver also validates and forwards their subjects.
 
 ## Dead ends
 
-none
+An initial mutation check showed the missing-subject test could pass through later request validation; the test now checks the driver's specific error.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 30 minutes; actual duration was not measured.
 
