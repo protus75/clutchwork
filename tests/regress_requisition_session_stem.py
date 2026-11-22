@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Standalone regression script that runs a fake-LLM driver stage with a requisition review and checks that the review request carries the reviewed ticket stem; it exits 0 on pass, 1 on defect and 2 on error.
+# purpose: Standalone regression script that runs a fake-LLM driver stage with a requisition review and checks that the review request carries the reviewed ticket stem; it exits 0 on pass, 1 on defect and 2 on error
 # relates: [clutch/config.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py]
-# owner: engine
-# verified: fb61b143
-# hash: 3f19a9078d8c34c9a6642f81bdd711793a7987fc0676eab772eb5a142f95399e
+# owner: clutch/requisition.py
+# verified: 58c46bba
+# hash: 2e9e8b1534942bd814b4aba862d2d24bc3c8d1237d78af1f093c48b0f66e2632
 
 import asyncio
 import json
@@ -129,6 +129,7 @@ def main() -> None:
                 LlmStage(surface="author", emits=Reply, gates=[], render=lambda consumed, findings: "proposal", review=review),
                 None,
                 ticket=None,
+                subject="box-1",
                 run_seq=4,
                 attempt=2,
                 workspace=repo,
@@ -140,7 +141,7 @@ def main() -> None:
             )
         )
         request = next((request for request in llm.requests if request.surface == "requisition_review"), None)
-        result = "error" if request is None else "pass" if request.ticket == "candidate" else "defect"
+        result = "error" if request is None else "pass" if request.subject == "candidate" else "defect"
         print(json.dumps({"regression_result": result}))
         raise SystemExit({"pass": 0, "defect": 1, "error": 2}[result])
 

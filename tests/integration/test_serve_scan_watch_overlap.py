@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Tests that changed-ticket intake, draft and priority edits and stop requests proceed while two implementations hold admission slots, without an exclusive gate pending
 # relates: [clutch/llm.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py, tests/integration/test_serve_parallel_admission.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: b82c858b53d854901b1967b537378037b49ad0818f739ef8713d3ed4e08b5363
+# owner: clutch/serve.py
+# verified: 58c46bba
+# hash: a4307499674d4477015876a805eec44cce092e4a733a06d12b03ac782ba512db
 
 import asyncio
 import json
@@ -31,7 +31,7 @@ async def test_changed_tickets_overlap_and_stop(root, monkeypatch):
 
     async def blocked(model, req):
         if req.surface == "implement":
-            entered[req.ticket].set()
+            entered[req.subject].set()
             await release.wait()
         return await call(model, req)
 

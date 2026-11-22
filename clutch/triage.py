@@ -309,6 +309,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
         size = len(selected) or 1
         kwargs = dict(
             ticket=None,
+            subject=message.id,
             run_seq=message.seq,
             attempt=pass_no,
             workspace=checkout.repo,

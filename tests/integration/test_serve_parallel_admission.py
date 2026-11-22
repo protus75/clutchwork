@@ -5,8 +5,8 @@
 # purpose: Tests that continuous serve admits parallel runs within capacity and fence overlap, and handles control confirm and stop requests during dispatch
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/llm.py, clutch/scheduler.py, tests/integration/serve_rig.py]
 # owner: clutch/serve.py
-# verified: 7abfadd2
-# hash: 288172e6240cc06ff1ecec5b537daeecf050fac85f058ddd6651a05bf39b2d28
+# verified: 58c46bba
+# hash: 2e3adb59e559dd9b59dbf0cd3aa7540b34347ec24e12d2feb2ea7ae0de3dcc30
 
 import asyncio
 import json
@@ -63,8 +63,8 @@ async def test_parallel_implementations(root, monkeypatch, max_runs, overlap):
 
     async def blocked(model, req):
         if req.surface == "implement":
-            entered[req.ticket].set()
-            await release[req.ticket].wait()
+            entered[req.subject].set()
+            await release[req.subject].wait()
         return await call(model, req)
 
     monkeypatch.setattr(FakeLLM, "call", blocked)

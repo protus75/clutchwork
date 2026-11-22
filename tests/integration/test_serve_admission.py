@@ -5,8 +5,8 @@
 # purpose: Tests serve merge admission: queue routing, rebase and regate, red-streak and tree-mismatch holds, cleanup, refusals and conflict reruns
 # relates: [clutch/audit.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: clutch/mergequeue.py
-# verified: 7abfadd2
-# hash: c6f9bbcae4eea1a7505758ea0683406342217a68b32ae8dfc36c79962a8d7c91
+# verified: 58c46bba
+# hash: 42e97901f056cfa1d33a84b00113fb38e44962aafc6f338bc3ec440990c6ce19
 
 import asyncio
 import json
@@ -447,7 +447,7 @@ async def test_serve_admission_refusal_keeps_main_green(root, monkeypatch, failu
         admission_ticket(root, "next", paths=("clutch/next.py",))
         await until(rig, lambda: ("next", "merged") in rig.returns)
         assert "red" not in (root / "clutch/thing.py").read_text() and not rig.owner.queue.red_stems
-        assert [req.surface for llm in rig.models for req in llm.requests if req.ticket == "work"].count("diagnose") == 0
+        assert [req.surface for llm in rig.models for req in llm.requests if req.subject == "work"].count("diagnose") == 0
     finally:
         await finish(rig, run)
 

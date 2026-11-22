@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit test asserting that requisition.review_ticket sends its requisition_review LLM request tagged with the reviewed ticket stem.
+# purpose: Tests that requisition.review_ticket tags its requisition_review LLM request with the stem of the ticket under review.
 # relates: [clutch/llm.py, clutch/requisition.py]
 # owner: engine
-# verified: fb61b143
-# hash: b8cab74ff5fc461214cb3292c43ed7f5d189cb0b1181a9be4ed67b303f6c9b7c
+# verified: 58c46bba
+# hash: 6ba3861d81c1c60be3813ce99e06af9209fc37e7d617cf2fa4b0bb1a45e48bae
 import asyncio
 import json
 from dataclasses import asdict
@@ -55,4 +55,4 @@ def test_requisition_review_request_has_reviewed_stem(monkeypatch, tmp_path):
         )
     )
     request = next(request for request in llm.requests if request.surface == "requisition_review")
-    assert request.ticket == "abc"
+    assert request.subject == "abc"

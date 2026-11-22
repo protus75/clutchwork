@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Reproduce nested requisition events attributed to a proposal.
+# purpose: Standalone regression script that runs an Author stage with a nested requisition review and checks that the stage_start and stage_end log events stay attributed to the owner, not the proposal stem
 # relates: [clutch/config.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py]
-# owner: engine
-# verified: d7719818
-# hash: 5b1fd3803ced387dfe2bb8da5ba80ba6532daaa35bed2ffe9fbed87e0f0a3542
+# owner: clutch/requisition.py
+# verified: 58c46bba
+# hash: bf1429fbe549f07c373c910aa04ba8aa25d390125d36e0c5dbbd321f55d27d88
 
 import asyncio
 import json
@@ -127,6 +127,7 @@ def main() -> None:
                 LlmStage(surface="author", emits=Reply, gates=[], render=lambda consumed, findings: "proposal", review=review),
                 None,
                 ticket=None,
+                subject="box-1",
                 run_seq=4,
                 attempt=2,
                 workspace=repo,

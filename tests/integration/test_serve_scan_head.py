@@ -4,8 +4,8 @@
 # purpose: Tests that non-ticket main commits do not block parallel admission and that a HEAD change retries a refused ticket intake
 # relates: [clutch/llm.py, clutch/scheduler.py, clutch/seams.py, clutch/serve.py, tests/fakes.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: clutch/serve.py
-# verified: 7abfadd2
-# hash: 7a7fc9603e69d67ad0031cbf079fc5f635a60f32887f1bf2353c67a380313962
+# verified: 58c46bba
+# hash: bc1a4b7eae894571bfe2f26807f67fb89ea48f81667ca8bcfc644f49d4814c00
 import asyncio
 
 import pytest
@@ -31,8 +31,8 @@ async def test_main_commits_preserve_parallel_admission_and_retry_refusal(root, 
     call, dispatch = FakeLLM.call, Scheduler.dispatch_next
 
     async def blocked(model, req):
-        if req.surface == "implement" and req.ticket in entered:
-            entered[req.ticket].set()
+        if req.surface == "implement" and req.subject in entered:
+            entered[req.subject].set()
             await release.wait()
         return await call(model, req)
 

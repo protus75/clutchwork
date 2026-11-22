@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: fixture
-# purpose: Fault-injection members for the production drain.
+# purpose: Shakeout fault-injection members for the production drain: an invalid committed ticket, a premise park and release, and a review red then green retry
 # relates: [clutch/caps.py, clutch/journal.py, clutch/stages.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py]
 # owner: engine
-# verified: d7719818
-# hash: 87905feddeba983e88ac9956c4b366da7d00fc79606ae5e9244ec3ef6ef9d551
+# verified: 58c46bba
+# hash: cb9771a4225d134f607665aeba47cf9663d30bf900f0ba704bf0c0ed531b63d3
 
 import json
 
@@ -38,7 +38,7 @@ async def _bad_schema(bench: Bench) -> Observation:
 
     invalid_events = [event for event in bench.journal.read() if event.ticket == invalid]
     assert not invalid_events
-    assert all(request.ticket != invalid for request in bench.llm.requests)
+    assert all(request.subject != invalid for request in bench.llm.requests)
     assert valid in report.merged
     assert len(report.invalid) == 1 and report.invalid[0][0] == invalid
     assert report.invalid[0][1]

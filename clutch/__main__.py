@@ -1460,7 +1460,7 @@ def main(
                     if model in seen:
                         continue
                     seen.add(model)
-                    req = LLMRequest(surface="preflight", rendered=PROBE_PROMPT, tier=tier, effort="low", ticket=None, worktree=None)
+                    req = LLMRequest(surface="preflight", rendered=PROBE_PROMPT, tier=tier, effort="low", subject=model, worktree=None)
                     try:
                         await adapter.invoke(req, model)
                         print(f"{name} {model}: ok")

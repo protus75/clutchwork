@@ -269,7 +269,7 @@ async def review_ticket(
     name = f"requisition_review/call-{call_seq:02d}"
     spool_stem = f"{stem_slot}/{run_seq}"
     driver.spool.write(spool_stem, attempt, f"{name}/prompt.md", prompt)
-    req = LLMRequest(surface="requisition_review", rendered=prompt, tier=tier, effort=spec.meta.effort, ticket=stem, worktree=None)
+    req = LLMRequest(surface="requisition_review", rendered=prompt, tier=tier, effort=spec.meta.effort, subject=stem, worktree=None)
     with ExitStack() as stack:
         try:
             if driver._active is None:

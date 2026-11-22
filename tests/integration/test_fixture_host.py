@@ -5,8 +5,8 @@
 # purpose: Tests the disposable fixture host scaffold: config profile, closed scenario list, deterministic replay, regression and escape evidence, report bounds, CLI adapter roundtrip and dormancy
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/git.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: ff6ac88d
-# hash: 59948ddfc1752fbf17d15eb2b2a09b87ae8223ff5956000178fe67193a57bb00
+# verified: 58c46bba
+# hash: d8cffe10a2c5ddc9c509d275d77f4c6d8d2ef98f272fe9fdc15a9abaa08a6ece
 
 import asyncio
 import json
@@ -366,10 +366,10 @@ def test_fixture_cli_adapter_roundtrip(host):
                     assert "--tools" in argv and (host / "settings.json").read_bytes() == before
         env.update(CLUTCH_FIXTURE_SCENARIO="unknown", CLUTCH_FIXTURE_SURFACE="review")
         with pytest.raises(ProviderCallError, match="select a declared scenario"):
-            await llm.call(LLMRequest("review", "unknown", "medium", "low", None, None))
+            await llm.call(LLMRequest("review", "unknown", "medium", "low", "unknown", None))
         env["CLUTCH_FIXTURE_SCENARIO"] = "escape"
         with pytest.raises(ProviderCallError, match="replenish.*declared responses"):
-            await llm.call(LLMRequest("review", "exhausted", "medium", "low", None, None))
+            await llm.call(LLMRequest("review", "exhausted", "medium", "low", "exhausted", None))
         assert not (cfg.state_dir / "journal").exists()
         assert all("--max-budget-usd" not in argv for argv, _ in exec_.calls)
 

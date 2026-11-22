@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests training eval: scoring review replay against labels, counting unparsed replies, selecting stems, and checking the CLI handler's gates and read-only contract.
+# purpose: Tests `clutch training eval`: scoring review replays against labels, counting unparsed replies, selecting stems, and checking the CLI handler's gates and read-only contract.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/evidence/store.py, clutch/journal.py, clutch/llm.py, clutch/redact.py, clutch/timers.py]
 # owner: engine
-# verified: cb71e4f8
-# hash: fe6938f4e308395a2b5e80522328623a446f4271fe9b2dd7b077409b7dfb22e8
+# verified: 58c46bba
+# hash: 4af90f0282ea3f15e05464e49be624ac3482547602b12b1c78e7cd3cade473e5
 
 import asyncio
 import json
@@ -63,7 +63,7 @@ def test_score_and_requests():
     # Rules out counting every parsed response as agreement, reversing labels, or excluding disagreements from the denominator.
     assert counts == dict(total=3, agree=2, disagree=1, unparsed=0, agreement=2 / 3)
     # Rules out replaying the target answer, wrong routing/effort, durable ticket association, or skipped/duplicate calls.
-    assert llm.requests == [LLMRequest(surface="review", rendered=prompt, tier="high", effort="medium", ticket=None, worktree=None) for prompt in ("first", "second", "third")]
+    assert llm.requests == [LLMRequest(surface="review", rendered=prompt, tier="high", effort="medium", subject=f"eval-{i}", worktree=None) for i, prompt in enumerate(("first", "second", "third"), 1)]
 
 
 @pytest.mark.parametrize("reply", ["not json", '{"verdict":"maybe"}', "{}", "[]", '{"verdict":["snag"]}'])
@@ -141,7 +141,7 @@ def test_handler(tmp_path, monkeypatch, capsys, enabled, holdout, problems, exit
     # Rules out accepting disabled/unreadable input or failing a valid eval.
     assert code == exit_code
     # Rules out calling the model before the enable/read/preflight gates, or evaluating b despite the holdout.
-    assert llm.requests == ([LLMRequest(surface="review", rendered="review prompt for a", tier="medium", effort="medium", ticket=None, worktree=None)] if exit_code == 0 else [])
+    assert llm.requests == ([LLMRequest(surface="review", rendered="review prompt for a", tier="medium", effort="medium", subject="eval-1", worktree=None)] if exit_code == 0 else [])
     # Rules out timer firing and any evidence/journal/log writes, including added or removed files.
     assert snapshot() == before
     if enabled and holdout == b"a\n":

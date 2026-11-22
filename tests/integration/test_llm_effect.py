@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that each LLM call journals one cost-bearing completion with a universal key, and covers replay on reentry, run_seq advance, and secret scrubbing
+# purpose: Tests that each LLM call journals one cost-bearing completion under the universal llm key, replays on same-sequence reentry and restart, advances with run_seq, keys ticketless surfaces on surface name and scrubs secrets
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
-# owner: engine
-# verified: d32c32ad
-# hash: 051a81c556f80b979235fd9dcab60a7b24c671b543325e3605ffc1d8bb369805
+# owner: clutch/llmeffect.py
+# verified: a8ff766f
+# hash: 2eaed955564c1123ca783db5b780e6b7e70153d78b522656a85d55b0b8256a72
 import asyncio
 import json
 import textwrap
@@ -85,8 +85,10 @@ def build(tmp_path: Path, llm: FakeLLM) -> tuple[Driver, Path]:
     return driver, config.state_dir
 
 
-def run(driver: Driver, ticket: str | None = "t-echo", attempt: int = 1):
-    return asyncio.run(driver.run(ECHO, Stub(text="hi"), ticket=ticket, attempt=attempt, workspace=Path("."), tier="medium", effort="low", stuck_budget=600.0, expected_budget=300.0, scope_fence=()))
+def run(driver: Driver, ticket: str | None = "t-echo", attempt: int = 1, subject: str | None = None):
+    return asyncio.run(
+        driver.run(ECHO, Stub(text="hi"), ticket=ticket, subject=subject, attempt=attempt, workspace=Path("."), tier="medium", effort="low", stuck_budget=600.0, expected_budget=300.0, scope_fence=())
+    )
 
 
 def metered(text: str, usd: float = 0.5) -> LLMResult:
@@ -185,7 +187,7 @@ def test_run_seq_counts_only_this_stems_terminals():
 
 def test_ticketless_surface_keys_on_its_surface_name(tmp_path):
     driver, state_dir = build(tmp_path, FakeLLM([metered(echo_json("hi"))]))
-    run(driver, ticket=None)
+    run(driver, ticket=None, subject="ticketless")
     (done,) = llm_completions(state_dir)
     assert done.key == "llm/implement/0/implement/1/1" and done.ticket is None
 

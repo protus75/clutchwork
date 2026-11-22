@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared test scaffolding for the scheduler, triage, terminal, restart and serve tests: a fake clock, a ticket text builder, a scheduler and watcher Rig, an import-closure walker, triage escape rigs, repo, repository, orphan and held fixtures, and serve graph, admission, notify and upgrade helpers
+# purpose: Shared test scaffolding for the scheduler, triage, restart and serve tests: a fake clock, ticket text builder, scheduler and watcher Rig, import-closure walker, triage escape rigs, repository, orphan and held fixtures, and serve graph, admission, notify and upgrade helpers
 # relates: [clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py, tests/cli_helpers.py]
 # owner: engine
-# verified: 7abfadd2
-# hash: de3325889b4f653754b0ebb4cbd7bf9176eaf615e30c30a1538e52efebc77e6f
+# verified: 58c46bba
+# hash: b226427d49583c9eafabe741b72de429701eab24419f342d1db0b444b37b6a66
 
 import ast
 import asyncio
@@ -497,7 +497,7 @@ async def admission_graph(root, monkeypatch, changes, *, endings=None, settled=N
 
     class Model(FakeLLM):
         async def call(self, req):
-            stem = req.ticket
+            stem = req.subject
             if req.surface == "implement":
                 for path, data in changes.get(stem, {}).items():
                     rig.fs.write(req.worktree / path, data.encode())

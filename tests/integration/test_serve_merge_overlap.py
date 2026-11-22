@@ -4,8 +4,8 @@
 # purpose: Tests that a merge and the following rebase complete while another implementation holds its parallel run slot
 # relates: [clutch/config.py, clutch/mergequeue.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: clutch/serve.py
-# verified: 7abfadd2
-# hash: e77e9670ef01a934e746a008db42ceb6fa780854ef1a596b0a7c946dff449f2b
+# verified: 58c46bba
+# hash: 91a5df42e70653c776b8304143e0fe90cbd315625f18353260cced7261c41f27
 import asyncio
 from dataclasses import replace
 
@@ -29,7 +29,7 @@ async def test_merge_while_other_implementation_holds_slot(root, monkeypatch):
 
     async def held(model, req):
         if req.surface == "implement":
-            if req.ticket == "two":
+            if req.subject == "two":
                 entered.set()
                 await release.wait()
             else:

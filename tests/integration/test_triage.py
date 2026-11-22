@@ -5,8 +5,8 @@
 # purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/triage.py
-# verified: ff6ac88d
-# hash: 6c681e7c3d7347248e06d9aeaaabbbe642bbcad261590d7e975e108435c35bc5
+# verified: 837c828e
+# hash: 75af71c55058d9f0135cf29d314285ac8b3756ba11261032521a3088c5447844
 
 import asyncio
 import json
@@ -78,12 +78,12 @@ def test_three_verdicts_and_second_pass_and_stale_author(tmp_path, monkeypatch, 
     assert box.get(ids[2]).resolution == Resolution(kind="ticket", link="authored")
     assert box.get(ids[2]).verdict.produced_by_spec_version == "1.1"
     assert len(llm.requests) == 5
-    assert [(r.surface, r.tier, r.ticket) for r in llm.requests] == [
-        ("triage", "medium", None),
-        ("triage", "medium", None),
-        ("triage", "medium", None),
-        ("author", "medium", None),
-        ("requisition_review", "medium", None),
+    assert [(r.surface, r.tier, r.subject) for r in llm.requests] == [
+        ("triage", "medium", ids[0]),
+        ("triage", "medium", ids[1]),
+        ("triage", "medium", ids[2]),
+        ("author", "medium", ids[2]),
+        ("requisition_review", "medium", "authored"),
     ]
     keys = {e.key for e in events(root) if e.type == EventType.EFFECT_COMPLETION and e.key.startswith("llm/")}
     assert keys == {f"llm/triage/{m.seq}/triage/0/1" for m in messages} | {f"llm/author/0/author/{messages[2].seq}/1", f"llm/author/0/requisition_review/{messages[2].seq}/1"}

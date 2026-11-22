@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the LLM stage driver: capture spooling, stuck-budget kills, re-prompts on schema or gate failure, cost totals, secret redaction and log rotation.
+# purpose: Tests the LLM stage driver: capture spooling, stuck-budget kills, re-prompts on schema or gate failure, fence unwrapping, cost totals, secret redaction and engine log rotation
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/redact.py]
-# owner: engine
-# verified: d32c32ad
-# hash: e7bd216afb4f01947a2e0874e90dd7fa75af1e6a9d49db4f51387c80a9360809
+# owner: clutch/driver.py
+# verified: 58c46bba
+# hash: e83d7ff4283fc12e1504167e72130d6b4c085e2a189234af92f9b7e5d0b84e39
 import asyncio
 import json
 import textwrap
@@ -133,7 +133,7 @@ def test_echo_stage_with_empty_gate_list_emits_validated_artifact(tmp_path):
     assert result.cost.provider == "fake"
     req = llm.requests[0]
     assert req.budget_usd is None
-    assert (req.surface, req.tier, req.effort, req.ticket) == ("implement", "medium", "low", "t-echo")
+    assert (req.surface, req.tier, req.effort, req.subject) == ("implement", "medium", "low", "t-echo")
     assert read_capture(state, "t-echo", 1, "implement/call-01/prompt.md").decode() == req.rendered
     assert read_capture(state, "t-echo", 1, "implement/call-01/output.txt").decode() == echo_json("hi")
     events = [e["event"] for e in log_events(state)]
@@ -280,7 +280,7 @@ def test_stage_without_hooks_keeps_its_request_shape(tmp_path):
     llm = FakeLLM([echo_json("hi")])
     driver, _ = build(tmp_path, llm)
     assert run(driver).outcome == "ok"
-    assert [(request.surface, request.ticket, request.worktree) for request in llm.requests] == [("implement", "t-echo", Path("."))]
+    assert [(request.surface, request.subject, request.worktree) for request in llm.requests] == [("implement", "t-echo", Path("."))]
 
 
 def test_reprompts_are_bounded_by_the_retry_cap(tmp_path):
@@ -330,15 +330,15 @@ def test_ticketless_surface_spools_under_its_surface_name(tmp_path):
     llm = FakeLLM([echo_json("hi")])
     driver, state = build(tmp_path, llm)
     stage = LlmStage(surface="triage", emits=Echo, gates=[], render=render)
-    run(driver, stage, ticket=None)
-    assert llm.requests[0].ticket is None
+    run(driver, stage, ticket=None, subject="ticketless")
+    assert llm.requests[0].subject == "ticketless"
     read_capture(state, "triage", 1, "triage/call-01/prompt.md")
 
 
 def test_ticketless_stage_logs_caller_run_sequence(tmp_path):
     driver, state = build(tmp_path, FakeLLM([echo_json("hi")]))
     stage = LlmStage(surface="triage", emits=Echo, gates=[], render=render)
-    run(driver, stage, ticket=None, run_seq=337)
+    run(driver, stage, ticket=None, subject="ticketless", run_seq=337)
     events = [e for e in log_events(state) if e["event"] in ("stage_start", "stage_end")]
     assert [(e["event"], e["run_seq"]) for e in events] == [("stage_start", 337), ("stage_end", 337)]  # Journal-derived sequence is zero.
 
@@ -359,7 +359,7 @@ def test_surfaces_sharing_an_attempt_keep_separate_spools(tmp_path):
 
 def test_fake_llm_refuses_when_script_exhausted():
     with pytest.raises(AssertionError, match="script exhausted"):
-        asyncio.run(FakeLLM([]).call(LLMRequest("implement", "x", "low", "low", None, None)))
+        asyncio.run(FakeLLM([]).call(LLMRequest("implement", "x", "low", "low", "probe", None)))
 
 
 def test_configured_secret_value_never_reaches_spool_or_engine_log(tmp_path):

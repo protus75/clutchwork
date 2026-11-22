@@ -5,8 +5,8 @@
 # purpose: Tests provider quota cooldown, ordered failover, drought parking and recovery, auth exclusion, and wait budgets through the production composition
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/drain.py]
 # owner: clutch/providers.py
-# verified: 7abfadd2
-# hash: 3682d8d112ea9df3d6e8140c54c3809a45014088c25a9e0845d22760e9e804be
+# verified: 58c46bba
+# hash: b1e15152a1d3cfbf2395c87ccfa8c335e40a58bbb5fd0b7811f95bb883920876
 
 import asyncio
 import json
@@ -338,6 +338,7 @@ async def test_one_provider_payload_and_timers_per_session(root, monkeypatch):
                 LlmStage(surface=surface, emits=Reply, gates=[], render=lambda *_: "probe"),
                 None,
                 ticket=None if ticketless else ticket.stem,
+                subject="ticketless" if ticketless else None,
                 attempt=0,
                 workspace=ctx.repo,
                 tier="medium",

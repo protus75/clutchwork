@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: fixture
-# purpose: Fault-injection members for the shared LLM-stage driver.
+# purpose: Shakeout fault-injection members for the shared LLM-stage driver: invalid Implement output that exhausts re-prompts, and a hung call killed at its stuck budget
 # relates: [clutch/journal.py, clutch/llm.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/run.py, tests/harness/shakeout/stages.py]
 # owner: engine
-# verified: d7719818
-# hash: 5ad43a11ed19fc24ac2d51117f21ae12d4b48c6addb06cbd9c8ed7abcc35e39f
+# verified: 58c46bba
+# hash: 790c973c3cd406149951c4340a84f3b0e4a98786f9bf92865aa1005899902bcf
 
 import json
 
@@ -45,8 +45,8 @@ async def _invalid_output_exhausted(bench: Bench) -> Observation:
     )
     report = await bench.drain()
 
-    diagnosis_at = next(index for index, request in enumerate(bench.llm.requests) if request.ticket == stem and request.surface == "diagnose")
-    requests = [request for request in bench.llm.requests[:diagnosis_at] if request.ticket == stem and request.surface == "implement"]
+    diagnosis_at = next(index for index, request in enumerate(bench.llm.requests) if request.subject == stem and request.surface == "diagnose")
+    requests = [request for request in bench.llm.requests[:diagnosis_at] if request.subject == stem and request.surface == "implement"]
     assert len(requests) == bench.config.caps.retry + 1
     assert all("invalid_artifact" in request.rendered for request in requests[1:]), [request.rendered for request in requests[1:]]
     terminal = _terminals(bench, stem)[0]

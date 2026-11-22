@@ -478,6 +478,7 @@ class Retro:
                 stage,
                 consumed,
                 ticket=None,
+                subject=f"window-{window.sequence}",
                 run_seq=window.sequence,
                 attempt=1,
                 workspace=c.repo,

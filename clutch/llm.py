@@ -18,12 +18,14 @@ class LLMRequest:
     rendered: str
     tier: AgentTier
     effort: AgentEffort
-    ticket: str | None
+    subject: str
     worktree: Path | None  # set for a cli Implement run only: the one surface granted write
     budget_usd: float | None = None
     kind: str | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.subject, str) or not self.subject:
+            raise ValueError("subject must be a non-empty string")
         if self.budget_usd is not None and (type(self.budget_usd) not in (float, int) or not math.isfinite(self.budget_usd) or self.budget_usd < 0):
             raise ValueError("budget_usd must be finite and nonnegative, or null")
 

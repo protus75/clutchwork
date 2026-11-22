@@ -5,8 +5,8 @@
 # purpose: Shared test scaffolding for config, providers, Rework and merge: VALID and CONFIG fixtures, a scripted FakeExec, provider session and LLM builders, claude and codex JSONL replies, Rework order, requisition and successor helpers, MigrationFS, the repo fixture and stage context, and a bootstrap inline-admission check
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 38957300
-# hash: 903b200961d48d421acbfb8ccf82e5d70e8b23c52b8623e53a315751cb7965e3
+# verified: 58c46bba
+# hash: a40645b4813de095496f0ad44c3976e8084b57f68c4885bdb81ec195c58b183c
 
 import asyncio
 import dataclasses
@@ -130,7 +130,7 @@ def llm(cfg, exec_: FakeExec, tmp_path: Path) -> ProviderLLM:
 
 
 def req(surface: str, tier="medium", worktree=None, rendered="do the thing", effort="high") -> LLMRequest:
-    return LLMRequest(surface=surface, rendered=rendered, tier=tier, effort=effort, ticket="t-1", worktree=worktree)
+    return LLMRequest(surface=surface, rendered=rendered, tier=tier, effort=effort, subject="t-1", worktree=worktree)
 
 
 def jsonl(*events: dict) -> str:

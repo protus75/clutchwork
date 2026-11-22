@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify triage panel voting, failures, and guards.
+# purpose: Tests triage settling with single or panel review: majority votes, tie-breaks and links, dropped or failed members, panel_facts logging, and the reopen and rejected-link guards.
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/panel.py, clutch/triage.py, tests/unit/test_route_kinds_filter.py]
 # owner: engine
-# verified: b1bfcbf6
-# hash: 1c78bbb264a71d4c77824966dd173610a72ef467772fbad4211f1ce2e7162f19
+# verified: 58c46bba
+# hash: 932211d227cdff1e189fd56b19617c9eb4a7ff293626e1f6329a54fb916a3319
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
@@ -88,7 +88,9 @@ async def test_single(setup, size):
     value = reply("declined", "0")
     c, d, lines = await setup.run(size, single=member(value))
     # Wrong: changing the existing call arguments or routing a single member through the panel.
-    assert d.run.await_args.kwargs == dict(ticket=None, run_seq=7, attempt=4, workspace=c.repo, tier="medium", effort="low", stuck_budget=600.0, expected_budget="surface", scope_fence=())
+    assert d.run.await_args.kwargs == dict(
+        ticket=None, subject="box-1", run_seq=7, attempt=4, workspace=c.repo, tier="medium", effort="low", stuck_budget=600.0, expected_budget="surface", scope_fence=()
+    )
     d.run.assert_awaited_once()
     d.run_panel.assert_not_awaited()
     assert lines == [("box-1", "recorded")]

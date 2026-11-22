@@ -455,7 +455,7 @@ class CliAdapter:
         if budget is not None and self.reports_cost:
             argv.extend(["--max-budget-usd", str(budget)])
         if isinstance(self, ClaudeAdapter):
-            argv.extend(["--name", self.session_name(req.surface, req.ticket)])
+            argv.extend(["--name", self.session_name(req.surface, req.subject)])
         if writes and req.worktree is None:
             raise ProviderSetupError(f"surface {req.surface!r} writes the tree but the request carries no worktree")
         prompt = self._config.state_dir / "evidence" / "scratch" / f"{uuid4().hex}.md"
@@ -740,9 +740,8 @@ class ClaudeAdapter(CliAdapter):
     LOGIN_ROAD = "run claude interactively and complete /login, then `clutch engine drain`"
 
     @staticmethod
-    def session_name(surface: str, ticket: str | None) -> str:
-        name = f"Clutch {surface.replace('_', ' ').title()}"
-        return f"{name} {ticket}" if ticket is not None else name
+    def session_name(surface: str, subject: str) -> str:
+        return f"Clutch {surface.replace('_', ' ').title()} {subject}"
 
     @classmethod
     async def list_models(cls, *, exec_: ProcessExec, env: Mapping[str, str], cwd: Path) -> ModelListing:
@@ -1026,7 +1025,7 @@ class ProviderLLM:
                 if (cand.provider, model) in probed:
                     continue
                 probed.add((cand.provider, model))
-                req = LLMRequest(surface="preflight", rendered=PROBE_PROMPT, tier=route.tier, effort="low", ticket=None, worktree=None)
+                req = LLMRequest(surface="preflight", rendered=PROBE_PROMPT, tier=route.tier, effort="low", subject=model, worktree=None)
                 probes.append((cand.provider, model, adapter, req))
         tasks = [asyncio.create_task(adapter.invoke(req, model)) for _, model, adapter, req in probes]
         try:

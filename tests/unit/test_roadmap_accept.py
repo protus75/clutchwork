@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the `clutch roadmap accept` release check: row-state mapping, gap rows appended in a single commit, reply validation and reprompting, refusals before the model runs, judge-family selection and the CLI exit codes. It uses temp files and a scripted driver.
+# purpose: Tests the `clutch roadmap accept` release check: how row states are mapped, gap rows appended in one commit, reply validation and reprompting, refusals before the model runs, judge-family selection and CLI exit codes. It uses temporary files and a scripted driver.
 # relates: [clutch/__main__.py, clutch/acceptance.py, clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/effects.py]
 # owner: engine
-# verified: ddd16fd3
-# hash: b95325fb4cbbc09e2688264a28e6ae1edfd96aa4525a1dc5e3fa257aa441ea86
+# verified: 58c46bba
+# hash: a0cc0c5be70445bba5b2b4a6349ae5d9d07e73f3c861f3775443893c4411d5ab
 
 import asyncio
 import json
@@ -156,7 +156,7 @@ def test_accept_passes(checkout):
     )
     assert checkout.git.commits == []  # A read-only pass must not create a commit.
     stage, kwargs = driver.calls[0]
-    assert kwargs == dict(ticket=None, run_seq=4, attempt=1, workspace=checkout.repo, tier="high", effort="high", stuck_budget=1800.0, expected_budget="surface", scope_fence=())
+    assert kwargs == dict(ticket=None, subject="1.0.0", run_seq=4, attempt=1, workspace=checkout.repo, tier="high", effort="high", stuck_budget=1800.0, expected_budget="surface", scope_fence=())
     assert (stage.surface, stage.emits, stage.gates) == ("acceptance", acceptance.AcceptanceReply, [])
     assert block(driver.prompts[0], "release") == dict(release="1.0.0", next_release="2.0.0", release_plan=PLAN, plans=["docs/roadmap.md"])
 

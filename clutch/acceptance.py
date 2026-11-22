@@ -181,6 +181,7 @@ async def accept(checkout, driver, release) -> tuple[bool, list[str]]:
         LlmStage(surface="acceptance", emits=AcceptanceReply, gates=[], render=render_reply, review=review),
         None,
         ticket=None,
+        subject=release,
         run_seq=len(events),
         attempt=1,
         workspace=repo,

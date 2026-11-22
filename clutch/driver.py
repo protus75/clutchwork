@@ -234,6 +234,7 @@ class Driver:
         consumed: Any,
         *,
         ticket: str | None,
+        subject: str | None = None,
         attempt: int,
         workspace: Path,
         tier: AgentTier,
@@ -254,6 +255,7 @@ class Driver:
                 stage,
                 consumed,
                 ticket=ticket,
+                subject=subject,
                 attempt=attempt,
                 workspace=workspace,
                 tier=tier,
@@ -297,6 +299,7 @@ class Driver:
         *,
         size: int,
         ticket: str | None,
+        subject: str | None = None,
         attempt: int,
         workspace: Path,
         tier: AgentTier,
@@ -308,6 +311,12 @@ class Driver:
         budget_usd: float | None = None,
         kind: str | None = None,
     ) -> PanelResult:
+        if run_seq is not None and ticket is not None:
+            raise ValueError("run_seq requires ticket=None")
+        if ticket is not None and subject is not None:
+            raise ValueError("subject must be None when ticket is set")
+        if ticket is None and (not isinstance(subject, str) or not subject):
+            raise ValueError("subject must be a non-empty string when ticket is None")
         started = self.clock()
         members: list[StageResult] = []
         dropped: list[DroppedMember] = []
@@ -320,6 +329,7 @@ class Driver:
                 stage,
                 consumed,
                 ticket=ticket,
+                subject=subject,
                 attempt=attempt,
                 workspace=workspace,
                 tier=tier,
@@ -350,6 +360,7 @@ class Driver:
         consumed: Any,
         *,
         ticket: str | None,
+        subject: str | None = None,
         attempt: int,
         workspace: Path,
         tier: AgentTier,
@@ -366,6 +377,10 @@ class Driver:
         stem = ticket or stage.surface  # ticketless surfaces spool and key under their surface name
         if run_seq is not None and ticket is not None:
             raise ValueError("run_seq requires ticket=None")
+        if ticket is not None and subject is not None:
+            raise ValueError("subject must be None when ticket is set")
+        if ticket is None and (not isinstance(subject, str) or not subject):
+            raise ValueError("subject must be a non-empty string when ticket is None")
         seq = run_seq if run_seq is not None else journal_run_seq(self.journal.read(), stem)
         key_seq = scoped_seq(key_scope, seq)
         spool_stem = f"{stem}/{run_seq}" if run_seq is not None else stem
@@ -432,7 +447,7 @@ class Driver:
                     rendered=prompt,
                     tier=tier,
                     effort=effort,
-                    ticket=ticket,
+                    subject=ticket if ticket is not None else subject,
                     worktree=workspace if stage.surface in WRITING_SURFACES else None,
                     budget_usd=remaining,
                     kind=kind,

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verifies routing rows filtered by ticket kind: config validation, candidate selection and fallback, conduct paths, and kind passing through the driver, provider, and stages; provides a shared config helper
+# purpose: Tests routing rows filtered by ticket kind: config validation, candidate selection and fallback, conduct paths, and how kind passes through the driver, provider and stages. It also provides a shared config helper.
 # relates: [clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/providers.py, clutch/redact.py, clutch/seams.py]
 # owner: engine
-# verified: df236100
-# hash: 99a93a24720899bf3cd954866cb99bfe0a098251016dab3894907888ef0da3c4
+# verified: 58c46bba
+# hash: e4a592699e58d60ccf29eb4af5346d98b3590782b7a3a1737fe6bc0a10ceed34
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -126,7 +126,7 @@ def test_driver_and_provider_propagate_kind(tmp_path):
 
     async def calls():
         for kind in ("bug", None):
-            await provider.call(LLMRequest(surface="implement", rendered="x", tier="medium", effort="low", ticket="item", worktree=None, kind=kind))
+            await provider.call(LLMRequest(surface="implement", rendered="x", tier="medium", effort="low", subject="item", worktree=None, kind=kind))
 
     asyncio.run(calls())
     assert provider._adapters["claude"].invoke.await_args.args[1] == "a"

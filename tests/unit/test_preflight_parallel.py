@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test preflight parallel
+# purpose: Tests that ProviderLLM preflight runs model probes concurrently, keeps results and notices in routing and adapter order, kills every running process group on abort, and waits for all probes to unwind when cancelled.
 # relates: [clutch/llm.py, clutch/providers.py]
 # owner: engine
-# verified: 9a610809
-# hash: 6239ba884d98c4a29611e9fb2fae5f0785601bbd291da8cf4104fb0927839c66
+# verified: 58c46bba
+# hash: d18370029da8ed7e726b9d31c763f0c161a5e27981fe51a173f0e04a673d5669
 import asyncio
 import json
 from pathlib import Path
@@ -132,7 +132,7 @@ async def test_abort_kills_all_concurrent_groups_and_calls_remove_them():
 
     exec_ = RunningExec()
     adapter = make_client(exec_)._adapters["codex"]
-    req = LLMRequest(surface="preflight", rendered="ok", tier="low", effort="low", ticket=None, worktree=None)
+    req = LLMRequest(surface="preflight", rendered="ok", tier="low", effort="low", subject="model", worktree=None)
     tasks = [asyncio.create_task(adapter.invoke(req, model)) for model in ("one", "three")]
     await asyncio.wait_for(exec_.started.wait(), 2)
     assert adapter._pgids == {101, 102}

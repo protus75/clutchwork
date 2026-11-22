@@ -4,8 +4,8 @@
 # purpose: Unit tests for the exported names and helpers in `tests/stages_helpers.py`: constants, the repo fixture, agent, author, git and the seams used by `run`.
 # relates: [clutch/llm.py, clutch/specs/__init__.py, clutch/stages.py, tests/cli_helpers.py, tests/fakes.py, tests/stage_replies.py, tests/stages_helpers.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: f78034843f533ea402987049054df115bc0c8dd8012629d637589a8331e5e7fd
+# verified: 58c46bba
+# hash: ae5744c191d72a888c27a956bcc457be14f5d0530540b0c96f7f3bb709d23c53
 import json
 
 from clutch.llm import LLMRequest
@@ -109,7 +109,7 @@ def test_adopt_conduct(tmp_path):
 
 
 def test_agent(tmp_path):
-    result = h.agent({"x/a": "hello"})(LLMRequest(surface="implement", rendered="", tier="medium", effort="medium", ticket=h.STEM, worktree=tmp_path))
+    result = h.agent({"x/a": "hello"})(LLMRequest(surface="implement", rendered="", tier="medium", effort="medium", subject=h.STEM, worktree=tmp_path))
     assert (tmp_path / "x/a").read_text() == "hello"
     assert [call[0] for call in git_fake(tmp_path).calls] == ["add", "commit"]
     assert result == implement_reply()

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Check that provider call evidence captures survive a new process and are keyed by stem and run
+# purpose: Tests that provider call evidence captures survive a new process and are keyed by stem and run sequence
 # relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llmeffect.py, clutch/redact.py, clutch/seams.py, tests/integration/test_providers.py]
 # owner: clutch/llmeffect.py
-# verified: 38957300
-# hash: 5826601a3e0d2000d9ecb41b5271c69cbf5642b9bad10838514799d64ffc5121
+# verified: 58c46bba
+# hash: d3af0b0b4daf0f2fe066012cda8961daf9622b7fe8d8079e4f666a57b01f2e53
 import asyncio
 from dataclasses import replace
 
@@ -22,7 +22,9 @@ pytestmark = pytest.mark.disk_io_skip
 
 
 def invoke(client, cfg, request, sequence):
-    return asyncio.run(llm_call(Effects(client.session.journal), client, request, Redactor.from_config(cfg, ENV), ticket=request.ticket, stem=request.ticket, run_seq=sequence, attempt=0, call_seq=1))
+    return asyncio.run(
+        llm_call(Effects(client.session.journal), client, request, Redactor.from_config(cfg, ENV), ticket=request.subject, stem=request.subject, run_seq=sequence, attempt=0, call_seq=1)
+    )
 
 
 def stdout(cfg, key):

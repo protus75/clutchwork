@@ -5,8 +5,8 @@
 # purpose: Tests that the watchdog runs on every production driver surface and eval caller, with one soft-band notification, eval-owned budgets and a harvested group kill on hard timeout
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/providers.py, clutch/requisition.py, clutch/runner.py]
 # owner: clutch/watchdog.py
-# verified: 7abfadd2
-# hash: 08b4e565aba32123b85810449ff2704f10462d1cd3bb0cf8da8b27108ca4b561
+# verified: 58c46bba
+# hash: 30322396b5e3216c27b036c705df68c9b01167dc60b8d6d68a2bd503e27b20fc
 
 import asyncio
 import json
@@ -72,6 +72,7 @@ async def call(rig, driver, ticket, *, surface="implement", attempt=0, expected=
         stage or probe(surface),
         None,
         ticket=ticket,
+        subject="ticketless" if ticket is None else None,
         attempt=attempt,
         workspace=rig.root,
         tier="medium",
@@ -101,7 +102,7 @@ async def test_every_production_driver_surface_is_watched(tmp_path, monkeypatch)
         result = await call(rig, ctx.driver, ticket.stem, surface=surface, expected=ticket.expected_minutes * 60)
         assert result.outcome == "ok"
         req, detector, meter = seen[-1]
-        assert req.surface == surface and req.ticket == ticket.stem
+        assert req.surface == surface and req.subject == ticket.stem
         assert req.worktree == (rig.root if surface == "implement" else None)
         assert detector.observe.fence == (("clutch/thing.py",) if surface == "implement" else ())
         assert detector.expected_seconds == ticket.expected_minutes * 60
@@ -113,7 +114,7 @@ async def test_every_production_driver_surface_is_watched(tmp_path, monkeypatch)
         result = await call(rig, ctx.driver, None, surface=surface, expected="surface", stuck=stuck, sequence=7)
         assert result.outcome == "ok"
         req, detector, _ = seen[-1]
-        assert req.ticket is req.worktree is None and detector.observe.fence == ()
+        assert req.subject == "ticketless" and req.worktree is None and detector.observe.fence == ()
         assert (detector.expected_seconds, detector.stuck_seconds) == (expected, stuck)
         rig.time.advance(boundary - 0.01)
         assert detector.region == "healthy"
@@ -305,7 +306,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
     for attempt in (1, 2):
         await harness.run_baseline(config=ctx.config, driver=ctx.driver, journal=rig.journal, fixtures=[fixture], workspace=tmp_path)
         req, d = observed[-1]
-        assert req.ticket == f"baseline-{fixture.name}" and req.worktree is None
+        assert req.subject == f"baseline-{fixture.name}" and req.worktree is None
         assert (d.expected_seconds, d.stuck_seconds, d.observe.fence) == (600, 1200, ())
         assert any(e.key == f"llm/baseline-{fixture.name}/0/review/{attempt}/1" for e in rig.journal.read())
         assert (attempt, "review/call-01/prompt.md") in list_captures(rig.checkout.config.state_dir, f"baseline-{fixture.name}", fs=rig.fs)
@@ -333,7 +334,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
     report = await diagnose.run_eval(config=ctx.config, driver=ctx.driver, journal=rig.journal, cases=cases, clock=rig.time, report_path=tmp_path / "diagnosis-report.json", progress=progress)
     assert len(report.cases) == 2
     for (req, d), case, budget in zip(observed[-2:], cases, (600, 400)):
-        assert req.ticket == f"diagnose-eval-{case.name}" and req.worktree is None
+        assert req.subject == f"diagnose-eval-{case.name}" and req.worktree is None
         assert (d.expected_seconds, d.stuck_seconds, d.observe.fence) == (budget / 2, budget, ())
         assert any(e.key == f"llm/diagnose-eval-{case.name}/0/diagnose/1/1" for e in rig.journal.read())
         assert (1, "diagnose/call-01/prompt.md") in list_captures(rig.checkout.config.state_dir, f"diagnose-eval-{case.name}", fs=rig.fs)
@@ -344,7 +345,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
         target = f"baseline-{fixture.name}" if mode == "baseline" else f"diagnose-eval-{cases[1].name}"
 
         async def hung(self, req, model, **kwargs):
-            if req.ticket != target:
+            if req.subject != target:
                 return await events(self, req, model, **kwargs)
             observed.append((req, kwargs["consumer"].detector))
             kwargs["consumer"].consume({"type": "assistant", "message": {"id": "message", "content": [{"type": "tool_use", "id": "hung-tool", "name": "Read", "input": {}}]}})
@@ -364,7 +365,7 @@ async def test_eval_owned_budgets_preserve_synthetic_identities(tmp_path, monkey
             )
         await asyncio.wait_for(entered.wait(), 5)
         req, d = observed[-1]
-        assert req.ticket == target and req.worktree is None and d.observe.fence == ()
+        assert req.subject == target and req.worktree is None and d.observe.fence == ()
         assert (d.expected_seconds, d.stuck_seconds) == (budget / 2, budget)
         assert d.call.tools == {"hung-tool"}
         rig.time.advance(budget * 0.75 - 0.01)

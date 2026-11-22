@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: fixture
-# purpose: Deterministic production soak harness.
+# purpose: Deterministic production soak harness that runs serve through worker-kill recovery, conflict-resolution and semantic integration-red members across 24 simulated hours and returns a validated DaemonSoakReport
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: e3a6f154
-# hash: f00c8990c106070f0ffd17c970d38e14f478e549d8fee888f58a5d4b3cf7459a
+# verified: 58c46bba
+# hash: 0294852f4c8ef1268d899e3bf41f3f36676e957de7d2597770d8665e1127613a
 
 import asyncio
 import json
@@ -309,7 +309,7 @@ class _Member:
 
         class Model(FakeLLM):
             async def call(self, req):
-                stem = req.ticket
+                stem = req.subject
                 if req.surface == "implement":
                     if member.hang:
                         member.fs.write(req.worktree / "unfinished.txt", b"interrupted fixture work\n")

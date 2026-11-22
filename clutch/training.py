@@ -389,7 +389,7 @@ async def render(
 async def evaluate(records, llm, tier):
     counts = dict(total=0, agree=0, disagree=0, unparsed=0)
     for record in records:
-        result = await llm.call(LLMRequest(surface="review", rendered=record["messages"][0]["content"], tier=tier, effort="medium", ticket=None, worktree=None))
+        result = await llm.call(LLMRequest(surface="review", rendered=record["messages"][0]["content"], tier=tier, effort="medium", subject=f"eval-{counts['total'] + 1}", worktree=None))
         counts["total"] += 1
         try:
             reply = json.loads(unwrap_fence(result.text))

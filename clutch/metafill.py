@@ -43,6 +43,7 @@ def make_ask(driver, spec, repo, run_seq):
             LlmStage(surface="meta", emits=MetaReply, gates=[], render=lambda consumed, findings: render(spec, {"files": files_json, "retry_findings": findings_text(findings)}), review=review),
             None,
             ticket=None,
+            subject=f"{len(paths)}-files",
             run_seq=run_seq,
             attempt=ask.attempt,
             workspace=repo,
