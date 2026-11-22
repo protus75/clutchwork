@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "fef52b8084732d68aedf86e81e59cb2a557f752f",
+  "produced_at_sha": "d9723cfe550780107f6471d89114ddf6d7d369fb",
   "stem": "evidence-never-prunes",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "Fence gap: tests/unit/test_main_view_group.py::test_dispatch_and_optional_locks fakes load_config as SimpleNamespace(state_dir, providers, snapshot_merged_limit) with no `evidence`; the new handle_status evidence line forces a fake edit there. Add that test file to ## Scope fence and ## Context.",
-    "After refencing, add evidence=SimpleNamespace(warn_gb=20) to that fake config. Keep `view status` output exactly 'rendered projection\\n' for an empty store under tmp_path; print no evidence line under the threshold.",
-    "tests/unit/test_host_running.py::test_verb_table_matches_parser needs each host-running.md verb cell to be exactly `group verb`. Write the row as | `evidence prune` | No | ... |, with no `--to-gb N` inside the backticks, and add no duplicate rows.",
-    "Fix the row in clutch/docs/host-running.md, which is already fenced. Before handing off, run `./dev.py test tests/unit/test_host_running.py tests/unit/test_main_view_group.py` and the full `./dev.py test` (criterion 8), not just the ## Verification files."
+    "The scope_fence finding is stale: the ticket's current `## Scope fence` lists tests/unit/test_main_view_group.py, and Scope in requires adding `evidence=SimpleNamespace(warn_gb=20)` there. Keep that edit. Do not revert it.",
+    "The branch already passed ruff, ruff format, Verification and the full `./dev.py test` (297 passed). Make no new code changes. Only confirm that the branch diff matches the 13 fenced files and hand off.",
+    "Keep the clutch/docs/host-running.md row as `| `evidence prune` | No | ... |`. The backticked cell must stay exactly `evidence prune`, as tests/unit/test_host_running.py::test_verb_table_matches_parser requires.",
+    "If Check flags test_main_view_group.py outside the fence again, ScopeFenceGate in clutch/stages.py is reading an old ticket.scope_fence that does not include the widened fence. Reply premise_failed naming that file, and do not revert the edit."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
