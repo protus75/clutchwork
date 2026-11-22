@@ -1,18 +1,14 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f4ecfbefdf7111298fb803b3e5c6b48538f1c070",
+  "produced_at_sha": "29cedbd022e9f926d34919eb4ee35757e045e42f",
   "stem": "shared-git-fake-unit-5",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "The fence misses files that import the migrated helpers. tests/unit/test_serve_scan_head.py imports `owner` from tests/unit/test_serve_idle_poll.py and sets `owner.checkout.git.status_porcelain.return_value` and `rev_parse.return_value` on that stand-in.",
-    "tests/unit/test_supervise_idle_hooks.py imports `rig` from tests/unit/test_supervise_idle_point.py and asserts `ctx.git.mock_calls == []` at line 192. That needs a mock stand-in, so the GitFake migration breaks this importer outside the fence.",
-    "Re-author the ticket and add tests/unit/test_serve_scan_head.py and tests/unit/test_supervise_idle_hooks.py to the Scope fence. Migrate their Git use to GitFake overrides and `fake.calls` assertions, keeping each test's name and assertion strength.",
-    "Before re-filing, grep tests/ for every `from tests.unit.<migrated module> import` and fence each importer that touches the helper's git. CLAUDE.md requires fencing every importer a change forces.",
-    "The rest of the attempt was sound: both Verification commands passed (3 and 114 tests). Only the 5 parametrized cases in those two unfenced importers failed the full unit gate."
+    "Do not revert tests/unit/test_serve_scan_head.py or tests/unit/test_supervise_idle_hooks.py. The ticket's `## Scope fence` now lists both, so the scope_fence findings came from the older fence. Re-run Check on the current branch."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
