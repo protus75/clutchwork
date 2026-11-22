@@ -1,0 +1,173 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "5f17496ef4df9e0fba8a8adea77fc3dcfc213b87",
+  "stem": "serve-live-keep-single-verdict",
+  "passed": true,
+  "changed_files": [
+    "clutch/runner.py",
+    "tests/regress_serve_live_keep.py",
+    "tests/unit/test_runner_verdict_reread.py"
+  ],
+  "inserted_lines": 101,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/regress_serve_live_keep.py"
+        ],
+        "head_sha": "5f17496ef4df9e0fba8a8adea77fc3dcfc213b87",
+        "base_sha": "a2600eadc04eb1e5358b788ebc8a26c741554bb6",
+        "overlay_paths": [
+          "tests/regress_serve_live_keep.py",
+          "tests/unit/test_runner_verdict_reread.py"
+        ],
+        "evidence_paths": [
+          "tickets/serve-live-keep-single-verdict/evidence/ev2.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/serve-live-keep-single-verdict\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/serve-live-keep-single-verdict\nInstalled 31 packages in 22ms\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.600013,
+        "passed": 1830,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.702999375978834,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2788526889926288
+        }
+      },
+      "coverage": {
+        "percent": 71.80016696691419,
+        "files": {
+          "clutch/runner.py": 68.42800528401585
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "python",
+        "tests/regress_serve_live_keep.py"
+      ],
+      "rc": 0,
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 2.338814
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_runner_verdict_reread.py",
+        "tests/integration/test_serve_dispatch.py",
+        "tests/integration/test_serve_admission.py",
+        "tests/integration/test_control_cli.py",
+        "tests/integration/test_stale_running.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_runner_verdict_reread.py tests/integration/test_serve_dispatch.py tests/integration/test_serve_admission.py tests/integration/test_control_cli.py tests/integration/test_stale_running.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 92%]\n......                                                                   [100%]\n78 passed in 12.55s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 13.914321
+    }
+  ]
+}
