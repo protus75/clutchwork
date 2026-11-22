@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's gate blocks
+purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 7fe9ffbc
-hash: f050a4b139d37e4a310ce5de45651e89bc476ef56c17ccb4c78d6519f8477013
+verified: bbe39566
+hash: f0a6528e3c482d448cf6552a9ca02deeee34d7642d910c7b0d7f78221945a7df
 -->
 # clutch roadmap
 
@@ -15,11 +15,14 @@ A plan change that moves a ticket, adds a dependency on another plan, or spends 
 
 ## Status
 
-Audit refreshed at commit `a59190cd` (clutch `0.5.0`, extension `0.4.4`). The audit sections are a snapshot at that commit, produced by six read-only passes over `clutch/`, `tests/`, `dev.py`, `docs/`, `clutch/docs/`, `clutch/specs/`, `CLAUDE.md`, `AGENTS.md`, `README.md`, and `CLUTCH_PLAN.md` §18-19. Re-run the audit before each minor release; the section headings are the checklist.
+Status reconciled on 2026-11-22 against main HEAD `e1ab1e16c`; the earlier six-pass audit remains a historical snapshot and touched findings are rechecked here. Re-run the audit before each minor release; the section headings are the checklist.
 
-Facts recorded in the original 2026-11-13 snapshot (counts were not re-measured):
+- 877 tickets merged, none in flight. Blocked: `authoring-reading-specs` (premise_failed), `clutch-ruff-reclean` (premise_failed), `evidence-never-prunes` (gate_failed), `host-mechanical-check` (abandoned), `llm-request-subject` (gate_failed), `phase7-continue` (abandoned), `restore-orphan-ticket-stems` (premise_failed), `retro-due-one-owner` (infra_error), and `roadmap-freshen-2026-11-22` (premise_failed on its earlier attempt).
+- Release status: 0.3.0 gate passed. 0.4.0 has 58 rows merged and `roadmap merged --release 0.4.0` passes; its recorded gate failure from 2026-11-20 is stale. 0.5.0 has 50 rows merged; its gate fails at `clutch training eval --route medium/review --holdout .clutch/training-eval/holdout.txt`. 0.6.0 has 1 row merged and 12 blocked; 0.7.0 has 13 blocked.
+- Since 2026-11-19, 242 stems merged on main, 160 absent from this roadmap. Merged work outside the roadmap includes integration I/O restoration (`integration-io-guard`, `integration-disk-io-skip`, `disk-io-skip-per-file`, `io-helpers-*`, `restore-helpers-*`, `restore-io-tests-01..39`, `shared-git-fake*`, `shared-fakes-guard`, `test-io-rules`, `test-tmp-in-checkout`); serve and parallel hardening (`serve-*`, retro checks, dispatch and scheduler ordering); requisition review (`requisition-review-*`, `requisition-contract-review-comparison`); meta blocks (`meta-*`, `check-owns-meta-headers`, `check-meta-fill-nested-stage`, `implement-spec-meta-headers-from-verbs`); atomic ticket-write commits and serialization; extension changes (`extension-*`); plan prompts (`plan-prompts-*`, `plan-ticket-serve-prompt`, `plan-subagents-explicit-sonnet`, `host-prompts`); and image quality, provider parser, hot-path and other fixes.
 
-- 725 tickets merged and 1 in flight (`visual-baseline-fixtures`) as of 2026-11-19. The Reject queue is empty. Five stems are blocked in the journal: `authoring-reading-specs`, `clutch-ruff-reclean`, `restore-orphan-ticket-stems` (all `premise_failed`), `host-mechanical-check` and `phase7-continue` (both `abandoned`).
+Earlier audit facts, not re-measured:
+
 - Four Suggestion Box messages are pending: `box-000324` (fence closure misses in-code registries; recurrence recorded in `tickets/retro/000046.md`), `box-000440` (operator prompts hard-code `./dev.py`), `box-000441` and `box-000442` (unit-test criteria that need disk pass requisition review, then fail Implement). None is a ticket yet.
 - `CLUTCH_PLAN.md` phases P3-P6 are complete. P7 `host-review-surfaces` was refused instead of built (`config.py:308-309`). P8 `rules-render` (`core --check`, a start-command file) was dropped; `host-onboarding-doc` added the two host-contract sections.
 - The CLI has 29 verbs (`clutch/__main__.py:237-287`) against the frozen plan's closed set of 16 (§18.1). Each arrived by ticket; the plan cannot be amended.
@@ -94,15 +97,26 @@ The `CLAUDE.md` rule "a rule has one of two homes" is the fix; `conduct-files-pa
 
 ### 2.6 Tests
 
-- Several test modules double as fixture libraries; `test_drain.py:34-37` imports and calls a test function from `test_merge.py` as its body. `test_merge.py` now imports `CONFIG` from `test_stages.py` rather than slicing its source text. (recurred in 0.5.0)
-- Shared clock, exec, filesystem, journal and git fakes now live in `tests/fakes.py`; other local fakes still exist (for example `tests/integration/test_git.py::FakeExec` and `tests/integration/test_providers.py::FakeExec`). (recurred in 0.5.0)
+- Shared clock, exec, filesystem, journal and git fakes now live in `tests/fakes.py`; other local fakes still exist (for example `tests/integration/test_git.py::FakeExec` and `tests/config_helpers.py::FakeExec`). (recurred in 0.5.0)
 - `tests/waiting.py` provides `wait_until`; local fixture builders such as `repo()` and `git()` still appear in multiple test modules. (recurred in 0.5.0)
+- Several test modules double as fixture libraries: `tests/integration/test_drain.py` imports `commit_lock` from `tests/integration/test_git.py`. (recurred in 0.5.0)
 - `CONFIG` and `TICKET` literals, configuration writes and git-init sequences appear across test modules. (recurred in 0.5.0)
 - The do-not-grow rule is in `CLAUDE.md` section A and `AGENTS.md` `## Engine conduct` (`contention-authoring-rules`, done). It names seven files: the five measured at `80b76d5d` (`test_daemon_composition.py`, `test_drain.py`, `test_mergequeue.py`, `test_stages.py`, `serve_rig.py`), which took 53 commits in the 13 days to 2026-11-13, and `tests/integration/test_cli.py` and `tests/integration/test_watch.py`, added when the list was re-measured at `c761b213`. (recurred in 0.5.0)
+
+Integration I/O restoration added `clutch/ioguard.py` and the `REAL_IO_TESTS` allowlist in `tests/integration/conftest.py`; restoration moves skipped tests to shared fakes while real-I/O subjects remain under that guard. Fixture duplication above remains (recurred in 0.5.0).
 
 Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 
 ## 3. Analysis: gaps
+
+### 3.0 Admission and held rows
+
+- `docs/api-image-provider-plan.md`: G0 must re-capture the current Gemini CLI and metering before the conditional API work; if it fails, C0 must establish provider contracts and open decision 0 must choose direct Google API or OpenRouter. Open decision 5 has no proposed release slot. Resolve those in Gate G0, Prerequisite C0 and Open decisions before admitting C1-C3; provisional row 56 remains conditional.
+- `docs/remote-view-plan.md`: Phase 1 leaves the service owner path, command, routes, response fields, errors and limits to authoring, and Delivery sequence has phases rather than ticket-sized units with prerequisites and discriminating checks. Anchor Status to a revision and specify those contracts and bounded units before admission; the remote-controls decision remains separate.
+- `docs/training-backup-plan.md`: Status explicitly waits for the owner to schedule backup; it lacks a revision anchor, release fit and ticket-level kind, priority, dependencies and discriminating checks. Resolve scheduling and add those to Status and Ticket breakdown before admission; settle evidence retention for the optional evidence work.
+- `docs/mcp-server-notes.md` is exploratory notes, not a plan: decide whether an adapter is needed and establish the multi-host registry prerequisite, then provide a revision-anchored plan with ownership, bounded tickets and checks before admission.
+- Rows 75-77 are held: `clutch/roadmap.py::plan_path` only resolves `docs/*-plan.md`, but their owner is `docs/document-agent/plan.md`. No Owner spelling can select that nested path; the parser needs nested-plan resolution. The nested-plan resolution repair still needs to be filed as a suggestion on main. The same limitation affects the remaining document-agent rows.
+- Row 210 remains held on the authored replacement: the rejected `state-verdict-ticket-service` exhausted its premise-bounce cap. Its attempt findings require a service-aware ticket-change check, coordinated Author publication, and an evidence publication and recovery contract compatible with checkpoints; the replacement must resolve these before it can run.
 
 ### 3.1 Defects found by the audit
 
@@ -455,7 +469,7 @@ uv run clutch roadmap accept 0.4.0
 | 207 | ~~`meta-context-ship-gate`~~ | roadmap | feature | P1 | | | **Merged** (`tickets/meta-context-ship-gate/`). The roadmap section 1 0.5.0 ship clause (filled meta blocks in this repo's docs and tests, and context suggest returning selectors for a real ticket) has no gate command (docs/roadmap.md#0.5.0), and six tests files still have an empty purpose; fill them and add gate commands running clutch meta check and a context suggest that fails on no selectors. |
 | 209 | ~~`plan-status-after-050`~~ | roadmap | chore | P1 | | | **Merged** (`tickets/plan-status-after-050/`). The 0.5.0 merges left plan Status sections stale: training-data, stage-panels and annotations-index plans say nothing is in effect, evidence-trail-plan.md#Status calls rows 62-64 planned, and boundary-contract-plan.md#Status calls row 153 unmerged; each Status names what merged and what remains. |
 
-The gate checks filled meta blocks in docs and tests and that `context suggest` returns selectors for a real ticket. The remaining 0.5.0 ship clause is unchecked: `training eval` scoring one lens.
+The gate checks filled meta blocks in docs and tests, `context suggest` selectors, and training eval scoring one lens; the recorded 2026-11-22 eval command fails as noted in Status.
 
 ```gate
 uv run clutch roadmap merged --release 0.5.0
