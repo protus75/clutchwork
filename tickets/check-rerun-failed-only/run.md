@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The affected unit tests pass on the merge base and fail on the candidate because their filesystem fake lacks write; the failure also reproduces in isolation. The exact ticket verification command cannot run on the base because its three new test files do not exist there. The targeted verification passed 124 tests, and the integration gate passed 3,601 tests. Mutation checks caught inverted selection and selection of all first-run IDs.
+The simpler full-command rerun was rejected because it caused the ticket's reported delay; selection preserves the existing base run and first-run timing and coverage.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ None.
 
 ## Second problems filed
 
-- box-001041-8ec0ae01: Metadata check reports existing empty-purpose entries in tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
+- box-001042-5109a77b: Metadata check reports empty purposes in untouched tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ None.
 
 ## Predicted vs actual
 
-The ticket budget was 20 minutes expected and 40 minutes stuck; work stopped when the scope conflict was confirmed.
+The ticket budget was 20 minutes expected and 40 minutes stuck; implementation and verification completed within the expected budget.
 
