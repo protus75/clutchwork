@@ -1,7 +1,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Shared in-memory CLI test helpers moved out of tests/integration/test_cli.py: config, env, plan and ticket text, a cli() runner patched onto FakeExec and GitFake, git output, journal and write helpers.
 # relates: [clutch/__main__.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/runner.py, tests/config_fixture.py]
 # owner: engine
 # verified: ae1a5a3b
