@@ -4,6 +4,8 @@ kind: plan
 purpose: OpenRouter and fal.ai as kind: api image providers for graphics generate mode: plan
 relates: [docs/gemini-graphics-refactor-plan.md]
 owner: engine
+verified: 1ae5b047
+hash: b2405e2705d4317cb766e34136a7ec86eb9abb4f3334492d03bccc48aae6b228
 -->
 # OpenRouter and fal.ai image providers: plan
 
