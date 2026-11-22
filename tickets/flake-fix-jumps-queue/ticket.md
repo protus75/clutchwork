@@ -57,7 +57,7 @@ A flaky test costs every ticket's Check until the fix for it merges: on 2026-11-
 - consumers: clutch/__main__.py `build_daemon_core`
 - observable change: `Scheduler` gains the attribute `flake_fixes: Callable[[], Set[str]]`, defaulting to `lambda: set()` like `continuations` and `select`; `dispatch_next` passes `self.flake_fixes()` as `fixes` to `parallel_order` and `order_tickets`; `build_daemon_core` sets it to `flake_fixes` over `Box(checkout.config.state_dir / BOX_DIR, checkout.fs).messages()`, read on each dispatch
 - compatibility: constructor signature unchanged; existing `Scheduler(...)` call sites need no edit
-- acceptance: criterion 4
+- acceptance: criteria 4 and 5
 - tests: tests/unit/test_flake_fix_order.py
 - post-merge source of truth: clutch/scheduler.py
 
@@ -67,7 +67,7 @@ Scope in:
 - clutch/scheduler.py: add the `flake_fixes` attribute and pass it in both branches of `dispatch_next`.
 - clutch/__main__.py `build_daemon_core`: set `core.scheduler.flake_fixes` as above.
 - docs/how-clutch-works.md section 7: in the "Pick order" item and the "Dispatch" item, say that a ticket linked as the fix of a confirmed flake report dispatches first, ahead of priority, chain and age.
-- New tests/unit/test_flake_fix_order.py covering criteria 1–4 with in-memory tickets, stand-in `Message` objects and the scheduler fakes used by tests/unit/test_scheduler_write_queue_seams.py, under `tmp_path`.
+- New tests/unit/test_flake_fix_order.py covering criteria 1–5 with in-memory tickets, stand-in `Message` objects and the scheduler fakes used by tests/unit/test_scheduler_write_queue_seams.py, under `tmp_path`.
 Scope out:
 - Linking a hand-written ticket to a flake report (no verb resolves a Box message to an existing ticket today); the flake quarantine cap; Check's rerun and merge-base runs; `clutch/observe.py` `simulate`; triage decisions on flake reports.
 
@@ -83,6 +83,7 @@ Scope out:
 2. `./dev.py test tests/unit/test_flake_fix_order.py` proves `order_tickets([p0, p2_fix], {}, fixes={"p2_fix"})` returns `p2_fix` first, not `p0`, and that a ticket naming `p2_fix` in `## Runs before` still sorts ahead of it.
 3. `./dev.py test tests/unit/test_flake_fix_order.py` proves `flake_fixes` returns `{"fix-a"}` for a resolved check `failure_report` linked `kind: ticket` to `fix-a`, and excludes a pending report, a `declined` and a `tombstone` resolution, and a `failure_report` with `stage: implement`.
 4. `./dev.py test tests/unit/test_flake_fix_order.py` proves that a `Scheduler` with `flake_fixes = lambda: {"fix"}` and parallel enabled dispatches `fix` (P2) before an eligible P0 ticket, and the written `queue.json` `order` begins with `fix`, not the P0 stem.
+5. `./dev.py test tests/unit/test_flake_fix_order.py` proves that a `Scheduler` with `flake_fixes = lambda: {"fix"}` dispatches the eligible P0 ticket, not `fix`, in each of three cases: `fix` is `state: draft`, `fix` depends on an unsettled stem, and `fix` is in `quarantined()`.
 
 ## Verification
 ```
