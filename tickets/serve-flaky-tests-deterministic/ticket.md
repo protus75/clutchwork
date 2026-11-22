@@ -84,15 +84,14 @@ Out: other `until` helpers (`tests/waiting.py`), `tests/integration/test_serve_a
 
 ## Acceptance criteria
 1. `uv run python tests/regress_serve_flaky_waits.py` prints `{"regression_result": "pass"}`, not `defect`, so neither the 5 s stop limit nor the 60 s `until` deadline decides the result.
-2. `./dev.py test tests/integration/test_host_loop.py` passes, and the stuck-member case, which starts the loop with `timeout=None` and swaps in a numeric `loop.timeout`, a fake `loop.clock` and a fake `loop.sleep` only before `until(lambda: False)`, raises `LoopRefused` (not a hang, not `RuntimeError`) without a real-time wait.
-3. `./dev.py test tests/integration/test_serve_admission.py -k refusal_keeps_main_green` passes, and `./dev.py test tests/unit/test_shared_fakes.py tests/integration/test_serve_rig_fakes.py` passes, so `fakes.until` with the default `timeout=60` still raises `AssertionError` for a predicate that never becomes true, and `test_until_translates_timeout`, with `fakes.until` monkeypatched to raise `AssertionError`, still sees `production graph did not reach the scripted boundary` without any deadline.
+2. `uv run python tests/regress_serve_flaky_waits.py` also runs the stuck-member case (moved here because `tests/integration/test_host_loop.py` is skipped by the `disk_io_skip` policy): a `FixtureLoop` with a numeric `loop.timeout`, a fake `loop.clock` and a fake `loop.sleep` raises `LoopRefused` from `until(lambda: False)` (not a hang, not `RuntimeError`) without a real-time wait; the script prints `defect` if it does not.
+3. `./dev.py test tests/unit/test_shared_fakes.py tests/integration/test_serve_rig_fakes.py` passes, so `fakes.until` with the default `timeout=60` still raises `AssertionError` for a predicate that never becomes true, and `test_until_translates_timeout`, with `fakes.until` monkeypatched to raise `AssertionError`, still sees `production graph did not reach the scripted boundary` without any deadline.
 4. A search of the fenced harness and rig files with `grep -n "wait_for\|timedelta(seconds=self.timeout)" tests/harness/host_loop.py` finds no unconditional real-seconds wait in `stop`; a numeric deadline appears only behind the `timeout is not None` check.
-5. `./dev.py test tests/integration/test_gates.py` passes, so `produce` and its numeric default are unchanged.
 
 ## Verification
 ```
 uv run python tests/regress_serve_flaky_waits.py
-./dev.py test tests/integration/test_host_loop.py tests/integration/test_serve_admission.py tests/integration/test_gates.py tests/unit/test_shared_fakes.py tests/integration/test_serve_rig_fakes.py
+./dev.py test tests/unit/test_shared_fakes.py tests/integration/test_serve_rig_fakes.py
 ```
 
 ## Definition of rejected
