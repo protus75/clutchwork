@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests Implement -> Check -> Review stage transitions, gates, outbox lifts and report artifacts with the scripted fake LLM
+# purpose: Tests Implement -> Check -> Review stage transitions, gates, outbox lifts and report artifacts using the scripted fake LLM.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: 9b76d3e1
-# hash: 7e895f76c05f74973a96f65b279057ec8507be907711449528069d1fa3510ec9
+# verified: 6f94fa01
+# hash: 737307bfedaf939ed950ecc799afff44514276f4ed66bf1a7325e22300aeaf95
 
 import asyncio
 import json
@@ -43,6 +43,7 @@ from clutch.stages import (
     run_stages,
 )
 from clutch.tickets import TicketInvalid, validate_ticket
+from tests.config_fixture import build_config
 from tests.integration.test_git import commit_lock
 from tests.spool_captures import list_captures, read_capture
 from tests.stage_replies import implement_reply
@@ -90,22 +91,10 @@ ENV = {
     "FAKE_KEY": SECRET,
 }
 
-CONFIG = """schema_version: 1
-state_dir: .clutch/state
-providers:
-  - name: fake
-    kind: cli
-    package: test-cli
-    auth: FAKE_KEY
-    models_by_tier: {low: m, medium: m, high: m, max: m}
-    limits: {concurrency: 1, est_cost_per_call_usd: 0.5}
-routing:
-  - {tier: medium, surface: implement, candidates: [{provider: fake}]}
-  - {tier: medium, surface: review, candidates: [{provider: fake}]}
-review: {}
-merge: {}
-engine_plane_safety_inventory: [config.yaml]
-"""
+CONFIG = build_config(
+    providers=[{"name": "fake", "auth": "FAKE_KEY", "models": {"low": "m", "medium": "m", "high": "m", "max": "m"}, "limits": {"concurrency": 1, "est_cost_per_call_usd": 0.5}}],
+    routing=[{"tier": "medium", "surface": "implement", "candidates": [{"provider": "fake"}]}, {"tier": "medium", "surface": "review", "candidates": [{"provider": "fake"}]}],
+)
 
 TICKET = """---
 state: confirmed

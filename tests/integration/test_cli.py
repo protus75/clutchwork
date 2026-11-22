@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test cli
+# purpose: Integration tests for the clutch CLI verbs: ticket new/order, view status, engine run/retro, host doctor/core/docs, config migrate and box suggest.
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: 148a8874
-# hash: 390a82c2c22bbe37c0f418ac368f8b857090ac2a25330b18d16b61a8d4ce164f
+# verified: 6f94fa01
+# hash: b4e3144ddc8066bac64fd7ba211cccbe0245917bb4494870fd7094d53c80e5f5
 import asyncio
 import os
 import subprocess
@@ -20,6 +20,7 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.runner import Refusal
 from clutch.seams import SubprocessExec
+from tests.config_fixture import build_config
 from tests.fakes import FakeClock as Clock
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import adopt_conduct
@@ -34,20 +35,7 @@ ENV = {
     "GIT_COMMITTER_EMAIL": "t@t",
 }
 
-CONFIG = """schema_version: 1
-state_dir: .clutch/state
-providers:
-  - name: claude
-    kind: cli
-    package: test-cli
-    models_by_tier: {low: m, medium: m, high: m, max: m}
-    limits: {concurrency: 1}
-routing:
-  - {tier: medium, surface: implement, candidates: [{provider: claude}]}
-review: {}
-merge: {}
-engine_plane_safety_inventory: [config.yaml]
-"""
+CONFIG = build_config()
 
 PLAN = "# Plan\n\n## 11. Failure spine\n\nSpine.\n"
 

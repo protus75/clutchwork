@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared rig for integration tests of the continuous serve graph: builds the graph, provides scripted stages and admission, control and retro scenario helpers.
+# purpose: Shared rig for continuous serve graph integration tests: builds the serve graph, scripts stages and model replies, and provides admission, control, notify, upgrade and retro scenario helpers.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 543c80a2
-# hash: 13920e38b28c579b6dc89cfe3a008619e09e140049f63df8267d1713399fbee2
+# verified: 6f94fa01
+# hash: aa6395182ca015868a98ae67a832d1269aaaf3220febfc434758ff57ea6e7c2f
 
 import asyncio
 import json
@@ -26,6 +26,7 @@ from clutch.mergequeue import RED_STREAK, TREE_MISMATCH
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import Invoice, PackingSlip
 from tests import fakes
+from tests.config_fixture import amend_config
 from tests.fakes import turn
 from tests.integration.test_cli import write as write_ticket
 from tests.integration.test_restart_timers import repository
@@ -287,31 +288,26 @@ async def start_admission(rig, monkeypatch):
 
 
 def admission_config(root, *, command=None, safety=False, strategies=()):
-    import yaml
-
-    path = root / "config.yaml"
-    config = yaml.safe_load(path.read_text())
-    config["review"] = {"mechanical": [{"code": "combined", "argv": command or ["true"], "trigger": "always", "severity": "hard"}]}
-    config["merge"] = {"safety_checks": ["combined"] if safety else [], "strategies": list(strategies)}
-    path.write_text(yaml.safe_dump(config))
+    amend_config(
+        root,
+        review={"mechanical": [{"code": "combined", "argv": command or ["true"], "trigger": "always", "severity": "hard"}]},
+        merge={"safety_checks": ["combined"] if safety else [], "strategies": list(strategies)},
+    )
 
 
 def notify_command(root, *, enabled=True):
     import sys
 
-    import yaml
-
-    path = root / "config.yaml"
-    raw = yaml.safe_load(path.read_text())
-    if enabled:
-        raw["notify"] = [
+    command = (
+        [
             sys.executable,
             "-c",
             "import sys; from pathlib import Path; p=Path('deliveries.jsonl'); p.open('a').write(sys.argv[-1]+'\\n'); sys.exit(1 if Path('notify-fails').exists() else 0)",
         ]
-    else:
-        raw.pop("notify", None)
-    path.write_text(yaml.safe_dump(raw))
+        if enabled
+        else None
+    )
+    amend_config(root, notify=command)
 
 
 def deliveries(root):

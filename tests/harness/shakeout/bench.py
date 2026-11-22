@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: fixture
-# purpose: Disposable production composition for the shakeout battery.
+# purpose: Disposable production composition for the shakeout battery: a git-backed bench repo with fake-provider config, advancing clock, scripted LLM and drain entry.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/drain.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/providers.py]
 # owner: engine
-# verified: d7719818
-# hash: 995c79cfd92d86b9972ba015ba6db0a2494aa9b45507f957694edd878e811b7b
+# verified: 6f94fa01
+# hash: 83fe87d5e20b8d716c3ddd11a8220caeb5254e5a7d532f69d7093aa3cecfcb39
 
 import asyncio
 import os
@@ -27,23 +27,13 @@ from clutch.llm import LLM, FakeLLM, ScriptItem
 from clutch.providers import ProviderLLM, routed_conduct_paths
 from clutch.runner import Checkout, Dispatch, bind, pipeline
 from clutch.seams import LocalFileSystem, SubprocessExec
+from tests.config_fixture import build_config
 from tests.integration.test_git import commit_lock
 
-_CONFIG = """schema_version: 1
-state_dir: .clutch/state
-providers:
-  - name: fake
-    kind: cli
-    package: test-cli
-    models_by_tier: {low: fake, medium: fake, high: fake, max: fake}
-    limits: {concurrency: 1, est_cost_per_call_usd: 0.0}
-routing:
-  - {tier: medium, surface: implement, candidates: [{provider: fake}]}
-  - {tier: medium, surface: review, candidates: [{provider: fake}]}
-review: {}
-merge: {}
-engine_plane_safety_inventory: [config.yaml]
-"""
+_CONFIG = build_config(
+    providers=[{"name": "fake", "models": {"low": "fake", "medium": "fake", "high": "fake", "max": "fake"}, "limits": {"concurrency": 1, "est_cost_per_call_usd": 0.0}}],
+    routing=[{"tier": "medium", "surface": "implement", "candidates": [{"provider": "fake"}]}, {"tier": "medium", "surface": "review", "candidates": [{"provider": "fake"}]}],
+)
 
 
 class AdvancingClock:

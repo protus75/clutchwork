@@ -2,24 +2,24 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify parallel serve admission and control requests.
+# purpose: Verifies that continuous serve admits parallel runs within capacity and fence overlap, and handles control confirm and stop requests during dispatch.
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/llm.py, clutch/scheduler.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: c92b542ba74a74a22331b377b14d9ae947b44c51cef513e148e604b36319ad26
+# verified: 6f94fa01
+# hash: d88664e13ded7c076ae3aea69b0e2c55ee80f959fac5033ce0ae146bc9328952
 
 import asyncio
 import json
 from dataclasses import replace
 
 import pytest
-import yaml
 
 from clutch.config import load_config
 from clutch.control import AdmissionRequest, publish_request
 from clutch.journal import EventType
 from clutch.llm import FakeLLM
 from clutch.scheduler import Scheduler
+from tests.config_fixture import amend_config
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, request, start_admission, terminals, until
 from tests.integration.test_cli import root
 
@@ -32,9 +32,7 @@ def stage_events(rig):
 async def parallel_rig(root, monkeypatch, max_runs):
     rig = await admission_graph(root, monkeypatch, {}, endings={"one": "noop", "two": "noop"})
     path = root / "config.yaml"
-    config = yaml.safe_load(path.read_text())
-    config["scheduler"] = {"parallel": {"enabled": True, "max_runs": max_runs}, "max_unmerged": 4}
-    path.write_text(yaml.safe_dump(config))
+    amend_config(root, scheduler={"parallel": {"enabled": True, "max_runs": max_runs}, "max_unmerged": 4})
     rig.checkout = replace(rig.checkout, config=load_config(path, cwd=root))
     return rig
 

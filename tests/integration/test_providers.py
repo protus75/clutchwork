@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test providers
+# purpose: Integration tests for provider routing, key scoping, redaction, claude and codex CLI adapter contracts, preflight, failure classification and process-group cleanup.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
-# owner: engine
-# verified: 96e46658
-# hash: 5b415054eea80d6e1cc15c0560cc0064a437a4ac841e51a9a6a98a0f578cef3b
+# owner: clutch/providers.py
+# verified: 6f94fa01
+# hash: fcc803bc695acf5c6cdbe45fc0e23bd0c44b725bf8427fb8b55adab4b42986d5
 import asyncio
 import json
 import os
@@ -34,36 +34,24 @@ from clutch.redact import Redactor
 from clutch.seams import GroupExec, LocalFileSystem, SubprocessExec
 from clutch.timers import Timers
 from clutch.watchdog import EventConsumer
+from tests.config_fixture import build_config
 from tests.waiting import group_exited, ready_before_returning_spawn, wait_until
 
 ROOT = Path(__file__).resolve().parents[2]
 
-CONFIG = textwrap.dedent(
-    """\
-    schema_version: 1
-    state_dir: state
-    providers:
-      - name: claude
-        kind: cli
-        package: test-cli
-        auth: CLAUDE_KEY
-        models_by_tier: {low: c-low, medium: c-med, high: c-high, max: c-max}
-        limits: {concurrency: 1}
-      - name: codex
-        kind: cli
-        package: test-cli
-        auth: CODEX_KEY
-        models_by_tier: {low: x-low, medium: x-med, high: x-high, max: x-max}
-        limits: {concurrency: 1, est_cost_per_call_usd: 1.5}
-    routing:
-      - {tier: medium, surface: implement, candidates: [{provider: codex}, {provider: claude}]}
-      - {tier: high, surface: implement, candidates: [{provider: claude}]}
-      - {tier: medium, surface: review, candidates: [{provider: claude, model: c-max}, {provider: codex}]}
-      - {tier: low, surface: review, candidates: [{provider: codex}]}
-    review: {}
-    merge: {}
-    engine_plane_safety_inventory: []
-    """
+CONFIG = build_config(
+    state_dir="state",
+    providers=[
+        {"name": "claude", "auth": "CLAUDE_KEY", "models": {"low": "c-low", "medium": "c-med", "high": "c-high", "max": "c-max"}, "limits": {"concurrency": 1}},
+        {"name": "codex", "auth": "CODEX_KEY", "models": {"low": "x-low", "medium": "x-med", "high": "x-high", "max": "x-max"}, "limits": {"concurrency": 1, "est_cost_per_call_usd": 1.5}},
+    ],
+    routing=[
+        {"tier": "medium", "surface": "implement", "candidates": [{"provider": "codex"}, {"provider": "claude"}]},
+        {"tier": "high", "surface": "implement", "candidates": [{"provider": "claude"}]},
+        {"tier": "medium", "surface": "review", "candidates": [{"provider": "claude", "model": "c-max"}, {"provider": "codex"}]},
+        {"tier": "low", "surface": "review", "candidates": [{"provider": "codex"}]},
+    ],
+    inventory=(),
 )
 
 ENV = {"PATH": "/usr/bin", "HOME": "/home/op", "CLAUDE_KEY": "sk-claude-secret", "CODEX_KEY": "sk-codex-secret"}
