@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The focused verification passed 34 tests and the unit coverage gate passed 1,829 tests. The base integration suite passed 3,597 tests; on the candidate, an initial full run failed, the affected tests passed individually, one full rerun passed, and a further full run reproduced the host-loop errors and exposed a serve-dispatch failure. The exact ticket verification cannot run on the base because its new test file does not exist there. The minimal implementation checks counts after the existing report; no change to the renderer was needed.
+The gate already contained index commands, which remain in their existing order. Verification passed with 32 tests passed and 2 skipped; ticket lint and focused lint and format checks passed. The count check is the class prevention: it rejects any requested record kind with zero exports.
 
 ## Dead ends
 
-The required full integration gate is not consistently green, and its failing test and fixture surfaces are outside the scope fence.
+A first test fixture supplied text instead of bytes to the filesystem seam; corrected it before final verification.
 
 ## Second problems filed
 
@@ -18,9 +18,9 @@ none
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.23
+- spec: implement 2.27
 
 ## Predicted vs actual
 
-Ticket estimate: 25 minutes; actual time was under 25 minutes.
+Ticket budget: 25 minutes expected, 50 minutes stuck; actual time was not measured.
 
