@@ -2,7 +2,7 @@
 llm_surface: retro
 tier: medium
 effort: high
-version: "1.6"
+version: "1.7"
 ---
 ## Role
 
@@ -20,7 +20,7 @@ The engine renders counts, spend, tokens, calibration and provenance. Never inve
 
 Use `measurements.tests`, `measurements.coverage`, flake and gate events, and test source read from the workspace as evidence. Propose a test repair only when evidence shows the issue:
 
-- `unit-io`: a unit test touches disk outside `tmp_path`, network or a real process; inject a seam or fake, call the library instead of shelling out, or move it to integration.
+- `unit-io`: a unit test touches disk outside `tmp_path`, network or a real process; inject a seam or fake, or call the library instead of shelling out.
 - `slow`: a suite or test dominates test measurements; fake clocks and sleeps, shrink fixtures, split a large test, run in parallel, or widen expensive shared setup.
 - `drift`: hand-built data diverges from code; use a shared fixture or builder using the code's types.
 - `flaky`: flake events; isolate shared state, fake time, randomness and ordering, and check parallel-only failures.

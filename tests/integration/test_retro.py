@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Production evidence, report effects, and lock-held retro invocation.
+# purpose: Tests retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests and test timing/coverage aggregation
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
-# owner: engine
-# verified: a0d5e388
-# hash: e2400307f6b1617be0889acb7600bf7bd1cf0c27c2320b363e5e28c8e4171c5b
+# owner: clutch/retro.py
+# verified: 593bc2df
+# hash: b5d0c6d2df525eb5f6b6f122436df704d303de5267de080d8a788be837c83537
 
 import asyncio
 import json
@@ -346,7 +346,7 @@ def test_receipt_uses_engine_provenance_usage_calibration_and_tombstones(tmp_pat
     assert asyncio.run(hook(forced=True))["commit"] != head
     report = (c.repo / "tickets/retro/000001.md").read_text()
     data = json.loads(report.split("```json\n")[1].split("\n```")[0])
-    assert data["provenance"] == {"head": head, "spec_version": "1.6", "at": c.clock().isoformat()}
+    assert data["provenance"] == {"head": head, "spec_version": "1.7", "at": c.clock().isoformat()}
     assert data["measurements"]["usd"] == 2.3 and data["measurements"]["merged_count"] == 1
     assert data["measurements"]["input_tokens"] == {"known": 0, "unknown_calls": 1}
     assert data["measurements"]["output_tokens"] == {"known": 7, "unknown_calls": 0}

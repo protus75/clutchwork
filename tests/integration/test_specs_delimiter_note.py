@@ -4,8 +4,8 @@
 # purpose: Checks every prompt spec's Role explains quoted data delimiters, pins spec versions, and renders delimiter payloads quoted
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 9be395f4
-# hash: 7e73e15682c231e10c7669056fa2d007d02cefe0ea6957e6eab15832c7d3410e
+# verified: 593bc2df
+# hash: 0b6f5f0b872914aca4752c233b432f511042527eb9c48d52072b4952ef8a6b0e
 from pathlib import Path
 
 import pytest
@@ -19,9 +19,9 @@ from clutch.specs import DATA_DELIM, data_close, data_open, lint_spec, load_spec
         ("acceptance", "1.0"),
         ("author", "1.11"),
         ("diagnose", "1.9"),
-        ("implement", "2.25"),
+        ("implement", "2.26"),
         ("requisition_review", "3.27"),
-        ("retro", "1.6"),
+        ("retro", "1.7"),
         ("review", "1.9"),
         ("rework", "1.3"),
         ("triage", "1.1"),

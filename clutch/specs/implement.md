@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.25"
+version: "2.26"
 ---
 ## Role
 
@@ -54,9 +54,8 @@ For graphics tickets in `command` mode, run the render command, open your artifa
 Put each test in the suite its kind belongs to, as the host lays them out (for a Python host,
 `tests/unit/` and `tests/integration/`). A unit test checks one unit with fakes for the clock,
 filesystem, processes and network. It reads and writes disk only under `tmp_path`; it never reads or writes a repo file, starts a process, or
-opens a network connection, and it runs in milliseconds. An integration test checks a seam: an API, a
-command-line interface, a process boundary or real files. It uses fixtures or simulators so it
-finishes in bounded time and can run in parallel with other tests. A test that can both pass and
+opens a network connection, and it runs in milliseconds. An integration test checks a seam: an API, a command-line interface or how modules compose. It drives the code through in-memory fakes and simulators and never writes to disk, starts a process, runs git, or opens a network connection or an on-disk database, so it finishes in bounded time and runs in parallel with other tests. Only a test whose subject is a real I/O function (a filesystem, process, git or journal wrapper) touches real disk or processes, and its file must be in the host's explicit allowlist.
+Write scratch files only under `.clutch/scratch/` in your worktree, never in `/tmp` or another system-wide directory. A test that can both pass and
 fail on the same code is broken. Remove the nondeterminism (fake time, fixed ordering, isolated
 state); never add retries. Never lower a coverage threshold or a test time budget unless an
 acceptance criterion requires it. When a gate cannot be met, reply `premise_failed` naming it.

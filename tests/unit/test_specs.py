@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text
+# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text and version pins
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 9be395f4
-# hash: 8287c655f7018e7b1d7cb53def72e7b8b6437212115ac082b82c18b7b7de6276
+# verified: 593bc2df
+# hash: ff6f42af8eb4da7e35cec9dadb55545e7a0f3c59a79558a8492df3b712950660
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.25"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.26"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -131,7 +131,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.25"
+    assert spec.meta.version == "2.26"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",
@@ -195,8 +195,10 @@ def test_implement_spec_consumer_read():
         "Put each test in the suite its kind belongs to, as the host lays them out (for a Python host, `tests/unit/` and `tests/integration/`).",
         "A unit test checks one unit with fakes for the clock, filesystem, processes and network. "
         "It reads and writes disk only under `tmp_path`; it never reads or writes a repo file, starts a process, or opens a network connection, and it runs in milliseconds.",
-        "An integration test checks a seam: an API, a command-line interface, a process boundary or real files. "
-        "It uses fixtures or simulators so it finishes in bounded time and can run in parallel with other tests.",
+        "An integration test checks a seam: an API, a command-line interface or how modules compose. "
+        "It drives the code through in-memory fakes and simulators and never writes to disk, starts a process, runs git, or opens a network connection or an on-disk database, so it finishes in bounded time and runs in parallel with other tests. "
+        "Only a test whose subject is a real I/O function (a filesystem, process, git or journal wrapper) touches real disk or processes, and its file must be in the host's explicit allowlist.",
+        "Write scratch files only under `.clutch/scratch/` in your worktree, never in `/tmp` or another system-wide directory.",
         "A test that can both pass and fail on the same code is broken. Remove the nondeterminism (fake time, fixed ordering, isolated state); never add retries.",
         "Never lower a coverage threshold or a test time budget unless an acceptance criterion requires it. When a gate cannot be met, reply `premise_failed` naming it.",
     ):

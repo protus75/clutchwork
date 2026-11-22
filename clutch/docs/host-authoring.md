@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host ticket authoring
+purpose: Host guide to ticket content: authoring workflow, what each section holds, keeping tickets apart, unit vs integration test I/O rules, path matching, graphics and bug ticket proof
 relates: [clutch/docs/host-running.md]
 owner: clutch/docs/host-running.md
-verified: f05aa75d
-hash: 22150bd2a96bdb52c16519a484fd27117276e8450a861cdd57766e4ed6d8995b
+verified: 593bc2df
+hash: e46e14c8d6887799d50a12ef5ec4ac876a4d83ab31056b01bc03c7209b7603af
 -->
 # Host ticket authoring
 
@@ -153,9 +153,9 @@ A file that many tickets fence makes their changes collide. Keep new work out of
 
 ## Unit and integration tests
 
-A test under `tests/unit/` reads and writes disk only under `tmp_path`; it never reads or writes a repo file, starts a process, or opens a network connection. In the unit suite `clutch.testguard` blocks processes and network connections but not disk, so reviewers check the disk part. Place a test that needs a repo file, a process, or the network under `tests/integration/` and fence that file. A test using only `tmp_path`, in-memory buffers, or fakes stays under `tests/unit/`, as does a test that reaches a repo file only through an injected seam or fake. Updating a pinned value in an existing unit test that already reads a repo file does not move that test.
+A test under `tests/unit/` reads and writes disk only under `tmp_path`; it never reads or writes a repo file, starts a process, or opens a network connection. In the unit suite `clutch.testguard` blocks processes and network connections but not disk, so reviewers check the disk part. Place a test that reads a repo file under `tests/integration/` and fence that file. An integration test never writes to disk, starts a process, runs git, or opens a network connection or an on-disk database; it drives the code through in-memory fakes. Only a test whose subject is a real I/O function touches real disk or processes, and its file is in the host's explicit allowlist (in clutch's own repo, `REAL_IO_TESTS` in `tests/integration/conftest.py`). Test temporary files never go to `/tmp`. A test using only `tmp_path`, in-memory buffers, or fakes stays under `tests/unit/`, as does a test that reaches a repo file only through an injected seam or fake. Updating a pinned value in an existing unit test that already reads a repo file does not move that test.
 
-When Scope in adds lines to a file with a floor above 0 under `[coverage.files]` in `test-gate.toml`, a fenced `tests/unit/` test runs those lines. When running those lines needs a repo file, a process, or the network, Scope in names an in-fence seam, such as an injected reader or a parameter carrying the bytes, through which a fenced `tests/unit` test runs those lines with a fake, and moves only the real disk, process, or network checks to `tests/integration/`. No seam is required for an I/O site where Scope in adds no line.
+When Scope in adds lines to a file with a floor above 0 under `[coverage.files]` in `test-gate.toml`, a fenced `tests/unit/` test runs those lines. When running those lines needs a repo file, a process, or the network, Scope in names an in-fence seam, such as an injected reader or a parameter carrying the bytes, through which a fenced `tests/unit` test runs those lines with a fake, and covers the real disk, process, or network site only in an allowlisted real-I/O test. No seam is required for an I/O site where Scope in adds no line.
 
 ## Path matching
 
