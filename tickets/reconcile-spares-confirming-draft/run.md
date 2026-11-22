@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The regression reproducer returned defect with verdict ownership removed and pass with the fix; it was not run in a separate merge-base worktree.
+The final verification passed with three tests passed and two existing tests skipped; the reproducer reported defect on the merge base and pass on the branch.
 
 ## Dead ends
 
-None.
+none
 
 ## Second problems filed
 
@@ -18,9 +18,9 @@ none
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.25
+- spec: implement 2.27
 
 ## Predicted vs actual
 
-Expected 15 minutes; actual time was not measured.
+Expected 15 minutes; elapsed time was not measured.
 
