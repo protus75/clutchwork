@@ -1,0 +1,10 @@
+Tickets panel at ~2026-11-22T15:18:04Z showed: host-prompts  running: Implement for 106m48s
+
+.clutch/state/engine.log stage events for host-prompts:
+{"ts": "2026-11-22T13:31:03.056085+00:00", "event": "stage_start", "stem": "host-prompts", "attempt": 0, "surface": "requisition_review", "run_seq": 53532}
+{"ts": "2026-11-22T13:31:16.435380+00:00", "event": "stage_end", "stem": "host-prompts", "attempt": 0, "surface": "requisition_review", "outcome": "ok", "run_seq": 53532, "calls": 1}
+{"ts": "2026-11-22T15:18:09.308861+00:00", "event": "stage_start", "stem": "host-prompts", "attempt": 0, "surface": "requisition_review", "run_seq": 0}
+{"ts": "2026-11-22T15:18:27.008934+00:00", "event": "stage_end", "stem": "host-prompts", "attempt": 0, "surface": "requisition_review", "outcome": "ok", "run_seq": 0, "calls": 1}
+{"ts": "2026-11-22T15:18:48.049970+00:00", "event": "stage_start", "stem": "host-prompts", "attempt": 0, "surface": "implement", "run_seq": 0, "stuck_budget": 3600.0}
+
+15:18:04 - 13:31:16 (preflight requisition_review stage_end) = 106m48s; the run's own requisition_review stage_start came at 15:18:09.
