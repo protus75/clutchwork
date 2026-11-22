@@ -119,16 +119,14 @@ Out: `driver.run`'s `ticket` parameter and its journal, spool, watch and evidenc
    - `Driver.run` with `ticket=None, subject="box-1"` records a request with `subject == "box-1"`, and with `ticket="abc"` records `subject == "abc"`.
 2. `./dev.py test tests/unit/test_claude_session_name.py` passes with the Implement argv ending `["--name", "Clutch Implement abc"]` and the retro argv ending `["--name", "Clutch Retro window-3"]`, not `Clutch Retro`.
 3. `uv run python tests/regress_requisition_session_stem.py` still prints `{"regression_result": "pass"}`, reading `subject`.
-4. `rg -n "ticket=None, worktree|\.ticket\b" clutch/llm.py clutch/providers.py` prints nothing, and `rg -n "req(uest)?\.ticket\b" clutch tests` prints nothing.
-5. `rg -n "ticket=\"t-1\"" tests/config_helpers.py` prints nothing.
+4. `./dev.py test tests/unit/test_llm_request_subject.py` also scans `clutch/llm.py` and `clutch/providers.py` (anchored on `Path(__file__)`) and asserts no line matches `ticket=None, worktree` or an `LLMRequest` `.ticket` read, and scans `clutch/` and `tests/` and asserts no line matches `req(uest)?\.ticket\b`. `CallCapture.ticket` in `clutch/providers.py` is a different object and is read with plain attribute access, not `getattr`; the scan allows it.
+5. `./dev.py test tests/unit/test_llm_request_subject.py` asserts that `tests/config_helpers.py` contains no `ticket="t-1"`.
 6. `./dev.py test` passes on the full suite.
 
 ## Verification
 ```
 ./dev.py test tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py
 uv run python tests/regress_requisition_session_stem.py
-rg -n "req(uest)?\.ticket\b" clutch tests
-rg -n "ticket=\"t-1\"" tests/config_helpers.py
 ./dev.py test
 ```
 
