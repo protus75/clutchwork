@@ -1,24 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "73f575b6e16c4597752fdeb9a47e228176fb5464",
+  "produced_at_sha": "6a80b410b70409b696591c1f79793616cfe0628c",
   "stem": "serve-no-roadmap",
-  "attempt": 4,
-  "terminal": "incomplete",
-  "stage": "implement",
-  "verdict": "split",
+  "attempt": 5,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "Attempt 4 ran out of context in Implement (codex gpt-6.1-terra, 1.48M input tokens) after editing 12 source and doc files and none of the roughly 45 fenced test files. One attempt cannot hold the source, prompt, doc and test edits together, so split the ticket.",
-    "Child 1, merged first: remove the driver from clutch/serve.py and clutch/drain.py, delete build_driver, drive, ship_when_queue_low, unsettled and settles, and update the prompts and docs. Prompts must land with the engine change (CLAUDE.md 'Keep shipped process prompts in sync'). Keep roadmap.ship",
-    "Child 1 tests: add tests/unit/test_serve_no_roadmap.py and test_drain_no_roadmap.py (acceptance criteria 1-2). Delete or edit only the tests that pin the driver: test_roadmap_drive, test_serve_driver*, test_drain_driver_overlap, test_driver_hooks, test_roadmap_gate_waits_for_queue, and integration",
-    "Child 2, Depends on child 1: move roadmap.ship into a `clutch release ship` handle_ship in clutch/__main__.py under _locked, with full _command help. Add tests/unit/test_release_ship_verb.py, set {bump, publish, ship} in test_main_release_group.py, edit test_roadmap_ship (unit and integration), add",
-    "Child 3, independent: stop author_ahead from re-filing rejected rows and list them in status under waits: with rejection_reason. Add tests/unit/test_roadmap_author_rejected_row.py and the test_roadmap_author default-ahead case (criterion 7). Fence only the refile and rejection-reason tests."
+    "In tests/integration/test_ask_plan_drain.py at line 44, remove \"clutch release bump --minor\" from the required-phrase list in test_plan_ticket_drain_prompt_content. The ticket deletes that bullet from plan-ticket-drain.md, and criterion 6 forbids telling the agent to run `clutch release bump`.",
+    "Optionally assert in that test that the rendered plan-ticket-drain prompt has no instruction to run `clutch release bump`, `clutch release publish` or `clutch release ship`. Also assert that it contains `clutch roadmap gate` and then `clutch release ship`, which the agent names for the owner, as",
+    "Check that tests/integration/test_ask_plan_serve.py, test_ask_drain_loop.py and test_ask_drain_loop_agent.py do not pin any phrase the diff removed from the three prompt specs. That includes `release bump --minor`, `release publish` and driver sentences. The runner skipped 14 of the targeted",
+    "Keep the rest of the attempt-5 diff as it is. Review found the engine, roadmap, release-ship and doc changes match the ticket; this prompt-test pin is the only finding."
   ],
   "mechanical": null,
   "trimmed_lessons": [
     1,
-    2,
-    3
+    2
   ],
   "spec_version": "1.10",
   "provider": "claude",
