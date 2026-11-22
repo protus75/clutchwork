@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host contract
+purpose: Host-facing contract: install steps, copyable config.yaml and full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and the cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: a8fa2c67
-hash: 01e31d06cfb2e31484120a5b36c996c718055fbdb7ae590d063845cbd85781c3
+verified: f74aec75
+hash: 0abb14fbb91dd5a313bae7c7976ccae5f89801b6dff9cb51a4ab780cf04b38e9
 -->
 # Host contract
 
@@ -176,6 +176,7 @@ Config:
     box_policy: {failure_report: confirmed, retro_finding: confirmed, override_report: draft, suggestion: draft, bug_report_self_diagnosed: confirmed, bug_report_player_repro: confirmed, bug_report_player_no_repro: draft, roadmap_row: confirmed}
     notify: unset
     report_inbox: unset
+    prompts_dir: unset
     context_files: []
     ask_notes: unset
 Graphics:
@@ -315,7 +316,9 @@ new approval.
 
 Set `ask_notes` to add host guidance to `prompt` operator prompts; it is appended as a quoted `host_notes` data block.
 
-Relative `state_dir`, explicit `worktree_root` and `report_inbox` resolve against
+Host prompts in `prompts_dir` are Markdown files named with ticket stem rules. Their YAML frontmatter contains exactly `description` (a non-empty single line) and `takes` (`none` or `stem`). The body is a string template accepting `$state_dir`, and for `stem` prompts also `$stem` and `$ticket`. Use `clutch prompt list` to inspect them and `clutch prompt host <name> [stem]` to render one.
+
+Relative `state_dir`, explicit `worktree_root`, `prompts_dir` and `report_inbox` resolve against
 the selected config file's parent; absolute paths remain absolute. Absent
 worktree_root becomes `<state_dir>/worktrees`. `context_files`
 remain Path values as written at load time; use host-relative content paths.

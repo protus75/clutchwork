@@ -434,25 +434,13 @@ def _parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     prompt_sub = prompt.add_subparsers(dest="kind", required=True)
-    prompt_details = {
-        "diagnose": "Diagnose a ticket, selecting the running prompt when it is live.",
-        "running": "Inspect a running ticket.",
-        "review": "Audit a ticket against merged and confirmed work.",
-        "box": "Discuss named Suggestion Box messages.",
-        "drafts": "Assess committed drafts awaiting a verdict.",
-        "drain-loop": "Print the supervising drain-loop prompt.",
-        "plan-ticket-drain": "Print the unattended roadmap kickoff prompt.",
-        "plan-ticket-serve": "Print the unattended roadmap serve kickoff prompt.",
-        "author": "Author a ticket from its roadmap row or request.",
-        "roadmap": "Print the roadmap creation and maintenance prompt.",
-    }
     for kind in ask.KINDS:
-        example = f"clutch prompt {kind}" + ("" if kind in ("drafts", "drain-loop", "plan-ticket-drain", "plan-ticket-serve", "roadmap") else " example")
+        example = f"clutch prompt {kind}" + ("" if ask.TAKES[kind] == "none" else " example")
         command = _command(
             prompt_sub,
             kind,
-            summary=prompt_details[kind],
-            does=prompt_details[kind],
+            summary=ask.DESCRIPTIONS[kind],
+            does=ask.DESCRIPTIONS[kind],
             reads="Config, prompt templates and relevant ticket or state data.",
             writes="Nothing; prints the prompt.",
             lock="None.",
@@ -460,6 +448,30 @@ def _parser() -> argparse.ArgumentParser:
             examples=[example],
         )
         command.add_argument("stems", nargs="*")
+    host_prompt = _command(
+        prompt_sub,
+        "host",
+        summary="render a host prompt",
+        does="Render a named host prompt.",
+        reads="Config and host prompt files.",
+        writes="Prompt to stdout.",
+        lock="None.",
+        exits="0 on success; 2 on refusal.",
+        examples=["clutch prompt host notes example"],
+    )
+    host_prompt.add_argument("name")
+    host_prompt.add_argument("stems", nargs="*")
+    _command(
+        prompt_sub,
+        "list",
+        summary="list available prompts",
+        does="List engine and host prompts.",
+        reads="Config and host prompt files.",
+        writes="Catalog to stdout and problems to stderr.",
+        lock="None.",
+        exits="0 on success; 2 on invalid host prompts.",
+        examples=["clutch prompt list"],
+    )
     help_parser = _command(
         sub,
         "help",
@@ -1513,7 +1525,39 @@ def main(
         return _new(repo, args.stem, args.kind, args.evidence or (), args.reference or (), args.input or ())
 
     def handle_prompt():
-        if args.kind in ("drain-loop", "plan-ticket-drain", "plan-ticket-serve", "roadmap"):
+        if args.kind == "list":
+            entries, problems = ask.catalog(config, repo)
+            for entry in entries:
+                print(f"{' '.join(entry['argv'])}\t{entry['takes']}\t{entry['description']}")
+            for path, message in problems:
+                print(f"{path}: {message}", file=sys.stderr)
+            return 2 if problems else 0
+        if args.kind == "host":
+            if config.prompts_dir is None:
+                raise runner.Refusal("prompts_dir is unset", "set prompts_dir in config.yaml")
+            entries, problems = ask.catalog(config, repo)
+            path = config.prompts_dir / f"{args.name}.md"
+            problem = next((message for p, message in problems if p == path), None)
+            if problem:
+                raise runner.Refusal(f"{path}: {problem}", "repair the host prompt file")
+            entry = next((e for e in entries if e["source"] == "host" and e["name"] == args.name), None)
+            if entry is None:
+                raise runner.Refusal(f"unknown host prompt {args.name!r}", "run clutch prompt list and choose a valid host prompt")
+            if len(args.stems) != (1 if entry["takes"] == "stem" else 0):
+                raise runner.Refusal(f"host prompt {args.name} takes {entry['takes']}", "supply exactly one ticket stem" if entry["takes"] == "stem" else "omit the stem")
+            stem = args.stems[0] if args.stems else ""
+            if stem:
+                if findings := stem_findings(stem):
+                    raise runner.Refusal(findings[0].message, findings[0].paved_road)
+                if not (repo / ticket_path(stem)).is_file():
+                    raise runner.Refusal(f"{ticket_path(stem)} does not exist", f"author it with clutch ticket new {stem}")
+            try:
+                result = ask.render_host(args.name, stem, config, repo)
+            except ValueError as exc:
+                raise runner.Refusal(str(exc), "repair the host prompt file") from None
+            print(result, end="")
+            return 0
+        if ask.TAKES[args.kind] == "none" and args.kind != "drafts":
             if args.stems:
                 raise runner.Refusal(f"{args.kind} takes no stem", f"run clutch prompt {args.kind} with no stems")
             print(ask.render(args.kind, "", config, repo), end="")

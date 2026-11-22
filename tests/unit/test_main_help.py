@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test main help
+# purpose: Unit tests for CLI help: every command and group has a description and examples that parse, all help forms give the same output, unknown commands are refused, _command requires every field, and meta lock text is correct
 # relates: [clutch/__main__.py, clutch/ask.py]
 # owner: engine
-# verified: a5584821
-# hash: f8c1193b54d608ad7c67dd3fb7115731bc9eb390328216408b19b716f1a356a8
+# verified: f74aec75
+# hash: aae42da65dff484252c0c3391880a97de7c53038cb94f8ef681b8be3d130a9d5
 import argparse
 import shlex
 
@@ -51,7 +51,7 @@ def test_commands_have_description_and_examples():
 
 def test_prompt_group_matches_kinds():
     parser = _parser()
-    assert set(children(children(parser).choices["prompt"]).choices) == set(ask.KINDS)
+    assert set(children(children(parser).choices["prompt"]).choices) == set(ask.KINDS) | {"host", "list"}
     args = parser.parse_args(["prompt", "box", "a", "b"])
     assert (args.kind, args.stems) == ("box", ["a", "b"])
     assert parser.parse_args(["prompt", "review"]).stems == []

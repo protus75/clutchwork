@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Operator guide to running ClutchWork on a host: the verb table showing which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
+purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 9aa0931a
-hash: 4166f7c61aeef71adde924af106228e4aba15902f5025b5ce9ad783f34eff6f5
+verified: f74aec75
+hash: f42d473e833a2151b5e4441cd1b008d12957b4693219b92087d19a43fd3a6f2e
 -->
 # Running ClutchWork on a host
 
@@ -29,7 +29,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
 | `engine calibrate` | Yes | Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
 | `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure. |
-| `prompt` | Yes | Render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
+| `prompt` | Yes | List prompts with `prompt list` and render host prompts with `prompt host <name> [stem]`; render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
 | `host core` | Yes | Refresh managed conduct files. |
 | `provider probe` | Yes | Probe declared providers and models. |
 | `provider install` | Yes | Install named provider CLIs into the host project as pnpm dev dependencies; with no names, report each adapter's package, location, and version. |

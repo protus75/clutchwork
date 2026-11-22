@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, Suggestion Box, state on disk, config and the project index
+purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: a6482110
-hash: 58b1c7d4d8446128d1102c75a27cf68d7b4b161013373cb6e4eeecf1aae65c34
+verified: f74aec75
+hash: de65215f5764f9b2214b2845524b6ba195fdcac3c9ccce0100cb00862cc32e81
 -->
 # How ClutchWork works
 
@@ -97,6 +97,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
 | `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
+| `prompt host <name> [stem]` | no | Render a host-owned prompt. |
+| `prompt list` | no | List engine and host prompts and report invalid host files. |
 | `prompt box <id> ...` | no | Print a prompt for discussing named box messages. |
 | `prompt drain-loop` | no | Print the supervising drain-loop prompt without writing state. |
 | `prompt drafts` | no | Print an assessment prompt for all committed drafts awaiting a verdict. |
@@ -883,6 +885,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers; drain and serve also calibrate at their idle point once that many have completed since the last calibration (section 7) |
 | `scheduler`, `drain` | `max_unmerged`; experimental serve-only `scheduler.parallel` with `enabled` (default false), `max_runs` (default 2), `shared_paths` (default []); `max_runtime_hours`, `max_ticket_minutes` |
 | `engine_plane_safety_inventory`, `box_policy` | Author starting state (section 9.3) |
+| `prompts_dir` | Optional directory of host prompt templates, relative to the config file. |
 | `ask_notes` | Optional host guidance appended to operator prompts as a `host_notes` data block. |
 | `notify`, `report_inbox`, `context_files` | notification command; host bug report folder; extra Implement context |
 

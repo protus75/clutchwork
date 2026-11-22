@@ -341,6 +341,7 @@ class Config(StrictModel):
     box_policy: dict[BoxRow, StartState] = Field(default_factory=lambda: dict(BOX_POLICY_DEFAULTS))
     notify: Argv | None = None
     report_inbox: PathField | None = None
+    prompts_dir: PathField | None = None
     context_files: list[PathField] = []
     ask_notes: str | None = None
 
@@ -363,6 +364,8 @@ class Config(StrictModel):
         self.worktree_root = base / self.worktree_root if self.worktree_root else self.state_dir / "worktrees"
         if self.report_inbox is not None:
             self.report_inbox = base / self.report_inbox
+        if self.prompts_dir is not None:
+            self.prompts_dir = base / self.prompts_dir
         return self
 
 
