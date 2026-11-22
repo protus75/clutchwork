@@ -4,8 +4,8 @@ kind: plan
 purpose: Training data backup to Google Drive: plan
 relates: [clutch/training.py, clutch/evidence/store.py, clutch/config.py]
 owner: clutch/training.py
-verified: 75e5796d
-hash: 24453332412e49ffbfae6ad3219e9bd7385f691d6f641ceb6334c1f34d3f871c
+verified: 2d2eba6f
+hash: 2eb580a418ecddad1a9303bc7628cec9f24f63d8b005392bcdacbe9dfccff784
 -->
 # Training data backup: plan
 
@@ -33,7 +33,7 @@ Draft, 2026-11-22. No roadmap rows yet; rows are added after the owner approves 
 - rclone, from the `rclone-bin` Python package, run through an argv wrapper module (`clutch/rclone.py`), never a shell (CLAUDE.md "Pure Python"). `rclone-bin` ships as an optional extra, `clutch[backup]`; the verb refuses with the install command when it is missing.
 - One rclone remote of type `drive` with scope `drive.file` (rclone sees only files it created). The owner's own Google Cloud OAuth client (Desktop app, consent screen published to production, unverified), not rclone's shared client, exactly as `fungo/docs/BACKUP_PLAN.md` "OAuth client" describes.
 - The rclone config holds the OAuth token and client secret. It lives outside the repo and is never committed or passed on a command line. Default: the per-user config directory (`~/.config/clutch/rclone.conf`), so every clone on the machine shares one sign-in; overridable by setting. (Open decision 1.)
-- `clutch training backup setup` creates the remote interactively (client ID and secret prompted, browser sign-in), writes the config file, and verifies access with one listing.
+- `clutch backup setup` creates the remote interactively (client ID and secret prompted, browser sign-in), writes the config file, and verifies access with one listing.
 
 ### Where data goes
 
@@ -58,8 +58,13 @@ Draft, 2026-11-22. No roadmap rows yet; rows are added after the owner approves 
 
 ### Verbs
 
-- `clutch training backup [--evidence] [--dry-run]`: one run as above. Prints counts (new records, skipped as already backed up, blobs uploaded, bytes) and the remote path. Exit codes per CLAUDE.md "Command help". Takes no writer lock unless export needs it; it reads the store and journal.
-- `clutch training backup setup`: one-time remote creation and access check.
+A new top-level `backup` group, modelled on `clutch provider install` / `clutch provider probe`: the operator never types an rclone command, and README and the host guides name only these verbs (CLAUDE.md "Guides name verbs, not command lines").
+
+- `clutch backup install`: installs or updates `rclone-bin` into the clutch environment (the `clutch[backup]` extra) and reports the rclone version, as `provider install` does for provider CLIs.
+- `clutch backup setup`: one-time remote creation (OAuth client ID and secret prompted, browser sign-in) and the rclone config file.
+- `clutch backup probe`: checks that rclone runs, the config exists, and the remote folder is reachable and writable; non-zero with the paved road when not.
+- `clutch backup run [--evidence] [--dry-run]`: one run as above. Prints counts (new records, skipped as already backed up, blobs uploaded, bytes) and the remote path. Exit codes per CLAUDE.md "Command help". Reads the store and journal.
+- `clutch host doctor` gains a backup row (rclone present, config present, last backup time), warning, never failing, when backup is unconfigured or stale.
 - A last-backup line in `clutch view status` (time, records, remote path), read from a marker in `state_dir`.
 
 ## Not in scope
@@ -70,8 +75,8 @@ Draft, 2026-11-22. No roadmap rows yet; rows are added after the owner approves 
 
 ## Ticket breakdown (after approval)
 
-1. `backup-rclone-seam`: `clutch/rclone.py` argv wrapper, the `clutch[backup]` extra, the `backup` config block (`remote`, `project`, `rclone_config`), clone ID, project-name default, and `training backup setup`.
-2. `backup-records`: `training backup` for records: export to temp, key filter, batch and index upload, local index cache, counts, `--dry-run`, last-backup marker and status line.
+1. `backup-rclone-seam`: `clutch/rclone.py` argv wrapper, the `clutch[backup]` extra, the `backup` config block (`remote`, `project`, `rclone_config`), clone ID, project-name default, and the `backup` group with `install`, `setup` and `probe`, plus the doctor row.
+2. `backup-records`: `backup run` for records: export to temp, key filter, batch and index upload, local index cache, counts, `--dry-run`, last-backup marker and status line.
 3. `backup-evidence-option`: `--evidence` blob and call-record upload.
 4. `backup-docs`: host guide section (setup, what is backed up, Drive folder layout, changing OAuth clients re-uploads, as in fungo), verb tables, README.
 
@@ -87,4 +92,4 @@ Draft, 2026-11-22. No roadmap rows yet; rows are added after the owner approves 
 2. **Project folder name.** Proposed: `<repo name>-<8-hex origin hash>`. Alternative: repo name alone, as requested, accepting that two unrelated projects with one name would share a folder (still no overwrite, since clone IDs differ).
 3. **Record key.** Proposed: clone ID, kind, call keys, label, ignoring the body. Alternative: a content hash of the canonical record, which re-uploads a record whenever export adds a field.
 4. **Batch granularity.** Proposed: one batch file per run. Alternative: one file per record (simplest dedup, slow on Drive).
-5. **Restore.** Proposed: a later `clutch training backup pull` that merges every clone's batches by key. Not part of this plan's tickets.
+5. **Restore.** Proposed: a later `clutch backup pull` that merges every clone's batches by key. Not part of this plan's tickets.
