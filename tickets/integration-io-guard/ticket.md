@@ -1,0 +1,88 @@
+---
+state: draft
+source: human
+priority: P0
+kind: feature
+---
+
+## Depends on
+- integration-disk-io-skip
+
+## Context
+- clutch/testguard.py
+- tests/integration/conftest.py
+- tests/fakes.py
+- tests/integration/test_testguard.py
+
+## Goal / Why
+Nothing stops an integration test from writing to disk, starting a process, or running real git. The only I/O guard, `clutch/testguard.py`, runs for `tests/unit` alone, and its own error message tells the agent to "move the test to the integration suite", which is how disk-writing tests piled up there: on 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories, saturating the disk during every Check and merge. `integration-disk-io-skip` turns the existing offenders off; this ticket keeps new ones from landing.
+
+When this ticket is done, every integration test outside an explicit allowlist runs under a guard. During its setup, call and teardown, the guard raises `IntegrationIOBlocked` on any of: opening a file for writing, appending, creating or exclusive creation; renaming, replacing, removing or unlinking a path; `shutil` copy, move or tree removal; starting a process (`subprocess`, `os.system`, `os.posix_spawn`, `os.posix_spawnp`, and the `asyncio` subprocess functions, which go through `subprocess.Popen`); opening a network connection; and `duckdb.connect` with any database other than `":memory:"`. Reading files stays allowed, and so does creating an empty directory under pytest's base temporary directory, which the autouse `isolate_working_directory` fixture needs. The message names the paved road: use the in-memory fakes in `tests/fakes.py` (`FakeFileSystem`, `FakeExec`, `FakeJournal`) and the shared git fake, and only when the test's subject is a real I/O function itself, add the file to `REAL_IO_TESTS` in `tests/integration/conftest.py`.
+
+`REAL_IO_TESTS` holds exactly the ten I/O-function files that `integration-disk-io-skip` leaves running. The unit guard's message stops pointing at the integration suite.
+
+## Boundary contract
+### Integration I/O guard
+- disposition: create
+- owner: clutch/ioguard.py
+- consumers: tests/integration/conftest.py, which applies it to every integration test outside `REAL_IO_TESTS`; follow-up tickets that rewrite skipped tests onto fakes
+- observable change: a guarded integration test that writes a file, starts a process, opens a network connection, or opens an on-disk DuckDB database fails with `clutch.ioguard.IntegrationIOBlocked` naming the operation and the paved road
+- compatibility: tests in `REAL_IO_TESTS` and tests skipped by `DISK_IO_SKIP` are unaffected; reads and empty-directory creation under the pytest base temporary directory stay allowed
+- acceptance: each blocked operation raises inside the guard, and each allowed operation succeeds
+- tests: tests/unit/test_ioguard.py
+- post-merge source of truth: clutch/ioguard.py and `REAL_IO_TESTS` in tests/integration/conftest.py
+- closest existing: `clutch/testguard.py::_guards` blocks process and network calls by patching functions for unit tests
+- earning reason: `testguard` cannot be reused as is because unit tests may write under `tmp_path`, so it has no write blocking, and it also carries the unit time budget; the integration guard adds file-write and on-disk DuckDB blocking, which needs a process-wide `sys.addaudithook` and a `duckdb.connect` patch that the unit plugin must not install. It reuses `testguard._guards` for processes and network instead of copying that list.
+
+### Unit guard message
+- disposition: extend
+- owner: clutch/testguard.py
+- consumers: agents reading a failed unit test; tests/integration/test_testguard.py
+- observable change: the `UnitIOBlocked` message ends with "inject the <seam> seam (or a fake) instead" and no longer suggests moving the test to the integration suite
+- compatibility: the blocked set and exception type are unchanged
+- acceptance: the message no longer contains "integration suite"
+- tests: tests/integration/test_testguard.py
+- post-merge source of truth: clutch/testguard.py
+
+## Scope in / Scope out
+Scope in:
+- `clutch/ioguard.py` (new): `class IntegrationIOBlocked(RuntimeError)` and a context manager `guard(basetemp: Path)`. On first use it installs one `sys.addaudithook` that does nothing unless a module-level flag is set; inside `guard` the flag is set and the hook raises `IntegrationIOBlocked` on the `open` event with a write, append, create or exclusive mode or flags, and on `os.rename`, `os.replace`, `os.remove`, `os.unlink`, `os.rmdir`, `shutil.copyfile`, `shutil.copytree`, `shutil.move`, `shutil.rmtree`, and on `os.mkdir` for any path not under `basetemp`. `guard` also enters `clutch.testguard._guards()` for processes and network, and patches `duckdb.connect` to raise unless the database argument is `":memory:"` or omitted. The message for every block reads `<operation> is blocked in integration tests; use the in-memory fakes in tests/fakes.py (FakeFileSystem, FakeExec, FakeJournal) and the shared git fake; only a test of a real I/O function belongs in REAL_IO_TESTS in tests/integration/conftest.py`.
+- `tests/integration/conftest.py`: add `REAL_IO_TESTS`, a sorted tuple of exactly these file names: `test_exec_seam_reap.py`, `test_exec_seam_unwind_capture.py`, `test_git.py`, `test_git_merged_tickets.py`, `test_git_tree_id.py`, `test_journal.py`, `test_journal_duckdb_cache.py`, `test_journal_incremental.py`, `test_journal_roll.py`, `test_lockfile.py`. Add `pytest_runtest_setup`, `pytest_runtest_call` and `pytest_runtest_teardown` wrapper hooks that run the phase inside `clutch.ioguard.guard(item.config._tmp_path_factory.getbasetemp())` unless `item.path.name` is in `REAL_IO_TESTS`. `DISK_IO_SKIP` and `isolate_working_directory` stay as they are.
+- `clutch/testguard.py`: in `_block`, drop `, or move the test to the integration suite` from the message.
+- `tests/integration/test_testguard.py`: change the assertion on that message text to assert the new ending `instead` and that "integration suite" is absent.
+- `tests/unit/test_ioguard.py` (new): tests that enter `guard(tmp_path)` and check every blocked and allowed case in Acceptance criteria. Each blocked case catches the exception before any side effect happens: the audit hook raises before the file is opened and before the process starts.
+
+Scope out:
+- Rewriting skipped tests or building a filesystem or git fake (follow-up tickets).
+- Prompt specs, guides and agent rule files (the separate `test-io-rules` ticket).
+- `config.yaml`, `pyproject.toml`, `-n auto`, and the unit suite's guard set.
+
+## Scope fence
+- clutch/ioguard.py
+- clutch/testguard.py
+- tests/integration/conftest.py
+- tests/integration/test_testguard.py
+- tests/unit/test_ioguard.py
+
+## Acceptance criteria
+1. `tests/unit/test_ioguard.py` asserts that inside `guard(tmp_path)`, `open(tmp_path / "f", "w")`, `open(..., "a")`, `open(..., "x")`, `os.open(..., os.O_WRONLY | os.O_CREAT)`, `os.rename`, `os.remove`, `shutil.rmtree`, `os.mkdir` of a path outside `tmp_path`, `subprocess.Popen(["true"])` and `duckdb.connect(str(tmp_path / "db.duckdb"))` each raise `IntegrationIOBlocked`, not succeed, and that the target file, directory or database does not exist afterwards, run by `./dev.py test tests/unit/test_ioguard.py`.
+2. `tests/unit/test_ioguard.py` asserts that inside `guard(tmp_path)` reading an existing file, `os.mkdir(tmp_path / "d")`, and `duckdb.connect(":memory:")` succeed, and that after the `with` block exits `open(tmp_path / "g", "w")` succeeds (a guard that stays on after exit fails it), run by `./dev.py test tests/unit/test_ioguard.py`.
+3. `tests/unit/test_ioguard.py` asserts that the `IntegrationIOBlocked` message names `tests/fakes.py` and `REAL_IO_TESTS`, run by `./dev.py test tests/unit/test_ioguard.py`.
+4. `tests/integration/test_testguard.py` asserts the unit guard message ends with `instead` and does not contain `integration suite`, run by `./dev.py test tests/integration/test_testguard.py` when that file is not in `DISK_IO_SKIP`; when it is skipped, the run record shows the message string from `clutch/testguard.py` (`run.md`).
+5. `./dev.py test tests/integration` exits 0 with the guard active on every non-skipped file outside `REAL_IO_TESTS`.
+
+## Verification
+```
+./dev.py test tests/unit/test_ioguard.py
+./dev.py test tests/integration
+./dev.py test tests/unit
+```
+
+## Definition of rejected
+- A file is added to `REAL_IO_TESTS` beyond the ten named, or to `DISK_IO_SKIP`, to make the suite pass.
+- The guard blocks reads, or lets a file write, process start, or on-disk DuckDB connection through.
+- `config.yaml`, `pyproject.toml`, or the xdist worker count changes.
+
+## Time budget
+- expected: 30m
+- stuck: 60m
