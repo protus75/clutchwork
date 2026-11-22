@@ -8,6 +8,12 @@ kind: bug
 ## Depends on
 - none
 
+## Runs before
+- shared-git-fake
+- shared-review-script
+- shared-serve-rig-config
+- disk-io-skip-per-file
+
 ## Context
 - clutch/driver.py::Driver.stage
 - clutch/driver.py::Driver._run
