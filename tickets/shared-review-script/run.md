@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The verification command passed with 6 tests passed and 191 skipped under the repository's existing disk-I/O skip policy; mutation checks detected the wrong implementations exercised.
+Final verification passed with 6 tests passed and 191 skipped; changed-file lint and format checks passed, and mutation checks rejected the tested incorrect variants.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-25m expected; actual time not recorded.
+none
 
