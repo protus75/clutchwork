@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "9b0601b51c7729144317db0b5dcbfb9a50e78fb5",
+  "produced_at_sha": "747b4c7d5df08b727d756927f1f5b131cfc306b4",
   "stem": "io-helpers-config",
-  "attempt": 3,
+  "attempt": 4,
   "terminal": "gate_failed",
   "stage": "check",
   "verdict": "abandon-human",
   "lessons": [
-    "The diff is in scope. tickets/io-helpers-config/ticket.md lines 24 and 82 fence tests/integration/test_shared_fakes_guard.py, but attempt 3's scope_fence gate (clutch/stages.py ScopeFenceGate) still reported it as outside the fence.",
-    "The fence was widened after attempt 2 raised a premise finding. The gate likely read a stale Ticket (gather_safety_evidence, stages.py:1150, uses ticket.scope_fence from the loaded ticket). A human should check which ticket.md version the drain loaded for attempt 3 Check.",
-    "The implementer's work matches the ticket. It edits only CONFIG_EXEMPT in test_shared_fakes_guard.py, and the run passed 296 integration tests with 3339 skipped, matching the base. After the fence is read fresh, re-run Check on commit 2db6f286 rather than re-implementing.",
-    "Prevention: Check and Review should reload tickets/<stem>/ticket.md from main for the fence on every attempt, so a fence widened after a premise_failed result takes effect. Name the engine file that caches the Ticket once it is found."
+    "Engine defect, not implementer: tickets/io-helpers-config/ticket.md lines 24 and 82 fence tests/integration/test_shared_fakes_guard.py, yet clutch/stages.py ScopeFenceGate (artifact.scope_fence) flagged it as outside the fence in attempts 3 and 4 alike.",
+    "Human: inspect where the Check Evidence builder in clutch/ loads scope_fence for the gate; it appears to read a stale ticket.md (branch or base copy from before the fence was widened) instead of the current ticket.",
+    "The diff is sound: verification passed 296/3339 matching base, and the only edit to test_shared_fakes_guard.py is CONFIG_EXEMPT as Scope in requires. Once the fence source is fixed, re-run Check on the existing branch; do not re-implement.",
+    "Do not retry again until the fence-loading defect is fixed: each retry spends an attempt reproducing the same false scope_fence finding."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
