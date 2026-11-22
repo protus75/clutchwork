@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The final verification passed: the reproducer reported pass and all 57 tests passed. Restoring either old deadline made the reproducer report defect; changing the translated error message failed its test. Filed the proposed repository-wide deadline lint as suggestion box-000001-c35b49ac. The simpler approach of raising timeout values was rejected because it would retain load-dependent failures.
+The regression reproducer passed; the combined verification command exited successfully with 8 passed and 49 skipped. The existing branch commits were left unchanged.
 
 ## Dead ends
 
-none
+None.
 
 ## Second problems filed
 
@@ -18,9 +18,9 @@ none
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.25
+- spec: implement 2.27
 
 ## Predicted vs actual
 
-Ticket budget: 25 minutes expected; completed within that budget.
+The ticket budget was 25 minutes; inspection and verification took less.
 
