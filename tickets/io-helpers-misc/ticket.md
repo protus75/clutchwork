@@ -56,6 +56,7 @@ Scope in:
 - `commit_lock` has 35 importers; 8 are real-I/O users kept on the real one (named above), the other 27 are fenced here, and the earlier helper modules (`tests/*_helpers.py`) that import it change to `tests.misc_helpers` or drop it where `GitFake` made it unnecessary.
 - `tests/integration/test_git.py` stays in `REAL_IO_TESTS` and unskipped and is not edited here.
 
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
