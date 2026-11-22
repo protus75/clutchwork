@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "3d64ca87799b005301db1259365fe06c6d00c4f2",
+  "stem": "check-owns-meta-headers",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket's scope fence leaves out two files that the required Implement spec version bump forces to change: tests/integration/test_implement_spec_mutation_check.py:22 pins `== \"2.23\"`, and tests/integration/test_stages.py:350 expects `spec: implement 2.23` in run.md.",
+    "Ticket fix: add both files to the scope fence. In Scope in, limit each to updating the `implement` version pin to the new minor (2.24 if main is still at 2.23). test_stages.py is a hot file, but fencing it is allowed because the bump forces this edit; add no new tests there.",
+    "On the next attempt, redo the full change from the merge base. The last run's ticket verification passed 64 tests and the unit coverage gate passed. Rebuild: the check_meta fill step before meta.refresh, rule 5 in implement.md, the version bump, the three fenced pin updates,",
+    "Before editing, search for every `2.23` implement-spec pin outside tickets/ and .clutch/ so the fence covers all of them. The previous run found only these two.",
+    "The full integration run also failed tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green with an admission timeout. Nobody checked it on the base commit. Run it once in a base-commit worktree; if it fails there, file it as a second problem and keep it out of"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2,
+    4
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
