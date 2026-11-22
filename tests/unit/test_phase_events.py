@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test phase events
+# purpose: Unit tests for the phase_start and phase_end engine-log events and their outcomes in runner preflight and in the drain and serve retro checks
 # relates: [clutch/drain.py, clutch/runner.py, clutch/serve.py]
 # owner: engine
-# verified: 9a610809
-# hash: e7c2245ccbde6fe2c6e3af1e16875554d6be4d0ac19e69df4efb495a9033d137
+# verified: 331196ce
+# hash: 046d5c506f943fb9ded076ab92b5af62015cb0c849a6fd4f37b4951ab12430b6
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -61,7 +61,10 @@ async def test_preflight_events(monkeypatch, result, outcome):
 async def test_drain_retro_events(monkeypatch, due, result, outcome):
     log = install_log(monkeypatch, drain)
     d = object.__new__(drain._Drain)
-    d.c = SimpleNamespace(config=SimpleNamespace(state_dir=Path("/state"), providers=[], release=SimpleNamespace(pypi_token="")), env={}, clock=None, sleep=None, control=None)
+    d.c = SimpleNamespace(
+        config=SimpleNamespace(state_dir=Path("/state"), providers=[], release=SimpleNamespace(pypi_token="")), env={}, clock=None, sleep=None, control=None, journal=SimpleNamespace(read=lambda: [])
+    )
+    d.retro_terminal_count = None
     d.retro = AsyncMock(side_effect=result if isinstance(result, Exception) else None, return_value=result)
     d.retro.due = due
     d.retro.abort_current = AsyncMock()

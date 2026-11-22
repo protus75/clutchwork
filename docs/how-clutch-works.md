@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 9aa0931a
-hash: deb2d6a6a4a528fa5792a971f640b554b48c4b3cfb66d9c702737ea77956f894
+verified: 331196ce
+hash: 5a6da024312642f9a79fcbccda4980589aa58a56f79d139d3aba944aeb8c495a
 -->
 # How ClutchWork works
 
@@ -747,7 +747,7 @@ integration-red conflict facts, reject queue routed transitions or reject arriva
 premise-failed transitions, infra-error transitions (including provider drought), flake
 detection signals, and escape signals for automatically reopened tombstones.
 
-The retro reads the journal since the last report. Measurements include `conflict_paths`: the top ten paths with at least two journaled merge conflicts in the window, with resolving rungs. By default `retro.test_timing` includes each Check gate’s per-invoice counts and duration plus each slow test’s maximum duration and invoice count. `retro.coverage` includes the latest repository percentage and each file’s latest and minimum percentages and invoice count. Set either switch to false to omit its summary. During a drain it runs between tickets, never
+The retro reads the journal since the last report. Measurements include `conflict_paths`: the top ten paths with at least two journaled merge conflicts in the window, with resolving rungs. By default `retro.test_timing` includes each Check gate’s per-invoice counts and duration plus each slow test’s maximum duration and invoice count. `retro.coverage` includes the latest repository percentage and each file’s latest and minimum percentages and invoice count. Set either switch to false to omit its summary. During a drain it checks once at startup, then only after a ticket settles or a retro is requested; it runs between tickets, never
 between attempts of one ticket, when due at the `retro:` thresholds: by default 25 merges, 40 settled tickets, or 5 events of one spike kind. A settled ticket is a stem whose state goes to merged, already satisfied or rejected, counted once. A requested retro runs at the drain’s next between-tickets point. Serve runs requested retros and automatic retros due after a ticket settles at its next idle point, then resumes admission. Each nested `retro.merges`, `retro.settled`, and `retro.spikes` block has an `enabled` switch; their thresholds are `merges.every`, `settled.every`, and `spikes.count`. The nonempty `spikes.kinds` allowlist selects which kinds can trigger; measurements still report every kind. The master `retro.enabled: false` disables automatic retros even if sub-triggers are enabled; run one on demand with `engine retro`. Config load refuses an enabled master with all three triggers disabled (enable a trigger or set `retro.enabled: false`) and duplicate spike kinds (list each kind once). It commits `tickets/retro/NNNNNN.md` (measurements,
 scorecard, proposals) and files new proposals as `retro_finding` messages. It supplies prior findings to the model; a proposal matching an existing cause counts as a recurrence on that message. A recurrence after its ticket fix merged reopens the finding for a new fix. Proposals identify either prompt-spec paths or repository paths for a test repair. Proposals may instead name conflicted paths with `strategy` (add a `merge.strategies` entry) or `split`. Test repairs name one issue: `unit-io`, `slow`, `drift`, `flaky`, `coverage-hard`, `over-mocking`, `weak-assertion`, `shared-state`, `duplicate`, or `skip-rot`.
 

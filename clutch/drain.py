@@ -448,6 +448,7 @@ class _Drain:
         self.report = Report()
         self.retro = None
         self.served_retro_id: str | None = None
+        self.retro_terminal_count: int | None = None
 
     async def run(self) -> Report:
         try:
@@ -726,6 +727,9 @@ class _Drain:
         pass
 
     async def _run_retro(self, *, forced):
+        count = sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in self.c.journal.read())
+        if not forced and count == self.retro_terminal_count:
+            return
         log = engine_log(self.c.config, Redactor.from_config(self.c.config, self.c.env), self.c.clock)
         log.event("phase_start", phase="retro_check")
         try:
@@ -733,6 +737,7 @@ class _Drain:
         except BaseException:
             log.event("phase_end", phase="retro_check", outcome="failed")
             raise
+        self.retro_terminal_count = count
         outcome: RetroCheckOutcome = "due" if self.retro.due else "not_due"
         log.event("phase_end", phase="retro_check", outcome=outcome)
 
