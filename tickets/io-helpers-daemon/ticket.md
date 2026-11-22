@@ -56,6 +56,7 @@ Scope in:
 - `test_mergequeue.import_closure` and `test_scheduler.import_closure` are different functions with the same name; this ticket moves the mergequeue one as `import_closure`, and `io-helpers-loop` moves the scheduler one under its own distinct name (`scheduler_import_closure`, aliased back at the two importers).
 - `tests/integration/test_daemon_composition.py` imports from `tests/integration/test_providers.py`, `tests/integration/test_scheduler.py`, `tests/integration/serve_rig.py` and others that later steps move; those lines stay untouched here.
 
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
