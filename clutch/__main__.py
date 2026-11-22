@@ -23,7 +23,7 @@ import duckdb
 
 import clutch
 from clutch import ask, context, control, drain, hostfiles, index, issue, observe, requisition, runner, seams, serve, tickets, triage
-from clutch.box import BOX_DIR, UnknownBoxId
+from clutch.box import BOX_DIR, Box, UnknownBoxId
 from clutch.config import ConfigError, ConfigSnapshot, load_config, load_config_text, migrate_config
 from clutch.daemon import DaemonCore, PauseConsumer, StartupBoundary, daemon_core
 from clutch.git import Git, GitError
@@ -217,6 +217,7 @@ def build_daemon_core(
                     held.add(stem)
         return held
 
+    core.scheduler.flake_fixes = lambda: drain.flake_fixes(Box(checkout.config.state_dir / BOX_DIR, checkout.fs).messages())
     core.scheduler.drought_parked = provider_holds
     return core
 

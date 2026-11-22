@@ -16,13 +16,14 @@ import asyncio
 import json
 import os
 import sys
-from collections.abc import Awaitable, Callable, Collection, Iterable, Mapping
+from collections.abc import Awaitable, Callable, Collection, Iterable, Mapping, Set
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
 from clutch import caps, control, roadmap, runner, triage
+from clutch.box import BOX_DIR, Box, Message
 from clutch.calibration import calibrate_when_due
 from clutch.control import ControlRequest
 from clutch.enginelog import engine_log
@@ -137,9 +138,18 @@ def eligible(tickets: Iterable[Ticket], last: Mapping[str, str], settled: set[st
     return [t for t in tickets if t.frontmatter.state == "confirmed" and last.get(t.stem) not in CLOSED and t.stem not in maps and set(t.depends) <= settled]
 
 
-def order_tickets(tickets: Iterable[Ticket], authored: Mapping[str, str]) -> list[Ticket]:
+def flake_fixes(messages: Iterable[Message]) -> set[str]:
+    """Return ticket links from resolved check failure reports."""
+    return {
+        m.resolution.link
+        for m in messages
+        if m.message_class == "failure_report" and m.stage == "check" and m.outcome == "gate_failed" and m.status == "resolved" and m.resolution is not None and m.resolution.kind == "ticket"
+    }
+
+
+def order_tickets(tickets: Iterable[Ticket], authored: Mapping[str, str], *, fixes: Set[str] = frozenset()) -> list[Ticket]:
     """Apply soft edges only within the eligible set, breaking ties by sort_key."""
-    return _soft_edges(sorted(tickets, key=lambda t: sort_key(t, authored)))
+    return _soft_edges(sorted(tickets, key=lambda t: (t.stem not in fixes, *sort_key(t, authored))))
 
 
 def _soft_edges(remaining: list[Ticket]) -> list[Ticket]:
@@ -170,9 +180,9 @@ def chain(stem: str, unsettled: Mapping[str, Ticket]) -> int:
     return len(seen) - 1
 
 
-def parallel_order(eligible: Iterable[Ticket], authored: Mapping[str, str], unsettled: Mapping[str, Ticket]) -> list[Ticket]:
+def parallel_order(eligible: Iterable[Ticket], authored: Mapping[str, str], unsettled: Mapping[str, Ticket], *, fixes: Set[str] = frozenset()) -> list[Ticket]:
     """Order eligible tickets by urgency and downstream work, respecting soft edges."""
-    return _soft_edges(sorted(eligible, key=lambda t: (t.frontmatter.priority != "P0", -chain(t.stem, unsettled), *sort_key(t, authored))))
+    return _soft_edges(sorted(eligible, key=lambda t: (t.stem not in fixes, t.frontmatter.priority != "P0", -chain(t.stem, unsettled), *sort_key(t, authored))))
 
 
 def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int, shared: Iterable[str], skips: Mapping[str, int], rerun: Collection[str]) -> tuple[list[Ticket], dict[str, int]]:
@@ -665,7 +675,7 @@ class _Drain:
             elif t.stem not in held and reofferable(events, t.stem, self.c.config.caps):
                 candidates.append((t, True))
         if candidates:
-            ordered = order_tickets((t for t, _ in candidates), authored)
+            ordered = order_tickets((t for t, _ in candidates), authored, fixes=flake_fixes(Box(self.c.config.state_dir / BOX_DIR, self.c.fs).messages()))
             write_queue(self.c.config.state_dir, self.c.fs, self.c.clock, ordered)
             return next(pair for pair in candidates if pair[0] == ordered[0])
         return None, False

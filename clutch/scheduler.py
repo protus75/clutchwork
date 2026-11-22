@@ -46,6 +46,7 @@ class Scheduler:
         self.parallel: Callable[[], Parallel] = Parallel
         self.log: Callable[..., None] = lambda *args, **kwargs: None
         self._slot = asyncio.Lock()
+        self.flake_fixes: Callable[[], Set[str]] = lambda: set()
         self.continuations: Callable[[], Iterable[Ticket]] = lambda: ()
         self.next_stage: Callable[[Ticket], str] = lambda _: "implement"
         self.select: Callable[[Ticket, str], bool] = lambda _ticket, _stage: True
@@ -105,7 +106,7 @@ class Scheduler:
                 return None
             if parallel.enabled:
                 unsettled = {stem: t for stem, t in candidates.items() if stem not in settled} | self.flying
-                ordered = parallel_order(ready, authored, unsettled)
+                ordered = parallel_order(ready, authored, unsettled, fixes=self.flake_fixes())
                 rerun = {stem for stem in candidates.keys() | self.flying.keys() if conflict_reruns(events, stem) > 0}
                 selected, counts = fill_slots(ordered, self.flying.values(), 1, parallel.shared_paths, self.skips, rerun)
                 for stem, count in counts.items():
@@ -117,7 +118,7 @@ class Scheduler:
                 ticket = selected[0]
                 ordered = [ticket, *(t for t in ordered if t.stem != ticket.stem)]
             else:
-                ordered = order_tickets(ready, authored)
+                ordered = order_tickets(ready, authored, fixes=self.flake_fixes())
                 ticket = ordered[0]
             write_queue(self.state_dir, self.fs, self.clock, ordered)
             self.remove(ticket.stem)
