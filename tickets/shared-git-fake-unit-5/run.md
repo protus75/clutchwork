@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Stateful lock-protected edits and changing return values required per-test overrides; GitFake itself was unchanged. The simpler default overrides could not model those behaviors.
+The branch already contained the migration from the prior attempt.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 26 minutes; actual time was shorter.
 
