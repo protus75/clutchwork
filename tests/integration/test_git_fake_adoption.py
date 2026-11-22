@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tracks the move to GitFake. Fails when a test file builds its own Git stand-in but is not on the PENDING list, or when a PENDING entry is stale or missing.
+# purpose: Tracks the move to GitFake: fails when a test file builds its own Git stand-in without being on the PENDING list, or when a PENDING entry is stale or missing.
 # relates: [tests/git_fake.py, tests/unit/test_git_fake.py]
 # owner: engine
-# verified: 73ec5da9
-# hash: 60fdbb01faf0bc2ccd25a595a26f49ee6e2c6ce9d448df144f22fc19d2ccebbd
+# verified: cb71e4f8
+# hash: 157cdc242c53ff711c13576344578545f22c780b705e054407218795aac744b1
 
 import re
 from pathlib import Path
@@ -25,16 +25,6 @@ PENDING = (
     "tests/unit/test_check_meta_fill.py",
     "tests/unit/test_runner_verdict_reread.py",
     "tests/unit/test_serve_verdict_owned.py",
-    "tests/unit/test_training_eval.py",
-    "tests/unit/test_training_export.py",
-    "tests/unit/test_training_export_conflict.py",
-    "tests/unit/test_training_export_kinds.py",
-    "tests/unit/test_training_index_join.py",
-    "tests/unit/test_training_ticket_kind.py",
-    "tests/unit/test_training_trajectory.py",
-    "tests/unit/test_training_triage_records.py",
-    "tests/unit/test_verdict_extension.py",
-    "tests/unit/test_verdict_menu_parity.py",
 )
 EXCLUDED = {"tests/unit/test_git_fake.py", "tests/integration/test_git_fake_adoption.py"}
 

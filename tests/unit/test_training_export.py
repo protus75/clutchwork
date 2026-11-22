@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test training export
+# purpose: Tests training export SFT and preference records: labels, pairing, secret scrubbing, holdout split, skipped records, the report, and the disabled and success CLI paths.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/evidence/store.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: ee052b47
-# hash: 2d410b0577e6e1358add0ce0c1915501fae7621b9af2c28ea871c2fbb8641bec
+# verified: cb71e4f8
+# hash: 338700183b2a6a854652b1d189ace12868645a6968250ed7b7e9083e0d5c956e
 import asyncio
 import hashlib
 import json
@@ -19,6 +19,7 @@ from clutch import training
 from clutch.config import TrainingData
 from clutch.evidence.store import SKIP
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 def call(run=1, attempt=1, call=1, surface="implement", blob="prompt"):
@@ -51,16 +52,12 @@ class Store:
         return self.blobs[key]
 
 
-class Git:
-    def __init__(self, stems=("a",)):
-        self.stems = stems
-
-    async def merged_tickets(self, repo):
-        return [("sha-" + stem, stem) for stem in self.stems]
-
-    async def diff(self, repo, base, sha):
+def git_fake(stems=("a",)):
+    def diff(repo, base, sha):
         assert base == sha + "^"
         return "diff --git a/file b/file\n+merged"
+
+    return GitFake(merged_tickets=[("sha-" + stem, stem) for stem in stems], diff=diff)
 
 
 def manifest(code="logic"):
@@ -68,7 +65,7 @@ def manifest(code="logic"):
 
 
 def export(store, git=None, kinds=("implement", "preference"), holdout=0, redactor=None):
-    return asyncio.run(training.render(store, git or Git(), Path("/repo"), redactor or Redactor({}), TrainingData(enabled=True), lambda path: b"", kinds, holdout))
+    return asyncio.run(training.render(store, git or git_fake(), Path("/repo"), redactor or Redactor({}), TrainingData(enabled=True), lambda path: b"", kinds, holdout))
 
 
 def test_records_and_pairing():
@@ -103,13 +100,13 @@ def test_scrub_and_holdout():
         assert len(files["sft.jsonl"].splitlines()) == 1 and counts["dropped"] == 1
     stems = [f"stem{i}" for i in range(20)]
     store.manifests = {}
-    files, counts = export(store, Git(stems), holdout=50)
+    files, counts = export(store, git_fake(stems), holdout=50)
     held = sorted(s for s in stems if int(hashlib.sha256(s.encode()).hexdigest(), 16) % 100 < 50)
     assert files["holdout.txt"].decode().splitlines() == held
     assert {json.loads(line)["stem"] for line in files["sft.jsonl"].splitlines()} == set(stems) - set(held)
-    assert counts["heldout"] == len(held) and export(store, Git(stems), holdout=50)[0] == files
-    assert "holdout.txt" not in export(store, Git(stems))[0]
-    assert not export(store, Git(stems), holdout=100)[0]["sft.jsonl"]
+    assert counts["heldout"] == len(held) and export(store, git_fake(stems), holdout=50)[0] == files
+    assert "holdout.txt" not in export(store, git_fake(stems))[0]
+    assert not export(store, git_fake(stems), holdout=100)[0]["sft.jsonl"]
 
 
 def test_missing_and_skipped():
@@ -136,14 +133,7 @@ def test_handler_success(tmp_path, capsys, monkeypatch):
     config = NS(state_dir=tmp_path / "state", training_data=TrainingData(enabled=True), providers=[], release=NS(pypi_token="TOKEN"))
     monkeypatch.setattr(entry, "load_config", lambda *args, **kwargs: config)
 
-    class EmptyGit:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        async def merged_tickets(self, repo):
-            return []
-
-    monkeypatch.setattr(entry, "Git", EmptyGit)
+    monkeypatch.setattr(entry, "Git", lambda *args, **kwargs: GitFake())
     out = tmp_path / "out"
     assert entry.main(["training", "export", "--out", str(out)], cwd=tmp_path, env={}) == 0
     stdout, stderr = capsys.readouterr()

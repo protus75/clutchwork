@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Review replay and its read-only handler contract, with scripted model calls.
+# purpose: Tests training eval: scoring review replay against labels, counting unparsed replies, selecting stems, and checking the CLI handler's gates and read-only contract.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/evidence/store.py, clutch/journal.py, clutch/llm.py, clutch/redact.py, clutch/timers.py]
 # owner: engine
-# verified: 9a610809
-# hash: b3c4be7823fa792575a3ad1121a019d8ec8e122aaa4b9dbdd70139dfe40260fc
+# verified: cb71e4f8
+# hash: fe6938f4e308395a2b5e80522328623a446f4271fe9b2dd7b077409b7dfb22e8
 
 import asyncio
 import json
@@ -24,6 +24,7 @@ from clutch.llm import FakeLLM, LLMRequest
 from clutch.redact import Redactor
 from clutch.timers import Timers
 from tests.fakes import FakeClock
+from tests.git_fake import GitFake
 
 
 class Store:
@@ -49,14 +50,6 @@ class Store:
 
     def get_blob(self, key):
         return f"review prompt for {key.split('/')[1]}".encode()
-
-
-class Git:
-    def __init__(self, *args, **kwargs):
-        pass
-
-    async def merged_tickets(self, repo):
-        return []
 
 
 def record(label, prompt="held-out prompt"):
@@ -90,7 +83,7 @@ def test_review_verdicts(reply, label):
 
 def test_render_selection():
     def render(**kwargs):
-        files, _ = asyncio.run(training.render(Store(), Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True), lambda path: b"", kinds=("review",), **kwargs))
+        files, _ = asyncio.run(training.render(Store(), GitFake(), Path("/repo"), Redactor({}), TrainingData(enabled=True), lambda path: b"", kinds=("review",), **kwargs))
         return [json.loads(line)["stem"] for line in files["review.jsonl"].splitlines()]
 
     # b has the same valid review manifest as a: only the requested stem selection can exclude it.
@@ -117,7 +110,7 @@ def test_handler(tmp_path, monkeypatch, capsys, enabled, holdout, problems, exit
         circuit_breaker=NS(),
     )
     monkeypatch.setattr(entry, "load_config", lambda *args, **kwargs: config)
-    monkeypatch.setattr(entry, "Git", Git)
+    monkeypatch.setattr(entry, "Git", lambda *args, **kwargs: GitFake())
     monkeypatch.setattr(evidence, "EvidenceStore", lambda *args: Store())
     llm = FakeLLM(['{"verdict":"snag"}'])
     llm.preflight = AsyncMock(return_value=problems)

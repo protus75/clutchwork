@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test training trajectory
+# purpose: Tests tool-call trajectories in SFT export rows: normalization, excluded paths, secret drops, missing or unsupported streams, and the --no-trajectory flag.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: 9a610809
-# hash: e9c5eed57c8d99e39b6fa2f795c3b8fd7c35bc49f2b78e545f1df23be6db0a2e
+# verified: cb71e4f8
+# hash: 667659e07f26f030e06f0e1e84c7a99c3b72c0da57d9c3eb7c8d7a3eda7dd6de
 import asyncio
 import hashlib
 import json
@@ -18,6 +18,7 @@ from clutch import __main__ as entry
 from clutch import training
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 class Store:
@@ -46,21 +47,22 @@ class Store:
         return self.blobs[key]
 
 
-class Git:
-    async def merged_tickets(self, repo):
-        return [("sha", "ticket")]
-
-    async def diff(self, repo, base, sha):
-        return "diff --git a/src/app.py b/src/app.py\n+merged"
-
-
 def event(seq, args, kind="tool_call"):
     return NS(seq=seq, kind=kind, tool=NS(class_="read", native="Read"), args=args, native={"private": "raw envelope"})
 
 
 def render(store, **kwargs):
     files, counts = asyncio.run(
-        training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True, exclude=["private/*"]), lambda path: b"", kinds=("implement", "preference"), **kwargs)
+        training.render(
+            store,
+            GitFake(merged_tickets=[("sha", "ticket")], diff="diff --git a/src/app.py b/src/app.py\n+merged"),
+            Path("/repo"),
+            Redactor({}),
+            TrainingData(enabled=True, exclude=["private/*"]),
+            lambda path: b"",
+            kinds=("implement", "preference"),
+            **kwargs,
+        )
     )
     return [json.loads(line) for line in files["sft.jsonl"].splitlines()], counts
 

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: verify training export index joins
+# purpose: Tests joining DuckDB file-index purposes and touch counts into SFT export rows, falling back on an unreadable index, and passing the index through the export handler.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/redact.py, clutch/training.py, tests/unit/test_training_export.py]
 # owner: engine
-# verified: ee052b47
-# hash: 6a1a6a1cb1e42eb4036fa6b02a0ce7a2dd92cacd02faab1ff19951115a524af0
+# verified: cb71e4f8
+# hash: a1cda4de4321f38677f617da0844817bcf132275dd0db814f4517b1a0d695b8b
 import asyncio
 import json
 from pathlib import Path
@@ -18,7 +18,8 @@ from clutch import __main__ as entry
 from clutch import training
 from clutch.config import TrainingData
 from clutch.redact import Redactor
-from tests.unit.test_training_export import Git, Store, manifest
+from tests.git_fake import GitFake
+from tests.unit.test_training_export import Store, manifest
 
 DIFF = "\n".join(f"diff --git a/{p} b/{p}" for p in ("clutch/b.py", "clutch/a.py", "docs/x.md", "new.py", "clutch/a.py"))
 EXPECTED = [
@@ -45,17 +46,13 @@ def render(index_marker=None, *, trajectory=False, secret=False, monkeypatch=Non
     store.manifests[("t0", 1, 1)] = manifest()
     store.manifests[("t0", 1, 1)].outcome = "rejected"
 
-    class DiffGit(Git):
-        async def diff(self, repo, base, sha):
-            return DIFF
-
     if trajectory:
         monkeypatch.setattr(training, "_trajectory", lambda *args: [{"seq": 17}])
     kwargs = {} if index_marker is None else {"index": index_marker}
     files, counts = asyncio.run(
         training.render(
             store,
-            DiffGit(("t0",)),
+            GitFake(merged_tickets=[("sha-t0", "t0")], diff=DIFF),
             Path("/repo"),
             Redactor({"key": "hidden-secret"} if secret else {}),
             TrainingData(enabled=True),

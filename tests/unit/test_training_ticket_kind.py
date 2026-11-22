@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test training ticket kind
+# purpose: Tests ticket-kind export: latest author call selection, authored_by from source, skipping bad or missing calls, scrubbing, holdout, Gemini streams, and the report requiring a ticket count.
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: ee052b47
-# hash: eae3847d7243b53e6f69b7c96d145082ed95a9b3bdfe094656d596e4ebf0a7bc
+# verified: cb71e4f8
+# hash: 301852fa52d5659daed7bd7d933f5ca5f7c887007d3aaffb94071bfbf7706881
 import asyncio
 import json
 from pathlib import Path
@@ -16,6 +16,7 @@ import pytest
 from clutch import training
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 class Store:
@@ -46,11 +47,6 @@ class Store:
         return self.blobs[key]
 
 
-class Git:
-    async def merged_tickets(self, repo):
-        return []
-
-
 def export(store, source="box:retro_finding", kinds=("ticket",), holdout=0, content=None):
     text = content or f"---\nsource: {source}\n---\nTicket body"
 
@@ -59,7 +55,7 @@ def export(store, source="box:retro_finding", kinds=("ticket",), holdout=0, cont
             raise FileNotFoundError(path)
         return text.encode()
 
-    return asyncio.run(training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True), read, kinds=kinds, holdout=holdout))
+    return asyncio.run(training.render(store, GitFake(), Path("/repo"), Redactor({}), TrainingData(enabled=True), read, kinds=kinds, holdout=holdout))
 
 
 def reply(stem="a-ticket"):

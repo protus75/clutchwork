@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test verdict menu parity
+# purpose: Checks that the snapshot's confirm/reject menu states match whether a runner verdict is allowed in each ticket state, and that a reject commits and journals.
 # relates: [clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/reconcile.py, clutch/runner.py, tests/unit/test_menu_admission.py]
 # owner: engine
-# verified: 2dd7da28
-# hash: 25fbd77f36e9ceafe73761232321fefc38b87d41702d8dde7a33e3eaa8b5b4d9
+# verified: cb71e4f8
+# hash: 83bdcb6a852e8fff6f9c8ac2a973f62e84f05ef794289c5c31af9a835bfa5ccc
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ from clutch import observe, runner
 from clutch.box import Box
 from clutch.journal import EventType
 from clutch.reconcile import orphans
+from tests.git_fake import GitFake
 
 
 @pytest.fixture
@@ -42,7 +43,7 @@ def world(monkeypatch):
         commits.append((message, list(only), files[root / only[0]]))
         return "commit-sha"
 
-    git = SimpleNamespace(describe=AsyncMock(return_value="id"), rev_parse=AsyncMock(return_value="head-sha"), commit_edit=commit_edit, _run=AsyncMock(return_value=""))
+    git = GitFake(describe="id", rev_parse="head-sha", commit_edit=commit_edit, _run="")
     journal = SimpleNamespace(read=lambda: list(events), append=append)
     checkout = SimpleNamespace(repo=root, config=SimpleNamespace(state_dir=root / "state"), journal=journal, git=git, fs=FS(), clock=None)
     ctx = observe.Context(root, root / "state", root / "config.yaml", None, None, None)

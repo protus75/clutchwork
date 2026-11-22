@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Tests triage export records: labels from Box resolutions, ordering, skipping invalid or missing calls, since filter, scrubbing, and holdout.
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: 25fa3109
-# hash: 531b5b140c6026d327899dd375be77818b428ea626d376652658656fecd0b5e9
+# verified: cb71e4f8
+# hash: 88e8a6cdec656d5f693cacbaaab44d43c1cf44505594f81e415405c025088d5e
 import asyncio
 import json
 from pathlib import Path
@@ -14,6 +14,7 @@ from types import SimpleNamespace as NS
 from clutch import training
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 class Store:
@@ -56,13 +57,8 @@ class Store:
             raise FileNotFoundError(key) from None
 
 
-class Git:
-    async def merged_tickets(self, repo):
-        return []
-
-
 def export(store, **kwargs):
-    return asyncio.run(training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True), lambda path: b"", **kwargs))
+    return asyncio.run(training.render(store, GitFake(), Path("/repo"), Redactor({}), TrainingData(enabled=True), lambda path: b"", **kwargs))
 
 
 def test_labels_and_records():

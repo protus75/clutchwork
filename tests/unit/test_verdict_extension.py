@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test verdict extension
+# purpose: Tests verdicts sent from the extension: the actor field, looping over several stems, forwarding the actor through settle and serve, repeat-keep handling, intake before publishing, and logging refusals.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/tickets.py]
 # owner: engine
-# verified: 9a610809
-# hash: 53f8055e0d8bc62e79c2ccb9b26f37b2fa688e23851e3d3c4098d3a7b65e67d9
+# verified: cb71e4f8
+# hash: d08f051a7a88af4de8a885e00e4d16d29a0397a1bb06775b18133eed8079feed
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
@@ -16,6 +16,7 @@ from clutch import __main__ as entry
 from clutch import control, runner
 from clutch.journal import EventType
 from clutch.serve import Serve
+from tests.git_fake import GitFake
 
 
 class Journal:
@@ -103,7 +104,7 @@ def test_repeat_keep_without_ticket(monkeypatch, extension):
 @pytest.mark.parametrize("actor", ["extension", "operator", "machine"])
 def test_serve_forwards_actor(monkeypatch, actor):
     journal = Journal([])
-    git = SimpleNamespace(rev_parse=AsyncMock(return_value="base"), _run=AsyncMock(return_value=""))
+    git = GitFake(rev_parse="base", _run="")
 
     class MissingPath:
         def __truediv__(self, other):
@@ -142,9 +143,7 @@ def test_live_verdict_intakes_before_publication(monkeypatch, refused):
     findings = {"sample": [SimpleNamespace(message="invalid edit")]} if refused else {}
     intake = AsyncMock(return_value=SimpleNamespace(refused=findings))
     published = []
-    checkout = SimpleNamespace(
-        repo=MissingPath(), git=SimpleNamespace(status_porcelain=AsyncMock(return_value=" M tickets/sample/ticket.md")), journal=Journal([]), fs=None, config=SimpleNamespace(state_dir=Path("state"))
-    )
+    checkout = SimpleNamespace(repo=MissingPath(), git=GitFake(status_porcelain=" M tickets/sample/ticket.md"), journal=Journal([]), fs=None, config=SimpleNamespace(state_dir=Path("state")))
     monkeypatch.setattr(runner, "verdict", held)
     monkeypatch.setattr(tickets, "intake", intake)
     monkeypatch.setattr(control, "read_active", lambda *args: ("life", None))
@@ -168,7 +167,7 @@ def test_shared_admission_refusal_and_replay(monkeypatch):
             return False
 
     journal = Journal([])
-    checkout = SimpleNamespace(repo=MissingPath(), journal=journal, git=SimpleNamespace(rev_parse=AsyncMock(return_value="base"), _run=AsyncMock(return_value="")))
+    checkout = SimpleNamespace(repo=MissingPath(), journal=journal, git=GitFake(rev_parse="base", _run=""))
     verdict = AsyncMock(side_effect=runner.Refusal("settled", "leave it"))
     monkeypatch.setattr(runner, "verdict_locked", verdict)
     result = asyncio.run(runner.apply_admission("sample", "confirm", "key", "extension", checkout))

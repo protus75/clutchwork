@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test training export conflict
+# purpose: Tests conflict-resolution export records: ordering, merged/neutral labels, Gemini stream assembly, skipping declined or incomplete calls, since filter, holdout, and scrubbing.
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: 9a610809
-# hash: d22eb2a2c26cd13f337c15ea9de935c5ca667a7e62f931f7cae7378fca98c07c
+# verified: cb71e4f8
+# hash: 45736cbf1cbae526de3168f5aa31140da13782d165274168bb1d148d7b209fa2
 import asyncio
 import json
 from pathlib import Path
@@ -14,6 +14,7 @@ from types import SimpleNamespace as NS
 from clutch import training
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 class Store:
@@ -64,16 +65,8 @@ class Store:
             raise FileNotFoundError(key) from None
 
 
-class Git:
-    async def merged_tickets(self, repo):
-        return [("sha", "merged")]
-
-    async def diff(self, repo, base, sha):
-        return "diff"
-
-
 def export(store, **kwargs):
-    return asyncio.run(training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True), lambda path: b"", **kwargs))
+    return asyncio.run(training.render(store, GitFake(merged_tickets=[("sha", "merged")], diff="diff"), Path("/repo"), Redactor({}), TrainingData(enabled=True), lambda path: b"", **kwargs))
 
 
 def rows(files):

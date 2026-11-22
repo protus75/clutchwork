@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test training export kinds
+# purpose: Tests review and diagnosis export kinds, plus the since filter, holdout, scrubbing, and conflict counting across kinds.
 # relates: [clutch/config.py, clutch/redact.py, clutch/training.py]
 # owner: engine
-# verified: 9a610809
-# hash: c60d1033ac69b710982c6226efb1cebcf5dd66ae0b741874d19ec0e4157a9cfa
+# verified: cb71e4f8
+# hash: 7fe358028deefde916d5414eef5ecd0197f2e5f7850af5def5f885d17a64ed48
 import asyncio
 import json
 from pathlib import Path
@@ -14,6 +14,7 @@ from types import SimpleNamespace as NS
 from clutch import training
 from clutch.config import TrainingData
 from clutch.redact import Redactor
+from tests.git_fake import GitFake
 
 
 class Store:
@@ -54,21 +55,15 @@ class Store:
         return self.blobs[key]
 
 
-class Git:
-    async def merged_tickets(self, repo):
-        return [("sha", "merged")]
-
-    async def diff(self, repo, base, sha):
-        return "diff --git a/a b/a\n+merged"
-
-
 def export(store, files=None, **kwargs):
     def reader(path):
         if path.parent.name not in (files or {}):
             raise FileNotFoundError(path)
         return files[path.parent.name]
 
-    return asyncio.run(training.render(store, Git(), Path("/repo"), Redactor({}), TrainingData(enabled=True), reader, **kwargs))
+    return asyncio.run(
+        training.render(store, GitFake(merged_tickets=[("sha", "merged")], diff="diff --git a/a b/a\n+merged"), Path("/repo"), Redactor({}), TrainingData(enabled=True), reader, **kwargs)
+    )
 
 
 def rows(files, kind):
