@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d6a4bfdfd324a578c0922e7ca71b2acaffbb774b",
+  "stem": "preflight-once-per-session",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review finding at clutch/providers.py:272: a skipped preflight leaves the fresh ProviderLLM's adapters with cli_version None, because ProviderLLM.preflight (providers.py:962) is the only place that sets it. Evidence (providers.py:512) then records None for every ticket after the first.",
+    "When the probe succeeds, store each provider's adapter.cli_version on ProviderSession along with the remembered providers/routing key. On a skip in runner.prepare_pipeline and __main__._preflighted_llm, copy the stored versions onto the new ProviderLLM's adapters without running --version.",
+    "A failed or changed-config preflight must still clear or replace the stored versions together with the key, so stale versions never outlive their probe. Keep the existing concurrency lock and phase-event skip unchanged.",
+    "Add a case to tests/unit/test_preflight_once_per_session.py: after two prepare_pipeline calls on one session with an equal snapshot, the second call's adapters carry the same cli_version as the first, and --version ran only once.",
+    "Rerun both ## Verification commands: ./dev.py test on the three named unit files, then ./dev.py test. Edit only files in the scope fence, and leave tests/integration/test_daemon_composition.py untouched."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
