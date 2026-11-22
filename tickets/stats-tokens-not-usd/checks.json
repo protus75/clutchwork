@@ -1,0 +1,147 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "14bd6343fa6d25254adf92728832ef132fa31f33",
+  "stem": "stats-tokens-not-usd",
+  "passed": true,
+  "changed_files": [
+    "clutch/help.py",
+    "clutch/stats.py",
+    "tests/integration/test_stats.py",
+    "tests/unit/test_stats_usage.py"
+  ],
+  "inserted_lines": 81,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 26.865142,
+        "passed": 2131,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5120080200140364,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0050433439901099
+        }
+      },
+      "coverage": {
+        "percent": 76.65268025346806,
+        "files": {
+          "clutch/help.py": 100.0,
+          "clutch/stats.py": 79.9163179916318
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 10.747699,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.4891412259894423,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.046813209017273,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.005218803009484,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0030465420277324
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_stats_usage.py",
+        "tests/integration/test_stats.py",
+        "tests/unit/test_help.py",
+        "tests/integration/test_help.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_stats_usage.py tests/integration/test_stats.py tests/unit/test_help.py tests/integration/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n.s...s.s.....s.                                                          [100%]\n11 passed, 4 skipped in 1.32s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 18.282612
+    }
+  ]
+}
