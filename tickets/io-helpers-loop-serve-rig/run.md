@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The hub retains its shared config-helper import because an existing adoption test checks for it. Base and candidate integration runs both reported 297 passed and 3341 skipped; the final unit runs reported 34 and 2138 passed.
+The final verification passed: 35 helper tests, 2,139 unit tests, and 297 integration tests, with 3,341 integration tests skipped. The prior attempt reported the same integration counts on the base commit; this retry did not rerun the base. The engine writes the run record.
 
 ## Dead ends
 
-An initial integration run exposed the hub's source-level adoption check; retaining the existing import resolved it.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 25 minutes expected; elapsed time was not recorded.
+none
 
