@@ -1,0 +1,243 @@
+{
+  "attempt": 1,
+  "stage": "review",
+  "terminal": "gate_failed",
+  "findings": [
+    {
+      "code": "scope",
+      "path": "tests/integration/test_harvest.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` text (line 5) and changes `owner: engine` to `owner: clutch/runner.py` (line 7). The ticket allows only the import line to change, and `clutch/meta.py` refresh rewrites only `verified` and `hash` for a non-empty owner.",
+      "paved_road": "Restore the original `purpose` and `owner` lines; keep only the import change and the regenerated `verified`/`hash`.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_hot_paths_snapshot.py",
+      "line": 4,
+      "message": "The importer rewrites `purpose` (line 4) and changes `owner: engine` to `clutch/observe.py` (line 6), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_inbox.py",
+      "line": 5,
+      "message": "The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/inbox.py` (line 7), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_intake_keeps_draft.py",
+      "line": 4,
+      "message": "The importer rewrites `purpose` (line 4) and changes `owner: engine` to `clutch/tickets.py` (line 6), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_intake_scope.py",
+      "line": 4,
+      "message": "The importer rewrites `purpose` (line 4) and changes `owner: engine` to `clutch/tickets.py` (line 6), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_kill_cli_activation.py",
+      "line": 5,
+      "message": "The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/control.py` (line 7), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ladder.py",
+      "line": 5,
+      "message": "The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/caps.py` (line 7), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_merge.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_open_tickets_closed.py",
+      "line": 4,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_paved_roads.py",
+      "line": 4,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_requisition_gate.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_requisition_identity_record.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` line and drops '64-hex' from it, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_retro.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_retro_box.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_review_command.py",
+      "line": 5,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_roadmap_start_gates.py",
+      "line": 4,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_scorecard.py",
+      "line": 7,
+      "message": "The importer changes `owner: engine` to `clutch/scorecard.py`, which is outside its import line.",
+      "paved_road": "Restore `owner: engine`.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_snapshot_cache_facts.py",
+      "line": 6,
+      "message": "The importer changes `owner: engine` to `clutch/observe.py`, which is outside its import line.",
+      "paved_road": "Restore `owner: engine`.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_snapshot_merged_cap.py",
+      "line": 4,
+      "message": "The importer rewrites its meta `purpose` line, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/integration/test_ticket_write_serialization.py",
+      "line": 4,
+      "message": "The importer rewrites its meta `purpose` line and drops the failed-edit lock-release clause, which is outside its import line.",
+      "paved_road": "Restore the original `purpose` line.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/regress_drain_detach.py",
+      "line": 7,
+      "message": "The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.",
+      "paved_road": "Restore `owner: engine`.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/regress_drain_park_findings.py",
+      "line": 7,
+      "message": "The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.",
+      "paved_road": "Restore `owner: engine`.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/regress_drain_signals.py",
+      "line": 7,
+      "message": "The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.",
+      "paved_road": "Restore `owner: engine`.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/regress_stale_running.py",
+      "line": 5,
+      "message": "The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/runner.py` (line 7), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "scope",
+      "path": "tests/snapshot_scale_fixture.py",
+      "line": 5,
+      "message": "The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/observe.py` (line 7), which is outside its import line.",
+      "paved_road": "Restore the original `purpose` and `owner` lines.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": " tests/drain_helpers.py                             | 172 +++++++++++++++++++++\n tests/integration/serve_rig.py                     |   6 +-\n tests/integration/test_ask.py                      |   6 +-\n tests/integration/test_audit.py                    |   6 +-\n tests/integration/test_author.py                   |   6 +-\n tests/integration/test_baseline.py                 |   6 +-\n tests/integration/test_box.py                      |  12 +-\n tests/integration/test_box_triage_inbox.py         |   9 +-\n tests/integration/test_caps.py                     |   6 +-\n tests/integration/test_control_cli.py              |   8 +-\n tests/integration/test_daemon_composition.py       |  22 +--\n tests/integration/test_daemon_pause.py             |   6 +-\n tests/integration/test_diagnose.py                 |   8 +-\n tests/integration/test_drain.py                    | 155 ++-----------------\n tests/integration/test_drain_admissions.py         |   7 +-\n tests/integration/test_drain_containment.py        |   6 +-\n tests/integration/test_drain_detach.py             |   6 +-\n tests/integration/test_drain_reentry.py            |  22 +--\n tests/integration/test_drain_signals.py            |   6 +-\n tests/integration/test_drain_upgrade.py            |   6 +-\n tests/integration/test_harvest.py                  |  10 +-\n tests/integration/test_hot_paths_snapshot.py       |  10 +-\n tests/integration/test_inbox.py                    |  10 +-\n tests/integration/test_intake_keeps_draft.py       |  11 +-\n tests/integration/test_intake_scope.py             |  10 +-\n tests/integration/test_kill_cli_activation.py      |  11 +-\n tests/integration/test_ladder.py                   |  10 +-\n tests/integration/test_menu_verb_parity.py         |   6 +-\n tests/integration/test_merge.py                    |   8 +-\n tests/integration/test_open_tickets_closed.py      |   8 +-\n tests/integration/test_paved_roads.py              |   8 +-\n tests/integration/test_reject_queue.py             |   6 +-\n tests/integration/test_requisition_gate.py         |   8 +-\n .../test_requisition_identity_record.py            |  12 +-\n tests/integration/test_retro.py                    |   8 +-\n tests/integration/test_retro_box.py                |   8 +-\n tests/integration/test_review_command.py           |   8 +-\n tests/integration/test_roadmap_author.py           |   6 +-\n tests/integration/test_roadmap_driver.py           |   6 +-\n tests/integration/test_roadmap_row_author.py       |   6 +-\n tests/integration/test_roadmap_start_gates.py      |   8 +-\n tests/integration/test_scorecard.py                |   8 +-\n tests/integration/test_snapshot_cache_facts.py     |   8 +-\n tests/integration/test_snapshot_merged_cap.py      |   8 +-\n tests/integration/test_stages.py                   |   8 +-\n tests/integration/test_stale_running.py            |   6 +-\n tests/integration/test_stats.py                    |   6 +-\n tests/integration/test_status.py                   |   6 +-\n tests/integration/test_storm_hold.py               |   7 +-\n .../test_storm_notification_activation.py          |   7 +-\n tests/integration/test_storm_producer.py           |   6 +-\n .../integration/test_ticket_write_serialization.py |   8 +-\n tests/integration/test_triage.py                   |   8 +-\n tests/integration/test_watch.py                    |   8 +-\n tests/regress_drain_detach.py                      |   8 +-\n tests/regress_drain_park_findings.py               |   8 +-\n tests/regress_drain_signals.py                     |   8 +-\n tests/regress_stale_running.py                     |  10 +-\n tests/snapshot_scale_fixture.py                    |  10 +-\n tests/unit/test_drain_helpers.py                   | 147 ++++++++++++++++++\n 60 files changed, 561 insertions(+), 383 deletions(-)\n",
+  "stage_log_tail": "` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_paved_roads.py\", \"line\": 4, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_requisition_gate.py\", \"line\": 5, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_requisition_identity_record.py\", \"line\": 5, \"message\": \"The importer rewrites its meta `purpose` line and drops '64-hex' from it, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_retro.py\", \"line\": 5, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_retro_box.py\", \"line\": 5, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_review_command.py\", \"line\": 5, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_roadmap_start_gates.py\", \"line\": 4, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_scorecard.py\", \"line\": 7, \"message\": \"The importer changes `owner: engine` to `clutch/scorecard.py`, which is outside its import line.\", \"paved_road\": \"Restore `owner: engine`.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_snapshot_cache_facts.py\", \"line\": 6, \"message\": \"The importer changes `owner: engine` to `clutch/observe.py`, which is outside its import line.\", \"paved_road\": \"Restore `owner: engine`.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_snapshot_merged_cap.py\", \"line\": 4, \"message\": \"The importer rewrites its meta `purpose` line, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/integration/test_ticket_write_serialization.py\", \"line\": 4, \"message\": \"The importer rewrites its meta `purpose` line and drops the failed-edit lock-release clause, which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` line.\"},\n{\"code\": \"scope\", \"path\": \"tests/regress_drain_detach.py\", \"line\": 7, \"message\": \"The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.\", \"paved_road\": \"Restore `owner: engine`.\"},\n{\"code\": \"scope\", \"path\": \"tests/regress_drain_park_findings.py\", \"line\": 7, \"message\": \"The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.\", \"paved_road\": \"Restore `owner: engine`.\"},\n{\"code\": \"scope\", \"path\": \"tests/regress_drain_signals.py\", \"line\": 7, \"message\": \"The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.\", \"paved_road\": \"Restore `owner: engine`.\"},\n{\"code\": \"scope\", \"path\": \"tests/regress_stale_running.py\", \"line\": 5, \"message\": \"The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/runner.py` (line 7), which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` and `owner` lines.\"},\n{\"code\": \"scope\", \"path\": \"tests/snapshot_scale_fixture.py\", \"line\": 5, \"message\": \"The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/observe.py` (line 7), which is outside its import line.\", \"paved_road\": \"Restore the original `purpose` and `owner` lines.\"}\n]}\n```",
+  "events_tail": "clause, which is outside its import line.\\\", \\\"paved_road\\\": \\\"Restore the original `purpose` line.\\\"},\\n{\\\"code\\\": \\\"scope\\\", \\\"path\\\": \\\"tests/regress_drain_detach.py\\\", \\\"line\\\": 7, \\\"message\\\": \\\"The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.\\\", \\\"paved_road\\\": \\\"Restore `owner: engine`.\\\"},\\n{\\\"code\\\": \\\"scope\\\", \\\"path\\\": \\\"tests/regress_drain_park_findings.py\\\", \\\"line\\\": 7, \\\"message\\\": \\\"The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.\\\", \\\"paved_road\\\": \\\"Restore `owner: engine`.\\\"},\\n{\\\"code\\\": \\\"scope\\\", \\\"path\\\": \\\"tests/regress_drain_signals.py\\\", \\\"line\\\": 7, \\\"message\\\": \\\"The importer changes `owner: engine` to `clutch/__main__.py`, which is outside its import line.\\\", \\\"paved_road\\\": \\\"Restore `owner: engine`.\\\"},\\n{\\\"code\\\": \\\"scope\\\", \\\"path\\\": \\\"tests/regress_stale_running.py\\\", \\\"line\\\": 5, \\\"message\\\": \\\"The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/runner.py` (line 7), which is outside its import line.\\\", \\\"paved_road\\\": \\\"Restore the original `purpose` and `owner` lines.\\\"},\\n{\\\"code\\\": \\\"scope\\\", \\\"path\\\": \\\"tests/snapshot_scale_fixture.py\\\", \\\"line\\\": 5, \\\"message\\\": \\\"The importer rewrites `purpose` (line 5) and changes `owner: engine` to `clutch/observe.py` (line 7), which is outside its import line.\\\", \\\"paved_road\\\": \\\"Restore the original `purpose` and `owner` lines.\\\"}\\n]}\\n```\",\"ttft_ms\":22274,\"type\":\"result\",\"duration_ms\":54744,\"uuid\":\"19b65f7e-cc4b-4712-8fb3-12015321b4ba\",\"ttft_stream_ms\":1150,\"time_to_request_ms\":124,\"time_to_request_phases_ms\":{\"other\":3,\"system_prompt\":17,\"resume_other\":0,\"process_user_input\":2,\"input_attachments\":61,\"input_hooks\":1,\"conversation_append\":1,\"transcript_persist\":17,\"tool_pool_refresh\":1,\"init_message\":3,\"init_frame_send\":2,\"engine_pickup\":1,\"loop_entry\":2,\"message_prep\":1,\"model_config_wait\":0,\"autocompact\":1,\"request_announcements\":4,\"query_setup\":0,\"model_gates\":0,\"tool_schema_build\":3,\"message_normalization\":1,\"client_creation\":1,\"request_build\":2},\"turn_start_resume_kind\":\"none\",\"process_turn_index\":0,\"time_to_request_loop_lag_ms\":21,\"time_to_request_cpu_ms\":195,\"time_to_request_major_faults\":0,\"input_attachments_detail\":{\"slowest_producer\":\"at_mentioned_files\",\"slowest_producer_ms\":46,\"cpu_ms\":100,\"major_faults\":0,\"setup_ms\":0,\"prompt_producers_ms\":48,\"ambient_start_ms\":1,\"ambient_wait_ms\":9,\"render_ms\":0,\"producers\":44,\"token_counts\":0},\"tool_schema_build_detail\":{\"betas_ms\":0,\"waits_ms\":1,\"placement_ms\":0,\"render_ms\":2,\"after_ms\":0,\"other_ms\":0,\"tools\":3,\"new_schemas\":3},\"message_normalization_detail\":{\"before_ms\":0,\"normalize_ms\":1,\"images_ms\":0,\"post_process_ms\":0,\"after_ms\":0,\"other_ms\":0,\"messages\":8,\"wire_messages\":2},\"request_build_detail\":{\"records_ms\":0,\"system_ms\":0,\"headers_ms\":1,\"cache_break_record_ms\":0,\"plans_ms\":0,\"retry_setup_ms\":0,\"sent_build_ms\":1,\"record_attempt_ms\":0,\"other_ms\":0,\"sent_build_safety_context_ms\":0,\"sent_build_cache_breakpoints_ms\":0,\"sent_build_surrogate_scan_ms\":0},\"first_content_frame_ms\":1150,\"queued_turn_count\":0,\"result_index\":0,\"model_usage_since_last_result\":{\"claude-haiku-5-5\":{\"inputTokens\":60863,\"outputTokens\":20,\"cacheReadInputTokens\":0,\"cacheCreationInputTokens\":0,\"webSearchRequests\":0,\"costUSD\":0.0060963,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":0,\"canonicalModel\":\"claude-haiku-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"},\"claude-opus-5-5\":{\"inputTokens\":10,\"outputTokens\":7166,\"cacheReadInputTokens\":311989,\"cacheCreationInputTokens\":75153,\"webSearchRequests\":0,\"costUSD\":0.8069818000000001,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":3962,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":75153,\"canonicalModel\":\"claude-opus-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"credential_expires_at\":\"2026-12-09T14:55:32.575Z\"}\n",
+  "wall_seconds": 621.248602,
+  "usd": 1.8130781000000002,
+  "run_record": "tickets/io-helpers-drain/run.md",
+  "provider": "claude",
+  "model": "claude-opus-5-5",
+  "usd_estimated": false,
+  "budget_capable": true
+}
