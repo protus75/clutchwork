@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-Python’s TemporaryFile emits a preliminary directory-open audit event before its O_TMPFILE event, so the guard permits that preliminary event; test_testguard.py remains in DISK_IO_SKIP, and its updated message ends with “inject the process-exec seam (or a fake) instead”. The final sequential verification passed: 8 guard tests, 263 integration tests with 3,341 skipped, and 1,845 unit tests.
+On Python 3.14, tempfile.TemporaryFile() first emits open('/tmp', 'w+', 524866), which has write and creation flags but no O_TMPFILE; only its subsequent open event includes O_TMPFILE. The specified guard must block the first event, so the acceptance test fails before the anonymous file opens.
 
 ## Dead ends
 
-The unit guard intercepts subprocess execution before its audit event, so the guard test supplies an audited process seam.
+Implemented the stated audit policy and ran the targeted unit command; the temporary-file case failed at the preliminary open event.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; elapsed time was not measured.
+none
 
