@@ -10,7 +10,10 @@ kind: bug
 
 ## Runs before
 - training-export-ship-gate
+- regression-command-program-lint
+- shared-git-fake
 - shared-serve-rig-config
+- shared-review-script
 
 ## Context
 - tests/harness/host_loop.py::FixtureLoop
