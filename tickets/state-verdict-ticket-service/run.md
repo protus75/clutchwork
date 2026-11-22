@@ -4,11 +4,11 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The current checkout has already removed the admission-wide waits from Serve.scan, Serve.watch, and verdict settlement.
+The checkpoint requirement commits only ticket.md, while current intake commits new or changed evidence with the ticket; the ticket does not specify how that evidence remains available to dispatched work.
 
 ## Dead ends
 
-Inspected the existing dispatch and ticket publication paths; drain independently scans and selects ticket files, bypassing Serve’s fenced dispatch path.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 28 minutes expected, 56 minutes stuck; scope contradiction identified during inspection.
+none
 
