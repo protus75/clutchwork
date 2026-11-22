@@ -1,0 +1,181 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "fef52b8084732d68aedf86e81e59cb2a557f752f",
+  "stem": "evidence-never-prunes",
+  "passed": false,
+  "changed_files": [
+    "clutch/__main__.py",
+    "clutch/config.py",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-running.md",
+    "clutch/doctor.py",
+    "clutch/evidence/store.py",
+    "clutch/providers.py",
+    "docs/how-clutch-works.md",
+    "tests/unit/test_evidence_config.py",
+    "tests/unit/test_evidence_prune_verb.py",
+    "tests/unit/test_evidence_warn_threshold.py",
+    "tests/unit/test_main_evidence_group.py"
+  ],
+  "inserted_lines": 190,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_host_running.py::test_verb_table_matches_parser failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_main_view_group.py::test_dispatch_and_optional_locks failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.266845,
+        "passed": 2086,
+        "failed": 2,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4861002789984923,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.400741739984369,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1446900959708728,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[parse]": 1.0119241470238194
+        }
+      },
+      "coverage": {
+        "percent": 75.21466597973553,
+        "files": {
+          "clutch/__main__.py": 79.21615201900238,
+          "clutch/config.py": 77.14285714285714,
+          "clutch/doctor.py": 88.11881188118812,
+          "clutch/evidence/store.py": 97.85522788203754,
+          "clutch/providers.py": 87.08571428571429
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 10.356795,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8939147999917623,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.134082841948839,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.076846211013617,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0038913759635761
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_evidence_warn_threshold.py",
+        "tests/unit/test_evidence_prune_verb.py",
+        "tests/unit/test_evidence_config.py",
+        "tests/unit/test_main_evidence_group.py",
+        "tests/unit/test_main_help.py",
+        "tests/unit/test_help.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_evidence_warn_threshold.py tests/unit/test_evidence_prune_verb.py tests/unit/test_evidence_config.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.91s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.56515
+    }
+  ]
+}
