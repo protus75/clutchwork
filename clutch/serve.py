@@ -30,7 +30,7 @@ from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.status import CLOSED, last_states
 from clutch.storm import StormLedger
 from clutch.supervise_idle import supervise_idle
-from clutch.tickets import Ticket, TicketInvalid, _pending, _porcelain, intake, parse_ticket, ticket_path
+from clutch.tickets import IntakeRefused, Ticket, TicketInvalid, _pending, _porcelain, intake, parse_ticket, ticket_path
 
 SERVE_POLL_S = 0.1
 
@@ -107,6 +107,7 @@ class Serve:
         self.queue = None
         self.scan_snapshot = None
         self.scanned = {}
+        self.intake_refusal = None
         self.report_arrivals = set()
         self.report_retry = None
         self.stopping = False
@@ -313,7 +314,15 @@ class Serve:
         if self.stopping:
             return {}
         c = self.checkout
-        await intake(c.repo, c.git, c.journal, c.fs, stems=None)
+        try:
+            await intake(c.repo, c.git, c.journal, c.fs, stems=None)
+        except IntakeRefused as exc:
+            # A stray staged file belongs to a person; refusing intake must not stop serve or its runs.
+            if str(exc) != self.intake_refusal:
+                self.intake_refusal = str(exc)
+                self.log.event("intake_refused", error=str(exc))
+            return self.scanned
+        self.intake_refusal = None
         async with c.git.main_write():
             self.scanned = {stem: self.read(stem) for stem in self.stems()}
             # Intake's own stamps and commits must not manufacture another work poll.
