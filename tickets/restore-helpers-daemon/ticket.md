@@ -7,6 +7,7 @@ kind: chore
 
 ## Depends on
 - restore-helpers-stages
+- shared-git-fake-integration
 
 ## Context
 - tests/fakes.py
@@ -46,18 +47,19 @@ Scope in:
   - From `test_daemon_composition.py`: `CoreRig` (68-line rig that writes config and files and runs the daemon core with fakes; its writes stay under a passed `tmp_path`), `LiveDrain` (113 lines; today it builds `SubprocessExec` and `LocalFileSystem` and a real drain: it becomes `FakeExec` and `FakeFileSystem` based), `assert_core_wiring`, `assert_startup_pause_wiring`, `capture_pipeline_queue`, `production_writer` (today it uses real git), `sources`, `without_core_import`.
   - From `test_mergequeue.py`: the `ctx` fixture (builds a repo, `Git(SubprocessExec())`, `LocalFileSystem`; becomes `GitFake` + `FakeExec` + `FakeFileSystem`/`tmp_path`), `commit`, `approve`, `ready`, `conflict` (each runs git; become calls on `ctx.git`'s `GitFake`), `admission`, `admission_control`, `facts`, `host`, `scripted`, `import_closure`.
   - From `test_daemon_admission.py`: `tickets` (fixture writing two tickets under `tmp_path`), `turn` (the same as `tests.fakes.turn`: the module re-exports the shared function and does not define a second one), `assert_idle`, `assert_reachable`.
+  - `sources()` reads every `clutch/**/*.py` through a `Path(__file__)` anchor (now `parents[1]` of `tests/daemon_helpers.py`); it stays a read-only repo read. `import_closure(sources)` and `without_core_import(material)` are pure functions of a dict of module sources.
   - The module imports `CONFIG`, `ENV`, `SECRET`, `SPECS`, `STEM`, `TICKET`, `adopt_conduct` from `tests.stages_helpers` and `CONFIG`/`ENV` pieces from `tests.cli_helpers`; `ctx` no longer imports `commit_lock`.
-- In every importer listed in `## Scope fence`, change only the import line (and an in-function import line) from `tests.integration.<hub>` to `tests.daemon_helpers` for the moved names; a line that imports a name this ticket does not move is kept and any name it still imports from another hub stays. A `tests.integration` module import (`from tests.integration import <hub>`) is not an importer of a name and stays.
-- Each hub file (`tests/integration/test_daemon_composition.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_daemon_admission.py`) deletes its definition of every moved name and imports the name back from `tests.daemon_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
+- In every importer listed in `## Scope fence`, change only the import line (also an import line inside a function) so each moved name comes from `tests.daemon_helpers`. Every name any file imports from these hubs is moved, except where Scope in says otherwise, so no importer keeps an import from a hub. Names an importer takes from other hubs stay as they are. A module import (`from tests.integration import <hub>`) is not an import of a name and stays.
+- Each hub file (`tests/integration/test_daemon_composition.py`, `tests/integration/test_mergequeue.py`, `tests/integration/test_daemon_admission.py`) deletes its definition of every moved name it defines and imports the name back from `tests.daemon_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
 - Earlier helper modules (`tests/cli_helpers.py`, `tests/drain_helpers.py`, `tests/stages_helpers.py`) change only where one of them imports a name this ticket moves.
-- Create `tests/unit/test_daemon_helpers.py`: one test per moved name that calls it with `tmp_path` and the shared fakes and asserts what it returns or writes, plus one test that every name above is importable from `tests.daemon_helpers` and that the module source names no `subprocess` or `SubprocessExec` import.
+- Create `tests/unit/test_daemon_helpers.py`: one test per moved name that runs without reading a repo file, calling it with `tmp_path`, in-memory inputs and the shared fakes and asserting what it returns or writes, plus one test that every name above is importable from `tests.daemon_helpers`. `sources()` reads the repo, so its test, and the one that feeds its output to `import_closure` and `without_core_import`, is the new `tests/integration/test_daemon_helpers_sources.py` (it reads repo files only through a `Path(__file__)` anchor and writes nothing); the unit test gives `import_closure` and `without_core_import` a hand-built dict of module sources instead.
 - `test_mergequeue.import_closure` and `test_scheduler.import_closure` are different functions with the same name; this ticket moves the mergequeue one as `import_closure`, and `restore-helpers-loop` moves the scheduler one under its own distinct name (`scheduler_import_closure`, aliased back at the two importers).
 - `tests/integration/test_daemon_composition.py` imports from `tests/integration/test_providers.py`, `tests/integration/test_scheduler.py`, `tests/integration/serve_rig.py` and others that later steps move; those lines stay untouched here.
 
 Scope out:
 - Restoring any skipped test file (the `restore-io-tests-NN` tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
-- Defining a `Fake*` or stand-in class in `tests/daemon_helpers.py`: use the shared fakes. Names that no other file imports stay in their hub (for example the many tests in `test_daemon_composition.py` that use `CoreRig`).
+- Defining in `tests/daemon_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`: use the shared fakes. A thin subclass is not needed by any moved name. Names that no other file imports stay in their hub (for example the many tests in `test_daemon_composition.py` that use `CoreRig`).
 - Skipped importers may still break semantically; their batch ticket fixes that.
 
 ## Scope fence
@@ -107,10 +109,11 @@ Scope out:
 - tests/cli_helpers.py
 - tests/drain_helpers.py
 - tests/stages_helpers.py
+- tests/integration/test_daemon_helpers_sources.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_daemon_helpers.py` passes, and `tests/unit/test_daemon_helpers.py` checks that a `CoreRig` built over `tmp_path` writes its files only under `tmp_path`, that the `ctx` fixture's `StageContext.git` is the `GitFake` (its `fake.calls` records `init`, `add` and `commit`) with no `.git` directory, and that `daemon_helpers.turn is fakes.turn`.
-2. `grep -rnE "from tests\.integration\.(test_daemon_composition|test_mergequeue|test_daemon_admission) import" tests --include=*.py` prints nothing: every importer takes the moved names from `tests.daemon_helpers`, and a leftover line names the importer that was missed.
+1. `./dev.py test tests/unit/test_daemon_helpers.py` passes, and `tests/unit/test_daemon_helpers.py` and `tests/integration/test_daemon_helpers_sources.py` pass; the unit test checks that a `CoreRig` built over `tmp_path` writes its files only under `tmp_path`, that the `ctx` fixture's `StageContext.git` is the `GitFake` (its `fake.calls` records `init`, `add` and `commit`) with no `.git` directory, and that `daemon_helpers.turn is fakes.turn`.
+2. `grep -rnE "from tests\.integration\.(test_daemon_composition|test_mergequeue|test_daemon_admission) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
 3. `grep -nE "^(async def|def|class) (CoreRig|LiveDrain|assert_core_wiring|assert_startup_pause_wiring|capture_pipeline_queue|production_writer|sources|without_core_import|admission|admission_control|approve|commit|conflict|ctx|facts|host|import_closure|ready|scripted|assert_idle|assert_reachable|tickets|turn)\b|^(CoreRig|LiveDrain|assert_core_wiring|assert_startup_pause_wiring|capture_pipeline_queue|production_writer|sources|without_core_import|admission|admission_control|approve|commit|conflict|ctx|facts|host|import_closure|ready|scripted|assert_idle|assert_reachable|tickets|turn) =" tests/integration/test_daemon_composition.py tests/integration/test_mergequeue.py tests/integration/test_daemon_admission.py` prints nothing: the hub files no longer define a moved name.
 4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/daemon_helpers.py` prints nothing.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
@@ -125,7 +128,7 @@ Scope out:
 
 ## Definition of rejected
 - A test that runs today fails or is skipped, or a skipped test becomes unskipped.
-- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/daemon_helpers.py` defines a new `Fake*` or copied reply or config helper.
+- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/daemon_helpers.py` defines a class that duplicates a shared fake or a copied reply or config helper.
 - A shared module (`tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py`, `tests/conftest.py`) is edited.
 - An importer changes anything other than its import line, or a hub test is deleted, weakened or restored.
 
