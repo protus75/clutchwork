@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only CLI view verbs.
+# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only view verbs.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
 # owner: clutch/observe.py
-# verified: 7ad3c1c2
-# hash: e72437c7f768434e7864e0c032a2369942ea48413e7f1e522706dec150bd4f76
+# verified: 56216342
+# hash: fd4bc48042f7916846f4171e6dcbbc853fbe59a3351f791edec33cfdbb35cb4b
 import json
 import os
 import subprocess
@@ -311,7 +311,7 @@ def test_snapshot_display_fields(tmp_path, monkeypatch):
     monkeypatch.setattr(watch, "lock_holder", lambda state, *args: None)
     monkeypatch.setattr(watch, "uncommitted_tickets", lambda ctx: (set(), set()))
     monkeypatch.setattr(watch, "committed_ticket_shas", lambda ctx: {})
-    monkeypatch.setattr(watch, "commits", lambda ctx: {"abc": {"date": "2026-01-03T02:00:00+00:00", "subject": "change", "short": "abc", "author": "Ada"}})
+    monkeypatch.setattr(watch, "commits", lambda ctx: {"abc": {"date": "2026-01-03T02:00:00+00:00", "subject": "change", "message": "change", "short": "abc", "author": "Ada"}})
     (tmp_path / "engine.log").write_text(json.dumps({"event": "stage_start", "stem": "live", "surface": "implement", "ts": ts}) + "\n")
     snap = watch.snapshot(ctx)
     rows = {r["stem"]: r for r in snap["rows"]}

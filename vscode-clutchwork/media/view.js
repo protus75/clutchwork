@@ -56,7 +56,7 @@ function render(snap) {
 	const rows = snap.rows.map(r => {
 		const row = el('div', `row ${r.section}`);
 		row.dataset.stem = r.stem;
-		row.title = snap.help[r.help.status].text;
+		row.title = r.tooltip;
 		// Context keys for the right-click menu's `when` clauses in package.json; the command receives this object.
 		row.dataset.vscodeContext = JSON.stringify({ ...r.menu, clutchStem: r.stem, clutchSessionId: r.sessionId, preventDefaultContextMenuItems: true });
 		row.append(renderGraph(r.graph, COLOR[r.section], COLOR));

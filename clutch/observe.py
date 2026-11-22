@@ -563,11 +563,15 @@ def committed_ticket_shas(ctx) -> dict[str, str]:
 
 
 def commits(ctx) -> dict[str, dict]:
-    out = git_output(ctx, "log", "--format=%H%x1f%h%x1f%an%x1f%aI%x1f%s", "main")
+    out = git_output(ctx, "log", "--format=%H%x1f%h%x1f%an%x1f%aI%x1f%s%x1f%b%x1e", "main")
     rows = {}
-    for line in out.splitlines():
-        sha, short, author, date, subject = line.split("\x1f", 4)
-        rows[sha] = {"sha": sha, "short": short, "author": author, "date": date, "subject": subject}
+    for record in out.split("\x1e"):
+        record = record.lstrip("\n")
+        if not record:
+            continue
+        sha, short, author, date, subject, body = record.split("\x1f", 5)
+        message = (subject + ("\n\n" + body if body else "")).rstrip()
+        rows[sha] = {"sha": sha, "short": short, "author": author, "date": date, "subject": subject, "message": message}
     return rows
 
 
@@ -832,6 +836,8 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     shared_fences = _shared_fences(tickets[r["stem"]] for r in rows if r["section"] != "merged" and r["stem"] in tickets)
 
     for r in rows:
+        status_help = help[r["help"]["status"]]["text"]
+        r["tooltip"] = r["commit"]["message"] + "\n\n" + status_help if r["section"] == "merged" and r["commit"] else status_help
         inputs = menu_inputs[r["stem"]]
         for values in inputs.values():
             values["session"] = "sessionId" in r

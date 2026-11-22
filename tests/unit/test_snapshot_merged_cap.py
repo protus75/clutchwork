@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test snapshot merged cap
+# purpose: Tests that the snapshot merged_limit caps merged rows, merged counts and menu inputs to the newest merges while leaving open-row fields unchanged except dependencies.
 # relates: [clutch/box.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
-# owner: engine
-# verified: 9a610809
-# hash: 309c14df7f631ffc67f7e02ec8f2255cf35f0ac01665caaa7ddd4f3905c720ab
+# owner: clutch/observe.py
+# verified: 56216342
+# hash: c093f9d46c52127477bc367ee7c645449609930b73f0666769040dadb7d4dab1
 from pathlib import Path
 from types import SimpleNamespace as NS
 from unittest.mock import Mock
@@ -26,7 +26,7 @@ def test_cap_limits_rows_and_menu_inputs(monkeypatch):
     monkeypatch.setattr(observe, "load_tickets", lambda *a: (tickets, {}))
     monkeypatch.setattr(observe, "uncommitted_tickets", lambda *a: (set(), set()))
     monkeypatch.setattr(observe, "committed_ticket_shas", lambda *a: {s: "blob" for s in tickets})
-    monkeypatch.setattr(observe, "commits", lambda *a: {f"sha-{i}": {"subject": str(i), "short": str(i), "author": "a", "date": "2026-08-01T12:00:00+00:00"} for i in range(5)})
+    monkeypatch.setattr(observe, "commits", lambda *a: {f"sha-{i}": {"subject": str(i), "message": str(i), "short": str(i), "author": "a", "date": "2026-08-01T12:00:00+00:00"} for i in range(5)})
     monkeypatch.setattr(observe, "held", lambda *a: set())
     monkeypatch.setattr(observe, "operator_holds", lambda *a: set())
     monkeypatch.setattr(observe, "running_stems", lambda *a: [])
