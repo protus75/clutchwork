@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "03d2e50d9382e38ac71936cdc07db2b732f7b5d9",
+  "produced_at_sha": "4430f8d00e8ac4f40f40fc9b0d79ae53143e385a",
   "stem": "shared-git-fake-unit-5",
   "passed": false,
   "changed_files": [
@@ -110,14 +110,13 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.56883,
+        "seconds": 17.824284,
         "passed": 1893,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3919757880212273,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.2718464220233727,
-          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0900932609802112
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3460069429711439,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3419527619844303
         }
       },
       "coverage": {
@@ -131,14 +130,14 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 10.045232,
+        "seconds": 9.7123,
         "passed": 283,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8095522900111973,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1319916009961162,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.012681929016253
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.613652647996787,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0619804250018205,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0051738820038736
         }
       }
     },
@@ -164,9 +163,9 @@
         "tests/integration/test_git_fake_adoption.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 0.99s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 3.999719
+      "seconds": 3.503906
     },
     {
       "argv": [
@@ -187,9 +186,9 @@
         "tests/unit/test_ticket_write_consumers_runner.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 63%]\n..........................................                               [100%]\n114 passed in 1.88s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 63%]\n..........................................                               [100%]\n114 passed in 2.04s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 12.432399
+      "seconds": 3.512922
     }
   ]
 }
