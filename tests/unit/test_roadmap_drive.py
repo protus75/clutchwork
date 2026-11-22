@@ -37,7 +37,7 @@ def setup(tmp_path, monkeypatch):
     for stem, body in [("a", {"to": "merged"}), ("b", {"to": "gate_failed", "routed": "reject_queue", "reason": "premise"}), ("c", {"to": "merged"})]:
         journal.append(EventType.STATE_TRANSITION, body, ticket=stem)
     journal.append(EventType.EFFECT_COMPLETION, {"cost": {"usd": 1.5}})
-    checkout = SimpleNamespace(repo=tmp_path, journal=journal, config=SimpleNamespace(notify=["say"]))
+    checkout = SimpleNamespace(repo=tmp_path, journal=journal, config=SimpleNamespace(notify=["say"], roadmap=SimpleNamespace(ahead=2)))
     calls = []
 
     async def author(*args):
@@ -129,4 +129,4 @@ async def test_build_driver_composes(tmp_path, monkeypatch):
     assert await cli.build_driver()(c, log) == ["done"]
     preflight.assert_awaited_once_with(c, c.control.providers)
     triage_pass.assert_awaited_once_with(c, llm, frozenset({"box-1"}))
-    assert cli._parser().parse_args(["roadmap", "author"]).ahead == roadmap.AHEAD == 2
+    assert cli._parser().parse_args(["roadmap", "author"]).ahead is None

@@ -18,11 +18,10 @@ from clutch.providers import child_env
 from clutch.runner import SPECS_DIR, Refusal
 from clutch.seams import ExecutableNotFound, NotificationFailed
 from clutch.specs import load_spec
-from clutch.status import SETTLED, last_states, project, reject_queue
+from clutch.status import CLOSED, SETTLED, last_states, project, reject_queue
 from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings, ticket_path
 
 ROADMAP = "docs/roadmap.md"
-AHEAD = 2
 COLUMNS = ("#", "Stem", "Owner", "Kind", "P", "Depends on", "Runs before", "Content")
 TOKEN = re.compile(r"`([^`]+)`")
 
@@ -771,11 +770,29 @@ def settles(events) -> int:
     return sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in events)
 
 
+def unsettled(checkout) -> list[str]:
+    """Confirmed tickets that have neither merged nor been retired."""
+    root = checkout.repo / "tickets"
+    if not root.is_dir():
+        return []
+    states = last_states(checkout.journal.read())
+    return sorted(path.parent.name for path in root.glob("*/ticket.md") if ticket_state(path.read_text()) == "confirmed" and states.get(path.parent.name) not in CLOSED)
+
+
+async def ship_when_queue_low(checkout) -> list[str]:
+    # The gate can only pass once the queue is done, and it holds up dispatch while it runs (driver plan section 6).
+    waiting = unsettled(checkout)
+    ahead = checkout.config.roadmap.ahead
+    if len(waiting) >= ahead:
+        return [f"gate: waits until fewer than {ahead} confirmed tickets are unsettled ({len(waiting)} now)"]
+    return await ship(checkout)
+
+
 async def drive(checkout, *, author_messages, notifications, log) -> list[str]:
     if not (checkout.repo / ROADMAP).is_file():
         return []
     lines = []
-    for action in (lambda: author_ahead(checkout, AHEAD, author_messages), lambda: ship(checkout)):
+    for action in (lambda: author_ahead(checkout, checkout.config.roadmap.ahead, author_messages), lambda: ship_when_queue_low(checkout)):
         try:
             lines.extend(await action())
         except Refusal as exc:

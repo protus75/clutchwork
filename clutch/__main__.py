@@ -677,8 +677,6 @@ def _parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     roadmap_sub = roadmap.add_subparsers(dest="roadmap_verb", required=True)
-    from clutch.roadmap import AHEAD
-
     author = _command(
         roadmap_sub,
         "author",
@@ -690,7 +688,7 @@ def _parser() -> argparse.ArgumentParser:
         exits="0 on success; 2 on refusal.",
         examples=["clutch roadmap author --ahead 2"],
     )
-    author.add_argument("--ahead", type=int, default=AHEAD)
+    author.add_argument("--ahead", type=int, default=None, help="open rows to keep authored ahead (default: config roadmap.ahead)")
     _command(
         roadmap_sub,
         "status",
@@ -1670,7 +1668,8 @@ def main(
             )
             print("\n".join(lines))
             return 0 if ok else 1
-        if args.ahead < 1:
+        ahead = config.roadmap.ahead if args.ahead is None else args.ahead
+        if ahead < 1:
             raise runner.Refusal("--ahead must be at least 1", "choose a positive window")
 
         async def roadmap_pass():
@@ -1683,7 +1682,7 @@ def main(
                         llm = await _preflighted_llm(checkout, session)
                         await triage.triage_pass(checkout, llm, frozenset(ids))
 
-                    return await roadmap.author_ahead(checkout, args.ahead, author_messages)
+                    return await roadmap.author_ahead(checkout, ahead, author_messages)
                 finally:
                     await session.close()
 

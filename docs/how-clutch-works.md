@@ -871,6 +871,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `schema_version`, `state_dir`, `worktree_root` | config version; where state and worktrees live |
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `snapshot_merged_limit` | Merged rows included by `view snapshot` (default 100), unless `--all-merged` is passed. |
+| `roadmap.ahead` | Roadmap tickets the driver keeps authored ahead (default 2), the default for `roadmap author --ahead`, and the queue size below which the driver runs the release gate: with that many or more confirmed tickets unsettled, the gate waits. |
 | `evidence.max_gb` | Evidence blob retention bound in GB; defaults to 20. |
 | `meta.paths` | Roots and kinds for file metadata; defaults to an empty list. |
 | `training_data` | Experimental training switch (off by default) and additional exclusion globs. |

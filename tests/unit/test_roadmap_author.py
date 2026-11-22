@@ -174,7 +174,7 @@ def test_unsettled_and_waiting_rows_are_reported(setup):
 
 def test_main_roadmap_author(monkeypatch, capsys, tmp_path):
     events = []
-    monkeypatch.setattr(cli, "load_config", lambda *a, **k: SimpleNamespace(state_dir=tmp_path))
+    monkeypatch.setattr(cli, "load_config", lambda *a, **k: SimpleNamespace(state_dir=tmp_path, roadmap=SimpleNamespace(ahead=2)))
     monkeypatch.setattr(cli, "child_env", lambda *a: {})
 
     class Lock:
@@ -232,4 +232,4 @@ def test_main_roadmap_author(monkeypatch, capsys, tmp_path):
     assert not events and capsys.readouterr().err.startswith("clutch roadmap:")
     with pytest.raises(SystemExit):
         cli._parser().parse_args(["roadmap"])
-    assert cli._parser().parse_args(["roadmap", "author"]).ahead == 2
+    assert cli._parser().parse_args(["roadmap", "author"]).ahead is None

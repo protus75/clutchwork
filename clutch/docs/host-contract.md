@@ -161,6 +161,7 @@ Config:
     snapshot_merged_limit: 100
     routing_default_tier: medium
     release: {publish: false, pypi_token: UV_PUBLISH_TOKEN, packages: []}
+    roadmap: {ahead: 2}
     evidence: {max_gb: 20}
     training_data: {enabled: false, exclude: []}
     meta: {paths: []}

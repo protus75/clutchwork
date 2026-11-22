@@ -268,6 +268,10 @@ class Release(StrictModel):
     packages: list[Package] = []
 
 
+class Roadmap(StrictModel):
+    ahead: Count = 2  # open roadmap tickets authored ahead; also the queue size below which the release gate runs
+
+
 class Evidence(StrictModel):
     max_gb: Count = 20
 
@@ -321,6 +325,7 @@ class Config(StrictModel):
     review: Review
     merge: Merge
     release: Release = Release()
+    roadmap: Roadmap = Roadmap()
     evidence: Evidence = Evidence()
     training_data: TrainingData = TrainingData()
     meta: Meta = Meta()
