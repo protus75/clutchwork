@@ -22,7 +22,7 @@ import yaml
 
 from clutch.artifacts import Cost, Finding, Harvest, StageResult, refused
 from clutch.caps import capability, consume, lineage, next_rung, spent, spent_reason, supervise_draws
-from clutch.config import Config, ConfigSnapshot, snapshot_config
+from clutch.config import Config, ConfigSnapshot, snapshot_config, training_exclude
 from clutch.driver import Driver
 from clutch.effects import Effects
 from clutch.enginelog import engine_log
@@ -612,7 +612,7 @@ async def harvest(
             keys = store.call_keys(f"llm/{stem}/{attempt}/")
             starts = [store.read_record(key, "start") for key in keys]
             starts = [start for start in starts if start is not SKIP]
-            diff = _filtered_diff(await ctx.git.diff(ctx.repo, "main", stem), ctx.config.training_data.effective_exclude())
+            diff = _filtered_diff(await ctx.git.diff(ctx.repo, "main", stem), training_exclude(ctx.config.training_data))
             outputs = {name.removeprefix("check/"): store.put_blob(data) for name, data in captures.items() if name.startswith("check/")}
             store.write_attempt(
                 {

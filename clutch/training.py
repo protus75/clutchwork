@@ -10,6 +10,7 @@ from pathlib import PurePosixPath
 import duckdb
 from pydantic import TypeAdapter, ValidationError
 
+from clutch.config import training_exclude
 from clutch.driver import unwrap_fence
 from clutch.evidence import claude, codex, gemini
 from clutch.evidence.store import SKIP
@@ -82,7 +83,7 @@ def _safe(record, diffs, redactor, config):
             if len(parts) != 4 or parts[:2] != ["diff", "--git"] or not parts[2].startswith("a/") or not parts[3].startswith("b/"):
                 return False
             for path in (parts[2][2:], parts[3][2:]):
-                if not path or any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for glob in config.effective_exclude()):
+                if not path or any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for glob in training_exclude(config)):
                     return False
     return True
 
@@ -106,7 +107,7 @@ def _trajectory(store, key, start, config):
         paths = event.args or {}
         values = [paths.get(k) for k in ("file_path", "path", "paths", "notebook_path")]
         paths = [path for value in values for path in (value if isinstance(value, list) else [value]) if isinstance(path, str)]
-        if any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for path in paths for glob in config.effective_exclude()):
+        if any(fnmatch.fnmatchcase(path, glob) or fnmatch.fnmatchcase(PurePosixPath(path).name, glob) for path in paths for glob in training_exclude(config)):
             continue
         result.append({"seq": event.seq, "tool": event.tool.class_, "native": event.tool.native, "args": event.args})
     return result

@@ -293,15 +293,17 @@ class TrainingData(StrictModel):
     enabled: bool = False
     exclude: list[Annotated[str, Field(min_length=1)]] = []
 
-    def effective_exclude(self) -> list[str]:
-        return list(dict.fromkeys((*_TRAINING_EXCLUDE, *self.exclude)))
-
     def require_enabled(self) -> None:
         if not self.enabled:
             raise ValueError("set training_data.enabled: true; only attempts after that carry a diff")
 
 
 _TRAINING_EXCLUDE = (".env*", "*.pem", "*.key", "id_*")
+
+
+def training_exclude(training_data) -> list[str]:
+    """Fixed globs plus the host's; a plain function because serve hands stages a field-only ConfigSnapshot."""
+    return list(dict.fromkeys((*_TRAINING_EXCLUDE, *training_data.exclude)))
 
 
 class Graphics(StrictModel):
