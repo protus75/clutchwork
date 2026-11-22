@@ -1,0 +1,63 @@
+{
+  "attempt": 2,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/conftest.py",
+      "line": 49,
+      "message": "The disk-I/O skip list skips both prescribed drain containment tests and the serve-kill tests, so the verification command cannot check their behavior.",
+      "paved_road": "Schedule the in-memory conversions first, then remove the converted files from the skip list and update the ticket's verification contract.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/serve_rig.py",
+      "line": 39,
+      "message": "The prescribed serve graph helper constructs a disposable real repository, while the integration guard forbids filesystem writes and git processes in the new test.",
+      "paved_road": "Provide an in-memory serve rig before this ticket, or revise the ticket to permit a suitable in-memory test fixture.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_serve_kill.py",
+      "line": 1,
+      "message": "The required consumer-failure tests are skipped because they use the disk-backed rig, so their pinned outcomes are not checked by the specified command.",
+      "paved_road": "Convert these tests to in-memory seams in a prerequisite ticket and enable them in the integration suite.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_drain_containment.py",
+      "line": 1,
+      "message": "The required unchanged drain integration tests are skipped because they use real repository I/O, so the specified command cannot establish unchanged containment.",
+      "paved_road": "Convert and enable the drain integration tests before this ticket, then update the unchanged-test requirement.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_drain_containment.py",
+      "line": 1,
+      "message": "The integration skip rule matches this unit test by filename too, so the prescribed verification skips the unchanged unit tests.",
+      "paved_road": "Scope the skip rule to integration paths before this ticket so the existing unit tests execute.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required containment checks cannot run as specified because the existing integration tests are skipped and the prescribed serve rig performs I/O blocked for new integration tests.\",\"surprises\":\"The verification command reported 2 passed, 27 skipped, and 3 setup errors; no changes were committed.\",\"second_problems\":[],\"dead_ends\":\"The new serve test using the existing rig failed during fixture setup because the integration I/O guard blocked its filesystem writes.\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/conftest.py\",\"line\":49,\"message\":\"The disk-I/O skip list skips both prescribed drain containment tests and the serve-kill tests, so the verification command cannot check their behavior.\",\"paved_road\":\"Schedule the in-memory conversions first, then remove the converted files from the skip list and update the ticket's verification contract.\"},{\"code\":\"premise\",\"path\":\"tests/integration/serve_rig.py\",\"line\":39,\"message\":\"The prescribed serve graph helper constructs a disposable real repository, while the integration guard forbids filesystem writes and git processes in the new test.\",\"paved_road\":\"Provide an in-memory serve rig before this ticket, or revise the ticket to permit a suitable in-memory test fixture.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_serve_kill.py\",\"line\":1,\"message\":\"The required consumer-failure tests are skipped because they use the disk-backed rig, so their pinned outcomes are not checked by the specified command.\",\"paved_road\":\"Convert these tests to in-memory seams in a prerequisite ticket and enable them in the integration suite.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_drain_containment.py\",\"line\":1,\"message\":\"The required unchanged drain integration tests are skipped because they use real repository I/O, so the specified command cannot establish unchanged containment.\",\"paved_road\":\"Convert and enable the drain integration tests before this ticket, then update the unchanged-test requirement.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_drain_containment.py\",\"line\":1,\"message\":\"The integration skip rule matches this unit test by filename too, so the prescribed verification skips the unchanged unit tests.\",\"paved_road\":\"Scope the skip rule to integration paths before this ticket so the existing unit tests execute.\"}]}",
+  "events_tail": "n REAL_IO_TESTS in tests/integration/conftest.py\\\"\\n        )\\nE       clutch.ioguard.IntegrationIOBlocked: open is blocked in integration tests; use the in-memory fakes in tests/fakes.py (FakeFileSystem, FakeExec, FakeJournal) and the shared git fake; only a test of a real I/O function belongs in REAL_IO_TESTS in tests/integration/conftest.py\\n\\n/home/djp/source/clutch/.clutch/state/worktrees/serve-contains-dispatch-exception/clutch/ioguard.py:58: IntegrationIOBlocked\\n=========================== short test summary info ============================\\nERROR tests/integration/test_serve_dispatch_containment.py::test_dispatch_does_not_contain_shutdown_or_cancellation[stopping]\\nERROR tests/integration/test_serve_dispatch_containment.py::test_dispatch_raises_while_another_ticket_is_in_flight\\nERROR tests/integration/test_serve_dispatch_containment.py::test_dispatch_does_not_contain_shutdown_or_cancellation[cancel]\\n2 passed, 27 skipped, 3 errors in 1.28s\\ndev: `uv run pytest -q tests/unit/test_dispatch_exception_terminal.py tests/integration/test_serve_dispatch_containment.py tests/integration/test_serve_kill.py tests/unit/test_drain_containment.py tests/integration/test_drain_containment.py` failed\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_12\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required containment checks cannot run as specified because the existing integration tests are skipped and the prescribed serve rig performs I/O blocked for new integration tests.\\\",\\\"surprises\\\":\\\"The verification command reported 2 passed, 27 skipped, and 3 setup errors; no changes were committed.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"The new serve test using the existing rig failed during fixture setup because the integration I/O guard blocked its filesystem writes.\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/conftest.py\\\",\\\"line\\\":49,\\\"message\\\":\\\"The disk-I/O skip list skips both prescribed drain containment tests and the serve-kill tests, so the verification command cannot check their behavior.\\\",\\\"paved_road\\\":\\\"Schedule the in-memory conversions first, then remove the converted files from the skip list and update the ticket's verification contract.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/serve_rig.py\\\",\\\"line\\\":39,\\\"message\\\":\\\"The prescribed serve graph helper constructs a disposable real repository, while the integration guard forbids filesystem writes and git processes in the new test.\\\",\\\"paved_road\\\":\\\"Provide an in-memory serve rig before this ticket, or revise the ticket to permit a suitable in-memory test fixture.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_serve_kill.py\\\",\\\"line\\\":1,\\\"message\\\":\\\"The required consumer-failure tests are skipped because they use the disk-backed rig, so their pinned outcomes are not checked by the specified command.\\\",\\\"paved_road\\\":\\\"Convert these tests to in-memory seams in a prerequisite ticket and enable them in the integration suite.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_drain_containment.py\\\",\\\"line\\\":1,\\\"message\\\":\\\"The required unchanged drain integration tests are skipped because they use real repository I/O, so the specified command cannot establish unchanged containment.\\\",\\\"paved_road\\\":\\\"Convert and enable the drain integration tests before this ticket, then update the unchanged-test requirement.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_drain_containment.py\\\",\\\"line\\\":1,\\\"message\\\":\\\"The integration skip rule matches this unit test by filename too, so the prescribed verification skips the unchanged unit tests.\\\",\\\"paved_road\\\":\\\"Scope the skip rule to integration paths before this ticket so the existing unit tests execute.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":632381,\"cached_input_tokens\":582272,\"cache_write_input_tokens\":0,\"output_tokens\":4143,\"reasoning_output_tokens\":750}}\n",
+  "wall_seconds": 135.98107,
+  "usd": 1.0,
+  "run_record": "tickets/serve-contains-dispatch-exception/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
