@@ -114,7 +114,7 @@ The repo's one dev command; standard library only, every task through `uv`.
 `./dev.py test` runs the suite in parallel on the available cores by default.
 Each test has a 120-second hard limit.
 Tests live in `tests/unit/` (disk only under `tmp_path`, no network or process; run under `clutch.testguard`) and
-`tests/integration/`. Run one suite with `./dev.py test tests/unit` or
+`tests/integration/`. Integration test files listed in `DISK_IO_SKIP` in `tests/integration/conftest.py` are skipped until rewritten onto in-memory fakes. Run one suite with `./dev.py test tests/unit` or
 `./dev.py test tests/integration`.
 A unit test file may share its name with an integration test file.
 
