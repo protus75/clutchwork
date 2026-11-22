@@ -472,6 +472,7 @@ class CliAdapter:
         failure = None
         returned = False
         start_written = False
+        native_id_saved = False
         times = []
         rusage = None
 
@@ -484,6 +485,17 @@ class CliAdapter:
             self._spawned(pgid)
 
         def stdout_line(line: str) -> None:
+            nonlocal native_id_saved
+            if capture is not None and start_written and not native_id_saved:
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    event = None
+                if isinstance(event, dict):
+                    ids = {name: event.get(name) if isinstance(event.get(name), str) else None for name in ("session_id", "thread_id")}
+                    if any(value is not None for value in ids.values()):
+                        store.write_record(key, "start", {**start_data, "native_ids": ids}, replace=True)
+                        native_id_saved = True
             if capture is not None:
                 times.append(int((capture.clock() - started).total_seconds() * 10**9))
             if consumer is not None:
@@ -504,50 +516,47 @@ class CliAdapter:
                 main_sha = await capture.git.rev_parse(cwd, "main")
                 base_sha = await capture.git.rev_parse(cwd, "HEAD")
                 started = capture.clock()
-                store.write_record(
-                    key,
-                    "start",
-                    {
-                        "schema": "clutch.evidence.call/1.0",
-                        "id": capture.key,
-                        "group": group,
-                        "stem": capture.ticket,
-                        "run_seq": int(run_seq) if run_seq.isdecimal() else run_seq,
-                        "surface": surface,
-                        "attempt": int(attempt),
-                        "call": int(call),
-                        "engine": {"version": engine_version(), "spec": f"{surface}.md", "spec_version": spec_version(surface)},
-                        "route": {
-                            "tier": req.tier,
-                            "effort": req.effort,
-                            "candidates": list(capture.candidates),
-                            "chosen": self.provider.name,
-                            "reason": capture.reason,
-                            "config_sha": hashlib.sha256(repr(snapshot_config(self._config)).encode()).hexdigest(),
-                        },
-                        "provider": {
-                            "name": self.provider.name,
-                            "adapter": type(self).__name__,
-                            "kind": self.provider.kind,
-                            "package": self.provider.package,
-                            "cli_version": self.cli_version,
-                            "billing": "local" if self.uses_base_url else "metered" if self.provider.auth else "subscription",
-                        },
-                        "model": {"requested": model},
-                        "process": {
-                            "argv": [self._redactor.scrub(arg) for arg in argv],
-                            "env_names": sorted(env),
-                            "cwd": str(cwd),
-                            "timeout_s": int(self._timeout),
-                            "writes": writes,
-                            "isolated": False,
-                            "conduct_file": conduct_file(self.provider.name),
-                        },
-                        "repo": {"main_sha": main_sha, "base_sha": base_sha, "tree_before": tree_before},
-                        "prompt": {"blob": store.put_blob(rendered.encode()), "chars": len(rendered), "bytes": len(rendered.encode())},
-                        "clock": {"wall_start": render_ts(started), "mono_start_ns": int(started.timestamp() * 10**9)},
+                start_data = {
+                    "schema": "clutch.evidence.call/1.0",
+                    "id": capture.key,
+                    "group": group,
+                    "stem": capture.ticket,
+                    "run_seq": int(run_seq) if run_seq.isdecimal() else run_seq,
+                    "surface": surface,
+                    "attempt": int(attempt),
+                    "call": int(call),
+                    "engine": {"version": engine_version(), "spec": f"{surface}.md", "spec_version": spec_version(surface)},
+                    "route": {
+                        "tier": req.tier,
+                        "effort": req.effort,
+                        "candidates": list(capture.candidates),
+                        "chosen": self.provider.name,
+                        "reason": capture.reason,
+                        "config_sha": hashlib.sha256(repr(snapshot_config(self._config)).encode()).hexdigest(),
                     },
-                )
+                    "provider": {
+                        "name": self.provider.name,
+                        "adapter": type(self).__name__,
+                        "kind": self.provider.kind,
+                        "package": self.provider.package,
+                        "cli_version": self.cli_version,
+                        "billing": "local" if self.uses_base_url else "metered" if self.provider.auth else "subscription",
+                    },
+                    "model": {"requested": model},
+                    "process": {
+                        "argv": [self._redactor.scrub(arg) for arg in argv],
+                        "env_names": sorted(env),
+                        "cwd": str(cwd),
+                        "timeout_s": int(self._timeout),
+                        "writes": writes,
+                        "isolated": False,
+                        "conduct_file": conduct_file(self.provider.name),
+                    },
+                    "repo": {"main_sha": main_sha, "base_sha": base_sha, "tree_before": tree_before},
+                    "prompt": {"blob": store.put_blob(rendered.encode()), "chars": len(rendered), "bytes": len(rendered.encode())},
+                    "clock": {"wall_start": render_ts(started), "mono_start_ns": int(started.timestamp() * 10**9)},
+                }
+                store.write_record(key, "start", start_data)
                 start_written = True
             rc, out, err = await self._exec.run(
                 argv,

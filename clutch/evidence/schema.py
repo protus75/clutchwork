@@ -64,6 +64,11 @@ class StartModel(Record):
     requested: str
 
 
+class NativeIds(Record):
+    session_id: str | None
+    thread_id: str | None
+
+
 class Start(Record):
     schema_: Literal["clutch.evidence.call/1.0"] = Field(alias="schema")
     id: str
@@ -81,6 +86,7 @@ class Start(Record):
     repo: StartRepo | None
     prompt: Prompt
     clock: StartClock
+    native_ids: NativeIds | None = None
 
 
 class Exit(Record):
@@ -118,11 +124,6 @@ class EndRepo(Record):
 class EndModel(Record):
     served: str | None
     served_source: Literal["stream", "none"]
-
-
-class NativeIds(Record):
-    session_id: str | None
-    thread_id: str | None
 
 
 class Parsed(Record):

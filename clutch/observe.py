@@ -234,19 +234,41 @@ def drain_processes(ctx, rows: list[tuple[int, int, str]]) -> list[int]:
     return sorted(pids, key=lambda pid: started(ctx, pid))
 
 
-def live_call(evidence: Path, stem: str, surface: str, began: str) -> str:
-    """The newest open model call for this stage, from its evidence record."""
+def _open_calls(evidence: Path, stem: str):
     records = []
     for directory in (evidence / "calls").glob("*"):
         if not unquote(directory.name).startswith(f"llm/{stem}/") or (directory / "end.json").exists():
             continue
         try:
             record = json.loads((directory / "start.json").read_text())
-        except OSError, ValueError:
+            start = datetime.fromisoformat(record["clock"]["wall_start"])
+        except OSError, ValueError, KeyError, TypeError:
             continue
-        start = datetime.fromisoformat(record["clock"]["wall_start"])
-        if record["surface"] == surface and (not began or start >= datetime.fromisoformat(began)):
-            records.append((start, directory.name, record))
+        records.append((start, directory.name, record))
+    return records
+
+
+def _session(record):
+    ids = record.get("native_ids") or {}
+    value = ids.get("session_id") or ids.get("thread_id")
+    return {"provider": record["provider"]["name"], "id": value} if value else None
+
+
+def step_session(evidence: Path, stem: str, surface: str, attempt: int, run_seq: int):
+    records = []
+    for directory in (evidence / "calls").glob("*"):
+        try:
+            record = json.loads((directory / "start.json").read_text())
+            if (record.get("stem"), record.get("surface"), record.get("attempt"), record.get("run_seq")) == (stem, surface, attempt, run_seq):
+                records.append((datetime.fromisoformat(record["clock"]["wall_start"]), directory.name, record))
+        except OSError, ValueError, KeyError, TypeError:
+            continue
+    return _session(max(records, key=lambda item: item[:2])[2]) if records else None
+
+
+def live_call(evidence: Path, stem: str, surface: str, began: str) -> str:
+    """The newest open model call for this stage, from its evidence record."""
+    records = [(start, name, record) for start, name, record in _open_calls(evidence, stem) if record["surface"] == surface and (not began or start >= datetime.fromisoformat(began))]
     if not records:
         return ""
     record = max(records, key=lambda item: item[:2])[2]
@@ -566,6 +588,7 @@ MENU = {
     "clutchRun": MenuEntry("ticket", run_admission, ("stem", "facts", "file_exists", "ticket", "intake_decision", "stray"), needs_lock=True, command="clutch.ticket.run"),
     "clutchConfirm": MenuEntry("ticket", confirm_admission, ("facts", "stem", "draft", "interrupted"), command="clutch.ticket.confirm"),
     "clutchReject": MenuEntry("ticket", reject_admission, ("facts", "stem", "draft", "interrupted"), command="clutch.ticket.reject"),
+    "clutchCopySession": MenuEntry("ticket", lambda session: Admission("admit" if session else "noop"), ("session",), extension_only=True, command="clutch.ticket.copySession"),
     "clutchCopyStem": MenuEntry("ticket", lambda section: Admission("admit" if section == "merged" else "noop"), ("section",), extension_only=True, command="clutch.ticket.copyStem"),
     "clutchAskDiagnose": MenuEntry("ticket", lambda section: Admission("admit" if section != "merged" else "noop"), ("section",), extension_only=True, command="clutch.ticket.askDiagnose"),
     "clutchAskDrafts": MenuEntry("ticket", lambda row_draft: Admission("admit" if row_draft else "noop"), ("row_draft",), extension_only=True, command="clutch.ticket.askDrafts"),
@@ -627,6 +650,7 @@ def ticket_menu_inputs(ctx, facts, stems, holder, interrupted):
             row_draft=False,
             interrupted=interrupted,
             section="",
+            session=False,
             lock_holder=holder,
         )
         order_ticket = validated(stem, text) if exists and text != claimed and states.get(stem) not in CLOSED else disk
@@ -786,7 +810,11 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     rows += [base(t.stem, "queued", *why_queued(t)) for t in reversed(queued)]
     for stem in running:
         step, began, _ = current_step(log, stem)
-        rows.append(base(stem, "running", f"running: {step}" + (f" for {ago(began)}" if began else ""), "running"))
+        row = base(stem, "running", f"running: {step}" + (f" for {ago(began)}" if began else ""), "running")
+        calls = [entry for entry in _open_calls(state / "evidence", stem) if _session(entry[2])]
+        if calls:
+            row["sessionId"] = _session(max(calls, key=lambda item: item[:2])[2])["id"]
+        rows.append(row)
     log_rows = commits(ctx)
     for stem in merged:
         body = last[stem]
@@ -806,6 +834,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     for r in rows:
         inputs = menu_inputs[r["stem"]]
         for values in inputs.values():
+            values["session"] = "sessionId" in r
             values["section"] = r["section"]
             values["row_draft"] = r["draft"]
             values["draft"] = bool(tickets.get(r["stem"])) and tickets[r["stem"]].frontmatter.state == "draft"
@@ -899,6 +928,11 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
         surface = step.pop("surface", None)
         attempt = step.pop("attempt", None)
         run_seq = step.pop("run_seq", None)
+        if step.get("stem") is not None and surface is not None and attempt is not None and run_seq is not None:
+            session = step_session(state / "evidence", step["stem"], surface, attempt, run_seq)
+            if session:
+                step["session"] = session
+                step["contextValue"] = "session"
         if surface in ("author", "triage"):
             # Author keys its box message by attempt; triage by run_seq (its attempt is the pass number).
             seq = attempt if surface == "author" else run_seq

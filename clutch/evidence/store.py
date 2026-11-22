@@ -179,12 +179,12 @@ class EvidenceStore:
             raise ValueError("record kind must be start or end")
         return self.root / "calls" / quote(key, safe="") / (kind + ".json")
 
-    def write_record(self, key: str, kind: str, data: dict) -> None:
+    def write_record(self, key: str, kind: str, data: dict, *, replace: bool = False) -> None:
         model = {"start": Start, "end": End}.get(kind)
         if model is None:
             raise ValueError("record kind must be start or end")
         record = model.model_validate(data)
-        self.fs.publish(self._record_path(key, kind), record.model_dump_json(by_alias=True).encode())
+        (self.fs.write if replace else self.fs.publish)(self._record_path(key, kind), record.model_dump_json(by_alias=True).encode())
 
     def read_record(self, key: str, kind: str) -> BaseModel | SkipRecord:
         path = self._record_path(key, kind)

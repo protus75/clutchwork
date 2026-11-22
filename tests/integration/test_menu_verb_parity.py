@@ -5,8 +5,8 @@
 # purpose: Checks that the snapshot menu's per-row action states match what the real ticket and box verbs admit, across ticket states and with or without the drain lock held, and pins verb refusal and lint summary output
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/reconcile.py]
 # owner: clutch/observe.py
-# verified: 322b4db9
-# hash: ba26f0afe59fd4301c033c8bfbfe5ae7979cf0668bdd8b38b605c43ba8b8f9de
+# verified: 19880b1d
+# hash: dcaf8b0a68b875f8bc1d37570e988ec4a78e43914f548234cec043089ee0420d
 
 import asyncio
 from types import SimpleNamespace as NS
@@ -192,7 +192,7 @@ def test_menu_matches_verbs(world, capsys, case, run, review, order, lint):
         snap = observe.snapshot(w.ctx)
         row = next(r for r in snap["rows"] if r["stem"] == "item")
         assert set(row["menu"]) == {k for k, spec in observe.MENU.items() if spec.kind == "ticket"}
-        assert {key for key, spec in observe.MENU.items() if spec.extension_only} == {"clutchAskDiagnose", "clutchAskReview", "clutchAskDrafts", "clutchCopyStem"}
+        assert {key for key, spec in observe.MENU.items() if spec.extension_only} == {"clutchAskDiagnose", "clutchAskReview", "clutchAskDrafts", "clutchCopyStem", "clutchCopySession"}
         inputs = verb_inputs(w, "item", row, live)
         for key, spec in observe.MENU.items():
             if not spec.extension_only:

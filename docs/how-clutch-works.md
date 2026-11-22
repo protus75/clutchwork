@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 331196ce
-hash: 5a6da024312642f9a79fcbccda4980589aa58a56f79d139d3aba944aeb8c495a
+verified: 19880b1d
+hash: 7ea333376423671744bab30452ac7eed7a1ed7d536ee6e41cb2efc892c85cfd9
 -->
 # How ClutchWork works
 
@@ -826,7 +826,7 @@ Each keyed provider call leaves a record under `<state_dir>/evidence/` with reda
 
 A record consists of `calls/<escaped key>/start.json` and `end.json`, with the key escaped by `urllib.parse.quote(key, safe="")`. If a key runs again, its existing directory causes the next record to use `<key>#2`, then `#3` and so on. Only a key without a journaled completion can run again; the record's `id` retains the unsuffixed key.
 
-`start.json` is written after the tree id is taken and before the CLI is spawned, so a crash, hang or kill can leave it behind. A start without an end means the call never finished recording, for example when the engine died mid-call. Its fields are:
+`start.json` is written after the tree id is taken and before the CLI is spawned, so a crash, hang or kill can leave it behind. The start record is rewritten once with `native_ids` when the stream first reports a session or thread id. A start without an end means the call never finished recording, for example when the engine died mid-call. Its fields are:
 
 - `schema`: `clutch.evidence.call/1.0`.
 - `id`, `group`, `run_seq`, `surface`, `attempt` and `call` come from the key; `stem` is null for a ticketless call.

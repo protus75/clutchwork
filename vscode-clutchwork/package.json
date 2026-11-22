@@ -133,6 +133,14 @@
 				"icon": "$(refresh)"
 			},
 			{
+				"command": "clutch.steps.copySession",
+				"title": "Copy Session ID"
+			},
+			{
+				"command": "clutch.ticket.copySession",
+				"title": "Copy Session ID"
+			},
+			{
 				"command": "clutch.ticket.copyStem",
 				"title": "Copy Stem",
 				"category": "clutch"
@@ -281,7 +289,11 @@
 			}
 		],
 		"menus": {
+			"view/item/context": [
+				{ "command": "clutch.steps.copySession", "when": "view == clutch.steps && viewItem == session" }
+			],
 			"webview/context": [
+				{ "command": "clutch.ticket.copySession", "when": "webviewId == 'clutch.tickets' && clutchCopySession == 'on'", "group": "1_open@3" },
 				{
 					"command": "clutch.ticket.copyStem",
 					"when": "webviewId == 'clutch.tickets' && clutchCopyStem == 'on'",
@@ -369,6 +381,8 @@
 				}
 			],
 			"commandPalette": [
+				{ "command": "clutch.steps.copySession", "when": "false" },
+				{ "command": "clutch.ticket.copySession", "when": "false" },
 				{
 					"command": "clutch.ticket.copyStem",
 					"when": "false"
