@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+already_satisfied
 
 ## Surprises / judgment calls
 
-Audit command: PYTHONPATH=/tmp:$PWD ./dev.py test tests/integration -p clutch_disk_audit. It recorded events in 194 files, including all 10 exempt files, leaving 184 entries in DISK_IO_SKIP. The instrumented audit had one failure in a listed file; the final uninstrumented integration run passed with 263 passed and 3341 skipped. The separate shared-fakes-guard ticket owns prevention of new disk-writing integration tests.
+The existing audit record reports 194 files, including 10 exempt files, leaving 184 listed; the integration run passed with 263 passed and 3341 skipped.
 
 ## Dead ends
 
-The first audit was stopped because it included pytest's isolation-fixture bookkeeping; the corrected audit suppressed that fixture's setup and initialized pytest's base directory before tests.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; completed in less than 25 minutes.
+Expected 25 minutes; verification completed in under a minute.
 
