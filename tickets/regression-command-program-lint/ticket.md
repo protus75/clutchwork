@@ -1,7 +1,7 @@
 ---
 state: confirmed
 source: human
-priority: P0
+priority: P1
 kind: feature
 ---
 
