@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6a80b410b70409b696591c1f79793616cfe0628c",
+  "produced_at_sha": "69ee0159afaea355fa74d84d0a0e35d77fe34319",
   "stem": "serve-no-roadmap",
   "passed": true,
   "changed_files": [
@@ -45,7 +45,7 @@
     "tests/unit/test_serve_verdict_owned.py",
     "tests/unit/test_supervise_idle_hooks.py"
   ],
-  "inserted_lines": 399,
+  "inserted_lines": 400,
   "bypassed": [],
   "reports": [
     {
@@ -114,15 +114,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.302156,
+        "seconds": 17.646653,
         "passed": 2149,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5224236880312674,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.2361192580428906,
-          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.1534334319876507,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.089607692003483
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5849481459881645,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.284083078004187,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.2170583719853312,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.0875115499948151
         }
       },
       "coverage": {
@@ -142,15 +142,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 11.735709,
+        "seconds": 11.369071,
         "passed": 297,
         "failed": 0,
         "skipped": 3331,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.2087360639998224,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1375422819983214,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0925891540246084,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043644469697028
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9649215110111982,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1091774860105943,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0810659890121315,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043851529771928
         }
       }
     },
@@ -180,9 +180,9 @@
         "tests/unit/test_main_release_group.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_roadmap_author_rejected_row.py tests/unit/test_release_ship_verb.py tests/unit/test_main_release_group.py\nbringing up nodes...\nbringing up nodes...\n\n...........                                                              [100%]\n11 passed in 1.38s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_roadmap_author_rejected_row.py tests/unit/test_release_ship_verb.py tests/unit/test_main_release_group.py\nbringing up nodes...\nbringing up nodes...\n\n...........                                                              [100%]\n11 passed in 1.44s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.918884
+      "seconds": 8.924958
     },
     {
       "argv": [
@@ -197,9 +197,9 @@
         "tests/integration/test_ask_drain_loop_agent.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_roadmap_ship.py tests/integration/test_roadmap_ship.py tests/unit/test_roadmap_author.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py\nbringing up nodes...\nbringing up nodes...\n\nssssssssss..sss.s.....                                                   [100%]\n8 passed, 14 skipped in 1.49s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_roadmap_ship.py tests/integration/test_roadmap_ship.py tests/unit/test_roadmap_author.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py\nbringing up nodes...\nbringing up nodes...\n\nssssssss.s.ssss.s.....                                                   [100%]\n8 passed, 14 skipped in 1.50s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.94583
+      "seconds": 5.973592
     },
     {
       "argv": [
@@ -207,9 +207,9 @@
         "test"
       ],
       "rc": 0,
-      "tail": "]\nssssssssssssssssssssssss.ssssssssssssssssssssssssss.sssssssssss...ssss.s [ 63%]\n.ssssssssssssss...sssssssssssss.ss..ssssssssssssssssssssssssssssssssssss [ 65%]\nsssssssssssssssssssss.s.ssssssssssssssssss.ssssss.ssss.sssssssssssssssss [ 67%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 69%]\n.ssssssssssssssssssssssss..sssss.ssssssssss.ss.ssssss.ssss..sssssss..sss [ 71%]\nsss....sssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssss. [ 73%]\nssss.sssssssssssssss.sssssssss.ssssssssssssssssssssssssssssssssss.ssss.s [ 75%]\nssssssssssssssssssssssssssssssssss...sssssssssssssssss.sssssss.sssssssss [ 77%]\nsssss.sssss.ssss..ss.s....sssssss.ssssssssssssssssssss....ssssssssssssss [ 79%]\nsss.ss..sssss.ss.ss.ssssss.sssssssssssssssss.sssss.ssss.ssssssssssssssss [ 81%]\nssssssss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 83%]\nsssss.ssssssssssssssssssss.sssssssss.sssssssssssssssssssssssssssssssssss [ 85%]\nsssssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssss.sssssssss [ 87%]\nss.s.sssssssssssssssssssssssssssssssssssssssssssssssssssssssss.ss..ssss. [ 89%]\n.ssssssssssssssss.sssss.ss.sss.ssssssssssssss..sssss.sssssssss.sssssssss [ 91%]\nssssssssssssssssssssss.ssssssssssss.s.ss...s.sss.ss.s.ssssss.sssssssssss [ 93%]\nssssssssssssssssssssssssssssssssssssssssssssss.ssss..................... [ 95%]\n.....s..ssss.ssssssssss.sssssss.....ssssssssssssssss.ssssssssssssssssss. [ 97%]\n...ssssssssssssssssss................ss.................ssssssss.sssssss [ 99%]\nss.........sssssssssssssssss                                             [100%]\n297 passed, 3331 skipped in 7.06s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "]\n....ssss.ssssssssssssss.sssssssssss..ssss..sssssssssssssssssssssssssssss [ 63%]\nsssssss.ssssssssssssssssssssssssssssss.sssssssssssss..ssssssssssssssssss [ 65%]\nssssssssssssss.ssssss.sssssssssssssssssssssssssss.ssssssssssssssssssssss [ 67%]\nssssssssssssssssssssssss.ssssssssssssssssssssssssssss.sssssss...ssssss.. [ 69%]\nssss.sssssssssssss...sssss.sssssssssssssssssssssssssssssssssssssssssssss [ 71%]\nsssss.sssssssssssss.sssss.ssssssss.ssssssssssssssssssssssssss.ssssssssss [ 73%]\nsssssss.ss.ssssssssssssssssssssssss.ssssssss.ssssssssssssssssssssssss..s [ 75%]\nsssssssssssssss.ssssssssssssss.sss.s.ssss.ssss...sssssss..s.ssssssssssss [ 77%]\n..s.s..sss.sssssssss.sssssssssss.sssssss.ssssss.sss.ssss.sssssssssssssss [ 79%]\n.sssssssssssssssssssssssssssssssssssss..ssssssssssssssssssssssssssssssss [ 81%]\nssssssss.ss.sssss.sssssssssssssssss.s.ss.sssssssssssssssssssssss.sssssss [ 83%]\nssssssssssssssssss.ssss.sssssssssssss.ssssssssssssssssssssssssssssssssss [ 85%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.ssssssss [ 87%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 89%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssssssss.sss.ssssssssss [ 91%]\nssss.ssssssssssss.s...ssssss.ssssssss.ssssssss.sssssssssssssssss.sssssss [ 93%]\nssssss.ssssssssssssssssssssss............sssssss.s.s...ssssss.s.....ssss [ 95%]\n..s.s............ssssssssssssssssssssssssssss.ssssss.....sssssssssssssss [ 97%]\n.........ssssssssssssssssssssssss.......ss................ssssssssssssss [ 99%]\nsss.......ssssssssssssssssss                                             [100%]\n297 passed, 3331 skipped in 6.98s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 19.121297
+      "seconds": 18.976633
     }
   ]
 }
