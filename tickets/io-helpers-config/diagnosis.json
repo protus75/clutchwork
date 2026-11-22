@@ -1,22 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "69b8c195ba476677658d8440b5832226067cd1c5",
+  "produced_at_sha": "999aa4b6e49b6f519cc9c31b27bc4545a44da341",
   "stem": "io-helpers-config",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "retry",
-  "lessons": [
-    "False premise: the ticket says FakeExec is the provider-script variant from test_providers.py and must be re-exported only if tests.fakes.FakeExec already does what it does. It does not, so move class FakeExec from test_providers.py:67 into tests/config_helpers.py unchanged.",
-    "The provider-script FakeExec (test_providers.py:67-94) is already in-memory: scripted responses, on_spawn/on_stdout_line callbacks, calls dicts, hang Event, kill_group. It runs no process, so moving it breaks no I/O rule and does not duplicate the shared fake. Do not edit tests/fakes.py.",
-    "Leave PythonProviderExec and python_client in test_providers.py. In test_watchdog.py and test_watchdog_activation.py, keep only the hub import lines named in criterion 2. Move every other listed name into tests/config_helpers.py; hubs import them back.",
-    "provider_session uses a real Journal under cfg.state_dir. Keep its signature and, in unit tests, point state_dir at tmp_path, or use tests.fakes.FakeJournal if callers allow it. watch_fixture_repo must not run git; it stores a GitFake in WATCH_GIT.",
-    "Record unit and integration passed/skipped counts for base and candidate in run.md (criterion 5). Check criteria 2-4 with the exact grep commands from the ticket before finishing."
-  ],
-  "mechanical": null,
+  "verdict": "abandon-human",
+  "lessons": [],
+  "mechanical": "premise_bounce cap spent",
   "trimmed_lessons": [],
   "spec_version": "1.10",
-  "provider": "claude",
-  "model": "claude-opus-5-5"
+  "provider": null,
+  "model": null
 }
