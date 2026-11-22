@@ -730,6 +730,8 @@ async def verdict_locked(stem: str, checkout: Checkout, *, kill: bool, extension
         print(f"confirmed draft {stem}")
         return EXIT_MERGED
     ticket_sha = await checkout.git.rev_parse(checkout.repo, f"HEAD:{rel}") if path.is_file() else None
+    history = checkout.journal.read()
+    refusal = verdict_refusal(admission_facts(history), stem, kill, draft, set())
     prior_keep = next(
         (
             e
