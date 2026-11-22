@@ -16,6 +16,8 @@ kind: feature
 - clutch/git.py::Git.rebase
 - clutch/git.py::Git.worktree_add
 - clutch/git.py::RebaseRefused
+- tests/fakes.py
+- tests/integration/conftest.py
 - tests/unit/test_specs.py::test_diagnose_spec_states_attempt_starting_point
 - docs/how-clutch-works.md#4.1 Worktree
 
@@ -31,10 +33,10 @@ Every retry throws away the previous attempt's code. `prepare_worktree` deletes 
 - disposition: extend
 - owner: clutch/stages.py::prepare_worktree and clutch/stages.py::implement
 - consumers: Implement and every retry
-- observable change: `prepare_worktree(ctx, stem, *, keep=False)`. When `keep` is true and branch `<stem>` exists, it removes only the old worktree, attaches a worktree to the existing branch with a new `Git.worktree_attach(dir, path, branch)` (`git worktree add <path> <branch>`) and runs `ctx.git.rebase(path, MAIN)`. If the rebase raises `GitError` (which `RebaseRefused` subclasses), it falls back to today's teardown-and-create. `implement` passes `keep=True` only when the stem's latest run terminal (`run_terminals`) has `to == "gate_failed"` and `stage` in `{"check", "review"}` and no `merge_conflict_rerun` signal is newer than it
+- observable change: `prepare_worktree(ctx, stem, *, keep=False)`. When `keep` is true and branch `<stem>` exists, it removes only the old worktree, attaches a worktree to the existing branch with a new `Git.worktree_attach(dir, path, branch)` (`git worktree add <path> <branch>`) and runs `ctx.git.rebase(path, MAIN)`. If the rebase raises `GitError` (which `RebaseRefused` subclasses; `Git.rebase` already runs `rebase --abort` before raising it), it falls back to today's teardown-and-create. `implement` passes `keep=True` only when the stem's latest run terminal (`run_terminals`) has `to == "gate_failed"` and `stage` in `{"check", "review"}` and no `merge_conflict_rerun` signal is newer than it
 - compatibility: `keep=False` (the default, and every other caller) is byte-for-byte today's behavior; first attempts, Implement failures and conflict reruns start fresh as today
 - acceptance: criteria 1 to 3
-- tests: tests/integration/test_retry_keeps_branch.py
+- tests: tests/integration/test_retry_keeps_branch.py, tests/integration/test_git.py and tests/unit/test_retry_keep_decision.py
 - post-merge source of truth: clutch/stages.py
 
 ### Implement and Diagnose prompts on the starting point
@@ -54,10 +56,11 @@ Scope in:
 - clutch/specs/implement.md: add the kept-branch sentence after the existing "For a prior attempt discarded on a merge conflict..." sentence; bump `version` to the next minor above main.
 - clutch/specs/diagnose.md: replace the starting-point sentence as stated; bump `version` to the next minor above main.
 - tests/unit/test_specs.py: update `test_diagnose_spec_states_attempt_starting_point` to the new sentence and the `implement` and `diagnose` version pins; nothing else changes there. tests/integration/test_specs_delimiter_note.py and tests/integration/test_implement_spec_meta_headers.py: update version pins only.
-- New tests/integration/test_retry_keeps_branch.py uses a real temporary git repo; new tests/integration/test_retry_prompts_starting_point.py reads the shipped specs through a `Path(__file__)` anchor; new tests/unit/test_retry_keep_decision.py runs the `implement` keep decision with fake journal events.
+- tests/integration/test_git.py (already in `REAL_IO_TESTS`): add one real-git test that `Git.worktree_attach` checks out an existing branch in a new worktree without moving that branch.
+- New tests/integration/test_retry_keeps_branch.py drives `prepare_worktree` with an in-memory fake Git and filesystem (the fakes in tests/fakes.py, or a small async fake Git inside the test file) and asserts the git calls made; it runs no git process and writes no repository, so it stays under the integration I/O guard and is not added to `REAL_IO_TESTS`. New tests/integration/test_retry_prompts_starting_point.py reads the shipped specs through a `Path(__file__)` anchor; new tests/unit/test_retry_keep_decision.py runs the `implement` keep decision with fake journal events.
 - docs/how-clutch-works.md section 4.1 Worktree: say a retry after a Check or Review failure reuses the branch rebased onto main, and that every other attempt starts fresh.
 Scope out:
-- Check, Review, Diagnose verdict logic, rework, the merge queue, conflict-rerun handling, and retry caps.
+- Check, Review, Diagnose verdict logic, rework, the merge queue, conflict-rerun handling, retry caps, and tests/integration/conftest.py (`REAL_IO_TESTS` and `DISK_IO_SKIP` stay unchanged).
 
 ## Scope fence
 - clutch/git.py
@@ -68,23 +71,24 @@ Scope out:
 - tests/unit/test_specs.py
 - tests/integration/test_specs_delimiter_note.py
 - tests/integration/test_implement_spec_meta_headers.py
+- tests/integration/test_git.py
 - tests/integration/test_retry_keeps_branch.py
 - tests/integration/test_retry_prompts_starting_point.py
 - tests/unit/test_retry_keep_decision.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/integration/test_retry_keeps_branch.py` proves `prepare_worktree(ctx, stem, keep=True)` on a repo whose branch `<stem>` holds a commit and whose main moved ahead without conflict yields a worktree whose HEAD contains that commit rebased onto main, not a fresh branch at main.
-2. `./dev.py test tests/integration/test_retry_keeps_branch.py` proves a conflicting rebase falls back to a fresh branch at main with no rebase left in progress, and `keep=False` still deletes the old branch.
+1. `./dev.py test tests/integration/test_retry_keeps_branch.py tests/integration/test_git.py` proves `prepare_worktree(ctx, stem, keep=True)`, with a fake Git on which branch `<stem>` exists and the rebase succeeds, removes the old worktree, calls `worktree_attach` on the existing branch and `rebase` onto main, and never calls `branch_delete` or `worktree_add` from main; and proves on a real repo that `Git.worktree_attach` checks out the existing branch head.
+2. `./dev.py test tests/integration/test_retry_keeps_branch.py` proves that when the fake Git's `rebase` raises `RebaseRefused`, `prepare_worktree` falls back to removing the attached worktree, deleting the branch and calling `worktree_add` from main, and that `keep=False` still deletes the old branch without calling `worktree_attach` or `rebase`.
 3. `./dev.py test tests/unit/test_retry_keep_decision.py` proves `keep` is true after a `gate_failed` terminal at `check` or `review`, and false on a first attempt, after `premise_failed`, `incomplete` or `timeout`, and when a `merge_conflict_rerun` signal is newer than the terminal.
 4. `./dev.py test tests/integration/test_retry_prompts_starting_point.py tests/unit/test_specs.py` proves the Implement Task carries the kept-branch sentence and the Diagnose prompt no longer says "no earlier diff survives".
 
 ## Verification
 ```
-./dev.py test tests/integration/test_retry_keeps_branch.py tests/unit/test_retry_keep_decision.py tests/integration/test_retry_prompts_starting_point.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_meta_headers.py tests/integration/test_reconcile.py tests/integration/test_kill_failure_suppression.py
+./dev.py test tests/integration/test_retry_keeps_branch.py tests/integration/test_git.py tests/unit/test_retry_keep_decision.py tests/integration/test_retry_prompts_starting_point.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/integration/test_implement_spec_meta_headers.py
 ```
 
 ## Definition of rejected
-Keeping the branch after an Implement failure or a merge conflict, a conflicting rebase left in place, a config knob, or files outside the fence change.
+Keeping the branch after an Implement failure or a merge conflict, a conflicting rebase left in place, a config knob, a new `REAL_IO_TESTS` entry, or files outside the fence change.
 
 ## Time budget
 - expected: 20m
