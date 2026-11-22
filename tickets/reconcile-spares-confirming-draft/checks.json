@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "05c58403465c9d31c730d0ef5552bb36d99d46fe",
+  "produced_at_sha": "90a6a7e63064ee3cc43e8e37b8f95b290834795f",
   "stem": "reconcile-spares-confirming-draft",
   "passed": false,
   "changed_files": [
@@ -10,7 +10,7 @@
     "tests/regress_reconcile_confirming_draft.py",
     "tests/unit/test_serve_verdict_owned.py"
   ],
-  "inserted_lines": 177,
+  "inserted_lines": 264,
   "bypassed": [],
   "reports": [
     {
@@ -77,8 +77,8 @@
           "python",
           "tests/regress_reconcile_confirming_draft.py"
         ],
-        "head_sha": "05c58403465c9d31c730d0ef5552bb36d99d46fe",
-        "base_sha": "a84781dbdf1635bff74f190efbed13110b08f143",
+        "head_sha": "90a6a7e63064ee3cc43e8e37b8f95b290834795f",
+        "base_sha": "62425e3ea16379ec7870aeb844431cf977108bca",
         "overlay_paths": [
           "tests/regress_reconcile_confirming_draft.py"
         ],
@@ -91,9 +91,9 @@
           "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
         },
         "base": {
-          "rc": 1,
+          "rc": 0,
           "regression_result": null,
-          "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\nInstalled 31 packages in 26ms\nTraceback (most recent call last):\n  File \"/home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft/tests/regress_reconcile_confirming_draft.py\", line 21, in <module>\n    from tests.integration.test_serve_verdict_orphan_sweep import result_ok, scenario\nModuleNotFoundError: No module named 'tests.integration.test_serve_verdict_orphan_sweep'\n"
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\nInstalled 31 packages in 31ms\n"
         }
       }
     },
@@ -115,17 +115,21 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 14.856134,
-        "passed": 1832,
+        "seconds": 15.842649,
+        "passed": 1873,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5764764359919354,
-          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.0715233249939047
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8345231089915615,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.4482389140175655,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.1065843359974679,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0962962690391578,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0913399780110922,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.0719275480369106
         }
       },
       "coverage": {
-        "percent": 72.06431489698194,
+        "percent": 72.22537920181843,
         "files": {
           "clutch/serve.py": 50.0
         }
@@ -135,7 +139,17 @@
       "code": "integration",
       "verdict": "pass",
       "findings": [],
-      "autofix_applied": false
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 9.583124,
+        "passed": 269,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7997738209669478,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039903310243972
+        }
+      }
     },
     {
       "code": "lint",
@@ -161,9 +175,9 @@
         "tests/integration/test_serve_confirm_during_check.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_serve_verdict_orphan_sweep.py tests/unit/test_serve_verdict_owned.py tests/integration/test_serve_confirm_during_check.py\nbringing up nodes...\nbringing up nodes...\n\n.....                                                                    [100%]\n5 passed in 2.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_serve_verdict_orphan_sweep.py tests/unit/test_serve_verdict_owned.py tests/integration/test_serve_confirm_during_check.py\nbringing up nodes...\nbringing up nodes...\n\n.ss..                                                                    [100%]\n3 passed, 2 skipped in 1.39s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 3.387014
+      "seconds": 5.221643
     },
     {
       "argv": [
@@ -175,7 +189,7 @@
       "rc": 0,
       "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 1.839857
+      "seconds": 0.758036
     }
   ]
 }
