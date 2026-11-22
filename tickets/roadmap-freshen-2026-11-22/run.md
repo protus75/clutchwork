@@ -1,18 +1,18 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The worktree's status projection also reports an empty journal, so its counts differ from the ticket's authoring-time snapshot.
+Rows 75–77 remain held because the owner parser cannot resolve the nested document-agent plan; the limitation was filed as box-000001-40a689e9. No new plan rows were admitted because each proposal has documented prerequisites or missing admission evidence.
 
 ## Dead ends
 
-No files were changed; the required metadata check was not run because the implementer instructions prohibit it.
+No Owner spelling can make the existing parser select a nested plan.
 
 ## Second problems filed
 
-none
+- box-001124-52bdccf4: The roadmap owner parser cannot resolve docs/document-agent/plan.md, leaving document-agent rows held.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 30 minutes; stopped during initial inspection.
+Expected 30 minutes; actual time was not measured.
 
