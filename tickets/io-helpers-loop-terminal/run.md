@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The unchanged author calls tests.approval.approve, which calls review_input_identity and Git.ls_files through SubprocessExec; the base integration run passed with 297 passed and 3341 skipped.
+Base and candidate integration runs each reported 297 passed and 3341 skipped. The engine writes run.md, so the counts are reported here. Keeping approval in author was rejected because it runs real git; writing the ticket alone is the minimum specified behavior.
 
 ## Dead ends
 
-Confirmed the approval path invokes git even when the fixture has no .git directory; mocking approval only in the unit test would leave the helper's production behavior unchanged.
+The first transition test used an invalid signal name; the fixture was corrected.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 15 minutes expected and 30 minutes stuck; the contradiction was found during initial investigation.
+Expected 15 minutes; actual time was not measured.
 
