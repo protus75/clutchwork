@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The final verification command passed all 37 tests; focused mutation checks and lint passed.
+The branch already contains the implementation from the prior attempt; no files were changed or committed in this attempt.
 
 ## Dead ends
 
-none
+The six retry findings were reproduced: every test in test_serve_retro_check_once.py fails during setup because serve.measurements was removed.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 20 minutes; completed within the budget.
+none
 
