@@ -8,6 +8,9 @@ kind: bug
 ## Depends on
 - none
 
+## Runs before
+- steps-view-unknown-kind
+
 ## Context
 - clutch/drain.py::_Drain.__init__
 - clutch/drain.py::_Drain._run
