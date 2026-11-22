@@ -1,23 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "14c2d934a98da0e76837c3bf3ab9accbb9ee2bcb",
+  "produced_at_sha": "2833fef89eb22c9466a8bba8e9a6b26b674c7403",
   "stem": "check-rerun-failed-only",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
-  "stage": "review",
-  "verdict": "retry",
+  "stage": "check",
+  "verdict": "abandon-human",
   "lessons": [
-    "Redo the work: testreport.py adds --clutch-select; in stages.py _check_host_results, run(name, selected=None) writes the failed ids with ctx.fs.write to path.with_suffix('.select.json') and appends ['--clutch-select', str(path)] to entry.argv.",
-    "In config.yaml the unit entry is wrapped in `clutch coverage gate`, and run_gate (clutch/covgate.py:140-164) fails a one-test run on coverage floors. In stages.py, judge a selected rerun by its recorded outcomes, not by rc. Add no rc finding when every selected id is recorded and none failed.",
-    "If any selected id is missing from the rerun results, return invalid() or add a finding. Keep the 'failed on rerun' finding when a selected id fails again, so flake classification stays as it was before the change.",
-    "Quarantine release in stages.py reads `last`, which now holds only the selected ids. Use merged outcomes ({**first, **last}) for the release check. Keep `last` (only the rerun results) for the flaky and 'failed on rerun' logic, so the release check behaves as it did before the change.",
-    "Add tests in tests/unit/test_check_rerun_select.py and tests/integration/test_check_rerun_failed_only.py. Case 1: the rerun records the selected id as passed and exits nonzero, so it is flaky with no extra finding. Case 2: a passing quarantined test is still released when an unrelated failure"
+    "The diff did not cause this failure. The ticket's own Goal names tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green as a timeout flake that predates this ticket. All 130 tests in the ticket's Verification command passed.",
+    "Check blocked the attempt because the quarantine cap is full, so the flake could not be quarantined. Only a human can clear this: fix and release existing quarantines, or land a deterministic fix for this test (box-001043, ordered ahead of this ticket with Runs before).",
+    "Do not retry this stem until the serve-admission test is deterministic or quarantine room exists. A retry would run the same full integration gate and hit the same flake, whatever the diff does.",
+    "When rerun, redo the same scope. Reviewers found the approach sound: _check_host_results run(name, selected=None) writes path.with_suffix('.select.json') through ctx.fs.write and adds --clutch-select to entry.argv; testreport.py deselects through config.hook.pytest_deselected."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    4
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5"
