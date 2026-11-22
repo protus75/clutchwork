@@ -5,8 +5,8 @@
 # purpose: Tests Implement -> Check -> Review stage transitions, gates, outbox lifts and report artifacts with the scripted fake LLM
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: 52843322
-# hash: 7148c4e20bee201dc6bd634a00d65303abab41ce499c1076ab0123be0f34473d
+# verified: 9b76d3e1
+# hash: 7e895f76c05f74973a96f65b279057ec8507be907711449528069d1fa3510ec9
 
 import asyncio
 import json
@@ -45,6 +45,8 @@ from clutch.stages import (
 from clutch.tickets import TicketInvalid, validate_ticket
 from tests.integration.test_git import commit_lock
 from tests.spool_captures import list_captures, read_capture
+from tests.stage_replies import implement_reply
+from tests.stage_replies import review_verdict as verdict
 
 SAMPLE_REPORT = "sample-report.json"
 
@@ -191,23 +193,6 @@ def author(repo: Path, bypass: str = "") -> None:
     approve(repo, STEM, lambda: datetime(2026, 10, 5, tzinfo=UTC))
 
 
-def implement_reply(outcome: str = "ok", findings: list | None = None) -> str:
-    return (
-        "```json\n"
-        + json.dumps(
-            {
-                "outcome": outcome,
-                "summary": "wrote ok",
-                "surprises": "",
-                "dead_ends": "none",
-                "predicted_vs_actual": "10m predicted, 2m actual",
-                "findings": findings or [],
-            }
-        )
-        + "\n```"
-    )
-
-
 def agent(files: dict[str, str], outcome: str = "ok"):
     """A scripted implementer: edits the worktree, commits on the branch, replies."""
 
@@ -222,10 +207,6 @@ def agent(files: dict[str, str], outcome: str = "ok"):
         return implement_reply(outcome)
 
     return act
-
-
-def verdict(v: str = "approve", findings: list | None = None) -> str:
-    return json.dumps({"verdict": v, "summary": "looked", "findings": findings or []})
 
 
 SNAG = {"code": "logic", "path": "clutch/thing.py", "line": 1, "message": "wrong word", "paved_road": "write ok"}

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Dispatch reviews committed ticket content before creating an implementation workspace.
+# purpose: Dispatch reviews committed ticket content before creating an implementation workspace, parks snags and releases on edit
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/runner.py, clutch/scheduler.py]
 # owner: engine
-# verified: 96e46658
-# hash: 6156a63764de728b8612e50920f3e6d6fd258ac581fe7359aae6b70306f002e1
+# verified: 9b76d3e1
+# hash: 1d69ab95b2cdf417335dfa4e9876d8003a7ec337410d47b2dea7e454fa1a34bb
 
 import asyncio
 import json
@@ -24,11 +24,12 @@ from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, pause_checkout
 from tests.integration.test_stages import implement_reply
+from tests.stage_replies import requisition_reply
 
 
 def reply(verdict, code=None):
     findings = [] if code is None else [{"code": code, "message": "missing required file", "paved_road": "add the file", "kind": "authoring_error"}]
-    return json.dumps({"verdict": verdict, "summary": "reviewed", "findings": findings})
+    return requisition_reply(verdict, findings)
 
 
 def setup(tmp_path, script):

@@ -4,8 +4,8 @@
 # purpose: test requisition
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/seams.py]
 # owner: engine
-# verified: 595b9e84
-# hash: faf6af310ce331fc22a740a1b91018497e7f225dfb612dd657c437d4cf217b5f
+# verified: 9b76d3e1
+# hash: 84e8cf00c68de3405ee035833f4a9df4874e9806a427cc4f4ef67d43d11d85f6
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -22,6 +22,7 @@ from clutch.requisition import FIRST_REVIEW, RequisitionReply, RequisitionVerdic
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, lint_spec, load_spec, render
 from clutch.stages import StageContext, implement_inputs, implement_stage
 from clutch.tickets import TicketInvalid
+from tests.stage_replies import requisition_reply
 
 SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 TICKET = """---
@@ -121,7 +122,7 @@ def run(driver: Driver, repo: Path, text: str = TICKET, stem: str = "one-thing",
 
 
 def reply(verdict: str, findings: list | None = None, dependents: list | None = None) -> str:
-    return json.dumps({"verdict": verdict, "summary": "reviewed", "findings": findings or [], "dependents": dependents or []})
+    return requisition_reply(verdict, findings, dependents or [])
 
 
 FINDING = {"code": "scope", "message": "missing file", "paved_road": "add it to the fence"}

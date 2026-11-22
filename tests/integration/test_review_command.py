@@ -2,13 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: On-demand review uses the committed ticket and records its verdict.
+# purpose: Tests the `clutch ticket review` command: reviews the committed ticket, journals its verdict, handles locks, provisional dependencies and prior findings
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/reconcile.py, clutch/requisition.py, clutch/status.py]
 # owner: engine
-# verified: 96e46658
-# hash: aa97a9455f49c61066e3bf6d155f2de3b54c07ce26a9ce8c7b2be61b13ac30c1
-
-import json
+# verified: 9b76d3e1
+# hash: 0313af33999721750557dd931b5d095ea7382b7347efe02b78528b0f4794560c
 
 from clutch.__main__ import main
 from clutch.journal import EventType, Journal
@@ -19,6 +17,7 @@ from clutch.requisition import FIRST_REVIEW
 from clutch.status import last_states
 from tests.integration.test_cli import ENV, git_out, ticket, write
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+from tests.stage_replies import requisition_reply as reply
 
 
 def run(root, monkeypatch, llm, stem):
@@ -28,10 +27,6 @@ def run(root, monkeypatch, llm, stem):
 
 def verdicts(root):
     return [e for e in Journal(root / ".clutch/state", Clock()).read() if e.type == EventType.SIGNAL and e.body.get("signal") == "requisition_verdict"]
-
-
-def reply(verdict, findings=None):
-    return json.dumps({"verdict": verdict, "summary": "reviewed", "findings": findings or []})
 
 
 def test_review_preflight_failure_refuses(tmp_path, monkeypatch, capsys):

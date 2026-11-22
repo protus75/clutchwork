@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Author integration: triage drives the one ticket-plane authoring path.
+# purpose: Integration tests for triage-driven Author: prompt contents, review/reprompt loops, bug-report evidence custody, baseline-resolved start state, decline records and crash recovery
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: 595b9e84
-# hash: 8129102f467f04f0484d70b1706e35faaf674a0d178b6eebd7c1dac133f199c6
+# verified: 9b76d3e1
+# hash: 1cd5d5f6889d1e607a652323d930ba830c4e741137fcd4912cb819d762483a4b
 
 import asyncio
 import json
@@ -25,6 +25,7 @@ from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root, pause_checkout
 from tests.integration.test_git import commit_lock
 from tests.integration.test_triage import author_reply, reply
+from tests.stage_replies import requisition_reply
 
 
 def test_author_spec_requires_criteria_to_name_wrong_results():
@@ -143,10 +144,6 @@ def _events(root):
 
 def _failure(box):
     return box.enqueue(message_class="failure_report", origin="test", summary="current broken behavior", stage="check", outcome="gate_failed")[0]
-
-
-def requisition_reply(verdict, findings=None):
-    return json.dumps({"verdict": verdict, "summary": "reviewed", "findings": findings or []})
 
 
 SNAG = {"code": "scope", "message": "missing test", "paved_road": "add the test", "kind": "authoring_error"}

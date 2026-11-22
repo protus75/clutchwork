@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Production CLI composition with a scripted provider and a real ticket-plane checkout.
+# purpose: Tests `clutch box triage` and `box dismiss` CLI composition: verdict records, reopen handling, report ingestion and escape attribution with a scripted provider
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 2ca75893b9a4f77d609390ff2f65542a0565f68206b283eb8e42f22eb1cf3b71
+# verified: 9b76d3e1
+# hash: 1a7cdab4219a1c00c7c8d4e8749df8ed13e647b4d6e4f044341052e9234e355b
 
 import asyncio
 import json
@@ -23,6 +23,7 @@ from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
 from tests.spool_captures import read_capture
+from tests.stage_replies import requisition_reply
 
 
 def test_triage_spec_places_reopen_condition_in_json():
@@ -108,10 +109,6 @@ uv run pytest
 """,
         }
     )
-
-
-def requisition_reply(verdict: str, findings: list | None = None) -> str:
-    return json.dumps({"verdict": verdict, "summary": "reviewed", "findings": findings or []})
 
 
 def run(root: Path, monkeypatch, llm: FakeLLM) -> int:
