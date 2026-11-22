@@ -6,10 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-- none
-
-## Runs before
-- shared-git-fake
+- implement-skips-full-suites
 
 ## Context
 - clutch/stages.py::prepare_worktree
