@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ea34ad05835f4ead1e6703a0e7b4a73fc5ccf2d4",
+  "produced_at_sha": "0b2c681c5454c9c2a97d1094143421d2d1e31b06",
   "stem": "io-helpers-drain",
   "passed": true,
   "changed_files": [
@@ -66,7 +66,7 @@
     "tests/snapshot_scale_fixture.py",
     "tests/unit/test_drain_helpers.py"
   ],
-  "inserted_lines": 561,
+  "inserted_lines": 534,
   "bypassed": [],
   "reports": [
     {
@@ -135,17 +135,18 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.441648,
-        "passed": 1960,
+        "seconds": 14.28699,
+        "passed": 1970,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.2665040810243227,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.2444744750391692
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3342587370134424,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.0462030769558623,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.0010853790154215
         }
       },
       "coverage": {
-        "percent": 73.8139838815073,
+        "percent": 73.837513061651,
         "files": {}
       }
     },
@@ -155,13 +156,13 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 26.431659,
+        "seconds": 10.602533,
         "passed": 289,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7642883020162117,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0037222120154183
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8683855290000793,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.004041004984174
         }
       }
     },
@@ -187,9 +188,9 @@
         "tests/unit/test_drain_helpers.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_drain_helpers.py\nbringing up nodes...\nbringing up nodes...\n\n.................                                                        [100%]\n=============================== warnings summary ===============================\ntests/integration/test_stages.py:52: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-drain/tests/integration/test_stages.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n17 passed, 20 warnings in 1.22s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_drain_helpers.py\nbringing up nodes...\nbringing up nodes...\n\n...................                                                      [100%]\n=============================== warnings summary ===============================\ntests/integration/test_stages.py:52: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-drain/tests/integration/test_stages.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n19 passed, 20 warnings in 1.22s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 3.258958
+      "seconds": 3.955839
     },
     {
       "argv": [
@@ -198,9 +199,9 @@
         "tests/unit"
       ],
       "rc": 0,
-      "tail": "......................... [ 66%]\n........................................................................ [ 69%]\n........................................................................ [ 73%]\n........................................................................ [ 77%]\n........................................................................ [ 80%]\n........................................................................ [ 84%]\n........................................................................ [ 88%]\n........................................................................ [ 91%]\n........................................................................ [ 95%]\n........................................................................ [ 99%]\n................                                                         [100%]\n=============================== warnings summary ===============================\ntests/integration/test_stages.py:52: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-drain/tests/integration/test_stages.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_providers.py:40: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-drain/tests/integration/test_providers.py:40: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1960 passed, 40 warnings in 9.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "......................... [ 65%]\n........................................................................ [ 69%]\n........................................................................ [ 73%]\n........................................................................ [ 76%]\n........................................................................ [ 80%]\n........................................................................ [ 84%]\n........................................................................ [ 87%]\n........................................................................ [ 91%]\n........................................................................ [ 95%]\n........................................................................ [ 98%]\n..........................                                               [100%]\n=============================== warnings summary ===============================\ntests/integration/test_stages.py:52: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-drain/tests/integration/test_stages.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_providers.py:40: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-drain/tests/integration/test_providers.py:40: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1970 passed, 40 warnings in 8.45s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 12.822341
+      "seconds": 10.982658
     },
     {
       "argv": [
@@ -209,9 +210,9 @@
         "tests/integration"
       ],
       "rc": 0,
-      "tail": "ssssssssssssssss [ 57%]\nsssssssss.ss.sssssssssssssssssssssssss.sssssssssssssssss..sssssssss.ssss [ 59%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.sss [ 61%]\ns.ssssssssssssssssssssssssssssssssssssssss...sssssssssssssssssssssssssss [ 63%]\ns...ssssssssssssssssssssssssss..sssssssssssssssssssssssssssss...ssssssss [ 65%]\nssss.sssssssssssssssss.s..ssssssssssssssssssssssssssssssssssssssssssssss [ 67%]\nssssssssssssssssssssssssss.sssssssssssss.sss.sss.sssssssssss.sssss.sss.s [ 69%]\nsssssssssssssssssssssssss..ss..sssssssssssssssssssssss...ssssssssssssss. [ 71%]\nssssssssssssssssssssssssssssss.ssss.sss.ssssssssssssssss.sssssssssss.sss [ 73%]\nsssssssss..ss.ssssssssssssssssssssssssssssssssssssssssssssssss.ssssss..s [ 75%]\nss.ssssssss.ssssssssss.sssssssssssssssssssssssssssssssssssssssss.sssssss [ 77%]\n...ss.ssssssssssssss...s..s.sssssss.s.....sssss...sssssss...ssssssssss.s [ 79%]\ns.ssss.sssssss.sss.ssssssssssssssssssssssssssssssssssssssssssssssssssss. [ 81%]\nssssssss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 83%]\nsss.ssssssssssssssssssssssssssssssssssssssssssssssssssssss.sssssssss.sss [ 85%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nssssss.ssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssssssssss [ 89%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssss.ssssssssssssssssss [ 91%]\nsssssssssssssssss.sssssssssssssssssssssssssssssssss.ssssssssssssssssssss [ 93%]\nsssssssss.sss.ss..ssssssss.ss.sssssssss.sss.ssssssssssssssssssssssssssss [ 95%]\nssssssssssssssssss........................ssssssss.ss.sssss............. [ 97%]\nssssssssss.......ssssssssssssssssssssssss......ssssss.s..........ssss... [ 99%]\nssssssssssssssssssss..........                                           [100%]\n289 passed, 3341 skipped in 7.00s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "ssssss.sssssssss [ 57%]\nssss.sssss.sssssssssssssssssssssssssss.ssssssssssssssss.ssssssssssssssss [ 59%]\nsssssssssssssssssssssssssssssssssssssssssssssss.sssssssssssssssssssss.ss [ 61%]\nsssssssssssssssssssssssssssssssssssssssss...ssss.sssssssssssssssssssssss [ 63%]\nsssssssssssss....ssssssss.sssssssss.s.ss.ssssssssssssssssss..sssssssssss [ 65%]\nsssssssssssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 67%]\nsssss.ssssssssss.sssssssss.ss.sssss.sssssssssssssssss.s.ssssss.sssssssss [ 69%]\ns.ssssssssssssssssssssssssssssssss..ssssssss...ssssssssssss.ss.sssss.sss [ 71%]\ns.sssssssssssss.s.sssssssssssssss.ssssss..ss..ssssssssssssssssssssssssss [ 73%]\nsssssssssssssssssssssss..ssssssssssssss.sssssssssssssssssss.ssssssssssss [ 75%]\nsss.ssssssssssssssssssssssssssssssss..ssssssssssss..sssssssssssss..sssss [ 77%]\nssssssssssssss..ss...s.ss.ssssssssssss....ssssssssss.sss.ss..ssssssssss. [ 79%]\nsssss....sssssssssssssssssssssssss.ssssssssssssssss.ssssssssss.sssssssss [ 81%]\nss.sssss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 83%]\nsssssssssssss.sssssss.sssssssssssssssssssss..sssssssssssssssssssssssssss [ 85%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nsssssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssssssssssssss [ 89%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nssssssssssssssssssssssssssssssssssssssss.ssssssss.ssssssssssssssss.sss.s [ 93%]\n....sss.sss.ssssssssssssssssssssssssssssssssss.sssssssssssssssssssssssss [ 95%]\nssssssssssssssssss...........sssssssssssssss...........................s [ 97%]\nssss.sssss.......ssssssssssssssssssssssss........sssssss.........ssss... [ 99%]\nssssssssssssssssssss..........                                           [100%]\n289 passed, 3341 skipped in 7.18s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 8.608755
+      "seconds": 9.65856
     }
   ]
 }
