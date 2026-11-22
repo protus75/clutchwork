@@ -64,7 +64,7 @@ After this ticket neither process imports `clutch.roadmap` or reads `docs/roadma
 - observable change: new verb `clutch release ship`; `roadmap.ship` moves into its handler in place (no second copy, no alias, no `ship` left on `clutch.roadmap`). It runs the current release's gate (`roadmap.run_gate` for `current_release`) and exits non-zero printing the failing gate lines when the gate fails or refuses when there is no current release; otherwise it bumps `--minor` and tags (`release.release`), journals the release (`release.journal_release`), publishes to PyPI only when `release.publish: true` (existing `release.publishable` and `release.publish`), then runs `release.run_packages` and prints each line, in that order. It takes the writer lock as `release bump` and `release publish` do (`_locked`)
 - compatibility: `release bump` and `release publish` are unchanged (arguments, exit codes, journal signal); `release.release`, `journal_release`, `publish`, `publishable` and `run_packages` are reused unchanged; the engine never calls the verb
 - acceptance: with a failing gate, `release ship` exits non-zero and bumps, publishes and runs nothing; with a passing gate it bumps, journals, publishes only when `release.publish` is true, then runs packages, in that order
-- tests: tests/unit/test_release_ship_verb.py (new); tests/unit/test_roadmap_ship.py and tests/integration/test_roadmap_ship.py are edited to drive the verb instead of `roadmap.ship`
+- tests: tests/unit/test_release_ship_verb.py (new); tests/unit/test_roadmap_ship.py and tests/integration/test_roadmap_ship.py are edited to drive the verb instead of `roadmap.ship`; tests/unit/test_main_release_group.py's release subcommand set gains `ship`
 - post-merge source of truth: clutch/__main__.py, docs/how-clutch-works.md, clutch/docs/host-running.md
 
 ### Prompts owning the roadmap loop
@@ -106,11 +106,13 @@ Scope in:
   - clutch/docs/host-running.md: the `roadmap` row sentence "When the roadmap table exists, `engine drain` and `engine serve` run ..." and a new `release ship` row.
   - clutch/docs/host-contract.md: "`ship` runs each configured package after the tag" becomes "`release ship` runs each configured package after the tag"; the `roadmap: {ahead: 2}` examples stay.
 - Tests: delete tests whose subject is the removed driver step; edit tests that merely use a removed name; add the unit tests below.
+- tests/unit/test_main_release_group.py: in `test_old_names_refuse`, change the expected release subcommand set to `{"bump", "publish", "ship"}`; leave the other assertions in that file as they are.
 
 Scope out:
 - `clutch roadmap accept`, `gate`, `merged`, `status` (other than the rejected-row line), the supervisor step, retro, calibration, and the Suggestion Box triage in serve and drain.
 - Removing the `release.packages` config or `release.run_packages`; changing `release bump` or `release publish`.
-- The frozen bootstrap design record, the repo-root agent rule files and the roadmap table: none names the driver, none is edited.
+- The frozen bootstrap design record and the repo-root agent rule files: neither names the driver, and neither is edited.
+- The roadmap table: it still names the driver in two rows, which box-001125 already tracks; this ticket does not edit it.
 - Stale driver wording in other guides and plan documents not listed in Scope in; those are separate Suggestion Box follow-ups.
 - Rows or tickets for further roadmap automation; that belongs to the agent prompts.
 
@@ -131,6 +133,7 @@ Scope out:
 - tests/unit/test_drain_no_roadmap.py
 - tests/unit/test_roadmap_author_rejected_row.py
 - tests/unit/test_release_ship_verb.py
+- tests/unit/test_main_release_group.py
 - tests/unit/test_roadmap_drive.py
 - tests/unit/test_roadmap_ship.py
 - tests/unit/test_roadmap_gate_waits_for_queue.py
@@ -178,7 +181,7 @@ Scope out:
 1. `./dev.py test tests/unit/test_serve_no_roadmap.py` passes: with every public function of `clutch.roadmap` monkeypatched to raise, one serve dispatch and idle cycle completes, and the roadmap table file is never read; the test fails if `Serve` still has `driver_pending` or imports `clutch.roadmap`.
 2. `./dev.py test tests/unit/test_drain_no_roadmap.py` passes: with every public function of `clutch.roadmap` monkeypatched to raise, drain's between-ticket step and no-pick exit complete, and a settle never starts a task or defers quiescence; it fails if `_Drain` still has `driver`, `driver_task` or `_run_driver`.
 3. `./dev.py test tests/unit/test_roadmap_author_rejected_row.py` passes: for a rejected, unstruck row, `author_ahead` returns without a `refile` commit, the row's stem and the table stay byte-identical, no `roadmap_row` message is enqueued for it, and `status` lists it under `waits:` with its rejection reason; the test fails on the old behavior (a new `-r1` stem).
-4. `./dev.py test tests/unit/test_release_ship_verb.py` passes: `clutch release ship` with a failing gate exits non-zero printing the failing command and bumps, publishes and runs no package; with a passing gate it bumps, journals, publishes only when `release.publish` is true, then runs packages and prints `package:` lines, in that order; it refuses when there is no current release; `clutch release --help` lists `ship` and `release ship --help` carries does, reads, writes, lock, exits and examples.
+4. `./dev.py test tests/unit/test_release_ship_verb.py tests/unit/test_main_release_group.py` passes: `clutch release ship` with a failing gate exits non-zero printing the failing command and bumps, publishes and runs no package; with a passing gate it bumps, journals, publishes only when `release.publish` is true, then runs packages and prints `package:` lines, in that order; it refuses when there is no current release; `clutch release --help` lists `ship` and `release ship --help` carries does, reads, writes, lock, exits and examples; the release group's subcommand set is exactly `{"bump", "publish", "ship"}`.
 5. `grep -rnE "build_driver|\.run_driver|def run_driver|_run_driver|driver_pending|wait_driver|ship_when_queue_low|roadmap_drive|roadmap/digest|roadmap\.settles|roadmap\.unsettled|roadmap\.ship|roadmap\.drive" clutch tests docs/how-clutch-works.md clutch/docs` prints only the new no-roadmap tests (the moved implementation lives in clutch/__main__.py as the `release ship` handler and is not named `roadmap.ship`; the pattern names the removed serve and drain methods and does not match an unrelated bare local variable `run_driver` bound to `clutch.driver.Driver.run`, which stays), and `grep -nE "roadmap" clutch/serve.py clutch/drain.py` prints no `import` of `clutch.roadmap`.
 6. `./dev.py test tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py` passes with the updated pins; the rendered prompts of `plan-ticket-serve`, `plan-ticket-drain` and `drain-loop` contain none of the strings "driver's author pass", "the driver runs the gate", "publishing happens only through the driver", "roadmap_drive" and contain `clutch roadmap gate` then `clutch release ship` (named as the owner's command, never as a step the agent runs) in Closing each phase of both plan prompts, and contain no instruction to run `clutch release bump`, `clutch release publish` or `clutch release ship`.
 7. `./dev.py test tests/unit/test_roadmap_author.py` passes and its default-window case asserts `clutch roadmap author` with no `--ahead` uses `config.roadmap.ahead`, not a literal.
@@ -187,7 +190,7 @@ Scope out:
 
 ## Verification
 ```
-./dev.py test tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_roadmap_author_rejected_row.py tests/unit/test_release_ship_verb.py
+./dev.py test tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_roadmap_author_rejected_row.py tests/unit/test_release_ship_verb.py tests/unit/test_main_release_group.py
 ./dev.py test tests/unit/test_roadmap_ship.py tests/integration/test_roadmap_ship.py tests/unit/test_roadmap_author.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py
 ./dev.py test
 ```
