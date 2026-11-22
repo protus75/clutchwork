@@ -1,0 +1,63 @@
+{
+  "attempt": 0,
+  "stage": "check",
+  "terminal": "gate_failed",
+  "findings": [
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_serve_scan_head.py::test_main_moves_only_invalidate_pending_intake[False] failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_serve_scan_head.py::test_main_moves_only_invalidate_pending_intake[True] failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_serve_scan_head.py::test_other_intake_inputs_still_invalidate[state] failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_serve_scan_head.py::test_other_intake_inputs_still_invalidate[status] failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_supervise_idle_hooks.py::test_drain_lazy_context[False-True] failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": " tests/integration/test_git_fake_adoption.py       | 19 ++-----\n tests/unit/test_runner_attempt_manifest.py        | 11 ++--\n tests/unit/test_runner_terminal_removal_shield.py | 28 ++++++----\n tests/unit/test_serve_idle_poll.py                | 15 +++---\n tests/unit/test_spool_store_switch.py             |  9 ++--\n tests/unit/test_stages_candidates_select.py       | 23 ++++----\n tests/unit/test_stages_conflict_rerun_inputs.py   | 11 ++--\n tests/unit/test_stages_flake_coverage.py          |  9 ++--\n tests/unit/test_stale_running.py                  | 31 ++++-------\n tests/unit/test_supervise_idle_point.py           | 34 ++++++------\n tests/unit/test_supervisor_trigger.py             | 11 ++--\n tests/unit/test_ticket_lint_rules.py              |  9 ++--\n tests/unit/test_ticket_write_consumers_author.py  | 65 +++++++++++------------\n tests/unit/test_ticket_write_consumers_runner.py  | 11 ++--\n 14 files changed, 136 insertions(+), 150 deletions(-)\n",
+  "stage_log_tail": "sss.ssssssssssssssssssssssssssssssssss [ 85%]\nsssssssssssssssssssssssss.ssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nsssssssssssss.ssssssssssssssssssssss.sssssssss.sssssssssssssssssssssssss [ 89%]\nssssssssss..ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nssssssssssssssssssssssss.sssssss.ss.ss..s.sssssssssss.ssssssssssss..ssss [ 93%]\nsssssssssssssssssssssssssssssssssss.ssssssssssssssssss..............s.ss [ 95%]\n.ssssssss.s.sssss.s.ss...sssssssssssss.ssssssssss.....sssssssss.....ssss [ 97%]\nsssssssss...........sssssssssss.sssssssssss..sssssssssssssssssssssssss.. [ 99%]\n...............                                                          [100%]\n====================== 274 passed, 3341 skipped in 8.99s =======================\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ uv run ruff check .\n[exit 0]\n--- stdout\nAll checks passed!\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ uv run ruff format --check .\n[exit 0]\n--- stdout\n791 files already formatted\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ ./dev.py test tests/integration/test_git_fake_adoption.py\n[exit 0]\n--- stdout\n$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.05s\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ ./dev.py test tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py\n[exit 0]\n--- stdout\n$ uv run pytest -q -p clutch.testguard tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 63%]\n..........................................                               [100%]\n114 passed in 1.99s\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n{\"outcome\":\"ok\",\"summary\":\"Migrated the 13 listed test files to GitFake, removed them from PENDING, and committed the changes as dfd92ce8; both verification commands passed.\",\"surprises\":\"Stateful lock-protected edits and changing return values required per-test overrides; GitFake itself was unchanged. The simpler default overrides could not model those behaviors.\",\"second_problems\":[],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"none\",\"findings\":[]}",
+  "events_tail": "cket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py'\",\"aggregated_output\":\"$ uv run pytest -q -p clutch.testguard tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py\\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\\nbringing up nodes...\\nbringing up nodes...\\n\\n........................................................................ [ 63%]\\n..........................................                               [100%]\\n114 passed in 1.96s\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_23\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git add tests/integration/test_git_fake_adoption.py tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_23\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git add tests/integration/test_git_fake_adoption.py tests/unit/test_runner_attempt_manifest.py tests/unit/test_runner_terminal_removal_shield.py tests/unit/test_serve_idle_poll.py tests/unit/test_spool_store_switch.py tests/unit/test_stages_candidates_select.py tests/unit/test_stages_conflict_rerun_inputs.py tests/unit/test_stages_flake_coverage.py tests/unit/test_stale_running.py tests/unit/test_supervise_idle_point.py tests/unit/test_supervisor_trigger.py tests/unit/test_ticket_lint_rules.py tests/unit/test_ticket_write_consumers_author.py tests/unit/test_ticket_write_consumers_runner.py'\",\"aggregated_output\":\"\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_24\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"git commit -m 'Migrate remaining unit Git stand-ins to shared fake'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_24\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"git commit -m 'Migrate remaining unit Git stand-ins to shared fake'\\\"\",\"aggregated_output\":\"[shared-git-fake-unit-5 dfd92ce8] Migrate remaining unit Git stand-ins to shared fake\\n 14 files changed, 89 insertions(+), 109 deletions(-)\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_25\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"ok\\\",\\\"summary\\\":\\\"Migrated the 13 listed test files to GitFake, removed them from PENDING, and committed the changes as dfd92ce8; both verification commands passed.\\\",\\\"surprises\\\":\\\"Stateful lock-protected edits and changing return values required per-test overrides; GitFake itself was unchanged. The simpler default overrides could not model those behaviors.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1685289,\"cached_input_tokens\":1631872,\"cache_write_input_tokens\":0,\"output_tokens\":6407,\"reasoning_output_tokens\":359}}\n",
+  "wall_seconds": 325.12370799999997,
+  "usd": 1.0,
+  "run_record": "tickets/shared-git-fake-unit-5/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
