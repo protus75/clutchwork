@@ -5,8 +5,8 @@
 # purpose: Integration tests for control verbs through the real CLI: pause, resume, stop, retro, confirm and reject route by the writer lock and publish requests bound to the running engine's identity, with live verdict recovery and refusals
 # relates: [clutch/__main__.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/seams.py, clutch/status.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: d777dfea500633f3ab370264392dfb4cad426afe8e4abb0e01c1314e14488508
+# verified: 92889fdb
+# hash: 7ebda96cf8b7cc5d0cb89cbe5434a55bd13a53b34910594ddc4f5d8a0ece35da
 
 import json
 from dataclasses import asdict
@@ -31,8 +31,8 @@ def test_confirm_held_without_writer_lock(tmp_path, monkeypatch, capsys, dirless
     from clutch import runner
     from clutch.journal import EventType
     from clutch.tickets import stamp
-    from tests.integration.test_mergequeue import admission_control, commit, ready
-    from tests.integration.test_mergequeue import ctx as context_fixture
+    from tests.daemon_helpers import admission_control, commit, ready
+    from tests.daemon_helpers import ctx as context_fixture
 
     ctx = context_fixture.__wrapped__(tmp_path)
 
@@ -341,8 +341,8 @@ def test_live_verdict_recovery_and_refusal(tmp_path, monkeypatch, capsys, kind):
     from clutch.journal import EventType
     from clutch.status import project, render
     from clutch.tickets import stamp
-    from tests.integration.test_mergequeue import admission_control, commit, ready
-    from tests.integration.test_mergequeue import ctx as context_fixture
+    from tests.daemon_helpers import admission_control, commit, ready
+    from tests.daemon_helpers import ctx as context_fixture
 
     ctx = context_fixture.__wrapped__(tmp_path)
 
@@ -408,8 +408,8 @@ def test_live_confirm_old_draft_and_unknown_stem(tmp_path):
     from clutch import runner
     from clutch.journal import EventType
     from clutch.tickets import stamp
-    from tests.integration.test_mergequeue import admission_control, commit, ready
-    from tests.integration.test_mergequeue import ctx as context_fixture
+    from tests.daemon_helpers import admission_control, commit, ready
+    from tests.daemon_helpers import ctx as context_fixture
 
     ctx = context_fixture.__wrapped__(tmp_path)
 
@@ -449,8 +449,8 @@ def test_yes_matches_typed_verdict(tmp_path, capsys, verb, verdict):
     import asyncio
 
     from clutch.journal import EventType
-    from tests.integration.test_mergequeue import ctx as context_fixture
-    from tests.integration.test_mergequeue import ready
+    from tests.daemon_helpers import ctx as context_fixture
+    from tests.daemon_helpers import ready
 
     ctx = context_fixture.__wrapped__(tmp_path)
 
@@ -493,8 +493,8 @@ def test_extension_repeat_keep(tmp_path, capsys, live):
     from clutch import runner
     from clutch.journal import EventType
     from clutch.status import project, render
-    from tests.integration.test_mergequeue import admission_control, ready
-    from tests.integration.test_mergequeue import ctx as context_fixture
+    from tests.daemon_helpers import admission_control, ready
+    from tests.daemon_helpers import ctx as context_fixture
 
     ctx = context_fixture.__wrapped__(tmp_path)
 
@@ -601,8 +601,8 @@ def test_confirm_multiple_stems_stops_on_refusal(tmp_path):
     import asyncio
 
     from clutch.journal import EventType
-    from tests.integration.test_mergequeue import ctx as context_fixture
-    from tests.integration.test_mergequeue import ready
+    from tests.daemon_helpers import ctx as context_fixture
+    from tests.daemon_helpers import ready
 
     ctx = context_fixture.__wrapped__(tmp_path)
 

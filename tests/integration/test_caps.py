@@ -5,8 +5,8 @@
 # purpose: Integration tests for the failure-spine caps: attempts counting, cap draws per stem and ticket revision, retry rungs, infra draws before terminals, parking a stem whose cap is spent, routing to the Reject queue, and premise-bounce escalation
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: a5687cb0a4d5ef2885fc850becc9953d31b2a5068830f0fe38d15043ca9ec6a7
+# verified: 92889fdb
+# hash: 308d9ca3df39958b7925df05ebd7eb587590c28dbf1164ee4b34abde0ae1645f
 
 import pytest
 
@@ -21,10 +21,9 @@ from clutch.stages import StagesRun
 from clutch.status import reject_queue
 from clutch.tickets import validate_ticket
 from tests.cli_helpers import git_out
+from tests.daemon_helpers import ctx as admission_context
+from tests.daemon_helpers import production_writer, ready
 from tests.drain_helpers import Clock, Script, commit_ticket, confirmed, drain, journal, make_root
-from tests.integration.test_daemon_composition import production_writer
-from tests.integration.test_mergequeue import ctx as admission_context
-from tests.integration.test_mergequeue import ready
 from tests.integration.test_terminal import ENV, STEM, author, clock, diagnosis_reply, repo
 
 pytestmark = pytest.mark.disk_io_skip

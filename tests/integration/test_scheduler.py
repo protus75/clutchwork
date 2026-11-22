@@ -5,8 +5,8 @@
 # purpose: Tests scheduler dispatch, eligibility, holds, ordering, backpressure and watcher debounce/parse handling, plus CLI reachability of scheduler and watcher
 # relates: [clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 97c3d4a2004ac2c5948b61b8b8c88c382171e5e96b82381879e980b6ced870bd
+# verified: 92889fdb
+# hash: d1af646b4a7be79666d4ba271425bcc0e80e6af41476c58cb3759455c2b00d79
 
 import ast
 import asyncio
@@ -438,7 +438,7 @@ def assert_reachable(sources):
 
 
 def test_scheduler_and_watcher_are_dormant(tmp_path):
-    from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, without_core_import
+    from tests.daemon_helpers import CoreRig, assert_core_wiring, without_core_import
 
     root = Path(__file__).resolve().parents[2]
     sources = {".".join(p.relative_to(root).with_suffix("").parts): p.read_text() for p in (root / "clutch").rglob("*.py")}
@@ -458,7 +458,7 @@ def test_scheduler_and_watcher_are_dormant(tmp_path):
 
 @pytest.mark.asyncio
 async def test_superseded_dependencies_require_all_successor_leaves(tmp_path):
-    from tests.integration.test_daemon_composition import CoreRig
+    from tests.daemon_helpers import CoreRig
 
     calls = []
 

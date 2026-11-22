@@ -4,14 +4,14 @@
 # purpose: Checks that the production daemon core writes queue.json through the checkout filesystem seam into the configured state directory
 # relates: [tests/dispatch_settle.py, tests/integration/test_daemon_composition.py]
 # owner: engine
-# verified: d32c32ad
-# hash: a406ca02cbf14ab4bba7611305c1378e50c7a4c17fdd7f2d04612f3278ddd523
+# verified: 92889fdb
+# hash: 612c3e6385cdc47bcbbace5dbda902b16c953721def4c9e6e243a8121b3a0a6b
 import json
 
 import pytest
 
+from tests.daemon_helpers import CoreRig
 from tests.dispatch_settle import dispatch_settled
-from tests.integration.test_daemon_composition import CoreRig
 
 pytestmark = pytest.mark.disk_io_skip
 

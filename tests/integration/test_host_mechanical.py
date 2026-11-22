@@ -5,8 +5,8 @@
 # purpose: Tests host mechanical checks through production Check and inline merge: triggers, severity, base-red, autofix commits, results-based flake detection and quarantine, coverage and timing
 # relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/merge.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 0fe93a03d32e87fe51484b585d12362a8a4d4d46b72254d645842d9b3216ff69
+# verified: 92889fdb
+# hash: 29f4f1497d2c1869af81f3442784b6e6e9ed8804a014fc2a05d732ec23c6d2e8
 
 import asyncio
 
@@ -15,7 +15,7 @@ import pytest
 from clutch import merge, stages
 from clutch.box import BOX_DIR, Box
 from clutch.seams import ExecutableNotFound
-from tests.integration.test_mergequeue import approve, commit, ctx, host, ready, scripted
+from tests.daemon_helpers import approve, commit, ctx, host, ready, scripted
 from tests.spool_captures import list_captures, read_capture
 from tests.stages_helpers import SECRET
 
@@ -167,7 +167,7 @@ def test_autofix_config_loading(ctx, tmp_path):
 
 def test_autofix_commits_selected_files_and_evaluates_head(ctx, monkeypatch):
     from clutch.config import AutofixCommand
-    from tests.integration.test_mergequeue import commit
+    from tests.daemon_helpers import commit
 
     async def run():
         ticket = await ready(ctx, changes={"clutch/thing.py": "before\n", "tickets/extra.txt": "ticket\n"}, fence=("clutch/thing.py", "tickets"))
@@ -220,7 +220,7 @@ def test_autofix_no_change_and_already_satisfied(ctx, monkeypatch):
 
 def test_autofix_failure_restores_and_blocks_check(ctx, monkeypatch):
     from clutch.config import AutofixCommand
-    from tests.integration.test_mergequeue import commit
+    from tests.daemon_helpers import commit
 
     async def run():
         ticket = await ready(ctx, fence=("clutch/thing.py", "tickets"))
@@ -253,7 +253,7 @@ def test_autofix_failure_restores_and_blocks_check(ctx, monkeypatch):
 
 def test_autofix_skips_when_no_files(ctx, monkeypatch):
     from clutch.config import AutofixCommand
-    from tests.integration.test_mergequeue import commit
+    from tests.daemon_helpers import commit
 
     async def run():
         ticket = await ready(ctx)
@@ -439,7 +439,7 @@ def test_results_edited_quarantine_and_cap(ctx, monkeypatch, edited, cap):
 def test_coverage_changed_lines(ctx, monkeypatch, deletion, covered, expected):
     import json
 
-    from tests.integration.test_mergequeue import commit
+    from tests.daemon_helpers import commit
 
     async def run():
         test = "tests/test_a.py::test_x"

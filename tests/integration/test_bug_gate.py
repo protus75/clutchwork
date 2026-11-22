@@ -5,8 +5,8 @@
 # purpose: Integration tests for the bug-evidence gate: the regression overlay proves the defect at base and the fix at head, plus result-protocol decoding, evidence custody, invalid carries, failed-execution handling, base-worktree cleanup, secret redaction, and wiring into Check, inline merge and the merge queue with real Git repositories
 # relates: [clutch/gates.py, clutch/merge.py, clutch/mergequeue.py, clutch/redact.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 64b9ebb7317c69dfd0f10b3d935403359646b174b9da100c669b0a26176b89ed
+# verified: 92889fdb
+# hash: 882f8b863a6aa947d3a03f3601beba3b69a4bfda2b16ec8a89add2421e5c1bba
 
 import asyncio
 import dataclasses
@@ -20,7 +20,7 @@ from clutch.gates import DEFAULT_GATE_SEVERITY
 from clutch.mergequeue import MergeQueue
 from clutch.seams import ExecutableNotFound
 from clutch.tickets import validate_ticket
-from tests.integration.test_mergequeue import approve, commit, ctx, ready
+from tests.daemon_helpers import approve, commit, ctx, ready
 from tests.spool_captures import read_capture
 from tests.stages_helpers import SECRET, STEM, TICKET
 

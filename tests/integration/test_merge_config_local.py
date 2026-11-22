@@ -4,13 +4,13 @@
 # purpose: Verify squash merges carry ticket config.yaml edits while keeping the owner's uncommitted local config.yaml edits, and still refuse other dirty paths
 # relates: [tests/integration/test_mergequeue.py]
 # owner: tests/integration/test_mergequeue.py
-# verified: d32c32ad
-# hash: 3dd8a14b90d110e39895eee0e99799c0602a8cd39808ca052b8274fabec582fc
+# verified: 92889fdb
+# hash: ad74242aca1d461a1bb0eab1e05fc6f72026acf909be5ac89d4c98f51ffa9002
 import asyncio
 
 import pytest
 
-from tests.integration.test_mergequeue import admission, ctx, ready
+from tests.daemon_helpers import admission, ctx, ready
 
 pytestmark = pytest.mark.disk_io_skip
 

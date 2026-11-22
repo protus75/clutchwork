@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 775911746b19d8ef48816d2b94ea794f35f332d7e96670fdea3cab6edaba60ea
+# verified: 92889fdb
+# hash: d41e512302ab2a3db7310f66c48cf45637739b0a73fb4dd67541372d9f880045
 
 import ast
 import asyncio
@@ -33,12 +33,11 @@ from clutch.stages import StageContext
 from clutch.tickets import INTAKE_SIGNAL
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
 from tests.cli_helpers import root, write
+from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring, assert_idle, assert_startup_pause_wiring, capture_pipeline_queue, production_writer, ready, sources, without_core_import
+from tests.daemon_helpers import ctx as admission_context
 from tests.dispatch_settle import dispatch_settled
-from tests.integration.test_daemon_admission import assert_idle
 from tests.integration.test_daemon_config import assert_detached, python_values
 from tests.integration.test_git import commit_lock
-from tests.integration.test_mergequeue import ctx as admission_context
-from tests.integration.test_mergequeue import ready
 from tests.integration.test_providers import CONFIG, ENV, claude_ok, codex_ok, jsonl
 from tests.integration.test_scheduler import Time, import_closure, text, turn
 from tests.spool_captures import list_captures
@@ -179,99 +178,6 @@ async def test_production_watchdog_shares_active_executor(root, monkeypatch):
         assert serving.owner.notifications.compose(serving.checkout.config).exec_ is not contexts[-1].exec_
     finally:
         await finish(serving, run)
-
-
-class CoreRig:
-    def __init__(self, root, *, prepare=None, config=CONFIG, config_path=None):
-        self.root = root
-        (root / "clutch").mkdir(exist_ok=True)
-        (root / "clutch/thing.py").write_text("")
-        self.config_path = config_path
-        self.put_config(config)
-        self.time = Time()
-        self.fs = ScriptFS()
-        self.exec = ScriptExec(self.fs)
-        self.journal = Journal(root / "state", self.time)
-        initial = load_config(config_path, cwd=root)
-        self.checkout = runner.Checkout(
-            root,
-            initial,
-            ENV,
-            self.exec,
-            Git(self.exec, env=child_env(ENV, initial), timeout=30, commit_lock=commit_lock(root / ".clutch/state")),
-            self.journal,
-            self.fs,
-            self.time,
-            self.time.sleep,
-        )
-        self.files = {}
-        self.quarantine, self.drought = set(), set()
-        self.unmerged = 0
-        self.calls, self.locals = [], []
-        kwargs = {} if prepare is None else {"prepare": prepare}
-        self.core = cli.build_daemon_core(
-            self.checkout,
-            config_path=config_path,
-            read=self.files.get,
-            debounce=5,
-            quarantined=lambda: self.quarantine,
-            drought_parked=lambda: self.drought,
-            completed_unmerged=lambda: self.unmerged,
-            **kwargs,
-        )
-
-    def put_config(self, config):
-        (self.config_path or self.root / "config.yaml").write_text(config)
-
-    async def publish(self, *stems):
-        async def changes():
-            for stem in stems:
-                yield stem
-
-        consumer = asyncio.create_task(self.core.watcher.run(changes()))
-        await turn()
-        await turn()
-        self.time.advance(5)
-        await consumer
-
-    async def add(self, stem, priority="P2", state="confirmed", depends="none"):
-        self.files[stem] = text(priority, state, depends)
-        write(self.root, stem, self.files[stem])
-        await self.publish(stem)
-        return self.core.scheduler.pending[stem]
-
-    def transition(self, stem, to, **body):
-        self.journal.append(EventType.STATE_TRANSITION, {"to": to, **body}, ticket=stem)
-
-    def intake(self, stem):
-        self.journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL, "source": "human", "state": "confirmed", "new": True, "commit": "abc"}, ticket=stem)
-
-    async def drain(self):
-        while await dispatch_settled(self.core.scheduler) is not None:
-            pass
-
-
-def assert_core_wiring(rig):
-    core = rig.core
-    assert isinstance(core.admission, DaemonAdmission)
-    assert isinstance(core.scheduler, Scheduler) and isinstance(core.watcher, Watcher)
-    assert core.scheduler.journal is core.watcher.journal is rig.checkout.journal
-    assert core.scheduler.dispatch == core.admission.dispatch
-    assert core.watcher.publish == core.scheduler.update
-    assert core.watcher.remove == core.scheduler.remove
-    assert core.watcher.read == rig.files.get
-    assert core.watcher.clock is rig.checkout.clock and core.watcher.sleep == rig.checkout.sleep
-    assert core.watcher.debounce == 5
-    assert core.scheduler.max_unmerged == rig.checkout.config.scheduler.max_unmerged
-
-
-def assert_startup_pause_wiring(core):
-    boundary = core.admission._before_dispatch
-    assert boundary is not None
-    assert isinstance(boundary.__self__, daemon.StartupBoundary)
-    assert boundary == boundary.__self__.checkpoint
-    assert boundary.__self__.restart is core.restart
-    assert boundary.__self__.pause is core.control
 
 
 @pytest.fixture
@@ -974,19 +880,6 @@ def test_bootstrap_pipeline_prepares_before_dispatch(tmp_path, monkeypatch, refu
     assert_idle(rig.core.admission)
 
 
-def capture_pipeline_queue(monkeypatch):
-    captured = []
-    compose = runner.compose_pipeline
-
-    def recording(ctx, *, escalate, control):
-        queue = compose(ctx, escalate=escalate, control=control)
-        captured.append((ctx, escalate, queue))
-        return queue
-
-    monkeypatch.setattr(runner, "compose_pipeline", recording)
-    return captured
-
-
 @pytest.mark.asyncio
 async def test_production_pipeline_composes_merge_queue(tmp_path, monkeypatch):
     captured = capture_pipeline_queue(monkeypatch)
@@ -1096,30 +989,6 @@ async def test_composed_merge_queue_admits_reviewed_candidate(admission_context,
     assert queue.pending == {} and queue.active is None
 
 
-def sources():
-    root = Path(__file__).resolve().parents[2]
-    material = {".".join(p.relative_to(root).with_suffix("").parts): p.read_text() for p in (root / "clutch").rglob("*.py")}
-    material["clutch"] = material.pop("clutch.__init__")
-    return material
-
-
-def without_core_import(material):
-    main = ast.parse(material["clutch.__main__"])
-    assert any(
-        isinstance(node, ast.ImportFrom) and node.module == "clutch.daemon" and {"DaemonCore", "PauseConsumer", "daemon_core"} <= {alias.name for alias in node.names} for node in ast.walk(main)
-    )
-
-    class RemoveDaemon(ast.NodeTransformer):
-        def visit_Import(self, node):
-            return ast.copy_location(ast.Pass(), node) if any(alias.name == "clutch.daemon" for alias in node.names) else node
-
-        def visit_ImportFrom(self, node):
-            target = node.module == "clutch.daemon" or (node.module == "clutch" and any(alias.name == "daemon" for alias in node.names))
-            return ast.copy_location(ast.Pass(), node) if target else node
-
-    return {name: ast.unparse(RemoveDaemon().visit(ast.parse(source))) for name, source in material.items()}
-
-
 def test_without_core_import_handles_multiline_and_nested_imports():
     material = {
         "clutch.__main__": "from clutch.daemon import (\n    DaemonCore,\n    PauseConsumer,\n    StartupBoundary,\n    daemon_core,\n)\n",
@@ -1132,27 +1001,19 @@ def test_without_core_import_handles_multiline_and_nested_imports():
     assert len([node for node in ast.walk(ast.parse(removed["clutch.other"])) if isinstance(node, ast.Pass)]) == 3
 
 
-def assert_reachable(material):
+def composition_assert_reachable(material):
     assert {"clutch.daemon", "clutch.scheduler", "clutch.watcher"} <= import_closure(material)
 
 
 def test_daemon_core_is_reachable_from_cli():
     material = sources()
-    assert_reachable(material)
+    composition_assert_reachable(material)
     removed = without_core_import(material)
     with pytest.raises(AssertionError):
-        assert_reachable(removed)
+        composition_assert_reachable(removed)
     for edge in ("import clutch.daemon", "from clutch import daemon"):
         restored = {**removed, "clutch.status": removed["clutch.status"] + "\n" + edge}
-        assert_reachable(restored)
-
-
-def production_writer(source, script):
-    """Reuse the production bind and its queue with the disposable admission repository."""
-    checkout = runner.Checkout(source.repo, source.config, source.env, source.exec_, source.git, source.driver.journal, source.fs, source.driver.clock, source.driver.sleep)
-    checkout = replace(checkout, control=cli.build_control(checkout))
-    writer = runner.bind(checkout, FakeLLM(script))
-    return checkout, writer
+        composition_assert_reachable(restored)
 
 
 @pytest.mark.asyncio
@@ -1187,7 +1048,7 @@ async def test_production_applies_reviewed_rework_orders(admission_context, monk
     ticket = await ready(ctx)
     text = (ctx.repo / f"tickets/{ticket.stem}/ticket.md").read_text()
     if action == "exhausted":
-        from tests.integration.test_mergequeue import commit
+        from tests.daemon_helpers import commit
 
         text = text.replace("kind: feature", "kind: feature\nagent_tier: max\nagent_effort: max")
         ctx.fs.write(ctx.repo / f"tickets/{ticket.stem}/ticket.md", text.encode())
@@ -1382,121 +1243,6 @@ async def test_production_composes_one_pause_consumer(tmp_path, monkeypatch):
     assert_startup_pause_wiring(rig.core)
     assert tasks == asyncio.all_tasks() and rig.journal.read() == []
     assert rig.fs.files == {} and rig.exec.calls == []
-
-
-class LiveDrain:
-    """The real drain and CLI control factory, with filesystem traces and barrier wakeups."""
-
-    def __init__(self, root, monkeypatch, *, pause=True):
-        from clutch.control import ControlRequest, publish_request
-        from clutch.lockfile import Lockfile, LockHeld
-        from clutch.seams import LocalFileSystem, SubprocessExec
-        from tests.cli_helpers import ENV as checkout_env
-        from tests.drain_helpers import Clock, journal
-
-        process = SubprocessExec()
-        self.checkout = runner.Checkout(
-            root,
-            load_config(None, cwd=root),
-            checkout_env,
-            process,
-            Git(process, env=checkout_env, timeout=30, commit_lock=commit_lock(root / ".clutch/state")),
-            journal(root),
-            LocalFileSystem(),
-            Clock(),
-        )
-        self.trace, self.consumers, self.calls = [], [], []
-        self.pause = pause
-        self.held = asyncio.Queue()
-        self.wake = asyncio.Queue()
-        original_acquire, original_release = Lockfile.acquire, Lockfile.release
-
-        def acquire(lock):
-            original_acquire(lock)
-            self.trace.append("lock")
-
-        def release(lock):
-            self.trace.append("unlock")
-            original_release(lock)
-
-        monkeypatch.setattr(Lockfile, "acquire", acquire)
-        monkeypatch.setattr(Lockfile, "release", release)
-        original = cli.build_control
-
-        def build(checkout):
-            assert checkout is self.checkout
-            consumer = original(checkout)
-            self.consumers.append(consumer)
-            consume = consumer.inbox.consume
-
-            def consumed():
-                self.trace.append("consume")
-                consume()
-
-            consumer.inbox.consume = consumed
-            return consumer
-
-        monkeypatch.setattr(cli, "build_control", build)
-        append = self.checkout.journal.append
-
-        def appended(*args, **kwargs):
-            event = append(*args, **kwargs)
-            if event.body.get("kind") == "control_decision":
-                self.trace.append(("decision", event.body.copy()))
-            return event
-
-        monkeypatch.setattr(self.checkout.journal, "append", appended)
-        rig = self
-
-        class Files(LocalFileSystem):
-            def write(self, path, data):
-                if path == rig.checkout.config.state_dir / "control/active.json":
-                    contender = Lockfile(rig.checkout.config.state_dir, verb="drain", instance_id="trace", clock=rig.checkout.clock)
-                    with pytest.raises(LockHeld):
-                        contender.acquire()
-                    assert rig.trace[0] == "lock" and "unlock" not in rig.trace
-                    rig.trace.append(("discovery", json.loads(data)))
-                    if data != b"null\n":
-                        value = json.loads(data)
-                        if value["hold_id"] is not None:
-                            assert any(e.body.get("request_id") == value["hold_id"] and e.body.get("decision") == "accepted" for e in rig.checkout.journal.read())
-                super().write(path, data)
-                if path.name == "active.json" and data != b"null\n" and rig.pause:
-                    rig.pause = False
-                    publish_request(rig.checkout.config.state_dir, ControlRequest("10-pause", json.loads(data)["lifecycle_id"], "pause", None), self)
-
-        async def sleep(delay):
-            assert delay > 0
-            await self.held.put(self.consumer.projection)
-            await self.wake.get()
-
-        self.checkout = replace(self.checkout, fs=Files(), sleep=sleep, control=None)
-        self.checkout = replace(self.checkout, control=cli.build_control(self.checkout))
-
-    @property
-    def consumer(self):
-        return self.consumers[-1]
-
-    def request(self, id, verb, hold=None, life=None):
-        from clutch.control import ControlRequest, publish_request
-
-        publish_request(self.checkout.config.state_dir, ControlRequest(id, life or self.consumer.inbox.lifecycle_id, verb, hold), self.checkout.fs)
-        self.wake.put_nowait(None)
-
-    async def resume(self):
-        self.request("90-resume", "resume", self.consumer.projection.pause_id)
-
-    async def run(self, dispatch=None, reexec=None, before_dispatch=None):
-        from clutch.drain import drain
-        from tests.drain_helpers import NoChild
-
-        async def callback(ticket):
-            self.calls.append(ticket.stem)
-            self.trace.append("dispatch")
-            self.checkout.journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=ticket.stem)
-            return "merged"
-
-        return await drain(self.checkout, dispatch or callback, reexec=reexec or NoChild(), before_dispatch=before_dispatch)
 
 
 @pytest.mark.asyncio
@@ -1899,8 +1645,8 @@ async def test_composed_admission_holds_accept_identity_bound_resume(admission_c
     from clutch.control import CONTROL_DECISION, ControlRequest, publish_request, read_active
     from clutch.lockfile import Lockfile
     from clutch.mergequeue import RED_STREAK, TREE_MISMATCH, TreeMismatch
+    from tests.daemon_helpers import host, scripted
     from tests.integration.test_control_cli import invoke
-    from tests.integration.test_mergequeue import host, scripted
 
     source = admission_context
     captured = capture_pipeline_queue(monkeypatch)

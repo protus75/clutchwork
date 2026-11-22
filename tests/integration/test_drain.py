@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: cf2eb463b555b7f02e277f5e565d5306c9f33946674d00406aedcc7bea6960a2
+# verified: 92889fdb
+# hash: 346acd8c45d8d50faaf2ee4e924ab312643ee51e1bfba5051b9a50cb0273655e
 
 import asyncio
 import json
@@ -1011,8 +1011,8 @@ async def test_selected_retro_remains_killable_through_existing_control(root):
     from clutch.drain import drain as run_drain
     from clutch.llm import HANG, FakeLLM
     from clutch.retro import Retro
+    from tests.daemon_helpers import turn
     from tests.drain_helpers import NoChild
-    from tests.integration.test_daemon_admission import turn
 
     commit_ticket(root, "work", confirmed())
     ticks = asyncio.Queue()

@@ -5,8 +5,8 @@
 # purpose: Tests that worker failures are suppressed only after a matching accepted kill, that other failures are kept, and that suppression is dormant in run and drain but active in serve.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 5a2ddb840f87041fded0078f6c90b4d5763dffc8a07236de5bbfb07ca6950de7
+# verified: 92889fdb
+# hash: 0ec2cd5fd51149b3f603ca27253efe8d59c3df91ce7515bd01975bf5f48d0a61
 
 import asyncio
 import json
@@ -21,13 +21,12 @@ from clutch.journal import EventType, run_seq
 from clutch.llm import FakeLLM
 from clutch.reconcile import RECOVERY_ALERT, orphans, reconcile
 from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
-from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
+from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring, ready
+from tests.daemon_helpers import ctx as admission_context
 from tests.integration.test_driver import ECHO, Stub, build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn
 from tests.integration.test_kill_signal_journal import Rig, decision
 from tests.integration.test_kill_worker_stop import Worker, accepted, boundary, release_all
-from tests.integration.test_mergequeue import ctx as admission_context
-from tests.integration.test_mergequeue import ready
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

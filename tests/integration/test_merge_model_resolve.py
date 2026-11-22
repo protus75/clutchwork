@@ -5,8 +5,8 @@
 # purpose: Tests model-driven merge conflict resolution through a real rebase and index, and serve admission with scripted model replies
 # relates: [clutch/artifacts.py, clutch/llm.py, clutch/mergequeue.py, clutch/runner.py, clutch/stages.py, tests/integration/test_daemon_composition.py]
 # owner: clutch/mergequeue.py
-# verified: 0a4d026b
-# hash: 89c11175aa76f0cc5ee062aac1bdea053c9f7e85d922ee538e74158336133b7c
+# verified: 92889fdb
+# hash: 7aa0a60f00cf73946eb9cff62b29e56fc4d49fe07df20ec49886e95fa0df0bf9
 
 import asyncio
 import json
@@ -17,8 +17,7 @@ from clutch import runner, stages
 from clutch.artifacts import Cost, StageResult
 from clutch.llm import FakeLLM
 from clutch.mergequeue import MergeQueue
-from tests.integration.test_daemon_composition import production_writer
-from tests.integration.test_mergequeue import commit, ctx, facts, ready
+from tests.daemon_helpers import commit, ctx, facts, production_writer, ready
 from tests.stages_helpers import SNAG, verdict
 
 pytestmark = pytest.mark.disk_io_skip

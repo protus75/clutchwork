@@ -4,8 +4,8 @@
 # purpose: Check that `ticket reject --reason` records the reason on both the direct path and the control-inbox path, and that help, docs and the drafts prompt mention it
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/runner.py]
 # owner: clutch/__main__.py
-# verified: d32c32ad
-# hash: 44ac9cf5d1a1a7118ddf43bc6324755ac497be19b4230f1bea1e913a07282af3
+# verified: 92889fdb
+# hash: 320abc8440a125152627e5d14949fc90edef1a00e98833a60ab5ebe005ed9831
 import asyncio
 from pathlib import Path
 
@@ -17,8 +17,8 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.roadmap import rejection_reason
 from clutch.tickets import stamp
-from tests.integration.test_mergequeue import admission_control, commit, ready
-from tests.integration.test_mergequeue import ctx as context_fixture
+from tests.daemon_helpers import admission_control, commit, ready
+from tests.daemon_helpers import ctx as context_fixture
 
 pytestmark = pytest.mark.disk_io_skip
 

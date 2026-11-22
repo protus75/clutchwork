@@ -5,8 +5,8 @@
 # purpose: Check that the queue validates the tree when main moves between check and squash, and pauses only when a non-ticket path changed
 # relates: [clutch/journal.py, clutch/merge.py, clutch/mergequeue.py, tests/integration/test_mergequeue.py]
 # owner: clutch/mergequeue.py
-# verified: d32c32ad
-# hash: e39e708d2a8fa393d0a0ecb44bc9078e4d559210548ee48e64af99d153a238cf
+# verified: 92889fdb
+# hash: fdff4d648332d0c7319d5f3b10dd2fb465b062024295e217417df12f5a91878f
 
 import asyncio
 
@@ -15,7 +15,7 @@ import pytest
 from clutch import merge
 from clutch.journal import EventType
 from clutch.mergequeue import TREE_MISMATCH, MergeQueue, TreeMismatch
-from tests.integration.test_mergequeue import commit, ctx, ready  # noqa: F401
+from tests.daemon_helpers import commit, ctx, ready  # noqa: F401
 
 pytestmark = pytest.mark.disk_io_skip
 

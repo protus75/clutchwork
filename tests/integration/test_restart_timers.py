@@ -5,8 +5,8 @@
 # purpose: Tests production restart with the lock held: orphan reconciliation and harvest custody, journal-backed timer arm, fire and rearm, and startup failures that never report ready
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: clutch/restart.py
-# verified: 0a4d026b
-# hash: c3109339bab319d374dac3a2057efa554c4823525240be8960e38a35ce4d0e11
+# verified: 92889fdb
+# hash: 53f5fa165c74ae6d848a4a57af4c303fe8e73b2f75c0251992758daeec94dbba
 
 import ast
 import asyncio
@@ -26,7 +26,7 @@ from clutch.restart import Restart
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.timers import Timers
 from tests.cli_helpers import ENV, root
-from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
+from tests.daemon_helpers import CoreRig, assert_startup_pause_wiring
 from tests.integration.test_providers import CONFIG
 from tests.integration.test_scheduler import Time, turn
 from tests.waiting import wait_until
@@ -37,8 +37,8 @@ pytestmark = pytest.mark.disk_io_skip
 @pytest.mark.parametrize("moved", [False, True])
 def test_restart_regates_historical_held_receipt(tmp_path, monkeypatch, moved):
     from clutch.mergequeue import MERGE_REGATE, regate_receipts
-    from tests.integration.test_mergequeue import commit, ready
-    from tests.integration.test_mergequeue import ctx as context_fixture
+    from tests.daemon_helpers import commit, ready
+    from tests.daemon_helpers import ctx as context_fixture
 
     ctx = context_fixture.__wrapped__(tmp_path)
 
@@ -362,8 +362,7 @@ async def test_orphan_sweep_preserves_live_ownership(root, monkeypatch, owner):
         if owner == "admission":
             # Exercise the real inline admission with its own barrier-held Git child.
             from clutch.llm import FakeLLM
-            from tests.integration.test_daemon_composition import capture_pipeline_queue
-            from tests.integration.test_mergequeue import ready
+            from tests.daemon_helpers import capture_pipeline_queue, ready
 
             captured = capture_pipeline_queue(monkeypatch)
             runner.bind(rig.core.restart.checkout, FakeLLM([]))

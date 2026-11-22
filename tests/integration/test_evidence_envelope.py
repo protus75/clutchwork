@@ -5,8 +5,8 @@
 # purpose: Tests that LLM call evidence records stay on the in-memory filesystem with real engine and spec versions, and that the old spool capture path is gone.
 # relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llm.py, clutch/llmeffect.py, clutch/providers.py, clutch/redact.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: d32c32ad
-# hash: f5622b00c13cf5bfdf3d67af975b9044dbe4a40e5f5363768b92453b7dee7279
+# verified: 92889fdb
+# hash: 7d7790bcb3aa7b56fe00b25cc2c50c52cd2b13129d2563f930bcd933bb58088d
 
 import asyncio
 import importlib.metadata
@@ -23,7 +23,7 @@ from clutch.llm import LLMRequest
 from clutch.llmeffect import llm_call
 from clutch.redact import Redactor
 from clutch.specs import load_spec
-from tests.integration.test_daemon_composition import CoreRig
+from tests.daemon_helpers import CoreRig
 from tests.integration.test_providers import ENV, provider_session
 
 pytestmark = pytest.mark.disk_io_skip

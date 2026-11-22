@@ -4,16 +4,15 @@
 # purpose: Checks that a failure terminal journals rework_findings, each with its paved road, only when a requested non-mechanical Rework fails and the ticket goes to the reject queue
 # relates: [clutch/artifacts.py, clutch/journal.py, clutch/runner.py, tests/integration/test_daemon_composition.py, tests/integration/test_mergequeue.py]
 # owner: clutch/runner.py
-# verified: d32c32ad
-# hash: 50591cbbd28f084a1a169a706d814ee4c6bb2669fea32122feb89ce92bb07c26
+# verified: 92889fdb
+# hash: 0e1dfd633cd5e9d87931a4ec539370c39224565a958e733f75ac7b0e4a30df24
 import pytest
 
 from clutch import runner
 from clutch.artifacts import Cost, Finding, StageResult
 from clutch.journal import EventType
-from tests.integration.test_daemon_composition import production_writer
-from tests.integration.test_mergequeue import ctx as admission_context
-from tests.integration.test_mergequeue import ready
+from tests.daemon_helpers import ctx as admission_context
+from tests.daemon_helpers import production_writer, ready
 from tests.unit.test_supervisor_trigger import order
 
 pytestmark = pytest.mark.disk_io_skip

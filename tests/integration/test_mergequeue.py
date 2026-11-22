@@ -5,8 +5,8 @@
 # purpose: Integration tests for merge queue admission (ordering, safety and integration checks, conflict strategies, squash, holds and resume) using real disposable git repos
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/git.py, clutch/journal.py]
 # owner: clutch/mergequeue.py
-# verified: 0a4d026b
-# hash: 5c4ee2996f2868480286e42d105a12dc7ce2683e56d1324ad18a8303920fa4ba
+# verified: 92889fdb
+# hash: 1b1c20a846d7e624943b4fb2885769e45482fb83752265fab6e1ce0c2de8d574
 
 import ast
 import asyncio
@@ -33,6 +33,7 @@ from clutch.providers import child_env
 from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
 from clutch.stages import ApprovedInvoice, CommandResult, StageContext, render_review
 from clutch.tickets import validate_ticket
+from tests.daemon_helpers import admission, admission_control, approve, commit, conflict, ctx, facts, host, import_closure, ready, scripted
 from tests.integration.test_git import commit_lock
 from tests.spool_captures import list_captures, read_capture
 from tests.stages_helpers import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
@@ -40,82 +41,6 @@ from tests.stages_helpers import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt
 pytestmark = pytest.mark.disk_io_skip
 
 run = asyncio.run
-
-
-@pytest.fixture
-def ctx(tmp_path):
-    repo = tmp_path / "repo"
-    (repo / "clutch").mkdir(parents=True)
-    (repo / "clutch/thing.py").write_text("ok base\n")
-    (repo / "clutch/other.py").write_text("")
-    (repo / "CLUTCH_PLAN.md").write_text("# Plan\n")
-    (repo / ".gitignore").write_text(".clutch/\n")
-    (repo / "config.yaml").write_text(CONFIG)
-    conduct = adopt_conduct(repo)
-    config = load_config(None, cwd=repo)
-    exec_ = SubprocessExec()
-    driver = Driver.from_config(
-        config,
-        journal=Journal((config).state_dir, lambda: datetime(2026, 10, 6, tzinfo=UTC)),
-        llm=FakeLLM([]),
-        env=ENV,
-        clock=lambda: datetime(2026, 10, 6, tzinfo=UTC),
-        sleep=lambda _: asyncio.Event().wait(),
-    )
-    context = StageContext(repo, config, ENV, exec_, Git(exec_, env=child_env(ENV, config), timeout=30, commit_lock=commit_lock(repo / ".clutch/state")), LocalFileSystem(), driver, SPECS)
-
-    async def init():
-        await context.git.init(repo, branch="main")
-        await context.git.add(repo, [".gitignore", "config.yaml", "CLUTCH_PLAN.md", "clutch", *conduct])
-        await context.git.commit(repo, "base")
-
-    run(init())
-    return context
-
-
-async def commit(ctx, root, paths, message="work"):
-    await ctx.git.add(root, paths)
-    await ctx.git.commit(root, message)
-
-
-async def approve(ctx, ticket, sha=None):
-    sha = sha or await ctx.git.rev_parse(ctx.repo, ticket.stem)
-    review = ApprovedInvoice(
-        produced_by_spec_version=1, produced_at_sha=sha, stem=ticket.stem, reviewed_sha=sha, verdict="approve", summary="approved", findings=[], spec_version="1.0", provider="fake", model="fake"
-    )
-    path = f"tickets/{ticket.stem}/review.md"
-    ctx.fs.write(ctx.repo / path, render_review(review).encode())
-    await commit(ctx, ctx.repo, [path], "review")
-
-
-async def ready(ctx, stem=STEM, *, changes=None, fence=("clutch/thing.py",), verification=(("true",),), priority="P2", lifted=False, commits=None):
-    text = TICKET.format(bypass="").replace("priority: P2", f"priority: {priority}")
-    text = text.replace("## Scope fence\n- clutch/thing.py", "## Scope fence\n" + "\n".join("- " + f for f in fence))
-    root = ctx.repo / "tickets" / stem
-    ctx.fs.write(root / "ticket.md", text.encode())
-    record = "".join(f"## {name}\n\n{'ok' if name == 'Outcome' else 'none'}\n\n" for name in stages.RUN_RECORD_SECTIONS)
-    ctx.fs.write(root / "run.md", record.encode())
-    await commit(ctx, ctx.repo, [f"tickets/{stem}"], "ticket and run record")
-    from tests.approval import approve as approve_ticket
-
-    approve_ticket(ctx.repo, stem, ctx.driver.clock)
-    ticket = dataclasses.replace(validate_ticket(stem, text, ctx.repo), verification=verification)
-    await ctx.git.worktree_add(ctx.repo, ctx.worktree(stem), stem, "main")
-    for batch in commits or [changes or {"clutch/thing.py": f"ok {stem}\n"}]:
-        for path, data in batch.items():
-            ctx.fs.write(ctx.worktree(stem) / path, data.encode())
-        await commit(ctx, ctx.worktree(stem), list(batch))
-    await approve(ctx, ticket)
-    if lifted:
-        (ctx.worktree(stem) / "tickets" / stem / "run.md").unlink()
-    return ticket
-
-
-async def admission(ctx, ticket, *, queue=None, attempt=0):
-    queue = queue or MergeQueue(ctx, escalate=lambda _: None)
-    queue.offer(ticket, attempt=attempt)
-    [result] = await queue.process()
-    return result
 
 
 @pytest.mark.parametrize("overlap", [True, False])
@@ -176,10 +101,6 @@ def test_green_candidate_merges_without_baseline_or_confirm(ctx):
     run(exercise())
 
 
-def facts(ctx):
-    return [e for e in ctx.driver.journal.read() if e.body.get("kind") == CONFLICT_FACTS]
-
-
 async def unchanged(ctx, ticket, before, result, code):
     assert isinstance(result, StageResult) and result.outcome == "gate_failed" and result.artifact is None
     assert code in {f.code for f in result.findings}
@@ -187,40 +108,6 @@ async def unchanged(ctx, ticket, before, result, code):
     assert await ctx.git.rev_parse(ctx.repo, ticket.stem)
     assert ctx.worktree(ticket.stem).exists()
     assert not any(e.type == EventType.STATE_TRANSITION for e in ctx.driver.journal.read())
-
-
-def host(code, *, trigger="always", severity="hard", argv=None):
-    return MechanicalCheck(code=code, argv=argv or ["host", code], trigger=trigger, severity=severity)
-
-
-def scripted(ctx, monkeypatch, results):
-    original = ctx.exec_.run
-    calls = []
-
-    async def execute(argv, **kw):
-        if argv[0] == "host":
-            calls.append((list(argv), kw))
-            value = results.pop(0)
-            if isinstance(value, BaseException):
-                raise value
-            return value
-        return await original(argv, **kw)
-
-    monkeypatch.setattr(ctx.exec_, "run", execute)
-    return calls
-
-
-def admission_control(ctx, lifecycle="admission-life", *, known):
-    return PauseConsumer(
-        journal=ctx.driver.journal,
-        lifecycle_id=lifecycle,
-        known=known,
-        state_dir=ctx.config.state_dir,
-        fs=ctx.fs,
-        sleep=ctx.driver.sleep,
-        files=lambda: (ctx.config.state_dir / "control/inbox").glob("*"),
-        read=Path.read_bytes,
-    )
 
 
 def request(consumer, request_id, *, hold=None, lifecycle=None, verb="resume"):
@@ -727,25 +614,6 @@ def test_distinct_red_streak_pause_and_resume(ctx, monkeypatch):
     run(scenario())
 
 
-async def conflict(ctx, *, strategy="union", generator=None, fence=("clutch/thing.py",), repeat=False):
-    generated = "clutch/generated.txt"
-    paths = [generated, "clutch/generated-two.txt"] if repeat else [generated]
-    for path in paths:
-        ctx.fs.write(ctx.repo / path, b"base\n")
-    await commit(ctx, ctx.repo, paths)
-    ticket = await ready(ctx, fence=fence, commits=[{"clutch/thing.py": "ok work\n", generated: "base\nbranch-one\n"}, *([{paths[1]: "base\nbranch-two\n"}] if repeat else [])])
-    for path in paths:
-        ctx.fs.write(ctx.repo / path, b"base\nmain\n")
-    await commit(ctx, ctx.repo, paths, "main conflicts")
-    if strategy == "union":
-        ctx.config.merge.strategies = [UnionStrategy(paths=paths, strategy="union")]
-    elif strategy == "regenerate":
-        ctx.config.merge.strategies = [
-            RegenerateStrategy(paths=paths, strategy="regenerate", argv=generator or ["python3", "-c", "from pathlib import Path; Path('clutch/generated.txt').write_text('regenerated\\n')"])
-        ]
-    return ticket, generated
-
-
 @pytest.mark.parametrize("strategy,repeat", [("union", False), ("union", True), ("regenerate", False)])
 def test_declared_union_and_regenerate_resolve(ctx, monkeypatch, strategy, repeat):
     async def scenario():
@@ -930,33 +798,14 @@ def test_admission_exception_and_cancellation_abort_and_release(ctx, monkeypatch
     run(scenario())
 
 
-def import_closure(root, sources):
-    pending, reached = [root], set()
-    while pending:
-        module = pending.pop()
-        if module in reached:
-            continue
-        reached.add(module)
-        tree = ast.parse(sources.get(module, ""))
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                pending.extend(a.name for a in node.names if a.name.startswith("clutch."))
-            elif isinstance(node, ast.ImportFrom):
-                if node.module and node.module.startswith("clutch."):
-                    pending.append(node.module)
-                elif node.module == "clutch":
-                    pending.extend("clutch." + a.name for a in node.names if "clutch." + a.name in sources)
-    return reached
-
-
-def assert_reachable(sources):
+def mergequeue_assert_reachable(sources):
     assert "clutch.mergequeue" in import_closure("clutch.__main__", sources)
 
 
 def test_merge_queue_is_reachable_from_production():
     root = Path(__file__).resolve().parents[2]
     sources = {"clutch." + p.stem: p.read_text() for p in (root / "clutch").glob("*.py")}
-    assert_reachable(sources)
+    mergequeue_assert_reachable(sources)
     closure = import_closure("clutch.__main__", sources)
     assert "clutch.merge" in closure
     assert any(
@@ -973,9 +822,9 @@ def test_merge_queue_is_reachable_from_production():
 
     removed = {name: ast.unparse(RemoveMergeQueue().visit(ast.parse(source))) for name, source in sources.items()}
     with pytest.raises(AssertionError):
-        assert_reachable(removed)
+        mergequeue_assert_reachable(removed)
     for spelling in ["import clutch.mergequeue as queue", "from clutch import mergequeue as queue"]:
-        assert_reachable({**removed, "clutch.merge": removed["clutch.merge"] + "\n" + spelling})
+        mergequeue_assert_reachable({**removed, "clutch.merge": removed["clutch.merge"] + "\n" + spelling})
 
 
 def test_inline_admission_does_not_use_merge_queue(ctx, monkeypatch):

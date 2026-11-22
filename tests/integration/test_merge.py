@@ -5,8 +5,8 @@
 # purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: clutch/merge.py
-# verified: 0a4d026b
-# hash: 9f5aa61591d1d95a023808cfab177608215c04bf40941ef83ca483c8417b4389
+# verified: 92889fdb
+# hash: 63d772e0502c9f9ffab2516d54fe70feb7ba3be2024c982b02be1c0871fa96e7
 
 import asyncio
 import dataclasses
@@ -775,7 +775,7 @@ async def test_retro_prompt_spec_merge_requires_unique_bridge(repo, monkeypatch,
 @pytest.mark.parametrize("change", ["current", "stale", "after-rebase"])
 def test_core_drift_merge_rerun(repo, mode, change):
     from clutch import hostfiles
-    from tests.integration.test_mergequeue import approve
+    from tests.daemon_helpers import approve
 
     ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
 
@@ -818,7 +818,7 @@ def test_core_drift_merge_rerun(repo, mode, change):
 @pytest.mark.parametrize("mode", ["inline", "queue"])
 def test_core_drift_candidate_template(repo, mode):
     from clutch import hostfiles
-    from tests.integration.test_mergequeue import approve
+    from tests.daemon_helpers import approve
 
     ctx, ticket, attempt = reviewed(repo, [agent({"clutch/thing.py": "ok\n"}), verdict()])
     serving = hostfiles.CORE_TEMPLATE
@@ -851,7 +851,7 @@ def test_core_drift_candidate_template(repo, mode):
 def test_core_activation_first_adoption_merge(repo, mode, omitted):
     from clutch import hostfiles, stages
     from tests.cli_helpers import core_config
-    from tests.integration.test_mergequeue import approve
+    from tests.daemon_helpers import approve
 
     core_config(repo, [("medium", "implement", ["claude", "codex"]), ("medium", "review", ["claude", "codex"])])
     original = {"CLAUDE.md": b"# Claude project\r\nno final newline", "AGENTS.md": b"# Codex project\n"}

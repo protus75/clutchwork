@@ -4,8 +4,8 @@
 # purpose: Integration tests for the control inbox: closed request validation, durable no-overwrite publication, decision before application, crash reconstruction, lifecycle identity, hold-matched resume, and the kill, stop and retro projections
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 3bcb2a87e294c2be59938c0a114cd160d03809862d7967902c34e20f61db7522
+# verified: 92889fdb
+# hash: 6e35f0bf88af93ebac9781e065120910464e222e7c29c46f18b20131d96f669c
 import asyncio
 import json
 import os
@@ -23,7 +23,7 @@ from clutch.control import ControlProjection, ControlRequest, publish_request, v
 from clutch.journal import EventType, Journal
 from clutch.seams import FileSystem, LocalFileSystem
 from tests.cli_helpers import Stages, cli, journal, root, ticket, write
-from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
+from tests.daemon_helpers import CoreRig, assert_startup_pause_wiring
 from tests.integration.test_effects import Crash, FakeClock
 
 pytestmark = pytest.mark.disk_io_skip

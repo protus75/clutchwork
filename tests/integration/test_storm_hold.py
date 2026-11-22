@@ -5,8 +5,8 @@
 # purpose: Tests storm-breaker holds through the production CLI and drain: only the emitting stem is held, resumes must match the hold identity once, and holds survive restarts, crashes and corrupt evidence.
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py]
 # owner: clutch/control.py
-# verified: 7ad3c1c2
-# hash: 3d46e9e55fa9f3bd42916564e70bc4db15ef00e785a806a35bd11d6e789b41ba
+# verified: 92889fdb
+# hash: f23851f0604352480329c1b3cc417304320499dbed564df7ae5cb2ad381d1daa
 
 import asyncio
 import json
@@ -28,8 +28,8 @@ from clutch.seams import LocalFileSystem
 from clutch.storm import StormLedger
 from clutch.tickets import INTAKE_SIGNAL, ticket_path
 from tests.cli_helpers import ENV
+from tests.daemon_helpers import CoreRig
 from tests.drain_helpers import NoChild, Script, commit_ticket, confirmed, make_root, pause_checkout
-from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_journal import T0, FakeClock
 from tests.integration.test_storm import SIG, snapshot
 from tests.integration.test_storm_notification_activation import digest, occurrences, six, trips

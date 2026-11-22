@@ -5,8 +5,8 @@
 # purpose: Tests serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: cac624b006d867d94833eaf4d39efb9d00642714536eae571d7682b070ed4c9e
+# verified: 92889fdb
+# hash: 8743adac5ebfd1776c2e6263892717a0bfa3f2ba6d172d2a6bd00ee6bee1bfc5
 
 import asyncio
 import json
@@ -19,8 +19,8 @@ from clutch import runner, serve, stages
 from clutch.journal import EventType
 from clutch.lockfile import Lockfile, LockHeld
 from tests.cli_helpers import ENV, root
+from tests.daemon_helpers import sources
 from tests.integration.serve_rig import finish, graph, request, script, terminals, until, write
-from tests.integration.test_daemon_composition import sources
 from tests.integration.test_restart_timers import orphan
 from tests.integration.test_scheduler import import_closure, text, turn
 
@@ -323,7 +323,7 @@ async def test_serve_heartbeat_requires_responsive_components(root, monkeypatch,
 @pytest.mark.asyncio
 async def test_serve_consumers_use_existing_writers(root, monkeypatch):
     from clutch.driver import Driver
-    from tests.integration.test_mergequeue import ready
+    from tests.daemon_helpers import ready
 
     calls, contexts, _ = script(monkeypatch)
     rig = await graph(root, monkeypatch)

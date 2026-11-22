@@ -5,8 +5,8 @@
 # purpose: Tests that a CLI kill is bound to the running drain's identity, reaches the production driver, is applied once, cleans up atomically, and is reconcilable after restart
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 99c5c874f0b803b452d5ef9f066bc074889e7217455cefe4c4cb79669c2eef30
+# verified: 92889fdb
+# hash: 385850131f1bf3f703353bd6f2aa9a0ee1290e3310b86a5fa41aab8da42e4596
 
 import asyncio
 import json
@@ -28,9 +28,9 @@ from clutch.seams import LocalFileSystem
 from clutch.status import last_states
 from tests.cli_helpers import ENV, Clock, Stages, root
 from tests.cli_helpers import write as write_ticket
+from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring
 from tests.drain_helpers import NoChild, confirmed, offer_events
 from tests.integration.test_control_cli import acquire, discovery, invoke, requests
-from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
 from tests.integration.test_kill_executor_abort import Timer, Writer, turn
 from tests.integration.test_kill_signal_journal import decision
 from tests.stages_helpers import agent, implement_reply, verdict

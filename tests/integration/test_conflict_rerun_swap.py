@@ -5,8 +5,8 @@
 # purpose: Tests that a declined merge conflict aborts the rebase, lifts the prior diff without conflicted paths, retires the branch and worktree, records a conflict rerun without spending attempts, and re-offers the ticket from current main
 # relates: [clutch/caps.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, tests/integration/test_mergequeue.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 709e1f81c9171f5b3f0f474d2415faa9df284c175e44e87696cde7957bbd7845
+# verified: 92889fdb
+# hash: 2749baa90d939042e347ddeb3ca6bb6b3faabd445773fd4cde1913e0ee156225
 
 import asyncio
 
@@ -17,7 +17,7 @@ from clutch.daemon import TicketWriter
 from clutch.journal import EventType
 from clutch.llm import FakeLLM
 from clutch.mergequeue import MergeQueue
-from tests.integration.test_mergequeue import (
+from tests.daemon_helpers import (
     commit,
     conflict,
     ctx,  # noqa: F401

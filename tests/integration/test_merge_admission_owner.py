@@ -4,8 +4,8 @@
 # purpose: Checks that inline merge delegates to MergeQueue admission, that safety evidence is gathered once, and that served_review refuses malformed or missing records
 # relates: [clutch/artifacts.py, clutch/journal.py, clutch/merge.py, clutch/mergequeue.py, clutch/stages.py, tests/integration/test_mergequeue.py]
 # owner: engine
-# verified: d32c32ad
-# hash: eec08ead61d1002175a71c4ccd3890a548e4e53d5e9a37ddd789174ec2bbb8bd
+# verified: 92889fdb
+# hash: 12448cc167e31ee1ac488f80cc97906aa1662fbc659bc588c0ad5052ed3f0df9
 import asyncio
 
 import pytest
@@ -14,7 +14,7 @@ from clutch import merge, stages
 from clutch.artifacts import Cost, StageResult
 from clutch.journal import EventType
 from clutch.mergequeue import MergeQueue
-from tests.integration.test_mergequeue import commit, ctx, ready  # noqa: F401
+from tests.daemon_helpers import commit, ctx, ready  # noqa: F401
 
 pytestmark = pytest.mark.disk_io_skip
 

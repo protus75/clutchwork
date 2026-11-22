@@ -5,8 +5,8 @@
 # purpose: Tests that each admission captures an immutable, detached config snapshot, sees valid edits on the next dispatch, never binds an invalid reload, unwinds failures, and is not wired into the bootstrap CLI
 # relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 47af57a5149743caab88c1c564d546bceffb9b4b96b90fb45b09171ff6459eb5
+# verified: 92889fdb
+# hash: dc934bf83b57931b5ddcb9f8cb0e94f090cd9e7303b8f552c3bf02702dd499d2
 
 import asyncio
 from collections.abc import Mapping
@@ -23,8 +23,8 @@ from clutch.daemon import DaemonAdmission, snapshot_dispatch
 from clutch.journal import EventType
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import ENV, Clock, root, ticket, with_retro_driver, write
+from tests.daemon_helpers import assert_idle, assert_reachable, tickets, turn
 from tests.integration.test_config import VALID
-from tests.integration.test_daemon_admission import assert_idle, assert_reachable, tickets, turn
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -427,7 +427,7 @@ def test_config_snapshot_is_dormant(root, monkeypatch, verb, operation):
     repo = Path(__file__).resolve().parents[2]
     sources = {".".join(path.relative_to(repo).with_suffix("").parts): path.read_text() for path in (repo / "clutch").rglob("*.py")}
     sources["clutch"] = sources.pop("clutch.__init__")
-    from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, without_core_import
+    from tests.daemon_helpers import CoreRig, assert_core_wiring, without_core_import
 
     assert_reachable(sources)
     removed = without_core_import(sources)

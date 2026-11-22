@@ -5,8 +5,8 @@
 # purpose: Tests production storm escalation: trip and report creation, closed hold targets, occurrence-id recipes at each producer site, and crash recovery from write-ahead records
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/flake.py, clutch/journal.py]
 # owner: clutch/storm.py
-# verified: 0a4d026b
-# hash: 2bb7491ede1bd141af9dd764595369ec75c47a45663ddc42e29cf3806b041906
+# verified: 92889fdb
+# hash: 5dc92fdc369954af7cb136252f7788fca41a8045358139385eb385b6bdbd8a7d
 
 import asyncio
 import hashlib
@@ -29,12 +29,11 @@ from clutch.seams import LocalFileSystem
 from clutch.storm import STORM_THRESHOLD, STORM_TRIP, STORM_WINDOW, StormLedger
 from clutch.tickets import validate_ticket
 from tests.cli_helpers import ENV
+from tests.daemon_helpers import CoreRig, ready, scripted
+from tests.daemon_helpers import ctx as admission_context
 from tests.dispatch_settle import dispatch_settled
 from tests.drain_helpers import NoChild, Script, commit_ticket, confirmed, make_root
-from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_journal import T0, FakeClock
-from tests.integration.test_mergequeue import ctx as admission_context
-from tests.integration.test_mergequeue import ready, scripted
 from tests.integration.test_storm import SIG, snapshot
 from tests.integration.test_storm_producer import ARRIVAL, compose
 from tests.stages_helpers import STEM, agent

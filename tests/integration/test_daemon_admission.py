@@ -5,10 +5,9 @@
 # purpose: Tests for DaemonAdmission: one dispatch at a time in a task it owns, unwinding on errors and cancellation, reachability from the CLI import closure, and that the bootstrap run and drain verbs never construct it
 # relates: [clutch/__main__.py, clutch/daemon.py, clutch/journal.py, clutch/tickets.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 8bc3e7ba7a5289882e03cd04d13852a2dec726b2cb7b736d9040371cd9f7ee88
+# verified: f98b9306
+# hash: dec7a544625f71cb5c01ccf5a19c1796954c1f0a1cdcda8cebc8a2385d1a6971
 
-import ast
 import asyncio
 from pathlib import Path
 
@@ -19,27 +18,9 @@ from clutch.daemon import DaemonAdmission
 from clutch.journal import EventType
 from clutch.tickets import parse_ticket
 from tests.cli_helpers import ENV, Clock, root, ticket, with_retro_driver, write
+from tests.daemon_helpers import assert_idle, assert_reachable, tickets, turn
 
 pytestmark = pytest.mark.disk_io_skip
-
-
-@pytest.fixture
-def tickets(tmp_path):
-    (tmp_path / "clutch").mkdir()
-    (tmp_path / "clutch/thing.py").write_text("")
-    text = ticket().replace("priority: P2", "state: confirmed\nsource: human\npriority: P2", 1)
-    return tuple(parse_ticket(stem, text, tmp_path) for stem in ("first", "second"))
-
-
-async def turn():
-    future = asyncio.get_running_loop().create_future()
-    asyncio.get_running_loop().call_soon(future.set_result, None)
-    await future
-
-
-def assert_idle(admission):
-    assert not admission.occupied()
-    assert not admission.occupied()
 
 
 @pytest.mark.asyncio
@@ -219,26 +200,6 @@ async def test_active_cancellation_awaits_cleanup_before_release(tickets, cancel
     assert_idle(admission)
 
 
-def import_closure(sources):
-    pending, reached = ["clutch.__main__", "clutch"], set()
-    while pending:
-        module = pending.pop()
-        if module in reached or module not in sources:
-            continue
-        reached.add(module)
-        for node in ast.walk(ast.parse(sources[module])):
-            if isinstance(node, ast.Import):
-                pending.extend(alias.name for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.module:
-                pending.append(node.module)
-                pending.extend(f"{node.module}.{alias.name}" for alias in node.names)
-    return reached
-
-
-def assert_reachable(sources):
-    assert "clutch.daemon" in import_closure(sources)
-
-
 @pytest.mark.parametrize("verb", ["run", "drain"])
 def test_daemon_admission_is_dormant(root, monkeypatch, verb):
     def pipeline(checkout):
@@ -283,7 +244,7 @@ def test_daemon_admission_is_dormant(root, monkeypatch, verb):
     repo = Path(__file__).resolve().parents[2]
     sources = {".".join(path.relative_to(repo).with_suffix("").parts): path.read_text() for path in (repo / "clutch").rglob("*.py")}
     sources["clutch"] = sources.pop("clutch.__init__")
-    from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, without_core_import
+    from tests.daemon_helpers import CoreRig, assert_core_wiring, without_core_import
 
     assert_reachable(sources)
     removed = without_core_import(sources)
