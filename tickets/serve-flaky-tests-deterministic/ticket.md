@@ -6,7 +6,9 @@ kind: bug
 ---
 
 ## Depends on
-- none
+- restore-io-tests-13
+- restore-io-tests-14
+- restore-io-tests-29
 
 ## Runs before
 - training-export-ship-gate
