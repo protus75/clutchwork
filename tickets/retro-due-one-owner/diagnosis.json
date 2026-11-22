@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "7f8b83a6b2edeb4d2a9e783a251740dc09298fed",
+  "produced_at_sha": "aae1ef08c50c746556745a9f811ca3f69689cbfd",
   "stem": "retro-due-one-owner",
-  "attempt": 3,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 4,
+  "terminal": "gate_failed",
+  "stage": "review",
   "verdict": "reject",
   "lessons": [
-    "Ticket fence misses forced files: tests/unit/test_serve_retro_check_once.py (fixture line 44 patches serve.measurements and serve.select_trigger) breaks once Serve.check_retro uses due_trigger; all six tests fail. Add it to Scope fence and Verification.",
-    "tests/regress_serve_retro_check_once.py patches serve.select_trigger and serve.measurements, so it no longer feeds the due decision once Serve.check_retro calls due_trigger. Add it to Scope fence and repatch it to serve.due_trigger.",
-    "The prior branch already holds the retro.py/serve.py work and the two new tests (diff_stat: 6 files). After refile, update only the two added files to patch serve.due_trigger; do not rewrite due_trigger or the call-site move.",
-    "Don't keep stale serve.measurements/serve.select_trigger imports just so the old patches resolve. Patching them would no longer steer check_retro (dual path). Repatch the tests to the due_trigger boundary instead."
+    "Premise false: the `override` spike is counted only in `production_evidence` (clutch/retro.py:247, `invoices[check.key].bypassed` from a `git show` of each checks invoice), not in `measurements(window)`. A pure no-I/O `due_trigger` cannot see it.",
+    "The criteria contradict each other: 'trigger kinds unchanged', a pure `due_trigger` with no I/O, and 'no `production_evidence` before trigger on unforced calls' cannot all hold while `override` is a default-enabled SpikeKind (config.py:24, 244).",
+    "A human must rewrite the ticket and pick one: (a) record `bypassed` in the journal from the Check stage and count `override` in `measurements`, fencing that path; (b) accept dropping or deferring the `override` trigger and update compatibility and docs; (c) state an override-only evidence fallback.",
+    "The serve half of the diff (`check_retro` called only from the `Serve.run` loop, with the dis-based site test) passed review. A rewritten ticket can keep that scope unchanged, or split it into its own ticket that lands independently."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
