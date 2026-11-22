@@ -108,6 +108,7 @@ Scope in:
 - Tests: delete tests whose subject is the removed driver step; edit tests that merely use a removed name; add the unit tests below.
 - tests/unit/test_main_release_group.py: in `test_old_names_refuse`, change the expected release subcommand set to `{"bump", "publish", "ship"}`; leave the other assertions in that file as they are.
 
+- `tests/unit/test_main_release_group.py::test_old_names_refuse`: the expected `release` subcommand set becomes `{"bump", "publish", "ship"}`; the file's other assertions stay.
 Scope out:
 - `clutch roadmap accept`, `gate`, `merged`, `status` (other than the rejected-row line), the supervisor step, retro, calibration, and the Suggestion Box triage in serve and drain.
 - Removing the `release.packages` config or `release.run_packages`; changing `release bump` or `release publish`.
@@ -176,6 +177,7 @@ Scope out:
 - tests/integration/test_ask_plan_priority_order.py
 - tests/integration/test_ask_plan_conduct_covered.py
 - tests/integration/test_ask_depends_rule.py
+- tests/unit/test_main_release_group.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_serve_no_roadmap.py` passes: with every public function of `clutch.roadmap` monkeypatched to raise, one serve dispatch and idle cycle completes, and the roadmap table file is never read; the test fails if `Serve` still has `driver_pending` or imports `clutch.roadmap`.
