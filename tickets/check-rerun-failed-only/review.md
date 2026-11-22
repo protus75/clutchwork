@@ -1,11 +1,11 @@
 # Review: snag
 
-The selected rerun works for a bare pytest command, but it breaks Check for the unit host entry wrapped in `clutch coverage gate` and stops quarantine release whenever a rerun happens.
+The selected rerun works and both prior findings are fixed, but deleting the rerun's rc-findings line means a ticket with one flaky test now skips the whole-suite coverage gate, and a test_host_mechanical case was changed so the test suite no longer catches that.
 
 ## Findings
 
-- [logic] clutch/stages.py:1295 The rerun appends `--clutch-select` to `entry.argv` and runs only the failed ids. config.yaml's unit entry is `clutch coverage gate -- ... pytest ...`. After that command exits 0, `run_gate` (clutch/covgate.py:140-164) checks repository and per-file coverage thresholds. A run of one test cannot meet them, so the gate exits nonzero even when the flaky test passes. Line 1342 `if result.rc != 0 and "failed" not in last.values(): findings.extend(report.findings)` then adds the rerun's command-failure finding, so every flaky unit test now fails Check. It used to be classified as a flake, which breaks the ticket's promise that flake detection is unchanged. (do instead: In stages.py, judge a selected rerun by its recorded outcomes, not by the wrapper's exit code. If every selected id is recorded and none failed, do not add the rerun command's rc findings. If any selected id is missing from the rerun results, return invalid() or add a finding. Add a test where the rerun records the selected id as passed but exits nonzero, and assert the test is classified as flaky with no extra finding.)
-- [logic] clutch/stages.py:1295 Once the rerun is selected, `last` holds only the first run's failed ids. The quarantine-release loop after the rerun block (`for identity in flake.quarantine().active.values(): if last.get(identity.test_id) != "passed": continue`) used to see every test's rerun outcome. Now, when any test fails and triggers a rerun, a quarantined test that passed is missing from `last`, so its release is silently skipped. Before this change it would have been released. That changes quarantine behavior, which the ticket's boundary contract says stays unchanged. (do instead: For the release check, merge the outcomes, e.g. `outcomes = {**first, **last}`, and test `outcomes.get(identity.test_id) != "passed"`. Keep `last` (only the rerun results) for the flaky and `failed on rerun` logic. Add a test that a passing quarantined test with a merged fix is still released when an unrelated test triggers a rerun.)
+- [logic] clutch/stages.py:1345 The diff deletes `if result.rc != 0 and "failed" not in last.values(): findings.extend(report.findings)` and builds the report from per-test findings only. config.yaml's unit entry wraps pytest in `clutch coverage gate`. `run_gate` (clutch/covgate.py:146-148) returns pytest's nonzero rc before it evaluates coverage thresholds, so the first run with a failed test never checks coverage. Before this diff, the full-suite rerun evaluated the gate, and a coverage drop added a finding through the deleted line. Now the rerun runs only the selected ids, its gate result is thrown away, and nothing else checks coverage. A ticket that lowers coverage below `test-gate.toml` thresholds and hits one flaky test passes Check with no finding. Any other non-test cause of a nonzero exit on the rerun is also ignored. This weakens a gate, which the ticket does not allow (only the rerun's scope may change). (do instead: In stages.py, when a selected rerun turns every failed id into a pass, still enforce the whole-suite gate, for example: evaluate the first run's coverage report against the gate with the existing `clutch.covgate` functions, or run the full command once when the first run's rc may have hidden a gate failure. Add a test where the first run fails one test and also misses coverage, the selected rerun passes, and Check still reports a finding.)
+- [logic] tests/integration/test_host_mechanical.py:396 The `test_results_fail_closed` case `[(1, {"a": "failed"}), (1, {"a": "passed"}), (0, {})]` asserted that a rerun exiting nonzero while recording passes fails closed. The diff replaces it with a missing-results case `(1, {})` instead of keeping that property. The ticket did not ask for this change (criterion 5 only requires the existing file to pass). It hides the gate bypass described in the previous finding. (do instead: Restore the original fail-closed case, or a version of it that fits the selected rerun, so that a nonzero rerun exit caused by something other than a recorded test failure (such as a coverage gate) still produces a finding. Keep the missing-results case as an additional parameter.)
 
 ## Record
 
@@ -13,26 +13,26 @@ The selected rerun works for a bare pytest command, but it breaks Check for the 
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "14c2d934a98da0e76837c3bf3ab9accbb9ee2bcb",
+  "produced_at_sha": "32ad8a0d932332e80ed2489c9195543cf2f7140a",
   "stem": "check-rerun-failed-only",
-  "reviewed_sha": "14c2d934a98da0e76837c3bf3ab9accbb9ee2bcb",
-  "summary": "The selected rerun works for a bare pytest command, but it breaks Check for the unit host entry wrapped in `clutch coverage gate` and stops quarantine release whenever a rerun happens.",
+  "reviewed_sha": "32ad8a0d932332e80ed2489c9195543cf2f7140a",
+  "summary": "The selected rerun works and both prior findings are fixed, but deleting the rerun's rc-findings line means a ticket with one flaky test now skips the whole-suite coverage gate, and a test_host_mechanical case was changed so the test suite no longer catches that.",
   "findings": [
     {
       "code": "logic",
       "path": "clutch/stages.py",
-      "line": 1295,
-      "message": "The rerun appends `--clutch-select` to `entry.argv` and runs only the failed ids. config.yaml's unit entry is `clutch coverage gate -- ... pytest ...`. After that command exits 0, `run_gate` (clutch/covgate.py:140-164) checks repository and per-file coverage thresholds. A run of one test cannot meet them, so the gate exits nonzero even when the flaky test passes. Line 1342 `if result.rc != 0 and \"failed\" not in last.values(): findings.extend(report.findings)` then adds the rerun's command-failure finding, so every flaky unit test now fails Check. It used to be classified as a flake, which breaks the ticket's promise that flake detection is unchanged.",
-      "paved_road": "In stages.py, judge a selected rerun by its recorded outcomes, not by the wrapper's exit code. If every selected id is recorded and none failed, do not add the rerun command's rc findings. If any selected id is missing from the rerun results, return invalid() or add a finding. Add a test where the rerun records the selected id as passed but exits nonzero, and assert the test is classified as flaky with no extra finding.",
+      "line": 1345,
+      "message": "The diff deletes `if result.rc != 0 and \"failed\" not in last.values(): findings.extend(report.findings)` and builds the report from per-test findings only. config.yaml's unit entry wraps pytest in `clutch coverage gate`. `run_gate` (clutch/covgate.py:146-148) returns pytest's nonzero rc before it evaluates coverage thresholds, so the first run with a failed test never checks coverage. Before this diff, the full-suite rerun evaluated the gate, and a coverage drop added a finding through the deleted line. Now the rerun runs only the selected ids, its gate result is thrown away, and nothing else checks coverage. A ticket that lowers coverage below `test-gate.toml` thresholds and hits one flaky test passes Check with no finding. Any other non-test cause of a nonzero exit on the rerun is also ignored. This weakens a gate, which the ticket does not allow (only the rerun's scope may change).",
+      "paved_road": "In stages.py, when a selected rerun turns every failed id into a pass, still enforce the whole-suite gate, for example: evaluate the first run's coverage report against the gate with the existing `clutch.covgate` functions, or run the full command once when the first run's rc may have hidden a gate failure. Add a test where the first run fails one test and also misses coverage, the selected rerun passes, and Check still reports a finding.",
       "kind": null,
       "unit": null
     },
     {
       "code": "logic",
-      "path": "clutch/stages.py",
-      "line": 1295,
-      "message": "Once the rerun is selected, `last` holds only the first run's failed ids. The quarantine-release loop after the rerun block (`for identity in flake.quarantine().active.values(): if last.get(identity.test_id) != \"passed\": continue`) used to see every test's rerun outcome. Now, when any test fails and triggers a rerun, a quarantined test that passed is missing from `last`, so its release is silently skipped. Before this change it would have been released. That changes quarantine behavior, which the ticket's boundary contract says stays unchanged.",
-      "paved_road": "For the release check, merge the outcomes, e.g. `outcomes = {**first, **last}`, and test `outcomes.get(identity.test_id) != \"passed\"`. Keep `last` (only the rerun results) for the flaky and `failed on rerun` logic. Add a test that a passing quarantined test with a merged fix is still released when an unrelated test triggers a rerun.",
+      "path": "tests/integration/test_host_mechanical.py",
+      "line": 396,
+      "message": "The `test_results_fail_closed` case `[(1, {\"a\": \"failed\"}), (1, {\"a\": \"passed\"}), (0, {})]` asserted that a rerun exiting nonzero while recording passes fails closed. The diff replaces it with a missing-results case `(1, {})` instead of keeping that property. The ticket did not ask for this change (criterion 5 only requires the existing file to pass). It hides the gate bypass described in the previous finding.",
+      "paved_road": "Restore the original fail-closed case, or a version of it that fits the selected rerun, so that a nonzero rerun exit caused by something other than a recorded test failure (such as a coverage gate) still produces a finding. Keep the missing-results case as an additional parameter.",
       "kind": null,
       "unit": null
     }
