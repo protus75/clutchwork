@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The prior attempt’s implementation and metadata commits were already present; the worktree is clean. Each new ordering test failed under its corresponding incorrect implementation.
+The prior scope-fence finding was a false positive; the scheduler test file is inside the current fence. Both verification commands passed, including all 1906 unit tests. Mutation checks detected the old cross-priority order, missing chain ordering, and missing soft-edge ordering.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 12 minutes; verification and review took less than 12 minutes.
+Expected 12 minutes; verification and review took less than the budget.
 
