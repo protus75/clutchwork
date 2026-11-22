@@ -1,13 +1,14 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test stages render check
+# purpose: Graphics command-mode render in Check: render protocol decoding, artifact content validation, scratch copy, bad artifact paths, skips for other kinds and modes, and the render finding wired into Check
 # relates: [clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: e3a6f154
-# hash: 6742084df9ca5002d524ac5dd0c7d6c624661fdee259caa82c8e6efbf008e513
+# verified: d80fccb7
+# hash: 49171f1894575d51d375610dbbe2f37f49587cb186964dbe828ad7057d2b3bfc
 import asyncio
 import json
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -68,6 +69,7 @@ def setup(monkeypatch, tmp_path, paths, *, kind="graphics", mode="command", rc=0
         spool=SimpleNamespace(root=tmp_path / "spool", write=Mock()),
         redactor=SimpleNamespace(scrub=lambda text: text),
         provider_wait=lambda *args: 0,
+        stage=lambda **kwargs: nullcontext(SimpleNamespace(end=lambda outcome: None)),
     )
     ctx = SimpleNamespace(
         driver=driver,

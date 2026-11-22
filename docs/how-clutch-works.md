@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: fd6afe46
-hash: 559f5de57e5f7860eee7c6b4a106696db8d97b4ddeb92b817815e2cfe7c8828f
+verified: d80fccb7
+hash: 34e15abaf6ba3f4104883455b6a8673f65095aa4b5d65be07e6c635a1fa42531
 -->
 # How ClutchWork works
 
@@ -575,7 +575,7 @@ For each candidate, in pick order:
    no binary, modify/delete or rename conflicts, and no safety-inventory paths (except configured
    `scheduler.parallel.shared_paths`, which waive only that exclusion). It receives the ticket's
    and relevant main-side tickets' Goal and Scope in, plus each file's base, ours and theirs text.
-   Resolve and its review may nest inside the merge stage on the same driver; other stages do not nest.
+   Resolve and its review may nest inside the merge stage, and visual review and meta fill may nest inside Check on the same driver.
    Resolved contents must have no markers and receive an approving call of the unchanged review
    surface over the resolution delta before the full safety and integration tiers run. The call
    writes no review record and lifts no outbox; the old approval alone cannot authorize the repair.
@@ -772,7 +772,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `journal/NNNNNN-YYYYMMDD.jsonl` | The journal (section 10.2); a segment rolls at 64 MiB or 24 hours. |
 | `cache/journal.duckdb` | Rebuildable journal projection; never authoritative. Delete it to force a rebuild. |
 | `cache/journal.duckdb.lock` | Exclusive lock held while opening, loading, querying and closing the journal cache. |
-| `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver except for resolve and review inside merge admission; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
+| `engine.log` | Per-call events carry `call_key`. Diagnostics including `engine_start` and `engine_stop` for drain, serve and run, and `phase_start` and `phase_end` for preflight and retro checks, and stage start/end events for every stage, including Check and merge. Stages do not nest on one driver except for resolve and review inside merge admission and visual review and meta fill inside Check; a gate run inside a stage logs under that stage. Requisition reviews nested in author or rework have no stage events of their own; a standalone review logs them under the reviewed ticket's stem; redacted, rotated at 16 MiB with 3 backups, and never authoritative. |
 | `dist/` | Wheel and sdist last built by `clutch release publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `engine drain --detach`. |
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |

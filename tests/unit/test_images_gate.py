@@ -1,13 +1,14 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test images gate
+# purpose: image_quality gate judges graphics render artifacts without writing files, writes side-by-side and heatmap previews, skips non-command modes, and runs after the render command in Check
 # relates: [clutch/images.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 75d75946
-# hash: 69fe12e4cf502404898d077533e579e36f99b602f7998451d52cccd4f57166bf
+# verified: d80fccb7
+# hash: 044f1f603f36eddf62d82b9c7f883e30d01ef5a16ea3d2a257cd2365d58e16e9
 import asyncio
 import json
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -94,6 +95,7 @@ def test_check_runs_render_before_gate(tmp_path, monkeypatch):
         spool=SimpleNamespace(root=tmp_path / "spool", write=Mock()),
         redactor=SimpleNamespace(scrub=lambda text: text),
         provider_wait=lambda *args: 0,
+        stage=lambda **kwargs: nullcontext(SimpleNamespace(end=lambda outcome: None)),
     )
     ctx = SimpleNamespace(
         driver=driver, env={}, config=SimpleNamespace(state_dir=tmp_path, meta=SimpleNamespace(paths=[]), review=SimpleNamespace(autofix=[])), worktree=lambda stem: work, fs=LocalFileSystem()

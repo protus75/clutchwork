@@ -4,9 +4,10 @@
 # purpose: Check-stage metadata refresh: fills and commits stale or missing meta blocks, reports malformed blocks, ignores unrelated files, and applies meta_drift severity
 # relates: [clutch/gates.py, clutch/meta.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 452057e3
-# hash: d9f43bdc0a03e58619b1f19675c698e9f7dc9cac722bcdcc3e4e647e6da1a9cc
+# verified: d80fccb7
+# hash: 5cac397031a7cc90d9b6434f8761765093d309c5bb4245f7fa1b0929520c5340
 import asyncio
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
@@ -87,7 +88,13 @@ def test_check_outcome(tmp_path, monkeypatch, setting, outcome, verdict):
     ticket.sections = {}
     monkeypatch.setattr("clutch.specs.load_spec", lambda text: text)
     monkeypatch.setattr(metafill, "make_ask", lambda *args: AsyncMock(return_value=None))
-    ctx.driver = SimpleNamespace(journal=SimpleNamespace(read=lambda: []), clock=lambda: datetime(2020, 1, 1, tzinfo=timezone.utc), provider_wait=lambda *args: 0, severity=merge_severity(None))
+    ctx.driver = SimpleNamespace(
+        journal=SimpleNamespace(read=lambda: []),
+        clock=lambda: datetime(2020, 1, 1, tzinfo=timezone.utc),
+        provider_wait=lambda *args: 0,
+        stage=lambda **kwargs: nullcontext(SimpleNamespace(end=lambda outcome: None)),
+        severity=merge_severity(None),
+    )
     if setting == "hard":
         ctx.driver.severity["meta_drift"] = "hard"
     item = stages.Evidence(stem="work", head_sha="abc", claimed="ok", scope_fence=[], changed_files=["docs/new.md"], inserted_lines=0, verification=[], run_record=None)

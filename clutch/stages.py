@@ -17,7 +17,6 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Mapping, Sequence
-from contextlib import nullcontext
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Literal
@@ -1727,7 +1726,9 @@ async def check_meta(ctx, ticket) -> list[Finding]:
     files = [
         path
         for path in await ctx.git.diff_names(ctx.repo, MAIN, ticket.stem)
-        if not in_fence(path, [TICKETS_DIR]) and (worktree / path).is_file() and any(path.startswith(entry.root.rstrip("/") + "/") for entry in ctx.config.meta.paths)
+        if not in_fence(path, [TICKETS_DIR])
+        and (worktree / path).name in ctx.fs.entries((worktree / path).parent)
+        and any(path.startswith(entry.root.rstrip("/") + "/") for entry in ctx.config.meta.paths)
     ]
     if not files:
         return []
@@ -1873,6 +1874,13 @@ async def check_candidates(ctx, ticket, attempt):
 
 async def check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt: int) -> StageResult:
     """Invoicing: run the mechanical gates on the branch head, write + lift `checks.json`."""
+    with ctx.driver.stage(stem=ticket.stem, attempt=attempt, surface="check") as event:
+        result = await _check(ctx, ticket, slip, attempt=attempt)
+        event.end(result.outcome)
+        return result
+
+
+async def _check(ctx: StageContext, ticket: Ticket, slip: PackingSlip, *, attempt: int) -> StageResult:
     stem = ticket.stem
     started = ctx.driver.clock()
     prior_wait = ctx.driver.provider_wait(stem, attempt)
@@ -2092,20 +2100,17 @@ async def run_stages(ctx: StageContext, ticket: Ticket) -> StagesRun:
             invoice = run.results["check"].artifact
             assert isinstance(invoice, Invoice)
             operation = review(ctx, ticket, invoice, attempt=run.attempt)
-        with ctx.driver.stage(stem=ticket.stem, attempt=run.attempt, surface="check") if stage == "check" else nullcontext() as event:
-            if boundary.select is None:
-                result = await operation
-            else:
-                boundary.active = asyncio.create_task(operation)
-                try:
-                    result = await asyncio.shield(boundary.active)
-                except asyncio.CancelledError:
-                    await ctx.abort_current()
-                    raise
-                finally:
-                    boundary.active = None
-            if stage == "check":
-                event.end(result.outcome)
+        if boundary.select is None:
+            result = await operation
+        else:
+            boundary.active = asyncio.create_task(operation)
+            try:
+                result = await asyncio.shield(boundary.active)
+            except asyncio.CancelledError:
+                await ctx.abort_current()
+                raise
+            finally:
+                boundary.active = None
         run.results[stage] = result
         if result.outcome != "ok":
             break
