@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The full verification passed: 2,168 unit tests and 297 integration tests passed; 3,307 integration tests were skipped by the local test configuration. Each new assertion failed under its corresponding mutation. Removing the cycle entirely was simpler than retaining an unused health-check wrapper.
+The prior attempt’s changes were absent from the branch, so the implementation was rederived; the full verification passed with 3,297 integration tests skipped.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; completed in less than 25 minutes.
+Expected 25 minutes; actual time was shorter.
 
