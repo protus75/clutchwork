@@ -1,0 +1,17 @@
+Observed 2026-11-21: clutch engine serve pid 3153426
+    PID     ELAPSED     TIME %CPU COMMAND
+3153426       20:06 00:20:21  101 /home/djp/source/clutch/.venv/bin/python3 -m clutch engine serve
+
+CPU ticks over 3 x 1s (utime,stime):
+120715 1440
+120815 1442
+120918 1443
+
+vmstat: bi=0 (journal served from page cache; CPU, not disk)
+
+Timing against the live journal (49,521 events), read-only, one Journal instance:
+events 49549
+journal.read (cached): 0.8 ms per call
+ControlInbox._fold: 5.4 ms per call
+
+Call path per 100 ms poll: serve.dispatch and serve.verdicts -> daemon.Control.poll() (clutch/daemon.py:249) -> ControlInbox.consume() -> recover() -> _fold() and a second _fold() (clutch/control.py:253-262); each _fold iterates decisions() over the whole journal even when no event was appended since the last poll.
