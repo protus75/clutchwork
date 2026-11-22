@@ -1,16 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "5fe62d637ac75fed55b72d98945da1a32332c903",
+  "produced_at_sha": "a7ba155c1e34c5f931fb19cc41db2735d24301c4",
   "stem": "llm-request-subject",
-  "attempt": 5,
+  "attempt": 6,
   "terminal": "gate_failed",
   "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "In tests/integration/test_triage.py:81, change `(r.surface, r.tier, r.ticket)` to `r.subject`. Update the expected tuples from None to the labels the code sends: each triage message's id, the authoring message's id for author, and the authored ticket stem for requisition_review.",
-    "Look for other request reads that use a variable name other than req/request (r.ticket, call.ticket, x.ticket on FakeLLM.requests) in every fenced test and harness file. Criterion 4's `req(uest)?\\.ticket\\b` scan does not catch them.",
-    "The last run reported 297 integration passed and 3341 skipped, so a skipped test hid this break. Run `./dev.py test tests/integration/test_triage.py` and confirm it actually executes. Do not trust a full-suite pass that mostly skips."
+    "tests/integration/test_llm_effect.py:188 calls run(driver, ticket=None, subject=\"ticketless\"), but the local helper at line 88 has no subject parameter. Add `subject: str | None = None` to that helper and pass `subject=subject` through to driver.run.",
+    "Most integration tests were skipped (3341 skipped), so a passing ./dev.py test does not prove the edited integration files work. Read every edited integration test call site and its local helper signature, and confirm each ticketless call forwards subject to driver.run.",
+    "Check every other fenced integration file that wraps driver.run in a local helper the same way: test_driver.py, test_fixture_host.py, test_triage.py, test_watchdog_activation.py and test_provider_*.py. Each ticket=None path must carry a non-empty subject, or the new ValueError fires."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
