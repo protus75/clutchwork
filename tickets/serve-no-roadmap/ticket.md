@@ -10,15 +10,10 @@ kind: chore
 
 ## Context
 - docs/roadmap-driver-plan.md#6. The loop (`driver-loop`)
-- clutch/roadmap.py::author_ahead
-- clutch/roadmap.py::ship
-- clutch/roadmap.py::ship_when_queue_low
-- clutch/roadmap.py::drive
-- clutch/serve.py::Serve.driver_pending
-- clutch/serve.py::Serve.run_driver
-- clutch/serve.py::Serve.wait_driver
-- clutch/__main__.py::build_driver
-- clutch/drain.py::_Drain._run_driver
+- clutch/roadmap.py
+- clutch/serve.py
+- clutch/__main__.py
+- clutch/drain.py
 
 ## On-demand
 - clutch/specs/ask/plan-ticket-serve.md
