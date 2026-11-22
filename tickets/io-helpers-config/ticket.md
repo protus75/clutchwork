@@ -60,6 +60,7 @@ Scope in:
 - `tests/integration/test_shared_fakes_adoption.py` asserts `test_merge.CONFIG is test_stages.CONFIG`, that `test_merge.py` source has no `test_stages.py` text and no `split('CONFIG`: the hub keeps `CONFIG` as the one object from `tests.stages_helpers`.
 - `tests/snapshot_scale_fixture.py` and `tests/integration/test_snapshot_cache_facts.py` import `VALID` and run today; they stay green.
 
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
