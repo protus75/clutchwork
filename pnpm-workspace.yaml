@@ -1,2 +1,3 @@
 allowBuilds:
   '@anthropic-ai/claude-code': true
+  '@google/gemini-cli': true
