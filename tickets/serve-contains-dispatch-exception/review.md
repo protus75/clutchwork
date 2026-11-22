@@ -1,6 +1,6 @@
 # Review: approve
 
-The diff moves drain's dispatch-exception journaling into the single function `runner.dispatch_exception_terminal`, which both drain and serve now call; serve catches only `Exception`, re-raises while stopping, and returns `infra_error`, and the tests, carried reproducer and doc changes meet every acceptance criterion within the fence.
+The diff moves the dispatch-exception terminal into one runner function that drain and serve both call, and serve now contains a ticket's `Exception` unless it is stopping, while `BaseException` and consumer failures stay fatal; the new tests and the reproducer cover every acceptance criterion, and the docs are updated, all inside the fence.
 
 ## Findings
 
@@ -12,10 +12,10 @@ none
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "3626430e63381f0bd1373a1963e2a114b16a6e7b",
+  "produced_at_sha": "a78b64d74ff1bdf436b6ff27e1708a0a2b92bfe9",
   "stem": "serve-contains-dispatch-exception",
-  "reviewed_sha": "3626430e63381f0bd1373a1963e2a114b16a6e7b",
-  "summary": "The diff moves drain's dispatch-exception journaling into the single function `runner.dispatch_exception_terminal`, which both drain and serve now call; serve catches only `Exception`, re-raises while stopping, and returns `infra_error`, and the tests, carried reproducer and doc changes meet every acceptance criterion within the fence.",
+  "reviewed_sha": "a78b64d74ff1bdf436b6ff27e1708a0a2b92bfe9",
+  "summary": "The diff moves the dispatch-exception terminal into one runner function that drain and serve both call, and serve now contains a ticket's `Exception` unless it is stopping, while `BaseException` and consumer failures stay fatal; the new tests and the reproducer cover every acceptance criterion, and the docs are updated, all inside the fence.",
   "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
