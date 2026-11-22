@@ -1,0 +1,128 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "78c11c6f5d6bd381c6c6434a4f0e6155e1c9343c",
+  "stem": "roadmap-freshen-2026-11-22",
+  "passed": true,
+  "changed_files": [
+    "docs/roadmap.md"
+  ],
+  "inserted_lines": 22,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.122912,
+        "passed": 2129,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3382773039629683,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0144981719786301
+        }
+      },
+      "coverage": {
+        "percent": 76.51469706058788,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.070855,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8138947779953014,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.041015379014425,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.025898252002662,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039328370185103
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "clutch",
+        "roadmap",
+        "status"
+      ],
+      "rc": 0,
+      "tail": "release 0.3.0: 71 merged, 0 authored, 0 ready, 0 blocked; gate not run\nrelease 0.4.0: 58 merged, 0 authored, 0 ready, 0 blocked; gate not run\nrelease 0.5.0: 50 merged, 0 authored, 0 ready, 0 blocked; gate not run\nrelease 0.6.0: 1 merged, 1 authored, 0 ready, 11 blocked; gate not run\nrelease 0.7.0: 0 merged, 1 authored, 0 ready, 12 blocked; gate not run\nnext: none\nwaits: row 75 doc-facet-registry: no unique plan for document plan 1 -- start Owner with roadmap or a word from exactly one docs/*-plan.md name\nwaits: row 76 docset-manifest: no unique plan for document plan 2 -- start Owner with roadmap or a word from exactly one docs/*-plan.md name\nwaits: row 77 isolated-readonly-call: no unique plan for document plan 3 -- start Owner with roadmap or a word from exactly one docs/*-plan.md name\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.335257
+    }
+  ]
+}
