@@ -1,20 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "aae1ef08c50c746556745a9f811ca3f69689cbfd",
+  "produced_at_sha": "a90e2b3ba30fd356e730607938625e856fbf0675",
   "stem": "retro-due-one-owner",
-  "attempt": 4,
-  "terminal": "gate_failed",
-  "stage": "review",
+  "attempt": 5,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Premise false: the `override` spike is counted only in `production_evidence` (clutch/retro.py:247, `invoices[check.key].bypassed` from a `git show` of each checks invoice), not in `measurements(window)`. A pure no-I/O `due_trigger` cannot see it.",
-    "The criteria contradict each other: 'trigger kinds unchanged', a pure `due_trigger` with no I/O, and 'no `production_evidence` before trigger on unforced calls' cannot all hold while `override` is a default-enabled SpikeKind (config.py:24, 244).",
-    "A human must rewrite the ticket and pick one: (a) record `bypassed` in the journal from the Check stage and count `override` in `measurements`, fencing that path; (b) accept dropping or deferring the `override` trigger and update compatibility and docs; (c) state an override-only evidence fallback.",
-    "The serve half of the diff (`check_retro` called only from the `Serve.run` loop, with the dis-based site test) passed review. A rewritten ticket can keep that scope unchanged, or split it into its own ticket that lands independently."
+    "Premise confirmed in clutch/retro.py: measurements() (line 125) counts no override spike; only production_evidence (line 247) adds spikes['override'], from invoice.bypassed read by git show. A pure due_trigger before production_evidence drops override-only triggers, breaking the contract's 'trigger",
+    "Rewrite the ticket to pick one resolution: (a) record bypass facts in the journal so measurements() counts override, and fence the code that writes and reads them; (b) state that override is no longer an unforced due trigger; or (c) define an evidence-loading fallback and when it runs.",
+    "If (b), add acceptance and tests for the override change and update any retro.spikes.kinds docs or config that list override. If (a), name the event that carries the bypass fact and the module that emits it, and fence both.",
+    "The branch already has an implementation (232425060 'Centralize retro due checks'). Keep its serve.py work (check_retro called only from the Serve.run loop) and the dis-based site test. Only the retro.py due-decision order depends on the premise fix."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
