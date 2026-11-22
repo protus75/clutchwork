@@ -23,7 +23,7 @@ none
 - reason: tests encoding an existing contract; the stand-ins move to the existing `tests/git_fake.py::GitFake` with the same assertions and no production, document or behavior change
 
 ## Scope in / Scope out
-In: migrate each stand-in in the files below onto `GitFake` from `tests/git_fake.py`, keeping every existing assertion and test name (an `assert_awaited_with` on a stand-in becomes an assertion on `fake.calls`). Add only the import `GitFake` needs and nothing else changes in a file. Remove each migrated file from `PENDING` in `tests/integration/test_git_fake_adoption.py`; that is the only edit allowed there. A test using a real `Git` on a fake process executor is not a stand-in and stays as is.
+In: migrate each stand-in in the files below onto `GitFake` from `tests/git_fake.py`, keeping every existing assertion and test name (an `assert_awaited_with` on a stand-in becomes an assertion on `fake.calls`). Add only the import `GitFake` needs and nothing else changes in a file. Remove each migrated file from `PENDING` in `tests/integration/test_git_fake_adoption.py`. The adoption test changes only as this Scope in states: these removals, deleting `PENDING` and its two checks, and adding the fourth pattern below. A test using a real `Git` on a fake process executor is not a stand-in and stays as is.
 
 Files migrated here (stand-ins counted):
 tests/integration/test_covmap.py (1)
@@ -63,9 +63,9 @@ Also in: delete `PENDING` and both of its checks from `tests/integration/test_gi
 - tests/unit/test_roadmap_merged_parallel.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/integration/test_git_fake_adoption.py` passes with `PENDING` gone: every file under `tests/unit` and `tests/integration` other than the two exempt files has zero matches for the three patterns, and the scan fails (not passes) when a temporary file under a `tmp_path` copy of the scan root contains `git = SimpleNamespace(`.
+1. `./dev.py test tests/integration/test_git_fake_adoption.py` passes with `PENDING` gone: every file under `tests/unit` and `tests/integration` other than the two exempt files has zero matches for the four patterns (the three existing ones plus the `FakeGit`/`fake_git` pattern this ticket adds), and the scan fails (not passes) when a temporary file under a `tmp_path` copy of the scan root contains `git = SimpleNamespace(`.
 2. `./dev.py test tests/integration/test_covmap.py tests/integration/test_harvest_cost_source.py` passes with the migrated tests keeping their names and assertions, so a test that asserted a Git call still asserts the same call (now via `fake.calls`), not a weaker one.
-3. `./dev.py test tests/integration/test_git_fake_adoption.py` proves no file under `tests/` other than tests/git_fake.py references `FakeGit` or `fake_git`, and the scan fails on a `tmp_path` copy holding `from tests.fakes import FakeGit`.
+3. `./dev.py test tests/integration/test_git_fake_adoption.py` proves no file under `tests/unit` or `tests/integration` other than tests/git_fake.py references `FakeGit` or `fake_git` (tests/fakes.py and tests/conftest.py lose theirs through the deletions in Scope in), and the scan fails on a `tmp_path` copy holding `from tests.fakes import FakeGit`.
 4. `./dev.py test tests/unit/test_git_commit.py tests/unit/test_hostfiles.py tests/unit/test_intake_plan.py tests/unit/test_release_changelog.py tests/unit/test_requisition_prior_review.py tests/unit/test_roadmap_accept.py tests/unit/test_roadmap_author.py tests/unit/test_roadmap_merged.py tests/unit/test_roadmap_merged_parallel.py tests/unit/test_shared_fakes.py` passes with every former `FakeGit` user on `GitFake` and test names unchanged.
 
 ## Verification
