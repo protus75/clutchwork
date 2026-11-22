@@ -49,7 +49,7 @@ from clutch.providers import (
 from clutch.redact import Redactor
 from clutch.restart import Restart
 from clutch.seams import Clock, CommandNotifications, ExecutableNotFound, LocalFileSystem, ProcessExec, SubprocessExec
-from clutch.status import admission_facts, latest_transitions, lint_admission, order_admission, project, reject_queue, render, review_admission
+from clutch.status import admission_facts, latest_transitions, lint_admission, order_admission, overdue, project, reject_queue, render, review_admission
 from clutch.storm import StormLedger
 from clutch.tickets import (
     CHECKS_FILE,
@@ -337,7 +337,7 @@ def _parser() -> argparse.ArgumentParser:
         view_sub,
         "status",
         summary="project current state from the journal (read-only)",
-        does="Print the journal projection of section 10.3.",
+        does="Print the journal projection of section 10.3, including overdue retro and calibration reminders; these run only when invoked.",
         reads="Config, journal, box, retro spec, HEAD and committed checks records.",
         writes="Nothing.",
         lock="None.",
@@ -403,7 +403,7 @@ def _parser() -> argparse.ArgumentParser:
         host_sub,
         "doctor",
         summary="inspect setup without changing state",
-        does="Check setup, managed conduct blocks, parallel provider concurrency, graphics judge independence and panel provider concurrency, printing PASS or FAIL rows.",
+        does="Check setup, managed conduct blocks, parallel provider concurrency, graphics judge independence and panel provider concurrency, printing PASS or FAIL rows and WARN rows for overdue retro and calibration; these run only when invoked.",
         reads="Config, git, the writer lock, journal and routed conduct files at HEAD.",
         writes="Nothing.",
         lock="None; probes the writer lock and fails while another process holds it.",
@@ -1037,7 +1037,7 @@ def _parser() -> argparse.ArgumentParser:
     engine = sub.add_parser(
         "engine",
         help="run and control the engine",
-        description="Run tickets, control a running engine, and run retros and estimate calibrations.",
+        description="Run tickets, control a running engine, and run retros and estimate calibrations only when invoked; view status and host doctor report overdue maintenance.",
         epilog="Examples:\nclutch engine drain\n  Run eligible tickets.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -1131,7 +1131,7 @@ def _parser() -> argparse.ArgumentParser:
         engine_sub,
         "retro",
         summary="run or queue a retro report",
-        does="Run a retro report now or queue one on a running drain or serve; refuse a non-engine lock holder.",
+        does="Run a retro report only when invoked, now or queued on a running drain or serve; view status and host doctor report overdue retros. Refuse a non-engine lock holder.",
         reads="Config, journal, tickets and engine state.",
         writes="A committed tickets/retro/NNNNNN.md report or a retro request to <state_dir>/control/inbox/.",
         lock="Writer lock, or queue on the running engine.",
@@ -1144,7 +1144,7 @@ def _parser() -> argparse.ArgumentParser:
         summary="journal actual Implement minutes against ticket estimates",
         does=(
             "Compute, per provider and model, the run count, median estimate, and median and 90th-percentile actual minutes "
-            "of the last calibration.every completed Implement calls; journal them as an estimate_calibration signal and print the table."
+            "of the last calibration.every completed Implement calls; journal them as an estimate_calibration signal and print the table. Run only when invoked; view status and host doctor report overdue calibration."
         ),
         reads="Config, journal, and tickets of stems in the window.",
         writes="One estimate_calibration journal signal.",
@@ -2355,6 +2355,7 @@ async def _status(checkout: runner.Checkout):
         provenance=provenance,
         box=Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal)),
         policy=checkout.config.box_policy,
+        overdue=overdue(events, checkout.config).values(),
     )
 
 

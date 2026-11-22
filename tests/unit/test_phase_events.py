@@ -1,20 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for the phase_start and phase_end engine-log events and their outcomes in runner preflight and in the drain and serve retro checks
+# purpose: Unit tests for the phase_start and phase_end engine-log events and their outcomes in runner preflight and in the drain retro check
 # relates: [clutch/drain.py, clutch/runner.py, clutch/serve.py]
 # owner: engine
-# verified: 2182d51e
-# hash: 769596fcf8605721451b971ba80c7d542aa6cd850badbb2812a50843ee174448
-from dataclasses import dataclass
+# verified: 45e4e081
+# hash: 9a8635351baac05bd050b1b710436edb7c24f51129abc37d306176c45f5f812f
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
 
-from clutch import drain, runner, serve
-from clutch.journal import EventType
+from clutch import drain, runner
 
 
 class RecordingLog:
@@ -65,67 +63,14 @@ async def test_drain_retro_events(monkeypatch, due, result, outcome):
     d.c = SimpleNamespace(
         config=SimpleNamespace(state_dir=Path("/state"), providers=[], release=SimpleNamespace(pypi_token="")), env={}, clock=None, sleep=None, control=None, journal=SimpleNamespace(read=lambda: [])
     )
-    d.retro_terminal_count = None
     d.retro = AsyncMock(side_effect=result if isinstance(result, Exception) else None, return_value=result)
     d.retro.due = due
     d.retro.abort_current = AsyncMock()
     if isinstance(result, Exception):
         with pytest.raises(RuntimeError, match="retro"):
-            await d._run_retro(forced=False)
+            await d._run_retro()
     else:
-        await d._run_retro(forced=False)
+        await d._run_retro()
+    # Wrong: keep an unforced path for an operator request.
+    d.retro.assert_awaited_once_with(forced=True)
     assert log.events == events("retro_check", outcome)
-
-
-@dataclass
-class Checkout:
-    config: object
-    journal: object
-    clock: object
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("trigger,outcome", [(None, "not_due"), (object(), "due")])
-async def test_serve_retro_events(monkeypatch, trigger, outcome):
-    s = object.__new__(serve.Serve)
-    s.log = RecordingLog()
-    s.retro_checked = None
-    config = SimpleNamespace(retro=object())
-    s.checkout = Checkout(config, SimpleNamespace(read=lambda: [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]), lambda: "now")
-    s.control = SimpleNamespace(load_config=lambda: config)
-    s.retro_due = False
-    monkeypatch.setattr(serve, "snapshot_config", lambda value: value)
-    monkeypatch.setattr(serve, "project_window", lambda value: value)
-    monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
-    monkeypatch.setattr(serve, "due_trigger", lambda *args, **kwargs: trigger)
-    await s.check_retro()
-    assert s.retro_due is (trigger is not None)
-    assert s.log.events == events("retro_check", outcome)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("failure", ["journal", "evidence"])
-async def test_serve_retro_failure(monkeypatch, failure):
-    s = object.__new__(serve.Serve)
-    s.log = RecordingLog()
-    s.retro_checked = None
-    config = SimpleNamespace(retro=object())
-
-    def read():
-        if failure == "journal":
-            raise RuntimeError("journal")
-        return [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]
-
-    s.checkout = Checkout(config, SimpleNamespace(read=read), lambda: "now")
-    s.control = SimpleNamespace(load_config=lambda: config)
-    monkeypatch.setattr(serve, "snapshot_config", lambda value: value)
-    monkeypatch.setattr(serve, "project_window", lambda value: value)
-    monkeypatch.setattr(serve, "suppressing_failure", lambda value: None)
-
-    def fail_measurements(*args, **kwargs):
-        raise RuntimeError("evidence")
-
-    monkeypatch.setattr(serve, "due_trigger", fail_measurements)
-    with pytest.raises(RuntimeError, match=failure):
-        await s.check_retro()
-    assert s.log.events == ([] if failure == "journal" else events("retro_check", "failed"))

@@ -11,6 +11,7 @@ from clutch.journal import Journal
 from clutch.lockfile import CommitLock, LockHeld, _read_holder
 from clutch.providers import judge_independence_finding, panel_slots_finding
 from clutch.seams import LocalFileSystem
+from clutch.status import overdue
 
 
 @dataclass(frozen=True)
@@ -63,8 +64,12 @@ async def check(*, repo, config_path, env, exec_, clock, sleep, in_venv):
             row(name, False, "state directory unavailable; repair the selected config and rerun host doctor")
             continue
         try:
-            detail = inspect_lock(config.state_dir) if name == "lock" else f"readable history ({len(Journal(config.state_dir, clock).read())} events)"
+            if name == "journal":
+                events = Journal(config.state_dir, clock).read()
+            detail = inspect_lock(config.state_dir) if name == "lock" else f"readable history ({len(events)} events)"
             row(name, True, detail)
+            if name == "journal":
+                results.extend(Check(name, True, line, warn=True) for name, line in overdue(events, config).items())
         except Exception as exc:
             row(
                 name,

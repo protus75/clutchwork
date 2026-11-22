@@ -4,8 +4,8 @@ kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 5214eb3e
-hash: 1021db419b6ef6589aad92a2c102c0374615dbb50b2f858f4006291c6a64cda6
+verified: 45e4e081
+hash: 777500675b21ba51a3b85a3372e0bea3d7615b29637468111a4d7733ce9bddc9
 -->
 # Host contract
 
@@ -298,7 +298,7 @@ environment variable, never a literal secret. Codex, qwen, and gemini report no 
 `est_cost_per_call_usd` at adapter setup; Claude can report actual cost. `base_url` is required for qwen and refused for the other adapters. Estimates
 are nonnegative, count fields are integers at least 1, and retry must not exceed
 diagnosis. Providers, routing, route candidates, argv and strategy paths are
-nonempty lists where declared. Retro uses nested `merges`, `settled`, and `spikes` blocks, each with an `enabled` switch; their thresholds are `every`, `every`, and `count`. `spikes.kinds` is a nonempty allowlist with each kind listed once. Override is measured and reported when a retro runs, but cannot make a retro due. If all triggers are disabled, set `retro.enabled: false` or enable a trigger. The master switch disables automatic retros without blocking a forced retro. Notify requires a nonblank executable and
+nonempty lists where declared. Retro uses nested `merges`, `settled`, and `spikes` blocks, each with an `enabled` switch; their overdue thresholds are `every`, `every`, and `count`, reported by `view status` and `host doctor`. Retro and Calibration run only when invoked with `engine retro` and `engine calibrate`; `calibration.every` is both its overdue threshold and its report window. `spikes.kinds` is a nonempty allowlist with each kind listed once. Override is measured and reported when a retro runs, but cannot make a retro due. If all triggers are disabled, set `retro.enabled: false` or enable a trigger. The master switch disables retro overdue reminders without blocking a forced retro. Notify requires a nonblank executable and
 NUL-free strings.
 
 `release ship` runs each configured package after the tag and names the paths kept by the run.

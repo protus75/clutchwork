@@ -4,8 +4,8 @@
 # purpose: Checks serve's dispatch loop never reads docs/roadmap.md or calls the roadmap module, while still dispatching and running the idle supervisor step
 # relates: [clutch/roadmap.py, clutch/serve.py]
 # owner: engine
-# verified: 18f3cf87
-# hash: d6a2b67717f7a2409831e17c07547d28d69e958c8078a7ac4a77ab9e464098a0
+# verified: 45e4e081
+# hash: 9b547f55352e6e9f7f0e9f3111f070bcc9a353a66c4f99f4a799b8830ee64757
 import inspect
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -45,7 +45,6 @@ async def test_dispatch_idle_never_reads_roadmap(monkeypatch, tmp_path):
     owner.mutations.return_value.__aenter__ = AsyncMock()
     owner.mutations.return_value.__aexit__ = AsyncMock()
     monkeypatch.setattr(serve, "supervise_idle", AsyncMock())
-    monkeypatch.setattr(serve, "calibrate_when_due", lambda _: None)
 
     async def end(_):
         raise StopAsyncIteration

@@ -5,8 +5,8 @@
 # purpose: Unit tests checking that serve and drain run idle supervision only at idle boundaries, inside the mutation lock and after retro, and prepare context only when eligible work exists
 # relates: [clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/serve.py, clutch/triage.py, tests/unit/test_supervise_idle_point.py]
 # owner: engine
-# verified: 18f3cf87
-# hash: 12bf64ba9a540265532c70275bfbb6a41c9d19ce19932ba72a660390495c9645
+# verified: 45e4e081
+# hash: 73850da6886d48cc1d92a87a55bcfbfed544a69c783dde57147e83f5c0f78cad
 
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -71,7 +71,6 @@ def serve_rig(tmp_path, monkeypatch, checkout, ctx):
     # replace() in lazy preparation needs the real dataclass checkout.
     monkeypatch.setattr(serve, "replace", lambda c, **kwargs: Checkout(c.repo, c.journal, kwargs["config"]))
     monkeypatch.setattr(serve, "snapshot_config", lambda c: c)
-    monkeypatch.setattr(serve, "calibrate_when_due", lambda checkout: None)
     return s
 
 
@@ -135,7 +134,6 @@ def drain_rig(tmp_path, monkeypatch, checkout, dispatch):
     d._settle = lambda *args: None
     monkeypatch.setattr(drain, "intake", AsyncMock())
     monkeypatch.setattr(triage, "report_intake", lambda c: None)
-    monkeypatch.setattr(drain, "calibrate_when_due", lambda checkout: None)
     return d
 
 
@@ -154,6 +152,7 @@ async def test_drain_boundary_order(tmp_path, monkeypatch, between):
     d.retro = object()
     d.served_retro_id = None
     d._run_retro = AsyncMock(side_effect=lambda **kwargs: calls.append("retro"))
+    c.control.projection.retro_id = "requested"
 
     async def supervise(checkout, make_ctx):
         calls.append("supervise")

@@ -11,7 +11,6 @@ from dataclasses import replace
 from pathlib import Path
 
 from clutch import git, runner, triage
-from clutch.calibration import calibrate_when_due
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
 from clutch.drain import record_reoffer, reexec_argv
@@ -24,7 +23,7 @@ from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
 from clutch.redact import Redactor
-from clutch.retro import Retro, RetroCheckOutcome, due_trigger, project_window, suppressing_failure
+from clutch.retro import Retro
 from clutch.seams import ExecutableNotFound, SubprocessExec
 from clutch.status import CLOSED, last_states
 from clutch.storm import StormLedger
@@ -109,8 +108,6 @@ class Serve:
         self.report_retry = None
         self.stopping = False
         self.served_retro_id = None
-        self.retro_due = False
-        self.retro_checked = None
         self.retro = None
         self.retro_task = None
         self.wake = asyncio.Event()
@@ -369,28 +366,7 @@ class Serve:
 
     def retro_pending(self):
         request_id = self.control.projection.retro_id
-        return self.retro_due or request_id is not None and request_id != self.served_retro_id
-
-    async def check_retro(self):
-        events = self.checkout.journal.read()
-        count = sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in events)
-        if count == self.retro_checked:
-            return
-        self.log.event("phase_start", phase="retro_check")
-        try:
-            c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
-            window = project_window(events)
-            due = False
-            if suppressing_failure(window) is None:
-                due = due_trigger(window, c.config.retro, forced=False) is not None
-                if due:
-                    self.retro_due = True
-        except BaseException:
-            self.log.event("phase_end", phase="retro_check", outcome="failed")
-            raise
-        self.retro_checked = count
-        outcome: RetroCheckOutcome = "due" if due else "not_due"
-        self.log.event("phase_end", phase="retro_check", outcome=outcome)
+        return request_id is not None and request_id != self.served_retro_id
 
     async def run_retro(self, request_id):
         async with self.mutations():
@@ -403,7 +379,6 @@ class Serve:
             try:
                 await self.retro(forced=request_id is not None)
                 self.served_retro_id = request_id if request_id is not None else self.served_retro_id
-                self.retro_due = False
             finally:
                 self.retro = None
 
@@ -443,7 +418,6 @@ class Serve:
 
                                 await self.control.inbox.settle_triage(run_triage)
                                 await supervise_idle(self.checkout, make_ctx)
-                                calibrate_when_due(self.checkout)
 
                         await response.wait(supervise())
                 if not busy or not exclusive_pending:
@@ -697,7 +671,6 @@ class Serve:
                             upgrade_stop = not self.control.projection.stop_requested
                             self.stop()
                             break
-                    await self.check_retro()
                     if self.retro_task is not None and self.retro_task.done():
                         self.retro_task.result()
                         self.retro_task = None

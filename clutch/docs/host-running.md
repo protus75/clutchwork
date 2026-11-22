@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 18f3cf87
-hash: a18e92631b84a895055bf5517ea1e8c8a7c8361e40fb6e3e8b121614984daf1a
+verified: 45e4e081
+hash: f7d4f265e0da130cd2f7b240ed7c3b333c1c2ca6f99167cfe07dcf41a380c255
 -->
 # Running ClutchWork on a host
 
@@ -22,13 +22,13 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 |---|---|---|
 | `view watch` | Yes | Show the live text view; `--once` prints one view. |
 | `view snapshot` | Yes | Print the extension snapshot as JSON; `snapshot_merged_limit` caps merged rows at 100 by default, and `--all-merged` includes all. |
-| `view status` | Yes | Show the journal projection and any evidence size warning. |
+| `view status` | Yes | Show the journal projection and any evidence size warning. Also reports overdue retro and calibration reminders without running them. |
 | `view stats` | Yes | Show the read-only health and efficiency projection. |
 | `view events` | Yes | Stream actionable engine changes after a silent baseline. |
 | `ticket lint` | Yes | Validate tickets and graphics judge independence without writing. |
-| `engine retro` | Yes | Run a retro report now, or queue one on the running engine. |
-| `engine calibrate` | Yes | Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
-| `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure and excess evidence size as a warning. |
+| `engine retro` | Yes | Run a retro report only when invoked, now or queued on the running engine; status and doctor report overdue thresholds. |
+| `engine calibrate` | Yes | Run only when invoked; status and doctor report overdue calibration. Journal and print, per provider and model, the median estimate and the median and 90th-percentile actual Implement minutes of the last `calibration.every` completed Implement calls. |
+| `host doctor` | No | Inspect setup, including parallel provider concurrency, graphics judge independence and panel provider concurrency; its lock probe reports a held lock as a failure and excess evidence size as a warning. Also reports overdue retro and calibration reminders without running them. |
 | `prompt` | Yes | List prompts with `prompt list` and render host prompts with `prompt host <name> [stem]`; render an operator prompt for a ticket, a new ticket stem (`author`), named box IDs, all committed drafts, the drain loop, the plan-ticket-drain or plan-ticket-serve kickoff, or roadmap creation and maintenance without writing state; both plan kickoffs require explicit Sonnet selection for Claude subagents; follow the roadmap prompt with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
 | `host core` | Yes | Refresh managed conduct files. |
 | `provider probe` | Yes | Probe declared providers and models. |

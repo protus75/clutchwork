@@ -28,20 +28,18 @@ def implement_runs(events):
     return runs
 
 
-def due(events, every):
+def pending(events):
     count = 0
     for event in events:
         if event.type == EventType.SIGNAL and event.body.get("signal") == ESTIMATE_CALIBRATION:
             count = 0
         elif event.type == EventType.EFFECT_COMPLETION and _IMPLEMENT.fullmatch(event.key or ""):
             count += 1
-    return count >= every
+    return count
 
 
-def calibrate_when_due(checkout):
-    every = checkout.config.calibration.every
-    if due(checkout.journal.read(), every):
-        calibrate(checkout.journal, checkout.fs, checkout.repo, every)
+def due(events, every):
+    return pending(events) >= every
 
 
 def calibrate(journal, fs, repo, every):

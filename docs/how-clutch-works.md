@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 5214eb3e
-hash: 0e632ea7701c18d3c0e682972fb4f57168b6dad16e3783e7d227db9a705117d9
+verified: 45e4e081
+hash: d97ffc58648cbe4a7e3c1642b27a3a7def97315ce8266dcdae06f13c23d10fb3
 -->
 # How ClutchWork works
 
@@ -55,7 +55,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `meta fill [paths]` | yes | Fill metadata using a read-only model. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
-| `view status` | no | Prints the journal projection and any evidence size warning (section 10.3). Read-only. |
+| `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |
 | `view stats [--window W] [--json] [--tree]` | no | Prints a read-only health and efficiency projection over a time or ticket window (default `7d`); it is not an authority. |
 | `view events` | no | Streams actionable engine changes after a silent baseline until Ctrl-C. |
 | `ticket lint [stem ...]` | no | Validates ticket grammar, intake claims, committable bug evidence, the time budget limits (over 30m requires a reason when not split, over 60m always splits, and `stuck` is twice `expected`), and the `drain.max_ticket_minutes` stuck ceiling and graphics judge independence without running tickets or writing files, journal events, or git state. With no stems, checks every ticket except those settled or rejected in the journal; with no journal, checks all tickets. Prints each finding and its fix, then `lint: <valid>/<total> tickets valid`. Exits 0 when valid, 1 for findings, or 2 for a missing named ticket or unreadable tickets directory. |
@@ -69,7 +69,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `training eval --route TIER/review --holdout FILE` | no | Replay held-out review records through the selected route and print agreement to stdout only; exit 2 if no held-out review record was scored; no journal, evidence records or engine log. |
 | `coverage map` | no | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate [--gate PATH] [--report PATH] -- <argv>` | no | Runs the unit-test command, then checks its fresh coverage report against `test-gate.toml` (default report `coverage.json`; paths relative to the invocation directory). Returns the command’s nonzero exit code, or 0 on coverage pass, 1 on threshold failures, or 2 for a refusal. |
-| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Warns when evidence exceeds its configured threshold without failing. Git is not probed if config fails to load. Exit 2 on any failure. |
+| `host doctor` | no | Checks venv, config load, git, lock probe, journal readability, core check, and parallel provider concurrency, graphics judge independence and panel provider concurrency checks. Warns when evidence exceeds its configured threshold or retro or calibration is overdue, without failing. Git is not probed if config fails to load. Exit 2 on any failure. |
 | `prompt <diagnose\|running\|review> <stem>` | no | Prints an operator prompt for an existing ticket without writing state; `diagnose` selects the running prompt for a live running ticket; `review` audits the ticket against merged code and every confirmed, unmerged ticket. |
 | `host core` | no | Rewrites the managed `clutch:core` block in each routed agent's conduct file (section 12). |
 | `provider probe [PROVIDER...]` | no | Probe declared providers and models; exits 1 when any probe fails and 2 for an undeclared provider name. |
@@ -85,8 +85,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `engine run <stem>` | yes | Reconciles orphans, intakes only the named ticket’s pending changes, then drives that ticket through every stage. Refuses a stem that failed intake, is missing, invalid, merged, not `confirmed`, or has unmerged dependencies. |
 | `engine drain [--detach] [--parked STEM] [--deadline ISO]` | yes | Runs every eligible ticket to quiescence (section 7.1); `--detach` starts its own session and appends to `<state_dir>/drain.out`. The self-upgrade re-exec sets `--parked` and `--deadline`, not the operator. |
 | `engine serve` | yes | Runs the continuous daemon until `engine kill`, `engine stop`, or a signal (section 7.2). |
-| `engine retro` | try | Runs a retro report now or queues one on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
-| `engine calibrate` | no | Reads the last `calibration.every` completed Implement calls from the journal, measuring minutes from each `effect_intent` to `effect_completion` and taking provider and model from completion `cost`. Reads expected minutes from each `tickets/<stem>/ticket.md`; calls without a readable estimate are left out. Journals one `estimate_calibration` signal and prints rows with the run count, median estimate, and median and 90th-percentile actual minutes per provider and model. |
+| `engine retro` | try | Runs a retro report only when invoked, now or queued on the running engine (section 9.5); refuses while a non-engine holder has the lock. |
+| `engine calibrate` | no | Runs only when invoked. Reads the last `calibration.every` completed Implement calls from the journal, measuring minutes from each `effect_intent` to `effect_completion` and taking provider and model from completion `cost`. Reads expected minutes from each `tickets/<stem>/ticket.md`; calls without a readable estimate are left out. Journals one `estimate_calibration` signal and prints rows with the run count, median estimate, and median and 90th-percentile actual minutes per provider and model. |
 | `box suggest <summary>` | no | Files an idea straight into the Suggestion Box. |
 | `box issue --class <class> <title> --body FILE` | no | Prints a link with title and body only, a version footer, and the Repository URL from package metadata; scrubs configured secrets when config loads. Refuses an unknown or missing class, unreadable or empty body, or a link over 3,000 bytes. Takes no lock, writes nothing, opens no browser, and submits nothing. |
 | `roadmap status` | no | Prints per-release merged, authored, ready, and blocked row counts and the last gate result, followed by `next:` and `waits:` lines for held rows, including declined messages, rejected stems, drafts, and spent re-files. Read-only. |
@@ -509,7 +509,7 @@ A dispatch exception is journaled as an `infra_error` terminal, re-offered, and 
 ### 7.1 `drain`
 
 1. Takes the lock, reconciles, fires due timers, runs the provider preflight, runs intake once.
-2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, calibrate estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1), scan committed tickets (skipping stems settled or rejected in the journal), pick the
+2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, run an operator-requested retro, scan committed tickets (skipping stems settled or rejected in the journal), pick the
    next ticket, review its committed content if it lacks an approval, run it, merge it inline. Serve applies the same review before Implement and holds a premise-parked ticket until its committed content changes.
 3. **Pick order:** confirmed, unsettled, not rejected, every dependency settled (through split
    successors); among eligible fresh tickets and re-offers, `## Runs before` orders named stems
@@ -552,10 +552,10 @@ publishes `state_dir/control/active.json`, and runs five loops (every 0.1s):
 Maintenance on each loop: control requests, timers, orphan sweeps, notification replay, and checkpoint pushes. If any loop dies,
 `serve` stops; consumer failures remain fatal.
 
-Requested retros and automatic retros due after a ticket settles stop new admission, wait for
+Requested retros stop new admission, wait for
 the next idle point, run, and then resume admission. A pending stop takes precedence.
 
-At each idle dispatch point, after supervising held stems, serve calibrates estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1).
+Retro and estimate calibration run only when an operator invokes `engine retro` or `engine calibrate`; `view status` and `host doctor` report overdue thresholds without holding admission.
 
 A git-checkout engine records its `clutch` tree at startup and checks it before
 admission and on every merge poll, including while implementations run. A change journals `serve_upgrade_pending` and stops new admissions; queued rows show the upgrade hold until `serve_handoff`. After running tickets,
@@ -747,8 +747,7 @@ integration-red conflict facts, reject queue routed transitions or reject arriva
 premise-failed transitions, infra-error transitions (including provider drought), flake
 detection signals, and escape signals for automatically reopened tombstones.
 
-The retro reads the journal since the last report. Measurements include `conflict_paths`: the top ten paths with at least two journaled merge conflicts in the window, with resolving rungs. By default `retro.test_timing` includes each Check gate’s per-invoice counts and duration plus each slow test’s maximum duration and invoice count. `retro.coverage` includes the latest repository percentage and each file’s latest and minimum percentages and invoice count. Set either switch to false to omit its summary. During a drain it checks once at startup, then only after a ticket settles or a retro is requested; it runs between tickets, never
-between attempts of one ticket, when due at the `retro:` thresholds: by default 25 merges, 40 settled tickets, or 5 events of one spike kind. A settled ticket is a stem whose state goes to merged, already satisfied or rejected, counted once. A requested retro runs at the drain’s next between-tickets point. Serve runs requested retros and automatic retros due after a ticket settles at its next idle point, then resumes admission. Each nested `retro.merges`, `retro.settled`, and `retro.spikes` block has an `enabled` switch; their thresholds are `merges.every`, `settled.every`, and `spikes.count`. The nonempty `spikes.kinds` allowlist selects which kinds can trigger, except that override cannot make a retro due. Overrides are measured and included in the report when a retro runs; measurements still report every kind. The master `retro.enabled: false` disables automatic retros even if sub-triggers are enabled; run one on demand with `engine retro`. Config load refuses an enabled master with all three triggers disabled (enable a trigger or set `retro.enabled: false`) and duplicate spike kinds (list each kind once). It commits `tickets/retro/NNNNNN.md` (measurements,
+The retro reads the journal since the last report. Measurements include `conflict_paths`: the top ten paths with at least two journaled merge conflicts in the window, with resolving rungs. By default `retro.test_timing` includes each Check gate’s per-invoice counts and duration plus each slow test’s maximum duration and invoice count. `retro.coverage` includes the latest repository percentage and each file’s latest and minimum percentages and invoice count. Set either switch to false to omit its summary. Retros run only when an operator invokes `engine retro`. A requested retro runs between tickets in drain and at the next idle point in serve, then admission resumes. The `retro:` thresholds mark overdue reminders in `view status` and `host doctor`: by default 25 merges, 40 settled tickets, or 5 events of one spike kind. A settled ticket is a stem whose state goes to merged, already satisfied or rejected, counted once. Each nested `retro.merges`, `retro.settled`, and `retro.spikes` block has an `enabled` switch; their thresholds are `merges.every`, `settled.every`, and `spikes.count`. The nonempty `spikes.kinds` allowlist selects which kinds can mark a retro overdue, except that override cannot make a retro due. Overrides are measured and included in the report when a retro runs; measurements still report every kind. The master `retro.enabled: false` disables retro overdue reminders even if sub-triggers are enabled; run one on demand with `engine retro`. Config load refuses an enabled master with all three triggers disabled (enable a trigger or set `retro.enabled: false`) and duplicate spike kinds (list each kind once). It commits `tickets/retro/NNNNNN.md` (measurements,
 scorecard, proposals) and files new proposals as `retro_finding` messages. It supplies prior findings to the model; a proposal matching an existing cause counts as a recurrence on that message. A recurrence after its ticket fix merged reopens the finding for a new fix. Proposals identify either prompt-spec paths or repository paths for a test repair. Proposals may instead name conflicted paths with `strategy` (add a `merge.strategies` entry) or `split`. Test repairs name one issue: `unit-io`, `slow`, `drift`, `flaky`, `coverage-hard`, `over-mocking`, `weak-assertion`, `shared-state`, `duplicate`, or `skip-rot`.
 
 ### 9.6 Scorecard and baseline
@@ -878,8 +877,8 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `review` | `coverage_map`, `gate_severity`, host `autofix` commands and `mechanical` checks |
 | `merge` | `safety_checks`, conflict `strategies` (serve only) |
 | `caps`, `circuit_breaker` | failure bounds (section 6.4, 8.3) |
-| `retro` | `enabled`, `merges`, `settled`, `spikes` control automatic reports; `test_timing` and `coverage` control measurement summaries (section 9.5) |
-| `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers; drain and serve also calibrate at their idle point once that many have completed since the last calibration (section 7) |
+| `retro` | `enabled`, `merges`, `settled`, `spikes` control overdue reminders; `test_timing` and `coverage` control measurement summaries (section 9.5) |
+| `calibration` | `every` (default 100): the number of most recent completed Implement calls an `engine calibrate` table covers; status and doctor report overdue calibration once that many have completed since the last calibration (section 7) |
 | `scheduler`, `drain` | `max_unmerged`; experimental serve-only `scheduler.parallel` with `enabled` (default false), `max_runs` (default 2), `shared_paths` (default []); `max_runtime_hours`, `max_ticket_minutes` |
 | `engine_plane_safety_inventory`, `box_policy` | Author starting state (section 9.3) |
 | `prompts_dir` | Optional directory of host prompt templates, relative to the config file. |

@@ -24,7 +24,6 @@ from uuid import uuid4
 
 from clutch import caps, control, runner, triage
 from clutch.box import BOX_DIR, Box, Message
-from clutch.calibration import calibrate_when_due
 from clutch.control import ControlRequest
 from clutch.enginelog import engine_log
 from clutch.journal import TERMINAL_STATES, Event, EventType, last_transition, render_ts, require_transition
@@ -448,7 +447,6 @@ class _Drain:
         self.report = Report()
         self.retro = None
         self.served_retro_id: str | None = None
-        self.retro_terminal_count: int | None = None
 
     async def run(self) -> Report:
         return await self._run()
@@ -467,16 +465,14 @@ class _Drain:
                 return self.report
             await intake(self.c.repo, self.c.git, self.c.journal, self.c.fs, stems=None)
             triage.report_intake(self.c)
-            # Keep a ticket's retry cycle together before checking retro triggers.
+            # Keep a ticket's retry cycle together before serving an operator request.
             if self.retro is not None and await self._between_tickets():
-                if hasattr(self.dispatch, "prepare"):
-                    await self.dispatch.prepare()
                 request_id = self.c.control.projection.retro_id
                 if request_id is not None and request_id != self.served_retro_id:
-                    await self._run_retro(forced=True)
+                    if hasattr(self.dispatch, "prepare"):
+                        await self.dispatch.prepare()
+                    await self._run_retro()
                     self.served_retro_id = request_id
-                else:
-                    await self._run_retro(forced=False)
             if await self._between_tickets():
 
                 async def make_ctx():
@@ -498,7 +494,6 @@ class _Drain:
 
                 await self.c.control.inbox.settle_triage(run_triage)
                 await supervise_idle(self.c, make_ctx)
-                calibrate_when_due(self.c)
             material = self._offer_material()
             scan = await self._scan()
             shas = {s: await self._sha(s) for s in scan.tickets}
@@ -695,18 +690,14 @@ class _Drain:
                 if self.c.repo.resolve() == ENGINE and any(p.startswith(UPGRADE_PREFIXES) for p in changed):
                     self.upgrade = (stem, commit)
 
-    async def _run_retro(self, *, forced):
-        count = sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in self.c.journal.read())
-        if not forced and count == self.retro_terminal_count:
-            return
+    async def _run_retro(self):
         log = engine_log(self.c.config, Redactor.from_config(self.c.config, self.c.env), self.c.clock)
         log.event("phase_start", phase="retro_check")
         try:
-            await self._await_controlled(asyncio.create_task(self.retro(forced=forced)), self.retro.abort_current, self.c.sleep)
+            await self._await_controlled(asyncio.create_task(self.retro(forced=True)), self.retro.abort_current, self.c.sleep)
         except BaseException:
             log.event("phase_end", phase="retro_check", outcome="failed")
             raise
-        self.retro_terminal_count = count
         outcome: RetroCheckOutcome = "due" if self.retro.due else "not_due"
         log.event("phase_end", phase="retro_check", outcome=outcome)
 

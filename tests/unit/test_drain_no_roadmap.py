@@ -4,8 +4,8 @@
 # purpose: Checks drain dispatches, settles and exits without touching the roadmap module or any driver hook, while still running the idle supervisor step
 # relates: [clutch/drain.py, clutch/journal.py, clutch/roadmap.py, clutch/triage.py, tests/fakes.py]
 # owner: engine
-# verified: 18f3cf87
-# hash: 636213855d4b765c5096ee3bfd4c59e2a41e1a7e6a7f6f3a1b2fdd034976aae4
+# verified: 45e4e081
+# hash: 0088f546f5a50e9e49d3e9432e457a68dc605135df70bfaedf1f14e106a1afb4
 import inspect
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
@@ -54,7 +54,6 @@ async def test_drain_settle_and_exit_without_roadmap(monkeypatch, tmp_path):
     monkeypatch.setattr(drain, "intake", AsyncMock())
     monkeypatch.setattr(triage, "report_intake", lambda *a: None)
     monkeypatch.setattr(drain, "supervise_idle", AsyncMock())
-    monkeypatch.setattr(drain, "calibrate_when_due", lambda *a: None)
     assert await d.run() is d.report
     d._run_one.assert_awaited_once_with(ticket, False, "sha")
     assert drain.supervise_idle.await_count == 2

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Drain admits reports after ticket intake on each loop.
+# purpose: Unit test that each drain loop runs host report intake after ticket intake
 # relates: [clutch/drain.py, clutch/triage.py]
 # owner: engine
-# verified: 0a308920
-# hash: 3e2acad1187ced1d99252a7ba6874359b804806074d32edb3107f0f4159bd036
+# verified: 45e4e081
+# hash: de95682fd4f9e650a14fc677853370dafd2cd3768c3dcbb2c0bb9fe03e3c140d
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -32,7 +32,6 @@ async def test_loop_intakes_reports_after_tickets(monkeypatch):
 
     monkeypatch.setattr(drain, "intake", intake)
     monkeypatch.setattr(triage, "report_intake", lambda c: calls.append(("reports", c)))
-    monkeypatch.setattr(drain, "calibrate_when_due", lambda checkout: None)
     run = drain._Drain.__new__(drain._Drain)
     run.c, run.dispatch, run.before_dispatch = checkout, object(), None
     run.report, run.retro, run.provider_deadlines, run.storm_waiting = object(), None, [], False

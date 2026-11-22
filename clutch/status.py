@@ -35,6 +35,33 @@ class Status:
     reopens: tuple[Mapping, ...] = ()
     scorecard: Scorecard = field(default_factory=lambda: project_scorecard(project_window(())))
     provenance: Mapping[str, str] = field(default_factory=lambda: MappingProxyType({}))
+    overdue: tuple[str, ...] = ()
+
+
+def overdue(events, config):
+    """Manual maintenance reminders derived only from journal history."""
+    from clutch import calibration
+    from clutch.retro import due_trigger, measurements, settled_count
+
+    events = tuple(events)
+    if not events:
+        return {}
+    lines = {}
+    window = project_window(events)
+    trigger = due_trigger(window, config.retro, forced=False) if config.retro.enabled else None
+    if trigger is not None:
+        evidence = measurements(window)
+        detail = (
+            f"{evidence['merged_count']} tickets merged"
+            if trigger == "merges"
+            else f"{settled_count(window)} tickets settled"
+            if trigger == "settled"
+            else f"{evidence['spikes'][trigger]} {trigger} events"
+        )
+        lines["retro"] = f"retro overdue: {detail} since the last retro; run `clutch engine retro`"
+    if calibration.due(events, config.calibration.every):
+        lines["calibration"] = f"calibration overdue: {calibration.pending(events)} Implement calls completed since the last calibration; run `clutch engine calibrate`"
+    return lines
 
 
 def reject_queue(events: Iterable[Event]) -> dict[str, Mapping]:
@@ -202,7 +229,7 @@ def reject_admission(facts, stem, draft, interrupted):
     return Admission("refuse", *refusal) if refusal else Admission("admit")
 
 
-def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=None, window: Window | None = None, provenance: Mapping[str, str] | None = None) -> Status:
+def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=None, window: Window | None = None, provenance: Mapping[str, str] | None = None, overdue=()) -> Status:
     events = list(events)
     from clutch.reconcile import orphans
 
@@ -260,6 +287,7 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
         reopens=tuple(e.body for e in events if e.type == EventType.SIGNAL and e.body.get("kind") == "tombstone_auto_reopened" and e.body.get("box_id") in unresolved_ids),
         scorecard=project_scorecard(window if window is not None else project_window(events)),
         provenance=MappingProxyType(dict(provenance or {})),
+        overdue=tuple(overdue),
     )
 
 
@@ -306,6 +334,7 @@ def render(status: Status) -> str:
                     if status.verdict_decisions
                     else ()
                 ),
+                *((block("overdue", status.overdue),) if status.overdue else ()),
                 block("current-window scorecard", totals),
                 block("window provenance", (f"{key}: {value}" for key, value in sorted(status.provenance.items()))),
                 "\n".join(table),

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and retro scheduling
+# purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and requested-retro scheduling
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: clutch/serve.py
-# verified: 7abfadd2
-# hash: a67365e08963a4ad151430158aef4bea45057c88ca87962a592d8ed02d8fa401
+# verified: 45e4e081
+# hash: 28a25d82d7ead00fdc0bacbd43e88c42e600f6c89bfa76c0618bcd9a36f2f638
 
 import asyncio
 import json
@@ -189,18 +189,3 @@ async def test_requested_retro_waits_for_idle_then_resumes(root, monkeypatch):
 @pytest.mark.asyncio
 async def test_kill_aborts_requested_retro(root, monkeypatch):
     await retro_scenario(root, monkeypatch, "kill")
-
-
-@pytest.mark.asyncio
-async def test_automatic_retro_runs_at_idle_when_due(root, monkeypatch):
-    await retro_scenario(root, monkeypatch, "automatic")
-
-
-@pytest.mark.asyncio
-async def test_automatic_retro_off_when_disabled(root, monkeypatch):
-    await retro_scenario(root, monkeypatch, "disabled")
-
-
-@pytest.mark.asyncio
-async def test_failed_retro_does_not_reblock(root, monkeypatch):
-    await retro_scenario(root, monkeypatch, "failed")

@@ -187,8 +187,13 @@ def measurements(window: Window) -> dict:
     }
 
 
-def select_trigger(window: Window, evidence: dict, settings: RetroSettings, *, forced: bool) -> str | None:
+def settled_count(window: Window) -> int:
     from clutch.status import CLOSED
+
+    return len({e.ticket for e in window.events if e.ticket is not None and e.type == EventType.STATE_TRANSITION and e.body.get("to") in CLOSED})
+
+
+def select_trigger(window: Window, evidence: dict, settings: RetroSettings, *, forced: bool) -> str | None:
 
     if forced:
         return "forced" if evidence["merged_count"] else None
@@ -196,7 +201,7 @@ def select_trigger(window: Window, evidence: dict, settings: RetroSettings, *, f
         return None
     if settings.merges.enabled and evidence["merged_count"] >= settings.merges.every:
         return "merges"
-    if settings.settled.enabled and len({e.ticket for e in window.events if e.ticket is not None and e.type == EventType.STATE_TRANSITION and e.body.get("to") in CLOSED}) >= settings.settled.every:
+    if settings.settled.enabled and settled_count(window) >= settings.settled.every:
         return "settled"
     return next((kind for kind, count in evidence["spikes"].items() if settings.spikes.enabled and kind != "override" and kind in settings.spikes.kinds and count >= settings.spikes.count), None)
 

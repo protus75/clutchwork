@@ -5,8 +5,8 @@
 # purpose: Shared rig for continuous serve graph integration tests: builds the serve graph, scripts stages and model replies, and provides admission, control request, notify, storm trip and retro scenario helpers
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 5214eb3e
-# hash: a3f859d1677e4e12e9682e76c0537a77b932d001915ec591a56d4f0123055000
+# verified: 45e4e081
+# hash: 0f2bb703aa4b264dcfb3855fab83a52a6bb254824985575985f7e24fc293f696
 
 import asyncio
 import json
@@ -208,9 +208,7 @@ def escalation_batch(rig, label):
 
 
 async def retro_scenario(root, monkeypatch, mode):
-    from clutch import retro
-
-    entered, release, retro_entered, retro_release, checked = (asyncio.Event() for _ in range(5))
+    entered, release, retro_entered, retro_release = (asyncio.Event() for _ in range(4))
 
     async def settled(rig, ctx, ticket, attempt):
         if ticket.stem == "aa":
@@ -219,7 +217,7 @@ async def retro_scenario(root, monkeypatch, mode):
 
     rig = await admission_graph(root, monkeypatch, {"aa": {"docs/a.txt": "a\n"}}, endings={"bb": "noop"}, settled=settled)
     config = root / "config.yaml"
-    config.write_text(config.read_text() + f"retro:\n  enabled: {'false' if mode == 'disabled' else 'true'}\n  merges: {{every: 1}}\n")
+    config.write_text(config.read_text() + "retro:\n  merges: {every: 1}\n")
     admission_ticket(root, "aa", paths=("docs/a.txt",), priority="P0")
     admission_ticket(root, "bb", paths=("docs/b.txt",), priority="P1")
     calls, aborted = [], []
@@ -236,53 +234,37 @@ async def retro_scenario(root, monkeypatch, mode):
             assert not rig.owner.core.admission.occupied() and not any(w.continuations for w in rig.owner.writers.values())
             retro_entered.set()
             await retro_release.wait()
-            if mode == "failed":
-                window = retro.project_window(rig.journal.read())
-                rig.journal.append(
-                    EventType.SIGNAL, {"kind": retro.RETRO_FAILED, "window_boundary": window.boundary, "trigger": "merges", "error_code": "ValueError"}, key=f"retro-failed/{window.boundary}/merges"
-                )
-            else:
-                rig.journal.append(EventType.EFFECT_COMPLETION, {"result": {"commit": "fixture"}}, key="retro/1")
+            rig.journal.append(EventType.EFFECT_COMPLETION, {"result": {"commit": "fixture"}}, key="retro/1")
 
         async def abort_current(self):
             aborted.append(True)
             retro_release.set()
 
     monkeypatch.setattr(serve, "Retro", FakeRetro)
-    check = rig.owner.check_retro
-
-    async def observed_check():
-        await check()
-        if terminals(rig, "bb"):
-            checked.set()
-
-    monkeypatch.setattr(rig.owner, "check_retro", observed_check)
     run = asyncio.create_task(rig.owner.run())
     try:
         await until(rig, entered.is_set)
-        if mode in {"requested", "kill"}:
-            request(rig, "retro", "retro-request")
-            await until(rig, lambda: rig.owner.control.projection.retro_id == "retro-request")
-            assert not any(e.ticket == "bb" and e.body.get("to") == "running" for e in rig.journal.read())
+        request(rig, "retro", "retro-request")
+        await until(rig, lambda: rig.owner.control.projection.retro_id == "retro-request")
+        assert not any(e.ticket == "bb" and e.body.get("to") == "running" for e in rig.journal.read())
         release.set()
-        if mode != "disabled":
-            await until(rig, retro_entered.is_set)
-            assert calls == [mode in {"requested", "kill"}]
-            assert not any(e.ticket == "bb" and e.body.get("to") == "running" for e in rig.journal.read())
-            if mode == "kill":
-                request(rig, "kill", "kill-retro")
-                await until(rig, run.done)
-                assert await run == 0 and aborted == [True]
-                assert any(e.body.get("kind") == "kill_applied" for e in rig.journal.read())
-                return
-            retro_release.set()
-        await until(rig, checked.is_set)
+        await until(rig, retro_entered.is_set)
+        assert calls == [True]
+        assert not any(e.ticket == "bb" and e.body.get("to") == "running" for e in rig.journal.read())
+        if mode == "kill":
+            request(rig, "kill", "kill-retro")
+            await until(rig, run.done)
+            assert await run == 0 and aborted == [True]
+            assert any(e.body.get("kind") == "kill_applied" for e in rig.journal.read())
+            return
+        retro_release.set()
+        await until(rig, lambda: bool(terminals(rig, "bb")))
         await until(rig, lambda: rig.owner.upgrade_idle() and rig.owner.retro_task is None)
         for _ in range(5):
             rig.time.advance(serve.SERVE_POLL_S)
             await turn()
         assert [e.body["to"] for e in terminals(rig, "bb")] == ["already_satisfied"]
-        assert calls == ([] if mode == "disabled" else [mode == "requested"])
+        assert calls == [True]
         assert not rig.owner.retro_pending()
     finally:
         release.set()

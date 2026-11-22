@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, the retry budget, mid-drain re-scan and intake, ceilings, pause and stop control, retros, rework, and Reject-queue holds
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: ff6ac88d
-# hash: 4d38d8939590e249fdc7b022a6613665d90b2b1a8df1816f462c36dc61f7caaf
+# verified: 45e4e081
+# hash: 8b376a37e298631c0a5803335ff2850e8110db6e454d438e0d6d64938b7809f1
 
 import asyncio
 import json
@@ -972,38 +972,6 @@ def test_retro_hook_is_default_off(root):
     assert not any((e.key or "").startswith("llm/retro/") for e in checkout.journal.read())
 
 
-def test_due_retro_waits_for_retry_and_precedes_next_ticket(root):
-    from clutch.drain import drain as run_drain
-    from clutch.retro import measurements, project_window, select_trigger
-    from tests.drain_helpers import NoChild
-
-    commit_ticket(root, "aa", confirmed(priority="P0"))
-    commit_ticket(root, "bb", confirmed(priority="P1"))
-    checkout = pause_checkout(root)
-    for n in range(4):
-        checkout.journal.append(EventType.STATE_TRANSITION, {"to": "gate_failed"}, ticket=f"prior-{n}")
-    trace = []
-    script = Script({"aa": ["gate_failed", "merged"]}, {"aa": lambda _: trace.append("aa"), "bb": lambda _: trace.append("bb")})
-    dispatch = script(checkout)
-
-    class Retro:
-        due = False
-
-        async def __call__(self, *, forced=False):
-            window = project_window(checkout.journal.read())
-            if trigger := select_trigger(window, measurements(window), checkout.config.retro, forced=forced):
-                trace.append(f"retro:{trigger}")
-                checkout.journal.append(EventType.EFFECT_COMPLETION, {"result": {}}, key="retro/1")
-
-        async def abort_current(self):
-            pass
-
-    dispatch._retro = Retro()
-    report = asyncio.run(run_drain(checkout, dispatch, reexec=NoChild()))
-    assert report.merged == ["aa", "bb"]
-    assert trace == ["aa", "aa", "retro:gate-failure", "bb"]
-
-
 @pytest.mark.asyncio
 async def test_selected_retro_remains_killable_through_existing_control(root):
     from clutch import runner
@@ -1037,6 +1005,7 @@ async def test_selected_retro_remains_killable_through_existing_control(root):
     dispatch.stages = writer.stages
     dispatch.abort_current = writer.abort_current
     dispatch._retro = Retro(checkout, dispatch)
+    publish_request(checkout.config.state_dir, ControlRequest("requested-retro", checkout.control.inbox.lifecycle_id, "retro", None), checkout.fs)
     async with asyncio.timeout(5):
         task = asyncio.create_task(run_drain(checkout, dispatch, reexec=NoChild()))
         while not llm.requests:
@@ -1050,13 +1019,9 @@ async def test_selected_retro_remains_killable_through_existing_control(root):
     assert not any(e.body.get("kind") == "retro_failed" for e in checkout.journal.read())
 
 
-@pytest.mark.parametrize("scenario", ["not-due", "selected-failure", "due", "self-upgrade"])
-def test_drain_retro_runs_only_when_due(tmp_path, monkeypatch, scenario):
+@pytest.mark.parametrize("scenario", ["selected-failure", "self-upgrade"])
+def test_drain_requested_retro_uses_shared_driver(tmp_path, monkeypatch, scenario):
     _exercise_retro_drain(tmp_path, monkeypatch, scenario)
-
-
-def test_phase_exit_stem_gets_no_forced_retro(tmp_path, monkeypatch):
-    _exercise_retro_drain(tmp_path, monkeypatch, "phase")
 
 
 def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
@@ -1076,12 +1041,9 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     git_out(root, "add", "config.yaml")
     git_out(root, "commit", "-m", "retro route")
     commit_ticket(root, "feature", confirmed(priority="P0"))
-    if scenario == "phase":
-        commit_ticket(root, "phase5-exit", confirmed(depends="- feature"))
     clock = Clock(START)
-    if scenario in {"due", "selected-failure", "self-upgrade"}:
-        for n in range(25):
-            journal(root).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=f"prior-{n}")
+    for n in range(25):
+        journal(root).append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket=f"prior-{n}")
     invocations, dispatches, contexts, prompts = [], [], [], []
     original_hook = Retro.__call__
 
@@ -1137,6 +1099,10 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     owners = []
 
     async def prepare(checkout):
+        if not owners:
+            from clutch.control import ControlRequest, publish_request
+
+            publish_request(checkout.config.state_dir, ControlRequest("manual-driver-retro", checkout.control.inbox.lifecycle_id, "retro", None), checkout.fs)
         writer = await prepared(checkout)
         assert writer.stages.driver.llm.session is checkout.control.providers
         owners.append(writer.stages.driver)
@@ -1172,16 +1138,12 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     child = Child()
     assert main(["engine", "drain"], cwd=root, env=ENV, clock=clock, pipeline=runner.pipeline, reexec=child if scenario == "self-upgrade" else NoChild()) == 0
     assert child.spawns == (1 if scenario == "self-upgrade" else 0)
-    assert invocations[0] == (False, [])
-    if scenario in {"not-due", "phase"}:
-        assert dispatches == (["feature", "phase5-exit"] if scenario == "phase" else ["feature"])
-        assert seen == prompts == []
-        assert not list((root / "tickets/retro").glob("*.md"))
-    elif scenario == "selected-failure":
-        assert dispatches == ["feature"] and len(seen) == 2
-        assert [order for order, _ in prompts] == [[], ["feature"]]
+    assert invocations == [(True, [])]
+    if scenario == "selected-failure":
+        assert dispatches == ["feature"] and len(seen) == 1
+        assert [order for order, _ in prompts] == [[]]
         failures = [e for e in journal(root).read() if e.body.get("kind") == "retro_failed"]
-        assert len(failures) == 2
+        assert len(failures) == 1
     else:
         assert dispatches == ["feature"] and len(seen) == len(prompts) == 1
         assert prompts[0][0] == []
