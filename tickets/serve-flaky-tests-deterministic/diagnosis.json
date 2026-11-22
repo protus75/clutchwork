@@ -1,21 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "96500390d6e9ca2bb91098a2b5e9f36726105e46",
+  "produced_at_sha": "24870f6e4547047d47d1c204a9b55c021a059645",
   "stem": "serve-flaky-tests-deterministic",
-  "attempt": 2,
+  "attempt": 3,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "reject",
+  "verdict": "abandon-human",
   "lessons": [
-    "Check's first full integration run passed all 3 tests/integration/test_host_loop.py tests. After test_live_keep_dispatches_again_without_restart failed, Check reran the suite and all 3 failed. The candidate already removed every deadline, so the ticket's premise does not explain the abandon.",
-    "The implementer saw the same thing on the candidate: an intermittent startup reconciliation race that abandons a ticket during draft confirmation (box-001062-cbf86391). It filed this as a second problem. Ticket item 1 required it to be named in the run record and fixed.",
-    "Before re-scoping, decode the rerun capture of check/host-02-rerun.txt for attempt 2 and record the LoopRefused body. If it is {'to': 'abandoned'} from clutch/reconcile.py::reconcile during startup, the fix is in serve production code. The fence and Definition of rejected forbid that.",
-    "Re-scope: file the reconcile race (box-001062-cbf86391) as its own P0 ticket that lists this stem in Runs before, or fence clutch/reconcile.py here. Keep the deadline removal, reproducer and test_until_translates_timeout rewrite as the ticket specifies. Its Verification passed.",
-    "Leave out of this ticket: test_live_keep_dispatches_again_without_restart (quarantine-cap finding) belongs to serve-live-keep-single-verdict. The ruff E501 in tests/unit/test_driver_check_nesting.py fails on the base commit too (box-001063-34871813)."
+    "The diff matched the ticket and Verification passed: reproducer pass, 57 tests green. The only red is test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[integration], failing once in Check's full integration run (3601 passed, 1 failed). None of the material carries its failure",
+    "A human should open attempt 3's integration capture and record that case's failure. If it is a pytest-timeout at 120 s after serve_rig.until lost its deadline, the graph stalled for real and item 2's premise (a slow 60 s deadline) is false.",
+    "If it stalled, the cause is in serve admission production code or a race in the rig, both outside this fence. File it as its own P0 ticket listed in this stem's Runs before, as was done for the reconcile race (box-001062-cbf86391). Do not retry this stem at the same scope.",
+    "The quarantine cap is full, so this flake cannot be quarantined. Releasing existing quarantines is an operator action, not implementer work. box-001071-979fce43 already records that the base precheck admission case fails under load.",
+    "Leave out: the ruff E501 in tests/unit/test_driver_check_nesting.py also fails on base (box-001063-34871813). Keep the deadline removal, reproducer and test_until_translates_timeout rewrite as the ticket specifies; review found them sound."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0
+  ],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5"
