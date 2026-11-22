@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "b908a9dbc0c9e1546d4e0857dbcbe7e1075d46f0",
+  "stem": "state-verdict-ticket-service-r1",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Contradiction confirmed at HEAD: tests/integration/test_tickets.py:455 (test_bug_evidence_committed_with_ticket) needs one intake commit holding ticket.md and tickets/<stem>/evidence/*. Criterion 5 and the Git checkpoint boundary allow only the ticket path in each commit.",
+    "tests/integration/test_roadmap_row_author.py:60 also expects ticket.md and tickets/<stem>/evidence/hand.txt in one commit. Both test files are under the ## Verification run but are outside the scope fence, so the implementer can neither keep them nor change them.",
+    "Refile with the checkpoint rule restated: the commit holds only that ticket's own tickets/<stem>/ paths (ticket.md plus its changed evidence), never another ticket's. Reword criterion 5 and the Git checkpoint 'observable change' to match.",
+    "If the refile keeps the ticket.md-only checkpoint, say where evidence gets committed. Fence tests/integration/test_tickets.py, tests/integration/test_roadmap_row_author.py, the author publication path, and docs that describe evidence committed at intake.",
+    "Keep the rest of the premise: the implementer reproduces the wait on the base commit in tests/unit/test_state_verdict_no_admission_wait.py and names the blocking edge in the run record before porting anything."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
