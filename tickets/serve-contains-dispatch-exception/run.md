@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The verification command reported 2 passed, 27 skipped, and 3 setup errors; no changes were committed.
+The regression reproducer reported defect on the merge base and pass on the branch; the final verification pass succeeded with 9 tests passed. Shared runner handling prevents drain and serve terminal bodies from diverging.
 
 ## Dead ends
 
-The new serve test using the existing rig failed during fixture setup because the integration I/O guard blocked its filesystem writes.
+None.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket budget was 25 minutes expected; elapsed time was not measured.
 
