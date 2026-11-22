@@ -8,6 +8,10 @@ kind: bug
 ## Depends on
 - none
 
+## Runs before
+- training-export-ship-gate
+- shared-serve-rig-config
+
 ## Context
 - clutch/runner.py::verdict_locked
 - clutch/runner.py::apply_admission
