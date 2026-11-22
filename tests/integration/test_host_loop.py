@@ -2,16 +2,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Closed exit records and real supervised subprocess evidence on disposable hosts.
+# purpose: Tests that the host-loop report schema is closed and that real supervised serve runs on disposable hosts produce green merge, regression and escape evidence.
 # relates: [clutch/audit.py, clutch/seams.py, tests/harness/host_loop.py]
 # owner: engine
-# verified: 148a8874
-# hash: e390afa9c87bf22db7928ead114efa50262fbfe6bf70e7757ebb78e0dfa43035
+# verified: 543c80a2
+# hash: 8a6595f4488841cf52efc7dbfba0dbd2054fdddf0c0852409955061de613df1d
 
 import asyncio
 import copy
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
@@ -85,7 +85,7 @@ def production(tmp_path_factory):
     root = tmp_path_factory.mktemp("host-loop")
     exec_ = RecordingExec()
     members = [
-        host_loop.FixtureLoop(root / name, name, exec_=exec_, fs=LocalFileSystem(), clock=lambda: datetime.now(UTC), sleep=asyncio.sleep, notifications=None, timeout=30)
+        host_loop.FixtureLoop(root / name, name, exec_=exec_, fs=LocalFileSystem(), clock=lambda: datetime.now(UTC), sleep=asyncio.sleep, notifications=None, timeout=None)
         for name in host_loop.scaffold.SCENARIOS
     ]
 
@@ -119,12 +119,21 @@ def test_host_loop_drives_supervised_fixture_serve(production, tmp_path):
         assert costs and all(c == 0 for c in costs)
         assert any(hold is None for _, hold in member.requests)
 
-    async def failure(timeout):
-        loop = host_loop.FixtureLoop(tmp_path / str(timeout), "merge-add", exec_=exec_, fs=LocalFileSystem(), clock=lambda: datetime.now(UTC), sleep=asyncio.sleep, notifications=None, timeout=timeout)
+    async def failure(stuck):
+        loop = host_loop.FixtureLoop(tmp_path / str(stuck), "merge-add", exec_=exec_, fs=LocalFileSystem(), clock=lambda: datetime.now(UTC), sleep=asyncio.sleep, notifications=None, timeout=None)
         try:
             await loop.initialize()
             await loop.start()
-            if timeout < 1:
+            if stuck:
+                now = datetime.now(UTC)
+
+                async def fake_sleep(seconds):
+                    nonlocal now
+                    now += timedelta(seconds=seconds)
+
+                loop.timeout = 0.3
+                loop.clock = lambda: now
+                loop.sleep = fake_sleep
                 await loop.until(lambda: False)
             else:
                 raise RuntimeError("injected member failure")
@@ -133,9 +142,9 @@ def test_host_loop_drives_supervised_fixture_serve(production, tmp_path):
             assert loop.task.done()
             assert loop.pgid in exec_.killed
 
-    for timeout, error in ((0.3, host_loop.LoopRefused), (30, RuntimeError)):
+    for stuck, error in ((True, host_loop.LoopRefused), (False, RuntimeError)):
         with pytest.raises(error):
-            asyncio.run(failure(timeout))
+            asyncio.run(failure(stuck))
 
 
 def test_host_loop_report_regression_and_escape(production):

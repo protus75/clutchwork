@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Small in-memory implementations of the engine's test seams.
+# purpose: In-memory fakes for the engine's test seams (clock, exec, filesystem, journal, git) plus the shared turn/until polling helpers.
 # relates: [clutch/journal.py]
 # owner: clutch/journal.py
-# verified: d7719818
-# hash: 1b1ae30e696dd8f8d696995f708f10f169381ff68b7431308ce9543a90e493f7
+# verified: 543c80a2
+# hash: bbeef79d62fee282fc7b4c0527ff447259ea6273c7dd1c85efae89c0fbcc4b0e
 
 import asyncio
 import time
@@ -111,9 +111,9 @@ async def turn():
 
 
 async def until(predicate, clock, step, *, timeout=60):
-    deadline = time.monotonic() + timeout
+    deadline = None if timeout is None else time.monotonic() + timeout
     n = 0
-    while time.monotonic() < deadline:
+    while deadline is None or time.monotonic() < deadline:
         if predicate():
             return
         if n % 20 == 0:

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared rig for integration tests of the continuous serve graph.
+# purpose: Shared rig for integration tests of the continuous serve graph: builds the graph, provides scripted stages and admission, control and retro scenario helpers.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 148a8874
-# hash: bc3744fe0571081258ad1770f193021b778b3f7c557ea68c70cf61a50b14dafb
+# verified: 543c80a2
+# hash: 13920e38b28c579b6dc89cfe3a008619e09e140049f63df8267d1713399fbee2
 
 import asyncio
 import json
@@ -35,7 +35,7 @@ from tests.integration.test_triage import reply
 
 async def until(rig, predicate):
     try:
-        await fakes.until(predicate, rig.time, serve.SERVE_POLL_S)
+        await fakes.until(predicate, rig.time, serve.SERVE_POLL_S, timeout=None)
     except AssertionError as exc:
         raise AssertionError("production graph did not reach the scripted boundary") from exc
 

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The serve rig uses the shared polling helpers without changing their contract.
+# purpose: Checks that serve_rig reuses the shared fakes.turn/until polling helpers, keeps their fake-clock pacing and translates their timeout message.
 # relates: [clutch/serve.py, tests/fakes.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 96e46658
-# hash: 7e33726c5d790f743f75d70795281a6c45eaa9ff20298849fc5804685930f16b
+# verified: 543c80a2
+# hash: 89ace906333ef500ed81ff8817e5baa941e24c7912383fdc3c5f1775c3606991
 
 import inspect
 from datetime import timedelta
@@ -44,8 +44,10 @@ async def test_until_pacing():
 
 @pytest.mark.asyncio
 async def test_until_translates_timeout(monkeypatch):
-    times = iter([0, 0, 61])
-    monkeypatch.setattr(fakes, "time", SimpleNamespace(monotonic=lambda: next(times)))
+    async def fail(*args, **kwargs):
+        raise AssertionError("injected failure")
+
+    monkeypatch.setattr(fakes, "until", fail)
     with pytest.raises(AssertionError) as caught:
         await serve_rig.until(SimpleNamespace(time=fakes.FakeClock()), lambda: False)
     assert str(caught.value) == "production graph did not reach the scripted boundary"

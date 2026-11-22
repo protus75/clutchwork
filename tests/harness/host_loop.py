@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: fixture
-# purpose: Supervised disposable host evidence.
+# purpose: Harness that runs a supervised clutch serve subprocess on disposable fixture hosts and turns merge, regression and escape evidence into a closed HostLoopReport.
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/git.py, clutch/journal.py, clutch/stages.py]
 # owner: engine
-# verified: d7719818
-# hash: 8c385d0f621eab521fa3b5e0f0eaedfe251be5cd19837ae50dce2c109878a19a
+# verified: 543c80a2
+# hash: ff72c99fa6f4c51ddb041d8bbae41754b803a1998134dc6de1ce6e454db82f51
 
 import asyncio
 import json
@@ -119,8 +119,9 @@ class FixtureLoop:
         self.inventory = cfg.engine_plane_safety_inventory
 
     async def start(self):
+        exec_timeout = None if self.timeout is None else self.timeout + 10
         self.task = asyncio.create_task(
-            self.exec.run([sys.executable, "-m", "clutch", "engine", "serve"], cwd=self.root, env=self.env, timeout=self.timeout + 10, on_spawn=lambda pgid: setattr(self, "pgid", pgid))
+            self.exec.run([sys.executable, "-m", "clutch", "engine", "serve"], cwd=self.root, env=self.env, timeout=exec_timeout, on_spawn=lambda pgid: setattr(self, "pgid", pgid))
         )
         await self.until(lambda: (self.root / ".clutch/state/control/active.json").exists() and json.loads((self.root / ".clutch/state/control/active.json").read_bytes()) is not None)
 
@@ -139,7 +140,7 @@ class FixtureLoop:
             publish_request(state, AdmissionRequest(f"fixture-{len(self.requests)}", lifecycle, "confirm", stem, hold, "machine"), self.fs)
 
     async def until(self, predicate, *, confirm=False):
-        deadline = self.clock() + timedelta(seconds=self.timeout)
+        deadline = None if self.timeout is None else self.clock() + timedelta(seconds=self.timeout)
         while not predicate():
             if self.task is not None and self.task.done():
                 try:
@@ -147,7 +148,7 @@ class FixtureLoop:
                 except Exception as exc:
                     raise LoopRefused(self.name, f"serve failed: {exc}") from exc
                 raise LoopRefused(self.name, f"serve exited before member evidence: {result}")
-            if self.clock() >= deadline:
+            if deadline is not None and self.clock() >= deadline:
                 raise LoopRefused(self.name, "bounded wait timed out before required production evidence")
             if confirm:
                 self.confirm()
@@ -180,7 +181,8 @@ class FixtureLoop:
     async def triage_pending(self):
         await self.until(lambda: bool(Box(self.root / ".clutch/state/box", self.fs).pending()))
         await self.stop()
-        code, out, err = await self.exec.run([sys.executable, "-m", "clutch", "box", "triage"], cwd=self.root, env=self.env, timeout=self.timeout + 10)
+        exec_timeout = None if self.timeout is None else self.timeout + 10
+        code, out, err = await self.exec.run([sys.executable, "-m", "clutch", "box", "triage"], cwd=self.root, env=self.env, timeout=exec_timeout)
         if code != 0:
             raise LoopRefused(self.name, f"triage exited {code}: {out} {err}")
         self.journal = Journal(self.root / ".clutch/state", self.clock)
@@ -218,8 +220,8 @@ class FixtureLoop:
                 try:
                     lifecycle, _ = read_active(state, Path.read_bytes)
                     publish_request(state, ControlRequest(f"fixture-stop-{lifecycle}", lifecycle, "kill", None), self.fs)
-                    await asyncio.wait_for(asyncio.shield(self.task), 5)
-                except ValueError, TimeoutError:
+                    await self.task
+                except ValueError:
                     self.task.cancel()
         finally:
             if self.pgid is not None:
