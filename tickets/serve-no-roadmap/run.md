@@ -4,16 +4,15 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The matched variable wraps clutch.driver.Driver.run for a retro test; it is unrelated to the removed roadmap driver.
+The base commit passed ./dev.py test; the attempted change failed tests/unit/test_main_release_group.py::test_old_names_refuse because adding ship changes the asserted command set. Partial implementation remains uncommitted.
 
 ## Dead ends
 
-None.
+The initial implementation could not satisfy the existing release-group assertion without changing a file outside the fence.
 
 ## Second problems filed
 
-- box-001121-f4083d08: clutch/docs/host-authoring.md:149 attributes roadmap row rewrites to the driver and will be stale after this change.
-- box-001122-65397968: docs/document-agent/plan.md:71 describes the roadmap as read by the driver and will be stale after this change.
+- box-001125-d48b1c9f: docs/roadmap.md contains current-process statements assigning roadmap authoring and publishing to the driver, although the ticket says that file does not name the driver and excludes it from scope.
 
 ## Resolved engine/model
 
@@ -23,5 +22,5 @@ None.
 
 ## Predicted vs actual
 
-The ticket estimated 55 minutes; inspection stopped after identifying the scope conflict.
+none
 
