@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "4371cbe622cdb2820206b65c366523475ee72bbc",
+  "stem": "implement-skips-full-suites",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise false: the required `version` bump in clutch/specs/implement.md breaks two out-of-fence pins: tests/integration/test_implement_spec_mutation_check.py:22 (`meta.version == \"2.24\"`) and tests/integration/test_stages.py:350 (`spec: implement 2.24`).",
+    "Refile: add tests/integration/test_implement_spec_mutation_check.py and tests/integration/test_stages.py to `## Scope fence` and Scope in as version-pin-only edits; test_stages.py is a hot file, but the bump forces this edit there.",
+    "Before refiling, grep the repo (excluding tickets/) for every `2.24` and `implement 2.24` pin and fence each hit, so no other version pin is missed.",
+    "The rule 3 rewrite was sound: the targeted Verification passed (49 tests). Redo the same edit on the refiled ticket; only the fence was wrong.",
+    "docs/how-clutch-works.md still says Implement runs hard always-trigger checks and coverage gates (box-001056-fa0a047d). Consider fencing it in the refiled ticket so the docs follow the change."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
