@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification passed: 2,167 unit tests and 297 integration tests passed; 3,341 integration tests were skipped. The simpler rename alone would leave ticketless driver calls unnamed, so the driver also validates and forwards their subjects.
+The required verification passed: 2,167 unit tests and 297 integration tests passed, with 3,341 integration tests skipped; the requisition regression passed. All 24 tests in the triage integration file are skipped normally. Forcing the affected test to run stopped at an earlier Git fixture assertion, so the corrected assertion was checked with synthetic request values and individual value mutations instead.
 
 ## Dead ends
 
-An initial mutation check showed the missing-subject test could pass through later request validation; the test now checks the driver's specific error.
+Forcing the skipped integration test to execute did not reach the changed assertion because its Git fixture returned an empty log.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 30 minutes; actual duration was not measured.
+Expected 30 minutes; actual not measured.
 
