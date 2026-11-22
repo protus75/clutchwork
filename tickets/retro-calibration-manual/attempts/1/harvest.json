@@ -1,0 +1,45 @@
+{
+  "attempt": 1,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/unit/test_serve_retro_check_site.py",
+      "line": 24,
+      "message": "This test requires Serve.run to call check_retro, but the ticket requires removing that method and every call.",
+      "paved_road": "Add this test to the scope fence and replace or remove its obsolete assertion.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_serve_no_roadmap.py",
+      "line": 48,
+      "message": "This test monkeypatches serve.calibrate_when_due, but the ticket requires deleting that import.",
+      "paved_road": "Add this test to the scope fence and remove the obsolete monkeypatch.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_drain_no_roadmap.py",
+      "line": 57,
+      "message": "This test monkeypatches drain.calibrate_when_due, but the ticket requires deleting that import.",
+      "paved_road": "Add this test to the scope fence and remove the obsolete monkeypatch.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The ticket cannot be implemented within its scope fence because three existing tests require behavior or names that the ticket explicitly removes.\",\"surprises\":\"Removing these references and updating the conflicting assertion requires expanding the scope fence; no files were changed.\",\"second_problems\":[{\"summary\":\"docs/roadmap-driver-plan.md describes automatic retros after a settle and would become stale.\"},{\"summary\":\"docs/roadmap.md describes automatic idle calibration and would become stale.\"}],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/unit/test_serve_retro_check_site.py\",\"line\":24,\"message\":\"This test requires Serve.run to call check_retro, but the ticket requires removing that method and every call.\",\"paved_road\":\"Add this test to the scope fence and replace or remove its obsolete assertion.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_serve_no_roadmap.py\",\"line\":48,\"message\":\"This test monkeypatches serve.calibrate_when_due, but the ticket requires deleting that import.\",\"paved_road\":\"Add this test to the scope fence and remove the obsolete monkeypatch.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_drain_no_roadmap.py\",\"line\":57,\"message\":\"This test monkeypatches drain.calibrate_when_due, but the ticket requires deleting that import.\",\"paved_road\":\"Add this test to the scope fence and remove the obsolete monkeypatch.\"}]}",
+  "events_tail": "IP_LIMIT, fill_slots\\ntests/unit/test_verdict_extension.py:18:from clutch.serve import Serve\\ntests/integration/test_box_triage_inbox.py:97:    from clutch.drain import drain\\ntests/integration/test_daemon_composition.py:122:    from clutch.drain import drain\\ntests/integration/test_daemon_composition.py:1070:    from clutch.drain import _Drain\\ntests/integration/test_daemon_composition.py:1198:        from clutch.drain import drain\\ntests/integration/test_daemon_composition.py:1823:    from clutch.serve import Serve\\ntests/integration/test_daemon_composition.py:1850:    from clutch.drain import drain\\ntests/unit/test_serve_idle_poll.py:24:from clutch.serve import Serve\\ntests/unit/test_parallel_order_priority.py:11:from clutch.drain import parallel_order\\ntests/unit/test_flake_fix_order.py:19:from clutch.drain import flake_fixes, order_tickets, parallel_order\\ntests/unit/test_scheduler_parallel_fill.py:18:from clutch.drain import SKIP_LIMIT\\ntests/unit/test_reject_reason_paths.py:21:from clutch.serve import Serve\\ntests/unit/test_drain_eligible.py:16:from clutch.drain import eligible\\ntests/unit/test_serve_retro_check_site.py:13:from clutch.serve import Serve\\ntests/unit/test_engine_signals.py:17:from clutch.drain import _Drain\\ntests/unit/test_drain_containment.py:16:from clutch.drain import _Drain\\ntests/unit/test_runner_verdict_reread.py:17:from clutch.drain import record_reoffer\\ntests/unit/test_admission_parallel_run_set.py:206:    from clutch.serve import Serve\\ntests/unit/test_conflict_rerun_runs_alone.py:18:from clutch.drain import fill_slots\\ntests/unit/test_chain_order.py:11:from clutch.drain import SKIP_LIMIT, chain, fill_slots, order_tickets, parallel_order\\ntests/unit/test_premise_overruled.py:17:from clutch.drain import parked_blob, record_reoffer\\ntests/unit/test_premise_park_keep.py:9:from clutch.drain import parked_blob\\ntests/unit/test_slot_idle_reason.py:19:from clutch.drain import write_queue\\ntests/unit/test_slot_idle_reason.py:109:    from clutch.drain import SKIP_LIMIT\\ntests/unit/test_calibration_idle.py:18:from clutch.calibration import calibrate_when_due, due\\ntests/unit/test_paved_roads.py:19:from clutch.drain import Report\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The ticket cannot be implemented within its scope fence because three existing tests require behavior or names that the ticket explicitly removes.\\\",\\\"surprises\\\":\\\"Removing these references and updating the conflicting assertion requires expanding the scope fence; no files were changed.\\\",\\\"second_problems\\\":[{\\\"summary\\\":\\\"docs/roadmap-driver-plan.md describes automatic retros after a settle and would become stale.\\\"},{\\\"summary\\\":\\\"docs/roadmap.md describes automatic idle calibration and would become stale.\\\"}],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_serve_retro_check_site.py\\\",\\\"line\\\":24,\\\"message\\\":\\\"This test requires Serve.run to call check_retro, but the ticket requires removing that method and every call.\\\",\\\"paved_road\\\":\\\"Add this test to the scope fence and replace or remove its obsolete assertion.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_serve_no_roadmap.py\\\",\\\"line\\\":48,\\\"message\\\":\\\"This test monkeypatches serve.calibrate_when_due, but the ticket requires deleting that import.\\\",\\\"paved_road\\\":\\\"Add this test to the scope fence and remove the obsolete monkeypatch.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_drain_no_roadmap.py\\\",\\\"line\\\":57,\\\"message\\\":\\\"This test monkeypatches drain.calibrate_when_due, but the ticket requires deleting that import.\\\",\\\"paved_road\\\":\\\"Add this test to the scope fence and remove the obsolete monkeypatch.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":151777,\"cached_input_tokens\":123648,\"cache_write_input_tokens\":0,\"output_tokens\":882,\"reasoning_output_tokens\":103}}\n",
+  "wall_seconds": 64.021063,
+  "usd": 1.0,
+  "run_record": "tickets/retro-calibration-manual/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
