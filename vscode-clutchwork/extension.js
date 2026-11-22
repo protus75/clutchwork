@@ -402,6 +402,24 @@ function activate(context) {
 			const root = clutchRoot();
 			if (root) openClaude(root, snapshot.snap.commands.askDrainLoop);
 		}),
+		vscode.commands.registerCommand('clutch.askPrompt', async () => {
+			const root = clutchRoot();
+			if (!root || !snapshot.snap) return;
+			const choice = await vscode.window.showQuickPick(snapshot.snap.promptPick);
+			if (!choice) return;
+			if (!choice.argv) { vscode.window.showErrorMessage(choice.detail); return; }
+			let args = [];
+			if (choice.takes === 'stem') {
+				const stem = await vscode.window.showQuickPick(snapshot.snap.promptArgs.stem);
+				if (!stem) return;
+				args = [stem];
+			} else if (choice.takes === 'box') {
+				const ids = await vscode.window.showQuickPick(snapshot.snap.promptArgs.box, { canPickMany: true });
+				if (!ids || !ids.length) return;
+				args = ids;
+			}
+			openClaude(root, [...choice.argv, ...args]);
+		}),
 		vscode.commands.registerCommand('clutch.engine', async () => {
 			const choice = await vscode.window.showQuickPick(snapshot.snap?.engineVerbs ?? []);
 			if (choice) devCommand(...choice.argv);

@@ -4,18 +4,20 @@
 # purpose: Tests that snapshot ticket tooltips put the commit message before the help text only for merged rows whose commit is known, and use help text alone otherwise.
 # relates: [clutch/box.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
 # owner: clutch/observe.py
-# verified: 56216342
-# hash: 8259f14a619eadab47b3878c0b2317bbe4d946ab6476242c62dc2da79da7a6c4
+# verified: 290c435a
+# hash: 3f6d3bc8a4dba38506e3eb80caa3255bc20a338c50f2af0b5021636d9ebab5cc
 from pathlib import Path
 from types import SimpleNamespace as NS
 
 from clutch import observe, status
 from clutch.box import Box
+from tests.config_fixture import build_config
 from tests.unit.test_menu_admission import dispatch_ticket, fake_snapshot_inputs
 
 
-def test_ticket_tooltips_use_commit_message_only_for_merged_commit(monkeypatch):
-    root = Path("/fake")
+def test_ticket_tooltips_use_commit_message_only_for_merged_commit(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / "config").write_text(build_config())
     ticket = NS(**{**vars(dispatch_ticket()), "stem": "queued"})
     events = [
         dict(v=1, type="state_transition", ts="2026-08-01T12:00:00+00:00", ticket="with-commit", key=None, body={"to": "merged", "commit": "sha"}),

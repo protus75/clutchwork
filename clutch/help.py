@@ -28,6 +28,7 @@ _add(
 )
 
 _commands = {
+    "clutch.askPrompt": "Open a prompt chosen from every engine and host prompt.",
     "clutch.askDrainLoop": "Open a prompt about supervising the drain loop.",
     "clutch.help": "Browse clutch help topics.",
     "clutch.refresh": "Refresh the displayed state.",

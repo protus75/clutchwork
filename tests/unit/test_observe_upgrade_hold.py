@@ -4,8 +4,8 @@
 # purpose: Unit tests that snapshot rows and the queue view show the upgrade hold only while a live engine has a pending serve upgrade that has not handed off yet
 # relates: [clutch/box.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
 # owner: engine
-# verified: a6482110
-# hash: cffd73c288977d3557206cb8e88f402f4de45d8a91adaba67aab7e97052fb9cb
+# verified: 290c435a
+# hash: bba2c39966f66149d63518cfbf8865e63b887452bbecdba082b0e08197710eb1
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -14,6 +14,7 @@ import pytest
 
 from clutch import observe, status
 from clutch.box import Box
+from tests.config_fixture import build_config
 from tests.unit.test_menu_admission import dispatch_ticket, fake_snapshot_inputs
 
 START = datetime.fromisoformat("2026-08-01T12:00:00+00:00")
@@ -32,8 +33,9 @@ def signal(name, ts="2026-08-01T13:00:00+00:00"):
         (None, [signal("serve_upgrade_pending")], False),
     ],
 )
-def test_snapshot_and_queue(monkeypatch, holder, history, expected):
-    root = Path("/fake")
+def test_snapshot_and_queue(tmp_path, monkeypatch, holder, history, expected):
+    root = tmp_path
+    (root / "config").write_text(build_config())
     ticket = NS(**{**vars(dispatch_ticket()), "stem": "queued"})
     monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(Box, "messages", lambda self: [])

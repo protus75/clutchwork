@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test observe hot paths
+# purpose: Checks that shared scope-fence paths between tickets are computed sorted and distinct, exclude ticket outboxes and unshared paths, and appear as a Shared fence detail on snapshot rows
 # relates: [clutch/box.py, clutch/observe.py, clutch/status.py, clutch/tickets.py, tests/unit/test_menu_admission.py]
 # owner: engine
-# verified: 9a610809
-# hash: bb737804b57bc5da8f54936b7053651f4a45f860a8b95a5dfd17995fbd07f165
+# verified: 290c435a
+# hash: 824f5eb41638f75f50d854b24675d969f7feeb87ef7a11442ef78b2a99904652
 from pathlib import Path
 from types import SimpleNamespace as NS
 
@@ -13,6 +13,7 @@ from clutch import observe, status
 from clutch.box import Box
 from clutch.observe import _shared_fences
 from clutch.tickets import Frontmatter, Ticket
+from tests.config_fixture import build_config
 from tests.unit.test_menu_admission import dispatch_ticket, fake_snapshot_inputs
 
 
@@ -33,8 +34,9 @@ def test_excludes_outbox_and_unshared_paths():
     assert _shared_fences([ticket("work", "tickets/work", "tickets/work/ticket.md", "one.py"), ticket("other", "tickets/work", "two.py")]) == {}
 
 
-def test_snapshot_shared_fence_details(monkeypatch):
-    root = Path("/fake")
+def test_snapshot_shared_fence_details(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / "config").write_text(build_config())
     tickets = {stem: NS(**{**vars(dispatch_ticket()), "stem": stem, "scope_fence": paths}) for stem, paths in (("one", ("shared.py",)), ("two", ("shared.py",)), ("lone", ()))}
     monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(Box, "messages", lambda self: [])

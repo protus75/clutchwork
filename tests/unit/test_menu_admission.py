@@ -4,8 +4,8 @@
 # purpose: Checks the admission rules behind ticket and box menu verbs (order, lint, run, review, triage, dismiss), and that the snapshot and intake share one pending-ticket plan
 # relates: [clutch/__main__.py, clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/runner.py, clutch/status.py, clutch/tickets.py, clutch/triage.py]
 # owner: engine
-# verified: c015c627
-# hash: f8dc54c59268de813a6ba68a91486d36adf91c69316c495c51899b7da965f0e7
+# verified: 290c435a
+# hash: e0ff44c3d16e8fc18b48bf734a6b3630b0a224a477d57fa9a3254e7e1b1be099
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace as NS
@@ -18,6 +18,7 @@ from clutch import observe, runner, status, triage
 from clutch.box import UnknownBoxId
 from clutch.journal import EventType
 from clutch.tickets import TicketInvalid, validate_ticket
+from tests.config_fixture import build_config
 from tests.git_fake import GitFake
 
 SNAPSHOT_INPUTS = observe.ticket_menu_inputs
@@ -203,6 +204,7 @@ def test_snapshot_reads_one_porcelain_and_shared_graphs(monkeypatch, count, inva
     root = Path("/fake")
     parsed = {f"item-{i}": NS(**{**vars(dispatch_ticket()), "stem": f"item-{i}"}) for i in range(count)}
     files = {root / tickets.ticket_path(stem): "confirmed disk text" for stem in parsed}
+    files[root / "config"] = build_config()
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "exists", lambda p: p in files)
     monkeypatch.setattr(Path, "read_text", lambda p, **kw: files[p])

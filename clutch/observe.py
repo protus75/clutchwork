@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from typing import Literal, get_args
 from urllib.parse import unquote
 
+from clutch import ask
 from clutch.box import BOX_DIR
 from clutch.config import load_config
 from clutch.drain import PREMISE, authored_at, awaiting_operator, order_tickets, parked_blob
@@ -748,6 +749,15 @@ def _shared_fences(tickets):
     return {stem: "\n".join(lines) for stem, lines in shared.items()}
 
 
+def prompt_pick(config, root, stems, box_ids):
+    entries, problems = ask.catalog(config, root)
+    return {
+        "promptPick": [{"label": " ".join(entry["argv"][1:]), "detail": entry["description"], "argv": entry["argv"], "takes": entry["takes"]} for entry in entries]
+        + [{"label": str(path), "detail": message} for path, message in problems],
+        "promptArgs": {"stem": stems, "box": box_ids},
+    }
+
+
 def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     state = ctx.state
     help, help_pick_items = help_payload()
@@ -1007,6 +1017,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     badge = {"value": total, "tooltip": tooltip} if total else None
     return {
         **extension_fields(ctx.root),
+        **prompt_pick(load_config(ctx.config, cwd=ctx.root), ctx.root, [row["stem"] for row in rows], [row["id"] for row in box_rows]),
         "help": help,
         "helpPick": help_pick_items,
         "headerHelp": {**{section: f"section.{section}" for section in counts}, "engine": "lock.engine", "commit": "lock.commit"},

@@ -4,8 +4,8 @@
 # purpose: Checks that the snapshot attaches provider session ids from unfinished evidence call records to Recent Steps entries and ticket rows, and turns the Copy Session menu item on only when a session exists
 # relates: [clutch/box.py, clutch/help.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
 # owner: clutch/observe.py
-# verified: 19880b1d
-# hash: c56da9cebed231dac48f940d3b749c29bbcfba6aacad919ef5eb9ecca85e7ebb
+# verified: 290c435a
+# hash: 0aff6a59b7eb0f2ae7f8d0ecc82873ab4beaac57b6bcf19cf2fe3299b47ed5cf
 import json
 from types import SimpleNamespace as NS
 from urllib.parse import quote
@@ -13,6 +13,7 @@ from urllib.parse import quote
 from clutch import observe, status
 from clutch.box import Box
 from clutch.help import TOPICS
+from tests.config_fixture import build_config
 from tests.unit.test_menu_admission import dispatch_ticket, fake_snapshot_inputs
 
 
@@ -26,6 +27,7 @@ def record(evidence, stem, call, ids, *, surface="implement", attempt=2, run_seq
 
 
 def test_snapshot_sessions(tmp_path, monkeypatch):
+    (tmp_path / "config").write_text(build_config())
     state = tmp_path / "state"
     evidence = state / "evidence"
     record(evidence, "active", 1, {"thread_id": "t1"})

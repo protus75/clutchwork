@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: f74aec75
-hash: de65215f5764f9b2214b2845524b6ba195fdcac3c9ccce0100cb00862cc32e81
+verified: 290c435a
+hash: 231535cbf15b73346727db640c6386c7a4b1b17be94bcfa3861f60d81ad59fda
 -->
 # How ClutchWork works
 
@@ -137,7 +137,7 @@ The Marketplace refuses a version it already holds.
 
 `vscode-clutchwork/` is an operator-only VS Code extension: an Activity Bar view of every ticket as an
 SCM-style graph (blocked, queued, running, merged) with a detail pane. A line between ticket rows means a dependency; merged rows show their history line. Running and queued rows show their priority. Its Activity Bar badge shows the queued and running ticket count while the engine is alive, or the blocked and queued count while it is stopped, and is hidden when the count is zero. The Tickets view's More Actions
-menu holds Ticket lifecycle, which opens `vscode-clutchwork/media/ticket-lifecycle.svg`, a hand-drawn diagram of ticket states, and Ask Claude: drain loop, which opens a Claude Code chat with `prompt drain-loop`.
+menu holds Ticket lifecycle, which opens `vscode-clutchwork/media/ticket-lifecycle.svg`, a hand-drawn diagram of ticket states, Ask Claude: drain loop, which opens a Claude Code chat with `prompt drain-loop`, and Ask Claude: prompt…, which lists every engine and host prompt.
 Each unsettled ticket's detail shows a `Shared fence` entry listing its fenced paths that another unsettled ticket also fences, with those tickets.
 Every verb-backed menu item is on exactly when its verb’s admission function admits the row, through the closed table in `clutch/observe.py`; an admitted action that needs the writer lock is locked while a holder is alive. Confirm and Reject use the shared verdict predicate without lock gating. The Ask items are extension-only.
 The Tickets view’s play button and Engine… picker start drain detached. The picker also runs serve, stop, kill, status, or retro. Its start/stop icon follows the snapshot engine flag, which is true only while a drain or serve holds the lock; `clutch.playAction` selects drain or serve for starting. Open config.yaml, also in More Actions, opens the snapshot’s `configPath`. Recent Steps row kinds are the closed vocabulary `STEP_KINDS` in `clutch/observe.py`, and a test fails until each step in it has its own icon. An unknown kind renders as a warning row instead of breaking the view. Recent Steps opens a step’s file when it exists; an Author row opens its Suggestion Box message, authored ticket, or decision record. The collapsed Stats view shows health figures for the window configured by `clutch.statsWindow` (default `7d`). The Suggestion Box view lists messages, supports multi-selection and manual triage or dismissal, and shows message details alongside tickets. `clutch view snapshot` builds journal facts once per call from the journal cache and in-memory history, and checks the drain holds only for stems that can hold; `clutch/graph.py` computes the graph layout for the extension to draw. The engine never runs the extension.

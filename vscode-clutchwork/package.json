@@ -123,6 +123,11 @@
 		},
 		"commands": [
 			{
+				"command": "clutch.askPrompt",
+				"title": "Ask Claude: prompt…",
+				"category": "clutch"
+			},
+			{
 				"command": "clutch.askDrainLoop",
 				"title": "Ask Claude: drain loop",
 				"category": "clutch"
@@ -389,6 +394,10 @@
 			],
 			"commandPalette": [
 				{
+					"command": "clutch.askPrompt",
+					"when": "false"
+				},
+				{
 					"command": "clutch.steps.copySession",
 					"when": "false"
 				},
@@ -502,6 +511,11 @@
 				}
 			],
 			"view/title": [
+				{
+					"command": "clutch.askPrompt",
+					"when": "view == clutch.tickets",
+					"group": "clutch@7"
+				},
 				{
 					"command": "clutch.askDrainLoop",
 					"when": "view == clutch.tickets",

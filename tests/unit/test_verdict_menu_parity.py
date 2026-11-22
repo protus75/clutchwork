@@ -4,8 +4,8 @@
 # purpose: Checks that the snapshot's confirm/reject menu states match whether a runner verdict is allowed in each ticket state, and that a reject commits and journals.
 # relates: [clutch/box.py, clutch/journal.py, clutch/observe.py, clutch/reconcile.py, clutch/runner.py, tests/unit/test_menu_admission.py]
 # owner: engine
-# verified: cb71e4f8
-# hash: 83bdcb6a852e8fff6f9c8ac2a973f62e84f05ef794289c5c31af9a835bfa5ccc
+# verified: 290c435a
+# hash: 8db2de368ae58e7d8ac121a7d71427508ea21498d5c32bc1f8ff8b8ba2f908a9
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ from clutch import observe, runner
 from clutch.box import Box
 from clutch.journal import EventType
 from clutch.reconcile import orphans
+from tests.config_fixture import build_config
 from tests.git_fake import GitFake
 
 
@@ -49,7 +50,7 @@ def world(monkeypatch):
     ctx = observe.Context(root, root / "state", root / "config.yaml", None, None, None)
     monkeypatch.setattr(Path, "is_file", lambda p: p in files)
     monkeypatch.setattr(Path, "exists", lambda p: p in files)
-    monkeypatch.setattr(Path, "read_text", lambda p, *a, **kw: files[p])
+    monkeypatch.setattr(Path, "read_text", lambda p, *a, **kw: build_config() if p == ctx.config else files[p])
     monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
     monkeypatch.setattr(runner, "intake", AsyncMock(return_value=SimpleNamespace(refused={})))
     monkeypatch.setattr(runner, "_dead_dependents", AsyncMock())

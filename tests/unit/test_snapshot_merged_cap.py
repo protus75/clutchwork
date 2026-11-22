@@ -4,19 +4,21 @@
 # purpose: Tests that the snapshot merged_limit caps merged rows, merged counts and menu inputs to the newest merges while leaving open-row fields unchanged except dependencies.
 # relates: [clutch/box.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
 # owner: clutch/observe.py
-# verified: 56216342
-# hash: c093f9d46c52127477bc367ee7c645449609930b73f0666769040dadb7d4dab1
+# verified: 290c435a
+# hash: a97d871d43560da20bc4ebfb538dfc5dd60aa285437c228e373691911d3c665c
 from pathlib import Path
 from types import SimpleNamespace as NS
 from unittest.mock import Mock
 
 from clutch import observe, status
 from clutch.box import Box
+from tests.config_fixture import build_config
 from tests.unit.test_menu_admission import dispatch_ticket, fake_snapshot_inputs
 
 
-def test_cap_limits_rows_and_menu_inputs(monkeypatch):
-    root = Path("/fake")
+def test_cap_limits_rows_and_menu_inputs(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / "config").write_text(build_config())
     tickets = {s: NS(**{**vars(dispatch_ticket(depends=("merged-0",) if s == "open-0" else ())), "stem": s}) for s in ("open-0", "open-1")}
     events = [dict(v=1, type="state_transition", ts=f"2026-08-0{i + 1}T12:00:00+00:00", ticket=f"merged-{i}", key=None, body={"to": "merged", "commit": f"sha-{i}"}) for i in range(5)]
     monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in __import__("clutch.help", fromlist=["TOPICS"]).TOPICS}, []))
