@@ -12,7 +12,7 @@ kind: feature
 - clutch/git.py::Git
 
 ## Goal / Why
-`shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in. This ticket migrates 2 of them (2 stand-ins) onto `GitFake` and removes them from `PENDING`, so those tests no longer break when `Git` gains a method. Read `tests/git_fake.py` in the worktree for the override and `calls` contract before editing; it is a merged dependency.
+`shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in. This ticket migrates the last 7 of them (8 stand-ins) onto `GitFake` and removes them from `PENDING`, so those tests no longer break when `Git` gains a method. Read `tests/git_fake.py` in the worktree for the override and `calls` contract before editing; it is a merged dependency.
 
 It also retires the older shared fake `tests/fakes.py::FakeGit` and its `fake_git` fixture in `tests/conftest.py`: `FakeGit` answers any attribute, so it never catches a call to a method `Git` lacks, and keeping it beside `GitFake` leaves two Git fakes with different behavior. Its 9 users move to `GitFake`.
 
@@ -28,6 +28,11 @@ In: migrate each stand-in in the files below onto `GitFake` from `tests/git_fake
 Files migrated here (stand-ins counted):
 tests/integration/test_covmap.py (1)
 tests/integration/test_harvest_cost_source.py (1)
+tests/integration/test_retry_keeps_branch.py (1)
+tests/integration/test_serve_verdict_orphan_sweep.py (1)
+tests/unit/test_check_meta_fill.py (2)
+tests/unit/test_runner_verdict_reread.py (1)
+tests/unit/test_serve_verdict_owned.py (1)
 
 Also in: retire `FakeGit`. Migrate every use of `FakeGit` or the `fake_git` fixture in these files onto `GitFake`, keeping test names and assertions (a `FakeGit.calls` or `results` assertion becomes the equivalent `GitFake` override or `calls` assertion):
 tests/unit/test_git_commit.py
@@ -49,6 +54,11 @@ Also in: delete `PENDING` and both of its checks from `tests/integration/test_gi
 - tests/integration/test_git_fake_adoption.py
 - tests/integration/test_covmap.py
 - tests/integration/test_harvest_cost_source.py
+- tests/integration/test_retry_keeps_branch.py
+- tests/integration/test_serve_verdict_orphan_sweep.py
+- tests/unit/test_check_meta_fill.py
+- tests/unit/test_runner_verdict_reread.py
+- tests/unit/test_serve_verdict_owned.py
 - tests/fakes.py
 - tests/conftest.py
 - tests/unit/test_shared_fakes.py
