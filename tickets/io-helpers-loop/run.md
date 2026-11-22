@@ -4,7 +4,7 @@ incomplete
 
 ## Surprises / judgment calls
 
-The serve helpers depend on behavior retained in serve_rig.py, including UpgradeChild and terminals, which needs to be accounted for without introducing an import cycle.
+The existing admission_graph calls the stay-behind terminals helper, and enable_upgrade constructs the stay-behind UpgradeChild; the migration needs to account for both without importing serve_rig.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket estimated 30 minutes; implementation was not completed.
+The ticket budget is 30 minutes expected and 60 minutes stuck; the work was not completed.
 
