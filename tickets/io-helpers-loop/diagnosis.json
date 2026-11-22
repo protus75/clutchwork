@@ -1,16 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "926f6cdde91666d92ebf8e0bfa058b3d0aa5154c",
+  "produced_at_sha": "97558aa000cef02435c8f842971bc69c06a02246",
   "stem": "io-helpers-loop",
-  "attempt": 5,
-  "terminal": "incomplete",
+  "attempt": 6,
+  "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "False premise: Scope in says the five moved serve_rig.py functions call none of the names that stay behind. But serve_rig.py:260 admission_graph calls terminals(), and serve_rig.py:354 enable_upgrade builds UpgradeChild. Both stay in serve_rig.py, which tests/loop_helpers.py must never import.",
-    "Re-author the ticket so it states where terminals and UpgradeChild live. One option: move both to tests/loop_helpers.py, and serve_rig.py imports them back. Another: keep admission_graph and enable_upgrade in serve_rig.py. Then fix acceptance criteria 2 and 3 to match.",
-    "The run gave up after 62s of reading on attempt 5 with no diff. A retry on the current text will stall again, because the cycle ban and the 'call none' claim contradict serve_rig.py as merged."
+    "The premise does not hold. notify_command (serve_rig.py:298) only writes a notify argv into config via amend_config. It never runs the command, so it needs no dispatch from FakeExec. Move it to tests/loop_helpers.py and keep its signature. Do not edit tests/fakes.py.",
+    "Replace the sys.executable '-c' script with a fixed in-process argv such as ['notify'], or None when enabled=False. FakeExec.run (tests/fakes.py:35) records that argv in .calls and returns its fixed result, which is all 'run through FakeExec' requires.",
+    "The only consumer, tests/integration/test_serve_notify.py, is skipped (pytestmark disk_io_skip, line 33). Scope out says skipped importers may break semantically and their batch ticket fixes that. So deliveries.jsonl and notify-fails behavior need not survive this ticket.",
+    "In tests/unit/test_loop_helpers.py, test notify_command by writing config under tmp_path. Assert that the notify key holds the in-process argv, and holds None when enabled=False. Do not assert deliveries.",
+    "Continue the remaining Scope in work from main: the 26 moved names, the hub import-backs, the 48 importer import lines, and the base vs candidate integration pass/skip counts in run.md (criterion 5)."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
