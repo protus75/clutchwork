@@ -1,6 +1,6 @@
 # Review: approve
 
-The diff sets a serve-owned `settling_verdicts` flag inside a try/finally around `settle_admissions`, so `Restart.owned()` returns true and the idle sweep skips while a verdict is settling; it adds the required integration test, unit test and reproducer, all inside the fence, and the reproducer imports only helpers that exist on the merge base.
+The diff adds a `settling_verdicts` flag that is cleared in a `finally` and checked by `Restart.owned`, so the idle orphan sweep cannot reap a stem while `Serve.verdicts` is settling admissions; the new tests and the self-contained reproducer follow the ticket's scope and the result protocol it requires.
 
 ## Findings
 
@@ -12,10 +12,10 @@ none
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "a0949cab03cf06f0f1c42f34b688a3d0bd6a2b15",
+  "produced_at_sha": "3ef8cf4c3b4100e83aa3451c91a171f0e0626e98",
   "stem": "reconcile-spares-confirming-draft",
-  "reviewed_sha": "a0949cab03cf06f0f1c42f34b688a3d0bd6a2b15",
-  "summary": "The diff sets a serve-owned `settling_verdicts` flag inside a try/finally around `settle_admissions`, so `Restart.owned()` returns true and the idle sweep skips while a verdict is settling; it adds the required integration test, unit test and reproducer, all inside the fence, and the reproducer imports only helpers that exist on the merge base.",
+  "reviewed_sha": "3ef8cf4c3b4100e83aa3451c91a171f0e0626e98",
+  "summary": "The diff adds a `settling_verdicts` flag that is cleared in a `finally` and checked by `Restart.owned`, so the idle orphan sweep cannot reap a stem while `Serve.verdicts` is settling admissions; the new tests and the self-contained reproducer follow the ticket's scope and the result protocol it requires.",
   "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
