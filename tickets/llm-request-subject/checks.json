@@ -1,0 +1,253 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a2c6360b166466ad15dba335e5b2c0d1cbb5e8f9",
+  "stem": "llm-request-subject",
+  "passed": false,
+  "changed_files": [
+    "clutch/__main__.py",
+    "clutch/acceptance.py",
+    "clutch/author.py",
+    "clutch/driver.py",
+    "clutch/llm.py",
+    "clutch/metafill.py",
+    "clutch/providers.py",
+    "clutch/requisition.py",
+    "clutch/retro.py",
+    "clutch/training.py",
+    "clutch/triage.py",
+    "tests/config_helpers.py",
+    "tests/harness/daemon_soak.py",
+    "tests/harness/shakeout/drain.py",
+    "tests/harness/shakeout/driver.py",
+    "tests/integration/serve_rig.py",
+    "tests/integration/test_driver.py",
+    "tests/integration/test_fixture_host.py",
+    "tests/integration/test_provider_capture_overwrite.py",
+    "tests/integration/test_serve_admission.py",
+    "tests/integration/test_serve_merge_overlap.py",
+    "tests/integration/test_serve_parallel_admission.py",
+    "tests/integration/test_serve_scan_head.py",
+    "tests/integration/test_serve_scan_watch_overlap.py",
+    "tests/integration/test_watchdog_activation.py",
+    "tests/regress_requisition_events_owner_stem.py",
+    "tests/regress_requisition_session_stem.py",
+    "tests/unit/test_claude_session_name.py",
+    "tests/unit/test_llm_request_subject.py",
+    "tests/unit/test_preflight_parallel.py",
+    "tests/unit/test_requisition_session_stem.py",
+    "tests/unit/test_roadmap_accept.py",
+    "tests/unit/test_route_kinds_filter.py",
+    "tests/unit/test_stages_helpers.py",
+    "tests/unit/test_training_eval.py",
+    "tests/unit/test_triage_panel_use.py"
+  ],
+  "inserted_lines": 239,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "verification",
+          "path": null,
+          "line": null,
+          "message": "`rg -n req(uest)?\\.ticket\\b clutch tests` exited 1: (no output)",
+          "paved_road": "make `rg -n req(uest)?\\.ticket\\b clutch tests` exit 0 on the branch and commit the fix",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "verification",
+          "path": null,
+          "line": null,
+          "message": "`rg -n ticket=\"t-1\" tests/config_helpers.py` exited 1: (no output)",
+          "paved_road": "make `rg -n ticket=\"t-1\" tests/config_helpers.py` exit 0 on the branch and commit the fix",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.126486,
+        "passed": 2090,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3079688390134834,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1149981469789054,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.0913847779738717
+        }
+      },
+      "coverage": {
+        "percent": 75.20948820420266,
+        "files": {
+          "clutch/__main__.py": 79.53040337146298,
+          "clutch/acceptance.py": 99.5798319327731,
+          "clutch/author.py": 85.53571428571429,
+          "clutch/driver.py": 72.2735674676525,
+          "clutch/llm.py": 89.47368421052632,
+          "clutch/metafill.py": 92.72727272727273,
+          "clutch/providers.py": 87.08571428571429,
+          "clutch/requisition.py": 87.20379146919431,
+          "clutch/retro.py": 76.63157894736842,
+          "clutch/training.py": 93.07359307359307,
+          "clutch/triage.py": 55.61959654178674
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 13.083911,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9801638089702465,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1210249319847208,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0802257020259276,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0040181020158343
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_llm_request_subject.py",
+        "tests/unit/test_claude_session_name.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.10s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.199991
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "python",
+        "tests/regress_requisition_session_stem.py"
+      ],
+      "rc": 0,
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.298184
+    },
+    {
+      "argv": [
+        "rg",
+        "-n",
+        "req(uest)?\\.ticket\\b",
+        "clutch",
+        "tests"
+      ],
+      "rc": 1,
+      "tail": "",
+      "base_red": false,
+      "seconds": 4.933798
+    },
+    {
+      "argv": [
+        "rg",
+        "-n",
+        "ticket=\"t-1\"",
+        "tests/config_helpers.py"
+      ],
+      "rc": 1,
+      "tail": "",
+      "base_red": false,
+      "seconds": 6.269572
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test"
+      ],
+      "rc": 0,
+      "tail": "]\n.ssssssssssssssssssssssssssssssssssssssssssss.ssssssssssssss.sssssssss.s [ 63%]\nsssssssssssssssssssssssssssssssssssssssssssssssss.ssssssssssssssssssss.s [ 65%]\nssssssssssssss.ssssssssssssssssssssssssssssssssssss.s.ssss.sssssssssssss [ 67%]\nssssssssssss.s.sssssssssss.ssss.sssssss.sssss.sssssssssssssss.sssssss..s [ 69%]\ns.ssssssssssss..ssssss.ss.ss.ssssss.ssssss.sss.sssssssssss..ssssssssssss [ 71%]\nssssss..sssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssssssss [ 73%]\nss..sssssssssssssssssssssssssssssssssss..sssssssss.ssssssss..sssssssssss [ 75%]\nsssssssssssssssssssssssssssssssssssssssssssss.s.sssss..ssssssss.ssss.sss [ 77%]\nssssssssssssssss..ss.ssssssss.sssss.sss..sssssssssssssss.ss.ssssssss.sss [ 79%]\nsss...sssssssss.sss...ssssssssssss.s.sssssssssssssssss.sssssssssss.sss.s [ 81%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.ssssssssssss [ 83%]\nsssssssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssssssssssss [ 85%]\nssssssssssss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nss.sss.ssssssssssssssssssssssssssssssssssssssss.ssssssssssss.sssssssssss [ 89%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nsssssssssss.sssss.s.ss.ssssss.sssssss.ss..ssss..s.sssssss.sss.sss.sss.ss [ 93%]\ns.ss.ssssssssssssssssssssssssssssssssssssssssss.ssssssssss.ss..s........ [ 94%]\n...........ss.ssss.s.ss.sss.ssss.ss.......ssssssssssssssssssssssssssssss [ 96%]\nssss...sssss.sssssss...........ssssssssssssssssssssssss.....ss.......... [ 98%]\n...ssssssssssssssssss...ssss..........                                   [100%]\n297 passed, 3341 skipped in 7.16s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 18.931679
+    }
+  ]
+}
