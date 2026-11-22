@@ -4,8 +4,8 @@ kind: guide
 purpose: Operator guide to running ClutchWork on a host: which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: 2036efdf
-hash: 9f15da4df0852e1b81feea43b45fb865b47ba17e2a93bf315d005e3d3bf8b9bb
+verified: 18f3cf87
+hash: a18e92631b84a895055bf5517ea1e8c8a7c8361e40fb6e3e8b121614984daf1a
 -->
 # Running ClutchWork on a host
 
@@ -50,8 +50,9 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `meta refresh` | Yes | Insert or refresh configured file metadata under the commit lock. |
 | `meta check` | Yes | Report metadata findings without writing. |
 | `meta fill` | No | Fill metadata using a read-only model under the writer lock. |
-| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. With `--parallel`, `roadmap merged` counts only merges whose run overlapped another run and fails when any such ticket spent its conflict-rerun limit. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. When `docs/roadmap.md` exists, `engine drain` and `engine serve` run `roadmap author --ahead 2`, the release gate (releasing and, with `release.publish: true`, publishing when it passes), and a `notify` digest at start and after every settle. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
+| `roadmap` | No | Author ready rows with `roadmap author [--ahead N]` and maintain their links. `roadmap merged` checks named stems, a release's rows, or a count of tickets merged since a tag, exits 0 when they hold and 1 otherwise, writes nothing, and works while serve runs. With `--parallel`, `roadmap merged` counts only merges whose run overlapped another run and fails when any such ticket spent its conflict-rerun limit. `roadmap status` prints, per release, the rows merged, authored, ready, and blocked and the last gate result, then the next rows to author and the waiting rows. It writes nothing and works while serve runs. `roadmap gate <release>` runs the release's gate block from `docs/roadmap.md`, journals the result, exits 0 when every command passes and 1 otherwise, and works while serve runs. `roadmap accept <release>` reviews release promises, appends gap rows in one commit, exits 0 only with no partial or unmet promise, takes no writer lock, and works while serve runs. |
 | `box triage` | Yes | Make one pass over named pending box IDs, or all pending messages. |
+| `release ship` | No | Gate the current release, bump and tag it, optionally publish, then run packages; takes the writer lock. |
 | `release publish` | No | Build the release tagged at HEAD and upload only with `release.publish: true`; never bumps. |
 | `release bump` | No | Bump the version with `--minor` or `--patch`, write a new `CHANGELOG.md` section, commit it with `pyproject.toml` and `uv.lock`, and tag `v<version>`; publishes nothing. |
 | `box dismiss` | No | Dismiss named box IDs without a model call. |
@@ -73,7 +74,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `engine drain` | No | Run eligible tickets to quiescence. `--detach` runs in its own session, surviving terminal or editor closing, and appends output to `<state_dir>/drain.out`. |
 | `engine serve` | No | Run the continuous daemon. |
 
-Stop serve before `evidence prune`, `index build`, `roadmap author`, `box dismiss`, `release bump`, `release publish`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
+Stop serve before `evidence prune`, `index build`, `roadmap author`, `box dismiss`, `release bump`, `release publish`, `release ship`, `engine run`, `engine drain`, or another `engine serve`: each takes the writer lock outright and refuses while it is held. `host doctor` also needs the lock available to pass its probe. There is one writer per host; the kernel releases its lock when the holder exits. Never delete `clutch.lock`—wait for or stop the holder instead.
 
 ## Reporting a clutch problem upstream
 

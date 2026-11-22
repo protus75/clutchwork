@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify that serve and drain run idle supervision only at idle boundaries, inside the lock and after retro/driver, and prepare context only when eligible work exists.
+# purpose: Unit tests checking that serve and drain run idle supervision only at idle boundaries, inside the mutation lock and after retro, and prepare context only when eligible work exists
 # relates: [clutch/config.py, clutch/drain.py, clutch/journal.py, clutch/serve.py, clutch/triage.py, tests/unit/test_supervise_idle_point.py]
 # owner: engine
-# verified: 53cd7139
-# hash: 735819881e70359e89851696dc80ab43f7c6e49396bea7d45c3f5e67d197eee1
+# verified: 18f3cf87
+# hash: 12bf64ba9a540265532c70275bfbb6a41c9d19ce19932ba72a660390495c9645
 
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -125,7 +125,7 @@ async def test_serve_preparation_is_lazy(tmp_path, monkeypatch, eligible):
 def drain_rig(tmp_path, monkeypatch, checkout, dispatch):
     d = drain._Drain.__new__(drain._Drain)
     d.c, d.dispatch, d.before_dispatch = checkout, dispatch, None
-    d.report, d.retro, d.driver = object(), None, None
+    d.report, d.retro = object(), None
     d.provider_deadlines, d.storm_waiting = [], False
     d.last_dispatched = "work"
     d._stopping = lambda: False
@@ -154,19 +154,14 @@ async def test_drain_boundary_order(tmp_path, monkeypatch, between):
     d.retro = object()
     d.served_retro_id = None
     d._run_retro = AsyncMock(side_effect=lambda **kwargs: calls.append("retro"))
-    d.driver = object()
-    d.driven = None
-    (tmp_path / "docs").mkdir()
-    (tmp_path / "docs/roadmap.md").touch()
-    d._run_driver = AsyncMock(side_effect=lambda: calls.append("driver"))
 
     async def supervise(checkout, make_ctx):
         calls.append("supervise")
 
     monkeypatch.setattr(drain, "supervise_idle", supervise)
     await d.run()
-    # Wrong: interrupt a retry cycle or supervise before retro/driver.
-    assert calls == (["retro", "driver", "supervise"] if between else [])
+    # Wrong: interrupt a retry cycle or supervise before retro.
+    assert calls == (["retro", "supervise"] if between else [])
 
 
 @pytest.mark.asyncio

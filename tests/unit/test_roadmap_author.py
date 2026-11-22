@@ -4,8 +4,8 @@
 # purpose: Verifies clutch roadmap author: refuses a dirty or missing roadmap, files rows until the ahead window is full, links and strikes rows, reports declined or waiting rows, and wires the CLI
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/fakes.py]
 # owner: engine
-# verified: a8fa2c67
-# hash: 1e5cb4851c54077bbcc0ddaa035840cfc13945f2cfebec9b7595f4e8dc2b36df
+# verified: 18f3cf87
+# hash: 13116a6e660719231e419ddc7e600e3cf99b65b737855e9c14480c610c64c119
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -174,7 +174,7 @@ def test_unsettled_and_waiting_rows_are_reported(setup):
 
 def test_main_roadmap_author(monkeypatch, capsys, tmp_path):
     events = []
-    monkeypatch.setattr(cli, "load_config", lambda *a, **k: SimpleNamespace(state_dir=tmp_path, roadmap=SimpleNamespace(ahead=2)))
+    monkeypatch.setattr(cli, "load_config", lambda *a, **k: SimpleNamespace(state_dir=tmp_path, roadmap=SimpleNamespace(ahead=7)))
     monkeypatch.setattr(cli, "child_env", lambda *a: {})
 
     class Lock:
@@ -218,6 +218,11 @@ def test_main_roadmap_author(monkeypatch, capsys, tmp_path):
     assert cli.main(["roadmap", "author", "--ahead", "3"], cwd=tmp_path, env={}) == 0
     assert events == ["acquire", "reap", 3, ("llm", frozenset({"box-1"})), "close", "release"]
     assert capsys.readouterr().out == "line one\nline two\n"
+
+    events.clear()
+    assert cli.main(["roadmap", "author"], cwd=tmp_path, env={}) == 0
+    assert events == ["acquire", "reap", 7, ("llm", frozenset({"box-1"})), "close", "release"]
+    capsys.readouterr()
 
     async def refusal(*args):
         raise Refusal("blocked", "repair")

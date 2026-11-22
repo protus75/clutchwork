@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks the plan-ticket-drain, author, review, drain-loop and running prompts carry required phrases, no session facts and only existing verbs, and that the docs list the prompt kinds
+# purpose: Checks that the plan-ticket-drain, author, review, drain-loop and running prompts include their required phrases, leave out session facts and name only real clutch verbs, and that the docs list the prompt kinds
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 38957300
-# hash: 51ea80f66e0ac16b23fd5394426607275670f0df7e8fe10f367060c70360e9c8
+# verified: d718479c
+# hash: 092dd95a147fd8bffcd448558d97591e43f3f2d68273a34a7886895e72cf6a85
 import argparse
 import re
 from pathlib import Path
@@ -41,8 +41,6 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "the engine authored",
         "clutch host doctor",
         "clutch provider probe",
-        "clutch release bump --minor",
-        "never twice",
         "clutch prompt drain-loop",
         "clutch prompt diagnose",
         "clutch prompt drafts",
@@ -61,7 +59,6 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "before the first drain",
         "the tick it appears",
         "roadmap_row",
-        "clutch roadmap author --ahead",
         "drift failure",
         "at most 3",
         "confirmed, unmerged ticket",
@@ -70,12 +67,10 @@ def test_plan_ticket_drain_prompt_content(prompts):
         "never hold",
         "clutch roadmap status",
         "clutch engine stop",
-        "roadmap_drive",
-        "custom/state/engine.log",
-        "custom/state/drain.out",
         "P1 row",
         "never a Suggestion Box message",
-        "before the last of them merges",
+        "clutch roadmap gate",
+        "clutch release ship",
         "run once",
         "next: none",
         "Still open:",

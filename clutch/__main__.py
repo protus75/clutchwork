@@ -255,22 +255,6 @@ def build_notifications(checkout: runner.Checkout, *, config_path: Path | None, 
     )
 
 
-def build_driver():
-    async def step(checkout, log):
-        from clutch import roadmap
-
-        async def author_messages(ids):
-            llm = await _preflighted_llm(checkout, checkout.control.providers)
-            await triage.triage_pass(checkout, llm, frozenset(ids))
-
-        notifications = CommandNotifications(
-            SubprocessExec(), cwd=checkout.repo, env=child_env(checkout.env, checkout.config, serving=None), timeout=NOTIFY_TIMEOUT_S, scrub=Redactor.from_config(checkout.config, checkout.env).scrub
-        )
-        return await roadmap.drive(checkout, author_messages=author_messages, notifications=notifications, log=log)
-
-    return step
-
-
 def watchdog_observation(workspace: Path, fence):
     from clutch.watchdog import ScopeObservation
 
@@ -758,8 +742,8 @@ def _parser() -> argparse.ArgumentParser:
     release = sub.add_parser(
         "release",
         help="bump, tag and publish releases",
-        description="Bump and tag a local release, or build and publish the tagged release.",
-        epilog="Examples:\nclutch release publish\n  Build the tagged release.",
+        description="Bump, publish or ship a release. Subcommands: bump, publish, ship.",
+        epilog="Examples:\nclutch release publish\n  Build the tagged release.\nclutch release ship\n  Gate and ship the current release.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     release_sub = release.add_subparsers(dest="release_verb", required=True)
@@ -787,6 +771,17 @@ def _parser() -> argparse.ArgumentParser:
         lock="Writer lock; refuses while another process holds it.",
         exits="0 when built (and uploaded when enabled); 2 on refusal (missing token, dirty tracked tree, missing or misplaced tag, uv failure or held lock).",
         examples=["clutch release publish"],
+    )
+    _command(
+        release_sub,
+        "ship",
+        summary="gate and ship the current release",
+        does="Run the current release gate, bump and tag, optionally publish, then run configured packages.",
+        reads="Config, roadmap gate, git state and version files.",
+        writes="Gate and release journal signals, version files, tag, packages and optional PyPI upload.",
+        lock="Writer lock; refuses while held.",
+        exits="0 on success; 1 on gate failure; 2 on refusal.",
+        examples=["clutch release ship"],
     )
     evidence = sub.add_parser(
         "evidence",
@@ -1777,6 +1772,33 @@ def main(
         print(f"publish: uploaded {version} to PyPI" if uploaded else "publish: release.publish is false; uploaded nothing -- set release.publish: true in config.yaml to upload")
         return 0
 
+    def handle_ship():
+        from clutch import release, roadmap
+
+        async def ship_release():
+            async with _locked(config.state_dir, "release ship", instance_id=await checkout.git.describe(repo), clock=clock):
+                async with checkout.git.main_write():
+                    current = roadmap.current_release(repo)
+                    if current is None:
+                        raise runner.Refusal("no current release", "set a valid project version in pyproject.toml")
+                    passed, lines = await roadmap.run_gate(checkout, current)
+                    if not passed:
+                        return False, lines
+                    if config.release.publish:
+                        await release.publishable(repo, checkout.git, env, config)
+                    version, sha = await release.release(repo, checkout.git, checkout.exec_, checkout.fs, child_env(env, config), "minor", checkout.clock().date().isoformat())
+                    release.journal_release(checkout.journal, version, sha)
+                    lines.append(f"release: tagged v{version} at {sha}")
+                    if config.release.publish:
+                        version, _, _ = await release.publish(repo, checkout.git, checkout.exec_, checkout.fs, env, config)
+                        lines.append(f"publish: uploaded {version} to PyPI")
+                    lines.extend(await release.run_packages(repo, checkout.exec_, checkout.fs, env, config))
+                    return True, lines
+
+        passed, lines = asyncio.run(ship_release())
+        print("\n".join(lines))
+        return 0 if passed else 1
+
     def handle_dismiss():
         async def dismiss_messages():
             async with _locked(config.state_dir, "dismiss", instance_id=await checkout.git.describe(repo), clock=clock):
@@ -1829,7 +1851,6 @@ def main(
 
             class DrainDispatch:
                 _retro = Retro(checkout, dispatch)
-                _driver = staticmethod(build_driver())
 
                 async def __call__(self, ticket):
                     return await dispatch(ticket)
@@ -2015,7 +2036,7 @@ def main(
         "prompt": handle_prompt,
         "view": lambda: {"snapshot": handle_watch, "watch": handle_watch, "stats": handle_stats, "status": handle_status, "events": handle_events}[args.view_verb](),
         "roadmap": handle_roadmap,
-        "release": lambda: {"bump": handle_release, "publish": handle_publish}[args.release_verb](),
+        "release": lambda: {"bump": handle_release, "publish": handle_publish, "ship": handle_ship}[args.release_verb](),
         "engine": lambda: {
             "stop": handle_control,
             "pause": handle_control,

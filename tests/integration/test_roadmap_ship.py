@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that roadmap ship passes the gate, bumps the version, commits and tags the release, then waits at the next failing gate and refuses a dirty tree
+# purpose: Tests that clutch release ship passes the roadmap gate, bumps, commits and tags the release, then stops at the next failing gate and refuses a dirty tree
 # relates: [clutch/config.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: ae1a5a3b
-# hash: b1bc0b721add6d6afba0aef20c22c5b281d02226cdf307fcb0d94e7e5f98b6dc
+# verified: 18f3cf87
+# hash: 9ccbb26b77e3c8b46d4a4b73c02ffb5edcd4f02e1e47696671e07194c6157510
 import asyncio
 import shlex
 import sys
@@ -14,6 +14,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from clutch import __main__ as cli
 from clutch import config, roadmap
 from clutch.git import CommitLock, Git, GitError
 from clutch.journal import Journal
@@ -24,7 +25,7 @@ from tests.cli_helpers import CONFIG, ENV
 pytestmark = pytest.mark.disk_io_skip
 
 
-def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch):
+def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch, capsys):
     def clock():
         return datetime(2026, 1, 1, tzinfo=UTC)
 
@@ -77,7 +78,8 @@ def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch):
         return SimpleNamespace(repo=repo, git=git, exec_=SubprocessExec(), fs=LocalFileSystem(), env={**ENV, "TOKEN": "secret"}, config=cfg, journal=journal, clock=clock), call
 
     c, call = repository(tmp_path / "first")
-    lines = asyncio.run(roadmap.ship(c))
+    assert cli.main(["release", "ship"], cwd=c.repo, env=c.env, clock=clock) == 0
+    lines = capsys.readouterr().out.splitlines()
     head = call("rev-parse", "HEAD")
     assert lines[-2:] == ["gate 1.0.0: passed", f"release: tagged v1.1.0 at {head}"]
     assert call("show", "-s", "--format=%s", "HEAD") == "release: 1.1.0"
@@ -87,12 +89,13 @@ def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch):
         {"signal": "release", "version": "1.1.0", "tag": "v1.1.0", "commit": head},
     ]
     assert uv_calls == [["uv", "version", "--bump", "minor", "--dry-run", "--short"], ["uv", "version", "--bump", "minor"]]
-    assert asyncio.run(roadmap.ship(c))[-1] == "gate 1.1.0: failed"
+    assert cli.main(["release", "ship"], cwd=c.repo, env=c.env, clock=clock) == 1
+    assert capsys.readouterr().out.splitlines()[-1] == "gate 1.1.0: failed"
     assert call("rev-parse", "HEAD") == head and call("tag", "--list") == "v1.1.0"
     dirty, dirty_call = repository(tmp_path / "dirty", True)
     before = dirty_call("rev-parse", "HEAD")
     (dirty.repo / "tracked").write_text("changed")
-    with pytest.raises(Refusal, match="uncommitted tracked files"):
-        asyncio.run(roadmap.ship(dirty))
+    assert cli.main(["release", "ship"], cwd=dirty.repo, env=dirty.env, clock=clock) == 2
+    assert "uncommitted tracked files" in capsys.readouterr().err
     assert dirty_call("rev-parse", "HEAD") == before and dirty_call("tag", "--list") == ""
     assert [e.body["signal"] for e in dirty.journal.read()] == ["roadmap_gate"]

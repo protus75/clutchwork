@@ -4,8 +4,8 @@
 # purpose: Checks the drain-loop prompt delegates Recommendation-driven verdicts, keeps hard limits (no push, no --extension) and limits Suggestion Box triage per tick
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 38957300
-# hash: 3f64d8eefb94544c436a0540ad03a6d10d11891fa8537b519b37a70f5179053d
+# verified: 18f3cf87
+# hash: cb76d91e77abb1a8094cee6e103ad5562cf5bac0c9be0dc0cca3b5d3ae137a2c
 import pytest
 
 from clutch import ask
@@ -35,7 +35,6 @@ def test_prompt_delegates_recommendations(tmp_path):
         "clutch engine drain --detach",
         "actor: operator",
         "--unattended",
-        "release.publish",
         "rework.md",
         "standing delegation",
         "## Goal / Why",
@@ -55,7 +54,6 @@ def test_prompt_keeps_hard_limits(tmp_path):
         "ticket_changed",
         "docs/roadmap.md",
         "Still open:",
-        "merged nothing and authored nothing",
         "no `docs/roadmap.md`",
     ):
         assert phrase in text, f"Omitting {phrase} differs"

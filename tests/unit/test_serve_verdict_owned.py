@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit test checking that Serve.verdicts marks restart recovery as owned while verdicts settle, and releases it on both success and failure
+# purpose: Unit test checking that Serve.verdicts marks restart recovery as owned while it settles admission verdicts, and releases ownership on both success and failure
 # relates: [clutch/__main__.py, clutch/runner.py, clutch/serve.py, tests/unit/test_serve_idle_poll.py]
 # owner: engine
-# verified: 10f08d74
-# hash: 6cc56f140b40646536a40344ba8ff72e71b55d2453ebb6411d226f3714da5cc8
+# verified: 18f3cf87
+# hash: f662c9f7063d868810289d7bf9236b217f7dab32cee49d3b6fa567b16d0c3e3e
 
 import asyncio
 from types import SimpleNamespace
@@ -29,7 +29,6 @@ async def test_verdict_ownership_clears(monkeypatch, tmp_path, raises):
     core.admission.occupied.return_value = False
     core.control.projection.kill_requested = False
     monkeypatch.setattr(cli, "build_daemon_core", lambda *a, **k: core)
-    monkeypatch.setattr(cli, "build_driver", MagicMock())
     monkeypatch.setattr(cli, "build_notifications", MagicMock())
     monkeypatch.setattr(serve, "engine_log", MagicMock())
     monkeypatch.setattr(serve.Redactor, "from_config", MagicMock())

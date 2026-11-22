@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test git main write
+# purpose: Checks Git.main_write is a per-instance lock that serializes squash merges, roadmap row writes and the dirty-checkout overlap check
 # relates: [clutch/git.py, clutch/merge.py, clutch/roadmap.py, tests/unit/test_roadmap_table.py]
 # owner: engine
-# verified: 407dfd0f
-# hash: c98ab00c810c2809cae3f63938cdb0398650716986114e5e3ab00ff732f3bbae
+# verified: 18f3cf87
+# hash: 590efc2dd08b63fb4b2d88a89a9a8bede5ed10ae26f24c7ffb06a894e16d3c59
 import asyncio
 from types import SimpleNamespace as NS
 
@@ -69,10 +69,9 @@ def test_waiting_callers(tmp_path, monkeypatch):
         calls = [
             lambda: git.merge_squash(tmp_path, "branch", "message"),
             lambda: roadmap._write_row(checkout, selected, lambda text, fresh: text.replace("Before.", "After."), "edit", "message", []),
-            lambda: roadmap.ship(checkout),
             lambda: merge.dirty_overlap(NS(repo=tmp_path, git=git), "branch"),
         ]
-        expected = [[["merge", "--squash", "branch"], ["commit", "-m", "message"], ["rev-parse", "--verify", "HEAD"]], ["commit"], ["gate"], ["status", "diff"]]
+        expected = [[["merge", "--squash", "branch"], ["commit", "-m", "message"], ["rev-parse", "--verify", "HEAD"]], ["commit"], ["status", "diff"]]
         for call, want in zip(calls, expected, strict=True):
             events.clear()
             async with git.main_write():
@@ -128,27 +127,5 @@ def test_overlapping_pairs(tmp_path, monkeypatch):
         release.set()
         await asyncio.wait_for(asyncio.gather(first, second), 1)
         assert events == ["commit-start", "commit-end", "status", "diff"]
-
-        events.clear()
-        entered.clear()
-        release.clear()
-
-        async def gate(*args):
-            events.append("gate-start")
-            entered.set()
-            await release.wait()
-            events.append("gate-end")
-            return False, []
-
-        monkeypatch.setattr(roadmap, "current_release", lambda repo: "1.0.0")
-        monkeypatch.setattr(roadmap, "run_gate", gate)
-        first = asyncio.create_task(roadmap.ship(checkout))
-        await asyncio.wait_for(entered.wait(), 1)
-        second = asyncio.create_task(git.merge_squash(tmp_path, "branch", "message"))
-        await asyncio.sleep(0)
-        assert events == ["gate-start"]
-        release.set()
-        await asyncio.wait_for(asyncio.gather(first, second), 1)
-        assert events == ["gate-start", "gate-end", ["merge", "--squash", "branch"], ["commit", "-m", "message"], ["rev-parse", "--verify", "HEAD"]]
 
     asyncio.run(check())

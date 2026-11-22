@@ -5,8 +5,8 @@
 # purpose: Unit tests that serve contains a ticket's dispatch exception as an infra_error terminal while other tickets complete, but lets stop, cancellation and consumer failures propagate
 # relates: [clutch/__main__.py, clutch/daemon.py, clutch/journal.py, clutch/runner.py, clutch/scheduler.py, clutch/serve.py, tests/fakes.py, tests/git_fake.py]
 # owner: engine
-# verified: 33066275
-# hash: b79ef8f6e3ba8229f7aa205586d794b8034e5f66c81e5a9ef51c69ea59791d4c
+# verified: 18f3cf87
+# hash: 4300153ba9e10c7d658c3921be6d84734f0ce8cc3c5a859177910e0877b3475e
 
 import asyncio
 from types import SimpleNamespace
@@ -40,7 +40,6 @@ async def rig(monkeypatch, tmp_path):
         return core
 
     monkeypatch.setattr(cli, "build_daemon_core", build)
-    monkeypatch.setattr(cli, "build_driver", MagicMock())
     monkeypatch.setattr(cli, "build_notifications", MagicMock())
     log = MagicMock()
     monkeypatch.setattr(serve, "engine_log", lambda *args: log)

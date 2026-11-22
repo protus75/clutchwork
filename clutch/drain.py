@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
-from clutch import caps, control, roadmap, runner, triage
+from clutch import caps, control, runner, triage
 from clutch.box import BOX_DIR, Box, Message
 from clutch.calibration import calibrate_when_due
 from clutch.control import ControlRequest
@@ -366,7 +366,6 @@ async def drain(
         if signals is not None:
             restore = signals(run._signal_kill)
         run.retro = getattr(dispatch, "_retro", None)
-        run.driver = getattr(dispatch, "_driver", None)
         report = await run.run()
         # A pending self-upgrade is still an offer boundary, never permission to
         # launch a child after a kill accepted during the final preparation.
@@ -432,9 +431,6 @@ async def settle_admissions(checkout):
 
 class _Drain:
     last_dispatched: str | None = None
-    driver = None
-    driver_task = None
-    driven = None
 
     def _signal_kill(self) -> None:
         control.publish_request(self.c.config.state_dir, ControlRequest(uuid4().hex, self.c.control.inbox.lifecycle_id, "kill", None), self.c.fs)
@@ -455,18 +451,7 @@ class _Drain:
         self.retro_terminal_count: int | None = None
 
     async def run(self) -> Report:
-        try:
-            return await self._run()
-        finally:
-            if self.driver_task is not None:
-                prior = sys.exception()
-                try:
-                    await self._await_controlled(self.driver_task, self._abort_driver, self.c.sleep)
-                except BaseException:
-                    if prior is None:
-                        raise
-                finally:
-                    self.driver_task = None
+        return await self._run()
 
     async def _run(self) -> Report:
         while True:
@@ -492,14 +477,6 @@ class _Drain:
                     self.served_retro_id = request_id
                 else:
                     await self._run_retro(forced=False)
-            if self.driver_task is not None and self.driver_task.done():
-                task, self.driver_task = self.driver_task, None
-                task.result()
-            if self.driver_task is None and self.driver is not None and (self.c.repo / roadmap.ROADMAP).is_file() and await self._between_tickets():
-                count = roadmap.settles(self.c.journal.read())
-                if count != self.driven:
-                    self.driven = count
-                    await self._run_driver()
             if await self._between_tickets():
 
                 async def make_ctx():
@@ -540,11 +517,6 @@ class _Drain:
             pick, reoffer = self._select(scan, events, last, held)
             if pick is None:
                 if self.retro is not None and self.c.control.projection.retro_id is not None and self.c.control.projection.retro_id != self.served_retro_id and await self._between_tickets():
-                    continue
-                if self.driver_task is not None:
-                    await self._await_controlled(self.driver_task, self._abort_driver, self.c.sleep)
-                    continue
-                if self.driver is not None and (self.c.repo / roadmap.ROADMAP).is_file() and await self._between_tickets() and roadmap.settles(self.c.journal.read()) != self.driven:
                     continue
                 if self.provider_deadlines:
                     now = self.c.clock()
@@ -722,13 +694,6 @@ class _Drain:
                 changed = await self.c.git.diff_names(self.c.repo, f"{commit}^", commit)
                 if self.c.repo.resolve() == ENGINE and any(p.startswith(UPGRADE_PREFIXES) for p in changed):
                     self.upgrade = (stem, commit)
-
-    async def _run_driver(self):
-        log = engine_log(self.c.config, Redactor.from_config(self.c.config, self.c.env), self.c.clock)
-        self.driver_task = asyncio.create_task(self.driver(self.c, log))
-
-    async def _abort_driver(self):
-        pass
 
     async def _run_retro(self, *, forced):
         count = sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in self.c.journal.read())

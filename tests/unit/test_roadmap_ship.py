@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verifies the roadmap ship steps (gate, publishable check, release bump, journal, publish) and the release publishable and journal helpers
+# purpose: Verifies the release publishable check (token, dirty tree, publish off) matches publish's refusal and that journal_release writes the release signal
 # relates: [clutch/journal.py, clutch/release.py, clutch/roadmap.py, clutch/runner.py, tests/fakes.py]
 # owner: engine
-# verified: df236100
-# hash: 971bd619b6588d3f51956efce4746b6009442286109d87798f4f2d88ff775cdb
+# verified: 18f3cf87
+# hash: d619ab34536a95d71757ebd214a562829ed843d442861c275d863b8388d5b72a
 import asyncio
 from datetime import datetime
 from types import SimpleNamespace as NS
@@ -17,66 +17,6 @@ from clutch.journal import EventType
 from clutch.runner import Refusal
 from tests.fakes import FakeJournal
 from tests.git_fake import GitFake
-
-
-def test_ship_steps(tmp_path, monkeypatch):
-    calls = []
-    c = NS(
-        repo=tmp_path,
-        git=GitFake(main_write=asyncio.Lock),
-        env={"a": "b"},
-        config=NS(release=NS(publish=False, packages=[])),
-        exec_=object(),
-        fs=object(),
-        journal=object(),
-        clock=lambda: datetime(2026, 1, 2),
-    )
-    passed = [False]
-    blocked = [False]
-
-    async def gate(checkout, current):
-        calls.append(("gate", checkout, current))
-        return passed[0], ["gate line"]
-
-    async def publishable(*args):
-        calls.append(("publishable", *args))
-        if blocked[0]:
-            raise Refusal("blocked", "fix")
-
-    async def bump(*args):
-        calls.append(("release", *args))
-        return "1.1.0", "sha"
-
-    def journal(*args):
-        calls.append(("journal", *args))
-
-    async def publish(*args):
-        calls.append(("publish", *args))
-        return "1.1.0", [], True
-
-    monkeypatch.setattr(roadmap, "run_gate", gate)
-    monkeypatch.setattr(roadmap, "child_env", lambda *args: {"safe": "env"})
-    monkeypatch.setattr(release, "publishable", publishable)
-    monkeypatch.setattr(release, "release", bump)
-    monkeypatch.setattr(release, "journal_release", journal)
-    monkeypatch.setattr(release, "publish", publish)
-    assert asyncio.run(roadmap.ship(c)) == [] and calls == []
-    (tmp_path / "pyproject.toml").write_text('[project]\nversion="1.0.0"')
-    assert asyncio.run(roadmap.ship(c)) == ["gate line"]
-    assert calls == [("gate", c, "1.0.0")]
-    calls.clear()
-    passed[0] = True
-    assert asyncio.run(roadmap.ship(c)) == ["gate line", "release: tagged v1.1.0 at sha"]
-    assert calls == [("gate", c, "1.0.0"), ("release", c.repo, c.git, c.exec_, c.fs, {"safe": "env"}, "minor", "2026-01-02"), ("journal", c.journal, "1.1.0", "sha")]
-    calls.clear()
-    c.config.release.publish = True
-    assert asyncio.run(roadmap.ship(c))[-1] == "publish: uploaded 1.1.0 to PyPI"
-    assert [x[0] for x in calls] == ["gate", "publishable", "release", "journal", "publish"]
-    calls.clear()
-    blocked[0] = True
-    with pytest.raises(Refusal, match="blocked"):
-        asyncio.run(roadmap.ship(c))
-    assert [x[0] for x in calls] == ["gate", "publishable"]
 
 
 def test_release_helpers(tmp_path):

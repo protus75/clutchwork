@@ -4,8 +4,8 @@ kind: guide
 purpose: Host-facing contract covering install, a copyable config.yaml with its full field inventory, Python host test setup, onboarding, managed conduct, check and seam interfaces, instance custody, the report-inbox format and cutover
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: 2182d51e
-hash: 5c0c478c59189eefce8e21dd5c1c99230a170bb803a0b1722230581b82cf1c9d
+verified: 18f3cf87
+hash: 37575e0ba8e6c122cc96c8dcdb5f223b42dba371db3df8485dd5ccf5ff9661ab
 -->
 # Host contract
 
@@ -301,7 +301,7 @@ diagnosis. Providers, routing, route candidates, argv and strategy paths are
 nonempty lists where declared. Retro uses nested `merges`, `settled`, and `spikes` blocks, each with an `enabled` switch; their thresholds are `every`, `every`, and `count`. `spikes.kinds` is a nonempty allowlist with each kind listed once. Override is measured and reported when a retro runs, but cannot make a retro due. If all triggers are disabled, set `retro.enabled: false` or enable a trigger. The master switch disables automatic retros without blocking a forced retro. Notify requires a nonblank executable and
 NUL-free strings.
 
-`ship` runs each configured package after the tag and names the paths kept by the run.
+`release ship` runs each configured package after the tag and names the paths kept by the run.
 
 `release.pypi_token` names an environment variable, never a literal token; it is removed from every child and redacted like provider `auth`, and only the `clutch release publish` upload receives its value. `release.publish: true` is the owner's standing authorization to upload.
 

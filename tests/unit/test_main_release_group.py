@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test main release group
+# purpose: Checks the release command group parses bump, publish and ship, refuses the old top-level publish and flag forms, and names the group in refusals
 # relates: [clutch/__main__.py]
 # owner: clutch/__main__.py
-# verified: 0a308920
-# hash: 39c2692db99dbb37bfdd139675dd74cf8b8f65df42157c81364ad5194083fd92
+# verified: 18f3cf87
+# hash: b2c9d4e090bac1e65240fc6f7a4a71401f81f8a8a59ec847506a416feb2af4ba
 import argparse
 
 import pytest
@@ -30,7 +30,7 @@ def test_old_names_refuse():
     top = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
     group = next(a for a in top.choices["release"]._actions if isinstance(a, argparse._SubParsersAction))
     assert "publish" not in top.choices
-    assert set(group.choices) == {"bump", "publish"}
+    assert set(group.choices) == {"bump", "publish", "ship"}
     for argv in (["publish"], ["release", "--minor"], ["release", "--patch"]):
         with pytest.raises(SystemExit) as exc:
             parser.parse_args(argv)

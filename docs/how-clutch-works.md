@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 2182d51e
-hash: a53239e8a195e06dafc5f5c6382b5753b8e444e8b6ed9723d6506fdfa4980fde
+verified: 18f3cf87
+hash: ea26234b3b77a509ca473cc1ba494041ef9f5e65aafce5c644fb6216339cfffb
 -->
 # How ClutchWork works
 
@@ -96,6 +96,7 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `roadmap author [--ahead N]` | yes | Refuses a dirty roadmap, strikes merged rows and links existing tickets in individual commits, then files ready rows in release order: the current release (the `pyproject.toml` version as `<major>.<minor>.0`) first, then rows that earlier releases left unfinished, then later releases, until N rows are open (default 2). Settles recorded author verdicts through triage without a triage model call and links authored tickets with `clutch(roadmap): author <stem>` commits. Reports hand-test and bug-evidence waits. |
 | `box triage [id ...]` | try | One sequential pass over named pending messages, or all pending messages; submits to a running engine for its next idle point (section 9.2). |
 | `release bump --minor\|--patch` | yes | Takes the writer lock; refuses dirty `pyproject.toml`, `uv.lock`, or `CHANGELOG.md`; previews the next version with uv and refuses an existing `v<version>` tag before writing; bumps with uv, writes a new `CHANGELOG.md` section, commits all three files as `release: <version>`, and creates an annotated tag on the returned commit sha, then journals a `release` signal. Prints `release: tagged v<version> at <commit sha>` and exits 0; publishes nothing. |
+| `release ship` | yes | Gates the current release, bumps and tags it, journals the release, optionally publishes, and runs configured packages. |
 | `release publish` | yes | Takes the writer lock, checks the tracked tree is clean and the version tag is at HEAD, builds into `state_dir/dist`, and lists artifacts; uploads only with `release.publish: true` and never bumps. |
 | `box dismiss <id> ...` | yes | Dismiss named messages without a model call. |
 | `prompt host <name> [stem]` | no | Render a host-owned prompt. |
@@ -131,7 +132,7 @@ A unit test file may share its name with an integration test file.
 | `vscode` | bumps the patch version in `vscode-clutchwork/package.json` (VS Code keeps an extension's old icon until its version changes), packages it with `npx @vscode/vsce`, and installs it with `code --install-extension --force`; reload the window to load it |
 
 To release the extension, bump `version` in `vscode-clutchwork/package.json`.
-`ship` runs `./dev.py vscode-package` after tagging; it stamps `Built for` only in the VSIX and restores the README. An existing `dist/vscode-clutchwork-<version>.vsix` is kept without rebuilding, so bump `version` in `vscode-clutchwork/package.json` before ship to keep a new file. Upload the VSIX manually on the [chunkydragon management page](https://marketplace.visualstudio.com/manage/publishers/chunkydragon).
+`release ship` runs `./dev.py vscode-package` after tagging; it stamps `Built for` only in the VSIX and restores the README. An existing `dist/vscode-clutchwork-<version>.vsix` is kept without rebuilding, so bump `version` in `vscode-clutchwork/package.json` before ship to keep a new file. Upload the VSIX manually on the [chunkydragon management page](https://marketplace.visualstudio.com/manage/publishers/chunkydragon).
 Under WSL, paste the printed Windows path into the upload dialog.
 Choose New extension for the first release and the extension's Update action for subsequent releases.
 The Marketplace refuses a version it already holds.
@@ -508,7 +509,7 @@ A dispatch exception is journaled as an `infra_error` terminal, re-offered, and 
 ### 7.1 `drain`
 
 1. Takes the lock, reconciles, fires due timers, runs the provider preflight, runs intake once.
-2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, run the roadmap driver after a settle (section 7.5), calibrate estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1), scan committed tickets (skipping stems settled or rejected in the journal), pick the
+2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, calibrate estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1), scan committed tickets (skipping stems settled or rejected in the journal), pick the
    next ticket, review its committed content if it lacks an approval, run it, merge it inline. Serve applies the same review before Implement and holds a premise-parked ticket until its committed content changes.
 3. **Pick order:** confirmed, unsettled, not rejected, every dependency settled (through split
    successors); among eligible fresh tickets and re-offers, `## Runs before` orders named stems
@@ -554,7 +555,6 @@ Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
 
 Requested retros and automatic retros due after a ticket settles stop new admission, wait for
 the next idle point, run, and then resume admission. A pending stop takes precedence.
-With `docs/roadmap.md` present, the roadmap driver (section 7.5) runs in the background beside tickets at start and after each settle, without holding admission. Retro still holds new admission and waits for any running pass.
 
 At each idle dispatch point, after supervising held stems, serve calibrates estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1).
 
@@ -625,15 +625,13 @@ kill stops the engine at the next safe point. Stop admits no new ticket, lets wo
   cost). It notifies on both.
 - **Notifications:** sent by running `config.notify` (an argv) with the message. `serve` replays
   undelivered escalations (storm trips, red streaks, tree mismatches) from the journal. Unset
-  `notify` only logs. The roadmap driver sends a digest after every settle (section 7.5).
+  `notify` only logs.
 - **Checkpoint push:** in `serve`, idle, after 5 merges or 10 settled tickets (merged, already satisfied, or rejected) since the last push: `git push origin main`. A
   failed push is journaled and filed to the Suggestion Box.
 
-### 7.5 Roadmap driver
+### 7.5 Roadmap operation
 
-With `docs/roadmap.md` present, drain and serve start the driver at start and after settles in the background beside the next ticket (serve after every settle). `run` never does. It checks release `start` blocks before readying rows, as does `roadmap status`. It authors ahead two rows, then runs the release gate for the boundary derived from the `pyproject.toml` version as `<major>.<minor>.0`. A passing gate releases, publishes only with `release.publish: true`, then runs configured packages and reports newly kept paths. Every gate block ends with `roadmap accept <release>` (section 2.1), so a release ships only when the acceptance review finds no partial or unmet promise; the driver authors the rows it appends like any other row.
-
-Finally, the digest lists the settle count, merged stems since the previous digest, Reject-queue stems and reasons, roadmap status and next rows, author and release lines, and spend. Its effect key is `notify/roadmap/digest/<n>`; unset `notify` sends nothing. The `roadmap_drive` engine-log event records the lines. A refusal becomes a digest line; any other error stops the engine. The Reject-queue supervisor runs inside `runner.drive` and merge-route `TicketWriter.consume_result`, and at the serve idle point and between drain tickets (section 6.6).
+The plan-ticket agent authors rows using `clutch roadmap author` and runs `clutch roadmap gate` after the queue drains. Once the release rows merge and the gate passes, it reports readiness to the owner. The owner runs `clutch release ship`, which gates the current release, bumps and tags it, publishes when configured, and runs packages. Serve and drain do not run these steps.
 
 The supervising agent loop is printed by `clutch prompt drain-loop`. It releases Reject-queue stems and drafts by executing `clutch prompt diagnose` or `clutch prompt drafts` Recommendations with `clutch ticket confirm --yes` or `clutch ticket reject --yes`. It files cause fixes with `clutch box suggest` and never authors a ticket itself. It triages Suggestion Box messages pending when its tick starts, including during a drain, and dismisses them between drains, each at most once per tick, by executing a `clutch prompt box` Recommendation; triage's verdict is final. Running the prompt is the owner's delegation of those verdicts. They are journaled with `actor: operator`, so `roadmap merged --unattended` does not count those stems.
 
@@ -874,7 +872,7 @@ with the fix. The full field inventory is in `clutch/docs/host-contract.md`. Thi
 | `schema_version`, `state_dir`, `worktree_root` | config version; where state and worktrees live |
 | `providers`, `routing`, `routing_default_tier` (default `medium`) | models and which serves what (section 8); every `kind: cli` provider requires `package`, the pnpm package preflight reads |
 | `snapshot_merged_limit` | Merged rows included by `view snapshot` (default 100), unless `--all-merged` is passed. |
-| `roadmap.ahead` | Roadmap tickets the driver keeps authored ahead (default 2), the default for `roadmap author --ahead`, and the queue size below which the driver runs the release gate: with that many or more confirmed tickets unsettled, the gate waits. |
+| `roadmap.ahead` | Default window for `roadmap author --ahead` (default 2). |
 | `evidence.warn_gb` | Evidence blob size warning threshold in GB; defaults to 20. |
 | `meta.paths` | Roots and kinds for file metadata; defaults to an empty list. |
 | `training_data` | Experimental training switch (off by default) and additional exclusion globs. |

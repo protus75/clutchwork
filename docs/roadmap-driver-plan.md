@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Roadmap driver: plan
+purpose: Design plan for running docs/roadmap.md unattended: supervisor Rework keeps, roadmap_row authoring, release gates as commands and release/publish; since 2026-11-22 the loop is an agent using clutch verbs, not engine idle steps
 relates: [clutch/author.py, clutch/caps.py, clutch/release.py, clutch/rework.py, clutch/runner.py, clutch/serve.py, clutch/status.py, tests/integration/test_ladder.py]
 owner: engine
-verified: d7719818
-hash: 5909036ef15a570e7f6cc98ce4185db7765c59f0b3f8ef68aded2d0645de551a
+verified: 18f3cf87
+hash: 562c35bac5b1ebac73518389076bb2519b4310c7daa5d3b4935fad696bbce4a3
 -->
 # Roadmap driver: plan
 
@@ -89,6 +89,8 @@ Runs in the shared terminal handling used by `runner.drive` (after Diagnosis) an
 - **Authorization.** Publishing is a remote mutation. `release.publish: true` in config is the owner's standing "push"; with it absent or false, the driver tags and bumps locally and does not publish. The conduct rule for chat sessions ("never push unless the user says push this turn") is untouched: the engine acts on config, sessions act on words.
 
 ### 6. The loop (`driver-loop`)
+
+**Decision 2026-11-22:** The loop is an agent using clutch verbs; the engine runs none of steps 2–4 below. The following remains as history.
 
 At serve's idle point after each settle, in this order:
 

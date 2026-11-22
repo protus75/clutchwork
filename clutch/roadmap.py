@@ -7,18 +7,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import get_args
 
-from clutch import release as release_module
 from clutch.author import ticket_state
 from clutch.box import BOX_DIR, Box, RereportJournal, RoadmapRow, Verdict, parse_record, record_path
-from clutch.effects import Effects
 from clutch.git import GitError
-from clutch.journal import TERMINAL_STATES, EventType
-from clutch.notify import notification_key, send
+from clutch.journal import EventType
 from clutch.providers import child_env
 from clutch.runner import SPECS_DIR, Refusal
-from clutch.seams import ExecutableNotFound, NotificationFailed
+from clutch.seams import ExecutableNotFound
 from clutch.specs import load_spec
-from clutch.status import CLOSED, SETTLED, last_states, project, reject_queue
+from clutch.status import SETTLED, last_states
 from clutch.tickets import INTAKE_SIGNAL, Frontmatter, stem_findings, ticket_path
 
 ROADMAP = "docs/roadmap.md"
@@ -388,36 +385,6 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
     box = Box(checkout.config.state_dir / BOX_DIR, checkout.fs, rereport=RereportJournal(checkout.journal))
     filed = []
 
-    rejected = [row for row in rows if not row.struck and states.get(row.stem) == "rejected"]
-    reasons = {}
-    for row in rejected:
-        if release_name(row.release) in held:
-            continue
-        if opened + len(reasons) >= ahead:
-            break
-        try:
-            dependencies = depends_on(row, rows)
-        except ValueError as exc:
-            lines.append(f"roadmap: row {row.number} {row.stem} waits: {exc} -- correct the Depends on cell")
-            continue
-        dependency = unfinished_dependency(dependencies, rows, choice.strike, states)
-        if dependency is not None:
-            lines.append(f"roadmap: row {row.number} {row.stem} waits: {dependency} is not done -- wait for it to merge or edit the Depends on cell")
-            continue
-        messages = row_messages(box, row)
-        count = refile_count(messages)
-        reason = rejection_reason(events, row.stem)
-        if count >= checkout.config.caps.supervise:
-            lines.append(f"roadmap: row {row.number} {row.stem} re-files spent: {reason}")
-            continue
-        stem = fresh_stem(row.stem, taken)
-        updated = await _write_row(checkout, row, lambda text, fresh: refile_row(text, fresh, stem), "refile", f"clutch(roadmap): refile {row.stem} as {stem}", lines)
-        if updated is None:
-            continue
-        taken.add(stem)
-        text = updated
-        new_row = next(r for r in parse(text) if r.number == row.number)
-        reasons[new_row.number] = reason
     ready_numbers = []
     for row in choice.ready:
         if row.stem in named and not states.get(row.stem):
@@ -429,13 +396,13 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
             taken.add(stem)
         ready_numbers.append(row.number)
     rows = parse(text)
-    candidates = [r for r in rows if r.number in reasons] + [next(r for r in rows if r.number == number) for number in ready_numbers]
+    candidates = [next(r for r in rows if r.number == number) for number in ready_numbers]
     for row in candidates:
         if opened + len(filed) >= ahead:
             break
         messages = row_messages(box, row)
         count = refile_count(messages)
-        reason = reasons.get(row.number)
+        reason = None
         latest = messages[-1] if messages else None
         if reason is None and latest and latest.resolution is not None and latest.resolution.kind == "declined":
             reason = decline_reason(repo, latest)
@@ -456,7 +423,7 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
         )
         summary = f"Roadmap row {row.number} `{row.stem}`: {row.content}"
         if reason is not None:
-            if row.number not in reasons and latest is not None:
+            if latest is not None:
                 summary = latest.summary
             summary += (f" {reason}" if reason else "") + f" [re-file {count + 1}]"
         elif latest and refile_count([latest]):
@@ -485,7 +452,10 @@ async def author_ahead(checkout, ahead, author_messages) -> list[str]:
             lines.append(f"roadmap: row {row.number} {row.stem} declined -> {message.resolution.link}")
         else:
             lines.append(f"roadmap: row {row.number} {row.stem} pending -- run clutch roadmap author again")
-    lines.extend(f"roadmap: row {wait.row.number} {wait.row.stem} waits: {wait.reason} -- {wait.road}" for wait in choice.waits if wait.row not in rejected)
+    lines.extend(
+        f"roadmap: row {wait.row.number} {wait.row.stem} waits: {rejection_reason(events, wait.row.stem) if states.get(wait.row.stem) == 'rejected' else wait.reason} -- {wait.road}"
+        for wait in choice.waits
+    )
     lines.append(f"roadmap: {opened} of {ahead} rows open")
     return lines
 
@@ -543,7 +513,9 @@ async def status(checkout) -> list[str]:
             gate = f"passed {event.ts}" if event.body["passed"] else f"failed {event.ts}: {event.body['failed']}"
         lines.append(f"release {release}: {merged_count} merged, {authored} authored, {ready} ready, {blocked} blocked; gate {gate}")
     lines.append("next: " + (", ".join(row.stem for row in choice.ready if row not in declined) or "none"))
-    lines.extend(f"waits: row {wait.row.number} {wait.row.stem}: {wait.reason} -- {wait.road}" for wait in choice.waits)
+    lines.extend(
+        f"waits: row {wait.row.number} {wait.row.stem}: {rejection_reason(events, wait.row.stem) if states.get(wait.row.stem) == 'rejected' else wait.reason} -- {wait.road}" for wait in choice.waits
+    )
     for row in rows:
         messages = messages_by_row[row]
         if row.struck or not messages or any(wait.row == row for wait in choice.waits):
@@ -744,77 +716,3 @@ async def merged(checkout, stems, *, release=None, priorities=(), since=None, at
             spent = {event.ticket for event in events if event.type == EventType.STATE_TRANSITION and event.ticket in overlapping and event.body.get("reason") == "merge_conflict_rerun_spent"}
             lines.extend(f"roadmap merged: {stem} hit merge_conflict_rerun_spent" for stem in sorted(spent))
     return (False, lines) if lines else (True, ["roadmap merged: ok"])
-
-
-async def ship(checkout) -> list[str]:
-    async with checkout.git.main_write():
-        current = current_release(checkout.repo)
-        if current is None:
-            return []
-        passed, lines = await run_gate(checkout, current)
-        if not passed:
-            return lines
-        if checkout.config.release.publish:
-            await release_module.publishable(checkout.repo, checkout.git, checkout.env, checkout.config)
-        version, sha = await release_module.release(checkout.repo, checkout.git, checkout.exec_, checkout.fs, child_env(checkout.env, checkout.config), "minor", checkout.clock().date().isoformat())
-        release_module.journal_release(checkout.journal, version, sha)
-        lines.append(f"release: tagged v{version} at {sha}")
-        if checkout.config.release.publish:
-            version, _, _ = await release_module.publish(checkout.repo, checkout.git, checkout.exec_, checkout.fs, checkout.env, checkout.config)
-            lines.append(f"publish: uploaded {version} to PyPI")
-        lines.extend(await release_module.run_packages(checkout.repo, checkout.exec_, checkout.fs, checkout.env, checkout.config))
-        return lines
-
-
-def settles(events) -> int:
-    return sum(e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES for e in events)
-
-
-def unsettled(checkout) -> list[str]:
-    """Confirmed tickets that have neither merged nor been retired."""
-    root = checkout.repo / "tickets"
-    if not root.is_dir():
-        return []
-    states = last_states(checkout.journal.read())
-    return sorted(path.parent.name for path in root.glob("*/ticket.md") if ticket_state(path.read_text()) == "confirmed" and states.get(path.parent.name) not in CLOSED)
-
-
-async def ship_when_queue_low(checkout) -> list[str]:
-    # The gate can only pass once the queue is done, and it holds up dispatch while it runs (driver plan section 6).
-    waiting = unsettled(checkout)
-    ahead = checkout.config.roadmap.ahead
-    if len(waiting) >= ahead:
-        return [f"gate: waits until fewer than {ahead} confirmed tickets are unsettled ({len(waiting)} now)"]
-    return await ship(checkout)
-
-
-async def drive(checkout, *, author_messages, notifications, log) -> list[str]:
-    if not (checkout.repo / ROADMAP).is_file():
-        return []
-    lines = []
-    for action in (lambda: author_ahead(checkout, checkout.config.roadmap.ahead, author_messages), lambda: ship_when_queue_low(checkout)):
-        try:
-            lines.extend(await action())
-        except Refusal as exc:
-            lines.append(f"roadmap: {exc}")
-    events = checkout.journal.read()
-    terminals = [e for e in events if e.type == EventType.STATE_TRANSITION and e.body.get("to") in TERMINAL_STATES]
-    n = len(terminals)
-    prefix = "notify/roadmap/digest/"
-    prior = max((int(e.key[len(prefix) :]) for e in events if e.type == EventType.EFFECT_INTENT and e.key and e.key.startswith(prefix) and e.key[len(prefix) :].isdigit()), default=n - 1)
-    merged = [e.ticket for e in terminals[prior:n] if e.body.get("to") == "merged"]
-    held = reject_queue(events)
-    digest = [f"roadmap digest {n}", "merged: " + (", ".join(merged) or "none"), "held: " + ("; ".join(f"{stem} ({held[stem].get('reason', '')})" for stem in sorted(held)) or "none")]
-    try:
-        digest.extend(await status(checkout))
-    except Refusal as exc:
-        digest.append(f"roadmap: {exc}")
-    digest.extend(lines)
-    digest.append(f"spend: ${project(events).spend_usd:.2f}")
-    if checkout.config.notify is not None:
-        try:
-            await send(Effects(checkout.journal), notifications, checkout.config.notify, owner="roadmap", escalation="digest", identity=str(n), message="\n".join(digest), ticket=None)
-        except NotificationFailed as exc:
-            log.event("notify_failed", key=notification_key("roadmap", "digest", str(n)), error=str(exc))
-    log.event("roadmap_drive", lines=digest)
-    return digest

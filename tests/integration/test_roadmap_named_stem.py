@@ -4,8 +4,8 @@
 # purpose: Tests that roadmap authoring renames a row whose stem is already used, gives it a fresh -rN stem and updates the rows that depend on it
 # relates: [clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: ae1a5a3b
-# hash: 450dab1f708a944c1ad9531968e5d3fdccf22a7fa848900d97c404f325ac7cc8
+# verified: 18f3cf87
+# hash: 44bea68ed1d3211b7d5e075216f99bf9f3685bad11f26a5211fb637ecfafcd0a
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -56,22 +56,6 @@ def test_unused_stem_is_unchanged(tmp_path):
     assert path.read_text() == before
     assert received == ["x"]
     assert run(git._run(tmp_path, "log", "-1", "--format=%s")).strip() == "initial"
-
-
-def test_rejected_stem_skips_journal_collision(tmp_path):
-    git, checkout, box, path = setup_repo(tmp_path, "none")
-    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="x")
-    checkout.journal.append(EventType.SIGNAL, {"signal": "diagnosis"}, ticket="x-r1")
-    received = []
-
-    async def author(ids):
-        received.extend(box.get(id).roadmap_row.stem for id in ids)
-
-    run(roadmap.author_ahead(checkout, 1, author))
-    rows = roadmap.parse(path.read_text())
-    assert rows[0].stem == "x-r2"
-    assert rows[1].depends == "`x-r2`"
-    assert received == ["x-r2"]
 
 
 def setup_repo(tmp_path, collision):

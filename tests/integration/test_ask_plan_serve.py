@@ -4,8 +4,8 @@
 # purpose: Checks the plan-ticket-serve prompt uses serve instead of drain, shares drain's limits, and is listed in the run guide and how-clutch-works
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 38957300
-# hash: 3b373d8b694847983a00ac1fd4944bbd07f36f030c681235381ff97d8cc22313
+# verified: 18f3cf87
+# hash: 30159213f5b6a4790fb921c5230dde69e4b567a2f11b94c6efcb13808848e583
 from pathlib import Path
 
 import pytest
@@ -22,7 +22,7 @@ def test_serve_prompt_and_docs(tmp_path):
     config = load_config(None, cwd=tmp_path)
     serve = ask.render("plan-ticket-serve", "", config, tmp_path)
     drain = ask.render("plan-ticket-drain", "", config, tmp_path)
-    for phrase in ("Never push; publishing happens only through the driver", "at most 3 roadmap tickets confirmed and unrun", "read the host's agent conduct files"):
+    for phrase in ("Never push; publishing happens only through `clutch release publish`", "at most 3 roadmap tickets confirmed and unrun", "read the host's agent conduct files"):
         assert phrase in serve and phrase in drain
     for phrase in (
         "clutch engine serve",
@@ -30,7 +30,6 @@ def test_serve_prompt_and_docs(tmp_path):
         "clutch prompt drain-loop",
         "clutch engine stop",
         "tail a drain's output or start a drain",
-        "custom/state/engine.log",
         "only with `clutch engine serve`",
         "idle with nothing running or confirmed unrun",
         "background-process facility",

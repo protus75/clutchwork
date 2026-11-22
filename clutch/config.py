@@ -269,7 +269,7 @@ class Release(StrictModel):
 
 
 class Roadmap(StrictModel):
-    ahead: Count = 2  # open roadmap tickets authored ahead; also the queue size below which the release gate runs
+    ahead: Count = 2  # open roadmap tickets authored ahead
 
 
 class Evidence(StrictModel):

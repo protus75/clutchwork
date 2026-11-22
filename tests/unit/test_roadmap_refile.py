@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap refile
+# purpose: Checks a declined roadmap row is re-filed with its decision record's evidence up to the re-file cap, and re-filed with a distinct summary when the record is missing
 # relates: [clutch/box.py, clutch/journal.py, clutch/roadmap.py, tests/unit/test_roadmap_author.py]
 # owner: engine
-# verified: 9a610809
-# hash: 0becbdfc907b7364970f2cdd0a853532c5b553fe03eaebfa24caec93986ec38b
+# verified: 18f3cf87
+# hash: a5259949aec9e42ff05a651ec76db605374c96d313e7766b790dce2d145da521
 import asyncio
 
 from clutch import roadmap
@@ -51,43 +51,3 @@ def test_missing_record_refiles(setup):
     first, second = box.messages()
     assert first.summary != second.summary
     assert second.summary.endswith(" [re-file 1]")
-
-
-def test_rejected_linked_row_is_rewritten(setup):
-    checkout, box = setup
-    put(checkout, r(1, "old-row"))
-
-    async def pending(ids):
-        pass
-
-    run(checkout, 1, pending)
-    put(checkout, r(1, "old-row", content="**Authored** (`tickets/old-row/`). Build it."))
-    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "premise_failed", "reason": "bad premise", "routed": "reject_queue"}, ticket="old-row")
-    checkout.journal.append(EventType.SIGNAL, {"signal": "diagnosis", "lessons": ["fix the path"]}, ticket="old-row")
-    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="old-row")
-    run(checkout, 1, pending)
-    row = roadmap.parse((checkout.repo / roadmap.ROADMAP).read_text())[0]
-    assert row.stem == "old-row-r1" and row.content == "Build it." and not row.linked
-    assert box.messages()[-1].origin == "roadmap/old-row-r1"
-    assert "bad premise" in box.messages()[-1].summary
-    assert "fix the path" in box.messages()[-1].summary
-    assert "[re-file 1]" in box.messages()[-1].summary
-    assert checkout.git.commits[-1][0] == "clutch(roadmap): refile old-row as old-row-r1"
-
-
-def test_rejected_without_messages_refiles_twice(setup):
-    checkout, box = setup
-    put(checkout, r(1, "empty-row"))
-    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="empty-row")
-
-    async def pending(ids):
-        pass
-
-    lines = run(checkout, 1, pending)
-    assert not any("give the row a new stem" in line for line in lines)
-    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="empty-row-r1")
-    run(checkout, 1, pending)
-    checkout.journal.append(EventType.STATE_TRANSITION, {"to": "rejected"}, ticket="empty-row-r2")
-    run(checkout, 1, pending)
-    assert [m.origin for m in box.messages()] == ["roadmap/empty-row-r1", "roadmap/empty-row-r2"]
-    assert roadmap.parse((checkout.repo / roadmap.ROADMAP).read_text())[0].stem == "empty-row-r2"

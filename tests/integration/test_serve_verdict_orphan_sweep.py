@@ -5,8 +5,8 @@
 # purpose: Integration test checking that an idle maintenance sweep does not abandon or orphan-alert a draft confirmation that is still in progress, and that the confirmation still completes
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/restart.py, clutch/runner.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: 10f08d74
-# hash: 45b4439db1caef54a708e91b6ab81d79d8fd10052babd583cf0b3ff37e6052fe
+# verified: 18f3cf87
+# hash: 5be12468a45f5315478afcc39175f2b06af5a77b750fdcc54407dccfd097e0d9
 
 import asyncio
 from types import SimpleNamespace
@@ -51,7 +51,6 @@ async def test_confirmation_survives_idle_sweep(tmp_path, monkeypatch):
     control.projection.kill_requested = False
     core = DaemonCore(admission, scheduler, MagicMock(), control)
     monkeypatch.setattr(cli, "build_daemon_core", lambda *a, **k: core)
-    monkeypatch.setattr(cli, "build_driver", MagicMock())
     monkeypatch.setattr(cli, "build_notifications", MagicMock())
     monkeypatch.setattr(serve, "engine_log", MagicMock())
     monkeypatch.setattr(serve.Redactor, "from_config", MagicMock())

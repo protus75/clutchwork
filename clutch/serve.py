@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from dataclasses import replace
 from pathlib import Path
 
-from clutch import git, roadmap, runner, triage
+from clutch import git, runner, triage
 from clutch.calibration import calibrate_when_due
 from clutch.config import ConfigError, snapshot_config
 from clutch.daemon import DaemonTasks, HeartbeatCycle, TicketWriter, WorkerFailureObserver, WorkerStop, _protected_cleanup, _stop_workers, checkpoint_push
@@ -79,8 +79,6 @@ class Responsiveness:
 class Serve:
     """One idle composition; only run acquires the lock and starts owned work."""
 
-    driver_task = None
-
     def __init__(
         self,
         checkout: runner.Checkout,
@@ -94,7 +92,7 @@ class Serve:
         argv=("engine", "serve"),
         reexec=None,
     ) -> None:
-        from clutch.__main__ import build_daemon_core, build_driver, build_notifications
+        from clutch.__main__ import build_daemon_core, build_notifications
 
         self.argv, self.reexec = tuple(argv), reexec or SubprocessExec()
         self.engine = Path(__file__).resolve().parent.parent
@@ -116,9 +114,6 @@ class Serve:
         self.retro_checked = None
         self.retro = None
         self.retro_task = None
-        self.driver = build_driver()
-        self.driven = None
-        self.driver_task = None
         self.wake = asyncio.Event()
         self.ready = asyncio.Event()
         self.workers: tuple[asyncio.Task, ...] = ()
@@ -374,8 +369,7 @@ class Serve:
 
     def upgrade_idle(self):
         return (
-            self.driver_task is None
-            and self.core.admission.idle()
+            self.core.admission.idle()
             and not self.core.scheduler.occupied()
             and not any(w.continuations for w in self.writers.values())
             and (self.queue is None or not self.queue.pending and self.queue.active is None)
@@ -405,26 +399,6 @@ class Serve:
         self.retro_checked = count
         outcome: RetroCheckOutcome = "due" if due else "not_due"
         self.log.event("phase_end", phase="retro_check", outcome=outcome)
-
-    def driver_pending(self):
-        return (self.checkout.repo / roadmap.ROADMAP).is_file() and roadmap.settles(self.checkout.journal.read()) != self.driven
-
-    async def run_driver(self):
-        self.control.poll()
-        if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested:
-            return
-        c = replace(self.checkout, config=snapshot_config(self.control.load_config()))
-        self.driven = roadmap.settles(c.journal.read())
-        await self.driver(c, self.log)
-
-    async def wait_driver(self):
-        task, self.driver_task = self.driver_task, None
-        if task is not None:
-            try:
-                await task
-            except Exception as exc:
-                return exc
-        return None
 
     async def run_retro(self, request_id):
         async with self.mutations():
@@ -741,18 +715,6 @@ class Serve:
                         if request_id == self.served_retro_id:
                             request_id = None
                         self.retro_task = asyncio.create_task(self.run_retro(request_id))
-                    if self.driver_task is not None and self.driver_task.done():
-                        task, self.driver_task = self.driver_task, None
-                        task.result()
-                    if (
-                        self.driver_task is None
-                        and self.retro_task is None
-                        and not self.retro_pending()
-                        and self.driver_pending()
-                        and self.upgrade is None
-                        and not self.control.projection.stop_requested
-                    ):
-                        self.driver_task = asyncio.create_task(self.run_driver())
                     for response in self.responses:
                         response.ask()
                     done = [task for task in self.workers if task.done()]
@@ -777,12 +739,6 @@ class Serve:
                 self.log.event("serve_failed", error=str(exc))
                 code = 2 if isinstance(exc, (ConfigError, runner.Refusal, ProviderSetupError, JournalCorruption, ExecutableNotFound)) else 1
                 self.stop()
-            driver_error = await self.wait_driver()
-            if driver_error is not None:
-                self.log.event("serve_failed", error=str(driver_error))
-                if code == 0:
-                    failure_type = type(driver_error).__name__
-                    code = 2 if isinstance(driver_error, (ConfigError, runner.Refusal, ProviderSetupError, JournalCorruption, ExecutableNotFound)) else 1
             self.control.poll()
             handoff = upgrade_stop and self.upgrade is not None and self.upgrade_idle() and not self.control.projection.kill_requested and code == 0
             if handoff:
