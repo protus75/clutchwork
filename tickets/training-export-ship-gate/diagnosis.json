@@ -1,21 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "67f3c36276cc806b4e0828ee788d9ba353926c69",
+  "produced_at_sha": "956ff6ce137ad7f6f53695e07e31dd806f7b6e4d",
   "stem": "training-export-ship-gate",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "abandon-human",
   "lessons": [
-    "The diff did not cause the gate failure. tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck] runs a synthetic serve_rig repo with its own config.yaml and never reads anything this diff touches: __main__ training export, config.yaml training_data,",
-    "Human: run test_serve_admission_refusal_keeps_main_green[precheck] alone and in the full integration suite, on the base commit 8f0df3d1, in a worktree with full history. Find out if it is a base failure or flaky, then fix it in its own P0 ticket listing training-export-ship-gate under Runs before.",
-    "Human: the same run had 3 setup errors in tests/integration/test_host_loop.py, which the implementer reproduced on base (box-001036-f367e6f4). Check whether that shared-fixture breakage also causes the precheck failure or a related one. Fix it before re-dispatching.",
-    "Do not re-dispatch this ticket hoping the test passes on rerun. The implementation met criteria 1-5 and its Verification passed: 34 tests passed and lint exited 0. Once the external test is green, redo the same seven-file change inside the fence."
+    "The implementation is complete and on-scope: the CLI flag, config.yaml, docs and a new unit test. 34 focused tests and the 1,829-test unit gate passed. The failures came from timing-flaky integration tests that the fenced diff cannot reach. A human should file a P0 flake-fix ticket and list it in",
+    "tests/integration/test_host_loop.py:103: the module fixture `production` runs every scaffold.SCENARIOS FixtureLoop at once with timeout=30. It errored in 2 of 3 full candidate runs but passed alone. It uses tmp_path_factory, so config.yaml cannot affect it. Inspect it for load and timeout flakiness.",
+    "tests/integration/test_serve_dispatch.py:122 test_live_keep_dispatches_again_without_restart saw 2 keep reject_verdict signals, not 1. The live keep-live AdmissionRequest is likely applied twice in a race. This is outside the fence, so fix the control/serve machinery or the test in its own ticket.",
+    "Do not retry this ticket until the flake fix merges. Rerunning until the gate goes green is forbidden. After the fix merges, redo the same scope: --require-records in clutch/__main__.py handle_training, training_data in config.yaml, the 0.5.0 gate line, three docs and"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0
+    0,
+    3
   ],
   "spec_version": "1.9",
   "provider": "claude",
