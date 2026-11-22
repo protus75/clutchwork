@@ -5,8 +5,8 @@
 # purpose: Tests the Rework stage: update, split and escalate orders are validated and reviewed without changing tickets, along with supersedes recording, dependency folds, timeouts, spec render and reachability from production
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
 # owner: clutch/rework.py
-# verified: 92889fdb
-# hash: a05409e78069d96c2a08e981d332087acaa1cf85b389b58006e5966c38b67612
+# verified: 38957300
+# hash: 44d961f71c1858eac25a242bfe56a32686a6f9d1e6b2f03ef81420a16529e49a
 
 import asyncio
 import hashlib
@@ -27,55 +27,16 @@ from clutch.rework import REWORK_ORDER, SUPERSEDES, ReworkOrder, dead_dependenci
 from clutch.specs import DATA_DELIM, QUOTED_DELIM, RENDER_BOUND_CHARS, data_close, data_open, lint_spec, load_spec, render, validate_data_blocks
 from clutch.stages import KNOWN_ARTIFACTS
 from clutch.tickets import ticket_path, validate_ticket
+from tests.config_helpers import SNAG, invoke, order, original, requisition, run, signals, successors, ticket_bytes
 from tests.daemon_helpers import commit, conflict, ctx, import_closure
 from tests.spool_captures import read_capture
 from tests.stages_helpers import TICKET
 
 pytestmark = pytest.mark.disk_io_skip
 
-run = asyncio.run
-SNAG = Finding(code="scope", path="clutch/thing.py", line=1, message="narrow the work", paved_road="retain only the first buildable piece", kind="authoring_error")
-
-
-async def original(ctx, *, source="human", payload=""):
-    text = TICKET.format(bypass="agent_tier: high\nagent_effort: low\n").replace("source: human", f"source: {source}")
-    text = text.replace("`thing.py` holds the word ok.", "`thing.py` holds the word ok." + payload)
-    ctx.fs.write(ctx.repo / ticket_path("original"), text.encode())
-    await commit(ctx, ctx.repo, [ticket_path("original")])
-    return validate_ticket("original", text, ctx.repo), text
-
-
-def order(action="escalate", proposals=()):
-    return json.dumps({"action": action, "tickets": [{"stem": stem, "ticket": text} for stem, text in proposals]})
-
-
-def requisition(verdict="approve", finding=SNAG):
-    return json.dumps({"verdict": verdict, "summary": "judged each proposal against the shipped grammar", "findings": [] if verdict == "approve" else [finding.model_dump()]})
-
-
-async def invoke(ctx, ticket, text, script, *, attempt=0, workspace=None, snags=None):
-    ctx.driver.llm = FakeLLM(script)
-    result = await rework(ctx, ticket, text, snags or [SNAG], attempt=attempt, workspace=workspace or ctx.repo, tier="max", effort="medium", stuck_budget=42.0)
-    return result, ctx.driver.llm.requests
-
-
-def signals(ctx, signal=None):
-    return [e for e in ctx.driver.journal.read() if e.type == EventType.SIGNAL and (signal is None or e.body.get("signal") == signal)]
-
-
-def ticket_bytes(ctx):
-    return {str(p.relative_to(ctx.repo)): p.read_bytes() for p in (ctx.repo / "tickets").rglob("*") if p.is_file()}
-
 
 def no_orders(ctx):
     assert signals(ctx, REWORK_ORDER) == signals(ctx, SUPERSEDES) == []
-
-
-def successors(text, *, second_dep="piece-one"):
-    first = text.replace("`thing.py` holds the word ok.", "First portion of `thing.py` holds ok.")
-    second = text.replace("`thing.py` holds the word ok.", "Second portion of `thing.py` holds ok.")
-    second = second.replace("## Depends on\nnone", f"## Depends on\n- {second_dep}")
-    return [("piece-one", first), ("piece-two", second)]
 
 
 def test_approved_proposals_journal_requisition_approval(ctx):

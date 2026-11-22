@@ -5,8 +5,8 @@
 # purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: clutch/merge.py
-# verified: 92889fdb
-# hash: 63d772e0502c9f9ffab2516d54fe70feb7ba3be2024c982b02be1c0871fa96e7
+# verified: 38957300
+# hash: 165a3150223dd541837d723a41ef83519e18f5826d7585f4d0f4ab26a217c769
 
 import asyncio
 import dataclasses
@@ -28,6 +28,7 @@ from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import StageContext, run_stages
 from clutch.tickets import validate_ticket
 from tests.cli_helpers import root
+from tests.config_helpers import bootstrap_pipeline_keeps_inline_admission, context, repo
 from tests.integration.test_git import commit_lock
 from tests.spool_captures import list_captures
 from tests.stages_helpers import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
@@ -41,36 +42,6 @@ def register_sample_report(monkeypatch):
 
 
 GOAL = "`thing.py` holds the word ok."
-
-
-@pytest.fixture
-def repo(tmp_path: Path) -> Path:
-    root = tmp_path / "repo"
-    (root / "clutch").mkdir(parents=True)
-    (root / "clutch" / "thing.py").write_text("")
-    (root / "clutch" / "other.py").write_text("")
-    (root / "CLUTCH_PLAN.md").write_text("# Plan\n")
-    (root / "config.yaml").write_text(CONFIG)
-    (root / ".gitignore").write_text(".clutch/\n")
-    adopt_conduct(root)
-    git(root, "init", "-b", "main")
-    git(root, "add", ".")
-    git(root, "commit", "-m", "base")
-    return root
-
-
-def context(repo: Path, script: list) -> StageContext:
-    config = load_config(None, cwd=repo)
-    clock = lambda: datetime(2026, 10, 5, tzinfo=UTC)  # noqa: E731
-
-    async def never(seconds: float) -> None:
-        await asyncio.Event().wait()
-
-    exec_ = SubprocessExec()
-    driver = Driver.from_config(config, journal=Journal((config).state_dir, clock), llm=FakeLLM(script), env=ENV, clock=clock, sleep=never)
-    return StageContext(
-        repo=repo, config=config, env=ENV, exec_=exec_, git=Git(exec_, env=ENV, timeout=30.0, commit_lock=commit_lock(repo / ".clutch/state")), fs=LocalFileSystem(), driver=driver, specs_dir=SPECS
-    )
 
 
 def reviewed(repo: Path, script: list, *, approve: bool = True, authored: bool = False):
@@ -161,47 +132,7 @@ def test_a_passing_ticket_squash_merges_with_trailers_and_journals_merged(repo):
 
 @pytest.mark.parametrize("verb", ["bind", "run", "drain"])
 def test_bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb):
-    author(repo)
-    source = context(repo, [])
-    checkout = runner.Checkout(repo, source.config, source.env, source.exec_, source.git, source.driver.journal, source.fs, source.driver.clock, source.driver.sleep)
-    from clutch.__main__ import build_control
-
-    checkout = dataclasses.replace(checkout, control=build_control(checkout))
-    llm = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
-
-    def forbidden(*args, **kwargs):
-        pytest.fail("bootstrap dispatch used the composed queue")
-
-    monkeypatch.setattr(MergeQueue, "offer", forbidden)
-    monkeypatch.setattr(MergeQueue, "process", forbidden)
-    calls = []
-    original = runner.merge
-
-    async def inline(ctx, ticket, *, attempt):
-        calls.append((ctx, ticket, attempt))
-        return await original(ctx, ticket, attempt=attempt)
-
-    monkeypatch.setattr(runner, "merge", inline)
-
-    def pipeline(local):
-        dispatch = runner.bind(local, llm)
-        dispatch.queue.paused, dispatch.queue.hold_id = True, "daemon-only-hold"
-        local.control.hold(dispatch.queue.hold_id)
-        return dispatch
-
-    ticket = validate_ticket(STEM, (repo / "tickets" / STEM / "ticket.md").read_text(), repo)
-    if verb == "bind":
-        assert asyncio.run(pipeline(checkout)(ticket)) == "merged"
-    else:
-        from clutch.__main__ import main
-        from tests.drain_helpers import NoChild
-
-        assert main(["engine", "run", STEM] if verb == "run" else ["engine", "drain"], cwd=repo, env=ENV, clock=checkout.clock, pipeline=pipeline, reexec=NoChild()) == 0
-    [(ctx, original_ticket, attempt)] = calls
-    assert original_ticket.stem == ticket.stem and attempt == 0
-    assert len(merged_events(ctx)) == 1
-    assert not any(e.body.get("kind") == CONFLICT_FACTS for e in ctx.driver.journal.read())
-    assert (repo / "clutch/thing.py").read_text() == "ok\n" and not ctx.worktree(STEM).exists()
+    bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb)
 
 
 def test_foreground_admission_never_supervised_holds(repo, monkeypatch):

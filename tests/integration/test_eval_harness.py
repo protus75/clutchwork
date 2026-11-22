@@ -5,8 +5,8 @@
 # purpose: Offline tests of the review-baseline eval harness: fixture floors, scoring, same-author refusal, preflight, shared cost cap and author graph.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/specs/__init__.py, eval/harness.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 2b895dd96d11370b7c7ff458fb17a00cf6884721c2125c0bd29674ebe38592dd
+# verified: 38957300
+# hash: ac60faaf0532213dd48da0e8dba5df5eeb0dd672bf678db310c3cd364a2b5116
 
 import asyncio
 import json
@@ -313,7 +313,7 @@ def test_eval_preflight_refuses_before_measured_calls(tmp_path, monkeypatch, mod
 
 
 def test_go_grade_fixture_author_identity_comes_from_call(tmp_path, monkeypatch):
-    from tests.integration.test_providers import FakeExec, codex_ok, provider_session
+    from tests.config_helpers import FakeExec, codex_ok, provider_session
 
     cfg = config(tmp_path)
     monkeypatch.setattr(harness, "_clock", lambda: NOW)

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Pins `build_config` output to the four original fixture config texts. Checks that overrides load and that `amend_config` keeps earlier edits.
+# purpose: Pins `build_config` output to the four original fixture config texts and checks that overrides load and `amend_config` keeps earlier edits.
 # relates: [clutch/config.py, tests/config_fixture.py, tests/harness/shakeout/bench.py, tests/integration/test_cli.py, tests/integration/test_providers.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: cd2c2916e97de9d69877c79d003a3b72735efa0ac676eb8a30144387b5b13998
+# verified: 38957300
+# hash: d4144bf12e02ef7126a7da1ffffb44a2acf297b75483ca4619360e06622fb548
 
 import pytest
 import yaml
@@ -14,8 +14,8 @@ import yaml
 from clutch.config import load_config
 from tests.cli_helpers import CONFIG as CLI_CONFIG
 from tests.config_fixture import amend_config, build_config
+from tests.config_helpers import CONFIG as PROVIDERS_CONFIG
 from tests.harness.shakeout.bench import _CONFIG as BENCH_CONFIG
-from tests.integration.test_providers import CONFIG as PROVIDERS_CONFIG
 from tests.stages_helpers import CONFIG as STAGES_CONFIG
 
 CLI_TEXT = """schema_version: 1

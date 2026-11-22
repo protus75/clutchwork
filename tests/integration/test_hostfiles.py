@@ -5,8 +5,8 @@
 # purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker-corruption refusal, drift classification, project-rule refusals, and the production core_drift gate.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 08fe32b85267360ab55946bd4b6076e9e1b737bbd495b8a323d37297a73e5729
+# verified: 38957300
+# hash: 51f89c34bc09b418dc7aeb00f0ace69dc033f3e36f4fc854415fc65c757b15ed
 
 import asyncio
 import base64
@@ -19,8 +19,8 @@ import pytest
 from clutch import hostfiles
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import root
+from tests.config_helpers import repo
 from tests.integration.test_git import commit_lock
-from tests.integration.test_merge import repo
 from tests.stages_helpers import agent, verdict
 
 pytestmark = pytest.mark.disk_io_skip
@@ -414,7 +414,7 @@ if __name__ == "__main__":
 @pytest.mark.parametrize("dirty", [False, True])
 async def test_committed_core_preserves_raw_bytes(repo, dirty):
     from clutch.config import load_config
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
     from tests.stages_helpers import evidence
 
     ctx = context(repo, [])
@@ -442,7 +442,7 @@ async def test_committed_core_preserves_raw_bytes(repo, dirty):
 async def test_committed_core_template_extraction_refuses(repo, source):
     from clutch import stages
     from clutch.tickets import validate_ticket
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
     from tests.stages_helpers import STEM, author, evidence
 
     author(repo)

@@ -5,8 +5,8 @@
 # purpose: Tests failure diagnosis through the production run and drain paths: reply schema, routing, cap draws, short-circuits and lesson rendering.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: e26c3e9f0c53a9263a0897a5a348a5c43936c7e5db8823606c1feddea187fd8f
+# verified: 38957300
+# hash: 11527051f6372c51f75583e306af0e4f99670a48b4e4aaf75f4c88b74760da2e
 
 import json
 from pathlib import Path
@@ -24,8 +24,8 @@ from clutch.llm import FakeLLM
 from clutch.providers import ProviderSetupError, resolve
 from clutch.specs import data_close, data_open
 from clutch.stages import StagesRun
+from tests.config_helpers import CONFIG as ROUTING_CONFIG
 from tests.drain_helpers import NoChild
-from tests.integration.test_providers import CONFIG as ROUTING_CONFIG
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
 from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
@@ -199,8 +199,8 @@ def test_no_lessons_keeps_raw_harvest_reason(repo):
 @pytest.mark.parametrize("workspace", [True, False])
 def test_render_over_bound_calls_rework_but_not_diagnosis(repo, monkeypatch, workspace):
     from clutch import daemon
+    from tests.config_helpers import order
     from tests.drain_helpers import mechanical_first
-    from tests.integration.test_rework import order
 
     author(repo)
     mechanical_first(monkeypatch, STEM, workspace=workspace)

@@ -1,16 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks supervising prompts state priority order and replaced-stem dependency repair before authoring and confirming
+# purpose: Checks the supervising prompts state priority order and repair dependencies on replaced stems before authoring and confirming
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: e5601adc10ad19ec3d5d5d22bfe6292073e4d382fecf41e1ce992648b01ce0ad
+# verified: 38957300
+# hash: bb9e9704a3f3ccb4ba8b90fd5eecb9a849877d9c3588d15dead0df2e452b2cf5
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

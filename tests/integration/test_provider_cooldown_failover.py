@@ -5,8 +5,8 @@
 # purpose: Tests provider quota cooldown, ordered failover, drought parking and recovery, auth exclusion, and wait budgets through the production composition
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/drain.py]
 # owner: clutch/providers.py
-# verified: 92889fdb
-# hash: ad7d361b409b9beb00a868bce28d743120cb26d69da37f3326120fee2705df36
+# verified: 38957300
+# hash: 9dad73e7b783edde8c6ac75306322de5cedc694bb144b2f004034e489626fd91
 
 import asyncio
 import json
@@ -33,10 +33,10 @@ from clutch.seams import SubprocessExec
 from clutch.tickets import intake
 from clutch.timers import Timers
 from tests.cli_helpers import root, write
+from tests.config_helpers import CONFIG
 from tests.daemon_helpers import CoreRig
 from tests.dispatch_settle import dispatch_settled
 from tests.integration.serve_rig import finish, graph, terminals, until
-from tests.integration.test_providers import CONFIG
 from tests.integration.test_restart_timers import held, repository
 from tests.integration.test_scheduler import text, turn
 from tests.spool_captures import read_capture

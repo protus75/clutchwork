@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that verdict, author and rework ticket writes hold the main-write and commit locks so intake never sees an intermediate stamp, plus lock release on callback failure, merge-squash lock ordering and check commands running outside the write locks.
+# purpose: Tests that verdict, author and rework ticket writes hold the main-write and commit locks so intake never sees an intermediate stamp, plus lock release on failure, merge-squash lock waits and check commands outside the locks.
 # relates: [clutch/daemon.py, clutch/effects.py, clutch/git.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
 # owner: clutch/git.py
-# verified: 92889fdb
-# hash: 1be0c803ac7c70d61aed02e9cf60e273662b5976381a88d7501bad0dc2d26247
+# verified: 38957300
+# hash: 8beb9f9efc56cd1713d0a0fbacf292efb1ddd417a0905b4f8d0deba7b725c232
 # ruff: noqa: E501
 import asyncio
 import json
@@ -18,11 +18,11 @@ from clutch.llm import FakeLLM
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.tickets import intake, stamp
 from clutch.triage import triage_pass
+from tests.config_helpers import SNAG, order, original, requisition
 from tests.daemon_helpers import ctx
 from tests.drain_helpers import commit_ticket, confirmed, make_root, pause_checkout
 from tests.integration.test_author import _box, _failure, _routes, requisition_reply
 from tests.integration.test_git import commit_lock
-from tests.integration.test_rework import SNAG, order, original, requisition
 from tests.integration.test_triage import author_reply, reply
 
 pytestmark = pytest.mark.disk_io_skip

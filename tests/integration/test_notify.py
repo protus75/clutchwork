@@ -4,8 +4,8 @@
 # purpose: Test notification effects: once-only delivery with conservative resend, key domains, argv seam with secret-free env and redaction, and timeout backoff
 # relates: [clutch/__main__.py, clutch/config.py, clutch/effects.py, clutch/enginelog.py, clutch/journal.py, clutch/notify.py, clutch/redact.py]
 # owner: clutch/notify.py
-# verified: d32c32ad
-# hash: 5bee5443e2fc7f37bdeb88175c76167362ae3a598dfd1e87c78fda48895aeecb
+# verified: 38957300
+# hash: ee5fed73c6e601921fbe78241da3e9291d97630af860701eae970cf4a218459f
 import json
 import sys
 from types import SimpleNamespace
@@ -20,7 +20,7 @@ from clutch.journal import EventType, Journal
 from clutch.notify import NOTIFY_RETRY_S, NotificationReconciler, notification_key, send
 from clutch.redact import Redactor
 from clutch.seams import CommandNotifications, NotificationFailed, SubprocessExec
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 from tests.integration.test_scheduler import Time
 from tests.waiting import wait_until
 

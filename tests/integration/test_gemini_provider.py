@@ -4,8 +4,8 @@
 # purpose: Tests the packaged Gemini settings files and Gemini calls through ProviderLLM: approval modes, environment, auth-error paved road
 # relates: [clutch/__init__.py, clutch/providers.py, clutch/seams.py, tests/integration/test_providers.py, tests/unit/test_gemini_adapter.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 71edd032ac118cb92d81ed7fe31808af7feef53b7d413607eaa88b9aa62a1edc
+# verified: 38957300
+# hash: c9d8921b2fb73baeae3f3aff1495112fc0311d6aaadc2e5a176146454b5c7916
 import asyncio
 import json
 from pathlib import Path
@@ -15,7 +15,7 @@ import pytest
 import clutch
 from clutch.providers import GeminiAdapter, ProviderCallError, ProviderLLM
 from clutch.seams import LocalFileSystem
-from tests.integration.test_providers import CONFIG, ENV, FakeExec, config, provider_session, req
+from tests.config_helpers import CONFIG, ENV, FakeExec, config, provider_session, req
 from tests.unit.test_gemini_adapter import T02, T06_ERR, T27, adapter
 
 pytestmark = pytest.mark.disk_io_skip

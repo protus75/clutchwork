@@ -5,8 +5,8 @@
 # purpose: Tests host report intake: closed schema validation, evidence size limits, evidence custody before enqueue, crash-safe single ingest, and a replayed report reaching a regression Check
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 1c4312d8486ab74ed0d2f3301ccadd6e12301503ef2a9a144f037281556f6478
+# verified: 38957300
+# hash: 6378e702f5731c8b77f46869b59a64a5aa818be421ae6fd12b99796f568bc289
 
 import asyncio
 import json
@@ -196,7 +196,7 @@ def test_report_replay_to_regression(tmp_path, monkeypatch):
     from clutch.tickets import validate_ticket
     from hosts.fixture import scaffold
     from tests.cli_helpers import ENV
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
     from tests.integration.test_triage import reply, requisition_reply
     from tests.stages_helpers import implement_reply
 

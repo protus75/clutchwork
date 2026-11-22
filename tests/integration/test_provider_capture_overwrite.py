@@ -4,8 +4,8 @@
 # purpose: Check that provider call evidence captures survive a new process and are keyed by stem and run
 # relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llmeffect.py, clutch/redact.py, clutch/seams.py, tests/integration/test_providers.py]
 # owner: clutch/llmeffect.py
-# verified: d32c32ad
-# hash: 3e4fbfa500f00b51d7c1220e988ed1773fa2b6cf754744a8d2f0763c91038069
+# verified: 38957300
+# hash: 5826601a3e0d2000d9ecb41b5271c69cbf5642b9bad10838514799d64ffc5121
 import asyncio
 from dataclasses import replace
 
@@ -16,7 +16,7 @@ from clutch.evidence.store import EvidenceStore
 from clutch.llmeffect import llm_call
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
-from tests.integration.test_providers import ENV, FakeExec, claude_ok, config, llm, req
+from tests.config_helpers import ENV, FakeExec, claude_ok, config, llm, req
 
 pytestmark = pytest.mark.disk_io_skip
 

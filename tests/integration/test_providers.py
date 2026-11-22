@@ -4,8 +4,8 @@
 # purpose: Integration tests for provider routing, key scoping, secret redaction, claude and codex CLI adapter contracts, preflight, failure classification, eval budget ceilings and process-group cleanup
 # relates: [clutch/__main__.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: clutch/providers.py
-# verified: f444aaa8
-# hash: aa353ad06aec1a20856ee702ab14c429671650c0f253f7ef66b0e40a85de6959
+# verified: 38957300
+# hash: 07ea8ab74c9f650a64bcd62a5feee24dc618efdd1569ec90fef7cb022c508537
 import asyncio
 import json
 import os
@@ -35,111 +35,12 @@ from clutch.seams import GroupExec, LocalFileSystem, SubprocessExec
 from clutch.timers import Timers
 from clutch.watchdog import EventConsumer
 from tests.config_fixture import build_config
+from tests.config_helpers import CONFIG, ENV, FakeExec, claude_ok, codex_ok, config, jsonl, llm, provider_request, provider_session, req
 from tests.waiting import group_exited, ready_before_returning_spawn, wait_until
 
 pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
-
-CONFIG = build_config(
-    state_dir="state",
-    providers=[
-        {"name": "claude", "auth": "CLAUDE_KEY", "models": {"low": "c-low", "medium": "c-med", "high": "c-high", "max": "c-max"}, "limits": {"concurrency": 1}},
-        {"name": "codex", "auth": "CODEX_KEY", "models": {"low": "x-low", "medium": "x-med", "high": "x-high", "max": "x-max"}, "limits": {"concurrency": 1, "est_cost_per_call_usd": 1.5}},
-    ],
-    routing=[
-        {"tier": "medium", "surface": "implement", "candidates": [{"provider": "codex"}, {"provider": "claude"}]},
-        {"tier": "high", "surface": "implement", "candidates": [{"provider": "claude"}]},
-        {"tier": "medium", "surface": "review", "candidates": [{"provider": "claude", "model": "c-max"}, {"provider": "codex"}]},
-        {"tier": "low", "surface": "review", "candidates": [{"provider": "codex"}]},
-    ],
-    inventory=(),
-)
-
-ENV = {"PATH": "/usr/bin", "HOME": "/home/op", "CLAUDE_KEY": "sk-claude-secret", "CODEX_KEY": "sk-codex-secret"}
-
-
-def config(tmp_path: Path, text: str = CONFIG):
-    (tmp_path / "config.yaml").write_text(text)
-    return load_config(None, cwd=tmp_path)
-
-
-class FakeExec:
-    """Scripted subprocess: records each invocation and what its stdin file held at spawn."""
-
-    def __init__(self, *responses: tuple[int, str, str]) -> None:
-        self.responses = list(responses)
-        self.calls: list[dict] = []
-        self.killed: list[int] = []
-        self.hang: asyncio.Event | None = None
-
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None, on_spawn=None, on_stdout_line=None, on_rusage=None):
-        if argv[0] == "git":
-            return 0, "a" * 40 + "\n", ""
-        self.calls.append({"argv": list(argv), "cwd": cwd, "env": dict(env), "stdin": Path(stdin_path).read_text(), "timeout": timeout})
-        if on_spawn is not None:
-            on_spawn(4242)
-        if self.hang is not None:
-            await self.hang.wait()
-            return -9, "", "killed"
-        result = self.responses.pop(0)
-        if on_stdout_line is not None:
-            for line in result[1].splitlines(keepends=True):
-                on_stdout_line(line)
-        return result
-
-    def kill_group(self, pgid: int) -> None:
-        self.killed.append(pgid)
-        if self.hang is not None:
-            self.hang.set()
-
-
-def provider_session(cfg, clock=lambda: datetime(2026, 1, 1, tzinfo=UTC), sleep=asyncio.sleep):
-    journal = Journal(cfg.state_dir, clock)
-    return ProviderSession(cfg, journal=journal, clock=clock, sleep=sleep, timers=Timers(journal=journal, clock=clock, sleep=sleep))
-
-
-def llm(cfg, exec_: FakeExec, tmp_path: Path) -> ProviderLLM:
-    return ProviderLLM(cfg, exec_=exec_, fs=LocalFileSystem(), env=ENV, cwd=tmp_path / "checkout", timeout=600, session=provider_session(cfg))
-
-
-def req(surface: str, tier="medium", worktree=None, rendered="do the thing", effort="high") -> LLMRequest:
-    return LLMRequest(surface=surface, rendered=rendered, tier=tier, effort=effort, ticket="t-1", worktree=worktree)
-
-
-def jsonl(*events: dict) -> str:
-    return "".join(json.dumps(e) + "\n" for e in events)
-
-
-def claude_ok(text="done", cost=0.42) -> str:
-    return jsonl(
-        {"type": "system", "subtype": "init"},
-        {"type": "assistant", "message": {"content": [{"type": "text", "text": "working"}]}},
-        {
-            "type": "result",
-            "subtype": "success",
-            "is_error": False,
-            "result": text,
-            "total_cost_usd": cost,
-            "usage": {
-                "input_tokens": 10,
-                "cache_creation_input_tokens": 5,
-                "cache_read_input_tokens": 100,
-                "output_tokens": 7,
-            },
-        },
-    )
-
-
-def codex_ok(text="patched") -> str:
-    return jsonl(
-        {"type": "thread.started", "thread_id": "th"},
-        {"type": "turn.started"},
-        {"type": "item.completed", "item": {"id": "i0", "type": "agent_message", "text": "first"}},
-        {"type": "item.completed", "item": {"id": "i1", "type": "command_execution", "command": "ls"}},
-        {"type": "item.completed", "item": {"id": "i2", "type": "agent_message", "text": text}},
-        {"type": "turn.completed", "usage": {"input_tokens": 300, "cached_input_tokens": 200, "output_tokens": 40}},
-    )
 
 
 def call(cfg, exec_, tmp_path, request):
@@ -768,10 +669,6 @@ class PythonProviderExec(SubprocessExec):
 
 def python_client(cfg, process, tmp_path, *, timeout=10, env=None):
     return ProviderLLM(cfg, exec_=process, fs=LocalFileSystem(), env=env or {**os.environ, **ENV, "PATH": os.environ["PATH"]}, cwd=tmp_path, timeout=timeout, session=provider_session(cfg))
-
-
-def provider_request(name, tmp_path, **kwargs):
-    return req("implement", tier="high" if name == "claude" else "medium", worktree=tmp_path, **kwargs)
 
 
 @pytest.mark.parametrize("fail_at_tail", [False, True])

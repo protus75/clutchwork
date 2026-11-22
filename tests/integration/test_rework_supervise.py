@@ -4,8 +4,8 @@
 # purpose: Tests supervised Rework: the supervise block renders its trigger and lessons, the edit gate refuses forbidden edits before review, and apply_rework forwards supervise
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/llm.py, clutch/rework.py, clutch/specs/__init__.py, tests/integration/test_mergequeue.py]
 # owner: clutch/rework.py
-# verified: 92889fdb
-# hash: e06366f540940d0d0deb08b61776fbd6c197fbb313351d6f16e9c18037f89196
+# verified: 38957300
+# hash: 34712f22d38ab8908bbed2630e758b3ff9d13c8f918dc45b6c9d9e18dbeaab8d
 import pytest
 
 from clutch import daemon
@@ -13,8 +13,8 @@ from clutch.artifacts import Cost, StageResult
 from clutch.llm import FakeLLM
 from clutch.rework import REWORK_ORDER, ReworkOrder, ReworkReply, Supervise, rework
 from clutch.specs import data_close, data_open
+from tests.config_helpers import SNAG, order, original, requisition, run, signals, ticket_bytes
 from tests.daemon_helpers import ctx
-from tests.integration.test_rework import SNAG, order, original, requisition, run, signals, ticket_bytes
 
 pytestmark = pytest.mark.disk_io_skip
 

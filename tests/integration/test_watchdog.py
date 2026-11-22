@@ -4,8 +4,8 @@
 # purpose: Tests the watchdog event consumer and detector: streamed provider events, spend metering, resets on scope progress, time regions, single notifications and the spiral corpus.
 # relates: [clutch/driver.py, clutch/effects.py, clutch/enginelog.py, clutch/journal.py, clutch/notify.py, clutch/providers.py, clutch/redact.py]
 # owner: clutch/watchdog.py
-# verified: 92889fdb
-# hash: 57cbe436ea97200735c5072714763545e9ca64dd131cba89d6374729c74460e0
+# verified: 38957300
+# hash: 420c4b49cf60d61c356b71b1e81038600d5968e52d0b2b1529dbb71055022034
 import asyncio
 import json
 import os
@@ -23,8 +23,9 @@ from clutch.providers import CliAdapter, ProviderCallError, ProviderLLM, Provide
 from clutch.redact import Redactor
 from clutch.thresh import PROVIDER_CAP_WAIT, Admission
 from clutch.watchdog import Detector, EventConsumer, ScopeObservation
+from tests.config_helpers import claude_ok, codex_ok, config, jsonl, provider_request
 from tests.daemon_helpers import CoreRig
-from tests.integration.test_providers import PythonProviderExec, claude_ok, codex_ok, config, jsonl, provider_request, python_client
+from tests.integration.test_providers import PythonProviderExec, python_client
 from tests.integration.test_scheduler import Time, turn
 
 pytestmark = pytest.mark.disk_io_skip

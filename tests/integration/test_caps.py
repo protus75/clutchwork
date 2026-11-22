@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for the failure-spine caps: attempts counting, cap draws per stem and ticket revision, retry rungs, infra draws before terminals, parking a stem whose cap is spent, routing to the Reject queue, and premise-bounce escalation
+# purpose: Integration tests for the failure-spine caps: counting attempts, cap draws per stem and ticket revision, retry rungs, infra draws before terminals, parking a stem whose cap is spent, routing to the Reject queue, and premise-bounce escalation
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
 # owner: engine
-# verified: 92889fdb
-# hash: 308d9ca3df39958b7925df05ebd7eb587590c28dbf1164ee4b34abde0ae1645f
+# verified: 38957300
+# hash: 49e6a2dfca04234c170329bc30bb0bc5d93133086f4611ef8bcf799578e224db
 
 import pytest
 
@@ -97,7 +97,7 @@ def test_attempts_cap_routes_to_reject_queue(repo, monkeypatch, capsys, outcome)
 @pytest.mark.parametrize("action", ["split", "update", "escalate"])
 async def test_attempts_cap_preserves_published_rework(admission_context, action):
     from clutch.daemon import apply_rework
-    from tests.integration.test_rework import order, requisition, successors
+    from tests.config_helpers import order, requisition, successors
 
     _, writer = production_writer(admission_context, [])
     ctx = writer.ctx

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts
+# purpose: Tests Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: 0a4d026b
-# hash: ba40fed65e2ad54f0d9ad4039013492b4ddb7cde5c8bc69c07e68b2769194a0d
+# verified: 38957300
+# hash: 2a47e1c66ebc7445a6b27d0d4852c9216eaa99f58128dfe5ceda1749fbd29a93
 
 import asyncio
 import json
@@ -414,7 +414,7 @@ def test_run_record_gate_requires_every_section_and_a_closed_outcome(tmp_path):
 
 def test_gather_safety_evidence_runs_no_verification(repo, monkeypatch):
     from clutch import stages
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     author(repo)
     ctx = context(repo, [])
@@ -447,7 +447,7 @@ def test_gather_safety_evidence_runs_no_verification(repo, monkeypatch):
 
 def test_base_worktree_clears_a_stale_worktree(repo):
     from clutch import stages
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     ctx = context(repo, [])
 
@@ -474,7 +474,7 @@ def test_base_worktree_clears_a_stale_worktree(repo):
 
 def test_full_gather_evidence_reuses_safety_gatherer(repo, monkeypatch):
     from clutch import stages
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     author(repo)
     ctx = context(repo, [])
@@ -657,7 +657,7 @@ def test_scope_fence_refuses_a_plan_edit(repo):
     from dataclasses import replace
 
     from clutch import stages
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     author(repo)
     ctx = context(repo, [])
@@ -708,7 +708,7 @@ def test_verification_records_each_command_seconds(repo, monkeypatch):
 @pytest.mark.asyncio
 async def test_outbox_lift_ignores_stray_file(repo):
     from clutch.stages import lift_outbox
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     author(repo)
     ctx = context(repo, [])
@@ -724,7 +724,7 @@ async def test_outbox_lift_ignores_stray_file(repo):
 @pytest.mark.asyncio
 async def test_outbox_lift_skips_symlink(repo, tmp_path):
     from clutch.stages import lift_outbox
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     author(repo)
     ctx = context(repo, [])
@@ -742,7 +742,7 @@ async def test_outbox_lift_skips_symlink(repo, tmp_path):
 @pytest.mark.asyncio
 async def test_outbox_lift_rejects_oversize(repo):
     from clutch.stages import LIFT_MAX_BYTES, ArtifactInvalid, lift_outbox
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     author(repo)
     ctx = context(repo, [])

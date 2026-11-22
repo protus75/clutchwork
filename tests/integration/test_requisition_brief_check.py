@@ -4,15 +4,15 @@
 # purpose: Checks that the requisition_review Task section stays brief and that the plan-ticket drain and serve prompts point to `clutch ticket review`
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: d32c32ad
-# hash: ebc9192cc39576d81de7db8fdd94dcf0e2344210df5477a31585b0e8443b7621
+# verified: 38957300
+# hash: ad352f64e2be46f20fa82eb350eaa43a8ce44647152e14d7d8c06e076ef08991
 from pathlib import Path
 
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

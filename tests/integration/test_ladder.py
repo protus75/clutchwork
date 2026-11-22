@@ -5,8 +5,8 @@
 # purpose: Tests capability-ladder escalation, Reject-queue routing with an automatic keep, and rework split or escalation through the production drain
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: e06a71601aa1542455774fa8e0b9da0bd93f0079ef8de644a039826926e9f7ea
+# verified: 38957300
+# hash: 416359212779e5f25cb39784ff51208917498237eb88ac435ca62be6db904428
 
 import json
 
@@ -217,7 +217,7 @@ def test_operator_confirm_resets_effective_rung(repo):
 
 @pytest.mark.parametrize("failure", [None, "review", "commit", "partial"])
 def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
-    from tests.integration.test_rework import order, requisition, successors
+    from tests.config_helpers import order, requisition, successors
 
     author(repo)
 
@@ -287,7 +287,7 @@ def test_split_dispatches_reviewed_rework(repo, monkeypatch, failure):
 
 @pytest.mark.parametrize("action", ["escalate", "exhausted", "update"])
 def test_rework_escalation_preserves_starting_capability_and_caps(repo, action):
-    from tests.integration.test_rework import order, requisition
+    from tests.config_helpers import order, requisition
 
     (repo / "config.yaml").write_text(ROUTING)
     author(repo)

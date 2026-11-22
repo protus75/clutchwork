@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 92889fdb
-# hash: 346acd8c45d8d50faaf2ee4e924ab312643ee51e1bfba5051b9a50cb0273655e
+# verified: 38957300
+# hash: 171f486031b95bd3288d06d82130a4289e2c65dde428324c4b3f8799a1e67ed5
 
 import asyncio
 import json
@@ -30,9 +30,9 @@ from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.tickets import intake
 from tests.cli_helpers import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
+from tests.config_helpers import repo as admission_repo
 from tests.drain_helpers import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root, mechanical_first, offer_events, pause_checkout, retry_draws, root, tos
 from tests.integration.test_git import commit_lock
-from tests.integration.test_merge import repo as admission_repo
 from tests.integration.test_terminal import repo as rework_repo
 from tests.stages_helpers import adopt_conduct
 
@@ -40,9 +40,9 @@ pytestmark = pytest.mark.disk_io_skip
 
 
 def test_bootstrap_never_supervised_holds(admission_repo, monkeypatch):
-    from tests.integration.test_merge import test_bootstrap_pipeline_keeps_inline_admission
+    from tests.config_helpers import bootstrap_pipeline_keeps_inline_admission
 
-    test_bootstrap_pipeline_keeps_inline_admission(admission_repo, monkeypatch, "drain")
+    bootstrap_pipeline_keeps_inline_admission(admission_repo, monkeypatch, "drain")
 
 
 def intake_at(root: Path, stem: str, at: datetime) -> None:
@@ -95,7 +95,7 @@ def test_already_satisfied_settles_without_diagnosis(rework_repo):
 def test_requisition_park_reports_full_reason_under_park_line(root, capsys):
     from clutch import runner
     from clutch.llm import FakeLLM
-    from tests.integration.test_rework import SNAG, requisition
+    from tests.config_helpers import SNAG, requisition
 
     commit_ticket(root, "review-park", confirmed())
     artifact = root / "tickets/review-park/review.md"
@@ -490,8 +490,8 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
     from clutch import runner
     from clutch.caps import consume
     from clutch.llm import FakeLLM
+    from tests.config_helpers import order, requisition
     from tests.drain_helpers import NoChild
-    from tests.integration.test_rework import order, requisition
     from tests.integration.test_terminal import author, clock
     from tests.stages_helpers import ENV, SNAG, STEM, agent, verdict
 
@@ -557,7 +557,7 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
 
     from clutch import runner
     from clutch.llm import FakeLLM
-    from tests.integration.test_rework import order, requisition, successors
+    from tests.config_helpers import order, requisition, successors
     from tests.integration.test_terminal import author, clock
     from tests.stages_helpers import ENV, SNAG, STEM, agent, verdict
 
@@ -637,7 +637,7 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
     from clutch import daemon, runner
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
-    from tests.integration.test_rework import order, requisition, successors
+    from tests.config_helpers import order, requisition, successors
     from tests.integration.test_terminal import author, clock
     from tests.stages_helpers import ENV, STEM, agent, verdict
 
@@ -1063,8 +1063,8 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     from clutch import __main__ as cli
     from clutch import runner
     from clutch.retro import Retro
+    from tests.config_helpers import claude_ok
     from tests.drain_helpers import NoChild
-    from tests.integration.test_providers import claude_ok
 
     root = make_root(tmp_path)
     if scenario == "self-upgrade":

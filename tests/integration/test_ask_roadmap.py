@@ -4,15 +4,15 @@
 # purpose: Checks the roadmap prompt prints the packaged type/roadmap facet and wrapped host notes without creating the roadmap or state
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/runner.py, clutch/specs/__init__.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: d36953724e8e7bb0114cccc62d7ab6bc51ee84faa1497411dc6b511cdb21a021
+# verified: 38957300
+# hash: af6ce3dea81b43d0eef9159cc012b77262dc05cb4787b297de23ab7c146de7e6
 import pytest
 import yaml
 
 from clutch import ask, specs
 from clutch.__main__ import main
 from clutch.runner import SPECS_DIR
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

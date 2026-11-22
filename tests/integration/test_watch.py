@@ -4,8 +4,8 @@
 # purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only view verbs.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
 # owner: clutch/observe.py
-# verified: 56216342
-# hash: fd4bc48042f7916846f4171e6dcbbc853fbe59a3351f791edec33cfdbb35cb4b
+# verified: 38957300
+# hash: 4c68e5d13a3c5a037107b9f2a5f4f0c4d9736c3349caf2f02792e3c72546cfa3
 import json
 import os
 import subprocess
@@ -14,14 +14,14 @@ import sys
 import pytest
 
 import clutch.observe as watch
-from tests.integration.watch_fixture_repo import watch_fixture_repo
+from tests.config_helpers import watch_fixture_repo
 
 pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture(autouse=True)
 def config_fixture(tmp_path):
-    from tests.integration.test_config import VALID
+    from tests.config_helpers import VALID
 
     (tmp_path / "config.yaml").write_text(VALID)
 
@@ -488,7 +488,7 @@ def test_snapshot_badge(tmp_path, monkeypatch):
 
 def test_diagnose_prompt_uses_live_running_state(tmp_path, monkeypatch, capsys):
     from clutch.__main__ import main
-    from tests.integration.test_config import VALID
+    from tests.config_helpers import VALID
 
     (tmp_path / "config.yaml").write_text(VALID)
     path = tmp_path / "tickets/live/ticket.md"
@@ -708,7 +708,7 @@ def test_queue_reports_content_hold(tmp_path):
 def test_snapshot_reject_queue_uses_configured_caps(tmp_path, monkeypatch):
     from types import SimpleNamespace
 
-    from tests.integration.test_config import VALID
+    from tests.config_helpers import VALID
 
     (tmp_path / "config.yaml").write_text(VALID + "caps: {retry: 1}\n")
     ctx = watch.Context(tmp_path, tmp_path, tmp_path / "config.yaml", None, None, None)

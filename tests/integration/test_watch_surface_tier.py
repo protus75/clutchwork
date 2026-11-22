@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that observe shows each surface's tier/effort from the ticket, the spec or an escalation rung, including the watch 'now' line
+# purpose: Tests that observe shows each surface's tier/effort from the ticket, the spec or an escalation rung, including the watch 'now' line.
 # relates: [clutch/__init__.py, clutch/observe.py, clutch/specs/__init__.py, tests/integration/test_config.py]
 # owner: clutch/observe.py
-# verified: d32c32ad
-# hash: e3182a21537685242a06662200efbe016e6a608acef6b2b5c023a0da3dc91a56
+# verified: 38957300
+# hash: 85e4b2ee25829d5bfca7dd33b0347bd785f161a14294bf9c0b7d8b784b6970e2
 import json
 import os
 from pathlib import Path
@@ -15,7 +15,7 @@ import pytest
 import clutch
 import clutch.observe as watch
 from clutch.specs import load_spec
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

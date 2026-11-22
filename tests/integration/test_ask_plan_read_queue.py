@@ -1,16 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks supervising prompts begin each tick by reading the current queue from view snapshot and view status, never from memory
+# purpose: Checks the supervising prompts start each tick by reading the current queue from view snapshot and view status, never from memory
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 1ce8a2de9bf2cecaab5bbf4b67b9ea72081de50099d40bcd78a0e8af9f79919c
+# verified: 38957300
+# hash: a47666208e9cba17148670b8f28e3d1b13da2c6b5ef1a97b6c794824c8803072
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

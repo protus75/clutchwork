@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Fails when a test module outside tests/stage_replies.py or tests/config_fixture.py defines its own stage reply helper or inline test config text, and flags any exemption that is stale or has no reason.
+# purpose: Fails when a test module outside tests/stage_replies.py or tests/config_fixture.py defines its own stage reply helper or inline config text, and flags stale or unexplained exemptions.
 # relates: [tests/stage_replies.py, tests/config_fixture.py, tests/unit/test_config_fixture.py]
 # owner: engine
-# verified: c589fb97
-# hash: 7ed63beea98ae8e38f6436a7e4440d077e1ac2371aeabd88d8bd0ea289565693
+# verified: 38957300
+# hash: 2c116263b41d30e007b6fab5c26ab49a7c038cc18046da0d06e73fe2a2c4a6b4
 
 import ast
 from pathlib import Path
@@ -19,7 +19,7 @@ REPLY_EXEMPT = {
     "tests/unit/test_stale_running.py": "Async callback records the verdict command.",
 }
 CONFIG_EXEMPT = {
-    "tests/integration/test_config.py": "Exercises config parsing and validation.",
+    "tests/config_helpers.py": "VALID must remain verbatim because build_config cannot express its review and merge sections byte for byte.",
     "tests/integration/test_diagnose_eval.py": "Exercises diagnosis evaluation configuration.",
     "tests/integration/test_driver.py": "Exercises driver configuration.",
     "tests/integration/test_echo_stage.py": "Exercises echo stage configuration.",

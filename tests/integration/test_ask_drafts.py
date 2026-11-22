@@ -1,16 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks the drafts prompt lists stems in order with ticket paths, configured state dir, confirm/reject verdicts and appended host notes
+# purpose: Checks the drafts prompt lists stems in order with their ticket paths, the configured state dir, confirm and reject verdicts, and appended host notes
 # relates: [clutch/ask.py, clutch/config.py, clutch/specs/__init__.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: a1cd71ecfcff7d765731047236aceaf388ed49840aded0a93e2a49414da63854
+# verified: 38957300
+# hash: 33b1e1ae981f030baf89358c9beb35826967a77fae05d7409a943f8d1e1ebe19
 import pytest
 
 from clutch import ask, specs
 from clutch.config import load_config
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -5,8 +5,8 @@
 # purpose: Checks that the approval fixture, CLI review, drain dispatch, Author and Rework all record the same 64-hex requisition_verdict input_identity
 # relates: [clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_author.py]
 # owner: clutch/requisition.py
-# verified: 92889fdb
-# hash: ab0c93545d694061bf419c1a24f14399b8dd4461bd5fe22296698fba43188d16
+# verified: 38957300
+# hash: 925f36b7d1373aab517ddaf0ce362a1a6bc61d8f654178875dc96104cf753f05
 
 import asyncio
 import re
@@ -94,7 +94,7 @@ def test_author_records_identity(tmp_path, monkeypatch):
 
 def test_rework_records_identity(ctx):
     from clutch.config import Route
-    from tests.integration.test_rework import invoke, order, original, requisition, signals
+    from tests.config_helpers import invoke, order, original, requisition, signals
 
     ctx.config.routing.append(Route(tier="max", surface="review", candidates=ctx.config.routing[1].candidates))
 

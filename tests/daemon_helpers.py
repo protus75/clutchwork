@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared daemon and merge-queue test scaffolding over in-memory fake seams: CoreRig, LiveDrain, the ctx and tickets fixtures, ticket readiness and approval, conflict setup, scripted host checks, pause-consumer construction, and import-closure and wiring assertions.
+# purpose: Shared daemon and merge-queue test scaffolding over in-memory fake seams: CoreRig, LiveDrain, the ctx and tickets fixtures, ticket readiness and approval, conflict setup, scripted host checks, pause-consumer construction, and import-closure and wiring assertions
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/git.py]
 # owner: engine
-# verified: f98b9306
-# hash: b44c538c53c90264929c33eb11273ecdcdaf63169713642a4f1700774befb19d
+# verified: 38957300
+# hash: 755ec1674fe172221710689a833462c62cf2c130f93ba8a33dcba8b96252ecc1
 
 import ast
 import asyncio
@@ -32,10 +32,10 @@ from clutch.tickets import INTAKE_SIGNAL, parse_ticket, validate_ticket
 from clutch.watcher import Watcher
 from tests.cli_helpers import CONFIG as CLI_CONFIG
 from tests.cli_helpers import ticket, write
+from tests.config_helpers import CONFIG as PROVIDERS_CONFIG
 from tests.dispatch_settle import dispatch_settled
 from tests.fakes import FakeClock, FakeExec, FakeFileSystem, FakeJournal, turn
 from tests.git_fake import GitFake
-from tests.integration.test_providers import CONFIG as PROVIDERS_CONFIG
 from tests.stages_helpers import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
 
 

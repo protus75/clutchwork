@@ -4,8 +4,8 @@
 # purpose: Integration tests for the clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: ab19a112f4c85239170ed78ed12197d9718576d2297cbaff5016fc25b26678ce
+# verified: 38957300
+# hash: cfd336f9d08ac5991c5090a3cde5a684415285c7f588005ece5bb6331492672a
 import asyncio
 import os
 import subprocess
@@ -600,7 +600,7 @@ def test_core_refusal_and_no_git(tmp_path, monkeypatch, capsys):
 def test_migrate_config_before_load(tmp_path, monkeypatch, capsys, explicit):
     import clutch.__main__ as module
     from clutch.providers import ProviderLLM
-    from tests.integration.test_config import MigrationFS
+    from tests.config_helpers import MigrationFS
 
     directory = tmp_path / "elsewhere" if explicit else tmp_path
     directory.mkdir(exist_ok=True)

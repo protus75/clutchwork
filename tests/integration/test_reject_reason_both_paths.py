@@ -4,8 +4,8 @@
 # purpose: Check that `ticket reject --reason` records the reason on both the direct path and the control-inbox path, and that help, docs and the drafts prompt mention it
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/runner.py]
 # owner: clutch/__main__.py
-# verified: 92889fdb
-# hash: 320abc8440a125152627e5d14949fc90edef1a00e98833a60ab5ebe005ed9831
+# verified: 38957300
+# hash: b2fc8e3c5275d42b5637bd39a161242e714c39c78ee9a14d7aa81b9c8ef85eb0
 import asyncio
 from pathlib import Path
 
@@ -69,7 +69,7 @@ def test_help_docs_and_prompt(tmp_path, capsys):
     for path in ("docs/how-clutch-works.md", "clutch/docs/host-running.md"):
         assert any("ticket reject" in line and "--reason" in line for line in (ROOT / path).read_text().splitlines())
     from clutch.config import load_config
-    from tests.integration.test_config import VALID
+    from tests.config_helpers import VALID
 
     (tmp_path / "config.yaml").write_text(VALID)
     assert "ticket reject --yes --reason" in ask.render("drafts", ["sample"], load_config(None, cwd=tmp_path), tmp_path)

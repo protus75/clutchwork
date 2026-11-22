@@ -1,16 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks plan prompts require explicit Sonnet selection for Claude subagents and different-family panels for calibration labels
+# purpose: Checks the plan prompts require an explicit Sonnet selection for Claude subagents and a panel from a different model family for calibration labels
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: f9d886fd0d2bbd8e4d284de9c8ae89ea21edb6abe5ddfc5538825413e67c3712
+# verified: 38957300
+# hash: 58ee0ea29200e9ad7755bac26d5acac2acc2fe0f641539b3a78a5e10130e50cc
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

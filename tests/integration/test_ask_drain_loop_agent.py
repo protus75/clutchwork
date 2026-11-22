@@ -1,16 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks the drain-loop prompt delegates Recommendation-driven verdicts, keeps hard limits (no push, no --extension) and bounds Suggestion Box triage per tick
+# purpose: Checks the drain-loop prompt delegates Recommendation-driven verdicts, keeps hard limits (no push, no --extension) and limits Suggestion Box triage per tick
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 6196600fd4a3891ce3b028d9fd1bfc5db41c59fb9d68522d1892e2c0449c1ccf
+# verified: 38957300
+# hash: 3f64d8eefb94544c436a0540ad03a6d10d11891fa8537b519b37a70f5179053d
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
-from tests.integration.test_config import VALID
+from tests.config_helpers import VALID
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -4,8 +4,8 @@
 # purpose: Tests the artifact and finding contracts, gate lint, the gate runner with severity merging, the core_drift gate and the bug-evidence gate on a fixture host
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 8ebd89f0844a21bbe2b18cdbbfd6f95dc9c8d980aea186090816a4347eb51720
+# verified: 38957300
+# hash: 41cf0e9bac19e8a699bab253c4f3465c1a28da8e91b7707e28819695dcbd90b0
 import textwrap
 from dataclasses import FrozenInstanceError
 from pathlib import Path
@@ -289,7 +289,7 @@ def test_core_drift_default_hard(repo):
     from clutch import stages
     from clutch.hostfiles import CoreDriftGate
     from clutch.tickets import validate_ticket
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
     from tests.stages_helpers import STEM, author, evidence
 
     artifact = evidence(core_files={"AGENTS.md": None})
@@ -337,8 +337,8 @@ async def test_host_loop_regression_uses_real_bug_gate(tmp_path, missing_base_te
     from clutch.seams import SubprocessExec
     from clutch.tickets import stamp, validate_ticket
     from hosts.fixture import scaffold
+    from tests.config_helpers import context
     from tests.integration.test_fixture_host import environment
-    from tests.integration.test_merge import context
 
     host = scaffold.copy_host(tmp_path / "host")
     env = {**environment(host), "GIT_AUTHOR_NAME": "Fixture", "GIT_AUTHOR_EMAIL": "fixture@invalid", "GIT_COMMITTER_NAME": "Fixture", "GIT_COMMITTER_EMAIL": "fixture@invalid"}

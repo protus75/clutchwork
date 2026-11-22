@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that the watchdog runs on every production driver surface and eval caller, with a single soft-band notification, eval-owned budgets and a harvested group kill on hard timeout.
+# purpose: Tests that the watchdog runs on every production driver surface and eval caller, with one soft-band notification, eval-owned budgets and a harvested group kill on hard timeout.
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/providers.py, clutch/requisition.py, clutch/runner.py]
 # owner: clutch/watchdog.py
-# verified: 92889fdb
-# hash: 412817cab3a7469deadb465718bb1a0bc40a0c4bea77c8edbbba9a7a8cf19331
+# verified: 38957300
+# hash: 41b54405c6f91abbbb30d551023523041e725fcb9d49967d355916d491e24d46
 
 import asyncio
 import json
@@ -25,9 +25,10 @@ from clutch.requisition import FIRST_REVIEW, review_ticket
 from clutch.watchdog import EventConsumer
 from eval import diagnose, harness
 from tests.cli_helpers import root, write
+from tests.config_helpers import CONFIG, claude_ok
 from tests.daemon_helpers import CoreRig
 from tests.integration.serve_rig import finish, graph, terminals, until
-from tests.integration.test_providers import CONFIG, PythonProviderExec, claude_ok
+from tests.integration.test_providers import PythonProviderExec
 from tests.integration.test_requisition import TICKET
 from tests.integration.test_scheduler import text, turn
 from tests.spool_captures import list_captures

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared stage-test scaffolding: a fake-provider config, a ticket fixture, a repo fixture, a scripted agent, report contexts and a `run` helper that drives `run_stages` over in-memory seams.
+# purpose: Shared stage-test scaffolding: fake-provider config, ticket and repo fixtures, a scripted agent, report contexts and a `run` helper that drives `run_stages` over in-memory seams.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 986e908a1169691a694005437bd029eecab7b5dd7b65d83f843313fa6732443b
+# verified: 38957300
+# hash: 2773926930abf4b37d3d29debe4d72d8a91f2a02da7f70926f8779606f4a2222
 
 import asyncio
 import shutil
@@ -123,7 +123,7 @@ def evidence(**kw) -> Evidence:
 
 async def report_context(repo, *, verification=None, source=None, script=None):
     """A disposable producer whose report is written by real Verification, never by its agent."""
-    from tests.integration.test_merge import context
+    from tests.config_helpers import context
 
     ctx = context(repo, script if script is not None else [agent({}), verdict()])
     ctx.fs.write(repo / "clutch/thing.py", b"ok\n")

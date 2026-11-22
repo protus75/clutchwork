@@ -1,45 +1,20 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for config.yaml loading: shipped defaults, refusal of missing, unknown, null or wrongly typed keys, schema version checks, closed vocabularies, notify argv validation, retro and coverage_map settings, and config migrate from version 0 to 1
+# purpose: Integration tests for loading config.yaml: shipped defaults, refusal of missing, unknown, null or wrongly typed keys, schema version checks, closed vocabularies, notify argv validation, retro and coverage_map settings, and config migrate from version 0 to 1
 # relates: [clutch/config.py, clutch/runner.py, clutch/seams.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 94a843e3cb660e77c61e150d2cdb008b0794a2516316879f76081a37fb7c7f27
+# verified: 38957300
+# hash: b13ff367ecf7d1d7af7caf266a4a210d75a7cb913b6c1f81cd90bd50aa32d245
 import textwrap
 from pathlib import Path
 
 import pytest
 
 from clutch.config import SCHEMA_VERSION, ConfigError, load_config
+from tests.config_helpers import VALID, MigrationFS
 
 pytestmark = pytest.mark.disk_io_skip
-
-VALID = textwrap.dedent(
-    """\
-    schema_version: 1
-    state_dir: .clutch
-    providers:
-      - name: claude
-        kind: cli
-        package: test-cli
-        models_by_tier: {low: haiku, medium: sonnet, high: opus, max: opus}
-        limits: {concurrency: 1, est_cost_per_call_usd: 0.25}
-    routing:
-      - {tier: medium, surface: implement, candidates: [{provider: claude, model: sonnet}]}
-    review:
-      mechanical:
-        - {code: pytest, argv: [uv, run, pytest], trigger: always, severity: hard}
-        - {code: ruff, argv: [uv, run, ruff, check], trigger: [clutch/], severity: soft}
-      gate_severity: {scope_fence: hard}
-    merge:
-      safety_checks: [pytest]
-      strategies:
-        - {paths: [uv.lock], strategy: regenerate, argv: [uv, lock]}
-        - {paths: [CHANGELOG.md], strategy: union}
-    engine_plane_safety_inventory: [specs/, clutch/gates.py, config.yaml]
-    """
-)
 
 
 def write(tmp_path: Path, text: str, name: str = "config.yaml") -> Path:
@@ -271,18 +246,6 @@ def test_provider_backstop_never_undercuts_a_ticket_stuck_budget(tmp_path):
 @pytest.mark.parametrize("argv", ["[]", "notify-send", "[3]", "[true]", "[{}]", '[""]', '["   "]', '[notify, "\\0"]'])
 def test_notify_refuses_malformed_argv(tmp_path, argv):
     assert refusal(tmp_path, VALID + f"notify: {argv}\n").key.startswith("notify")
-
-
-class MigrationFS:
-    def __init__(self):
-        from clutch.seams import LocalFileSystem
-
-        self.local = LocalFileSystem()
-        self.writes = []
-
-    def write(self, path, data):
-        self.writes.append((path, data))
-        self.local.write(path, data)
 
 
 @pytest.mark.parametrize(

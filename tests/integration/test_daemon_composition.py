@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 92889fdb
-# hash: d41e512302ab2a3db7310f66c48cf45637739b0a73fb4dd67541372d9f880045
+# verified: 38957300
+# hash: 3971ecec770fd9c4690512a3001d372a6e5d44429c82393793e803b33a495b5f
 
 import ast
 import asyncio
@@ -33,12 +33,12 @@ from clutch.stages import StageContext
 from clutch.tickets import INTAKE_SIGNAL
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
 from tests.cli_helpers import root, write
+from tests.config_helpers import CONFIG, ENV, claude_ok, codex_ok, jsonl
 from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring, assert_idle, assert_startup_pause_wiring, capture_pipeline_queue, production_writer, ready, sources, without_core_import
 from tests.daemon_helpers import ctx as admission_context
 from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_daemon_config import assert_detached, python_values
 from tests.integration.test_git import commit_lock
-from tests.integration.test_providers import CONFIG, ENV, claude_ok, codex_ok, jsonl
 from tests.integration.test_scheduler import Time, import_closure, text, turn
 from tests.spool_captures import list_captures
 
@@ -1041,7 +1041,7 @@ async def test_production_composes_rework_without_running_it(tmp_path, monkeypat
 @pytest.mark.parametrize("action", ["update", "split", "escalate", "exhausted"])
 async def test_production_applies_reviewed_rework_orders(admission_context, monkeypatch, action):
     from clutch.rework import SUPERSEDES, record_supersedes
-    from tests.integration.test_rework import order, requisition, successors
+    from tests.config_helpers import order, requisition, successors
 
     checkout, writer = production_writer(admission_context, [])
     ctx = writer.ctx
@@ -1120,7 +1120,7 @@ async def test_production_applies_reviewed_rework_orders(admission_context, monk
 @pytest.mark.parametrize("action", ["split", "update"])
 @pytest.mark.parametrize("failure", ["validation", "review", "write", "add", "commit", "partial", "incomplete", "all-commits", "spent"])
 async def test_production_refuses_failed_rework_publication(admission_context, monkeypatch, failure, action):
-    from tests.integration.test_rework import order, requisition, successors
+    from tests.config_helpers import order, requisition, successors
 
     checkout, writer = production_writer(admission_context, [])
     ctx = writer.ctx

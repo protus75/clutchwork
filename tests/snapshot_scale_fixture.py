@@ -5,8 +5,8 @@
 # purpose: Builds a deterministic, incident-sized snapshot host repo with many tickets, merges, journal events and Box messages.
 # relates: [clutch/box.py, clutch/git.py, clutch/seams.py, tests/integration/test_config.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 32d3b9efa95b211bba2706b3ee2f6211ee6b38973bfd18a4520b7f1560524971
+# verified: 38957300
+# hash: 18ca1685a8b476e00e8c63ee6342bda2a7d62d450dca0ee60ae58ffe0e8eb59f
 
 import json
 import subprocess
@@ -15,8 +15,8 @@ from pathlib import Path
 from clutch.box import Box
 from clutch.git import blob_sha
 from clutch.seams import LocalFileSystem
+from tests.config_helpers import VALID
 from tests.drain_helpers import confirmed
-from tests.integration.test_config import VALID
 
 
 def git(root, *args, input=None):
