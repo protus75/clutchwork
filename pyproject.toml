@@ -65,6 +65,8 @@ extend-exclude = ["*.md", "tickets"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+# Line length never blocks work (owner decision 2026-11-21).
+ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 # Shared fixture imports are required by pytest.
