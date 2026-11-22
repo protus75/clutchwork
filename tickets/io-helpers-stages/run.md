@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-The shared GitFake records calls but does not maintain repository state; the fake-backed runner still needs its input and stage behavior worked through.
+The hub retains its existing build_config import for the config-adoption check. Final verification passed: 19 helper unit tests, 1 helper integration test, 2005 unit tests, and 294 integration tests with 3339 skipped. The separate shared-fakes and skip-list checks also passed. The base integration count was not independently measured.
 
 ## Dead ends
 
-none
+An initial fake Git response caused core-drift findings; the helper now returns file-based blob identities and reports absent files through GitError.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+30 minutes expected; elapsed time not recorded.
 
