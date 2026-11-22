@@ -49,8 +49,9 @@ Since `clutch:meta` headers became required on files under `docs/`, `clutch/docs
 ## Scope in / Scope out
 Scope in:
 - clutch/stages.py `check_meta`: add the fill step before the existing `meta.refresh` call, then run `refresh` as today for every changed file. Import `metafill` and `load_spec` inside `check_meta` (`clutch.metafill` imports `findings_text` from `clutch.stages`, so a module-level import would be circular); call it as `metafill.make_ask(...)` and `metafill.fill(...)` so tests can monkeypatch `clutch.metafill.make_ask`. A fill that returns no reply leaves those files' findings in place.
-- clutch/specs/implement.md: replace rule 5 as stated and bump `version` to the next minor above main.
-- tests/integration/test_implement_spec_meta_headers.py: replace the clause list with the new rule's clauses and update its version pin; tests/unit/test_specs.py and tests/integration/test_specs_delimiter_note.py: update the `implement` version pin. Nothing else changes in those three files.
+- clutch/specs/implement.md: replace rule 5 as stated and bump `version` to the next minor above main (2.24 if main is still at 2.23).
+- tests/integration/test_implement_spec_meta_headers.py: replace the clause list with the new rule's clauses and update its version pin.
+- Implement version pins forced by the bump, each limited to changing the `implement` version from the old minor to the new one and nothing else: tests/unit/test_specs.py (both pins, lines 33 and 134 on main), tests/integration/test_specs_delimiter_note.py, tests/integration/test_implement_spec_mutation_check.py (line 22), and tests/integration/test_stages.py (the expected `spec: implement 2.23` run-record text at line 350). test_stages.py is a hot file fenced only because the bump forces this edit; add no new test, fixture or helper there. Before editing, search for every `2.23` implement-spec pin outside tickets/ and .clutch/ to confirm these are all of them.
 - tests/unit/test_meta_drift_check.py: the expected findings change because empty and drift-flagged purposes are now filled; inject the fill through a fake `ask` (monkeypatch `metafill.make_ask`) and give the stand-in ctx the `driver` the new call reads.
 - New tests/unit/test_check_meta_fill.py drives `check_meta` under `tmp_path` with a fake ask.
 - docs/how-clutch-works.md section 5.1 `meta_drift` row: say Check refreshes headers and fills empty or drift-flagged purposes first, and the gate reports only what stays malformed or empty.
@@ -66,6 +67,8 @@ Scope out:
 - tests/unit/test_specs.py
 - tests/integration/test_specs_delimiter_note.py
 - tests/integration/test_implement_spec_meta_headers.py
+- tests/integration/test_implement_spec_mutation_check.py
+- tests/integration/test_stages.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_check_meta_fill.py` proves a new file with an empty purpose and a changed file whose header drifted both get the fake ask's purpose written and committed in the `meta` commit, and `check_meta` returns no finding for them, not `empty_purpose` or `purpose_unverified`.
@@ -74,11 +77,11 @@ Scope out:
 
 ## Verification
 ```
-./dev.py test tests/unit/test_check_meta_fill.py tests/unit/test_meta_drift_check.py tests/unit/test_meta_drift_gate.py tests/integration/test_implement_spec_meta_headers.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/unit/test_meta_fill.py
+./dev.py test tests/unit/test_check_meta_fill.py tests/unit/test_meta_drift_check.py tests/unit/test_meta_drift_gate.py tests/integration/test_implement_spec_meta_headers.py tests/integration/test_implement_spec_mutation_check.py tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py tests/unit/test_meta_fill.py tests/integration/test_stages.py
 ```
 
 ## Definition of rejected
-Making `meta_drift` hard or removing it, Implement still being told to run a meta verb, a second metadata writer, or files outside the fence change.
+Making `meta_drift` hard or removing it, Implement still being told to run a meta verb, a second metadata writer, new tests added to tests/integration/test_stages.py, or files outside the fence change.
 
 ## Time budget
 - expected: 15m
