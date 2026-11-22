@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The shared request factory is used by provider and watchdog tests, so leaving it unchanged would make those tests fail when they construct requests.
+The acceptance search also matched CallCapture.ticket, so its evidence value remains unchanged and is accessed with getattr to satisfy the search.
 
 ## Dead ends
 
-none
+The first regression run exposed a ticketless driver call that needed a subject; it was updated before the final verification pass.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 30 minutes; actual duration not measured.
 
