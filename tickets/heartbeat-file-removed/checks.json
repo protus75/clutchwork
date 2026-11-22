@@ -1,0 +1,156 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "e65fe0edafad8ea266b11ab729ed21b761b7046f",
+  "stem": "heartbeat-file-removed",
+  "passed": true,
+  "changed_files": [
+    "clutch/daemon.py",
+    "clutch/docs/host-contract.md",
+    "clutch/heartbeat.py",
+    "clutch/serve.py",
+    "docs/engine-state-db-plan.md",
+    "docs/how-clutch-works.md",
+    "test-gate.toml",
+    "tests/harness/daemon_soak.py",
+    "tests/integration/serve_rig.py",
+    "tests/integration/test_daemon_soak_runner.py",
+    "tests/integration/test_heartbeat.py",
+    "tests/integration/test_serve_lifecycle.py",
+    "tests/integration/test_serve_notify.py",
+    "tests/integration/test_serve_verdict_orphan_sweep.py",
+    "tests/unit/test_callerless_code_removed.py",
+    "tests/unit/test_serve_no_heartbeat_file.py"
+  ],
+  "inserted_lines": 88,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 16.509628,
+        "passed": 2168,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.389992141048424,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.267928761022631,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0259074669738766
+        }
+      },
+      "coverage": {
+        "percent": 76.78212099156569,
+        "files": {
+          "clutch/daemon.py": 68.25396825396825,
+          "clutch/serve.py": 57.10955710955711
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 10.56488,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3307,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.023275201994693,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1475055450282525,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1061349729716312,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043745769944508
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test"
+      ],
+      "rc": 0,
+      "tail": "]\nssss.sssss..ssssssss.sssssssssss....sssssssssssssssssssssssssssssssssss. [ 63%]\nsssssssssssssssssssssssssssssssssssssssssssssss.sss.ssssssssssssssssssss [ 65%]\nssssssssssssssssss..ssssss.ssssssssssssssss.sssssssssssssssss..sssssssss [ 67%]\nsssssssssssssssssss.ssssssssssssss...sssssss.ssss.s.ssss.sssssss.sssssss [ 69%]\nsssssssssssssss.ssssss.sssssssssssssssssssssssssssssss.ssss..ssssssss.ss [ 71%]\ns.sssssssss.ssssssssssssssssssssss.sssss.sssssssssssssssssssssssssssssss [ 73%]\nssssssssssssssssssssssss.sssssssssssss.sssssssssssss.sssssssss..ssssss.s [ 75%]\nss..sss.sss.ss.ssssssss.s..sssssssssss..sssssssssss.sssssssssss..sssssss [ 77%]\nsss...s..ssssssssssss.ssssss.s....ssssssssssssssssssssssssssssssssssssss [ 79%]\nssssssssssssssssssssssssss.sssssssssssssss..ssssssssssssssssssssssssssss [ 81%]\nsssssssssssssssssssssssssssssssssssssssssssssssssss.ssssssssssssssssss.s [ 83%]\nssssssss.ssssssssssssssssssssssssssssssssssssssssssssss.ssssssssss.sssss [ 85%]\nss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 89%]\nssssss.ssssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nss..sss..ss.ssssss.ssssssssssssssssssssssssssss.ssssssssssssssssssssssss [ 93%]\nsssssss.sss............ssss.ssssssssss.................sssssssssssssssss [ 95%]\nsssssssssssssssss....s.ssssssss.sssssssss...............ssssssssss.sssss [ 97%]\nssssss.ssssss.......ss............sssssssssssssssss........sssssssssssss [ 99%]\nssss                                                                     [100%]\n297 passed, 3307 skipped in 6.85s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 17.69309
+    }
+  ]
+}
