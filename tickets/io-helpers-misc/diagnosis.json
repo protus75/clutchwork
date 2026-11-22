@@ -1,0 +1,25 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "27018a495f317b369bd66037f10983b4894c6cc3",
+  "stem": "io-helpers-misc",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "The premise holds. Every hub file, test_kill_signal_journal.py included, keeps `pytestmark = pytest.mark.disk_io_skip`. Its tests do not run. Scope out says skipped files may still break semantically and their batch ticket fixes that. Compatibility covers only tests that run today.",
+    "Write Rig in tests/misc_helpers.py on FakeFileSystem and FakeJournal, as Scope in says. Do not keep a separate real-I/O rig, and do not rewrite the hub tests. test_kill_signal_journal.py deletes its Rig and decision definitions and imports them back from tests.misc_helpers.",
+    "The run stopped before writing anything, so redo all the work. Create tests/misc_helpers.py with all 17 moved names. Repoint the importer lines in the fence. Have the 5 hubs import the names back. commit_lock returns asyncio.Lock(). test_git.py and the 8 real-I/O commit_lock importers stay",
+    "Add tests/unit/test_misc_helpers.py with one test per moved name, plus an import test. Assert that commit_lock(tmp_path/'state') is an asyncio.Lock and creates nothing, and that arrival writes only under tmp_path. Record the passed and skipped counts for the base commit and the candidate in run.md",
+    "Stop on a premise failure only when a test that runs today breaks, or when a shared fake lacks a behavior a helper needs. A helper change that only a skipped hub test notices is expected scope. Mention it under Surprises in run.md."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2,
+    3
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
