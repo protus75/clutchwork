@@ -4,8 +4,8 @@
 # purpose: test roadmap drive
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, clutch/triage.py, tests/fakes.py]
 # owner: engine
-# verified: 9a610809
-# hash: a4eac8bbdbcd9ec438a1401a55560d0fc4032bf53b4bd001eb916b62c05ddfac
+# verified: a8fa2c67
+# hash: a568f38e6c3f97b96a2b6569c6eb03ebe109454fbcec9a205b1cbade881b2ec4
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 

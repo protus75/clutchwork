@@ -4,8 +4,8 @@
 # purpose: Verifies clutch roadmap author: refuses a dirty or missing roadmap, files rows until the ahead window is full, links and strikes rows, reports declined or waiting rows, and wires the CLI
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/fakes.py]
 # owner: engine
-# verified: df236100
-# hash: 5dd4d6781f397f8e2ee69c750f87f0364111fa08a202f63dbf4159e75f1dc99f
+# verified: a8fa2c67
+# hash: 1e5cb4851c54077bbcc0ddaa035840cfc13945f2cfebec9b7595f4e8dc2b36df
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace

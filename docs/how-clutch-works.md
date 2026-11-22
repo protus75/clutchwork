@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 9d19a72e
-hash: d91113a3f2d8383c133f683474327220caec7d1a15941d1259cc036982932711
+verified: a8fa2c67
+hash: c4baa7040a6b30e8622473ebad91fcf1a2f6d1a7911470d57dc343e34bca6a49
 -->
 # How ClutchWork works
 

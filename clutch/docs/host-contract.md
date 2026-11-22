@@ -4,8 +4,8 @@ kind: guide
 purpose: Host contract
 relates: [clutch/docs/host-gemini.md, clutch/docs/host-qwen.md, clutch/docs/host-running.md, clutch/tickets.py]
 owner: engine
-verified: de6f600b
-hash: f08deb93467899e9e942d1afdd9d36afee61d2d4ad79523f70c9fb82ba90a051
+verified: a8fa2c67
+hash: 01e31d06cfb2e31484120a5b36c996c718055fbdb7ae590d063845cbd85781c3
 -->
 # Host contract
 

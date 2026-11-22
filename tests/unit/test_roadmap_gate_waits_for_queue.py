@@ -4,8 +4,8 @@
 # purpose: Verify that the roadmap driver skips the release gate while roadmap.ahead or more confirmed tickets are unsettled and runs it once fewer remain.
 # relates: [clutch/roadmap.py, clutch/status.py, tests/fakes.py]
 # owner: engine
-# verified: 00000000
-# hash: 0000000000000000000000000000000000000000000000000000000000000000
+# verified: a8fa2c67
+# hash: 2dafef7974bcb5268f9557e0e2a18b7a86b1c60744d969018e19d63af447fbb4
 from types import SimpleNamespace
 
 import pytest
