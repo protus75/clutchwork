@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "5f3f98e957c00c71fe8cbb71a48ab2764274d06e",
+  "produced_at_sha": "f919b4bf31162b268a947c7a9aea23edfe0a5fb5",
   "stem": "serve-no-roadmap",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "premise_failed",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Acceptance criterion 5's grep matches the local variable `run_driver` in tests/integration/test_drain.py:1147 and :1154. That variable wraps clutch.driver.Driver.run and has nothing to do with the roadmap driver. The file is outside the fence, so the criterion can't pass as written.",
-    "Fix the ticket, not the code: narrow the criterion 5 grep to the removed names, e.g. `\\.run_driver\\(|def run_driver|self\\.run_driver`, or exclude tests/integration/test_drain.py. Don't fence that file: CLAUDE.md lists it as a hot test file to fence only when a change forces an edit.",
-    "After the grep fix, restate the full work on the next attempt from main: remove the driver from serve.py and drain.py, move roadmap.ship into the `release ship` handler in __main__.py, stop author_ahead re-filing rejected rows, rewrite the three prompts and the docs, and add the four new unit tests.",
-    "Box items box-001121 and box-001122 flag stale driver wording in clutch/docs/host-authoring.md:149 and docs/document-agent/plan.md:71. Decide whether to add both files to this ticket's fence and Scope in, or leave them as separate follow-ups."
+    "Fence gap confirmed: tests/unit/test_main_release_group.py:33 asserts set(group.choices) == {\"bump\", \"publish\"}, so the required `release ship` subcommand fails `./dev.py test` (AC 8). Add that file to ## Scope fence before rerunning.",
+    "In tests/unit/test_main_release_group.py::test_old_names_refuse, change the expected release subcommand set to {\"bump\", \"publish\", \"ship\"}. Leave the other assertions in that file as they are.",
+    "Scope out says the roadmap table does not name the driver, but docs/roadmap.md (rows 161 and 540) does. box-001125 already tracks this. Correct the Scope out wording so it no longer claims this; don't add docs/roadmap.md to the fence.",
+    "After fixing the fence, grep tests/ for other exact pins of the release subcommand set or the release group help text, such as `bump`/`publish` choice sets in tests/unit/test_main_help.py. Add each forced file to the fence before the run starts from main."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
