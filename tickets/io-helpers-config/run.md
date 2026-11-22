@@ -1,23 +1,23 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Base: 2045 unit passed; integration 296 passed, 3339 skipped. Candidate: 2074 unit passed, including 29 helper checks; integration 295 passed, 3339 skipped, one guard failure. The exact integration command passed again in a full-history base worktree. Import checks and mutation checks passed.
+Final sequential verification passed: 27 helper tests, 2,072 unit tests, 296 integration tests with 3,339 skipped, and 8 focused integration checks. The base had 2,045 unit tests and the same 296 passed and 3,339 skipped integration tests. The existing shared-fakes guard tracks the relocated verbatim config.
 
 ## Dead ends
 
-Moving VALID verbatim, as permitted, triggers both a missing exemption for its new owner and a stale exemption for its former owner; build_config cannot reproduce its review and merge sections byte-for-byte.
+none
 
 ## Second problems filed
 
-- box-001112-ce4cf299: docs/roadmap.md:97–98 would retain stale helper ownership statements after this extraction.
+- box-001113-7829d434: docs/roadmap.md:98 names the provider FakeExec at its former location and is outside the scope fence.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6.1-terra
 - spec: implement 2.27
 
 ## Predicted vs actual
