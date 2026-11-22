@@ -1,24 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "839679780dac18713c71b10487fcb55412d2e92e",
+  "produced_at_sha": "06395f4b23d0f391c3573eac46232e78477f0158",
   "stem": "integration-io-guard",
-  "attempt": 2,
-  "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "retry",
+  "attempt": 3,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
   "lessons": [
-    "The coverage gate failed: clutch/ioguard.py had 48.10% coverage against a 90% floor, with lines 31-52 and 66 missing. All tests passed, so redo the full ticket scope and add unit-test coverage of those lines in tests/unit/test_ioguard.py. Do not lower the floor in test-gate.toml.",
-    "CPython runs sys.addaudithook callbacks with tracing paused unless the hook has a truthy __cantrace__ attribute. Coverage therefore never records the hook body even when tests trigger it. Put the event decision in a pure function in clutch/ioguard.py, e.g. (event, args, basetemp) -> operation or",
-    "In tests/unit/test_ioguard.py, call that pure decision function directly for each case: open write/append/create/exclusive/O_TMPFILE, os.rename/replace/remove/unlink/rmdir, shutil events, os.mkdir inside and outside basetemp, the *current symlink carve-out, subprocess.Popen, os.system,",
-    "Also keep the end-to-end tests from the acceptance criteria that enter guard(tmp_path) and assert IntegrationIOBlocked is raised and nothing is left on disk. Make sure the duckdb.connect raise for an on-disk database (likely line 66) runs in a unit test.",
-    "Before you finish, run the gate's own command, not just the Verification commands: `uv run clutch coverage gate -- uv run python -m pytest tests/unit -p clutch.testguard --cov=clutch --cov-branch --cov-report=json:coverage.json -n auto`. Confirm clutch/ioguard.py is at 90% or above."
+    "The premise finding holds. On Python 3.14, tempfile.TemporaryFile() calls io.open(dir, 'w+', opener=...), which emits open('/tmp','w+',O_RDWR|O_CREAT|O_TRUNC|O_CLOEXEC) before the opener's O_TMPFILE os.open. Carve-out (b) alone cannot make criterion 5 pass.",
+    "Revise the ticket Scope in, carve-out (b): also allow a write-mode `open` event whose path is an existing directory. Opening a directory for writing can create no file; the O_TMPFILE event that follows does the real work. Keep all other write-mode opens blocked.",
+    "On first use, tempfile._get_default_tempdir probes the temp directory by writing a random file there (the event open('/tmp/<random>', None, O_CREAT|O_EXCL...)). The ticket should have guard() call tempfile.gettempdir() before it sets the flag, so the guard never sees that probe.",
+    "Add a unit case to criterion 5 that asserts tempfile.TemporaryFile() succeeds inside guard() on the installed Python, which is 3.14.6 per the run log. Keep the blocked-case assertions in criterion 1 unchanged so the new carve-out cannot let real file writes through."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    1,
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5"
