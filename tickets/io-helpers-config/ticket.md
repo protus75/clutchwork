@@ -64,7 +64,7 @@ Scope in:
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
-- Defining in `tests/config_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`: use the shared fakes. `MigrationFS` may subclass `tests.fakes.FakeFileSystem` , adding only the behavior the importers need. Tests defined in the five hubs stay there (including `test_merge.py::test_bootstrap_pipeline_keeps_inline_admission`, now a wrapper).
+- Defining in `tests/config_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`: use the shared fakes. `MigrationFS` may subclass `tests.fakes.FakeFileSystem`, adding only the behavior the importers need. Tests defined in the five hubs stay there (including `test_merge.py::test_bootstrap_pipeline_keeps_inline_admission`, now a wrapper).
 - Skipped importers may still break semantically; their batch ticket fixes that.
 
 ## Scope fence
