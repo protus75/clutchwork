@@ -1,0 +1,14 @@
+Observed 2026-11-21 in Check captures and diagnoses; fails in most full-suite `pytest -n auto` runs, passes alone, also fails on older commits (1 of 3 runs on 99c9d7ec and its parent).
+
+1. tests/integration/test_host_loop.py module fixture `production` (timeout=30, five FixtureLoop members each a real `python -m clutch engine serve` subprocess, run concurrently):
+   LoopRefused: machine_ticket_merge (merge-floor): merge-floor did not merge: [... body={'to': 'abandoned'}]  (and similarly merge-add)
+   All three tests in the module then ERROR at setup.
+
+2. tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[precheck|safety|integration|host-red]:
+   AssertionError: predicate did not become true before timeout   (tests/fakes.py:123 until(), 60 s time.monotonic deadline)
+   AssertionError: production graph did not reach the scripted boundary   (tests/integration/serve_rig.py:40)
+
+3. tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart (line ~122):
+   saw 2 reject_verdict keep signals, not 1.
+
+Cause of rising frequency: scheduler.parallel max_runs: 2 enabled 2026-11-20 (config.yaml); two tickets' `pytest -n auto` runs plus model CLIs load the machine at once.
