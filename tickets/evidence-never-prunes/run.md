@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final specified verification passed with 36 tests; targeted mutation checks caught the tested retention, warning, configuration, and lock regressions. The full suite was left to Check as instructed.
+The existing branch already contained the evidence retention implementation; the full test command passed with 3,341 integration tests skipped.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-001116-739ec955: Planning documents outside the scope fence—docs/evidence-trail-plan.md, docs/training-data-plan.md, and docs/roadmap.md—still describe the former automatic retention policy.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 30 minutes; completed in under 30 minutes.
 
