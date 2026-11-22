@@ -53,7 +53,7 @@ Item 3 of the same report, `test_live_keep_dispatches_again_without_restart` see
 - consumers: tests/integration/test_host_loop.py (production fixture and the stuck-member case) and `produce` used by tests/integration/test_gates.py
 - observable change: `FixtureLoop(timeout=None)` waits for evidence, for serve exit and for the `box triage` exec without a real-seconds limit; a numeric timeout is still measured by the injected `clock` and `sleep`, so a fake clock makes it expire deterministically; `stop` no longer cancels a serve that is slow to honor the kill request
 - compatibility: restores the intended behavior that a loaded machine only slows the harness; `produce` and the numeric default of 60 are unchanged, and a stuck member still raises `LoopRefused`
-- acceptance: the carried reproducer's stop case and the existing member tests pass; no member ends `abandoned`
+- acceptance: the carried reproducer's stop and stuck-member parts pass
 - tests: tests/regress_serve_flaky_waits.py and tests/integration/test_host_loop.py
 - post-merge source of truth: tests/harness/host_loop.py
 
@@ -68,9 +68,10 @@ Item 3 of the same report, `test_live_keep_dispatches_again_without_restart` see
 - post-merge source of truth: tests/fakes.py
 
 ## Scope in / Scope out
-In: the two extensions above, the `production` fixture and the stuck-member case in `tests/integration/test_host_loop.py` (forced: the case passes a numeric `timeout` and must now inject a fake clock and sleep), the rewrite of `test_until_translates_timeout` in `tests/integration/test_serve_rig_fakes.py` (forced: it relies on the rig's removed 60 s deadline and would hang), and a new reproducer `tests/regress_serve_flaky_waits.py`. The reproducer prints one JSON object and works in two parts, each reporting `defect` when its old behavior is present:
+In: the two extensions above, the `production` fixture and the stuck-member case in `tests/integration/test_host_loop.py` (forced: the case passes a numeric `timeout` and must now inject a fake clock and sleep), the rewrite of `test_until_translates_timeout` in `tests/integration/test_serve_rig_fakes.py` (forced: it relies on the rig's removed 60 s deadline and would hang), and a new reproducer `tests/regress_serve_flaky_waits.py`. The reproducer prints one JSON object and works in three parts, each reporting `defect` when its old behavior is present:
 - until part: replace `tests.fakes.time` with an object whose `monotonic()` adds 100 s per call, then await `tests.integration.serve_rig.until(SimpleNamespace(time=FakeClock()), predicate)` where the predicate turns true on its 300th call. Old code raises `AssertionError` (defect); fixed code returns (pass).
 - stop part: build a `FixtureLoop` under a temp root with a recording fake exec, write `control/active.json` as `{"lifecycle_id": "x", "hold_id": null}` under its state dir, set `loop.task` to a task that sleeps 5.5 real seconds then returns `(0, "", "")`, and await `loop.stop()`. Old code times out at 5 s and cancels the task (defect: `task.cancelled()`); fixed code lets it finish (pass). The 5.5 s is a fixed injected delay larger than the old constant, not a load-dependent race.
+- stuck-member part (moved here because `tests/integration/test_host_loop.py` is skipped by the `disk_io_skip` policy): build a `FixtureLoop` with a numeric `timeout`, a fake `clock` and a fake `sleep`, and await `loop.until(lambda: False)`. Raising `LoopRefused` without a real-time wait is pass; a hang (bounded by the script's own fake-clock step count), a `RuntimeError`, or any other outcome is defect.
 Any import failure or unexpected exception prints `{"regression_result": "error"}` with the traceback on stderr. Model it on `tests/regress_lint_carries.py`.
 Out: other `until` helpers (`tests/waiting.py`), `tests/integration/test_serve_admission.py` itself, `tests/integration/test_gates.py`, other tests in `tests/integration/test_serve_rig_fakes.py`, serve production code, the scheduler config, and any skip, xfail, retry loop or raised timeout. The fix to `test_live_keep_dispatches_again_without_restart` is `serve-live-keep-single-verdict`.
 
