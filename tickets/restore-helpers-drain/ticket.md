@@ -7,6 +7,7 @@ kind: chore
 
 ## Depends on
 - restore-helpers-cli
+- shared-git-fake-integration
 
 ## Context
 - tests/fakes.py
@@ -41,22 +42,22 @@ The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit an
 
 ## Scope in / Scope out
 Scope in:
-- Create `tests/drain_helpers.py` holding these moved names, each rewritten as described, keeping its signature unless a change is named: `Clock`, `NoChild`, `START`, `Script`, `commit_ticket`, `confirmed`, `drain`, `journal`, `make_root`, `mechanical_first`, `offer_events`, `pause_checkout`, `retry_draws`, `root`, `tos`.
+- Create `tests/drain_helpers.py` holding these moved names, each rewritten as described, keeping its signature unless a change is named: `Clock`, `NoChild`, `START`, `Script`, `commit_ticket`, `confirmed`, `drain`, `journal`, `make_root`, `mechanical_first`, `offer_events`, `pause_checkout`, `reentry_drain`, `retry_draws`, `root`, `tos`.
   - From `test_drain.py`: `START` (constant), `Script` (the per-stem scripted stage seam; its lock probe writes a lockfile under `state_dir` inside the `tmp_path` repo), `make_root(tmp_path, caps="")` and the `root` fixture (same files as today, no `git init`/`add`/`commit`: a `GitFake` stands in), `drain(root, script, clock=None)` (in-process `main(["engine","drain"], ...)` with the shared fakes), `journal(root)` (`FakeJournal` as in `tests/cli_helpers.py`), `confirmed(depends, priority)` (pure text), `commit_ticket(root, stem, text)` (writes the ticket file, then records the add and commit on the registered `GitFake` instead of running git), `retry_draws(root, stem)`, `tos(root, stem)`, `offer_events(root)`, `mechanical_first(monkeypatch, stem, workspace=True)`, `pause_checkout(root)` (builds the `Checkout` over `GitFake`, `FakeExec` and `FakeFileSystem` in place of `Git(SubprocessExec(), ...)` and `LocalFileSystem()`), and the `Clock` name (`tests.fakes.FakeClock`).
-  - From `test_drain_reentry.py`: `NoChild` (an async `run(argv, *, cwd, env, timeout, stdin_path=None)` returning `(0, "", "")`; it is the shared fake `FakeExec` if that class already scripts this, else it stays a three-line class, the only stand-in allowed here because `tests/fakes.py` has no equivalent) and `drain(repo, script, *, green_base=True)`. This second `drain` has a different signature from the `test_drain.py` one, so it is named `reentry_drain` in the new module; its only importer, `tests/integration/test_audit.py`, imports it as `from tests.drain_helpers import reentry_drain as drain`, and the hub keeps the old name through the same alias.
+  - From `test_drain_reentry.py`: `NoChild`, which is the name `NoChild = tests.fakes.FakeExec` (its `run(argv, *, cwd, env, timeout, stdin_path=None)` already returns `(0, "", "")` and records `calls`, which no `NoChild` user reads) and `drain(repo, script, *, green_base=True)`. This second `drain` has a different signature from the `test_drain.py` one, so it is named `reentry_drain` in the new module; its only importer, `tests/integration/test_audit.py`, imports it as `from tests.drain_helpers import reentry_drain as drain`, and the hub keeps the old name through the same alias.
   - The two helpers that need names from hubs not yet moved keep importing them from where they live: `Script`/`make_root` use `PLAN`, `CONFIG`, `ENV`, `git_out`, `ticket`, `with_retro_driver`, `write` from `tests.cli_helpers` (moved by `restore-helpers-cli`), and `adopt_conduct` from `tests.integration.test_stages` until `restore-helpers-stages`.
-- In every importer listed in `## Scope fence`, change only the import line (and an in-function import line) from `tests.integration.<hub>` to `tests.drain_helpers` for the moved names; a line that imports a name this ticket does not move is kept and any name it still imports from another hub stays. A `tests.integration` module import (`from tests.integration import <hub>`) is not an importer of a name and stays.
-- Each hub file (`tests/integration/test_drain.py`, `tests/integration/test_drain_reentry.py`) deletes its definition of every moved name and imports the name back from `tests.drain_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
+- In every importer listed in `## Scope fence`, change only the import line (also an import line inside a function) so each moved name comes from `tests.drain_helpers`. Every name any file imports from these hubs is moved, except where Scope in says otherwise, so no importer keeps an import from a hub. Names an importer takes from other hubs stay as they are. A module import (`from tests.integration import <hub>`) is not an import of a name and stays.
+- Each hub file (`tests/integration/test_drain.py`, `tests/integration/test_drain_reentry.py`) deletes its definition of every moved name it defines and imports the name back from `tests.drain_helpers` (it keeps its tests, its `pytestmark = pytest.mark.disk_io_skip` line, and every name it defines that no other file imports). Its own tests keep working through the name it imports back; the hub module keeps each moved name as a module attribute.
 - Earlier helper modules (`tests/cli_helpers.py`) change only where one of them imports a name this ticket moves.
-- Create `tests/unit/test_drain_helpers.py`: one test per moved name that calls it with `tmp_path` and the shared fakes and asserts what it returns or writes, plus one test that every name above is importable from `tests.drain_helpers` and that the module source names no `subprocess` or `SubprocessExec` import.
+- Create `tests/unit/test_drain_helpers.py`: one test per moved name that runs without reading a repo file, calling it with `tmp_path`, in-memory inputs and the shared fakes and asserting what it returns or writes, plus one test that every name above is importable from `tests.drain_helpers`. 
 - `clutch.__main__.main` builds its own `SubprocessExec` and `Git` (see `clutch/__main__.py`, where `SubprocessExec()` is constructed in each verb branch) and has no parameter for either, so a helper that calls `main` replaces those two names on the `clutch.__main__` module with the shared `FakeExec` and `GitFake` for the duration of the call (a patch inside the helper, never a change under `clutch/`). When a verb a helper drives still reaches a real process after that, the run stops as a premise failure naming the verb and the construction site.
-- `test_drain.py` also imports `repo` from `tests/integration/test_merge.py` and `tests/integration/test_terminal.py` and `intake_at`/`prior_failure`/`paused_drain` stay in the hub (no other file imports them). `paused_drain` imports `NoChild` inside the function; that line becomes `from tests.drain_helpers import NoChild`.
+- `test_drain.py` also imports `repo` from `tests/integration/test_merge.py` and `tests/integration/test_terminal.py`; those lines are for later steps and stay. `paused_drain` imports `NoChild` inside the function; that line becomes `from tests.drain_helpers import NoChild`.
 - `tests/regress_drain_detach.py`, `tests/regress_drain_park_findings.py`, `tests/regress_drain_signals.py`, `tests/regress_stale_running.py` and `tests/snapshot_scale_fixture.py` import from the hub (outside `tests/integration`) and stay green.
 
 Scope out:
 - Restoring any skipped test file (the `restore-io-tests-NN` tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
-- Defining a `Fake*` or stand-in class in `tests/drain_helpers.py`: use the shared fakes. `prior_failure`, `intake_at`, `paused_drain` and `Pause` (imported by no other file) stay in the hub.
+- Defining in `tests/drain_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`: use the shared fakes. A thin subclass is not needed by any moved name. `prior_failure`, `intake_at`, `paused_drain` and `Pause` are imported by no other file and stay in the hub, which keeps its own `from tests.drain_helpers import ...` lines for them to use `journal`, `pause_checkout` and `NoChild`.
 - Skipped importers may still break semantically; their batch ticket fixes that.
 
 ## Scope fence
@@ -125,7 +126,7 @@ Scope out:
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_drain_helpers.py` passes, and `tests/unit/test_drain_helpers.py` checks that `make_root(tmp_path)` leaves no `.git` directory, that `commit_ticket` writes `tickets/<stem>/ticket.md` and records an add and a commit in the registered `GitFake`'s `fake.calls` (not a real commit), and that `reentry_drain` and `drain` are two different functions.
-2. `grep -rnE "from tests\.integration\.(test_drain|test_drain_reentry) import" tests --include=*.py` prints nothing: every importer takes the moved names from `tests.drain_helpers`, and a leftover line names the importer that was missed.
+2. `grep -rnE "from tests\.integration\.(test_drain|test_drain_reentry) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
 3. `grep -nE "^(async def|def|class) (START|Script|commit_ticket|confirmed|drain|journal|make_root|mechanical_first|offer_events|pause_checkout|retry_draws|root|tos|NoChild)\b|^(START|Script|commit_ticket|confirmed|drain|journal|make_root|mechanical_first|offer_events|pause_checkout|retry_draws|root|tos|NoChild) =" tests/integration/test_drain.py tests/integration/test_drain_reentry.py` prints nothing: the hub files no longer define a moved name.
 4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/drain_helpers.py` prints nothing.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
@@ -140,7 +141,7 @@ Scope out:
 
 ## Definition of rejected
 - A test that runs today fails or is skipped, or a skipped test becomes unskipped.
-- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/drain_helpers.py` defines a new `Fake*` or copied reply or config helper.
+- A moved name keeps real git, a process, or a write outside `tmp_path`, or `tests/drain_helpers.py` defines a class that duplicates a shared fake or a copied reply or config helper.
 - A shared module (`tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py`, `tests/conftest.py`) is edited.
 - An importer changes anything other than its import line, or a hub test is deleted, weakened or restored.
 
