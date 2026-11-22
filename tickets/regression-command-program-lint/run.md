@@ -4,15 +4,16 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The focused verification passed, and ticket lint accepted all seven current tickets. The full unit check failed two existing tests that passed on the base commit. The integration suite had one serve-dispatch failure; the base suite and an isolated candidate rerun passed.
+The full unit coverage gate passed all 1,831 tests. Ticket lint passed for all eight current tickets. The host-loop tests passed in isolation on both candidate and base, but failed in both full candidate runs when different fixture runs were abandoned as orphaned; the full base integration run passed. The exact ticket verification command cannot collect on the base because the new test file does not exist there.
 
 ## Dead ends
 
-Implementing the finding in _regression also makes it a parse-time error, contradicting existing tests that reserve this restriction for lint.
+The host-loop and admission failures passed when isolated, but the host-loop errors recurred in the second full candidate integration run.
 
 ## Second problems filed
 
-- box-001038-744ec6e3: The integration suite intermittently failed test_live_keep_dispatches_again_without_restart during the candidate run; it passed on the base and when rerun alone.
+- box-001039-ad05ab5b: The existing test_lint_verb_prints_carried_file_finding fails on the base because its Path.read_text fake breaks DuckDB metadata import under Python 3.14.
+- box-001040-bbd2205b: The full meta check reports pre-existing empty purposes in tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
 
 ## Resolved engine/model
 
@@ -22,5 +23,5 @@ Implementing the finding in _regression also makes it a parse-time error, contra
 
 ## Predicted vs actual
 
-The ticket estimated 8 minutes; the scope conflict was identified during verification.
+Expected 8 minutes; approximately 9 minutes elapsed.
 
