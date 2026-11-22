@@ -4,8 +4,8 @@ kind: guide
 purpose: Host guide to writing ticket content: the authoring workflow, what each section holds, how to keep tickets apart, unit vs integration test I/O rules, path matching, and how graphics and bug tickets prove their results
 relates: [clutch/docs/host-running.md]
 owner: clutch/docs/host-running.md
-verified: 19f68561
-hash: 3dca1cb7533245a8995ff3e78fe79a8bedbf83e8d074065978fa99c86ebfd671
+verified: 4a118128
+hash: 2dc32325b6464ccffb901e84df73568245911672f8f84af839011ef59f62d15d
 -->
 # Host ticket authoring
 
@@ -101,7 +101,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   Lint requires that a document named in `Scope in` is fenced; say which part to update or drop the mention.
   For a roadmap-row request whose Goal calls the work a slice, deliver the whole row, or fence
   `docs/roadmap.md` and add a follow-up row for the remaining parts in Scope in.
-  Work deferred to separate tickets needs an existing ticket stem in backticks or a fenced follow-up roadmap row.
+  Work deferred to separate tickets or left to an operator, owner, user, person, or later setup step needs an existing ticket stem in backticks or a fenced follow-up roadmap row, because no person runs the pipeline.
 - `Scope fence`: every path the agent may write. Fence every file the acceptance criteria force
   it to change, including existing tests whose assertions flip; a forced file outside the fence
   makes the ticket impossible. Before replying, grep the repo for each changed name or value.

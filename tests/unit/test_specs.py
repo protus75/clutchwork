@@ -4,8 +4,8 @@
 # purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text and version pins
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 52843322
-# hash: 9fd3b458f24bc145ddf06490045802453be7315b39fff4d0863413f14d5f38fe
+# verified: 4a118128
+# hash: 0d8406cbc531bdc92e6fa663b963ae91aabec8b39bae3a9ebebbcf3f356714f7
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.27"), ("requisition_review", "3.27"), ("diagnose", "1.10")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.27"), ("requisition_review", "3.28"), ("diagnose", "1.10")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version

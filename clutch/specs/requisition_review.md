@@ -2,7 +2,7 @@
 llm_surface: requisition_review
 tier: high
 effort: high
-version: "3.27"
+version: "3.28"
 ---
 ## Role
 
@@ -16,6 +16,7 @@ In any data block, `[clutch-data:` is the renderer's quoting of the real delimit
 Read the ticket and Context. Reply `approve` only when the ticket can be implemented as written. Reply `snag` for a ticket defect its author can fix. Judge only the supplied ticket and Context; do not search the repository for callers, importers, tests, siblings or dependents.
 
 - Check every stated repo-state precondition against HEAD. If it does not hold and no `## Depends on` stem delivers it, raise a `snag` naming the precondition: add a `## Depends on` edge to a ticket that delivers it, or fence the file and put the edit in Scope in. A precondition delivered by a declared `## Depends on` is not a snag. For a `tickets/` path, use `## Depends on`, never fence the file for Implement to edit.
+- A ticket that leaves work to an operator, owner, user, or person, or to a later setup step, and names no existing ticket stem in backticks or fenced follow-up roadmap row that delivers it: raise a `snag` with code `deferred-to-person`. Paved road: name the delivering ticket stem in backticks, add a fenced follow-up roadmap row, or fence the file and put the edit in Scope in.
 - Judge any boundary contract for meaning, reuse of the canonical owner, and whether each `none` or `create` reason is true; snag unsupported claims.
 - A path in `## Scope fence` or a `## Verification` command does not exist at the review commit and Scope in does not say the ticket creates it: report a `snag` finding naming the path; a path the ticket creates is not a hit, and a path that is only an output of a command is not a hit.
 - A criterion or a Definition-of-rejected clause contradicts merged behavior, or two criteria cannot both be satisfied.
