@@ -5,8 +5,8 @@
 # purpose: Unit tests that the help registry builds from injected document text, covers every snapshot vocabulary value and raises on unresolved links
 # relates: [clutch/box.py, clutch/help.py, clutch/observe.py, clutch/stats.py, clutch/status.py]
 # owner: engine
-# verified: a6482110
-# hash: 7b0cc69c3c8d9ebb8ae360d515273d25ec7858e860d79732efb1f2f1e2a99082
+# verified: 5a90be6a
+# hash: b3cf4d6603a654f5a22388b0d334b62034a22690a26528ddea35a0d3f38bd535
 
 from datetime import datetime, timezone
 from typing import get_args
@@ -59,6 +59,8 @@ def test_vocabularies_covered():
             "upgrade_hold",
             "after",
             "ready",
+            "slot_overlap",
+            "merge_wait",
             "running",
             "merged",
             "already_satisfied",

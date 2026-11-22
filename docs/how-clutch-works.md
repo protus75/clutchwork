@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 62301251
-hash: 04cef60d15ba83af85d7a5e6c76dc7d0e602dac6412c25fa9caa9f26ced03a4c
+verified: 5a90be6a
+hash: cb4501073a57ea516889902af9b3542a9061cc00a233e50da2d894a18f469ea9
 -->
 # How ClutchWork works
 
@@ -514,7 +514,7 @@ A dispatch exception is journaled as an `infra_error` terminal, re-offered, and 
    after the ticket naming them, with fixes linked from confirmed flake reports first, then priority P0-P3, authored age, and stem breaking ties.
    Edges to ineligible stems never block a pick. Skipped: storm-held, drought-parked, Reject-queue stems without budget, and tickets
    whose `stuck` exceeds `drain.max_ticket_minutes` (default 90).
-   Each pick records this order and its hints in `queue.json`; `view watch` displays it.
+   Each pick records this order and its hints in `queue.json`; it also records idle free-slot reasons in `waiting` and `hold`, which `view watch` and the extension show as row status.
 4. **Quiescence:** when nothing is eligible, it re-offers parked stems with budget (drawing
    `retry`, subject to the exclusions in section 6.6), and stops when nothing changes.
 5. **Report:** merged, parked (with reasons and the command to continue), blocked on depends,
@@ -778,7 +778,7 @@ Everything lives under `state_dir` (this repo: `.clutch/state`).
 | `dist/` | Wheel and sdist last built by `clutch release publish`; `uv build --clear` empties it on each publish. |
 | `drain.out` | Output appended by `engine drain --detach`. |
 | `coverage-map.json` | Written by `coverage map` and read by requisition review. |
-| `queue.json` | Derived pick order, timestamp, and `Runs before` hints for watch. |
+| `queue.json` | Derived pick order, timestamp, `Runs before` hints, and idle free-slot reasons (`waiting`, `hold`) shown as row status in watch and the extension. |
 | `scratch/` | Graphics render directories and retro window files read by agents by path, distinct from `evidence/scratch/`. |
 | `evidence/` | Call records (section 10.4) in `calls/<escaped key>/` (`start.json` before spawn, `end.json` at exit; re-executions use a `#<n>` suffix; keyless calls have no record), attempt manifests in `attempts/<stem>/<run_seq>/<attempt>.json` (schema `clutch.evidence.attempt/1.0`), compressed redacted `blobs/`, and temporary stdin and index files in `scratch/`. After each completed record, `evidence.max_gb` bounds blobs by pruning the oldest eligible references; records remain. Per-attempt prompts, outputs, and command output are captures. Capture pointers to blobs live at `captures/<stem>/<attempt>/<escaped name>.json`. |
 | `clutch.lock` | Engine lock held by `run`, `drain`, `serve` and the other verbs that still take it. Its JSON identity records the holder verb, used to decide whether it consumes control requests; the kernel frees the lock when the holder dies. |

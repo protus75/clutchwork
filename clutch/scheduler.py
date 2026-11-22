@@ -6,11 +6,11 @@ from pathlib import Path
 
 from clutch.caps import conflict_reruns
 from clutch.config import Caps, Parallel
-from clutch.drain import authored_at, eligible, fill_slots, order_tickets, parallel_order, parked_blob, reofferable, write_queue
+from clutch.drain import SKIP_LIMIT, authored_at, eligible, fill_slots, order_tickets, parallel_order, parked_blob, reofferable, write_queue
 from clutch.journal import TERMINAL_STATES, Journal
 from clutch.seams import Clock, FileSystem
 from clutch.status import last_states
-from clutch.tickets import Ticket
+from clutch.tickets import Ticket, fences_overlap
 
 
 class Scheduler:
@@ -41,6 +41,7 @@ class Scheduler:
         self.pending: dict[str, Ticket] = {}
         self.flying: dict[str, Ticket] = {}
         self.skips: dict[str, int] = {}
+        self.last_queue_reason = None
         self.tasks: set[asyncio.Task] = set()
         self.failures: list[BaseException] = []
         self.parallel: Callable[[], Parallel] = Parallel
@@ -79,8 +80,6 @@ class Scheduler:
             events = self.journal.read()
             last = last_states(events)
             held = self.quarantined() | self.drought_parked()
-            if self.completed_unmerged() >= self.max_unmerged:
-                return None
             parallel = self.parallel()
             if (not parallel.enabled and self.flying) or (parallel.enabled and len(self.flying) >= parallel.max_runs):
                 return None
@@ -104,23 +103,40 @@ class Scheduler:
             ]
             if not ready:
                 return None
+            hold = "max_unmerged" if self.completed_unmerged() >= self.max_unmerged else None
+            waiting = {}
             if parallel.enabled:
                 unsettled = {stem: t for stem, t in candidates.items() if stem not in settled} | self.flying
                 ordered = parallel_order(ready, authored, unsettled, fixes=self.flake_fixes())
                 rerun = {stem for stem in candidates.keys() | self.flying.keys() if conflict_reruns(events, stem) > 0}
-                selected, counts = fill_slots(ordered, self.flying.values(), 1, parallel.shared_paths, self.skips, rerun)
+                selected, counts = fill_slots(ordered, self.flying.values(), 1, parallel.shared_paths, self.skips, rerun) if not hold else ([], self.skips)
+                occupied = list(self.flying.values())
+                for candidate in ordered:
+                    if candidate in selected or hold:
+                        break
+                    overlaps = sorted(other.stem for other in occupied if fences_overlap(candidate, other, parallel.shared_paths, rerun))
+                    if overlaps:
+                        waiting[candidate.stem] = overlaps
+                        if self.skips.get(candidate.stem, 0) >= SKIP_LIMIT:
+                            occupied.append(candidate)
                 for stem, count in counts.items():
                     if count > self.skips.get(stem, 0):
                         self.log("dispatch_skip", stem=stem, count=count)
                 self.skips = counts
-                if not selected:
-                    return None
-                ticket = selected[0]
-                ordered = [ticket, *(t for t in ordered if t.stem != ticket.stem)]
+                if selected:
+                    ticket = selected[0]
+                    ordered = [ticket, *(t for t in ordered if t.stem != ticket.stem)]
             else:
                 ordered = order_tickets(ready, authored, fixes=self.flake_fixes())
-                ticket = ordered[0]
-            write_queue(self.state_dir, self.fs, self.clock, ordered)
+                ticket = ordered[0] if not hold else None
+            if hold or (parallel.enabled and not selected):
+                reason = (waiting, hold)
+                if reason != self.last_queue_reason:
+                    write_queue(self.state_dir, self.fs, self.clock, ordered, waiting, hold)
+                    self.last_queue_reason = reason
+                return None
+            write_queue(self.state_dir, self.fs, self.clock, ordered, waiting, hold)
+            self.last_queue_reason = (waiting, hold)
             self.remove(ticket.stem)
             self.flying[ticket.stem] = ticket
             task = asyncio.create_task(self.dispatch(ticket))

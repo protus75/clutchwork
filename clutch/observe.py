@@ -395,7 +395,15 @@ def upgrade_pending(state, events):
     return False
 
 
-def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str], held_stems: set[str]) -> list[tuple[str, str, str]]:
+def idle_reason(stem, view):
+    if stem in view.get("waiting", {}):
+        return "waits for a free slot: overlaps " + ", ".join(view["waiting"][stem]), "slot_overlap"
+    if view.get("hold") == "max_unmerged":
+        return "waits for merges: max_unmerged finished tickets wait to merge", "merge_wait"
+    return None
+
+
+def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str], held_stems: set[str], *, alive: bool = False) -> list[tuple[str, str, str]]:
     """Every confirmed ticket not yet settled, rejected, or running: (priority, stem, why it is waiting)."""
     done = CLOSED
     history = as_events(events)
@@ -432,6 +440,8 @@ def queue(ctx, events: list[dict], last_state: dict[str, dict], running: set[str
         view = json.loads((ctx.state / "queue.json").read_text())
     except FileNotFoundError:
         return rows
+    if alive:
+        rows = [(priority, stem, idle_reason(stem, view)[0] if why == "ready, not run yet" and idle_reason(stem, view) else why) for priority, stem, why in rows]
     by_stem = {row[1]: row for row in rows}
     ordered = []
     for stem in view["order"]:
@@ -524,7 +534,7 @@ def text_snapshot(ctx) -> str:
             lines.append(f"  {clock(body['ts'])}  {stem}  {outcome}")
         if not done:
             lines.append("  (nothing finished yet)")
-    pending = queue(ctx, events, last_state, set(running), held(history, committed_ticket_shas(ctx), {e.ticket for e in history if e.ticket is not None}))
+    pending = queue(ctx, events, last_state, set(running), held(history, committed_ticket_shas(ctx), {e.ticket for e in history if e.ticket is not None}), alive=bool(drains))
     lines += ["", f"Queue ({len(pending)} to do):"]
     lines += [f"  {priority}  {stem}  {why}" for priority, stem, why in pending] or ["  (empty)"]
     recent = recent_steps(state, log, 8)
@@ -828,6 +838,11 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
 
     upgrade = upgrade_pending(state, events)
 
+    try:
+        queue_view = json.loads((state / "queue.json").read_text()) if verb in ENGINE_VERBS else {}
+    except FileNotFoundError:
+        queue_view = {}
+
     def why_queued(t) -> tuple[str, str]:
         if to(t.stem) == "running":
             return "interrupted: the engine stopped mid-run; reruns when it restarts", "interrupted"
@@ -836,7 +851,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
         if to(t.stem) is not None:
             return f"retry pending (last: {to(t.stem)})", "retry_pending"
         waits = [d for d in t.depends if d not in settled]
-        return ("after " + ", ".join(waits), "after") if waits else ("ready", "ready")
+        return ("after " + ", ".join(waits), "after") if waits else (idle_reason(t.stem, queue_view) or ("ready", "ready"))
 
     def base(stem: str, section: str, status: str, status_key: str) -> dict:
         t, path = tickets.get(stem), ctx.root / ticket_path(stem)

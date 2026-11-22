@@ -109,6 +109,8 @@ _add(
         "retry_pending": "The ticket is waiting for another attempt.",
         "after": "The ticket is ordered after other tickets.",
         "ready": "The ticket is ready for dispatch.",
+        "slot_overlap": "The ticket is ready but its scope fence overlaps a running or barrier ticket, so it waits for a free slot.",
+        "merge_wait": "The ticket is ready but dispatch waits until finished tickets merge (`scheduler.max_unmerged`).",
         "running": "The ticket is running.",
         "merged": "The ticket's change has merged.",
         "already_satisfied": "The ticket settled without a change.",

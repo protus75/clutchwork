@@ -206,8 +206,12 @@ def fill_slots(ordered: Iterable[Ticket], in_flight: Iterable[Ticket], free: int
     return dispatch, counts
 
 
-def write_queue(state_dir, fs, clock, ordered: list[Ticket]) -> None:
+def write_queue(state_dir, fs, clock, ordered: list[Ticket], waiting=None, hold=None) -> None:
     value = {"at": render_ts(clock()), "order": [t.stem for t in ordered], "runs_before": {t.stem: list(t.runs_before) for t in ordered if t.runs_before}}
+    if waiting:
+        value["waiting"] = waiting
+    if hold is not None:
+        value["hold"] = hold
     fs.write(state_dir / "queue.json", (json.dumps(value) + "\n").encode())
 
 
