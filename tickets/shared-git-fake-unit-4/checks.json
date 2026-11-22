@@ -1,9 +1,9 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "b8404eb3274c0538607b16d4fd0f8a2e7b539a4a",
+  "produced_at_sha": "ec0abea08fa5d3ec90f60335c35be7ffea4501d2",
   "stem": "shared-git-fake-unit-4",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "tests/integration/test_git_fake_adoption.py",
     "tests/unit/test_requisition_prior_review.py",
@@ -11,6 +11,7 @@
     "tests/unit/test_retro_proposal.py",
     "tests/unit/test_retro_recurrence.py",
     "tests/unit/test_review_panel_use.py",
+    "tests/unit/test_roadmap_accept.py",
     "tests/unit/test_roadmap_author.py",
     "tests/unit/test_roadmap_merged.py",
     "tests/unit/test_roadmap_merged_parallel.py",
@@ -20,7 +21,7 @@
     "tests/unit/test_route_kinds_judge.py",
     "tests/unit/test_run_stages_propagates.py"
   ],
-  "inserted_lines": 103,
+  "inserted_lines": 122,
   "bypassed": [],
   "reports": [
     {
@@ -85,31 +86,21 @@
     },
     {
       "code": "unit",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "('clutch', 'coverage', 'gate', '--', 'uv', 'run', 'python', '-m', 'pytest', 'tests/unit', '-p', 'clutch.testguard', '-p', 'clutch.testreport', '--clutch-results', '.clutch/results/unit.json', '--cov=clutch', '--cov-branch', '--cov-report=json:coverage.json', '-n', 'auto') exited 1: ........................ [ 81%]\n........................................................................ [ 85%]\n........................................................................ [ 89%]\n........................................................................ [ 93%]\n........................................................................ [ 96%]\n.........................................................                [100%]\n==================================== ERRORS ====================================\n______________ ERROR collecting tests/unit/test_roadmap_accept.py ______________\nImportError while importing test module '/home/djp/source/clutch/.clutch/state/worktrees/shared-git-fake-unit-4/tests/unit/test_roadmap_accept.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/home/djp/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/unit/test_roadmap_accept.py:29: in <module>\n    from tests.unit.test_roadmap_author import FakeGit\nE   ImportError: cannot import name 'FakeGit' from 'tests.unit.test_roadmap_author' (/home/djp/source/clutch/.clutch/state/worktrees/shared-git-fake-unit-4/tests/unit/test_roadmap_author.py)\n================================ tests coverage ================================\n_______________ coverage: platform linux, python 3.14.6-final-0 ________________\n\nCoverage JSON written to file coverage.json\n=========================== short test summary info ============================\nERROR tests/unit/test_roadmap_accept.py - ImportError while importing test mo...\n======================== 1857 passed, 1 error in 13.03s ========================\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead",
-          "paved_road": "make the configured command exit 0 on the rebased candidate and retry",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 16.55899,
-        "passed": 1857,
+        "seconds": 17.442088,
+        "passed": 1886,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3105207640037406,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.1977856020093895
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3307761600299273,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.045544858003268
         }
       },
       "coverage": {
-        "percent": 71.36802551666885,
+        "percent": 72.41228645082361,
         "files": {}
       }
     },
@@ -119,13 +110,13 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 9.185559,
-        "passed": 272,
+        "seconds": 9.334993,
+        "passed": 274,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.667116445983993,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0040149530104827
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.6758902949804906,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0025498600152787
         }
       }
     },
@@ -151,9 +142,9 @@
         "tests/integration/test_git_fake_adoption.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.01s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.03s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.33538
+      "seconds": 3.166328
     },
     {
       "argv": [
@@ -174,9 +165,9 @@
         "tests/unit/test_run_stages_propagates.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_requisition_prior_review.py tests/unit/test_retro_measurements.py tests/unit/test_retro_proposal.py tests/unit/test_retro_recurrence.py tests/unit/test_review_panel_use.py tests/unit/test_roadmap_author.py tests/unit/test_roadmap_merged.py tests/unit/test_roadmap_merged_parallel.py tests/unit/test_roadmap_ship.py tests/unit/test_roadmap_status.py tests/unit/test_route_kinds_filter.py tests/unit/test_route_kinds_judge.py tests/unit/test_run_stages_propagates.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 88%]\n.........                                                                [100%]\n81 passed in 1.81s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_requisition_prior_review.py tests/unit/test_retro_measurements.py tests/unit/test_retro_proposal.py tests/unit/test_retro_recurrence.py tests/unit/test_review_panel_use.py tests/unit/test_roadmap_author.py tests/unit/test_roadmap_merged.py tests/unit/test_roadmap_merged_parallel.py tests/unit/test_roadmap_ship.py tests/unit/test_roadmap_status.py tests/unit/test_route_kinds_filter.py tests/unit/test_route_kinds_judge.py tests/unit/test_run_stages_propagates.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 88%]\n.........                                                                [100%]\n81 passed in 1.86s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 3.612892
+      "seconds": 3.89581
     }
   ]
 }
