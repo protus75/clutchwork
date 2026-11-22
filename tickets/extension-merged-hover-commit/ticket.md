@@ -38,6 +38,8 @@ Scope in:
 - tests/unit/test_snapshot_merged_cap.py and tests/integration/test_watch.py: their `commits` stand-ins reach the new `message` read; add a `"message"` key to each stand-in dict and nothing else.
 - New tests/unit/test_observe_commit_message.py: monkeypatch `observe.git_output` with fake log bytes holding one commit with a multi-line body and one subject-only commit.
 - New tests/unit/test_snapshot_merged_tooltip.py: build a snapshot with the stand-ins `test_snapshot_merged_cap.py` uses (imported `dispatch_ticket` and `fake_snapshot_inputs`), one merged row with a commit, one merged row without, and one queued row.
+- Unaffected, no edit: tests/integration/test_stale_running.py, tests/regress_engine_flag_only_drain_serve.py, tests/regress_snapshot_verdict_menu_parity.py, tests/unit/test_menu_admission.py, tests/unit/test_observe_hot_paths.py and tests/unit/test_verdict_menu_parity.py stub `observe.commits` to return `{}`, so no commit dict reaches the `message` read and every row's `commit` stays `None`; none asserts a full row key set (they read `["menu"]`, `["engine"]` or single rows). tests/unit/test_help_snapshot.py only checks `stats_tree` tooltips and `STATUS_KEYS`, never `observe.snapshot` rows or `commits`, so the new `tooltip` row key cannot reach it.
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - The Details view, box rows, the steps tree and the merge commit format.
 
