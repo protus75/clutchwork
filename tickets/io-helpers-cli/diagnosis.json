@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "414b6def66523037cb35b607f5dbf200f266a556",
+  "stem": "io-helpers-cli",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Acceptance criterion 2 cannot pass inside the fence: tests/regress_reconcile_confirming_draft.py:26 imports `root` and tests/unit/test_config_fixture.py:17 imports `CONFIG as CLI_CONFIG` from tests.integration.test_cli, and neither file is in `## Scope fence`.",
+    "Add tests/regress_reconcile_confirming_draft.py and tests/unit/test_config_fixture.py to `## Scope fence` and to the Scope in list of running importers that must stay green. Allow only their import lines to change to `tests.cli_helpers`.",
+    "Before refiling, run `grep -rnE \"from tests\\.integration\\.test_cli import\" tests --include=*.py` (also catching imports inside functions). Check that every file it lists is fenced, so the fence matches criterion 2 exactly.",
+    "test_config_fixture.py imports CONFIG under an alias (`as CLI_CONFIG`). The changed line must keep that alias so the test body stays the same, as the ticket's 'import line only' rule requires."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
