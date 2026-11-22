@@ -24,6 +24,8 @@ kind: chore
 - tests/unit/test_stale_running.py
 - tests/unit/test_paved_roads.py
 - tests/unit/test_serve_dispatch_containment.py
+- tests/unit/test_serve_retro_check_once.py
+- tests/regress_serve_retro_check_once.py
 
 ## Goal / Why
 `retro-check-once` stops the doubled, slow check, but the structure that produced it stays. Two things are wrong with that structure.
@@ -61,8 +63,10 @@ When done:
 Scope in:
 - In `clutch/retro.py`, add a pure `due_trigger(window, settings, *, forced)` that returns `select_trigger(window, measurements(window), settings, forced=forced)`.
 - `Retro.__call__` calls `due_trigger` first, returns early when it is `None`, and only then awaits `production_evidence` for the report.
-- In `clutch/serve.py`, `Serve.check_retro` uses `due_trigger`. Remove the `await self.check_retro()` calls from the dispatch wrapper `finally` and from `Serve.merge`. Call `check_retro` once per iteration of the `Serve.run` loop, immediately before the existing `retro_task` scheduling block.
+- In `clutch/serve.py`, `Serve.check_retro` uses `due_trigger`. Remove the `await self.check_retro()` calls from the dispatch wrapper `finally` and from `Serve.merge`. Call `check_retro` once per iteration of the `Serve.run` loop, immediately before the existing `retro_task` scheduling block. Do not keep unused `measurements` or `select_trigger` imports in `clutch/serve.py` so old monkeypatches resolve; that would be a dual path.
 - Update `tests/unit/test_phase_events.py` and `tests/unit/test_retro_check_vocabulary.py` where they monkeypatch names this change moves. Touch `tests/unit/test_stale_running.py` and `tests/unit/test_paved_roads.py` only if their monkeypatches of `production_evidence` stop applying.
+- Update `tests/unit/test_serve_retro_check_once.py`: its setup fixture and `test_failure_retries_same_count` patch `serve.measurements` and `serve.select_trigger`; repatch them to `serve.due_trigger` so they still steer the due decision.
+- Update the carried reproducer `tests/regress_serve_retro_check_once.py`: replace its `serve.select_trigger` and `serve.measurements` patches with a `serve.due_trigger` patch returning `None`.
 - Add `tests/unit/test_retro_due_owner.py` and `tests/unit/test_serve_retro_check_site.py`. The site test imports `clutch.serve` and inspects compiled code objects with `dis`; it reads no repository file.
 
 Scope out:
@@ -80,22 +84,26 @@ Scope out:
 - tests/unit/test_retro_due_owner.py
 - tests/unit/test_serve_retro_check_site.py
 - tests/unit/test_serve_dispatch_containment.py
+- tests/unit/test_serve_retro_check_once.py
+- tests/regress_serve_retro_check_once.py
 
 ## Acceptance criteria
 1. `Retro.__call__(forced=False)` on a window with no trigger returns `None` without awaiting `production_evidence`. A test monkeypatches it to raise and the call still returns `None`, not an exception (`tests/unit/test_retro_due_owner.py`).
 2. `Retro.__call__(forced=True)` on a window with one merge still awaits `production_evidence` once and selects `forced` (`tests/unit/test_retro_due_owner.py`).
 3. `due_trigger` returns `merges` once a window's merge count reaches `retro.merges.every`, and `None` one merge below it (`tests/unit/test_retro_due_owner.py`).
 4. A test imports `clutch.serve` and walks the code objects of every `Serve` function, recursing into nested code objects in `co_consts`, with `dis.get_instructions`. It finds exactly one instruction loading `check_retro`, reachable from `Serve.run`, and none reachable from `Serve.merge` or `Serve.__init__` (which holds the dispatch wrapper). It reads no repository file. A second load site fails the test (`tests/unit/test_serve_retro_check_site.py`).
-5. `./dev.py test tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py` exits 0.
+5. `./dev.py test tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_retro_check_once.py` exits 0.
+6. The carried reproducer patches `serve.due_trigger` and no longer patches `serve.select_trigger` or `serve.measurements` (`tests/regress_serve_retro_check_once.py`).
 
 ## Verification
 ```
-./dev.py test tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_dispatch_containment.py
+./dev.py test tests/unit/test_retro_due_owner.py tests/unit/test_serve_retro_check_site.py tests/unit/test_phase_events.py tests/unit/test_retro_check_vocabulary.py tests/unit/test_stale_running.py tests/unit/test_paved_roads.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_retro_check_once.py
 ```
 
 ## Definition of rejected
 - `check_retro` is still called while `admission.merging()` is held.
 - `production_evidence` still runs before a trigger is selected on an unforced call.
+- `clutch/serve.py` keeps an unused `measurements` or `select_trigger` import so stale test patches resolve.
 - Any edit to `tests/integration/serve_rig.py` or another hot test file.
 
 ## Time budget
