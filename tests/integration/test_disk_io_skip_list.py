@@ -1,3 +1,11 @@
+# clutch:meta
+# schema: clutch.meta/1.0
+# kind: test
+# purpose: Tests that the DISK_IO_SKIP hook marks only listed files and that the list is sorted, unique, existing and excludes I/O seam tests
+# relates: [tests/integration/conftest.py]
+# owner: tests/integration/conftest.py
+# verified: edd57bac
+# hash: 3b2e5319753363c92f4d5ab57393f78072fe9a2e8ef0a942b52ab5fb8bb79cb7
 from pathlib import Path
 from types import SimpleNamespace
 

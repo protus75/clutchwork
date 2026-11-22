@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: conftest
-# relates: []
+# purpose: Integration pytest setup: skips disk-IO test files listed in DISK_IO_SKIP and runs each test in an isolated empty working directory
+# relates: [tests/integration/test_disk_io_skip_list.py, docs/how-clutch-works.md]
 # owner: engine
-# verified: 148a8874
-# hash: e2d7759b6fb3841a3514e0e12950a4cf223f4f9350878d0abd2683fecddeb080
+# verified: edd57bac
+# hash: 2f81b22b9cdc8dd8814ada0fb05b28101f9cfd59f467db9fbe49ecc5da0096ef
 import pytest
 
 DISK_IO_SKIP = (
