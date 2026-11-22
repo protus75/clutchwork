@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-The current importer search found the two paths identified by the prior attempt inside the revised scope fence.
+The partial changes remain uncommitted; the shared-fakes adoption and disk-I/O skip-list checks passed.
 
 ## Dead ends
 
-Inspected the existing reply builders and helper consumers; implementing the missing reply shapes in the new module would violate the ticket's shared-source requirement.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 30 minutes; stopped during contract inspection.
+The ticket estimated 30 minutes; elapsed time was not measured.
 
