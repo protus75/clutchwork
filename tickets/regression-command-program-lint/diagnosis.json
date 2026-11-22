@@ -1,22 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6dc53cb75c418c1cb418d508097039b73ce0295b",
+  "produced_at_sha": "c71a4988eb35d8b450e6075c353caac36a800ce7",
   "stem": "regression-command-program-lint",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "abandon-human",
   "lessons": [
-    "Premise is false: the ticket puts the rule in clutch/tickets.py::_regression, which runs at parse time (parse_ticket/validate_ticket). Settled and rejected tickets would then fail too, which breaks the ticket's own compatibility clause. Re-scope the owner to clutch/tickets.py::lint_findings, beside",
-    "The fence must add tests/unit/test_ticket_lint_rules.py. Its fixture TEXT uses `./dev.py test tests/x.py`, so the new rule makes test_regression_requires_carried_path_not_runner_denylist (lines 70-79) fail even in lint_findings: `[finding] =` at line 75 would get two findings.",
-    "In the re-authored ticket, update test_ticket_lint_rules.py:75-76 to expect both findings for `./dev.py test tests/x.py`, or change that fixture's command, so the test still pins the 'does not name a carried file' check.",
-    "Keep the new tests in tests/unit/test_regression_command_program.py, but build the ticket with parse_ticket and call lint_findings, not _regression, to match the moved owner. Criteria 1 and 2 stay as written.",
-    "The test_live_keep_dispatches_again_without_restart flake is already filed as box-001038-744ec6e3. It is not caused by this ticket, so leave it out of the rewrite."
+    "The ticket's premise holds. The diff only adds a lint finding in clutch/tickets.py::lint_findings plus docs and tests, and the implementer reported unit tests and ticket lint passing. The blocker is outside the fence: tests/harness/host_loop.py:162 raises LoopRefused when a fixture run ends",
+    "A human should inspect why host-loop fixture runs (the 'escape' member in pytest-3034/popen-gw18) get a recovery_alert 'orphaned run' only under the full parallel integration run. They pass alone on both the base and the candidate, which points to load or timing in run recovery, not this diff.",
+    "No host-loop fixture uses a path-led ## Regression command. Grep shows tests use 'python', 'python3' or 'uv run python' with carried files. So the new program rule cannot plausibly change host-loop behavior. Fix the orphan-recovery flake in its own ticket, ordered ahead with ## Runs before.",
+    "When retrying after that fix, redo the same scope. In lint_findings, flag ticket.regression[0] when it contains '/' and no carries prefix equals it or is a directory prefix of it. Add the host-authoring.md sentence. Update test_ticket_lint_rules.py lines 75-76 to expect both findings. Add",
+    "Don't rerun the full integration gate until host-loop passes and then call that fixed. Compare the base and the candidate over the same number of full runs. One passing base run against two failing candidate runs doesn't prove the candidate caused the failure."
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0
+    0,
+    3
   ],
   "spec_version": "1.9",
   "provider": "claude",
