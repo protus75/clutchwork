@@ -1,19 +1,18 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-Removing these references and updating the conflicting assertion requires expanding the scope fence; no files were changed.
+The working tree was restored to its initial clean state.
 
 ## Dead ends
 
-none
+An initial implementation was abandoned before the affected tests and documentation were updated.
 
 ## Second problems filed
 
-- box-001130-6d860266: docs/roadmap-driver-plan.md describes automatic retros after a settle and would become stale.
-- box-001131-43b6d880: docs/roadmap.md describes automatic idle calibration and would become stale.
+none
 
 ## Resolved engine/model
 
