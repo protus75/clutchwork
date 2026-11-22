@@ -27,7 +27,7 @@ On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real g
 
 Five files supply config text, provider fakes, rework scripts, the merge repository and the snapshot fixture repository: `test_config.py` (`VALID` imported by 23 files, `MigrationFS`), `test_providers.py` (`FakeExec`, `PythonProviderExec`, `claude_ok` and more, 11 importers), `test_rework.py` (9 importers), `test_merge.py` (`repo`, `context`, 7 importers) and `watch_fixture_repo.py`, whose builder runs `git init` and `git commit` in a subprocess.
 
-When this ticket is done, `tests/config_helpers.py` defines every name that another test file imports from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`) (the names are listed under Scope in), and each of those 46 importers takes it from `tests.config_helpers`. The helpers use the shared fakes, so a restored test file that needs them does not start a process or run git, and a later batch ticket can turn a file back on without first fixing a helper that sits in a skipped file.
+When this ticket is done, `tests/config_helpers.py` defines every name that another test file imports from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`) (the names are listed under Scope in), and each of those 47 importers takes it from `tests.config_helpers`. The helpers use the shared fakes, so a restored test file that needs them does not start a process or run git, and a later batch ticket can turn a file back on without first fixing a helper that sits in a skipped file.
 
 The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit and integration tests": no real git (use `tests/git_fake.py::GitFake`, created by `shared-git-fake`; read it in the worktree), no process (use `tests.fakes.FakeExec`, or call `clutch.__main__.main` in process), time through `tests.fakes.FakeClock` and `fakes.until`/`fakes.turn` with no sleep, a journal as `tests.fakes.FakeJournal` unless the helper's subject is journal persistence, and a disk write only under a `tmp_path` the caller passes in. A model-reply helper or config text reuses `tests/stage_replies.py` and `tests/config_fixture.py` (created by `shared-review-script` and `shared-serve-rig-config`, merged before `shared-fakes-guard`); a helper never copies either. The owner requires restored tests to be fast and to reuse shared fixtures: this module is the one place each helper below lives.
 
@@ -35,14 +35,14 @@ The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit an
 ### Shared config, provider, rework and merge test helpers
 - disposition: create
 - owner: tests/config_helpers.py
-- consumers: the 46 test files listed in `## Scope fence` that import from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`), and the later batch tickets that restore the skipped ones
+- consumers: the 47 test files listed in `## Scope fence` that import from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`), and the later batch tickets that restore the skipped ones
 - observable change: the names listed under Scope in move from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`) into `tests/config_helpers.py`, rewritten onto the shared fakes; every importer's import line changes to `tests.config_helpers`; the hub file imports the names back from the new module for its own tests; no production code, CLI, journal or document changes
 - compatibility: every test that runs today still passes and the set of skipped tests is unchanged; a name that a running test reads as a module attribute of the hub (for example `test_cli.Clock` in `tests/integration/test_shared_fakes_adoption.py`) stays reachable under the same name on the hub module
 - acceptance: `tests/unit/test_config_helpers.py` imports each moved name from `tests.config_helpers` and exercises it without a process, real git or a write outside `tmp_path`; no importer still imports a moved name from the hub
 - tests: tests/unit/test_config_helpers.py
 - post-merge source of truth: tests/config_helpers.py
 - closest existing: `tests/fakes.py` (FakeClock, FakeExec, FakeFileSystem, FakeJournal, `turn`, `until`) and `tests/git_fake.py::GitFake` supply the fake seams but none of the scaffolding below; the hub definitions today do real git and processes, so a skipped file cannot reuse them
-- earning reason: consolidation of evidenced duplicates and shared use: 46 files import these names from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`), and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
+- earning reason: consolidation of evidenced duplicates and shared use: 47 files import these names from `tests/integration/test_config.py`, `test_providers.py`, `test_rework.py`, `test_merge.py` and `watch_fixture_repo.py` (all under `tests/integration/`), and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
 
 ## Scope in / Scope out
 Scope in:
@@ -126,6 +126,7 @@ Scope out:
 - tests/stages_helpers.py
 - tests/daemon_helpers.py
 
+- tests/unit/test_config_fixture.py
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_config_helpers.py` passes, and `tests/unit/test_config_helpers.py` checks that `watch_fixture_repo(tmp_path, "state")` writes `config.yaml` under `tmp_path / "repo"` whose `state_dir` line is `state_dir: state`, creates no `.git` directory, and registers a `GitFake` whose `fake.calls` is empty until a test uses it (a version that still runs git passes only if a `.git` directory exists, which the test rules out), that `VALID` parses through `clutch.config.load_config`, and that the moved `repo` fixture leaves no `.git` directory.
 2. `grep -rnE "from tests\.integration\.(test_config|test_providers|test_rework|test_merge|watch_fixture_repo) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
@@ -150,4 +151,4 @@ Scope out:
 ## Time budget
 - expected: 30m
 - stuck: 60m
-- reason: 46 import lines and the hub definitions move in one change because a name must resolve in every importer at once; splitting by importer leaves a name defined in two places, and the files share one module so they stay together
+- reason: 47 import lines and the hub definitions move in one change because a name must resolve in every importer at once; splitting by importer leaves a name defined in two places, and the files share one module so they stay together
