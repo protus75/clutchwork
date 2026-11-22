@@ -1,0 +1,173 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "360763e191357457198ab0c406fc2382a9ee15df",
+  "stem": "shared-git-fake-unit-3",
+  "passed": true,
+  "changed_files": [
+    "tests/integration/test_git_fake_adoption.py",
+    "tests/unit/test_merge_admission_params.py",
+    "tests/unit/test_merge_config_local.py",
+    "tests/unit/test_merge_dirty.py",
+    "tests/unit/test_merge_dirty_commit_lock.py",
+    "tests/unit/test_merge_index_hook.py",
+    "tests/unit/test_merge_resolve.py",
+    "tests/unit/test_mergequeue_retained_ticket.py",
+    "tests/unit/test_mergequeue_tree_check.py",
+    "tests/unit/test_meta_drift_check.py",
+    "tests/unit/test_paved_roads.py",
+    "tests/unit/test_reject_reason_paths.py",
+    "tests/unit/test_release_changelog.py",
+    "tests/unit/test_requisition_input_identity.py"
+  ],
+  "inserted_lines": 129,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 16.990384,
+        "passed": 1876,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4864382009836845,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.0982269270170946,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0357587449543644
+        }
+      },
+      "coverage": {
+        "percent": 72.22537920181843,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 13.180712,
+        "passed": 272,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.6650790889980271,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0040627379785292
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_git_fake_adoption.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_git_fake_adoption.py\nbringing up nodes...\nbringing up nodes...\n\n...                                                                      [100%]\n3 passed in 1.02s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.269047
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_merge_admission_params.py",
+        "tests/unit/test_merge_config_local.py",
+        "tests/unit/test_merge_dirty.py",
+        "tests/unit/test_merge_dirty_commit_lock.py",
+        "tests/unit/test_merge_index_hook.py",
+        "tests/unit/test_merge_resolve.py",
+        "tests/unit/test_mergequeue_retained_ticket.py",
+        "tests/unit/test_mergequeue_tree_check.py",
+        "tests/unit/test_meta_drift_check.py",
+        "tests/unit/test_paved_roads.py",
+        "tests/unit/test_reject_reason_paths.py",
+        "tests/unit/test_release_changelog.py",
+        "tests/unit/test_requisition_input_identity.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_merge_admission_params.py tests/unit/test_merge_config_local.py tests/unit/test_merge_dirty.py tests/unit/test_merge_dirty_commit_lock.py tests/unit/test_merge_index_hook.py tests/unit/test_merge_resolve.py tests/unit/test_mergequeue_retained_ticket.py tests/unit/test_mergequeue_tree_check.py tests/unit/test_meta_drift_check.py tests/unit/test_paved_roads.py tests/unit/test_reject_reason_paths.py tests/unit/test_release_changelog.py tests/unit/test_requisition_input_identity.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 84%]\n.............                                                            [100%]\n85 passed in 1.55s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.45476
+    }
+  ]
+}
