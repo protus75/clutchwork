@@ -61,6 +61,7 @@ Scope in:
 - `serve_rig.py` imports from `test_scheduler.py` (`text`), `test_triage.py` (`reply`), `test_restart_timers.py` (`repository`), `test_stages.py`, `test_cli.py` and `test_drain.py`; those lines change to the helper modules (it is a hub here and an importer).
 - `tests/regress_serve_reoffer_dispatch.py` imports `Rig` from `test_scheduler.py` and stays green.
 
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
