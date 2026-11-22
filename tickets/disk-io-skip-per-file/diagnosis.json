@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "71fbb658548e4a9cd946934a94bd71674bb8840e",
+  "stem": "disk-io-skip-per-file",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "abandon-human",
+  "lessons": [
+    "An engine step changed the meta headers after Implement, not the implementer. The run record says the headers were left untouched, but the diff rewrites purpose/owner in 181 skipped files. The haiku usage in the harvest matches the engine's model-run metadata fill.",
+    "Defect in clutch/metafill.py fill(): meta.check marks every file whose body changed as 'drifted' and sends it for refill. Line 110 then replaces fields['purpose'] unconditionally, and line 114 replaces owner 'engine' with the model's guess. That rewrites headers the ticket forbids changing.",
+    "Fix outside this ticket's fence: for drifted files, fill() should only refresh verified/hash, as meta.refresh does. Model-written purpose/owner should go only to missing or empty_purpose files. Rerun disk-io-skip-per-file after that fix merges.",
+    "The implementer's work passed review apart from these lines: conftest hook, test rewrite, doc sentence and all 184 pytestmark lines. Base and final runs both report 283 passed and 3,341 skipped. A rerun needs no implementation change once the engine stops rewriting headers."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
