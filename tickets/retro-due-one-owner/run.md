@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final unit verification passed 44 tests; the integration verification exited successfully with all 31 tests skipped by the existing disk-I/O marker. Mutation checks caught the targeted incorrect behaviors.
+Final verification passed 44 unit tests; the integration command exited successfully but skipped all 31 tests in this environment. Deliberate mutations of the due decision and check site were caught.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 20 minutes; actual time not measured.
 
