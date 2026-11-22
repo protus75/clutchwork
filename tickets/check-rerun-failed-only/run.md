@@ -4,16 +4,16 @@ ok
 
 ## Surprises / judgment calls
 
-The final integration gate again timed out in test_serve_admission_refusal_keeps_main_green[safety]; the test passed alone and an earlier full candidate rerun passed. The exact ticket verification could not run on the base because the new test files do not exist there; the full base integration gate passed. The final ticket verification, unit coverage, lint, and format checks passed. A whole-class fix for the admission timeout would make its scripted boundary deterministic.
+The final verification passed 130 tests, the coverage gate passed 1,828 unit tests, and the final integration run passed 3,602 tests. An earlier integration run failed the serve-dispatch test with a duplicate keep verdict; the same failure reproduced on the base commit. The simpler approach of treating every nonzero rerun exit as a failure was rejected because the coverage wrapper can exit nonzero even when all selected tests pass.
 
 ## Dead ends
 
-A full-command selected rerun would cause the coverage wrapper to fail its thresholds, so selected outcomes determine flake classification.
+The first generated metadata purpose exceeded the lint line limit and was shortened.
 
 ## Second problems filed
 
-- box-001043-63bd4b02: test_serve_admission_refusal_keeps_main_green[safety] intermittently times out waiting for the next merge boundary.
-- box-001044-d6d64920: The base metadata check reports empty purposes in tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
+- box-001046-e2222211: tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart intermittently records two keep verdicts; it also failed on the base commit.
+- box-001047-e49769ea: clutch meta check reports empty purposes in unchanged tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
 
 ## Resolved engine/model
 
@@ -23,5 +23,5 @@ A full-command selected rerun would cause the coverage wrapper to fail its thres
 
 ## Predicted vs actual
 
-The ticket budget was 20 minutes expected and 40 minutes stuck; actual elapsed time was not measured.
+The ticket expected 20 minutes; elapsed time was not measured.
 
