@@ -6,7 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-none
+- retry-keeps-prior-branch
 
 ## Context
 - clutch/git.py::Git
