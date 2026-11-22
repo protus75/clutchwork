@@ -1,0 +1,14 @@
+{"ts": "2026-11-22T01:39:54.437661+00:00", "event": "stage_end", "stem": "check-owns-meta-headers", "attempt": 1, "surface": "merge", "outcome": "ok"}
+{"ts": "2026-11-22T01:39:56.599579+00:00", "event": "engine_stop", "verb": "drain", "pid": 4162897, "outcome": "handoff"}
+{"ts": "2026-11-22T01:39:56.862986+00:00", "event": "engine_start", "verb": "drain", "pid": 528712}
+{"ts": "2026-11-22T01:39:57.206369+00:00", "event": "phase_start", "phase": "preflight"}
+{"ts": "2026-11-22T01:40:01.721674+00:00", "event": "phase_end", "phase": "preflight", "outcome": "ok"}
+{"ts": "2026-11-22T01:40:06.065548+00:00", "event": "phase_start", "phase": "retro_check"}
+{"ts": "2026-11-22T01:40:34.623748+00:00", "event": "phase_end", "phase": "retro_check", "outcome": "not_due"}
+{"ts": "2026-11-22T01:40:46.218243+00:00", "event": "roadmap_drive", "lines": ["roadmap digest 1971", "merged: check-owns-meta-headers", "held: training-export-ship-gate (premise)", "release 0.3.0: 71
+{"ts": "2026-11-22T01:40:46.230023+00:00", "event": "phase_start", "phase": "retro_check"}
+{"ts": "2026-11-22T01:41:12.531776+00:00", "event": "phase_end", "phase": "retro_check", "outcome": "not_due"}
+{"ts": "2026-11-22T01:41:28.333993+00:00", "event": "stage_start", "stem": "serve-flaky-tests-deterministic", "attempt": 0, "surface": "requisition_review", "run_seq": 0}
+{"ts": "2026-11-22T01:41:36.218728+00:00", "event": "stage_end", "stem": "serve-flaky-tests-deterministic", "attempt": 0, "surface": "requisition_review", "outcome": "ok", "run_seq": 0, "calls": 1}
+{"ts": "2026-11-22T01:41:49.631766+00:00", "event": "stage_start", "stem": "serve-flaky-tests-deterministic", "attempt": 0, "surface": "implement", "run_seq": 0, "stuck_budget": 3000.0}
+{"ts": "2026-11-22T01:41:49.651591+00:00", "event": "llm_call", "stem": "serve-flaky-tests-deterministic", "attempt": 0, "surface": "implement", "call_seq": 1, "call_key": "llm/serve-flaky-tests-deter
