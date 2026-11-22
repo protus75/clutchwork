@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 10576102
-hash: 41205438560afe8d3a4320d9fa940366c8986062ab33f8fe91cbcc1d720523f2
+verified: f2360ef5
+hash: 80015f1d8ff16afb8583c8349e156493474f19aff0e144a432226ec9a0a58a5e
 -->
 # clutch roadmap
 
@@ -471,6 +471,10 @@ uv run clutch roadmap accept 0.5.0
 
 ### 0.6.0 (conditional)
 
+```start
+uv run clutch roadmap gate 0.5.0
+```
+
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
 | 35 | (re-measure) | journal plan | evidence | | | | Profile a drain start and `status` at the end of 0.3.0; the window runs only if journal reads still dominate. |
@@ -497,6 +501,10 @@ uv run clutch roadmap accept 0.6.0
 ```
 
 ### 0.7.0
+
+```start
+uv run clutch roadmap gate 0.6.0
+```
 
 | # | Stem | Owner | Kind | P | Depends on | Runs before | Content |
 |---|---|---|---|---|---|---|---|
