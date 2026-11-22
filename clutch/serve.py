@@ -210,7 +210,8 @@ class Serve:
         self.core.scheduler.next_stage = self.next_stage
         self.core.scheduler.select = self.select
         self.core.admission.resume = self.resume
-        self.core.restart.owned = lambda: self.core.admission.occupied() or any(w.continuations for w in self.writers.values())
+        self.settling_verdicts = False
+        self.core.restart.owned = lambda: self.settling_verdicts or self.core.admission.occupied() or any(w.continuations for w in self.writers.values())
         self.tasks = DaemonTasks(watcher=self.watch, merge_queue=self.merge, box_consumer=self.box_intake, verdict_consumer=self.verdicts)
         self.heartbeat = HeartbeatCycle(
             heartbeat=Heartbeat(state_dir=checkout.config.state_dir, fs=checkout.fs),
@@ -527,7 +528,11 @@ class Serve:
         while True:
             self.control.poll()
             if not self.stopping and not self.control.projection.kill_requested:
-                await response.wait(self.control.inbox.settle_admissions(self.apply_verdict))
+                self.settling_verdicts = True
+                try:
+                    await response.wait(self.control.inbox.settle_admissions(self.apply_verdict))
+                finally:
+                    self.settling_verdicts = False
             await response.wait(self.checkout.sleep(SERVE_POLL_S))
 
     def box_work(self) -> bool:
