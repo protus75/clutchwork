@@ -1,22 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "05c58403465c9d31c730d0ef5552bb36d99d46fe",
+  "produced_at_sha": "90a6a7e63064ee3cc43e8e37b8f95b290834795f",
   "stem": "reconcile-spares-confirming-draft",
-  "attempt": 0,
+  "attempt": 3,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "retry",
-  "lessons": [
-    "Check overlaid only tests/regress_reconcile_confirming_draft.py onto the merge base. There it died with ModuleNotFoundError on tests.integration.test_serve_verdict_orphan_sweep, which does not exist on base, so it never printed defect. Make the reproducer self-contained.",
-    "Inline the event-held confirmation scenario and result check in tests/regress_reconcile_confirming_draft.py. Import only modules that exist on the merge base: clutch/serve.py, clutch/runner.py, clutch/reconcile.py and the existing tests/integration helpers.",
-    "Base behaviour must be: the confirmation is held open with an asyncio.Event, Serve.maintenance runs once, the stem ends abandoned with an 'orphaned run' alert, and the script prints {\"regression_result\": \"defect\"} and exits 0. Head must print pass. Use no sleeps or deadlines.",
-    "Before committing, prove the base result in a real merge-base git worktree. Copy in only tests/regress_reconcile_confirming_draft.py and run `uv run python tests/regress_reconcile_confirming_draft.py`. It must print defect there. Removing the fix by hand in the branch does not count.",
-    "Keep the clutch/serve.py fix, the integration test and the unit test as they are: the Verification command passed, 5 tests. The ruff E501 in tests/unit/test_driver_check_nesting.py came from the base run and is outside the fence. Do not edit it."
-  ],
-  "mechanical": null,
+  "verdict": "abandon-human",
+  "lessons": [],
+  "mechanical": "retry cap spent",
   "trimmed_lessons": [],
-  "spec_version": "1.9",
-  "provider": "claude",
-  "model": "claude-opus-5-5"
+  "spec_version": "1.10",
+  "provider": null,
+  "model": null
 }
