@@ -54,6 +54,7 @@ Scope in:
 - `test_drain.py` also imports `repo` from `tests/integration/test_merge.py` and `tests/integration/test_terminal.py`; those lines are for later steps and stay. Every function-level `from tests.integration.test_drain_reentry import NoChild` line in `tests/integration/test_drain.py` (in `paused_drain` and the 14 other functions that have one) becomes `from tests.drain_helpers import NoChild`. Each hub's import-back lines, including `test_drain_reentry.py`'s import of `drain` as `reentry_drain`, import from `tests.drain_helpers`, never from the other hub.
 - `tests/regress_drain_detach.py`, `tests/regress_drain_park_findings.py`, `tests/regress_drain_signals.py`, `tests/regress_stale_running.py` and `tests/snapshot_scale_fixture.py` import from the hub (outside `tests/integration`) and stay green.
 
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
 - Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
