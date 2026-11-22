@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Implement spec requires generated metadata headers
+# purpose: Checks the Implement spec forbids agent-written clutch:meta headers, leaves headers to Check, and pins spec version 2.25
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: abdfb3f9
-# hash: 90441ccc48615b9363750c79de6d850421ec35e1156996ff7f1fbcf34c085821
+# verified: 9be395f4
+# hash: c16437a1ac348c6426884165bc9408770444bf647aebd0f3b217ac805f45eb34
 from pathlib import Path
 
 import pytest
@@ -31,4 +31,4 @@ def test_implement_spec_requires_generated_meta_headers(clause):
 def test_implement_spec_meta_header_version():
     text = (Path(__file__).resolve().parents[2] / "clutch/specs/implement.md").read_text()
     # The previous spec version would leave consumers unable to identify the new rule.
-    assert load_spec(text).meta.version == "2.24"
+    assert load_spec(text).meta.version == "2.25"

@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.24"
+version: "2.25"
 ---
 ## Role
 
@@ -31,12 +31,8 @@ Read the ticket and the context files below before writing anything. For a prior
 3. Run every `## Verification` command yourself as a whole command, one after another, with
    no other test process running. Parallelism inside a single command is allowed. Run one final
    sequential pass and report its result. A timing failure that appears only when test runs overlap is verified on the base commit and reported in `second_problems`.
-   Run each hard always-trigger host Check entry (a `review.mechanical` entry with `trigger: always` and `severity: hard`, such as lint, format and the full test suites) once after your last edit and before replying `ok`, because Check runs every one of them on the candidate.
-   A failure in a file outside `## Scope fence` is reported as a forced file or in `second_problems`, never edited; apply lint and format fixes only to files the ticket changed.
-   Run each host Check hard coverage gate (a `review.mechanical` entry with a `coverage` report)
-   once after your last edit, not after every edit; skip a gate when the diff touches no file that gate measures.
-   A coverage floor miss is fixed with a test inside `## Scope fence`, or reported as `premise_failed` naming the file and its floor; never restructure production code to avoid coverage.
-   When a command still fails after your work,
+   Run lint and format only on the files the diff changes, and leave the full suites, coverage gates and base comparisons to Check, whose failures come back as retry findings.
+   When a `## Verification` command still fails after your work,
    rerun the ticket's `## Verification` command exactly as written once in a base-commit git worktree
    with full history, no environment overrides (such as `PYTHONPATH`), and no synthetic repository
    (such as a fresh `git init`). Any other method is not evidence. Compare failing tests by name
@@ -45,10 +41,6 @@ Read the ticket and the context files below before writing anything. For a prior
    For each failure also on the base list, commit, reply `ok`, and report it in `second_problems`
    and `surprises`. A failure that passes on the base commit and requires an edit outside
    `## Scope fence` remains a `premise_failed` finding.
-   When a failing test passes on the base commit and fixing it would require an edit outside `## Scope fence`, first rerun that test alone on the candidate and run the ticket's `## Verification` command one further time in full; if it passes alone and the further full run does not reproduce the failure, treat it as an intermittent failure: commit, reply `ok`, and report it in `second_problems` and `surprises`.
-   For this case only, this paragraph overrides step 2's requirement that a failure also fails on the base commit before you report it.
-   The isolated rerun and the one further full run are the only evidence; further reruns until green are never proof.
-   A failure that reproduces on the isolated rerun or on the further full run stays a `premise_failed` finding.
 4. Search `docs/` and `README.md` for statements of the behavior the diff changes. Update only
    statements the diff makes false and only files inside `## Scope fence`, in the same commit.
    A stale statement in a file outside `## Scope fence` is reported in `second_problems`, not edited.

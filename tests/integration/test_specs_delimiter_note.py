@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test specs delimiter note
+# purpose: Checks every prompt spec's Role explains quoted data delimiters, pins spec versions, and renders delimiter payloads quoted
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: abdfb3f9
-# hash: 3c2e52d2ef638a548f350cdc8993f1556db6448315fa75a3aa9dacd11c110659
+# verified: 9be395f4
+# hash: 7e73e15682c231e10c7669056fa2d007d02cefe0ea6957e6eab15832c7d3410e
 from pathlib import Path
 
 import pytest
@@ -19,7 +19,7 @@ from clutch.specs import DATA_DELIM, data_close, data_open, lint_spec, load_spec
         ("acceptance", "1.0"),
         ("author", "1.11"),
         ("diagnose", "1.9"),
-        ("implement", "2.24"),
+        ("implement", "2.25"),
         ("requisition_review", "3.27"),
         ("retro", "1.6"),
         ("review", "1.9"),

@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: How ClutchWork works
+purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state, config and index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: abdfb3f9
-hash: 594fdcbb0c16f2a5aca59fdc49df2efa5d628d778395bd87a835de1fec8bbf21
+verified: 9be395f4
+hash: 5dde672d9f76c1c4a1268db992a9d393c56724ffc3db7047c8565f707c79b47c
 -->
 # How ClutchWork works
 
@@ -245,8 +245,7 @@ Ticket Context files are UTF-8 text; lint renders each entry exactly as Implemen
   file outside the scope fence separately.
 
 Implement runs each Verification command whole and in sequence and reports that final result.
-Implement runs the host hard always-trigger checks once after its last edit.
-Implement also runs each host hard coverage gate once after its last edit when the diff touches a file that gate measures.
+Implement runs its Verification commands and lint and format on changed files, leaving the full suites, coverage gates and base comparisons to Check.
 Failures reproduced on the base commit are reported as second problems rather than `premise_failed`.
 Implement updates documentation statements the diff makes false inside the scope fence in the same commit.
 

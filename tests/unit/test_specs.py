@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test specs
+# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: abdfb3f9
-# hash: 285a3ddbafbd5f4c6cdcbb5fa4bcc3893229d62d89ed554a86e1fa8cc933784b
+# verified: 9be395f4
+# hash: 8287c655f7018e7b1d7cb53def72e7b8b6437212115ac082b82c18b7b7de6276
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.24"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.25"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -131,7 +131,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.24"
+    assert spec.meta.version == "2.25"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",
@@ -150,22 +150,6 @@ def test_implement_spec_consumer_read():
         "A stale statement in a file outside `## Scope fence` is reported in `second_problems`, not edited.",
     ):
         assert rule in task
-    # The old spec omitted always-trigger checks and allowed unrelated files to be fixed.
-    assert (
-        "Run each hard always-trigger host Check entry (a `review.mechanical` entry with `trigger: always` and `severity: hard`, "
-        "such as lint, format and the full test suites) once after your last edit and before replying `ok`, "
-        "because Check runs every one of them on the candidate."
-    ) in task
-    assert ("A failure in a file outside `## Scope fence` is reported as a forced file or in `second_problems`, never edited; apply lint and format fixes only to files the ticket changed.") in task
-    # The old spec omitted coverage gates, their applicability, and the fenced floor-miss remedy.
-    for rule in (
-        "hard coverage gate",
-        "once after your last edit",
-        "touches no file that gate measures",
-        "not after every edit",
-        "A coverage floor miss is fixed with a test inside `## Scope fence`, or reported as `premise_failed` naming the file and its floor; never restructure production code to avoid coverage.",
-    ):
-        assert rule in task
     # The old spec omitted sequential execution, permitted overlap, and did not route timing failures.
     for rule in (
         "whole command",
@@ -177,25 +161,14 @@ def test_implement_spec_consumer_read():
     ):
         assert rule in task
     assert (
-        "When a command still fails after your work, rerun the ticket's `## Verification` command exactly as written once "
+        "When a `## Verification` command still fails after your work, rerun the ticket's `## Verification` command exactly as written once "
         "in a base-commit git worktree with full history, no environment overrides (such as `PYTHONPATH`), and no synthetic "
         "repository (such as a fresh `git init`). Any other method is not evidence. Compare failing tests by name with the base run. "
         "Never label a failure base-red without running it on the base commit. Fix every failure not on the base list. "
         "For each failure also on the base list, commit, reply `ok`, and report it in `second_problems` and `surprises`. "
         "A failure that passes on the base commit and requires an edit outside `## Scope fence` remains a `premise_failed` finding."
     ) in task
-    # Missing guards would excuse reproduced failures, accept suite retries, or conflict with step 2.
-    for rule in (
-        "Before reporting a failure you did not cause, verify that it also fails on the base commit.",
-        "When a failing test passes on the base commit and fixing it would require an edit outside `## Scope fence`, "
-        "first rerun that test alone on the candidate and run the ticket's `## Verification` command one further time in full; "
-        "if it passes alone and the further full run does not reproduce the failure, treat it as an intermittent failure: commit, reply `ok`, "
-        "and report it in `second_problems` and `surprises`.",
-        "For this case only, this paragraph overrides step 2's requirement that a failure also fails on the base commit before you report it.",
-        "The isolated rerun and the one further full run are the only evidence; further reruns until green are never proof.",
-        "A failure that reproduces on the isolated rerun or on the further full run stays a `premise_failed` finding.",
-    ):
-        assert rule in task
+    assert "Before reporting a failure you did not cause, verify that it also fails on the base commit." in task
     assert "no changed file is imported, called or exercised by that test" not in task
     assert (
         "Before replying `premise_failed` for a scope reason, work the change through every file the "
