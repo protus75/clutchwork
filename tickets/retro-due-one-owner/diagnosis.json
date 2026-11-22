@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d1d9dde8587fcb39e31ff9da44dac7e30e636b1c",
+  "produced_at_sha": "7f8b83a6b2edeb4d2a9e783a251740dc09298fed",
   "stem": "retro-due-one-owner",
-  "attempt": 2,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 3,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "tests/unit/test_serve_retro_check_once.py monkeypatches serve.measurements and serve.select_trigger (lines 44-45, 81, 85). Once Serve.check_retro calls retro.due_trigger, those names are gone from serve, so 6 tests fail. That file is outside the scope fence.",
-    "The ticket must fence tests/unit/test_serve_retro_check_once.py. Its setup fixture and test_failure_retries_same_count should patch clutch.retro.due_trigger (or retro.measurements) instead of serve.measurements/serve.select_trigger.",
-    "Add tests/unit/test_serve_retro_check_once.py to the Verification and acceptance criterion 5 commands so the local run catches this. The 37-test verification passed only because it left this file out.",
-    "Keeping dead imports of measurements/select_trigger in clutch/serve.py would not work: the test's patches would no longer reach due_trigger, and that is a dual path the rules ban. Fix the fence, not the code."
+    "Ticket fence misses forced files: tests/unit/test_serve_retro_check_once.py (fixture line 44 patches serve.measurements and serve.select_trigger) breaks once Serve.check_retro uses due_trigger; all six tests fail. Add it to Scope fence and Verification.",
+    "tests/regress_serve_retro_check_once.py patches serve.select_trigger and serve.measurements, so it no longer feeds the due decision once Serve.check_retro calls due_trigger. Add it to Scope fence and repatch it to serve.due_trigger.",
+    "The prior branch already holds the retro.py/serve.py work and the two new tests (diff_stat: 6 files). After refile, update only the two added files to patch serve.due_trigger; do not rewrite due_trigger or the call-site move.",
+    "Don't keep stale serve.measurements/serve.select_trigger imports just so the old patches resolve. Patching them would no longer steer check_retro (dual path). Repatch the tests to the due_trigger boundary instead."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
