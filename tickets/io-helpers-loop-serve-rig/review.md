@@ -1,10 +1,10 @@
-# Review: snag
+# Review: approve
 
-The move, the 20 import-line edits, the GitFake/FakeExec rewrites and the in-process notify-sink branch are correct, but tests/unit/test_loop_helpers.py leaves out the check criterion 1 requires: that serve_rig.until and serve_rig.turn still resolve.
+All seven names now live in tests/loop_helpers.py and run on GitFake, FakeExec and FakeFileSystem; `notify-sink` is answered in process through the repository exec and the `clutch.__main__.SubprocessExec` patch; all 20 importers changed only their import lines; the hub imports the names back; and the new test_serve_hub_exports closes the prior until/turn finding.
 
 ## Findings
 
-- [acceptance] tests/unit/test_loop_helpers.py:410 Acceptance criterion 1 requires tests/unit/test_loop_helpers.py to check that `serve_rig.until` and `serve_rig.turn` still resolve (`serve_rig.turn is tests.fakes.turn`). None of the added tests (test_serve_exports through test_serve_enable_upgrade) imports tests.integration.serve_rig or asserts on `until` or `turn`, so that part of the criterion is unmet. The hub could lose either attribute after this move and this test file would still pass. (do instead: Append a test to tests/unit/test_loop_helpers.py that runs `from tests.integration import serve_rig`, asserts `serve_rig.turn is fakes.turn` and `callable(serve_rig.until)`, and also asserts that each moved name on the hub (for example `serve_rig.graph is loop_helpers.graph`) is the shared object.)
+none
 
 ## Record
 
@@ -12,24 +12,14 @@ The move, the 20 import-line edits, the GitFake/FakeExec rewrites and the in-pro
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "63ac2ea4d0a5d5c3a11e81cfbfdb82dbffc68151",
+  "produced_at_sha": "6e4619a7374a0a9e72cf8f84d3f3f008001de81d",
   "stem": "io-helpers-loop-serve-rig",
-  "reviewed_sha": "63ac2ea4d0a5d5c3a11e81cfbfdb82dbffc68151",
-  "summary": "The move, the 20 import-line edits, the GitFake/FakeExec rewrites and the in-process notify-sink branch are correct, but tests/unit/test_loop_helpers.py leaves out the check criterion 1 requires: that serve_rig.until and serve_rig.turn still resolve.",
-  "findings": [
-    {
-      "code": "acceptance",
-      "path": "tests/unit/test_loop_helpers.py",
-      "line": 410,
-      "message": "Acceptance criterion 1 requires tests/unit/test_loop_helpers.py to check that `serve_rig.until` and `serve_rig.turn` still resolve (`serve_rig.turn is tests.fakes.turn`). None of the added tests (test_serve_exports through test_serve_enable_upgrade) imports tests.integration.serve_rig or asserts on `until` or `turn`, so that part of the criterion is unmet. The hub could lose either attribute after this move and this test file would still pass.",
-      "paved_road": "Append a test to tests/unit/test_loop_helpers.py that runs `from tests.integration import serve_rig`, asserts `serve_rig.turn is fakes.turn` and `callable(serve_rig.until)`, and also asserts that each moved name on the hub (for example `serve_rig.graph is loop_helpers.graph`) is the shared object.",
-      "kind": null,
-      "unit": null
-    }
-  ],
+  "reviewed_sha": "6e4619a7374a0a9e72cf8f84d3f3f008001de81d",
+  "summary": "All seven names now live in tests/loop_helpers.py and run on GitFake, FakeExec and FakeFileSystem; `notify-sink` is answered in process through the repository exec and the `clutch.__main__.SubprocessExec` patch; all 20 importers changed only their import lines; the hub imports the names back; and the new test_serve_hub_exports closes the prior until/turn finding.",
+  "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5",
-  "verdict": "snag"
+  "verdict": "approve"
 }
 ```
