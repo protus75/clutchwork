@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The two importer files are in the current scope fence, despite the prior scope-fence findings; individual mutation checks were not repeated during this retry.
+Both importer files are in the current scope fence despite the prior scope-fence findings; individual assertion mutation checks were not repeated on this retry.
 
 ## Dead ends
 
