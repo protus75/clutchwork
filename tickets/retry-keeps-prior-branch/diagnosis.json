@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "418c48429d1c06de32f807ae81cd8318f5a6c153",
+  "produced_at_sha": "7fda5eb273898795aa437894f850073385521648",
   "stem": "retry-keeps-prior-branch",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "reject",
   "lessons": [
-    "Premise is false: criteria 1-2 need tests/integration/test_retry_keeps_branch.py to run real git, but tests/integration/conftest.py guards every integration file not named in REAL_IO_TESTS (line 13), and conftest.py is outside the scope fence.",
-    "Re-author the ticket in one of two ways: add tests/integration/conftest.py to the fence and add test_retry_keeps_branch.py to REAL_IO_TESTS, or rewrite criteria 1-2 to drive prepare_worktree through the in-memory fakes in tests/fakes.py.",
-    "Put the real-git check of the new Git.worktree_attach in an allowlisted file such as tests/integration/test_git.py (it is in REAL_IO_TESTS) and fence that file. Test prepare_worktree's keep, rebase and fallback logic with a fake Git.",
-    "The Verification command names test_reconcile.py and test_kill_failure_suppression.py. Both are in DISK_IO_SKIP in tests/integration/conftest.py, so they are skipped and verify nothing. Drop them or name tests that actually run."
+    "The fence leaves out tests/integration/test_implement_spec_mutation_check.py. Its line 22 pins the implement.md version at 2.26. The required bump to 2.27 breaks that test, and fixing it means editing a file outside the fence, which the ticket's Definition of rejected forbids.",
+    "Repair the ticket: add tests/integration/test_implement_spec_mutation_check.py to the Scope fence. In Scope in, extend the 'update version pins only' list to cover it. The CLAUDE.md fence rule requires fencing every test that pins a changed version.",
+    "Before refiling, grep tests/ for pins on the implement and diagnose spec versions and for the old Diagnose sentence. Fence every hit. The known implement 2.26 pins are in test_specs.py:134, test_implement_spec_meta_headers.py:34 and test_implement_spec_mutation_check.py:22.",
+    "Review found nothing wrong with the implementation. Its only Check failure was this version pin outside the fence, and the Verification command passed with 104 tests. Redo the same approach after the fence is repaired."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
