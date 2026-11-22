@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The help registry builds entirely from injected document text.
+# purpose: Unit tests that the help registry builds from injected document text, covers every snapshot vocabulary value and raises on unresolved links
 # relates: [clutch/box.py, clutch/help.py, clutch/observe.py, clutch/stats.py, clutch/status.py]
 # owner: engine
-# verified: 0a308920
-# hash: f7465624251ba52b674c908e4bf3d48e64097ebc320e8284a50c86a58c57135a
+# verified: 9d19a72e
+# hash: 1f9af826fb480ec3ef7ac7ea146d0567dc0b284487d0f49270e60dc601ce0045
 
 from datetime import datetime, timezone
 from typing import get_args
@@ -35,13 +35,12 @@ def test_topic_shape():
     result = build(documents())
     assert set(result) == set(TOPICS)  # Omitting a topic must fail.
     for key, entry in result.items():
-        lines = entry["text"].splitlines()
-        assert len(lines) == 3  # Missing or extra lines must fail.
-        assert lines[0] == entry["what"] and lines[0].endswith(".") and len(lines[0]) > 1
-        assert lines[1].startswith("Before: ") and lines[1][8:]
-        assert lines[2].startswith("After: ") and lines[2][7:]
+        assert entry["text"] == entry["what"] and len(entry["text"].splitlines()) == 1
+        assert "Before:" not in entry["text"] and "After:" not in entry["text"]
+        assert "before" not in entry and "after" not in entry
+        assert "before" not in TOPICS[key] and "after" not in TOPICS[key]
         if not key.startswith("verb."):
-            assert topic_text(key) == entry["text"]  # Separate text renderers must agree.
+            assert topic_text(key) == entry["what"]
 
 
 def test_vocabularies_covered():

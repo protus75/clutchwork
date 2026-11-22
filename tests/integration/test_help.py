@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Check registry links and vocabulary against shipped inputs.
+# purpose: Checks help registry links resolve to shipped doc headings and run-guide verb rows, and that the VS Code extension manifest's commands, views and settings are covered by help
 # relates: [clutch/__init__.py, clutch/help.py]
 # owner: engine
-# verified: 148a8874
-# hash: 6f9d0e4bdc1c40f357306e7ea987fceab39c5f5481e5f0fec302a08319877784
+# verified: 9d19a72e
+# hash: 4fc2fbb6a11669f12f3ab219f4b98d64c9b5e1bf6754e7d92eb54d4a3984dbcd
 
 import json
 import re
@@ -60,7 +60,7 @@ def test_manifest_covered():
     for setting in manifest["configuration"]["properties"].values():
         assert "description" not in setting
         description = setting["markdownDescription"]
-        assert "Before:" in description and "After:" in description
+        assert "Before:" not in description and "After:" not in description
         links = re.findall(r"\]\((https://[^)]+)\)", description)
         assert len(links) == 1 and links[0].startswith(repo + "/blob/main/")
         path, fragment = links[0].split("/blob/main/", 1)[1].split("#", 1)

@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 5b8a60b2
-hash: dcde2f9c0ef96040ded66af542ec4c15d30146397c3a142ee61933d37532cdc2
+verified: 9d19a72e
+hash: d91113a3f2d8383c133f683474327220caec7d1a15941d1259cc036982932711
 -->
 # How ClutchWork works
 
@@ -142,7 +142,7 @@ The Tickets view’s play button and Engine… picker start drain detached. The 
 
 The `clutch.command` setting supplies the command and arguments the extension runs the engine with; its default is `.venv/bin/clutch`, resolved from the workspace folder.
 
-Extension help comes from `clutch/help.py` through the snapshot; each surface shows what it is, `Before:` and `After:` lines, and a link to its documentation, and `clutch.help` lists every topic. `clutch.refreshSeconds` sets the timed refresh interval (default 15 seconds); 0 disables the timer while file-change refreshes continue. `clutch.unavailableMenuItems` controls whether unavailable ticket actions are disabled (the default) or hidden.
+Extension help comes from `clutch/help.py` through the snapshot; each surface shows what it is and a link to its documentation, and `clutch.help` lists every topic. `clutch.refreshSeconds` sets the timed refresh interval (default 15 seconds); 0 disables the timer while file-change refreshes continue. `clutch.unavailableMenuItems` controls whether unavailable ticket actions are disabled (the default) or hidden.
 
 ## 3. Tickets
 

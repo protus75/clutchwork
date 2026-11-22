@@ -79,19 +79,19 @@
 					"default": [
 						".venv/bin/clutch"
 					],
-					"markdownDescription": "The command and arguments used to run clutch in this workspace.\n\nBefore: The default uses the host\u2019s .venv/bin/clutch.\n\nAfter: Set the array to the host invocation.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md#vs-code-extension)"
+					"markdownDescription": "The command and arguments used to run clutch in this workspace.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/clutch/docs/host-contract.md#vs-code-extension)"
 				},
 				"clutch.statsWindow": {
 					"type": "string",
 					"default": "7d",
 					"pattern": "^[1-9][0-9]*[hdt]$",
-					"markdownDescription": "The window used for Stats, in hours, days, or settled tickets.\n\nBefore: Stats uses 7d by default.\n\nAfter: Set a window such as 24h, 7d, or 10t.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+					"markdownDescription": "The window used for Stats, in hours, days, or settled tickets.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
 				},
 				"clutch.refreshSeconds": {
 					"type": "number",
 					"default": 15,
 					"minimum": 0,
-					"markdownDescription": "Seconds between timed view refreshes.\n\nBefore: Views also refresh on watched file changes.\n\nAfter: Set 0 to turn off the timer.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+					"markdownDescription": "Seconds between timed view refreshes.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
 				},
 				"clutch.unavailableMenuItems": {
 					"type": "string",
@@ -104,7 +104,7 @@
 						"Show every ticket action; grey out the ones that cannot run right now (engine running, unmet dependencies, uncommitted draft).",
 						"Show only the ticket actions that can run right now."
 					],
-					"markdownDescription": "How unavailable ticket actions appear in the menu.\n\nBefore: Unavailable actions are disabled by default.\n\nAfter: Choose hide to omit them.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+					"markdownDescription": "How unavailable ticket actions appear in the menu.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
 				},
 				"clutch.playAction": {
 					"type": "string",
@@ -117,7 +117,7 @@
 						"Run eligible tickets to quiescence, then exit.",
 						"Run the continuous daemon until stopped."
 					],
-					"markdownDescription": "The action started by the Tickets play button.\n\nBefore: The button starts drain by default.\n\nAfter: Choose serve to start the daemon.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
+					"markdownDescription": "The action started by the Tickets play button.\n\n[Learn more](https://github.com/protus75/clutchwork/blob/main/docs/how-clutch-works.md#22-devpy)"
 				}
 			}
 		},

@@ -9,9 +9,9 @@ DOCS = Path(clutch.__file__).parent / "docs"
 TOPICS = {}
 
 
-def _add(kind, rows, heading, before, after, doc="docs/how-clutch-works.md"):
+def _add(kind, rows, heading, doc="docs/how-clutch-works.md"):
     for name, what in rows.items():
-        TOPICS[f"{kind}.{name}"] = dict(what=what, before=before, after=after, doc=doc, heading=heading)
+        TOPICS[f"{kind}.{name}"] = dict(what=what, doc=doc, heading=heading)
 
 
 _add(
@@ -24,8 +24,6 @@ _add(
         "clutch.stats": "Shows health and efficiency statistics.",
     },
     "VS Code extension",
-    "Open a clutch workspace.",
-    "Select an item or action.",
     "host-contract.md",
 )
 
@@ -49,7 +47,7 @@ _commands = {
     "clutch.openConfig": "Open the host configuration.",
     "clutch.ticket.askDrafts": "Open a prompt to assess drafts.",
 }
-_add("command", _commands, "VS Code extension", "Open a clutch workspace.", "Use the selected action.", "host-contract.md")
+_add("command", _commands, "VS Code extension", "host-contract.md")
 COMMANDS = {name: f"command.{name}" for name in _commands}
 COMMANDS.update(
     {
@@ -70,10 +68,6 @@ COMMANDS.update(
 )
 for _verb in ("drain", "serve", "stop", "kill", "status", "retro", "review", "lint", "run", "confirm", "reject", "order", "triage", "dismiss"):
     TOPICS[f"verb.{_verb}"] = dict(
-        before="Choose the action for the current state.",
-        after="Inspect the applied result; a submitted request is not yet completion. Serve applies ticket verdicts during active Check or model work."
-        if _verb in {"confirm", "reject"}
-        else "Inspect the result.",
         doc="host-running.md",
         verb=f"ticket {_verb}"
         if _verb in {"review", "lint", "order", "confirm", "reject"}
@@ -88,8 +82,6 @@ _add(
     "verdict",
     {"decisions": "Shows verdict requests that were not applied."},
     "7.3 Control",
-    "A confirm or reject request is published.",
-    "Fix the reason and run ticket confirm or ticket reject again for the stem.",
 )
 _add(
     "section",
@@ -100,8 +92,6 @@ _add(
         "merged": "This section shows the most recently settled tickets, up to snapshot_merged_limit.",
     },
     "7.1 `drain`",
-    "Tickets enter intake.",
-    "The engine reevaluates their state.",
 )
 _add(
     "status",
@@ -122,8 +112,6 @@ _add(
         "already_satisfied": "The ticket settled without a change.",
     },
     "7.1 `drain`",
-    "The engine inspects the ticket and its history.",
-    "The state can change after intake or a run.",
 )
 _add(
     "step",
@@ -151,23 +139,17 @@ _add(
         )
     },
     "4. A ticket's run",
-    "The engine begins work.",
-    "Inspect the associated record when available.",
 )
 _add(
     "step",
     {"resolve": "Resolves bounded text conflicts in serve merge admission."},
     "7.2.1 Merge queue (serve only)",
-    "Mechanical resolution could not finish and the conflict bounds passed.",
-    "An approving review of the resolution delta precedes safety and integration checks; refusals hand off to Rework.",
 )
 
 _add(
     "step",
     {"meta": "Fills file metadata with a read-only model."},
     "2. Commands",
-    "Check configured files for metadata findings.",
-    "Inspect the filled metadata blocks.",
 )
 
 _add(
@@ -181,8 +163,6 @@ _add(
         "bug_report": "A bug report records a host-reported problem.",
     },
     "9.1 Messages",
-    "A message enters the Suggestion Box.",
-    "Triage can settle the message.",
 )
 _add(
     "boxOutcome",
@@ -194,8 +174,6 @@ _add(
         "declined": "Triage recorded a decision to decline the message.",
     },
     "9.2 Triage",
-    "A message enters the Suggestion Box.",
-    "Inspect the linked ticket or decision when available.",
 )
 _add(
     "stat",
@@ -211,24 +189,17 @@ _add(
         "spend": "Summarizes provider costs and token usage.",
     },
     "2.1 Verbs",
-    "Select a statistics window.",
-    "Inspect the underlying journal for details.",
 )
 _add(
     "lock",
     {"engine": "The engine lock allows one writer per host.", "commit": "The commit lock serializes git index writes and commits."},
     "10.1 Files",
-    "A process requests the lock.",
-    "The holder releases the lock when finished.",
 )
-TOPICS["priority"] = dict(
-    what="Priority helps order eligible tickets.", before="A ticket is authored or reordered.", after="The scheduler selects eligible work.", doc="docs/how-clutch-works.md", heading="7.1 `drain`"
-)
+TOPICS["priority"] = dict(what="Priority helps order eligible tickets.", doc="docs/how-clutch-works.md", heading="7.1 `drain`")
 
 
 def topic_text(key):
-    entry = TOPICS[key]
-    return f"{entry['what']}\nBefore: {entry['before']}\nAfter: {entry['after']}"
+    return TOPICS[key]["what"]
 
 
 def _slug(heading):
@@ -262,10 +233,7 @@ def help_map(read, repo_url):
                 link = {"label": heading, "path": str(path), "line": line}
         if "verb" not in entry:
             what = entry["what"]
-            text = topic_text(key)
-        else:
-            text = f"{what}\nBefore: {entry['before']}\nAfter: {entry['after']}"
-        result[key] = {"what": what, "before": entry["before"], "after": entry["after"], "text": text, "link": link}
+        result[key] = {"what": what, "text": what, "link": link}
     return result
 
 
