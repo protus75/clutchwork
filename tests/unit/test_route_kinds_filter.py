@@ -4,8 +4,8 @@
 # purpose: test route kinds filter
 # relates: [clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/providers.py, clutch/redact.py, clutch/seams.py]
 # owner: engine
-# verified: 23d3b116
-# hash: 1823eb349ec0f44bfc2f177a82e9bed30df2306879ecf0e66c888265d6bcdae5
+# verified: ad9c2b01
+# hash: 774d36add7684a7dd30ba5cde02a44b3cb49ae2b66d915beb0cc7368aef0fe79
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -150,7 +150,9 @@ def test_ticket_stages_pass_kind(tmp_path, monkeypatch):
 
     ticket = SimpleNamespace(stem="hero", frontmatter=SimpleNamespace(kind="bug", agent_tier="medium", agent_effort="low"), expected_minutes=10, stuck_minutes=20, scope_fence=())
     git = SimpleNamespace(rev_parse=AsyncMock(return_value="sha"), diff=AsyncMock(return_value="diff"))
-    ctx = SimpleNamespace(driver=SimpleNamespace(run=capture), worktree=lambda _: tmp_path, repo=tmp_path, git=git, config=SimpleNamespace(routing=[], providers=[]))
+    ctx = SimpleNamespace(
+        driver=SimpleNamespace(run=capture, journal=SimpleNamespace(read=lambda: [])), worktree=lambda _: tmp_path, repo=tmp_path, git=git, config=SimpleNamespace(routing=[], providers=[])
+    )
     (tmp_path / "tickets/hero").mkdir(parents=True)
     (tmp_path / "tickets/hero/ticket.md").write_text("ticket")
     monkeypatch.setattr(stages, "_spec", lambda *args: None)
