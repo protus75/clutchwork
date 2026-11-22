@@ -133,6 +133,11 @@
 				"icon": "$(refresh)"
 			},
 			{
+				"command": "clutch.ticket.copyStem",
+				"title": "Copy Stem",
+				"category": "clutch"
+			},
+			{
 				"command": "clutch.ticket.open",
 				"title": "Open ticket.md",
 				"category": "clutch"
@@ -278,6 +283,11 @@
 		"menus": {
 			"webview/context": [
 				{
+					"command": "clutch.ticket.copyStem",
+					"when": "webviewId == 'clutch.tickets' && clutchCopyStem == 'on'",
+					"group": "1_open@2"
+				},
+				{
 					"command": "clutch.ticket.open",
 					"when": "webviewId == 'clutch.tickets' && clutchStem",
 					"group": "1_open"
@@ -359,6 +369,10 @@
 				}
 			],
 			"commandPalette": [
+				{
+					"command": "clutch.ticket.copyStem",
+					"when": "false"
+				},
 				{
 					"command": "clutch.askDrainLoop",
 					"when": "false"

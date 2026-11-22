@@ -33,6 +33,7 @@ _commands = {
     "clutch.askDrainLoop": "Open a prompt about supervising the drain loop.",
     "clutch.help": "Browse clutch help topics.",
     "clutch.refresh": "Refresh the displayed state.",
+    "clutch.ticket.copyStem": "Copy the selected ticket's stem.",
     "clutch.ticket.open": "Open the selected ticket.",
     "clutch.ticket.askDiagnose": "Open a prompt to diagnose the selected ticket.",
     "clutch.ticket.askReview": "Open a prompt to review the selected ticket.",

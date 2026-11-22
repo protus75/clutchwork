@@ -374,6 +374,7 @@ function activate(context) {
 		}),
 		vscode.commands.registerCommand('clutch.lifecycle', () => showLifecycle(context.extensionUri)),
 		vscode.commands.registerCommand('clutch.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:chunkydragon.vscode-clutchwork')),
+		vscode.commands.registerCommand('clutch.ticket.copyStem', ctx => vscode.env.clipboard.writeText(ctx.clutchStem)),
 		vscode.commands.registerCommand('clutch.ticket.open', ctx => openTicket(`tickets/${ctx.clutchStem}/ticket.md`)),
 		vscode.commands.registerCommand('clutch.ticket.review', ctx => devCommand(...snapshot.snap.commands.review, ctx.clutchStem)),
 		vscode.commands.registerCommand('clutch.ticket.lint', ctx => devCommand(...snapshot.snap.commands.lint, ctx.clutchStem)),

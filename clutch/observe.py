@@ -566,6 +566,7 @@ MENU = {
     "clutchRun": MenuEntry("ticket", run_admission, ("stem", "facts", "file_exists", "ticket", "intake_decision", "stray"), needs_lock=True, command="clutch.ticket.run"),
     "clutchConfirm": MenuEntry("ticket", confirm_admission, ("facts", "stem", "draft", "interrupted"), command="clutch.ticket.confirm"),
     "clutchReject": MenuEntry("ticket", reject_admission, ("facts", "stem", "draft", "interrupted"), command="clutch.ticket.reject"),
+    "clutchCopyStem": MenuEntry("ticket", lambda section: Admission("admit" if section == "merged" else "noop"), ("section",), extension_only=True, command="clutch.ticket.copyStem"),
     "clutchAskDiagnose": MenuEntry("ticket", lambda section: Admission("admit" if section != "merged" else "noop"), ("section",), extension_only=True, command="clutch.ticket.askDiagnose"),
     "clutchAskDrafts": MenuEntry("ticket", lambda row_draft: Admission("admit" if row_draft else "noop"), ("row_draft",), extension_only=True, command="clutch.ticket.askDrafts"),
     "clutchAskReview": MenuEntry("ticket", lambda section: Admission("admit" if section in ("queued", "blocked") else "noop"), ("section",), extension_only=True, command="clutch.ticket.askReview"),
