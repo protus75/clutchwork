@@ -115,7 +115,7 @@ Scope out:
 2. `grep -rnE "from tests\.integration\.(test_stages) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
 3. `grep -nE "^(async def|def|class) (CONFIG|ENV|SAMPLE_REPORT|SECRET|SNAG|SPECS|STEM|SampleReport|TICKET|_report_bytes|adopt_conduct|agent|author|evidence|git|implement_reply|repo|report_context|run|verdict)\b|^(CONFIG|ENV|SAMPLE_REPORT|SECRET|SNAG|SPECS|STEM|SampleReport|TICKET|_report_bytes|adopt_conduct|agent|author|evidence|git|implement_reply|repo|report_context|run|verdict) =" tests/integration/test_stages.py` prints nothing: the hub files no longer define a moved name.
 4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/stages_helpers.py` prints nothing.
-5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
+5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the base commit's passed count plus the 4 new tests in `tests/integration/test_stages_helpers_repo.py`, the same skipped count as on the base commit, and no failures; both numbers are recorded in `run.md`.
 6. `./dev.py test tests/integration/test_shared_fakes_adoption.py tests/integration/test_disk_io_skip_list.py` passes (a running test that reads a moved name as a hub module attribute still sees the shared object).
 
 ## Verification
