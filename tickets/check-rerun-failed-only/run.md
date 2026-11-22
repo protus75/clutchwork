@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The base verification command could not run tests because the three new test files do not exist on the base commit. The attempted implementation and tests remain uncommitted.
+The final verification passed all 11 tests; focused mutation checks caught the tested incorrect implementations. The simpler full-command rerun was rejected because it retains the delay this ticket addresses.
 
 ## Dead ends
 
-The required pytest project test was blocked by the integration I/O guard; the existing host-mechanical tests are skipped by the same integration setup.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 20 minutes expected and 40 minutes stuck; actual time was not measured.
+The ticket budget was 20 minutes expected and 40 minutes stuck; elapsed time was not measured.
 
