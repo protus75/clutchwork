@@ -1,16 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "90a6a7e63064ee3cc43e8e37b8f95b290834795f",
+  "produced_at_sha": "a0949cab03cf06f0f1c42f34b688a3d0bd6a2b15",
   "stem": "reconcile-spares-confirming-draft",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/serve.py",
     "tests/integration/test_serve_verdict_orphan_sweep.py",
     "tests/regress_reconcile_confirming_draft.py",
     "tests/unit/test_serve_verdict_owned.py"
   ],
-  "inserted_lines": 264,
+  "inserted_lines": 274,
   "bypassed": [],
   "reports": [
     {
@@ -57,18 +57,8 @@
     },
     {
       "code": "bug_evidence",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "bug_evidence",
-          "path": null,
-          "line": null,
-          "message": "overlaid base did not complete with a positive exit and defect",
-          "paved_road": "supply durable ticket evidence and carries matching only changed test/fixture files; provide a carried reproducer checking prerequisites and emitting the regression result protocol: pass at head, defect at the overlaid base",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "bug_evidence": {
         "argv": [
@@ -77,8 +67,8 @@
           "python",
           "tests/regress_reconcile_confirming_draft.py"
         ],
-        "head_sha": "90a6a7e63064ee3cc43e8e37b8f95b290834795f",
-        "base_sha": "62425e3ea16379ec7870aeb844431cf977108bca",
+        "head_sha": "a0949cab03cf06f0f1c42f34b688a3d0bd6a2b15",
+        "base_sha": "4be5575ca1d3da9ee5f6d547bbe6131d477698f5",
         "overlay_paths": [
           "tests/regress_reconcile_confirming_draft.py"
         ],
@@ -91,9 +81,9 @@
           "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
         },
         "base": {
-          "rc": 0,
-          "regression_result": null,
-          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\nInstalled 31 packages in 31ms\n"
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/reconcile-spares-confirming-draft\nInstalled 31 packages in 20ms\n"
         }
       }
     },
@@ -115,17 +105,16 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 15.842649,
+        "seconds": 15.91483,
         "passed": 1873,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8345231089915615,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.4482389140175655,
-          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.1065843359974679,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0962962690391578,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0913399780110922,
-          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.0719275480369106
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.6632975770335179,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.336736678989837,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.0954821959894616,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.066633262031246,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.04963141301414
         }
       },
       "coverage": {
@@ -141,13 +130,13 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 9.583124,
+        "seconds": 8.814096,
         "passed": 269,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7997738209669478,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039903310243972
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.721436053951038,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0042668440146372
         }
       }
     },
@@ -175,9 +164,9 @@
         "tests/integration/test_serve_confirm_during_check.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/integration/test_serve_verdict_orphan_sweep.py tests/unit/test_serve_verdict_owned.py tests/integration/test_serve_confirm_during_check.py\nbringing up nodes...\nbringing up nodes...\n\n.ss..                                                                    [100%]\n3 passed, 2 skipped in 1.39s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/integration/test_serve_verdict_orphan_sweep.py tests/unit/test_serve_verdict_owned.py tests/integration/test_serve_confirm_during_check.py\nbringing up nodes...\nbringing up nodes...\n\ns.s..                                                                    [100%]\n3 passed, 2 skipped in 1.42s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.221643
+      "seconds": 2.283922
     },
     {
       "argv": [
@@ -189,7 +178,7 @@
       "rc": 0,
       "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 0.758036
+      "seconds": 1.165999
     }
   ]
 }
