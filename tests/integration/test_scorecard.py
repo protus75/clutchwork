@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Scorecard entry obligations over real invoices and the production retro composition.
+# purpose: Tests surface scorecard catches, escapes, rates, prune candidates and totals over real check invoices and the production retro composition.
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/retro.py, clutch/scorecard.py, clutch/stages.py]
 # owner: engine
-# verified: 96e46658
-# hash: 8a9bf69ec4760532c128c21bccd115cd7e591628cf0c620e6b801bb056373548
+# verified: d32c32ad
+# hash: c6a3578e8b047cf8b53e0bb69cefba1ed1e55ea8956db9cb8da06239c8593cf7
 
 import asyncio
 import json
@@ -26,6 +26,8 @@ from clutch.tickets import validate_ticket
 from tests.integration.test_drain import confirmed
 from tests.integration.test_retro import completed, merged, rig
 from tests.integration.test_stages import implement_reply
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 async def invoice(c, writer, stem, *, bypass=False, attempt=0):

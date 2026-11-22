@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test covgate
+# purpose: Integration tests for the coverage gate: threshold precedence, weighted aggregates, branch coverage, unrounded comparison, invalid gate keys, stale-report refusal, and the clutch coverage gate CLI
 # relates: [clutch/__main__.py, clutch/covgate.py]
 # owner: engine
-# verified: 148a8874
-# hash: 7623fcacb0a5f6589a1b0f91141579ae4677fb3bab1120a30f715f58f4437b21
+# verified: d32c32ad
+# hash: fa6e260a1af7c9e9bcc894109bf246bc5805ce5a165a4df03f4a0f5a9145e824
 import json
 import os
 import sys
@@ -14,6 +14,8 @@ import pytest
 
 from clutch.__main__ import main
 from clutch.covgate import GateInvalid, evaluate, parse_gate, percentages, run_gate
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def report(**files):

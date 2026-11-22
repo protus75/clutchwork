@@ -1,20 +1,24 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test stats
+# purpose: Tests the stats projection (windows, stage durations, cycles, ladder, verification timings), the `view stats` CLI JSON and tree output, and that the CLI refuses a bad window.
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/stats.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
-# owner: engine
-# verified: 96e46658
-# hash: f774289b687495ef16258e961639968eb81578f83768faa385d60de60d4b555a
+# owner: clutch/stats.py
+# verified: d32c32ad
+# hash: e558ec2211f486ef68d31e71644043f37ffa9294c1f645db731126f08d69f86f
 import json
 from datetime import timedelta
 from types import SimpleNamespace
+
+import pytest
 
 from clutch.__main__ import main
 from clutch.journal import EventType, Journal
 from clutch.stats import project_stats, stats_tree
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, make_root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_projection_windows_durations_cycles_and_invoices(tmp_path):

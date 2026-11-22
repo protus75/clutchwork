@@ -1,14 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test handoff replace
-# relates: []
+# purpose: Tests that SubprocessExec.replace keeps the PID, exit code and buffered output, and that drain and serve handoffs never spawn unbounded children
+# relates: [clutch/seams.py, clutch/drain.py, clutch/serve.py, docs/how-clutch-works.md]
 # owner: engine
-# verified: 148a8874
-# hash: e93cf07becbe54b1039f4702f5a6cd4b7a9993c5490bb059b7a824f2b8a24899
+# verified: d32c32ad
+# hash: 98e04e7bc73c314f7b337d9065b807da53b6dbe1eab47e6fd9c1a98b62f60a3f
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

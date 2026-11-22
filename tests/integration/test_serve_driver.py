@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test serve driver
+# purpose: Tests that serve runs the roadmap driver beside admission only when a roadmap is present.
 # relates: [clutch/roadmap.py, tests/integration/serve_rig.py, tests/integration/test_cli.py, tests/integration/test_scheduler.py]
 # owner: engine
-# verified: 96e46658
-# hash: 008213d5e6849b881a3fa00c7f705227563ec04c06d65febc25891382cecd795
+# verified: d32c32ad
+# hash: fac2e0b3555ff69e9548059dae0f73075e1f787be62d4b4033586fed462a719e
 import asyncio
 
 import pytest
@@ -14,6 +14,8 @@ from clutch import roadmap
 from tests.integration.serve_rig import finish, graph, script, terminals, until, write
 from tests.integration.test_cli import root  # noqa: F401
 from tests.integration.test_scheduler import text
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

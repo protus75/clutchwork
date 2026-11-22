@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Offline contract tests for the production diagnosis eval.
+# purpose: Offline contract tests for the diagnosis eval: corpus loading, production render, deadline and cost caps, resume and report verification.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: 148a8874
-# hash: a75391b158ac9441da584198a85328f8e61f5819e09321647be31da3a293d21f
+# verified: d32c32ad
+# hash: 77dc53f12375399b5ac64b53181f75bed3a1ed65a45686cb2d39a94b84056eeb
 
 import asyncio
 import json
@@ -24,6 +24,8 @@ from clutch.llm import HANG, FakeLLM, LLMResult
 from clutch.specs import load_spec
 from clutch.stages import DiagnosisMaterial, diagnose_stage
 from eval import diagnose
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = textwrap.dedent("""\

@@ -4,8 +4,8 @@
 # purpose: Verify main commits preserve parallel admission and retry refused intake.
 # relates: [clutch/llm.py, clutch/scheduler.py, clutch/seams.py, clutch/serve.py, tests/fakes.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: fc08bb14
-# hash: d60d5e7552115a223458c12c8e5587d2db104b50e77eb2cba780e1bcc178a22f
+# verified: d32c32ad
+# hash: 5afbc5060612adca9a22d32233d9073322d76893045a7e40e223c513e789b3f4
 import asyncio
 
 import pytest
@@ -17,6 +17,8 @@ from clutch.seams import LocalFileSystem
 from tests.integration.serve_rig import admission_ticket, finish, start_admission, terminals, until
 from tests.integration.test_cli import root
 from tests.integration.test_serve_parallel_admission import parallel_rig
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

@@ -6,11 +6,11 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The `drain` scaffold verb (CLUTCH_PLAN.md sections 9, 11.2, 18, 19.P1) against a temp checkout.
+# purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 11213934
-# hash: 34a9fe0f90e1233779435668fd5f127fa25851982a11231df9b77ada9764d094
+# verified: d32c32ad
+# hash: 8ec3199530055657006f3a0a31dc39651f42a34e98c040c4fc558bb217c2c61e
 
 import asyncio
 import json
@@ -35,6 +35,8 @@ from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo as admission_repo
 from tests.integration.test_stages import adopt_conduct
 from tests.integration.test_terminal import repo as rework_repo
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_bootstrap_never_supervised_holds(admission_repo, monkeypatch):

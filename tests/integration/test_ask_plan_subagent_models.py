@@ -1,16 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test rendered plan subagent model policy
+# purpose: Checks plan prompts require explicit Sonnet selection for Claude subagents and different-family panels for calibration labels
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 0c49d7b5
-# hash: 69ad79e5b8a02633becdf6158363bb96571363587cc1f45095d8b430a07b379b
+# verified: d32c32ad
+# hash: f9d886fd0d2bbd8e4d284de9c8ae89ea21edb6abe5ddfc5538825413e67c3712
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize("kind", ["plan-ticket-drain", "plan-ticket-serve"])

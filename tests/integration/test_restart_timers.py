@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Lock-held production restart, recovery custody and durable deadline evidence.
+# purpose: Covers production restart with the lock held: orphan reconciliation and harvest custody, journal-backed timer arm and fire with rearm, and startup failures that never report ready
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/mergequeue.py]
-# owner: engine
-# verified: 96e46658
-# hash: f4bb38c5ce2c5721f91bde3c29541238a2978ca1074c09664d1e5e4aee727592
+# owner: clutch/restart.py
+# verified: d32c32ad
+# hash: 8e19046d7975fef0dba37d7f26a0520654f359c39da3d4426b1310c16f8cf952
 
 import ast
 import asyncio
@@ -30,6 +30,8 @@ from tests.integration.test_daemon_composition import CoreRig, assert_startup_pa
 from tests.integration.test_providers import CONFIG
 from tests.integration.test_scheduler import Time, turn
 from tests.waiting import wait_until
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize("moved", [False, True])

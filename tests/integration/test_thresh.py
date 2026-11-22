@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test thresh
+# purpose: Tests Thresh admission: per-provider concurrency caps, FIFO cap waits, spill rules, circuit breaker rebuilt from the journal, slot release on unwind, and that the CLI imports the module.
 # relates: [clutch/config.py, clutch/effects.py, clutch/journal.py, clutch/llmeffect.py, clutch/providers.py, clutch/seams.py, clutch/thresh.py]
-# owner: engine
-# verified: 96e46658
-# hash: d0c716c215a26a7c3a80b130a5028a7c82b9b51df152e48db82e839e9a98ccf8
+# owner: clutch/thresh.py
+# verified: d32c32ad
+# hash: 58a0e976f6d8feb6666d28ff6dba3b42b1a6f04de4678ad9fb9e9a9da424bad4
 import ast
 import asyncio
 from datetime import UTC, datetime, timedelta
@@ -29,6 +29,8 @@ from clutch.thresh import (
     Thresh,
     UnavailableRoute,
 )
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

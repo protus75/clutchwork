@@ -1,15 +1,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test closed sets remaining
-# relates: []
+# purpose: Checks that RETIRED, CLOSED and SETTLED are defined only in status.py, bans ad hoc set unions and version splitting, and checks that retro and status import without a cycle
+# relates: [clutch/status.py, clutch/retro.py, clutch/stages.py, clutch/artifacts.py]
 # owner: engine
-# verified: 148a8874
-# hash: 86da91a987563285a31dcdfce1ea3f1fecfdc98ceb332fd63b8d524bfd41fd70
+# verified: d32c32ad
+# hash: 47542fb731dac033b919df0976928edad03aa4dbc31d988e2808ae06f6ff2b44
 import ast
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

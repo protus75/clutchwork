@@ -11,8 +11,8 @@ plan change first (the owning section names the set), then a deliberate edit her
 # purpose: Closed sets are invariants (plan 19.I).
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/author.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/config.py]
 # owner: engine
-# verified: 75d75946
-# hash: 7375eeca3871345fb8b49ed972b82b4f047119f5ed484cfc326e984ec2232c98
+# verified: d32c32ad
+# hash: ae07764b041e7269b6dc902a4cfac137dab827e528a895fe24b5c2e19d8c64a2
 
 import typing
 from typing import get_args
@@ -384,6 +384,8 @@ from pydantic import TypeAdapter, ValidationError  # noqa: E402
 from clutch.box import Message  # noqa: E402
 from clutch.journal import EventType, Journal  # noqa: E402
 from clutch.tickets import Frontmatter  # noqa: E402
+
+pytestmark = pytest.mark.disk_io_skip
 
 LEVELS = {"low", "medium", "high", "max"}
 FRONTMATTER_VOCABULARIES = {

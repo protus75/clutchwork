@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Failed-run harvest through the production CLI and ticket-plane lane.
+# purpose: Tests failed-run harvest records through the production CLI: closed contents, ordering ahead of caps and terminal, soft failure, and quoting in drain re-entry prompts
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: 148a8874
-# hash: db4498871c9614fb2b09f841bdb8a1005a99e1cf8e32d2ac45c05455c489ae93
+# verified: d32c32ad
+# hash: 8faf5cee9c62f9fb1c9a4f7e10789b94e56a1404b62ed8bb56bdb0550744d407
 
 import json
 from pathlib import Path
@@ -24,6 +24,8 @@ from tests.evidence_records import seed_end
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def run(repo: Path, script: list, verb: str = "run") -> tuple[int, FakeLLM]:

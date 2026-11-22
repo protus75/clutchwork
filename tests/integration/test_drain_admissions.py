@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test drain admissions
+# purpose: Tests that ticket confirm/reject requests sent to a running or paused drain are accepted, refused or marked stale correctly.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 148a8874
-# hash: 90f2564aea7129a4d15bc301eee2e80dec72cf01bdbf749773413f8cfc59d3ac
+# verified: d32c32ad
+# hash: a486f474b0dc93adc3dd217beee98f2b503908bba52304410d3c38e59297ec32
 import asyncio
 import json
 
@@ -18,6 +18,8 @@ from clutch.journal import EventType
 from tests.integration.test_cli import ENV, ticket
 from tests.integration.test_drain import commit_ticket, confirmed, pause_checkout, root
 from tests.integration.test_drain_reentry import NoChild
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 async def until(predicate):

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test notify
+# purpose: Test notification effects: once-only delivery with conservative resend, key domains, argv seam with secret-free env and redaction, and timeout backoff
 # relates: [clutch/__main__.py, clutch/config.py, clutch/effects.py, clutch/enginelog.py, clutch/journal.py, clutch/notify.py, clutch/redact.py]
-# owner: engine
-# verified: 96e46658
-# hash: e953daf538618e80396b9deb364f8e61189597910ce34eaf1ffec2f39f53a781
+# owner: clutch/notify.py
+# verified: d32c32ad
+# hash: 5bee5443e2fc7f37bdeb88175c76167362ae3a598dfd1e87c78fda48895aeecb
 import json
 import sys
 from types import SimpleNamespace
@@ -23,6 +23,8 @@ from clutch.seams import CommandNotifications, NotificationFailed, SubprocessExe
 from tests.integration.test_config import VALID
 from tests.integration.test_scheduler import Time
 from tests.waiting import wait_until
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

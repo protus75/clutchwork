@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests showing that ticket writes from verdict, author, and rework finish under the main-write and commit locks without exposing intermediate stamps to intake. They also check that a failed edit callback releases both locks and the effect replays, that merge_squash waits for the commit lock, and that host check commands run outside the write locks.
+# purpose: Tests that ticket writes from verdict, author and rework commit under the main-write and commit locks without exposing intermediate stamps to intake. Also tests that a failed edit releases the locks, that merge_squash waits for the commit lock and that host checks run outside the locks.
 # relates: [clutch/daemon.py, clutch/effects.py, clutch/git.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
-# owner: engine
-# verified: 3d8c0329
-# hash: 5b1b5b09e042f94af37b4e57502395cb058a734d6e7e7434345742a9c5e2f4d7
+# owner: clutch/git.py
+# verified: d32c32ad
+# hash: 512e184888aee2c94ce140494ceba80870c0d5ef72c6300e889fba2c3edadf7e
 # ruff: noqa: E501
 import asyncio
 import json
@@ -24,6 +24,8 @@ from tests.integration.test_git import commit_lock
 from tests.integration.test_mergequeue import ctx
 from tests.integration.test_rework import SNAG, order, original, requisition
 from tests.integration.test_triage import author_reply, reply
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 async def race(checkout, action, stem, monkeypatch, journal=None):

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for provider routing, key scoping, redaction, claude and codex CLI adapter contracts, preflight, failure classification and process-group cleanup.
+# purpose: Integration tests for provider routing, key scoping, redaction, claude and codex CLI adapter contracts, preflight, failure classification and process-group cleanup
 # relates: [clutch/__main__.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: clutch/providers.py
-# verified: 6f94fa01
-# hash: fcc803bc695acf5c6cdbe45fc0e23bd0c44b725bf8427fb8b55adab4b42986d5
+# verified: d32c32ad
+# hash: 4cbc72bd25819e4451ce9f82ecfb5b64546e03f6b44a6a807a10a2ce7dd85d77
 import asyncio
 import json
 import os
@@ -36,6 +36,8 @@ from clutch.timers import Timers
 from clutch.watchdog import EventConsumer
 from tests.config_fixture import build_config
 from tests.waiting import group_exited, ready_before_returning_spawn, wait_until
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

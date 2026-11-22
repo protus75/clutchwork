@@ -4,8 +4,8 @@
 # purpose: Verify merge and rebase complete beside a held implementation.
 # relates: [clutch/config.py, clutch/mergequeue.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 407dfd0f
-# hash: 1b6c8a360b459c3819dd371f7bb322e8842d98db2198644215345c29a4236960
+# verified: d32c32ad
+# hash: 987472fa30436837c3fd02a569af46cab8f735de7366e4691ceb5f805370bcc4
 import asyncio
 from dataclasses import replace
 
@@ -17,6 +17,8 @@ from clutch.llm import FakeLLM
 from clutch.mergequeue import TREE_MISMATCH
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, terminals, until
 from tests.integration.test_cli import root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

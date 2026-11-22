@@ -5,8 +5,8 @@
 # purpose: Integration tests that serve applies confirm and reject verdict effects, and refuses a reject on a running ticket, while an unrelated Check holds its run slot, without blocking disjoint admission.
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 407dfd0f
-# hash: 746142c3da2e766b76118a2501b1ac80f0853f0fee875b9fa14430b4cead3084
+# verified: d32c32ad
+# hash: 6a747d35ae527d555cda5765c4aa3a63a187b97fa66b0ba56b56d40b23aa1d0e
 
 # The generated metadata purpose can exceed the line length limit.
 # ruff: noqa: E501
@@ -21,6 +21,8 @@ from clutch.control import AdmissionRequest, publish_request
 from clutch.journal import EventType
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, until
 from tests.integration.test_cli import root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

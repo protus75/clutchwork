@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test watchdog
+# purpose: Tests the watchdog event consumer and detector: streamed provider events, spend metering, scope-progress resets, time regions, notify-once and the spiral corpus
 # relates: [clutch/driver.py, clutch/effects.py, clutch/enginelog.py, clutch/journal.py, clutch/notify.py, clutch/providers.py, clutch/redact.py]
-# owner: engine
-# verified: 96e46658
-# hash: f6c4c3fe863e8eb741fb9ca013247297f0cf4271e4b43918e53e1e1cb53d5080
+# owner: clutch/watchdog.py
+# verified: d32c32ad
+# hash: 68f8d36dcf67193c2d23683d976b328f92d433399cd10af6f2d9678e3e65e0a6
 import asyncio
 import json
 import os
@@ -26,6 +26,8 @@ from clutch.watchdog import Detector, EventConsumer, ScopeObservation
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_providers import PythonProviderExec, claude_ok, codex_ok, config, jsonl, provider_request, python_client
 from tests.integration.test_scheduler import Time, turn
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def tool_events(name):

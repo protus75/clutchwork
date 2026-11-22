@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Closed promoted journal vocabularies (CLUTCH_PLAN.md section 6.2).
+# purpose: Checks that the dispatch and journal signal-name vocabularies are closed: every engine signal name is listed, and unlisted names are refused when appended
 # relates: [clutch/journal.py]
 # owner: clutch/journal.py
-# verified: 96e46658
-# hash: 8dd11bbd5ba9f94964bea659257f937043e13e9e24b3df12dcc0db84f8fdbdee
+# verified: d32c32ad
+# hash: 315cca88b00a203c700c14db9d703569037541f78f89f835fef2924d36c76174
 
 import ast
 from datetime import UTC, datetime
@@ -17,6 +17,8 @@ import pytest
 
 from clutch import journal as journal_module
 from clutch.journal import EventType, Journal
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_dispatch_vocabulary_is_closed():

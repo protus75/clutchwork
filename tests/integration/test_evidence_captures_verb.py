@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify capture command outcomes and help.
+# purpose: Tests the read-only outcomes and help text of the evidence captures command.
 # relates: [clutch/__main__.py, clutch/evidence/store.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 8373ae09
-# hash: 8fff9a19e8e02f8e8ae33dc6617946c818d99f66b038ed281ef1699ab564144a
+# verified: d32c32ad
+# hash: a0fabed93861856f8335ff09ecebcfce91c0db3a3b5956e9a5d684aba7d41517
 
 import json
 
@@ -16,6 +16,8 @@ from clutch.__main__ import main
 from clutch.evidence.store import EvidenceStore
 from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import CONFIG
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_capture_outcomes_are_read_only(tmp_path, capsys):

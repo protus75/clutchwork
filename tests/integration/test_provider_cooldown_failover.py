@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Activation evidence through the existing production composition and injected seams.
+# purpose: Test provider quota cooldown, ordered failover, drought parking and recovery, auth exclusion, and wait budgets through the production composition
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/drain.py]
-# owner: engine
-# verified: 5e952a0e
-# hash: 2b27625b25a82b56e0453cbd17cd7f699ea34ed8dd0146eadf6dc548372f41a4
+# owner: clutch/providers.py
+# verified: d32c32ad
+# hash: f3140434fffc9b2fe47ce6b091473999b1cb766a50a128c584c092b4d81a1c69
 
 import asyncio
 import json
@@ -40,6 +40,8 @@ from tests.integration.test_providers import CONFIG
 from tests.integration.test_restart_timers import held, repository
 from tests.integration.test_scheduler import text, turn
 from tests.spool_captures import read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Reply(BaseModel):

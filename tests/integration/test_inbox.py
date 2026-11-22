@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Host reports use the production Box, Author, and regression Check seams.
+# purpose: Host report intake: closed schema validation, evidence size bounds, custody before enqueue, crash-safe single ingest, and replay through Author into a regression Check
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: f2f7903659af5d8a692110ddac9dbc40d66fbdd0eaf1c9fcb27369e76edbf931
+# verified: d32c32ad
+# hash: 43360e8af6a0b4e9f4d8f53cca3ac94fdd6c15de6589cbb3fde977f6283519a4
 
 import asyncio
 import json
@@ -23,6 +23,8 @@ from clutch.journal import Journal
 from clutch.seams import LocalFileSystem
 from tests.integration.test_drain import Clock
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def raw_report(origin="player", **updates):

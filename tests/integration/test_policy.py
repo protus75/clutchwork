@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test policy
+# purpose: Test the box policy start state under the baseline GO/NO_GO verdict, the draft overrides, and the message-class-to-policy-row mapping
 # relates: [clutch/baseline.py, clutch/config.py, clutch/journal.py, clutch/policy.py]
-# owner: engine
-# verified: 96e46658
-# hash: f648d693723d678eb81dc67cf46ac534428208f59669af6af0bb6c91cf477d04
+# owner: clutch/policy.py
+# verified: d32c32ad
+# hash: 2cc10485781f985b3df733e7b056472e4f5e0326aa445b0e4a2d937d49203408
 import textwrap
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,6 +16,8 @@ from clutch.baseline import resolve_baseline
 from clutch.config import BOX_POLICY_DEFAULTS, load_config
 from clutch.journal import EventType
 from clutch.policy import BASELINE_SIGNAL, baseline_identity, policy_row, start_state, touches_inventory
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

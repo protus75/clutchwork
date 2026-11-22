@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Direct construction evidence; activation must migrate the dormancy assertion.
+# purpose: Tests the Rework stage: update, split and escalate orders are validated and reviewed without changing tickets, along with supersedes recording, dependency folds, timeouts, spec render and reachability from production
 # relates: [clutch/artifacts.py, clutch/caps.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, clutch/requisition.py, clutch/rework.py]
-# owner: engine
-# verified: 595b9e84
-# hash: 4cc76d3935d6b212ab087631621f995a02bde7dcdf6a23b976dc86aad7044ecd
+# owner: clutch/rework.py
+# verified: d32c32ad
+# hash: 41832c73c7114d3cf8919ce326f9ab0ccf247768ff366672f0c6740a8c1f7d1e
 
 import asyncio
 import hashlib
@@ -30,6 +30,8 @@ from clutch.tickets import ticket_path, validate_ticket
 from tests.integration.test_mergequeue import commit, conflict, ctx, import_closure
 from tests.integration.test_stages import TICKET
 from tests.spool_captures import read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 run = asyncio.run
 SNAG = Finding(code="scope", path="clutch/thing.py", line=1, message="narrow the work", paved_road="retain only the first buildable piece", kind="authoring_error")

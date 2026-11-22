@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Executor unwind ordering and its activation through the production drain.
+# purpose: Checks executor abort ordering: the writer stops before cancellation, abort waits for unwind, stays atomic under repeated cancel, and passes failures through
 # relates: [clutch/daemon.py, clutch/llm.py, tests/integration/test_cli.py, tests/integration/test_driver.py, tests/integration/test_kill_cli_activation.py]
 # owner: engine
-# verified: 23d3b116
-# hash: 84bf41c1bf92dd52b2e47cb4444929e53b2db6ca410ebc19b21e395919602043
+# verified: d32c32ad
+# hash: 8a178cee21c197a02581b8760b84261a3d3eb61218ac605badd0f0e5de45a5e0
 
 import asyncio
 from dataclasses import replace
@@ -19,6 +19,8 @@ from tests.integration.test_cli import root
 from tests.integration.test_driver import ECHO, Stub, build, echo_json, log_events
 from tests.integration.test_kill_signal_journal import Rig, decision
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 async def turn():

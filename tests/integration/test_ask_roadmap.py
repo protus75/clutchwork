@@ -1,17 +1,20 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask roadmap
+# purpose: Checks the roadmap prompt prints the packaged type/roadmap facet and wrapped host notes without creating the roadmap or state
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/runner.py, clutch/specs/__init__.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 148a8874
-# hash: cc464732d7762ea0f4a267371d6eef07afb90d2b74c5c8c70f0d7ec558f37b4b
+# verified: d32c32ad
+# hash: d36953724e8e7bb0114cccc62d7ab6bc51ee84faa1497411dc6b511cdb21a021
+import pytest
 import yaml
 
 from clutch import ask, specs
 from clutch.__main__ import main
 from clutch.runner import SPECS_DIR
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_roadmap_resources_and_read_only_host(tmp_path, capsys):

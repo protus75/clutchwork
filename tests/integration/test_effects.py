@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test effects
+# purpose: Tests that journaled effects record intent then completion, replay idempotently by key, survive crashes and validate keys.
 # relates: [clutch/effects.py, clutch/journal.py, clutch/seams.py, tests/fakes.py]
 # owner: engine
-# verified: 148a8874
-# hash: 955b7370e360a13947478c8a2e85e83b3abb6fc840464dcda7b99059941dd01b
+# verified: d32c32ad
+# hash: ef50e31f468cc65d5c30b1e58e3adb02f8067616a543d258f7e85e7c7565f8e8
 import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -16,6 +16,8 @@ from clutch.effects import Effects
 from clutch.journal import EventType, Journal
 from clutch.seams import FileSystem, ProcessExec
 from tests.fakes import FakeExec
+
+pytestmark = pytest.mark.disk_io_skip
 
 T0 = datetime(2026, 8, 4, 12, 0, 0, tzinfo=UTC)
 

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test snapshot merged cap
+# purpose: Tests that `view snapshot` caps merged rows at the configured snapshot_merged_limit and shows all of them with --all-merged. Also tests that the config loader refuses a zero limit.
 # relates: [clutch/__main__.py, clutch/config.py, tests/integration/test_config.py, tests/integration/test_drain.py, tests/snapshot_scale_fixture.py]
-# owner: engine
-# verified: 96e46658
-# hash: 4e90b4a565f543ce2aea7a44cfc5818de1c2b1a483dbef3538a0f799d92bd213
+# owner: clutch/observe.py
+# verified: d32c32ad
+# hash: 177487cbc37bb8f4b30fbd25f99d875751f91567b4e89a3701f2c8baf42ad50f
 import json
 import os
 
@@ -16,6 +16,8 @@ from clutch.config import ConfigError, load_config
 from tests.integration.test_config import VALID
 from tests.integration.test_drain import confirmed
 from tests.snapshot_scale_fixture import git
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_cli_cap_and_config(tmp_path, capsys):

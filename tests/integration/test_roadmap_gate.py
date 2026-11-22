@@ -1,20 +1,24 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap gate
+# purpose: Tests that `clutch roadmap gate` runs real gate commands and journals the results, and that the repository roadmap gate blocks have the expected shape
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: 188365c9
-# hash: 2d778b26b559fe9db61018657ab05ceb6e12f29c1bfd47352dbe104edfa55e03
+# owner: clutch/roadmap.py
+# verified: d32c32ad
+# hash: a392ec69be46da4d2b9a0cf51d385f13d5fc240d465a0cbc1fcccc803cbcd2af
 import shlex
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 import clutch.__main__ as cli
 from clutch import roadmap
 from clutch.journal import EventType, Journal
 from tests.integration.test_cli import CONFIG, ENV
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_roadmap_gate_runs_real_commands(tmp_path, capsys):

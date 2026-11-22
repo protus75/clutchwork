@@ -1,16 +1,20 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask plan serve
+# purpose: Checks the plan-ticket-serve prompt uses serve instead of drain, shares drain's limits, and is listed in the run guide and how-clutch-works
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 148a8874
-# hash: 0e26fae02e4f1b9ba726cc5ae3f444fe6ab9d344487c330a000084661be8cd2b
+# verified: d32c32ad
+# hash: f2523910b0f839d39b405c9b66f364eecf16dbb865df748a467e8259560d2ddb
 from pathlib import Path
+
+import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_serve_prompt_and_docs(tmp_path):

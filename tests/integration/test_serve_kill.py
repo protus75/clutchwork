@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Serve kill integration tests.
+# purpose: Tests serve worker failure, kill, signal stops, storm-breaker suspension and resume, and restart recovery of suspended runs.
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: c2543c399fe7e2a332595082deabb3d213ef2fe2b70e51ad88d5c43603a32b35
+# verified: d32c32ad
+# hash: 30bddafb66832785df3076d7e7846861d51d88dd48df40a8837996841a559a4b
 
 import asyncio
 import json
@@ -22,6 +22,8 @@ from clutch.daemon import TicketWriter
 from tests.integration.serve_rig import active_graph, finish, graph, request, script, terminals, trip, until, write
 from tests.integration.test_cli import root
 from tests.integration.test_scheduler import text, turn
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

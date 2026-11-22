@@ -2,17 +2,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Dispatch exceptions are isolated to their ticket.
+# purpose: Tests that a dispatch exception is contained to its ticket as infra_error, keeps a single terminal, and reaches the Reject queue once caps are spent.
 # relates: [clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/status.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 148a8874
-# hash: 1991b0acc768e7400ee83b919f49662eba61d71c36403c7a8a51a6cb51610d08
+# verified: d32c32ad
+# hash: 055d569f8ef7fad7730ba5486bee30842d4b8ac9c7a4a903dbb7e4fbaa736dc6
+
+import pytest
 
 from clutch import caps
 from clutch.config import Caps
 from clutch.journal import TERMINAL_STATES, EventType
 from clutch.status import reject_queue
 from tests.integration.test_drain import Script, commit_ticket, confirmed, drain, journal, make_root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Boom(Script):

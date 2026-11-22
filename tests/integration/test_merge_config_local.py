@@ -1,14 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: verify local config survives squash merges
+# purpose: Verify squash merges carry ticket config.yaml edits while keeping the owner's uncommitted local config.yaml edits, and still refuse other dirty paths
 # relates: [tests/integration/test_mergequeue.py]
 # owner: tests/integration/test_mergequeue.py
-# verified: 365b3e38
-# hash: 2f5ec1c3ecd30c6219d810cf3e323e938724a9060b0bb618de427c186f3e3fe9
+# verified: d32c32ad
+# hash: 3dd8a14b90d110e39895eee0e99799c0602a8cd39808ca052b8274fabec582fc
 import asyncio
 
+import pytest
+
 from tests.integration.test_mergequeue import admission, ctx, ready
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_config_local_merge(ctx):

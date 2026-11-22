@@ -6,11 +6,11 @@ never the phase exit artifact.
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Closed report and ordinary checks custody (CLUTCH_PLAN.md 19.P3.daemon-soak).
+# purpose: Checks that the daemon-soak report schema is closed: exact members, entry fields and producing-run identity, with green required to match observed versus expected and an empty auditor list (19.P3.daemon-soak)
 # relates: [clutch/artifacts.py, clutch/git.py, clutch/seams.py, tests/harness/daemon_soak.py, tests/integration/test_cli.py, tests/integration/test_git.py]
 # owner: engine
-# verified: 148a8874
-# hash: 8faa0dd01cb5683d66ab779d2a7a9556cccf3ca83d9503f6c4c6d3493f724cd0
+# verified: d32c32ad
+# hash: cf589ffd829ee297fe85255697f10756664de33a92c9c2286d3049eadda4dae4
 
 import json
 from copy import deepcopy
@@ -24,6 +24,8 @@ from clutch.seams import SubprocessExec
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS, DAEMON_SOAK_SPEC_VERSION, DaemonSoakEntry, DaemonSoakReport
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 MEMBERS = (
     "worker_killed_mid_run",

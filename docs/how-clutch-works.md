@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: a4987a89
-hash: 4e8a10d5edd07e6ef75683347fc2d5a92316c998a989638bae89ada9ba5c50f5
+verified: d32c32ad
+hash: 7cf27c001df457ed1683dbd05ce1cedc767d9c370e061703a41436de52e1c0b0
 -->
 # How ClutchWork works
 
@@ -115,7 +115,7 @@ The repo's one dev command; standard library only, every task through `uv`.
 Each test has a 120-second hard limit.
 Test temporary files go to the gitignored `.test-tmp/` folder in the checkout, never `/tmp`.
 Tests live in `tests/unit/` (disk only under `tmp_path`, no network or process; run under `clutch.testguard`) and
-`tests/integration/`. Integration test files listed in `DISK_IO_SKIP` in `tests/integration/conftest.py` are skipped until rewritten onto in-memory fakes. Run one suite with `./dev.py test tests/unit` or
+`tests/integration/`. Integration test files carrying the `disk_io_skip` marker are skipped until rewritten onto in-memory fakes. Run one suite with `./dev.py test tests/unit` or
 `./dev.py test tests/integration`.
 A unit test file may share its name with an integration test file.
 

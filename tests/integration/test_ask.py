@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask
+# purpose: Integration tests for operator prompt rendering: stem, ticket path and state dir substitution, host_notes data block, missing-ticket refusal, no state writes, box and drafts prompts
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/config.py, clutch/seams.py, clutch/specs/__init__.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: a9a4e81f8068bcbf04b42916de9d9c8c550066f7cc73e56e3d6276afd43f0048
+# verified: d32c32ad
+# hash: 7bd0d9c48bd57d24879c4a523a1faf7d9d8bd332afaeae3544cca27265cbdacc
 from pathlib import Path
 
 import pytest
@@ -14,6 +14,8 @@ from clutch import ask, specs
 from clutch.__main__ import main
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture

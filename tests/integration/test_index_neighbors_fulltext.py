@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify full-text fallback and persistent vector search.
+# purpose: Checks index neighbor search: full-text ranking, embedding search, and fallback to full-text when embedding fails
 # relates: [clutch/box.py, clutch/index.py, tests/unit/test_index_build.py, tests/unit/test_index_sources.py]
 # owner: engine
-# verified: 8a803ea2
-# hash: 7fca512435c4ccd249e1c4b4c35a9175d2f721b60cd1a106b8c21650823be49a
+# verified: d32c32ad
+# hash: 35289058408330e6e4ccbe2415367b382a3f134113783e32a616bc4ed7e89462
 
 import json
 
@@ -16,6 +16,8 @@ from clutch.box import Box
 from clutch.index import default_creator, neighbors
 from tests.unit.test_index_build import Exec, rig, run  # noqa: F401
 from tests.unit.test_index_sources import put, record
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Vectors(Exec):

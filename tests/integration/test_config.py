@@ -1,17 +1,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test config
+# purpose: Integration tests for config.yaml loading: shipped defaults, refusal of missing, unknown, null or wrongly typed keys, schema version checks, closed vocabularies, notify argv validation, retro and coverage_map settings, and config migrate from version 0 to 1
 # relates: [clutch/config.py, clutch/runner.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: 43bb2a87381637e3b0448ac050a08f8ce5bb5a0efbe3f3ed8f78da42fcb85268
+# verified: d32c32ad
+# hash: 94a843e3cb660e77c61e150d2cdb008b0794a2516316879f76081a37fb7c7f27
 import textwrap
 from pathlib import Path
 
 import pytest
 
 from clutch.config import SCHEMA_VERSION, ConfigError, load_config
+
+pytestmark = pytest.mark.disk_io_skip
 
 VALID = textwrap.dedent(
     """\

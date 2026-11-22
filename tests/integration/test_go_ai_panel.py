@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test go ai panel
+# purpose: Tests that the eval harness records GO only after an approving cross-family AI graph panel and refuses rejected, missing or same-family panels
 # relates: [clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, eval/harness.py, tests/integration/test_eval_harness.py]
 # owner: engine
-# verified: 148a8874
-# hash: ee2b11a4f8bcbccfba12cc7bcce95aacfc6af3033bf1a2b40627565b7237ac1c
+# verified: d32c32ad
+# hash: 19e11e533926761dc1a556aa63a6a7662cdf9b9f18e5892f44bffe0d31ef3c3b
 import asyncio
 import json
 from types import SimpleNamespace
@@ -18,6 +18,8 @@ from clutch.llm import FakeLLM, LLMResult
 from clutch.seams import LocalFileSystem
 from eval import harness
 from tests.integration.test_eval_harness import CODEX, NOW, report_fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def panel(provider="codex", model="x-high", approve=True):

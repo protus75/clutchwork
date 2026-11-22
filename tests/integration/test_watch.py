@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test watch
+# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the CLI view verbs
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
-# owner: engine
-# verified: 96e46658
-# hash: 7e4a9c966aebdcc21e8e173b8f97dd1bf3a74ae9365a9ed9aa1041028311bc9c
+# owner: clutch/observe.py
+# verified: d32c32ad
+# hash: e3d287be567e4da1826296001094acdb80f109ab3bc265896afa12292f87b7e6
 import json
 import os
 import subprocess
@@ -15,6 +15,8 @@ import pytest
 
 import clutch.observe as watch
 from tests.integration.watch_fixture_repo import watch_fixture_repo
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture(autouse=True)

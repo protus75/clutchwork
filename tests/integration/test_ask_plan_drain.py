@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask plan drain
+# purpose: Checks plan-ticket-drain, author, review, drain-loop and running prompts carry required phrases, no session facts, only existing verbs, and that docs list the prompt kinds
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 0c49d7b5
-# hash: 518d38fe0f8793e7760a048abbdae145cae5f1f80624bb9917fadd9fdf7e755d
+# verified: d32c32ad
+# hash: 71a5a8050f8b2bb18ff82748b6c4577e7ff977ddad960155ef8c7d679d4c313d
 import argparse
 import re
 from pathlib import Path
@@ -16,6 +16,8 @@ from clutch import __main__ as entry
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

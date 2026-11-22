@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Real rebase/index and serve admission with scripted model replies.
+# purpose: Exercise model-driven merge conflict resolution through a real rebase and index, and serve admission with scripted model replies
 # relates: [clutch/artifacts.py, clutch/llm.py, clutch/mergequeue.py, clutch/runner.py, clutch/stages.py, tests/integration/test_daemon_composition.py]
-# owner: engine
-# verified: 96e46658
-# hash: c4cb27b9437b6b4bf3ea407c83d6c2d044447433186dc1f3d99f171d3360b25e
+# owner: clutch/mergequeue.py
+# verified: d32c32ad
+# hash: 12fe2a889ba454a7ec349e65c6756b61641f3c2b9933915523f421bb8c58cbe7
 
 import asyncio
 import json
@@ -20,6 +20,8 @@ from clutch.mergequeue import MergeQueue
 from tests.integration.test_daemon_composition import production_writer
 from tests.integration.test_mergequeue import commit, ctx, facts, ready
 from tests.integration.test_stages import SNAG, verdict
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def resolved(text="ok combined\n"):

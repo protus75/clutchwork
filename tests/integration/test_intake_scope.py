@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test intake scope
+# purpose: Checks that intake scoped to named stems, and the named ticket verbs, leave other pending or staged tickets untouched
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, clutch/tickets.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: b1c43347de1b904043ab0d8a0810342f0eb12fcb320a7b88911b7507755d6a63
+# verified: d32c32ad
+# hash: 921412e281104b51396317232977fb891082fc18533f98abb8d4eea4437521c5
 import asyncio
 
 import pytest
@@ -19,6 +19,8 @@ from tests.integration.test_cli import ENV, Clock, Stages, git_out, ticket, writ
 from tests.integration.test_drain import make_root
 from tests.integration.test_review_command import reply
 from tests.integration.test_tickets import VALID, repo
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_scoped_intake_leaves_invalid_staged_ticket(repo):

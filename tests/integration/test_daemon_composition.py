@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Drive the production CLI core through injected delivery, process, filesystem and time seams.
+# purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 365b3e38
-# hash: dde51a2d9cc831f5e322af238656e74a388a0fcebf61a793992a2d2cc15b09c7
+# verified: d32c32ad
+# hash: ddcca2e604b0e978866a06bc7b83cd0701763f121aef919a63a76844088f1d14
 
 import ast
 import asyncio
@@ -42,6 +42,8 @@ from tests.integration.test_mergequeue import ready
 from tests.integration.test_providers import CONFIG, ENV, claude_ok, codex_ok, jsonl
 from tests.integration.test_scheduler import Time, import_closure, text, turn
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class ScriptFS:

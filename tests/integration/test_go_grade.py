@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: GO-grade entry contract, closed reports and operator-only verdict production.
+# purpose: Tests GO-grade recording floors, identity drift refusal, panel judgment and the closed ReviewBaselineReport schema
 # relates: [clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, eval/harness.py, tests/integration/test_eval_harness.py]
 # owner: engine
-# verified: 148a8874
-# hash: 43054c22a6008bd087285937688239ea2aa8e8bf90150f0c4be4114c48da0203
+# verified: d32c32ad
+# hash: aaf4c14c786599f4db1adfc2c816c8ab9f80997f9db1863f7995851ffb40b84d
 
 import asyncio
 import json
@@ -21,6 +21,8 @@ from clutch.llm import FakeLLM, LLMResult
 from clutch.seams import LocalFileSystem
 from eval import harness
 from tests.integration.test_eval_harness import CODEX, NOW, corpus_results, report_fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_record_go_requires_complete_floors_identity_and_operator_judgment(tmp_path, monkeypatch):

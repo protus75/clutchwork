@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test box
+# purpose: Tests the Suggestion Box: signature recipe, enqueue dedup and validation, durability, decision registry format, tombstone re-report reopening and crash replay, and sequence claims
 # relates: [clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 148a8874
-# hash: ef2ae403ffb198650d63c4c6d172ed2830aa1e8d9541e47d493b172d7b38870f
+# verified: d32c32ad
+# hash: 125285b96ab05b60018f279229130b476ec96d8f7639e8dc8e29703decacf6e2
 import asyncio
 import hashlib
 import json
@@ -31,6 +31,8 @@ from clutch.box import (
 from clutch.git import Git
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_signature_recipe():

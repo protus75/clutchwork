@@ -1,15 +1,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test snapshot cache facts
+# purpose: Tests that the observe snapshot opens the journal cache once, checks only candidate tickets for holds, and matches the full-history reference.
 # relates: [clutch/git.py, clutch/observe.py, clutch/seams.py, clutch/status.py, tests/integration/test_config.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 96e46658
-# hash: 1e587df55afe320168a37b5ddd55f6b19c3ddf21d93dde8e10a56fa263433d66
+# verified: d32c32ad
+# hash: b8a27a7891b4f9ccf2c5fb9473789593922e6efd4adf6be3d4f631894538c8f3
 import json
 import os
 from datetime import datetime
 from unittest.mock import Mock
+
+import pytest
 
 from clutch import observe, status
 from clutch.git import Git, blob_sha
@@ -17,6 +19,8 @@ from clutch.seams import SubprocessExec
 from tests.integration.test_config import VALID
 from tests.integration.test_drain import confirmed
 from tests.snapshot_scale_fixture import git
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_snapshot_matches_event_reference_and_checks_candidates(tmp_path, monkeypatch):

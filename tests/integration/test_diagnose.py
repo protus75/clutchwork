@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Diagnosis through the production run and drain composition.
+# purpose: Tests failure diagnosis through the production run and drain paths: reply schema, routing, cap draws, short-circuits and lesson rendering.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 148a8874
-# hash: 871fb6e484b20c1e2e12bf0ad7a674835e49b379f8b34ac1a7c7aea89d2a118a
+# verified: d32c32ad
+# hash: e3785a7d8e681979ee954ef4c3e2e4fde8508bf6187a2184c94fe0e965c77e02
 
 import json
 from pathlib import Path
@@ -28,6 +28,8 @@ from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_providers import CONFIG as ROUTING_CONFIG
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def history(repo: Path):

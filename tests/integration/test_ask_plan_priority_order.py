@@ -1,16 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: verify priority and dependency repair in supervising prompts
+# purpose: Checks supervising prompts state priority order and replaced-stem dependency repair before authoring and confirming
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: d8700f17
-# hash: 711536f67327c63139e18c5b50926eeecf00918764818e7aa88fa6f8b68d0e29
+# verified: d32c32ad
+# hash: e5601adc10ad19ec3d5d5d22bfe6292073e4d382fecf41e1ce992648b01ce0ad
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize("kind", ["plan-ticket-drain", "plan-ticket-serve", "drain-loop"])

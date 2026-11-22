@@ -2,14 +2,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Implement replies file second problems through the production run command.
+# purpose: Tests that Implement reply second_problems are filed to the Suggestion Box, deduplicated, and listed in the run record through the run command.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 96e46658
-# hash: ddd1678959e814749794a4e6affc81a450ac67db2fad0e2e20f4bbbce64e1808
+# verified: d32c32ad
+# hash: d5c701711f92b9a124374f1f06b142ebe8392e6b79ada664a09cd94866581cf2
 
 import json
 from pathlib import Path
+
+import pytest
 
 from clutch import runner
 from clutch.__main__ import main
@@ -20,6 +22,8 @@ from clutch.seams import LocalFileSystem
 from clutch.stages import ImplementReply
 from tests.integration.test_stages import ENV, STEM, agent, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 FINDING = {"code": "premise", "path": f"tickets/{STEM}/ticket.md", "message": "the premise is false", "paved_road": "correct the ticket"}
 

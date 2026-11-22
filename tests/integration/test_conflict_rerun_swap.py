@@ -2,13 +2,15 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Real rebase abort, reference lift, branch retirement and fresh admission.
+# purpose: Tests that a declined merge conflict aborts the rebase, lifts the prior diff without conflicted paths, retires the branch and worktree, records a conflict rerun without spending attempts, and re-offers the ticket from current main
 # relates: [clutch/caps.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/mergequeue.py, tests/integration/test_mergequeue.py]
 # owner: engine
-# verified: 148a8874
-# hash: 0f163b8677060961590f30650e4d1460e685265fb49132de476c4ab1806e8990
+# verified: d32c32ad
+# hash: 709e1f81c9171f5b3f0f474d2415faa9df284c175e44e87696cde7957bbd7845
 
 import asyncio
+
+import pytest
 
 from clutch import caps, drain
 from clutch.daemon import TicketWriter
@@ -20,6 +22,8 @@ from tests.integration.test_mergequeue import (
     conflict,
     ctx,  # noqa: F401
 )
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_discard_reoffers_from_current_main(ctx):

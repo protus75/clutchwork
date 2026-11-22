@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Closed evidence, production faults and existing checks custody for the battery.
+# purpose: Test the reliability battery's closed report schema, its planted provider-fault members, its member-local evidence requirements, and cleanup of owned lifetimes
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/git.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
-# owner: engine
-# verified: 96e46658
-# hash: 85e0fd818a5ebd6bbc709951bfd5f317565d39603934e0fd4b56f711d1858c1e
+# owner: tests/harness/reliability_battery.py
+# verified: d32c32ad
+# hash: be73298ce14bdbd60fca765a2579ba2da4cfbb665926e5b2755ef3bf64077144
 
 import asyncio
 import copy
@@ -26,6 +26,8 @@ from clutch.journal import EventType
 from clutch.seams import SubprocessExec
 from clutch.specs import load_spec
 from tests.harness import reliability_battery as battery
+
+pytestmark = pytest.mark.disk_io_skip
 
 MEMBERS = battery.RELIABILITY_BATTERY_MEMBERS
 EXPECTED = battery._RELIABILITY_BATTERY_EXPECTED

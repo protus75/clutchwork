@@ -2,17 +2,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Invariant auditor coverage over direct journal fixtures and the production drain.
+# purpose: Invariant auditor coverage over direct journal fixtures and the production drain
 # relates: [clutch/audit.py, clutch/journal.py, tests/integration/test_drain_reentry.py, tests/integration/test_stages.py, tests/integration/test_terminal.py]
 # owner: engine
-# verified: 148a8874
-# hash: 47a33e69d52d72e7f385a9940791e74bf1c57fdda935f921f7dd1a2be631e863
+# verified: d32c32ad
+# hash: c4f88a0315253edd4ed5763daf75d37937ecb1155b4d9116aee01df79543aaa5
+
+import pytest
 
 from clutch.audit import INVARIANTS, audit, audit_journal
 from clutch.journal import Event, EventType, Journal
 from tests.integration.test_drain_reentry import drain
 from tests.integration.test_stages import agent, implement_reply, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 COMMIT = "a" * 40
 

@@ -4,8 +4,8 @@
 # purpose: Tests that a failed-run harvest records the provider, model, cost and estimate/budget flags from the stage result, and that an orphan harvest leaves those fields null
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/integration/test_harvest_orphans.py]
 # owner: engine
-# verified: 10f08d74
-# hash: 108001c318a74067a1268dcc0767a418fd928d8df16ed9ac08204f03af6fc099
+# verified: d32c32ad
+# hash: d63e9900fcd69f4874b4781c1b427020723261f31097bbc6cbb2b13ec8b9f6a9
 import asyncio
 import json
 from types import SimpleNamespace
@@ -22,6 +22,8 @@ from tests.git_fake import GitFake
 from tests.integration.test_harvest_orphans import invoke, orphan
 from tests.integration.test_stages import STEM, agent, verdict
 from tests.integration.test_terminal import repo  # noqa: F401
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize(("provider", "estimated", "capable"), [("codex", True, False), ("claude", False, True)])

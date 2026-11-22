@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The emitted table and real verb inputs agree on the same files and journal.
+# purpose: Checks that the snapshot menu table's enabled states match what the real ticket and box verbs admit, across ticket states and lock-held cases
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/reconcile.py]
 # owner: engine
-# verified: 96e46658
-# hash: 592294ef3a6db3961f2f05dedcf22fcba05588d46bf8f2fc6029679aff17eb43
+# verified: d32c32ad
+# hash: 851e2cf575caf03b65cbe8520822b34b80ee49167c25d96080c0670f7c42b48f
 
 import asyncio
 from types import SimpleNamespace as NS
@@ -25,6 +25,8 @@ from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import Clock, confirmed, make_root
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture

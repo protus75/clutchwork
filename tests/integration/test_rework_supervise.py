@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test rework supervise
+# purpose: Tests supervised Rework: the supervise block renders its trigger and lessons, the edit gate refuses forbidden edits before review, and apply_rework forwards supervise
 # relates: [clutch/artifacts.py, clutch/daemon.py, clutch/llm.py, clutch/rework.py, clutch/specs/__init__.py, tests/integration/test_mergequeue.py]
-# owner: engine
-# verified: 96e46658
-# hash: 6238c2aed3ceb8f3d0d7bbc6ae4e7e983dd492e91910375aeb68baff0d103fc4
+# owner: clutch/rework.py
+# verified: d32c32ad
+# hash: 15cad81d74e4810ec797da683bc0e9d1ee9cf05cf7d5f12a6e2dda668a306acf
 import pytest
 
 from clutch import daemon
@@ -15,6 +15,8 @@ from clutch.rework import REWORK_ORDER, ReworkOrder, ReworkReply, Supervise, rew
 from clutch.specs import data_close, data_open
 from tests.integration.test_mergequeue import ctx
 from tests.integration.test_rework import SNAG, order, original, requisition, run, signals, ticket_bytes
+
+pytestmark = pytest.mark.disk_io_skip
 
 S = Supervise("premise_bounce cap spent", ("Fence tests/x.py",))
 

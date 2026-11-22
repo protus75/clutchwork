@@ -1,16 +1,20 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test tolerant reader callers
+# purpose: Checks that observe reads capability defaults from the prompt spec metadata, and that observe, retro and __main__ contain no hand-written YAML or ticket-section readers.
 # relates: [clutch/observe.py, clutch/specs/__init__.py]
-# owner: engine
-# verified: 96e46658
-# hash: 5a1fa4ec414376c2e26877cdc85a683c847c38eeea7b1203d70669df80e18054
+# owner: clutch/specs/__init__.py
+# verified: d32c32ad
+# hash: dfd4ad6938715b5205dbb018c4900dcd0b0023c6ac9b1b3f726009ad6f25f0ef
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from clutch import observe
 from clutch.specs import load_spec
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

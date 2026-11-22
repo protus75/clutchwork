@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Production soak evidence, false-green refusal, and owned lifetime cleanup.
+# purpose: Runs the production serve soak harness and checks 24-hour member evidence, worker recovery, conflict rungs, refusal of semantic integration red, false-green refusal, owned lifetime cleanup and reproducible reports
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: d6bba8032982a37f7688996c46994e3e1e89a3b27198fbb40fe2b38b51c1786d
+# verified: d32c32ad
+# hash: 1664bdc57437b3d8af6214944811953dd0a87694984cffbf22937bd97ef14937
 
 import asyncio
 import json
@@ -32,6 +32,8 @@ from tests.harness import daemon_soak as soak
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS
 from tests.integration.test_git import commit_lock
 from tests.spool_captures import read_capture, write_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

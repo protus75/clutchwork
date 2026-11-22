@@ -1,17 +1,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Implement hint prompt rendering and safety
+# purpose: Checks that the Implement stage renders the related-files hint with quoted delimiters, drops it when the prompt has no headroom, and calls the index once
 # relates: [clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 0d51535705ec88d4c46dd91444d62faace0057934c008aa5d7805727acd01a22
+# verified: d32c32ad
+# hash: 3794a3b0146145897dba47232c02904fad280ad475dc5fbf5ef0ae5415ae835d
 import ast
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from clutch import stages
 from clutch.specs import SPEC_MAX_LINES, load_spec
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

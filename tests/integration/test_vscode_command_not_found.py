@@ -2,15 +2,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Exercise errors from the VS Code extension's snapshot command.
-# relates: []
-# owner: engine
-# verified: 96e46658
-# hash: f1c4df3d1cb535dea42a4bcdb297a6676596b178d14017c8d893ef069f66a076
+# purpose: Runs the node harness to check the VS Code extension's error message when the snapshot command is missing and when it fails for another reason
+# relates: [tests/vscode_command_not_found.js, vscode-clutchwork/package.json]
+# owner: vscode-clutchwork
+# verified: d32c32ad
+# hash: dc66401d39372cb067de092e2286719731c02f357ad7120c7317e92a394a9db9
 
 import json
 import subprocess
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 HARNESS = Path(__file__).parents[1] / "vscode_command_not_found.js"
 

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Failure-spine cap fold, terminal draws, and parked-stem eligibility.
+# purpose: Integration tests for the failure-spine caps: attempts counting, cap draws per stem and ticket revision, retry rungs, infra draws before terminals, parking a stem whose cap is spent, routing to the Reject queue, and premise-bounce escalation
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
 # owner: engine
-# verified: 148a8874
-# hash: e4009a1beb476f384a0cc6d63b48537596882848a3476ff4229cf819bf82e6c6
+# verified: d32c32ad
+# hash: d3d2a94cde60082900ccfa453369caeb4880189981ef394eb6b084421ef2249d
 
 import pytest
 
@@ -26,6 +26,8 @@ from tests.integration.test_drain import Clock, Script, commit_ticket, confirmed
 from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready
 from tests.integration.test_terminal import ENV, STEM, author, clock, diagnosis_reply, repo
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_attempts_cap_counts_every_failed_terminal(tmp_path):

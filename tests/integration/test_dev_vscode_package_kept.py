@@ -1,17 +1,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test dev vscode package kept
+# purpose: Tests that vscode-package leaves an existing VSIX untouched, restores the README after packaging, and is declared as the host release package.
 # relates: [clutch/config.py, dev.py]
-# owner: engine
-# verified: 148a8874
-# hash: e598f3204624b790e1928c961b6a1674c158756495f49813a1db1fb5218d9205
+# owner: dev.py
+# verified: d32c32ad
+# hash: 894af2df74b712d358cf74a70d75dd0a5b2853e633faab81e06aeb2ca4bbd225
 import json
 from pathlib import Path
 from unittest.mock import Mock
 
+import pytest
+
 import dev
 from clutch import config
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def setup_root(tmp_path, monkeypatch):

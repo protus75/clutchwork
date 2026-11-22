@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Consumer ownership, serve activation, and preserved bootstrap dormancy.
+# purpose: Tests DaemonTasks consumer ownership, cancellation and cleanup, dormancy under run/drain, and activation under serve.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/daemon.py, clutch/journal.py, clutch/mergequeue.py, clutch/runner.py, clutch/triage.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: 6e7c7328f723e4fb0763bf70832d17e7cda7948eb28dd920b9c8fa5f35e93abd
+# verified: d32c32ad
+# hash: c1f27f657e1833664b53cd00c37037ccaa89acfbf91c9ae4298cbaeab24a1d2f
 
 import asyncio
 import gc
@@ -25,6 +25,8 @@ from tests.integration.test_daemon_composition import CoreRig, assert_core_wirin
 from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready
 from tests.integration.test_scheduler import turn
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Consumers:

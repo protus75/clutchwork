@@ -1,11 +1,13 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap author
+# purpose: Runs `clutch roadmap author` end to end: it authors confirmed tickets for open rows, links and strikes rows, and changes nothing when it refuses
 # relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/policy.py, clutch/roadmap.py]
-# owner: engine
-# verified: 96e46658
-# hash: 5de81640758f65beeb78dde814d3437062fef245b6236e95d209454ce09e2f76
+# owner: clutch/roadmap.py
+# verified: d32c32ad
+# hash: 8317923d5bd4688cd2069465383850d1f51b6aa49bbeb4b73a34ac16584f161b
+import pytest
+
 from clutch.__main__ import main
 from clutch.config import load_config
 from clutch.journal import EventType, Journal
@@ -17,6 +19,8 @@ from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, make_root
 from tests.integration.test_triage import author_reply, requisition_reply
 from tests.unit.test_roadmap_table import document, row
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def setup_repo(tmp_path):

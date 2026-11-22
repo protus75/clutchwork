@@ -1,19 +1,23 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test drain detach
+# purpose: Tests that drain --detach spawns a foreground drain in its own session and appends its output to drain.out.
 # relates: [clutch/__main__.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 148a8874
-# hash: b3792d5469b95a341a4b17054843e358b852bde554b5fbcf8825abd57c192de9
+# verified: d32c32ad
+# hash: 6cc3cf55f7f133ebedd6eb829801ac8c10b69637c38f33dd9aa96613ad22783e
 import os
 import sys
 from unittest.mock import Mock
+
+import pytest
 
 from clutch.__main__ import main
 from clutch.seams import spawn_detached
 from tests.integration.test_cli import ENV
 from tests.integration.test_drain import make_root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_detach_spawns_a_foreground_drain_and_returns(tmp_path, capsys):

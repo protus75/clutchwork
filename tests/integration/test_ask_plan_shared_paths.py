@@ -1,16 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that the rendered plan-ticket-drain and plan-ticket-serve prompts let a row skip the fence-overlap wait for paths listed in scheduler.parallel.shared_paths.
+# purpose: Checks plan-ticket-drain and plan-ticket-serve prompts exempt scheduler.parallel.shared_paths from the fence-overlap authoring wait
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: bce07f02
-# hash: 4ec90563c0d4e057659373c5ceb1929cca560bb42408d37c3176dde8f113c4b5
+# verified: d32c32ad
+# hash: c368cefafe7385e1ca3504fa60c645567a8dd3e7b1eada7374ecebbcbe3c0a5f
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize("kind", ["plan-ticket-drain", "plan-ticket-serve"])

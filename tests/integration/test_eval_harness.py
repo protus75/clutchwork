@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Review-baseline harness (CLUTCH_PLAN.md 19.P1), offline: scripted fake LLM, temp journal.
+# purpose: Offline tests of the review-baseline eval harness: fixture floors, scoring, same-author refusal, preflight, shared cost cap and author graph.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/specs/__init__.py, eval/harness.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 4e0d81a9a7bf68721fd6f2740e33e601e05dbbb44abdbf33c9f7aaf58cebb132
+# verified: d32c32ad
+# hash: 2b895dd96d11370b7c7ff458fb17a00cf6884721c2125c0bd29674ebe38592dd
 
 import asyncio
 import json
@@ -26,6 +26,8 @@ from clutch.specs import lint_spec
 from eval import harness
 from eval.harness import Expected, Fixture, FixtureError, Scored
 from tests.spool_captures import read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Deterministic capability and Reject routing through the production drain.
+# purpose: Checks capability-ladder escalation, Reject-queue routing with automatic keep, and rework split or escalation through the production drain
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py]
 # owner: engine
-# verified: 11213934
-# hash: 89bfd8b4854d44c5c9b63e6c88d6ff415e135f40a24e1ef14980c42df7ee342d
+# verified: d32c32ad
+# hash: ba1a87a58cdafd61498ee104898ee9beef31e3313c2bf145d5d7a7dfee898650
 
 import json
 
@@ -21,6 +21,8 @@ from clutch.llm import FakeLLM
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROUTING = """schema_version: 1
 state_dir: .clutch/state

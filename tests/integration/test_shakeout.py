@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shakeout report custody and cumulative double gate.
+# purpose: Tests the shakeout harness: cumulative report custody, the member auditor, the bench, and each planted-fault member observing its expected outcome.
 # relates: [clutch/journal.py, tests/harness/shakeout/bench.py, tests/harness/shakeout/drain.py, tests/harness/shakeout/driver.py]
 # owner: engine
-# verified: 96e46658
-# hash: 6af553d859b253e1d55b78a2378d5dfe611f036f0db261eed26fd64e0ad3dca9
+# verified: d32c32ad
+# hash: d0bd34d8a57cee8103c8314d1f620b30d1d5ca1ebfeebb51f77568ebeae16b3a
 
 import asyncio
 import json
@@ -28,6 +28,8 @@ from tests.harness.shakeout.recovery import MEMBERS as RECOVERY_MEMBERS
 from tests.harness.shakeout.run import ShakeoutEntry, ShakeoutReport
 from tests.harness.shakeout.runner import MEMBERS as RUNNER_MEMBERS
 from tests.harness.shakeout.stages import MEMBERS
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def entry(member: str, observed: str = "ok") -> ShakeoutEntry:

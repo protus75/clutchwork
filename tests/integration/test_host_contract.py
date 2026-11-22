@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Executable host documentation.
+# purpose: Executable host contract: checks that the YAML blocks and prose in host-contract.md match the config schema, migration, managed core, seam signatures, report fields and lockfile behavior
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/covgate.py, clutch/gates.py, clutch/hostfiles.py, clutch/llm.py, clutch/lockfile.py]
 # owner: engine
-# verified: 148a8874
-# hash: 6b616712b755382233ecfc6cef5d2cac3faebc4d6099794b440efeaaae62983d
+# verified: d32c32ad
+# hash: 918c19ed040af933b5b8b0ae58d04493e9ded1093fda32cab44a3311889c9954
 
 import asyncio
 import copy
@@ -25,6 +25,8 @@ from pydantic import BaseModel
 from clutch import artifacts, config, covgate, gates, hostfiles, llm, providers, seams, tickets
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.mergequeue import MergeQueue
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = (ROOT / "clutch/docs/host-contract.md").read_text()

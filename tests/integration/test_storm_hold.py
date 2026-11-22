@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Identity-bound holds through the production bootstrap CLI and drain composition.
+# purpose: Tests storm-breaker holds through the production CLI and drain: only the emitting stem is held, resume is bound to the hold identity and accepted once, and holds survive restart and crashes.
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py]
-# owner: engine
-# verified: 96e46658
-# hash: e60778237a12902ba19963e6c22616e9f405715acc663e74f5f7da2efffd7cee
+# owner: clutch/control.py
+# verified: d32c32ad
+# hash: 0690a9ba206cb4bf52bbb603582045abea25d2ea206bea5657a285259a1c3568
 
 import asyncio
 import json
@@ -35,6 +35,8 @@ from tests.integration.test_journal import T0, FakeClock
 from tests.integration.test_storm import SIG, snapshot
 from tests.integration.test_storm_notification_activation import digest, occurrences, six, trips
 from tests.integration.test_storm_producer import ARRIVAL
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class LiveStorm:

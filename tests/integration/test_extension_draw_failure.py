@@ -2,17 +2,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Snapshot drawing errors remain visible in each extension view.
-# relates: []
+# purpose: Tests through a node harness that each VS Code extension view shows snapshot draw errors with setup help and that the extension README explains how to update
+# relates: [tests/vscode_draw_failure.js, vscode-clutchwork/README.md]
 # owner: engine
-# verified: 148a8874
-# hash: 1a46d8636b689ff83c8da55866ac4322fffbb85f41546a8a4606a0d12c60228a
+# verified: d32c32ad
+# hash: 23e5a08cf09c909b57be8a6257967c6393bcb4df8df639da191bcb1dce368954
 
 import json
 import subprocess
 from pathlib import Path
 
 import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 HARNESS = ROOT / "tests/vscode_draw_failure.js"

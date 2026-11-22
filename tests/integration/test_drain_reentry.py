@@ -7,13 +7,15 @@ written. The production stage pipeline runs behind a scripted FakeLLM.
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Findings-fed re-entry behind the `drain` verb (CLUTCH_PLAN.md sections 11.2, 19.P1) against a temp checkout.
+# purpose: Tests that a re-offered ticket renders the prior attempt's review or check findings in criteria position without writing ticket.md.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: 148a8874
-# hash: 0bf5a248673ee348833436b90cdfbd20e95b522444b4d3f278a4f9a4ef8d04fa
+# verified: d32c32ad
+# hash: e115c99a4b48fcdd34c9b5be582e31621d98dece68b21376d3a3fac565dc563b
 
 from pathlib import Path
+
+import pytest
 
 from clutch import runner
 from clutch.__main__ import main
@@ -26,6 +28,8 @@ from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo, transitions  # noqa: F401 -- `repo` is the fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class NoChild:

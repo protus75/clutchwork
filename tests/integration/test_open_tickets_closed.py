@@ -1,12 +1,14 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test open tickets closed
+# purpose: Check that open-ticket listing excludes closed tickets and that triage declines tombstone links to rejected tickets
 # relates: [clutch/author.py, clutch/box.py, clutch/journal.py, clutch/llm.py, tests/integration/test_drain.py, tests/integration/test_triage.py]
-# owner: engine
-# verified: 96e46658
-# hash: c675a250ddfd1d1f71b6668a5f3c1f82ca11ebbcfb8986495075ffb333af6356
+# owner: clutch/author.py
+# verified: d32c32ad
+# hash: 52cd1098f2661f9cb7fe82fdb6f16fe79da02f72f5c2a4647b677497015a8c1a
 import asyncio
+
+import pytest
 
 from clutch.author import list_open_tickets
 from clutch.box import parse_record, record_path
@@ -14,6 +16,8 @@ from clutch.journal import EventType
 from clutch.llm import FakeLLM
 from tests.integration.test_drain import commit_ticket, pause_checkout
 from tests.integration.test_triage import enqueue, reply, root_with_box, run
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_closed_tickets_and_tombstones(tmp_path, monkeypatch):

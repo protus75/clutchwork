@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests `clutch box triage` and `box dismiss` CLI composition: verdict records, reopen handling, report ingestion and escape attribution with a scripted provider
+# purpose: Tests `clutch box triage` and `box dismiss` CLI composition with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
-# owner: engine
-# verified: 9b76d3e1
-# hash: 1a7cdab4219a1c00c7c8d4e8749df8ed13e647b4d6e4f044341052e9234e355b
+# owner: clutch/triage.py
+# verified: d32c32ad
+# hash: 49fc950fb165a8cf39ecd475a9b9e31f41e0b01a8956ea39c1045e58438607ab
 
 import asyncio
 import json
@@ -24,6 +24,8 @@ from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
 from tests.spool_captures import read_capture
 from tests.stage_replies import requisition_reply
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_triage_spec_places_reopen_condition_in_json():

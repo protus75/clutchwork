@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checkpoint custody through the existing journal, process, timer and production Box seams.
+# purpose: Integration tests for the checkpoint push: merge and settled triggers, journaled effect intent and completion, failed-push refire with redacted Box failure reports and storm occurrences, crash-replay windows, and dormant versus serve-active wiring
 # relates: [clutch/__main__.py, clutch/checkpoint.py, clutch/daemon.py, clutch/effects.py, clutch/enginelog.py, clutch/git.py, clutch/journal.py]
 # owner: engine
-# verified: 148a8874
-# hash: bc53d0a562709b4e19218dd5db4da2d30ea0a0283f0ee7f6f7b31c6ca71de563
+# verified: d32c32ad
+# hash: 3638d97268f6bed47eb00146b114579556dabdbfa396e545d5ccbd736e61d8c5
 
 import asyncio
 import hashlib
@@ -30,6 +30,8 @@ from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
 from tests.integration.test_restart_timers import repository
+
+pytestmark = pytest.mark.disk_io_skip
 
 T0 = datetime(2026, 10, 7, tzinfo=UTC)
 SECRET = "private-checkpoint-key"

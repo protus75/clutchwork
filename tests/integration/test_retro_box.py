@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Completed production receipts travel through the existing consumer and admission.
+# purpose: Retro proposals become Box messages, pass through triage and Author to a ticket, and are tracked through a merged prompt spec change; covers replay and recurrence handling
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
-# owner: engine
-# verified: 96e46658
-# hash: 11825d7be238aae700b280e1ae5484e91e2232524942581b0f32b1936c432633
+# owner: clutch/retro.py
+# verified: d32c32ad
+# hash: 6cb06a3c3ac040059c19b17ab342f0538cc9ed459962238f113c8042aad6622f
 
 import asyncio
 import hashlib
@@ -30,6 +30,8 @@ from clutch.tickets import validate_ticket
 from tests.integration.test_drain import pause_checkout
 from tests.integration.test_stages import implement_reply, verdict
 from tests.integration.test_triage import author_reply, reply, requisition_reply, root_with_box
+
+pytestmark = pytest.mark.disk_io_skip
 
 PROPOSAL = {"fixed_failure": "Observed café failure", "overcorrection_risk": "Rejecting useful inputs", "proposed_spec_paths": ["specs/review.md", "specs/author.md"]}
 

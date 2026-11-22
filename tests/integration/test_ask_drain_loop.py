@@ -1,15 +1,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask drain loop
+# purpose: Checks the drain-loop prompt renders with the /loop prefix, configured state dir and owner verdict limits, and that the prompt verb writes no state
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 148a8874
-# hash: 8a130baa05606ed13248bbdf6a2dbcf1609539d7de3eb6c4629e2f99f9c13556
+# verified: d32c32ad
+# hash: 1296fc811c04deff99f5229a72fd9e71a7d2f80be5ae08a62fc485535bbb4e72
+import pytest
+
 from clutch import ask
 from clutch.__main__ import main
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_drain_loop_renders_state_dir_and_loop_prefix(tmp_path):

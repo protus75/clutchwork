@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test reject reason both paths
+# purpose: Check that `ticket reject --reason` records the reason on both the direct path and the control-inbox path, and that help, docs and the drafts prompt mention it
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/config.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/runner.py]
-# owner: engine
-# verified: 96e46658
-# hash: ea7380f14fa1aecaa72990a9538412e2be214ca4a672641d458c3b7d38871374
+# owner: clutch/__main__.py
+# verified: d32c32ad
+# hash: 44ac9cf5d1a1a7118ddf43bc6324755ac497be19b4230f1bea1e913a07282af3
 import asyncio
 from pathlib import Path
 
@@ -19,6 +19,8 @@ from clutch.roadmap import rejection_reason
 from clutch.tickets import stamp
 from tests.integration.test_mergequeue import admission_control, commit, ready
 from tests.integration.test_mergequeue import ctx as context_fixture
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

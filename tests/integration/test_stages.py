@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests Implement -> Check -> Review stage transitions, gates, outbox lifts and report artifacts using the scripted fake LLM.
+# purpose: Tests the Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: 6f94fa01
-# hash: 737307bfedaf939ed950ecc799afff44514276f4ed66bf1a7325e22300aeaf95
+# verified: d32c32ad
+# hash: 1b729836b76b94b7fa30d0a7e16d23cf1390ed468c14ca6e4819ce2deb06bfb7
 
 import asyncio
 import json
@@ -48,6 +48,8 @@ from tests.integration.test_git import commit_lock
 from tests.spool_captures import list_captures, read_capture
 from tests.stage_replies import implement_reply
 from tests.stage_replies import review_verdict as verdict
+
+pytestmark = pytest.mark.disk_io_skip
 
 SAMPLE_REPORT = "sample-report.json"
 

@@ -1,19 +1,23 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test step events
+# purpose: Tests that Check and merge write stage_start and stage_end events to the engine log with the right outcome, stem and attempt.
 # relates: [clutch/runner.py, clutch/stages.py, clutch/tickets.py, tests/integration/test_merge.py, tests/integration/test_stages.py]
-# owner: engine
-# verified: 96e46658
-# hash: 0761e900f7c682f2bcb42157a52e785cd058d4a6d71b7524109929848ce90cc2
+# owner: clutch/stages.py
+# verified: d32c32ad
+# hash: 8845d67abe48b5cfc9e657859653421afa8b602fddf0a509af70235c20e4d18a
 import asyncio
 import json
+
+import pytest
 
 from clutch import runner
 from clutch.stages import run_stages
 from clutch.tickets import validate_ticket
 from tests.integration.test_merge import context, repo
 from tests.integration.test_stages import STEM, agent, author, verdict
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def stage_events(ctx, surface):

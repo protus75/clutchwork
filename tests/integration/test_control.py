@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test control
+# purpose: Integration tests for the control inbox: closed request validation, durable no-overwrite publication, decision before application, crash reconstruction, lifecycle identity, hold-matched resume, and the kill, stop and retro projections
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: 8fc99aa34271f84b1f82fe6a1bcebc19b570f36c4ed22f48f1b0a1c7e2179038
+# verified: d32c32ad
+# hash: d56f913a14adbbd7dbe6131713adcc336a7857bff2b12832ae39027a61bad047
 import asyncio
 import json
 import os
@@ -25,6 +25,8 @@ from clutch.seams import FileSystem, LocalFileSystem
 from tests.integration.test_cli import Stages, cli, journal, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
 from tests.integration.test_effects import Crash, FakeClock
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Rig:

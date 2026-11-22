@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Drive the CLI's continuous graph with disposable repositories and injected time.
+# purpose: Tests serve merge admission: queue routing, rebase and regate, red-streak and tree-mismatch holds, cleanup, refusals and conflict reruns.
 # relates: [clutch/audit.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 77c3dad9
-# hash: 31e9d5cebe87ee06004e1b6ae895be838c0e9e0b29608880c02e30414896aec4
+# verified: d32c32ad
+# hash: 4b706d3f2a27897c9b2da4e3f767dc06b1bb7d2888f71b702b21408f646a366d
 
 import asyncio
 import json
@@ -40,6 +40,8 @@ from tests.integration.serve_rig import (
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
 from tests.spool_captures import list_captures, read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

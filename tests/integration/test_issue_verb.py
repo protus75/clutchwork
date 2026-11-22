@@ -1,17 +1,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test issue verb
+# purpose: Checks the `clutch box issue` link: built from installed package metadata, with configured secrets scrubbed from the body
 # relates: [clutch/__main__.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: 513a5490829ef641b0c23184a42a3ffb0b3aa8a088011b77aa978121153770f4
+# verified: d32c32ad
+# hash: 9b248924edcf1b23aa24f17bcfbe004f32ac7c44b169a2d8e13a480917911497
 import importlib.metadata
 import platform
 from urllib.parse import parse_qs, urlsplit
 
+import pytest
+
 from clutch.__main__ import main
 from tests.integration.test_cli import CONFIG
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_link_from_installed_metadata(tmp_path, capsys):

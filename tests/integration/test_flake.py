@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Injected detection, durable record custody, and calibrated production dormancy.
+# purpose: Tests flake detection, quarantine projection, cap escalation, release and crash replay through the journal and Suggestion Box
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: f4f657541b54846811060100efe7be580b7e2e701fe03718bb5e7e0d2f520f50
+# verified: d32c32ad
+# hash: 043be254bab4f675b76077c61dc0f523e2f3ba596a8a65153198085aeab0c4ba
 
 import asyncio
 from dataclasses import replace
@@ -24,6 +24,8 @@ from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def evidence(test_id="tests/test_12.py::test_34"):

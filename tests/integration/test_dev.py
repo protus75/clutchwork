@@ -1,17 +1,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test dev
+# purpose: Tests dev.py's test passthrough, vscode-package WSL path printing and version stamping, and its rejection of engine verbs.
 # relates: [dev.py]
 # owner: dev.py
-# verified: 148a8874
-# hash: 7668c49776a8aafc7aee221cda0a5a2fcbddfeaed3af532450eda4fcd5de5005
+# verified: d32c32ad
+# hash: 2f742ff7f0f480629bdbe4fef618159ae4405debe326fd72e6c77a78a194fa9e
 from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 
 import dev
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_test_passes_leading_options_to_pytest(monkeypatch):

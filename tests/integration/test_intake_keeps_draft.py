@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test intake keeps draft
+# purpose: Checks that intake keeps the authored draft state, that drain waits for `ticket confirm`, and that the confirm guidance appears in the author and drafts specs
 # relates: [clutch/__main__.py, clutch/drain.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: 148a8874
-# hash: 2481440c5c928d74b1e2543d4cddf6babe1f23be8720817a3ab67ef2076e3ce6
+# verified: d32c32ad
+# hash: e3e7093c5fb8067a297c2834beea03d23e24f8b222df789afee8b68d18865f06
 import asyncio
 from pathlib import Path
 
@@ -19,6 +19,8 @@ from tests.integration.test_drain import pause_checkout, root
 from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_tickets import VALID, do_intake, repo
 from tests.integration.test_tickets import write as write_ticket
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

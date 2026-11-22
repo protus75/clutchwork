@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test requisition
+# purpose: Integration tests for requisition review: the spec loads, approve and snag verdicts, invalid replies, mechanical snags for render headroom, provider errors and committed-ticket lint, and context rendering shared with Implement
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/seams.py]
-# owner: engine
-# verified: 9b76d3e1
-# hash: 84e8cf00c68de3405ee035833f4a9df4874e9806a427cc4f4ef67d43d11d85f6
+# owner: clutch/requisition.py
+# verified: d32c32ad
+# hash: 2e0bd1d24e55c4fd3ea838763a5db744611eed4d3e0fbd10d6538e124d530148
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -23,6 +23,8 @@ from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, lint_spec, loa
 from clutch.stages import StageContext, implement_inputs, implement_stage
 from clutch.tickets import TicketInvalid
 from tests.stage_replies import requisition_reply
+
+pytestmark = pytest.mark.disk_io_skip
 
 SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 TICKET = """---

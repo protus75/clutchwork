@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test testreport
+# purpose: Tests the clutch.testreport pytest plugin's schema-2 results file (per-test outcomes and seconds, under xdist too) and the validation of results files by read_results.
 # relates: [clutch/testreport.py]
 # owner: clutch/testreport.py
-# verified: 96e46658
-# hash: 2a06b71b382b9e41c21f8d6e1dba0db55b66e553b6bc142c2006a2d4d1515ba4
+# verified: d32c32ad
+# hash: 3b09586330a94826c9c001a5a1c0cdb83eb53d869a0ba10c7383a84b3ca44428
 import json
 import os
 from pathlib import Path
@@ -14,6 +14,8 @@ from types import SimpleNamespace
 import pytest
 
 from clutch.testreport import ResultsInvalid, pytest_sessionfinish, read_results
+
+pytestmark = pytest.mark.disk_io_skip
 
 pytest_plugins = ["pytester"]
 

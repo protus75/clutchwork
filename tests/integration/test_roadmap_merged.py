@@ -1,13 +1,15 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap merged
+# purpose: Runs `clutch roadmap merged` end to end over stems, a release and a since-tag count check, without changing git or the journal
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: 96e46658
-# hash: 781ad9696c4a9677f062f3a58429c5f1a9c2dac321872ce2f89536bcb86f7604
+# owner: clutch/roadmap.py
+# verified: d32c32ad
+# hash: 3976ef7da22db4b52cba643a029eec238b8381b18f168ac4f1090eb3d9c9ea9c
 import asyncio
 from datetime import UTC, datetime
+
+import pytest
 
 from clutch.__main__ import main
 from clutch.git import Git
@@ -15,6 +17,8 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import CommitLock
 from clutch.seams import SubprocessExec
 from tests.integration.test_cli import CONFIG, ENV
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_roadmap_merged_end_to_end(tmp_path, capsys):

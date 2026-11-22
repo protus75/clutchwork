@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Direct dormant arrival wiring and preservation of the production composition.
+# purpose: Tests that Box arrivals record storm occurrences in order, that dedup preserves stored messages, that invalid arrivals publish nothing, and that the production composition wires the producer.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
-# owner: engine
-# verified: 96e46658
-# hash: b3933024424e359d221f6cbff4f2b92c503f175cdc5829e1110e6d6129902e8c
+# owner: clutch/daemon.py
+# verified: d32c32ad
+# hash: 28ddb2197d5fbc70f5091f8246c23ba222983dae0e392e86bf35e8fca24e6681
 
 import json
 from dataclasses import asdict
@@ -29,6 +29,8 @@ from tests.integration.test_journal import T0, FakeClock
 from tests.integration.test_mergequeue import ctx as admission_context  # noqa: F401
 from tests.integration.test_stages import STEM, TICKET, agent, verdict
 from tests.integration.test_storm import SIG, snapshot
+
+pytestmark = pytest.mark.disk_io_skip
 
 ARRIVAL = dict(message_class="failure_report", origin="one", summary="failed path/one 123", stage="implement", outcome="gate_failed")
 

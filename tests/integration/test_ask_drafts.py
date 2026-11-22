@@ -1,14 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask drafts
+# purpose: Checks the drafts prompt lists stems in order with ticket paths, configured state dir, confirm/reject verdicts and appended host notes
 # relates: [clutch/ask.py, clutch/config.py, clutch/specs/__init__.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 148a8874
-# hash: 7b608d75a0a9336f7ef2fa930bc9aab11d548fe65b55e5c90c4394cfab4ed510
+# verified: d32c32ad
+# hash: a1cd71ecfcff7d765731047236aceaf388ed49840aded0a93e2a49414da63854
+import pytest
+
 from clutch import ask, specs
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_render_drafts(tmp_path):

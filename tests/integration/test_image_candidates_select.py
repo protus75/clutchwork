@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test image candidates select
+# purpose: Tests graphics Check candidate selection: visual review picks and commits a winner, a tie or a missing baseline parks the ticket as undecided, effect keys name the winner, and forbidden paths are refused
 # relates: [clutch/caps.py, clutch/config.py, clutch/drain.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 059d9bc04f49b01448d6aadc95280f21bb5fb8107c7344d15cafe35c1a78f26c
+# verified: d32c32ad
+# hash: 9555fda0ff13d22e8e6c45c07a1f5d3f48df41270a2175105c934c7b5033c675
 import asyncio
 import json
 from dataclasses import replace
@@ -28,6 +28,8 @@ from clutch.tickets import validate_ticket
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import ENV, SPECS, STEM, author, git, repo  # noqa: F401
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def reply(verdict, passes):

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Merge admission against a temp repo (CLUTCH_PLAN.md sections 7, 9, 10; 19.P1).
+# purpose: Merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: engine
-# verified: 77c3dad9
-# hash: 34da6756643260fcdcbadad1199447c7386629a8413684afce481674f45e6ac0
+# verified: d32c32ad
+# hash: a7cf3647290f8212c29ea3d38cb33adef9fefbf192396b8bad9b7c843b388757
 
 import asyncio
 import dataclasses
@@ -31,6 +31,8 @@ from tests.integration.test_cli import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture(autouse=True)

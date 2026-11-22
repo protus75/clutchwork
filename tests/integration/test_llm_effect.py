@@ -1,17 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test llm effect
+# purpose: Checks that each LLM call journals one cost-bearing completion with a universal key, and covers replay on reentry, run_seq advance, and secret scrubbing
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: engine
-# verified: 96e46658
-# hash: a8f776c4bf109b5bb99819a8f9d61d0f317a642ad397f51b133f882f4f1f20e0
+# verified: d32c32ad
+# hash: 051a81c556f80b979235fd9dcab60a7b24c671b543325e3605ffc1d8bb369805
 import asyncio
 import json
 import textwrap
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
 from pydantic import BaseModel, ConfigDict
 
 from clutch.artifacts import Artifact, Finding
@@ -21,6 +22,8 @@ from clutch.effects import Effects
 from clutch.journal import EventType, Journal, run_seq
 from clutch.llm import FakeLLM, LLMResult
 from clutch.llmeffect import llm_key
+
+pytestmark = pytest.mark.disk_io_skip
 
 SECRET = "sk-live-0123456789abcdef"
 

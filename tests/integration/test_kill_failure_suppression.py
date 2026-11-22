@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Worker notification suppression and preserved bootstrap dormancy.
+# purpose: Checks that worker failures are suppressed only after a matching accepted kill, that other failures are kept, and that suppression stays dormant in run and drain
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: b379fdcab0d8e659796f6e4b2e5828cdcfbc83b31b562db9e4235ace4097ee60
+# verified: d32c32ad
+# hash: 76091bbd4b9e73e9f55f6943412912d0315381062a889384e8fd4f367ff40002
 
 import asyncio
 import json
@@ -29,6 +29,8 @@ from tests.integration.test_kill_worker_stop import Worker, accepted, boundary, 
 from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @asynccontextmanager

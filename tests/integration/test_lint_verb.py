@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test lint verb
+# purpose: Checks `clutch ticket lint`: findings and exit codes, new-stem claims, bug evidence, skipping settled tickets, and that it stays read-only without taking the lock
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 96e46658
-# hash: f1df04c3a7c24fe5ef6ce179c417cf373af598ab4c6e59a25eb8aa8b3a34056b
+# verified: d32c32ad
+# hash: a5278a44709d1299d043868d1b5e265993885faad2c848b520535b624b5f22cc
 import asyncio
 import multiprocessing
 from pathlib import Path
@@ -19,6 +19,8 @@ from clutch.lockfile import Lockfile
 from clutch.seams import SubprocessExec
 from tests.integration.test_cli import ENV, Clock, journal, root, ticket, write
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def lint(root, *stems):

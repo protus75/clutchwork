@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Status surfaces confirmed policy classes using write-free queue and journal reads.
+# purpose: Tests that `view status` renders its sections, tombstones, Suggestion Box, scorecard, provenance and verdict decisions from write-free journal and box reads.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/effects.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
-# owner: engine
-# verified: 96e46658
-# hash: a7f23da6967b0a1c26cf4bdc5763a9cacd92a12b0b17abafc7e050db5d209c34
+# owner: clutch/status.py
+# verified: d32c32ad
+# hash: e13486347ecd6e8877ab0535a811b10086947c64d470b1468489578d47072289
 
 import asyncio
 import re
@@ -33,6 +33,8 @@ from tests.integration.test_git import commit_lock
 from tests.integration.test_retro import completed, merged, rig
 from tests.integration.test_retro_box import PROPOSAL
 from tests.integration.test_scorecard import invoice, review, rows
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_settled_stem_never_awaits_verdict(tmp_path):

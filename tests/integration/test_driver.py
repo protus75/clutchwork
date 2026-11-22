@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test driver
+# purpose: Tests the LLM stage driver: capture spooling, stuck-budget kills, re-prompts on schema or gate failure, cost totals, secret redaction and log rotation.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/gates.py, clutch/journal.py, clutch/llm.py, clutch/redact.py]
 # owner: engine
-# verified: 23d3b116
-# hash: eab53875e0d871903159502503afc841bdd9fa4705dd1ee22f07ab940b1a0bd2
+# verified: d32c32ad
+# hash: e7bd216afb4f01947a2e0874e90dd7fa75af1e6a9d49db4f51387c80a9360809
 import asyncio
 import json
 import textwrap
@@ -25,6 +25,8 @@ from clutch.llm import HANG, FakeLLM, LLMRequest, LLMResult
 from clutch.redact import Redactor
 from tests.fakes import FakeClock
 from tests.spool_captures import CaptureNotFound, list_captures, read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 SECRET = "sk-live-0123456789abcdef"
 

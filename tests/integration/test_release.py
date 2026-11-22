@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Real git proves the release preserves unrelated staged and unstaged edits.
+# purpose: Check with real git that `release bump` commits and tags while keeping unrelated staged and unstaged edits, and that refusals change nothing
 # relates: [clutch/__main__.py, clutch/git.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: 96e46658
-# hash: 3b1758914524a03d4310172c1354e7bf837d107b2a4ca746bf5ac71c79c4742b
+# owner: clutch/__main__.py
+# verified: d32c32ad
+# hash: 3ec7e58b40e5361c223c5a5a29c91431ced27dbf711bc3ae269b47a6538712a4
 
 import asyncio
 from datetime import UTC, datetime
@@ -18,6 +18,8 @@ from clutch.git import Git
 from clutch.lockfile import CommitLock, Lockfile
 from clutch.seams import SubprocessExec
 from tests.integration.test_cli import CONFIG, ENV
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def clock():

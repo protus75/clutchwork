@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Queue admission with injected seams and disposable real repositories.
+# purpose: Integration tests for merge queue admission (ordering, safety and integration checks, conflict strategies, squash, holds and resume) using real disposable git repos
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/git.py, clutch/journal.py]
-# owner: engine
-# verified: 77c3dad9
-# hash: 22c932c4a3478608fa8d5d1d5d019e70cac900dc764971ed2a5781490e6419b8
+# owner: clutch/mergequeue.py
+# verified: d32c32ad
+# hash: 7ee5b9920f12eba9eec965533f93a9a50e86f1e2bd116395dedaa839d9d3df2a
 
 import ast
 import asyncio
@@ -36,6 +36,8 @@ from clutch.tickets import validate_ticket
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
 from tests.spool_captures import list_captures, read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 run = asyncio.run
 

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Host checks through production Check and inline admission.
+# purpose: Tests host mechanical checks through production Check and inline merge: triggers, severity, base-red, autofix commits, results-based flake detection and quarantine, coverage and timing
 # relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/merge.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 77c3dad9
-# hash: 50df0251b3c87339bed27ee50e6970164b32ec462e3e5d8c7dc41bc96d2ee627
+# verified: d32c32ad
+# hash: 742ca6d28b08b99f6786fd3f0d2e13e50bde31434d2d986c67bcaf0db068de71
 
 import asyncio
 
@@ -18,6 +18,8 @@ from clutch.seams import ExecutableNotFound
 from tests.integration.test_mergequeue import approve, commit, ctx, host, ready, scripted
 from tests.integration.test_stages import SECRET
 from tests.spool_captures import list_captures, read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 async def checked(ctx, ticket):

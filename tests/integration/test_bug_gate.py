@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Regression custody and admission proofs with disposable real Git repositories.
+# purpose: Integration tests for the bug-evidence gate: the regression overlay proves the defect at base and the fix at head, plus result-protocol decoding, evidence custody, invalid carries, failed-execution handling, base-worktree cleanup, secret redaction, and wiring into Check, inline merge and the merge queue with real Git repositories
 # relates: [clutch/gates.py, clutch/merge.py, clutch/mergequeue.py, clutch/redact.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
 # owner: engine
-# verified: 77c3dad9
-# hash: b2cf54a6cf02e9c7b82d444d14ca739bb7aed3aaa3813bff5e07a3b55f03ed96
+# verified: d32c32ad
+# hash: a2023aa1aacf4352228168f3cf5b86448f914b51d51d5a7bb49a9832fb7b5286
 
 import asyncio
 import dataclasses
@@ -23,6 +23,8 @@ from clutch.tickets import validate_ticket
 from tests.integration.test_mergequeue import approve, commit, ctx, ready
 from tests.integration.test_stages import SECRET, STEM, TICKET
 from tests.spool_captures import read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 run = asyncio.run
 PRODUCER = "tests/reproducer.py"

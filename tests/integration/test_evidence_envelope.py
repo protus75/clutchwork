@@ -2,17 +2,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Real metadata/source and the composed in-memory filesystem boundary.
+# purpose: Tests that LLM call evidence records stay on the in-memory filesystem with real engine and spec versions, and that the old spool capture path is gone.
 # relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llm.py, clutch/llmeffect.py, clutch/providers.py, clutch/redact.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: de6f600b
-# hash: e639dc2e261f67eb7015e5985f7cbc24d8839a8681c58bd35bd63b2204b3f211
+# verified: d32c32ad
+# hash: f5622b00c13cf5bfdf3d67af975b9044dbe4a40e5f5363768b92453b7dee7279
 
 import asyncio
 import importlib.metadata
 import re
 from pathlib import Path
 from urllib.parse import quote
+
+import pytest
 
 from clutch import providers
 from clutch.effects import Effects
@@ -23,6 +25,8 @@ from clutch.redact import Redactor
 from clutch.specs import load_spec
 from tests.integration.test_daemon_composition import CoreRig
 from tests.integration.test_providers import ENV, provider_session
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

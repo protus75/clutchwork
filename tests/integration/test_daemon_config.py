@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Per-admission capture, production core reachability, and bootstrap preservation.
+# purpose: Tests that each admission captures an immutable, detached config snapshot, sees valid edits on the next dispatch, never binds an invalid reload, unwinds failures, and is not wired into the bootstrap CLI
 # relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: 3d5c307656999889e053dcad9da69f19d3d8133f8dfaf4169ae44e581e525a1e
+# verified: d32c32ad
+# hash: 08ec9a2224db163a01e6c503eae99b1d0f8003e23ce3146274eb3db3c7c5c4f2
 
 import asyncio
 from collections.abc import Mapping
@@ -25,6 +25,8 @@ from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, Clock, root, ticket, with_retro_driver, write
 from tests.integration.test_config import VALID
 from tests.integration.test_daemon_admission import assert_idle, assert_reachable, tickets, turn
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def put_config(directory, text=VALID):

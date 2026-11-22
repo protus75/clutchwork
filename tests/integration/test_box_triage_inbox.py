@@ -1,12 +1,14 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test box triage inbox
+# purpose: Tests box triage submission to a running drain or serve, refusal under a non-engine lock holder, lock-free direct passes, and that only requested messages are triaged
 # relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: 851d1bbc9c3f073cca2375f4550fe0ad2d016dfb1e5e0a82a83a6c6413deb267
+# verified: d32c32ad
+# hash: adad1cb025bce91c46b66e172a64dc57890789e358c31a2403a590051912face
 from pathlib import Path
+
+import pytest
 
 from clutch import control
 from clutch.__main__ import main
@@ -18,6 +20,8 @@ from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_drain import Clock
 from tests.integration.test_triage import enqueue, reply, root_with_box
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_prompt_bounds():

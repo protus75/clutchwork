@@ -1,16 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Plan prompts check conduct rules before running verbs
+# purpose: Checks plan-ticket-drain and plan-ticket-serve prompts check host conduct rules before running any clutch verb and distinguish covered rules from conflicts
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 75d75946
-# hash: 8cc4d3d8f0bf363bc9a05e320376b1a01512672d7ebd97e2fe52892c3895738e
+# verified: d32c32ad
+# hash: 12ea1bb1db03666889647e3a98fcf51257741b3b8dc78c99f7a397ef8c2966bc
 import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize("kind", ["plan-ticket-drain", "plan-ticket-serve"])

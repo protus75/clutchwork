@@ -2,14 +2,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The production terminal path publishes reviewed edits or lifts refused proposals.
+# purpose: Tests the supervisor rework path on a premise_failed terminal: a reviewed edit is published and kept, a refused edit is lifted to rework.md, and a spent supervise cap leaves the ticket for the operator.
 # relates: [clutch/audit.py, clutch/caps.py, clutch/drain.py, clutch/journal.py, clutch/status.py, tests/approval.py]
-# owner: engine
-# verified: 96e46658
-# hash: 83d99795a00370ff28fb54f403685f47d35bcc9547321cad06c02613c5822091
+# owner: clutch/daemon.py
+# verified: d32c32ad
+# hash: 2ac414e4c0b2fbe82a2bc8b2d7794ff7cf71f133933b6cfa8c0316121df33448
 
 import asyncio
 import json
+
+import pytest
 
 from clutch.audit import audit_journal
 from clutch.caps import consume, supervise_draws
@@ -19,6 +21,8 @@ from clutch.status import reject_queue
 from tests.approval import approve
 from tests.integration.test_requisition_gate import dispatch, reply, setup
 from tests.integration.test_stages import implement_reply
+
+pytestmark = pytest.mark.disk_io_skip
 
 PREMISE = implement_reply("premise_failed", [{"code": "premise", "path": "tests/x.py", "message": "missing fence", "paved_road": "reword scope"}])
 

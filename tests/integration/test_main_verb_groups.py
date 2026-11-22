@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Source shape guards and real CLI refusal paths for the shared verb plumbing.
+# purpose: Checks the source shape of the shared verb plumbing in __main__ (each shared call has one owner) and the real CLI refusal paths
 # relates: [clutch/__main__.py, clutch/lockfile.py, clutch/runner.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 96e46658
-# hash: 5ece80d993fe972c0360ccf24ba06180c0929354790763f3942c0b77be19ae2d
+# verified: d32c32ad
+# hash: f610d9ce2e93a3a5936b3f7de06c084f6dd962bbf85b48ba5922d50091cd1e2b
 
 import ast
 import json
@@ -18,6 +18,8 @@ from clutch import __main__ as entry
 from clutch import runner
 from clutch.lockfile import Lockfile, LockHeld
 from tests.integration.test_cli import ENV, Clock, root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def calls(node, owner=None):

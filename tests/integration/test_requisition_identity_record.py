@@ -2,20 +2,24 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests checking that the approval fixture, CLI review, drain dispatch, Author and rework all record the same 64-hex requisition_verdict input_identity in the journal.
+# purpose: Checks that the approval fixture, CLI review, drain dispatch, Author and Rework all record the same 64-hex requisition_verdict input_identity
 # relates: [clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_author.py]
-# owner: engine
-# verified: 9c24a9bd
-# hash: c24804fd2163fe3fab679afab1f8a376d21a7badf4b34fe80367c07342407a06
+# owner: clutch/requisition.py
+# verified: d32c32ad
+# hash: 2fb198a5b11ab1ed35b42bf13837ceacea444581abb8b7a2c318259546421173
 
 import asyncio
 import re
+
+import pytest
 
 from clutch.journal import EventType, Journal
 from tests.approval import approve
 from tests.integration.test_cli import git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
 from tests.integration.test_mergequeue import ctx  # noqa: F401
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_fixture_event_loop_identity(tmp_path):

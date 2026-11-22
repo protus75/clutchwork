@@ -9,11 +9,11 @@ once if its completion survived the crash, re-executed if not.
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Crash-point / fault-injection harness on the state layer (CLUTCH_PLAN.md 19.P0, section 15 rung 2).
+# purpose: Crash-point fault-injection harness that kills journal writes and fsyncs at every byte prefix and checks torn-tail tolerance and exactly-once effect semantics after restart
 # relates: [clutch/effects.py, clutch/journal.py]
 # owner: engine
-# verified: 148a8874
-# hash: 2a3ba6dd089b91afcb101ee6e3ff2d58e655be9de45175ddb74f86c4c7f107a9
+# verified: d32c32ad
+# hash: 88884533cd117f2ab4a8d6b48723701d1d7988a8d86c80c10ebd1da97d891c4f
 
 import asyncio
 import os
@@ -26,6 +26,8 @@ import pytest
 import clutch.journal as journal_mod
 from clutch.effects import Effects
 from clutch.journal import EventType, Journal, JournalCorruption, _parse_segment
+
+pytestmark = pytest.mark.disk_io_skip
 
 T0 = datetime(2026, 10, 5, tzinfo=UTC)
 KEYS = ("a", "b")

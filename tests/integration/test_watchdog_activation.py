@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Watchdog evidence through the CLI core, serving graph, and actual eval callers.
+# purpose: Tests that the watchdog is active through the CLI core, the serving graph and the eval callers: every driver surface is watched, soft-band notification, eval budgets and hard-timeout group kill
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/providers.py, clutch/requisition.py, clutch/runner.py]
-# owner: engine
-# verified: 5e952a0e
-# hash: 030b9956eb90f7d5139fe3f45d2f443ff804046775e44be4bd2d5853052ae5f3
+# owner: clutch/watchdog.py
+# verified: d32c32ad
+# hash: 6a8969e0c59c318965f6562b49c63e27119be9d495e3eb86b77b8e30382a08f6
 
 import asyncio
 import json
@@ -31,6 +31,8 @@ from tests.integration.test_providers import CONFIG, PythonProviderExec, claude_
 from tests.integration.test_requisition import TICKET
 from tests.integration.test_scheduler import text, turn
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 SPECS = Path(__file__).resolve().parents[2] / "clutch" / "specs"
 WATCH_CONFIG = CONFIG.replace(

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Explicit pause checkpoints and their active production composition.
+# purpose: Tests that the pause checkpoint runs before dispatch and config capture, never preempts active work, releases only on a matching resume, leaves no dispatch on failure or cancellation, and is active in production wiring
 # relates: [clutch/__main__.py, clutch/config.py, clutch/control.py, clutch/daemon.py, tests/integration/test_cli.py, tests/integration/test_control.py]
 # owner: engine
-# verified: 148a8874
-# hash: 192ea3a974aed00f1eb046c9686cddbfd6c51d38650b9a2ed5d3f4050ffa6b2d
+# verified: d32c32ad
+# hash: f3aaa1f69408d898d4714b4de1d659ac9b349a1c068f3c3b45bef8911e4af57b
 
 import asyncio
 
@@ -21,6 +21,8 @@ from tests.integration.test_control import Rig
 from tests.integration.test_daemon_admission import assert_idle, tickets, turn
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, assert_startup_pause_wiring
 from tests.integration.test_drain import Script, journal
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

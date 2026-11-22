@@ -1,13 +1,15 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test provider capture overwrite
+# purpose: Check that provider call evidence captures survive a new process and are keyed by stem and run
 # relates: [clutch/effects.py, clutch/evidence/store.py, clutch/llmeffect.py, clutch/redact.py, clutch/seams.py, tests/integration/test_providers.py]
-# owner: engine
-# verified: 96e46658
-# hash: 3e46cb1ea4e9c34cf73a47fbd817f687e196dea0ff215dbcdbd63f9df31c5570
+# owner: clutch/llmeffect.py
+# verified: d32c32ad
+# hash: 3e4fbfa500f00b51d7c1220e988ed1773fa2b6cf754744a8d2f0763c91038069
 import asyncio
 from dataclasses import replace
+
+import pytest
 
 from clutch.effects import Effects
 from clutch.evidence.store import EvidenceStore
@@ -15,6 +17,8 @@ from clutch.llmeffect import llm_call
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
 from tests.integration.test_providers import ENV, FakeExec, claude_ok, config, llm, req
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def invoke(client, cfg, request, sequence):

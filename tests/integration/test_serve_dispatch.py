@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Drive the CLI's continuous graph with disposable repositories and injected time.
+# purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and retro scheduling.
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 96e46658
-# hash: e1a781810e35d431597948bbe9d227ca703f90874cffb63f187c30612bb73771
+# verified: d32c32ad
+# hash: 9b021e64c9e795ae7240a7ed986e7fa0465d84d52537d2c8ec1da7a74752c9c5
 
 import asyncio
 import json
@@ -39,6 +39,8 @@ from tests.integration.serve_rig import (
 )
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

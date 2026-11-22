@@ -1,13 +1,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test route kinds judge lint
+# purpose: Tests that ticket lint requires a review_visual judge route for graphics tickets when implement routes are restricted by kind.
 # relates: [tests/integration/test_cli.py, tests/integration/test_lint_verb.py]
 # owner: engine
-# verified: 96e46658
-# hash: 9c48371f56e6c46fb3453ab3dc2c35d35bc9f31292ddd1ba532b642c491ea0c9
+# verified: d32c32ad
+# hash: 71c499ceb3477d804a841dc9250c756f2f2bcb3196a8dc28f1e97f64365d4c0f
+import pytest
+
 from tests.integration.test_cli import root, ticket, write
 from tests.integration.test_lint_verb import lint
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_graphics_judge_lint(root, capsys):

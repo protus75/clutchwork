@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test gates
+# purpose: Tests the artifact and finding contracts, gate lint, the gate runner with severity merging, the core_drift gate and the bug-evidence gate on a fixture host
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 75d75946
-# hash: 46129118a8bd574716e5b3f6888c81bd18d089112aa2b618f1de4fe27aa3b8ea
+# verified: d32c32ad
+# hash: 7510b575a3d899b3d39691f3720b9623d46845a1be6d460863448f701d16cc3c
 import textwrap
 from dataclasses import FrozenInstanceError
 from pathlib import Path
@@ -26,6 +26,8 @@ from clutch.gates import (
 )
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import repo
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Slip(Artifact):

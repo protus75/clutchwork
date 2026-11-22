@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Read-only operator setup inspection through production readers.
+# purpose: Tests that host doctor runs its setup checks in order, reports failures, detects drift in the clutch core block and never writes anything.
 # relates: [clutch/__main__.py, clutch/doctor.py, clutch/journal.py, clutch/lockfile.py, clutch/providers.py, clutch/runner.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: 96598de3df582fc648edb68f70c9d4fc4059badfb3d12cafed5903baae40a056
+# verified: d32c32ad
+# hash: 44cb3d01baac7292f3d5d62751d2d9126ad78c8d55ca90ae5a338f7270cd3052
 
 import asyncio
 import sys
@@ -19,6 +19,8 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.seams import ExecutableNotFound
 from tests.integration.test_cli import ENV, Clock, journal, root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Exec:

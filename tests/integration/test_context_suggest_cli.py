@@ -1,12 +1,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: clutch context suggest end to end through main
+# purpose: End-to-end test of clutch context suggest: refuses with no index, builds the index, suggests files that changed together while another lock is held without changing the database, and checks that the docs list the verb
 # relates: [clutch/__main__.py]
 # owner: engine
-# verified: be8ec7c3
-# hash: d5dd4df73626c44b2bee4194b40bee9e3d339b251e1230eb6f378d7e773a86ee
+# verified: d32c32ad
+# hash: c31c24b3c778a21f1b7866294b2990c88e8fdf2528d989938c02b5d7173c10ac
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_documentation():

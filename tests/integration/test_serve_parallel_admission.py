@@ -5,8 +5,8 @@
 # purpose: Verifies that continuous serve admits parallel runs within capacity and fence overlap, and handles control confirm and stop requests during dispatch.
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/llm.py, clutch/scheduler.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 6f94fa01
-# hash: d88664e13ded7c076ae3aea69b0e2c55ee80f959fac5033ce0ae146bc9328952
+# verified: d32c32ad
+# hash: a59c79853416fc2a3faef49359a01d22509ef44762bebf60c0ab99fa1b925c34
 
 import asyncio
 import json
@@ -22,6 +22,8 @@ from clutch.scheduler import Scheduler
 from tests.config_fixture import amend_config
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, request, start_admission, terminals, until
 from tests.integration.test_cli import root
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def stage_events(rig):

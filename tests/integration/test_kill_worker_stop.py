@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Executor-before-worker ordering and calibrated production dormancy.
+# purpose: Checks WorkerStop: the executor unwinds before workers are cancelled, stop requires a matching kill, all workers are observed, and the stop stays dormant in production
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 8107f6ac
-# hash: 6c1df2ef477c92a20e999210e457aa3be87956a7c98a5f02de187303d72c2016
+# verified: d32c32ad
+# hash: 445576a496d825e1bfbdfa13d1a775de9b3afd92f1b8410782b6e2e48426babd
 
 import asyncio
 from functools import partial
@@ -23,6 +23,8 @@ from tests.integration.test_driver import build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn
 from tests.integration.test_kill_signal_journal import Rig, decision
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def accepted(state):

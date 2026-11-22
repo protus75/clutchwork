@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Runs the clutch.testguard pytest plugin in pytester sessions, including under xdist, to check that it blocks unit-test process and socket I/O and enforces the unit-suite time budget
+# purpose: Runs the clutch.testguard pytest plugin in pytester sessions, including under xdist, to check that it blocks process and socket I/O in unit tests and enforces the unit-suite time budget.
 # relates: [clutch/testguard.py, test-gate.toml]
-# owner: engine
-# verified: d6229699
-# hash: da534b37c51e88e0df415c130e8b33e5370380bdead1eabd4604dac0c28975b9
+# owner: clutch/testguard.py
+# verified: d32c32ad
+# hash: 3c4922e4e27b14aaed3eba061eda593db6fe5c70a3ed85caa4fbf23c4252031c
 
 import os
 import socket
@@ -14,6 +14,8 @@ import subprocess
 from pathlib import Path
 
 import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 pytest_plugins = ["pytester"]
 ROOT = Path(__file__).resolve().parents[2]

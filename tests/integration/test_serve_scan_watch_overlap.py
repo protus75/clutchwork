@@ -5,8 +5,8 @@
 # purpose: Integration test that changed-ticket intake, draft/priority edits and stop requests proceed while two implementations hold admission slots, without an exclusive gate pending.
 # relates: [clutch/llm.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py, tests/integration/test_serve_parallel_admission.py]
 # owner: engine
-# verified: 4296219b
-# hash: 1de30d8c73ee182a4f46d7c61367756f221dccce7d544b4c0202354e17c8c714
+# verified: d32c32ad
+# hash: 1cda67f69423d8dc69c493e8c4110ed48340ca18124eed7563f034f187771301
 
 import asyncio
 import json
@@ -18,6 +18,8 @@ from clutch.llm import FakeLLM
 from tests.integration.serve_rig import admission_ticket, finish, request, start_admission, until
 from tests.integration.test_cli import root  # noqa: F401
 from tests.integration.test_serve_parallel_admission import parallel_rig
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

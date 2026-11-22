@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that the host-loop report schema is closed and that real supervised serve runs on disposable hosts produce green merge, regression and escape evidence.
+# purpose: Tests that the host-loop report schema is closed and that real supervised serve runs on disposable hosts produce green merge, regression and escape evidence
 # relates: [clutch/audit.py, clutch/seams.py, tests/harness/host_loop.py]
 # owner: engine
-# verified: 543c80a2
-# hash: 8a6595f4488841cf52efc7dbfba0dbd2054fdddf0c0852409955061de613df1d
+# verified: d32c32ad
+# hash: ca22b4b5599a5c85738b3537cc7c950ca97a5be136324b8ac284828cdc543b61
 
 import asyncio
 import copy
@@ -20,6 +20,8 @@ from clutch.audit import Violation
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.harness import host_loop
 from tests.harness.host_loop import HOST_LOOP_EXPECTED, HOST_LOOP_MEMBERS, HostLoopReport
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def loop_report():

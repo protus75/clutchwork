@@ -1,16 +1,20 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test brief requisition and plan prompts
+# purpose: Checks that the requisition_review Task section stays brief and that the plan-ticket drain and serve prompts point to `clutch ticket review`
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 595b9e84
-# hash: b57309ed91524eabc8b86fef854af63d3d064de87b7a41d4e9e3a38f3c75eb15
+# verified: d32c32ad
+# hash: ebc9192cc39576d81de7db8fdd94dcf0e2344210df5477a31585b0e8443b7621
 from pathlib import Path
+
+import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 

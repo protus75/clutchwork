@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap named stem
+# purpose: Tests that roadmap authoring renames a row whose stem is already used, gives it a fresh -rN stem and updates the rows that depend on it
 # relates: [clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/seams.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: 96e46658
-# hash: 0ccbc5c02370cd60a77c9a4761ecf5cc767a40359e621707d0b1233f0e6c768e
+# owner: clutch/roadmap.py
+# verified: d32c32ad
+# hash: eff159962d7132955de97221245bba0b51116621bc525f0f60bd0ba2e1b607b8
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -18,6 +18,8 @@ from clutch.git import CommitLock, Git
 from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import ENV
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def run(coro):

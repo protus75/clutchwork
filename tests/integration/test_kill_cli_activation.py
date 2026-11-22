@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Identity-bound kill through the bootstrap CLI's existing writer and shared inbox.
+# purpose: Checks that a kill sent through the CLI is bound to the drain's identity, reaches the production driver, is applied once, cleans up atomically, and can be reconciled after restart
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: engine
-# verified: 148a8874
-# hash: 3354013bac9f488a5628560d6920b0570ecbe009fac01633b2e5cad23a3e51c7
+# verified: d32c32ad
+# hash: 6117d5d62e4c1e5d8198351739d0d2493b254e6e21aa074240ce1eedec09c910
 
 import asyncio
 import json
@@ -35,6 +35,8 @@ from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_kill_executor_abort import Timer, Writer, turn
 from tests.integration.test_kill_signal_journal import decision
 from tests.integration.test_stages import agent, implement_reply, verdict
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def write(root, stem, text):

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Persistent extension lifecycle and index seam restrictions
+# purpose: Checks that the persistent vss/fts DuckDB extensions survive index rebuilds and that index.py uses only the injected seams with no SQLite
 # relates: [clutch/index.py, tests/unit/test_index_build.py]
 # owner: engine
-# verified: 1ce1e32c
-# hash: e7541a6d358faffd66bd0c615d44097369ef81cab2998b66fd68898463ca888d
+# verified: d32c32ad
+# hash: 45501cc1165bd7056079ca30fa29ef1ef11cf7bde6e3e558233f8af159104395
 
 import ast
 from pathlib import Path
@@ -16,6 +16,8 @@ import pytest
 
 from clutch.index import default_creator
 from tests.unit.test_index_build import Exec, rig, rows, run
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class RealCreator:

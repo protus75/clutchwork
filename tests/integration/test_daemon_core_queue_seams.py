@@ -1,17 +1,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test daemon core queue seams
+# purpose: Checks that the production daemon core writes queue.json through the checkout filesystem seam into the configured state directory
 # relates: [tests/dispatch_settle.py, tests/integration/test_daemon_composition.py]
 # owner: engine
-# verified: 148a8874
-# hash: e2559dca78154f1ff694b9747bc0757108bf44bb6c62578704ffe671ea091e33
+# verified: d32c32ad
+# hash: a406ca02cbf14ab4bba7611305c1378e50c7a4c17fdd7f2d04612f3278ddd523
 import json
 
 import pytest
 
 from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_daemon_composition import CoreRig
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

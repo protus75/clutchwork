@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Direct scaffold evidence, deliberately below production host-loop evidence.
+# purpose: Tests the disposable fixture host scaffold: config profile, closed scenario list, deterministic replay, regression and escape evidence, report bounds, CLI adapter roundtrip and dormancy
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/git.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: b7994b8c10bd193966211a3e8c9e843ed2d768c0a7cbcd47cbcb0c75c9355936
+# verified: d32c32ad
+# hash: 4db424c06342b3bb3d0faa3959fd3f3596f440e8bd136efab31dfed67607c375
 
 import asyncio
 import json
@@ -34,6 +34,8 @@ from clutch.stages import ImplementReply
 from clutch.tickets import stamp, validate_ticket
 from clutch.triage import TriageReply
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "hosts/fixture"

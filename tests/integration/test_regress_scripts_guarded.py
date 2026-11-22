@@ -2,17 +2,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Regression scripts are inert when imported and remain executable.
-# relates: []
+# purpose: Check that the tests/regress_*.py scripts do nothing on import and still run as executables
+# relates: [tests/regress_premise_park_keep.py]
 # owner: engine
-# verified: 96e46658
-# hash: 1d159f8ccdde0e352a791e200d9ddb8c3c82ce15f1d36d75a0c467684b1c69b0
+# verified: d32c32ad
+# hash: ab9902883af931b5c8b8c3ce13fc91dcf0ba08d24f61d88a246f00e47fc79c43
 
 import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
+
+pytestmark = pytest.mark.disk_io_skip
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = sorted((ROOT / "tests").glob("regress_*.py"))

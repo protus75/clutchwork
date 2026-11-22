@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Ownership, production core reachability, and bootstrap CLI preservation evidence.
+# purpose: Tests for DaemonAdmission: one dispatch at a time in a task it owns, unwinding on errors and cancellation, reachability from the CLI import closure, and that the bootstrap run and drain verbs never construct it
 # relates: [clutch/__main__.py, clutch/daemon.py, clutch/journal.py, clutch/tickets.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: 019d729e7d68693a8133b36086828832015eb2e127806a6e77b452d0633fea58
+# verified: d32c32ad
+# hash: 396968e71c0449ebab8031737a9ea546680a9c68d6d7a84fb9f687fec90431e8
 
 import ast
 import asyncio
@@ -19,6 +19,8 @@ from clutch.daemon import DaemonAdmission
 from clutch.journal import EventType
 from clutch.tickets import parse_ticket
 from tests.integration.test_cli import ENV, Clock, root, ticket, with_retro_driver, write
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture

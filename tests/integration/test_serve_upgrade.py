@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Drive the CLI's continuous graph with disposable repositories and injected time.
+# purpose: Tests serve self-upgrade re-exec after engine changes, waiting for continuations and selection, and suppression by kill, stop or a non-git engine.
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: 96e46658
-# hash: 9075c1d31f62e7dfa0a4f7b9541211eee4f1137dd561a6b1505bb7820cdbd1db
+# verified: d32c32ad
+# hash: 7cf93f39c1dc65ece81522dff5eb7469e2fd0281c549526320d794877c266c69
 
 import asyncio
 import json
@@ -39,6 +39,8 @@ from tests.integration.serve_rig import (
 )
 from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.asyncio

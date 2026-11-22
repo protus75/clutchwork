@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Real CLI lock routing and identity-bound durable requests.
+# purpose: Integration tests for control verbs through the real CLI: pause, resume, stop, retro, confirm and reject route by the writer lock and publish requests bound to the running engine's identity, with live verdict recovery and refusals
 # relates: [clutch/__main__.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/seams.py, clutch/status.py]
 # owner: engine
-# verified: 148a8874
-# hash: 675c96bcfec51de584bb87e76dc7cfde3f67b7a525ec8d72cc5503d00e7347bd
+# verified: d32c32ad
+# hash: 13b24c340fb435353f03254e925773fba9a33a421c2023902b58ad6e5100c08e
 
 import json
 from dataclasses import asdict
@@ -20,6 +20,8 @@ from clutch.journal import Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.mark.parametrize("dirless", ["draft", "Reject"])

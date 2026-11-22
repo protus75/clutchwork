@@ -4,8 +4,8 @@
 # purpose: Tests that covmap reduces a coverage report to a per-file test map, and that build publishes the map with the main SHA or refuses and keeps the old map when the command fails or its report is missing or invalid
 # relates: [clutch/covmap.py, clutch/runner.py]
 # owner: engine
-# verified: 10f08d74
-# hash: 710bea1e708cb64feba9dfa2b7c917578f5e5767ddda8b3103b9f6e1492de9fa
+# verified: d32c32ad
+# hash: 27cb8294c0222d7452240074f63b563fc20145a80e94756c0ccb6f3b1657fd02
 import json
 from types import SimpleNamespace
 
@@ -14,6 +14,8 @@ import pytest
 from clutch.covmap import build, reduce_map
 from clutch.runner import Refusal
 from tests.git_fake import GitFake
+
+pytestmark = pytest.mark.disk_io_skip
 
 REPORT = {
     "files": {

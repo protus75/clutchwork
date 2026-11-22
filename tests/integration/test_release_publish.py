@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Exercise publishing through the CLI and real git.
+# purpose: Test `release publish` through the CLI and real git: token passed only to the upload, the publish-disabled report, refusals, the release signal, and dev.py publish removal
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, dev.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: 96e46658
-# hash: ca42a60d3a1e8df0f11b2db2b7d3e36003f443b0dcab09bf50306d10b6c627a7
+# owner: clutch/__main__.py
+# verified: d32c32ad
+# hash: c92628fee54c20acc35120bea90e55dd932119ff426327003acc30f96e898054
 
 import asyncio
 from unittest.mock import Mock
@@ -21,6 +21,8 @@ from clutch.lockfile import CommitLock, Lockfile
 from clutch.seams import SubprocessExec
 from tests.integration.test_cli import CONFIG, ENV
 from tests.integration.test_release import clock, repository  # noqa: F401
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 @pytest.fixture

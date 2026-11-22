@@ -3,17 +3,19 @@ emits one -- runs end to end under the driver with the fake LLM."""
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Phase 0 exit read (CLUTCH_PLAN.md 19.P0): a toy echo stage -- consumes a stub artifact,
+# purpose: Phase 0 exit check: a toy echo stage runs end to end under the driver with the fake LLM and recovers from a gate failure.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/gates.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: a0d5e388
-# hash: 67e5a769d3ca5f40017cfd44edccfc2a363a84edd381141e3647627a6cfd54a9
+# verified: d32c32ad
+# hash: 339023360e8cce805a165ca0fbce52ad61098d094eab88defc9e0aab75bd5897
 
 import asyncio
 import json
 import textwrap
 from datetime import UTC, datetime
 from pathlib import Path
+
+import pytest
 
 from clutch.artifacts import Artifact, Finding
 from clutch.config import load_config
@@ -22,6 +24,8 @@ from clutch.gates import GateReport
 from clutch.journal import Journal
 from clutch.llm import FakeLLM
 from tests.spool_captures import read_capture
+
+pytestmark = pytest.mark.disk_io_skip
 
 CONFIG = textwrap.dedent(
     """\

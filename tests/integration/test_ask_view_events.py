@@ -1,16 +1,20 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test ask view events
+# purpose: Checks plan-ticket-drain and drain-loop prompts monitor with clutch view events and that docs and README list the verb
 # relates: [clutch/ask.py, clutch/config.py, tests/integration/test_config.py]
 # owner: engine
-# verified: 148a8874
-# hash: 2e14902f79bbaf31cce6a9b5b295e3d60b1bb2dadfb995c8a3ac93fef1f400d1
+# verified: d32c32ad
+# hash: 4578495d6cb97c61204f86cfb2520afb3564aafb557978e7db0eb8fb313ed6c8
 from pathlib import Path
+
+import pytest
 
 from clutch import ask
 from clutch.config import load_config
 from tests.integration.test_config import VALID
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_prompts_and_docs(tmp_path):

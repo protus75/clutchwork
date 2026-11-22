@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test storm
+# purpose: Tests StormLedger occurrence signals: event shape, identity validation, window boundaries, replay, journal roll and restart, and crash handling.
 # relates: [clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/journal.py, clutch/seams.py, clutch/storm.py]
-# owner: engine
-# verified: 96e46658
-# hash: f73900bac49a1e913058ff5dc2894f169db8b0951ffaf8ebe48dbed0d60b6dd6
+# owner: clutch/storm.py
+# verified: d32c32ad
+# hash: d144c234a7d0afc994796fe50df564c6b11bd90355ebc5cbaaa4ceb1cc569989
 from dataclasses import asdict
 from datetime import timedelta, timezone
 from unittest.mock import Mock
@@ -18,6 +18,8 @@ from clutch.journal import EventType, Journal, JournalCorruption
 from clutch.seams import LocalFileSystem
 from clutch.storm import STORM_WINDOW, StormLedger
 from tests.integration.test_journal import T0, FakeClock
+
+pytestmark = pytest.mark.disk_io_skip
 
 SIG = signature("failure_report", "one", "implement", "gate_failed", reason="failed path/one 123")
 OTHER = "b" * 64

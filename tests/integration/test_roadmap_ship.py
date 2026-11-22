@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap ship
+# purpose: Tests that roadmap ship passes the gate, bumps the version, commits and tags the release, then waits at the next failing gate and refuses a dirty tree
 # relates: [clutch/config.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: 96e46658
-# hash: f4ee22a77cc5b07fdec2ebbcac1d09cbb72cab175bae81c028acc794e3f7ae84
+# owner: clutch/roadmap.py
+# verified: d32c32ad
+# hash: bb52ff678c0cee23eb24dbf4ca1e87f60399804cd346707d6ba1ae88d01b2ed7
 import asyncio
 import shlex
 import sys
@@ -20,6 +20,8 @@ from clutch.journal import Journal
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import CONFIG, ENV
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_ship_releases_then_waits_for_the_next_gate(tmp_path, monkeypatch):

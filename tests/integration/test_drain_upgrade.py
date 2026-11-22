@@ -6,11 +6,11 @@ seam is faked to run the child drain in-process, so the whole chain shares one j
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The `drain` self-upgrade re-exec and the premise park (CLUTCH_PLAN.md sections 11.2, 18, 19.P1), temp checkout.
+# purpose: Tests the drain self-upgrade re-exec handoff order, how the parked set and deadline carry over, and the premise_failed park.
 # relates: [clutch/__main__.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 148a8874
-# hash: 21d993cfe8f5795304f5b13abbe062c418971bb24d871247e4543f53429e244c
+# verified: d32c32ad
+# hash: 30a44cc9f79dad868a206e8e17a9ea8856de0ffda9f52942ec0c3cb556074eee
 
 import asyncio
 import os
@@ -30,6 +30,8 @@ from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import SubprocessExec
 from tests.integration.test_cli import ENV, git_out, with_retro_driver
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, retry_draws, tos
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 class Script:

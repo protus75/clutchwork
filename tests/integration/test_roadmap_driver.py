@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap driver
+# purpose: Tests that the roadmap driver step authors rows and sends a digest notification, and that drain calls the driver at start and after each settle
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/roadmap.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
-# owner: engine
-# verified: 96e46658
-# hash: 7cbd490d165c1b1e9b9d126dc771b194cbd5125592032b2b0b9ed780f5291887
+# owner: clutch/roadmap.py
+# verified: d32c32ad
+# hash: 5134096758b0056a184eee811b1ffcb8637ee8a4ebdc3ec884d94d488c0818cd
 import asyncio
 import sys
 
@@ -21,6 +21,8 @@ from tests.integration.test_drain import Clock, Script, commit_ticket, confirmed
 from tests.integration.test_roadmap_author import setup_repo
 from tests.integration.test_triage import author_reply, requisition_reply
 from tests.unit.test_phase_events import RecordingLog
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_driver_step_authors_and_digests(tmp_path, monkeypatch):

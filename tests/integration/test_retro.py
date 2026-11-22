@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests and test timing/coverage aggregation
+# purpose: Tests the retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests and test timing and coverage aggregation
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
 # owner: clutch/retro.py
-# verified: 593bc2df
-# hash: b5d0c6d2df525eb5f6b6f122436df704d303de5267de080d8a788be837c83537
+# verified: d32c32ad
+# hash: 2f34eac477ce66a494cc46c77a1f255d0d4cfa2af13cef01ccb0fe8c4cf553af
 
 import asyncio
 import json
@@ -27,6 +27,8 @@ from clutch.retro import Retro, RetroArtifact, measurements, production_evidence
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root, pause_checkout
 from tests.spool_captures import list_captures
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def rig(tmp_path, script=()):

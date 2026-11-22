@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for the clutch CLI verbs: ticket new/order, view status, engine run/retro, host doctor/core/docs, config migrate and box suggest.
+# purpose: Integration tests for the clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: 6f94fa01
-# hash: b4e3144ddc8066bac64fd7ba211cccbe0245917bb4494870fd7094d53c80e5f5
+# verified: d32c32ad
+# hash: f4b3bf2f0c04a8e3386b3bbe39ddb15b625f81e01778745f5da270ba83475acf
 import asyncio
 import os
 import subprocess
@@ -24,6 +24,8 @@ from tests.config_fixture import build_config
 from tests.fakes import FakeClock as Clock
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import adopt_conduct
+
+pytestmark = pytest.mark.disk_io_skip
 
 ENV = {
     "PATH": "/usr/bin:/bin",

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test baseline
+# purpose: Tests review-baseline resolution: GO/NO_GO/ABSENT/REVOKED states, routing and spec-major drift, and fail-closed handling of invalid inputs and torn journal tails
 # relates: [clutch/baseline.py, clutch/config.py, clutch/journal.py, clutch/policy.py, clutch/providers.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: 148a8874
-# hash: 5e92d1528d2907b5f8be91e355435702de30246233eb15aef2da98742b3acba7
+# verified: d32c32ad
+# hash: 9fd54013830251acc6cbfb9ddb2cb803ce8c04fc17d5bc3bf05f9d63b5ffa86b
 import json
 import re
 from copy import deepcopy
@@ -22,6 +22,8 @@ from clutch.providers import PLACEHOLDER
 from clutch.specs import load_spec
 from tests.integration.test_drain import Clock
 from tests.integration.test_policy import ROOT, config, signal
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_baseline_states_and_latest_signal(tmp_path):

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Kill decisions use the lock holder's inbox and journal fold, including live drain activation.
+# purpose: Checks that kill decisions are journaled before projection, with fail-closed shape and identity checks, once-only handling, crash recovery, and the latched kill state
 # relates: [clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_effects.py]
 # owner: engine
-# verified: 148a8874
-# hash: b29b48931197c39a552283e16e208a1f252a137ca91a216341997c44ff8cef53
+# verified: d32c32ad
+# hash: 5a337127053c8e3bdea461cbe1fdf181de5dd0a5be6db2e9a579b3ceb29c9178
 
 import asyncio
 import json
@@ -21,6 +21,8 @@ from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem
 from tests.integration.test_cli import root
 from tests.integration.test_effects import Crash, FakeClock
+
+pytestmark = pytest.mark.disk_io_skip
 
 ACCEPTED = "matching lifecycle and hold identities"
 STALE = "read the current lifecycle and submit a new request"

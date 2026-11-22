@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Heartbeat construction, custody, freshness, and calibrated behavioral dormancy.
+# purpose: Tests that the heartbeat is idle at construction, refreshes only when every core component is healthy, propagates failures, stays dormant in run and drain, and is active in serve
 # relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/heartbeat.py, clutch/journal.py, clutch/seams.py]
 # owner: engine
-# verified: 148a8874
-# hash: 83afdbef394aebdffdea520fcd3067bc95c8519a3ad1d318b9311bf57bc7a765
+# verified: d32c32ad
+# hash: e8dd35e717e8c6b4f4f85abfa322b52e8f1f27aa7bd556793bd631f8b35b3b8a
 
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
@@ -23,6 +23,8 @@ from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
+
+pytestmark = pytest.mark.disk_io_skip
 
 NAMES = ("workers", "merge_queue", "box_consumer", "watcher")
 AGE = timedelta(seconds=10)

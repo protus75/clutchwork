@@ -2,15 +2,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Watch uses the same capability lineage as the engine.
+# purpose: Checks that the watch capability display uses the same lineage as the engine: an escalated rung resets after a supervisor keep.
 # relates: [clutch/observe.py]
 # owner: clutch/observe.py
-# verified: 96e46658
-# hash: fe8f89442fdfc57bc27d5993cc63a74501766fc7f589787ac517ac1f38b521d0
+# verified: d32c32ad
+# hash: e805c5600ec562786b639c5e75aaf9cab46b9688f17bfa561dbb957cbabca2d3
 
 from types import SimpleNamespace
 
+import pytest
+
 from clutch import observe
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_watch_capability_restarts_at_a_supervisor_keep(tmp_path):

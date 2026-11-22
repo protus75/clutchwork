@@ -1,18 +1,22 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose:
+# purpose: Check that meta refresh works while another writer holds the lockfile, that meta fill refuses, and that refresh refuses when commit.lock is held
 # relates: [clutch/__main__.py, clutch/lockfile.py, clutch/meta.py, tests/integration/test_cli.py, tests/integration/test_git_tree_id.py]
-# owner: engine
-# verified: a5584821
-# hash: 082d74e346ae59357a4075fb0168eb0c42a2880d13b7def36c8a1f69232940ed
+# owner: clutch/meta.py
+# verified: d32c32ad
+# hash: 06e9eae58f991589950ec1a881ab1dbdad6c294502666d85c1346d4fca592f89
 import asyncio
+
+import pytest
 
 from clutch.__main__ import main
 from clutch.lockfile import Lockfile
 from clutch.meta import digest, parse
 from tests.integration.test_cli import CONFIG, ENV, Clock
 from tests.integration.test_git_tree_id import setup_repo
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_refresh_and_fill_with_writer_held(tmp_path, capsys):

@@ -2,14 +2,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Recorded roadmap verdict travels through Author with its evidence.
+# purpose: Tests that a recorded roadmap_row triage verdict goes through Author with its plan and evidence and produces a confirmed ticket under NO_GO
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/policy.py, clutch/seams.py, clutch/specs/__init__.py]
-# owner: engine
-# verified: 96e46658
-# hash: 8b0435e021b7411d5e511c55bbefab9d95c70df3fc0c5fb954b31a2edfc87966
+# owner: clutch/author.py
+# verified: d32c32ad
+# hash: d6c17ba634be703bd533b3648e3bfa7e6b4c446fb352621fe53e0bc2baa2ca8b
 
 import json
 from pathlib import Path
+
+import pytest
 
 from clutch.__main__ import main
 from clutch.box import Box, Resolution, RoadmapRow, Verdict
@@ -23,6 +25,8 @@ from tests.integration.test_author import _routes, block, requisition_reply
 from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, make_root
 from tests.integration.test_triage import author_reply
+
+pytestmark = pytest.mark.disk_io_skip
 
 
 def test_triage_authors_roadmap_row_confirmed_under_no_go(tmp_path, monkeypatch):
