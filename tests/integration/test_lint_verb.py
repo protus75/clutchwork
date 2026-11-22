@@ -3,9 +3,9 @@
 # kind: test
 # purpose: Tests `clutch ticket lint`: findings and exit codes, claims on new stems, bug evidence, skipping settled tickets, budget limits, and that it stays read-only without taking the lock.
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: 01693fd71852d0d22e19ef0e41b91e351506c4794cdc2f18795cf44ad759b5e2
+# owner: clutch/tickets.py
+# verified: ff6ac88d
+# hash: 7632c720f70bd240d232a7f9530d987f0adc37ac1bfb4c61bb23a51a28002ac1
 import asyncio
 import multiprocessing
 from pathlib import Path
@@ -18,7 +18,7 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.seams import SubprocessExec
 from tests.cli_helpers import ENV, Clock, journal, root, ticket, write
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

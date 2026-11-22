@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that reconcile reaps orphaned runs to abandoned with a recovery alert before removing worktrees, is idempotent, and preserves history
+# purpose: Checks that reconcile marks orphaned runs abandoned and journals a recovery alert before removing worktrees, that it is idempotent, and that it preserves terminal history.
 # relates: [clutch/audit.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/seams.py, clutch/stages.py]
 # owner: clutch/reconcile.py
-# verified: ae1a5a3b
-# hash: 0a0aedd9c7b18a888a7b9e3c456495f511a8c4739a354c5de7576d2c4b0e201a
+# verified: ff6ac88d
+# hash: 3f457463cfe0d6f6017b1a3d9d71e932a8158bd67b51eb58bfe76b8bef63dc93
 import asyncio
 from dataclasses import asdict
 from pathlib import Path
@@ -23,7 +23,7 @@ from clutch.reconcile import RECOVERY_ALERT, orphans, reconcile
 from clutch.seams import SubprocessExec
 from clutch.status import last_states
 from tests.cli_helpers import ENV, Clock, Stages, cli, git_out, journal, root, ticket, write  # noqa: F401
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

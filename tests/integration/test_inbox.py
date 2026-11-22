@@ -5,8 +5,8 @@
 # purpose: Tests intake of host reports: closed schema validation, evidence size limits, evidence custody before enqueue, a single ingest that survives crashes, and a replayed report reaching a regression Check
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py]
 # owner: clutch/inbox.py
-# verified: 79efeedb
-# hash: 0a043c181ae2a750034dbb995abd42efbb7fbeb6f79999e0a04e8c0a611c56ee
+# verified: ff6ac88d
+# hash: aa4a14bc2ced269b6d3ea3a323debfcee59996b2f704ad4aa365e24ed6fa5e22
 
 import asyncio
 import json
@@ -22,26 +22,9 @@ from clutch.inbox import CAPS, ReportError, bounded, ingest, validate_report
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem
 from tests.drain_helpers import Clock
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import arrival, commit_lock, raw_report
 
 pytestmark = pytest.mark.disk_io_skip
-
-
-def raw_report(origin="player", **updates):
-    data = dict(schema_version=1, origin=origin, summary="Observed scoring defect", app_commit="host-supplied-evidence", app_version="1.2.3")
-    if origin == "self_diagnosed":
-        data.update(game_slug="score2", anomaly_code="illegal42", location="app/view.py:123")
-    return {**data, **updates}
-
-
-def arrival(root, **updates):
-    root.mkdir(parents=True, exist_ok=True)
-    (root / "inbox").mkdir(exist_ok=True)
-    (root / "replay.json").write_text(json.dumps({"initial_state": {"score": 0}, "actions": []}))
-    (root / "log.txt").write_text("structured log\n")
-    path = root / "inbox/a.json"
-    path.write_text(json.dumps(raw_report(evidence={"replay": "replay.json", "log": "log.txt"}, **updates)))
-    return path
 
 
 def test_report_schema_is_closed():

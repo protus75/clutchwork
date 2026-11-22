@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only view verbs.
+# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only view verbs
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
 # owner: clutch/observe.py
-# verified: 778fd8bc
-# hash: c2a36f39bd9efb7104fe5355c7366377703dc5d16ae69d5cc91771ad4b31ecac
+# verified: ff6ac88d
+# hash: 682b750ace4aef87e6064af80741c35ee9bf8f6bdbc1efda4da78d5ddc1b4b07
 import json
 import os
 import subprocess
@@ -795,7 +795,7 @@ def test_snapshot_review_locks_for_changed_evidence(tmp_path):
     from clutch.seams import SubprocessExec
     from tests.cli_helpers import ENV
     from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
-    from tests.integration.test_git import commit_lock
+    from tests.misc_helpers import commit_lock
 
     root = make_root(tmp_path)
     commit_ticket(root, "candidate", confirmed())
@@ -844,7 +844,7 @@ def test_draft_assessment_menu_tracks_snapshot_draft(tmp_path):
     from clutch.seams import SubprocessExec
     from tests.cli_helpers import ENV, git_out
     from tests.drain_helpers import confirmed, make_root
-    from tests.integration.test_git import commit_lock
+    from tests.misc_helpers import commit_lock
 
     root = make_root(tmp_path)
     for stem, state in (("committed-draft", "draft"), ("confirmed-ticket", "confirmed"), ("untracked-draft", "draft")):

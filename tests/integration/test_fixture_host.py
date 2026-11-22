@@ -5,8 +5,8 @@
 # purpose: Tests the disposable fixture host scaffold: config profile, closed scenario list, deterministic replay, regression and escape evidence, report bounds, CLI adapter roundtrip and dormancy
 # relates: [clutch/artifacts.py, clutch/author.py, clutch/config.py, clutch/git.py, clutch/hostfiles.py, clutch/llm.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 4db424c06342b3bb3d0faa3959fd3f3596f440e8bd136efab31dfed67607c375
+# verified: ff6ac88d
+# hash: 59948ddfc1752fbf17d15eb2b2a09b87ae8223ff5956000178fe67193a57bb00
 
 import asyncio
 import json
@@ -33,7 +33,7 @@ from clutch.specs import (
 from clutch.stages import ImplementReply
 from clutch.tickets import stamp, validate_ticket
 from clutch.triage import TriageReply
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

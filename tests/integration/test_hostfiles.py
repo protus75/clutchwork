@@ -5,8 +5,8 @@
 # purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker-corruption refusal, drift classification, project-rule refusals, and the production core_drift gate
 # relates: [clutch/__main__.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
 # owner: clutch/hostfiles.py
-# verified: 7abfadd2
-# hash: 08445dcfaaf8c86a9ebdb18157851944bfeda900232ae207e09b077ca980423e
+# verified: ff6ac88d
+# hash: f53c836b8b3e9b9d03a4be3863b5a216691945be5592fc97cc314c8cae72b5f4
 
 import asyncio
 import base64
@@ -20,7 +20,7 @@ from clutch import hostfiles
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import root
 from tests.config_helpers import repo
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.stages_helpers import agent, verdict
 
 pytestmark = pytest.mark.disk_io_skip

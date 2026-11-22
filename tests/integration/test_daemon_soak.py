@@ -9,8 +9,8 @@ never the phase exit artifact.
 # purpose: Checks that the daemon-soak report schema is closed: exact members, entry fields and producing-run identity, with green required to match observed versus expected and an empty auditor list (19.P3.daemon-soak)
 # relates: [clutch/artifacts.py, clutch/git.py, clutch/seams.py, tests/harness/daemon_soak.py, tests/integration/test_cli.py, tests/integration/test_git.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 66ae9c5e7b9a9fba3d3b76e31482f797b03475eb6f3b6f234215094a0d05621b
+# verified: ff6ac88d
+# hash: 4b5982f464c888b051a626304300096f4ea03a029f13050fa6e51585dc2e912d
 
 import json
 from copy import deepcopy
@@ -23,7 +23,7 @@ from clutch.git import Git
 from clutch.seams import SubprocessExec
 from tests.cli_helpers import ENV, root
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS, DAEMON_SOAK_SPEC_VERSION, DaemonSoakEntry, DaemonSoakReport
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

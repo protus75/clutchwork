@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: clutch/daemon.py
-# verified: 7abfadd2
-# hash: ec9e67eca4d6fb127568b386cc55d739f6c82ccbd6fb6d13e4e83d4467381e05
+# verified: ff6ac88d
+# hash: 39c0a8bff246d0830fbe133892035002cc8b1194bbe5ed2c286a638458d96b53
 
 import ast
 import asyncio
@@ -38,9 +38,9 @@ from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring, assert_
 from tests.daemon_helpers import ctx as admission_context
 from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_daemon_config import assert_detached, python_values
-from tests.integration.test_git import commit_lock
 from tests.loop_helpers import Time, text, turn
 from tests.loop_helpers import scheduler_import_closure as import_closure
+from tests.misc_helpers import commit_lock
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip
@@ -1852,9 +1852,9 @@ async def test_production_boxes_receive_rereport_callback(admission_context, tmp
     from clutch.retro import Retro
     from clutch.triage import triage_pass
     from tests.drain_helpers import NoChild
-    from tests.integration.test_retro_box import PROPOSAL
     from tests.integration.test_storm_notification_activation import SITES, exercise_site
     from tests.loop_helpers import graph
+    from tests.misc_helpers import PROPOSAL
 
     source = admission_context
     checkout, writer = production_writer(source, [])

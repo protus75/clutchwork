@@ -4,15 +4,15 @@
 # purpose: Tests that snapshot rows show a Shared fence detail only for open tickets that share fenced paths, never for closed or rejected ones
 # relates: [clutch/journal.py, clutch/observe.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_retro.py]
 # owner: engine
-# verified: 7ad3c1c2
-# hash: 596be9c6c77bd74508bdd7d902e71f9642893ddedd484b5ba2352af8844046fc
+# verified: ff6ac88d
+# hash: f5c8f8d2bfa299eae38556586c42f0dd14a6047cc286a4606ea543b00bc86dc4
 import pytest
 
 from clutch import observe
 from clutch.journal import EventType
 from tests.cli_helpers import ENV
 from tests.drain_helpers import commit_ticket, confirmed
-from tests.integration.test_retro import rig
+from tests.misc_helpers import rig
 
 pytestmark = pytest.mark.disk_io_skip
 

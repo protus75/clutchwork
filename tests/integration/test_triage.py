@@ -5,8 +5,8 @@
 # purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/triage.py
-# verified: 79efeedb
-# hash: ab3860f5b8b1f0f00f72d4a85e736c6586f5a4d2a654f13a559b844508024ee3
+# verified: ff6ac88d
+# hash: 6c681e7c3d7347248e06d9aeaaabbbe642bbcad261590d7e975e108435c35bc5
 
 import asyncio
 import json
@@ -192,7 +192,7 @@ def test_invalid_replies_leave_pending_without_commit(tmp_path, monkeypatch):
 
 def test_report_ingested_before_pending_scan(tmp_path, monkeypatch):
     from clutch import inbox
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     root, box = root_with_box(tmp_path)
     source = arrival(root)
@@ -225,7 +225,7 @@ def test_report_ingested_before_pending_scan(tmp_path, monkeypatch):
 
 
 def test_report_author_failure_is_decision(tmp_path, monkeypatch):
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     root, box = root_with_box(tmp_path)
     arrival(root)
@@ -241,7 +241,7 @@ def test_report_author_failure_is_decision(tmp_path, monkeypatch):
     assert "tickets/broken" not in git_out(root, "status", "--porcelain")
     assert run(root, monkeypatch, FakeLLM([])) == 0
     # A later arrival has its own allowance and can reuse the rejected stem.
-    from tests.integration.test_author import bug_reply
+    from tests.misc_helpers import bug_reply
 
     source = root / "inbox/a.json"
     source.rename(source.with_name("b.json"))

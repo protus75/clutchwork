@@ -4,8 +4,8 @@
 # purpose: Tests graphics Check candidate selection: visual review picks and commits a winner, a tie or a missing baseline parks the ticket as undecided, effect keys name the winner, and forbidden paths are refused
 # relates: [clutch/caps.py, clutch/config.py, clutch/drain.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 99166893c7efebeef8d0b6aacab545e6adfbe39709f0ac8c7ea422797c7bd34d
+# verified: ff6ac88d
+# hash: 60ff8f8e40d04650a2ca2d8019789f3cf68a6352776d83fa78b21774190f28b7
 import asyncio
 import json
 from dataclasses import replace
@@ -25,7 +25,7 @@ from clutch.policy import visual_identity
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import PackingSlip, StageContext
 from clutch.tickets import validate_ticket
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.spool_captures import list_captures
 from tests.stages_helpers import ENV, SPECS, STEM, author, git, repo  # noqa: F401
 

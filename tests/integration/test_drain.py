@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, the retry budget, mid-drain re-scan and intake, ceilings, pause and stop control, retros, rework, and Reject-queue holds
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 7050142a
-# hash: 0952a32c5f6e0948b6e7f2bd2f7b5a7aa73df18db4b36e3df5e8b52f5546c937
+# verified: ff6ac88d
+# hash: 4d38d8939590e249fdc7b022a6613665d90b2b1a8df1816f462c36dc61f7caaf
 
 import asyncio
 import json
@@ -32,8 +32,8 @@ from clutch.tickets import intake
 from tests.cli_helpers import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
 from tests.config_helpers import repo as admission_repo
 from tests.drain_helpers import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root, mechanical_first, offer_events, pause_checkout, retry_draws, root, tos
-from tests.integration.test_git import commit_lock
 from tests.loop_helpers import repo as rework_repo
+from tests.misc_helpers import commit_lock
 from tests.stages_helpers import adopt_conduct
 
 pytestmark = pytest.mark.disk_io_skip
@@ -262,7 +262,7 @@ def test_a_ticket_committed_during_the_invocation_runs_in_the_same_invocation(ro
 
 
 def test_drain_ingests_reports_without_triaging(root):
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     config = root / "config.yaml"
     config.write_text(config.read_text() + "report_inbox: inbox\n")

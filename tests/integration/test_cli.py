@@ -4,8 +4,8 @@
 # purpose: Integration tests for clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: clutch/__main__.py
-# verified: 79efeedb
-# hash: a4415dc50c4b01384824723a91c9fe7ab14c9d1577347ee5eb26f98a19db821f
+# verified: ff6ac88d
+# hash: 0b50076f561b1c4b6023c94b9f09776293ac9a840dae646713527c3e149650a5
 import asyncio
 import os
 import subprocess
@@ -22,7 +22,7 @@ from clutch.runner import Refusal
 from clutch.seams import SubprocessExec
 from tests.cli_helpers import CONFIG, ENV, PLAN, TICKET, Clock, Stages, cli, core_config, git_fake, git_out, journal, root, ticket, with_retro_driver, write
 from tests.config_fixture import build_config
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

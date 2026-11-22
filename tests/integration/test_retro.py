@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for the retro window projection, trigger thresholds, production evidence, receipt commits and replay, failure suppression, tombstone digests, and test timing and coverage aggregation
+# purpose: Integration tests for the retro window projection, trigger thresholds, production evidence, receipt commits and replay, failure suppression, tombstone digests, and test timing and coverage aggregation.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
 # owner: clutch/retro.py
-# verified: 2182d51e
-# hash: a5414fefcd6fcc0de1d1777911f8e2dedd5e7177d78dd6f249299b382280ac1a
+# verified: ff6ac88d
+# hash: 18dcdc71609781c253fd8994d547fa3d9380753914760fbb1fedf709f79d6d31
 
 import asyncio
 import json
@@ -26,29 +26,10 @@ from clutch.llm import FakeLLM, LLMResult
 from clutch.retro import Retro, RetroArtifact, due_trigger, measurements, production_evidence, project_window, render_report, select_trigger
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
 from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root, pause_checkout
+from tests.misc_helpers import completed, merged, rig
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip
-
-
-def rig(tmp_path, script=()):
-    from clutch.__main__ import build_control
-
-    c = pause_checkout(make_root(tmp_path))
-    c = replace(c, journal=Journal(c.config.state_dir, c.clock), control=None)
-    c = replace(c, control=build_control(c))
-    llm = FakeLLM(list(script))
-    writer = runner.bind(c, llm)
-    writer.stages.driver.retry_cap = 0
-    return c, writer, Retro(c, writer), llm
-
-
-def completed(journal, sequence):
-    return journal.append(EventType.EFFECT_COMPLETION, {"result": {"commit": "receipt"}}, key=f"retro/{sequence}")
-
-
-def merged(journal, stem="one", commit=None):
-    return journal.append(EventType.STATE_TRANSITION, {"to": "merged", "commit": commit}, ticket=stem)
 
 
 def test_window_uses_completed_report_boundary(tmp_path):

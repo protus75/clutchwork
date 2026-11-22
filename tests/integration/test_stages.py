@@ -5,8 +5,8 @@
 # purpose: Tests Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: 38957300
-# hash: 2a47e1c66ebc7445a6b27d0d4852c9216eaa99f58128dfe5ceda1749fbd29a93
+# verified: ff6ac88d
+# hash: c9456c9ee2f517c5f68025091a8be5e2d482fa99c60492e0bff3e0370ea14c8a
 
 import asyncio
 import json
@@ -44,7 +44,7 @@ from clutch.stages import (
 )
 from clutch.tickets import TicketInvalid, validate_ticket
 from tests.config_fixture import build_config
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.spool_captures import list_captures, read_capture
 from tests.stages_helpers import (
     CONFIG,

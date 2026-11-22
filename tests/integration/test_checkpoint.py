@@ -5,8 +5,8 @@
 # purpose: Integration tests for checkpoint push: merge and settled triggers, journaled effect intent and completion, failed-push refire with redacted Box reports and storm occurrences, crash replay, and dormant versus serve-active wiring
 # relates: [clutch/__main__.py, clutch/checkpoint.py, clutch/daemon.py, clutch/effects.py, clutch/enginelog.py, clutch/git.py, clutch/journal.py]
 # owner: clutch/checkpoint.py
-# verified: 11188936
-# hash: a53831494a934df11c2cb7a16ae113505b4eab0feee4dc41d64afe8152979cea
+# verified: ff6ac88d
+# hash: 663d76b4da23da53ccf648df7dd98e13b942fa98e51b5b675755cb92d7f54b18
 
 import asyncio
 import hashlib
@@ -28,8 +28,8 @@ from clutch.seams import ExecutableNotFound, LocalFileSystem
 from clutch.storm import StormLedger, arrival_id
 from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.daemon_helpers import CoreRig, assert_core_wiring
-from tests.integration.test_git import commit_lock
 from tests.loop_helpers import repository
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

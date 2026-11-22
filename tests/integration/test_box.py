@@ -4,8 +4,8 @@
 # purpose: Tests the Suggestion Box: the signature recipe, enqueue dedup and validation, durability, the decision registry format, reopening a tombstone after re-reports and its crash replay, and sequence claims
 # relates: [clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, tests/integration/test_drain.py]
 # owner: clutch/box.py
-# verified: 79efeedb
-# hash: a8ce41e1d1235b93525b599a8e2c4bacbad3b8bc5c2469161562a1dd343b8433
+# verified: ff6ac88d
+# hash: 841e1694dfed46916a2314556a6e2b81d2afc209ab68c3133007533ee39ff632
 import asyncio
 import hashlib
 import json
@@ -30,7 +30,7 @@ from clutch.box import (
 )
 from clutch.git import Git
 from clutch.seams import LocalFileSystem, SubprocessExec
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -55,7 +55,7 @@ def test_signature_recipe():
 
 def test_host_report_signature(tmp_path):
     from clutch.inbox import validate_report
-    from tests.integration.test_inbox import raw_report
+    from tests.misc_helpers import raw_report
 
     box = Box(tmp_path / "box", LocalFileSystem())
     raw = raw_report("self_diagnosed")
@@ -336,7 +336,7 @@ def test_late_rereport_replay_preserves_later_arrival_count(tmp_path, monkeypatc
 
 
 def test_tombstone_visibility_uses_message_class(tmp_path, monkeypatch):
-    from tests.integration.test_retro_box import PROPOSAL
+    from tests.misc_helpers import PROPOSAL
 
     box = Box(tmp_path / "box", LocalFileSystem())
     expected = []

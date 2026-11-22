@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that the snapshot menu's per-row action states match what the real ticket and box verbs admit, across ticket states and with or without the drain lock held, and pins verb refusal and lint summary output
+# purpose: Checks that each row's snapshot menu action states match what the real ticket and box verbs admit, across ticket states and with or without the drain lock held, and pins verb refusal and lint summary output.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/reconcile.py]
 # owner: clutch/observe.py
-# verified: 19880b1d
-# hash: dcaf8b0a68b875f8bc1d37570e988ec4a78e43914f548234cec043089ee0420d
+# verified: ff6ac88d
+# hash: 35cae312c409aaeca102f345db86957730c966df546187dab0281f0befb487ad
 
 import asyncio
 from types import SimpleNamespace as NS
@@ -24,7 +24,7 @@ from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.cli_helpers import ENV
 from tests.drain_helpers import Clock, confirmed, make_root
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

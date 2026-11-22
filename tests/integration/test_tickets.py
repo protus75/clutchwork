@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests ticket validation grammar, intake commits and source stamping, bug evidence rules, per-kind templates and the `ticket new` skeleton and evidence copying.
+# purpose: Tests ticket validation grammar, intake commits and source stamping, bug evidence rules, per-kind templates, and the `ticket new` skeleton and evidence copying.
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/runner.py, clutch/seams.py, clutch/stages.py, clutch/tickets.py]
 # owner: clutch/tickets.py
-# verified: d32c32ad
-# hash: 852adc4ce966a5559f0737b54ce6e5e1f217ca9a0ce732fca645b4ea77a69b42
+# verified: ff6ac88d
+# hash: 784bcfb36df343abeb7fbced0e62ecee82c7ec5d85a0d5306a90b1e999c591ae
 import asyncio
 import re
 import subprocess
@@ -26,7 +26,7 @@ from clutch.tickets import (
     validate_ticket,
 )
 from tests.fakes import FakeClock as Clock
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -5,8 +5,8 @@
 # purpose: Runs the production serve soak harness and checks 24-hour member evidence, worker recovery, conflict rungs, refusal of semantic integration red, false-green refusal, owned lifetime cleanup and reproducible reports
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 1664bdc57437b3d8af6214944811953dd0a87694984cffbf22937bd97ef14937
+# verified: ff6ac88d
+# hash: b7dba48f669c2db71d72996f2e1754a1a88e7af4d8b4f60f33e04b23134cc2ab
 
 import asyncio
 import json
@@ -30,7 +30,7 @@ from clutch.stages import read_review
 from clutch.tickets import parse_ticket, ticket_path
 from tests.harness import daemon_soak as soak
 from tests.harness.daemon_soak import DAEMON_SOAK_MEMBERS
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.spool_captures import read_capture, write_capture
 
 pytestmark = pytest.mark.disk_io_skip

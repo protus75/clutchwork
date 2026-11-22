@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
+# purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: clutch/merge.py
-# verified: 7abfadd2
-# hash: 03ff82f8310b0bee7d17c393f93d8876338aa377d9002e2b398361557bfbf9d3
+# verified: ff6ac88d
+# hash: 34ad7424c8a2cdc410e865dcb298a9ceffd868dbcea0af864cfa6212af240a9f
 
 import asyncio
 import dataclasses
@@ -29,7 +29,7 @@ from clutch.stages import StageContext, run_stages
 from clutch.tickets import validate_ticket
 from tests.cli_helpers import root
 from tests.config_helpers import bootstrap_pipeline_keeps_inline_admission, context, repo
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.spool_captures import list_captures
 from tests.stages_helpers import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
 

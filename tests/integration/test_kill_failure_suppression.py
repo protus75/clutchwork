@@ -5,8 +5,8 @@
 # purpose: Tests that worker failures are suppressed only after a matching accepted kill, that other failures are kept, and that suppression is dormant in run and drain but active in serve.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
 # owner: engine
-# verified: 92889fdb
-# hash: 0ec2cd5fd51149b3f603ca27253efe8d59c3df91ce7515bd01975bf5f48d0a61
+# verified: ff6ac88d
+# hash: bccb57823ab9df2862dd9fed915e8d50b70e7c7c223b1288657847b7d2f4fd7e
 
 import asyncio
 import json
@@ -25,8 +25,8 @@ from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring, ready
 from tests.daemon_helpers import ctx as admission_context
 from tests.integration.test_driver import ECHO, Stub, build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn
-from tests.integration.test_kill_signal_journal import Rig, decision
 from tests.integration.test_kill_worker_stop import Worker, accepted, boundary, release_all
+from tests.misc_helpers import Rig, decision
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

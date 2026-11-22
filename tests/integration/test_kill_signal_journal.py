@@ -5,8 +5,8 @@
 # purpose: Tests that kill decisions are journaled before the projection changes, with fail-closed shape and identity checks, once-only handling, crash recovery, and a latched kill state.
 # relates: [clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_effects.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: c8784375f69191bb6a10940fe888aec4e5629f65278bacf0ab723fc28c50b4e6
+# verified: ff6ac88d
+# hash: 27dab7544463e1f5f421f0e35a88a373303b80199b22744e28ea98578b1567ce
 
 import asyncio
 import json
@@ -21,6 +21,7 @@ from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import root
 from tests.integration.test_effects import Crash, FakeClock
+from tests.misc_helpers import Rig, decision
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -32,49 +33,6 @@ SHAPE = (
     "match request_id to the filename; pause/kill/retro/stop require null hold_id; "
     "for resume read the current hold and submit its exact nonempty identity"
 )
-
-
-def decision(id, *, life="life-1", verb="kill", hold=None, result="accepted", reason=ACCEPTED):
-    return {"kind": control.CONTROL_DECISION, "request_id": id, "lifecycle_id": life, "verb": verb, "hold_id": hold, "decision": result, "reason": reason}
-
-
-class Rig:
-    def __init__(self, state, *, life="life-1"):
-        self.state, self.life = state, life
-        self.clock, self.fs = FakeClock(), LocalFileSystem()
-        self.journal = Journal(state, self.clock)
-        self.projection = ControlProjection(life)
-        self.holds, self.applications, self.changes = set(), [], []
-        self.inbox = self.reconstruct()
-
-    def apply(self, projection):
-        assert any(e.body.get("decision") == "accepted" and e.body.get("lifecycle_id") == self.life for e in self.journal.read())
-        self.applications.append(projection)
-        if projection != self.projection:
-            self.changes.append(projection)
-        self.projection = projection
-        self.holds.difference_update(projection.released_hold_ids)
-
-    def reconstruct(self, apply=None):
-        return daemon.control_inbox(
-            journal=self.journal,
-            lifecycle_id=self.life,
-            holds=lambda: self.holds,
-            apply=apply or self.apply,
-            files=lambda: reversed(list((self.state / "control/inbox").glob("*"))),
-            read=Path.read_bytes,
-            known=lambda _: False,
-        )
-
-    def publish(self, id, verb="kill", hold=None, life=None):
-        publish_request(self.state, ControlRequest(id, life or self.life, verb, hold), self.fs)
-        return self.state / "control/inbox" / (id + ".json")
-
-    def decisions(self):
-        events = self.journal.read()
-        assert all(e.type == EventType.SIGNAL and e.ticket is None and e.key is None for e in events)
-        assert all(set(e.body) == set(decision("id")) for e in events)
-        return [e.body for e in events]
 
 
 def test_kill_decision_precedes_projection(tmp_path, monkeypatch):

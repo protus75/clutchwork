@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher
+# purpose: Tests the serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher.
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
 # owner: clutch/serve.py
-# verified: 7abfadd2
-# hash: 448c7db74082e778338cd8a09681d589ff360f7820264da3792501204cc67991
+# verified: ff6ac88d
+# hash: b405c2b2c3e32e940a74b5a8a07320be7d7e280b8a989de134cac85a107d47ae
 
 import asyncio
 import json
@@ -47,7 +47,7 @@ async def test_serve_waits_at_quiescence_and_discovers_work(root, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_empty_box_report_intake(root, monkeypatch):
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     rig = await graph(root, monkeypatch)
     config = root / "config.yaml"
@@ -69,7 +69,7 @@ async def test_empty_box_report_intake(root, monkeypatch):
 @pytest.mark.asyncio
 async def test_report_consumer_is_sequential(root, monkeypatch):
     from clutch.driver import Driver
-    from tests.integration.test_inbox import arrival, raw_report
+    from tests.misc_helpers import arrival, raw_report
 
     rig = await graph(root, monkeypatch)
     config = root / "config.yaml"

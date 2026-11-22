@@ -5,8 +5,8 @@
 # purpose: Tests that `view status` renders its sections, tombstones, Suggestion Box, scorecard, provenance and verdict decisions from journal and box reads that write nothing.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/effects.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: clutch/status.py
-# verified: 7ad3c1c2
-# hash: aba392a4860409ebff21a023110b248f89bce21cd9857a333f5b9d634d971219
+# verified: ff6ac88d
+# hash: 6b4815782c908c93871a47b81349bdfcf63a3e4fac41917a7dacae05e66ec1cc
 
 import asyncio
 import re
@@ -29,10 +29,8 @@ from clutch.specs import load_spec
 from clutch.status import project, reject_queue, render
 from tests.cli_helpers import ENV
 from tests.drain_helpers import Clock, make_root
-from tests.integration.test_git import commit_lock
-from tests.integration.test_retro import completed, merged, rig
-from tests.integration.test_retro_box import PROPOSAL
 from tests.integration.test_scorecard import invoice, review, rows
+from tests.misc_helpers import PROPOSAL, commit_lock, completed, merged, rig
 
 pytestmark = pytest.mark.disk_io_skip
 

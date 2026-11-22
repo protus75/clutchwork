@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests surface scorecard catches, escapes, rates, prune candidates and totals over real check invoices and the production retro composition
+# purpose: Tests surface scorecard catches, escapes, rates, prune candidates and totals over real check invoices and the production retro composition.
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/retro.py, clutch/scorecard.py, clutch/stages.py]
 # owner: clutch/scorecard.py
-# verified: 0a4d026b
-# hash: af940b752b604d050377bdfb7486f3cdfcf5fec1457ea7566831827c91c8b873
+# verified: ff6ac88d
+# hash: 4fefa37b968c55e245cc66f1dfb395134e3502c15a1c74cac1075b0c880ab15b
 
 import asyncio
 import json
@@ -24,7 +24,7 @@ from clutch.scorecard import project_scorecard
 from clutch.stages import PackingSlip, check, implement
 from clutch.tickets import validate_ticket
 from tests.drain_helpers import confirmed
-from tests.integration.test_retro import completed, merged, rig
+from tests.misc_helpers import completed, merged, rig
 from tests.stages_helpers import implement_reply
 
 pytestmark = pytest.mark.disk_io_skip

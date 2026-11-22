@@ -5,8 +5,8 @@
 # purpose: Tests WorkerStop: the executor unwinds before workers are cancelled, stop requires a matching kill, every worker is observed, and the stop is dormant in run and drain but active in serve.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: 92889fdb
-# hash: 0e88dbecb60bde1c8ee9caceebb0b8a315bad2b04ed2e8eebc406b3ac6574fc1
+# verified: ff6ac88d
+# hash: ab949b185236d2f7ff70455fbe6b3914ccdde07dd3ce9a85123c2d335a47b14f
 
 import asyncio
 from functools import partial
@@ -21,7 +21,7 @@ from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.daemon_helpers import CoreRig, LiveDrain, assert_core_wiring
 from tests.integration.test_driver import build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn
-from tests.integration.test_kill_signal_journal import Rig, decision
+from tests.misc_helpers import Rig, decision
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

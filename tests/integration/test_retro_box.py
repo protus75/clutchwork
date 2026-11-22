@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that retro proposals become Box messages, reach a ticket through triage and Author, get tracked through a merged prompt spec change, and handle replay and recurrence
+# purpose: Tests that retro proposals become Box messages, reach a ticket through triage and Author, are tracked through a merged prompt spec change, and handle replay and recurrence.
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
 # owner: clutch/retro.py
-# verified: 79efeedb
-# hash: 4dfbfcc81c2f5ee064aa931c3e35a7e5518ba72c2b407171f07ffc141f9b5102
+# verified: ff6ac88d
+# hash: b16fdc4ffbcf5d7447634d0a1379f9b37288c85a26827c51d964ba289230b18d
 
 import asyncio
 import hashlib
@@ -29,11 +29,10 @@ from clutch.storm import arrival_id
 from clutch.tickets import validate_ticket
 from tests.drain_helpers import pause_checkout
 from tests.loop_helpers import author_reply, reply, requisition_reply, root_with_box
+from tests.misc_helpers import PROPOSAL
 from tests.stages_helpers import implement_reply, verdict
 
 pytestmark = pytest.mark.disk_io_skip
-
-PROPOSAL = {"fixed_failure": "Observed café failure", "overcorrection_risk": "Rejecting useful inputs", "proposed_spec_paths": ["specs/review.md", "specs/author.md"]}
 
 
 @pytest.mark.asyncio

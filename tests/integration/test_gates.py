@@ -4,8 +4,8 @@
 # purpose: Tests the artifact and finding contracts, gate lint, the gate runner with severity merging, the core_drift gate and the bug-evidence gate on a fixture host
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 38957300
-# hash: 41cf0e9bac19e8a699bab253c4f3465c1a28da8e91b7707e28819695dcbd90b0
+# verified: ff6ac88d
+# hash: 9ef62a054a95acc4612d80ea436dc824f53361cfd1659f8f6252343d3a44e52f
 import textwrap
 from dataclasses import FrozenInstanceError
 from pathlib import Path
@@ -24,7 +24,7 @@ from clutch.gates import (
     merge_severity,
     run_gates,
 )
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.stages_helpers import repo
 
 pytestmark = pytest.mark.disk_io_skip

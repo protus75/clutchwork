@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for requisition review: the spec loads, approve and snag verdicts, invalid replies, mechanical snags for render headroom, provider errors and committed-ticket lint, and context rendering shared with Implement
+# purpose: Integration tests for requisition review: the spec loads, approve and snag verdicts, invalid replies, mechanical snags (render headroom, provider errors, committed-ticket lint), and context rendering shared with Implement.
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/seams.py]
 # owner: clutch/requisition.py
-# verified: d32c32ad
-# hash: 2e0bd1d24e55c4fd3ea838763a5db744611eed4d3e0fbd10d6538e124d530148
+# verified: ff6ac88d
+# hash: 7969b30d959f1deb8e4b792542855a99848ac9f8d252f57149479a83e6b3bfc0
 import asyncio
 import json
 from datetime import UTC, datetime
@@ -321,8 +321,8 @@ def test_requisition_stage_events_in_engine_log(tmp_path):
 def test_committed_ticket_lint_snags_without_provider(tmp_path):
     from clutch.git import Git
     from clutch.seams import SubprocessExec
-    from tests.integration.test_git import commit_lock
     from tests.integration.test_tickets import ENV
+    from tests.misc_helpers import commit_lock
 
     repo, driver, llm = setup(tmp_path, [])
     path = repo / "tickets/one-thing/ticket.md"

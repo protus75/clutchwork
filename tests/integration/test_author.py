@@ -5,8 +5,8 @@
 # purpose: Integration tests for the Author stage that triage drives: prompt contents, review and reprompt loops, custody of bug-report evidence, start state chosen from the review baseline, decline records and crash recovery
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: clutch/author.py
-# verified: 79efeedb
-# hash: 3dbc09f63f30fb1e423e4899afd0ca95afae200cbb03db786ee7085be5663679
+# verified: ff6ac88d
+# hash: 1ffad880439eda0b114818a0b5a2effd53b6c391fa778c507e0bfb4e9e089710
 
 import asyncio
 import json
@@ -23,9 +23,8 @@ from clutch.specs import load_spec
 from clutch.tickets import template, validate_ticket
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root, pause_checkout
-from tests.integration.test_git import commit_lock
 from tests.loop_helpers import author_reply, reply
-from tests.stage_replies import requisition_reply
+from tests.misc_helpers import _box, _events, _failure, _routes, _run, block, bug_reply, commit_lock, requisition_reply
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -45,10 +44,6 @@ def test_author_spec_states_ticket_rules():
     guide = (root / "clutch/docs/host-authoring.md").read_text()
     assert "asserts against the changed set or hardcodes the moved path" in guide
     assert "A mere textual mention, a path built under `tmp_path`" in guide
-
-
-def block(prompt, name):
-    return prompt.split(f"<<clutch-data:begin {name}>>\n", 1)[1].split(f"\n<<clutch-data:end {name}>>", 1)[0]
 
 
 def test_author_prompt_contains_guide_and_skeletons(tmp_path, monkeypatch):
@@ -102,11 +97,6 @@ def test_author_reprompt_carries_previous_reply(tmp_path, monkeypatch):
     assert "gate_bypass" in prompts[1].split("<<clutch-data:begin retry_findings>>", 1)[1].split("<<clutch-data:end retry_findings>>", 1)[0]
 
 
-def _run(root, monkeypatch, llm):
-    monkeypatch.setattr("clutch.__main__.ProviderLLM", lambda *args, **kwargs: llm)
-    return main(["box", "triage"], cwd=root, env=ENV, clock=Clock())
-
-
 def _track_specs(root, paths):
     for path in paths:
         fixture = root / "clutch" / path
@@ -117,57 +107,15 @@ def _track_specs(root, paths):
     git_out(root, "commit", "-m", "track fixture specs", "--only", "--", *names)
 
 
-def _routes(root):
-    config = root.joinpath("config.yaml")
-    config.write_text(
-        config.read_text().replace(
-            "  - {tier: medium, surface: implement, candidates: [{provider: claude}]}",
-            """  - {tier: medium, surface: implement, candidates: [{provider: claude}]}
-  - {tier: low, surface: author, candidates: [{provider: claude}]}
-  - {tier: medium, surface: author, candidates: [{provider: claude}]}
-  - {tier: high, surface: author, candidates: [{provider: claude}]}
-  - {tier: max, surface: author, candidates: [{provider: claude}]}
-  - {tier: low, surface: review, candidates: [{provider: claude}]}
-  - {tier: medium, surface: review, candidates: [{provider: claude}]}
-  - {tier: high, surface: review, candidates: [{provider: claude}]}
-  - {tier: max, surface: review, candidates: [{provider: claude}]}
-""",
-        )
-    )
-
-
-def _box(root):
-    return Box(root / ".clutch" / "state" / "box", LocalFileSystem())
-
-
-def _events(root):
-    return Journal(root / ".clutch" / "state", Clock()).read()
-
-
-def _failure(box):
-    return box.enqueue(message_class="failure_report", origin="test", summary="current broken behavior", stage="check", outcome="gate_failed")[0]
-
-
 SNAG = {"code": "scope", "message": "missing test", "paved_road": "add the test", "kind": "authoring_error"}
 RMA = {"code": "scope", "message": "plan cannot support this", "paved_road": "repair the plan", "kind": "spec_gap"}
-
-
-def bug_reply(stem, *, prose=None):
-    data = json.loads(author_reply(stem))
-    data["ticket"] = data["ticket"].replace("kind: feature", "kind: bug")
-    data["ticket"] = data["ticket"].replace("- clutch/thing.py\n\n## Goal", f"- clutch/thing.py\n- tickets/{stem}/evidence/replay.json\n\n## Goal")
-    data["ticket"] = data["ticket"].replace("## Scope fence\n", "## Scope fence\n- tests/report_regression.py\n")
-    data["ticket"] += "\n## Regression\n```\npython tests/report_regression.py\n```\n- carries: tests/report_regression.py\n"
-    if prose is not None:
-        data["ticket"] = data["ticket"].replace("`clutch/thing.py` is repaired.", prose)
-    return json.dumps(data)
 
 
 def test_bug_report_evidence_ticket_plane_commit(tmp_path, monkeypatch):
     from clutch import author as module
     from clutch.git import Git
     from clutch.seams import SubprocessExec
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     root = make_root(tmp_path)
     _routes(root)
@@ -227,7 +175,7 @@ def test_bug_report_text_stays_untrusted(tmp_path, monkeypatch):
     from clutch.git import Git
     from clutch.seams import SubprocessExec
     from clutch.specs import DATA_DELIM, QUOTED_DELIM
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     root = make_root(tmp_path)
     _routes(root)
@@ -254,7 +202,7 @@ def test_bug_report_text_stays_untrusted(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("rejection", ["schema", "kind", "player", "snag", "rma", "exception"])
 def test_report_rejected_candidate_releases_evidence(tmp_path, monkeypatch, rejection):
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     root = make_root(tmp_path)
     _routes(root)
@@ -301,7 +249,7 @@ def test_report_rejected_candidate_releases_evidence(tmp_path, monkeypatch, reje
 @pytest.mark.parametrize("failure", ["copy", "write", "add", "commit"])
 def test_report_failed_publication_cleans_candidate(tmp_path, monkeypatch, failure):
     from clutch.git import Git
-    from tests.integration.test_inbox import arrival
+    from tests.misc_helpers import arrival
 
     root = make_root(tmp_path)
     _routes(root)
@@ -519,7 +467,7 @@ def test_reopened_retro_ticket_starts_draft(tmp_path, monkeypatch):
     from clutch.box import RereportJournal
     from clutch.config import load_config
     from clutch.policy import baseline_identity
-    from tests.integration.test_retro_box import PROPOSAL
+    from tests.misc_helpers import PROPOSAL
 
     root = make_root(tmp_path)
     _routes(root)
@@ -547,7 +495,7 @@ def test_reopened_retro_ticket_starts_draft(tmp_path, monkeypatch):
 @pytest.mark.parametrize("point", ["bridge", "resolution"])
 @pytest.mark.parametrize("after", [False, True])
 def test_retro_author_bridge_and_resolution_recover_without_another_call(tmp_path, monkeypatch, point, after):
-    from tests.integration.test_retro_box import PROPOSAL
+    from tests.misc_helpers import PROPOSAL
 
     class Crash(BaseException):
         pass
@@ -647,7 +595,7 @@ def test_list_open_tickets_requires_disk_commit_and_not_merged(tmp_path):
 
 def test_merged_fix_recurrence_can_author_new_ticket(tmp_path, monkeypatch):
     from clutch.box import RereportJournal
-    from tests.integration.test_retro_box import PROPOSAL
+    from tests.misc_helpers import PROPOSAL
 
     root = make_root(tmp_path)
     _routes(root)

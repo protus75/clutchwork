@@ -5,8 +5,8 @@
 # purpose: Tests that the heartbeat does nothing at construction, refreshes only when every core component is healthy, passes failures through, stays dormant in run and drain, and is active in serve.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/heartbeat.py, clutch/journal.py, clutch/seams.py]
 # owner: engine
-# verified: 92889fdb
-# hash: 3d61a79190e9ccdbd1b93409724a3b2557a1ce4c418bf650ea94cb03fe1d1869
+# verified: ff6ac88d
+# hash: 625fcc22167c9ce568ab595730db5f00d00a68a615c27d20569bee5b442153b9
 
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
@@ -22,7 +22,7 @@ from clutch.journal import Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.daemon_helpers import CoreRig, assert_core_wiring
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip
 

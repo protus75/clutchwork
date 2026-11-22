@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that a recorded triage verdict on a roadmap_row goes through Author with its plan and evidence and produces a confirmed ticket under NO_GO
+# purpose: Tests that a recorded triage verdict on a roadmap_row goes through Author with its plan and evidence and produces a confirmed ticket under NO_GO.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/policy.py, clutch/seams.py, clutch/specs/__init__.py]
 # owner: clutch/author.py
-# verified: 79efeedb
-# hash: d7d9c21b8455ae9ab405b5b8984af9bea20fb2c21be286cbdcf5100cdab3d900
+# verified: ff6ac88d
+# hash: cdf88abbe61f7d3747a18c67dd3d9087da36ee9e22122cde6d6216f32cd8bcef
 
 import json
 from pathlib import Path
@@ -23,8 +23,8 @@ from clutch.seams import LocalFileSystem
 from clutch.specs import load_spec
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, make_root
-from tests.integration.test_author import _routes, block, requisition_reply
 from tests.loop_helpers import author_reply
+from tests.misc_helpers import _routes, block, requisition_reply
 
 pytestmark = pytest.mark.disk_io_skip
 

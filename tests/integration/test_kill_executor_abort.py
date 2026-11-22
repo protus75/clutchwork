@@ -5,8 +5,8 @@
 # purpose: Tests executor abort ordering: the writer stops before cancellation, abort waits for unwind, stays atomic under repeated cancel, and passes failures through.
 # relates: [clutch/daemon.py, clutch/llm.py, tests/integration/test_cli.py, tests/integration/test_driver.py, tests/integration/test_kill_cli_activation.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: e6bd2762c80815677259d5791228cea1a6a002b86a5a731f2c3d6954b549c29d
+# verified: ff6ac88d
+# hash: 8ea964b134d67c1b0196f899f83ae1077f572ca2c3196a3077c9d93699716e88
 
 import asyncio
 from dataclasses import replace
@@ -17,7 +17,7 @@ from clutch import daemon
 from clutch.llm import FakeLLM, LLMAborted
 from tests.cli_helpers import root
 from tests.integration.test_driver import ECHO, Stub, build, echo_json, log_events
-from tests.integration.test_kill_signal_journal import Rig, decision
+from tests.misc_helpers import Rig, decision
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

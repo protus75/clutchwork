@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for merge queue admission (ordering, safety and integration checks, conflict strategies, squash, holds and resume) using real disposable git repos
+# purpose: Integration tests for merge queue admission using real disposable git repos: ordering, safety and integration checks, conflict strategies, squash, holds and resume.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/git.py, clutch/journal.py]
 # owner: clutch/mergequeue.py
-# verified: 92889fdb
-# hash: 1b1c20a846d7e624943b4fb2885769e45482fb83752265fab6e1ce0c2de8d574
+# verified: ff6ac88d
+# hash: 2cb52fd148703bf93a545b42547e0f7e7d0bd2acf847a47ae18479e1c2b2735c
 
 import ast
 import asyncio
@@ -34,7 +34,7 @@ from clutch.seams import ExecutableNotFound, LocalFileSystem, SubprocessExec
 from clutch.stages import ApprovedInvoice, CommandResult, StageContext, render_review
 from clutch.tickets import validate_ticket
 from tests.daemon_helpers import admission, admission_control, approve, commit, conflict, ctx, facts, host, import_closure, ready, scripted
-from tests.integration.test_git import commit_lock
+from tests.misc_helpers import commit_lock
 from tests.spool_captures import list_captures, read_capture
 from tests.stages_helpers import CONFIG, ENV, SECRET, SPECS, STEM, TICKET, adopt_conduct
 
