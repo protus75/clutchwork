@@ -168,7 +168,7 @@ Scope out:
 1. `./dev.py test tests/unit/test_cli_helpers.py` passes, and `tests/unit/test_cli_helpers.py` checks that the `root` fixture leaves no `.git` directory under `tmp_path` and that after `git_out(root, "status")` the list `git_fake(root).calls` ends with `("git_out", ("status",), {})`, so a version that runs real git fails the first check.
 2. `grep -rnE "from tests\.integration\.(test_cli) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
 3. `grep -nE "^(async def|def|class) (CONFIG|ENV|PLAN|TICKET|Stages|cli|core_config|git_out|journal|root|ticket|with_retro_driver|write)\b|^(CONFIG|ENV|PLAN|TICKET|Stages|cli|core_config|git_out|journal|root|ticket|with_retro_driver|write) =" tests/integration/test_cli.py` prints nothing: the hub files no longer define a moved name.
-4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/cli_helpers.py` prints nothing.
+4. `grep -nE "import subprocess|time\.sleep|git -C|SubprocessExec\(" tests/cli_helpers.py` prints nothing: the helper names `SubprocessExec` only as the module attribute it patches, never constructs one.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
 6. `./dev.py test tests/integration/test_shared_fakes_adoption.py tests/integration/test_disk_io_skip_list.py` passes (a running test that reads a moved name as a hub module attribute still sees the shared object).
 
