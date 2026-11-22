@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- implement-skips-full-suites
+
 ## Context
 - clutch/stages.py::check_meta
 - clutch/metafill.py
