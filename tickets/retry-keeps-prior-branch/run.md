@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Journal event order determines whether a merge-conflict signal is newer than the latest terminal; targeted mutation checks detected the incorrect behaviors tested.
+The final verification passed 101 tests; the prior mutation-check finding also passed separately. Existing meta headers were left untouched as required. Focused regression tests protect the retry behavior; fresh creation remains the fallback when rebasing fails.
 
 ## Dead ends
 
-none
+The first verification run exposed an outdated Diagnose version pin, which was corrected.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 20 minutes; actual time was not measured.
+The ticket estimated 20 minutes; elapsed time was not measured.
 
