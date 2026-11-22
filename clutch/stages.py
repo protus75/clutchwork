@@ -1696,6 +1696,9 @@ async def check_autofix(ctx, ticket, attempt):
 
 
 async def check_meta(ctx, ticket) -> list[Finding]:
+    from clutch import metafill
+    from clutch.specs import load_spec
+
     worktree = ctx.worktree(ticket.stem)
     files = [
         path
@@ -1707,7 +1710,13 @@ async def check_meta(ctx, ticket) -> list[Finding]:
     tracked = await ctx.git.ls_files(worktree)
     sha = await ctx.git.rev_parse(ctx.repo, ticket.stem)
     before = set(meta.check(ctx.config, worktree, ctx.fs, tracked, sha, files))
+    filled = []
+    if any(reason in {"empty_purpose", "missing", "drifted"} for _, reason in before):
+        spec = load_spec((ctx.specs_dir / "meta.md").read_text())
+        ask = metafill.make_ask(ctx.driver, spec, worktree, len(ctx.driver.journal.read()))
+        filled, _ = await metafill.fill(ctx.config, worktree, ctx.fs, tracked, sha, spec, ask, files)
     changed, malformed = meta.refresh(ctx.config, worktree, ctx.fs, tracked, sha, files)
+    changed = sorted(set(filled) | set(changed))
     after = set(meta.check(ctx.config, worktree, ctx.fs, tracked, sha, files))
     if changed:
         await ctx.git.commit(worktree, f"clutch({ticket.stem}): meta", only=changed)
@@ -1718,7 +1727,7 @@ async def check_meta(ctx, ticket) -> list[Finding]:
     }
     findings = []
     for path in files:
-        reason = "malformed" if path in malformed else "empty_purpose" if (path, "empty_purpose") in after else "purpose_unverified" if (path, "drifted") in before else None
+        reason = "malformed" if path in malformed else "empty_purpose" if (path, "empty_purpose") in after else None
         if reason:
             findings.append(Finding(code="meta_drift", path=path, message=f"{path}: {reason}", paved_road=roads[reason].format(path=path)))
     return findings

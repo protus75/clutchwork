@@ -4,8 +4,8 @@ kind: plan
 purpose: How ClutchWork works
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: a5584821
-hash: 4a3761a93115c6068ebe4e022c97a7dc3b2754d245a9f39aba7a1079fa354f69
+verified: abdfb3f9
+hash: 594fdcbb0c16f2a5aca59fdc49df2efa5d628d778395bd87a835de1fec8bbf21
 -->
 # How ClutchWork works
 
@@ -316,7 +316,7 @@ conflict is simply refused.
 
 | Code | Fails when |
 |---|---|
-| `meta_drift` | Changed metadata is malformed, has an empty purpose, or its purpose needs review after drift. |
+| `meta_drift` | After Check fills empty or drift-flagged purposes and refreshes headers, changed metadata remains malformed or has an empty purpose. |
 | `scope_fence` | A changed file is outside `## Scope fence` (the stem's own outbox is exempt, except `ticket.md`). |
 | `verification` | A Verification command fails and was green at the base; or `already_satisfied` came with a diff; or a required report is missing or invalid. |
 | `run_record` | `run.md` is missing, or lacks its six fixed sections in order, or has an unknown outcome. |

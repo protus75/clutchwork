@@ -4,8 +4,8 @@
 # purpose: Metadata refresh and drift findings during check
 # relates: [clutch/gates.py, clutch/meta.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 75d75946
-# hash: f5991c632adceae28701525434be43541380d015511afa03074cd7f7e2649cda
+# verified: abdfb3f9
+# hash: 9f80e41a2abc3513c544205cfabd366b52716edf7977fae1eb2a95a85a339e3b
 import asyncio
 from datetime import datetime, timezone
 from types import SimpleNamespace
@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from clutch import meta, stages
+from clutch import meta, metafill, stages
 from clutch.gates import merge_severity
 from clutch.seams import LocalFileSystem
 
@@ -25,7 +25,9 @@ def setup(tmp_path, files, changed, paths=True):
         target.write_text(data)
     git = SimpleNamespace(diff_names=AsyncMock(return_value=changed), ls_files=AsyncMock(return_value=list(files)), rev_parse=AsyncMock(return_value="123456789"), commit=AsyncMock())
     config = SimpleNamespace(meta=SimpleNamespace(paths=[SimpleNamespace(root="docs/", kind="plan")] if paths else []), review=SimpleNamespace(autofix=[]))
-    return SimpleNamespace(repo=tmp_path, worktree=lambda stem: tmp_path, fs=LocalFileSystem(), git=git, config=config), SimpleNamespace(stem="work")
+    (tmp_path / "meta.md").write_text("fake spec")
+    driver = SimpleNamespace(journal=SimpleNamespace(read=lambda: []))
+    return SimpleNamespace(driver=driver, specs_dir=tmp_path, repo=tmp_path, worktree=lambda stem: tmp_path, fs=LocalFileSystem(), git=git, config=config), SimpleNamespace(stem="work")
 
 
 def block(body, purpose, stale=False):
@@ -33,7 +35,13 @@ def block(body, purpose, stale=False):
     return meta.compose(fields, body, 0, ".md")[0]
 
 
-def test_refresh_reasons_commit_and_repeat(tmp_path):
+def test_refresh_reasons_commit_and_repeat(tmp_path, monkeypatch):
+    monkeypatch.setattr("clutch.specs.load_spec", lambda text: text)
+
+    async def ask(paths, payload):
+        return metafill.MetaReply(files={p: metafill.MetaEntry(purpose="filled purpose", relates=[], owner="") for p in paths})
+
+    monkeypatch.setattr(metafill, "make_ask", lambda *args: ask)
     files = {
         "docs/new.md": "new\n",
         "docs/old.md": block("old\n", "old purpose", True),
@@ -43,8 +51,8 @@ def test_refresh_reasons_commit_and_repeat(tmp_path):
     }
     ctx, ticket = setup(tmp_path, files, list(files))
     findings = asyncio.run(stages.check_meta(ctx, ticket))
-    assert {f.message for f in findings} == {"docs/new.md: empty_purpose", "docs/old.md: purpose_unverified", "docs/bad.md: malformed", "docs/empty.md: empty_purpose"}
-    assert len(findings) == 4
+    assert {f.message for f in findings} == {"docs/bad.md: malformed"}
+    assert len(findings) == 1
     assert (tmp_path / "docs/bad.md").read_text() == files["docs/bad.md"]
     ctx.git.commit.assert_awaited_once_with(tmp_path, "clutch(work): meta", only=["docs/empty.md", "docs/new.md", "docs/old.md"])
     for path in ["docs/new.md", "docs/old.md", "docs/empty.md"]:
@@ -76,7 +84,9 @@ def test_check_outcome(tmp_path, monkeypatch, setting, outcome, verdict):
     ticket.frontmatter = SimpleNamespace(kind="feature", gate_bypass=[], source="human")
     ticket.verification = []
     ticket.sections = {}
-    ctx.driver = SimpleNamespace(clock=lambda: datetime(2020, 1, 1, tzinfo=timezone.utc), provider_wait=lambda *args: 0, severity=merge_severity(None))
+    monkeypatch.setattr("clutch.specs.load_spec", lambda text: text)
+    monkeypatch.setattr(metafill, "make_ask", lambda *args: AsyncMock(return_value=None))
+    ctx.driver = SimpleNamespace(journal=SimpleNamespace(read=lambda: []), clock=lambda: datetime(2020, 1, 1, tzinfo=timezone.utc), provider_wait=lambda *args: 0, severity=merge_severity(None))
     if setting == "hard":
         ctx.driver.severity["meta_drift"] = "hard"
     item = stages.Evidence(stem="work", head_sha="abc", claimed="ok", scope_fence=[], changed_files=["docs/new.md"], inserted_lines=0, verification=[], run_record=None)

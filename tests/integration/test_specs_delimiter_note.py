@@ -4,8 +4,8 @@
 # purpose: test specs delimiter note
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 595b9e84
-# hash: 81d182d46712b3af76f71203da15d4ad85911257af29ff86c7ef06d3dc02705c
+# verified: abdfb3f9
+# hash: 3c2e52d2ef638a548f350cdc8993f1556db6448315fa75a3aa9dacd11c110659
 from pathlib import Path
 
 import pytest
@@ -19,7 +19,7 @@ from clutch.specs import DATA_DELIM, data_close, data_open, lint_spec, load_spec
         ("acceptance", "1.0"),
         ("author", "1.11"),
         ("diagnose", "1.9"),
-        ("implement", "2.23"),
+        ("implement", "2.24"),
         ("requisition_review", "3.27"),
         ("retro", "1.6"),
         ("review", "1.9"),

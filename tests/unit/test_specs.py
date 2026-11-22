@@ -4,8 +4,8 @@
 # purpose: test specs
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 595b9e84
-# hash: 0fc7b247af32e92d0320b394c5ef1d703b3dc267e395d1731b430d578af462aa
+# verified: abdfb3f9
+# hash: 285a3ddbafbd5f4c6cdcbb5fa4bcc3893229d62d89ed554a86e1fa8cc933784b
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.23"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
+    for name, version in (("resolve", "1.0"), ("implement", "2.24"), ("requisition_review", "3.27"), ("diagnose", "1.9")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         assert load_spec(text).meta.version == version
@@ -131,7 +131,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.23"
+    assert spec.meta.version == "2.24"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",
