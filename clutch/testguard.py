@@ -24,7 +24,7 @@ _durations = {}
 
 def _block(name, seam):
     def blocked(*args, **kwargs):
-        raise UnitIOBlocked(f"{name} is blocked in unit tests; inject the {seam} seam (or a fake) instead, or move the test to the integration suite")
+        raise UnitIOBlocked(f"{name} is blocked in unit tests; inject the {seam} seam (or a fake) instead")
 
     return blocked
 

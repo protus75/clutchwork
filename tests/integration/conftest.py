@@ -1,12 +1,52 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration pytest setup: skips disk-IO test files listed in DISK_IO_SKIP and runs each test in an isolated empty working directory
+# purpose: Integration pytest setup: wraps each test phase in the I/O guard unless the file is in REAL_IO_TESTS, skips the files in DISK_IO_SKIP, and runs every test in its own empty working directory
 # relates: [tests/integration/test_disk_io_skip_list.py, docs/how-clutch-works.md]
 # owner: engine
-# verified: edd57bac
-# hash: 2f81b22b9cdc8dd8814ada0fb05b28101f9cfd59f467db9fbe49ecc5da0096ef
+# verified: d6229699
+# hash: 0d8d6b257f997f6ef4c733f0f66035423f7383d78b51ff384301000b14d9146b
 import pytest
+
+from clutch.ioguard import guard
+
+REAL_IO_TESTS = (
+    "test_exec_seam_reap.py",
+    "test_exec_seam_unwind_capture.py",
+    "test_git.py",
+    "test_git_merged_tickets.py",
+    "test_git_tree_id.py",
+    "test_journal.py",
+    "test_journal_duckdb_cache.py",
+    "test_journal_incremental.py",
+    "test_journal_roll.py",
+    "test_lockfile.py",
+)
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_setup(item):
+    if item.path.name in REAL_IO_TESTS:
+        return (yield)
+    with guard(item.config._tmp_path_factory.getbasetemp()):
+        return (yield)
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_call(item):
+    if item.path.name in REAL_IO_TESTS:
+        return (yield)
+    with guard(item.config._tmp_path_factory.getbasetemp()):
+        return (yield)
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_teardown(item, nextitem):
+    if item.path.name in REAL_IO_TESTS:
+        return (yield)
+    with guard(item.config._tmp_path_factory.getbasetemp()):
+        return (yield)
+
 
 DISK_IO_SKIP = (
     "test_ask.py",

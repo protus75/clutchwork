@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Exercise the plugin in pytest sessions, including the xdist controller.
-# relates: []
+# purpose: Runs the clutch.testguard pytest plugin in pytester sessions, including under xdist, to check that it blocks unit-test process and socket I/O and enforces the unit-suite time budget
+# relates: [clutch/testguard.py, test-gate.toml]
 # owner: engine
-# verified: 75d75946
-# hash: b9464d84bd2adab7ddc5058378cdbf706bca10ce074868e26206ae29ae824687
+# verified: d6229699
+# hash: da534b37c51e88e0df415c130e8b33e5370380bdead1eabd4604dac0c28975b9
 
 import os
 import socket
@@ -54,7 +54,8 @@ def test_guarded_calls_and_asyncio(pytester):
     for i in range(9):
         section = result.stdout.str().split(f"test_blocked[<lambda>{i}]", 1)[1].splitlines()[1:]
         assert any("E       clutch.testguard.UnitIOBlocked:" in line for line in section[: next((j for j, line in enumerate(section) if line.startswith("________________")), len(section))])
-    assert "move the test to the integration suite" in result.stdout.str()
+    assert "seam (or a fake) instead" in result.stdout.str()
+    assert "integration suite" not in result.stdout.str()
 
 
 def test_setup_and_teardown(pytester):
