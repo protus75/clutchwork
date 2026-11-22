@@ -8,12 +8,17 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- shared-git-fake
+
 ## Context
 - clutch/stages.py::prepare_worktree
 - clutch/stages.py::implement
 - clutch/stages.py::prior_attempts
 - clutch/journal.py::run_terminals
 - clutch/git.py::Git.rebase
+- clutch/git.py::Git.worktree_add
+- clutch/git.py::RebaseRefused
 - tests/unit/test_specs.py::test_diagnose_spec_states_attempt_starting_point
 - docs/how-clutch-works.md#4.1 Worktree
 
@@ -29,7 +34,7 @@ Every retry throws away the previous attempt's code. `prepare_worktree` deletes 
 - disposition: extend
 - owner: clutch/stages.py::prepare_worktree and clutch/stages.py::implement
 - consumers: Implement and every retry
-- observable change: `prepare_worktree(ctx, stem, *, keep=False)`. When `keep` is true and branch `<stem>` exists, it removes only the old worktree, adds a worktree on the existing branch and runs `ctx.git.rebase(path, MAIN)`. If the rebase raises `GitError`, it falls back to today's teardown-and-create. `implement` passes `keep=True` only when the stem's latest run terminal (`run_terminals`) has `to == "gate_failed"` and `stage` in `{"check", "review"}` and no `merge_conflict_rerun` signal is newer than it
+- observable change: `prepare_worktree(ctx, stem, *, keep=False)`. When `keep` is true and branch `<stem>` exists, it removes only the old worktree, attaches a worktree to the existing branch with a new `Git.worktree_attach(dir, path, branch)` (`git worktree add <path> <branch>`) and runs `ctx.git.rebase(path, MAIN)`. If the rebase raises `GitError` (which `RebaseRefused` subclasses), it falls back to today's teardown-and-create. `implement` passes `keep=True` only when the stem's latest run terminal (`run_terminals`) has `to == "gate_failed"` and `stage` in `{"check", "review"}` and no `merge_conflict_rerun` signal is newer than it
 - compatibility: `keep=False` (the default, and every other caller) is byte-for-byte today's behavior; first attempts, Implement failures and conflict reruns start fresh as today
 - acceptance: criteria 1 to 3
 - tests: tests/integration/test_retry_keeps_branch.py
@@ -47,6 +52,7 @@ Every retry throws away the previous attempt's code. `prepare_worktree` deletes 
 
 ## Scope in / Scope out
 Scope in:
+- clutch/git.py: add `async def worktree_attach(self, dir: Path, path: Path, branch: str) -> None` running `worktree add <path> <branch>` through `_run`, beside `worktree_add`.
 - clutch/stages.py: the `keep` keyword and the `implement` decision above.
 - clutch/specs/implement.md: add the kept-branch sentence after the existing "For a prior attempt discarded on a merge conflict..." sentence; bump `version` to the next minor above main.
 - clutch/specs/diagnose.md: replace the starting-point sentence as stated; bump `version` to the next minor above main.
@@ -57,6 +63,7 @@ Scope out:
 - Check, Review, Diagnose verdict logic, rework, the merge queue, conflict-rerun handling, and retry caps.
 
 ## Scope fence
+- clutch/git.py
 - clutch/stages.py
 - clutch/specs/implement.md
 - clutch/specs/diagnose.md
