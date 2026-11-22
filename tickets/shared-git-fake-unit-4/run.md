@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Overrides preserve mutable fixture state and commit snapshots that GitFake does not provide directly.
+The shared fake uses fixture overrides to preserve the original mutable dirty, files, and commits state.
 
 ## Dead ends
 
