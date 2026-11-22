@@ -16,6 +16,8 @@ kind: chore
 - tests/vscode_step_icons.js
 - tests/integration/test_step_icons.py
 - tests/integration/test_extension_draw_failure.py
+- tests/integration/conftest.py
+- tests/integration/test_disk_io_skip_list.py
 - vscode-clutchwork/README.md
 - docs/how-clutch-works.md#2. Commands
 
@@ -34,28 +36,33 @@ After this ticket, a Recent Steps row whose `kind` is not in the icon table rend
 - observable change: an unknown step kind yields a tree item with ThemeIcon `warning` and description `cannot draw the clutch snapshot: unknown step kind <kind>` instead of throwing; known kinds render exactly as today
 - compatibility: the icon table and every known kind's icon are unchanged, so `tests/integration/test_step_icons.py` still passes
 - acceptance: criteria 1 to 3
-- tests: tests/integration/test_step_view_unknown_kind.py, tests/integration/test_step_icons.py
+- tests: tests/integration/test_step_view_unknown_kind.py, tests/integration/test_step_icons.py (both run for real once listed in `REAL_IO_TESTS`)
 - post-merge source of truth: vscode-clutchwork/extension.js
 
 ## Scope in / Scope out
 Scope in:
 - In `StepsTree.getTreeItem`, when `icons[step.kind]` is undefined, set the item's icon to `new vscode.ThemeIcon('warning')` and its description to `cannot draw the clutch snapshot: unknown step kind ${step.kind}`. The label, tooltip and command stay as for any other row. This only maps a closed value to an icon through the lookup table, which the extension rule allows. It adds no filtering or derivation.
 - New node harness `tests/vscode_step_unknown.js`, modeled on `tests/vscode_step_icons.js` (which stays unedited). It activates the extension with a stubbed `vscode` and prints `{"icon": <iconPath.id>, "description": <description>}` as JSON for a step whose kind is given on argv.
-- New `tests/integration/test_step_view_unknown_kind.py` that runs the harness.
+- New `tests/integration/test_step_view_unknown_kind.py` that runs the harness with `subprocess.run(["node", ...])`, like `test_step_icons.py`. It carries no `disk_io_skip` marker.
+- `tests/integration/conftest.py`: add `"test_step_view_unknown_kind.py"` and `"test_step_icons.py"` to `REAL_IO_TESTS`. Real I/O is required because both tests start a real `node` process to run the shipped `extension.js` against a stubbed `vscode`; the I/O guard blocks `subprocess.Popen`, and a `disk_io_skip` marker skips the test, so neither route could run criteria 1 to 3. No in-memory fake can execute JavaScript. This is the allowlist the repo's authoring guide names for tests whose subject is a real process.
+- `tests/integration/test_step_icons.py`: delete its `pytestmark = pytest.mark.disk_io_skip` line, and the `import pytest` line if nothing else uses it. A file in `REAL_IO_TESTS` must not carry the marker (`tests/integration/test_disk_io_skip_list.py` fails otherwise), and with the marker it is skipped, so criterion 3 never runs. Change nothing else in it.
+- Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 - `docs/how-clutch-works.md` section 2: in the Recent Steps sentences (the paragraph naming `STEP_KINDS`), add that an unknown kind renders with a warning row instead of breaking the view.
 
-Scope out: version or build-skew detection, the webview draw-failure paths, `clutch/observe.py`, and the README (its road already covers this message).
+Scope out: `tests/integration/test_extension_draw_failure.py` and the other skipped node-harness tests (they stay skipped; only the two files above join `REAL_IO_TESTS`), version or build-skew detection, the webview draw-failure paths, `clutch/observe.py`, and the README (its road already covers this message).
 
 ## Scope fence
 - vscode-clutchwork/extension.js
 - tests/vscode_step_unknown.js
 - tests/integration/test_step_view_unknown_kind.py
+- tests/integration/conftest.py
+- tests/integration/test_step_icons.py
 - docs/how-clutch-works.md
 
 ## Acceptance criteria
 1. For a step with kind `not_a_kind`, the harness reports icon `warning` and description `cannot draw the clutch snapshot: unknown step kind not_a_kind`, not a thrown error and not a `null` icon; checked by `./dev.py test tests/integration/test_step_view_unknown_kind.py`.
-2. For a known kind such as `check_ok`, the harness reports icon `checklist` and description equal to the step's `text`, not the warning text; checked by `./dev.py test tests/integration/test_step_view_unknown_kind.py`.
-3. Every `STEP_KINDS` entry still maps to its own distinct icon; checked by `./dev.py test tests/integration/test_step_icons.py`.
+2. For a known kind such as `check_ok`, the harness reports icon `checklist` and description equal to the step's `text`, not the warning text; checked by `./dev.py test tests/integration/test_step_view_unknown_kind.py`, which runs rather than skips.
+3. Every `STEP_KINDS` entry still maps to its own distinct icon; checked by `./dev.py test tests/integration/test_step_icons.py`, which now runs rather than skips because the file is in `REAL_IO_TESTS`.
 
 ## Verification
 ```
@@ -66,6 +73,7 @@ Scope out: version or build-skew detection, the webview draw-failure paths, `clu
 - Recent Steps hides or drops the unknown row instead of showing the warning.
 - Any known kind's icon or color changes.
 - Edits outside the fence, including `tests/vscode_step_icons.js`.
+- Either test file reports skipped, or raises `IntegrationIOBlocked`, instead of running the node harness.
 
 ## Time budget
 - expected: 10m
