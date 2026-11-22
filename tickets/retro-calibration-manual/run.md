@@ -1,26 +1,28 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Both exact Verification commands ran sequentially on the untouched branch and a full-history base worktree at bf062c4c72caeec112fb8071f9918134ffc5a671: unit verification exited 1 with no tests collected; integration verification exited 0 with all 270 tests skipped.
+The final unit verification passed 86 tests; the integration verification exited successfully but skipped all 263 tests under the existing skip policy. Targeted mutations of threshold, reset, request-routing, warning, and calibration behavior were detected; not every assertion was individually mutation-checked.
 
 ## Dead ends
 
-No placeholder tests were created to mask the malformed Verification command.
+none
 
 ## Second problems filed
 
-- box-001136-71491e78: The integration Verification command skips all 270 tests on both branch and base through disk_io_skip, leaving its acceptance claims unverified.
+- box-001137-20d9b9ec: The integration skip policy prevents the specified integration tests from exercising doctor, serve, drain, and config behavior.
+- box-001138-77be05b7: docs/roadmap-driver-plan.md still describes automatic retros after a settle.
+- box-001139-57de75a4: docs/roadmap.md still describes automatic calibration at the engine idle point.
 
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6.1-terra
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-Expected 60 minutes; blocker verification took approximately 6 minutes.
+none
 
