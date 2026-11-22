@@ -1,0 +1,184 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "2141d5d8b25114b18de29c3f7338ed44671aa011",
+  "stem": "running-step-stale-event",
+  "passed": true,
+  "changed_files": [
+    "clutch/observe.py",
+    "tests/integration/test_watch.py",
+    "tests/regress_running_step_stale_event.py",
+    "tests/unit/test_observe_current_step_run_floor.py",
+    "tests/unit/test_observe_step_session.py"
+  ],
+  "inserted_lines": 77,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/regress_running_step_stale_event.py"
+        ],
+        "head_sha": "2141d5d8b25114b18de29c3f7338ed44671aa011",
+        "base_sha": "3b41479cb61ffe739fe95477ec33f5dca8614b13",
+        "overlay_paths": [
+          "tests/regress_running_step_stale_event.py"
+        ],
+        "evidence_paths": [
+          "tickets/running-step-stale-event/evidence/evidence.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/running-step-stale-event\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/running-step-stale-event\nInstalled 31 packages in 26ms\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.604345,
+        "passed": 2134,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5399709110206459,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0117974710010458
+        }
+      },
+      "coverage": {
+        "percent": 76.67936806952947,
+        "files": {
+          "clutch/observe.py": 66.63146779303062
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 27.992952,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9322966859908774,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1903213219484314,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.086862387979636,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0049896959972102
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_observe_current_step_run_floor.py",
+        "tests/unit/test_observe_step_session.py",
+        "tests/integration/test_watch.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_observe_current_step_run_floor.py tests/unit/test_observe_step_session.py tests/integration/test_watch.py\nbringing up nodes...\nbringing up nodes...\n\n.ssssssssssssssssss.sssss.ss.ssssss                                      [100%]\n4 passed, 31 skipped in 1.33s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 6.499271
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "python",
+        "tests/regress_running_step_stale_event.py"
+      ],
+      "rc": 0,
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.633204
+    }
+  ]
+}
