@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-Final verification passed all 43 tests; targeted mutations confirmed the new tests detect the specified failure modes.
+The branch already contains the prior implementation; it selects triggers before loading the invoice evidence that counts override spikes.
 
 ## Dead ends
 
-none
+Reviewed the existing measurements, invoice loading, trigger selection, and default spike configuration; the ticket does not choose how to resolve their conflicting requirements.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 20 minutes; completed within the ticket budget.
+none
 
