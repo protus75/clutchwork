@@ -39,7 +39,7 @@ The set of skipped tests is exactly the set skipped today.
 Scope in:
 - `tests/integration/conftest.py`: the changes in Goal / Why, and its `purpose:` meta line says it skips files that carry the `disk_io_skip` marker in place of `skips the files in DISK_IO_SKIP`.
 - Every file currently named in `DISK_IO_SKIP`: add the one `pytestmark` line (and `import pytest` when missing). Nothing else in those files changes. Record in the run record the count of files given the marker; it equals the length of `DISK_IO_SKIP` on the base commit (184).
-- `tests/integration/test_disk_io_skip_list.py`: rewrite its two tests to (1) call the conftest hook with stand-in items whose `get_closest_marker` returns a marker for one and `None` for the other, and (2) scan `tests/integration/test_*.py` (anchored on `Path(__file__)`) and assert that no `REAL_IO_TESTS` file contains `pytest.mark.disk_io_skip` and that `DISK_IO_SKIP` no longer exists on the conftest module.
+- `tests/integration/test_disk_io_skip_list.py`: rewrite its two tests to (1) call the conftest hook with stand-in items whose `get_closest_marker` returns a marker for one and `None` for the other, and (2) scan `tests/integration/test_*.py` (anchored on `Path(__file__)`) and assert that no `REAL_IO_TESTS` file has a line matching the regex `^pytestmark = pytest\.mark\.disk_io_skip$` and that `DISK_IO_SKIP` no longer exists on the conftest module. This test file itself carries no such line (it is not skipped), so it holds the pattern only inside a string literal.
 - `docs/how-clutch-works.md` section 2.2: the sentence naming `DISK_IO_SKIP` says that integration test files carrying the `disk_io_skip` marker are skipped until rewritten onto in-memory fakes. Nothing else in that document changes.
 
 Scope out:
@@ -54,7 +54,7 @@ Scope out:
 1. `./dev.py test tests/integration/test_disk_io_skip_list.py` passes and checks that a stand-in item carrying the `disk_io_skip` marker gets exactly one skip marker with a reason starting `disk-io-skip:`, and an item without the marker gets none (not a skip on every item, not on none).
 2. `./dev.py test tests/integration/test_disk_io_skip_list.py` checks that no `REAL_IO_TESTS` file carries the marker and that `conftest.DISK_IO_SKIP` is gone.
 3. `./dev.py test tests/integration` exits 0 and its summary reports the same number of skipped tests as on the base commit, recorded in the run record from both runs (`run.md`).
-4. `grep -l "pytest.mark.disk_io_skip" tests/integration/test_*.py` lists 184 files, the same names as `DISK_IO_SKIP` on the base commit, recorded in the run record (`run.md`).
+4. `grep -lx "pytestmark = pytest.mark.disk_io_skip" tests/integration/test_*.py` lists 184 files, excluding `test_disk_io_skip_list.py`, the same names as `DISK_IO_SKIP` on the base commit, recorded in the run record (`run.md`).
 
 ## Verification
 ```
