@@ -1,18 +1,18 @@
 ## Outcome
 
-incomplete
+ok
 
 ## Surprises / judgment calls
 
-Partial changes remove the engine roadmap step and add a release ship handler, but the required test updates, mutation checks, and verification remain outstanding.
+The final verification passed: 2,149 unit tests and 297 integration tests passed; the configured runner skipped 3,331 disk-I/O integration tests, including 14 cases in the targeted command. Ticket lint passed.
 
 ## Dead ends
 
-none
+An initial help assertion did not detect a missing example; it was tightened and the mutation was caught.
 
 ## Second problems filed
 
-none
+- box-001129-b8700b77: Out-of-scope roadmap and guide documents retain historical driver wording, including docs/roadmap.md and docs/document-agent/plan.md; existing box items track these statements.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 55 minutes; elapsed time was not measured.
+none
 
