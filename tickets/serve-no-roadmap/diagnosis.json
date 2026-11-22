@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c9af35242402c3e37d9c23b4dbfab70cb892b286",
+  "produced_at_sha": "1b159d9cd2916d4875b25218d46a6109da03094f",
   "stem": "serve-no-roadmap",
-  "attempt": 2,
-  "terminal": "incomplete",
+  "attempt": 3,
+  "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "escalate",
+  "verdict": "reject",
   "lessons": [
-    "Attempt 2 (codex gpt-6.1-terra) stopped after 145s of a 55m budget with uncommitted partial edits and no tests updated. The ticket must land as one change, so finish every Scope in item and commit before reporting.",
-    "Start from main. Delete the driver from clutch/serve.py (driver_pending, run_driver, wait_driver, driver/driven/driver_task, upgrade_idle clause) and clutch/drain.py (_run_driver, _abort_driver, driver finally, roadmap import). Delete build_driver and DrainDispatch._driver from clutch/__main__.py.",
-    "Move roadmap.ship into a new handle_ship for `clutch release ship` in clutch/__main__.py under _locked: gate, release, journal_release, publish only if release.publish, run_packages. Delete drive/ship_when_queue_low/unsettled/settles and the rejected-row refile from clutch/roadmap.py.",
-    "Delete or rewrite the fenced driver-pinning tests, such as tests/unit/test_drain_driver_overlap.py (it monkeypatches roadmap.settles and sets d.driver). Add the 4 new unit tests from ACs 1-4 and set test_main_release_group's expected release subcommands to {bump, publish, ship}.",
-    "Rewrite the 3 prompt specs and the listed docs according to Scope in. Then run AC 5's grep and all three ## Verification commands, ending with the full `./dev.py test`, before reporting complete."
+    "AC 9 contradicts the required deletions: `clutch ticket lint serve-no-roadmap` fails after implementation because 8 `## Context` selectors name symbols the ticket deletes. Lint passed on base, so the ticket must change, not the code.",
+    "Fix the ticket: replace clutch/roadmap.py::ship, ::ship_when_queue_low and ::drive, clutch/serve.py::Serve.driver_pending, ::Serve.run_driver and ::Serve.wait_driver, clutch/__main__.py::build_driver and clutch/drain.py::_Drain._run_driver with whole-file entries.",
+    "Keep clutch/roadmap.py::author_ahead as a selector, since that function survives. The whole-file entries for clutch/roadmap.py, serve.py, drain.py and __main__.py still resolve after the deletions.",
+    "Attempt 3 reported that the implementation passed all three Verification commands and all 61 mutations were caught. After the ticket fix, rerun the same work unchanged: it starts from main and nothing was committed.",
+    "Class fix: ticket lint or review should reject a Context selector that names a definition the ticket's Scope in says to delete, because that selector cannot resolve after merge."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
