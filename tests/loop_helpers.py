@@ -2,17 +2,19 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared scheduler and triage test scaffolding: fake clock, ticket text builder, scheduler and watcher Rig, import-closure walker, and triage helpers (box root, scripted replies, CLI run, escape rig and report)
+# purpose: Shared test scaffolding for the scheduler, triage and terminal tests: a fake clock, a ticket text builder, a scheduler and watcher Rig, an import-closure walker, triage helpers, and the repo, author, diagnosis_reply and transitions fixtures
 # relates: [clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py, tests/cli_helpers.py]
 # owner: engine
-# verified: 79efeedb
-# hash: 70a6fd3a742d4937ee5f3398331282199067c77ab40053633b7f2cd70592d523
+# verified: 7050142a
+# hash: 8fc75a3f25d3389eb10e72aa17ea898bea8a5167cc8cebcc7ea0e16400855392
 
 import ast
 import asyncio
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+
+import pytest
 
 from clutch.__main__ import main
 from clutch.box import Box, Resolution
@@ -28,6 +30,7 @@ from tests.dispatch_settle import dispatch_settled
 from tests.drain_helpers import Clock, confirmed, make_root
 from tests.fakes import FakeExec, turn
 from tests.stage_replies import requisition_reply
+from tests.stages_helpers import STEM as TERMINAL_STEM
 
 
 class Time:
@@ -375,3 +378,40 @@ async def escape_report(c, *, commit, paths=(), stem="repair"):
     assert message.resolution == Resolution(kind="ticket", link=stem)
     assert message.report and message.report.custody.replay
     return c, message, llm
+
+
+def clock() -> datetime:
+    return datetime(2026, 10, 5, tzinfo=UTC)
+
+
+@pytest.fixture
+def repo(tmp_path: Path) -> Path:
+    from tests.stages_helpers import CONFIG, adopt_conduct
+
+    root = tmp_path / "repo"
+    (root / "clutch").mkdir(parents=True)
+    (root / "clutch" / "thing.py").write_text("")
+    (root / "CLUTCH_PLAN.md").write_text("# Plan\n")
+    (root / "config.yaml").write_text(CONFIG)
+    (root / ".gitignore").write_text(".clutch/\n")
+    adopt_conduct(root)
+    return root
+
+
+def author(repo: Path, stem: str = TERMINAL_STEM, depends: str = "none") -> None:
+    """Hand-author the ticket file only: `run` intake commits it."""
+    from tests.stages_helpers import TICKET as STAGE_TICKET
+
+    path = repo / "tickets" / stem / "ticket.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(STAGE_TICKET.format(bypass="").replace("## Depends on\nnone", f"## Depends on\n{depends}"))
+
+
+def diagnosis_reply(*lessons: str) -> str:
+    return json.dumps({"verdict": "retry", "lessons": list(lessons or ("Apply the terminal findings.",))})
+
+
+def transitions(repo: Path) -> list[dict]:
+    from tests.stages_helpers import STEM
+
+    return [e.body for e in Journal(repo / ".clutch" / "state", clock).read() if e.type == EventType.STATE_TRANSITION and e.ticket == STEM]

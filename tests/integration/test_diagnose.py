@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests failure diagnosis through the production run and drain paths: reply schema, routing, cap draws, short-circuits and lesson rendering.
+# purpose: Tests failure diagnosis through the production run and drain paths: reply schema, diagnose routing, ordering of harvest, cap draw and terminal, invalid-verdict fallback, short-circuits on spent caps, lesson rendering and trimming, and render_over_bound skipping diagnosis
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: 38957300
-# hash: 11527051f6372c51f75583e306af0e4f99670a48b4e4aaf75f4c88b74760da2e
+# verified: 7050142a
+# hash: d8d6078e8a7561e4edd525c8d4d322b22ec8a24441ddacf7e2d413e4c7fa5dc4
 
 import json
 from pathlib import Path
@@ -26,7 +26,7 @@ from clutch.specs import data_close, data_open
 from clutch.stages import StagesRun
 from tests.config_helpers import CONFIG as ROUTING_CONFIG
 from tests.drain_helpers import NoChild
-from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+from tests.loop_helpers import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
 from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip

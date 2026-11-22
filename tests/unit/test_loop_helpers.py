@@ -1,18 +1,25 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for loop_helpers: scheduler exports, Rig, the fake Time clock, the ticket text builder, turn, the import closure, and each triage helper's outputs and confinement to tmp_path
+# purpose: Unit tests for loop_helpers: its exports, the Rig, the fake Time clock, the ticket text builder, turn, the import closure, the triage and terminal helpers, and that fixtures write only under tmp_path
 # relates: [tests/fakes.py, tests/loop_helpers.py]
 # owner: engine
-# verified: 79efeedb
-# hash: 43476e18135c7d9b2e9175ef1dbf81c92dac795b8ff79cee29bcca30b72397ff
+# verified: 7050142a
+# hash: 6f73793a567098ae2ce0ca7b78220b99561ca0db42d9617d1ab4968a02d40cf9
 import asyncio
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from tests import fakes, loop_helpers
-from tests.loop_helpers import Rig, Time, scheduler_import_closure, text, turn
+from tests.loop_helpers import (
+    Rig,
+    Time,
+    repo,  # noqa: F401 -- fixture
+    scheduler_import_closure,
+    text,
+    turn,
+)
 
 
 def test_exports():
@@ -298,3 +305,56 @@ async def test_triage_escape_report(tmp_path, monkeypatch):
         True,
         True,
     )
+
+
+def test_terminal_exports():
+    from tests.loop_helpers import author, clock, diagnosis_reply, repo, transitions
+
+    # Rules out leaving any export solely on the skipped hub.
+    assert (author, clock, diagnosis_reply, repo, transitions) == tuple(getattr(loop_helpers, name) for name in ("author", "clock", "diagnosis_reply", "repo", "transitions"))
+
+
+def test_repo(repo, tmp_path):
+    # Rules out using the wrong root, omitting tracked fixture files, or initializing git.
+    assert (repo, (repo / "config.yaml").is_file(), (repo / "clutch/thing.py").is_file(), (repo / ".git").exists()) == (tmp_path / "repo", True, True, False)
+
+
+def test_terminal_author(repo):
+    from tests.loop_helpers import author
+
+    author(repo, "distinct", "- parent")
+    content = (repo / "tickets/distinct/ticket.md").read_text()
+    # Rules out ignoring the stem or dependency and recording an approval.
+    assert "## Depends on\n- parent" in content and not (repo / ".clutch").exists()
+    author(repo)
+    assert (repo / "tickets/add-thing/ticket.md").is_file()
+
+
+def test_terminal_clock():
+    from tests.loop_helpers import clock
+
+    # Rules out a current or different fixture time.
+    assert clock() == datetime(2026, 10, 5, tzinfo=UTC)
+
+
+def test_terminal_diagnosis_reply():
+    import json
+
+    from tests.loop_helpers import diagnosis_reply
+
+    # Rules out dropping supplied lessons or changing the verdict.
+    assert json.loads(diagnosis_reply("a")) == {"verdict": "retry", "lessons": ["a"]}
+    assert json.loads(diagnosis_reply())["lessons"] == ["Apply the terminal findings."]
+
+
+def test_terminal_transitions(tmp_path):
+    from clutch.journal import EventType, Journal
+    from tests.loop_helpers import clock, transitions
+    from tests.stages_helpers import STEM
+
+    journal = Journal(tmp_path / ".clutch/state", clock)
+    journal.append(EventType.STATE_TRANSITION, {"to": "running"}, ticket=STEM)
+    journal.append(EventType.STATE_TRANSITION, {"to": "other"}, ticket="other")
+    journal.append(EventType.SIGNAL, {"signal": "ticket_intake"}, ticket=STEM)
+    # Rules out including another ticket or non-transition event.
+    assert transitions(tmp_path) == [{"to": "running"}]

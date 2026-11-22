@@ -6,14 +6,12 @@ place; an engine-plane refusal exits 2 with nothing dispatched. Retry, diagnosis
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests non-ok terminals behind `engine run <stem>`: each journals one terminal transition and exits 1, while engine-plane refusals exit 2 and dispatch nothing
+# purpose: Tests non-ok terminals behind `engine run <stem>`: each journals one terminal transition and exits 1, leaving the ticket and branch in place, while engine-plane refusals exit 2 and dispatch nothing
 # relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_stages.py]
 # owner: clutch/runner.py
-# verified: 0a4d026b
-# hash: 69611652ce315bfffaa20a8fff85286267b6c21138cf4ff3c8f54923bf006603
+# verified: 7050142a
+# hash: d3b93af5394d385c1267f1730128229e5dfee1cf6971d8d3f35fc2adff05fcb1
 
-import json
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -23,52 +21,16 @@ from clutch.__main__ import main
 from clutch.config import load_config
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
-from tests.stages_helpers import CONFIG, ENV, SNAG, STEM, TICKET, adopt_conduct, agent, git, implement_reply, verdict
+from tests.loop_helpers import author, clock, diagnosis_reply, repo, transitions  # noqa: F401 -- fixture
+from tests.stages_helpers import ENV, SNAG, STEM, agent, git, implement_reply, verdict
 
 pytestmark = pytest.mark.disk_io_skip
-
-
-def clock() -> datetime:
-    return datetime(2026, 10, 5, tzinfo=UTC)
-
-
-@pytest.fixture
-def repo(tmp_path: Path) -> Path:
-    root = tmp_path / "repo"
-    (root / "clutch").mkdir(parents=True)
-    (root / "clutch" / "thing.py").write_text("")
-    (root / "CLUTCH_PLAN.md").write_text("# Plan\n")
-    (root / "config.yaml").write_text(CONFIG)
-    (root / ".gitignore").write_text(".clutch/\n")
-    adopt_conduct(root)
-    git(root, "init", "-b", "main")
-    git(root, "add", ".")
-    git(root, "commit", "-m", "base")
-    return root
-
-
-def author(repo: Path, stem: str = STEM, depends: str = "none") -> None:
-    """Hand-author the ticket file only: `run` intake commits it."""
-    path = repo / "tickets" / stem / "ticket.md"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(TICKET.format(bypass="").replace("## Depends on\nnone", f"## Depends on\n{depends}"))
-    from tests.approval import approve
-
-    approve(repo, stem, clock)
 
 
 def run(repo: Path, script: list) -> tuple[int, FakeLLM]:
     llm = FakeLLM(script)
     code = main(["engine", "run", STEM], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm))
     return code, llm
-
-
-def diagnosis_reply(*lessons: str) -> str:
-    return json.dumps({"verdict": "retry", "lessons": list(lessons or ("Apply the terminal findings.",))})
-
-
-def transitions(repo: Path) -> list[dict]:
-    return [e.body for e in Journal(repo / ".clutch" / "state", clock).read() if e.type == EventType.STATE_TRANSITION and e.ticket == STEM]
 
 
 def left_in_place(repo: Path, expected: str = "") -> None:

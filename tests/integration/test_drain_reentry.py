@@ -7,11 +7,11 @@ written. The production stage pipeline runs behind a scripted FakeLLM.
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that a re-offered ticket renders the prior attempt's review or check findings in criteria position without writing ticket.md.
+# purpose: Tests that a stem re-offered by drain renders the prior attempt's review or check findings in the acceptance-criteria position without writing ticket.md, and that a check already failing on the base files one report instead of retrying
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 35358855aea79ef2aebb90058d54c7616b86ce7965c72770bffdd03a55c19ce7
+# verified: 7050142a
+# hash: 5e90ee0b4f84dd48ab712c844765537d44ffd3ea8822d97d68ac6a206a2a8283
 
 from pathlib import Path
 
@@ -28,7 +28,7 @@ from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS
 from tests.drain_helpers import NoChild
 from tests.drain_helpers import reentry_drain as drain
-from tests.integration.test_terminal import author, clock, diagnosis_reply, repo, transitions  # noqa: F401 -- `repo` is the fixture
+from tests.loop_helpers import author, clock, diagnosis_reply, repo, transitions  # noqa: F401 -- `repo` is the fixture
 from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip

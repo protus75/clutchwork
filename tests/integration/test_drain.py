@@ -6,11 +6,11 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
+# purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, the retry budget, mid-drain re-scan and intake, ceilings, pause and stop control, retros, rework, and Reject-queue holds
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: 38957300
-# hash: 171f486031b95bd3288d06d82130a4289e2c65dde428324c4b3f8799a1e67ed5
+# verified: 7050142a
+# hash: 0952a32c5f6e0948b6e7f2bd2f7b5a7aa73df18db4b36e3df5e8b52f5546c937
 
 import asyncio
 import json
@@ -33,7 +33,7 @@ from tests.cli_helpers import CONFIG, ENV, PLAN, git_out, ticket, with_retro_dri
 from tests.config_helpers import repo as admission_repo
 from tests.drain_helpers import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root, mechanical_first, offer_events, pause_checkout, retry_draws, root, tos
 from tests.integration.test_git import commit_lock
-from tests.integration.test_terminal import repo as rework_repo
+from tests.loop_helpers import repo as rework_repo
 from tests.stages_helpers import adopt_conduct
 
 pytestmark = pytest.mark.disk_io_skip
@@ -58,7 +58,7 @@ def test_already_satisfied_settles_without_diagnosis(rework_repo):
     from clutch import runner
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
-    from tests.integration.test_terminal import author, clock
+    from tests.loop_helpers import author, clock
     from tests.stages_helpers import STEM, agent
 
     repo = rework_repo
@@ -492,7 +492,7 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
     from clutch.llm import FakeLLM
     from tests.config_helpers import order, requisition
     from tests.drain_helpers import NoChild
-    from tests.integration.test_terminal import author, clock
+    from tests.loop_helpers import author, clock
     from tests.stages_helpers import ENV, SNAG, STEM, agent, verdict
 
     repo = rework_repo
@@ -558,7 +558,7 @@ def test_rework_split_preserves_dispatch_terminal_invariant(rework_repo, monkeyp
     from clutch import runner
     from clutch.llm import FakeLLM
     from tests.config_helpers import order, requisition, successors
-    from tests.integration.test_terminal import author, clock
+    from tests.loop_helpers import author, clock
     from tests.stages_helpers import ENV, SNAG, STEM, agent, verdict
 
     repo = rework_repo
@@ -638,7 +638,7 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
     from tests.config_helpers import order, requisition, successors
-    from tests.integration.test_terminal import author, clock
+    from tests.loop_helpers import author, clock
     from tests.stages_helpers import ENV, STEM, agent, verdict
 
     repo = rework_repo
@@ -1274,7 +1274,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
     from clutch import runner, stages
     from clutch.llm import FakeLLM
     from clutch.status import reject_queue
-    from tests.integration.test_terminal import author, clock
+    from tests.loop_helpers import author, clock
     from tests.stages_helpers import STEM, agent, verdict
 
     author(repo)
@@ -1328,7 +1328,7 @@ def test_engine_artifacts_do_not_trigger(rework_repo):
     from clutch import runner
     from clutch.llm import FakeLLM
     from tests.drain_helpers import NoChild
-    from tests.integration.test_terminal import author, clock
+    from tests.loop_helpers import author, clock
     from tests.stages_helpers import STEM, agent, verdict
 
     repo = rework_repo

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests Reject queue arrival, the confirm and reject verdict verbs, premise-bounce accounting and dead-dependency notices through the CLI
+# purpose: Tests Reject-queue arrival, the confirm and reject verdict verbs, premise-bounce accounting, and dead-dependency notices through the CLI
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: clutch/runner.py
-# verified: 0a4d026b
-# hash: f92123faf3e9da7722aa94a6322a40f6305de6eee43e5106bf6ad184cac07bef
+# verified: 7050142a
+# hash: 8c85fbe688d09e8238839a6e6b2738d32a616af5732c2fecd5c78e5adf7196d3
 
 import asyncio
 
@@ -24,8 +24,8 @@ from clutch.status import reject_queue
 from tests.cli_helpers import ENV, git_out
 from tests.drain_helpers import Clock, Script, commit_ticket, confirmed, drain, journal, make_root
 from tests.integration.test_git import commit_lock
-from tests.integration.test_terminal import author, clock, diagnosis_reply, implement_reply, repo
-from tests.stages_helpers import STEM
+from tests.loop_helpers import author, clock, diagnosis_reply, repo
+from tests.stages_helpers import STEM, implement_reply
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that a failed-run harvest records the provider, model, cost and estimate/budget flags from the stage result, and that an orphan harvest leaves those fields null
+# purpose: Tests that a failed-run harvest records the stage result's provider, model, cost and estimate/budget flags, and that an orphan harvest leaves those fields null
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/integration/test_harvest_orphans.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: d833a6b2ffb12cae8446db3906d3bbf200703920f6ea83aaa3e8c6124172cef5
+# verified: 7050142a
+# hash: cee0d0c505ebe837d39eb8d9aa4e8437302df1358a9b730786207ae57280fc83
 import asyncio
 import json
 from types import SimpleNamespace
@@ -20,7 +20,7 @@ from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
 from tests.git_fake import GitFake
 from tests.integration.test_harvest_orphans import invoke, orphan
-from tests.integration.test_terminal import repo  # noqa: F401
+from tests.loop_helpers import repo  # noqa: F401
 from tests.stages_helpers import STEM, agent, verdict
 
 pytestmark = pytest.mark.disk_io_skip

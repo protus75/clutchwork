@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests failed-run harvest records through the production CLI: closed contents, ordering ahead of caps and terminal, soft failure, and quoting in drain re-entry prompts
+# purpose: Tests failed-run harvest records through the production CLI: closed contents with no code content, ordering ahead of cap draws and the terminal, soft failure, no harvest after a merge, and quoting in drain re-entry prompts
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 4fd568576d55911b3a09b78a48ea83b23690951482502df3eaa7087c4c391ff2
+# verified: 7050142a
+# hash: 10ffc2f9eb0043e05a3f6650384ba800a030f7625258772cf14d5423d3b4e3b8
 
 import json
 from pathlib import Path
@@ -22,7 +22,7 @@ from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS, StagesRun
 from tests.drain_helpers import NoChild
 from tests.evidence_records import seed_end
-from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+from tests.loop_helpers import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
 from tests.stages_helpers import ENV, SNAG, STEM, agent, git, verdict
 
 pytestmark = pytest.mark.disk_io_skip

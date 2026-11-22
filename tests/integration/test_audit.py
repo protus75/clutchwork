@@ -2,18 +2,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Invariant auditor coverage over direct journal fixtures and the production drain
+# purpose: Tests the invariant auditor: a production drain journal with a merge and a parked failure audits clean, each invariant flags its own planted violation, exempt runs pass, timestamp order is checked per segment, and provider-drought parks count as terminals only while a run is open
 # relates: [clutch/audit.py, clutch/journal.py, tests/integration/test_drain_reentry.py, tests/integration/test_stages.py, tests/integration/test_terminal.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 555b518e867e38d0fa5cb340106652193d0d05a9fb944de5792efa74e2cbb8cd
+# verified: 7050142a
+# hash: 80211955302b2a4f29f48b6892580bf85d5fe9d3484992ab67cf1eb8d2fa6cdd
 
 import pytest
 
 from clutch.audit import INVARIANTS, audit, audit_journal
 from clutch.journal import Event, EventType, Journal
 from tests.drain_helpers import reentry_drain as drain
-from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+from tests.loop_helpers import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
 from tests.stages_helpers import agent, implement_reply, verdict
 
 pytestmark = pytest.mark.disk_io_skip

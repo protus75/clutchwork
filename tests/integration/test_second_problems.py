@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that Implement reply second_problems are filed to the Suggestion Box, deduplicated, and listed in the run record through the run command
+# purpose: Tests that second_problems in an Implement reply are filed to the Suggestion Box, deduplicated, and listed in the run record through the run command
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 0a4d026b
-# hash: 52f1132e72d2d618a556db3cf55d77d2942d61a7a5290453324579f34da12de0
+# verified: 7050142a
+# hash: a975ed7c761172f9a189a4b16681b9f26b18487cbc8b6f2f022920388187ebb6
 
 import json
 from pathlib import Path
@@ -20,7 +20,7 @@ from clutch.config import load_config
 from clutch.llm import FakeLLM
 from clutch.seams import LocalFileSystem
 from clutch.stages import ImplementReply
-from tests.integration.test_terminal import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
+from tests.loop_helpers import author, clock, diagnosis_reply, repo  # noqa: F401 -- fixture
 from tests.stages_helpers import ENV, STEM, agent, verdict
 
 pytestmark = pytest.mark.disk_io_skip
