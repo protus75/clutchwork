@@ -112,7 +112,7 @@ async def _preflighted_llm(checkout: runner.Checkout, session: ProviderSession) 
     llm = ProviderLLM(checkout.config, exec_=checkout.exec_, fs=checkout.fs, env=checkout.env, cwd=checkout.repo, timeout=runner.call_timeout(checkout.config), session=session)
     session.timers.reconstruct()
     session.timers.fire_due()
-    problems = await llm.preflight() if session.active else []
+    problems = await session.preflight_once(checkout.config, llm, llm.preflight) if session.active else []
     if problems:
         raise ProviderSetupError("; ".join(problems))
     return llm

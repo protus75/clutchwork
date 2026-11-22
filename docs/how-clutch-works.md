@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 5a232ea2
-hash: 693e72c26917efd1268c6f5eb236e69ccf587907ea219fea4039782334b45b93
+verified: a4987a89
+hash: 4e8a10d5edd07e6ef75683347fc2d5a92316c998a989638bae89ada9ba5c50f5
 -->
 # How ClutchWork works
 
@@ -650,7 +650,7 @@ Four CLI adapters ship: `claude`, `codex`, `qwen` (Qwen Code against a local Oll
 - Each provider maps tiers `low | medium | high | max` to models (`models_by_tier`).
 - A provider's `auth` env var is removed from every child process except that provider's own
   calls; git, checks, and notifications get no provider key. The env var named by `release.pypi_token` is removed likewise, except the `clutch release publish` upload receives it as `UV_PUBLISH_TOKEN`.
-- **Preflight** (start of `engine run`/`engine drain`/`engine serve`/`box triage`/`ticket review`, and standalone `engine retro` with a merge to report): checks each CLI's version against its
+- **Preflight** (once per engine session, and again after a config reload changes `providers` or `routing`; also at the start of `box triage`/`ticket review` and standalone `engine retro` with a merge to report): checks each CLI's version against its
   latest release (a mismatch is only a notice) and sends one probe call to every routed model.
 - A CLI installed in the host project (`clutch provider install <provider>`, a pnpm dev dependency under `node_modules/.bin`) is used before one on `PATH`, because the checkout's `node_modules/.bin` heads every provider child's `PATH`; the preflight's update road is `clutch provider install <provider>`.
 

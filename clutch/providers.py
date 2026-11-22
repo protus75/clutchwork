@@ -229,6 +229,9 @@ class ProviderSession:
         self.waits: set[asyncio.Task] = set()
         self._holds: dict[str, datetime] = {}
         self._held_seconds: dict[str, float] = {}
+        self._preflight_lock = asyncio.Lock()
+        self._preflight_config = None
+        self._preflight_versions = {}
 
     def live_wait(self, prefix):
         return (
@@ -262,6 +265,22 @@ class ProviderSession:
             task.cancel()
         await _observe(asyncio.gather(*tasks, return_exceptions=True))
         self.waits.clear()
+
+    async def preflight_once(self, config, llm, probe):
+        snapshot = snapshot_config(config) if isinstance(config, Config) else config
+        key = (snapshot.providers, snapshot.routing)
+        async with self._preflight_lock:
+            if self._preflight_config == key:
+                for name, adapter in llm._adapters.items():
+                    adapter.cli_version = self._preflight_versions[name]
+                return []
+            self._preflight_config = None
+            self._preflight_versions = {}
+            problems = await probe()
+            if not problems:
+                self._preflight_config = key
+                self._preflight_versions = {name: adapter.cli_version for name, adapter in llm._adapters.items()}
+            return problems
 
     def preflight_passed(self):
         if self.auth_position is None:
