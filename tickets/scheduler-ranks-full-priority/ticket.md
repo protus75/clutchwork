@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- preflight-once-per-session
+
 ## Context
 - clutch/drain.py::PRIORITY
 - clutch/drain.py::sort_key
