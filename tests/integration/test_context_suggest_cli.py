@@ -4,8 +4,8 @@
 # purpose: End-to-end test of clutch context suggest: refuses with no index, builds the index, suggests files that changed together while another lock is held without changing the database, and checks that the docs list the verb
 # relates: [clutch/__main__.py]
 # owner: engine
-# verified: d32c32ad
-# hash: c31c24b3c778a21f1b7866294b2990c88e8fdf2528d989938c02b5d7173c10ac
+# verified: ae1a5a3b
+# hash: 63477a9b6550a99a9ebdba85854a713e1ff1a2a4dbf44a70d3db6f74d60ee911
 from pathlib import Path
 
 import pytest
@@ -26,7 +26,7 @@ def test_context_suggest_end_to_end(tmp_path, monkeypatch, capsys):
     from clutch import index
     from clutch.__main__ import main
     from clutch.lockfile import Lockfile
-    from tests.integration.test_cli import CONFIG, ENV, Clock
+    from tests.cli_helpers import CONFIG, ENV, Clock
     from tests.integration.test_git_tree_id import setup_repo
 
     repo, git = setup_repo(tmp_path)

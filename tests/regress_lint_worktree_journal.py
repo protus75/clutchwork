@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for lint reading the main journal from a worktree.
+# purpose: Standalone reproducer that checks `ticket lint` run from a worktree reads the main journal and skips merged tickets.
 # relates: [clutch/__main__.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_lint_verb.py]
 # owner: engine
-# verified: d7719818
-# hash: 4b3bebae206f66fef30735cba1094e52010607e17f6fa127cdc024d9bcf18527
+# verified: ae1a5a3b
+# hash: daa93d75d97e35b005287dc401ab82bc479985cc44d490ee0edd1ba3851d97a7
 
 import contextlib
 import io
@@ -22,7 +22,7 @@ def main() -> int:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         from clutch.__main__ import main as clutch_main
         from clutch.journal import EventType
-        from tests.integration.test_cli import ENV, Clock, journal, root, ticket, write
+        from tests.cli_helpers import ENV, Clock, journal, root, ticket, write
         from tests.integration.test_lint_verb import git
 
         with tempfile.TemporaryDirectory() as directory:

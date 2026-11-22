@@ -4,8 +4,8 @@
 # purpose: Tests that roadmap authoring renames a row whose stem is already used, gives it a fresh -rN stem and updates the rows that depend on it
 # relates: [clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: d32c32ad
-# hash: eff159962d7132955de97221245bba0b51116621bc525f0f60bd0ba2e1b607b8
+# verified: ae1a5a3b
+# hash: 450dab1f708a944c1ad9531968e5d3fdccf22a7fa848900d97c404f325ac7cc8
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -17,7 +17,7 @@ from clutch.box import Box
 from clutch.git import CommitLock, Git
 from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
-from tests.integration.test_cli import ENV
+from tests.cli_helpers import ENV
 
 pytestmark = pytest.mark.disk_io_skip
 

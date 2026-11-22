@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Check that refusal and failure messages (reject queue, halted drain, box errors, retro failures) name a working paved-road verb or repair
+# purpose: Checks that refusal and failure messages (reject queue, halted drain, box errors, retro failures) name a working paved-road verb or repair
 # relates: [clutch/box.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_retro.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 638d08c4d73761efdef0630d778bf6b0804469ee7406216f991da0945f49180f
+# verified: ae1a5a3b
+# hash: ff7c5d855ffad7d1bbaa6433506184bf60cc6d7a59ed286145ffbed7526a5f53
 import asyncio
 from datetime import timedelta
 
@@ -14,7 +14,7 @@ import pytest
 from clutch.box import Box, BoxError, Resolution, read_registry
 from clutch.journal import EventType
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import ticket, write
+from tests.cli_helpers import ticket, write
 from tests.integration.test_drain import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root
 from tests.integration.test_retro import merged, rig
 

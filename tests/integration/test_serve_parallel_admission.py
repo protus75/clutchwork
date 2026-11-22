@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verifies that continuous serve admits parallel runs within capacity and fence overlap, and handles control confirm and stop requests during dispatch.
+# purpose: Tests that continuous serve admits parallel runs within capacity and fence overlap, and handles control confirm and stop requests during dispatch
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/llm.py, clutch/scheduler.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: d32c32ad
-# hash: a59c79853416fc2a3faef49359a01d22509ef44762bebf60c0ab99fa1b925c34
+# verified: ae1a5a3b
+# hash: a90050da7ce1348bf1e4c4e931bbbb9b2e9eed1ce49da50837a893b4231d2ed7
 
 import asyncio
 import json
@@ -19,9 +19,9 @@ from clutch.control import AdmissionRequest, publish_request
 from clutch.journal import EventType
 from clutch.llm import FakeLLM
 from clutch.scheduler import Scheduler
+from tests.cli_helpers import root
 from tests.config_fixture import amend_config
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, request, start_admission, terminals, until
-from tests.integration.test_cli import root
 
 pytestmark = pytest.mark.disk_io_skip
 

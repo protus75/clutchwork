@@ -5,8 +5,8 @@
 # purpose: Tests that host doctor runs its setup checks in order, reports failures, detects drift in the clutch core block and never writes anything.
 # relates: [clutch/__main__.py, clutch/doctor.py, clutch/journal.py, clutch/lockfile.py, clutch/providers.py, clutch/runner.py, clutch/seams.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 44cb3d01baac7292f3d5d62751d2d9126ad78c8d55ca90ae5a338f7270cd3052
+# verified: ae1a5a3b
+# hash: 16a7e4eefd9936c24185df3ca49f60b348cb781adcb1ad6076c10ad842b38324
 
 import asyncio
 import sys
@@ -18,7 +18,7 @@ from clutch.__main__ import main
 from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.seams import ExecutableNotFound
-from tests.integration.test_cli import ENV, Clock, journal, root
+from tests.cli_helpers import ENV, Clock, journal, root
 
 pytestmark = pytest.mark.disk_io_skip
 
@@ -177,7 +177,7 @@ def test_doctor_is_read_only(root, monkeypatch, capsys, history):
 @pytest.mark.parametrize("drifted", [False, True])
 def test_doctor_core_committed(root, drifted):
     from clutch.seams import SubprocessExec
-    from tests.integration.test_cli import git_out
+    from tests.cli_helpers import git_out
 
     if drifted:
         path = root / "CLAUDE.md"

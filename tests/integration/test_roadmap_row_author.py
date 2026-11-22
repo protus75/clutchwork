@@ -5,8 +5,8 @@
 # purpose: Tests that a recorded roadmap_row triage verdict goes through Author with its plan and evidence and produces a confirmed ticket under NO_GO
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/policy.py, clutch/seams.py, clutch/specs/__init__.py]
 # owner: clutch/author.py
-# verified: d32c32ad
-# hash: d6c17ba634be703bd533b3648e3bfa7e6b4c446fb352621fe53e0bc2baa2ca8b
+# verified: ae1a5a3b
+# hash: 5064dc50cfa115211a5b82c5b5d2bf15a211008e68a20da1cd92adeddb7c2b7b
 
 import json
 from pathlib import Path
@@ -21,8 +21,8 @@ from clutch.llm import FakeLLM
 from clutch.policy import baseline_identity
 from clutch.seams import LocalFileSystem
 from clutch.specs import load_spec
+from tests.cli_helpers import ENV, git_out
 from tests.integration.test_author import _routes, block, requisition_reply
-from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, make_root
 from tests.integration.test_triage import author_reply
 

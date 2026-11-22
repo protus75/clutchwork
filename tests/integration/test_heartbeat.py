@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that the heartbeat is idle at construction, refreshes only when every core component is healthy, propagates failures, stays dormant in run and drain, and is active in serve
+# purpose: Tests that the heartbeat does nothing at construction, refreshes only when every core component is healthy, passes failures through, stays dormant in run and drain, and is active in serve.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/git.py, clutch/heartbeat.py, clutch/journal.py, clutch/seams.py]
 # owner: engine
-# verified: d32c32ad
-# hash: e8dd35e717e8c6b4f4f85abfa322b52e8f1f27aa7bd556793bd631f8b35b3b8a
+# verified: ae1a5a3b
+# hash: 23e64c54dbd931b231d5459092b34fbe0f3974b19d6d95fe683fd2351a4a103c
 
 import asyncio
 from datetime import UTC, datetime, timedelta, timezone
@@ -20,7 +20,7 @@ from clutch.git import Git
 from clutch.heartbeat import Heartbeat
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
-from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
+from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
 

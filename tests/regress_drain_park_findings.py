@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for requisition findings missing from the drain report.
+# purpose: Standalone reproducer that checks the drain report lists the reason for a ticket parked at requisition review.
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d7719818
-# hash: 8ce8839cb021b354121c8b94cf457b6906884f5d52a75f56776dc9e20be312e3
+# verified: ae1a5a3b
+# hash: 04f43ddfcde2c6b47e2e8e3438554e77c7ee187807d1771a06e5a2e0bac51349
 
 import contextlib
 import io
@@ -24,7 +24,7 @@ def main() -> int:
         from clutch.__main__ import main as clutch_main
         from clutch.journal import EventType
         from clutch.llm import FakeLLM
-        from tests.integration.test_cli import ENV
+        from tests.cli_helpers import ENV
         from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root
         from tests.integration.test_rework import requisition
 

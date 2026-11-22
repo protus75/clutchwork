@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for rejecting an interrupted run.
+# purpose: Standalone reproducer that checks `ticket reject` on an interrupted run ends with the ticket in the rejected state.
 # relates: [clutch/__main__.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d7719818
-# hash: fb05d5ea7ca6f2b9b0d910cebc6b220996f9b54102cb516889c23aabb74d655b
+# verified: ae1a5a3b
+# hash: 9e3ed3b371129abc200b08b608c9bd02e38074a5345d5a1f9198f63c719d3fee
 
 import contextlib
 import io
@@ -22,7 +22,7 @@ def main():
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         from clutch.__main__ import main as clutch_main
         from clutch.journal import EventType
-        from tests.integration.test_cli import ENV
+        from tests.cli_helpers import ENV
         from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root
 
         with tempfile.TemporaryDirectory() as directory:

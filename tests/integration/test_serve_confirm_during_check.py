@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests that serve applies confirm and reject verdict effects, and refuses a reject on a running ticket, while an unrelated Check holds its run slot, without blocking disjoint admission.
+# purpose: Tests that serve applies confirm and reject verdict effects, and refuses a reject on a running ticket, while an unrelated Check holds its run slot, without blocking disjoint admission
 # relates: [clutch/config.py, clutch/control.py, clutch/journal.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 6a747d35ae527d555cda5765c4aa3a63a187b97fa66b0ba56b56d40b23aa1d0e
+# verified: ae1a5a3b
+# hash: 5b6fe99f34d2850ac00aed0fe21bf6424464b3f5477a6200e306df2bccb4ea9c
 
 # The generated metadata purpose can exceed the line length limit.
 # ruff: noqa: E501
@@ -19,8 +19,8 @@ import pytest
 from clutch import stages
 from clutch.control import AdmissionRequest, publish_request
 from clutch.journal import EventType
+from tests.cli_helpers import root
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, until
-from tests.integration.test_cli import root
 
 pytestmark = pytest.mark.disk_io_skip
 

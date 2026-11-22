@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve escalation notifications: startup and poll reconciliation, the unset warning, failure backoff, restart, and a hung command.
+# purpose: Tests serve escalation notifications: startup and poll reconciliation, the unset warning, failure backoff, restart, and a hung command
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/mergequeue.py, clutch/notify.py, clutch/status.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 7e1f0b61434ebc7435935d2ca18d150ddae74f8b7deb8d13d42abd969a271f5c
+# verified: ae1a5a3b
+# hash: fd7c7bec6847afd83de4f26272b44eb935b7f951cbac273aee50678a5102d895
 
 import asyncio
 import json
@@ -16,6 +16,7 @@ import pytest
 from clutch import __main__ as cli
 from clutch.journal import EventType
 from clutch.mergequeue import RED_STREAK
+from tests.cli_helpers import root
 from tests.integration.serve_rig import (
     deliveries,
     escalation_batch,
@@ -28,7 +29,6 @@ from tests.integration.serve_rig import (
     trip,
     until,
 )
-from tests.integration.test_cli import root
 
 pytestmark = pytest.mark.disk_io_skip
 

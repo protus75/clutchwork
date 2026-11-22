@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 8ec3199530055657006f3a0a31dc39651f42a34e98c040c4fc558bb217c2c61e
+# verified: ae1a5a3b
+# hash: 28def4989f80dbbff1cfedbaa09ffda573c9c1f4d48d12e6e2d03c9e878ae8e4
 
 import asyncio
 import json
@@ -29,8 +29,8 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.tickets import intake
+from tests.cli_helpers import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
 from tests.fakes import FakeClock as Clock
-from tests.integration.test_cli import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo as admission_repo
 from tests.integration.test_stages import adopt_conduct

@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
-# owner: engine
-# verified: d32c32ad
-# hash: a7cf3647290f8212c29ea3d38cb33adef9fefbf192396b8bad9b7c843b388757
+# owner: clutch/merge.py
+# verified: ae1a5a3b
+# hash: fe48cfd3a2b9c17fa9715ddf30b2845fcf10afb0d15708f5534ff7c7db1d5ab7
 
 import asyncio
 import dataclasses
@@ -27,7 +27,7 @@ from clutch.mergequeue import CONFLICT_FACTS, MergeQueue
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.stages import StageContext, run_stages
 from clutch.tickets import validate_ticket
-from tests.integration.test_cli import root
+from tests.cli_helpers import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import CONFIG, ENV, SAMPLE_REPORT, SNAG, SPECS, STEM, SampleReport, _report_bytes, adopt_conduct, agent, author, git, report_context, verdict
 from tests.spool_captures import list_captures
@@ -850,7 +850,7 @@ def test_core_drift_candidate_template(repo, mode):
 @pytest.mark.parametrize("omitted", [None, "CLAUDE.md", "AGENTS.md"])
 def test_core_activation_first_adoption_merge(repo, mode, omitted):
     from clutch import hostfiles, stages
-    from tests.integration.test_cli import core_config
+    from tests.cli_helpers import core_config
     from tests.integration.test_mergequeue import approve
 
     core_config(repo, [("medium", "implement", ["claude", "codex"]), ("medium", "review", ["claude", "codex"])])

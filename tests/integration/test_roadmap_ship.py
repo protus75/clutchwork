@@ -4,8 +4,8 @@
 # purpose: Tests that roadmap ship passes the gate, bumps the version, commits and tags the release, then waits at the next failing gate and refuses a dirty tree
 # relates: [clutch/config.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: d32c32ad
-# hash: bb52ff678c0cee23eb24dbf4ca1e87f60399804cd346707d6ba1ae88d01b2ed7
+# verified: ae1a5a3b
+# hash: b1bc0b721add6d6afba0aef20c22c5b281d02226cdf307fcb0d94e7e5f98b6dc
 import asyncio
 import shlex
 import sys
@@ -19,7 +19,7 @@ from clutch.git import CommitLock, Git, GitError
 from clutch.journal import Journal
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem, SubprocessExec
-from tests.integration.test_cli import CONFIG, ENV
+from tests.cli_helpers import CONFIG, ENV
 
 pytestmark = pytest.mark.disk_io_skip
 

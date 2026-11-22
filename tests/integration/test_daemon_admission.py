@@ -5,8 +5,8 @@
 # purpose: Tests for DaemonAdmission: one dispatch at a time in a task it owns, unwinding on errors and cancellation, reachability from the CLI import closure, and that the bootstrap run and drain verbs never construct it
 # relates: [clutch/__main__.py, clutch/daemon.py, clutch/journal.py, clutch/tickets.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 396968e71c0449ebab8031737a9ea546680a9c68d6d7a84fb9f687fec90431e8
+# verified: ae1a5a3b
+# hash: 8bc3e7ba7a5289882e03cd04d13852a2dec726b2cb7b736d9040371cd9f7ee88
 
 import ast
 import asyncio
@@ -18,7 +18,7 @@ from clutch.__main__ import main
 from clutch.daemon import DaemonAdmission
 from clutch.journal import EventType
 from clutch.tickets import parse_ticket
-from tests.integration.test_cli import ENV, Clock, root, ticket, with_retro_driver, write
+from tests.cli_helpers import ENV, Clock, root, ticket, with_retro_driver, write
 
 pytestmark = pytest.mark.disk_io_skip
 

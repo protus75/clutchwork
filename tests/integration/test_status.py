@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that `view status` renders its sections, tombstones, Suggestion Box, scorecard, provenance and verdict decisions from write-free journal and box reads.
+# purpose: Tests that `view status` renders its sections, tombstones, Suggestion Box, scorecard, provenance and verdict decisions from journal and box reads that write nothing.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/effects.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: clutch/status.py
-# verified: d32c32ad
-# hash: e13486347ecd6e8877ab0535a811b10086947c64d470b1468489578d47072289
+# verified: ae1a5a3b
+# hash: 76aca155df0bd201041f086ff7f24813532d789bd5423f4d42fbc4fcb663bb33
 
 import asyncio
 import re
@@ -27,7 +27,7 @@ from clutch.retro import Retro, RetroArtifact, measurements, production_evidence
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.specs import load_spec
 from clutch.status import project, reject_queue, render
-from tests.integration.test_cli import ENV
+from tests.cli_helpers import ENV
 from tests.integration.test_drain import Clock, make_root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_retro import completed, merged, rig

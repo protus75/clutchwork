@@ -5,8 +5,8 @@
 # purpose: Tests that each admission captures an immutable, detached config snapshot, sees valid edits on the next dispatch, never binds an invalid reload, unwinds failures, and is not wired into the bootstrap CLI
 # relates: [clutch/__main__.py, clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 08ec9a2224db163a01e6c503eae99b1d0f8003e23ce3146274eb3db3c7c5c4f2
+# verified: ae1a5a3b
+# hash: 47af57a5149743caab88c1c564d546bceffb9b4b96b90fb45b09171ff6459eb5
 
 import asyncio
 from collections.abc import Mapping
@@ -22,7 +22,7 @@ from clutch.config import ConfigError, ConfigSnapshot, load_config, snapshot_con
 from clutch.daemon import DaemonAdmission, snapshot_dispatch
 from clutch.journal import EventType
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import ENV, Clock, root, ticket, with_retro_driver, write
+from tests.cli_helpers import ENV, Clock, root, ticket, with_retro_driver, write
 from tests.integration.test_config import VALID
 from tests.integration.test_daemon_admission import assert_idle, assert_reachable, tickets, turn
 

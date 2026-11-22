@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks WorkerStop: the executor unwinds before workers are cancelled, stop requires a matching kill, all workers are observed, and the stop stays dormant in production
+# purpose: Tests WorkerStop: the executor unwinds before workers are cancelled, stop requires a matching kill, every worker is observed, and the stop is dormant in run and drain but active in serve.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, tests/integration/serve_rig.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 445576a496d825e1bfbdfa13d1a775de9b3afd92f1b8410782b6e2e48426babd
+# verified: ae1a5a3b
+# hash: 13bd79cba586c420e59ec1f625e86bf3ac086044f8a4eaef7d17da5fc49e13dd
 
 import asyncio
 from functools import partial
@@ -17,7 +17,7 @@ from clutch import __main__ as main
 from clutch import daemon
 from clutch.control import ControlProjection
 from clutch.llm import FakeLLM
-from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
+from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
 from tests.integration.test_driver import build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn

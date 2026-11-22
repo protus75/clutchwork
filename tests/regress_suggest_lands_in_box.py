@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for suggestions invisible until intake.
+# purpose: Standalone reproducer that checks `box suggest` puts a pending suggestion in the Suggestion Box straight away.
 # relates: [clutch/box.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d7719818
-# hash: 7275df5adbcbc74d0967e88b624497d114cce04d6a71c26c7a8f7c7a60564256
+# verified: ae1a5a3b
+# hash: 8f239a24ae4d536c3630c43c603ecf5935edcd9702c0102462ef25aa1873abb2
 
 import contextlib
 import io
@@ -22,7 +22,7 @@ def main() -> int:
     try:
         from clutch.box import Box
         from clutch.seams import LocalFileSystem
-        from tests.integration.test_cli import cli, root
+        from tests.cli_helpers import cli, root
 
         with tempfile.TemporaryDirectory() as directory:
             repo = root.__wrapped__(Path(directory))

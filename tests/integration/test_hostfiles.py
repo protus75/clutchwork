@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker corruption refusal, drift classification, remainder process refusals, and the production core_drift gate
+# purpose: Tests the managed core block renderer: golden output, byte-preserving adoption and refresh, marker-corruption refusal, drift classification, project-rule refusals, and the production core_drift gate.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
 # owner: engine
-# verified: d32c32ad
-# hash: fe529696ccc31197b48e9ed63a82958758b9d83fd9c3d808de34d2bdf31d326e
+# verified: ae1a5a3b
+# hash: 5f95c50c1b6159379350028781f89c5343a8863096a5cfd82c965f1c19a6a075
 
 import asyncio
 import base64
@@ -18,7 +18,7 @@ import pytest
 
 from clutch import hostfiles
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import root
+from tests.cli_helpers import root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo
 from tests.integration.test_stages import agent, verdict
@@ -319,8 +319,8 @@ def test_core_drift_reachable_from_production_gates(root, monkeypatch, mode):
     from clutch.__main__ import main
     from clutch.gates import run_gates
     from clutch.llm import FakeLLM
-    from tests.integration.test_cli import ENV, Clock, write
-    from tests.integration.test_cli import ticket as ticket_text
+    from tests.cli_helpers import ENV, Clock, write
+    from tests.cli_helpers import ticket as ticket_text
 
     calls, selections = [], []
     classify = hostfiles.classify_core
@@ -466,7 +466,7 @@ async def test_stale_core_reads_head(root, state):
     from clutch.config import load_config
     from clutch.git import Git
     from clutch.seams import SubprocessExec
-    from tests.integration.test_cli import ENV, git_out
+    from tests.cli_helpers import ENV, git_out
 
     path = root / "CLAUDE.md"
     current = path.read_bytes()

@@ -4,8 +4,8 @@
 # purpose: Tests that ticket confirm/reject requests sent to a running or paused drain are accepted, refused or marked stale correctly.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d32c32ad
-# hash: a486f474b0dc93adc3dd217beee98f2b503908bba52304410d3c38e59297ec32
+# verified: ae1a5a3b
+# hash: 4896b78eca1887a3edbb2d02674090102bc6b77b7d3b5a0b5790ad6b535c4398
 import asyncio
 import json
 
@@ -15,7 +15,7 @@ from clutch import __main__ as entry
 from clutch.control import ControlRequest, publish_request
 from clutch.drain import drain
 from clutch.journal import EventType
-from tests.integration.test_cli import ENV, ticket
+from tests.cli_helpers import ENV, ticket
 from tests.integration.test_drain import commit_ticket, confirmed, pause_checkout, root
 from tests.integration.test_drain_reentry import NoChild
 

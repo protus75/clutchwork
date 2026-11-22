@@ -4,8 +4,8 @@
 # purpose: Tests box triage submission to a running drain or serve, refusal under a non-engine lock holder, lock-free direct passes, and that only requested messages are triaged
 # relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/seams.py]
 # owner: engine
-# verified: d32c32ad
-# hash: adad1cb025bce91c46b66e172a64dc57890789e358c31a2403a590051912face
+# verified: ae1a5a3b
+# hash: 3dc726dd97b16b32d18a4d809fb51af6ff0d3597eecadf7bbf377eedb32f4739
 from pathlib import Path
 
 import pytest
@@ -17,7 +17,7 @@ from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import ENV, root
+from tests.cli_helpers import ENV, root
 from tests.integration.test_drain import Clock
 from tests.integration.test_triage import enqueue, reply, root_with_box
 

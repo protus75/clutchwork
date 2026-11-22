@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Runs `clutch index build` end to end through main, covering DuckDB output, the fts extension load, a rerun, and refusal while the lock is held
+# purpose: Runs `clutch index build` end to end and checks the DuckDB output, the fts extension load, a rerun, and refusal while the lock is held.
 # relates: [clutch/__main__.py]
 # owner: engine
-# verified: d32c32ad
-# hash: edec33420394ba08629dcf73f48a7d21c19f5c72b546d29369c9c57f9acb12ae
+# verified: ae1a5a3b
+# hash: ca26b0aecc5bb3b2295a0591f7274d4af6cdb67900b6fd1c9182c6f38bfa3326
 import asyncio
 
 import duckdb
@@ -14,7 +14,7 @@ import pytest
 from clutch import index
 from clutch.__main__ import main
 from clutch.lockfile import Lockfile
-from tests.integration.test_cli import CONFIG, ENV, Clock
+from tests.cli_helpers import CONFIG, ENV, Clock
 from tests.integration.test_git_tree_id import setup_repo
 
 pytestmark = pytest.mark.disk_io_skip

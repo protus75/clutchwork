@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for signals that terminate a drain without a kill.
+# purpose: Standalone reproducer that checks a stop signal during a drain logs a killed `engine_stop` record.
 # relates: [clutch/__main__.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d7719818
-# hash: b3107154e2a1b1e0d5e80207a1cc0c08dac43d149aa87fcffa2b31bf3e30b81a
+# verified: ae1a5a3b
+# hash: 5fba6c37b1f18f7a3207406858fdfadc1706fbc46133b76eb864e82face599c4
 
 import asyncio
 import contextlib
@@ -24,7 +24,7 @@ def main():
         from clutch import __main__ as cli
         from clutch import runner
         from clutch.llm import FakeLLM
-        from tests.integration.test_cli import ENV
+        from tests.cli_helpers import ENV
         from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
         from tests.integration.test_stages import agent
 

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that an OS signal kills a running drain the same way a kill control request does.
+# purpose: Tests that an OS signal stops a running drain the same way an accepted kill request does, journals the kill, and restores the signal handlers.
 # relates: [clutch/__main__.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 3ff40bcc21f00211e1a5e2328c33bd4d47812fee1178c176843f5029edda2b5e
+# verified: ae1a5a3b
+# hash: 4a4e3f76bc714d729281ab4cf25d6c42b733ea68abdb98cf62bbeb8591357562
 import asyncio
 import json
 
@@ -14,7 +14,7 @@ import pytest
 from clutch import __main__ as cli
 from clutch import runner
 from clutch.llm import FakeLLM
-from tests.integration.test_cli import ENV
+from tests.cli_helpers import ENV
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, root
 from tests.integration.test_stages import agent
 

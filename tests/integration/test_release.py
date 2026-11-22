@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Check with real git that `release bump` commits and tags while keeping unrelated staged and unstaged edits, and that refusals change nothing
+# purpose: Checks with real git that `release bump` commits and tags while keeping unrelated staged and unstaged edits, and that refusals change nothing
 # relates: [clutch/__main__.py, clutch/git.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/__main__.py
-# verified: d32c32ad
-# hash: 3ec7e58b40e5361c223c5a5a29c91431ced27dbf711bc3ae269b47a6538712a4
+# verified: ae1a5a3b
+# hash: bda7e11d8df6f7fb5bb30950f120a70caaef7b6e1fd441f4db7fcd8f28e009fb
 
 import asyncio
 from datetime import UTC, datetime
@@ -17,7 +17,7 @@ from clutch.__main__ import main
 from clutch.git import Git
 from clutch.lockfile import CommitLock, Lockfile
 from clutch.seams import SubprocessExec
-from tests.integration.test_cli import CONFIG, ENV
+from tests.cli_helpers import CONFIG, ENV
 
 pytestmark = pytest.mark.disk_io_skip
 

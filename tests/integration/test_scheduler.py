@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests scheduler dispatch, eligibility, holds, ordering, backpressure and watcher debounce/parse handling, plus CLI reachability of scheduler and watcher.
+# purpose: Tests scheduler dispatch, eligibility, holds, ordering, backpressure and watcher debounce/parse handling, plus CLI reachability of scheduler and watcher
 # relates: [clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 629c21b8ab01edcc4097078f27dde0cb06e88f42f090cf6d83f55d93b3e946e4
+# verified: ae1a5a3b
+# hash: 97c3d4a2004ac2c5948b61b8b8c88c382171e5e96b82381879e980b6ced870bd
 
 import ast
 import asyncio
@@ -24,8 +24,8 @@ from clutch.scheduler import Scheduler
 from clutch.seams import LocalFileSystem
 from clutch.tickets import INTAKE_SIGNAL, parse_ticket
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
+from tests.cli_helpers import TICKET
 from tests.dispatch_settle import dispatch_settled
-from tests.integration.test_cli import TICKET
 
 pytestmark = pytest.mark.disk_io_skip
 

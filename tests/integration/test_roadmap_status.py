@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: End-to-end test that `clutch roadmap status` reports release counts, the next row and gate result without changing HEAD, the worktree or the journal.
+# purpose: End-to-end test that `clutch roadmap status` reports release counts, the next row and gate result without changing HEAD, the worktree or the journal
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/seams.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: d32c32ad
-# hash: e5ef63d502745d25a502f3a668bb98ca88ec4474a8c565b3b355290d3be3b352
+# owner: clutch/roadmap.py
+# verified: ae1a5a3b
+# hash: 6fd80f15d92e001b129621ec6964ea324423ad2f327006ada314b16af56ad36f
 import asyncio
 import shlex
 import sys
@@ -18,7 +18,7 @@ from clutch import roadmap
 from clutch.git import CommitLock, Git
 from clutch.journal import EventType, Journal
 from clutch.seams import SubprocessExec
-from tests.integration.test_cli import CONFIG, ENV
+from tests.cli_helpers import CONFIG, ENV
 
 pytestmark = pytest.mark.disk_io_skip
 

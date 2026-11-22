@@ -5,8 +5,8 @@
 # purpose: Tests DaemonTasks consumer ownership, cancellation and cleanup, dormancy under run/drain, and activation under serve.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/daemon.py, clutch/journal.py, clutch/mergequeue.py, clutch/runner.py, clutch/triage.py]
 # owner: engine
-# verified: d32c32ad
-# hash: c1f27f657e1833664b53cd00c37037ccaa89acfbf91c9ae4298cbaeab24a1d2f
+# verified: ae1a5a3b
+# hash: 83e29bcaff7ddd9e397b12c4f82910e5ff0bf8bfea9d99f4a3ad7891d8b2216b
 
 import asyncio
 import gc
@@ -20,7 +20,7 @@ from clutch.daemon import DaemonTasks
 from clutch.journal import EventType
 from clutch.mergequeue import MergeQueue
 from clutch.runner import Checkout
-from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
+from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring
 from tests.integration.test_mergequeue import ctx as admission_context
 from tests.integration.test_mergequeue import ready

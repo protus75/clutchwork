@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that worker failures are suppressed only after a matching accepted kill, that other failures are kept, and that suppression stays dormant in run and drain
+# purpose: Tests that worker failures are suppressed only after a matching accepted kill, that other failures are kept, and that suppression is dormant in run and drain but active in serve.
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/reconcile.py, clutch/runner.py, clutch/stages.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 76091bbd4b9e73e9f55f6943412912d0315381062a889384e8fd4f367ff40002
+# verified: ae1a5a3b
+# hash: 5a2ddb840f87041fded0078f6c90b4d5763dffc8a07236de5bbfb07ca6950de7
 
 import asyncio
 import json
@@ -20,7 +20,7 @@ from clutch.control import ControlProjection
 from clutch.journal import EventType, run_seq
 from clutch.llm import FakeLLM
 from clutch.reconcile import RECOVERY_ALERT, orphans, reconcile
-from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
+from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
 from tests.integration.test_driver import ECHO, Stub, build
 from tests.integration.test_kill_executor_abort import Timer, Writer, cancelled, invoke, turn

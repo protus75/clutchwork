@@ -4,8 +4,8 @@
 # purpose: Integration tests for the clutch CLI verbs: ticket new and order, view status, engine run and retro, host doctor, core and docs, config migrate, and box suggest
 # relates: [clutch/__init__.py, clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/gates.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py]
 # owner: engine
-# verified: d32c32ad
-# hash: f4b3bf2f0c04a8e3386b3bbe39ddb15b625f81e01778745f5da270ba83475acf
+# verified: ae1a5a3b
+# hash: d99a5b63d76f4f99613c1ede24d72f9b55f9ac334796a4bd9ebd017951384122
 import asyncio
 import os
 import subprocess
@@ -20,149 +20,11 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.runner import Refusal
 from clutch.seams import SubprocessExec
+from tests.cli_helpers import CONFIG, ENV, PLAN, TICKET, Clock, Stages, cli, core_config, git_fake, git_out, journal, root, ticket, with_retro_driver, write
 from tests.config_fixture import build_config
-from tests.fakes import FakeClock as Clock
 from tests.integration.test_git import commit_lock
-from tests.integration.test_stages import adopt_conduct
 
 pytestmark = pytest.mark.disk_io_skip
-
-ENV = {
-    "PATH": "/usr/bin:/bin",
-    "HOME": "/nonexistent",
-    "GIT_CONFIG_NOSYSTEM": "1",
-    "GIT_AUTHOR_NAME": "t",
-    "GIT_AUTHOR_EMAIL": "t@t",
-    "GIT_COMMITTER_NAME": "t",
-    "GIT_COMMITTER_EMAIL": "t@t",
-}
-
-CONFIG = build_config()
-
-PLAN = "# Plan\n\n## 11. Failure spine\n\nSpine.\n"
-
-TICKET = """---
-priority: P2
-kind: feature
----
-
-## Depends on
-{depends}
-
-## Context
-- clutch/thing.py
-
-## Goal / Why
-`thing()` returns ok.
-
-## Boundary contract
-none
-- reason: unchanged behavior
-
-## Scope in / Scope out
-In: thing. Out: the rest.
-
-## Scope fence
-- clutch/thing.py
-
-## Acceptance criteria
-1. `uv run pytest` exits 0.
-
-## Verification
-```
-uv run pytest
-```
-
-## Definition of rejected
-Needs a new dependency.
-
-## Time budget
-- expected: 10m
-- stuck: 20m
-"""
-
-
-def ticket(depends: str = "none") -> str:
-    return TICKET.format(depends=depends)
-
-
-def with_retro_driver(checkout, dispatch):
-    from clutch import runner
-    from clutch.llm import FakeLLM
-
-    dispatch.stages = runner.bind(checkout, FakeLLM(['{"proposals": []}'] * 10)).stages
-    return dispatch
-
-
-class Stages:
-    """Scripted fake for the stage-dispatch seam: records each dispatched ticket and the lock state."""
-
-    def __init__(self, terminal: str = "merged") -> None:
-        self.terminal = terminal
-        self.calls: list[str] = []
-        self.lock_held: list[bool] = []
-        self.checkout = None
-
-    def __call__(self, checkout):
-        self.checkout = checkout
-
-        async def dispatch(t):
-            self.calls.append(t.stem)
-            contender = Lockfile(checkout.config.state_dir, verb="drain", instance_id="contender", clock=Clock())
-            try:
-                contender.acquire()
-            except LockHeld:
-                self.lock_held.append(True)
-            else:
-                contender.release()
-                self.lock_held.append(False)
-            checkout.journal.append(EventType.STATE_TRANSITION, {"to": self.terminal}, ticket=t.stem)
-            return self.terminal
-
-        return with_retro_driver(checkout, dispatch)
-
-
-@pytest.fixture
-def root(tmp_path: Path) -> Path:
-    root = tmp_path / "repo"
-    (root / "clutch").mkdir(parents=True)
-    (root / "clutch" / "thing.py").write_text("")
-    (root / "CLUTCH_PLAN.md").write_text(PLAN)
-    (root / "config.yaml").write_text(CONFIG)
-    (root / ".gitignore").write_text(".clutch/\n")
-    conduct = adopt_conduct(root)
-    # Some consumers replace the fixture's routing with a Codex configuration.
-    from clutch.hostfiles import render
-
-    (root / "AGENTS.md").write_bytes(render(b""))
-    conduct.append("AGENTS.md")
-    g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(tmp_path / "seed-state"))
-
-    async def seed():
-        await g.init(root, branch="main")
-        await g.add(root, ["clutch", "CLUTCH_PLAN.md", "config.yaml", ".gitignore", *conduct])
-        await g.commit(root, "base")
-
-    asyncio.run(seed())
-    return root
-
-
-def cli(root: Path, *argv: str, stages=None) -> int:
-    return main(list(argv), cwd=root, env=ENV, clock=Clock(), pipeline=stages or Stages())
-
-
-def journal(root: Path) -> Journal:
-    return Journal(root / ".clutch" / "state", Clock())
-
-
-def write(root: Path, stem: str, text: str) -> None:
-    path = root / "tickets" / stem / "ticket.md"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
-
-
-def git_out(root: Path, *args: str) -> str:
-    return subprocess.run(["git", "-C", str(root), *args], env=ENV, capture_output=True, text=True, check=True).stdout
 
 
 # --- new ----------------------------------------------------------------------------------------
@@ -652,19 +514,6 @@ def test_doctor_cli(root, capsys):
     lines = capsys.readouterr().out.splitlines()
     assert lines[0] == "doctor: ok"
     assert [line.split(":", 1)[0] for line in lines[1:]] == [f"PASS {n}" for n in ("venv", "config", "git", "lock", "journal", "core")]
-
-
-def core_config(root, routes):
-    import yaml
-
-    config = yaml.safe_load(CONFIG)
-    claude = config["providers"][0]
-    # Both providers are declared even when only one is routed.
-    config["providers"].append({**claude, "name": "codex", "package": "other-cli"})
-    config["routing"] = [{"tier": tier, "surface": surface, "candidates": [{"provider": name} for name in names]} for tier, surface, names in routes]
-    path = root / "config.yaml"
-    path.write_text(yaml.safe_dump(config))
-    return path
 
 
 @pytest.mark.parametrize(

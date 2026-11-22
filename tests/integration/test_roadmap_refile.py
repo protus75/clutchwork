@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that a declined roadmap row is refiled to the Box with the real journal and Box, without the reword hint
+# purpose: Tests that a declined roadmap row is refiled to the Box on the next author-ahead pass with the real journal and Box, without the reword hint
 # relates: [clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: d32c32ad
-# hash: ce1848542d227696e90caab23f5e40e028417408425ddb1888ed2fd91864aea3
+# verified: ae1a5a3b
+# hash: eac602d7cc144b9d77c3c5e4f2db02984593747c754a4056108ccfea6f761b05
 import asyncio
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -17,7 +17,7 @@ from clutch.box import Box, Resolution
 from clutch.git import CommitLock, Git
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
-from tests.integration.test_cli import ENV
+from tests.cli_helpers import ENV
 
 pytestmark = pytest.mark.disk_io_skip
 

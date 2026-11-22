@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests `clutch box triage` and `box dismiss` CLI composition with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution
+# purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/triage.py
-# verified: d32c32ad
-# hash: 49fc950fb165a8cf39ecd475a9b9e31f41e0b01a8956ea39c1045e58438607ab
+# verified: ae1a5a3b
+# hash: f82df5c832ded2e03aa15457c9b039ef3eca1c9d010fdbafcfe94d51a28626d4
 
 import asyncio
 import json
@@ -20,7 +20,7 @@ from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import ENV, git_out
+from tests.cli_helpers import ENV, git_out
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
 from tests.spool_captures import read_capture
 from tests.stage_replies import requisition_reply

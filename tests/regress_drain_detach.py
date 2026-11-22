@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for drain detachment at the engine verb.
+# purpose: Standalone reproducer that checks `engine drain --detach` spawns one detached process and exits 0.
 # relates: [clutch/__main__.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d7719818
-# hash: 800ca46264cfc291188c609b497032dc90fd46c1971808459ddfb4958826bfae
+# verified: ae1a5a3b
+# hash: b75f0013f52e0c9ac5aa1ee075e740f627db338806aec9ce4d51ccd0dfc022b9
 
 import contextlib
 import io
@@ -23,7 +23,7 @@ def main() -> int:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         from clutch.__main__ import _parser
         from clutch.__main__ import main as clutch_main
-        from tests.integration.test_cli import ENV
+        from tests.cli_helpers import ENV
         from tests.integration.test_drain import make_root
 
         with tempfile.TemporaryDirectory() as directory:

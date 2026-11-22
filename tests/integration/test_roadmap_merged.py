@@ -4,8 +4,8 @@
 # purpose: Runs `clutch roadmap merged` end to end over stems, a release and a since-tag count check, without changing git or the journal
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: clutch/roadmap.py
-# verified: d32c32ad
-# hash: 3976ef7da22db4b52cba643a029eec238b8381b18f168ac4f1090eb3d9c9ea9c
+# verified: ae1a5a3b
+# hash: 3feb9a3a06382ee0dc367c4fafafadf51d1f36337fcac1890e3b9f491bbb2685
 import asyncio
 from datetime import UTC, datetime
 
@@ -16,7 +16,7 @@ from clutch.git import Git
 from clutch.journal import EventType, Journal
 from clutch.lockfile import CommitLock
 from clutch.seams import SubprocessExec
-from tests.integration.test_cli import CONFIG, ENV
+from tests.cli_helpers import CONFIG, ENV
 
 pytestmark = pytest.mark.disk_io_skip
 

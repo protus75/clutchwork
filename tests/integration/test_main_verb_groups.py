@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Checks the source shape of the shared verb plumbing in __main__ (each shared call has one owner) and the real CLI refusal paths
 # relates: [clutch/__main__.py, clutch/lockfile.py, clutch/runner.py, tests/integration/test_cli.py]
-# owner: engine
-# verified: d32c32ad
-# hash: f610d9ce2e93a3a5936b3f7de06c084f6dd962bbf85b48ba5922d50091cd1e2b
+# owner: clutch/__main__.py
+# verified: ae1a5a3b
+# hash: f09fb084cd2b3a7029805086a1f017cade29023e99b483948d0645f982f4be55
 
 import ast
 import json
@@ -17,7 +17,7 @@ import pytest
 from clutch import __main__ as entry
 from clutch import runner
 from clutch.lockfile import Lockfile, LockHeld
-from tests.integration.test_cli import ENV, Clock, root
+from tests.cli_helpers import ENV, Clock, root
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: d32c32ad
-# hash: ddcca2e604b0e978866a06bc7b83cd0701763f121aef919a63a76844088f1d14
+# verified: ae1a5a3b
+# hash: 3f8e74b290cde5ed4b1e32ebee8530b41c8aeddb3bc90ea8bd7ae59d2fc4499c
 
 import ast
 import asyncio
@@ -32,8 +32,8 @@ from clutch.scheduler import Scheduler
 from clutch.stages import StageContext
 from clutch.tickets import INTAKE_SIGNAL
 from clutch.watcher import WATCHER_PARSE_FAILURE, Watcher
+from tests.cli_helpers import root, write
 from tests.dispatch_settle import dispatch_settled
-from tests.integration.test_cli import root, write
 from tests.integration.test_daemon_admission import assert_idle
 from tests.integration.test_daemon_config import assert_detached, python_values
 from tests.integration.test_git import commit_lock
@@ -1391,7 +1391,7 @@ class LiveDrain:
         from clutch.control import ControlRequest, publish_request
         from clutch.lockfile import Lockfile, LockHeld
         from clutch.seams import LocalFileSystem, SubprocessExec
-        from tests.integration.test_cli import ENV as checkout_env
+        from tests.cli_helpers import ENV as checkout_env
         from tests.integration.test_drain import Clock, journal
 
         process = SubprocessExec()
@@ -1817,8 +1817,8 @@ async def test_pause_activation_observables_detect_removed_bindings(root, monkey
 
 @pytest.mark.asyncio
 async def test_production_shares_one_admission_control_consumer(root, tmp_path, monkeypatch):
-    from tests.integration.test_cli import ENV as checkout_env
-    from tests.integration.test_cli import Clock
+    from tests.cli_helpers import ENV as checkout_env
+    from tests.cli_helpers import Clock
 
     captured = capture_pipeline_queue(monkeypatch)
     trace, roots, consumers = [], [], []

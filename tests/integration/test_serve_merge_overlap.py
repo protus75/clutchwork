@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify merge and rebase complete beside a held implementation.
+# purpose: Tests that a merge and the following rebase complete while another implementation holds its parallel run slot
 # relates: [clutch/config.py, clutch/mergequeue.py, clutch/stages.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 987472fa30436837c3fd02a569af46cab8f735de7366e4691ceb5f805370bcc4
+# verified: ae1a5a3b
+# hash: 50c819f723fac2a626ac3aa03393d191640559c754ffa023605b5ad7daf7bce5
 import asyncio
 from dataclasses import replace
 
@@ -15,8 +15,8 @@ import yaml
 from clutch.config import load_config
 from clutch.llm import FakeLLM
 from clutch.mergequeue import TREE_MISMATCH
+from tests.cli_helpers import root
 from tests.integration.serve_rig import admission_graph, admission_ticket, finish, start_admission, terminals, until
-from tests.integration.test_cli import root
 
 pytestmark = pytest.mark.disk_io_skip
 

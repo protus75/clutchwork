@@ -5,8 +5,8 @@
 # purpose: Covers production restart with the lock held: orphan reconciliation and harvest custody, journal-backed timer arm and fire with rearm, and startup failures that never report ready
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: clutch/restart.py
-# verified: d32c32ad
-# hash: 8e19046d7975fef0dba37d7f26a0520654f359c39da3d4426b1310c16f8cf952
+# verified: ae1a5a3b
+# hash: 2d45fccfc6550240887055d06dae27af56d7e2c46e600b335f522eac338ed503
 
 import ast
 import asyncio
@@ -25,7 +25,7 @@ from clutch.lockfile import Lockfile, LockHeld
 from clutch.restart import Restart
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.timers import Timers
-from tests.integration.test_cli import ENV, root
+from tests.cli_helpers import ENV, root
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
 from tests.integration.test_providers import CONFIG
 from tests.integration.test_scheduler import Time, turn

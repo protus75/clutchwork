@@ -2,16 +2,16 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Evidence capture command through the composition root
+# purpose: Tests that `evidence captures` lists stored captures, prints a named capture, and refuses `--name` without `--attempt`.
 # relates: [clutch/__main__.py, clutch/evidence/store.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: 75d75946
-# hash: 73cf0c78760b687f8ebca20c02ef747eb848acc35d112c45dea9fca7a39ed59e
+# verified: ae1a5a3b
+# hash: 190612dd06bc8ba0f2e56d7ecf49f43d306af7661c7b3b3b989af77ae3b76481
 
 from clutch.__main__ import main
 from clutch.evidence.store import EvidenceStore
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import CONFIG
+from tests.cli_helpers import CONFIG
 
 
 def test_main_captures(tmp_path, capsys):

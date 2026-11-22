@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the CLI view verbs
+# purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only CLI view verbs.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
 # owner: clutch/observe.py
-# verified: d32c32ad
-# hash: e3d287be567e4da1826296001094acdb80f109ab3bc265896afa12292f87b7e6
+# verified: ae1a5a3b
+# hash: af8c778e76bd88f4437d6afad9aa214ec54e00a45a636d75ee0058846889344c
 import json
 import os
 import subprocess
@@ -793,7 +793,7 @@ def test_snapshot_review_locks_for_changed_evidence(tmp_path):
     from clutch.git import Git
     from clutch.lockfile import Lockfile
     from clutch.seams import SubprocessExec
-    from tests.integration.test_cli import ENV
+    from tests.cli_helpers import ENV
     from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
     from tests.integration.test_git import commit_lock
 
@@ -842,7 +842,7 @@ def test_draft_assessment_menu_tracks_snapshot_draft(tmp_path):
     from clutch import observe
     from clutch.git import Git
     from clutch.seams import SubprocessExec
-    from tests.integration.test_cli import ENV, git_out
+    from tests.cli_helpers import ENV, git_out
     from tests.integration.test_drain import confirmed, make_root
     from tests.integration.test_git import commit_lock
 

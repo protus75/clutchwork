@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests flake detection, quarantine projection, cap escalation, release and crash replay through the journal and Suggestion Box
+# purpose: Tests flake detection and release: the bare-rerun evidence rules, Suggestion Box identity, journaled quarantine projection, cap escalation, and crash replay.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/seams.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 043be254bab4f675b76077c61dc0f523e2f3ba596a8a65153198085aeab0c4ba
+# verified: ae1a5a3b
+# hash: d9e6fa077e33eda264bcab8c9c844c8d970b6164c4ff35511992bb41bc133a4f
 
 import asyncio
 from dataclasses import replace
@@ -22,7 +22,7 @@ from clutch.config import Caps
 from clutch.flake import Flake, FlakeError, GreenRerunEvidence, RerunEvidence
 from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import ENV, Clock, Stages, root, ticket, write
+from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.integration.test_daemon_composition import CoreRig, assert_startup_pause_wiring
 
 pytestmark = pytest.mark.disk_io_skip

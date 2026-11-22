@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the read-only outcomes and help text of the evidence captures command.
+# purpose: Tests that the evidence captures command lists and prints captures read-only, refuses bad or missing input with paved-road errors, and has the expected help text.
 # relates: [clutch/__main__.py, clutch/evidence/store.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: a0fabed93861856f8335ff09ecebcfce91c0db3a3b5956e9a5d684aba7d41517
+# verified: ae1a5a3b
+# hash: c18245f1fdb536deb53956ba9181031a25587a1694fdd12d36df3090b12b7be5
 
 import json
 
@@ -15,7 +15,7 @@ import pytest
 from clutch.__main__ import main
 from clutch.evidence.store import EvidenceStore
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import CONFIG
+from tests.cli_helpers import CONFIG
 
 pytestmark = pytest.mark.disk_io_skip
 

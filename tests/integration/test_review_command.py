@@ -5,8 +5,8 @@
 # purpose: Tests `clutch ticket review`: it reviews the committed ticket, journals the verdict, handles the checkout and commit locks, provisional dependencies, prior findings and intake of only the named ticket
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/reconcile.py, clutch/requisition.py, clutch/status.py]
 # owner: clutch/__main__.py
-# verified: d32c32ad
-# hash: 52695e2e37668b72a68950633df1448d778071afd16891ac8542e5d5d3d95f3c
+# verified: ae1a5a3b
+# hash: 8b31ed1e561f1d9e98fc05df512f24a8f180f0a5492211ac919d7d3296f24ded
 
 import pytest
 
@@ -17,7 +17,7 @@ from clutch.lockfile import Lockfile
 from clutch.reconcile import orphans
 from clutch.requisition import FIRST_REVIEW
 from clutch.status import last_states
-from tests.integration.test_cli import ENV, git_out, ticket, write
+from tests.cli_helpers import ENV, git_out, ticket, write
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
 from tests.stage_replies import requisition_reply as reply
 

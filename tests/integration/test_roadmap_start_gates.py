@@ -4,8 +4,8 @@
 # purpose: Tests that roadmap start gates hold back status and author-ahead until they pass, and checks the repository's start and ship gate blocks
 # relates: [clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/seams.py]
 # owner: clutch/roadmap.py
-# verified: d32c32ad
-# hash: 978a1a248befaffc85358499781c503e469a4c587ab3cfabe92b14c324926e02
+# verified: ae1a5a3b
+# hash: 5901dd188c527ff62f61dfd8cd9fbabdece0b11ef1ad3a07ec50ec2edd29133c
 import asyncio
 import shlex
 import sys
@@ -18,7 +18,7 @@ from clutch.box import Box
 from clutch.config import load_config
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
-from tests.integration.test_cli import ENV
+from tests.cli_helpers import ENV
 from tests.integration.test_drain import Clock
 from tests.integration.test_roadmap_author import setup_repo
 from tests.unit.test_roadmap_status import fixture
@@ -46,7 +46,7 @@ def test_status_and_author_start(tmp_path, monkeypatch):
     path = root / roadmap.ROADMAP
     original = path.read_text()
     path.write_text(original.replace("### Next\n", f"### Next\n```start\n{command}\n```\n", 1))
-    from tests.integration.test_cli import git_out
+    from tests.cli_helpers import git_out
 
     git_out(root, "add", "docs/roadmap.md")
     git_out(root, "commit", "-m", "add start gate")

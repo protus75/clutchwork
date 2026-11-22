@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve self-upgrade re-exec after engine changes, waiting for continuations and selection, and suppression by kill, stop or a non-git engine.
+# purpose: Tests serve self-upgrade re-exec after engine changes, waiting for continuations and selection, and suppression by kill, stop or a non-git engine
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 7cf93f39c1dc65ece81522dff5eb7469e2fd0281c549526320d794877c266c69
+# verified: ae1a5a3b
+# hash: 0b069d1974c75b049bbfd076ec2f2c8c842b2711f9e903eece153756ad689a3b
 
 import asyncio
 import json
@@ -20,6 +20,7 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.merge import Admission
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
+from tests.cli_helpers import ENV, root
 from tests.integration.serve_rig import (
     UpgradeChild,
     admission_config,
@@ -37,7 +38,6 @@ from tests.integration.serve_rig import (
     until,
     write,
 )
-from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
 
 pytestmark = pytest.mark.disk_io_skip

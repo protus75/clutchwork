@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the evidence schema, show, renormalize and coverage CLI verbs over stored calls and the golden Codex stream, including pruned, unknown-version and corrupt inputs
+# purpose: Tests the evidence schema, show, renormalize and coverage commands over stored calls and the golden Codex stream, including pruned, unknown-version and corrupt inputs.
 # relates: [clutch/__main__.py, clutch/evidence/schema.py, clutch/evidence/store.py, clutch/seams.py, tests/evidence_records.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 2176ece0f9876bc690517c843a24b110f7efc60aa136114917d39001f9186790
+# verified: ae1a5a3b
+# hash: 2f6c3ae6eb1a7defb35cd11cda7431210d21e5b1f983191128274bd3779e981e
 
 import json
 from pathlib import Path
@@ -17,8 +17,8 @@ from clutch.__main__ import main
 from clutch.evidence.schema import json_schema
 from clutch.evidence.store import EvidenceStore
 from clutch.seams import LocalFileSystem
+from tests.cli_helpers import CONFIG
 from tests.evidence_records import seed_end
-from tests.integration.test_cli import CONFIG
 from tests.unit.test_evidence_views import start_record
 
 pytestmark = pytest.mark.disk_io_skip

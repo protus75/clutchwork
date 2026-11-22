@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve merge admission: queue routing, rebase and regate, red-streak and tree-mismatch holds, cleanup, refusals and conflict reruns.
+# purpose: Tests serve merge admission: queue routing, rebase and regate, red-streak and tree-mismatch holds, cleanup, refusals and conflict reruns
 # relates: [clutch/audit.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 4b706d3f2a27897c9b2da4e3f767dc06b1bb7d2888f71b702b21408f646a366d
+# verified: ae1a5a3b
+# hash: decbba12f5a0a4d8af9234270757ab105e05ea12c73bc24a1fffff958169c6e5
 
 import asyncio
 import json
@@ -20,6 +20,7 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.merge import Admission
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
+from tests.cli_helpers import ENV, root
 from tests.integration.serve_rig import (
     UpgradeChild,
     admission_config,
@@ -37,7 +38,6 @@ from tests.integration.serve_rig import (
     until,
     write,
 )
-from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
 from tests.spool_captures import list_captures, read_capture
 

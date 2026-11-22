@@ -4,8 +4,8 @@
 # purpose: Runs `clutch roadmap author` end to end: it authors confirmed tickets for open rows, links and strikes rows, and changes nothing when it refuses
 # relates: [clutch/__main__.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/policy.py, clutch/roadmap.py]
 # owner: clutch/roadmap.py
-# verified: d32c32ad
-# hash: 8317923d5bd4688cd2069465383850d1f51b6aa49bbeb4b73a34ac16584f161b
+# verified: ae1a5a3b
+# hash: 75ed22247739ace25db265906d47a8a3cefba301726031746de828cef1ba63fd
 import pytest
 
 from clutch.__main__ import main
@@ -14,8 +14,8 @@ from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
 from clutch.policy import baseline_identity
 from clutch.roadmap import parse
+from tests.cli_helpers import ENV, git_out
 from tests.integration.test_author import _routes
-from tests.integration.test_cli import ENV, git_out
 from tests.integration.test_drain import Clock, make_root
 from tests.integration.test_triage import author_reply, requisition_reply
 from tests.unit.test_roadmap_table import document, row

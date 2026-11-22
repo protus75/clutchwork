@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that ticket verbs, status and the extension menu handle a ticket whose run was killed: the stale run is reaped as abandoned, while a run that still holds the lock is refused.
+# purpose: Tests how ticket verbs, `view status` and the extension menu handle a killed run: a stale run is reaped as abandoned, and a run that still holds the lock is refused.
 # relates: [clutch/__main__.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/runner.py, clutch/seams.py]
 # owner: clutch/runner.py
-# verified: d32c32ad
-# hash: 113bfc5da5f7dbd16a583209a4737fd894231e44c9e3c5a25a00ae0032da912d
+# verified: ae1a5a3b
+# hash: 78d766df832e50a25cd9a712722fde8fb005d65e92a99f96a45f6997843bf0bc
 import asyncio
 
 import pytest
@@ -14,7 +14,7 @@ from clutch import observe, runner
 from clutch.__main__ import main
 from clutch.journal import EventType
 from clutch.lockfile import Lockfile, LockHeld
-from tests.integration.test_cli import ENV
+from tests.cli_helpers import ENV
 from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root
 from tests.integration.test_git import commit_lock
 

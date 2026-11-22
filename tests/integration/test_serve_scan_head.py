@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify main commits preserve parallel admission and retry refused intake.
+# purpose: Tests that non-ticket main commits do not block parallel admission and that a HEAD change retries a refused ticket intake
 # relates: [clutch/llm.py, clutch/scheduler.py, clutch/seams.py, clutch/serve.py, tests/fakes.py, tests/integration/serve_rig.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 5afbc5060612adca9a22d32233d9073322d76893045a7e40e223c513e789b3f4
+# verified: ae1a5a3b
+# hash: 14543a325437b357b3104eb37a153c9779abd42d5ee83e15bd068427f8f92fe3
 import asyncio
 
 import pytest
@@ -14,8 +14,8 @@ from clutch import serve
 from clutch.llm import FakeLLM
 from clutch.scheduler import Scheduler
 from clutch.seams import LocalFileSystem
+from tests.cli_helpers import root
 from tests.integration.serve_rig import admission_ticket, finish, start_admission, terminals, until
-from tests.integration.test_cli import root
 from tests.integration.test_serve_parallel_admission import parallel_rig
 
 pytestmark = pytest.mark.disk_io_skip

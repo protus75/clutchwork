@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher.
+# purpose: Tests serve lifecycle: quiescence, report intake, CLI composition, lock holding, startup recovery, control ordering, maintenance, heartbeat and the watcher
 # relates: [clutch/__main__.py, clutch/driver.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py, clutch/stages.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 5f082f5d2c022de5bb557be579e0b8b6d4b969d3ad63a820498ac77ccc3c6cd2
+# verified: ae1a5a3b
+# hash: cac624b006d867d94833eaf4d39efb9d00642714536eae571d7682b070ed4c9e
 
 import asyncio
 import json
@@ -18,8 +18,8 @@ from clutch import __main__ as cli
 from clutch import runner, serve, stages
 from clutch.journal import EventType
 from clutch.lockfile import Lockfile, LockHeld
+from tests.cli_helpers import ENV, root
 from tests.integration.serve_rig import finish, graph, request, script, terminals, until, write
-from tests.integration.test_cli import ENV, root
 from tests.integration.test_daemon_composition import sources
 from tests.integration.test_restart_timers import orphan
 from tests.integration.test_scheduler import import_closure, text, turn

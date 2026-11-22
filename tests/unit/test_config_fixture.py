@@ -5,16 +5,16 @@
 # purpose: Pins build_config output to the four original fixture config texts and checks that overrides load and amend_config keeps earlier edits.
 # relates: [clutch/config.py, tests/config_fixture.py, tests/harness/shakeout/bench.py, tests/integration/test_cli.py, tests/integration/test_providers.py]
 # owner: engine
-# verified: 6f94fa01
-# hash: d0301a8ae33532ed5769987d22b38245ce1a1b1a3a3a38d0db0586bf935e69ac
+# verified: ae1a5a3b
+# hash: 92982567889a7d694ce56ea0de91373ee8dfe281573560fa9ae63c3e41d53dc7
 
 import pytest
 import yaml
 
 from clutch.config import load_config
+from tests.cli_helpers import CONFIG as CLI_CONFIG
 from tests.config_fixture import amend_config, build_config
 from tests.harness.shakeout.bench import _CONFIG as BENCH_CONFIG
-from tests.integration.test_cli import CONFIG as CLI_CONFIG
 from tests.integration.test_providers import CONFIG as PROVIDERS_CONFIG
 from tests.integration.test_stages import CONFIG as STAGES_CONFIG
 

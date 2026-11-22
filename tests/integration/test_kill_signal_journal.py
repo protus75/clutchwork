@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that kill decisions are journaled before projection, with fail-closed shape and identity checks, once-only handling, crash recovery, and the latched kill state
+# purpose: Tests that kill decisions are journaled before the projection changes, with fail-closed shape and identity checks, once-only handling, crash recovery, and a latched kill state.
 # relates: [clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_effects.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 5a337127053c8e3bdea461cbe1fdf181de5dd0a5be6db2e9a579b3ceb29c9178
+# verified: ae1a5a3b
+# hash: c8784375f69191bb6a10940fe888aec4e5629f65278bacf0ab723fc28c50b4e6
 
 import asyncio
 import json
@@ -19,7 +19,7 @@ from clutch import control, daemon
 from clutch.control import ControlProjection, ControlRequest, publish_request
 from clutch.journal import EventType, Journal
 from clutch.seams import LocalFileSystem
-from tests.integration.test_cli import root
+from tests.cli_helpers import root
 from tests.integration.test_effects import Crash, FakeClock
 
 pytestmark = pytest.mark.disk_io_skip

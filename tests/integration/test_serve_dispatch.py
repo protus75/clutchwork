@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and retro scheduling.
+# purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and retro scheduling
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 9b021e64c9e795ae7240a7ed986e7fa0465d84d52537d2c8ec1da7a74752c9c5
+# verified: ae1a5a3b
+# hash: a265196aafa5a00cfdbd6e389aaaef4619dfd1a6bfb4bf74884b67264cba64bb
 
 import asyncio
 import json
@@ -20,6 +20,7 @@ from clutch.journal import EventType
 from clutch.lockfile import Lockfile
 from clutch.merge import Admission
 from clutch.mergequeue import CONFLICT_FACTS, RED_STREAK, TREE_MISMATCH, MergeQueue, TreeMismatch
+from tests.cli_helpers import ENV, root
 from tests.integration.serve_rig import (
     UpgradeChild,
     admission_config,
@@ -37,7 +38,6 @@ from tests.integration.serve_rig import (
     until,
     write,
 )
-from tests.integration.test_cli import ENV, root
 from tests.integration.test_scheduler import text, turn
 
 pytestmark = pytest.mark.disk_io_skip

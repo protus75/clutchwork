@@ -4,8 +4,8 @@
 # purpose: Integration tests for provider routing, key scoping, redaction, claude and codex CLI adapter contracts, preflight, failure classification and process-group cleanup
 # relates: [clutch/__main__.py, clutch/config.py, clutch/driver.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/llmeffect.py]
 # owner: clutch/providers.py
-# verified: d32c32ad
-# hash: 4cbc72bd25819e4451ce9f82ecfb5b64546e03f6b44a6a807a10a2ce7dd85d77
+# verified: ae1a5a3b
+# hash: 5f9f59beab2b940646b6aeab19bb09dcaecfaad7e1fbe0d2506008f335ba20f5
 import asyncio
 import json
 import os
@@ -946,7 +946,7 @@ def test_event_callback_unwind_kills_group(tmp_path, monkeypatch, name, unwind):
 )
 def test_routed_conduct_paths(tmp_path, names, expected):
     from clutch.providers import routed_conduct_paths
-    from tests.integration.test_cli import core_config
+    from tests.cli_helpers import core_config
 
     path = core_config(tmp_path, [("medium", "implement", names), ("high", "review", names)])
     config = load_config(path, cwd=tmp_path)
