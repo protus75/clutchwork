@@ -4,7 +4,7 @@ premise_failed
 
 ## Surprises / judgment calls
 
-The current tree contains additional request consumers and an acceptance-call assertion that the ticket’s closed file list omits. Expanding the fence to cover all request consumers and affected assertions would prevent this class of scope failure.
+The shared request factory is used by provider and watchdog tests, so leaving it unchanged would make those tests fail when they construct requests.
 
 ## Dead ends
 
