@@ -1,9 +1,9 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "adfdf9579df20a76597e48d1fee2ca94b9c4bc33",
+  "produced_at_sha": "679ce3761b672414be0a954a3347aeac3b6f2791",
   "stem": "evidence-never-prunes",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/__main__.py",
     "clutch/config.py",
@@ -36,18 +36,8 @@
     },
     {
       "code": "scope_fence",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "scope_fence",
-          "path": "tests/unit/test_main_view_group.py",
-          "line": null,
-          "message": "tests/unit/test_main_view_group.py is outside `## Scope fence`",
-          "paved_road": "revert the edit and commit; if the criteria force it, reply premise_failed naming the file so the fence is widened",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false
     },
     {
@@ -98,18 +88,17 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 18.104533,
-        "passed": 2088,
+        "seconds": 14.761273,
+        "passed": 2104,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5130925600242335,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.327281980047701,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2303723789809737
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4765105939877685,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.272809634974692
         }
       },
       "coverage": {
-        "percent": 75.25759917568264,
+        "percent": 75.36411925976697,
         "files": {
           "clutch/__main__.py": 79.80997624703087,
           "clutch/config.py": 77.14285714285714,
@@ -125,15 +114,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 10.128683,
+        "seconds": 11.307995,
         "passed": 297,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8599445650179405,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1110799880116247,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0598005980136804,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.00403106000158
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.7145719600084703,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0625513699487783,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0034659229859244,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0031674880010542
         }
       }
     },
@@ -164,9 +153,9 @@
         "tests/unit/test_help.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_evidence_warn_threshold.py tests/unit/test_evidence_prune_verb.py tests/unit/test_evidence_config.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.97s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_evidence_warn_threshold.py tests/unit/test_evidence_prune_verb.py tests/unit/test_evidence_config.py tests/unit/test_main_evidence_group.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n....................................                                     [100%]\n36 passed in 1.87s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.503754
+      "seconds": 6.366512
     }
   ]
 }
