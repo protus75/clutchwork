@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ecde5f1bbdf551a67918e9cd484950d63a247c45",
+  "stem": "io-helpers-loop",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false as written: tests/regress_reconcile_confirming_draft.py:26 imports graph and tests/integration/test_serve_upgrade_pending.py:17 imports admission_graph and enable_upgrade from serve_rig. Both sit outside ## Scope fence, but criterion 2 requires changing their imports.",
+    "Fix: add tests/regress_reconcile_confirming_draft.py and tests/integration/test_serve_upgrade_pending.py to ## Scope fence and to the importer list, then recount the importers (the Goal says 46). Re-run criterion 2's grep on current main to confirm no other importer is missing.",
+    "Criteria conflict: test_triage.py and tests/integration/test_terminal.py:60 both define run, with incompatible bodies. Scope in moves only triage's run, but criterion 3 forbids any hub defining run, so terminal's run would be deleted while its hub tests must stay unchanged.",
+    "Fix: either exempt test_terminal.py's run from criterion 3's grep (check whether any file imports it from that hub; if none, it stays), or give the two helpers distinct names in tests/loop_helpers.py and permit the call-site edits that renaming forces.",
+    "Re-author with clutch ticket lint and clutch ticket review before requeueing. The attempt made no diff, so the next attempt starts from main and must do the whole move as Scope in describes."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
