@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tickets/check-opens-own-stage/ticket.md",
+      "line": null,
+      "message": "The required integration test must reuse a fixture that creates and commits to a real Git repository, but the implementer instructions prohibit real disk and process I/O for this test's subject.",
+      "paved_road": "Revise the integration criterion to use in-memory filesystem and Git seams while retaining the real Driver and FakeLLM.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/conftest.py",
+      "line": 13,
+      "message": "The specified fixture is blocked by the integration I/O guard, and the new test is not in the real-I/O allowlist; this file is outside the scope fence.",
+      "paved_road": "Revise the ticket to use permitted in-memory seams, or explicitly resolve the conflict with the real-I/O policy and include the required guard changes in scope.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required integration test cannot use the specified real-repository fixture under the repository’s integration I/O rules.\",\"surprises\":\"The existing host mechanical tests are skipped because they use real disk and Git; the new test fails during fixture setup under the I/O guard. No changes were committed.\",\"second_problems\":[],\"dead_ends\":\"Reusing the specified fixture failed because it writes files and starts Git processes.\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tickets/check-opens-own-stage/ticket.md\",\"line\":null,\"message\":\"The required integration test must reuse a fixture that creates and commits to a real Git repository, but the implementer instructions prohibit real disk and process I/O for this test's subject.\",\"paved_road\":\"Revise the integration criterion to use in-memory filesystem and Git seams while retaining the real Driver and FakeLLM.\"},{\"code\":\"premise\",\"path\":\"tests/integration/conftest.py\",\"line\":13,\"message\":\"The specified fixture is blocked by the integration I/O guard, and the new test is not in the real-I/O allowlist; this file is outside the scope fence.\",\"paved_road\":\"Revise the ticket to use permitted in-memory seams, or explicitly resolve the conflict with the real-I/O policy and include the required guard changes in scope.\"}]}",
+  "events_tail": "default)\\n            if isinstance(value, BaseException):\\n                raise value\\n            if callable(value):\\n                value = value(*args, **kwargs)\\n                if inspect.isawaitable(value):\\n                    value = await value\\n            return value\\n\\n        return call\\n\\n    return decorate\\n\\n\\nclass GitFake:\\n    def __init__(self, **overrides):\\n        allowed = {name for name in vars(type(self)) if not name.startswith(\\\"_\\\")} | {\\\"_run\\\"}\\n        unknown = overrides.keys() - allowed\\n        if unknown:\\n            raise TypeError(f\\\"Unknown GitFake overrides: {sorted(unknown)}\\\")\\n        self._overrides = overrides\\n        self.calls = []\\n        self._main_write = asyncio.Lock()\\n        self._commit_lock = asyncio.Lock()\\n\\n    def main_write(self) -> asyncio.Lock:\\n        self.calls.append((\\\"main_write\\\", (), {}))\\n        value = self._overrides.get(\\\"main_write\\\", self._main_write)\\n        if isinstance(value, BaseException):\\n            raise value\\n        return value() if callable(value) else value\\n\\n    @_method(\\\"\\\")\\n    async def _run(self, dir: Path, *args: str) -> str:\\n        pass\\n\\n    @_method(None)\\n    async def init(self, dir: Path, *, branch: str) -> None:\\n        pass\\n\\n    @_method(\\\"\\\")\\n    async def status_porcelain(self, dir: Path, *args: str) -> str:\\n        pass\\n\\n    @_method((lambda *args, **kwargs: []))\\n    async def ls_files(self, dir: Path) -> list[str]:\\n        pass\\n\\n    @_method(\\\"\\\")\\n    async def tree_id(self, dir: Path, index: Path) -> str:\\n        pass\\n\\n    @_method((lambda *args, **kwargs: []))\\n    async def tree_changes(self, dir: Path, before: str, after: str) -> list[str]:\\n        pass\\n\\n    @_method(\\\"\\\")\\n    async def rev_parse(self, dir: Path, rev: str) -> str:\\n        pass\\n\\n    @_method(\\\"\\\")\\n    async def merge_base(self, dir: Path, a: str, b: str) -> str:\\n        pass\\n\\n    @_method((lambda dir: dir / \\\".git\\\"))\\n    async def git_common_dir(self, dir: Path) -> Path:\\n        pass\\n\\n    @_method((lambda *args, **kwargs: []))\\n    async def diff_names(self, dir: Path, base: str, stem: str) -> list[str]:\\n        pass\\n\\n    @_method(\\\"\\\")\\n    async def diff(self, dir: Path, base: str, stem: str) -> str:\\n        pass\\n\\n    @_method(\\\"\\\")\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_7\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required integration test cannot use the specified real-repository fixture under the repository’s integration I/O rules.\\\",\\\"surprises\\\":\\\"The existing host mechanical tests are skipped because they use real disk and Git; the new test fails during fixture setup under the I/O guard. No changes were committed.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Reusing the specified fixture failed because it writes files and starts Git processes.\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tickets/check-opens-own-stage/ticket.md\\\",\\\"line\\\":null,\\\"message\\\":\\\"The required integration test must reuse a fixture that creates and commits to a real Git repository, but the implementer instructions prohibit real disk and process I/O for this test's subject.\\\",\\\"paved_road\\\":\\\"Revise the integration criterion to use in-memory filesystem and Git seams while retaining the real Driver and FakeLLM.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/conftest.py\\\",\\\"line\\\":13,\\\"message\\\":\\\"The specified fixture is blocked by the integration I/O guard, and the new test is not in the real-I/O allowlist; this file is outside the scope fence.\\\",\\\"paved_road\\\":\\\"Revise the ticket to use permitted in-memory seams, or explicitly resolve the conflict with the real-I/O policy and include the required guard changes in scope.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":354779,\"cached_input_tokens\":310272,\"cache_write_input_tokens\":0,\"output_tokens\":2552,\"reasoning_output_tokens\":238}}\n",
+  "wall_seconds": 64.989415,
+  "usd": 1.0,
+  "run_record": "tickets/check-opens-own-stage/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
