@@ -34,7 +34,7 @@ When this ticket is done, the field is `subject: str`. It is required, and an em
 ### LLM request subject
 - disposition: replace
 - owner: clutch/llm.py
-- consumers: `ClaudeAdapter.session_name` (`clutch/providers.py`); every `LLMRequest` constructor (`clutch/driver.py`, `clutch/requisition.py`, `clutch/training.py`, `clutch/providers.py` preflight, `clutch/__main__.py` probe); tests that read `req.ticket` off `FakeLLM.requests`
+- consumers: `ClaudeAdapter.session_name` (`clutch/providers.py`); every `LLMRequest` constructor (`clutch/driver.py`, `clutch/requisition.py`, `clutch/training.py`, `clutch/providers.py` preflight, `clutch/__main__.py` probe); tests and test harnesses that build an `LLMRequest` or read `req.ticket` / `request.ticket` off `FakeLLM.requests`
 - observable change: `LLMRequest.ticket: str | None` becomes `LLMRequest.subject: str`; `__post_init__` raises `ValueError` when `subject` is not a non-empty `str`; `session_name(surface, subject)` always returns `Clutch <Surface> <subject>`
 - compatibility: breaking rename with no shim. Every constructor and reader is updated in this change (old contract `ticket`, replacement `subject`). Ticket-scoped calls carry the same stem as before, so their session names are unchanged. Journal keys, spool paths, evidence records (`stem` comes from `CallCapture`, not the request) and `driver.run`'s own `ticket` argument keep their meaning.
 - acceptance: constructing a request with `subject=None` or `subject=""` raises `ValueError`; ticketless session names carry their label
@@ -44,7 +44,7 @@ When this ticket is done, the field is `subject: str`. It is required, and an em
 ### Driver ticketless subject
 - disposition: extend
 - owner: clutch/driver.py
-- consumers: the ticketless `driver.run`/`run_panel` callers in `clutch/author.py`, `clutch/triage.py`, `clutch/retro.py`, `clutch/acceptance.py`, `clutch/metafill.py`, and tests that run the driver with `ticket=None`
+- consumers: the ticketless `driver.run`/`run_panel` callers in `clutch/author.py`, `clutch/triage.py`, `clutch/retro.py`, `clutch/acceptance.py`, `clutch/metafill.py`; tests that run the driver with `ticket=None`; tests that assert the exact driver kwargs of a ticketless caller (`tests/unit/test_triage_panel_use.py`, `tests/unit/test_roadmap_accept.py`)
 - observable change: `Driver.run` and `Driver.run_panel` take keyword `subject: str | None = None`. With `ticket` set, `subject` must be `None` and the request subject is the ticket. With `ticket=None`, `subject` must be a non-empty `str`. Either violation raises `ValueError` before any call, following the existing `run_seq requires ticket=None` check.
 - compatibility: ticket-scoped callers are unchanged; ticketless callers must now pass `subject`. Journal and spool keying by `ticket or surface` and `run_seq` are unchanged.
 - acceptance: `driver.run(..., ticket=None)` without `subject` raises `ValueError`; with `subject="box-1"` the request carries `subject == "box-1"`
@@ -60,7 +60,7 @@ In:
 - `clutch/requisition.py`: `ticket=stem` becomes `subject=stem`.
 - `clutch/training.py` `evaluate`: `subject=f"eval-{counts['total'] + 1}"`, computed before the increment.
 - The ticketless driver callers pass these labels: `clutch/author.py` `subject=message.id`; `clutch/triage.py` `subject=message.id` in its shared `kwargs`; `clutch/retro.py` `subject=f"window-{window.sequence}"`; `clutch/acceptance.py` `subject=release`; `clutch/metafill.py` `subject=f"{len(paths)}-files"`.
-- Tests: update every test that reads `.ticket` off an `LLMRequest`, builds an `LLMRequest`, or runs the driver with `ticket=None`. Each is listed in `Scope fence`, and the only edit in each is the rename, or adding a `subject` label for ticketless runs. Tests that built a request with `None` (`tests/integration/test_driver.py:362`, `tests/integration/test_fixture_host.py:369` and `:372`, `tests/unit/test_preflight_parallel.py`, `tests/unit/test_training_eval.py`) pass a label instead (`"probe"`, `"unknown"`, `"exhausted"`, the model name, `"eval-1"` and so on). In `tests/unit/test_triage_panel_use.py`, the expected kwargs dict gains `subject=<message id>`. In `tests/unit/test_claude_session_name.py`, the `ticket=None` / `Clutch Retro` case becomes `subject="window-3"` / `Clutch Retro window-3`.
+- Tests and test harnesses: update every file that reads `.ticket` off an `LLMRequest` (`req.ticket` or `request.ticket`), builds an `LLMRequest`, runs the driver with `ticket=None`, or asserts the exact driver kwargs of a ticketless caller. Each is listed in `Scope fence`, and the only edit in each is the rename, or adding a `subject` label for ticketless runs. Tests that built a request with `None` (`tests/integration/test_driver.py:362`, `tests/integration/test_fixture_host.py:369` and `:372`, `tests/unit/test_preflight_parallel.py`, `tests/unit/test_training_eval.py`) pass a label instead (`"probe"`, `"unknown"`, `"exhausted"`, the model name, `"eval-1"` and so on). `tests/unit/test_stages_helpers.py` changes `ticket=h.STEM` to `subject=h.STEM` in its `LLMRequest`. `tests/harness/shakeout/driver.py`, `tests/harness/daemon_soak.py`, `tests/integration/test_serve_scan_watch_overlap.py` and `tests/integration/test_serve_parallel_admission.py` read `subject` instead of `ticket` off recorded requests. In `tests/unit/test_triage_panel_use.py`, the expected kwargs dict gains `subject=<message id>`. In `tests/unit/test_roadmap_accept.py`, the expected kwargs dict gains `subject=release`. In `tests/unit/test_claude_session_name.py`, the `ticket=None` / `Clutch Retro` case becomes `subject="window-3"` / `Clutch Retro window-3`.
 - New `tests/unit/test_llm_request_subject.py`, covering the acceptance criteria below.
 
 Out: `driver.run`'s `ticket` parameter and its journal, spool, watch and evidence semantics; the `--name` flag itself; the Codex adapter; docs (no document describes the request field or session names); the requisition `event_context`.
@@ -83,6 +83,8 @@ Out: `driver.run`'s `ticket` parameter and its journal, spool, watch and evidenc
 - tests/unit/test_training_eval.py
 - tests/unit/test_preflight_parallel.py
 - tests/unit/test_triage_panel_use.py
+- tests/unit/test_roadmap_accept.py
+- tests/unit/test_stages_helpers.py
 - tests/unit/test_evidence_envelope.py
 - tests/unit/test_panel_member_keys.py
 - tests/unit/test_requisition_session_stem.py
@@ -97,9 +99,13 @@ Out: `driver.run`'s `ticket` parameter and its journal, spool, watch and evidenc
 - tests/integration/test_serve_admission.py
 - tests/integration/test_serve_merge_overlap.py
 - tests/integration/test_serve_scan_head.py
+- tests/integration/test_serve_scan_watch_overlap.py
+- tests/integration/test_serve_parallel_admission.py
 - tests/integration/test_triage.py
 - tests/integration/serve_rig.py
 - tests/harness/shakeout/drain.py
+- tests/harness/shakeout/driver.py
+- tests/harness/daemon_soak.py
 - tests/regress_requisition_events_owner_stem.py
 - tests/regress_requisition_session_stem.py
 
@@ -118,6 +124,7 @@ Out: `driver.run`'s `ticket` parameter and its journal, spool, watch and evidenc
 ```
 ./dev.py test tests/unit/test_llm_request_subject.py tests/unit/test_claude_session_name.py
 uv run python tests/regress_requisition_session_stem.py
+rg -n "req(uest)?\.ticket\b" clutch tests
 ./dev.py test
 ```
 
