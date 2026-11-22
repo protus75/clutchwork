@@ -1,20 +1,24 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "5bab5aa3b54451c72013ee4768e2f40d0ea9a588",
+  "produced_at_sha": "5530a35fdd57357c93c184455c40bbc0cc4b931b",
   "stem": "io-helpers-stages",
-  "attempt": 1,
-  "terminal": "premise_failed",
+  "attempt": 3,
+  "terminal": "incomplete",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Premise holds: grep confirms tests/unit/test_config_fixture.py:19 imports CONFIG and tests/integration/test_shared_stage_replies.py:12 imports implement_reply, verdict from tests.integration.test_stages, and neither file is in ## Scope fence.",
-    "Acceptance criterion 2 says no file may import from the hub, and the fence forbids editing those two files. A retry cannot satisfy both, so the ticket must change before another attempt.",
-    "Ticket fix: add tests/unit/test_config_fixture.py and tests/integration/test_shared_stage_replies.py to ## Scope fence, and list them as importers whose import line moves to tests.stages_helpers. That makes 40 importers, not 38.",
-    "Class prevention: build the importer list in Goal and Scope fence from `grep -rn 'from tests.integration.test_stages import' tests` across tests/unit as well as tests/integration, so every importer is fenced."
+    "Premise is false: the ticket needs `run` to execute in tests/integration/test_stages_helpers_repo.py with a FakeFileSystem and no file writes. clutch/stages.py writes through ctx.fs but reads many paths straight from disk, and clutch/stages.py is outside the fence.",
+    "Examples in clutch/stages.py: line 775 reads the ticket with `(ctx.repo / ticket_path(ticket.stem)).read_text()`, line 1156 reads run.md, lines 1705/1715 read worktree bytes and line 1994 reads the ticket for review. Files the `repo` fixture or `author` put in FakeFileSystem are missing on disk for",
+    "The integration I/O guard (tests/integration/conftest.py `blocked_operation`) blocks any open-for-write, tmp_path included. So in an integration test the `repo` fixture cannot put real files where stages.py reads them from disk. Acceptance criteria 1 and the `run` integration test cannot both be",
+    "Refile: first, a ticket that sends every stages.py read through ctx.fs (fs.read_bytes / an exists check). Then this ticket depends on it. Or move the `run` behavior test into REAL_IO_TESTS / tests/unit and use a real tmp_path repo, with the owner's agreement.",
+    "Also check GitFake: it returns canned overrides and keeps no repository state (tests/git_fake.py). The ticket must name the overrides `run` needs (rev_parse, diff_names, diff, commit) so stages see the commits made by `agent` and `author`."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1,
+    2
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
