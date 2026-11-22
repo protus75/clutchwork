@@ -17,7 +17,7 @@ kind: chore
 ## Goal / Why
 After this ticket this repo's `config.yaml` declares the `gemini` provider (`kind: cli`, `package: "@google/gemini-cli"`, `auth: GEMINI_API_KEY`), using the declaration in `clutch/docs/host-gemini.md`.
 
-Why: `gemini-provider` merged the adapter but left the declaration as "an operator edit after setup" (its Scope in / Scope out). Roadmap decision 19 has no operator, so the edit never happened. `ProviderLLM.preflight` compares only declared providers with their latest release, so the installed `gemini` stayed at 0.49.0 with no notice while 0.70.0 shipped. The owner then relied on a stale capture (A0 fact 7) to decide image generation. Declaring it puts gemini under the existing stale-CLI notice. Declaring without routing costs nothing at preflight, because probes run only for routed candidates.
+Why: `gemini-provider` merged the adapter but left the declaration as "an operator edit after setup" (its Scope in / Scope out). Roadmap decision 19 has no operator, so the edit never happened. `ProviderLLM.preflight` compares only declared providers with their latest release, so no notice ever reported the project's `gemini` (0.68.0 in `node_modules/.bin`, latest 0.70.0) as stale. Meanwhile an image-generation decision rested on A0 fact 7, captured with a separate 0.49.0 global install. Declaring it puts gemini under the existing stale-CLI notice. Declaring without routing costs nothing at preflight, because probes run only for routed candidates.
 
 ## Boundary contract
 none
