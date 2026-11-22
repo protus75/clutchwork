@@ -8,6 +8,10 @@ kind: bug
 ## Depends on
 - none
 
+## Runs before
+- training-export-ship-gate
+- shared-serve-rig-config
+
 ## Context
 - tests/harness/host_loop.py::FixtureLoop
 - tests/harness/host_loop.py::produce
