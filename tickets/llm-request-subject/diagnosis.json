@@ -1,20 +1,22 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "a2c6360b166466ad15dba335e5b2c0d1cbb5e8f9",
+  "produced_at_sha": "8b64646b5ec5461c6332c52c8997cf829791b32a",
   "stem": "llm-request-subject",
-  "attempt": 2,
+  "attempt": 3,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "reject",
+  "verdict": "abandon-human",
   "lessons": [
-    "The ticket's ## Verification contradicts its acceptance criteria 4 and 5. Both rg absence checks must print nothing, but rg exits 1 when nothing matches, and the check gate needs exit 0. The diff already meets the criteria, so no implementation can pass this gate as written.",
-    "Re-author the ticket: remove the two rg lines from ## Verification. Move the absence checks into tests/unit/test_llm_request_subject.py, which can scan clutch/ and tests/ for `req(uest)?\\.ticket\\b` and config_helpers.py for `ticket=\"t-1\"`, and assert that nothing matches.",
-    "Run record: the implementer reads CallCapture.ticket through getattr only to dodge the rg search. The re-authored ticket should narrow the pattern to LLMRequest readers or name the CallCapture readers as allowed, so the next attempt keeps plain attribute access.",
-    "On retry, the branch is rebased onto main and already holds the full 36-file rename. The 297-test suite passed, so the next attempt only needs the revised verification and dropping the getattr workaround."
+    "An engine step changed the branch after Implement. The implementer's commit 12bd040ce had 137+/59- lines and its own run of the Verification commands passed. The final diff has 255+/141- lines because `# clutch:meta` headers were added afterward, with `verified: b95ca51e` and a hash.",
+    "The only failure is tests/unit/test_llm_request_subject.py:4. That is the engine-written `# purpose:` meta line, and its text includes `request.ticket`. The test's own scan for `req(uest)?\\.ticket\\b` over tests/ matches that line, so the line the implementer wrote did not cause this failure.",
+    "A human should check the meta-header writer (clutch/metafill.py make_ask and the step that stamps `# clutch:meta` purpose lines). It summarizes a test's forbidden pattern into prose, which breaks self-scanning tests. Fix or regenerate the header there instead of asking the implementer to pre-empt",
+    "To unblock this ticket, a human can reword the purpose line in tests/unit/test_llm_request_subject.py to avoid the literal `request.ticket`, for example 'the old ticket field on requests'. Then rerun Check. The rest of the diff passed 2120 unit tests."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    2
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
