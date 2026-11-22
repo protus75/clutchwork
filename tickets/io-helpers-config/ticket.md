@@ -125,8 +125,8 @@ Scope out:
 - tests/drain_helpers.py
 - tests/stages_helpers.py
 - tests/daemon_helpers.py
-
 - tests/unit/test_config_fixture.py
+
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_config_helpers.py` passes, and `tests/unit/test_config_helpers.py` checks that `watch_fixture_repo(tmp_path, "state")` writes `config.yaml` under `tmp_path / "repo"` whose `state_dir` line is `state_dir: state`, creates no `.git` directory, and registers a `GitFake` whose `fake.calls` is empty until a test uses it (a version that still runs git passes only if a `.git` directory exists, which the test rules out), that `VALID` parses through `clutch.config.load_config`, and that the moved `repo` fixture leaves no `.git` directory.
 2. `grep -rnE "from tests\.integration\.(test_config|test_providers|test_rework|test_merge|watch_fixture_repo) import" tests --include=*.py` prints nothing: every name any file imports from these hubs is moved, so a leftover line names the importer that was missed.
