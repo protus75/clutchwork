@@ -17,6 +17,8 @@ kind: feature
 - clutch/drain.py::chain
 - clutch/drain.py::parallel_order
 - tests/unit/test_chain_order.py
+- tests/unit/test_scheduler_parallel_fill.py
+- tests/unit/test_flake_fix_order.py
 - docs/parallel-tickets-plan.md#3. Ordering: fill free slots by longest chain
 - docs/parallel-tickets-plan.md#Open decisions
 
@@ -35,13 +37,14 @@ After this ticket `parallel_order` sorts by `(PRIORITY[priority], -chain, *sort_
 - observable change: the old contract ranks P0 first, then by `-chain` across P1/P2/P3 together, then by priority. The new contract ranks by full priority (P0 < P1 < P2 < P3 via `PRIORITY`), then `-chain`, then the rest of `sort_key`. `runs_before` soft edges are applied after the sort, unchanged.
 - compatibility: P0 ordering is unchanged. Within one priority the order is unchanged. Only tickets of different non-P0 priorities change their relative order. The function signature, `chain`, `fill_slots`, `SKIP_LIMIT`, `order_tickets` (serial path) and `queue.json` shape are unchanged. No ticket, journal or config migration.
 - acceptance: a P1 ticket with chain 0 is ordered before a P2 ticket with chain 3
-- tests: tests/unit/test_parallel_order_priority.py, plus the updated expectation in tests/unit/test_chain_order.py
+- tests: tests/unit/test_parallel_order_priority.py, plus the updated expectations in tests/unit/test_chain_order.py and tests/unit/test_scheduler_parallel_fill.py
 - post-merge source of truth: clutch/drain.py `parallel_order`, described in docs/how-clutch-works.md section 7.2 and docs/parallel-tickets-plan.md section 3
 
 ## Scope in / Scope out
 Scope in:
 - `clutch/drain.py` `parallel_order`: in the sort key, replace the term `t.frontmatter.priority != "P0"` with `PRIORITY[t.frontmatter.priority]`. Keep every other term, and any term another merged ticket has added before it (for example a `fixes` term from `flake-fix-jumps-queue`), as is. Update the docstring if it names P0-only ranking.
 - `tests/unit/test_chain_order.py::test_parallel_priority_chain_and_soft_edges`: the first assertion changes from `["zero", "long", "middle", "short"]` to `["zero", "long", "short", "middle"]`. This is the only expectation in the file that changes; the soft-edge assertion (`["x", "y"]`) stays.
+- `tests/unit/test_scheduler_parallel_fill.py`: these two tests pin the old cross-priority order (`long` is P2 with chain 2, `short` is P1 with chain 0). In `test_order`, the parallel-enabled parametrize case changes from `(True, "long", ["long", "short"])` to `(True, "short", ["short", "long"])`; the disabled case stays. In `test_p0_precedes_chain`, the queue-order assertion changes from `["urgent", "long", "short"]` to `["urgent", "short", "long"]`; the `urgent` dispatch assertion stays. No other test in the file changes.
 - New `tests/unit/test_parallel_order_priority.py` with the criteria-1 to 3 tests, building tickets the way `tests/unit/test_chain_order.py::ticket` does (a local helper in the new file; do not import from the old test module).
 - `docs/how-clutch-works.md` section 7.2 Dispatch bullet: replace "`parallel_order` prioritizes P0 then the longest unsettled chain" with wording that says it ranks by priority, then the longest unsettled chain within a priority. Nothing else in that bullet changes.
 - `docs/parallel-tickets-plan.md`: in section 3, change the order tuple to `(priority, -chain, age, stem)` and replace the sentence "P0 stays first because ... keep the slots full." with one saying priority ranks first at every level and the longest chain breaks ties within a priority. In "Open decisions" item 2, add that the 2026-11-13 decision was replaced on 2026-11-22: chain order applies within each priority, never across priorities, because a long-chain P2 ticket outranked every P1 ticket.
@@ -50,12 +53,14 @@ Scope in:
 Scope out:
 - `order_tickets` and the serial drain order (already priority-first through `sort_key`).
 - `chain`, `fill_slots`, `SKIP_LIMIT`, `_soft_edges`, `clutch/scheduler.py`.
+- `tests/unit/test_flake_fix_order.py`: its parallel cases compare a P0 ticket with a fix or soft-edge ticket, so they pass unchanged.
 - Removing the `## Runs before` links the 2026-11-22 reorder added between P1 and P2 tickets; they stay valid and harmless.
 - The extension and snapshot; they draw `queue.json` order as given.
 
 ## Scope fence
 - clutch/drain.py
 - tests/unit/test_chain_order.py
+- tests/unit/test_scheduler_parallel_fill.py
 - tests/unit/test_parallel_order_priority.py
 - docs/how-clutch-works.md
 - docs/parallel-tickets-plan.md
@@ -66,11 +71,12 @@ Scope out:
 2. Within one priority the longest chain still wins: with `p1_long` (P1, chain 2) and `p1_short` (P1, chain 0), authored in the order short then long, `parallel_order` returns `["p1_long", "p1_short"]`, not the age order `["p1_short", "p1_long"]`; checked by `./dev.py test tests/unit/test_parallel_order_priority.py`.
 3. Soft edges still override priority: with `p2_first` (P2) whose `runs_before` names `p1_next` (P1), `parallel_order` returns `["p2_first", "p1_next"]`, not `["p1_next", "p2_first"]`; checked by `./dev.py test tests/unit/test_parallel_order_priority.py`.
 4. `tests/unit/test_chain_order.py::test_parallel_priority_chain_and_soft_edges` expects `["zero", "long", "short", "middle"]` and passes; checked by `./dev.py test tests/unit/test_chain_order.py`.
-5. The full unit suite passes: `./dev.py test tests/unit`.
+5. With parallel dispatch enabled, the scheduler dispatches the P1 `short` ticket ahead of the P2 long-chain `long` ticket and writes queue order `["short", "long"]`, and with a P0 ticket present writes `["urgent", "short", "long"]`; checked by `./dev.py test tests/unit/test_scheduler_parallel_fill.py`.
+6. The full unit suite passes: `./dev.py test tests/unit`.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_parallel_order_priority.py tests/unit/test_chain_order.py
+./dev.py test tests/unit/test_parallel_order_priority.py tests/unit/test_chain_order.py tests/unit/test_scheduler_parallel_fill.py
 ./dev.py test tests/unit
 ```
 
