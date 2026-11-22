@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+incomplete
 
 ## Surprises / judgment calls
 
-The existing shared configuration adoption test can remain satisfied by retaining the hub’s build_config import.
+The shared GitFake records calls but does not maintain repository state; the fake-backed runner still needs its input and stage behavior worked through.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-30 minutes expected; scope conflict found during initial inspection.
+none
 
