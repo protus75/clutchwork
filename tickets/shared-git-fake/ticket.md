@@ -1,12 +1,17 @@
 ---
 state: confirmed
 source: human
-priority: P1
+priority: P0
 kind: feature
 ---
 
 ## Depends on
 - retry-keeps-prior-branch
+
+## Runs before
+- shared-review-script
+- shared-serve-rig-config
+- disk-io-skip-per-file
 
 ## Context
 - clutch/git.py::Git
