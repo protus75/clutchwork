@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Final sequential verification passed: 27 helper tests, 2,072 unit tests, 296 integration tests with 3,339 skipped, and 8 focused integration checks. The base had 2,045 unit tests and the same 296 passed and 3,339 skipped integration tests. The existing shared-fakes guard tracks the relocated verbatim config.
+The prior scope finding names tests/integration/test_shared_fakes_guard.py, but the current ticket explicitly fences that file and requires its CONFIG_EXEMPT edit. Integration reported 296 passed and 3339 skipped, matching the prior recorded base result. Mutation checks for every assertion were not independently repeated in this attempt.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-001113-7829d434: docs/roadmap.md:98 names the provider FakeExec at its former location and is outside the scope fence.
+none
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+The ticket estimated 30 minutes; this retry verified the existing committed implementation without reimplementing it.
 
