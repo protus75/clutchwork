@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "e65fe0edafad8ea266b11ab729ed21b761b7046f",
+  "produced_at_sha": "f70901cbcb1b0152706625f1b309ff1c17504b76",
   "stem": "heartbeat-file-removed",
   "passed": true,
   "changed_files": [
@@ -22,7 +22,7 @@
     "tests/unit/test_callerless_code_removed.py",
     "tests/unit/test_serve_no_heartbeat_file.py"
   ],
-  "inserted_lines": 88,
+  "inserted_lines": 95,
   "bypassed": [],
   "reports": [
     {
@@ -91,21 +91,23 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 16.509628,
-        "passed": 2168,
+        "seconds": 16.349785,
+        "passed": 2151,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.389992141048424,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.267928761022631,
-          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0259074669738766
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.6139736709592398,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.2312067110324278,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.2120115519792307,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.2026291220099665,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1664587120176293
         }
       },
       "coverage": {
-        "percent": 76.78212099156569,
+        "percent": 76.57544889502762,
         "files": {
           "clutch/daemon.py": 68.25396825396825,
-          "clutch/serve.py": 57.10955710955711
+          "clutch/serve.py": 56.14250614250614
         }
       }
     },
@@ -115,15 +117,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 10.56488,
+        "seconds": 11.168351,
         "passed": 297,
         "failed": 0,
-        "skipped": 3307,
+        "skipped": 3297,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.023275201994693,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1475055450282525,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1061349729716312,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043745769944508
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8944705330068246,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.084199315024307,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0670960010029376,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0036273429868743
         }
       }
     },
@@ -148,9 +150,9 @@
         "test"
       ],
       "rc": 0,
-      "tail": "]\nssss.sssss..ssssssss.sssssssssss....sssssssssssssssssssssssssssssssssss. [ 63%]\nsssssssssssssssssssssssssssssssssssssssssssssss.sss.ssssssssssssssssssss [ 65%]\nssssssssssssssssss..ssssss.ssssssssssssssss.sssssssssssssssss..sssssssss [ 67%]\nsssssssssssssssssss.ssssssssssssss...sssssss.ssss.s.ssss.sssssss.sssssss [ 69%]\nsssssssssssssss.ssssss.sssssssssssssssssssssssssssssss.ssss..ssssssss.ss [ 71%]\ns.sssssssss.ssssssssssssssssssssss.sssss.sssssssssssssssssssssssssssssss [ 73%]\nssssssssssssssssssssssss.sssssssssssss.sssssssssssss.sssssssss..ssssss.s [ 75%]\nss..sss.sss.ss.ssssssss.s..sssssssssss..sssssssssss.sssssssssss..sssssss [ 77%]\nsss...s..ssssssssssss.ssssss.s....ssssssssssssssssssssssssssssssssssssss [ 79%]\nssssssssssssssssssssssssss.sssssssssssssss..ssssssssssssssssssssssssssss [ 81%]\nsssssssssssssssssssssssssssssssssssssssssssssssssss.ssssssssssssssssss.s [ 83%]\nssssssss.ssssssssssssssssssssssssssssssssssssssssssssss.ssssssssss.sssss [ 85%]\nss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 89%]\nssssss.ssssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nss..sss..ss.ssssss.ssssssssssssssssssssssssssss.ssssssssssssssssssssssss [ 93%]\nsssssss.sss............ssss.ssssssssss.................sssssssssssssssss [ 95%]\nsssssssssssssssss....s.ssssssss.sssssssss...............ssssssssss.sssss [ 97%]\nssssss.ssssss.......ss............sssssssssssssssss........sssssssssssss [ 99%]\nssss                                                                     [100%]\n297 passed, 3307 skipped in 6.85s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "]\nsssssssssssss.sssssssss.sssssssssssssssssssss.s.s..ssssssssss..ss.ssss.s [ 62%]\nsssss.sssssss..sssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 64%]\nss.sssssssssssssssssssssssssss.sssssss.sssssssssssssssssssssssssssssssss [ 66%]\nssssssssssssssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssss. [ 68%]\nssssssssssssssssss..ssssssssss.s.sssss.sssssssssssssssssssssssssssssss.. [ 70%]\ns.ssss.s.sssssssssss.s.ssssssssssssss.sssssss...ssss.ssssssssssssssss.ss [ 72%]\nssssssssssssssssssssssssss..sssssssssss.sssssssss..sssssssss.sssssssssss [ 74%]\nss.ss.sssssssssssssssss.ssssssssssssssss.sss.ssssssssssss..ss.ssss.ssss. [ 76%]\nsss.ssssssssss.ssssss..ss.sss..ssss..ss..ssssssssssssssssss...ssssssssss [ 78%]\nsssssssss..ss.ssssssssssssss.s..sss.s.ssssssssssssss.sssssssss.sssss.sss [ 80%]\nsssssssssssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssssssss [ 82%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssss..ssssssssssss [ 84%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 86%]\nssssss.s.ssssssssssssssss.sssss.sssssssssssssssssss.ssssssssssssssssssss [ 88%]\nsssssssssss.ssss..sssssssssssssssssssssssss.sss.ssssssssssssssssssssssss [ 90%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 92%]\nsssssssssss...sss..sssssss.sssssssssssssssssssssss.sssssssssssssssssssss [ 94%]\nssssssssssssssssss.....................ss.ssss.ssssss......sssssssssssss [ 96%]\nss...ss.sssssssssssss.sssssssssssss......ssssssssssssssss...........ssss [ 98%]\nsss......sssssss..........ssss.sssssssssssssssssssssssss..........       [100%]\n297 passed, 3297 skipped in 6.71s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 17.69309
+      "seconds": 17.953293
     }
   ]
 }
