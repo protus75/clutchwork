@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "629d4e575e4e99d1bb1cccf980efd753fd6ecb6d",
+  "stem": "roadmap-freshen-2026-11-22",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "clutch/specs/implement.md rule 5 forbids Implement to edit a clutch:meta header or run `clutch meta refresh`/`fill`/`check`. The ticket's Scope in line 39 (edit `relates:`, run meta refresh) contradicts that rule, so Implement cannot satisfy it.",
+    "Rewrite the ticket: remove the `relates:` edit and the `clutch meta refresh` step from Scope in. Say instead that Check writes the docs/roadmap.md meta header for the changed file.",
+    "Remove `uv run clutch meta check docs/roadmap.md` from Verification and drop acceptance criterion 2, or restate it as something Check verifies. Keep only `uv run clutch roadmap status` as an implementer-run command.",
+    "Goal item 3 makes an admitted plan appear in the `relates:` meta field. Reword it so the plan is cited in the section 1 theme or a section 5 decision. Listing it in `relates:` is left to Check.",
+    "The implementer saw an empty journal in the worktree, so `clutch view status` counts there will not match main. Before the rerun, decide where the Status counts and HEAD should come from, or put them in the ticket."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
