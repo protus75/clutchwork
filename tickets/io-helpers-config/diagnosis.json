@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c5ea0568eadd7f46fc77a5459fd086400a2ae29d",
+  "stem": "io-helpers-config",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false: tests/fakes.py:30 FakeExec only records argv and returns a fixed (rc, out, err). PythonProviderExec (test_providers.py:749, a SubprocessExec subclass) needs spawn callbacks, streamed output, timeout or process-group kill, and capture after callback errors.",
+    "The ticket forbids editing tests/fakes.py and also says a missing FakeExec behavior stops the run as a premise failure. The implementer stopped on exactly that rule, so a retry at the same scope cannot succeed.",
+    "Consumers pass arbitrary Python child scripts (test_watchdog.py:349,379,410 `os.write(1, ...)`; test_watchdog_activation.py:408 subclasses it). Both files are disk_io_skip, so no running test needs the old behavior kept.",
+    "Refile with either a prerequisite ticket that adds a streaming, scriptable exec fake to tests/fakes.py and then lists it in ## Depends on, or a scope that leaves PythonProviderExec and python_client in test_providers.py for the watchdog batch tickets.",
+    "When refiling, rewrite AC2, AC3 and the Scope in name list so they match whichever choice is made. As written they require PythonProviderExec and python_client to leave the hub and test_watchdog*.py to import them from tests.config_helpers."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
