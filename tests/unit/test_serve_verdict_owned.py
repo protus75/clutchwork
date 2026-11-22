@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit test checking that Serve.verdicts marks restart recovery as owned while verdicts settle, and releases it on both success and failure.
+# purpose: Unit test checking that Serve.verdicts marks restart recovery as owned while verdicts settle, and releases it on both success and failure
 # relates: [clutch/__main__.py, clutch/runner.py, clutch/serve.py, tests/unit/test_serve_idle_poll.py]
 # owner: engine
-# verified: 8413cf72
-# hash: 420ac0adcbcbb2b306928793f50fd511679dc06b1c6b6c51fecb76092e790815
+# verified: 10f08d74
+# hash: 6cc56f140b40646536a40344ba8ff72e71b55d2453ebb6411d226f3714da5cc8
 
 import asyncio
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ import pytest
 from clutch import __main__ as cli
 from clutch import serve
 from clutch.runner import Checkout
+from tests.git_fake import GitFake
 from tests.unit.test_serve_idle_poll import PollFinished, Response, stop_poll
 
 
@@ -32,7 +33,7 @@ async def test_verdict_ownership_clears(monkeypatch, tmp_path, raises):
     monkeypatch.setattr(cli, "build_notifications", MagicMock())
     monkeypatch.setattr(serve, "engine_log", MagicMock())
     monkeypatch.setattr(serve.Redactor, "from_config", MagicMock())
-    checkout = Checkout(repo=tmp_path, config=SimpleNamespace(state_dir=tmp_path), env={}, exec_=None, fs=MagicMock(), clock=MagicMock(), journal=MagicMock(), git=MagicMock(), sleep=stop_poll)
+    checkout = Checkout(repo=tmp_path, config=SimpleNamespace(state_dir=tmp_path), env={}, exec_=None, fs=MagicMock(), clock=MagicMock(), journal=MagicMock(), git=GitFake(), sleep=stop_poll)
     owner = serve.Serve(checkout, read=lambda _: None, stems=lambda: [])
     owner.responses = [Response() for _ in range(5)]
     entered, release = asyncio.Event(), asyncio.Event()

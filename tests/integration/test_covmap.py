@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test covmap
+# purpose: Tests that covmap reduces a coverage report to a per-file test map, and that build publishes the map with the main SHA or refuses and keeps the old map when the command fails or its report is missing or invalid
 # relates: [clutch/covmap.py, clutch/runner.py]
 # owner: engine
-# verified: 148a8874
-# hash: 96c36c584902317a776f181866d8b3d41b9b88f87cd006ddab6ae23d2e73f41c
+# verified: 10f08d74
+# hash: 710bea1e708cb64feba9dfa2b7c917578f5e5767ddda8b3103b9f6e1492de9fa
 import json
 from types import SimpleNamespace
 
@@ -13,6 +13,7 @@ import pytest
 
 from clutch.covmap import build, reduce_map
 from clutch.runner import Refusal
+from tests.git_fake import GitFake
 
 REPORT = {
     "files": {
@@ -40,10 +41,9 @@ async def test_build(tmp_path, case):
                 report.write_text(json.dumps(REPORT) if case == "success" else "{}")
             return (1 if case == "exit" else 0, "", "")
 
-    class Git:
-        async def rev_parse(self, repo, ref):
-            assert repo == tmp_path and ref == "main"
-            return "main-sha"
+    def rev_parse(repo, ref):
+        assert repo == tmp_path and ref == "main"
+        return "main-sha"
 
     class FS:
         def __init__(self):
@@ -57,10 +57,10 @@ async def test_build(tmp_path, case):
 
     fs = FS()
     if case == "success":
-        await build(repo=tmp_path, config=config, exec_=Exec(), git=Git(), fs=fs, env={})
+        await build(repo=tmp_path, config=config, exec_=Exec(), git=GitFake(rev_parse=rev_parse), fs=fs, env={})
         assert json.loads(fs.files[state / "coverage-map.json"]) == {"sha": "main-sha", "files": {"clutch/a.py": ["tests/test_a.py", "tests/test_b.py"], "clutch/b.py": []}}
     else:
         with pytest.raises(Refusal):
-            await build(repo=tmp_path, config=config, exec_=Exec(), git=Git(), fs=fs, env={})
+            await build(repo=tmp_path, config=config, exec_=Exec(), git=GitFake(rev_parse=rev_parse), fs=fs, env={})
         assert fs.files == {state / "coverage-map.json": b"previous"}
     assert not report.exists()

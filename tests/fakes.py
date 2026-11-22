@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: In-memory fakes for the engine's test seams (clock, exec, filesystem, journal, git) plus the shared turn/until polling helpers.
+# purpose: In-memory fakes for the engine's test seams (clock, exec, filesystem, journal) plus the shared turn/until polling helpers
 # relates: [clutch/journal.py]
 # owner: clutch/journal.py
-# verified: 543c80a2
-# hash: bbeef79d62fee282fc7b4c0527ff447259ea6273c7dd1c85efae89c0fbcc4b0e
+# verified: 10f08d74
+# hash: 0107e561c7eab7976317ff462cb003666174830775c2aff76fabf6ebece92f95
 
 import asyncio
 import time
@@ -88,19 +88,6 @@ class FakeJournal:
 
     def read(self):
         return list(self.events)
-
-
-class FakeGit:
-    def __init__(self, results=None):
-        self.results = {} if results is None else results
-        self.calls = []
-
-    def __getattr__(self, name):
-        def call(*args, **kwargs):
-            self.calls.append((name, args, kwargs))
-            return self.results[name]
-
-        return call
 
 
 async def turn():

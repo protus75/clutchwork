@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test shared fakes
+# purpose: Unit tests for the shared test fakes and fixtures: clock, exec, filesystem and journal behavior, plus how the until helper paces its clock steps, avoids sleeping and times out
 # relates: [clutch/journal.py, tests/fakes.py]
-# owner: engine
-# verified: 9a610809
-# hash: 7e282ba3904be61cde2c2a92229f5399dbdd1a5428542605d1ee9f6bee2f279d
+# owner: tests/fakes.py
+# verified: 10f08d74
+# hash: 872175b72e3e0bf81e4eb3c2a26388da725e32c23844dbf0687a95fb7212bfb8
 import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -13,11 +13,11 @@ from pathlib import Path
 import pytest
 
 from clutch.journal import EventType
-from tests.fakes import FakeClock, FakeExec, FakeFileSystem, FakeGit, FakeJournal, until
+from tests.fakes import FakeClock, FakeExec, FakeFileSystem, FakeJournal, until
 
 
-def test_fixtures(fake_clock, fake_exec, fake_fs, fake_journal, fake_git):
-    for value, cls in ((fake_clock, FakeClock), (fake_exec, FakeExec), (fake_fs, FakeFileSystem), (fake_journal, FakeJournal), (fake_git, FakeGit)):
+def test_fixtures(fake_clock, fake_exec, fake_fs, fake_journal):
+    for value, cls in ((fake_clock, FakeClock), (fake_exec, FakeExec), (fake_fs, FakeFileSystem), (fake_journal, FakeJournal)):
         assert isinstance(value, cls)
 
 
@@ -82,6 +82,3 @@ async def test_exec_journal_git():
     event = journal.append(EventType.EFFECT_INTENT, {"action": "run"}, ticket="one", key="key")
     assert journal.read() == [event]
     assert (event.type, event.body, event.ticket, event.key, event.ts) == (EventType.EFFECT_INTENT, {"action": "run"}, "one", "key", "2024-01-02T00:00:00+00:00")
-    git = FakeGit({"status": "dirty"})
-    assert git.status("repo", short=True) == "dirty"
-    assert git.calls == [("status", ("repo",), {"short": True})]

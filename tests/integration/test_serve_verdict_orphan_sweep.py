@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration test checking that an idle maintenance sweep does not abandon or orphan-alert a draft confirmation still in flight, and that the confirmation still completes.
+# purpose: Integration test checking that an idle maintenance sweep does not abandon or orphan-alert a draft confirmation that is still in progress, and that the confirmation still completes
 # relates: [clutch/__main__.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/restart.py, clutch/runner.py, clutch/serve.py, tests/fakes.py]
 # owner: engine
-# verified: 8413cf72
-# hash: aa69ba1eb90e5b8604a0647d584be254badaa4bc7486877c943f8df2bd4b83fe
+# verified: 10f08d74
+# hash: 45b4439db1caef54a708e91b6ab81d79d8fd10052babd583cf0b3ff37e6052fe
 
 import asyncio
 from types import SimpleNamespace
@@ -22,6 +22,7 @@ from clutch.journal import EventType
 from clutch.restart import Restart
 from clutch.runner import Checkout
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_serve_idle_poll import PollFinished, Response, stop_poll
 
 
@@ -36,7 +37,7 @@ async def test_confirmation_survives_idle_sweep(tmp_path, monkeypatch):
         fs=MagicMock(),
         clock=MagicMock(),
         journal=journal,
-        git=SimpleNamespace(worktree_prune=AsyncMock()),
+        git=GitFake(),
         sleep=stop_poll,
     )
     timers = SimpleNamespace(fire_due=lambda: None)

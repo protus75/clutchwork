@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test harvest cost source
+# purpose: Tests that a failed-run harvest records the provider, model, cost and estimate/budget flags from the stage result, and that an orphan harvest leaves those fields null
 # relates: [clutch/artifacts.py, clutch/config.py, clutch/redact.py, clutch/runner.py, clutch/seams.py, tests/integration/test_harvest_orphans.py]
 # owner: engine
-# verified: 148a8874
-# hash: 47038886a65d0ff936bffd3ddc595494e7d9e803e04ffeb39a40fd88eac91309
+# verified: 10f08d74
+# hash: 108001c318a74067a1268dcc0767a418fd928d8df16ed9ac08204f03af6fc099
 import asyncio
 import json
 from types import SimpleNamespace
@@ -18,6 +18,7 @@ from clutch.artifacts import Cost, StageResult
 from clutch.config import TrainingData
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 from tests.integration.test_harvest_orphans import invoke, orphan
 from tests.integration.test_stages import STEM, agent, verdict
 from tests.integration.test_terminal import repo  # noqa: F401
@@ -30,7 +31,7 @@ def test_failed_harvest_writes_cost_source(tmp_path, monkeypatch, provider, esti
         config=SimpleNamespace(training_data=TrainingData(), state_dir=tmp_path / "state", providers=[SimpleNamespace(name=provider)]),
         repo=tmp_path,
         worktree=lambda stem: tmp_path / "worktree",
-        git=SimpleNamespace(diff_stat=AsyncMock(return_value="changed")),
+        git=GitFake(diff_stat="changed"),
         fs=fs,
         driver=SimpleNamespace(redactor=Redactor({})),
     )
