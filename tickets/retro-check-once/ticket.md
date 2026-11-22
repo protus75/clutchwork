@@ -58,7 +58,7 @@ Scope in:
   - Build `s = object.__new__(serve.Serve)` and set `s.retro_checked = None` and `s.retro_due = False`. Base ignores `retro_checked`.
   - Set `s.log` to an object whose `event(name, **fields)` appends `name` to a list.
   - Set `config = SimpleNamespace(retro=object())`.
-  - Set `s.checkout = SimpleNamespace(config=config, journal=SimpleNamespace(read=lambda: [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]))`.
+  - Define a local `@dataclass class Checkout` with fields `config`, `journal` and `clock`, as `tests/unit/test_phase_events.py` does, because `check_retro` calls `dataclasses.replace` on the checkout. Set `s.checkout = Checkout(config, SimpleNamespace(read=lambda: [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]), lambda: "now")`. `tests/unit/test_serve_retro_check_once.py` builds its checkouts the same way.
   - Set `s.control = SimpleNamespace(load_config=lambda: config)`.
   - Replace `serve.snapshot_config` with identity, `serve.project_window` with identity, `serve.suppressing_failure` with `lambda w: None`, and `serve.select_trigger` with `lambda *a, **k: None`.
   - Where the `serve` module has the attribute, replace `serve.production_evidence` with `AsyncMock(return_value={})` and `serve.measurements` with `lambda w: {}`.
