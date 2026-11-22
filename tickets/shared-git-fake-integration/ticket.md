@@ -10,6 +10,8 @@ kind: feature
 
 ## Context
 - clutch/git.py::Git
+- tests/integration/conftest.py
+- clutch/ioguard.py
 
 ## Goal / Why
 `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in. This ticket migrates the last 7 of them (8 stand-ins) onto `GitFake` and removes them from `PENDING`, so those tests no longer break when `Git` gains a method. Read `tests/git_fake.py` in the worktree for the override and `calls` contract before editing; it is a merged dependency.
@@ -23,9 +25,9 @@ none
 - reason: tests encoding an existing contract; the stand-ins move to the existing `tests/git_fake.py::GitFake` with the same assertions and no production, document or behavior change
 
 ## Scope in / Scope out
-In: migrate each stand-in in the files below onto `GitFake` from `tests/git_fake.py`, keeping every existing assertion and test name (an `assert_awaited_with` on a stand-in becomes an assertion on `fake.calls`). Add only the import `GitFake` needs and nothing else changes in a file. Remove each migrated file from `PENDING` in `tests/integration/test_git_fake_adoption.py`. The adoption test changes only as this Scope in states: these removals, deleting `PENDING` and its two checks, and adding the fourth pattern below. A test using a real `Git` on a fake process executor is not a stand-in and stays as is.
+In: migrate each stand-in in the files below onto `GitFake` from `tests/git_fake.py`, keeping every existing assertion and test name (an `assert_awaited_with` on a stand-in becomes an assertion on `fake.calls`). Add only the import `GitFake` needs and nothing else changes in a file. Remove each migrated file from `PENDING` in `tests/integration/test_git_fake_adoption.py`. The adoption test changes only as this Scope in states: these removals, deleting `PENDING` and its two checks, adding the fourth pattern below, and the in-memory scan checks the acceptance criteria name. A test using a real `Git` on a fake process executor is not a stand-in and stays as is.
 
-Files migrated here (stand-ins counted):
+Files migrated here (stand-ins counted; every one is in the Scope fence):
 tests/integration/test_covmap.py (1)
 tests/integration/test_harvest_cost_source.py (1)
 tests/integration/test_retry_keeps_branch.py (1)
@@ -34,7 +36,7 @@ tests/unit/test_check_meta_fill.py (2)
 tests/unit/test_runner_verdict_reread.py (1)
 tests/unit/test_serve_verdict_owned.py (1)
 
-Also in: retire `FakeGit`. Migrate every use of `FakeGit` or the `fake_git` fixture in these files onto `GitFake`, keeping test names and assertions (a `FakeGit.calls` or `results` assertion becomes the equivalent `GitFake` override or `calls` assertion):
+Also in: retire `FakeGit`. On main the dependency chain has already moved the 9 former `FakeGit` users below onto `GitFake`; check each and migrate any remaining use of `FakeGit` or the `fake_git` fixture onto `GitFake`, keeping test names and assertions (a `FakeGit.calls` or `results` assertion becomes the equivalent `GitFake` override or `calls` assertion). A file with no remaining use is left unchanged:
 tests/unit/test_git_commit.py
 tests/unit/test_hostfiles.py
 tests/unit/test_intake_plan.py
@@ -46,9 +48,9 @@ tests/unit/test_roadmap_merged.py
 tests/unit/test_roadmap_merged_parallel.py
 Then delete `class FakeGit` from tests/fakes.py, the `fake_git` fixture from tests/conftest.py, and in tests/unit/test_shared_fakes.py drop `fake_git`/`FakeGit` from `test_fixtures` (its parameter and loop entry) and delete the test that exercises `FakeGit` directly; nothing else changes there. Add a fourth pattern to the adoption scan: any `FakeGit` or `fake_git` reference outside tests/git_fake.py fails.
 
-Out: production code under `clutch/`; `tests/git_fake.py` (when a stand-in needs a capability `GitFake` lacks, give the fake the capability through an override callable in the test, and name the gap in the run record); the rest of `tests/fakes.py`; the five `tests/regress_*.py` files; every file not listed above.
+Also in: delete `PENDING` and both of its checks from `tests/integration/test_git_fake_adoption.py`, so the scan covers every file with the two exempt files named in the test's own `EXCLUDED` set. The adoption test is under the integration I/O guard (`tests/integration/conftest.py`, `clutch/ioguard.py`) and is not in `REAL_IO_TESTS`, so its negative checks pass an in-memory `{path: content}` mapping to the scan function, as the existing checks already do, and write no file.
 
-Also in: delete `PENDING` and both of its checks from `tests/integration/test_git_fake_adoption.py`, so the scan covers every file with the two exempt files named in the test's own header.
+Out: production code under `clutch/`; `tests/git_fake.py` (when a stand-in needs a capability `GitFake` lacks, give the fake the capability through an override callable in the test, and name the gap in the run record); the rest of `tests/fakes.py`; `tests/integration/conftest.py` and its `REAL_IO_TESTS`; the five `tests/regress_*.py` files; every file not listed above.
 
 ## Scope fence
 - tests/integration/test_git_fake_adoption.py
@@ -73,20 +75,20 @@ Also in: delete `PENDING` and both of its checks from `tests/integration/test_gi
 - tests/unit/test_roadmap_merged_parallel.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/integration/test_git_fake_adoption.py` passes with `PENDING` gone: every file under `tests/unit` and `tests/integration` other than the two exempt files has zero matches for the four patterns (the three existing ones plus the `FakeGit`/`fake_git` pattern this ticket adds), and the scan fails (not passes) when a temporary file under a `tmp_path` copy of the scan root contains `git = SimpleNamespace(`.
-2. `./dev.py test tests/integration/test_covmap.py tests/integration/test_harvest_cost_source.py` passes with the migrated tests keeping their names and assertions, so a test that asserted a Git call still asserts the same call (now via `fake.calls`), not a weaker one.
-3. `./dev.py test tests/integration/test_git_fake_adoption.py` proves no file under `tests/unit` or `tests/integration` other than tests/git_fake.py references `FakeGit` or `fake_git` (tests/fakes.py and tests/conftest.py lose theirs through the deletions in Scope in), and the scan fails on a `tmp_path` copy holding `from tests.fakes import FakeGit`.
+1. `./dev.py test tests/integration/test_git_fake_adoption.py` passes with `PENDING` gone: every file under `tests/unit` and `tests/integration` other than the two exempt files has zero matches for the four patterns (the three existing ones plus the `FakeGit`/`fake_git` pattern this ticket adds), and the scan function reports the path (fails, not passes) when given an in-memory `{path: content}` mapping whose content contains `git = SimpleNamespace(`, with no file written.
+2. `./dev.py test tests/integration/test_covmap.py tests/integration/test_harvest_cost_source.py tests/integration/test_retry_keeps_branch.py tests/integration/test_serve_verdict_orphan_sweep.py tests/unit/test_check_meta_fill.py tests/unit/test_runner_verdict_reread.py tests/unit/test_serve_verdict_owned.py` passes with the migrated tests keeping their names and assertions, so a test that asserted a Git call still asserts the same call (now via `fake.calls`), not a weaker one.
+3. `./dev.py test tests/integration/test_git_fake_adoption.py` proves no file under `tests/unit` or `tests/integration` other than tests/git_fake.py references `FakeGit` or `fake_git` (tests/fakes.py and tests/conftest.py lose theirs through the deletions in Scope in), and the scan function reports the path when given an in-memory `{path: content}` mapping whose content is `from tests.fakes import FakeGit`, with no file written.
 4. `./dev.py test tests/unit/test_git_commit.py tests/unit/test_hostfiles.py tests/unit/test_intake_plan.py tests/unit/test_release_changelog.py tests/unit/test_requisition_prior_review.py tests/unit/test_roadmap_accept.py tests/unit/test_roadmap_author.py tests/unit/test_roadmap_merged.py tests/unit/test_roadmap_merged_parallel.py tests/unit/test_shared_fakes.py` passes with every former `FakeGit` user on `GitFake` and test names unchanged.
 
 ## Verification
 ```
 ./dev.py test tests/integration/test_git_fake_adoption.py
-./dev.py test tests/integration/test_covmap.py tests/integration/test_harvest_cost_source.py
+./dev.py test tests/integration/test_covmap.py tests/integration/test_harvest_cost_source.py tests/integration/test_retry_keeps_branch.py tests/integration/test_serve_verdict_orphan_sweep.py tests/unit/test_check_meta_fill.py tests/unit/test_runner_verdict_reread.py tests/unit/test_serve_verdict_owned.py
 ./dev.py test tests/unit/test_git_commit.py tests/unit/test_hostfiles.py tests/unit/test_intake_plan.py tests/unit/test_release_changelog.py tests/unit/test_requisition_prior_review.py tests/unit/test_roadmap_accept.py tests/unit/test_roadmap_author.py tests/unit/test_roadmap_merged.py tests/unit/test_roadmap_merged_parallel.py tests/unit/test_shared_fakes.py
 ```
 
 ## Definition of rejected
-A change under `clutch/`; a migrated test whose assertion is dropped, weakened or turned into one that also passes when the call never happens; a stand-in left in a migrated file; a file outside the Scope fence edited; `GitFake` members that differ from `Git` in name or signature.
+A change under `clutch/`; a migrated test whose assertion is dropped, weakened or turned into one that also passes when the call never happens; a stand-in left in a migrated file; a file outside the Scope fence edited; an adoption-test check that writes a file; `GitFake` members that differ from `Git` in name or signature.
 
 ## Time budget
 - expected: 25m
