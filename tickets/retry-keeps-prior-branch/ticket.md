@@ -55,7 +55,7 @@ Scope in:
 - clutch/stages.py: the `keep` keyword and the `implement` decision above.
 - clutch/specs/implement.md: add the kept-branch sentence after the existing "For a prior attempt discarded on a merge conflict..." sentence; bump `version` to the next minor above main.
 - clutch/specs/diagnose.md: replace the starting-point sentence as stated; bump `version` to the next minor above main.
-- tests/unit/test_specs.py: update `test_diagnose_spec_states_attempt_starting_point` to the new sentence and the `implement` and `diagnose` version pins; nothing else changes there. tests/integration/test_specs_delimiter_note.py and tests/integration/test_implement_spec_meta_headers.py: update version pins only.
+- tests/unit/test_specs.py: update `test_diagnose_spec_states_attempt_starting_point` to the new sentence and the `implement` and `diagnose` version pins; nothing else changes there. tests/integration/test_specs_delimiter_note.py, tests/integration/test_implement_spec_meta_headers.py and tests/integration/test_implement_spec_mutation_check.py (line 22 and its purpose header): update version pins only. tests/integration/test_stages.py: update only the `spec: implement 2.26` pin at line 350; add nothing else there.
 - tests/integration/test_git.py (already in `REAL_IO_TESTS`): add one real-git test that `Git.worktree_attach` checks out an existing branch in a new worktree without moving that branch.
 - New tests/integration/test_retry_keeps_branch.py drives `prepare_worktree` with an in-memory fake Git and filesystem (the fakes in tests/fakes.py, or a small async fake Git inside the test file) and asserts the git calls made; it runs no git process and writes no repository, so it stays under the integration I/O guard and is not added to `REAL_IO_TESTS`. New tests/integration/test_retry_prompts_starting_point.py reads the shipped specs through a `Path(__file__)` anchor; new tests/unit/test_retry_keep_decision.py runs the `implement` keep decision with fake journal events.
 - docs/how-clutch-works.md section 4.1 Worktree: say a retry after a Check or Review failure reuses the branch rebased onto main, and that every other attempt starts fresh.
@@ -71,6 +71,8 @@ Scope out:
 - tests/unit/test_specs.py
 - tests/integration/test_specs_delimiter_note.py
 - tests/integration/test_implement_spec_meta_headers.py
+- tests/integration/test_implement_spec_mutation_check.py
+- tests/integration/test_stages.py
 - tests/integration/test_git.py
 - tests/integration/test_retry_keeps_branch.py
 - tests/integration/test_retry_prompts_starting_point.py
