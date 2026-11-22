@@ -1248,9 +1248,14 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
     escalations = []
     flake = flake_detection(journal=ctx.driver.journal, box=box, config=ctx.config, escalate=escalations.append)
 
-    async def run(name):
+    async def run(name, selected=None):
         ctx.fs.remove(path)
-        result, report = await run_host_command(ctx, ticket, attempt, entry.argv, entry.code, name)
+        argv = entry.argv
+        if selected is not None:
+            selection_path = path.with_suffix(".select.json")
+            ctx.fs.write(selection_path, json.dumps(selected).encode("utf-8"))
+            argv = entry.argv + ["--clutch-select", str(selection_path)]
+        result, report = await run_host_command(ctx, ticket, attempt, argv, entry.code, name)
         try:
             results = read_results(path.read_text())
         except OSError, UnicodeError, ResultsInvalid:
@@ -1305,7 +1310,8 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
     first = first.tests
     last = first
     if result.rc != 0 and "failed" in first.values():
-        result, report, last = await run(f"check/host-{n:02d}-rerun.txt")
+        selected = [test for test, outcome in first.items() if outcome == "failed"] if entry.coverage is None else None
+        result, report, last = await run(f"check/host-{n:02d}-rerun.txt", selected)
         if last is None:
             return invalid()
         last = last.tests
@@ -1358,7 +1364,7 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
 
     events = ctx.driver.journal.read()
     for identity in list(flake.quarantine().active.values()):
-        if last.get(identity.test_id) != "passed":
+        if {**first, **last}.get(identity.test_id) != "passed":
             continue
         message = box.get(identity.box_id)
         resolution = message.resolution

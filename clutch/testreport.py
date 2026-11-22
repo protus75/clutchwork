@@ -24,6 +24,17 @@ _seconds: dict[str, float] = {}
 
 def pytest_addoption(parser):
     parser.addoption("--clutch-results", metavar="PATH", default=None)
+    parser.addoption("--clutch-select", metavar="PATH", default=None)
+
+
+def pytest_collection_modifyitems(config, items):
+    path = config.getoption("--clutch-select")
+    if path is None:
+        return
+    selected = set(json.loads(Path(path).read_text()))
+    deselected = [item for item in items if item.nodeid not in selected]
+    items[:] = [item for item in items if item.nodeid in selected]
+    config.hook.pytest_deselected(items=deselected)
 
 
 def pytest_configure(config):
