@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "6dc53cb75c418c1cb418d508097039b73ce0295b",
+  "stem": "regression-command-program-lint",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false: the ticket puts the rule in clutch/tickets.py::_regression, which runs at parse time (parse_ticket/validate_ticket). Settled and rejected tickets would then fail too, which breaks the ticket's own compatibility clause. Re-scope the owner to clutch/tickets.py::lint_findings, beside",
+    "The fence must add tests/unit/test_ticket_lint_rules.py. Its fixture TEXT uses `./dev.py test tests/x.py`, so the new rule makes test_regression_requires_carried_path_not_runner_denylist (lines 70-79) fail even in lint_findings: `[finding] =` at line 75 would get two findings.",
+    "In the re-authored ticket, update test_ticket_lint_rules.py:75-76 to expect both findings for `./dev.py test tests/x.py`, or change that fixture's command, so the test still pins the 'does not name a carried file' check.",
+    "Keep the new tests in tests/unit/test_regression_command_program.py, but build the ticket with parse_ticket and call lint_findings, not _regression, to match the moved owner. Criteria 1 and 2 stay as written.",
+    "The test_live_keep_dispatches_again_without_restart flake is already filed as box-001038-744ec6e3. It is not caused by this ticket, so leave it out of the rewrite."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0
+  ],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
