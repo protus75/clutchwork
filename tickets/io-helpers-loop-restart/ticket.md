@@ -49,7 +49,7 @@ Scope in:
 - - Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged; skipped importers may still break semantically and their batch ticket fixes that.
-- Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior (except `Time`, which moves unchanged where Scope in says so).
+- Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
 - Defining in `tests/loop_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`, or a copied reply or config helper.
 - Names that other hubs own: each of the other four `io-helpers-loop-*` tickets moves its own hub's names, and this ticket leaves their definitions and importers alone.
 
