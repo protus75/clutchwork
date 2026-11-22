@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "458ab4120a3701b1ccb26bd899eb95046d625c0c",
+  "stem": "scheduler-ranks-full-priority",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Scope fence omits tests/unit/test_scheduler_parallel_fill.py, yet test_order (parallel-enabled case, ~line 70) and test_p0_precedes_chain pin the old cross-priority order; criterion 5 (./dev.py test tests/unit) cannot pass inside the fence.",
+    "Refile: add tests/unit/test_scheduler_parallel_fill.py to ## Scope fence and Scope in, and allow updating both expectations to priority-first order: PRIORITY[priority], then -chain, then sort_key.",
+    "Implementer reported a clean diff otherwise: the drain.py sort-key change, test_chain_order.py expectation, new test_parallel_order_priority.py, and the three doc edits passed the focused verification. Reuse that work on retry after the fence fix.",
+    "Before refiling, grep tests/ for other parallel_order or dispatch-order expectations, such as scheduler and queue.json order tests, so every test that pins the old P0-then-chain rule is fenced."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
