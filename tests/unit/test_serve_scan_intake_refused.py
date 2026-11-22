@@ -4,8 +4,8 @@
 # purpose: Verify that a refused intake (a stray staged file) leaves Serve.scan returning the last ticket set and logs the refusal once, instead of stopping serve.
 # relates: [clutch/serve.py, clutch/tickets.py, tests/unit/test_serve_idle_poll.py]
 # owner: engine
-# verified: 00000000
-# hash: 0000000000000000000000000000000000000000000000000000000000000000
+# verified: 650c688b
+# hash: 7d5f96acd1c20cd674e970bdc886ea5ca7c72a0fddd5809ac8829ae337142542
 from types import SimpleNamespace
 
 import pytest
