@@ -1,0 +1,36 @@
+{
+  "attempt": 1,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/unit/test_config_fixture.py",
+      "line": 19,
+      "message": "This file imports CONFIG from the stages hub, so acceptance criterion 2 requires changing its import outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and permit its import line to move to tests.stages_helpers.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_shared_stage_replies.py",
+      "line": 12,
+      "message": "This file imports implement_reply and verdict from the stages hub, so acceptance criterion 2 requires changing its import outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and permit its import line to move to tests.stages_helpers.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required removal of every import from the stages hub forces edits to two files outside the scope fence.\",\"surprises\":\"The existing shared configuration adoption test can remain satisfied by retaining the hub’s build_config import.\",\"second_problems\":[],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"30 minutes expected; scope conflict found during initial inspection.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/unit/test_config_fixture.py\",\"line\":19,\"message\":\"This file imports CONFIG from the stages hub, so acceptance criterion 2 requires changing its import outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and permit its import line to move to tests.stages_helpers.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_shared_stage_replies.py\",\"line\":12,\"message\":\"This file imports implement_reply and verdict from the stages hub, so acceptance criterion 2 requires changing its import outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and permit its import line to move to tests.stages_helpers.\"}]}",
+  "events_tail": "\\nimport ast\\nimport re\\nfrom pathlib import Path\\n\\nimport pytest\\n\\nBUILDERS = (\\n    \\\"tests/integration/test_cli.py\\\",\\n    \\\"tests/integration/test_stages.py\\\",\\n    \\\"tests/integration/test_providers.py\\\",\\n    \\\"tests/harness/shakeout/bench.py\\\",\\n)\\nEDITORS = (\\\"tests/integration/serve_rig.py\\\", \\\"tests/integration/test_serve_parallel_admission.py\\\")\\nROOT = Path(__file__).resolve().parents[2]\\n\\n\\n@pytest.mark.parametrize(\\\"path\\\", BUILDERS + EDITORS)\\ndef test_shared_config_adoption(path):\\n    source = (ROOT / path).read_text()\\n    # Reintroducing a YAML config literal duplicates the provider defaults again.\\n    assert re.search(r\\\"^\\\\s*providers:\\\", source, re.MULTILINE) is None\\n    helper = \\\"build_config\\\" if path in BUILDERS else \\\"amend_config\\\"\\n    # A local helper or an unrelated import does not adopt the canonical owner.\\n    assert any(isinstance(node, ast.ImportFrom) and node.module == \\\"tests.config_fixture\\\" and any(alias.name == helper for alias in node.names) for node in ast.walk(ast.parse(source)))\\n    if path in EDITORS:\\n        # An editor retaining its own dump bypasses the shared top-level edit behavior.\\n        assert \\\"yaml.safe_dump\\\" not in source\\n# clutch:meta\\n# schema: clutch.meta/1.0\\n# kind: test\\n# purpose: test shared fakes adoption\\n# relates: [tests/fakes.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_driver.py, tests/integration/test_effects.py]\\n# owner: engine\\n# verified: 96e46658\\n# hash: c93b96d73bf49ef86196707cb395343c4cbaf21eb6d48d19e03393e5b327228f\\nfrom datetime import UTC, datetime, timedelta\\nfrom pathlib import Path\\n\\nfrom tests import fakes\\nfrom tests.integration import test_cli, test_drain, test_driver, test_effects, test_merge, test_stages, test_tickets\\n\\n\\ndef test_shared_class_identities():\\n    assert test_drain.Clock is fakes.FakeClock\\n    assert test_cli.Clock is fakes.FakeClock\\n    assert test_tickets.Clock is fakes.FakeClock\\n    assert test_driver.FakeClock is fakes.FakeClock\\n    assert test_effects.FakeExec is fakes.FakeExec\\n\\n\\ndef test_merge_uses_imported_config():\\n    assert test_merge.CONFIG is test_stages.CONFIG\\n    source = Path(test_merge.__file__).read_text()\\n    assert \\\"test_stages.py\\\" not in source\\n    assert \\\"split('CONFIG\\\" not in source\\n\\n\\ndef test_drain_clock_default_and_advance():\\n    clock = test_drain.Clock()\\n    assert clock() == datetime(2026, 1, 1, tzinfo=UTC)\\n    clock.advance(37)\\n    assert clock() == datetime(2026, 1, 1, tzinfo=UTC) + timedelta(seconds=37)\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_13\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required removal of every import from the stages hub forces edits to two files outside the scope fence.\\\",\\\"surprises\\\":\\\"The existing shared configuration adoption test can remain satisfied by retaining the hub’s build_config import.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"30 minutes expected; scope conflict found during initial inspection.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_config_fixture.py\\\",\\\"line\\\":19,\\\"message\\\":\\\"This file imports CONFIG from the stages hub, so acceptance criterion 2 requires changing its import outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and permit its import line to move to tests.stages_helpers.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_shared_stage_replies.py\\\",\\\"line\\\":12,\\\"message\\\":\\\"This file imports implement_reply and verdict from the stages hub, so acceptance criterion 2 requires changing its import outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and permit its import line to move to tests.stages_helpers.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":267728,\"cached_input_tokens\":229248,\"cache_write_input_tokens\":0,\"output_tokens\":1126,\"reasoning_output_tokens\":345}}\n",
+  "wall_seconds": 60.024695,
+  "usd": 1.0,
+  "run_record": "tickets/io-helpers-stages/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
