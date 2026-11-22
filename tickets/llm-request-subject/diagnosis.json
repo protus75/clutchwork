@@ -1,17 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "fe71815d79493f508c366262cd04ad18b117c0cb",
+  "produced_at_sha": "5fe62d637ac75fed55b72d98945da1a32332c903",
   "stem": "llm-request-subject",
-  "attempt": 4,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 5,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
   "lessons": [
-    "The premise finding is real. On main, tests/loop_helpers.py:500 (the admission_graph fake) has `stem = req.ticket`. That file is not in the Scope fence, so the rename and the AC4 scan over `tests/` for `req(uest)?\\.ticket\\b` cannot both pass.",
-    "Fix the ticket: add tests/loop_helpers.py to `## Scope fence` and add a Scope in line saying its admission_graph fake reads `req.subject` instead of `req.ticket`. Then run `clutch ticket lint` and `clutch ticket review` again.",
-    "I scanned clutch/ and tests/ on main for `req(uest)?\\.ticket\\b`, `LLMRequest(` and driver `ticket=None` runs. Every other hit is already in the fence; tests/loop_helpers.py is the only file missing.",
-    "Prevent this class: the ticket's reader list is copied by hand, so it goes stale as main changes between attempts. Before each retry, check the fence against a fresh grep of `req(uest)?\\.ticket\\b` on main."
+    "In tests/integration/test_triage.py:81, change `(r.surface, r.tier, r.ticket)` to `r.subject`. Update the expected tuples from None to the labels the code sends: each triage message's id, the authoring message's id for author, and the authored ticket stem for requisition_review.",
+    "Look for other request reads that use a variable name other than req/request (r.ticket, call.ticket, x.ticket on FakeLLM.requests) in every fenced test and harness file. Criterion 4's `req(uest)?\\.ticket\\b` scan does not catch them.",
+    "The last run reported 297 integration passed and 3341 skipped, so a skipped test hid this break. Run `./dev.py test tests/integration/test_triage.py` and confirm it actually executes. Do not trust a full-suite pass that mostly skips."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
