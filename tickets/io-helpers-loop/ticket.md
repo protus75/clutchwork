@@ -36,14 +36,14 @@ The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit an
 ### Shared serve-loop and triage test helpers
 - disposition: create
 - owner: tests/loop_helpers.py
-- consumers: the 46 test files listed in `## Scope fence` that import from `tests/integration/test_scheduler.py`, `test_triage.py`, `test_terminal.py`, `test_restart_timers.py` and `serve_rig.py` (all under `tests/integration/`), and the later batch tickets that restore the skipped ones
+- consumers: the 48 test files listed in `## Scope fence` that import from `tests/integration/test_scheduler.py`, `test_triage.py`, `test_terminal.py`, `test_restart_timers.py` and `serve_rig.py` (all under `tests/integration/`), and the later batch tickets that restore the skipped ones
 - observable change: the names listed under Scope in move from `tests/integration/test_scheduler.py`, `test_triage.py`, `test_terminal.py`, `test_restart_timers.py` and `serve_rig.py` (all under `tests/integration/`) into `tests/loop_helpers.py`, rewritten onto the shared fakes; every importer's import line changes to `tests.loop_helpers`; the hub file imports the names back from the new module for its own tests; no production code, CLI, journal or document changes
 - compatibility: every test that runs today still passes and the set of skipped tests is unchanged; a name that a running test reads as a module attribute of the hub (for example `test_cli.Clock` in `tests/integration/test_shared_fakes_adoption.py`) stays reachable under the same name on the hub module
 - acceptance: `tests/unit/test_loop_helpers.py` imports each moved name from `tests.loop_helpers` and exercises it without a process, real git or a write outside `tmp_path`; no importer still imports a moved name from the hub
 - tests: tests/unit/test_loop_helpers.py
 - post-merge source of truth: tests/loop_helpers.py
 - closest existing: `tests/fakes.py` (FakeClock, FakeExec, FakeFileSystem, FakeJournal, `turn`, `until`) and `tests/git_fake.py::GitFake` supply the fake seams but none of the scaffolding below; the hub definitions today do real git and processes, so a skipped file cannot reuse them
-- earning reason: consolidation of evidenced duplicates and shared use: 46 files import these names from `tests/integration/test_scheduler.py`, `test_triage.py`, `test_terminal.py`, `test_restart_timers.py` and `serve_rig.py` (all under `tests/integration/`), and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
+- earning reason: consolidation of evidenced duplicates and shared use: 48 files import these names from `tests/integration/test_scheduler.py`, `test_triage.py`, `test_terminal.py`, `test_restart_timers.py` and `serve_rig.py` (all under `tests/integration/`), and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
 
 ## Scope in / Scope out
 Scope in:
@@ -127,11 +127,13 @@ Scope out:
 - tests/stages_helpers.py
 - tests/daemon_helpers.py
 - tests/config_helpers.py
+- tests/regress_reconcile_confirming_draft.py
+- tests/integration/test_serve_upgrade_pending.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_loop_helpers.py` passes, and `tests/unit/test_loop_helpers.py` checks that `Rig` built over `tmp_path` writes only under `tmp_path`, that `repository(...)` returns a rig whose `checkout.git` is a `GitFake` (its `fake.calls` records the `add` and `commit`) and leaves no `.git` directory, and that `serve_rig.until` and `serve_rig.turn` still resolve (`serve_rig.turn is tests.fakes.turn`).
 2. `grep -rnE "from tests\.integration\.(test_scheduler|test_triage|test_terminal|test_restart_timers) import" tests --include=*.py` prints nothing, and `grep -rPzl "from tests\.integration\.serve_rig import (?:\([^)]*|[^\n(]*)\b(?:graph|admission_graph|admission_config|notify_command|enable_upgrade)\b" tests --include=*.py` lists no file (note `activated_graph` and `active_graph` stay in `serve_rig.py`; `\bgraph\b` does not match them).
-3. `grep -nE "^(async def|def|class) (Rig|Time|text|author_reply|enqueue|escape_report|escape_rig|reply|requisition_reply|root_with_box|run|author|clock|diagnosis_reply|repo|transitions|held|orphan|repository|import_closure|graph|admission_graph|admission_config|notify_command|enable_upgrade)\b|^(Rig|Time|text|author_reply|enqueue|escape_report|escape_rig|reply|requisition_reply|root_with_box|run|author|clock|diagnosis_reply|repo|transitions|held|orphan|repository|import_closure|graph|admission_graph|admission_config|notify_command|enable_upgrade) =" tests/integration/test_scheduler.py tests/integration/test_triage.py tests/integration/test_terminal.py tests/integration/test_restart_timers.py tests/integration/serve_rig.py` prints nothing: the hub files no longer define a moved name.
+3. `grep -nE "^(async def|def|class) (Rig|Time|text|author_reply|enqueue|escape_report|escape_rig|reply|requisition_reply|root_with_box|run|author|clock|diagnosis_reply|repo|transitions|held|orphan|repository|import_closure|graph|admission_graph|admission_config|notify_command|enable_upgrade)\b|^(Rig|Time|text|author_reply|enqueue|escape_report|escape_rig|reply|requisition_reply|root_with_box|run|author|clock|diagnosis_reply|repo|transitions|held|orphan|repository|import_closure|graph|admission_graph|admission_config|notify_command|enable_upgrade) =" tests/integration/test_scheduler.py tests/integration/test_triage.py tests/integration/test_terminal.py tests/integration/test_restart_timers.py tests/integration/serve_rig.py` prints nothing: the hub files no longer define a moved name, except the `run` definition in `tests/integration/test_terminal.py`: no file imports that `run` (its importers take `author`, `clock`, `diagnosis_reply`, `repo`, `ENV` and `STEM`), so it is not a moved name and stays.
 4. `grep -nE "import subprocess|SubprocessExec|time\.sleep|git -C" tests/loop_helpers.py` prints nothing.
 5. `./dev.py test tests/unit` and `./dev.py test tests/integration` exit 0, and the integration summary reports the same number of passed and skipped tests as on the base commit, both recorded in `run.md`.
 6. `./dev.py test tests/integration/test_shared_fakes_adoption.py tests/integration/test_disk_io_skip_list.py` passes (a running test that reads a moved name as a hub module attribute still sees the shared object).
@@ -152,4 +154,4 @@ Scope out:
 ## Time budget
 - expected: 30m
 - stuck: 60m
-- reason: 46 import lines and the hub definitions move in one change because a name must resolve in every importer at once; splitting by importer leaves a name defined in two places, and the files share one module so they stay together
+- reason: 48 import lines and the hub definitions move in one change because a name must resolve in every importer at once; splitting by importer leaves a name defined in two places, and the files share one module so they stay together
