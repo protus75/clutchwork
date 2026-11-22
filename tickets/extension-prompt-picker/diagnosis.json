@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "32bee32578f6410f2fd6c7feafb769317818860e",
+  "stem": "extension-prompt-picker",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false: clutch/observe.py::operator_holds calls load_config(ctx.config, cwd=ctx.root) only when candidates is non-empty, so snapshot does not always load config for caps. Snapshot fixtures without a readable config pass today but fail once prompt_pick's catalog load always runs.",
+    "Implement reported 22 unit failures outside the fence that it did not cause in its code: tests/unit/test_menu_admission.py, test_observe_hot_paths.py, test_observe_step_session.py, test_observe_upgrade_hold.py, test_snapshot_merged_cap.py, test_snapshot_merged_tooltip.py,",
+    "Re-author: add those seven test files to ## Scope fence and Scope in, and have each snapshot fixture supply a readable config. Do not wrap load_config in a fallback in snapshot. That is a defensive dual path, which CLAUDE.md bans.",
+    "Fix the Scope in wording 'as it already does for caps': say that snapshot now always loads config, while operator_holds loads it only when there are candidates. Keep acceptance criteria 1-5 and the prompt_pick(config, root, stems, box_ids) design. The focused verification already passed."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
