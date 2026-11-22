@@ -1,18 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c5ea0568eadd7f46fc77a5459fd086400a2ae29d",
+  "produced_at_sha": "69b8c195ba476677658d8440b5832226067cd1c5",
   "stem": "io-helpers-config",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "retry",
   "lessons": [
-    "Premise is false: tests/fakes.py:30 FakeExec only records argv and returns a fixed (rc, out, err). PythonProviderExec (test_providers.py:749, a SubprocessExec subclass) needs spawn callbacks, streamed output, timeout or process-group kill, and capture after callback errors.",
-    "The ticket forbids editing tests/fakes.py and also says a missing FakeExec behavior stops the run as a premise failure. The implementer stopped on exactly that rule, so a retry at the same scope cannot succeed.",
-    "Consumers pass arbitrary Python child scripts (test_watchdog.py:349,379,410 `os.write(1, ...)`; test_watchdog_activation.py:408 subclasses it). Both files are disk_io_skip, so no running test needs the old behavior kept.",
-    "Refile with either a prerequisite ticket that adds a streaming, scriptable exec fake to tests/fakes.py and then lists it in ## Depends on, or a scope that leaves PythonProviderExec and python_client in test_providers.py for the watchdog batch tickets.",
-    "When refiling, rewrite AC2, AC3 and the Scope in name list so they match whichever choice is made. As written they require PythonProviderExec and python_client to leave the hub and test_watchdog*.py to import them from tests.config_helpers."
+    "False premise: the ticket says FakeExec is the provider-script variant from test_providers.py and must be re-exported only if tests.fakes.FakeExec already does what it does. It does not, so move class FakeExec from test_providers.py:67 into tests/config_helpers.py unchanged.",
+    "The provider-script FakeExec (test_providers.py:67-94) is already in-memory: scripted responses, on_spawn/on_stdout_line callbacks, calls dicts, hang Event, kill_group. It runs no process, so moving it breaks no I/O rule and does not duplicate the shared fake. Do not edit tests/fakes.py.",
+    "Leave PythonProviderExec and python_client in test_providers.py. In test_watchdog.py and test_watchdog_activation.py, keep only the hub import lines named in criterion 2. Move every other listed name into tests/config_helpers.py; hubs import them back.",
+    "provider_session uses a real Journal under cfg.state_dir. Keep its signature and, in unit tests, point state_dir at tmp_path, or use tests.fakes.FakeJournal if callers allow it. watch_fixture_repo must not run git; it stores a GitFake in WATCH_GIT.",
+    "Record unit and integration passed/skipped counts for base and candidate in run.md (criterion 5). Check criteria 2-4 with the exact grep commands from the ticket before finishing."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
