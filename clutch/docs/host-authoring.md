@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host guide to ticket content: authoring workflow, what each section holds, keeping tickets apart, unit vs integration test I/O rules, path matching, graphics and bug ticket proof
+purpose: Host guide to writing ticket content: the authoring workflow, what each section holds, how to keep tickets apart, unit vs integration test I/O rules, path matching, and how graphics and bug tickets prove their results
 relates: [clutch/docs/host-running.md]
 owner: clutch/docs/host-running.md
-verified: 593bc2df
-hash: e46e14c8d6887799d50a12ef5ec4ac876a4d83ab31056b01bc03c7209b7603af
+verified: 19f68561
+hash: 3dca1cb7533245a8995ff3e78fe79a8bedbf83e8d074065978fa99c86ebfd671
 -->
 # Host ticket authoring
 
@@ -195,6 +195,7 @@ Save the evidence before any change that destroys it, such as deleting a file, r
 `## Regression` names one command, plus the test or fixture paths it carries. The command
 must name a path under a `carries:` prefix; lint checks this before review. It
 prints exactly one JSON object to stdout and nothing else; diagnostics go to stderr.
+The command runs again in a fresh base worktree without `.venv`, so start with a program on PATH (such as `uv run python`) or a carried script, never `.venv/bin/...`.
 
 - `{"regression_result": "pass"}` with exit 0: the defect is absent.
 - `{"regression_result": "defect"}` with a non-zero exit: the defect is present.

@@ -759,6 +759,16 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
                 path,
             )
         )
+    if ticket.regression and "/" in ticket.regression[0]:
+        program = ticket.regression[0]
+        if (
+            Path(program).is_absolute()
+            or ".." in Path(program).parts
+            or not any(str(Path(program)) == prefix.rstrip("/") or str(Path(program)).startswith(prefix.rstrip("/") + "/") for prefix in ticket.carries)
+        ):
+            findings.append(
+                _f(f"`## Regression` command runs {program}, which the base worktree does not have", "start the command with a program on PATH, such as `uv run python <carried reproducer>`", path)
+            )
     for prefix in ticket.carries:
         if not any(prefix.rstrip("/") == fence.rstrip("/") or prefix.startswith(fence.rstrip("/") + "/") for fence in ticket.scope_fence):
             findings.append(_f(f"`## Regression` carries prefix {prefix!r} is outside `## Scope fence`", "add the carried prefix to `## Scope fence`", path))

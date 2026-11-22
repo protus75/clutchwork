@@ -2,16 +2,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks ticket lint rules against an in-memory repo: regression carried-file and fence rules, file coverage floors that need a unit test, an invalid test-gate.toml, command path matching, and the output of the lint verb.
+# purpose: Checks ticket lint rules against an in-memory repo: regression carried-file and fence rules, file coverage floors that need a unit test, an invalid test-gate.toml, command path matching, and the output of the lint verb
 # relates: [clutch/__main__.py, clutch/tickets.py]
 # owner: engine
-# verified: 73ec5da9
-# hash: 069992339a351d15b808e90e01083fb8b0c602fe230c614395649f4a9caddb77
+# verified: 19f68561
+# hash: 3bfdd8331da2a20320dae83963ba74344936480d09281d69a05ef5b40326b428
 
 from pathlib import Path
 
 import pytest
 
+from clutch import __main__ as cli
 from clutch import tickets
 from tests.git_fake import GitFake
 
@@ -73,9 +74,10 @@ def test_regression_requires_carried_path_not_runner_denylist(repo):
     # Neither parsing nor merge validation should acquire the authoring restriction.
     for parse in (tickets.parse_ticket, tickets.validate_ticket):
         ticket = parse("example", TEXT, root)
-        [finding] = tickets.lint_findings(ticket, root)
+        finding, program_finding = tickets.lint_findings(ticket, root)
         assert "does not name a carried file" in finding.message
         assert finding.paved_road == "run a reproducer under a `carries:` prefix; a bare test runner such as `pytest -q` does not speak the regression protocol"
+        assert "command runs ./dev.py" in program_finding.message
     good = TEXT.replace("./dev.py test tests/x.py", "uv run python tests/regress_x.py")
     assert tickets.lint_findings(tickets.parse_ticket("example", good, root), root) == []
 
@@ -134,8 +136,6 @@ def test_command_path_membership(repo, command, allowed):
 def test_lint_verb_prints_carried_file_finding(repo, monkeypatch, capsys):
     import asyncio
     from types import SimpleNamespace
-
-    from clutch import __main__ as cli
 
     root, files = repo
     files[root / "tickets/example/ticket.md"] = TEXT
