@@ -10,7 +10,9 @@ kind: bug
 
 ## Runs before
 - training-export-ship-gate
+- retry-keeps-prior-branch
 - shared-serve-rig-config
+- shared-review-script
 
 ## Context
 - clutch/runner.py::verdict_locked
