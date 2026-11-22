@@ -36,7 +36,7 @@ tests/unit/test_route_kinds_filter.py (1)
 tests/unit/test_route_kinds_judge.py (1)
 tests/unit/test_run_stages_propagates.py (1)
 
-Importers of the removed `tests/unit/test_roadmap_author.py::FakeGit` (no stand-in of their own): `tests/unit/test_roadmap_accept.py`, `tests/unit/test_roadmap_fresh_write.py`, `tests/unit/test_roadmap_refile.py`, `tests/unit/test_roadmap_refile_ready.py`, `tests/unit/test_roadmap_release_boundary.py`. Each replaces `from tests.unit.test_roadmap_author import FakeGit` with the `GitFake` import from `tests/git_fake.py` and builds the fake the way the migrated `tests/unit/test_roadmap_author.py` does; no other line changes.
+Importers of `tests/unit/test_roadmap_author.py` (no stand-in of their own): `tests/unit/test_roadmap_accept.py` imports its `FakeGit` and switches that import to `GitFake` from `tests/git_fake.py`, built the way the migrated `tests/unit/test_roadmap_author.py` builds it. `tests/unit/test_roadmap_fresh_write.py`, `tests/unit/test_roadmap_refile.py`, `tests/unit/test_roadmap_refile_ready.py` and `tests/unit/test_roadmap_release_boundary.py` import its `put`, `r`, `run` and `setup`; they change only if those helpers' signatures change, and then only at the call sites.
 
 Out: production code under `clutch/`; `tests/git_fake.py` (when a stand-in needs a capability `GitFake` lacks, give the fake the capability through an override callable in the test, and name the gap in the run record); `tests/fakes.py`; the five `tests/regress_*.py` files; every file not listed above.
 
