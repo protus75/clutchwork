@@ -7,16 +7,18 @@ owner: engine
 -->
 # OpenRouter and fal.ai image providers: plan
 
-Make `mode: generate` graphics tickets work by adding clutch's first `kind: api` providers: OpenRouter first, then fal.ai. Each is an HTTP client that sends a prompt and input images to an image model and receives image bytes. The engine makes the call itself in a new `generate` stage. No agent CLI makes it, so the API key never enters an agent's environment. The candidates land where Check already looks for them, so grading (layers 1-3 of `docs/gemini-graphics-refactor-plan.md`) is unchanged.
+Make `mode: generate` graphics tickets work. First re-test whether the current Gemini CLI can write a generated image to disk (G0). Only if it cannot, add clutch's first `kind: api` providers: OpenRouter first, then fal.ai. Each is an HTTP client that sends a prompt and input images to an image model and receives image bytes. The engine makes the call itself in a new `generate` stage. No agent CLI makes it, so the API key never enters an agent's environment. The candidates land where Check already looks for them, so grading (layers 1-3 of `docs/gemini-graphics-refactor-plan.md`) is unchanged.
 
 ## Status
 
-Nothing in this plan has been built. Written 2026-11-21 at commit `6717a0b8`. This plan fills the conditional roadmap row 56 (`api-provider-client`) that `docs/gemini-graphics-refactor-plan.md` (Roadmap, Risks) defers to the first `kind: api` provider. Gemini agent capture A0 fact 7 (`tickets/gemini-provider/evidence/fact-07-image-generation-headless.txt`) triggered that row: Gemini CLI can call an image model, but it discards the image.
+Nothing in this plan has been built. Written 2026-11-21 at commit `6717a0b8`. Revised the same day: A0 fact 7 is stale, so G0 now gates everything else. This plan would fill the conditional roadmap row 56 (`api-provider-client`) that `docs/gemini-graphics-refactor-plan.md` (Roadmap, Risks) defers to the first `kind: api` provider.
+
+**Why A0 fact 7 is not enough.** Gemini agent capture A0 fact 7 (`tickets/gemini-provider/evidence/fact-07-image-generation-headless.txt`) found that Gemini CLI calls an image model and then discards the image. That capture ran a global `gemini` 0.49.0 with no extensions on 2026-11-15. The copy clutch runs is the repo's `node_modules/.bin/gemini`, which is 0.70.0 as of 2026-11-21, 21 releases later. Fact 7 never tested Google's image extension for Gemini CLI, which adds a tool that generates an image and saves it to the workspace. So fact 7 does not settle whether the CLI can deliver images today, and G0 re-tests it.
 
 ## Why
 
-- **`generate` mode has no working generator.** `clutch/specs/implement.md` tells the Implement agent to write `candidates:` images to `.clutch/renders/<stem>/a<i>/cand-<k>.<ext>`. No routed CLI can do that. Claude, Codex and Qwen have no image model. Gemini CLI throws the image away (fact 7: no image on stdout, no file, and only a base64 copy in a telemetry debug log).
-- **No Gemini credential on this machine** (`docs/roadmap.md` §6, decision 19). Even a fixed CLI would be skipped. Decision 19 says to look for a route through authenticated providers, and an API key for OpenRouter or fal.ai is that route.
+- **`generate` mode has no proven generator.** `clutch/specs/implement.md` tells the Implement agent to write `candidates:` images to `.clutch/renders/<stem>/a<i>/cand-<k>.<ext>`. Claude, Codex and Qwen have no image model. Gemini CLI is unproven: fact 7 is stale (see Status), and G0 decides.
+- **The Gemini credential exists.** `GEMINI_API_KEY` is set on this machine, so `docs/roadmap.md` §6 decision 19's "Gemini has no credential on this machine" is out of date, and G0 can run now.
 - **Breadth.** Both services front many image models (Gemini image models, GPT image, FLUX, Seedream, Qwen-Image-Edit) behind one key. That makes it cheap to run the generator on a different model family from the judge (roadmap decision 13).
 
 ## Current state
@@ -110,9 +112,23 @@ routing:
 | How a generate ticket is written | `clutch/docs/host-authoring.md` (the one authoring source) |
 | Agent rules | none; no CLAUDE.md, AGENTS.md or CORE_TEMPLATE change |
 
+## Gate: Gemini CLI re-capture (G0)
+
+G0 runs first, and its result decides whether the rest of this plan is needed. An agent runs the repo's `node_modules/.bin/gemini` (record `--version`, which must equal `pnpm view @google/gemini-cli version`) headless in a scratch workspace with `GEMINI_API_KEY` and an empty `HOME`. It commits stdout, stderr, exit code, the binary path and version, and any image files written, under `tickets/api-provider-client/evidence/g0/`. Establish:
+
+1. **Bare CLI:** whether 0.70.0, given a prompt and two `@path` input images on an image model, writes an image file or emits image bytes on stdout (`stream-json` or `json`). This is fact 7 re-run on the current version.
+2. **Image extension:** after installing Google's image extension for Gemini CLI into the scratch `HOME`, whether a headless call with a general model and the write grant calls the extension's tool and saves an image file, where the file lands, and whether the input images reach the image model.
+3. **Metering:** whether the `result` event's stats count the image model's tokens when the extension's tool makes the call, or whether that spend is invisible to clutch's meter.
+4. **Key handling:** whether the extension reads `GEMINI_API_KEY` from the environment clutch already passes to the gemini child (`child_env`), so no new secret reaches the agent.
+
+**Outcomes:**
+- **1 or 2 yields an image file, and 3 meters it:** `generate` mode routes Implement to gemini through `Route.kinds` (`docs/gemini-graphics-refactor-plan.md` B3). C1-C3 are dropped. One ticket installs and pins the extension in the gemini settings files and updates `clutch/docs/host-gemini.md`.
+- **An image file, but 3 shows unmetered spend:** the CLI route still works, and that ticket adds a per-call image estimate to gemini's `limits` as well. C1-C3 stay dropped unless that estimate cannot be enforced.
+- **No image file either way:** C0-C3 below proceed.
+
 ## Prerequisite: agent capture (C0)
 
-Same shape as Gemini A0. It needs `OPENROUTER_API_KEY` for facts 1-6 and `FAL_KEY` for facts 7-11, and it is skipped per decision 19 until the owner supplies a key. An agent runs plain HTTP calls from a scratch script and commits request, status, headers (key redacted) and body (images saved as files) under `tickets/api-provider-client/evidence/` and `tickets/fal-provider/evidence/`. No adapter or parser in this plan is final until the capture is committed.
+C0 runs only if G0 finds no image file. Same shape as Gemini A0. It needs `OPENROUTER_API_KEY` for facts 1-6 and `FAL_KEY` for facts 7-11, and it is skipped per decision 19 until the owner supplies a key. An agent runs plain HTTP calls from a scratch script and commits request, status, headers (key redacted) and body (images saved as files) under `tickets/api-provider-client/evidence/` and `tickets/fal-provider/evidence/`. No adapter or parser in this plan is final until the capture is committed.
 
 OpenRouter:
 1. Whether `/api/v1/images` accepts input images (edit and fuse), or only chat completions does. The exact request and reply for each, and the two models picked for `models_by_tier`.
@@ -135,7 +151,8 @@ Future tickets, none authored yet. Each is written with `clutch ticket new`, the
 
 | # | Stem | Kind | P | Depends on | Content |
 |---|---|---|---|---|---|
-| C0 | (agent capture) | evidence | | | Facts 1-11, committed as C1's and C3's evidence. Needs the keys. |
+| G0 | (agent capture) | evidence | | | Gemini CLI 0.70.0 re-capture, bare and with the image extension. Needs only `GEMINI_API_KEY`, which is set. Decides whether C0-C3 run. |
+| C0 | (agent capture) | evidence | | G0 finds no image | Facts 1-11, committed as C1's and C3's evidence. Needs the keys. |
 | C1 | `api-provider-client` | feature | P2 | | Roadmap row 56. `http` seam, `ApiAdapter`, `API_ADAPTERS = {openrouter}`, `LLMResult.images`, lifting the api refusal for `generate` only, failure classes, capture with blob refs, `probe` for api, `host-openrouter.md`, host-contract and how-clutch-works updates. |
 | C2 | `generate-stage` | feature | P2 | `api-provider-client` | `generate` surface. Runner picks Generate over Implement for `mode: generate`, writes candidates where `check_candidates` reads them, `implement.md` paragraph removed, authoring-guide lint snag for a missing `generate` route. |
 | C3 | `fal-provider` | feature | P3 | `api-provider-client` | fal adapter (queue, poll, download, closed model set), `host-fal.md`. Independent of C2. |
@@ -154,6 +171,7 @@ What this does not ship: a first real generate ticket and this repo's `config.ya
 
 ## Open decisions
 
+0. **If G0 finds no CLI route, Google's API direct or OpenRouter first.** Calling Google's Gemini API directly (`generateContent` with image output) uses the key and credit already on this machine and involves no third party. OpenRouter reaches more model families with one key. No Proposed option; the owner decides before C1 is authored.
 1. **Which service first.** Proposed: OpenRouter (single reply, reported cost, Gemini image models). fal.ai follows as C3.
 2. **OpenRouter endpoint.** Proposed: `/api/v1/images` if C0 fact 1 shows it takes input images, otherwise chat completions.
 3. **HTTP implementation.** Proposed: stdlib `urllib` behind the seam. The alternative is `httpx` in the `images` extra, which earns its place only if C0 shows a need (streaming, HTTP/2).
