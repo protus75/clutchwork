@@ -1,22 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "8b64646b5ec5461c6332c52c8997cf829791b32a",
+  "produced_at_sha": "fe71815d79493f508c366262cd04ad18b117c0cb",
   "stem": "llm-request-subject",
-  "attempt": 3,
-  "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "abandon-human",
+  "attempt": 4,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
   "lessons": [
-    "An engine step changed the branch after Implement. The implementer's commit 12bd040ce had 137+/59- lines and its own run of the Verification commands passed. The final diff has 255+/141- lines because `# clutch:meta` headers were added afterward, with `verified: b95ca51e` and a hash.",
-    "The only failure is tests/unit/test_llm_request_subject.py:4. That is the engine-written `# purpose:` meta line, and its text includes `request.ticket`. The test's own scan for `req(uest)?\\.ticket\\b` over tests/ matches that line, so the line the implementer wrote did not cause this failure.",
-    "A human should check the meta-header writer (clutch/metafill.py make_ask and the step that stamps `# clutch:meta` purpose lines). It summarizes a test's forbidden pattern into prose, which breaks self-scanning tests. Fix or regenerate the header there instead of asking the implementer to pre-empt",
-    "To unblock this ticket, a human can reword the purpose line in tests/unit/test_llm_request_subject.py to avoid the literal `request.ticket`, for example 'the old ticket field on requests'. Then rerun Check. The rest of the diff passed 2120 unit tests."
+    "The premise finding is real. On main, tests/loop_helpers.py:500 (the admission_graph fake) has `stem = req.ticket`. That file is not in the Scope fence, so the rename and the AC4 scan over `tests/` for `req(uest)?\\.ticket\\b` cannot both pass.",
+    "Fix the ticket: add tests/loop_helpers.py to `## Scope fence` and add a Scope in line saying its admission_graph fake reads `req.subject` instead of `req.ticket`. Then run `clutch ticket lint` and `clutch ticket review` again.",
+    "I scanned clutch/ and tests/ on main for `req(uest)?\\.ticket\\b`, `LLMRequest(` and driver `ticket=None` runs. Every other hit is already in the fence; tests/loop_helpers.py is the only file missing.",
+    "Prevent this class: the ticket's reader list is copied by hand, so it goes stale as main changes between attempts. Before each retry, check the fence against a fresh grep of `req(uest)?\\.ticket\\b` on main."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
