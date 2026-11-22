@@ -1,22 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "480eceef7970b3a640e84e5b762a9c2b7857ff41",
+  "produced_at_sha": "a2c6360b166466ad15dba335e5b2c0d1cbb5e8f9",
   "stem": "llm-request-subject",
-  "attempt": 1,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "check",
   "verdict": "reject",
   "lessons": [
-    "Fence defect: tests/config_helpers.py:133 req() builds LLMRequest(..., ticket=\"t-1\", ...) and is not in the Scope fence. Removing the field breaks every test using req(), so the rename cannot pass `./dev.py test` as written. The ticket author must add the file to Scope fence and Scope in.",
-    "Ticket repair: in Scope in, add tests/config_helpers.py and say its req() factory changes `ticket=\"t-1\"` to `subject=\"t-1\"`. Add the file to the Boundary contract consumers as a test harness that builds an LLMRequest.",
-    "A grep for `LLMRequest(` and `req(uest)?.ticket` across tests/ finds tests/config_helpers.py as the only constructor or reader outside the fence. Driver-level `ticket=None` uses found in tests/ are Effects.run or thresh.run, not Driver.run, so they need no change.",
-    "After the fence fix, the next attempt starts from main and redoes the whole rename. That covers clutch/llm.py (subject: str with a non-empty check in __post_init__) and the driver subject kwarg with its ValueError checks. It also adds the caller labels from Scope in and the new"
+    "The ticket's ## Verification contradicts its acceptance criteria 4 and 5. Both rg absence checks must print nothing, but rg exits 1 when nothing matches, and the check gate needs exit 0. The diff already meets the criteria, so no implementation can pass this gate as written.",
+    "Re-author the ticket: remove the two rg lines from ## Verification. Move the absence checks into tests/unit/test_llm_request_subject.py, which can scan clutch/ and tests/ for `req(uest)?\\.ticket\\b` and config_helpers.py for `ticket=\"t-1\"`, and assert that nothing matches.",
+    "Run record: the implementer reads CallCapture.ticket through getattr only to dodge the rg search. The re-authored ticket should narrow the pattern to LLMRequest readers or name the CallCapture readers as allowed, so the next attempt keeps plain attribute access.",
+    "On retry, the branch is rebased onto main and already holds the full 36-file rename. The 297-test suite passed, so the next attempt only needs the revised verification and dropping the getattr workaround."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    3
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
