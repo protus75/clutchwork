@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- regression-command-program-lint
+
 ## Context
 - clutch/providers.py::CliAdapter.invoke
 - clutch/providers.py::ClaudeAdapter
