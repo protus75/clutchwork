@@ -1,19 +1,23 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "7b29554be132d3857a0fcdf4f6d94f06559386a4",
+  "produced_at_sha": "ff50e2cc4911d8a4f3afe989a3dbf35497ecd714",
   "stem": "scheduler-ranks-full-priority",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "gate_failed",
   "stage": "check",
-  "verdict": "retry",
+  "verdict": "abandon-human",
   "lessons": [
-    "Attempt 1's only finding was scope_fence on tests/unit/test_scheduler_parallel_fill.py. The rework has since added that file to the ticket's ## Scope fence and Scope in, so keep the existing edit to test_order and test_p0_precedes_chain as is.",
-    "Keep the rest of the attempt-1 diff unchanged: the PRIORITY[priority] sort term in clutch/drain.py parallel_order, the test_chain_order.py expectation, the new tests/unit/test_parallel_order_priority.py, and the three doc edits. Both verification commands passed (1906 unit tests).",
-    "Before committing, check that the diff touches only the seven fenced paths and keeps the existing flake-fix term ahead of priority in parallel_order, as Scope in requires. Then rerun both ## Verification commands exactly as written."
+    "The implementer's diff is correct. tests/unit/test_scheduler_parallel_fill.py is listed in the current `## Scope fence`, and the ticket's Retry note says to keep these edits. Both verification commands passed, and so did all 1906 unit tests. The scope_fence finding is a false positive, and this is",
+    "The cause is in the engine, outside the fence. In clutch/stages.py, ScopeFenceGate.check reads artifact.scope_fence from a stale copy of the ticket. The Check stage log shows the same thing: the first command ran only test_parallel_order_priority.py and test_chain_order.py, which is an older `##",
+    "A human should find where Check builds the Evidence (scope_fence and verification) for a retried attempt, and fix it so Check reads the current tickets/scheduler-ranks-full-priority/ticket.md. Then rerun Check on the existing branch. Do not retry Implement: its commits 742ed141 and ff50e2cc are"
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0,
+    1,
+    2
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
