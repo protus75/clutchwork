@@ -397,6 +397,10 @@ function activate(context) {
 			const choice = await vscode.window.showQuickPick(snapshot.snap?.engineVerbs ?? []);
 			if (choice) devCommand(...choice.argv);
 		}),
+		vscode.commands.registerCommand('clutch.updateProvider', async () => {
+			const choice = await vscode.window.showQuickPick(snapshot.snap?.providerInstalls ?? []);
+			if (choice) devCommand(...choice.argv);
+		}),
 		vscode.commands.registerCommand('clutch.playDrain', () => devCommand(...snapshot.snap.drainCommand)),
 		vscode.commands.registerCommand('clutch.playServe', () => devCommand(...snapshot.snap.commands.serve)),
 		vscode.commands.registerCommand('clutch.stopRunning', () => devCommand(...snapshot.snap.commands.stop)),

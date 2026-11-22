@@ -240,6 +240,10 @@
 				"icon": "$(server-process)"
 			},
 			{
+				"command": "clutch.updateProvider",
+				"title": "Update Provider CLI..."
+			},
+			{
 				"command": "clutch.playDrain",
 				"title": "Start drain",
 				"icon": "$(play)"
@@ -432,6 +436,10 @@
 					"when": "false"
 				},
 				{
+					"command": "clutch.updateProvider",
+					"when": "false"
+				},
+				{
 					"command": "clutch.playDrain",
 					"when": "false"
 				},
@@ -482,6 +490,11 @@
 					"command": "clutch.bulkTriage",
 					"when": "view == clutch.tickets",
 					"group": "clutch@4"
+				},
+				{
+					"command": "clutch.updateProvider",
+					"when": "view == clutch.tickets",
+					"group": "clutch@8"
 				},
 				{
 					"command": "clutch.engine",

@@ -42,6 +42,7 @@ _commands = {
     "clutch.box.link": "Open the selected message's linked record.",
     "clutch.box.discuss": "Open a prompt to discuss selected messages.",
     "clutch.engine": "Choose an engine action.",
+    "clutch.updateProvider": "Choose a provider CLI to update.",
     "clutch.openConfig": "Open the host configuration.",
     "clutch.ticket.askDrafts": "Open a prompt to assess drafts.",
 }

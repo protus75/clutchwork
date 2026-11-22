@@ -21,6 +21,7 @@ from clutch.graph import layout
 from clutch.help import COMMANDS, help_map, help_pick
 from clutch.journalcache import open_journal_cache
 from clutch.lockfile import ENGINE_VERBS
+from clutch.providers import ADAPTERS
 from clutch.rework import settled_dependencies
 from clutch.specs import load_spec
 from clutch.status import (
@@ -657,6 +658,8 @@ def extension_fields(root: Path) -> dict:
             "askBox": ["prompt", "box"],
         },
         "orderFlags": {"priority": "--priority", "runsBefore": "--runs-before"},
+        "providerInstalls": [{"label": f"Update {name}", "detail": f"installs {ADAPTERS[name].PACKAGE}@latest", "argv": ["provider", "install", name]} for name in sorted(ADAPTERS)]
+        + [{"label": "Update all providers", "detail": "installs all provider CLIs", "argv": ["provider", "install", *sorted(ADAPTERS)]}],
     }
 
 
