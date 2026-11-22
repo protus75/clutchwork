@@ -81,7 +81,7 @@ Scope out:
 
 ## Acceptance criteria
 1. With a `tmp_path` config whose `prompts_dir` holds one valid `takes: stem` prompt `notes` and one invalid file `bad.md`, `prompt_pick(...)["promptPick"]` holds every `ask.KINDS` label in `KINDS` order, then `host notes` with `argv == ["prompt", "host", "notes"]` and `takes == "stem"`, then one entry for `bad.md` with no `argv` key. It is not missing the host entry and does not hide the problem (`tests/unit/test_observe_prompt_pick.py`).
-2. Every `promptPick` entry with an `argv`, plus `example` when `takes` is `stem` or `box`, parses with the clutch CLI parser without `SystemExit` (`tests/unit/test_observe_prompt_pick.py`).
+2. For every `promptPick` entry with an `argv`, the test appends the literal placeholder argument `example` when `takes` is `stem` or `box`, and the result parses with the clutch CLI parser without `SystemExit` (`tests/unit/test_observe_prompt_pick.py`).
 3. `prompt_pick(config, root, ["a", "b"], ["box-1"])["promptArgs"] == {"stem": ["a", "b"], "box": ["box-1"]}`, keeping input order, not sorted (`tests/unit/test_observe_prompt_pick.py`).
 4. Each `promptPick` `detail` for an engine kind equals `ask.DESCRIPTIONS[kind]`, not a copied string (`tests/unit/test_observe_prompt_pick.py`).
 5. `package.json` declares `clutch.askPrompt` and `clutch/help.py` has its entry (`tests/integration/test_help.py`).
