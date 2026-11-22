@@ -165,6 +165,12 @@ class Serve:
                 runner.mark_running(local.journal, ticket.stem, sha)
                 try:
                     return await callback(ticket)
+                except Exception as exc:
+                    if self.stopping:
+                        raise
+                    runner.dispatch_exception_terminal(local.journal, ticket.stem, exc)
+                    self.log.event("dispatch_exception", stem=ticket.stem, error=f"{type(exc).__name__}: {exc}")
+                    return "infra_error"
                 finally:
                     latest = last_transition(local.journal.read(), ticket.stem) or {}
                     if latest.get("to") in TERMINAL_STATES:

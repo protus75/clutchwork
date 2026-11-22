@@ -691,9 +691,7 @@ class _Drain:
         except Exception as exc:
             if self._stopping() or not task.done() or task.cancelled() or task.exception() is not exc:
                 raise
-            body = require_transition(self.c.journal.read(), stem)
-            if body.get("to") not in TERMINAL_STATES:
-                self.c.journal.append(EventType.STATE_TRANSITION, {"to": "infra_error", "stage": "dispatch", "reason": "dispatch_exception", "error": f"{type(exc).__name__}: {exc}"}, ticket=stem)
+            runner.dispatch_exception_terminal(self.c.journal, stem, exc)
             return
         if self._stopping():
             return

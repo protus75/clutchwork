@@ -28,7 +28,7 @@ from clutch.effects import Effects
 from clutch.enginelog import engine_log
 from clutch.evidence.store import SKIP, CaptureNotFound, CaptureUnreadable, EvidenceStore
 from clutch.git import Git, GitError
-from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, run_seq
+from clutch.journal import TERMINAL_STATES, Event, EventType, Journal, dispatch_of, require_transition, run_seq
 from clutch.journal import Dispatch as JournalDispatch
 from clutch.llm import LLM
 from clutch.lockfile import Lockfile
@@ -73,6 +73,12 @@ Dispatch = Callable[[Ticket], Awaitable[str]]
 
 def mark_running(journal: Journal, stem: str, sha: str) -> None:
     journal.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": sha}, ticket=stem)
+
+
+def dispatch_exception_terminal(journal: Journal, stem: str, exc: Exception) -> None:
+    body = require_transition(journal.read(), stem)
+    if body.get("to") not in TERMINAL_STATES:
+        journal.append(EventType.STATE_TRANSITION, {"to": "infra_error", "stage": "dispatch", "reason": "dispatch_exception", "error": f"{type(exc).__name__}: {exc}"}, ticket=stem)
 
 
 # The provider backstop is the drain ceiling every ticket stuck budget fits under:

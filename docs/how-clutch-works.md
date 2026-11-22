@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain/serve, providers, Suggestion Box, state on disk, config and project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 52843322
-hash: f07111a51297c84c90781678c309f5dba1f87bca7e46ae4929c41c6cc7030d76
+verified: 33066275
+hash: 0cded2c8d308e8660c4ee3c3370571506ce0de78486dd9549f3ec0979fba82b3
 -->
 # How ClutchWork works
 
@@ -500,9 +500,9 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
 
 ## 7. Drain and serve
 
-### 7.1 `drain`
-
 A dispatch exception is journaled as an `infra_error` terminal, re-offered, and held in the Reject queue at the attempts cap.
+
+### 7.1 `drain`
 
 1. Takes the lock, reconciles, fires due timers, runs the provider preflight, runs intake once.
 2. Loops: reload config, honor pause/kill/stop, run intake and ingest host bug reports into the Suggestion Box between tickets, maybe run a retro, run the roadmap driver after a settle (section 7.5), calibrate estimates once `calibration.every` Implement calls have completed since the last calibration (`engine calibrate`, section 2.1), scan committed tickets (skipping stems settled or rejected in the journal), pick the
@@ -547,7 +547,7 @@ publishes `state_dir/control/active.json`, and runs five loops (every 0.1s):
 
 Maintenance on each loop: control requests, timers, orphan sweeps, heartbeat
 (`state_dir/heartbeat` mtime), notification replay, and checkpoint pushes. If any loop dies,
-`serve` stops.
+`serve` stops; consumer failures remain fatal.
 
 Requested retros and automatic retros due after a ticket settles stop new admission, wait for
 the next idle point, run, and then resume admission. A pending stop takes precedence.
