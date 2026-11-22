@@ -23,6 +23,7 @@ kind: chore
 ## On-demand
 - tests/unit/test_stale_running.py
 - tests/unit/test_paved_roads.py
+- tests/unit/test_serve_dispatch_containment.py
 
 ## Goal / Why
 `retro-check-once` stops the doubled, slow check, but the structure that produced it stays. Two things are wrong with that structure.
@@ -50,9 +51,9 @@ When done:
 - disposition: extend
 - owner: clutch/serve.py
 - consumers: `Serve.run` maintenance loop, Recent Steps via the engine log
-- observable change: `check_retro` is no longer called from the dispatch wrapper or `Serve.merge`; the run loop calls it each iteration, and the terminal-count dedupe from `retro-check-once` keeps it silent when nothing settled
+- observable change: `check_retro` is no longer called from the dispatch wrapper or `Serve.merge`; the `Serve.run` loop is its only caller, and the terminal-count dedupe from `retro-check-once` keeps it silent when nothing settled
 - compatibility: `retro_check` phase events and outcomes are unchanged; `retro_due` and `retro_pending()` still gate dispatch and start `run_retro` as before
-- acceptance: no `check_retro` call appears inside `Serve.merge` or the dispatch wrapper; a settle is checked within one loop iteration
+- acceptance: no `check_retro` call appears inside `Serve.merge` or the dispatch wrapper; its only call site is inside `Serve.run`
 - tests: tests/unit/test_serve_retro_check_site.py
 - post-merge source of truth: clutch/serve.py
 
@@ -78,6 +79,7 @@ Scope out:
 - tests/unit/test_paved_roads.py
 - tests/unit/test_retro_due_owner.py
 - tests/unit/test_serve_retro_check_site.py
+- tests/unit/test_serve_dispatch_containment.py
 
 ## Acceptance criteria
 1. `Retro.__call__(forced=False)` on a window with no trigger returns `None` without awaiting `production_evidence`. A test monkeypatches it to raise and the call still returns `None`, not an exception (`tests/unit/test_retro_due_owner.py`).
