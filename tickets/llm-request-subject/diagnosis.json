@@ -1,21 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "6403c2c6ea12cf35c69255abf698d91a0cd8c801",
+  "produced_at_sha": "480eceef7970b3a640e84e5b762a9c2b7857ff41",
   "stem": "llm-request-subject",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "premise_failed",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "The scope fence leaves out files that the rename forces. These read req.ticket or request.ticket: tests/harness/shakeout/driver.py, tests/harness/daemon_soak.py, tests/integration/test_serve_scan_watch_overlap.py and tests/integration/test_serve_parallel_admission.py. AC4's rg check fails unless",
-    "tests/unit/test_stages_helpers.py:112 builds LLMRequest(..., ticket=h.STEM, ...). After the rename the full suite (AC5) fails unless this file is fenced and changed to subject=h.STEM.",
-    "tests/unit/test_roadmap_accept.py:159 checks the exact driver kwargs. Fence it and add subject=release to the expected dict, because clutch/acceptance.py now passes subject=release.",
-    "Before refiling, run the AC4 rg command and an rg for 'ticket=' inside LLMRequest( calls across clutch and tests. Fence every hit and every test that checks exact driver kwargs for the ticketless callers (author, triage, retro, acceptance, metafill)."
+    "Fence defect: tests/config_helpers.py:133 req() builds LLMRequest(..., ticket=\"t-1\", ...) and is not in the Scope fence. Removing the field breaks every test using req(), so the rename cannot pass `./dev.py test` as written. The ticket author must add the file to Scope fence and Scope in.",
+    "Ticket repair: in Scope in, add tests/config_helpers.py and say its req() factory changes `ticket=\"t-1\"` to `subject=\"t-1\"`. Add the file to the Boundary contract consumers as a test harness that builds an LLMRequest.",
+    "A grep for `LLMRequest(` and `req(uest)?.ticket` across tests/ finds tests/config_helpers.py as the only constructor or reader outside the fence. Driver-level `ticket=None` uses found in tests/ are Effects.run or thresh.run, not Driver.run, so they need no change.",
+    "After the fence fix, the next attempt starts from main and redoes the whole rename. That covers clutch/llm.py (subject: str with a non-empty check in __post_init__) and the driver subject kwarg with its ValueError checks. It also adds the caller labels from Scope in and the new"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0
+    3
   ],
   "spec_version": "1.10",
   "provider": "claude",
