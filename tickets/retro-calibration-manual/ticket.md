@@ -143,5 +143,6 @@ Scope out:
 - Edits to a hot test file beyond the removals named in Scope in, or any new test placed in one.
 
 ## Time budget
-- expected: 30m
-- stuck: 60m
+- expected: 60m
+- stuck: 120m
+- reason: removing the automatic retro and calibration triggers from serve and drain and adding the overdue warnings must land together, or one engine verb would still auto-run while status claims it is manual; the 28-file fence is mostly tests that pin the removed triggers
