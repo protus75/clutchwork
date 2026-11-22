@@ -1,0 +1,165 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "6b851b41bb1b1ab11cfab26e080627a21f58efb4",
+  "stem": "training-eval-ship-gate",
+  "passed": true,
+  "changed_files": [
+    "clutch/__main__.py",
+    "clutch/docs/host-running.md",
+    "clutch/docs/host-training.md",
+    "docs/how-clutch-works.md",
+    "docs/roadmap.md",
+    "tests/unit/test_training_eval_scored_exit.py"
+  ],
+  "inserted_lines": 82,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 29.4791,
+        "passed": 1951,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3196927020326257,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0871632329944987,
+          "tests/unit/test_evidence_envelope.py::test_cli_version_from_preflight[False]": 1.0566010860202368,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0285401350120082,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.0270984120143112
+        }
+      },
+      "coverage": {
+        "percent": 72.78822709857192,
+        "files": {
+          "clutch/__main__.py": 77.18204488778055
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 20.094805,
+        "passed": 289,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8323847419815138,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0381647360045463,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0042418289813213
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_training_eval_scored_exit.py",
+        "tests/unit/test_training_eval.py",
+        "tests/unit/test_main_help.py",
+        "tests/unit/test_main_training_group.py",
+        "tests/integration/test_roadmap_gate.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_training_eval_scored_exit.py tests/unit/test_training_eval.py tests/unit/test_main_help.py tests/unit/test_main_training_group.py tests/integration/test_roadmap_gate.py\nbringing up nodes...\nbringing up nodes...\n\n.......................ss......................                          [100%]\n45 passed, 2 skipped in 1.78s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 12.456159
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "clutch",
+        "ticket",
+        "lint",
+        "training-eval-ship-gate"
+      ],
+      "rc": 0,
+      "tail": "lint: 1/1 tickets valid\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.483483
+    }
+  ]
+}
