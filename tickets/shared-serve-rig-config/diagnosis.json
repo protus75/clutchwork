@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "2c2f1f05838022edfea1c4b4e8485032d996b62b",
+  "stem": "shared-serve-rig-config",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "retry",
+  "lessons": [
+    "Read criterion 4's 'none calls yaml.safe_dump' as applying to the two amend_config files only: tests/integration/serve_rig.py and tests/integration/test_serve_parallel_admission.py. The Scope In list names only those rewriters (admission_config, notify_command, parallel_rig).",
+    "Leave tests/integration/test_cli.py:676 and tests/harness/shakeout/bench.py:123 (both yaml.safe_dump) unchanged. Scope In does not list them as rewriters, and test_cli.py is a hot file where only the CONFIG literal and its import may change.",
+    "Write tests/integration/test_config_fixture_adoption.py with a Path(__file__) anchor. Assert no '^\\s*providers:' line in all six files, build_config imported in the first four, amend_config imported in the last two, and no yaml.safe_dump in serve_rig.py or test_serve_parallel_admission.py.",
+    "Start from main and do the full work. Create tests/config_fixture.py with build_config and amend_config, and rebuild CONFIG in test_cli, test_stages and test_providers and _CONFIG in bench.py byte-identically. Pin the four texts from git show HEAD:<file> in tests/unit/test_config_fixture.py.",
+    "Rewrite admission_config and notify_command in serve_rig.py and parallel_rig in test_serve_parallel_admission.py to call amend_config (a None value removes a key). Drop each yaml import that is no longer used, then run the ticket's ## Verification command as written."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
