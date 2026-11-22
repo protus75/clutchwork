@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The regression reproducer reported defect on the merge base and pass on the branch; the final verification pass succeeded with 9 tests passed. Shared runner handling prevents drain and serve terminal bodies from diverging.
+The final verification commands passed; the reproducer reported defect on the merge base, and the GitFake adoption guard passed. Sharing drain’s terminal writer is the smallest change that prevents the two paths from diverging.
 
 ## Dead ends
 
-None.
+The first reproducer run exposed an async fixture declaration error, which was corrected before final verification.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 25 minutes expected; elapsed time was not measured.
+Expected 25 minutes; elapsed time was not measured.
 
