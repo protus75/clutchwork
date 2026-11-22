@@ -4,8 +4,8 @@
 # purpose: Tests that Check reruns only the failed host tests with --clutch-select, marks tests that pass on rerun as flaky and releases quarantined ones, fails if the rerun exits nonzero, and reruns the full command when coverage is configured.
 # relates: [clutch/config.py, clutch/daemon.py, clutch/journal.py, clutch/stages.py]
 # owner: engine
-# verified: fd407c31
-# hash: a15144e214dd91c6ec81ca0cd19fd1a383b01b7f5dca1d03709ad5b45859187c
+# verified: 1dff4d00
+# hash: eab11ceba558df7e1d11ad66a8e9503d43a69e9c60775275715da2df7c98a629
 import asyncio
 import json
 from datetime import datetime
