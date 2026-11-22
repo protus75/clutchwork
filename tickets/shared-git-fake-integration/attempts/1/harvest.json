@@ -1,0 +1,63 @@
+{
+  "attempt": 1,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_retry_keeps_branch.py",
+      "line": 20,
+      "message": "The existing Git stand-in matches the required scan and is outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_serve_verdict_orphan_sweep.py",
+      "line": 39,
+      "message": "The existing SimpleNamespace Git stand-in matches the required scan and is outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_check_meta_fill.py",
+      "line": 26,
+      "message": "The existing SimpleNamespace Git stand-ins match the required scan and are outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and migrate its stand-ins, or merge that migration before this ticket runs.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_runner_verdict_reread.py",
+      "line": 34,
+      "message": "The existing SimpleNamespace Git stand-in matches the required scan and is outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_serve_verdict_owned.py",
+      "line": 35,
+      "message": "The existing MagicMock Git stand-in matches the required scan and is outside the scope fence.",
+      "paved_road": "Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The adoption scan cannot cover all required files without changing five stand-ins outside the scope fence.\",\"surprises\":\"The merged dependency migrated the nine listed unit files, but five other files remain on PENDING and match the existing scan patterns.\",\"second_problems\":[],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_retry_keeps_branch.py\",\"line\":20,\"message\":\"The existing Git stand-in matches the required scan and is outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_serve_verdict_orphan_sweep.py\",\"line\":39,\"message\":\"The existing SimpleNamespace Git stand-in matches the required scan and is outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_check_meta_fill.py\",\"line\":26,\"message\":\"The existing SimpleNamespace Git stand-ins match the required scan and are outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and migrate its stand-ins, or merge that migration before this ticket runs.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_runner_verdict_reread.py\",\"line\":34,\"message\":\"The existing SimpleNamespace Git stand-in matches the required scan and is outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_serve_verdict_owned.py\",\"line\":35,\"message\":\"The existing MagicMock Git stand-in matches the required scan and is outside the scope fence.\",\"paved_road\":\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\"}]}",
+  "events_tail": "Fake(_run=lambda repo, *args: {\\\"old-sha\\\": \\\"a\\\\n\\\", \\\"new-sha\\\": \\\"later\\\\n\\\"}[args[1]])\\ntests/unit/test_requisition_prior_review.py:37:    git = GitFake(_run=lambda repo, *args: {\\\"old-sha\\\": \\\"a\\\\n\\\", \\\"new-sha\\\": \\\"later\\\\n\\\"}[args[1]])\\ntests/unit/test_requisition_prior_review.py:48:    git = GitFake(_run=lambda repo, *args: {\\\"old-sha\\\": \\\"a\\\\n\\\", \\\"new-sha\\\": \\\"later\\\\n\\\"}[args[1]])\\ntests/unit/test_requisition_prior_review.py:57:    recorded = asyncio.run(prior_review(GitFake(_run=lambda repo, *args: {\\\"old-sha\\\": \\\"a\\\\n\\\", \\\"new-sha\\\": \\\"later\\\\n\\\"}[args[1]]), \\\"repo\\\", [verdict(\\\"one\\\", \\\"old-sha\\\", findings)], \\\"one\\\", \\\"a\\\\nnew\\\\n\\\"))\\ntests/unit/test_serve_verdict_owned.py:35:    checkout = Checkout(repo=tmp_path, config=SimpleNamespace(state_dir=tmp_path), env={}, exec_=None, fs=MagicMock(), clock=MagicMock(), journal=MagicMock(), git=MagicMock(), sleep=stop_poll)\\ntests/unit/test_runner_verdict_reread.py:34:    return SimpleNamespace(repo=tmp_path, journal=journal, git=SimpleNamespace(), fs=None, config=SimpleNamespace())\\ntests/unit/test_check_meta_fill.py:26:    git = SimpleNamespace(diff_names=AsyncMock(return_value=files), ls_files=AsyncMock(return_value=files), rev_parse=AsyncMock(return_value=\\\"123456789\\\"), commit=AsyncMock())\\ntests/unit/test_check_meta_fill.py:65:    git = SimpleNamespace(diff_names=AsyncMock(return_value=files), ls_files=AsyncMock(return_value=files), rev_parse=AsyncMock(return_value=\\\"123456789\\\"), commit=AsyncMock())\\ntests/integration/test_serve_verdict_orphan_sweep.py:39:        git=SimpleNamespace(worktree_prune=AsyncMock()),\\ntests/integration/test_retry_keeps_branch.py:20:class Git:\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_4\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The adoption scan cannot cover all required files without changing five stand-ins outside the scope fence.\\\",\\\"surprises\\\":\\\"The merged dependency migrated the nine listed unit files, but five other files remain on PENDING and match the existing scan patterns.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_retry_keeps_branch.py\\\",\\\"line\\\":20,\\\"message\\\":\\\"The existing Git stand-in matches the required scan and is outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_serve_verdict_orphan_sweep.py\\\",\\\"line\\\":39,\\\"message\\\":\\\"The existing SimpleNamespace Git stand-in matches the required scan and is outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_check_meta_fill.py\\\",\\\"line\\\":26,\\\"message\\\":\\\"The existing SimpleNamespace Git stand-ins match the required scan and are outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and migrate its stand-ins, or merge that migration before this ticket runs.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_runner_verdict_reread.py\\\",\\\"line\\\":34,\\\"message\\\":\\\"The existing SimpleNamespace Git stand-in matches the required scan and is outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_serve_verdict_owned.py\\\",\\\"line\\\":35,\\\"message\\\":\\\"The existing MagicMock Git stand-in matches the required scan and is outside the scope fence.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and migrate its stand-in, or merge that migration before this ticket runs.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":129479,\"cached_input_tokens\":106624,\"cache_write_input_tokens\":0,\"output_tokens\":1039,\"reasoning_output_tokens\":120}}\n",
+  "wall_seconds": 31.006578,
+  "usd": 1.0,
+  "run_record": "tickets/shared-git-fake-integration/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
