@@ -11,6 +11,7 @@ kind: feature
 ## Context
 - clutch/observe.py::extension_fields
 - clutch/observe.py::snapshot
+- clutch/observe.py::operator_holds
 - clutch/help.py
 - vscode-clutchwork/extension.js
 - tests/integration/test_help.py
@@ -18,6 +19,13 @@ kind: feature
 
 ## On-demand
 - vscode-clutchwork/package.json
+- tests/unit/test_menu_admission.py
+- tests/unit/test_observe_hot_paths.py
+- tests/unit/test_observe_step_session.py
+- tests/unit/test_observe_upgrade_hold.py
+- tests/unit/test_snapshot_merged_cap.py
+- tests/unit/test_snapshot_merged_tooltip.py
+- tests/unit/test_verdict_menu_parity.py
 
 ## Goal / Why
 The Tickets view's More Actions menu gets an "Ask Claude: prompt…" item. It opens a single-choice picker listing every named operator prompt, engine-owned and host-owned (from `host-prompts`), each with its description. Choosing one opens a Claude Code chat with that prompt's rendered text.
@@ -59,7 +67,8 @@ Behavior:
 
 ## Scope in / Scope out
 Scope in:
-- `clutch/observe.py`: add `prompt_pick(config, root, stems, box_ids)`, returning `{"promptPick": [...], "promptArgs": {...}}`, and merge its result into the `snapshot` return. It is a separate function so the unit test can drive it under `tmp_path` without building a whole snapshot. `snapshot` loads config with `load_config(ctx.config, cwd=ctx.root)`, as it already does for caps.
+- `clutch/observe.py`: add `prompt_pick(config, root, stems, box_ids)`, returning `{"promptPick": [...], "promptArgs": {...}}`, and merge its result into the `snapshot` return. It is a separate function so the unit test can drive it under `tmp_path` without building a whole snapshot. `snapshot` now always loads config with `load_config(ctx.config, cwd=ctx.root)` to build `promptPick`; today only `operator_holds` loads config, and only when it has candidates. Do not wrap `load_config` in a fallback: a missing config is a fixture defect, not a runtime path to tolerate.
+- Snapshot test fixtures that build a snapshot without a readable config: give each fixture a readable config file at `ctx.config` (for example a minimal config written under `tmp_path`) so the now-unconditional config load succeeds. Files: `tests/unit/test_menu_admission.py`, `tests/unit/test_observe_hot_paths.py`, `tests/unit/test_observe_step_session.py`, `tests/unit/test_observe_upgrade_hold.py`, `tests/unit/test_snapshot_merged_cap.py`, `tests/unit/test_snapshot_merged_tooltip.py`, `tests/unit/test_verdict_menu_parity.py`. Change only fixture configuration; leave their assertions unchanged.
 - `clutch/help.py`: add `"clutch.askPrompt": "Open a prompt chosen from every engine and host prompt."` to `_commands`.
 - `vscode-clutchwork/package.json`: declare `clutch.askPrompt` titled `Ask Claude: prompt…`, category `clutch`. Add it to `view/title` for `view == clutch.tickets` in group `clutch@7`, and to `commandPalette` with `when: false`.
 - `vscode-clutchwork/extension.js`: register `clutch.askPrompt`. JavaScript only maps snapshot fields to `showQuickPick` items and calls the existing `openClaude(root, argv)`. It never filters, sorts or builds argv beyond appending the picked stem or ids.
@@ -70,6 +79,7 @@ Scope out:
 - Removing or changing `clutch.askDrainLoop` or any ticket or box context-menu ask action.
 - Any change to `ask.catalog`, `clutch prompt`, or host prompt files (`host-prompts`).
 - Filtering the stem list by ticket state.
+- A fallback or try/except around `load_config` in `snapshot`.
 
 ## Scope fence
 - clutch/observe.py
@@ -78,6 +88,13 @@ Scope out:
 - vscode-clutchwork/package.json
 - docs/how-clutch-works.md
 - tests/unit/test_observe_prompt_pick.py
+- tests/unit/test_menu_admission.py
+- tests/unit/test_observe_hot_paths.py
+- tests/unit/test_observe_step_session.py
+- tests/unit/test_observe_upgrade_hold.py
+- tests/unit/test_snapshot_merged_cap.py
+- tests/unit/test_snapshot_merged_tooltip.py
+- tests/unit/test_verdict_menu_parity.py
 
 ## Acceptance criteria
 1. With a `tmp_path` config whose `prompts_dir` holds one valid `takes: stem` prompt `notes` and one invalid file `bad.md`, `prompt_pick(...)["promptPick"]` holds every `ask.KINDS` label in `KINDS` order, then `host notes` with `argv == ["prompt", "host", "notes"]` and `takes == "stem"`, then one entry for `bad.md` with no `argv` key. It is not missing the host entry and does not hide the problem (`tests/unit/test_observe_prompt_pick.py`).
@@ -89,6 +106,7 @@ Scope out:
 ## Verification
 ```
 ./dev.py test tests/unit/test_observe_prompt_pick.py tests/integration/test_help.py tests/unit/test_observe_extension_fields.py
+./dev.py test tests/unit/test_menu_admission.py tests/unit/test_observe_hot_paths.py tests/unit/test_observe_step_session.py tests/unit/test_observe_upgrade_hold.py tests/unit/test_snapshot_merged_cap.py tests/unit/test_snapshot_merged_tooltip.py tests/unit/test_verdict_menu_parity.py
 ./dev.py test
 ```
 
@@ -96,7 +114,9 @@ Scope out:
 - `extension.js` filters, sorts, or derives prompt entries or stems, or hardcodes a prompt name or description.
 - An invalid host prompt makes the snapshot fail or vanishes from the picker without an entry.
 - Any existing extension prompt action changes behavior.
+- `snapshot` tolerates a missing or unreadable config through a fallback path instead of the fixtures supplying one.
 
 ## Time budget
-- expected: 25m
-- stuck: 50m
+- expected: 35m
+- stuck: 70m
+- reason: not split because the unconditional config load in `snapshot` breaks the seven snapshot fixtures, so the fixture updates must land in the same diff as the `promptPick` change for the suite to stay green
