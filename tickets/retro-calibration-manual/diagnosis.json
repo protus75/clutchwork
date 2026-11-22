@@ -1,24 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "3ec3a57d86e5d8af36d5697a31a686bb687c745d",
+  "produced_at_sha": "ec1fcf2d5cae8f26da0f4a8ae3ce31f52443ac09",
   "stem": "retro-calibration-manual",
-  "attempt": 2,
-  "terminal": "incomplete",
-  "stage": "implement",
-  "verdict": "escalate",
+  "attempt": 3,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "reject",
   "lessons": [
-    "Attempt 2 (codex gpt-6.1-terra) quit after 111s, restored the tree, and named no blocker. The fence is complete: grep for check_retro/calibrate_when_due/retro_due/_run_retro outside it finds only docs/roadmap-driver-plan.md and CLUTCH_PLAN.md, which are out of scope. Do the full ticket and don't",
-    "Engine first: in clutch/serve.py remove check_retro, retro_due, retro_checked, calibrate_when_due and the unused imports; retro_pending keeps only the request clause. In clutch/drain.py, _run_retro takes no forced arg, loses retro_terminal_count and drops calibrate_when_due.",
-    "In clutch/calibration.py delete calibrate_when_due, add pending(events) and make due = pending>=every. In clutch/retro.py extract the settled count from select_trigger. In clutch/status.py add a pure overdue(events, config) dict, Status.overdue and render. Pass it from _status in __main__.py.",
-    "In clutch/doctor.py, after the journal row add Check(name, True, line, warn=True) for each overdue key; an unreadable journal adds none. Then handle the tests exactly as Scope in lists: delete the 5 pinned test files, drop only the named monkeypatches, and trim the automatic modes in serve_rig.py,",
-    "Write the 4 new unit test files, update the help in __main__.py and the docs sentences in how-clutch-works.md, host-contract.md and host-running.md, then run both ## Verification commands. If something blocks, report it as a finding instead of reverting silently."
+    "Ticket Verification and Scope in name tests/unit/test_drain_driver_overlap.py and tests/unit/test_driver_hooks.py, but neither file exists on main, so pytest collects no tests and the unit Verification command can never exit 0 as written.",
+    "Re-author the ticket: remove both missing paths from ## Verification, ## Scope fence and the Scope in edit list. Do not create placeholder test files to satisfy the command.",
+    "Attempt 3's diff (commit 9b89edc50) passed 86 unit tests with those two paths left out. It can be reused once the ticket is corrected; the integration command exited 0 but every test was skipped.",
+    "The integration Verification skips all 263 tests through the disk_io_skip policy, and it skipped all of them on base too (box-001133). Criteria 5, 8 and 9 rely on those tests, so the re-authored ticket must state how they actually run."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    0,
-    3
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
