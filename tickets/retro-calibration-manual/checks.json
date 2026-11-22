@@ -1,0 +1,220 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ec1fcf2d5cae8f26da0f4a8ae3ce31f52443ac09",
+  "stem": "retro-calibration-manual",
+  "passed": false,
+  "changed_files": [
+    "clutch/__main__.py",
+    "clutch/calibration.py",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-running.md",
+    "clutch/doctor.py",
+    "clutch/drain.py",
+    "clutch/retro.py",
+    "clutch/serve.py",
+    "clutch/status.py",
+    "docs/how-clutch-works.md",
+    "tests/integration/serve_rig.py",
+    "tests/integration/test_drain.py",
+    "tests/integration/test_serve_dispatch.py",
+    "tests/regress_drain_retro_once_per_settle.py",
+    "tests/regress_serve_retro_check_once.py",
+    "tests/unit/test_calibration_idle.py",
+    "tests/unit/test_doctor_overdue.py",
+    "tests/unit/test_drain_no_roadmap.py",
+    "tests/unit/test_drain_report_intake.py",
+    "tests/unit/test_drain_retro_once_per_settle.py",
+    "tests/unit/test_manual_retro_calibration_verbs.py",
+    "tests/unit/test_no_automatic_retro_calibration.py",
+    "tests/unit/test_phase_events.py",
+    "tests/unit/test_serve_dispatch_containment.py",
+    "tests/unit/test_serve_no_roadmap.py",
+    "tests/unit/test_serve_retro_check_once.py",
+    "tests/unit/test_serve_retro_check_site.py",
+    "tests/unit/test_status_overdue.py",
+    "tests/unit/test_supervise_idle_hooks.py"
+  ],
+  "inserted_lines": 590,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "verification",
+          "path": null,
+          "line": null,
+          "message": "`./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py` exited 1: $ uv run pytest -q -p clutch.testguard tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n\nno tests ran in 0.88s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q -p clutch.testguard tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py` failed",
+          "paved_road": "make `./dev.py test tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py` exit 0 on the branch and commit the fix",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 18.623802,
+        "passed": 2156,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.6321232590125874,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.554605742014246,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.4395952920021955,
+          "tests/unit/test_tickets_tolerant_reader.py::test_never_raises": 1.1210548399831168,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.002666344982572,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.0004782040196005
+        }
+      },
+      "coverage": {
+        "percent": 76.83969597512524,
+        "files": {
+          "clutch/__main__.py": 81.31224370240187,
+          "clutch/calibration.py": 100.0,
+          "clutch/doctor.py": 90.9090909090909,
+          "clutch/drain.py": 62.20095693779904,
+          "clutch/retro.py": 81.83716075156576,
+          "clutch/serve.py": 57.289002557544755,
+          "clutch/status.py": 99.26470588235294
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.205544,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9381676290067844,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.2001222770195454,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1737322540138848,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043463789916132
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_no_automatic_retro_calibration.py",
+        "tests/unit/test_status_overdue.py",
+        "tests/unit/test_doctor_overdue.py",
+        "tests/unit/test_manual_retro_calibration_verbs.py",
+        "tests/unit/test_main_engine_calibrate.py",
+        "tests/unit/test_calibration_idle.py",
+        "tests/unit/test_phase_events.py",
+        "tests/unit/test_drain_driver_overlap.py",
+        "tests/unit/test_drain_report_intake.py",
+        "tests/unit/test_driver_hooks.py",
+        "tests/unit/test_supervise_idle_hooks.py",
+        "tests/unit/test_serve_dispatch_containment.py",
+        "tests/unit/test_serve_no_roadmap.py",
+        "tests/unit/test_drain_no_roadmap.py",
+        "tests/unit/test_main_help.py",
+        "tests/unit/test_help.py"
+      ],
+      "rc": 1,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py\nbringing up nodes...\nbringing up nodes...\n\n\nno tests ran in 0.88s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\ndev: `uv run pytest -q -p clutch.testguard tests/unit/test_no_automatic_retro_calibration.py tests/unit/test_status_overdue.py tests/unit/test_doctor_overdue.py tests/unit/test_manual_retro_calibration_verbs.py tests/unit/test_main_engine_calibrate.py tests/unit/test_calibration_idle.py tests/unit/test_phase_events.py tests/unit/test_drain_driver_overlap.py tests/unit/test_drain_report_intake.py tests/unit/test_driver_hooks.py tests/unit/test_supervise_idle_hooks.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_main_help.py tests/unit/test_help.py` failed\n",
+      "base_red": false,
+      "seconds": 4.812366
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_doctor.py",
+        "tests/integration/test_serve_dispatch.py",
+        "tests/integration/test_serve_admission.py",
+        "tests/integration/test_serve_upgrade.py",
+        "tests/integration/test_drain.py",
+        "tests/integration/test_config.py",
+        "tests/integration/test_retro.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_doctor.py tests/integration/test_serve_dispatch.py tests/integration/test_serve_admission.py tests/integration/test_serve_upgrade.py tests/integration/test_drain.py tests/integration/test_config.py tests/integration/test_retro.py\nbringing up nodes...\nbringing up nodes...\n\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 27%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 54%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 82%]\nsssssssssssssssssssssssssssssssssssssssssssssss                          [100%]\n263 skipped in 1.61s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.091835
+    }
+  ]
+}
