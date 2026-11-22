@@ -1253,7 +1253,8 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
         if selected is not None:
             selection_path = path.with_suffix(".select.json")
             ctx.fs.write(selection_path, json.dumps(selected).encode("utf-8"))
-            argv = entry.argv + ["--clutch-select", str(selection_path)]
+            # Serve passes a frozen ConfigSnapshot whose argv is a tuple.
+            argv = [*entry.argv, "--clutch-select", str(selection_path)]
         result, report = await run_host_command(ctx, ticket, attempt, argv, entry.code, name)
         try:
             results = read_results(path.read_text())

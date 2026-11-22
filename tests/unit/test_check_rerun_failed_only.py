@@ -12,11 +12,11 @@ from datetime import datetime
 from types import SimpleNamespace as NS
 
 from clutch import daemon, stages
-from clutch.config import MechanicalCheck
+from clutch.config import MechanicalCheck, snapshot_config
 from clutch.journal import EventType
 
 
-def run_check(tmp_path, monkeypatch, runs, *, coverage=None, quarantine=False):
+def run_check(tmp_path, monkeypatch, runs, *, coverage=None, quarantine=False, frozen=False):
     calls, captures, selections, released, detected = [], [], [], [], []
     identity = NS(test_id="old", box_id="box")
     projection = NS(active={"box": identity} if quarantine else {}, tests={"old"} if quarantine else set(), detected={})
@@ -50,6 +50,8 @@ def run_check(tmp_path, monkeypatch, runs, *, coverage=None, quarantine=False):
         driver=NS(clock=lambda: datetime(2020, 1, 1), spool=NS(write=lambda stem, attempt, name, data: captures.append(name)), redactor=NS(scrub=lambda value: value), journal=NS(read=lambda: events)),
     )
     entry = MechanicalCheck(code="tests", argv=["test", "suite"], trigger="always", severity="hard", results="results.json", coverage=coverage)
+    if frozen:
+        entry = snapshot_config(entry)
     report = asyncio.run(stages._check_host_results(ctx, NS(stem="ticket", stuck_minutes=1), entry, 1, 0, []))
     return report, calls, captures, selections, released, detected
 
@@ -80,3 +82,10 @@ def test_coverage_reruns_full_command(tmp_path, monkeypatch):
     assert calls == [["test", "suite"], ["test", "suite"]]
     assert selections == []
     assert any("a failed on rerun" in finding.message for finding in report.findings)
+
+
+def test_selected_rerun_under_serve_snapshot(tmp_path, monkeypatch):
+    # Serve hands Check a ConfigSnapshot whose argv is a tuple; tuple + list crashed the rerun.
+    report, calls, _, selections, _, _ = run_check(tmp_path, monkeypatch, [(1, {"a": "failed", "b": "passed"}), (1, {"a": "failed"})], frozen=True)
+    assert calls[1] == ["test", "suite", "--clutch-select", str(tmp_path / "results.select.json")]
+    assert selections == [["a"]]
