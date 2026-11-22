@@ -1,0 +1,216 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0967af9668ae0d5ff3f00cc28dea0712c0bec140",
+  "stem": "io-helpers-stages",
+  "passed": true,
+  "changed_files": [
+    "tests/cli_helpers.py",
+    "tests/drain_helpers.py",
+    "tests/integration/serve_rig.py",
+    "tests/integration/test_audit.py",
+    "tests/integration/test_bug_gate.py",
+    "tests/integration/test_cli.py",
+    "tests/integration/test_daemon_composition.py",
+    "tests/integration/test_diagnose.py",
+    "tests/integration/test_drain.py",
+    "tests/integration/test_drain_reentry.py",
+    "tests/integration/test_drain_signals.py",
+    "tests/integration/test_gates.py",
+    "tests/integration/test_harvest.py",
+    "tests/integration/test_harvest_cost_source.py",
+    "tests/integration/test_harvest_orphans.py",
+    "tests/integration/test_host_mechanical.py",
+    "tests/integration/test_hostfiles.py",
+    "tests/integration/test_image_candidates_select.py",
+    "tests/integration/test_inbox.py",
+    "tests/integration/test_kill_cli_activation.py",
+    "tests/integration/test_ladder.py",
+    "tests/integration/test_merge.py",
+    "tests/integration/test_merge_model_resolve.py",
+    "tests/integration/test_mergequeue.py",
+    "tests/integration/test_provider_failure_surface.py",
+    "tests/integration/test_reject_queue.py",
+    "tests/integration/test_requisition_gate.py",
+    "tests/integration/test_restart_timers.py",
+    "tests/integration/test_retro_box.py",
+    "tests/integration/test_rework.py",
+    "tests/integration/test_scorecard.py",
+    "tests/integration/test_second_problems.py",
+    "tests/integration/test_shared_stage_replies.py",
+    "tests/integration/test_stages.py",
+    "tests/integration/test_stages_helpers_repo.py",
+    "tests/integration/test_step_events.py",
+    "tests/integration/test_storm_notification_activation.py",
+    "tests/integration/test_storm_producer.py",
+    "tests/integration/test_supervisor_rework.py",
+    "tests/integration/test_terminal.py",
+    "tests/integration/test_triage.py",
+    "tests/regress_drain_signals.py",
+    "tests/stages_helpers.py",
+    "tests/unit/test_config_fixture.py",
+    "tests/unit/test_stages_helpers.py"
+  ],
+  "inserted_lines": 584,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.249227,
+        "passed": 2005,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5657066230196506,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.0955505679885391,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.044095281045884,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0351722449995577
+        }
+      },
+      "coverage": {
+        "percent": 74.41941224985892,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 9.57324,
+        "passed": 294,
+        "failed": 0,
+        "skipped": 3339,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7518350539903622,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.034176598972408,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0045865989814047
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_stages_helpers.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_stages_helpers.py\nbringing up nodes...\nbringing up nodes...\n\n...................                                                      [100%]\n19 passed in 1.31s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.211263
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_stages_helpers_repo.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_stages_helpers_repo.py\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.28s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.091248
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit"
+      ],
+      "rc": 0,
+      "tail": ".................... [ 46%]\n........................................................................ [ 50%]\n........................................................................ [ 53%]\n........................................................................ [ 57%]\n........................................................................ [ 61%]\n........................................................................ [ 64%]\n........................................................................ [ 68%]\n........................................................................ [ 71%]\n........................................................................ [ 75%]\n........................................................................ [ 79%]\n........................................................................ [ 82%]\n........................................................................ [ 86%]\n........................................................................ [ 89%]\n........................................................................ [ 93%]\n........................................................................ [ 96%]\n.............................................................            [100%]\n=============================== warnings summary ===============================\ntests/integration/test_providers.py:40: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-stages/tests/integration/test_providers.py:40: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n2005 passed, 20 warnings in 8.73s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 12.161781
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration"
+      ],
+      "rc": 0,
+      "tail": "ssssss.sssssssss [ 57%]\nsss.sssssssssssssssssssssss.ssssssssssssssssssssssssssssssssssssssssssss [ 59%]\ns.sssssssssssssssssssssssssssssssssssssssssssssssssssssss..sssssssssssss [ 61%]\nsssssssssssssss..sssss..sssssssssssssssssss.sssss.ssssssssssssssssssssss [ 63%]\nsssssssssss...sssssssssssssssss.sssssssssssssssssss..sssssssssss.sssssss [ 65%]\ns..sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.sssss [ 67%]\nss..sssssssssssssssssssss.sssssssssssssssss.sssssssssss.ssssssssssssssss [ 69%]\nsssss..ssss..sss..ss.sssssssssssssssss..sssssssssssssssssss..s.ss.sss.ss [ 71%]\nsssssssssss.sss.sssssssssssss.s.ssss.ssssssssssssssssssssssssssssss..sss [ 73%]\nssss.sssssssss.sssssssss.sss.ssssssssssssssssssssssssssssssssssssss.ss.s [ 75%]\nssssssssss.ssssssss.ssssssssssssssssssssssssssssssssssssssssssssss.sssss [ 77%]\n.sssssssss...ssssss..s..ssss...s..ss.sssssss.ssss.s....ssssssssss.ss.sss [ 79%]\nssssssssssssssssssssss.sssssssssssssss.ssssss.ssssssssssssssssssssssssss [ 81%]\nssssssssssssssssssssssssssssssssssssssssssssss.sssssssssssssssssssssssss [ 83%]\nssssssssssssssssssssssssssssssssssss.ssssssssssss.ssssssssssssssssssssss [ 85%]\nsssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\nsssssssssssss.ssssssss.sssssssssss..ssssssssssssssssssssssssssssssssssss [ 89%]\nssssssss.ssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nssss.ssssss.sssssssssssssssssssssssssssssssssss.ssssssssssssssssss.sssss [ 93%]\nsss..sss.sssss.s...sssssssssssssssssssssssssss.sssssssssssssssssssssssss [ 95%]\nssssssssssssssssssssss.s....................ss......s.ssssssssssssss.... [ 97%]\n....sssssssssss.........ssss..............ssssss........ss........sssss. [ 99%]\n..ssssssssssssssssssss...........                                        [100%]\n294 passed, 3339 skipped in 7.19s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 9.84209
+    }
+  ]
+}
