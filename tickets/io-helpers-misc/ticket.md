@@ -6,7 +6,7 @@ kind: chore
 ---
 
 ## Depends on
-- io-helpers-loop
+- io-helpers-loop-serve-rig
 - shared-git-fake-integration
 - shared-review-script
 
