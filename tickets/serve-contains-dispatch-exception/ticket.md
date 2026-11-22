@@ -25,6 +25,8 @@ kind: bug
 - tests/unit/test_drain_containment.py
 - tests/integration/test_drain_containment.py
 - tests/unit/test_serve_verdict_owned.py
+- tests/git_fake.py
+- tests/integration/test_git_fake_adoption.py
 - tests/unit/test_serve_idle_poll.py
 - tests/integration/conftest.py
 - tests/integration/test_serve_kill.py
@@ -65,7 +67,7 @@ Scope in:
 - `clutch/drain.py`: `_Drain._run_one` calls that function in place of its inline `require_transition` check and journal append. Nothing else in drain changes.
 - `clutch/serve.py`: in the per-ticket `dispatch` closure built in `Serve.__init__`, catch `Exception` around `await callback(ticket)` as described above.
 - New `tests/unit/test_dispatch_exception_terminal.py` for the runner function: one terminal is appended when the latest transition is `running`, and none when it is already terminal.
-- New `tests/unit/test_serve_dispatch_containment.py`. It builds `Serve` around a `MagicMock` daemon core the way `tests/unit/test_serve_verdict_owned.py` does (no real repo, git, or disk I/O, because the integration I/O guard blocks `tests/integration/serve_rig.py` and `DISK_IO_SKIP` skips the serve and drain containment integration tests), with an in-memory journal. It reaches the per-ticket dispatch closure through the `prepare` callable that `Serve.__init__` passes to the monkeypatched `build_daemon_core`, feeding it a `MagicMock(spec=TicketWriter)` callback, and awaits the closure directly. Ticket A's run callback raises `ValueError("boom")` while ticket B's callback, awaited concurrently through the same closure, returns its scripted terminal. The test name for the A case contains `raises`.
+- New `tests/unit/test_serve_dispatch_containment.py`. It builds `Serve` around a `MagicMock` daemon core the way `tests/unit/test_serve_verdict_owned.py` does (no real repo, git, or disk I/O, because the integration I/O guard blocks `tests/integration/serve_rig.py` and `DISK_IO_SKIP` skips the serve and drain containment integration tests), with an in-memory journal. It reaches the per-ticket dispatch closure through the `prepare` callable that `Serve.__init__` passes to the monkeypatched `build_daemon_core`, feeding it a `MagicMock(spec=TicketWriter)` callback, and awaits the closure directly. Its `Checkout` takes `git=GitFake()` from `tests/git_fake.py`, never a `MagicMock`/`SimpleNamespace` git, because `tests/integration/test_git_fake_adoption.py` fails any test file that hand-builds a git stand-in. Ticket A's run callback raises `ValueError("boom")` while ticket B's callback, awaited concurrently through the same closure, returns its scripted terminal. The test name for the A case contains `raises`.
 - New carried reproducer `tests/regress_serve_dispatch_containment.py`, modeled on `tests/regress_drain_containment.py`, that runs `tests/unit/test_serve_dispatch_containment.py -k raises` and maps the pytest result to the regression protocol.
 - `docs/how-clutch-works.md`: move the sentence "A dispatch exception is journaled as an `infra_error` terminal, re-offered, and held in the Reject queue at the attempts cap." so it covers both drain (7.1) and serve (7.2), and say in 7.2 that consumer failures still stop serve.
 
