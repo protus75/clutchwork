@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that roadmap start gates hold back status and author-ahead until they pass, and checks the repository's start and ship gate blocks
+# purpose: Tests that roadmap start gates hold back status and author-ahead until they pass, and checks the repository's start and ship gate blocks.
 # relates: [clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/roadmap.py, clutch/seams.py]
 # owner: clutch/roadmap.py
-# verified: ae1a5a3b
-# hash: 5901dd188c527ff62f61dfd8cd9fbabdece0b11ef1ad3a07ec50ec2edd29133c
+# verified: 7ad3c1c2
+# hash: 7e8b17f7dd8227788a9899c922afed1e9434504faa530b10687d58e11c0fa833
 import asyncio
 import shlex
 import sys
@@ -19,7 +19,7 @@ from clutch.config import load_config
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.cli_helpers import ENV
-from tests.integration.test_drain import Clock
+from tests.drain_helpers import Clock
 from tests.integration.test_roadmap_author import setup_repo
 from tests.unit.test_roadmap_status import fixture
 

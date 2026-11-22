@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests storm-breaker holds through the production CLI and drain: only the emitting stem is held, a resume must match the hold identity and is accepted once, and holds survive restarts, crashes and corrupt evidence.
+# purpose: Tests storm-breaker holds through the production CLI and drain: only the emitting stem is held, resumes must match the hold identity once, and holds survive restarts, crashes and corrupt evidence.
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py]
 # owner: clutch/control.py
-# verified: ae1a5a3b
-# hash: 9b4cab66b0735b0cfc854e33e26d96211937a03e4ce6775d7040bb94fc613953
+# verified: 7ad3c1c2
+# hash: 3d46e9e55fa9f3bd42916564e70bc4db15ef00e785a806a35bd11d6e789b41ba
 
 import asyncio
 import json
@@ -28,9 +28,8 @@ from clutch.seams import LocalFileSystem
 from clutch.storm import StormLedger
 from clutch.tickets import INTAKE_SIGNAL, ticket_path
 from tests.cli_helpers import ENV
+from tests.drain_helpers import NoChild, Script, commit_ticket, confirmed, make_root, pause_checkout
 from tests.integration.test_daemon_composition import CoreRig
-from tests.integration.test_drain import Script, commit_ticket, confirmed, make_root, pause_checkout
-from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_journal import T0, FakeClock
 from tests.integration.test_storm import SIG, snapshot
 from tests.integration.test_storm_notification_activation import digest, occurrences, six, trips

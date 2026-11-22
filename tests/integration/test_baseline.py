@@ -4,8 +4,8 @@
 # purpose: Tests review-baseline resolution: GO/NO_GO/ABSENT/REVOKED states, routing and spec-major drift, and fail-closed handling of invalid inputs and torn journal tails
 # relates: [clutch/baseline.py, clutch/config.py, clutch/journal.py, clutch/policy.py, clutch/providers.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 9fd54013830251acc6cbfb9ddb2cb803ce8c04fc17d5bc3bf05f9d63b5ffa86b
+# verified: 7ad3c1c2
+# hash: 5f8610231a0e1f34ab488bb65bf579850f539ff38aa41c093a2ccf69774c3250
 import json
 import re
 from copy import deepcopy
@@ -20,7 +20,7 @@ from clutch.journal import EventType, Journal
 from clutch.policy import BASELINED_SURFACES, TIERS, baseline_identity
 from clutch.providers import PLACEHOLDER
 from clutch.specs import load_spec
-from tests.integration.test_drain import Clock
+from tests.drain_helpers import Clock
 from tests.integration.test_policy import ROOT, config, signal
 
 pytestmark = pytest.mark.disk_io_skip

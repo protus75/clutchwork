@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that intake keeps the authored draft state, that drain waits for `ticket confirm`, and that the author and drafts specs and the authoring guide carry the confirm guidance.
+# purpose: Tests that intake keeps the authored draft state, that drain waits for `ticket confirm`, and that the author and drafts specs and authoring guide carry the confirm guidance
 # relates: [clutch/__main__.py, clutch/drain.py, clutch/journal.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: aed2f291a245c8de1c9d9b7b2f2c6fb8f082b981f4baaa34473c4c73116331eb
+# verified: 7ad3c1c2
+# hash: 2c1341326d657eda8c75cc91403ca90b608299facd8f694b3e00763d02be4ecc
 import asyncio
 from pathlib import Path
 
@@ -15,8 +15,7 @@ from clutch import __main__ as entry
 from clutch.drain import drain
 from clutch.journal import EventType
 from tests.cli_helpers import ENV, git_out, ticket, write
-from tests.integration.test_drain import pause_checkout, root
-from tests.integration.test_drain_reentry import NoChild
+from tests.drain_helpers import NoChild, pause_checkout, root
 from tests.integration.test_tickets import VALID, do_intake, repo
 from tests.integration.test_tickets import write as write_ticket
 

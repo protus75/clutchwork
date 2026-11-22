@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the stats projection (windows, stage durations, cycles, ladder and verification timings), the `view stats` JSON and tree output, and refusal of a bad window.
+# purpose: Tests the stats projection (windows, stage durations, cycles, ladder, verification timings), the `view stats` JSON and tree output, and refusal of a bad window.
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/stats.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: clutch/stats.py
-# verified: ae1a5a3b
-# hash: a2336f654d8e2d3901d6e3f9f8c411c361075e6f9c2e52f7076f69a1c3881cdf
+# verified: 7ad3c1c2
+# hash: 51307d331cce6a568beee8d8770d34d0f19c6e28392557d041790bf78dd2fc35
 import json
 from datetime import timedelta
 from types import SimpleNamespace
@@ -16,7 +16,7 @@ from clutch.__main__ import main
 from clutch.journal import EventType, Journal
 from clutch.stats import project_stats, stats_tree
 from tests.cli_helpers import ENV
-from tests.integration.test_drain import Clock, make_root
+from tests.drain_helpers import Clock, make_root
 
 pytestmark = pytest.mark.disk_io_skip
 

@@ -5,8 +5,8 @@
 # purpose: Integration tests for triage-driven Author: prompt contents, review/reprompt loops, bug-report evidence custody, baseline-resolved start state, decline records and crash recovery
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/policy.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: d4415975846f6c50a5951bb354a5fd155ad0ca14e3f7a52288f98d12f896fb63
+# verified: 7ad3c1c2
+# hash: 1eb28c85f51e0cce2be60d3479ba9852f0ba6a9060becb0368eb6884a4cc10eb
 
 import asyncio
 import json
@@ -22,7 +22,7 @@ from clutch.seams import LocalFileSystem
 from clutch.specs import load_spec
 from clutch.tickets import template, validate_ticket
 from tests.cli_helpers import ENV, git_out
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root, pause_checkout
+from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root, pause_checkout
 from tests.integration.test_git import commit_lock
 from tests.integration.test_triage import author_reply, reply
 from tests.stage_replies import requisition_reply

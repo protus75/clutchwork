@@ -5,8 +5,8 @@
 # purpose: Integration tests for control verbs through the real CLI: pause, resume, stop, retro, confirm and reject route by the writer lock and publish requests bound to the running engine's identity, with live verdict recovery and refusals
 # relates: [clutch/__main__.py, clutch/control.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/seams.py, clutch/status.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: e2d5a557e054439a3affcafe3d3b6628b6d752e48906d63420b786cf2b075143
+# verified: 7ad3c1c2
+# hash: d777dfea500633f3ab370264392dfb4cad426afe8e4abb0e01c1314e14488508
 
 import json
 from dataclasses import asdict
@@ -566,8 +566,8 @@ def test_live_confirm_intakes_before_submission(root, monkeypatch, capsys, kind)
 
     from clutch.lockfile import CommitLock
     from tests.cli_helpers import git_out
-    from tests.integration.test_drain import Clock as AdvancingClock
-    from tests.integration.test_drain import commit_ticket, confirmed
+    from tests.drain_helpers import Clock as AdvancingClock
+    from tests.drain_helpers import commit_ticket, confirmed
 
     commit_ticket(root, "candidate", confirmed().replace("state: confirmed", "state: draft"))
     path = root / "tickets/candidate/ticket.md"

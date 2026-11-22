@@ -5,8 +5,8 @@
 # purpose: Tests the retro window projection, trigger thresholds, production evidence, receipt commits, failure suppression, tombstone digests and test timing and coverage aggregation
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/driver.py, clutch/effects.py, clutch/gates.py, clutch/journal.py]
 # owner: clutch/retro.py
-# verified: d32c32ad
-# hash: 2f34eac477ce66a494cc46c77a1f255d0d4cfa2af13cef01ccb0fe8c4cf553af
+# verified: 7ad3c1c2
+# hash: 1f18680d7b34206a60d89354cba95939b80914967bf28c3c0369446d4bc99084
 
 import asyncio
 import json
@@ -25,7 +25,7 @@ from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM, LLMResult
 from clutch.retro import Retro, RetroArtifact, measurements, production_evidence, project_window, render_report, select_trigger
 from clutch.specs import RENDER_BOUND_CHARS, REQ_RENDER_HEADROOM, data_close, data_open
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root, pause_checkout
+from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root, pause_checkout
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

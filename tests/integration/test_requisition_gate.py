@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Dispatch reviews committed ticket content before creating an implementation workspace, parks a snag before Implement and releases it when the ticket is edited
+# purpose: Tests that dispatch reviews committed ticket content before creating a workspace, parks a snag before Implement, and releases it when the ticket is edited
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/requisition.py, clutch/runner.py, clutch/scheduler.py]
 # owner: clutch/requisition.py
-# verified: ae1a5a3b
-# hash: f1ff906c2e8994b46369dc551ea4a55c8151f3769792c3f1e14e35249b4843e9
+# verified: 7ad3c1c2
+# hash: b927d5913559688ab2a8f526c2afc75e08ac2d60dc27cf407ec3c19b199e1791
 
 import asyncio
 import json
@@ -24,7 +24,7 @@ from clutch.tickets import validate_ticket
 from tests.approval import approve
 from tests.cli_helpers import ENV, git_out
 from tests.dispatch_settle import dispatch_settled
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, pause_checkout
+from tests.drain_helpers import Clock, commit_ticket, confirmed, journal, make_root, pause_checkout
 from tests.integration.test_stages import implement_reply
 from tests.stage_replies import requisition_reply
 

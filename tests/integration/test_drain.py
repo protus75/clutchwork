@@ -9,8 +9,8 @@ re-scan, the journal cap fold, the ceilings -- is the production path.
 # purpose: End-to-end tests of the drain verb: ordering, parking and re-offers, retry budget, re-scan, ceilings, pause/stop control, retros and rework.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 28def4989f80dbbff1cfedbaa09ffda573c9c1f4d48d12e6e2d03c9e878ae8e4
+# verified: 7ad3c1c2
+# hash: f01bfd0501a708a82aabc45490ccbe2e751277148997dec1a17c40126609b03e
 
 import asyncio
 import json
@@ -30,7 +30,7 @@ from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.tickets import intake
 from tests.cli_helpers import CONFIG, ENV, PLAN, git_out, ticket, with_retro_driver, write
-from tests.fakes import FakeClock as Clock
+from tests.drain_helpers import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root, mechanical_first, offer_events, pause_checkout, retry_draws, root, tos
 from tests.integration.test_git import commit_lock
 from tests.integration.test_merge import repo as admission_repo
 from tests.integration.test_stages import adopt_conduct
@@ -45,78 +45,6 @@ def test_bootstrap_never_supervised_holds(admission_repo, monkeypatch):
     test_bootstrap_pipeline_keeps_inline_admission(admission_repo, monkeypatch, "drain")
 
 
-START = datetime(2026, 1, 1, tzinfo=UTC)
-
-
-class Script:
-    """Scripted stage seam: each stem's terminals in order (default `merged`), plus per-stem side effects."""
-
-    def __init__(self, outcomes: dict[str, list[str]] | None = None, hooks: dict | None = None) -> None:
-        self.outcomes = {stem: list(seq) for stem, seq in (outcomes or {}).items()}
-        self.hooks = hooks or {}
-        self.calls: list[str] = []
-        self.lock_held: list[bool] = []
-
-    def __call__(self, checkout):
-        async def dispatch(t):
-            self.calls.append(t.stem)
-            contender = Lockfile(checkout.config.state_dir, verb="drain", instance_id="contender", clock=checkout.clock)
-            try:
-                contender.acquire()
-            except LockHeld:
-                self.lock_held.append(True)
-            else:
-                contender.release()
-                self.lock_held.append(False)
-            if hook := self.hooks.get(t.stem):
-                hook(checkout)
-            seq = self.outcomes.get(t.stem, [])
-            terminal = seq.pop(0) if seq else "merged"
-            checkout.journal.append(EventType.STATE_TRANSITION, {"to": terminal, "stage": "review"} if terminal != "merged" else {"to": terminal}, ticket=t.stem)
-            return terminal
-
-        return with_retro_driver(checkout, dispatch)
-
-
-def make_root(tmp_path: Path, caps: str = "") -> Path:
-    root = tmp_path / "repo"
-    (root / "clutch").mkdir(parents=True)
-    (root / "clutch" / "thing.py").write_text("")
-    (root / "CLUTCH_PLAN.md").write_text(PLAN)
-    (root / "config.yaml").write_text(CONFIG + caps)
-    (root / ".gitignore").write_text(".clutch/\n")
-    adopt_conduct(root)
-    git_out(root, "init", "-b", "main")
-    git_out(root, "add", ".")
-    git_out(root, "commit", "-m", "base")
-    return root
-
-
-@pytest.fixture
-def root(tmp_path: Path) -> Path:
-    return make_root(tmp_path)
-
-
-def drain(root: Path, script: Script, clock: Clock | None = None) -> int:
-    return main(["engine", "drain"], cwd=root, env=ENV, clock=clock or Clock(START), pipeline=script)
-
-
-def journal(root: Path) -> Journal:
-    return Journal(root / ".clutch" / "state", Clock(START))
-
-
-def confirmed(depends: str = "none", priority: str = "P2") -> str:
-    """A ticket as the ticket-plane lane commits it: frontmatter already stamped, no intake needed."""
-    return ticket(depends).replace("---\npriority: P2", f"---\nstate: confirmed\nsource: human\npriority: {priority}", 1)
-
-
-def commit_ticket(root: Path, stem: str, text: str) -> None:
-    """A ticket-plane commit straight to main (a seeding ticket's output): no intake, no authoring event."""
-    write(root, stem, text)
-    git_out(root, "add", f"tickets/{stem}/ticket.md")
-    git_out(root, "commit", "-m", f"clutch({stem}): ticket", "--only", "--", f"tickets/{stem}/ticket.md")
-
-
 def intake_at(root: Path, stem: str, at: datetime) -> None:
     """Hand-author and intake one stem with the journal clock at `at` (its authoring-commit event)."""
     write(root, stem, ticket())
@@ -124,14 +52,6 @@ def intake_at(root: Path, stem: str, at: datetime) -> None:
     clock.now = at
     g = Git(SubprocessExec(), env=ENV, timeout=30.0, commit_lock=commit_lock(root / ".clutch/state"))
     asyncio.run(intake(root, g, Journal(root / ".clutch" / "state", clock), LocalFileSystem(), stems=None))
-
-
-def retry_draws(root: Path, stem: str) -> int:
-    return draws(journal(root).read(), stem, "retry")
-
-
-def tos(root: Path, stem: str) -> list[str]:
-    return [e.body["to"] for e in journal(root).read() if e.type == EventType.STATE_TRANSITION and e.ticket == stem]
 
 
 def test_already_satisfied_settles_without_diagnosis(rework_repo):
@@ -563,32 +483,6 @@ def test_drain_reconciles_on_entry(root):
 # --- spec-gap hold (section 11.4) ---------------------------------------------------------------
 
 
-def mechanical_first(monkeypatch, stem, *, workspace=True):
-    from clutch import runner, stages
-    from clutch.artifacts import Cost, Finding, StageResult
-
-    original = runner.run_stages
-    called = []
-
-    async def first(ctx, ticket):
-        if ticket.stem == stem and not called:
-            called.append(ticket.stem)
-            if workspace:
-                await stages.prepare_worktree(ctx, ticket.stem)
-            return stages.StagesRun(
-                attempt=0,
-                results={
-                    "implement": StageResult(
-                        outcome="premise_failed", artifact=None, cost=Cost(), findings=[Finding(code="render_over_bound", message="too large", paved_road="shrink or split and rerun drain")]
-                    )
-                },
-            )
-        return await original(ctx, ticket)
-
-    monkeypatch.setattr(runner, "run_stages", first)
-    return called
-
-
 @pytest.mark.parametrize("mechanical", [False, True])
 def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mechanical):
     import json
@@ -596,7 +490,7 @@ def test_rework_update_reenters_on_fresh_content(rework_repo, monkeypatch, mecha
     from clutch import runner
     from clutch.caps import consume
     from clutch.llm import FakeLLM
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
     from tests.integration.test_rework import order, requisition
     from tests.integration.test_stages import ENV, SNAG, STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
@@ -806,7 +700,7 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
 
         return dispatch
 
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=bind, reexec=NoChild()) == 0
     events = Journal(repo / ".clutch/state", clock).read()
@@ -837,17 +731,6 @@ def test_render_over_bound_dispatches_rework_without_diagnosis(rework_repo, monk
 # --- dormant dispatch pause checkpoint ----------------------------------------------------------
 
 
-def pause_checkout(root):
-    from clutch.config import load_config
-    from clutch.runner import Checkout
-
-    process = SubprocessExec()
-    checkout = Checkout(
-        root, load_config(None, cwd=root), ENV, process, Git(process, env=ENV, timeout=30, commit_lock=commit_lock(root / ".clutch/state")), journal(root), LocalFileSystem(), Clock(START)
-    )
-    return replace(checkout, control=build_control(checkout))
-
-
 class Pause:
     def __init__(self, at=2):
         self.at = at
@@ -863,7 +746,7 @@ class Pause:
 
 async def paused_drain(root, script, checkpoint):
     from clutch.drain import drain as run_drain
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     checkout = pause_checkout(root)
     return await run_drain(checkout, script(checkout), reexec=NoChild(), before_dispatch=checkpoint)
@@ -875,10 +758,6 @@ def prior_failure(root, *, terminal="gate_failed", extra=None):
     j.append(EventType.STATE_TRANSITION, {"to": "running", "ticket_sha": blob}, ticket="work")
     j.append(EventType.STATE_TRANSITION, {"to": terminal, **(extra or {})}, ticket="work")
     return blob
-
-
-def offer_events(root):
-    return [e for e in journal(root).read() if e.type in {EventType.CAP_CONSUMED, EventType.STATE_TRANSITION} or e.body.get("signal") == "reject_verdict"]
 
 
 @pytest.mark.asyncio
@@ -1027,7 +906,7 @@ async def test_drain_uses_supplied_control(root, monkeypatch):
     from clutch import __main__ as cli
     from clutch.drain import drain as run_drain
     from clutch.runner import Refusal
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     checkout = pause_checkout(root)
     consumer = checkout.control
@@ -1081,7 +960,7 @@ async def test_drain_uses_supplied_control(root, monkeypatch):
 def test_retro_hook_is_default_off(root):
     from clutch.drain import _Drain
     from clutch.drain import drain as run_drain
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     commit_ticket(root, "work", confirmed())
     checkout = pause_checkout(root)
@@ -1096,7 +975,7 @@ def test_retro_hook_is_default_off(root):
 def test_due_retro_waits_for_retry_and_precedes_next_ticket(root):
     from clutch.drain import drain as run_drain
     from clutch.retro import measurements, project_window, select_trigger
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     commit_ticket(root, "aa", confirmed(priority="P0"))
     commit_ticket(root, "bb", confirmed(priority="P1"))
@@ -1132,8 +1011,8 @@ async def test_selected_retro_remains_killable_through_existing_control(root):
     from clutch.drain import drain as run_drain
     from clutch.llm import HANG, FakeLLM
     from clutch.retro import Retro
+    from tests.drain_helpers import NoChild
     from tests.integration.test_daemon_admission import turn
-    from tests.integration.test_drain_reentry import NoChild
 
     commit_ticket(root, "work", confirmed())
     ticks = asyncio.Queue()
@@ -1184,7 +1063,7 @@ def _exercise_retro_drain(tmp_path, monkeypatch, scenario):
     from clutch import __main__ as cli
     from clutch import runner
     from clutch.retro import Retro
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
     from tests.integration.test_providers import claude_ok
 
     root = make_root(tmp_path)
@@ -1430,7 +1309,7 @@ def _mid_run_hold(repo, monkeypatch, *, committed, failed=False):
 
     approve(repo, STEM, clock)
     fresh = FakeLLM([agent({"clutch/thing.py": "ok\n"}), verdict()])
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     assert main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, fresh), reexec=NoChild()) == 0
     assert [r.surface for r in fresh.requests] == ["implement", "review"]
@@ -1448,7 +1327,7 @@ def test_uncommitted_ticket_edit_mid_run_holds(rework_repo, monkeypatch):
 def test_engine_artifacts_do_not_trigger(rework_repo):
     from clutch import runner
     from clutch.llm import FakeLLM
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
     from tests.integration.test_stages import STEM, agent, verdict
     from tests.integration.test_terminal import author, clock
 
@@ -1502,7 +1381,7 @@ def test_historical_spec_gap_hold_terminal_reads_without_release(root):
 async def test_stop_finishes_current_ticket_and_releases_lock(root):
     from clutch.control import ControlRequest, publish_request
     from clutch.drain import drain as run_drain
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     commit_ticket(root, "aa", confirmed(priority="P0"))
     commit_ticket(root, "bb", confirmed(priority="P1"))
@@ -1541,7 +1420,7 @@ async def test_stop_survives_self_upgrade_handoff(root, monkeypatch):
     from clutch import drain as drain_mod
     from clutch.control import ControlRequest, publish_request
     from clutch.drain import drain as run_drain
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     monkeypatch.setattr(drain_mod, "ENGINE", root.resolve())
     commit_ticket(root, "aa", confirmed(priority="P0"))
@@ -1580,7 +1459,7 @@ async def test_stop_survives_self_upgrade_handoff(root, monkeypatch):
 async def test_stop_at_paused_checkpoint_admits_nothing(root):
     from clutch.control import ControlRequest, publish_request
     from clutch.drain import drain as run_drain
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     commit_ticket(root, "work", confirmed())
     checkout = pause_checkout(root)
@@ -1657,7 +1536,7 @@ def test_reoffer_rules_and_recording():
 async def requested_retro_scenario(root, *, second=False, stop=False):
     from clutch.control import ControlRequest, publish_request
     from clutch.drain import drain as run_drain
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
 
     commit_ticket(root, "aa", confirmed(priority="P0"))
     if second:

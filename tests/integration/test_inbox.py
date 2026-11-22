@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests host report intake: closed schema validation, evidence size limits, taking custody of evidence before enqueue, crash-safe single ingest, and a report replayed through Author into a regression Check.
+# purpose: Tests host report intake: closed schema validation, evidence size limits, evidence custody before enqueue, crash-safe single ingest, and a replayed report reaching a regression Check
 # relates: [clutch/__main__.py, clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: af699e3f2149e88698c6bd0805a07e275b5d257b97f49e0b5474e2b5a519dbbc
+# verified: 7ad3c1c2
+# hash: ad48da5ff5093b876dcad0dbd02a9dca1ba35d74d7e4c0bde7361993e4e5680c
 
 import asyncio
 import json
@@ -21,7 +21,7 @@ from clutch.daemon import storm_producer
 from clutch.inbox import CAPS, ReportError, bounded, ingest, validate_report
 from clutch.journal import Journal
 from clutch.seams import LocalFileSystem
-from tests.integration.test_drain import Clock
+from tests.drain_helpers import Clock
 from tests.integration.test_git import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip

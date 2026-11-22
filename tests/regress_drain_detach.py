@@ -5,8 +5,8 @@
 # purpose: Standalone reproducer that checks `engine drain --detach` spawns one detached process and exits 0.
 # relates: [clutch/__main__.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: b75f0013f52e0c9ac5aa1ee075e740f627db338806aec9ce4d51ccd0dfc022b9
+# verified: 7ad3c1c2
+# hash: 56b1b803914bf5d57c84c74ba8b64355d25cf98fbc2787dc2fc94692d0e72734
 
 import contextlib
 import io
@@ -24,7 +24,7 @@ def main() -> int:
         from clutch.__main__ import _parser
         from clutch.__main__ import main as clutch_main
         from tests.cli_helpers import ENV
-        from tests.integration.test_drain import make_root
+        from tests.drain_helpers import make_root
 
         with tempfile.TemporaryDirectory() as directory:
             root = make_root(Path(directory))

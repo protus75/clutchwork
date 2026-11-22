@@ -4,8 +4,8 @@
 # purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only CLI view verbs.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
 # owner: clutch/observe.py
-# verified: ae1a5a3b
-# hash: af8c778e76bd88f4437d6afad9aa214ec54e00a45a636d75ee0058846889344c
+# verified: 7ad3c1c2
+# hash: e72437c7f768434e7864e0c032a2369942ea48413e7f1e522706dec150bd4f76
 import json
 import os
 import subprocess
@@ -794,7 +794,7 @@ def test_snapshot_review_locks_for_changed_evidence(tmp_path):
     from clutch.lockfile import Lockfile
     from clutch.seams import SubprocessExec
     from tests.cli_helpers import ENV
-    from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+    from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
     from tests.integration.test_git import commit_lock
 
     root = make_root(tmp_path)
@@ -843,7 +843,7 @@ def test_draft_assessment_menu_tracks_snapshot_draft(tmp_path):
     from clutch.git import Git
     from clutch.seams import SubprocessExec
     from tests.cli_helpers import ENV, git_out
-    from tests.integration.test_drain import confirmed, make_root
+    from tests.drain_helpers import confirmed, make_root
     from tests.integration.test_git import commit_lock
 
     root = make_root(tmp_path)

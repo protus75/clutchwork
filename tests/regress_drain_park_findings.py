@@ -5,8 +5,8 @@
 # purpose: Standalone reproducer that checks the drain report lists the reason for a ticket parked at requisition review.
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 04f43ddfcde2c6b47e2e8e3438554e77c7ee187807d1771a06e5a2e0bac51349
+# verified: 7ad3c1c2
+# hash: 3e2895956470b52cc850234f6019ac03b906d51b8a300d282bf1d958bfc6becf
 
 import contextlib
 import io
@@ -25,7 +25,7 @@ def main() -> int:
         from clutch.journal import EventType
         from clutch.llm import FakeLLM
         from tests.cli_helpers import ENV
-        from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root
+        from tests.drain_helpers import Clock, commit_ticket, confirmed, journal, make_root
         from tests.integration.test_rework import requisition
 
         with tempfile.TemporaryDirectory() as directory:

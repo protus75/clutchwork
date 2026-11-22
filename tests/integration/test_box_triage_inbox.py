@@ -4,8 +4,8 @@
 # purpose: Tests box triage submission to a running drain or serve, refusal under a non-engine lock holder, lock-free direct passes, and that only requested messages are triaged
 # relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/seams.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 3dc726dd97b16b32d18a4d809fb51af6ff0d3597eecadf7bbf377eedb32f4739
+# verified: 7ad3c1c2
+# hash: 4e13420ca9a19e41d30f8bf46f2ac0b42dff14a8a38128c89828c79d5d0ba2ce
 from pathlib import Path
 
 import pytest
@@ -18,7 +18,7 @@ from clutch.llm import FakeLLM
 from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import ENV, root
-from tests.integration.test_drain import Clock
+from tests.drain_helpers import Clock
 from tests.integration.test_triage import enqueue, reply, root_with_box
 
 pytestmark = pytest.mark.disk_io_skip
@@ -94,8 +94,7 @@ def test_real_drain_accepts_and_settles_request(root, monkeypatch, capsys):
     import asyncio
 
     from clutch.drain import drain
-    from tests.integration.test_drain import pause_checkout
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild, pause_checkout
 
     async def exercise():
         checkout = pause_checkout(root)

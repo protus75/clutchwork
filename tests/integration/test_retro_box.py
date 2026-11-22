@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Retro proposals become Box messages, pass through triage and Author to a ticket, and are tracked through a merged prompt spec change; covers replay and recurrence handling
+# purpose: Tests that retro proposals become Box messages, reach a ticket through triage and Author, are tracked through a merged prompt spec change, and handle replay and recurrence
 # relates: [clutch/__main__.py, clutch/author.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/merge.py]
 # owner: clutch/retro.py
-# verified: d32c32ad
-# hash: 6cb06a3c3ac040059c19b17ab342f0538cc9ed459962238f113c8042aad6622f
+# verified: 7ad3c1c2
+# hash: b9735cf73368eadb868bbfc6f1bb9c4fc61c87609f73644a8a98d493fa1a6efc
 
 import asyncio
 import hashlib
@@ -27,7 +27,7 @@ from clutch.merge import write_squash
 from clutch.retro import Retro, project_window
 from clutch.storm import arrival_id
 from clutch.tickets import validate_ticket
-from tests.integration.test_drain import pause_checkout
+from tests.drain_helpers import pause_checkout
 from tests.integration.test_stages import implement_reply, verdict
 from tests.integration.test_triage import author_reply, reply, requisition_reply, root_with_box
 

@@ -5,8 +5,8 @@
 # purpose: Tests `box triage` and `box dismiss` through the CLI with a scripted provider: verdict records, stale and reopened verdicts, report ingestion, lock contention and escape attribution.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/effects.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/triage.py
-# verified: ae1a5a3b
-# hash: f82df5c832ded2e03aa15457c9b039ef3eca1c9d010fdbafcfe94d51a28626d4
+# verified: 7ad3c1c2
+# hash: b96e1dda0719dc363bd6b826caa17ca71c228ba1f4bf1598d6e1df9b3948c06f
 
 import asyncio
 import json
@@ -21,7 +21,7 @@ from clutch.llm import FakeLLM
 from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import ENV, git_out
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
 from tests.spool_captures import read_capture
 from tests.stage_replies import requisition_reply
 
@@ -408,7 +408,7 @@ def test_reopened_message_bypasses_its_tombstone(tmp_path, monkeypatch, recorded
 async def escape_rig(tmp_path):
     from clutch import runner, stages
     from clutch.tickets import validate_ticket
-    from tests.integration.test_drain import pause_checkout
+    from tests.drain_helpers import pause_checkout
     from tests.integration.test_stages import implement_reply
 
     root, box = root_with_box(tmp_path)

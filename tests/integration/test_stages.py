@@ -5,8 +5,8 @@
 # purpose: Tests the Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts.
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: d32c32ad
-# hash: 1b729836b76b94b7fa30d0a7e16d23cf1390ed468c14ca6e4819ce2deb06bfb7
+# verified: 7ad3c1c2
+# hash: a642a1d84c958785a2e0fcbdb32b88a548fd2518be89597908d16c59712ef10c
 
 import asyncio
 import json
@@ -66,7 +66,7 @@ def register_sample_report(monkeypatch):
 def test_retro_driver_access_is_public_and_read_only(repo):
     from clutch import runner
     from clutch.retro import Retro, RetroConstructionError
-    from tests.integration.test_drain import pause_checkout
+    from tests.drain_helpers import pause_checkout
 
     checkout = pause_checkout(repo)
     writer = runner.bind(checkout, FakeLLM([]))
@@ -834,7 +834,7 @@ def test_scope_fence_refuses_a_plan_edit(repo):
 def test_verification_records_each_command_seconds(repo, monkeypatch):
     from datetime import timedelta
 
-    from tests.integration.test_drain import Clock
+    from tests.drain_helpers import Clock
 
     clock = Clock()
     original = SubprocessExec.run

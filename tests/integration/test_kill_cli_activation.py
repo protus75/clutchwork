@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that a kill sent through the CLI is bound to the running drain's identity, reaches the production driver, is applied once, cleans up atomically, and can be reconciled after a restart.
+# purpose: Tests that a CLI kill is bound to the running drain's identity, reaches the production driver, is applied once, cleans up atomically, and is reconcilable after restart
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 3f3381531968e909564d1c323145edadebd5bdc6bc1b92f93be797b05fbdc52b
+# verified: 7ad3c1c2
+# hash: 0f5b75462b5a25b6428ccd1fe9785542ca0f6861dc33865566ad445419fc9289
 
 import asyncio
 import json
@@ -28,10 +28,9 @@ from clutch.seams import LocalFileSystem
 from clutch.status import last_states
 from tests.cli_helpers import ENV, Clock, Stages, root
 from tests.cli_helpers import write as write_ticket
+from tests.drain_helpers import NoChild, confirmed, offer_events
 from tests.integration.test_control_cli import acquire, discovery, invoke, requests
 from tests.integration.test_daemon_composition import CoreRig, LiveDrain, assert_core_wiring
-from tests.integration.test_drain import confirmed, offer_events
-from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_kill_executor_abort import Timer, Writer, turn
 from tests.integration.test_kill_signal_journal import decision
 from tests.integration.test_stages import agent, implement_reply, verdict

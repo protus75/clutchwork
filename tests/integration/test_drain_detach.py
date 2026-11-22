@@ -4,8 +4,8 @@
 # purpose: Tests that `engine drain --detach` spawns a foreground drain with forwarded config and returns, and that spawn_detached runs the child in its own session and appends its output.
 # relates: [clutch/__main__.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 14505dbc4c42216454ce2277df69cf48d0b77da0dcfb143f2fc09dcb1f143db7
+# verified: 7ad3c1c2
+# hash: c41c78baa07a9e2b28e47089e95cddab431667404ed5656c808492a161e7f982
 import os
 import sys
 from unittest.mock import Mock
@@ -15,7 +15,7 @@ import pytest
 from clutch.__main__ import main
 from clutch.seams import spawn_detached
 from tests.cli_helpers import ENV
-from tests.integration.test_drain import make_root
+from tests.drain_helpers import make_root
 
 pytestmark = pytest.mark.disk_io_skip
 

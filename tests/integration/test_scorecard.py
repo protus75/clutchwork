@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Tests surface scorecard catches, escapes, rates, prune candidates and totals over real check invoices and the production retro composition.
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/retro.py, clutch/scorecard.py, clutch/stages.py]
-# owner: engine
-# verified: d32c32ad
-# hash: c6a3578e8b047cf8b53e0bb69cefba1ed1e55ea8956db9cb8da06239c8593cf7
+# owner: clutch/scorecard.py
+# verified: 7ad3c1c2
+# hash: c7b9be2d3163c6e0e6b7999a8818810ba90a6559116ac265231701522bdf1f94
 
 import asyncio
 import json
@@ -23,7 +23,7 @@ from clutch.retro import RetroArtifact, measurements, production_evidence, proje
 from clutch.scorecard import project_scorecard
 from clutch.stages import PackingSlip, check, implement
 from clutch.tickets import validate_ticket
-from tests.integration.test_drain import confirmed
+from tests.drain_helpers import confirmed
 from tests.integration.test_retro import completed, merged, rig
 from tests.integration.test_stages import implement_reply
 

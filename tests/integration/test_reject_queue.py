@@ -5,8 +5,8 @@
 # purpose: Tests Reject queue arrival, the confirm and reject verdict verbs, premise-bounce accounting and dead-dependency notices through the CLI
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py]
 # owner: clutch/runner.py
-# verified: ae1a5a3b
-# hash: dac3ea4d302284d297739d3a163df300c5bd3763d342090ca7371d544ae8309e
+# verified: 7ad3c1c2
+# hash: c02df4b4a77a2bafa1150437691f01e24a2433a72284f39b64f4fd0168c965ee
 
 import asyncio
 
@@ -22,7 +22,7 @@ from clutch.llm import FakeLLM
 from clutch.stages import StagesRun
 from clutch.status import reject_queue
 from tests.cli_helpers import ENV, git_out
-from tests.integration.test_drain import Clock, Script, commit_ticket, confirmed, drain, journal, make_root
+from tests.drain_helpers import Clock, Script, commit_ticket, confirmed, drain, journal, make_root
 from tests.integration.test_git import commit_lock
 from tests.integration.test_stages import STEM
 from tests.integration.test_terminal import author, clock, diagnosis_reply, implement_reply, repo

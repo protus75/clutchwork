@@ -4,8 +4,8 @@
 # purpose: Tests that an OS signal stops a running drain the same way an accepted kill request does, journals the kill, and restores the signal handlers.
 # relates: [clutch/__main__.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 4a4e3f76bc714d729281ab4cf25d6c42b733ea68abdb98cf62bbeb8591357562
+# verified: 7ad3c1c2
+# hash: 87151cbac01d57ef10ec233018e694d97812bdb9cc32fb1c452cb0cf5bb46985
 import asyncio
 import json
 
@@ -15,7 +15,7 @@ from clutch import __main__ as cli
 from clutch import runner
 from clutch.llm import FakeLLM
 from tests.cli_helpers import ENV
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, root
+from tests.drain_helpers import Clock, commit_ticket, confirmed, journal, root
 from tests.integration.test_stages import agent
 
 pytestmark = pytest.mark.disk_io_skip

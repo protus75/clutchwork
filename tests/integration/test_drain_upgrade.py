@@ -9,8 +9,8 @@ seam is faked to run the child drain in-process, so the whole chain shares one j
 # purpose: Tests the drain self-upgrade re-exec: handoff order, carrying the parked set, deadline and retry budget across the handoff, and the premise_failed park.
 # relates: [clutch/__main__.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/seams.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 6681ab81e98e27d34ade709efc9d86e60d6da1fc9aecf6cc6828bad59545610b
+# verified: 7ad3c1c2
+# hash: f7ae47d83a90d297c57dc89bff16f1809379139b97febf642b1dc4dea9305b24
 
 import asyncio
 import os
@@ -29,7 +29,7 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.seams import SubprocessExec
 from tests.cli_helpers import ENV, git_out, with_retro_driver
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, journal, make_root, retry_draws, tos
+from tests.drain_helpers import Clock, commit_ticket, confirmed, journal, make_root, retry_draws, tos
 
 pytestmark = pytest.mark.disk_io_skip
 

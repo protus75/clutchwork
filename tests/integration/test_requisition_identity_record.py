@@ -5,8 +5,8 @@
 # purpose: Checks that the approval fixture, CLI review, drain dispatch, Author and Rework all record the same 64-hex requisition_verdict input_identity
 # relates: [clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py, tests/integration/test_author.py]
 # owner: clutch/requisition.py
-# verified: ae1a5a3b
-# hash: d68f52735e82d76dfb4be7c48c55e3841d7450d6f18b6d1e850d29a73d71f542
+# verified: 7ad3c1c2
+# hash: 50e4b0593f91ad182f2c1211cfeee1b92a29e7c89ae6b51d1686ff29cd6d2450
 
 import asyncio
 import re
@@ -16,7 +16,7 @@ import pytest
 from clutch.journal import EventType, Journal
 from tests.approval import approve
 from tests.cli_helpers import git_out
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
 from tests.integration.test_mergequeue import ctx  # noqa: F401
 
 pytestmark = pytest.mark.disk_io_skip
@@ -45,7 +45,7 @@ def test_fixture_event_loop_identity(tmp_path):
 def test_cli_dispatch_and_fixture_share_identity(tmp_path, monkeypatch):
     from clutch import runner
     from clutch.llm import FakeLLM
-    from tests.integration.test_drain import pause_checkout
+    from tests.drain_helpers import pause_checkout
     from tests.integration.test_requisition_gate import dispatch, reply
     from tests.integration.test_review_command import run
 
@@ -83,7 +83,7 @@ def test_author_records_identity(tmp_path, monkeypatch):
     from clutch.requisition import review_input_identity
     from clutch.runner import SPECS_DIR
     from clutch.tickets import validate_ticket
-    from tests.integration.test_drain import pause_checkout
+    from tests.drain_helpers import pause_checkout
 
     checkout = pause_checkout(root)
     text = (root / "tickets/repair-thing/ticket.md").read_text()

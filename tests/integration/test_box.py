@@ -4,8 +4,8 @@
 # purpose: Tests the Suggestion Box: signature recipe, enqueue dedup and validation, durability, decision registry format, tombstone re-report reopening and crash replay, and sequence claims
 # relates: [clutch/box.py, clutch/daemon.py, clutch/git.py, clutch/inbox.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 125285b96ab05b60018f279229130b476ec96d8f7639e8dc8e29703decacf6e2
+# verified: 7ad3c1c2
+# hash: 0b10c144dbe82965e5b59d2bbd9778bf274f4540148cf378b8ef9b28a5d53a76
 import asyncio
 import hashlib
 import json
@@ -154,7 +154,7 @@ def test_tombstone_rereports_reopen_at_threshold(tmp_path, monkeypatch):
     from clutch.daemon import storm_producer
     from clutch.journal import EventType, Journal
     from clutch.llm import FakeLLM
-    from tests.integration.test_drain import Clock, commit_ticket, confirmed
+    from tests.drain_helpers import Clock, commit_ticket, confirmed
     from tests.integration.test_triage import reply, root_with_box, run
 
     root, _ = root_with_box(tmp_path)
@@ -216,7 +216,7 @@ def test_tombstone_rereports_reopen_at_threshold(tmp_path, monkeypatch):
 def test_tombstone_reopen_requires_journal_callback(tmp_path, monkeypatch):
     from clutch.box import RereportCallbackRequired, RereportJournal
     from clutch.journal import Journal
-    from tests.integration.test_drain import Clock
+    from tests.drain_helpers import Clock
 
     box = Box(tmp_path / "box", LocalFileSystem())
     id, _ = box.enqueue(message_class="suggestion", origin="test", summary="same")
@@ -254,7 +254,7 @@ def test_tombstone_reopen_requires_journal_callback(tmp_path, monkeypatch):
 def test_rereport_crash_replay_counts_and_reopens_once(tmp_path, monkeypatch, point, after):
     from clutch.daemon import storm_producer
     from clutch.journal import EventType, Journal
-    from tests.integration.test_drain import Clock
+    from tests.drain_helpers import Clock
 
     class Crash(BaseException):
         pass
@@ -306,7 +306,7 @@ def test_rereport_crash_replay_counts_and_reopens_once(tmp_path, monkeypatch, po
 def test_late_rereport_replay_preserves_later_arrival_count(tmp_path, monkeypatch, after):
     from clutch.daemon import storm_producer
     from clutch.journal import Journal
-    from tests.integration.test_drain import Clock
+    from tests.drain_helpers import Clock
 
     clock = Clock()
     box = storm_producer(root=tmp_path / "box", fs=LocalFileSystem(), journal=Journal(tmp_path, clock), clock=clock)

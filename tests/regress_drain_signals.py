@@ -5,8 +5,8 @@
 # purpose: Standalone reproducer that checks a stop signal during a drain logs a killed `engine_stop` record.
 # relates: [clutch/__main__.py, clutch/llm.py, clutch/runner.py, tests/integration/test_cli.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 5fba6c37b1f18f7a3207406858fdfadc1706fbc46133b76eb864e82face599c4
+# verified: 7ad3c1c2
+# hash: 58e6e1e15add61f4d429c08351d833fa4f7084ff4e0f77a2c98e49cd06d7021f
 
 import asyncio
 import contextlib
@@ -25,7 +25,7 @@ def main():
         from clutch import runner
         from clutch.llm import FakeLLM
         from tests.cli_helpers import ENV
-        from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+        from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
         from tests.integration.test_stages import agent
 
         temporary = tempfile.TemporaryDirectory()

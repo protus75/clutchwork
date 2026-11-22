@@ -5,8 +5,8 @@
 # purpose: Tests that a dispatch exception is contained to its ticket as infra_error, keeps a single terminal, and reaches the Reject queue once caps are spent.
 # relates: [clutch/caps.py, clutch/config.py, clutch/journal.py, clutch/status.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d32c32ad
-# hash: 055d569f8ef7fad7730ba5486bee30842d4b8ac9c7a4a903dbb7e4fbaa736dc6
+# verified: 7ad3c1c2
+# hash: 735f9f80fbd9d94e93ccec140e4b172d6ffbb58b78717d65de4f2d5e33362930
 
 import pytest
 
@@ -14,7 +14,7 @@ from clutch import caps
 from clutch.config import Caps
 from clutch.journal import TERMINAL_STATES, EventType
 from clutch.status import reject_queue
-from tests.integration.test_drain import Script, commit_ticket, confirmed, drain, journal, make_root
+from tests.drain_helpers import Script, commit_ticket, confirmed, drain, journal, make_root
 
 pytestmark = pytest.mark.disk_io_skip
 

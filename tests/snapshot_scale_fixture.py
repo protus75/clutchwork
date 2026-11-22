@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Construct an incident-sized, deterministic snapshot host.
+# purpose: Builds a deterministic, incident-sized snapshot host repo with many tickets, merges, journal events and Box messages.
 # relates: [clutch/box.py, clutch/git.py, clutch/seams.py, tests/integration/test_config.py, tests/integration/test_drain.py]
 # owner: engine
-# verified: d7719818
-# hash: 495527e89de65abb6dbd287bf8508554887c777ffefd996bccf9428227793a51
+# verified: 7ad3c1c2
+# hash: 32d3b9efa95b211bba2706b3ee2f6211ee6b38973bfd18a4520b7f1560524971
 
 import json
 import subprocess
@@ -15,8 +15,8 @@ from pathlib import Path
 from clutch.box import Box
 from clutch.git import blob_sha
 from clutch.seams import LocalFileSystem
+from tests.drain_helpers import confirmed
 from tests.integration.test_config import VALID
-from tests.integration.test_drain import confirmed
 
 
 def git(root, *args, input=None):

@@ -5,8 +5,8 @@
 # purpose: Checks that the snapshot menu table's enabled states match what the real ticket and box verbs admit, across ticket states and lock-held cases
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/lockfile.py, clutch/observe.py, clutch/reconcile.py]
 # owner: clutch/observe.py
-# verified: ae1a5a3b
-# hash: afa964e91cce7a175475a130231364ae1a5ad1a424e6aa4c76567dce7986a808
+# verified: 7ad3c1c2
+# hash: 1f9ca92b006bfc9b12f83fe62281ea9888600fe51093296754464e28c4587220
 
 import asyncio
 from types import SimpleNamespace as NS
@@ -23,7 +23,7 @@ from clutch.journal import EventType, Journal
 from clutch.lockfile import Lockfile
 from clutch.seams import LocalFileSystem, SubprocessExec
 from tests.cli_helpers import ENV
-from tests.integration.test_drain import Clock, confirmed, make_root
+from tests.drain_helpers import Clock, confirmed, make_root
 from tests.integration.test_git import commit_lock
 
 pytestmark = pytest.mark.disk_io_skip

@@ -4,8 +4,8 @@
 # purpose: Integration tests for operator prompt rendering: stem, ticket path and state dir substitution, host_notes data block, missing-ticket refusal, no state writes, box and drafts prompts
 # relates: [clutch/__main__.py, clutch/ask.py, clutch/box.py, clutch/config.py, clutch/seams.py, clutch/specs/__init__.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 61889bdba9ce06cbd9c24e6becfad67422257a2a4f9e2d672a387254004ed01a
+# verified: 7ad3c1c2
+# hash: 2639d6054d8115658ab1bd12fc9394b0513341f48663bd2c9abebd58aabca059
 from pathlib import Path
 
 import pytest
@@ -87,7 +87,7 @@ def test_box_prompt_unknown_id_refuses(config, tmp_path, capsys):
 
 def test_drafts_prompt_selects_committed_drafts(tmp_path, capsys):
     from tests.cli_helpers import git_out
-    from tests.integration.test_drain import confirmed, make_root
+    from tests.drain_helpers import confirmed, make_root
 
     root = make_root(tmp_path)
     for stem, state in (("committed-draft", "draft"), ("confirmed-ticket", "confirmed"), ("untracked-draft", "draft")):

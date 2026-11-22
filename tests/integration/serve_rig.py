@@ -5,8 +5,8 @@
 # purpose: Shared rig for continuous serve graph integration tests: builds the serve graph, scripts stages and model replies, and provides admission, control, notify, upgrade and retro scenario helpers.
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/driver.py, clutch/journal.py, clutch/llm.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 79b27a9354daea08238535b691b8b64b908f0e7459b88c5a0a4843d8baaed35f
+# verified: 7ad3c1c2
+# hash: 504b52cb4d9d77ae83c001586e3982c925c6c3c6ea2fa008df27dd575fbec491
 
 import asyncio
 import json
@@ -57,7 +57,7 @@ async def graph(root, monkeypatch, **kwargs):
 
 def write(root, stem, text):
     from tests.approval import approve
-    from tests.integration.test_drain import Clock
+    from tests.drain_helpers import Clock
 
     write_ticket(root, stem, text)
     approve(root, stem, Clock())

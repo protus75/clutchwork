@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that intake scoped to named stems, and the named ticket verbs, leave other pending or staged tickets untouched.
+# purpose: Tests that intake scoped to named stems, and the named ticket verbs, leave other pending or staged tickets untouched
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/seams.py, clutch/tickets.py, tests/integration/test_cli.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: bda2afc1482315807df8fe101cc5df469d60115f799cb1667c2b58c2d2151cca
+# verified: 7ad3c1c2
+# hash: 5e9243799b3f00511af06c7c50af5d915cdba23ae15f3c7572a2739c87dae14f
 import asyncio
 
 import pytest
@@ -16,7 +16,7 @@ from clutch.llm import FakeLLM
 from clutch.seams import LocalFileSystem
 from clutch.tickets import intake
 from tests.cli_helpers import ENV, Clock, Stages, git_out, ticket, write
-from tests.integration.test_drain import make_root
+from tests.drain_helpers import make_root
 from tests.integration.test_review_command import reply
 from tests.integration.test_tickets import VALID, repo
 

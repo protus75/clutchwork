@@ -5,8 +5,8 @@
 # purpose: Checks capability-ladder escalation, Reject-queue routing with automatic keep, and rework split or escalation through the production drain
 # relates: [clutch/__main__.py, clutch/caps.py, clutch/config.py, clutch/git.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, tests/approval.py]
 # owner: engine
-# verified: d32c32ad
-# hash: ba1a87a58cdafd61498ee104898ee9beef31e3313c2bf145d5d7a7dfee898650
+# verified: 7ad3c1c2
+# hash: acd943a6b60128941c339471b595220c699bff934350a9a4b5f7c6b471553f32
 
 import json
 
@@ -18,7 +18,7 @@ from clutch.caps import consume, draws, next_rung, remaining
 from clutch.config import load_config
 from clutch.journal import EventType, Journal
 from clutch.llm import FakeLLM
-from tests.integration.test_drain_reentry import NoChild
+from tests.drain_helpers import NoChild
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, repo  # noqa: F401 -- fixture
 

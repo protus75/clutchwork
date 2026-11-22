@@ -5,8 +5,8 @@
 # purpose: Tests that the pause checkpoint runs before dispatch and config capture, never preempts active work, releases only on a matching resume, leaves no dispatch on failure or cancellation, and is active in production wiring
 # relates: [clutch/__main__.py, clutch/config.py, clutch/control.py, clutch/daemon.py, tests/integration/test_cli.py, tests/integration/test_control.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 7e4fb7b844d69e22baae24c35effae36767e65c3df9cd7686b0f77c3a8d2338f
+# verified: 7ad3c1c2
+# hash: b3c19d826106e0b77a85de198ced241ca759fc007bf85195293c3d1471cb170d
 
 import asyncio
 
@@ -17,10 +17,10 @@ from clutch.__main__ import main
 from clutch.config import load_config
 from clutch.daemon import DaemonAdmission, snapshot_dispatch
 from tests.cli_helpers import CONFIG, ENV, Clock, root, ticket, write
+from tests.drain_helpers import Script, journal
 from tests.integration.test_control import Rig
 from tests.integration.test_daemon_admission import assert_idle, tickets, turn
 from tests.integration.test_daemon_composition import CoreRig, assert_core_wiring, assert_startup_pause_wiring
-from tests.integration.test_drain import Script, journal
 
 pytestmark = pytest.mark.disk_io_skip
 

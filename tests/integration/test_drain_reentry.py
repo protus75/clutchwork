@@ -10,8 +10,8 @@ written. The production stage pipeline runs behind a scripted FakeLLM.
 # purpose: Tests that a re-offered ticket renders the prior attempt's review or check findings in criteria position without writing ticket.md.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/journal.py, clutch/llm.py, clutch/runner.py, clutch/seams.py, clutch/specs/__init__.py]
 # owner: engine
-# verified: d32c32ad
-# hash: e115c99a4b48fcdd34c9b5be582e31621d98dece68b21376d3a3fac565dc563b
+# verified: 7ad3c1c2
+# hash: e47f20ccaedbd6a8b6a4815aa1ea8b5ecc75a8c5fd2a5b26b95afa3cf2d64f25
 
 from pathlib import Path
 
@@ -26,26 +26,12 @@ from clutch.llm import FakeLLM
 from clutch.seams import LocalFileSystem
 from clutch.specs import data_close, data_open
 from clutch.stages import PRIOR_ATTEMPTS
+from tests.drain_helpers import NoChild
+from tests.drain_helpers import reentry_drain as drain
 from tests.integration.test_stages import ENV, SNAG, STEM, agent, git, verdict
 from tests.integration.test_terminal import author, clock, diagnosis_reply, repo, transitions  # noqa: F401 -- `repo` is the fixture
 
 pytestmark = pytest.mark.disk_io_skip
-
-
-class NoChild:
-    """The merge admits `clutch/thing.py`, a self-upgrade: the handoff's re-exec is faked to a quiescent child."""
-
-    async def run(self, argv, *, cwd, env, timeout, stdin_path=None):
-        return 0, "", ""
-
-
-def drain(repo: Path, script: list, *, green_base: bool = True) -> tuple[int, FakeLLM]:
-    if green_base:
-        (repo / "clutch" / "thing.py").write_text("ok base\n")
-        git(repo, "commit", "-am", "green verification base")
-    llm = FakeLLM(script)
-    code = main(["engine", "drain"], cwd=repo, env=ENV, clock=clock, pipeline=lambda c: runner.bind(c, llm), reexec=NoChild())
-    return code, llm
 
 
 def implements(llm: FakeLLM) -> list[str]:

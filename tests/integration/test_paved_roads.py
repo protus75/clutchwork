@@ -4,8 +4,8 @@
 # purpose: Checks that refusal and failure messages (reject queue, halted drain, box errors, retro failures) name a working paved-road verb or repair
 # relates: [clutch/box.py, clutch/journal.py, clutch/seams.py, tests/integration/test_cli.py, tests/integration/test_drain.py, tests/integration/test_retro.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: ff7c5d855ffad7d1bbaa6433506184bf60cc6d7a59ed286145ffbed7526a5f53
+# verified: 7ad3c1c2
+# hash: 03453a6be18d9d50ef11a1839a1bbc17dde1643a2f7dadb204adbe842a5c20db
 import asyncio
 from datetime import timedelta
 
@@ -15,7 +15,7 @@ from clutch.box import Box, BoxError, Resolution, read_registry
 from clutch.journal import EventType
 from clutch.seams import LocalFileSystem
 from tests.cli_helpers import ticket, write
-from tests.integration.test_drain import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root
+from tests.drain_helpers import START, Clock, Script, commit_ticket, confirmed, drain, journal, make_root
 from tests.integration.test_retro import merged, rig
 
 pytestmark = pytest.mark.disk_io_skip

@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: ae1a5a3b
-# hash: 3f8e74b290cde5ed4b1e32ebee8530b41c8aeddb3bc90ea8bd7ae59d2fc4499c
+# verified: 7ad3c1c2
+# hash: 4f8b38912c12817b36b24ec2505198ea2f70b1d60e86479b8ed407833909a848
 
 import ast
 import asyncio
@@ -1334,7 +1334,7 @@ async def test_production_refuses_failed_rework_publication(admission_context, m
         assert await ctx.git.status_porcelain(ctx.repo) == ""
         # A later ordinary drain must not intake a leaked machine proposal as human work.
         from clutch.drain import drain
-        from tests.integration.test_drain_reentry import NoChild
+        from tests.drain_helpers import NoChild
 
         intake_before = [e for e in events if e.body.get("signal") == INTAKE_SIGNAL]
         for _ in range(ctx.config.caps.retry - caps.draws(events, ticket.stem, "retry")):
@@ -1392,7 +1392,7 @@ class LiveDrain:
         from clutch.lockfile import Lockfile, LockHeld
         from clutch.seams import LocalFileSystem, SubprocessExec
         from tests.cli_helpers import ENV as checkout_env
-        from tests.integration.test_drain import Clock, journal
+        from tests.drain_helpers import Clock, journal
 
         process = SubprocessExec()
         self.checkout = runner.Checkout(
@@ -1488,7 +1488,7 @@ class LiveDrain:
 
     async def run(self, dispatch=None, reexec=None, before_dispatch=None):
         from clutch.drain import drain
-        from tests.integration.test_drain_reentry import NoChild
+        from tests.drain_helpers import NoChild
 
         async def callback(ticket):
             self.calls.append(ticket.stem)
@@ -1503,7 +1503,7 @@ class LiveDrain:
 @pytest.mark.parametrize("kind", ["fresh", "retry", "machine-keep", "empty"])
 async def test_live_drain_pause_blocks_all_offer_accounting(root, monkeypatch, kind):
     from clutch.control import CONTROL_DECISION
-    from tests.integration.test_drain import confirmed, offer_events
+    from tests.drain_helpers import confirmed, offer_events
 
     live = LiveDrain(root, monkeypatch)
     c = live.checkout
@@ -1546,7 +1546,7 @@ async def test_live_drain_pause_blocks_all_offer_accounting(root, monkeypatch, k
 @pytest.mark.asyncio
 @pytest.mark.parametrize("change", ["caps", "retire", "priority", "retry", "premise"])
 async def test_live_drain_resume_rechecks_selection_and_caps(root, monkeypatch, change):
-    from tests.integration.test_drain import confirmed, offer_events
+    from tests.drain_helpers import confirmed, offer_events
 
     live = LiveDrain(root, monkeypatch, pause=False)
     c = live.checkout
@@ -1597,7 +1597,7 @@ async def test_live_drain_resume_rechecks_selection_and_caps(root, monkeypatch, 
 @pytest.mark.parametrize("exit", ["normal", "failure", "cancel", "cancel-held", "handoff"])
 async def test_control_lifecycle_cleanup_on_exit_and_handoff(root, monkeypatch, exit):
     from clutch.lockfile import Lockfile
-    from tests.integration.test_drain import confirmed
+    from tests.drain_helpers import confirmed
 
     if exit == "handoff":
         from clutch import drain as drain_mod
@@ -1755,7 +1755,7 @@ async def test_production_pause_defers_snapshot_and_effects_without_preempting(t
 async def test_pause_activation_observables_detect_removed_bindings(root, monkeypatch, binding):
     """Calibrate positive production assertions by breaking their actual binding."""
     from clutch.control import ControlProjection
-    from tests.integration.test_drain import confirmed
+    from tests.drain_helpers import confirmed
 
     live = LiveDrain(root, monkeypatch)
     c = live.checkout
@@ -2023,7 +2023,7 @@ async def test_composed_admission_holds_accept_identity_bound_resume(admission_c
 
 @pytest.mark.parametrize("verb", ["run", "drain"])
 def test_bootstrap_inline_admission_never_holds(admission_context, monkeypatch, verb):
-    from tests.integration.test_drain_reentry import NoChild
+    from tests.drain_helpers import NoChild
     from tests.integration.test_stages import STEM, TICKET, agent, verdict
 
     source = admission_context
@@ -2103,8 +2103,8 @@ async def test_production_boxes_receive_rereport_callback(admission_context, tmp
     from clutch.providers import ProviderCallError
     from clutch.retro import Retro
     from clutch.triage import triage_pass
+    from tests.drain_helpers import NoChild
     from tests.integration.serve_rig import graph
-    from tests.integration.test_drain_reentry import NoChild
     from tests.integration.test_retro_box import PROPOSAL
     from tests.integration.test_storm_notification_activation import SITES, exercise_site
 

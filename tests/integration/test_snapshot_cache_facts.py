@@ -3,9 +3,9 @@
 # kind: test
 # purpose: Tests that the observe snapshot opens the journal cache once, checks only candidate tickets for holds, and matches the full-history reference.
 # relates: [clutch/git.py, clutch/observe.py, clutch/seams.py, clutch/status.py, tests/integration/test_config.py, tests/integration/test_drain.py]
-# owner: engine
-# verified: d32c32ad
-# hash: b8a27a7891b4f9ccf2c5fb9473789593922e6efd4adf6be3d4f631894538c8f3
+# owner: clutch/observe.py
+# verified: 7ad3c1c2
+# hash: cd3c498cb6eeb8fd0870b047e2088c551b234b5e64427b7b63bb7e5c3b3fcdbe
 import json
 import os
 from datetime import datetime
@@ -16,8 +16,8 @@ import pytest
 from clutch import observe, status
 from clutch.git import Git, blob_sha
 from clutch.seams import SubprocessExec
+from tests.drain_helpers import confirmed
 from tests.integration.test_config import VALID
-from tests.integration.test_drain import confirmed
 from tests.snapshot_scale_fixture import git
 
 pytestmark = pytest.mark.disk_io_skip

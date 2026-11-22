@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests `clutch ticket review`: it reviews the committed ticket, journals the verdict, handles the checkout and commit locks, provisional dependencies, prior findings and intake of only the named ticket
+# purpose: Tests `clutch ticket review`: it reviews the committed ticket, journals the verdict, handles checkout and commit locks, provisional dependencies, prior findings and named-only intake
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/reconcile.py, clutch/requisition.py, clutch/status.py]
 # owner: clutch/__main__.py
-# verified: ae1a5a3b
-# hash: 8b31ed1e561f1d9e98fc05df512f24a8f180f0a5492211ac919d7d3296f24ded
+# verified: 7ad3c1c2
+# hash: d7ed63dbdd1696d6436d69f60691f421734b590694aadf4ecb08d7dda0106c34
 
 import pytest
 
@@ -18,7 +18,7 @@ from clutch.reconcile import orphans
 from clutch.requisition import FIRST_REVIEW
 from clutch.status import last_states
 from tests.cli_helpers import ENV, git_out, ticket, write
-from tests.integration.test_drain import Clock, commit_ticket, confirmed, make_root
+from tests.drain_helpers import Clock, commit_ticket, confirmed, make_root
 from tests.stage_replies import requisition_reply as reply
 
 pytestmark = pytest.mark.disk_io_skip

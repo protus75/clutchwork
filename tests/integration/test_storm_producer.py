@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests that Box arrivals record storm occurrences in order, that dedup preserves stored messages, that invalid arrivals publish nothing, and that the production composition wires the producer.
+# purpose: Tests that Box arrivals record storm occurrences in order, dedup preserves stored messages, invalid arrivals publish nothing, and the production composition wires the producer.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/control.py, clutch/daemon.py, clutch/effects.py, clutch/journal.py, clutch/llm.py, clutch/runner.py]
 # owner: clutch/daemon.py
-# verified: d32c32ad
-# hash: 28ddb2197d5fbc70f5091f8246c23ba222983dae0e392e86bf35e8fca24e6681
+# verified: 7ad3c1c2
+# hash: e0e41b27786f99e0469257071e381d78ef9c8770954db4dbf30a1c9e7ba4863f
 
 import json
 from dataclasses import asdict
@@ -23,8 +23,8 @@ from clutch.journal import EventType, Journal, JournalCorruption
 from clutch.llm import FakeLLM
 from clutch.seams import LocalFileSystem
 from clutch.storm import StormLedger
+from tests.drain_helpers import NoChild
 from tests.integration.test_daemon_composition import CoreRig
-from tests.integration.test_drain_reentry import NoChild
 from tests.integration.test_journal import T0, FakeClock
 from tests.integration.test_mergequeue import ctx as admission_context  # noqa: F401
 from tests.integration.test_stages import STEM, TICKET, agent, verdict

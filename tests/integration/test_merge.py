@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
+# purpose: Tests merge admission against a temp repo: squash with trailers, dirty-checkout and gate refusals, outbox-only admissions, the retro spec bridge, and core drift
 # relates: [clutch/__main__.py, clutch/artifacts.py, clutch/audit.py, clutch/box.py, clutch/checkpoint.py, clutch/config.py, clutch/driver.py]
 # owner: clutch/merge.py
-# verified: ae1a5a3b
-# hash: fe48cfd3a2b9c17fa9715ddf30b2845fcf10afb0d15708f5534ff7c7db1d5ab7
+# verified: 7ad3c1c2
+# hash: d6287dfaba4f8b480e874081a384856329d8d03c608d61b3083074fffd33e732
 
 import asyncio
 import dataclasses
@@ -194,7 +194,7 @@ def test_bootstrap_pipeline_keeps_inline_admission(repo, monkeypatch, verb):
         assert asyncio.run(pipeline(checkout)(ticket)) == "merged"
     else:
         from clutch.__main__ import main
-        from tests.integration.test_drain_reentry import NoChild
+        from tests.drain_helpers import NoChild
 
         assert main(["engine", "run", STEM] if verb == "run" else ["engine", "drain"], cwd=repo, env=ENV, clock=checkout.clock, pipeline=pipeline, reexec=NoChild()) == 0
     [(ctx, original_ticket, attempt)] = calls
