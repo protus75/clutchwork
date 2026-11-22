@@ -1,0 +1,5 @@
+{"ts": "2026-11-22T02:11:45.086965+00:00", "event": "stage_end", "stem": "serve-flaky-tests-deterministic", "attempt": 1, "surface": "implement", "outcome": "ok", "run_seq": 1, "calls": 1}
+{"ts": "2026-11-22T02:11:52.441851+00:00", "event": "stage_start", "stem": "serve-flaky-tests-deterministic", "attempt": 1, "surface": "check"}
+{"ts": "2026-11-22T02:11:57.202171+00:00", "event": "worker_failure", "error": "stage already open: stem=serve-flaky-tests-deterministic, surface=check"}
+{"ts": "2026-11-22T02:11:57.388334+00:00", "event": "serve_cleanup_failed", "error": "stage already open: stem=serve-flaky-tests-deterministic, surface=check"}
+{"ts": "2026-11-22T02:11:57.437426+00:00", "event": "engine_stop", "verb": "serve", "pid": 828943, "outcome": "error: ValueError"}
