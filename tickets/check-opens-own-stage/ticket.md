@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 - check-meta-fill-nested-stage
 
+## Runs before
+- supervisor-orders-by-depends
+
 ## Context
 - clutch/stages.py::check
 - clutch/stages.py::check_meta
