@@ -1,23 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "4f1940a128dc48dc197b07681351565559a8929e",
+  "produced_at_sha": "85073f06cacacd2b5a7b4e60ef8c3836200e811f",
   "stem": "shared-git-fake-integration",
-  "attempt": 1,
+  "attempt": 2,
   "terminal": "premise_failed",
   "stage": "implement",
-  "verdict": "reject",
-  "lessons": [
-    "The premise is false: this ticket claims to be the last in the chain, but PENDING still names five files outside the fence: tests/integration/test_retry_keeps_branch.py:20, tests/integration/test_serve_verdict_orphan_sweep.py:39, tests/unit/test_check_meta_fill.py:26 and :65,",
-    "Deleting PENDING and its checks (Scope in, criteria 1 and 3) makes the scan fail on those five files. Fixing them would mean edits outside the Scope fence, which Definition of rejected forbids. As written, the ticket cannot pass.",
-    "Re-author the ticket in one of two ways. Option 1: add the five files to the Scope fence and Scope in, with their stand-in counts (1, 1, 2, 1, 1). Option 2: file a separate migration ticket for them and list it under ## Depends on.",
-    "The run found that the dependency already migrated the nine FakeGit unit files. Check that against main before re-authoring, and keep only the FakeGit/fake_git deletions and the fourth scan pattern if that work is already done."
-  ],
-  "mechanical": null,
-  "trimmed_lessons": [
-    0
-  ],
+  "verdict": "abandon-human",
+  "lessons": [],
+  "mechanical": "premise_bounce cap spent",
+  "trimmed_lessons": [],
   "spec_version": "1.10",
-  "provider": "claude",
-  "model": "claude-opus-5-5"
+  "provider": null,
+  "model": null
 }
