@@ -1,22 +1,19 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ed605bece6f7cd8996e59b5a88dd2f5cbebb3fb9",
+  "produced_at_sha": "926f6cdde91666d92ebf8e0bfa058b3d0aa5154c",
   "stem": "io-helpers-loop",
-  "attempt": 4,
+  "attempt": 5,
   "terminal": "incomplete",
   "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "False premise: Scope in says the five moved serve_rig.py functions call no stay-behind name, but admission_graph calls terminals() (tests/integration/serve_rig.py:260) and enable_upgrade builds UpgradeChild (serve_rig.py:354). Both names stay in serve_rig.py and loop_helpers may not import",
-    "Revise the ticket so terminals and UpgradeChild also move into tests/loop_helpers.py. Re-export them in serve_rig.py and add them to the Scope in list, criterion 3 and the unit tests. Otherwise admission_graph and enable_upgrade cannot move without an import cycle.",
-    "notify_command writes a sys.executable script through amend_config. The ticket must say which in-process command and which FakeExec wiring replaces it, plus where amend_config comes from (it must not be an integration test file). Read serve_rig.py:298-310 before rewriting the ticket.",
-    "Attempt 4 stopped after 85s with an empty diff because of the 26 names and 48 importers. Consider splitting by hub: one ticket per hub, moving that hub's names and their importers together. Each name still resolves in one place, so the claim against splitting does not hold."
+    "False premise: Scope in says the five moved serve_rig.py functions call none of the names that stay behind. But serve_rig.py:260 admission_graph calls terminals(), and serve_rig.py:354 enable_upgrade builds UpgradeChild. Both stay in serve_rig.py, which tests/loop_helpers.py must never import.",
+    "Re-author the ticket so it states where terminals and UpgradeChild live. One option: move both to tests/loop_helpers.py, and serve_rig.py imports them back. Another: keep admission_graph and enable_upgrade in serve_rig.py. Then fix acceptance criteria 2 and 3 to match.",
+    "The run gave up after 62s of reading on attempt 5 with no diff. A retry on the current text will stall again, because the cycle ban and the 'call none' claim contradict serve_rig.py as merged."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    0
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
