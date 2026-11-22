@@ -1,18 +1,19 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The combined verification passed on the base commit; on the candidate, the timeout test failed both alone and in the required full rerun. The carried reproducer passed, and restoring either old deadline separately made it report the defect. A suggestion for repository-wide deadline lint was filed as box-000001-03a67f3f.
+The first combined verification run failed intermittently: its journal showed startup reconciliation abandoning a ticket while confirmation was in progress, after the preceding serve stopped cleanly. Base verification, isolated candidate reruns, and the required full candidate rerun passed. The carried reproducer caught both restored deadlines. Full integration passed 3,595 tests; lint and format passed. The coverage gate was skipped because the diff changes no files it measures. A suggestion for assessing deadline lint was filed as box-000001-0a56d8ae.
 
 ## Dead ends
 
-The existing test expects serve_rig.until to time out while the ticket requires that wait to be unbounded.
+Raising timeout values was rejected because it would only move the load threshold at which the failures recur.
 
 ## Second problems filed
 
-none
+- box-001057-8010d6da: Startup reconciliation can race with draft confirmation and mark a ticket abandoned, as observed in the first candidate verification run.
+- box-001058-099e50c3: Two admission cases hit the global test timeout during the first combined run, then passed in isolation and on the required full rerun.
 
 ## Resolved engine/model
 
@@ -22,5 +23,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; completion was blocked by the conflicting test.
+Ticket estimate: 25 minutes expected, 50 minutes stuck; work completed within the expected budget.
 
