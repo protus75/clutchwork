@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-Renamed private hub reachability helpers to satisfy the definition scan while preserving their assertions; retained composition’s scheduler import_closure. Final sequential verification: 24 helper unit cases, 2032 unit tests, and 296 integration tests passed. Untouched base: 294 integration passes; skips unchanged at 3339. All 26 mutation checks caught their intended defects; lint and formatting passed.
+Preserved the prior extraction. Final sequential verification passed: 29 helper cases, 2037 unit tests, and 296 integration tests with 3339 skipped; base had 294 integration passes and 3339 skipped. All 32 mutation checks and five compatibility checks passed. Lint and formatting passed; engine-owned run.md was untouched.
 
 ## Dead ends
 
-A direct extraction would retain forbidden I/O, so the helpers required fake-seam rewrites.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-30m expected; actual elapsed time was not tracked.
+30m expected; retry completed within budget.
 
