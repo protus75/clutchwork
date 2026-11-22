@@ -1,14 +1,14 @@
 ## Outcome
 
-incomplete
+premise_failed
 
 ## Surprises / judgment calls
 
-The existing admission_graph calls the stay-behind terminals helper, and enable_upgrade constructs the stay-behind UpgradeChild; the migration needs to account for both without importing serve_rig.
+The existing notification tests rely on the command recording each delivery and returning a failure when notify-fails exists; FakeExec.run only records argv and returns one fixed result.
 
 ## Dead ends
 
-none
+Checked the notification consumers and shared fake for an existing dispatch seam; none is available, and the ticket explicitly requires stopping when a shared fake lacks needed behavior.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget is 30 minutes expected and 60 minutes stuck; the work was not completed.
+none
 
