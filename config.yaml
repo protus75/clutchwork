@@ -64,6 +64,7 @@ merge: {}
 drain:
   max_ticket_minutes: 180  # raised from the shipped 90 to admit the Phase 2 seeds' largest stuck budget (section 18)
 caps:
+  quarantine: 8  # owner 2026-11-22: 5 slots full (3 owned by serve-flaky-tests-deterministic); new load flakes failed every Check
   premise_bounce: 2  # a fixed ticket.md re-offers a premise park without an operator keep; the second bounce still needs one
 engine_plane_safety_inventory: [clutch/specs/, clutch/gates.py, clutch/config.py, clutch/providers.py, config.yaml, test-gate.toml]
 
