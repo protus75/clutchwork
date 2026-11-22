@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "044f927c6608c4c384706628778c656d194738b2",
+  "stem": "shared-review-script",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "Check failed only on ruff E731 at tests/unit/test_stage_replies.py:41: `callback = lambda request: request`. Replace it with a nested `def callback(request): return request` inside test_script_order_and_passthrough, keeping the identity assert for the `implement` passthrough (criterion 3).",
+    "Before committing, run `uv run ruff check .` and `uv run ruff format --check .` as well as the ## Verification command. The gate runs all three on the rebased candidate; the tests and format check already passed on this attempt.",
+    "Change nothing else: the other 8 fenced files already passed the Verification command (6 passed, 191 skipped) and ruff format. Keep the builders byte-identical and leave existing script sequences unchanged, per ## Definition of rejected."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
