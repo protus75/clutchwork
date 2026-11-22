@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "1683531b7955a43aa315e242ee43618bc4454999",
+  "stem": "steps-view-unknown-kind",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false: the ticket needs a Node subprocess in tests/integration/test_step_view_unknown_kind.py, but tests/integration/conftest.py guards every file not listed in REAL_IO_TESTS. That conftest is outside the fence, and this is a rendering test, not a real-I/O test.",
+    "Criteria 1-2 fail either way: unguarded, the test raises IntegrationIOBlocked; marked disk_io_skip, it is skipped, so the Verification command can never pass as written.",
+    "Criterion 3 is also unverifiable: the run record says tests/integration/test_step_icons.py (the Node icon harness) is skipped under the current integration configuration, so it no longer proves every STEP_KINDS entry has its own icon.",
+    "Before re-filing, name an approved way to run the JS harness (for example, a REAL_IO_TESTS entry the test policy allows, or a Node test runner outside pytest integration), and fence its owning files, such as tests/integration/conftest.py.",
+    "Keep the extension.js change as specified: unknown kind gives ThemeIcon 'warning' and description 'cannot draw the clutch snapshot: unknown step kind <kind>', and known kinds stay unchanged. Only the test plan and fence need rework."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
