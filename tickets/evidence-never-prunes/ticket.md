@@ -18,6 +18,8 @@ kind: feature
 - tests/unit/test_evidence_config.py
 - tests/unit/test_main_evidence_group.py
 - tests/unit/test_main_host_group.py
+- tests/unit/test_main_view_group.py
+- tests/unit/test_host_running.py
 
 ## On-demand
 - clutch/__main__.py
@@ -87,6 +89,9 @@ Scope in:
 - Tests: update `tests/unit/test_evidence_config.py` to the new name; extend the verb set in `tests/unit/test_main_evidence_group.py` with `prune`; add new test files named below.
 - Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 
+- `tests/unit/test_main_view_group.py`: its fake config in `test_dispatch_and_optional_locks` gains `evidence=SimpleNamespace(warn_gb=20)`; `view status` output stays exactly `rendered projection\n` for an empty store under the threshold.
+- The `clutch/docs/host-running.md` verb row is written as `| `evidence prune` | No | ... |`: the backticked cell is exactly `group verb` (no `--to-gb N` inside it), as `tests/unit/test_host_running.py::test_verb_table_matches_parser` requires; one row only.
+- Before handing off, run the full `./dev.py test`, not only the Verification files.
 Scope out:
 - No extension, snapshot or `clutch/help.py` surface; the warning is a CLI-only line and row. If an implementer finds the snapshot needs a change, stop and report instead.
 - No change to `prune`'s walk rules, blob layout, record schema, training export, or `config.yaml` (it does not set the key).
@@ -108,6 +113,7 @@ Simpler approach rejected: reusing a doctor-only check without `size_warning` le
 - tests/unit/test_main_evidence_group.py
 - tests/unit/test_evidence_warn_threshold.py
 - tests/unit/test_evidence_prune_verb.py
+- tests/unit/test_main_view_group.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_evidence_warn_threshold.py` proves that a `CliAdapter.invoke` call run through the `Rig` fake with the store's `size` reporting over `warn_gb` leaves a pre-seeded old blob file present, not removed as the old automatic prune did.
