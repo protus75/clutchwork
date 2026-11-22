@@ -86,6 +86,7 @@ Scope in:
 - port the intake, verdict, watcher publication and admission paths named above, and delete their former live writers and read paths; `Serve.scan`, `Serve.watch` and verdict settlement must stay free of `DaemonAdmission.exclusive` and `mutations` (no new entry may be added);
 - drain selection and dispatch (`_Drain._scan`, `_sha`, `_offer_material` in `clutch/drain.py`) dispatch only revisions whose checkpoint commit exists and skip tickets held for an editor conflict, using the `clutch/state.py` service for both checks;
 - engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them;
+- add the release path for an editor-conflict hold: `clutch ticket resolve <stem> --keep file|database` submits through the service, records the chosen version as a new revision on the recorded base, checkpoints it and releases only that ticket's hold; its help and examples and its `clutch/docs/host-running.md` verb row ship in the same change;
 - update verb help and the docs that describe these commands: `clutch/docs/host-running.md` verb rows, and `docs/how-clutch-works.md` section 2 and the lock inventory;
 - update the existing tests whose assertions flip because the exclusive wait is gone.
 
@@ -138,6 +139,11 @@ The row asks for one slice that removes the wait with no dual writer, so it is n
 10. No former live writer or read path remains for the ported state, and no SQLite file is opened: `./dev.py test tests/unit/test_state_service.py`.
 11. Command docs and help are consistent: `./dev.py test tests/unit/test_main_help.py tests/unit/test_help.py`.
 12. Drain selection and dispatch skip a revision with no checkpoint commit and a ticket held for an editor conflict, while other tickets still dispatch: `./dev.py test tests/unit/test_drain_checkpoint_dispatch.py`.
+13. `clutch ticket resolve <stem> --keep file|database` records the chosen version as a new revision, checkpoints it and releases only that ticket's hold; a ticket not held is refused with a named reason: `./dev.py test tests/unit/test_state_checkpoint_conflict.py`.
+14. No database transaction is open while a fake Git call, endpoint call or host check is pending: `./dev.py test tests/unit/test_state_service.py`.
+15. Dispatch and verdict handling are refused until startup recovery completes, then proceed: `./dev.py test tests/unit/test_state_verdict_no_admission_wait.py`.
+16. A ticket edit during a run still invalidates the pinned revision under the ticket-changed contract: `./dev.py test tests/unit/test_state_verdict_no_admission_wait.py`.
+17. The exporter rechecks the file hash before replacement and refuses and rescans on change; an interrupted export retries after inspecting HEAD and bytes: `./dev.py test tests/unit/test_state_checkpoint_conflict.py`.
 
 ## Verification
 ```
