@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host guide to training data: enabling capture, fixed exclusions, `training export` kinds and flags, `training eval` agreement scoring, provider terms and privacy
+purpose: Host guide to training data: turning capture on, fixed exclusions, `training export` kinds and flags, how `training eval` scores agreement, provider terms and privacy
 relates: [clutch/config.py, clutch/docs/host-contract.md, clutch/docs/host-running.md, clutch/training.py]
 owner: engine
-verified: fd6afe46
-hash: 6326e11f44fba5a0e191bf8e0d07b4828e5ae5d8f25c75229bd88aaf11f89565
+verified: 9aa0931a
+hash: fc208d2e064b11ade19e34fa43c2a07ae7104595b1c39f07fb17bd6df43b21c7
 -->
 # Training data export and evaluation
 
@@ -29,7 +29,7 @@ Run `clutch training export --out DIR`. The kinds are `implement`, `preference`,
 
 Run `clutch training eval --route medium/review --holdout FILE` with the holdout file from export. Only the review lens is supported; tiers are `low`, `medium`, `high` and `max`. Eval rebuilds review records for those stems and calls the route with each recorded prompt.
 
-A recorded label is negative for logic, acceptance, scope or leak findings, and neutral otherwise. Agreement means the model replies `snag` exactly when the label is negative; `approve` and `rma` agree with neutral labels. Replies without a valid JSON verdict count as unparsed, never as agreement. The agreement fraction is agreements divided by all records (zero for no records). The report prints total, agree, disagree and unparsed counts to stdout only; eval writes no journal, evidence records or engine log.
+A recorded label is negative for logic, acceptance, scope or leak findings, and neutral otherwise. Agreement means the model replies `snag` exactly when the label is negative; `approve` and `rma` agree with neutral labels. Replies without a valid JSON verdict count as unparsed, never as agreement. The agreement fraction is agreements divided by all records (zero for no records, when the run exits 2). Eval also exits 2 when no held-out review record received a parsed verdict. The report prints total, agree, disagree and unparsed counts to stdout only; eval writes no journal, evidence records or engine log.
 
 ## Provider terms
 

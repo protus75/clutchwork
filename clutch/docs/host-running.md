@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: guide
-purpose: Host operator guide for running ClutchWork: the verb table with serve compatibility, writer-lock rules, and the channels and classes for reporting clutch problems upstream
+purpose: Operator guide to running ClutchWork on a host: the verb table showing which verbs work while serve runs, writer-lock rules, and the channels and classes for reporting clutch problems upstream
 relates: [clutch/docs/host-contract.md]
 owner: clutch/docs/host-contract.md
-verified: fd6afe46
-hash: c7282888c5c258e3272de4b4f7c09e5ac2a4377e80183737d8d2046d0e0e3345
+verified: 9aa0931a
+hash: 4166f7c61aeef71adde924af106228e4aba15902f5025b5ce9ad783f34eff6f5
 -->
 # Running ClutchWork on a host
 
@@ -61,7 +61,7 @@ Use the same prefix for the other verbs below; for example, `clutch provider ins
 | `evidence coverage` | Yes | Print known-event percentages and unknown native types by provider and CLI version, and unknown-major-version skip counts. |
 | `evidence captures` | Yes | List ticket captures or print one by attempt and name. |
 | `training export` | Yes | With `--require-records`, exit 2 after export if any requested kind has no records. With `--kinds` choose implement, preference, review, diagnosis, ticket, conflict, or triage; `--since DATE` filters by call date. Triage labels reflect operator overrides of the verdict. Ticket records include an `authored_by` filter; human tickets without a linked author call are omitted. Exports labelled training records from evidence and merged commits; implement records include a tool-call trajectory unless `--no-trajectory` is set, and `file_purposes` for changed paths found in the index. |
-| `training eval` | Yes | Replay held-out review records through the selected route and print agreement to stdout only; no journal, evidence records or engine log. |
+| `training eval` | Yes | Replay held-out review records through the selected route and print agreement to stdout only; exit 2 if no held-out review record was scored; no journal, evidence records or engine log. |
 | `coverage map` | Yes | Runs `review.coverage_map.argv` and writes `<state_dir>/coverage-map.json`; exits 0 on success or 2 on refusal. |
 | `coverage gate` | Yes | Run a unit command and check its coverage report. |
 | `ticket new` | Yes | Create and lint a ticket skeleton. |

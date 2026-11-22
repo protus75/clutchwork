@@ -890,7 +890,7 @@ def _parser() -> argparse.ArgumentParser:
         reads="Config, holdout stems, evidence and first-parent git commits; calls the selected model route.",
         writes="Report to stdout only; no journal, evidence records or engine log.",
         lock="None.",
-        exits="0 on success; 2 when disabled, the route is invalid, the holdout is unreadable or provider setup fails.",
+        exits="0 on success; 2 when disabled, the route is invalid, the holdout is unreadable, provider setup fails or no held-out review record was scored.",
         examples=["clutch training eval --route medium/review --holdout training-data/holdout.txt"],
     )
     evaluation.add_argument("--route", choices=[f"{tier}/review" for tier in TIERS], required=True)
@@ -1900,7 +1900,10 @@ def main(
                 finally:
                     await session.close()
 
-            print(training.report_eval(asyncio.run(evaluation())))
+            counts = asyncio.run(evaluation())
+            print(training.report_eval(counts))
+            if counts["agree"] + counts["disagree"] == 0:
+                raise runner.Refusal("no held-out review record was scored", "run training export with --kinds review and --holdout PCT, then pass its holdout.txt")
             return 0
         index = training.index_files(config.state_dir / "index.duckdb", checkout.fs.size)
         from clutch.box import Box
