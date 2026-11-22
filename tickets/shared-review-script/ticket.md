@@ -8,6 +8,10 @@ kind: feature
 ## Depends on
 - none
 
+## Runs before
+- shared-serve-rig-config
+- disk-io-skip-per-file
+
 ## Context
 - tests/integration/test_requisition.py::reply
 - tests/integration/test_requisition_gate.py::reply
