@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ea34ad05835f4ead1e6703a0e7b4a73fc5ccf2d4",
+  "stem": "io-helpers-drain",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review failed on scope only: in each importer, restore the original meta `purpose` and `owner: engine` lines. Ticket Scope in allows only the import line to change, plus the `verified`/`hash` lines that `clutch/meta.py` refresh regenerates.",
+    "Restore `purpose` and `owner: engine` in: tests/integration/test_harvest.py, test_hot_paths_snapshot.py, test_inbox.py, test_intake_keeps_draft.py, test_intake_scope.py, test_kill_cli_activation.py, test_ladder.py, tests/regress_stale_running.py, tests/snapshot_scale_fixture.py.",
+    "Restore only `purpose` in tests/integration/test_merge.py, test_open_tickets_closed.py, test_paved_roads.py, test_requisition_gate.py, test_requisition_identity_record.py, test_retro.py, test_retro_box.py, test_review_command.py, test_roadmap_start_gates.py, test_snapshot_merged_cap.py,",
+    "Restore `owner: engine` in tests/integration/test_scorecard.py, test_snapshot_cache_facts.py, tests/regress_drain_detach.py, regress_drain_park_findings.py, regress_drain_signals.py. Copy the original lines from main and don't reword them.",
+    "Keep tests/drain_helpers.py, tests/unit/test_drain_helpers.py and the hub edits as they are. Afterwards, diff each importer against main and confirm only import lines and the regenerated verified/hash differ. Then rerun the ticket's ## Verification commands."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    2
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
