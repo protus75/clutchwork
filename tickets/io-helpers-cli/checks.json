@@ -1,0 +1,279 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "275dbfd1d32bf46258e2bc98089479b9682c6da3",
+  "stem": "io-helpers-cli",
+  "passed": true,
+  "changed_files": [
+    "tests/cli_helpers.py",
+    "tests/integration/serve_rig.py",
+    "tests/integration/test_ask.py",
+    "tests/integration/test_author.py",
+    "tests/integration/test_box_triage_inbox.py",
+    "tests/integration/test_caps.py",
+    "tests/integration/test_checkpoint.py",
+    "tests/integration/test_cli.py",
+    "tests/integration/test_context_suggest_cli.py",
+    "tests/integration/test_control.py",
+    "tests/integration/test_control_cli.py",
+    "tests/integration/test_daemon_admission.py",
+    "tests/integration/test_daemon_composition.py",
+    "tests/integration/test_daemon_config.py",
+    "tests/integration/test_daemon_pause.py",
+    "tests/integration/test_daemon_soak.py",
+    "tests/integration/test_daemon_tasks.py",
+    "tests/integration/test_doctor.py",
+    "tests/integration/test_drain.py",
+    "tests/integration/test_drain_admissions.py",
+    "tests/integration/test_drain_detach.py",
+    "tests/integration/test_drain_signals.py",
+    "tests/integration/test_drain_upgrade.py",
+    "tests/integration/test_evidence_captures_verb.py",
+    "tests/integration/test_evidence_verbs.py",
+    "tests/integration/test_flake.py",
+    "tests/integration/test_heartbeat.py",
+    "tests/integration/test_hostfiles.py",
+    "tests/integration/test_hot_paths_snapshot.py",
+    "tests/integration/test_inbox.py",
+    "tests/integration/test_index_cli.py",
+    "tests/integration/test_intake_keeps_draft.py",
+    "tests/integration/test_intake_scope.py",
+    "tests/integration/test_issue_verb.py",
+    "tests/integration/test_kill_cli_activation.py",
+    "tests/integration/test_kill_executor_abort.py",
+    "tests/integration/test_kill_failure_suppression.py",
+    "tests/integration/test_kill_signal_journal.py",
+    "tests/integration/test_kill_worker_stop.py",
+    "tests/integration/test_lint_verb.py",
+    "tests/integration/test_main_verb_groups.py",
+    "tests/integration/test_menu_verb_parity.py",
+    "tests/integration/test_merge.py",
+    "tests/integration/test_meta_refresh_commit_lock.py",
+    "tests/integration/test_paved_roads.py",
+    "tests/integration/test_provider_cooldown_failover.py",
+    "tests/integration/test_providers.py",
+    "tests/integration/test_reconcile.py",
+    "tests/integration/test_reject_queue.py",
+    "tests/integration/test_release.py",
+    "tests/integration/test_release_publish.py",
+    "tests/integration/test_requisition_gate.py",
+    "tests/integration/test_requisition_identity_record.py",
+    "tests/integration/test_restart_timers.py",
+    "tests/integration/test_review_command.py",
+    "tests/integration/test_roadmap_author.py",
+    "tests/integration/test_roadmap_driver.py",
+    "tests/integration/test_roadmap_gate.py",
+    "tests/integration/test_roadmap_merged.py",
+    "tests/integration/test_roadmap_named_stem.py",
+    "tests/integration/test_roadmap_refile.py",
+    "tests/integration/test_roadmap_row_author.py",
+    "tests/integration/test_roadmap_ship.py",
+    "tests/integration/test_roadmap_start_gates.py",
+    "tests/integration/test_roadmap_status.py",
+    "tests/integration/test_route_kinds_judge_lint.py",
+    "tests/integration/test_scheduler.py",
+    "tests/integration/test_serve_admission.py",
+    "tests/integration/test_serve_confirm_during_check.py",
+    "tests/integration/test_serve_dispatch.py",
+    "tests/integration/test_serve_driver.py",
+    "tests/integration/test_serve_driver_overlap.py",
+    "tests/integration/test_serve_kill.py",
+    "tests/integration/test_serve_lifecycle.py",
+    "tests/integration/test_serve_merge_overlap.py",
+    "tests/integration/test_serve_notify.py",
+    "tests/integration/test_serve_parallel_admission.py",
+    "tests/integration/test_serve_scan_head.py",
+    "tests/integration/test_serve_scan_watch_overlap.py",
+    "tests/integration/test_serve_upgrade.py",
+    "tests/integration/test_stale_running.py",
+    "tests/integration/test_stats.py",
+    "tests/integration/test_status.py",
+    "tests/integration/test_storm_hold.py",
+    "tests/integration/test_storm_notification_activation.py",
+    "tests/integration/test_triage.py",
+    "tests/integration/test_watch.py",
+    "tests/integration/test_watchdog_activation.py",
+    "tests/regress_drain_detach.py",
+    "tests/regress_drain_park_findings.py",
+    "tests/regress_drain_signals.py",
+    "tests/regress_lint_worktree_journal.py",
+    "tests/regress_reconcile_confirming_draft.py",
+    "tests/regress_stale_running.py",
+    "tests/regress_suggest_lands_in_box.py",
+    "tests/unit/test_cli_helpers.py",
+    "tests/unit/test_config_fixture.py",
+    "tests/unit/test_main_evidence_captures.py"
+  ],
+  "inserted_lines": 657,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "meta_drift",
+          "path": "tests/cli_helpers.py",
+          "line": null,
+          "message": "tests/cli_helpers.py: empty_purpose",
+          "paved_road": "run clutch meta fill tests/cli_helpers.py or write the one-line purpose",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.905174,
+        "passed": 1942,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3923637320112903,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.105119226995157,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.072439123003278,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0600106750207487
+        }
+      },
+      "coverage": {
+        "percent": 72.67381076842655,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 8.34229,
+        "passed": 285,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7007097600144334,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0035990649776068
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_cli_helpers.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_cli_helpers.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n=============================== warnings summary ===============================\ntests/integration/test_stages.py:52: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_stages.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n16 passed, 20 warnings in 1.18s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.142328
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit"
+      ],
+      "rc": 0,
+      "tail": "............................. [ 63%]\n........................................................................ [ 66%]\n........................................................................ [ 70%]\n........................................................................ [ 74%]\n........................................................................ [ 77%]\n........................................................................ [ 81%]\n........................................................................ [ 85%]\n........................................................................ [ 88%]\n........................................................................ [ 92%]\n........................................................................ [ 96%]\n......................................................................   [100%]\n=============================== warnings summary ===============================\ntests/integration/test_stages.py:52: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_stages.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_providers.py:40: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_providers.py:40: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1942 passed, 40 warnings in 8.11s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 11.095273
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration"
+      ],
+      "rc": 0,
+      "tail": "sssssssssss.sss. [ 57%]\n.sssssssssssssssssss.sssssssssssssssssss.sssssssssssssssssssssssssssssss [ 59%]\nssss.ssssssssssss.ssssssssssssssss.ssssssssss.ssssssssssssssssssss.sssss [ 61%]\ns.sssssssssssssss..sss.ssssss...sssssss.....ssssss.ssssssssssssssssss.ss [ 63%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssss.sss.sssssssssss.. [ 65%]\nsss.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 67%]\nsssss.ssssssssssssssss.ssssssssssssssss.ssssssssssssssssss.ssss...ssssss [ 69%]\nssssssssss..sssssssss.ssssss.sssssssss.s.ssssss..sssssssssssssssssssssss [ 71%]\nsssssss.sssssssssss.ssssssssss.sssssssssssssssss.sssss.sssssssssssssssss [ 73%]\nssss.ssssssss.ssssssssssssssssssss.sssssss.sssssssssssssssssssss.sssssss [ 75%]\nsssssssssssssssssssssssssssssssssss.ssssss.sss.ssssss..ss..sssssssss..ss [ 77%]\nssssssssssssssssssss.ss.ssssssss..ssssss.s.ssssssss.sssssssssssss....sss [ 79%]\nsssssssssssssssss..s.ss..s...ssssssssssssss.sssssssssss..s.ss.ssssssss.. [ 81%]\nsssssssssssssssssssssssssssssssssssssssss...s.sss.ssssss.ssssssss.ssssss [ 83%]\nssssssssss.ssssssssss.ssssssssssssssssssssssssssssssss.sssssssssssssssss [ 85%]\nssssssssssssssssssssssssssssss.sssssssssssssssssssssssssssss.sssssssssss [ 87%]\nssssssss.s.ssssssss.ssssssssssssssssssssssssssssssssssssssssssssssssssss [ 89%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 91%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss.sss.s. [ 93%]\n...sssssss.ssssssssssss.sssssssssssssssssssssssssssss.sssss.ssssssssss.s [ 95%]\nssssssss.sssssssssssssssssss.......ssssssssssss.sssssssssssssss.ss...... [ 97%]\n......ssssssssss............sssss..........sssssss.sssssss...sssssssssss [ 99%]\nsssssssssssss.............                                               [100%]\n285 passed, 3341 skipped in 7.48s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 8.971605
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_config_fixture.py",
+        "tests/regress_reconcile_confirming_draft.py"
+      ],
+      "rc": 0,
+      "tail": "ks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_merge.py:35: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_merge.py:35: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_terminal.py:28: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_terminal.py:28: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_drain.py:39: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_drain.py:39: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\ntests/integration/test_triage.py:28: 20 warnings\n  /home/djp/source/clutch/.clutch/state/worktrees/io-helpers-cli/tests/integration/test_triage.py:28: PytestUnknownMarkWarning: Unknown pytest.mark.disk_io_skip - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    pytestmark = pytest.mark.disk_io_skip\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n7 passed, 260 warnings in 1.25s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 6.902432
+    }
+  ]
+}
