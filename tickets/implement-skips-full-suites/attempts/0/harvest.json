@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_implement_spec_mutation_check.py",
+      "line": 22,
+      "message": "The test pins Implement version 2.24 and fails when the required version is bumped to 2.25.",
+      "paved_road": "Add this file to the scope fence and update its version pin.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_stages.py",
+      "line": 350,
+      "message": "The provenance assertion pins Implement version 2.24 and fails when the required version is bumped to 2.25.",
+      "paved_road": "Add this file to the scope fence and update its version pin.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required Implement version bump makes two integration tests outside the scope fence fail, so the ticket cannot pass Check as written.\",\"surprises\":\"The targeted verification passed with 49 tests; the full integration suite exposed two additional version pins.\",\"second_problems\":[{\"summary\":\"docs/how-clutch-works.md still says Implement runs hard always-trigger checks and coverage gates, which the requested prompt change makes stale.\"}],\"dead_ends\":\"The coverage gate was stopped because the diff changes no file it measures; the full integration suite then identified the out-of-fence failures.\",\"predicted_vs_actual\":\"8 minutes expected; actual time not measured.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_implement_spec_mutation_check.py\",\"line\":22,\"message\":\"The test pins Implement version 2.24 and fails when the required version is bumped to 2.25.\",\"paved_road\":\"Add this file to the scope fence and update its version pin.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_stages.py\",\"line\":350,\"message\":\"The provenance assertion pins Implement version 2.24 and fails when the required version is bumped to 2.25.\",\"paved_road\":\"Add this file to the scope fence and update its version pin.\"}]}",
+  "events_tail": "/test_testguard.py::test_guards_are_phase_scoped\\ntests/integration/test_testguard.py::test_budget_and_slowest\\ntests/integration/test_testguard.py::test_budget_and_slowest\\ntests/integration/test_testguard.py::test_xdist_budget\\ntests/integration/test_testguard.py::test_default_and_invalid_budget\\ntests/integration/test_testguard.py::test_default_and_invalid_budget\\ntests/integration/test_testguard.py::test_default_and_invalid_budget\\n  /home/djp/source/clutch/.clutch/state/worktrees/implement-skips-full-suites/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \\\"asyncio_default_fixture_loop_scope\\\" is unset.\\n  The event loop scope for asynchronous fixtures will default to the \\\"fixture\\\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \\\"function\\\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \\\"function\\\", \\\"class\\\", \\\"module\\\", \\\"package\\\", \\\"session\\\"\\n  \\n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\\n\\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\\n=========================== short test summary info ============================\\nFAILED tests/integration/test_implement_spec_mutation_check.py::test_implement_spec_finishes_mutation_checks_before_replying\\nFAILED tests/integration/test_stages.py::test_implement_check_review_all_ok_with_artifacts_and_provenance\\n============ 2 failed, 3600 passed, 9 warnings in 98.73s (0:01:38) =============\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"rg -n '2\\\\\\\\.24' --glob '\\\"'!tickets/**'\\\"' --glob '\\\"'!*.lock'\\\"'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"rg -n '2\\\\\\\\.24' --glob '\\\"'!tickets/**'\\\"' --glob '\\\"'!*.lock'\\\"'\\\"\",\"aggregated_output\":\"tests/integration/test_implement_spec_mutation_check.py:22:    assert load_spec(text).meta.version == \\\"2.24\\\"\\ntests/integration/test_stages.py:350:    assert \\\"## Outcome\\\\n\\\\nok\\\\n\\\" in run_md and \\\"- provider: fake\\\\n- model: fake\\\\n- spec: implement 2.24\\\" in run_md\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_15\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required Implement version bump makes two integration tests outside the scope fence fail, so the ticket cannot pass Check as written.\\\",\\\"surprises\\\":\\\"The targeted verification passed with 49 tests; the full integration suite exposed two additional version pins.\\\",\\\"second_problems\\\":[{\\\"summary\\\":\\\"docs/how-clutch-works.md still says Implement runs hard always-trigger checks and coverage gates, which the requested prompt change makes stale.\\\"}],\\\"dead_ends\\\":\\\"The coverage gate was stopped because the diff changes no file it measures; the full integration suite then identified the out-of-fence failures.\\\",\\\"predicted_vs_actual\\\":\\\"8 minutes expected; actual time not measured.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_implement_spec_mutation_check.py\\\",\\\"line\\\":22,\\\"message\\\":\\\"The test pins Implement version 2.24 and fails when the required version is bumped to 2.25.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update its version pin.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_stages.py\\\",\\\"line\\\":350,\\\"message\\\":\\\"The provenance assertion pins Implement version 2.24 and fails when the required version is bumped to 2.25.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update its version pin.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1196912,\"cached_input_tokens\":1160704,\"cache_write_input_tokens\":0,\"output_tokens\":3849,\"reasoning_output_tokens\":465}}\n",
+  "wall_seconds": 185.597131,
+  "usd": 1.0,
+  "run_record": "tickets/implement-skips-full-suites/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
