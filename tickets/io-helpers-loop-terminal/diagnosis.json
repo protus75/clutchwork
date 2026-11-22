@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "3532e0188ed2fa9e02247ed408071ec319f39e77",
+  "stem": "io-helpers-loop-terminal",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise is false as written: tests/integration/test_terminal.py:50 author ends with tests.approval.approve(repo, stem, clock), and tests/approval.py:44 builds Git(SubprocessExec()) for review_input_identity, so a moved author runs real git, which Definition of rejected forbids.",
+    "Criterion 4's grep passes only because approve is imported lazily. Moving author with approve kept still breaks the 'no real git, no process' rule, so passing the grep does not resolve the contradiction.",
+    "Re-author the ticket to say what author does about approval: fence tests/approval.py and give approve an injectable Git/exec seam backed by tests/git_fake.py::GitFake, or let author skip approval and name which running callers rely on the approval event.",
+    "If tests/approval.py gets a seam, also fence and name its other running callers, so that 'every test that runs today still passes' can be checked. Base measured by the implementer: 297 passed, 3341 skipped in integration."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
