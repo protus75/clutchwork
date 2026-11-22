@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "5bab5aa3b54451c72013ee4768e2f40d0ea9a588",
+  "stem": "io-helpers-stages",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise holds: grep confirms tests/unit/test_config_fixture.py:19 imports CONFIG and tests/integration/test_shared_stage_replies.py:12 imports implement_reply, verdict from tests.integration.test_stages, and neither file is in ## Scope fence.",
+    "Acceptance criterion 2 says no file may import from the hub, and the fence forbids editing those two files. A retry cannot satisfy both, so the ticket must change before another attempt.",
+    "Ticket fix: add tests/unit/test_config_fixture.py and tests/integration/test_shared_stage_replies.py to ## Scope fence, and list them as importers whose import line moves to tests.stages_helpers. That makes 40 importers, not 38.",
+    "Class prevention: build the importer list in Goal and Scope fence from `grep -rn 'from tests.integration.test_stages import' tests` across tests/unit as well as tests/integration, so every importer is fenced."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
