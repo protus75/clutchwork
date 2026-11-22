@@ -8,6 +8,9 @@ kind: feature
 ## Depends on
 - training-export-ship-gate
 
+## Runs before
+- drain-retro-check-once-per-settle
+
 ## Context
 - clutch/training.py::evaluate
 - clutch/training.py::report_eval
