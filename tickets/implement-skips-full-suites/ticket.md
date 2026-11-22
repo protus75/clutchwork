@@ -6,10 +6,7 @@ kind: feature
 ---
 
 ## Depends on
-- none
-
-## Runs before
-- retry-keeps-prior-branch
+- check-owns-meta-headers
 
 ## Context
 - tests/unit/test_specs.py::test_implement_spec_consumer_read
