@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Carried reproducer for serve's Reject-queue re-offer selection.
+# purpose: Carried reproducer checking serve's scheduler re-offers a Reject-queue ticket for dispatch
 # relates: [clutch/scheduler.py, tests/integration/test_scheduler.py]
-# owner: engine
-# verified: d7719818
-# hash: 2b32cb85bcac258244898a026fb71ce0243f5afd5562489b1f1f1fd631806162
+# owner: clutch/scheduler.py
+# verified: 82d23237
+# hash: 5c9cf43ea2b47375df6bf5dcab4b56098087e91131cac0a2791a8dbf971807a2
 
 import asyncio
 import inspect
@@ -25,7 +25,7 @@ def main():
         if "caps" not in inspect.signature(Scheduler).parameters:
             result = "defect"
         else:
-            from tests.integration.test_scheduler import Rig
+            from tests.loop_helpers import Rig
 
             with tempfile.TemporaryDirectory() as directory:
                 rig = Rig(Path(directory))

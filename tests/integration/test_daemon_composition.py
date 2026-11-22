@@ -5,8 +5,8 @@
 # purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
 # owner: engine
-# verified: 38957300
-# hash: 3971ecec770fd9c4690512a3001d372a6e5d44429c82393793e803b33a495b5f
+# verified: 82d23237
+# hash: 17d90f5716d7dc71690a20cff114f23d7a4c345cd2d000c1cccf8c430005938d
 
 import ast
 import asyncio
@@ -39,7 +39,8 @@ from tests.daemon_helpers import ctx as admission_context
 from tests.dispatch_settle import dispatch_settled
 from tests.integration.test_daemon_config import assert_detached, python_values
 from tests.integration.test_git import commit_lock
-from tests.integration.test_scheduler import Time, import_closure, text, turn
+from tests.loop_helpers import Time, text, turn
+from tests.loop_helpers import scheduler_import_closure as import_closure
 from tests.spool_captures import list_captures
 
 pytestmark = pytest.mark.disk_io_skip

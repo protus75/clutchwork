@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Tests serve self-upgrade re-exec after engine changes, waiting for continuations and selection, and suppression by kill, stop or a non-git engine
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: 0b069d1974c75b049bbfd076ec2f2c8c842b2711f9e903eece153756ad689a3b
+# owner: clutch/serve.py
+# verified: 82d23237
+# hash: 67eabad36d20b6f86f634d2e930ac07207d4ee92ab1538f469ed8f5356da184e
 
 import asyncio
 import json
@@ -38,7 +38,7 @@ from tests.integration.serve_rig import (
     until,
     write,
 )
-from tests.integration.test_scheduler import text, turn
+from tests.loop_helpers import text, turn
 
 pytestmark = pytest.mark.disk_io_skip
 

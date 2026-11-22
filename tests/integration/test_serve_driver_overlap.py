@@ -3,9 +3,9 @@
 # kind: test
 # purpose: Tests that roadmap driver passes overlap dispatch, run one at a time, are awaited at shutdown, and stop serve on failure
 # relates: [clutch/roadmap.py, clutch/serve.py, tests/integration/serve_rig.py, tests/integration/test_cli.py, tests/integration/test_scheduler.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: 772c3439a0478caea48d628fb810211ca003a324f59d3c805760b65e142e4b95
+# owner: clutch/serve.py
+# verified: 82d23237
+# hash: d3593c387c3bbaeaae1b0fb78a99b2ddabbaef7feb506fc6a445c6d3aa0823d6
 import asyncio
 
 import pytest
@@ -13,7 +13,7 @@ import pytest
 from clutch import roadmap, serve
 from tests.cli_helpers import root  # noqa: F401
 from tests.integration.serve_rig import finish, graph, script, terminals, until, write
-from tests.integration.test_scheduler import text
+from tests.loop_helpers import text
 from tests.unit.test_phase_events import RecordingLog
 
 pytestmark = pytest.mark.disk_io_skip

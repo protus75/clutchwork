@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Tests serve dispatch: invalid tickets, republication of changed tickets, keep and retry reoffers, merge-failure reoffers and retro scheduling
 # relates: [clutch/audit.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: a265196aafa5a00cfdbd6e389aaaef4619dfd1a6bfb4bf74884b67264cba64bb
+# owner: clutch/serve.py
+# verified: 82d23237
+# hash: 75666ea88d9210e900d143b6ff97b8676f20bd6ad1e78838d7748506d2924217
 
 import asyncio
 import json
@@ -38,7 +38,7 @@ from tests.integration.serve_rig import (
     until,
     write,
 )
-from tests.integration.test_scheduler import text, turn
+from tests.loop_helpers import text, turn
 
 pytestmark = pytest.mark.disk_io_skip
 

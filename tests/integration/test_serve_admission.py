@@ -4,9 +4,9 @@
 # kind: test
 # purpose: Tests serve merge admission: queue routing, rebase and regate, red-streak and tree-mismatch holds, cleanup, refusals and conflict reruns
 # relates: [clutch/audit.py, clutch/caps.py, clutch/control.py, clutch/daemon.py, clutch/journal.py, clutch/lockfile.py, clutch/merge.py, clutch/mergequeue.py]
-# owner: engine
-# verified: ae1a5a3b
-# hash: decbba12f5a0a4d8af9234270757ab105e05ea12c73bc24a1fffff958169c6e5
+# owner: clutch/mergequeue.py
+# verified: 82d23237
+# hash: 45470727d041960fac47c7d3f107889547dd0f3cdaa7d19bde712bfd687ec8c6
 
 import asyncio
 import json
@@ -38,7 +38,7 @@ from tests.integration.serve_rig import (
     until,
     write,
 )
-from tests.integration.test_scheduler import text, turn
+from tests.loop_helpers import text, turn
 from tests.spool_captures import list_captures, read_capture
 
 pytestmark = pytest.mark.disk_io_skip
