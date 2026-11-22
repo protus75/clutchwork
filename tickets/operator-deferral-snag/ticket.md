@@ -8,6 +8,9 @@ kind: chore
 ## Depends on
 - gemini-provider
 
+## Runs before
+- training-export-ship-gate
+
 ## Context
 - clutch/docs/host-authoring.md#What each section is for
 - tests/integration/test_precondition_rules.py
