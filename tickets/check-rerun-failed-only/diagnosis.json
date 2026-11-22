@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "9af1a696869ce0a104eb4beaede6fefbc40a7e2e",
+  "stem": "check-rerun-failed-only",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The ticket requires `ctx.fs.write` in `_check_host_results`. The existing test tests/unit/test_stages_flake_coverage.py:60 builds `fs=NS(remove=...)` with no `write`, so 3 hard unit cases fail. That file is outside the scope fence, so the ticket cannot pass as written.",
+    "Fix the ticket: add tests/unit/test_stages_flake_coverage.py to `## Scope fence` and `## Context`. Add a scope-in line saying its ctx fake gains `fs.write` (for example, a lambda that writes the bytes to the path). Also add the file to `## Verification`.",
+    "The redo can reuse the approach the previous attempt validated: `run(name, selected=None)` writes `path.with_suffix('.select.json')` and appends `--clutch-select`. Its targeted tests (124) and the integration gate (3,601) passed. Mutation checks caught inverted selection and selecting all ids."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
