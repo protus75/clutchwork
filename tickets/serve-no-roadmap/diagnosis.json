@@ -1,21 +1,25 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "1b159d9cd2916d4875b25218d46a6109da03094f",
+  "produced_at_sha": "73f575b6e16c4597752fdeb9a47e228176fb5464",
   "stem": "serve-no-roadmap",
-  "attempt": 3,
-  "terminal": "premise_failed",
+  "attempt": 4,
+  "terminal": "incomplete",
   "stage": "implement",
-  "verdict": "reject",
+  "verdict": "split",
   "lessons": [
-    "AC 9 contradicts the required deletions: `clutch ticket lint serve-no-roadmap` fails after implementation because 8 `## Context` selectors name symbols the ticket deletes. Lint passed on base, so the ticket must change, not the code.",
-    "Fix the ticket: replace clutch/roadmap.py::ship, ::ship_when_queue_low and ::drive, clutch/serve.py::Serve.driver_pending, ::Serve.run_driver and ::Serve.wait_driver, clutch/__main__.py::build_driver and clutch/drain.py::_Drain._run_driver with whole-file entries.",
-    "Keep clutch/roadmap.py::author_ahead as a selector, since that function survives. The whole-file entries for clutch/roadmap.py, serve.py, drain.py and __main__.py still resolve after the deletions.",
-    "Attempt 3 reported that the implementation passed all three Verification commands and all 61 mutations were caught. After the ticket fix, rerun the same work unchanged: it starts from main and nothing was committed.",
-    "Class fix: ticket lint or review should reject a Context selector that names a definition the ticket's Scope in says to delete, because that selector cannot resolve after merge."
+    "Attempt 4 ran out of context in Implement (codex gpt-6.1-terra, 1.48M input tokens) after editing 12 source and doc files and none of the roughly 45 fenced test files. One attempt cannot hold the source, prompt, doc and test edits together, so split the ticket.",
+    "Child 1, merged first: remove the driver from clutch/serve.py and clutch/drain.py, delete build_driver, drive, ship_when_queue_low, unsettled and settles, and update the prompts and docs. Prompts must land with the engine change (CLAUDE.md 'Keep shipped process prompts in sync'). Keep roadmap.ship",
+    "Child 1 tests: add tests/unit/test_serve_no_roadmap.py and test_drain_no_roadmap.py (acceptance criteria 1-2). Delete or edit only the tests that pin the driver: test_roadmap_drive, test_serve_driver*, test_drain_driver_overlap, test_driver_hooks, test_roadmap_gate_waits_for_queue, and integration",
+    "Child 2, Depends on child 1: move roadmap.ship into a `clutch release ship` handle_ship in clutch/__main__.py under _locked, with full _command help. Add tests/unit/test_release_ship_verb.py, set {bump, publish, ship} in test_main_release_group.py, edit test_roadmap_ship (unit and integration), add",
+    "Child 3, independent: stop author_ahead from re-filing rejected rows and list them in status under waits: with rejection_reason. Add tests/unit/test_roadmap_author_rejected_row.py and the test_roadmap_author default-ahead case (criterion 7). Fence only the refile and rejection-reason tests."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    1,
+    2,
+    3
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
