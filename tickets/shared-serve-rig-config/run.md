@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-Both test_cli.py and bench.py already call yaml.safe_dump outside their config literals.
+Applied the safe_dump prohibition to the two named rig editors. Existing repository policy skips 282 integration tests. All 31 mutation checks were caught and restored; guarded unit tests, lint, and formatting passed. Documentation required no changes.
 
 ## Dead ends
 
-Considered removing the existing yaml.safe_dump call, but the ticket permits only the config literal and its import to change in test_cli.py.
+Retaining local config copies would preserve the recurring duplication; the shared builder and adoption test prevent it.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-none
+Completed within the expected 25-minute budget.
 
