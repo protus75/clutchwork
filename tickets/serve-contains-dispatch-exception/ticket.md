@@ -9,14 +9,10 @@ kind: bug
 - none
 
 ## Runs before
-- disk-io-skip-per-file
-- flake-fix-jumps-queue
-- preflight-once-per-session
-- supervisor-orders-by-depends
 - shared-git-fake
-- shared-serve-rig-config
 - shared-review-script
-- check-rerun-failed-only
+- shared-serve-rig-config
+- disk-io-skip-per-file
 
 ## Context
 - clutch/serve.py::Serve.__init__
