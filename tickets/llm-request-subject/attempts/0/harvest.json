@@ -1,0 +1,72 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/harness/shakeout/driver.py",
+      "line": 48,
+      "message": "Two LLMRequest readers use request.ticket, which the rename removes and the repository-wide acceptance check forbids.",
+      "paved_road": "Add this file to the scope fence and update both readers to subject.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/harness/daemon_soak.py",
+      "line": 312,
+      "message": "An LLMRequest reader uses req.ticket, which the rename removes and the repository-wide acceptance check forbids.",
+      "paved_road": "Add this file to the scope fence and update the reader to subject.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_serve_scan_watch_overlap.py",
+      "line": 34,
+      "message": "An LLMRequest reader uses req.ticket, which the rename removes and the repository-wide acceptance check forbids.",
+      "paved_road": "Add this file to the scope fence and update the reader to subject.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_serve_parallel_admission.py",
+      "line": 65,
+      "message": "Two LLMRequest readers use req.ticket, which the rename removes and the repository-wide acceptance check forbids.",
+      "paved_road": "Add this file to the scope fence and update both readers to subject.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_stages_helpers.py",
+      "line": 112,
+      "message": "An LLMRequest constructor passes the removed ticket keyword, causing the full suite to fail after the rename.",
+      "paved_road": "Add this file to the scope fence and rename the constructor keyword to subject.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_roadmap_accept.py",
+      "line": 159,
+      "message": "The test asserts the exact driver kwargs, so adding the required release subject makes that assertion fail.",
+      "paved_road": "Add this file to the scope fence and include the release subject in the expected kwargs.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required breaking rename forces changes outside the ticket’s scope fence, so no files were changed or committed.\",\"surprises\":\"The current tree contains additional request consumers and an acceptance-call assertion that the ticket’s closed file list omits. Expanding the fence to cover all request consumers and affected assertions would prevent this class of scope failure.\",\"second_problems\":[],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/harness/shakeout/driver.py\",\"line\":48,\"message\":\"Two LLMRequest readers use request.ticket, which the rename removes and the repository-wide acceptance check forbids.\",\"paved_road\":\"Add this file to the scope fence and update both readers to subject.\"},{\"code\":\"premise\",\"path\":\"tests/harness/daemon_soak.py\",\"line\":312,\"message\":\"An LLMRequest reader uses req.ticket, which the rename removes and the repository-wide acceptance check forbids.\",\"paved_road\":\"Add this file to the scope fence and update the reader to subject.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_serve_scan_watch_overlap.py\",\"line\":34,\"message\":\"An LLMRequest reader uses req.ticket, which the rename removes and the repository-wide acceptance check forbids.\",\"paved_road\":\"Add this file to the scope fence and update the reader to subject.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_serve_parallel_admission.py\",\"line\":65,\"message\":\"Two LLMRequest readers use req.ticket, which the rename removes and the repository-wide acceptance check forbids.\",\"paved_road\":\"Add this file to the scope fence and update both readers to subject.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_stages_helpers.py\",\"line\":112,\"message\":\"An LLMRequest constructor passes the removed ticket keyword, causing the full suite to fail after the rename.\",\"paved_road\":\"Add this file to the scope fence and rename the constructor keyword to subject.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_roadmap_accept.py\",\"line\":159,\"message\":\"The test asserts the exact driver kwargs, so adding the required release subject makes that assertion fail.\",\"paved_road\":\"Add this file to the scope fence and include the release subject in the expected kwargs.\"}]}",
+  "events_tail": "cket is None\\ntests/integration/test_driver.py:376:    assert SECRET in llm.requests[0].rendered  # the model still gets what it was sent\\ntests/integration/test_serve_admission.py:466:        assert [req.surface for llm in rig.models for req in llm.requests if req.ticket == \\\"work\\\"].count(\\\"diagnose\\\") == 0\\ntests/integration/test_requisition.py:169:    assert llm.requests[0].surface == \\\"requisition_review\\\"\\ntests/integration/test_drain.py:1044:        assert llm.requests[0].surface == \\\"retro\\\"\\ntests/integration/test_retro.py:105:    prompt = llm.requests[0].rendered\\ntests/unit/test_stages_helpers.py:163:    assert llm.requests[0].worktree == config.worktree_root / h.STEM\\ntests/unit/test_stages_helpers.py:164:    assert (llm.requests[0].worktree / \\\"clutch/thing.py\\\").read_text() == \\\"changed\\\"\\ntests/integration/test_supervisor_rework.py:47:    assert '\\\"trigger\\\": \\\"premise_bounce cap spent\\\"' in llm.requests[1].rendered  # Wrong: run ordinary Rework without supervisor restrictions.\\ntests/integration/test_stages.py:372:    assert \\\"approve carries an empty findings list\\\" in llm.requests[2].rendered\\ntests/integration/test_requisition_gate.py:137:    blocks = [r.rendered.split(\\\"<<clutch-data:begin prior_review>>\\\\n\\\", 1)[1].split(\\\"\\\\n<<clutch-data:end prior_review>>\\\", 1)[0] for r in llm.requests[:2]]\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_7\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required breaking rename forces changes outside the ticket’s scope fence, so no files were changed or committed.\\\",\\\"surprises\\\":\\\"The current tree contains additional request consumers and an acceptance-call assertion that the ticket’s closed file list omits. Expanding the fence to cover all request consumers and affected assertions would prevent this class of scope failure.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/harness/shakeout/driver.py\\\",\\\"line\\\":48,\\\"message\\\":\\\"Two LLMRequest readers use request.ticket, which the rename removes and the repository-wide acceptance check forbids.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update both readers to subject.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/harness/daemon_soak.py\\\",\\\"line\\\":312,\\\"message\\\":\\\"An LLMRequest reader uses req.ticket, which the rename removes and the repository-wide acceptance check forbids.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update the reader to subject.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_serve_scan_watch_overlap.py\\\",\\\"line\\\":34,\\\"message\\\":\\\"An LLMRequest reader uses req.ticket, which the rename removes and the repository-wide acceptance check forbids.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update the reader to subject.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_serve_parallel_admission.py\\\",\\\"line\\\":65,\\\"message\\\":\\\"Two LLMRequest readers use req.ticket, which the rename removes and the repository-wide acceptance check forbids.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and update both readers to subject.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_stages_helpers.py\\\",\\\"line\\\":112,\\\"message\\\":\\\"An LLMRequest constructor passes the removed ticket keyword, causing the full suite to fail after the rename.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and rename the constructor keyword to subject.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_roadmap_accept.py\\\",\\\"line\\\":159,\\\"message\\\":\\\"The test asserts the exact driver kwargs, so adding the required release subject makes that assertion fail.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and include the release subject in the expected kwargs.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":214091,\"cached_input_tokens\":184320,\"cache_write_input_tokens\":0,\"output_tokens\":1296,\"reasoning_output_tokens\":161}}\n",
+  "wall_seconds": 60.730336,
+  "usd": 1.0,
+  "run_record": "tickets/llm-request-subject/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
