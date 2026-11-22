@@ -7,6 +7,8 @@ kind: feature
 
 ## Depends on
 - training-triage-records
+- serve-flaky-tests-deterministic
+- serve-live-keep-single-verdict
 
 ## Context
 - clutch/training.py::report
