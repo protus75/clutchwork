@@ -1,23 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "ea34ad05835f4ead1e6703a0e7b4a73fc5ccf2d4",
+  "produced_at_sha": "21f9c6355c3f739c72d14cad4aa44858d7de56a4",
   "stem": "io-helpers-drain",
-  "attempt": 1,
-  "terminal": "gate_failed",
-  "stage": "review",
-  "verdict": "retry",
+  "attempt": 2,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "abandon-human",
   "lessons": [
-    "Review failed on scope only: in each importer, restore the original meta `purpose` and `owner: engine` lines. Ticket Scope in allows only the import line to change, plus the `verified`/`hash` lines that `clutch/meta.py` refresh regenerates.",
-    "Restore `purpose` and `owner: engine` in: tests/integration/test_harvest.py, test_hot_paths_snapshot.py, test_inbox.py, test_intake_keeps_draft.py, test_intake_scope.py, test_kill_cli_activation.py, test_ladder.py, tests/regress_stale_running.py, tests/snapshot_scale_fixture.py.",
-    "Restore only `purpose` in tests/integration/test_merge.py, test_open_tickets_closed.py, test_paved_roads.py, test_requisition_gate.py, test_requisition_identity_record.py, test_retro.py, test_retro_box.py, test_review_command.py, test_roadmap_start_gates.py, test_snapshot_merged_cap.py,",
-    "Restore `owner: engine` in tests/integration/test_scorecard.py, test_snapshot_cache_facts.py, tests/regress_drain_detach.py, regress_drain_park_findings.py, regress_drain_signals.py. Copy the original lines from main and don't reword them.",
-    "Keep tests/drain_helpers.py, tests/unit/test_drain_helpers.py and the hub edits as they are. Afterwards, diff each importer against main and confirm only import lines and the regenerated verified/hash differ. Then rerun the ticket's ## Verification commands."
+    "Engine defect, not implementer: clutch/stages.py check_meta runs metafill.fill on every 'drifted' file after Implement. Any importer whose import line changed counts as drifted, so the Check stage rewrites its clutch:meta header and commits it as 'clutch(<stem>): meta'.",
+    "clutch/metafill.py fill (lines 110-115) always replaces `purpose` with the model's text and replaces `owner: engine` with the model's owner. That produced all 25 Review scope findings. clutch/meta.py refresh alone would change only verified/hash.",
+    "The retry cannot succeed: clutch/specs/implement.md step 5 forbids the implementer from editing a clutch:meta header, and Check would rewrite purpose/owner again on the next pass. A human must fix check_meta/metafill so a drifted-only file keeps its purpose and owner.",
+    "Alternative fix: have Review treat Check-stage meta commits as engine-owned. After either fix, rerun from the existing branch. Keep tests/drain_helpers.py, tests/unit/test_drain_helpers.py, the hub edits and the import rewrites, which Review found correct."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
