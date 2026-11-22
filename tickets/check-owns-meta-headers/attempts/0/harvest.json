@@ -1,0 +1,36 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/integration/test_implement_spec_mutation_check.py",
+      "line": 22,
+      "message": "This test pins the Implement spec to 2.23, but the ticket requires version 2.24.",
+      "paved_road": "Add this file to the scope fence and require its version pin to be updated.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/integration/test_stages.py",
+      "line": 350,
+      "message": "This test expects run records to name Implement spec 2.23, but the required version bump makes them name 2.24.",
+      "paved_road": "Add this file to the scope fence and require its expected run-record version to be updated.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The required Implement spec version bump makes two integration tests outside the scope fence fail, so the change cannot pass the host checks as fenced.\",\"surprises\":\"The ticket verification passed with 64 tests, and the unit coverage gate passed with 1,828 tests. The full integration run also had a separate admission timeout that was not diagnosed or verified on the base commit. The implementation remains uncommitted.\",\"second_problems\":[],\"dead_ends\":\"none\",\"predicted_vs_actual\":\"none\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/integration/test_implement_spec_mutation_check.py\",\"line\":22,\"message\":\"This test pins the Implement spec to 2.23, but the ticket requires version 2.24.\",\"paved_road\":\"Add this file to the scope fence and require its version pin to be updated.\"},{\"code\":\"premise\",\"path\":\"tests/integration/test_stages.py\",\"line\":350,\"message\":\"This test expects run records to name Implement spec 2.23, but the required version bump makes them name 2.24.\",\"paved_road\":\"Add this file to the scope fence and require its expected run-record version to be updated.\"}]}",
+  "events_tail": "gration/test_testguard.py::test_budget_and_slowest\\ntests/integration/test_testguard.py::test_budget_and_slowest\\ntests/integration/test_testguard.py::test_xdist_budget\\ntests/integration/test_testguard.py::test_default_and_invalid_budget\\ntests/integration/test_testguard.py::test_default_and_invalid_budget\\ntests/integration/test_testguard.py::test_default_and_invalid_budget\\n  /home/djp/source/clutch/.clutch/state/worktrees/check-owns-meta-headers/.venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:299: PytestDeprecationWarning: The configuration option \\\"asyncio_default_fixture_loop_scope\\\" is unset.\\n  The event loop scope for asynchronous fixtures will default to the \\\"fixture\\\" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to \\\"function\\\" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \\\"function\\\", \\\"class\\\", \\\"module\\\", \\\"package\\\", \\\"session\\\"\\n  \\n    warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\\n\\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\\n=========================== short test summary info ============================\\nFAILED tests/integration/test_implement_spec_mutation_check.py::test_implement_spec_finishes_mutation_checks_before_replying\\nFAILED tests/integration/test_stages.py::test_implement_check_review_all_ok_with_artifacts_and_provenance\\nFAILED tests/integration/test_serve_admission.py::test_serve_admission_refusal_keeps_main_green[integration]\\n============ 3 failed, 3592 passed, 9 warnings in 134.49s (0:02:14) ============\\n\",\"exit_code\":1,\"status\":\"failed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_17\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"rg -n 'implement 2\\\\\\\\.23|\\\\\\\"2\\\\\\\\.23\\\\\\\"|implement.*2\\\\\\\\.23' --glob '\\\"'!tickets/**'\\\"' --glob '\\\"'!.clutch/**'\\\"'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_17\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"rg -n 'implement 2\\\\\\\\.23|\\\\\\\"2\\\\\\\\.23\\\\\\\"|implement.*2\\\\\\\\.23' --glob '\\\"'!tickets/**'\\\"' --glob '\\\"'!.clutch/**'\\\"'\\\"\",\"aggregated_output\":\"tests/integration/test_implement_spec_mutation_check.py:22:    assert load_spec(text).meta.version == \\\"2.23\\\"\\ntests/integration/test_stages.py:350:    assert \\\"## Outcome\\\\n\\\\nok\\\\n\\\" in run_md and \\\"- provider: fake\\\\n- model: fake\\\\n- spec: implement 2.23\\\" in run_md\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_18\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The required Implement spec version bump makes two integration tests outside the scope fence fail, so the change cannot pass the host checks as fenced.\\\",\\\"surprises\\\":\\\"The ticket verification passed with 64 tests, and the unit coverage gate passed with 1,828 tests. The full integration run also had a separate admission timeout that was not diagnosed or verified on the base commit. The implementation remains uncommitted.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"none\\\",\\\"predicted_vs_actual\\\":\\\"none\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_implement_spec_mutation_check.py\\\",\\\"line\\\":22,\\\"message\\\":\\\"This test pins the Implement spec to 2.23, but the ticket requires version 2.24.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and require its version pin to be updated.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/integration/test_stages.py\\\",\\\"line\\\":350,\\\"message\\\":\\\"This test expects run records to name Implement spec 2.23, but the required version bump makes them name 2.24.\\\",\\\"paved_road\\\":\\\"Add this file to the scope fence and require its expected run-record version to be updated.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1989930,\"cached_input_tokens\":1942144,\"cache_write_input_tokens\":0,\"output_tokens\":5672,\"reasoning_output_tokens\":442}}\n",
+  "wall_seconds": 267.303414,
+  "usd": 1.0,
+  "run_record": "tickets/check-owns-meta-headers/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
