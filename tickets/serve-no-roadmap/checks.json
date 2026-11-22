@@ -1,0 +1,215 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "6a80b410b70409b696591c1f79793616cfe0628c",
+  "stem": "serve-no-roadmap",
+  "passed": true,
+  "changed_files": [
+    "clutch/__main__.py",
+    "clutch/config.py",
+    "clutch/docs/host-contract.md",
+    "clutch/docs/host-running.md",
+    "clutch/drain.py",
+    "clutch/roadmap.py",
+    "clutch/serve.py",
+    "clutch/specs/ask/drain-loop.md",
+    "clutch/specs/ask/plan-ticket-drain.md",
+    "clutch/specs/ask/plan-ticket-serve.md",
+    "docs/how-clutch-works.md",
+    "docs/roadmap-driver-plan.md",
+    "tests/integration/test_ask_drain_loop_agent.py",
+    "tests/integration/test_ask_plan_drain.py",
+    "tests/integration/test_ask_plan_serve.py",
+    "tests/integration/test_roadmap_driver.py",
+    "tests/integration/test_roadmap_named_stem.py",
+    "tests/integration/test_roadmap_ship.py",
+    "tests/integration/test_serve_driver.py",
+    "tests/integration/test_serve_driver_overlap.py",
+    "tests/integration/test_serve_verdict_orphan_sweep.py",
+    "tests/unit/test_drain_driver_overlap.py",
+    "tests/unit/test_drain_no_roadmap.py",
+    "tests/unit/test_driver_hooks.py",
+    "tests/unit/test_git_main_write.py",
+    "tests/unit/test_main_release_group.py",
+    "tests/unit/test_release_ship_verb.py",
+    "tests/unit/test_roadmap_author.py",
+    "tests/unit/test_roadmap_author_rejected_row.py",
+    "tests/unit/test_roadmap_drive.py",
+    "tests/unit/test_roadmap_gate_waits_for_queue.py",
+    "tests/unit/test_roadmap_refile.py",
+    "tests/unit/test_roadmap_refile_ready.py",
+    "tests/unit/test_roadmap_ship.py",
+    "tests/unit/test_serve_dispatch_containment.py",
+    "tests/unit/test_serve_driver_overlap.py",
+    "tests/unit/test_serve_no_roadmap.py",
+    "tests/unit/test_serve_verdict_owned.py",
+    "tests/unit/test_supervise_idle_hooks.py"
+  ],
+  "inserted_lines": 399,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.302156,
+        "passed": 2149,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5224236880312674,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.2361192580428906,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.1534334319876507,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.089607692003483
+        }
+      },
+      "coverage": {
+        "percent": 76.52106420594195,
+        "files": {
+          "clutch/__main__.py": 80.25776215582894,
+          "clutch/config.py": 77.58241758241758,
+          "clutch/drain.py": 62.765957446808514,
+          "clutch/roadmap.py": 94.00921658986175,
+          "clutch/serve.py": 55.07955936352509
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.735709,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3331,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.2087360639998224,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1375422819983214,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0925891540246084,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043644469697028
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_serve_no_roadmap.py",
+        "tests/unit/test_drain_no_roadmap.py",
+        "tests/unit/test_roadmap_author_rejected_row.py",
+        "tests/unit/test_release_ship_verb.py",
+        "tests/unit/test_main_release_group.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_serve_no_roadmap.py tests/unit/test_drain_no_roadmap.py tests/unit/test_roadmap_author_rejected_row.py tests/unit/test_release_ship_verb.py tests/unit/test_main_release_group.py\nbringing up nodes...\nbringing up nodes...\n\n...........                                                              [100%]\n11 passed in 1.38s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.918884
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_roadmap_ship.py",
+        "tests/integration/test_roadmap_ship.py",
+        "tests/unit/test_roadmap_author.py",
+        "tests/integration/test_ask_plan_drain.py",
+        "tests/integration/test_ask_plan_serve.py",
+        "tests/integration/test_ask_drain_loop.py",
+        "tests/integration/test_ask_drain_loop_agent.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_roadmap_ship.py tests/integration/test_roadmap_ship.py tests/unit/test_roadmap_author.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py\nbringing up nodes...\nbringing up nodes...\n\nssssssssss..sss.s.....                                                   [100%]\n8 passed, 14 skipped in 1.49s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.94583
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test"
+      ],
+      "rc": 0,
+      "tail": "]\nssssssssssssssssssssssss.ssssssssssssssssssssssssss.sssssssssss...ssss.s [ 63%]\n.ssssssssssssss...sssssssssssss.ss..ssssssssssssssssssssssssssssssssssss [ 65%]\nsssssssssssssssssssss.s.ssssssssssssssssss.ssssss.ssss.sssssssssssssssss [ 67%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 69%]\n.ssssssssssssssssssssssss..sssss.ssssssssss.ss.ssssss.ssss..sssssss..sss [ 71%]\nsss....sssss.ssssssssssssssssssssssssssssssssssssssssssssssssssssssssss. [ 73%]\nssss.sssssssssssssss.sssssssss.ssssssssssssssssssssssssssssssssss.ssss.s [ 75%]\nssssssssssssssssssssssssssssssssss...sssssssssssssssss.sssssss.sssssssss [ 77%]\nsssss.sssss.ssss..ss.s....sssssss.ssssssssssssssssssss....ssssssssssssss [ 79%]\nsss.ss..sssss.ss.ss.ssssss.sssssssssssssssss.sssss.ssss.ssssssssssssssss [ 81%]\nssssssss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 83%]\nsssss.ssssssssssssssssssss.sssssssss.sssssssssssssssssssssssssssssssssss [ 85%]\nsssssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssss.sssssssss [ 87%]\nss.s.sssssssssssssssssssssssssssssssssssssssssssssssssssssssss.ss..ssss. [ 89%]\n.ssssssssssssssss.sssss.ss.sss.ssssssssssssss..sssss.sssssssss.sssssssss [ 91%]\nssssssssssssssssssssss.ssssssssssss.s.ss...s.sss.ss.s.ssssss.sssssssssss [ 93%]\nssssssssssssssssssssssssssssssssssssssssssssss.ssss..................... [ 95%]\n.....s..ssss.ssssssssss.sssssss.....ssssssssssssssss.ssssssssssssssssss. [ 97%]\n...ssssssssssssssssss................ss.................ssssssss.sssssss [ 99%]\nss.........sssssssssssssssss                                             [100%]\n297 passed, 3331 skipped in 7.06s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 19.121297
+    }
+  ]
+}
