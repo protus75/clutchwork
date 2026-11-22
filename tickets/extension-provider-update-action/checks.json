@@ -1,0 +1,148 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "979f1e1243adfd1d0145de2f8b60f9a5378d1a09",
+  "stem": "extension-provider-update-action",
+  "passed": true,
+  "changed_files": [
+    "clutch/help.py",
+    "clutch/observe.py",
+    "tests/unit/test_observe_extension_fields.py",
+    "tests/unit/test_observe_provider_installs.py",
+    "vscode-clutchwork/extension.js",
+    "vscode-clutchwork/package.json"
+  ],
+  "inserted_lines": 53,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.005917,
+        "passed": 1976,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4281186669832096,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3080029069678858
+        }
+      },
+      "coverage": {
+        "percent": 73.8466225626741,
+        "files": {
+          "clutch/help.py": 100.0,
+          "clutch/observe.py": 52.29681978798587
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 10.462504,
+        "passed": 289,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7510198580566794,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0033655589795671
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_observe_provider_installs.py",
+        "tests/unit/test_observe_extension_fields.py",
+        "tests/unit/test_help.py",
+        "tests/integration/test_help.py",
+        "tests/integration/test_extension_argv.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_observe_provider_installs.py tests/unit/test_observe_extension_fields.py tests/unit/test_help.py tests/integration/test_help.py tests/integration/test_extension_argv.py\nbringing up nodes...\nbringing up nodes...\n\n.............                                                            [100%]\n13 passed in 1.24s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 3.354365
+    }
+  ]
+}
