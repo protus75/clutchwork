@@ -38,7 +38,7 @@ The set of skipped tests is exactly the set skipped today.
 ## Scope in / Scope out
 Scope in:
 - `tests/integration/conftest.py`: the changes in Goal / Why, and its `purpose:` meta line says it skips files that carry the `disk_io_skip` marker in place of `skips the files in DISK_IO_SKIP`.
-- Every file currently named in `DISK_IO_SKIP`: add the one `pytestmark` line (and `import pytest` when missing). Nothing else in those files changes. Record in the run record the count of files given the marker; it equals the length of `DISK_IO_SKIP` on the base commit (184).
+- Every file currently named in `DISK_IO_SKIP`: add the one `pytestmark` line (and `import pytest` when missing). Nothing else in those files changes, except the `# clutch:meta` header lines that the engine's Check meta fill rewrites after Implement; the implementer never edits those lines. Record in the run record the count of files given the marker; it equals the length of `DISK_IO_SKIP` on the base commit (184).
 - `tests/integration/test_disk_io_skip_list.py`: rewrite its two tests to (1) call the conftest hook with stand-in items whose `get_closest_marker` returns a marker for one and `None` for the other, and (2) scan `tests/integration/test_*.py` (anchored on `Path(__file__)`) and assert that no `REAL_IO_TESTS` file has a line matching the regex `^pytestmark = pytest\.mark\.disk_io_skip$` and that `DISK_IO_SKIP` no longer exists on the conftest module. This test file itself carries no such line (it is not skipped), so it holds the pattern only inside a string literal.
 - `docs/how-clutch-works.md` section 2.2: the sentence naming `DISK_IO_SKIP` says that integration test files carrying the `disk_io_skip` marker are skipped until rewritten onto in-memory fakes. Nothing else in that document changes.
 
@@ -64,7 +64,7 @@ Scope out:
 
 ## Definition of rejected
 - A test that runs today is skipped, or a test skipped today runs.
-- Any line other than the marker and its `import pytest` changes in a skipped file.
+- Any line other than the marker, its `import pytest`, and engine-written `# clutch:meta` header lines changes in a skipped file.
 - `REAL_IO_TESTS`, the I/O guard hooks, or `isolate_working_directory` change.
 
 ## Time budget
