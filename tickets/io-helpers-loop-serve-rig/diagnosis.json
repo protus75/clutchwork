@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "63ac2ea4d0a5d5c3a11e81cfbfdb82dbffc68151",
+  "stem": "io-helpers-loop-serve-rig",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Review failed only on criterion 1: tests/unit/test_loop_helpers.py has no check that the hub still resolves `until` and `turn`. Everything else (the move, the 20 import-line edits, the GitFake/FakeExec rewrites, the notify-sink branch) passed review. Don't redo it.",
+    "Append one test to tests/unit/test_loop_helpers.py: `from tests.integration import serve_rig`, then assert `serve_rig.turn is fakes.turn` and `callable(serve_rig.until)`. This is criterion 1's last clause.",
+    "In the same test, assert that each moved name on the hub is the shared object, e.g. `serve_rig.graph is loop_helpers.graph`, for graph, admission_graph, admission_config, enable_upgrade, notify_command, terminals and UpgradeChild. This is the reviewer's suggested fix.",
+    "Add the test without reading a repo file and without starting a process. Importing serve_rig only defines module attributes. Then rerun `./dev.py test tests/unit/test_loop_helpers.py` and `./dev.py test tests/unit`, and keep the base and candidate counts of 297 passed / 3341 skipped in run.md."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
