@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The untouched integration suite passed with 297 passed and 3341 skipped; no candidate changes were made.
+Base ff8b017d and candidate integration counts both equal 297 passed, 3341 skipped. Final verification passed: 15 helper tests, 2103 unit tests, and 8 targeted adoption tests. escape_rig mirrors FakeFileSystem writes under tmp_path for production Path readers; GitFake callbacks support the complete probe. Counts are supplied here for the engine-owned run.md.
 
 ## Dead ends
 
-The existing pause_checkout supplies GitFake, FakeExec and FakeFileSystem, but GitFake.worktree_add does not create or populate a worktree, and its default commit and revision methods do not model the history needed by the scenario.
+Memory-only worktree contents failed production Path reads; caller-contained mirroring resolved this. All 11 deliberate mutations were rejected and restored.
 
 ## Second problems filed
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-terra
+- model: gpt-6.1-sol
 - spec: implement 2.27
 
 ## Predicted vs actual
 
-Expected 20m; stopped after identifying the missing shared-fake behavior.
+20m expected; approximately 10m actual.
 
