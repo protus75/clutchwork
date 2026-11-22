@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The two importer files are now inside the scope fence, so their existing committed changes were retained.
+The two importer files are in the current scope fence, despite the prior scope-fence findings; individual mutation checks were not repeated during this retry.
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-The ticket budget was 26 minutes; this verification took less than that.
+none
 
