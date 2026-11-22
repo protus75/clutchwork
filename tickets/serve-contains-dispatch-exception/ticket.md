@@ -8,6 +8,16 @@ kind: bug
 ## Depends on
 - none
 
+## Runs before
+- disk-io-skip-per-file
+- flake-fix-jumps-queue
+- preflight-once-per-session
+- supervisor-orders-by-depends
+- shared-git-fake
+- shared-serve-rig-config
+- shared-review-script
+- check-rerun-failed-only
+
 ## Context
 - clutch/serve.py::Serve.__init__
 - clutch/serve.py::Serve.dispatch
