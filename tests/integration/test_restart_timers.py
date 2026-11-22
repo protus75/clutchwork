@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests production restart with the lock held: orphan reconciliation and harvest custody, journal-backed timer arm, fire and rearm, and startup failures that never report ready
+# purpose: Tests lock-held production restart: orphan reconciliation and harvest custody, journal-backed timer arm, fire and rearm, and startup failures that never report ready
 # relates: [clutch/__main__.py, clutch/audit.py, clutch/daemon.py, clutch/journal.py, clutch/llm.py, clutch/lockfile.py, clutch/mergequeue.py]
 # owner: clutch/restart.py
-# verified: 82d23237
-# hash: 53c636fc8e6b19c89e87ef39371e92e5e8d11881217d5ac06c329e796b2b5b5e
+# verified: 11188936
+# hash: 60ba11667f31f40858f5f069dc5a648e08e761ddf18c7935830729b717da798c
 
 import ast
 import asyncio
@@ -23,12 +23,10 @@ from clutch.audit import audit_journal
 from clutch.journal import EventType, Journal, JournalCorruption, render_ts, run_seq
 from clutch.lockfile import Lockfile, LockHeld
 from clutch.restart import Restart
-from clutch.seams import LocalFileSystem, SubprocessExec
 from clutch.timers import Timers
-from tests.cli_helpers import ENV, root
-from tests.config_helpers import CONFIG
+from tests.cli_helpers import root
 from tests.daemon_helpers import CoreRig, assert_startup_pause_wiring
-from tests.loop_helpers import Time, turn
+from tests.loop_helpers import Time, held, orphan, repository, turn
 from tests.waiting import wait_until
 
 pytestmark = pytest.mark.disk_io_skip
@@ -101,67 +99,6 @@ def timers(state, time):
 
 def green(journal):
     assert audit_journal(journal) == []
-
-
-async def repository(root, monkeypatch, *, prepare=None):
-    """Reuse CoreRig and its real build root, with Git/FS seams backed by a disposable repo."""
-    rig = CoreRig(root, prepare=prepare, config=CONFIG + "worktree_root: recovery-workspaces\n")
-    process, fs = SubprocessExec(), LocalFileSystem()
-    scripted = rig.exec.run
-
-    async def run(argv, **kwargs):
-        if argv[0] in {"git", "true"}:
-            return await process.run(argv, **kwargs)
-        return await scripted(argv, **kwargs)
-
-    monkeypatch.setattr(rig.exec, "run", run)
-    rig.checkout.git._env = ENV
-    write = rig.fs.write
-
-    def written(path, data):
-        write(path, data)
-        fs.write(path, data)
-
-    monkeypatch.setattr(rig.fs, "write", written)
-    mkdir, remove = rig.fs.mkdir, rig.fs.remove
-
-    def made(path):
-        mkdir(path)
-        fs.mkdir(path)
-
-    def removed(path):
-        remove(path)
-        fs.remove(path)
-
-    monkeypatch.setattr(rig.fs, "mkdir", made)
-    monkeypatch.setattr(rig.fs, "remove", removed)
-    (root / ".gitignore").write_text(".clutch/\nstate/\nrecovery-workspaces/\n")
-    from tests.stages_helpers import adopt_conduct
-
-    conduct = adopt_conduct(root)
-    await rig.checkout.git.add(root, ["config.yaml", ".gitignore", "clutch/thing.py", *conduct])
-    await rig.checkout.git.commit(root, "restart fixture config")
-    return rig
-
-
-async def orphan(rig, stem, *, intent=False, worktree=True):
-    journal = rig.journal
-    if intent:
-        journal.append(EventType.EFFECT_INTENT, {}, ticket=stem, key=f"test/{stem}/0")
-    else:
-        rig.transition(stem, "running")
-    path = rig.checkout.config.worktree_root / stem
-    if worktree:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        await rig.checkout.git.worktree_add(rig.root, path, stem, "main")
-        (path / "interrupted.py").write_text("unfinished")
-    return path
-
-
-def held(rig):
-    lock = Lockfile(rig.checkout.config.state_dir, verb="drain", instance_id="restart-test", clock=rig.time)
-    lock.acquire()
-    return lock
 
 
 @pytest.mark.asyncio

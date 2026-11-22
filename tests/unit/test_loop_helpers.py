@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for loop_helpers: its exports, the Rig, the fake Time clock, the ticket text builder, turn, the import closure, the triage and terminal helpers, and that fixtures write only under tmp_path
+# purpose: Unit tests for loop_helpers exports, Rig, fake Time clock, ticket text builder, import closure, triage, terminal and restart helpers, and that fixtures write only under tmp_path
 # relates: [tests/fakes.py, tests/loop_helpers.py]
 # owner: engine
-# verified: 7050142a
-# hash: 6f73793a567098ae2ce0ca7b78220b99561ca0db42d9617d1ab4968a02d40cf9
+# verified: 11188936
+# hash: c092bf89d630375c3186089bd4efbba699c8a91731bf86d84afe73d3c0f84258
 import asyncio
 from datetime import UTC, datetime, timedelta
 
@@ -358,3 +358,50 @@ def test_terminal_transitions(tmp_path):
     journal.append(EventType.SIGNAL, {"signal": "ticket_intake"}, ticket=STEM)
     # Rules out including another ticket or non-transition event.
     assert transitions(tmp_path) == [{"to": "running"}]
+
+
+def test_restart_exports():
+    from tests.loop_helpers import held, orphan, repository
+
+    assert (held, orphan, repository) == (loop_helpers.held, loop_helpers.orphan, loop_helpers.repository)
+
+
+@pytest.mark.asyncio
+async def test_restart_repository(tmp_path, monkeypatch):
+    from tests.git_fake import GitFake
+    from tests.loop_helpers import repository
+
+    rig = await repository(tmp_path, monkeypatch)
+    assert isinstance(rig.checkout.git, GitFake)
+    assert [call[0] for call in rig.checkout.git.calls] == ["add", "commit"]
+    assert not (tmp_path / ".git").exists()
+    assert isinstance(rig.fs, fakes.FakeFileSystem)
+
+
+@pytest.mark.asyncio
+async def test_restart_orphan(tmp_path, monkeypatch):
+    from clutch.journal import EventType
+    from tests.loop_helpers import orphan, repository
+
+    rig = await repository(tmp_path, monkeypatch)
+    path = await orphan(rig, "distinct", intent=True)
+    assert path == tmp_path / "recovery-workspaces/distinct"
+    assert (path / "interrupted.py").read_text() == "unfinished"
+    assert rig.journal.events[-1].type == EventType.EFFECT_INTENT
+    assert rig.journal.events[-1].key == "test/distinct/0"
+    assert rig.checkout.git.calls[-1][0] == "worktree_add"
+
+
+@pytest.mark.asyncio
+async def test_restart_held(tmp_path, monkeypatch):
+    from tests.loop_helpers import held, repository
+
+    rig = await repository(tmp_path, monkeypatch)
+    lock = held(rig)
+    try:
+        assert lock.held
+        identity = __import__("json").loads(lock.path.read_text())
+        assert identity["verb"] == "drain"
+        assert identity["instance_id"] == "restart-test"
+    finally:
+        lock.release()

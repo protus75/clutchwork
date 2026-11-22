@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected process, filesystem and time seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
+# purpose: Drives the production daemon core, merge queue, Rework, pause consumer and serve graph through injected seams, covering config snapshots, provider preflight, admission holds and the drain control lifecycle
 # relates: [clutch/__main__.py, clutch/box.py, clutch/caps.py, clutch/config.py, clutch/control.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py]
-# owner: engine
-# verified: 82d23237
-# hash: 17d90f5716d7dc71690a20cff114f23d7a4c345cd2d000c1cccf8c430005938d
+# owner: clutch/daemon.py
+# verified: 11188936
+# hash: 264a621d6407f181c49e121dd2f21eadf96fa3dab9cfa64c252c19f96cf3ecd1
 
 import ast
 import asyncio
@@ -122,7 +122,7 @@ async def test_production_watchdog_shares_active_executor(root, monkeypatch):
     from clutch.drain import drain
     from clutch.seams import SubprocessExec
     from tests.integration.serve_rig import finish, terminals, until
-    from tests.integration.test_restart_timers import repository
+    from tests.loop_helpers import repository
 
     contexts = []
 

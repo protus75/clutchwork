@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Shared test scaffolding for the scheduler, triage and terminal tests: a fake clock, a ticket text builder, a scheduler and watcher Rig, an import-closure walker, triage helpers, and the repo, author, diagnosis_reply and transitions fixtures
+# purpose: Shared scaffolding for scheduler, triage, terminal and restart tests: fake clock, ticket text builder, scheduler and watcher Rig, import-closure walker, triage helpers, and repo, repository, orphan and held fixtures
 # relates: [clutch/config.py, clutch/journal.py, clutch/scheduler.py, clutch/seams.py, clutch/tickets.py, clutch/watcher.py, tests/cli_helpers.py]
 # owner: engine
-# verified: 7050142a
-# hash: 8fc75a3f25d3389eb10e72aa17ea898bea8a5167cc8cebcc7ea0e16400855392
+# verified: 11188936
+# hash: 6c00eb5adeb434500e09af9c6cd816990b9cd6e7bb0cba4f2a771e351baa0435
 
 import ast
 import asyncio
@@ -415,3 +415,48 @@ def transitions(repo: Path) -> list[dict]:
     from tests.stages_helpers import STEM
 
     return [e.body for e in Journal(repo / ".clutch" / "state", clock).read() if e.type == EventType.STATE_TRANSITION and e.ticket == STEM]
+
+
+async def repository(root, monkeypatch, *, prepare=None):
+    """Build a restart rig using the shared in-memory I/O seams."""
+    from tests.config_helpers import CONFIG
+    from tests.daemon_helpers import CoreRig
+    from tests.stages_helpers import adopt_conduct
+
+    rig = CoreRig(root, prepare=prepare, config=CONFIG + "worktree_root: recovery-workspaces\n")
+    process = FakeExec()
+    scripted = rig.exec.run
+
+    async def run(argv, **kwargs):
+        if argv[0] in {"git", "true"}:
+            return await process.run(argv, **kwargs)
+        return await scripted(argv, **kwargs)
+
+    monkeypatch.setattr(rig.exec, "run", run)
+    (root / ".gitignore").write_text(".clutch/\nstate/\nrecovery-workspaces/\n")
+    conduct = adopt_conduct(root)
+    await rig.checkout.git.add(root, ["config.yaml", ".gitignore", "clutch/thing.py", *conduct])
+    await rig.checkout.git.commit(root, "restart fixture config")
+    return rig
+
+
+async def orphan(rig, stem, *, intent=False, worktree=True):
+    journal = rig.journal
+    if intent:
+        journal.append(EventType.EFFECT_INTENT, {}, ticket=stem, key=f"test/{stem}/0")
+    else:
+        rig.transition(stem, "running")
+    path = rig.checkout.config.worktree_root / stem
+    if worktree:
+        path.mkdir(parents=True, exist_ok=True)
+        await rig.checkout.git.worktree_add(rig.root, path, stem, "main")
+        (path / "interrupted.py").write_text("unfinished")
+    return path
+
+
+def held(rig):
+    from clutch.lockfile import Lockfile
+
+    lock = Lockfile(rig.checkout.config.state_dir, verb="drain", instance_id="restart-test", clock=rig.time)
+    lock.acquire()
+    return lock

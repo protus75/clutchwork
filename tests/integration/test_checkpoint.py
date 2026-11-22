@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Integration tests for the checkpoint push: merge and settled triggers, journaled effect intent and completion, failed-push refire with redacted Box failure reports and storm occurrences, crash-replay windows, and dormant versus serve-active wiring
+# purpose: Integration tests for checkpoint push: merge and settled triggers, journaled effect intent and completion, failed-push refire with redacted Box reports and storm occurrences, crash replay, and dormant versus serve-active wiring
 # relates: [clutch/__main__.py, clutch/checkpoint.py, clutch/daemon.py, clutch/effects.py, clutch/enginelog.py, clutch/git.py, clutch/journal.py]
-# owner: engine
-# verified: 92889fdb
-# hash: d05590e54076001791d2185f49d13e130774b0dd850fc8eef502c6035b41e72c
+# owner: clutch/checkpoint.py
+# verified: 11188936
+# hash: a53831494a934df11c2cb7a16ae113505b4eab0feee4dc41d64afe8152979cea
 
 import asyncio
 import hashlib
@@ -29,7 +29,7 @@ from clutch.storm import StormLedger, arrival_id
 from tests.cli_helpers import ENV, Clock, Stages, root, ticket, write
 from tests.daemon_helpers import CoreRig, assert_core_wiring
 from tests.integration.test_git import commit_lock
-from tests.integration.test_restart_timers import repository
+from tests.loop_helpers import repository
 
 pytestmark = pytest.mark.disk_io_skip
 
