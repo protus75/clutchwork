@@ -14,6 +14,7 @@ kind: bug
 - shared-git-fake
 - shared-serve-rig-config
 - shared-review-script
+- check-rerun-failed-only
 
 ## Context
 - tests/harness/host_loop.py::FixtureLoop
