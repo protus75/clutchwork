@@ -14,6 +14,7 @@ kind: chore
 ## Context
 - tests/fakes.py
 - tests/conftest.py
+- tests/stage_replies.py
 - clutch/docs/host-authoring.md#Unit and integration tests
 
 ## On-demand
@@ -42,14 +43,14 @@ The helpers follow the rules in `clutch/docs/host-authoring.md` section "Unit an
 - acceptance: `tests/unit/test_loop_helpers.py` imports each moved name from `tests.loop_helpers` and exercises it without a process, real git or a write outside `tmp_path`; no importer still imports a moved name from the hub
 - tests: tests/unit/test_loop_helpers.py
 - post-merge source of truth: tests/loop_helpers.py
-- closest existing: `tests/fakes.py` (FakeClock, FakeExec, FakeFileSystem, FakeJournal, `turn`, `until`) and `tests/git_fake.py::GitFake` supply the fake seams but none of the scaffolding below; the hub definitions today do real git and processes, so a skipped file cannot reuse them
+- closest existing: `tests/fakes.py` (FakeClock, FakeExec, FakeFileSystem, FakeJournal, `turn`, `until`) and `tests/git_fake.py::GitFake` supply the fake seams but none of the scaffolding below; `tests/stage_replies.py` supplies `requisition_reply` but no triage-verdict or authored-ticket reply builder; the hub definitions today do real git and processes, so a skipped file cannot reuse them
 - earning reason: consolidation of evidenced duplicates and shared use: 48 files import these names from `tests/integration/test_scheduler.py`, `test_triage.py`, `test_terminal.py`, `test_restart_timers.py` and `serve_rig.py` (all under `tests/integration/`), and the hub is skipped, so no importer can be restored until the names live in an unskipped module that follows the I/O rules
 
 ## Scope in / Scope out
 Scope in:
 - Create `tests/loop_helpers.py` holding these moved names, each rewritten as described, keeping its signature unless a change is named: `Rig`, `Time`, `admission_config`, `admission_graph`, `author`, `author_reply`, `clock`, `diagnosis_reply`, `enable_upgrade`, `enqueue`, `escape_report`, `escape_rig`, `graph`, `held`, `notify_command`, `orphan`, `reply`, `repo`, `repository`, `requisition_reply`, `root_with_box`, `run`, `scheduler_import_closure`, `text`, `transitions`, `turn`.
   - From `test_scheduler.py`: `Time`, `Rig` (writes config and files under `tmp_path`), `text`, and `turn` (re-exported from `tests.fakes`, no second definition); its `import_closure` moves as `scheduler_import_closure` (the mergequeue function of the same name moved in `io-helpers-daemon`), and the two importers `test_daemon_composition.py` and `test_serve_lifecycle.py` import it as `scheduler_import_closure as import_closure` where they also import the other.
-  - From `test_triage.py`: `root_with_box`, `enqueue`, `reply`, `author_reply`, `requisition_reply` (the model-reply shapes come from `tests/stage_replies.py`; no copy), `run`, `escape_rig` (runs git; becomes `GitFake`) and `escape_report`.
+  - From `test_triage.py`: `root_with_box`, `enqueue`, `reply`, `author_reply`, `requisition_reply`, `run`, `escape_rig` (runs git; becomes `GitFake`) and `escape_report`. `requisition_reply` is a re-export of `tests.stage_replies.requisition_reply` (which `test_triage.py` already imports), with no second definition. `tests/stage_replies.py` has no triage-verdict or authored-ticket builder, so `reply` (the triage verdict JSON) and `author_reply` (the authored-ticket JSON) move into `tests/loop_helpers.py` unchanged in body and signature; they do no I/O, and this module becomes their one home.
   - From `test_terminal.py`: `clock`, `author`, `diagnosis_reply`, `transitions`, and the `repo` fixture (real git today; `GitFake`). `ENV`, `STEM` and `implement_reply` are re-exports of names already in `tests.stages_helpers`; the importers of those three from the hub (`test_caps.py` for `ENV` and `STEM`, `test_reject_queue.py` for `implement_reply`) import them from `tests.stages_helpers` instead.
   - From `test_restart_timers.py`: `repository` (39 lines: it wires a real `SubprocessExec`, `LocalFileSystem` and git into `CoreRig`; it becomes `GitFake`, `FakeExec` and `FakeFileSystem`), `orphan`, `held`.
   - From `tests/integration/serve_rig.py`, only the five names that run real git, a process or `LocalFileSystem` move: `graph` (uses `LocalFileSystem().publish`), `admission_graph` (79 lines, `SubprocessExec` and git), `enable_upgrade` (git and files), `notify_command` (writes a script and uses `sys.executable`; it returns an in-process command run through `FakeExec`) and `admission_config` (edits `config.yaml` under the given root). `serve_rig.py` keeps its path and every other name it exports (`until`, `write`, `script`, `terminals`, `request`, `trip`, `finish`, `activated_graph`, `active_graph`, `admission_ticket`, `start_admission`, `deliveries`, `notify_completions`, `escalation_batch`, `UpgradeChild`, `HeldLLM`, `retro_scenario`) and imports the five moved names back from `tests.loop_helpers`, so `tests.loop_helpers` never imports `serve_rig` (no cycle). The five moved functions call none of the stay-behind names.
@@ -64,7 +65,7 @@ Scope in:
 - Engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them.
 Scope out:
 - Restoring any skipped test file (later batch tickets): a hub file stays skipped and its tests are unchanged.
-- Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior.
+- Editing `tests/fakes.py`, `tests/git_fake.py`, `tests/stage_replies.py`, `tests/config_fixture.py` or `tests/conftest.py`. A shared fake that lacks a behavior a helper needs stops the run as a premise failure naming the missing behavior. Adding triage or author reply builders to `tests/stage_replies.py` is out of scope; `reply` and `author_reply` live in `tests/loop_helpers.py`.
 - Defining in `tests/loop_helpers.py` a class that duplicates `tests/fakes.py` or `tests/git_fake.py`: use the shared fakes. A thin subclass is not needed by any moved name. Names in `serve_rig.py` that do no git, process or disk work stay in `serve_rig.py`.
 - Skipped importers may still break semantically; their batch ticket fixes that.
 
