@@ -1,7 +1,7 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit test checking that Driver.stage allows only same-stem review_visual and meta-stem meta stages inside a check stage, restores the outer stage, and rejects any nesting under other surfaces
+# purpose: Unit test checking that Driver.stage allows only same-stem review_visual and meta-stem meta stages inside a check stage, restores the outer stage, and rejects other nesting
 # relates: [clutch/driver.py]
 # owner: clutch/driver.py
 # verified: ae8dbac1
