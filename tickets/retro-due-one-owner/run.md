@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The branch already contains the prior implementation; it selects triggers before loading the invoice evidence that counts override spikes.
+The final unit verification passed 44 tests. The integration verification exited successfully but skipped all 31 disk-I/O tests. Mutation checks caught the tested wrong implementations.
 
 ## Dead ends
 
-Reviewed the existing measurements, invoice loading, trigger selection, and default spike configuration; the ticket does not choose how to resolve their conflicting requirements.
+none
 
 ## Second problems filed
 
