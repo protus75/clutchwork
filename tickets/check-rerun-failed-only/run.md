@@ -4,24 +4,23 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification passed 130 tests, the coverage gate passed 1,828 unit tests, and the final integration run passed 3,602 tests. An earlier integration run failed the serve-dispatch test with a duplicate keep verdict; the same failure reproduced on the base commit. The simpler approach of treating every nonzero rerun exit as a failure was rejected because the coverage wrapper can exit nonzero even when all selected tests pass.
+The ticket verification passed all 130 tests, and the unit suite and coverage gate, lint, and format checks passed. The full integration suite timed out in test_serve_admission_refusal_keeps_main_green[safety], which also timed out on the base commit. The exact ticket verification command could not collect on the base because the new test files do not exist there. The selected-rerun tests guard against recurrence; the simpler full rerun was rejected because it would not meet the ticket’s speed goal.
 
 ## Dead ends
 
-The first generated metadata purpose exceeded the lint line limit and was shortened.
+The base integration run also had three host-loop setup errors that did not occur on the candidate.
 
 ## Second problems filed
 
-- box-001046-e2222211: tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart intermittently records two keep verdicts; it also failed on the base commit.
-- box-001047-e49769ea: clutch meta check reports empty purposes in unchanged tests/integration/test_meta_refresh_commit_lock.py and tests/unit/test_training_triage_records.py.
+- box-001055-d2562a00: The serve-admission safety integration test timed out on both the candidate and the base commit.
 
 ## Resolved engine/model
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.23
+- spec: implement 2.24
 
 ## Predicted vs actual
 
-The ticket expected 20 minutes; elapsed time was not measured.
+Expected 20 minutes; completed in under 20 minutes.
 
