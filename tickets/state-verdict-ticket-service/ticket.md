@@ -25,7 +25,7 @@ none
 - clutch/docs/host-running.md
 
 ## Goal / Why
-Roadmap row 210, the first slice of `docs/engine-state-db-plan.md` section 7. After this change a verdict (confirm, reject, keep) and a ticket change (intake, watcher publication) complete while an implementation is running. Today `Serve.scan`, `Serve.watch` and `Serve.merge` enter `DaemonAdmission.exclusive`, which waits for every held run slot; a confirm on 2026-11-21 waited about 6 minutes for a running ticket to merge while a ready ticket with a disjoint fence did not start.
+Roadmap row 210, the first slice of `docs/engine-state-db-plan.md` section 7. After this change a verdict (confirm, reject, keep) and a ticket change (intake, watcher publication) complete while an implementation is running. Today `Serve.scan`, `Serve.watch` and the merge-queue `Serve.merge` no longer enter `DaemonAdmission.exclusive`; the remaining admission-wide waits are `Serve.mutations` (retro, supervision, box intake), `Serve.maintenance` (`admission.exclusive()` in `clutch/serve.py`) and the startup and orphan-sweep entries in `clutch/daemon.py`. A confirm on 2026-11-21 waited about 6 minutes for a running ticket to merge while a ready ticket with a disjoint fence did not start; this slice must leave verdict and ticket-change paths with no such wait once ticket state moves to the database.
 
 The slice delivers the minimum end-to-end machinery, with no dual writer:
 - a per-user DuckDB state database with stable project identity, keyed rows and short transactions;
@@ -63,8 +63,8 @@ Each ported path deletes its former live writer and read path in the same change
 ### Admission exclusion for verdicts, intake and watcher
 - disposition: replace
 - owner: clutch/daemon.py (`DaemonAdmission`) and clutch/serve.py
-- consumers: `Serve.scan`, `Serve.watch`, the verdict part of `Serve.merge`, and `runner.verdict_locked`
-- observable change: these paths no longer enter `DaemonAdmission.exclusive`. Bounded run slots and the short scheduler selection remain. Startup recovery keeps a readiness barrier.
+- consumers: `Serve.scan`, `Serve.watch`, verdict settlement (`Serve.verdicts`, `Serve.apply_verdict`), and `runner.verdict_locked`
+- observable change: these paths do not enter `DaemonAdmission.exclusive` or `mutations`, and the ported state reads add no admission wait. Bounded run slots and the short scheduler selection remain. Startup recovery keeps a readiness barrier.
 - compatibility: merge-queue processing keeps its current serialization until `state-merge-queue`. The existing ticket-changed contract for an edit during a run is preserved.
 - acceptance: with a run slot held, a verdict and an intake pass complete without waiting for it.
 - tests: new unit tests with held slots and fake time.
@@ -83,7 +83,9 @@ Each ported path deletes its former live writer and read path in the same change
 ## Scope in / Scope out
 Scope in:
 - add `clutch/state.py` with the schema, the service, the endpoint, request-ID idempotency, the checkpoint exporter and startup reconciliation;
-- port the intake, verdict, watcher publication and admission paths named above, and delete their former live writers and read paths, including the `exclusive` entries in `Serve.scan` and `Serve.watch` and the verdict settlement part of `Serve.merge`;
+- port the intake, verdict, watcher publication and admission paths named above, and delete their former live writers and read paths; `Serve.scan`, `Serve.watch` and verdict settlement must stay free of `DaemonAdmission.exclusive` and `mutations` (no new entry may be added);
+- drain selection and dispatch (`_Drain._scan`, `_sha`, `_offer_material` in `clutch/drain.py`) dispatch only revisions whose checkpoint commit exists and skip tickets held for an editor conflict, using the `clutch/state.py` service for both checks;
+- engine-written `# clutch:meta` header lines: the engine's Check meta fill rewrites the header of each edited file after Implement. Those header changes are in scope; the implementer never edits them;
 - update verb help and the docs that describe these commands: `clutch/docs/host-running.md` verb rows, and `docs/how-clutch-works.md` section 2 and the lock inventory;
 - update the existing tests whose assertions flip because the exclusive wait is gone.
 
@@ -103,6 +105,7 @@ The row asks for one slice that removes the wait with no dual writer, so it is n
 - clutch/git.py
 - clutch/control.py
 - clutch/watcher.py
+- clutch/drain.py
 - clutch/__main__.py
 - clutch/help.py
 - clutch/docs/host-running.md
@@ -117,12 +120,16 @@ The row asks for one slice that removes the wait with no dual writer, so it is n
 - tests/integration/test_serve_scan_watch_overlap.py
 - tests/regress_serve_scan_watch_off_exclusive.py
 - tests/regress_serve_merge_off_exclusive.py
+- tests/unit/test_drain_checkpoint_dispatch.py
+- tests/unit/test_drain_eligible.py
+- tests/unit/test_drain_reoffer.py
+- tests/unit/test_drain_containment.py
 
 ## Acceptance criteria
 1. A request replayed with the same request ID returns the recorded result and creates no second revision, not a new one: `./dev.py test tests/unit/test_state_service.py`.
 2. A request with a stale expected revision is refused with a named reason, not applied: `./dev.py test tests/unit/test_state_service.py`.
 3. Rows for project A are never returned by a query for project B, and a duplicate or ambiguous registration is refused: `./dev.py test tests/unit/test_state_service.py`.
-4. While a run slot is held, a verdict and an intake pass both complete, and neither enters `DaemonAdmission.exclusive`: `./dev.py test tests/unit/test_state_verdict_no_admission_wait.py`.
+4. While a run slot is held, `Serve.scan` (intake) and verdict settlement both complete, and neither enters `DaemonAdmission.exclusive` or `mutations` (built from `DaemonAdmission` and in-memory fakes in a unit file, not an integration test): `./dev.py test tests/unit/test_state_verdict_no_admission_wait.py`.
 5. A revision is not dispatchable until its checkpoint commit exists. The commit contains only that ticket's path: `./dev.py test tests/unit/test_state_checkpoint_conflict.py`.
 6. When both the file and the database changed since the exported base, both versions are kept, the file is not overwritten, that ticket is held and another ticket still checkpoints: `./dev.py test tests/unit/test_state_checkpoint_conflict.py`.
 7. After a simulated crash between the database commit and the Git commit, restart produces exactly one checkpoint commit: `./dev.py test tests/unit/test_state_checkpoint_conflict.py`.
@@ -130,6 +137,7 @@ The row asks for one slice that removes the wait with no dual writer, so it is n
 9. A real local endpoint round trip authenticates the client and returns the acknowledged result: `./dev.py test tests/integration/test_state_endpoint.py`.
 10. No former live writer or read path remains for the ported state, and no SQLite file is opened: `./dev.py test tests/unit/test_state_service.py`.
 11. Command docs and help are consistent: `./dev.py test tests/unit/test_main_help.py tests/unit/test_help.py`.
+12. Drain selection and dispatch skip a revision with no checkpoint commit and a ticket held for an editor conflict, while other tickets still dispatch: `./dev.py test tests/unit/test_drain_checkpoint_dispatch.py`.
 
 ## Verification
 ```
