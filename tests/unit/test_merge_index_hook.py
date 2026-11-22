@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: merge-path index refresh outcomes
+# purpose: Post-merge index refresh: skipped without an index, logs built/findings/failed outcomes, never breaks the squash, and loads extensions without installing them
 # relates: [clutch/evidence/store.py, clutch/merge.py, clutch/providers.py, clutch/seams.py]
 # owner: engine
-# verified: 365b3e38
-# hash: 97ec0526f760ba56fa0b6647d7b97bc2af914d4f139c05efee50f59c568e5e36
+# verified: 452057e3
+# hash: cbf522d5ae012143cb7efe6c3604c9696034237ef1afb03ba88db98efa78e698
 
 import asyncio
 import json
@@ -21,12 +21,13 @@ from clutch import merge
 from clutch.evidence.store import EvidenceStore
 from clutch.providers import child_env
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 
 
 def context(tmp_path):
     config = NS(state_dir=tmp_path, index=NS(embed=None), providers=[NS(auth="SECRET")], release=NS(pypi_token="TOKEN"))
     driver = NS(redactor=NS(scrub=lambda s: s), clock=lambda: datetime(2026, 1, 1, tzinfo=UTC))
-    return NS(config=config, repo=tmp_path, fs=LocalFileSystem(), git=NS(), exec_=object(), env={"SECRET": "hidden", "KEEP": "yes"}, driver=driver)
+    return NS(config=config, repo=tmp_path, fs=LocalFileSystem(), git=GitFake(), exec_=object(), env={"SECRET": "hidden", "KEEP": "yes"}, driver=driver)
 
 
 def records(ctx):
@@ -111,7 +112,7 @@ async def test_squash_order_and_failure(tmp_path, monkeypatch):
         return await fn()
 
     ctx.driver.effects = NS(run=run)
-    ctx.git = NS(status_porcelain=AsyncMock(return_value=""), diff_names=AsyncMock(return_value=["a"]), merge_squash=AsyncMock(return_value="commit"), rev_parse=AsyncMock(return_value="head"))
+    ctx.git = GitFake(status_porcelain="", diff_names=["a"], merge_squash="commit", rev_parse="head")
     ticket = NS(stem="work", frontmatter=NS(source="human"), sections={"Goal / Why": "goal"})
     original = merge.refresh_index
 
@@ -136,7 +137,7 @@ async def test_real_build(tmp_path, monkeypatch):
     ctx = context(tmp_path)
     (tmp_path / "a.md").write_text("# Heading\ncontent\n")
     duckdb.connect(str(tmp_path / "index.duckdb")).close()
-    ctx.git = NS(ls_files=AsyncMock(return_value=["a.md"]), ticket_touches=AsyncMock(return_value=[]))
+    ctx.git = GitFake(ls_files=["a.md"], ticket_touches=[])
     loads, statements = [], []
     monkeypatch.setattr(merge.MERGE_CREATOR, "load", lambda conn, kind: (loads.append(kind), [])[1])
     monkeypatch.setattr(merge, "EvidenceStore", lambda *args: NS(call_keys=lambda prefix: []))

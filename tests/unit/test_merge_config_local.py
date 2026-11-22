@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: verify local config survives squash merges
+# purpose: Dirty-overlap exempts config.yaml, and squash merges three-way merge the owner's local config.yaml with the owner winning, restoring it if the merge fails
 # relates: [clutch/git.py, clutch/merge.py, clutch/seams.py]
 # owner: clutch/merge.py
-# verified: 407dfd0f
-# hash: eeefe9098af94a6bf69c7c62ad14a5660c94f9b4110a45dcacbf8668134e0004
+# verified: 452057e3
+# hash: 6d6d1bbd9225181c29ae76ef0eebc40d3e576b92a98ac6976df123d7fd343dd6
 import asyncio
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock
@@ -15,13 +15,12 @@ import pytest
 from clutch.git import GitError
 from clutch.merge import dirty_overlap, write_squash
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 
 
 @pytest.mark.asyncio
 async def test_dirty_config_exempt():
-    git = NS(
-        main_write=asyncio.Lock, _commit_lock=asyncio.Lock(), status_porcelain=AsyncMock(return_value="M  config.yaml\0 M other.py\0"), diff_names=AsyncMock(return_value=["config.yaml", "other.py"])
-    )
+    git = GitFake(status_porcelain="M  config.yaml\0 M other.py\0", diff_names=["config.yaml", "other.py"])
     findings = await dirty_overlap(NS(git=git, repo="repo"), "work")
     assert len(findings) == 1 and "other.py" in findings[0].message and "config.yaml" not in findings[0].message
 
@@ -55,7 +54,7 @@ async def test_squash_config(tmp_path, status, fail, monkeypatch):
     async def effect(fn, **kwargs):
         return await fn()
 
-    git = NS(status_porcelain=AsyncMock(return_value=status), diff_names=AsyncMock(return_value=["x"]), _run=command, merge_squash=squash)
+    git = GitFake(status_porcelain=status, diff_names=["x"], _run=command, merge_squash=squash)
     ctx = NS(repo=tmp_path, config=NS(state_dir=state), fs=LocalFileSystem(), git=git, driver=NS(effects=NS(run=effect), journal=NS(read=lambda: [], append=lambda *a, **kw: None)))
     ticket = NS(stem="work", frontmatter=NS(source="human"), sections={"Goal / Why": "goal"})
     monkeypatch.setattr("clutch.merge.refresh_index", AsyncMock())

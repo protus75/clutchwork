@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test release changelog
+# purpose: Release writes the CHANGELOG before the commit and tag, refuses on a dirty changelog or an existing tag, and merged_subjects filters out trailer commits
 # relates: [clutch/git.py, clutch/release.py, clutch/runner.py]
 # owner: engine
-# verified: 9a610809
-# hash: 18eed84516f3cb3673cd17acf2dce10dff760c6fed8d529290b9f1b8ade35e21
+# verified: 452057e3
+# hash: 8a04678e9836ee2d33c9556765c0d34aff456617734175da108eedb21a4380e7
 import asyncio
 from pathlib import Path
 
@@ -14,6 +14,7 @@ import pytest
 from clutch.git import Git, GitError
 from clutch.release import release
 from clutch.runner import Refusal
+from tests.git_fake import GitFake
 
 
 class Process:
@@ -39,40 +40,37 @@ class FS:
         self.events.append(("write", path.name, data))
 
 
-class FakeGit:
-    def __init__(self, previous=None, dirty="", exists=False):
-        self.previous = previous
-        self.dirty = dirty
-        self.exists = exists
-        self.events = []
+def make_git(previous=None, dirty="", exists=False):
+    events = []
 
-    async def status_porcelain(self, repo, *paths):
+    def status(repo, *paths):
         assert "CHANGELOG.md" in paths
-        return self.dirty
+        return dirty
 
-    async def rev_parse(self, repo, ref):
-        if self.exists:
+    def rev_parse(repo, ref):
+        if exists:
             return "existing"
         raise GitError([], 1, "", "missing")
 
-    async def previous_release_tag(self, repo):
-        return self.previous
-
-    async def merged_subjects(self, repo, since):
-        self.events.append(("since", since))
+    def subjects(repo, since):
+        events.append(("since", since))
         return ["clutch(a-b): Does X. Also Y."]
 
-    async def commit(self, repo, message, *, only):
-        self.events.append(("commit", message, only))
+    def commit(repo, message, *, only):
+        events.append(("commit", message, only))
         return "sha"
 
-    async def tag(self, repo, tag, message, sha):
-        self.events.append(("tag", tag, sha))
+    def tag(repo, tag, message, sha):
+        events.append(("tag", tag, sha))
+
+    git = GitFake(status_porcelain=status, rev_parse=rev_parse, previous_release_tag=previous, merged_subjects=subjects, commit=commit, tag=tag)
+    git.events = events
+    return git
 
 
 @pytest.mark.parametrize("previous", [None, "v0.3.0"])
 def test_release_writes_before_commit(previous):
-    git = FakeGit(previous)
+    git = make_git(previous)
     process = Process()
     assert asyncio.run(release(Path("/repo"), git, process, FS(git.events), {}, "minor", "2026-02-03")) == ("0.4.0", "sha")
     assert git.events == [
@@ -85,7 +83,7 @@ def test_release_writes_before_commit(previous):
 
 @pytest.mark.parametrize("dirty,exists", [(" M CHANGELOG.md", False), ("", True)])
 def test_refusals_before_write(dirty, exists):
-    git = FakeGit(dirty=dirty, exists=exists)
+    git = make_git(dirty=dirty, exists=exists)
     process = Process()
     with pytest.raises(Refusal):
         asyncio.run(release(Path("/repo"), git, process, FS(git.events), {}, "minor", "2026-02-03"))

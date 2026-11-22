@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tracks the move to GitFake: fails when a test file builds its own Git stand-in without being on the pending list, or when a pending entry is stale or missing
+# purpose: Tracks migration to GitFake: fails when a test file builds its own Git stand-in without being on the PENDING list, or when a PENDING entry is stale or missing
 # relates: [tests/git_fake.py, tests/unit/test_git_fake.py]
 # owner: engine
-# verified: c015c627
-# hash: 56867deafe99c2826ff008824c97e9491db0b64ff3237d98a301f1f6755a19ca
+# verified: 452057e3
+# hash: f4b19c0bc0d053a0cdace2227d935716a7caec17ca5f65f8729767d40a1bc662
 
 import re
 from pathlib import Path
@@ -23,19 +23,6 @@ PENDING = (
     "tests/integration/test_retry_keeps_branch.py",
     "tests/integration/test_serve_verdict_orphan_sweep.py",
     "tests/unit/test_check_meta_fill.py",
-    "tests/unit/test_merge_admission_params.py",
-    "tests/unit/test_merge_config_local.py",
-    "tests/unit/test_merge_dirty.py",
-    "tests/unit/test_merge_dirty_commit_lock.py",
-    "tests/unit/test_merge_index_hook.py",
-    "tests/unit/test_merge_resolve.py",
-    "tests/unit/test_mergequeue_retained_ticket.py",
-    "tests/unit/test_mergequeue_tree_check.py",
-    "tests/unit/test_meta_drift_check.py",
-    "tests/unit/test_paved_roads.py",
-    "tests/unit/test_reject_reason_paths.py",
-    "tests/unit/test_release_changelog.py",
-    "tests/unit/test_requisition_input_identity.py",
     "tests/unit/test_requisition_prior_review.py",
     "tests/unit/test_retro_measurements.py",
     "tests/unit/test_retro_proposal.py",

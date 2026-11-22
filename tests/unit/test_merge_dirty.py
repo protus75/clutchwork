@@ -1,20 +1,21 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test merge dirty
+# purpose: Dirty-checkout findings for staged paths outside the diff, renames, and unstaged paths that overlap the branch diff
 # relates: [clutch/merge.py]
 # owner: clutch/merge.py
-# verified: 407dfd0f
-# hash: ff8e54188b0de2d17afd0d456469a5e86e62d9266df0a9b25f6b8a17f24a1bfc
+# verified: 452057e3
+# hash: 945dca6e90f73bf5f11615593a0721271729d2e5b395a550f447c2cd1a5d5e09
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from clutch.merge import dirty_overlap
+from tests.git_fake import GitFake
 
 
 def findings(status):
-    git = SimpleNamespace(main_write=asyncio.Lock, _commit_lock=asyncio.Lock(), status_porcelain=AsyncMock(return_value=status), diff_names=AsyncMock(return_value=["branch.py"]))
+    git = GitFake(status_porcelain=status, diff_names=["branch.py"])
     return asyncio.run(dirty_overlap(SimpleNamespace(git=git, repo="repo"), "ticket"))
 
 

@@ -1,17 +1,18 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test mergequeue retained ticket
+# purpose: Retained admission loads the ticket from main or a lift commit, and refuses on a review SHA mismatch, a snag verdict, a missing worktree, a dirty worktree, or a moved HEAD
 # relates: [clutch/mergequeue.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: 325f56523fbfd5b9aaf960ba263f0f13c301232858d4180fad3648b380fec81d
+# verified: 452057e3
+# hash: c3f5ca2e4e4a3fdaad718222b291e5fe4b778643a41731962f79643808222708
 from types import SimpleNamespace
 
 import pytest
 
 from clutch import stages
 from clutch.mergequeue import MergeQueue
+from tests.git_fake import GitFake
 
 TICKET = """---
 state: confirmed
@@ -56,30 +57,6 @@ Needs an outside file.
 """
 
 
-class Git:
-    def __init__(self, review):
-        self.review = review
-        self.shows = []
-        self.status = ""
-        self.head = "head-sha"
-        self.lift_review = "review-sha"
-
-    async def _run(self, repo, verb, ref):
-        assert verb == "show"
-        self.shows.append(ref)
-        return self.review if ref.endswith("/review.md") else TICKET
-
-    async def rev_parse(self, repo, ref):
-        if ref == "HEAD":
-            return self.head
-        if ref == "work":
-            return "head-sha"
-        return self.lift_review if ref.startswith("c1:") else "review-sha"
-
-    async def status_porcelain(self, *args):
-        return self.status
-
-
 def rig(tmp_path, *, verdict="approve", reviewed_sha="reviewed", lifts=()):
     (tmp_path / "context.txt").write_text("context")
     worktree = tmp_path / "worktree"
@@ -88,7 +65,22 @@ def rig(tmp_path, *, verdict="approve", reviewed_sha="reviewed", lifts=()):
     review = cls(
         verdict=verdict, stem="work", reviewed_sha=reviewed_sha, summary="reviewed", findings=[], spec_version="1", produced_by_spec_version=1, produced_at_sha="abc", provider=None, model=None
     )
-    git = Git(stages.render_review(review))
+    state = SimpleNamespace(review=stages.render_review(review), shows=[], status="", head="head-sha", lift_review="review-sha")
+
+    def run(repo, verb, ref):
+        assert verb == "show"
+        state.shows.append(ref)
+        return state.review if ref.endswith("/review.md") else TICKET
+
+    def rev_parse(repo, ref):
+        if ref == "HEAD":
+            return state.head
+        if ref == "work":
+            return "head-sha"
+        return state.lift_review if ref.startswith("c1:") else "review-sha"
+
+    git = GitFake(_run=run, rev_parse=rev_parse, status_porcelain=lambda *args: state.status)
+    git.state = state
     effects = SimpleNamespace(recorded=lambda key: list(lifts))
     ctx = SimpleNamespace(repo=tmp_path, worktree=lambda stem: worktree, git=git, driver=SimpleNamespace(effects=effects))
     receipt = {"attempt": 2, "reviewed_sha": "reviewed", "review_provider": None, "review_model": None}
@@ -100,15 +92,15 @@ async def test_retained_ticket_uses_main(tmp_path):
     queue, git, receipt, _ = rig(tmp_path)
     ticket = await queue.retained_ticket("work", receipt)
     assert ticket.stem == "work"
-    assert git.shows == ["main:tickets/work/ticket.md", "main:tickets/work/review.md"]
+    assert git.state.shows == ["main:tickets/work/ticket.md", "main:tickets/work/review.md"]
 
 
 @pytest.mark.asyncio
 async def test_retained_ticket_uses_lift_and_checks_review(tmp_path):
     queue, git, receipt, _ = rig(tmp_path, lifts=[{"commit": "c1"}])
     assert (await queue.retained_ticket("work", receipt)).stem == "work"
-    assert git.shows[0] == "c1:tickets/work/ticket.md"
-    git.lift_review = "different"
+    assert git.state.shows[0] == "c1:tickets/work/ticket.md"
+    git.state.lift_review = "different"
     with pytest.raises(ValueError, match="retained admission work is unavailable.*restore the retained committed ticket"):
         await queue.retained_ticket("work", receipt)
 
@@ -120,8 +112,8 @@ async def test_unavailable_retained_ticket(tmp_path, failure):
     if failure == "missing":
         worktree.rmdir()
     if failure == "dirty":
-        git.status = " M code.py\0"
+        git.state.status = " M code.py\0"
     if failure == "head":
-        git.head = "different"
+        git.state.head = "different"
     with pytest.raises(ValueError, match="retained admission work is unavailable.*restore the retained committed ticket"):
         await queue.retained_ticket("work", receipt)

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test paved roads
+# purpose: Drain, admission, box, login, and retro-failure messages carry paved roads that name clutch verbs
 # relates: [clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/drain.py, clutch/journal.py, clutch/providers.py, clutch/retro.py, clutch/runner.py]
 # owner: engine
-# verified: 9a610809
-# hash: 0b5f62cba8bb4d0eee99ae78f19a2713708f3d2b0f3541bef4084fe07f910f2e
+# verified: 452057e3
+# hash: 4649dfe9fdc1d064859c0063f02ca3906cc52d6725cb312e66c92286b293f9c2
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
@@ -22,6 +22,7 @@ from clutch.providers import ClaudeAdapter, CodexAdapter
 from clutch.retro import Retro
 from clutch.status import admission_facts, dismiss_admission, run_admission, triage_admission
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 
 
 def test_drain_heads_name_the_drain_verb():
@@ -70,7 +71,7 @@ def test_retro_error_code_names_the_stage_outcome(monkeypatch, exception):
         journal=journal,
         config=SimpleNamespace(retro=RetroSettings(), state_dir=Path("state"), drain=SimpleNamespace(max_ticket_minutes=10)),
         clock=lambda: datetime(2026, 1, 2, tzinfo=UTC),
-        git=SimpleNamespace(rev_parse=rev_parse),
+        git=GitFake(rev_parse=rev_parse),
         repo=Path("repo"),
         fs=None,
     )

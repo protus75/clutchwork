@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Merge tree validation accepts ticket-plane differences
+# purpose: Merge tree validation accepts ticket-plane-only differences, and pauses the queue with a tree-mismatch event on other diffs or a git error
 # relates: [clutch/git.py, clutch/merge.py, clutch/mergequeue.py]
 # owner: engine
-# verified: fc0ba349
-# hash: 5177ac49196f5365782abe966e23fb4ceb3acc3db0976456bc91eaf7a2c02da1
+# verified: 452057e3
+# hash: 1953ccb1df31aaabba3431e44bab0f4e5723a08a8631187f1d354ac2b4b9b5a1
 
 import asyncio
 from datetime import UTC, datetime
@@ -18,6 +18,7 @@ import pytest
 from clutch import merge
 from clutch.git import GitError
 from clutch.mergequeue import TREE_MISMATCH, MergeQueue, TreeMismatch
+from tests.git_fake import GitFake
 
 
 @pytest.mark.parametrize("paths", ["tickets/x/run.md", "docs/roadmap.md", "tickets/x/run.md\ndocs/roadmap.md"])
@@ -25,7 +26,7 @@ def test_ticket_plane_diff_is_accepted(monkeypatch, paths):
     result, queue, events, git = exercise(monkeypatch, paths)
     assert result.outcome == "ok"
     assert not queue.paused and events == []
-    git._run.assert_awaited_once_with("repo", "diff", "--name-only", "checked", "main-tree")
+    assert [call for call in git.calls if call[0] == "_run"] == [("_run", ("repo", "diff", "--name-only", "checked", "main-tree"), {})]
 
 
 @pytest.mark.parametrize("paths", ["clutch/a.py", GitError(["git", "diff"], 1, "", "bad tree")])
@@ -43,11 +44,7 @@ def exercise(monkeypatch, paths, mismatch=False):
     events = []
     journal = SimpleNamespace(append=lambda kind, body, **kw: events.append(body))
     driver = SimpleNamespace(effects=SimpleNamespace(recorded=lambda key: []), journal=journal, clock=lambda: now)
-    git = SimpleNamespace(rev_parse=AsyncMock(return_value="main-tree"), _run=AsyncMock())
-    if isinstance(paths, Exception):
-        git._run.side_effect = paths
-    else:
-        git._run.return_value = paths
+    git = GitFake(rev_parse="main-tree", _run=paths)
     ctx = SimpleNamespace(driver=driver, git=git, repo="repo")
     monkeypatch.setattr(merge, "write_squash", AsyncMock(return_value=SimpleNamespace(commit="squash")))
     monkeypatch.setattr(merge, "retire", AsyncMock())

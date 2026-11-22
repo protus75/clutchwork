@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test merge admission params
+# purpose: Merge admission reuses supplied safety evidence, keeps the inline gather stage with facts suppressed, and serve admission uses the merge-integration stage and journals conflict facts
 # relates: [clutch/artifacts.py, clutch/gates.py, clutch/git.py, clutch/merge.py, clutch/mergequeue.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: 8adfd95ef538fcd4a6d101ed06135ad7ce20aab1f3abc02fec92f30034a371d0
+# verified: 452057e3
+# hash: 1e070b8eaa3dbb3933eeaef0ee1f95c2f2eede4e240a6bf6c8586ef00a3c0a51
 import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
@@ -17,6 +17,7 @@ from clutch.artifacts import Finding
 from clutch.gates import GateRunResult
 from clutch.git import GitError
 from clutch.mergequeue import MergeQueue
+from tests.git_fake import GitFake
 
 
 def evidence():
@@ -41,7 +42,7 @@ def rig(monkeypatch):
     events = []
     journal = SimpleNamespace(read=lambda: [], append=lambda typ, body, **kwargs: events.append(body))
     clock = lambda: datetime(2026, 1, 1, tzinfo=UTC)  # noqa: E731
-    git = SimpleNamespace(rev_parse=AsyncMock(return_value="sha"), restore=AsyncMock(), rebase=AsyncMock(), rebase_stop_at_conflict=AsyncMock())
+    git = GitFake(rev_parse="sha")
     driver = SimpleNamespace(clock=clock, journal=journal, redactor=SimpleNamespace(scrub=lambda s: s))
     ctx = SimpleNamespace(repo=Path("/virtual"), worktree=lambda _: Path("/virtual/work"), git=git, driver=driver, config=SimpleNamespace(review=SimpleNamespace(mechanical=[])))
     ticket = SimpleNamespace(stem="work")
@@ -93,11 +94,11 @@ def test_serve_parameters_use_integration_stage_and_signal_conflict(monkeypatch)
     assert asyncio.run(queue._admit(ticket, 1)) == "finished"
     assert gather.await_args.kwargs["stage"] == "merge-integration"
     events.clear()
-    queue.ctx.git.rebase_stop_at_conflict = AsyncMock(side_effect=GitError(["git"], 1, "", "conflict"))
-    queue.ctx.git.conflicted_paths = AsyncMock(return_value=["src/a"])
+    queue.ctx.git._overrides["rebase_stop_at_conflict"] = GitError(["git"], 1, "", "conflict")
+    queue.ctx.git._overrides["conflicted_paths"] = ["src/a"]
     queue.ctx.git._call = AsyncMock()
-    queue.ctx.git._run = AsyncMock(return_value="text")
-    queue.ctx.git.merge_base = AsyncMock(return_value="base")
+    queue.ctx.git._overrides["_run"] = "text"
+    queue.ctx.git._overrides["merge_base"] = "base"
     queue.ctx.fs = SimpleNamespace(read_bytes=lambda _: b"text")
     queue.ctx.config.engine_plane_safety_inventory = ["src"]
     queue.ctx.config.scheduler = SimpleNamespace(parallel=SimpleNamespace(shared_paths=[]))

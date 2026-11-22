@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test reject reason paths
+# purpose: An operator reject reason flows through the CLI parser, the control inbox, drain/serve admission, and runner verdict paths into the reject signal
 # relates: [clutch/__main__.py, clutch/control.py, clutch/drain.py, clutch/journal.py, clutch/lockfile.py, clutch/runner.py, clutch/serve.py]
 # owner: engine
-# verified: 9a610809
-# hash: 886b03222e69e3cd80372fa2024e9baf96d96e6cd86ef31ec1dc58c8969be69f
+# verified: 452057e3
+# hash: bac19d52e80efd8ea332ff8316ca721190ddb685f084d9a8a79a32ea98c98f2c
 import asyncio
 import json
 from pathlib import PurePath
@@ -19,6 +19,7 @@ from clutch import control, drain, runner
 from clutch.journal import EventType
 from clutch.lockfile import LockHeld
 from clutch.serve import Serve
+from tests.git_fake import GitFake
 
 
 class Journal:
@@ -58,7 +59,7 @@ def test_verdict_forward(monkeypatch, reason):
     monkeypatch.setattr(runner, "reap", AsyncMock())
     target = AsyncMock(return_value=0)
     monkeypatch.setattr(runner, "verdict_locked", target)
-    checkout = SimpleNamespace(config=SimpleNamespace(state_dir="state"), git=SimpleNamespace(describe=AsyncMock(return_value="head")), repo="repo", clock=None)
+    checkout = SimpleNamespace(config=SimpleNamespace(state_dir="state"), git=GitFake(describe="head"), repo="repo", clock=None)
     asyncio.run(runner.verdict("sample", checkout, kill=True, reason=reason))
     target.assert_awaited_once_with("sample", checkout, kill=True, extension=False, **({"reason": "r"} if reason else {}))
 
@@ -90,7 +91,7 @@ def test_apply_admission_forward(monkeypatch, reason):
         def is_file(self):
             return False
 
-    checkout = SimpleNamespace(repo=Missing(), journal=Journal(), git=SimpleNamespace(rev_parse=AsyncMock(return_value="base")))
+    checkout = SimpleNamespace(repo=Missing(), journal=Journal(), git=GitFake(rev_parse="base"))
     target = AsyncMock()
     monkeypatch.setattr(runner, "verdict_locked", target)
     asyncio.run(runner.apply_admission("sample", "reject", "key", "operator", checkout, reason=reason))

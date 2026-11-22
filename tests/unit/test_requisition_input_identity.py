@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for requisition input identity: canonical hashing in the composer, which review inputs change the identity, and how review_with_identity attaches it to the verdict or drops it.
+# purpose: Requisition input identity: canonical hashing in the composer, which review inputs change the identity, and how review_with_identity attaches it to the verdict or drops it
 # relates: [clutch/config.py, clutch/requisition.py, tests/unit/test_route_kinds_filter.py]
 # owner: engine
-# verified: 9c24a9bd
-# hash: 9c299816d725ba3d76a81eecf6a77fa6f5e80302bbff6a867bc4307e3cd727c3
+# verified: 452057e3
+# hash: c4c614d5e1180b5a4f7a8b7d93b36ec2f357bb54a5a4842fb50e3cafb10bc509
 
 import asyncio
 import re
@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 from clutch import requisition
+from tests.git_fake import GitFake
 from tests.unit.test_route_kinds_filter import config
 
 
@@ -34,7 +35,8 @@ def test_gather_inputs(tmp_path, monkeypatch):
     ticket = SimpleNamespace(context=("ctx",))
     sibling = ["siblings"]
     monkeypatch.setattr(requisition, "sibling_tickets_block", lambda *args: sibling[0])
-    git = SimpleNamespace(ls_files=AsyncMock(return_value=["src", "tickets/other/ticket.md"]))
+    tracked = ["src", "tickets/other/ticket.md"]
+    git = GitFake(ls_files=tracked)
     cfg = config("  - {tier: medium, surface: requisition_review, candidates: [{provider: codex, model: a}]}\n")
     text = "---\nstate: confirmed\n---\nbody"
 
@@ -45,7 +47,7 @@ def test_gather_inputs(tmp_path, monkeypatch):
     assert base is not None
     assert gather(text.replace("confirmed", "draft")) == base
     assert gather(text.replace("body", "other")) != base
-    git.ls_files.return_value.append("tickets/other/extra")
+    tracked.append("tickets/other/extra")
     assert gather() == base
     for name in ("src", "ctx", "coverage", "requisition_review.md", "implement.md"):
         path = repo / name

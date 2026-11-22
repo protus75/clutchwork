@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Boundaries and model repair use only injected seams.
+# purpose: Model conflict resolution: eligibility bounds (files, markers, binary, rename, inventory), resolve-then-review paths, and merge stage restore after a nested resolution
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/mergequeue.py, clutch/specs/__init__.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: a7fbc782c2d3380cc9aac30a7c185c1fdd3eb844427f86339af778151cbd8f1b
+# verified: 452057e3
+# hash: 269896e37a3195f4e0b33686fd1c5ff183adadc89d8bbb92ee456bd1f4bde696
 
 import asyncio
 from pathlib import Path
@@ -19,6 +19,7 @@ from clutch import mergequeue, stages
 from clutch.artifacts import Cost, StageResult
 from clutch.mergequeue import MergeQueue, ResolveReply, model_eligible
 from clutch.specs import data_close, data_open, load_spec
+from tests.git_fake import GitFake
 
 
 def files(n=1):
@@ -82,7 +83,7 @@ def rig(monkeypatch, replies):
     )
     monkeypatch.setattr(stages, "_spec", lambda *args: spec)
     monkeypatch.setattr(stages, "review_stage", lambda ctx, text, diff, prior: (SimpleNamespace(surface="review", render=lambda *args: diff), spec))
-    git = SimpleNamespace(_run=git_run, rev_parse=AsyncMock(return_value="abc"), add=AsyncMock())
+    git = GitFake(_run=git_run, rev_parse="abc")
     driver = SimpleNamespace(run=run, redactor=SimpleNamespace(scrub=lambda s: s), journal=SimpleNamespace(append=lambda *args, **kwargs: signals.append(args[1])))
     config = SimpleNamespace(engine_plane_safety_inventory=[], scheduler=SimpleNamespace(parallel=SimpleNamespace(shared_paths=[])))
     ctx = SimpleNamespace(
@@ -128,7 +129,7 @@ def test_model_paths(monkeypatch, mode):
     else:
         assert findings  # Refusals cannot be mistaken for a successful repair.
         if mode in {"decline", "malformed", "markers", "paths", "binary"}:
-            assert not writes and queue.ctx.git.add.await_count == 0  # Validate before staging any member.
+            assert not writes and not [call for call in queue.ctx.git.calls if call[0] == "add"]  # Validate before staging any member.
         if mode == "decline":
             assert "incompatible intent" in findings[0].message
 
