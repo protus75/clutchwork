@@ -1,0 +1,81 @@
+{
+  "attempt": 0,
+  "stage": "implement",
+  "terminal": "premise_failed",
+  "findings": [
+    {
+      "code": "premise",
+      "path": "tests/unit/test_menu_admission.py",
+      "line": null,
+      "message": "Snapshot fixtures lack readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_observe_hot_paths.py",
+      "line": null,
+      "message": "The snapshot fixture lacks readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_observe_step_session.py",
+      "line": null,
+      "message": "The snapshot fixture lacks readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_observe_upgrade_hold.py",
+      "line": null,
+      "message": "Snapshot fixtures lack readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_snapshot_merged_cap.py",
+      "line": null,
+      "message": "The snapshot fixture lacks readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_snapshot_merged_tooltip.py",
+      "line": null,
+      "message": "The snapshot fixture lacks readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "premise",
+      "path": "tests/unit/test_verdict_menu_parity.py",
+      "line": null,
+      "message": "Snapshot fixtures lack readable configuration for the required catalog load.",
+      "paved_road": "Expand the scope fence to include this file and update its fake configuration.",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": "",
+  "stage_log_tail": "{\"outcome\":\"premise_failed\",\"summary\":\"The picker implementation passes focused verification, but the full suite fails because existing snapshot tests use fake configurations that cannot satisfy the newly required config read.\",\"surprises\":\"The exact full verification command passed on the base commit; the modified worktree has 22 unit test failures across seven files outside the scope fence. No changes were committed.\",\"second_problems\":[],\"dead_ends\":\"None.\",\"predicted_vs_actual\":\"The ticket budget was 25 minutes expected and 50 minutes stuck; elapsed time was not recorded.\",\"findings\":[{\"code\":\"premise\",\"path\":\"tests/unit/test_menu_admission.py\",\"line\":null,\"message\":\"Snapshot fixtures lack readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_observe_hot_paths.py\",\"line\":null,\"message\":\"The snapshot fixture lacks readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_observe_step_session.py\",\"line\":null,\"message\":\"The snapshot fixture lacks readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_observe_upgrade_hold.py\",\"line\":null,\"message\":\"Snapshot fixtures lack readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_snapshot_merged_cap.py\",\"line\":null,\"message\":\"The snapshot fixture lacks readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_snapshot_merged_tooltip.py\",\"line\":null,\"message\":\"The snapshot fixture lacks readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"},{\"code\":\"premise\",\"path\":\"tests/unit/test_verdict_menu_parity.py\",\"line\":null,\"message\":\"Snapshot fixtures lack readable configuration for the required catalog load.\",\"paved_road\":\"Expand the scope fence to include this file and update its fake configuration.\"}]}",
+  "events_tail": ".sssssssssssssssssssssssssssssssssssssssssssssss [ 87%]\\nsssssssssssssssss.sssssssssss.ssssssssssssssss.sssssssssssssssssssssssss [ 89%]\\nssssssssssssssssssssssssssssss.sssssssssssssss.ssssssssssss.ssssssssssss [ 91%]\\nsssssssssssss.ssssssssssssssssssssssssssssssssssssss.ss..ss...ssssssssss [ 93%]\\ns.ssssssssssssssssssssss.ssssssss.ssssssssssssssssssssssssssssss........ [ 94%]\\n.....ssssssss.s.......ss.sss.ss.s.ssss.sssss.sss.ssssss.ssssssssssssssss [ 96%]\\nsss........ssssssssssss........ssssssssssssssssssssssss........ss....... [ 98%]\\n...ssss...ssssssssssssssssss..........                                   [100%]\\n297 passed, 3341 skipped in 9.19s\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove --force .clutch/scratch/prompt-picker-base'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc 'git worktree remove --force .clutch/scratch/prompt-picker-base'\",\"aggregated_output\":\"\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_15\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"premise_failed\\\",\\\"summary\\\":\\\"The picker implementation passes focused verification, but the full suite fails because existing snapshot tests use fake configurations that cannot satisfy the newly required config read.\\\",\\\"surprises\\\":\\\"The exact full verification command passed on the base commit; the modified worktree has 22 unit test failures across seven files outside the scope fence. No changes were committed.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"None.\\\",\\\"predicted_vs_actual\\\":\\\"The ticket budget was 25 minutes expected and 50 minutes stuck; elapsed time was not recorded.\\\",\\\"findings\\\":[{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_menu_admission.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"Snapshot fixtures lack readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_observe_hot_paths.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The snapshot fixture lacks readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_observe_step_session.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The snapshot fixture lacks readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_observe_upgrade_hold.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"Snapshot fixtures lack readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_snapshot_merged_cap.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The snapshot fixture lacks readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_snapshot_merged_tooltip.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"The snapshot fixture lacks readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"},{\\\"code\\\":\\\"premise\\\",\\\"path\\\":\\\"tests/unit/test_verdict_menu_parity.py\\\",\\\"line\\\":null,\\\"message\\\":\\\"Snapshot fixtures lack readable configuration for the required catalog load.\\\",\\\"paved_road\\\":\\\"Expand the scope fence to include this file and update its fake configuration.\\\"}]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":1011758,\"cached_input_tokens\":972032,\"cache_write_input_tokens\":0,\"output_tokens\":3967,\"reasoning_output_tokens\":261}}\n",
+  "wall_seconds": 143.73243,
+  "usd": 1.0,
+  "run_record": "tickets/extension-prompt-picker/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-terra",
+  "usd_estimated": true,
+  "budget_capable": false
+}
