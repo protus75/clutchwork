@@ -1,0 +1,158 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "fb32af52c49c6afb0e00640ad9e0904cd66e83bb",
+  "stem": "slot-idle-reason",
+  "passed": true,
+  "changed_files": [
+    "clutch/drain.py",
+    "clutch/help.py",
+    "clutch/observe.py",
+    "clutch/scheduler.py",
+    "docs/how-clutch-works.md",
+    "tests/unit/test_help.py",
+    "tests/unit/test_slot_idle_reason.py"
+  ],
+  "inserted_lines": 179,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.564986,
+        "passed": 2101,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3159621129743755,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0294580530025996
+        }
+      },
+      "coverage": {
+        "percent": 75.30901287553648,
+        "files": {
+          "clutch/drain.py": 64.0044994375703,
+          "clutch/help.py": 100.0,
+          "clutch/observe.py": 65.96194503171247,
+          "clutch/scheduler.py": 97.31543624161074
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 10.52281,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3341,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8934476909926161,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0634660329960752,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0585233719903044,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0033911320206244
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_slot_idle_reason.py",
+        "tests/unit/test_help.py",
+        "tests/integration/test_help.py",
+        "tests/unit/test_scheduler_parallel_fill.py",
+        "tests/unit/test_scheduler_write_queue_seams.py",
+        "tests/unit/test_admission_parallel_run_set.py",
+        "tests/unit/test_admission_running_set.py",
+        "tests/integration/test_scheduler.py",
+        "tests/integration/test_watch.py",
+        "tests/integration/test_drain.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_slot_idle_reason.py tests/unit/test_help.py tests/integration/test_help.py tests/unit/test_scheduler_parallel_fill.py tests/unit/test_scheduler_write_queue_seams.py tests/unit/test_admission_parallel_run_set.py tests/unit/test_admission_running_set.py tests/integration/test_scheduler.py tests/integration/test_watch.py tests/integration/test_drain.py\nbringing up nodes...\nbringing up nodes...\n\n..........s.........s.s...ss...s..s...sss.s.ss..ssssss.sssssssssssssssss [ 42%]\nsssssssssssssssssssssssssssssssssssssssssssss.ssssssssssssssssssssssssss [ 84%]\nssssssssssssssssssssssssss                                               [100%]\n37 passed, 133 skipped in 1.56s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 6.211721
+    }
+  ]
+}
