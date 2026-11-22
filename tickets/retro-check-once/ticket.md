@@ -44,13 +44,26 @@ When done:
 ## Scope in / Scope out
 Scope in:
 - In `clutch/serve.py`, add `self.retro_checked = None` in `Serve.__init__`, next to `retro_due`.
-- `Serve.check_retro` counts `STATE_TRANSITION` events whose `to` is in `TERMINAL_STATES`. When that count equals `self.retro_checked`, return before logging anything.
+- `Serve.check_retro` first reads the journal once, before `phase_start`, and counts `STATE_TRANSITION` events whose `to` is in `TERMINAL_STATES`. When that count equals `self.retro_checked`, it returns before logging anything. If the journal read itself raises, the exception propagates with no phase events, because no check started. The `project_window` and trigger work that follow use the events from that same read.
 - Otherwise run the check as now, but replace `await production_evidence(window, c)` with `measurements(window)`. Record `self.retro_checked = count` only after a successful check. Mirror `_Drain._run_retro`.
 - The body of `check_retro` has no `await`, so a concurrent caller cannot interleave with it.
 - Update the `clutch.retro` import in `clutch/serve.py`: drop `production_evidence` and add `measurements`.
-- In `tests/unit/test_phase_events.py`, change `test_serve_retro_events` and `test_serve_retro_failure` to monkeypatch `serve.measurements` instead of `serve.production_evidence`. The `evidence` failure case raises from `measurements`.
+- In `tests/unit/test_phase_events.py`, change `test_serve_retro_events` and `test_serve_retro_failure` in four ways:
+  - Set `s.retro_checked = None`.
+  - Make the fake journal `read` return `[SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]` instead of `["journal"]`.
+  - Monkeypatch `serve.measurements` (returning `"evidence"`) instead of `serve.production_evidence`. The `evidence` failure case raises from `measurements` and still expects a `failed` pair.
+  - The `journal` failure case now expects `RuntimeError("journal")` with an empty log, not a `failed` pair.
 - Add `tests/unit/test_serve_retro_check_once.py`.
-- Add the carried reproducer `tests/regress_serve_retro_check_once.py`. The reproducer builds a `Serve` via `object.__new__`, as `tests/unit/test_phase_events.py::test_serve_retro_events` does. It gives `Serve` a journal holding one `merged` transition and a recording log. It sets `retro_checked = None` only when `Serve.__init__` would, i.e. it never sets the attribute itself. If `serve` exposes `production_evidence`, it replaces it with an `AsyncMock`; if `serve` exposes `measurements`, it replaces that with a stub. It then awaits `check_retro()` twice and counts `phase_start` events. One means `pass`, two means `defect`, and an exception means `error`. On base, a missing `retro_checked` attribute is defect behavior, not error: base never reads it.
+- Add the carried reproducer `tests/regress_serve_retro_check_once.py`. It follows `tests/regress_phase_step_kinds.py`: it puts the repo root on `sys.path` and prints only the `regression_result` JSON object to stdout. It exits 0 on `pass`, 1 on `defect`, and 2 on `error` with a traceback on stderr. Setup:
+  - Build `s = object.__new__(serve.Serve)` and set `s.retro_checked = None` and `s.retro_due = False`. Base ignores `retro_checked`.
+  - Set `s.log` to an object whose `event(name, **fields)` appends `name` to a list.
+  - Set `config = SimpleNamespace(retro=object())`.
+  - Set `s.checkout = SimpleNamespace(config=config, journal=SimpleNamespace(read=lambda: [SimpleNamespace(type=EventType.STATE_TRANSITION, body={"to": "merged"})]))`.
+  - Set `s.control = SimpleNamespace(load_config=lambda: config)`.
+  - Replace `serve.snapshot_config` with identity, `serve.project_window` with identity, `serve.suppressing_failure` with `lambda w: None`, and `serve.select_trigger` with `lambda *a, **k: None`.
+  - Where the `serve` module has the attribute, replace `serve.production_evidence` with `AsyncMock(return_value={})` and `serve.measurements` with `lambda w: {}`.
+
+  It awaits `check_retro()` twice in one `asyncio.run` and counts `phase_start` names. One is `pass`, two is `defect`, and an exception is `error`.
 
 Scope out:
 - `Retro.__call__` in `clutch/retro.py` and the drain path still run `production_evidence` before selecting a trigger. Unifying the due decision across drain and serve is `retro-due-one-owner`.
