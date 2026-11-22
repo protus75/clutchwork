@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-Rows 75–77 remain held because the owner parser cannot resolve the nested document-agent plan; the limitation was filed as box-000001-40a689e9. No new plan rows were admitted because each proposal has documented prerequisites or missing admission evidence.
+Rows 75–77 remain held as documented because the roadmap parser cannot resolve the nested document-agent plan; verification passed with those expected waits.
 
 ## Dead ends
 
-No Owner spelling can make the existing parser select a nested plan.
+none
 
 ## Second problems filed
 
-- box-001124-52bdccf4: The roadmap owner parser cannot resolve docs/document-agent/plan.md, leaving document-agent rows held.
+- box-001126-4e483907: The roadmap parser needs nested-plan resolution in clutch/roadmap.py::plan_path; the repair still needs a Suggestion Box entry on main.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ No Owner spelling can make the existing parser select a nested plan.
 
 ## Predicted vs actual
 
-Expected 30 minutes; actual time was not measured.
+Ticket budget: 30 minutes expected, 60 minutes stuck; actual elapsed time was not measured.
 
