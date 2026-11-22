@@ -339,9 +339,10 @@ def journal(state: Path) -> list[dict]:
     return events
 
 
-def current_step(log: list[dict], stem: str) -> tuple[str, str, str | None]:
+def current_step(log: list[dict], stem: str, since: str) -> tuple[str, str, str | None]:
     """The step `stem` is on, inferred from its last engine-log stage event; when it began; its model surface."""
-    stages = [e for e in log if e.get("stem") == stem and e.get("event") in ("stage_start", "stage_end")]
+    floor = datetime.fromisoformat(since)
+    stages = [e for e in log if e.get("stem") == stem and e.get("event") in ("stage_start", "stage_end") and datetime.fromisoformat(e["ts"]) >= floor]
     if not stages:
         return "Starting", "", None
     last = stages[-1]
@@ -512,7 +513,7 @@ def text_snapshot(ctx) -> str:
     if running:
         for stem in running:
             attempt = sum(1 for e in events if e.get("type") == "state_transition" and e.get("ticket") == stem and e["body"].get("to") not in ("running", None))
-            step, began, surface = current_step(log, stem)
+            step, began, surface = current_step(log, stem, last_state[stem]["ts"])
             when = f" for {ago(began)} (since {clock(began)})" if began else ""
             lines.append(f"Now: {stem}  attempt {attempt + 1}  step: {step}{when}")
             if surface:
@@ -878,7 +879,7 @@ def snapshot(ctx, *, merged_limit: int | None = None) -> dict:
     rows += [base(t.stem, "blocked", *why_blocked(t)) for t in reversed(blocked)]
     rows += [base(t.stem, "queued", *why_queued(t)) for t in reversed(queued)]
     for stem in running:
-        step, began, _ = current_step(log, stem)
+        step, began, _ = current_step(log, stem, last[stem]["ts"])
         row = base(stem, "running", f"running: {step}" + (f" for {ago(began)}" if began else ""), "running")
         calls = [entry for entry in _open_calls(state / "evidence", stem) if _session(entry[2])]
         if calls:

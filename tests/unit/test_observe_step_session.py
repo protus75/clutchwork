@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that the snapshot attaches provider session ids from unfinished evidence call records to Recent Steps entries and ticket rows, and turns the Copy Session menu item on only when a session exists
+# purpose: Checks that the snapshot attaches provider session ids from unfinished evidence call records to Recent Steps entries and ticket rows, and turns the Copy Session menu item on only when a session exists.
 # relates: [clutch/box.py, clutch/help.py, clutch/observe.py, clutch/status.py, tests/unit/test_menu_admission.py]
 # owner: clutch/observe.py
-# verified: 290c435a
-# hash: 0aff6a59b7eb0f2ae7f8d0ecc82873ab4beaac57b6bcf19cf2fe3299b47ed5cf
+# verified: 778fd8bc
+# hash: ee3c8ba65849f7c856fcf24c1e8faaa9e53b53af0842e74efe3db6890bef614b
 import json
 from types import SimpleNamespace as NS
 from urllib.parse import quote
@@ -39,7 +39,7 @@ def test_snapshot_sessions(tmp_path, monkeypatch):
     log = [{"event": "stage_start", "ts": "2026-01-01T00:00:00+00:00", "stem": stem, "surface": "implement", "attempt": 2, "run_seq": 3} for stem in tickets]
     monkeypatch.setattr(observe, "help_payload", lambda: ({key: {"what": key, "text": key} for key in TOPICS}, []))
     monkeypatch.setattr(Box, "messages", lambda self: [])
-    monkeypatch.setattr(observe, "journal", lambda *a: [])
+    monkeypatch.setattr(observe, "journal", lambda *a: [{"type": "state_transition", "ticket": stem, "body": {"to": "running"}, "ts": "2026-01-01T00:00:00+00:00"} for stem in ("active", "finished")])
     monkeypatch.setattr(observe, "journal_facts", lambda state, history: status.admission_facts(history))
     monkeypatch.setattr(observe, "load_tickets", lambda *a: (tickets, {}))
     monkeypatch.setattr(observe, "uncommitted_tickets", lambda *a: (set(), set()))

@@ -4,8 +4,8 @@
 # purpose: Tests the observe snapshot and watch projections: queue order, lock holder, recent steps, menu availability, badges, box rows, holds and the read-only view verbs.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/help.py, clutch/lockfile.py, clutch/observe.py, clutch/rework.py, clutch/seams.py]
 # owner: clutch/observe.py
-# verified: 38957300
-# hash: 4c68e5d13a3c5a037107b9f2a5f4f0c4d9736c3349caf2f02792e3c72546cfa3
+# verified: 778fd8bc
+# hash: c2a36f39bd9efb7104fe5355c7366377703dc5d16ae69d5cc91771ad4b31ecac
 import json
 import os
 import subprocess
@@ -520,12 +520,12 @@ def test_snapshot_step_files_and_mechanical_kinds(tmp_path, monkeypatch):
     rows = {row["text"]: row for row in watch.snapshot(ctx)["steps"]}
     assert rows["Implement start"]["path"] == "tickets/alpha/run.md"  # The ticket file is a different target.
     assert (rows["Check start"]["kind"], rows["Check start"]["path"]) == ("check_start", "tickets/alpha/checks.json")  # Generic stage kind or ticket path is wrong.
-    assert watch.current_step(events, "alpha") == ("Merge", events[-1]["ts"], None)  # A model surface would display model details.
+    assert watch.current_step(events, "alpha", events[0]["ts"]) == ("Merge", events[-1]["ts"], None)  # A model surface would display model details.
     (directory / "run.md").unlink()
     (directory / "ticket.md").write_text("ticket")
     rows = {row["text"]: row for row in watch.snapshot(ctx)["steps"]}
     assert rows["Implement start"]["path"] == "tickets/alpha/ticket.md"  # A missing run record must not be opened.
-    assert watch.current_step([dict(events[1], event="stage_end", outcome="ok")], "alpha")[0] == "Review"  # Check advances to Review.
+    assert watch.current_step([dict(events[1], event="stage_end", outcome="ok")], "alpha", events[0]["ts"])[0] == "Review"  # Check advances to Review.
 
 
 def test_snapshot_author_steps_open_box_ticket_or_decision(tmp_path, monkeypatch):
@@ -752,8 +752,8 @@ def test_requisition_review_steps(tmp_path):
     events = [dict(event=event, stem="alpha", surface="requisition_review", ts=f"2026-01-01T00:00:0{i}+00:00", outcome="gate_failed") for i, event in enumerate(("stage_start", "stage_end"))]
     rows = watch.recent_steps(tmp_path, events, 10)
     assert [(r["text"], r["kind"]) for r in rows] == [("Requisition end (gate_failed)", "requisition_review_failed"), ("Requisition start", "requisition_review_start")]
-    assert watch.current_step(events[:1], "alpha") == ("Requisition", events[0]["ts"], "requisition_review")
-    assert watch.current_step(events, "alpha") == ("Implement", events[1]["ts"], None)
+    assert watch.current_step(events[:1], "alpha", events[0]["ts"]) == ("Requisition", events[0]["ts"], "requisition_review")
+    assert watch.current_step(events, "alpha", events[0]["ts"]) == ("Implement", events[1]["ts"], None)
 
 
 def test_snapshot_review_owner_without_ticket_has_no_path(tmp_path, monkeypatch):
