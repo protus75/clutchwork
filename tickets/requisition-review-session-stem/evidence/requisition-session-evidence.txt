@@ -1,0 +1,11 @@
+Observed 2026-11-22 in the VS Code Claude panel Past Conversations list (owner screenshot):
+  Clutch Review extension-copy-merged-stem
+  Clutch Rework steps-view-unknown-kind
+  Clutch Requisition Review      <- no stem (repeated many times)
+
+Source:
+272:    req = LLMRequest(surface="requisition_review", rendered=prompt, tier=tier, effort=spec.meta.effort, ticket=None, worktree=None)
+744:    def session_name(surface: str, ticket: str | None) -> str:
+745-        name = f"Clutch {surface.replace('_', ' ').title()}"
+746-        return f"{name} {ticket}" if ticket is not None else name
+747-
