@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "3626430e63381f0bd1373a1963e2a114b16a6e7b",
+  "produced_at_sha": "a78b64d74ff1bdf436b6ff27e1708a0a2b92bfe9",
   "stem": "serve-contains-dispatch-exception",
   "passed": true,
   "changed_files": [
@@ -70,8 +70,8 @@
           "python",
           "tests/regress_serve_dispatch_containment.py"
         ],
-        "head_sha": "3626430e63381f0bd1373a1963e2a114b16a6e7b",
-        "base_sha": "ad5f9688fedc4c256715dd21e01e0ebfc4c1cee2",
+        "head_sha": "a78b64d74ff1bdf436b6ff27e1708a0a2b92bfe9",
+        "base_sha": "9b3893c4ab1af5b2047e2a1f4b84636006465bd0",
         "overlay_paths": [
           "tests/regress_serve_dispatch_containment.py",
           "tests/unit/test_serve_dispatch_containment.py"
@@ -82,12 +82,12 @@
         "head": {
           "rc": 0,
           "regression_result": "pass",
-          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 1.14s\n"
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.17s\n"
         },
         "base": {
           "rc": 1,
           "regression_result": "defect",
-          "tail": "ython 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/serve-contains-dispatch-exception/.venv/bin/python\n\nrig = namespace(owner=<clutch.serve.Serve object at 0x75d9e5ef6660>, dispatch=<function Serve.__init__.<locals>.prepared.<lo...t at 0x75d9e5ef5160>, journal=<tests.fakes.FakeJournal object at 0x75d9e5ef41a0>, log=<MagicMock id='129578728174464'>)\n\n    @pytest.mark.asyncio\n    async def test_raises_is_contained_while_other_ticket_completes(rig):\n        entered, release = asyncio.Event(), asyncio.Event()\n        a, b = SimpleNamespace(stem=\"a\"), SimpleNamespace(stem=\"b\")\n    \n        async def run(ticket):\n            if ticket is a:\n                entered.set()\n                await release.wait()\n                raise ValueError(\"boom\")\n            await entered.wait()\n            rig.journal.append(EventType.STATE_TRANSITION, {\"to\": \"already_satisfied\"}, ticket=\"b\")\n            release.set()\n            return \"already_satisfied\"\n    \n        rig.callback.side_effect = run\n>       assert await asyncio.gather(rig.dispatch(a), rig.dispatch(b)) == [\"infra_error\", \"already_satisfied\"]\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/unit/test_serve_dispatch_containment.py:81: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nclutch/serve.py:167: in dispatch\n    return await callback(ticket)\n           ^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nticket = namespace(stem='a')\n\n    async def run(ticket):\n        if ticket is a:\n            entered.set()\n            await release.wait()\n>           raise ValueError(\"boom\")\nE           ValueError: boom\n\ntests/unit/test_serve_dispatch_containment.py:74: ValueError\n=========================== short test summary info ============================\nFAILED tests/unit/test_serve_dispatch_containment.py::test_raises_is_contained_while_other_ticket_completes\n1 failed, 1 passed in 1.26s\n"
+          "tail": "_ticket_completes ______________\n[gw0] linux -- Python 3.14.6 /home/djp/source/clutch/.clutch/state/worktrees/.regression-base/serve-contains-dispatch-exception/.venv/bin/python\n\nrig = namespace(owner=<clutch.serve.Serve object at 0x751fa174a510>, dispatch=<function Serve.__init__.<locals>.prepared.<lo...0x751fa19878c0>, scheduler=<clutch.scheduler.Scheduler object at 0x751fa17497f0>, log=<MagicMock id='128778713209824'>)\n\n    @pytest.mark.asyncio\n    async def test_raises_contained_while_other_ticket_completes(rig):\n        a, b = SimpleNamespace(stem=\"a\"), SimpleNamespace(stem=\"b\")\n        entered, release = asyncio.Event(), asyncio.Event()\n    \n        async def run(ticket):\n            if ticket is a:\n                entered.set()\n                await release.wait()\n                raise ValueError(\"boom\")\n            await entered.wait()\n            rig.journal.append(EventType.STATE_TRANSITION, {\"to\": \"merged\"}, ticket=\"b\")\n            release.set()\n            return \"merged\"\n    \n        rig.callback.side_effect = run\n>       assert await asyncio.gather(rig.dispatch(a), rig.dispatch(b)) == [\"infra_error\", \"merged\"]\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests/unit/test_serve_dispatch_containment.py:84: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \nclutch/serve.py:167: in dispatch\n    return await callback(ticket)\n           ^^^^^^^^^^^^^^^^^^^^^^\n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nticket = namespace(stem='a')\n\n    async def run(ticket):\n        if ticket is a:\n            entered.set()\n            await release.wait()\n>           raise ValueError(\"boom\")\nE           ValueError: boom\n\ntests/unit/test_serve_dispatch_containment.py:77: ValueError\n=========================== short test summary info ============================\nFAILED tests/unit/test_serve_dispatch_containment.py::test_raises_contained_while_other_ticket_completes\n1 failed in 1.17s\n"
         }
       }
     },
@@ -109,20 +109,20 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 16.573015,
-        "passed": 1879,
+        "seconds": 16.745702,
+        "passed": 1882,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.3507745999959297,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.1004898879909888
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.525945317989681,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.026810408977326
         }
       },
       "coverage": {
-        "percent": 72.41108101022459,
+        "percent": 72.41228645082361,
         "files": {
           "clutch/drain.py": 47.30195177956372,
-          "clutch/runner.py": 68.63517060367454,
+          "clutch/runner.py": 68.67627785058978,
           "clutch/serve.py": 55.1764705882353
         }
       }
@@ -133,13 +133,13 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 13.166224,
-        "passed": 269,
+        "seconds": 20.472265,
+        "passed": 272,
         "failed": 0,
         "skipped": 3341,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7598668299906421,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039280320052058
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.6491400389932096,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0032582269923296
         }
       }
     },
@@ -166,9 +166,9 @@
         "tests/regress_serve_dispatch_containment.py"
       ],
       "rc": 0,
-      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n..                                                                       [100%]\n2 passed in 1.17s\n",
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nbringing up nodes...\nbringing up nodes...\n\n.                                                                        [100%]\n1 passed in 1.26s\n",
       "base_red": false,
-      "seconds": 20.532714
+      "seconds": 4.887148
     },
     {
       "argv": [
@@ -179,9 +179,9 @@
         "tests/unit/test_drain_containment.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_dispatch_exception_terminal.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_drain_containment.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.26s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_dispatch_exception_terminal.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_drain_containment.py\nbringing up nodes...\nbringing up nodes...\n\n.........                                                                [100%]\n9 passed in 1.30s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 15.393827
+      "seconds": 6.079539
     }
   ]
 }
