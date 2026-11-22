@@ -1,0 +1,12 @@
+# engine.log tail (2026-11-22): max_runs 2, one slot idle
+{"ts": "2026-11-22T16:28:57.256541+00:00", "event": "dispatch_skip", "stem": "io-helpers-loop-scheduler", "count": 36}
+{"ts": "2026-11-22T16:29:06.238851+00:00", "event": "dispatch_skip", "stem": "io-helpers-loop-scheduler", "count": 37}
+{"ts": "2026-11-22T16:29:15.732665+00:00", "event": "dispatch_skip", "stem": "io-helpers-loop-scheduler", "count": 38}
+{"ts": "2026-11-22T16:29:28.217850+00:00", "event": "dispatch_skip", "stem": "io-helpers-loop-scheduler", "count": 39}
+{"ts": "2026-11-22T16:29:37.147587+00:00", "event": "dispatch_skip", "stem": "io-helpers-loop-scheduler", "count": 40}
+
+# .clutch/state/queue.json
+{"at": "2026-11-22T16:21:24.118335+00:00", "order": ["llm-request-subject", "serve-no-roadmap", "stats-tokens-not-usd", "running-step-stale-event", "heartbeat-file-removed"], "runs_before": {}}
+
+# clutch view status: in flight = llm-request-subject only; ready = serve-no-roadmap, stats-tokens-not-usd, running-step-stale-event, heartbeat-file-removed, io-helpers-loop-scheduler
+# io-helpers-loop-scheduler overlaps llm-request-subject on: tests/integration/serve_rig.py, test_provider_cooldown_failover.py, test_serve_admission.py, test_watchdog_activation.py
