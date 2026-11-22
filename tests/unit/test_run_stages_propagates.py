@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test run stages propagates
+# purpose: Verifies run_stages re-raises a ProviderCallError from a stage without calling the driver's provider_failure handler
 # relates: [clutch/providers.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: 260611d710da258ce3130db632c702949d46ddc7721581b8d51a88de5e1e22e3
+# verified: df236100
+# hash: 9d7ba052563d531612fa7068f59e14b48dbc70492fea5e825dcb36ead4bf6bbd
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
@@ -14,6 +14,7 @@ import pytest
 
 from clutch import stages
 from clutch.providers import ProviderCallError
+from tests.git_fake import GitFake
 
 
 @pytest.mark.asyncio
@@ -25,7 +26,7 @@ async def test_provider_error_from_stage_propagates(monkeypatch):
         config=SimpleNamespace(worktree_root=Path("/worktrees")),
         env={},
         exec_=None,
-        git=SimpleNamespace(rev_parse=AsyncMock(return_value="ticket-sha")),
+        git=GitFake(rev_parse="ticket-sha"),
         fs=None,
         driver=driver,
         specs_dir=Path("/specs"),

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test retro recurrence
+# purpose: Verifies retro recurrence handling: prior-findings projection, unknown recurs references, recurrence counting and reopen, crash-intent recovery, and emit behavior by fix state
 # relates: [clutch/box.py, clutch/daemon.py, clutch/journal.py, clutch/retro.py, tests/fakes.py, tests/unit/test_retro_proposal.py]
 # owner: engine
-# verified: 9a610809
-# hash: 5e7ffe8bad01382a2e34a8ec0af08de5183a15ef9907a393c5a112cd37a882ee
+# verified: df236100
+# hash: eeb1104baf31dcca62f858c98daf563f9a095603793aeef9f375a82ad6015784
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,6 +16,7 @@ from clutch.box import Box, Message, RereportJournal, Resolution, Verdict
 from clutch.journal import Event, EventType
 from clutch.retro import Retro, RetroArtifact, prior_findings, validate_recurrences
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_retro_proposal import BASE, SPEC
 
 
@@ -108,7 +109,7 @@ async def test_emit_recurrence(monkeypatch, state_name):
     async def show(*args):
         return "# Retro receipt\n\n```json\n" + json.dumps({"proposals": [SPEC | {"recurs": initial.id}]}) + "\n```"
 
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(_run=show), config=SimpleNamespace(state_dir=Path("/state")), fs=None, journal=journal, clock=None)
+    checkout = SimpleNamespace(repo=Path("/repo"), git=GitFake(_run=show), config=SimpleNamespace(state_dir=Path("/state")), fs=None, journal=journal, clock=None)
     hook = Retro(checkout, None)
     for n in [1, 2, 3] if state_name == "running" else [1, 1]:
         event = Event(1, EventType.EFFECT_COMPLETION, "", None, f"retro/{n}", {"result": {"commit": "abc"}})

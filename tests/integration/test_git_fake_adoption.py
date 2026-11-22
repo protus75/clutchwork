@@ -5,8 +5,8 @@
 # purpose: Tracks migration to GitFake: fails when a test file builds its own Git stand-in without being on the PENDING list, or when a PENDING entry is stale or missing
 # relates: [tests/git_fake.py, tests/unit/test_git_fake.py]
 # owner: engine
-# verified: 452057e3
-# hash: f4b19c0bc0d053a0cdace2227d935716a7caec17ca5f65f8729767d40a1bc662
+# verified: df236100
+# hash: fb9b7042c97cb5f16d4f4db95fdc5bba1325f8911286be1982b87f477b6486d2
 
 import re
 from pathlib import Path
@@ -23,19 +23,6 @@ PENDING = (
     "tests/integration/test_retry_keeps_branch.py",
     "tests/integration/test_serve_verdict_orphan_sweep.py",
     "tests/unit/test_check_meta_fill.py",
-    "tests/unit/test_requisition_prior_review.py",
-    "tests/unit/test_retro_measurements.py",
-    "tests/unit/test_retro_proposal.py",
-    "tests/unit/test_retro_recurrence.py",
-    "tests/unit/test_review_panel_use.py",
-    "tests/unit/test_roadmap_author.py",
-    "tests/unit/test_roadmap_merged.py",
-    "tests/unit/test_roadmap_merged_parallel.py",
-    "tests/unit/test_roadmap_ship.py",
-    "tests/unit/test_roadmap_status.py",
-    "tests/unit/test_route_kinds_filter.py",
-    "tests/unit/test_route_kinds_judge.py",
-    "tests/unit/test_run_stages_propagates.py",
     "tests/unit/test_runner_attempt_manifest.py",
     "tests/unit/test_runner_terminal_removal_shield.py",
     "tests/unit/test_runner_verdict_reread.py",

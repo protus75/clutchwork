@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test route kinds filter
+# purpose: Verifies routing rows filtered by ticket kind: config validation, candidate selection and fallback, conduct paths, and kind passing through the driver, provider, and stages; provides a shared config helper
 # relates: [clutch/config.py, clutch/driver.py, clutch/enginelog.py, clutch/journal.py, clutch/llm.py, clutch/providers.py, clutch/redact.py, clutch/seams.py]
 # owner: engine
-# verified: ad9c2b01
-# hash: 774d36add7684a7dd30ba5cde02a44b3cb49ae2b66d915beb0cc7368aef0fe79
+# verified: df236100
+# hash: 99a93a24720899bf3cd954866cb99bfe0a098251016dab3894907888ef0da3c4
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,6 +13,7 @@ import pytest
 
 from clutch.config import ConfigError, load_config_text
 from clutch.providers import ProviderSetupError, candidates, resolve, routed_conduct_paths
+from tests.git_fake import GitFake
 
 
 def config(rows):
@@ -149,7 +150,7 @@ def test_ticket_stages_pass_kind(tmp_path, monkeypatch):
         raise Captured
 
     ticket = SimpleNamespace(stem="hero", frontmatter=SimpleNamespace(kind="bug", agent_tier="medium", agent_effort="low"), expected_minutes=10, stuck_minutes=20, scope_fence=())
-    git = SimpleNamespace(rev_parse=AsyncMock(return_value="sha"), diff=AsyncMock(return_value="diff"))
+    git = GitFake(rev_parse="sha", diff="diff")
     ctx = SimpleNamespace(
         driver=SimpleNamespace(run=capture, journal=SimpleNamespace(read=lambda: [])), worktree=lambda _: tmp_path, repo=tmp_path, git=git, config=SimpleNamespace(routing=[], providers=[])
     )

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap status
+# purpose: Verifies read-only clutch roadmap status: per-release row buckets, gate results, next and waiting rows, declined rows, and CLI output
 # relates: [clutch/__main__.py, clutch/box.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py]
 # owner: engine
-# verified: 9a610809
-# hash: 9df26531c7b434cfe3a876e5ff8e341618dab4da772a66ea7e16179fa0dabc8e
+# verified: df236100
+# hash: ed8729ad9a2fd7bac83aa888af49468f11e3cacfdddfd70345ef50d1d6714ea8
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +18,7 @@ from clutch.box import Box, Resolution, RoadmapRow
 from clutch.journal import Event, EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
+from tests.git_fake import GitFake
 
 HEADER = "| # | Stem | Owner | Kind | P | Depends on | Runs before | Content |\n|---|---|---|---|---|---|---|---|\n"
 
@@ -48,13 +49,6 @@ def fixture(tmp_path):
         for stem, state in {"m-one": "already_satisfied", "a-three": "running", "x-five": "rejected", "sp-ten": "merged", "sp-sib": "running"}.items()
     ]
 
-    class Git:
-        calls = []
-
-        async def _run(self, *args):
-            self.calls.append(args)
-            return "\0".join(sorted(files)) + "\0"
-
     class Journal:
         def read(self):
             return events
@@ -62,7 +56,13 @@ def fixture(tmp_path):
         def append(self, *args, **kwargs):
             pytest.fail("status appended to journal")
 
-    checkout = SimpleNamespace(repo=tmp_path, git=Git(), journal=Journal(), config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)), fs=LocalFileSystem())
+    checkout = SimpleNamespace(
+        repo=tmp_path,
+        git=GitFake(_run=lambda *args: "\0".join(sorted(files)) + "\0"),
+        journal=Journal(),
+        config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)),
+        fs=LocalFileSystem(),
+    )
     return checkout, text, files, events
 
 
@@ -102,7 +102,7 @@ def test_status_is_read_only(tmp_path):
     path = tmp_path / roadmap.ROADMAP
     assert asyncio.run(roadmap.status(checkout))
     assert path.read_bytes() == text.encode()
-    assert checkout.git.calls == [(tmp_path, "ls-files", "--cached", "--others", "--exclude-standard", "-z")]
+    assert checkout.git.calls == [("_run", (tmp_path, "ls-files", "--cached", "--others", "--exclude-standard", "-z"), {})]
     path.unlink()
     checkout.git.calls.clear()
     with pytest.raises(Refusal, match="docs/roadmap.md"):

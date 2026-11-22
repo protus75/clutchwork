@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verify review stage panel behavior.
+# purpose: Verifies the review stage in single and panel modes: verdict and finding merging, cost totals, panel_facts logging, dropped members, non-ok results, and effect keys
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/llm.py, clutch/panel.py, clutch/providers.py, clutch/redact.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: 23d3b116
-# hash: c5a551c50c58a41285caa565bef9beaedaed2867d3747e3a20035621193c61c8
+# verified: df236100
+# hash: 8c056468b220613508740075c43ad4a75f7cdcae4a223b35a3169d279fae7786
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -22,6 +22,7 @@ from clutch.providers import ProviderCallError, ProviderSetupError
 from clutch.redact import Redactor
 from clutch.seams import LocalFileSystem
 from tests.fakes import FakeClock, FakeFileSystem, FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_route_kinds_filter import config
 
 
@@ -82,7 +83,7 @@ def setup(tmp_path, monkeypatch):
             config=cfg(size),
             repo=tmp_path,
             worktree=lambda _: tmp_path,
-            git=SimpleNamespace(rev_parse=AsyncMock(return_value="sha"), diff=AsyncMock(return_value="diff")),
+            git=GitFake(rev_parse="sha", diff="diff"),
             fs=FakeFileSystem(),
         )
 

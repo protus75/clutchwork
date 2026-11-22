@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap merged
+# purpose: Verifies the clutch roadmap merged gate for named stems, release rows, split tickets, merged-since-tag counts, argument refusals, and CLI exit codes
 # relates: [clutch/__main__.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, tests/fakes.py]
 # owner: engine
-# verified: 9a610809
-# hash: 91073dd9b9ad911f22e8216546749529454bcf8e20c9ba1c8c25cd09032b3ea3
+# verified: df236100
+# hash: 497455b11bb99846da12e7c371b0c8c2bf96616ef0fecbf3551a0d07f48c1787
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,32 +18,23 @@ from clutch.git import GitError
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 
 
 def run(c, stems=(), **kwargs):
     return asyncio.run(roadmap.merged(c, stems, **kwargs))
 
 
-class FakeGit:
-    def __init__(self):
-        self.calls = []
-        self.log = "a-row\n\nb-row\n\nb-row\n\nc-row\n\n"
-        self.missing = False
-
-    async def rev_parse(self, repo, ref):
-        self.calls.append((repo, ref))
-        if self.missing:
+@pytest.fixture
+def checkout(tmp_path):
+    async def rev_parse(repo, ref):
+        if git.missing:
             raise GitError(["git"], 1, "", "missing")
         return "sha"
 
-    async def _run(self, repo, *args):
-        self.calls.append((repo, *args))
-        return self.log
-
-
-@pytest.fixture
-def checkout(tmp_path):
-    return SimpleNamespace(repo=tmp_path, journal=FakeJournal(), git=FakeGit())
+    git = GitFake(rev_parse=rev_parse, _run=lambda repo, *args: git.log)
+    git.log, git.missing = "a-row\n\nb-row\n\nb-row\n\nc-row\n\n", False
+    return SimpleNamespace(repo=tmp_path, journal=FakeJournal(), git=git)
 
 
 def table(c, *groups):
@@ -133,7 +124,7 @@ def test_count_since_tag(checkout):
         signal(c, stem, "ticket_intake", source=source)
     signal(c, "a-row", "draft_confirmed")
     assert run(c, since="v1.0.0", at_least=3)[0]
-    assert c.git.calls[-1] == (c.repo, "log", "--first-parent", "--format=%(trailers:key=clutch-ticket,valueonly)", "refs/tags/v1.0.0..HEAD")
+    assert c.git.calls[-1] == ("_run", (c.repo, "log", "--first-parent", "--format=%(trailers:key=clutch-ticket,valueonly)", "refs/tags/v1.0.0..HEAD"), {})
     assert run(c, since="v1.0.0", at_least=4) == (False, ["roadmap merged: 3 of 4 tickets merged since v1.0.0 match"])
     assert run(c, since="v1.0.0", at_least=2, source="box:roadmap_row")[0]
     assert run(c, since="v1.0.0", at_least=2, source="box:roadmap_row", unattended=True) == (False, ["roadmap merged: 1 of 2 tickets merged since v1.0.0 match"])

@@ -1,12 +1,13 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test route kinds judge
+# purpose: Verifies the judge-independence finding when graphics implement and review route to the same model, and that doctor and ticket lint report it
 # relates: [clutch/__main__.py, clutch/doctor.py, clutch/journal.py, clutch/providers.py, tests/unit/test_graphics_kind.py]
 # owner: engine
-# verified: 9a610809
-# hash: f5851833f43cf3ac3438d106208d69d15c58c47cb6cb79ee5f7ffa9d57a570cb
+# verified: df236100
+# hash: 8947b0eaed326d2cefb9fbbb22589105aa973c57fa4be6402999e7c799ef3ae7
 from clutch.providers import judge_independence_finding
+from tests.git_fake import GitFake
 from tests.unit.test_route_kinds_filter import config
 
 
@@ -57,7 +58,7 @@ def test_doctor_and_lint(tmp_path, monkeypatch, capsys):
     ticket.parent.mkdir(parents=True)
     render = "## Render\n- mode: generate\n- artifact: assets/hero.png\n- candidates: 3"
     ticket.write_text(source(render))
-    git = SimpleNamespace(git_common_dir=AsyncMock(return_value=tmp_path / ".git"), status_porcelain=AsyncMock(return_value=""), _run=AsyncMock(return_value=""))
+    git = GitFake(git_common_dir=tmp_path / ".git", status_porcelain="", _run="")
     checkout = SimpleNamespace(repo=tmp_path, config=cfg, git=git, journal=Journal(cfg.state_dir, clock), clock=clock)
     assert asyncio.run(_lint(checkout, ["hero"])) == 1
     assert "review_visual" in capsys.readouterr().out

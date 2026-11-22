@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap merged parallel
+# purpose: Verifies roadmap merged --parallel counts only tickets whose runs overlapped, fails when a parallel stem spent its merge-conflict cap, and requires --at-least
 # relates: [clutch/__main__.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, tests/fakes.py]
 # owner: engine
-# verified: 9a610809
-# hash: 1af5cd5eaf0014af13af67d0ec1a960adab9bffd9ad06f5fb99552cbd2f5cb80
+# verified: df236100
+# hash: 596ba0a84cee46d24333f5cef4e89693ace3dbff129f75a665ec20194d472295
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,21 +17,11 @@ from clutch import roadmap
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from tests.fakes import FakeJournal
-
-
-class FakeGit:
-    def __init__(self, log):
-        self.log = log
-
-    async def rev_parse(self, repo, ref):
-        return "sha"
-
-    async def _run(self, repo, *args):
-        return self.log
+from tests.git_fake import GitFake
 
 
 def checkout(log="a-row\nb-row\nc-row\n"):
-    return SimpleNamespace(repo=Path("/repo"), journal=FakeJournal(), git=FakeGit(log))
+    return SimpleNamespace(repo=Path("/repo"), journal=FakeJournal(), git=GitFake(rev_parse="sha", _run=log))
 
 
 def state(c, stem, target, **body):

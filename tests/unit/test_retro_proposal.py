@@ -1,16 +1,17 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test retro proposal
+# purpose: Verifies retro proposal validation (spec vs test proposals, path safety, legacy findings) and that emit_proposals skips proposals already in the box
 # relates: [clutch/box.py, clutch/daemon.py, clutch/journal.py, clutch/retro.py]
 # owner: engine
-# verified: 9a610809
-# hash: ae37b5b99cdbec5453db57850c209e84422dd3a71e48b34432d115b5d0bf8d0f
+# verified: df236100
+# hash: 67ff4fe4f6155a2f76e83482079b908bca9ba92689f5b7cb7f7ce5b6334c908f
 import pytest
 from pydantic import ValidationError
 
 from clutch.box import Message
 from clutch.retro import RetroProposal
+from tests.git_fake import GitFake
 
 SPEC = {"fixed_failure": "bad result", "overcorrection_risk": "lost coverage", "proposed_spec_paths": ["specs/review.md"]}
 TEST = {"fixed_failure": "slow test", "overcorrection_risk": "lost coverage", "test_issue": "slow", "proposed_paths": ["tests/unit/test_one.py"]}
@@ -83,7 +84,7 @@ async def test_emit_proposals_skips_existing_origin(monkeypatch):
         assert args[1:] == ("show", "abc:tickets/retro/000001.md")
         return "# Retro receipt\n\n```json\n" + json.dumps({"proposals": [SPEC, other]}) + "\n```"
 
-    checkout = SimpleNamespace(repo=Path("/repo"), git=SimpleNamespace(_run=show), config=SimpleNamespace(state_dir=Path("/state")), fs=None, journal=None, clock=None)
+    checkout = SimpleNamespace(repo=Path("/repo"), git=GitFake(_run=show), config=SimpleNamespace(state_dir=Path("/state")), fs=None, journal=None, clock=None)
     event = Event(1, EventType.EFFECT_COMPLETION, "2026-01-01T00:00:00+00:00", None, "retro/1", {"result": {"commit": "abc"}})
     await Retro(checkout, None).emit_proposals("retro/1", event)
     assert len(calls) == 1

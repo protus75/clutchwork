@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Release acceptance uses real temporary files and a scripted, gate-aware driver.
+# purpose: Tests the `clutch roadmap accept` release check: row-state mapping, gap rows appended in a single commit, reply validation and reprompting, refusals before the model runs, judge-family selection and the CLI exit codes. It uses temp files and a scripted driver.
 # relates: [clutch/__main__.py, clutch/acceptance.py, clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/effects.py]
 # owner: engine
-# verified: 9a610809
-# hash: fd16e49f9d7253e1d1baec14ffb23165fe4d6c946400e155bb45c125657a56a9
+# verified: ddd16fd3
+# hash: b95325fb4cbbc09e2688264a28e6ae1edfd96aa4525a1dc5e3fa257aa441ea86
 
 import asyncio
 import json
@@ -26,7 +26,7 @@ from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
 from tests.fakes import FakeJournal
-from tests.unit.test_roadmap_author import FakeGit
+from tests.git_fake import GitFake
 from tests.unit.test_roadmap_table import HEADER, row
 
 SPEC = """---
@@ -103,7 +103,21 @@ def checkout(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
     (repo / roadmap.ROADMAP).write_text(document())
-    return SimpleNamespace(repo=repo, config=SimpleNamespace(state_dir=tmp_path / "state", providers=[]), git=FakeGit(repo), fs=LocalFileSystem(), journal=FakeJournal())
+
+    async def status(repo_arg, *args):
+        assert (repo_arg, args) == (repo, ("--", roadmap.ROADMAP))
+        return git.dirty
+
+    async def run(repo_arg, *args):
+        assert args == ("ls-files", "--cached", "--others", "--exclude-standard", "-z")
+        return "\0".join(git.files)
+
+    async def commit(repo_arg, message, *, only):
+        git.commits.append((message, only, (repo_arg / roadmap.ROADMAP).read_text()))
+
+    git = GitFake(status_porcelain=status, _run=run, commit=commit)
+    git.dirty, git.files, git.commits = "", [], []
+    return SimpleNamespace(repo=repo, config=SimpleNamespace(state_dir=tmp_path / "state", providers=[]), git=git, fs=LocalFileSystem(), journal=FakeJournal())
 
 
 def run(checkout, driver, release="1.0.0"):

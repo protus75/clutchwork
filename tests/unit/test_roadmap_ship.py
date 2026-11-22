@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap ship
+# purpose: Verifies the roadmap ship steps (gate, publishable check, release bump, journal, publish) and the release publishable and journal helpers
 # relates: [clutch/journal.py, clutch/release.py, clutch/roadmap.py, clutch/runner.py, tests/fakes.py]
 # owner: engine
-# verified: 9a610809
-# hash: 45a263d14d8274a126389da62457bc7de9bc79dea8970a8d9eed0234b135e7fb
+# verified: df236100
+# hash: 971bd619b6588d3f51956efce4746b6009442286109d87798f4f2d88ff775cdb
 import asyncio
 from datetime import datetime
 from types import SimpleNamespace as NS
@@ -16,13 +16,14 @@ from clutch import release, roadmap
 from clutch.journal import EventType
 from clutch.runner import Refusal
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 
 
 def test_ship_steps(tmp_path, monkeypatch):
     calls = []
     c = NS(
         repo=tmp_path,
-        git=NS(main_write=asyncio.Lock),
+        git=GitFake(main_write=asyncio.Lock),
         env={"a": "b"},
         config=NS(release=NS(publish=False, packages=[])),
         exec_=object(),
@@ -79,15 +80,8 @@ def test_ship_steps(tmp_path, monkeypatch):
 
 
 def test_release_helpers(tmp_path):
-    class Git:
-        calls = []
-        dirty = ""
-
-        async def status_porcelain(self, *args):
-            self.calls.append(args)
-            return self.dirty
-
-    git = Git()
+    git = GitFake(status_porcelain=lambda *args: git.dirty)
+    git.dirty = ""
     cfg = NS(release=NS(publish=True, pypi_token="TOKEN"))
     with pytest.raises(Refusal) as helper:
         asyncio.run(release.publishable(tmp_path, git, {}, cfg))
@@ -97,7 +91,7 @@ def test_release_helpers(tmp_path):
     git.dirty = " M x"
     with pytest.raises(Refusal, match="uncommitted tracked files"):
         asyncio.run(release.publishable(tmp_path, git, {"TOKEN": "secret"}, cfg))
-    assert git.calls == [(tmp_path, "--untracked-files=no")]
+    assert git.calls == [("status_porcelain", (tmp_path, "--untracked-files=no"), {})]
     git.dirty = ""
     cfg.release.publish = False
     assert asyncio.run(release.publishable(tmp_path, git, {}, cfg)) is None

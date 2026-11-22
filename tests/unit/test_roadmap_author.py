@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: test roadmap author
+# purpose: Verifies clutch roadmap author: refuses a dirty or missing roadmap, files rows until the ahead window is full, links and strikes rows, reports declined or waiting rows, and wires the CLI
 # relates: [clutch/__main__.py, clutch/box.py, clutch/git.py, clutch/journal.py, clutch/roadmap.py, clutch/runner.py, clutch/seams.py, tests/fakes.py]
 # owner: engine
-# verified: 9a610809
-# hash: 9cf5cb3837ceef764b06b30929a316f5f9d9fb943b9e62ba9341c0479354e759
+# verified: df236100
+# hash: 5dd4d6781f397f8e2ee69c750f87f0364111fa08a202f63dbf4159e75f1dc99f
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -20,25 +20,8 @@ from clutch.journal import EventType
 from clutch.runner import Refusal
 from clutch.seams import LocalFileSystem
 from tests.fakes import FakeJournal
+from tests.git_fake import GitFake
 from tests.unit.test_roadmap_table import document, row
-
-
-class FakeGit:
-    def __init__(self, repo):
-        self.repo, self.dirty, self.files, self.commits = repo, "", [], []
-        self.main_write = lambda: self._lock
-        self._lock = asyncio.Lock()
-
-    async def status_porcelain(self, repo, *args):
-        assert (repo, args) == (self.repo, ("--", roadmap.ROADMAP))
-        return self.dirty
-
-    async def _run(self, repo, *args):
-        assert args == ("ls-files", "--cached", "--others", "--exclude-standard", "-z")
-        return "\0".join(self.files)
-
-    async def commit(self, repo, message, *, only):
-        self.commits.append((message, only, (repo / roadmap.ROADMAP).read_text()))
 
 
 @pytest.fixture
@@ -50,8 +33,20 @@ def setup(tmp_path, monkeypatch):
     (specs / "triage.md").write_text("placeholder")
     monkeypatch.setattr(roadmap, "SPECS_DIR", specs)
     monkeypatch.setattr(roadmap, "load_spec", lambda _: SimpleNamespace(meta=SimpleNamespace(version="9.9")))
-    git = FakeGit(repo)
-    git.files = ["docs/sample-plan.md"]
+
+    async def status(repo_arg, *args):
+        assert (repo_arg, args) == (repo, ("--", roadmap.ROADMAP))
+        return git.dirty
+
+    async def run(repo_arg, *args):
+        assert args == ("ls-files", "--cached", "--others", "--exclude-standard", "-z")
+        return "\0".join(git.files)
+
+    async def commit(repo_arg, message, *, only):
+        git.commits.append((message, only, (repo_arg / roadmap.ROADMAP).read_text()))
+
+    git = GitFake(status_porcelain=status, _run=run, commit=commit)
+    git.dirty, git.files, git.commits = "", ["docs/sample-plan.md"], []
     checkout = SimpleNamespace(repo=repo, git=git, config=SimpleNamespace(state_dir=tmp_path / "state", caps=SimpleNamespace(supervise=2)), fs=LocalFileSystem(), journal=FakeJournal())
     return checkout, Box(checkout.config.state_dir / "box", checkout.fs)
 

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Retro measurement aggregation without filesystem or process access.
+# purpose: Verifies retro production_evidence aggregates test timing and coverage from check invoices in memory and honors the retro on/off switches
 # relates: [clutch/config.py, clutch/gates.py, clutch/journal.py, clutch/retro.py, clutch/stages.py]
 # owner: engine
-# verified: 9a610809
-# hash: a468b6061a12171086b91a9cdf9ee0bf90d5ab2ace7d322b2590a79ed8f449b4
+# verified: df236100
+# hash: 62f0e21d7cd7168f2a63792f367beb8984d4da00950bd4b79f5727ffb835d455
 
 import asyncio
 from types import SimpleNamespace
@@ -18,6 +18,7 @@ from clutch.gates import TestTiming as Timing
 from clutch.journal import Event, EventType
 from clutch.retro import production_evidence, project_window
 from clutch.stages import Invoice
+from tests.git_fake import GitFake
 
 
 def invoice(stem, seconds, percent):
@@ -30,11 +31,10 @@ def invoice(stem, seconds, percent):
 def evidence(invoices, settings=Retro()):
     events = [Event(1, EventType.EFFECT_COMPLETION, "2026-01-01T00:00:00+00:00", item.stem, f"ticket-plane/{item.stem}/0/checks", {"result": {"commit": item.stem}}) for item in invoices]
 
-    class Git:
-        async def _run(self, repo, *args):
-            return next(item.model_dump_json() for item in invoices if args[-1].startswith(item.stem + ":"))
+    async def run(repo, *args):
+        return next(item.model_dump_json() for item in invoices if args[-1].startswith(item.stem + ":"))
 
-    checkout = SimpleNamespace(config=SimpleNamespace(retro=settings), git=Git(), repo="unused")
+    checkout = SimpleNamespace(config=SimpleNamespace(retro=settings), git=GitFake(_run=run), repo="unused")
     return asyncio.run(production_evidence(project_window(events), checkout))
 
 
