@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a7469ec21a455445f28b4f42e10a634bd0ea430f",
+  "stem": "serve-flaky-tests-deterministic",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise confirmed: tests/integration/test_serve_rig_fakes.py::test_until_translates_timeout (line 46) fakes time.monotonic to jump to 61 and expects serve_rig.until to raise the translated AssertionError. The ticket's required unbounded serve_rig.until makes it hang, and Verification runs this file.",
+    "Re-scope the ticket: add tests/integration/test_serve_rig_fakes.py to ## Scope fence and to the Boundary contract consumers of 'Serve rig until'.",
+    "In the re-scoped ticket, rewrite test_until_translates_timeout so it monkeypatches fakes.until to raise AssertionError. It should still assert the message 'production graph did not reach the scripted boundary', with no deadline involved.",
+    "Leave the rest of the ticket's design unchanged: the attempt found the carried reproducer passed with the fix and reported defect when either old deadline was restored. The base-commit verification passed, so only the out-of-fence test conflict blocked it."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.9",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
