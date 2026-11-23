@@ -40,6 +40,8 @@ Scope in:
 - Trace the real Serve operations that acquire the commit lock and can escape a consumer, including `Serve.scan` intake and `Serve.verdicts` settlement. The ticket dispatch callback already has per-ticket exception containment. The maintenance call runs outside `guarded`. Record which acquisition site the regression drives and how it reaches engine failure on main. If the historical worker cannot be established from evidence, label the reproduced route separately from the historical incident.
 - Contain the timeout around the concrete operation that the regression reproduces, at the smallest existing retry boundary whose input is still owned or durably recoverable. Use the next poll or existing effect retry rather than restarting an arbitrary callback. Log `commit_lock_timeout` with the operation and preserve stop or kill behavior. For a verdict, prove the same accepted request settles via its existing durable effect key. For a scan, prove a still-pending ticket reaches intake exactly once after the lock clears.
 
+- Create `tests/unit/test_serve_commit_lock_timeout.py` for the concrete acquisition and ownership cases above. Reuse the Serve rig and the existing fake seams.
+
 Scope out: long-hold prevention, changing the wait deadline, retrying every consumer, new knobs and new durable work queues.
 
 ## Scope fence
