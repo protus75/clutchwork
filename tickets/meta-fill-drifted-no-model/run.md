@@ -1,26 +1,26 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The integration test fails because it expects a drifted file's valid purpose to be replaced by the model, directly contradicting the acceptance criteria.
+The integration test’s existing metadata purpose header was left unchanged because the implementation instructions prohibit editing clutch:meta headers; Check owns their refresh.
 
 ## Dead ends
 
-none
+Mutation checks confirmed that sending drifted files to the model and applying generic refresh after fill cause the new tests to fail.
 
 ## Second problems filed
 
-- box-001147-13238b12: README.md says meta fill uses a model to fill drifted blocks, which is stale under the requested behavior.
+none
 
 ## Resolved engine/model
 
 - provider: codex
 - model: gpt-6.1-terra
-- spec: implement 2.27
+- spec: implement 2.28
 
 ## Predicted vs actual
 
-The ticket budget was 15 minutes expected and 30 minutes stuck; this inspection took less than 15 minutes.
+Expected 15 minutes; actual time was not measured.
 
