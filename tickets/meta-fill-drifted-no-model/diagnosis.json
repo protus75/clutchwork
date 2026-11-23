@@ -1,17 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "93656f9465ee4414092291ffe45fb73dd3609bd9",
+  "produced_at_sha": "759fd65f22197e15d80eace616bc9644cfcef1d6",
   "stem": "meta-fill-drifted-no-model",
-  "attempt": 1,
-  "terminal": "premise_failed",
-  "stage": "implement",
+  "attempt": 2,
+  "terminal": "gate_failed",
+  "stage": "review",
   "verdict": "reject",
   "lessons": [
-    "Premise false: tests/integration/test_check_meta_fill_stage.py:28,48 seeds a drift-only file (purpose 'old purpose') and asserts the model rewrites it to 'scripted purpose'. The ticket's required behavior breaks this test, and the file is outside the scope fence.",
-    "Refile with tests/integration/test_check_meta_fill_stage.py in the Scope fence and Context. Seed purpose=\"\" in its fixture (line 28) so it still covers the model fill and the clutch(work): meta commit, and update its line-4 purpose text to match.",
-    "The current branch (metafill.py, stages.py, docs, two unit tests) passes all 27 Verification tests. Keep that diff. The only missing piece is the fenced integration-test fixture change.",
-    "README.md says meta fill uses the model for drifted blocks (box-001147-13238b12). If the ticket makes that line false, add README.md to the fence and fix it in the same change, per the 'Docs follow commands' rule."
+    "Ticket Scope in requires rewording the `# purpose:` header line of tests/integration/test_check_meta_fill_stage.py, but clutch/specs/implement.md rule 5 forbids Implement to edit any `clutch:meta` header, so Implement cannot meet that Scope in item.",
+    "Once this ticket merges, Check keeps a drifted file's existing purpose and does not call the model, so Check will never reword that header either. Re-scope: drop the header-reword item, or have a human edit the header outside Implement.",
+    "Also fix in the revised ticket: keep the clean-rerun assertions in tests/unit/test_check_meta_fill.py (second check_meta call, factory.assert_not_called(), no new commit) in a test whose fixture has a normal owner and valid relates.",
+    "Put the empty-owner and stale-relates preservation check in its own test function. A second Check sends the file through generic meta.refresh, which rewrites owner to `engine` and drops the stale relation, so that fixture cannot also serve as the clean-rerun guard.",
+    "The rest of attempt 2 passed Verification (28 tests) and Review accepted it: drifted-only paths are refreshed in metafill.fill without the model, and check_meta skips generic refresh for those paths. Keep that approach."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
