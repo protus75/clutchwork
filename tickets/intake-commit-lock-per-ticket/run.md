@@ -1,10 +1,10 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The ticket verification passed all 6 tests; tests/unit/test_git_commit.py has two failures caused by the changed locking behavior. Preventing this class of omission requires checking tests that call a changed function when authoring its scope fence.
+none
 
 ## Dead ends
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 25 minutes; completed within that budget.
 
