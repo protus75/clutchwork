@@ -1,5 +1,5 @@
 ---
-state: draft
+state: confirmed
 source: box:retro_finding
 priority: P1
 kind: chore
