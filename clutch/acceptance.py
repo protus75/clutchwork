@@ -7,7 +7,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from clutch import providers, roadmap
+from clutch import meta, providers, roadmap
 from clutch.artifacts import Finding, NonBlank
 from clutch.box import BOX_DIR, Box
 from clutch.driver import LlmStage
@@ -196,19 +196,34 @@ async def accept(checkout, driver, release) -> tuple[bool, list[str]]:
     promises = result.artifact.promises
     added = {}
     if any(p.new_row is not None for p in promises):
-        if await checkout.git.status_porcelain(repo, "--", roadmap.ROADMAP):
-            raise Refusal(f"uncommitted {roadmap.ROADMAP}", f"commit or restore {roadmap.ROADMAP}, then run `clutch roadmap accept {release}` again")
-        text = path.read_text()
-        number = max(row.number for row in roadmap.parse(text))
-        for promise in promises:
-            if gap := promise.new_row:
-                number += 1
-                target = next_release if promise.status == "deferred" else release
-                line = f"| {number} | `{gap.stem}` | {gap.owner} | {gap.kind} | P1 | | | {gap.content} |"
-                text = roadmap.append_row(text, target, line)
-                added[gap.stem] = (number, target)
-        checkout.fs.write(path, text.encode())
-        await checkout.git.commit(repo, f"clutch(roadmap): accept {release}", only=[roadmap.ROADMAP])
+
+        async def edit():
+            if await checkout.git.status_porcelain(repo, "--", roadmap.ROADMAP):
+                raise Refusal(f"uncommitted {roadmap.ROADMAP}", f"commit or restore {roadmap.ROADMAP}, then run `clutch roadmap accept {release}` again")
+            text = path.read_text()
+            tracked = await checkout.git.ls_files(repo)
+            sha = await checkout.git.rev_parse(repo, "HEAD")
+            selected_meta = list(meta._files(checkout.config, tracked, (roadmap.ROADMAP,)))
+            if selected_meta:
+                try:
+                    meta.parse(text, path.suffix)
+                except meta.Malformed as exc:
+                    raise Refusal(f"malformed {roadmap.ROADMAP}", f"fix the meta block, then run `clutch roadmap accept {release}` again") from exc
+            number = max(row.number for row in roadmap.parse(text))
+            for promise in promises:
+                if gap := promise.new_row:
+                    number += 1
+                    target = next_release if promise.status == "deferred" else release
+                    line = f"| {number} | `{gap.stem}` | {gap.owner} | {gap.kind} | P1 | | | {gap.content} |"
+                    text = roadmap.append_row(text, target, line)
+                    added[gap.stem] = (number, target)
+            if selected_meta:
+                fields, body, offset = meta.parse(text, path.suffix)
+                fields, generated_relates = meta.generated(fields, body, roadmap.ROADMAP, selected_meta[0][1], tracked, sha)
+                text, _ = meta.compose(fields, body, offset, path.suffix, trim=generated_relates)
+            checkout.fs.write(path, text.encode())
+
+        await checkout.git.commit_edit(repo, f"clutch(roadmap): accept {release}", only=[roadmap.ROADMAP], edit=edit)
     lines = []
     by_number = {row.number: row for row in rows}
     for promise in promises:

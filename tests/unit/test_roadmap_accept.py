@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests the `clutch roadmap accept` release check: how row states are mapped, gap rows appended in one commit, reply validation and reprompting, refusals before the model runs, judge-family selection and CLI exit codes. It uses temporary files and a scripted driver.
+# purpose: Tests the `clutch roadmap accept` release check with temporary files and a scripted driver: row-state mapping, gap rows appended in one commit with the roadmap meta header refreshed (and malformed meta refused), reply validation and reprompting, refusals before the model runs, judge-family selection and CLI exit codes.
 # relates: [clutch/__main__.py, clutch/acceptance.py, clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/effects.py]
 # owner: engine
-# verified: 58c46bba
-# hash: a0cc0c5be70445bba5b2b4a6349ae5d9d07e73f3c861f3775443893c4411d5ab
+# verified: 4a0484b0
+# hash: 6462892bc64e82b586c8cc629993a8074ff8a89d8473cd53e37812a4650d3a91
 
 import asyncio
 import json
@@ -16,7 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 import clutch.__main__ as cli
-from clutch import acceptance, roadmap
+from clutch import acceptance, meta, roadmap
 from clutch.artifacts import Cost, StageResult
 from clutch.box import BOX_DIR, Box, Resolution, RoadmapRow
 from clutch.config import load_config_text
@@ -112,12 +112,19 @@ def checkout(tmp_path, monkeypatch):
         assert args == ("ls-files", "--cached", "--others", "--exclude-standard", "-z")
         return "\0".join(git.files)
 
-    async def commit(repo_arg, message, *, only):
+    async def commit_edit(repo_arg, message, *, only, edit):
+        await edit()
         git.commits.append((message, only, (repo_arg / roadmap.ROADMAP).read_text()))
 
-    git = GitFake(status_porcelain=status, _run=run, commit=commit)
-    git.dirty, git.files, git.commits = "", [], []
-    return SimpleNamespace(repo=repo, config=SimpleNamespace(state_dir=tmp_path / "state", providers=[]), git=git, fs=LocalFileSystem(), journal=FakeJournal())
+    git = GitFake(status_porcelain=status, _run=run, commit_edit=commit_edit, ls_files=lambda repo_arg: git.tracked, rev_parse=lambda repo_arg, rev: "12345678abcdef")
+    git.dirty, git.files, git.commits, git.tracked = "", [], [], []
+    return SimpleNamespace(
+        repo=repo,
+        config=SimpleNamespace(state_dir=tmp_path / "state", providers=[], meta=SimpleNamespace(paths=[SimpleNamespace(root="docs", kind="doc")])),
+        git=git,
+        fs=LocalFileSystem(),
+        journal=FakeJournal(),
+    )
 
 
 def run(checkout, driver, release="1.0.0"):
@@ -155,10 +162,41 @@ def test_accept_passes(checkout):
         ],
     )
     assert checkout.git.commits == []  # A read-only pass must not create a commit.
+    assert not any(call[0] == "commit_edit" for call in checkout.git.calls)
     stage, kwargs = driver.calls[0]
     assert kwargs == dict(ticket=None, subject="1.0.0", run_seq=4, attempt=1, workspace=checkout.repo, tier="high", effort="high", stuck_budget=1800.0, expected_budget="surface", scope_fence=())
     assert (stage.surface, stage.emits, stage.gates) == ("acceptance", acceptance.AcceptanceReply, [])
     assert block(driver.prompts[0], "release") == dict(release="1.0.0", next_release="2.0.0", release_plan=PLAN, plans=["docs/roadmap.md"])
+
+
+def test_meta_header(checkout):
+    path = checkout.repo / roadmap.ROADMAP
+    checkout.git.tracked = [roadmap.ROADMAP]
+    fields, body, offset = meta.parse(document(), ".md")
+    fields, _ = meta.generated(fields, body, roadmap.ROADMAP, "doc", checkout.git.tracked, "oldsha")
+    fields["purpose"] = "Roadmap"
+    fields["hash"] = "stale-hash"
+    stale, _ = meta.compose(fields, body, offset, ".md")
+    path.write_text(stale)
+    old_hash = fields["hash"]
+    run(checkout, FakeDriver([promise("partial", new_row=gap("meta-gap"))]))
+    message, only, committed = checkout.git.commits[0]
+    assert message == "clutch(roadmap): accept 1.0.0"
+    assert only == [roadmap.ROADMAP]
+    assert meta.parse(committed, ".md")[0]["hash"] != old_hash
+    assert meta.check(checkout.config, checkout.repo, checkout.fs, checkout.git.tracked, "12345678abcdef") == []
+    assert committed == path.read_text()
+
+
+def test_meta_malformed(checkout):
+    path = checkout.repo / roadmap.ROADMAP
+    checkout.git.tracked = [roadmap.ROADMAP]
+    original = ("<!-- clutch:meta\ninvalid\n-->\n" + document()).encode()
+    path.write_bytes(original)
+    with pytest.raises(Refusal, match="malformed docs/roadmap.md.*fix the meta block"):
+        run(checkout, FakeDriver([promise("partial", new_row=gap("meta-gap"))]))
+    assert path.read_bytes() == original
+    assert checkout.git.commits == []
 
 
 def test_row_states(checkout):
