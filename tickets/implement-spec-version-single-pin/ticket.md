@@ -32,13 +32,13 @@ none
 ## Scope in / Scope out
 Scope in:
 - `tests/unit/test_specs.py`: keep the literal `2.27` in `test_implement_spec_consumer_read` as the single designated pin. In `test_spec_lint_accepts_the_implement_and_requisition_specs`, drop the literal for the `implement` entry. It still lints and checks `llm_surface` and line count, and its version is not asserted. The other specs' versions stay as they are.
-- `tests/integration/test_specs_delimiter_note.py`: drop the literal version for the `implement` parametrize entry. Its version assertion is skipped for that entry only, and the delimiter-note assertions still run. Edit the purpose header to say the file no longer pins the Implement version. The other specs' versions stay.
-- `tests/integration/test_implement_spec_meta_headers.py`: delete `test_implement_spec_meta_header_version`. Drop `2.27` from the purpose header line. Keep the clause test.
-- `tests/integration/test_implement_spec_mutation_check.py`: remove the `== "2.27"` version assertion. Drop `2.27` from the purpose header line. Keep its other assertions. Remove `from clutch.specs import load_spec` (line 11), since the version assertion is its only use in the file. If the assertion is the only content of its test function, delete that function.
+- `tests/integration/test_specs_delimiter_note.py`: drop the literal version for the `implement` parametrize entry. Its version assertion is skipped for that entry only, and the delimiter-note assertions still run. The other specs' versions stay.
+- `tests/integration/test_implement_spec_meta_headers.py`: delete `test_implement_spec_meta_header_version`. Keep the clause test.
+- `tests/integration/test_implement_spec_mutation_check.py`: remove the `== "2.27"` version assertion. Keep its other assertions. Remove `from clutch.specs import load_spec` (line 11), since the version assertion is its only use in the file. If the assertion is the only content of its test function, delete that function.
 - `tests/integration/test_stages.py`: in the run-record assertion, build the expected `- spec: implement <version>` line from the version of the loaded implement spec. Add the import the new name needs. The `- provider: fake\n- model: fake\n- spec: implement ` prefix is still asserted literally.
-- A `clutch:meta` header `hash` or `verified` line may be refreshed by Check. Do not hand-edit them.
+- Check owns every `clutch:meta` header, including the purpose line, for each file this diff changes. Do not add, edit or refresh any `clutch:meta` header line, even where a purpose line still mentions `2.27` (for example, the purpose line on line 4 of `tests/integration/test_implement_spec_mutation_check.py`). Leave those lines as they are.
 
-Scope out: the Implement spec file itself, any other spec's version pins, and the `slip.produced_by_spec_version == 2` assertion. Do not add new tests, helpers or a shared constant.
+Scope out: the Implement spec file itself, any other spec's version pins, any `clutch:meta` header line, and the `slip.produced_by_spec_version == 2` assertion. Do not add new tests, helpers or a shared constant.
 
 ## Scope fence
 - tests/unit/test_specs.py
@@ -60,7 +60,7 @@ Scope out: the Implement spec file itself, any other spec's version pins, and th
 ```
 
 ## Definition of rejected
-A branch is rejected if it removes the single literal pin, so a version change no longer fails any test. It is also rejected if the run-record assertion stops checking that the `spec:` line is rendered, if it adds a new constant or helper module, or if it edits a file outside the fence.
+A branch is rejected if it removes the single literal pin, so a version change no longer fails any test. It is also rejected if the run-record assertion stops checking that the `spec:` line is rendered, if it adds a new constant or helper module, if it hand-edits a `clutch:meta` header line, or if it edits a file outside the fence.
 
 ## Time budget
 - expected: 15m
