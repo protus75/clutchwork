@@ -1,16 +1,18 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "01b9c8b3be3beccd052ef0f51dc2156473576d51",
+  "produced_at_sha": "cbf931e3dec14c907a83e6c9c28f72c7b43d4a35",
   "stem": "flake-release-declined-resolution",
   "passed": true,
   "changed_files": [
     "clutch/flake.py",
+    "clutch/stages.py",
     "docs/how-clutch-works.md",
     "tests/integration/test_flake.py",
+    "tests/unit/test_check_flake_declined_release.py",
     "tests/unit/test_flake_declined_release.py"
   ],
-  "inserted_lines": 136,
+  "inserted_lines": 223,
   "bypassed": [],
   "reports": [
     {
@@ -79,22 +81,24 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 17.691908,
-        "passed": 2178,
+        "seconds": 18.006697,
+        "passed": 2186,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7305220360285603,
-          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.4840385330026038,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.404836491041351,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.066622278012801,
-          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.0169697539822664
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5715736530255526,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1848326309700496,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.07669541798532,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.0732671720033977,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.0701919800194446,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[failover]": 1.009142441995209
         }
       },
       "coverage": {
-        "percent": 77.21982758620689,
+        "percent": 77.24334109128523,
         "files": {
-          "clutch/flake.py": 75.55555555555556
+          "clutch/flake.py": 77.53623188405797,
+          "clutch/stages.py": 70.55109070034443
         }
       }
     },
@@ -104,16 +108,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 14.018757,
+        "seconds": 14.273805,
         "passed": 297,
         "failed": 0,
         "skipped": 3290,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.081564228021307,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.389990311989095,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.3696097090141848,
-          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.2222741479927208,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0049654579779599
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.929131833021529,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1794770010164939,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1698068869882263,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0043890799861401
         }
       }
     },
@@ -137,13 +140,14 @@
         "./dev.py",
         "test",
         "tests/unit/test_flake_declined_release.py",
+        "tests/unit/test_check_flake_declined_release.py",
         "tests/integration/test_flake.py",
         "tests/unit/test_flake_fix_order.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_flake_declined_release.py tests/integration/test_flake.py tests/unit/test_flake_fix_order.py\nbringing up nodes...\nbringing up nodes...\n\n.s...ssssssss.sss.ss...ss.ss.sssssssssssssssssssssssssssssssssssssssssss [ 79%]\nsss.ss.s.s.s...s...                                                      [100%]\n21 passed, 70 skipped in 1.51s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_flake_declined_release.py tests/unit/test_check_flake_declined_release.py tests/integration/test_flake.py tests/unit/test_flake_fix_order.py\nbringing up nodes...\nbringing up nodes...\n\n..s.s.ss.s.ss...ss.sss.s..ssss..ss.ssss.ss.ssssssssssssss.ssssssssssssss [ 72%]\nsssssssssssssssss..........                                              [100%]\n29 passed, 70 skipped in 1.44s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.067469
+      "seconds": 5.241633
     }
   ]
 }
