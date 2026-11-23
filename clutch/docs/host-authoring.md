@@ -4,8 +4,8 @@ kind: guide
 purpose: Host guide to writing ticket content: the authoring workflow, what each section holds, how to keep tickets apart, unit vs integration test I/O rules, path matching, and how graphics and bug tickets prove their results
 relates: [clutch/docs/host-running.md]
 owner: clutch/docs/host-running.md
-verified: 4a118128
-hash: 2dc32325b6464ccffb901e84df73568245911672f8f84af839011ef59f62d15d
+verified: 981eb002
+hash: 1c700ddafbc93ba37961a52a22135f69950fef6499fface70c21018cca0c5bf7
 -->
 # Host ticket authoring
 
@@ -122,6 +122,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   is marked hand-built with its reason, and the Goal does not promise it.
   The words `improved`, `better` and `cleaner` are refused as unmeasurable.
   Lint requires that every criterion names a check in backticks.
+  A changed-files check against main uses `main...HEAD`, never `main`.
 - `Verification`: the commands Check runs; every one must exit 0.
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.

@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: The installed authoring guide states the lint rules.
-# relates: []
-# owner: engine
-# verified: 96e46658
-# hash: 54bea857dd8eeadfeb9044d56e76054d46c5087e358a894d77be7a2ec14621b0
+# purpose: Checks that the installed authoring guide states each ticket lint rule, such as cycle refusal, criteria backticks, main...HEAD diffs and time budget splits
+# relates: [clutch/docs/host-authoring.md, clutch/tickets.py]
+# owner: clutch/docs/host-authoring.md
+# verified: 981eb002
+# hash: e8e7d952db49972210ea55b9c3328d3b9f46193a255341b0c332a8f2cefe9d53
 
 from pathlib import Path
 
@@ -19,6 +19,7 @@ def test_guide_states_lint_rules():
         "an `On-demand` path is fenced and never also in `Context`",
         "refused as unmeasurable",
         "every criterion names a check in backticks",
+        "A changed-files check against main uses `main...HEAD`, never `main`",
         "`stuck` is twice `expected`",
         "over 60m, always split into more tickets, each its own stem",
         "Over 30m, split when possible or add `- reason: <why it is not split>`",

@@ -739,6 +739,12 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
     """Decidable authoring rules, separate from scan and merge admission."""
     path = ticket_path(ticket.stem)
     findings = []
+    for section, text in (
+        ("Acceptance criteria", ticket.sections["Acceptance criteria"]),
+        ("Verification", "\n".join(" ".join(command) for command in ticket.verification)),
+    ):
+        if re.search(r"\bgit[ \t]+diff\b[^\n]*--name-only\b[^\n]*(?<![\w./-])main(?![\w/-]|\.\.\.)", text):
+            findings.append(_f(f"`## {section}` compares changed files against main", "compare with the merge base: `git diff --name-only main...HEAD`", path))
     expected, stuck = ticket.expected_minutes, ticket.stuck_minutes
     if expected > 60:
         findings.append(_f(f"`## Time budget` expected {expected}m exceeds 60m", "split into more tickets, each its own stem; never raise the budget instead", path))
