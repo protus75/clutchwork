@@ -1,0 +1,24 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f9e9dddbc97dca7d0b7bd0dba5ee08c8f994990a",
+  "stem": "intake-commit-lock-per-ticket",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "reject",
+  "lessons": [
+    "The fence omits tests/unit/test_git_commit.py. Its test_intake_skips_concurrent_commit asserts `git._commit_lock.entries == 1` (line 110), which pins the single hold over the whole batch. Criterion 2 forbids exactly that, so no in-fence diff can pass both. Add the file to `## Scope fence` and `##",
+    "tests/unit/test_git_commit.py::test_intake_stem_scope also fails. Its GitFake/FakeLock stubs (lines 123-125) do not handle the batched evidence call or the CommitLock sleep seam the new intake uses. The refiled ticket's scope must allow updating these stubs, as it already does for",
+    "When refiled, keep the attempt-0 approach: one batched ls-files call under tickets/, then one commit-lock section per stem that yields through the CommitLock sleep seam. Releasing and immediately reacquiring the lock did not let the polling contender in.",
+    "Class prevention: the fence check should grep tests/ for every test that calls the changed function (here `tickets.intake`) and require each such test file in the fence. test_git_commit.py calls intake but was not fenced."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    0,
+    1
+  ],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
