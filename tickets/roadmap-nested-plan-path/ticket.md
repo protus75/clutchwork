@@ -28,12 +28,13 @@ none
 - post-merge source of truth: clutch/roadmap.py
 
 ## Scope in / Scope out
-Scope in: in `clutch/roadmap.py`, `plan_path` also counts files matching `docs/<dir>/plan.md` (single directory level) as candidates. A nested candidate matches when the Owner's first word equals the whole directory name `<dir>` or is one of the hyphen-separated parts of `<dir>`; flat candidates keep their existing rule. The existing exactly-one-match rule applies across flat and nested candidates together. The `choose` Wait paved-road text names both `docs/*-plan.md` and `docs/<name>/plan.md`. Add a new unit test file.
-Scope out: roadmap row edits (the driver owns them), documentation, and the existing `tests/unit/test_roadmap_table.py` (its expectations stay valid and unchanged).
+Scope in: in `clutch/roadmap.py`, `plan_path` also counts files matching `docs/<dir>/plan.md` (single directory level) as candidates. A nested candidate matches when the Owner's first word equals the whole directory name `<dir>` or is one of the hyphen-separated parts of `<dir>`; flat candidates keep their existing rule. The existing exactly-one-match rule applies across flat and nested candidates together. The `choose` Wait paved-road text names both `docs/*-plan.md` and `docs/<name>/plan.md`. Add a new unit test file with the actual Owner spellings `document plan 1`, `document plan 2` and `document plan 3` represented in fixture rows. In the paragraph in `docs/roadmap.md` that describes the 75–77 hold, record nested-plan support and remove the stale claim that the fix needs filing.
+Scope out: roadmap row edits (the driver owns them), other documentation, and the existing `tests/unit/test_roadmap_table.py` (its expectations stay valid and unchanged).
 
 ## Scope fence
 - clutch/roadmap.py
 - tests/unit/test_roadmap_nested_plan.py
+- docs/roadmap.md
 
 ## Acceptance criteria
 1. `plan_path("document plan 1", {"docs/document-agent/plan.md", "docs/roadmap.md"})` returns `"docs/document-agent/plan.md"`, not `None`; checked by `./dev.py test tests/unit/test_roadmap_nested_plan.py`.
@@ -41,6 +42,8 @@ Scope out: roadmap row edits (the driver owns them), documentation, and the exis
 3. With both `docs/document-agent/plan.md` and `docs/document-extra-plan.md` present, `plan_path("document plan", files)` returns `None` (ambiguous), not either path; checked by `./dev.py test tests/unit/test_roadmap_nested_plan.py`.
 4. `choose` over a parsed row whose Owner is `document-agent plan` with files containing `docs/document-agent/plan.md` yields the row as ready and no Wait whose reason starts with `no unique plan`; checked by `./dev.py test tests/unit/test_roadmap_nested_plan.py`.
 5. Existing flat resolutions still hold, including `plan_path("roadmap (decision 4)", files) == "docs/roadmap.md"`; checked by `./dev.py test tests/unit/test_roadmap_table.py`.
+
+Review checks that `docs/roadmap.md` describes the supported nested lookup and no longer describes rows 75–77 as held by that limitation. The `./dev.py test tests/unit/test_roadmap_nested_plan.py` fixture exercises the real Owner spellings through `choose`, with other dependencies settled.
 
 ## Verification
 ```
