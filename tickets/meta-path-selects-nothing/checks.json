@@ -1,0 +1,182 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "00eb8a5e83419cb4626bbf1abaa0c272dc4fb90c",
+  "stem": "meta-path-selects-nothing",
+  "passed": true,
+  "changed_files": [
+    "clutch/__main__.py",
+    "docs/how-clutch-works.md",
+    "tests/regress_meta_path_selects_nothing.py",
+    "tests/unit/test_meta_path_selects_nothing.py"
+  ],
+  "inserted_lines": 94,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "bug_evidence": {
+        "argv": [
+          "uv",
+          "run",
+          "python",
+          "tests/regress_meta_path_selects_nothing.py"
+        ],
+        "head_sha": "00eb8a5e83419cb4626bbf1abaa0c272dc4fb90c",
+        "base_sha": "02299a082d121437bb8b94b90f4a3749fe6791ec",
+        "overlay_paths": [
+          "tests/regress_meta_path_selects_nothing.py"
+        ],
+        "evidence_paths": [
+          "tickets/meta-path-selects-nothing/evidence/meta-untracked.txt"
+        ],
+        "head": {
+          "rc": 0,
+          "regression_result": "pass",
+          "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nclutch meta check: docs/new.md: selects no tracked file -- for a new file, run git add -N docs/new.md then rerun; otherwise name a .md or .py path under a configured meta.paths root\n"
+        },
+        "base": {
+          "rc": 1,
+          "regression_result": "defect",
+          "tail": "{\"regression_result\": \"defect\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/meta-path-selects-nothing\n      Built clutchwork @ file:///home/djp/source/clutch/.clutch/state/worktrees/.regression-base/meta-path-selects-nothing\nInstalled 31 packages in 24ms\n"
+        }
+      }
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 18.118925,
+        "passed": 2260,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.419771014014259,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.138497235981049
+        }
+      },
+      "coverage": {
+        "percent": 77.50385868633168,
+        "files": {
+          "clutch/__main__.py": 81.41025641025641
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.205156,
+        "passed": 298,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8628319209965412,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.061990126996534,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0419167530199047,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0038435799942818
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_meta_path_selects_nothing.py",
+        "tests/unit/test_meta_cli.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_meta_path_selects_nothing.py tests/unit/test_meta_cli.py\nbringing up nodes...\nbringing up nodes...\n\n............                                                             [100%]\n12 passed in 1.19s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.952594
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "python",
+        "tests/regress_meta_path_selects_nothing.py"
+      ],
+      "rc": 0,
+      "tail": "{\"regression_result\": \"pass\"}\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nclutch meta check: docs/new.md: selects no tracked file -- for a new file, run git add -N docs/new.md then rerun; otherwise name a .md or .py path under a configured meta.paths root\n",
+      "base_red": false,
+      "seconds": 3.840511
+    }
+  ]
+}
