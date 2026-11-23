@@ -1,0 +1,149 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "01b9c8b3be3beccd052ef0f51dc2156473576d51",
+  "stem": "flake-release-declined-resolution",
+  "passed": true,
+  "changed_files": [
+    "clutch/flake.py",
+    "docs/how-clutch-works.md",
+    "tests/integration/test_flake.py",
+    "tests/unit/test_flake_declined_release.py"
+  ],
+  "inserted_lines": 136,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.691908,
+        "passed": 2178,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7305220360285603,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.4840385330026038,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.404836491041351,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.066622278012801,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.0169697539822664
+        }
+      },
+      "coverage": {
+        "percent": 77.21982758620689,
+        "files": {
+          "clutch/flake.py": 75.55555555555556
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.018757,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.081564228021307,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.389990311989095,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.3696097090141848,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.2222741479927208,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0049654579779599
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_flake_declined_release.py",
+        "tests/integration/test_flake.py",
+        "tests/unit/test_flake_fix_order.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_flake_declined_release.py tests/integration/test_flake.py tests/unit/test_flake_fix_order.py\nbringing up nodes...\nbringing up nodes...\n\n.s...ssssssss.sss.ss...ss.ss.sssssssssssssssssssssssssssssssssssssssssss [ 79%]\nsss.ss.s.s.s...s...                                                      [100%]\n21 passed, 70 skipped in 1.51s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.067469
+    }
+  ]
+}
