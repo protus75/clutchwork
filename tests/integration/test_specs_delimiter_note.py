@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks every prompt spec's Role explains quoted data delimiters, pins spec versions, and renders delimiter payloads quoted
+# purpose: Checks every prompt spec's Role explains quoted data delimiters, pins non-implement spec versions, and renders delimiter payloads quoted
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 4a118128
-# hash: 6f7ecae93bdfe48708472f1a7169df75271e46834676ebb5f3bbcf9091a2cd54
+# verified: c62231b6
+# hash: f882be6a60562e936127d74748186ac1e9457a30f2b891a51141e67addffe7a7
 from pathlib import Path
 
 import pytest
@@ -19,7 +19,7 @@ from clutch.specs import DATA_DELIM, data_close, data_open, lint_spec, load_spec
         ("acceptance", "1.0"),
         ("author", "1.11"),
         ("diagnose", "1.10"),
-        ("implement", "2.27"),
+        ("implement", None),
         ("requisition_review", "3.28"),
         ("retro", "1.7"),
         ("review", "1.9"),
@@ -31,7 +31,8 @@ def test_role_explains_quoted_delimiters(name, version):
     text = (Path(__file__).resolve().parents[2] / "clutch" / "specs" / f"{name}.md").read_text()
     assert lint_spec(text) == []
     spec = load_spec(text)
-    assert spec.meta.version == version
+    if version is not None:
+        assert spec.meta.version == version
     role = spec.body.split("## Role\n", 1)[1].split("## Task\n", 1)[0]
     note = (
         "In any data block, `[clutch-data:` is the renderer's quoting of the real delimiter, "

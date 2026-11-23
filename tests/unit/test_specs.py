@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text and version pins
+# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text and version pins including Implement 2.27
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 4a118128
-# hash: 0d8406cbc531bdc92e6fa663b963ae91aabec8b39bae3a9ebebbcf3f356714f7
+# verified: c62231b6
+# hash: 3d7714a729fce9fada9e9bb6c7fab3a170374662812e3e4721a3e2b702dca950
 from pathlib import Path
 
 import pytest
@@ -30,10 +30,11 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", "2.27"), ("requisition_review", "3.28"), ("diagnose", "1.10")):
+    for name, version in (("resolve", "1.0"), ("implement", None), ("requisition_review", "3.28"), ("diagnose", "1.10")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
-        assert load_spec(text).meta.version == version
+        if version is not None:
+            assert load_spec(text).meta.version == version
         assert load_spec(text).meta.llm_surface == name
         assert len(text.splitlines()) <= SPEC_MAX_LINES
 

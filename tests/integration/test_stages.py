@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Tests Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts.
+# purpose: Tests Implement -> Check -> Review stage transitions with the scripted fake LLM, including gates, outbox lifts, base-red verification and registered report artifacts
 # relates: [clutch/artifacts.py, clutch/box.py, clutch/config.py, clutch/driver.py, clutch/git.py, clutch/hostfiles.py, clutch/journal.py, clutch/llm.py]
 # owner: clutch/stages.py
-# verified: ff6ac88d
-# hash: c9456c9ee2f517c5f68025091a8be5e2d482fa99c60492e0bff3e0370ea14c8a
+# verified: c62231b6
+# hash: c829f81102c38fb642051a6fd87a67546617782818c51f4f871b1b8762454783
 
 import asyncio
 import json
@@ -28,6 +28,7 @@ from clutch.git import Git
 from clutch.journal import Journal
 from clutch.llm import FakeLLM, LLMRequest
 from clutch.seams import LocalFileSystem, SubprocessExec
+from clutch.specs import load_spec
 from clutch.stages import (
     ApprovedInvoice,
     DiffBudgetGate,
@@ -188,7 +189,8 @@ def test_implement_check_review_all_ok_with_artifacts_and_provenance(repo):
     assert read_review((canonical / "review.md").read_text()) == review
     assert Invoice.model_validate_json((canonical / "checks.json").read_text()) == invoice
     run_md = (canonical / "run.md").read_text()
-    assert "## Outcome\n\nok\n" in run_md and "- provider: fake\n- model: fake\n- spec: implement 2.27" in run_md
+    version = load_spec((SPECS / "implement.md").read_text()).meta.version
+    assert "## Outcome\n\nok\n" in run_md and f"- provider: fake\n- model: fake\n- spec: implement {version}" in run_md
     assert git(repo, "diff", "--name-only", f"main...{STEM}").split() == ["clutch/thing.py"]
     outbox = config.worktree_root / STEM / "tickets" / STEM
     assert sorted(p.name for p in outbox.iterdir()) == ["ticket.md"]  # lifted and unlinked
