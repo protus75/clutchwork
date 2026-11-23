@@ -74,3 +74,4 @@ meta:
     - {root: docs/, kind: plan}
     - {root: clutch/docs/, kind: guide}
     - {root: tests/, kind: test}
+retro: {enabled: false}
