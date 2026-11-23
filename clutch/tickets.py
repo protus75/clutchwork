@@ -959,18 +959,20 @@ def _intake_plan_stem(repo: Path, stem: str, new: bool, paths: Collection[str], 
 async def intake_pending(repo, git, entries):
     """Read the committable evidence and stray paths for one porcelain listing."""
     pending = _pending(repo, entries)
+    paths = (await git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"{TICKETS_DIR}/")).split("\0")
     evidence = {}
     for stem in pending:
         directory = repo / TICKETS_DIR / stem / "evidence"
-        paths = await git._run(repo, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", f"{TICKETS_DIR}/{stem}/evidence/")
-        evidence[stem] = sorted({p for p in paths.split("\0") if p and _regular_evidence(repo / p, directory)})
+        prefix = f"{TICKETS_DIR}/{stem}/evidence/"
+        evidence[stem] = sorted({p for p in paths if p.startswith(prefix) and _regular_evidence(repo / p, directory)})
     return pending, evidence, _intake_stray(repo, entries, evidence)
 
 
 async def intake(repo: Path, git: Git, journal: Journal, fs: FileSystem, *, stems: Collection[str] | None) -> IntakeResult:
     """Validate pending hand-authored ticket files and ticket-plane-commit each clean one.
 
-    Intake holds main_write and the commit lock across status, the stray check and commits.
+    Intake holds main_write throughout, with separate commit-lock sections for the
+    inventory and each stem, yielding to polling writers between sections.
     A refused ticket stays on disk, uncommitted, untouched.
     """
     async with git.main_write():
@@ -982,31 +984,36 @@ async def intake(repo: Path, git: Git, journal: Journal, fs: FileSystem, *, stem
 
                 admission = intake_stray_admission(stray)
                 raise IntakeRefused(_f(admission.message, admission.paved_road))
-            from clutch.status import last_states
+        from clutch.status import last_states
 
-            states = last_states(journal.read())
-            committed: list[str] = []
-            refused: dict[str, list[Finding]] = {}
-            for stem in sorted(pending):
-                if stems is not None and stem not in stems:
-                    continue
+        states = last_states(journal.read())
+        committed: list[str] = []
+        refused: dict[str, list[Finding]] = {}
+        selected = [stem for stem in sorted(pending) if stems is None or stem in stems]
+        if selected:
+            await git._commit_lock._sleep(0.1)
+        for index, stem in enumerate(selected):
+            async with git._commit_lock:
                 rel = ticket_path(stem)
                 text, stamped, decision = _intake_plan_stem(repo, stem, pending[stem], evidence[stem], states.get(stem))
                 if isinstance(decision, list):
                     refused[stem] = decision
-                    continue
-                fm = decision.frontmatter
-                if stamped != text:
-                    fs.write(repo / rel, stamped.encode())
-                paths = [rel, *evidence[stem]]
-                # Pathspec-limited: a refused ticket must never ride along in another stem's commit.
-                try:
-                    sha = await git._commit(repo, f"clutch({stem}): ticket", only=paths)
-                except NothingToCommit:
-                    continue
-                journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL, "source": fm.source, "state": fm.state, "new": pending[stem], "commit": sha}, ticket=stem)
-                committed.append(stem)
-            return IntakeResult(committed=tuple(committed), refused=refused)
+                else:
+                    fm = decision.frontmatter
+                    if stamped != text:
+                        fs.write(repo / rel, stamped.encode())
+                    paths = [rel, *evidence[stem]]
+                    # Pathspec-limited: a refused ticket must never ride along in another stem's commit.
+                    try:
+                        sha = await git._commit(repo, f"clutch({stem}): ticket", only=paths)
+                    except NothingToCommit:
+                        pass
+                    else:
+                        journal.append(EventType.SIGNAL, {"signal": INTAKE_SIGNAL, "source": fm.source, "state": fm.state, "new": pending[stem], "commit": sha}, ticket=stem)
+                        committed.append(stem)
+            if index + 1 < len(selected):
+                await git._commit_lock._sleep(0.1)
+        return IntakeResult(committed=tuple(committed), refused=refused)
 
 
 # --- new ----------------------------------------------------------------------------------------

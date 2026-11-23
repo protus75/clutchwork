@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks intake plan decisions for each pending ticket (stamping, lint refusal, settled tickets), stray staged-path refusal, and commits with evidence paths
+# purpose: Checks intake plan decisions for each pending ticket (stamping, lint refusal, settled tickets), refusal of stray staged paths, and commits that include evidence paths
 # relates: [clutch/journal.py, clutch/tickets.py]
 # owner: engine
-# verified: c015c627
-# hash: a3a583bc540e3ec77c77461ea9ecbf7df6c6eaf1ded62659cf917d0a569c2fe8
+# verified: c3c5fa35
+# hash: 0a67a71e585fc11360c2ae3bc96aeb1896a1f5a12293652ac9d026696a6695ea
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +18,9 @@ from tests.git_fake import GitFake
 
 
 class Lock:
+    async def _sleep(self, seconds):
+        pass
+
     async def __aenter__(self):
         return self
 
@@ -29,8 +32,7 @@ def make_git(entries, evidence):
     commits = []
 
     def run(repo, *args):
-        stem = args[-1].split("/")[1]
-        return "\0".join(evidence[stem])
+        return "\0".join(path for paths in evidence.values() for path in paths)
 
     async def commit(repo, message, *, only):
         commits.append((message, only))

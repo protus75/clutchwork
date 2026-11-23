@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, panels, the Suggestion Box, state on disk, config and the project index
+purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 97f3403f
-hash: 3def293d16a0745cbc929a9ae04e1d904d7314709362f1e35588eb48b385114c
+verified: c3c5fa35
+hash: 277e788bbbcfd709725eb6ce14206cd724129ddaaf2518b1de4d61d116454588
 -->
 # How ClutchWork works
 
@@ -799,8 +799,10 @@ and notifications are Effects, so a crash never repeats one.
 
 Ticket-plane edits use a narrow critical section: `main_write` is acquired before
 `commit.lock`, and the edit callback and exact-path commit run under both. Intake
-holds the same locks across its status read, stray check, stamping, and commits;
-merge squash also takes them in that order. Callbacks must not invoke a model,
+holds `main_write` across the whole pass and takes `commit.lock` separately for
+the status and evidence inventory and stray check, then each stem’s validation,
+stamping, and commit. It yields between sections for polling commit writers;
+merge squash also takes both locks in that order. Callbacks must not invoke a model,
 run checks, or call a lock-taking Git writer. Model and check work run outside
 this section; the commit lock is not held for a run lifetime.
 

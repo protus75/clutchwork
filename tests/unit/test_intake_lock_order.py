@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks that tickets.intake holds the main-write and commit locks in order through status, read, validation, stamp and commit, and that a competing writer waits until intake finishes.
+# purpose: Checks that tickets.intake holds the main-write and commit locks in order through status, read, validation, stamp and commit, and that a competing writer waits until intake finishes
 # relates: [clutch/git.py, clutch/tickets.py]
 # owner: clutch/tickets.py
-# verified: cd8a8d84
-# hash: 2e39d342d25b8e29e189da491a618558d435d71834fe6b19be0b5dd5b12b827f
+# verified: c3c5fa35
+# hash: 77b9d14ea9584d6960804a380068fac27d9613a9d59575dd4780b83764e3ca78
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +18,7 @@ def test_intake_holds_ordered_locks_through_edit_and_commit(monkeypatch):
     async def scenario():
         events = []
         lock = asyncio.Lock()
+        lock._sleep = asyncio.sleep
         git = Git(None, env={}, timeout=1, commit_lock=lock)
         entered, release = asyncio.Event(), asyncio.Event()
 

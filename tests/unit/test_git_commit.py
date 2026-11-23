@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks how Git.commit stages paths and handles nothing-to-commit, squash merges, and how intake handles commit lock, concurrent commits and stem scope
+# purpose: Checks how Git.commit stages paths, handles nothing-to-commit and squash merges, and how intake handles the commit lock, concurrent commits and stem scope
 # relates: [clutch/git.py, clutch/tickets.py]
 # owner: engine
-# verified: c015c627
-# hash: ce6b9cc3e5bca9ea9d3af33c5c6a05a9d43d3328203bfef879bb92da3bdc8c63
+# verified: c3c5fa35
+# hash: cda57bfc7d44e9708a3f9461bc08e7aef5976096bb0831c4fc94442be13ed33b
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +18,9 @@ from tests.git_fake import GitFake
 
 
 class FakeLock:
+    async def _sleep(self, seconds):
+        pass
+
     async def __aenter__(self):
         return self
 
@@ -75,6 +78,9 @@ def test_intake_skips_concurrent_commit(monkeypatch):
             self.entries = 0
             self.held = False
 
+        async def _sleep(self, seconds):
+            pass
+
         async def __aenter__(self):
             self.entries += 1
             self.held = True
@@ -107,7 +113,7 @@ def test_intake_skips_concurrent_commit(monkeypatch):
     git._commit_lock = CountingLock()
     git._commit = commit
     result = run(tickets.intake(Path("/repo"), git, Journal(), SimpleNamespace(), stems=None))
-    assert git._commit_lock.entries == 1 and not git._commit_lock.held
+    assert git._commit_lock.entries == 2 and not git._commit_lock.held
     assert result.committed == () and result.refused == {}
     assert calls == [("clutch(one): ticket", ["tickets/one/ticket.md"])]
 
