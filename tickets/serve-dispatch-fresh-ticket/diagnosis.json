@@ -1,20 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d94c1e9bc7c7e7cfb47af048501cfe4b31a5081d",
+  "produced_at_sha": "9e015ed97a9a926d7200c7aefd70528310a7cb12",
   "stem": "serve-dispatch-fresh-ticket",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "The new dispatch parses the main blob and compares it with the selected Ticket. tests/unit/test_serve_commit_lock_timeout.py:68 still dispatches SimpleNamespace(stem=\"active\") using the shared rig, so active_run never starts. That file is outside the fence, so the fence must add it.",
-    "Add tests/unit/test_serve_commit_lock_timeout.py and tests/unit/test_no_automatic_retro_calibration.py to ## Scope fence. Both import the rig fixture from tests/unit/test_serve_dispatch_containment.py, which this ticket must change.",
-    "In test_scan_retries_owned_pending_ticket, dispatch a real parse_ticket(...) whose blob the rig serves unchanged. This keeps the active run reaching rig.callback, as the updated containment tests already do with parse_ticket(\"aa\", rig.text, rig.repo).",
-    "Before the Check stage, run ./dev.py test tests/unit/test_serve_commit_lock_timeout.py tests/unit/test_no_automatic_retro_calibration.py. The Verification command misses every module that imports the changed rig, so add them to ## Verification."
+    "Forced file is missing from the scope fence: tests/unit/test_serve_commit_lock_timeout.py::test_scan_retries_owned_pending_ticket times out. Its dispatch passes a SimpleNamespace and an invalid committed ticket, so the new exact-blob dispatch never calls the callback. Add the file to ## Scope fence",
+    "Update the test_serve_commit_lock_timeout.py fixture near line 68 to dispatch a parsed Ticket and serve valid committed ticket text for that blob. Do not weaken the serve.py rule that keeps unparseable content out of the callback; the ticket's acceptance criterion 3 requires it.",
+    "Add tests/unit/test_serve_commit_lock_timeout.py to ## Verification and the acceptance criteria. The current command passed all 14 tests and still missed the crash. Before re-confirming, grep tests/ for other Serve dispatch fixtures that pass SimpleNamespace or invalid ticket text."
   ],
   "mechanical": null,
-  "trimmed_lessons": [],
+  "trimmed_lessons": [
+    0
+  ],
   "spec_version": "1.10",
   "provider": "claude",
   "model": "claude-opus-5-5"
