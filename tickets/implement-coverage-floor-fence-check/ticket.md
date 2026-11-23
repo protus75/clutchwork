@@ -1,5 +1,5 @@
 ---
-state: confirmed
+state: rejected
 source: box:retro_finding
 priority: P2
 kind: chore
