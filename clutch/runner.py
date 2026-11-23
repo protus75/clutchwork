@@ -44,6 +44,7 @@ from clutch.tickets import (
     HARVEST_FILE,
     REWORK_FILE,
     RUN_FILE,
+    IntakeRefused,
     Ticket,
     TicketInvalid,
     artifact_path,
@@ -892,6 +893,6 @@ async def apply_admission(stem, verb, key, actor, c, *, reason=None):
     if not applied:
         try:
             await verdict_locked(stem, c, kill=verb == "reject", extension=actor == "extension", **({"reason": reason} if reason is not None else {}))
-        except Refusal as exc:
+        except (Refusal, IntakeRefused) as exc:
             refusal = str(exc)
     return {"refusal": refusal}
