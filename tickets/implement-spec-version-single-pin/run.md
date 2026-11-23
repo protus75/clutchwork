@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The requested purpose changes cannot be made within the implementer instructions; no files were changed.
+Final verification passed with 42 tests passed and 59 skipped; the stage test is skipped by the repository, so its changed assertion could not be mutation-verified.
 
 ## Dead ends
 
-none
+An attempt to run the skipped stage test separately stopped at an earlier fixture assertion before reaching the changed assertion.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 15 minutes; completed within the budget.
 
