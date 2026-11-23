@@ -1,0 +1,22 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "01b9c8b3be3beccd052ef0f51dc2156473576d51",
+  "stem": "flake-release-declined-resolution",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "reject",
+  "lessons": [
+    "The fence cannot meet the Goal. The only engine caller of Flake.release, clutch/stages.py:1370-1373, sets fix only for resolution.kind == 'ticket' and calls release only after a merge. So the declined quarantines 000359, 000449, 000450, 000451 and 000457 are never released in a real run.",
+    "Re-scope the ticket: add clutch/stages.py and the test covering Check's flake release loop to ## Scope fence. Name that test file only after reading it, and keep it out of the hot test files listed in CLAUDE.md.",
+    "Add an acceptance criterion for the Check path. For a declined resolution with a passing observation, Check calls flake.release with GreenRerunEvidence whose fix_stem is f'declined:{box_id}' and needs no merge event. Ticket resolutions still need a merge.",
+    "Keep the flake.py change from this attempt: declined gives fix 'declined:<box_id>', skips the merge check, and replay compares the recorded fix_stem. Keep tests/unit/test_flake_declined_release.py and the edit to the idle parametrization in tests/integration/test_flake.py.",
+    "docs/how-clutch-works.md: the Check sentence at line 371 must describe the real Check behaviour once stages.py releases declined reports. Also update the line 503 bullet to describe the declined release: no merge, green rerun, fix_stem 'declined:<box_id>'."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
