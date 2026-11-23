@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "d94c1e9bc7c7e7cfb47af048501cfe4b31a5081d",
+  "stem": "serve-dispatch-fresh-ticket",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "reject",
+  "lessons": [
+    "The new dispatch parses the main blob and compares it with the selected Ticket. tests/unit/test_serve_commit_lock_timeout.py:68 still dispatches SimpleNamespace(stem=\"active\") using the shared rig, so active_run never starts. That file is outside the fence, so the fence must add it.",
+    "Add tests/unit/test_serve_commit_lock_timeout.py and tests/unit/test_no_automatic_retro_calibration.py to ## Scope fence. Both import the rig fixture from tests/unit/test_serve_dispatch_containment.py, which this ticket must change.",
+    "In test_scan_retries_owned_pending_ticket, dispatch a real parse_ticket(...) whose blob the rig serves unchanged. This keeps the active run reaching rig.callback, as the updated containment tests already do with parse_ticket(\"aa\", rig.text, rig.repo).",
+    "Before the Check stage, run ./dev.py test tests/unit/test_serve_commit_lock_timeout.py tests/unit/test_no_automatic_retro_calibration.py. The Verification command misses every module that imports the changed rig, so add them to ## Verification."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
