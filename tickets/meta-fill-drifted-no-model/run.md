@@ -1,10 +1,10 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-Preserved original header formatting when updating stamps because composing parsed fields can normalize descriptive lines. The smaller approach of using generic refresh would rewrite stale relations and empty owners.
+The integration test fails because it expects a drifted file's valid purpose to be replaced by the model, directly contradicting the acceptance criteria.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-001146-3956a730: README.md and docs/annotations-index-plan.md describe model filling for drifted metadata and are outside the scope fence.
+- box-001147-13238b12: README.md says meta fill uses a model to fill drifted blocks, which is stale under the requested behavior.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 15 minutes expected, 30 minutes stuck; actual elapsed time not measured.
+The ticket budget was 15 minutes expected and 30 minutes stuck; this inspection took less than 15 minutes.
 
