@@ -1,0 +1,144 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f3fd9236f6648d6cd9ddfa2562e80964052e44f6",
+  "stem": "serve-commit-lock-timeout-contained",
+  "passed": true,
+  "changed_files": [
+    "clutch/serve.py",
+    "tests/unit/test_serve_commit_lock_timeout.py"
+  ],
+  "inserted_lines": 127,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 21.096726,
+        "passed": 2192,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7675123749650083,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1825443569687195,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.1382571119756903
+        }
+      },
+      "coverage": {
+        "percent": 77.28486519080025,
+        "files": {
+          "clutch/serve.py": 58.58585858585859
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 13.516711,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9092633549880702,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.2162815750052687,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2070826480339747,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0032261419983115
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_serve_commit_lock_timeout.py",
+        "tests/integration/test_serve_lifecycle.py",
+        "tests/unit/test_serve_dispatch_containment.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_serve_commit_lock_timeout.py tests/integration/test_serve_lifecycle.py tests/unit/test_serve_dispatch_containment.py\nbringing up nodes...\nbringing up nodes...\n\nssssssss.ssss......s..                                                   [100%]\n9 passed, 13 skipped in 1.89s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 6.438689
+    }
+  ]
+}
