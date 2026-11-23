@@ -4,8 +4,8 @@
 # purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus the rule text and version pins of the shipped resolve, implement, requisition_review, diagnose and review specs
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: d397b992
-# hash: 3d62dc7a92c6bba9bb7b121e074ae0c6e0fc13170a34153232bedcc9bba83dff
+# verified: 7d610a6c
+# hash: da42cb42f18632854a1e00876b9ffab02173ee7c420f6b1e4b6c7e2532297ad1
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", None), ("requisition_review", "3.28"), ("diagnose", "1.10")):
+    for name, version in (("resolve", "1.0"), ("implement", None), ("requisition_review", "3.29"), ("diagnose", "1.10")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         if version is not None:
@@ -51,6 +51,19 @@ def test_requisition_review_spec_checks_changed_text_against_unchanged():
         "Unchanged text that no changed statement touches is not reviewed again.",
     ):
         assert phrase in task
+
+
+def test_requisition_review_spec_snags_deleted_context_selectors():
+    text = (Path(__file__).resolve().parents[2] / "clutch/specs/requisition_review.md").read_text()
+    spec = load_spec(text)
+    rendered = render(spec, {name: f"fixture {name}" for name in spec.inputs})
+    task = " ".join(rendered.split("## Task\n", 1)[1].split("## Inputs\n", 1)[0].split())
+    # Omitting any part permits an unresolvable selector or snags an edited symbol.
+    assert (
+        "Raise a `snag` whether or not the ticket text changed when a selector in `## Context` names a Python definition or Markdown heading that `## Scope in / Scope out` deletes, renames, or moves: the selector will no longer resolve and ticket lint will fail. "
+        "Drop the selector from Context or select the surviving file or an unaffected symbol, and list the file under `## On-demand` if still needed. "
+        "A selector on a symbol the ticket only edits is not a hit."
+    ) in task
 
 
 def test_requisition_review_spec_raises_impossible_criteria_unchanged():

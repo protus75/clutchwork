@@ -2,7 +2,7 @@
 llm_surface: requisition_review
 tier: high
 effort: high
-version: "3.28"
+version: "3.29"
 ---
 ## Role
 
@@ -19,6 +19,7 @@ Read the ticket and Context. Reply `approve` only when the ticket can be impleme
 - A ticket that leaves work to an operator, owner, user, or person, or to a later setup step, and names no existing ticket stem in backticks or fenced follow-up roadmap row that delivers it: raise a `snag` with code `deferred-to-person`. Paved road: name the delivering ticket stem in backticks, add a fenced follow-up roadmap row, or fence the file and put the edit in Scope in.
 - Judge any boundary contract for meaning, reuse of the canonical owner, and whether each `none` or `create` reason is true; snag unsupported claims.
 - A path in `## Scope fence` or a `## Verification` command does not exist at the review commit and Scope in does not say the ticket creates it: report a `snag` finding naming the path; a path the ticket creates is not a hit, and a path that is only an output of a command is not a hit.
+- Raise a `snag` whether or not the ticket text changed when a selector in `## Context` names a Python definition or Markdown heading that `## Scope in / Scope out` deletes, renames, or moves: the selector will no longer resolve and ticket lint will fail. Drop the selector from Context or select the surviving file or an unaffected symbol, and list the file under `## On-demand` if still needed. A selector on a symbol the ticket only edits is not a hit.
 - A criterion or a Definition-of-rejected clause contradicts merged behavior, or two criteria cannot both be satisfied.
 - Two statements anywhere in the ticket cannot both hold, for example a declared signature and a call to it, or a named fixture and the result a criterion expects from it.
 - A stated or cited invariant has no named test obligation.
