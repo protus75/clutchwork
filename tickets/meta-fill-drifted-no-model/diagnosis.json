@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "4fb61d91c373365de2f282cf83c4884fb52109d4",
+  "produced_at_sha": "93656f9465ee4414092291ffe45fb73dd3609bd9",
   "stem": "meta-fill-drifted-no-model",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Ticket fence misses tests/integration/test_check_meta_fill_stage.py: test_check_fills_meta_inside_check_stage writes docs/edited.md with purpose 'old purpose' and hash 'stale' (drift only) and asserts the model's 'scripted purpose' lands, which pins the behavior this ticket removes.",
-    "Re-author: add tests/integration/test_check_meta_fill_stage.py to ## Scope fence and ## Context, and add a Scope-in line to change that test to seed an empty purpose (empty_purpose finding) so Check still fills through FakeLLM and commits 'clutch(work): meta'.",
-    "Also re-author the test's '# purpose:' header line, which says 'fills a drifted metadata purpose'. After this change that header is false, and Check meta-refreshes the changed file anyway.",
-    "The implementation itself passed Verification (27 tests): clutch/metafill.py and clutch/stages.py changes are sound. The only failure is the unfenced integration test pinning the old drifted-to-model behavior."
+    "Premise false: tests/integration/test_check_meta_fill_stage.py:28,48 seeds a drift-only file (purpose 'old purpose') and asserts the model rewrites it to 'scripted purpose'. The ticket's required behavior breaks this test, and the file is outside the scope fence.",
+    "Refile with tests/integration/test_check_meta_fill_stage.py in the Scope fence and Context. Seed purpose=\"\" in its fixture (line 28) so it still covers the model fill and the clutch(work): meta commit, and update its line-4 purpose text to match.",
+    "The current branch (metafill.py, stages.py, docs, two unit tests) passes all 27 Verification tests. Keep that diff. The only missing piece is the fenced integration-test fixture change.",
+    "README.md says meta fill uses the model for drifted blocks (box-001147-13238b12). If the ticket makes that line false, add README.md to the fence and fix it in the same change, per the 'Docs follow commands' rule."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
