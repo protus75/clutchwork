@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The existing branch contains the prior implementation commits; the integration test header still describes a drifted purpose.
+The mechanical refresh preserves original metadata line formatting because parsing and composing alone can normalize descriptive fields.
 
 ## Dead ends
 
-none
+Mutation checks confirmed that sending drifted files to the model or applying generic refresh breaks the targeted tests; both mutations were restored.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 15 minutes; actual time not measured.
 
