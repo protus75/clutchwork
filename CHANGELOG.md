@@ -1,5 +1,165 @@
 # Changelog
 
+## 0.6.0 - 2026-11-23
+- panel-facts-journal-signal: Row 217 of the roadmap.
+- retro-calibration-manual: Owner decision (2026-11-22): retro and estimate calibration stay as features but never run on their own.
+- heartbeat-file-removed: `clutch/heartbeat.py` writes an empty file `state_dir/heartbeat` on every healthy serve loop (`HeartbeatCycle.cycle`, built in `Serve.__init__`, called from `Serve.maintenance`).
+- serve-no-roadmap: Owner decision 2026-11-22: the engine process (`clutch engine serve` and `clutch engine drain`) has no roadmap knowledge.
+- llm-request-subject: `LLMRequest.ticket: str | None` has one reader: `ClaudeAdapter.session_name`, which names each `claude` session `Clutch <Surface> <ticket>`.
+- io-helpers-misc: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- running-step-stale-event: A running ticket's step and elapsed time come from the stem's stage events that belong to the current run, never from an event logged before that run began.
+- io-helpers-loop-serve-rig: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- stats-tokens-not-usd: `clutch view stats` (and the extension's Stats view, which renders `stats_tree` of the same projection) reports LLM usage in tokens, broken down per provider, and reports no USD figure at all.
+- roadmap-freshen-2026-11-22: `docs/roadmap.md` has drifted behind the repo, and the owner asked for a refresh on 2026-11-22.
+- io-helpers-loop-restart: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- io-helpers-loop-terminal: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- retro-due-one-owner: `retro-check-once` stops the doubled, slow check, but the structure that produced it stays.
+- io-helpers-loop-triage: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- evidence-never-prunes: Today, after every completed provider record, `CliAdapter.invoke` calls `EvidenceStore.prune` with `evidence.max_gb`, which silently deletes the oldest calls' stdout, stderr and arrival-time blobs.
+- slot-idle-reason: On 2026-11-22 serve ran with `scheduler.parallel.max_runs: 2` but kept one slot idle while four tickets showed `ready`.
+- io-helpers-loop-scheduler: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- barrier-admits-disjoint: With `scheduler.parallel` on and `max_runs: 2`, serve ran one ticket while four ready tickets waited (evidence: `evidence/evidence.txt`, 2026-11-22).
+- extension-prompt-picker: The Tickets view's More Actions menu gets an "Ask Claude: prompt…" item.
+- host-prompts: A host can add its own operator prompts and run them through clutch, and every prompt, engine-owned or host-owned, is listed in one place with its description.
+- io-helpers-config: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- serve-upgrade-hold-visible: When a merge changes the engine's own `clutch/` tree, serve sets `Serve.upgrade` and `select()` refuses every ticket not already running until serve is idle and re-execs on the new code.
+- io-helpers-daemon: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- retro-check-once: Under `engine serve`, one merge writes two overlapping `retro_check` phases to the engine log.
+- remove-help-before-after: Every VS Code extension help surface (hover tooltips, the Details help text, the Stats tree tooltips, and each setting's `markdownDescription`) shows only what the surface is plus its doc link.
+- requisition-review-session-stem: Every Requisition Review `claude` session clutch starts shows up in the VS Code Claude panel as plain `Clutch Requisition Review`, with no ticket stem.
+- io-helpers-stages: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- steps-view-unknown-kind: On 2026-11-21 at 21:28 a `clutch meta fill` run journaled the first `meta_start`/`meta_ok` engine-log steps.
+- extension-merged-hover-commit: Hovering a merged row in the Tickets view shows only the generic help text for the merged status, so finding out what a merged ticket changed means opening Details or git.
+- extension-step-copy-session-id: To look at the model session behind a step, the owner has to dig the Claude session id or Codex thread id out of evidence files, and while the call is still running clutch doesn't save it anywhere.
+- extension-copy-merged-stem: Getting a merged ticket's stem into another command or a chat today means retyping it.
+- extension-provider-update-action: Updating a provider CLI today means typing `clutch provider install <name>` in a terminal (the drain's preflight prints that notice when claude or codex is behind).
+- io-helpers-drain: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- drain-retro-check-once-per-settle: `engine drain` runs an unforced retro check at the top of every pass of its loop in `_Drain._run`, whenever it is between tickets.
+- training-eval-ship-gate: Section 1 of `docs/roadmap.md` ships 0.5.0 only when `training eval` scores one lens, but the 0.5.0 `gate` block has no command for that clause.
+- claude-session-names: Every `claude` process clutch starts (Implement, Review, Diagnose, Rework, Retro, Triage, preflight probes and the rest) saves a session under the same project as the owner's own chats.
+- supervisor-orders-by-depends: Owner rule, 2026-11-21: a supervising session never leaves work waiting on a merge or on a later hand edit.
+- io-helpers-cli: On 2026-11-21 one integration run wrote 975 MB in 119,498 files and 1,531 real git repositories and saturated the disk.
+- check-opens-own-stage: On 2026-11-22 `engine serve` stopped with `stage already open: stem=serve-flaky-tests-deterministic, surface=check` (see `check-meta-fill-nested-stage`, which fixes that instance).
+- training-export-ship-gate: Section 1 of `docs/roadmap.md` ships 0.5.0 only when `training export` produces every record kind from this repo's journal, and the 0.5.0 `gate` block has no command for that clause.
+- operator-deferral-snag: After this ticket, requisition review raises a `snag` with code `deferred-to-person` on a ticket that leaves work to an operator, owner, user or person and names no existing ticket stem or fenced roadmap row that delivers it.
+- disk-io-skip-per-file: `integration-disk-io-skip` turned off 184 integration test files by listing their names in one sorted tuple, `DISK_IO_SKIP`, in `tests/integration/conftest.py`.
+- check-rerun-failed-only: When one test fails at random in a Check host command (the integration suite takes about 85 s), Check reruns the whole command (`check/host-NN-rerun.txt`), and when the report still fails it runs the whole command again on the merge base (`check/host-NN-base.txt`).
+- regression-command-program-lint: On 2026-11-21 `serve-confirm-during-check` passed Implement, the full suite, lint and the head run of its reproducer, then failed Check because its `## Regression` command started with `.venv/bin/python`.
+- shared-git-fake-integration: `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in.
+- preflight-once-per-session: Provider preflight runs once per lock-held engine session, not once per ticket.
+- shared-git-fake-unit-6: `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in.
+- scheduler-ranks-full-priority: With parallel dispatch on, `parallel_order` in `clutch/drain.py` sorts eligible tickets by `(priority != "P0", -chain, *sort_key)`.
+- shared-git-fake-unit-5: `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in.
+- flake-fix-jumps-queue: A flaky test costs every ticket's Check until the fix for it merges: on 2026-11-22 Check for `implement-skips-full-suites` attempt 2 took 509 s because `test_serve_admission_refusal_keeps_main_green[integration]` failed once, so Check reran the whole 3602-test integration suite (89 s) and then ran it again on the merge base (137 s).
+- shared-fakes-guard: `shared-review-script` moves the per-file model-reply helpers into `tests/stage_replies.py`, and `shared-serve-rig-config` moves the copied test `config.yaml` texts into `tests/config_fixture.py`.
+- shared-serve-rig-config: Serve and drain integration tests each carry their own copy of the test `config.yaml` text.
+- shared-git-fake-unit-4: `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in.
+- shared-review-script: Tests script the exact order of model replies (`FakeLLM` lists), and the per-stage reply shape is copied into six test files.
+- shared-git-fake-unit-3: `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in.
+- serve-contains-dispatch-exception: On 2026-11-22 at 02:11:57Z one ticket's run raised `ValueError: stage already open` (evidence `serve-crash.log`).
+- shared-git-fake-unit-2: `shared-git-fake` created `tests/git_fake.py::GitFake` and `tests/integration/test_git_fake_adoption.py`, whose `PENDING` list names the files still holding a hand-built `Git` stand-in.
+- shared-git-fake: Since about merge 675 the most frequent cause of failed Implement attempts is a fence miss: a ticket changes the `clutch.git.Git` seam and tests that stand in for it with hand-built objects break outside the fence, because each stand-in implements only the few methods its author needed ("fakes only Git.commit", "Git stand-ins lacking main_write").
+- serve-flaky-tests-deterministic: Two groups of tests fail in most full-suite `pytest -n auto` runs and pass alone (evidence file in `evidence/`).
+- reconcile-spares-confirming-draft: Since merge 99c9d7ec (`serve-confirm-during-check`, 2026-11-21), serve can journal `{"to": "abandoned"}` for a draft ticket while its confirmation is being applied.
+- gemini-provider-configured: After this ticket this repo's `config.yaml` declares the `gemini` provider (`kind: cli`, `package: "@google/gemini-cli"`, `auth: GEMINI_API_KEY`), using the declaration in `clutch/docs/host-gemini.md`.
+- retry-keeps-prior-branch: Every retry throws away the previous attempt's code.
+- test-io-rules: The shipped test rules restrict only unit tests and send everything else to the integration suite.
+- integration-io-guard: Nothing stops an integration test from writing to disk, starting a process, or running real git.
+- control-fold-cached: `clutch engine serve` holds one CPU core at 100% while idle (evidence file: 3 s of samples show about 100 user ticks per second, and vmstat shows no disk reads, so it is CPU, not I/O).
+- test-tmp-in-checkout: Every pytest run in this repo puts `tmp_path`, `tmp_path_factory` and `tempfile` output under `/tmp`.
+- serve-live-keep-single-verdict: `tests/integration/test_serve_dispatch.py::test_live_keep_dispatches_again_without_restart` fails under load with two `reject_verdict` keep signals instead of one (evidence file).
+- implement-skips-full-suites: Implement attempts spend much of their time running test suites that Check runs anyway.
+- check-owns-meta-headers: Since `clutch:meta` headers became required on files under `docs/`, `clutch/docs/` and `tests/` (about merge 725), about 20 failed attempts came from Implement handling those headers itself: hand-typed or duplicated blocks, empty `purpose`, or a false premise claiming a changed file's header "drifted".
+- meta-refresh-commit-lock: `clutch meta refresh` takes the engine's writer lock ([clutch/__main__.py](clutch/__main__.py) `handle_meta`), so it refuses for as long as a drain or serve runs.
+- roadmap-meta-resync: `uv run clutch meta check docs/roadmap.md` reports `drifted`: the owner's 2026-11-21 edits that withdrew rows 173 and 174 and their 0.4.0 ship clauses were committed (`cf8cd1fe`) without refreshing the file's `clutch:meta` block, because `meta refresh` refused while the drain held the writer lock.
+- serve-merge-off-exclusive: With `scheduler.parallel` `max_runs` 2, a reviewed ticket's merge waits for every running implementation to finish, and while it waits serve admits no new run.
+- merge-dirty-checkout-never-blocks: The owner keeps uncommitted local edits in `config.yaml` (routing, scheduler, their own tuning).
+- serve-confirm-during-check: Apply accepted confirmations while unrelated tickets are still in Implement, Check or Review.
+- requisition-contract-review-comparison: Owner decision, 2026-11-21: normal ticket review is one short Sonnet check.
+- plan-prompts-priority-order: An operator running `clutch prompt plan-ticket-drain`, `clutch prompt plan-ticket-serve` or `clutch prompt drain-loop` worked in the wrong order.
+- serve-scan-watch-off-exclusive: A ticket-file change (new draft, supervisor rework edit, operator edit) makes serve's second implementation slot wait for the running ticket.
+- requisition-review-input-identity: Stop paying for a repeated buildability investigation when its substantive inputs have not changed.
+- training-triage-records: `clutch training export --kinds triage` writes `triage.jsonl`: one record per Triage model call, the user message being the call's prompt blob and the assistant message the call's reply text (a `TriageReply` JSON: verdict `author`, `tombstone` or `declined`).
+- boundary-contract-outcome-compare: Phase 3 of `docs/boundary-contract-plan.md` says to measure premise failures, review findings, rework and duplicate-owner incidents before and after the change, and roadmap row 153 says to compare them with the trial baseline.
+- meta-context-ship-gate: Roadmap row 207 (`meta-context-ship-gate`), part 2 of 2.
+- meta-docs-tests-clean: Roadmap row 207 (`meta-context-ship-gate`), part 1 of 2.
+- plan-status-after-050: Roadmap row 209 (`plan-status-after-050`).
+- release-audit-050: At the end of 0.5.0, `docs/roadmap.md` sections 2-4 describe the code as it was at the 0.4.0 audit commit, and the 0.6.0 `gate` block checks no section 1 ship clause.
+- spools-evidence-docs: Roadmap row 186 (`spools-evidence-docs`).
+- spools-onto-evidence-store-r2: Roadmap row 63 (`spools-onto-evidence-store-r2`), flip only.
+- engine-state-duckdb-plan: Serve runs one ticket at a time for much of the time even with `scheduler.parallel` `max_runs` 2.
+- ticket-write-serialization-proof: Use real flock and real Git to prove that engine ticket writes are serialized end to end, and document the narrow ticket-write critical section.
+- plan-prompts-read-queue-each-tick: An operator running `clutch prompt plan-ticket-drain`, `clutch prompt plan-ticket-serve` or `clutch prompt drain-loop` states the queue from memory and from the last command it happened to run.
+- author-ticket-writes-commit-edit: Move Author's final ticket publication, its failure compensation and its decision-record commits onto Git.commit_edit.
+- runner-ticket-writes-commit-edit: Move the runner's ticket state writers onto Git.commit_edit, so confirm, reject and admission replay repair can no longer stamp ticket.md before they take the commit lock.
+- rework-ticket-writes-commit-edit: Move daemon.apply_rework publication and compensation onto Git.commit_edit, so Rework no longer writes ticket files before it takes the commit lock and its compensation never undoes another writer's later edit.
+- git-commit-edit-owner: Add the one shared owner for engine ticket-file edits and their commits, and put intake under the same lock order.
+- review-cost-sonnet-instance: Stop the current instance of routine ticket buildability reviews inheriting the Opus-pinned review route in this repository.
+- plan-subagents-explicit-sonnet: The plan prompts currently request separate authoring and adversarial-audit agents without selecting their model, allowing them to inherit expensive supervisor models.
+- index-consumers-implement-hint: Roadmap row 197 (`index-consumers-implement-hint`), ticket 6 of `docs/annotations-index-plan.md`.
+- spools-tests-via-helper-driver: Roadmap row 194, the driver family of row 63's integration test split (the merge family was `spools-tests-via-helper`; the two fake-filesystem tests are the roadmap row `spools-tests-via-helper-fake-fs`).
+- panel-scorecard: Row 68 of the roadmap.
+- serve-scan-ignores-head-moves: `Serve.scan` takes the exclusive admission section (`mutations()`, which waits for every running implementation and, while it waits, refuses new runs) whenever its intake snapshot changes, and the snapshot includes the sha of `main`.
+- review-panel-stage-use-triage: Roadmap row 199, the last call site of rows 179, 192 and 193: Triage is the only surface that accepts a `majority-verdict` panel in config (`PANEL_SURFACES["majority-verdict"]` already lists `triage`, so `clutch/config.py` needs no edit) and then ignores it.
+- index-box-neighbors-prompts-author: Roadmap row 198 (`index-box-neighbors-prompts-author`), the Author half of row 188 (row 110's slice 3).
+- plan-prompts-shared-paths-exempt: The Authoring rule in `plan-ticket-drain.md` and `plan-ticket-serve.md` says to author a row only when no confirmed, unmerged ticket fences a file the row will change, and otherwise to wait.
+- review-panel-stage-use-majority: Roadmap row 192 as filed holds two call sites, diagnosis (`clutch/stages.py::diagnose`) and triage (`clutch/triage.py::_settle_pass`), each with its own artifact model, tie order, failure handling and tests.
+- review-panel-stage-use-requisition: Roadmap row 193.
+- spools-tests-via-helper-fake-fs: Roadmap row 195, part 3 of 3 of row 63's test split (parts 1 and 2 are rows 190 and 194).
+- index-consumers-training-join: Roadmap row 74 (now `index-consumers-training-join`), ticket 6 of `docs/annotations-index-plan.md`, split in three because its three consumers are separate boundaries: this ticket is the training export join; `index-consumers-doc-draft` (`doc draft --from <topic>`) and `index-consumers-implement-hint` (`index.implement_hint` in the Implement prompt, the hot path of every ticket, so last) are roadmap rows 196 and 197 (already on main).
+- index-box-neighbors-prompts: Roadmap row 188 (`index-box-neighbors-prompts`), slice 3 of 3 of row 110, split in two because the row names two prompt specs, two builders and their tests (about 15 fenced files).
+- implement-spec-meta-headers-from-verbs: The Implement prompt says nothing about `clutch:meta` headers.
+- review-panel-dropped-member-findings: When a review panel drops a member, the member's findings (for example `quota_exhausted`) must survive.
+- diagnose-spec-engine-written-failure-abandons: The Diagnose prompt defines `abandon-human` only as credentials, external environment, or an unreadable cause.
+- requisition-review-tool-output-evidence: Requisition review raised snags on the five meta-annotate shards at least eight times (codes `format-gate-contradiction`, `format-breaks-block-placement`, `premise`).
+- review-panel-stage-use: Roadmap row 179 as filed holds four call sites (review, diagnosis, triage, requisition review), each with its own artifact model, tie order and tests.
+- spools-tests-via-helper: Roadmap row 190, the integration half of row 63's test split, part 1 of 3 (the merge-admission and soak family; the remaining parts are the roadmap rows `spools-tests-via-helper-driver` and `spools-tests-via-helper-fake-fs`, each filed as a roadmap row by the owner, not by this ticket).
+- context-suggest-author-block: Roadmap row 191 (`context-suggest-author-block`), second slice of row 73 and ticket 5 of `docs/annotations-index-plan.md`.
+- spools-test-helper: Roadmap row 189, the helper half of row 63's test split.
+- index-box-neighbors-query: Roadmap row 187, slice 2 of 3 of row 110: the nearest-neighbor query over the index that `index-box-neighbors` filled.
+- context-suggest: Roadmap row 73, ticket 5 of `docs/annotations-index-plan.md`, first of two slices.
+- merge-tree-check-ignores-ticket-plane: After a correct merge, serve keeps running.
+- index-build-verb-r1: Roadmap row 182, the verb of ticket 4 of `docs/annotations-index-plan.md`, split from the rejected `index-build-r1` (its diagnosis names this as split 3).
+- index-box-neighbors: Roadmap row 110, first of three slices: the index half.
+- index-merge-hook: Roadmap row 181, the merge hook of ticket 4 of `docs/annotations-index-plan.md` ("`index build` runs at the end of a merge"), split from the rejected `index-build-r1` (its diagnosis names this as split 4).
+- spools-capture-keys: Roadmap row 185, the key half of row 63's split (decision 12).
+- index-build-r2: Roadmap row 72, the core build of ticket 4 of `docs/annotations-index-plan.md`, split from the rejected `index-build-r1` (5 boundaries, 18 fenced files; its diagnosis names this as split 2).
+- meta-render-empty-purpose-no-trailing-space: After this ticket, `meta.refresh` renders a new block's empty `purpose` as `# purpose:` (Python) or `purpose:` (Markdown) with no trailing space, so a freshly inserted block is already stable under `ruff format --check`.
+- serve-polls-block-parallel-runs: With `scheduler.parallel: {enabled: true, max_runs: 2}` in `config.yaml`, `clutch engine serve` never runs two implementations at the same time.
+- meta-drift-lint: Roadmap row 71, ticket 3 of `docs/annotations-index-plan.md`.
+- evidence-captures: Roadmap row 184, the second of the two slices before `spools-onto-evidence-store` (decision 12, row 63).
+- spools-scratch-dir: Roadmap row 183, the first of the two slices that precede `spools-onto-evidence-store` (decision 12).
+- index-config-touches: Roadmap row 180, the first slice of rejected `index-build-r1` (its diagnosis names this "Child 1").
+- meta-fill-surface: Roadmap row 70, ticket 2 of `docs/annotations-index-plan.md`.
+- plan-prompts-covered-conflicts: On 2026-11-20 an operator model ran `clutch prompt plan-ticket-serve` at the owner's request ("run and follow").
+- meta-annotate-docs-support: `meta-schema-and-refresh-r2` ships `clutch meta refresh` and `clutch meta check` and the `meta.paths` roots in `config.yaml`.
+- evidence-verbs: Roadmap row 62, ticket 6 of `docs/evidence-trail-plan.md`.
+- meta-annotate-tests-unit-a: `meta-schema-and-refresh-r2` ships `clutch meta refresh` and `clutch meta check` and the `meta.paths` roots in `config.yaml`.
+- meta-annotate-tests-integration-a: `meta-schema-and-refresh-r2` ships `clutch meta refresh` and `clutch meta check` and the `meta.paths` roots in `config.yaml`.
+- testguard-slowest-order-deterministic: `tests/integration/test_testguard.py::test_budget_and_slowest` decides which of two inner tests is slower from real wall time: `test_slowest` sleeps 0.2s and `test_slower` sleeps 0.1s, and the test asserts the report lists `test_slowest` before `test_slower`.
+- meta-annotate-tests-unit-b: `meta-schema-and-refresh-r2` ships `clutch meta refresh` and `clutch meta check` and the `meta.paths` roots in `config.yaml`.
+- meta-annotate-tests-integration-b: `meta-schema-and-refresh-r2` ships `clutch meta refresh` and `clutch meta check` and the `meta.paths` roots in `config.yaml`.
+- meta-schema-and-refresh-r2: Roadmap row 69, ticket 1 of `docs/annotations-index-plan.md`.
+- training-export-conflict: `clutch training export` today counts stems that have a `resolve`-surface call as `conflict skipped` and writes no conflict file.
+- training-eval: Roadmap row 60 (decision 11).
+- review-panel-r2: Roadmap row 67, re-scoped after review of the first two drafts: this ticket delivers the driver and provider machinery that runs one stage as N independent member calls.
+- extension-reports-unreadable-snapshot: When the installed extension cannot read the snapshot that `clutch view snapshot` returns, the Tickets view shows its header and an empty list and says nothing (2026-11-20: `hot-paths-into-ticket-detail` removed `hotPaths` from the snapshot, the installed copy of view.js still read `snap.hotPaths.map`, threw after drawing the header, and the list stayed blank).
+- one-parser-per-provider-meter: `CallMeter` (`clutch/watchdog.py`) reads each stream event through the provider's normalizer instead of branching on Claude, Codex and Gemini event shapes itself (roadmap decision 13, evidence plan row 8, part 2 of `one-parser-per-provider`).
+- hot-paths-into-ticket-detail: Today the Tickets view draws the `hotPaths` snapshot field as bare lines above the ticket rows (`clutch/__main__.py: 2`).
+- plan-ticket-serve-prompt: `clutch prompt plan-ticket-drain` hands an unattended operator a roadmap run that starts `clutch engine drain`, reads `${state_dir}/drain.out`, and treats a drain exit as the end of a run.
+- hot-paths-only-contended: The `hotPaths` snapshot field (`clutch view snapshot`, drawn by the extension's Tickets view) lists the ten paths fenced by the most unsettled tickets.
+- training-docs: Roadmap row 61, section 5 of `docs/training-data-plan.md`.
+- one-parser-per-provider-live: `clutch view watch` shows the model call running now from the call's own `start.json` record, not from the provider CLI's command line in the process table (roadmap decision 13, evidence plan row 8, part 3 of `one-parser-per-provider`).
+- one-parser-per-provider: `Parsed`, the result of one provider call, is built from the call's normalized `clutch.evidence.events/1.0` events by one function, so the per-provider `parse` methods of `ClaudeAdapter`, `CodexAdapter` and `GeminiAdapter` are deleted (roadmap decision 13, evidence plan row 8).
+- training-export-ticket: `clutch training export` writes `implement`, `preference`, `review` and `diagnosis` records today and refuses `ticket`.
+- training-export-kinds: `clutch training export` today writes the `implement` and `preference` kinds (and, once `training-export-trajectory` merges, a trajectory on `implement`).
+- training-export-trajectory: Today `clutch training export` writes `implement` records whose target is only the final diff.
+- panel-routing-config: Roadmap row 66 (stage panels plan, ticket 2).
+- training-export: `clutch training export --out DIR` exists.
+- panel-combiners: Roadmap row 65 (stage panels plan, ticket 1).
+- boundary-contract-implementation-review: Roadmap row 153, Phase 3 of `docs/boundary-contract-plan.md`.
+- parallel-enable-repo-config: The 0.4.0 ship clause needs ten parallel serve merges, but this repo's `config.yaml` sets no `scheduler.parallel`, so `Scheduler.dispatch_next` stays single-flight and `roadmap merged --parallel` can never pass.
+
 ## 0.5.0 - 2026-11-20
 - training-attempt-manifest: When `training_data.enabled` is true, every failed or abandoned attempt leaves one attempt manifest in the evidence store before its worktree is removed.
 - serve-dispatch-returns-on-slot: Roadmap row 166, replacing merged row 45.
