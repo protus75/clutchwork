@@ -49,6 +49,7 @@ from clutch.tickets import (
     TicketInvalid,
     artifact_path,
     harvest_path,
+    in_fence,
     intake,
     parse_ticket,
     split_frontmatter,
@@ -427,6 +428,13 @@ async def failure_terminal(
         terminal.update(to="infra_error", reason="provider_drought", provider_drought=provider_drought)
         rework_requested, verdict = False, None
         outcome = "infra_error"
+    if (
+        outcome == "premise_failed"
+        and stage == "implement"
+        and findings
+        and all(f.code == "fence_gap" and f.path and f.path.strip() and not f.path.startswith("tickets/") and not in_fence(f.path, ticket.scope_fence) for f in findings)
+    ):
+        terminal["fence_gap"] = True
     history = ctx.driver.journal.read()
     tier, effort = capability(ticket, history)
     split = False

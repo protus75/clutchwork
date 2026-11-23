@@ -127,9 +127,9 @@ class ImplementReply(FrozenModel):
     @model_validator(mode="after")
     def _findings_match_outcome(self) -> "ImplementReply":
         if self.outcome == "premise_failed":
-            if not self.findings or any(f.code != "premise" or not f.path or not f.path.strip() for f in self.findings):
+            if not self.findings or any(f.code not in {"premise", "fence_gap"} or not f.path or not f.path.strip() for f in self.findings):
                 raise ValueError(
-                    "premise_failed needs at least one finding, every code `premise` and every one naming `path` "
+                    "premise_failed needs at least one finding, every code `premise` or `fence_gap` and every one naming `path` "
                     "(the file outside the fence, the file the criteria contradict, or the ticket); unfinished or large "
                     "work is not a premise failure: implement the ticket and reply ok, or reply incomplete when you stopped before finishing"
                 )
@@ -817,7 +817,13 @@ async def implement(ctx: StageContext, ticket: Ticket, *, attempt: int) -> Stage
     history = ctx.driver.journal.read()
     terminals = run_terminals(history, stem)
     terminal = terminals[-1] if terminals else None
-    keep = bool(terminal and terminal.body.get("to") == "gate_failed" and terminal.body.get("stage") in {"check", "review"})
+    keep = bool(
+        terminal
+        and (
+            (terminal.body.get("to") == "gate_failed" and terminal.body.get("stage") in {"check", "review"})
+            or (terminal.body.get("to") == "premise_failed" and terminal.body.get("stage") == "implement" and terminal.body.get("fence_gap") is True)
+        )
+    )
     if keep:
         after_terminal = history[next(i for i, event in enumerate(history) if event is terminal) + 1 :]
         keep = not any(e.type == EventType.SIGNAL and e.ticket == stem and e.body.get("signal") == "merge_conflict_rerun" for e in after_terminal)

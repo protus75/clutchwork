@@ -4,8 +4,8 @@
 # purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus the rule text and version pins of the shipped resolve, implement, requisition_review, diagnose and review specs
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: 7d610a6c
-# hash: da42cb42f18632854a1e00876b9ffab02173ee7c420f6b1e4b6c7e2532297ad1
+# verified: 800fa1a3
+# hash: 60d2abc0b3a66bc507fccd2b1d96b18a560455504ace35a60a0fa1d40d9fda4f
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ from clutch.specs import (
 
 def test_spec_lint_accepts_the_implement_and_requisition_specs():
     specs = Path(__file__).resolve().parents[2] / "clutch" / "specs"
-    for name, version in (("resolve", "1.0"), ("implement", None), ("requisition_review", "3.29"), ("diagnose", "1.10")):
+    for name, version in (("resolve", "1.0"), ("implement", None), ("requisition_review", "3.29"), ("diagnose", "1.11")):
         text = (specs / f"{name}.md").read_text()
         assert lint_spec(text) == []
         if version is not None:
@@ -145,7 +145,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.28"
+    assert spec.meta.version == "2.29"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",

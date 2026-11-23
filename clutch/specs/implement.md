@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.28"
+version: "2.29"
 ---
 ## Role
 
@@ -74,8 +74,7 @@ Three first-class outcomes replace grinding out a bad implementation:
   criteria contradict existing behavior or each other, or meeting them forces an edit outside
   `## Scope fence`. Running out of time, or a change that is only large, is never `premise_failed`. Before replying `premise_failed` for a scope reason, work the change through
   every file the acceptance criteria and `## Verification` commands force, and report each forced
-  file outside `## Scope fence` as its own finding; never stop at the first. Stop, commit nothing
-  further, and say exactly why.
+  file outside `## Scope fence` as its own finding; never stop at the first. Use code `fence_gap` only for a finding naming a file that must change to satisfy the ticket and is outside the fence and `tickets/`; use `premise` for other findings. If every finding is a fence gap, first commit the in-fence work in progress, then reply; otherwise commit nothing further. Say exactly why.
 
 - `incomplete` -- you stopped before finished work was committed and nothing in the ticket is wrong;
   say in `summary` what stopped you, carry an empty `findings` list, and commit nothing further.
@@ -121,12 +120,12 @@ When your work is committed, reply with ONLY one JSON object, no prose before or
  "second_problems": [{"summary": "<one problem, one sentence>"}],
  "dead_ends": "<what you tried and abandoned, and why, or none>",
  "predicted_vs_actual": "<the ticket's time budget against what the work took, or none>",
- "findings": [{"code": "premise", "path": "<file outside the fence, file the criteria contradict, or tickets/<stem>/ticket.md>", "line": <line or null>,
+ "findings": [{"code": "premise" | "fence_gap", "path": "<file outside the fence, file the criteria contradict, or tickets/<stem>/ticket.md>", "line": <line or null>,
                "message": "<why the ticket cannot be done as written>",
                "paved_road": "<the ticket change that would make it doable>"}]}
 
 `ok`, `already_satisfied`, and `incomplete` carry an empty `findings` list. `premise_failed` carries at least one
-finding, every one coded `premise` and naming its `path`. A ticket that contradicts merged code or is malformed, or whose
+finding, every one coded `premise` or `fence_gap` and naming its `path`. A ticket that contradicts merged code or is malformed, or whose
 `## Scope fence` lacks a path the criteria force, is a `premise` finding naming that file.
 Use an empty `second_problems` list when there are none. The first character of your reply is `{` and the last is `}`; no prose, markdown or code fence surrounds the object.
 
