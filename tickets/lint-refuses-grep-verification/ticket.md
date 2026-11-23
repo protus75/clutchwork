@@ -8,16 +8,17 @@ agent_effort: medium
 ---
 
 ## Depends on
-- lint-refuses-two-dot-git-diff-main
+none
 
 ## Context
 - clutch/tickets.py::lint_findings
 - clutch/docs/host-authoring.md#What each section is for
 - tests/unit/test_ticket_lint_rules.py::TEXT
 - tests/unit/test_regression_command_program.py
+- tests/integration/test_lint_guide_parity.py
 
 ## Goal / Why
-`clutch ticket lint` now exits nonzero on a ticket whose `## Verification` command starts with `rg` or `grep`. Check requires every Verification command to exit 0, but `rg` and `grep` exit 1 when they find no match. A ticket that uses one as an absence check (print nothing, so the pattern is gone) can never pass once the work is correct. The owner reports `llm-request-subject` lost two attempts with a correct diff for this reason, and lint passes the form today because nothing in `clutch/tickets.py` checks the Verification program. The paved road is to assert absence inside the ticket's own unit test. Siblings: `lint-refuses-two-dot-git-diff-main` covers a different broken command form, and declined-box-000435 asked only for authoring prose and did not cover the exit-code trap.
+`clutch ticket lint` now exits nonzero on a ticket whose `## Verification` command starts with `rg` or `grep`. Check requires every Verification command to exit 0, but `rg` and `grep` exit 1 when they find no match. A ticket that uses one as an absence check (print nothing, so the pattern is gone) can never pass once the work is correct. The owner reports `llm-request-subject` lost two attempts with a correct diff for this reason, and lint passes the form today because nothing in `clutch/tickets.py` checks the Verification program. The host policy uses a consistent rule for direct search commands because their argv does not express whether a match counts as success. The paved road is an explicit assertion in a ticket-owned test or check command. Siblings: `lint-refuses-two-dot-git-diff-main` covers a different broken command form, and declined-box-000435 asked only for authoring prose and did not cover the exit-code trap.
 
 ## Boundary contract
 ### Ticket lint rules
@@ -31,13 +32,14 @@ agent_effort: medium
 - post-merge source of truth: clutch/tickets.py and the authoring guide `clutch/docs/host-authoring.md`
 
 ## Scope in / Scope out
-In: in `lint_findings`, add one finding per `ticket.verification` command whose first argument's basename is `rg`, `grep`, `egrep`, `fgrep` or `ripgrep`. In `clutch/docs/host-authoring.md`, add one sentence to the `Verification` bullet of "What each section is for": a search program such as `rg` or `grep` exits 1 on no match, so Verification never uses one as an absence check, and the ticket's unit test asserts absence instead. Add the new unit test file.
+In: in `lint_findings`, add one finding per `ticket.verification` command whose first argument's basename is `rg`, `grep`, `egrep`, `fgrep` or `ripgrep`. In `clutch/docs/host-authoring.md`, add one sentence to the `Verification` bullet of "What each section is for": a search program such as `rg` or `grep` exits 1 on no match, so Verification reserves direct search commands for acceptance-criterion inspection and refuses them as standalone checks, even for positive matches. Put positive and negative assertions in a ticket-owned test or check command with a pass/fail exit code instead. Add the new unit test file and extend the integration guide parity test to require the direct-search rule.
 Out: no new command group or verb. No linting of programs other than the search family, and no parsing of shell pipelines or `uv run rg` wrappers. No edits to other lint rules, `docs/how-clutch-works.md` or any prompt spec. Any `meta` header refresh for the touched guide is handled by Check's meta step.
 
 ## Scope fence
 - clutch/tickets.py
 - clutch/docs/host-authoring.md
 - tests/unit/test_ticket_lint_verification_search.py
+- tests/integration/test_lint_guide_parity.py
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_ticket_lint_verification_search.py` passes. For each program in `rg`, `grep`, `egrep`, `fgrep` and `ripgrep`, `lint_findings` on a ticket whose Verification command is that program followed by a pattern and a path returns exactly one finding that names the program and a paved road mentioning the unit test. It does not return an empty list.
