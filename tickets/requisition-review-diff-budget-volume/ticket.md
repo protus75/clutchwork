@@ -1,5 +1,5 @@
 ---
-state: draft
+state: rejected
 priority: P1
 kind: chore
 agent_tier: medium
