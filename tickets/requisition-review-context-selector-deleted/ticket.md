@@ -35,20 +35,21 @@ This does not duplicate open ticket `implement-context-unresolved-selector-notic
 - post-merge source of truth: clutch/specs/requisition_review.md
 
 ## Scope in / Scope out
-Scope in: add the rule to the Task section of `clutch/specs/requisition_review.md`. State that it applies whether or not the ticket text changed, that it applies to selectors in Context only, and that a selector on a symbol the ticket merely edits is not a hit. Bump the spec `version` to the next minor above the version on main (never a literal target). In `tests/unit/test_specs.py`, update the existing requisition review version pin to the new minor and add one phrase test for the new rule. Scope out: any change to `clutch/tickets.py` or lint code, other specs, and docs.
+Scope in: add the rule to the Task section of `clutch/specs/requisition_review.md`. State that it applies whether or not the ticket text changed, that it applies to selectors in Context only, and that a selector on a symbol the ticket merely edits is not a hit. Bump the spec `version` to the next minor above the version on main (never a literal target). Update the requisition review version pins in `tests/unit/test_specs.py` and `tests/integration/test_specs_delimiter_note.py`, and add one phrase test for the new rule in the unit file. Scope out: any change to `clutch/tickets.py` or lint code, other specs, and docs.
 
 ## Scope fence
 - clutch/specs/requisition_review.md
 - tests/unit/test_specs.py
+- tests/integration/test_specs_delimiter_note.py
 
 ## Acceptance criteria
 1. The requisition review spec Task text contains the new rule naming a Context selector deleted by Scope in; `./dev.py test tests/unit/test_specs.py` asserts the phrase and fails if the rule is removed.
-2. The spec `version` is the next minor above main's, and the `tests/unit/test_specs.py` pin matches it; `./dev.py test tests/unit/test_specs.py` fails when the pin and the spec disagree.
+2. The spec `version` is the next minor above main's, and both pins match it; `./dev.py test tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py` fails when either pin disagrees with the spec.
 3. The new rule states that a selector on a symbol the ticket only edits is not a hit; the phrase test in `./dev.py test tests/unit/test_specs.py` asserts that sentence, so an over-broad rule fails.
 
 ## Verification
 ```
-./dev.py test tests/unit/test_specs.py
+./dev.py test tests/unit/test_specs.py tests/integration/test_specs_delimiter_note.py
 ```
 
 ## Definition of rejected
