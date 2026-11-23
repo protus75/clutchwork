@@ -18,7 +18,7 @@ from clutch.effects import Effects
 from clutch.enginelog import engine_log
 from clutch.git import GitError
 from clutch.journal import TERMINAL_STATES, EventType, JournalCorruption, last_transition, run_seq
-from clutch.lockfile import Lockfile
+from clutch.lockfile import CommitLockTimeout, Lockfile
 from clutch.merge import AdmissionBoundary
 from clutch.mergequeue import regate_receipts
 from clutch.providers import ProviderSetupError
@@ -318,7 +318,15 @@ class Serve:
         async def changes():
             previous = {}
             while True:
-                current = await response.wait(self.scan())
+                try:
+                    current = await response.wait(self.scan())
+                except CommitLockTimeout as exc:
+                    self.control.poll()
+                    if self.stopping or self.control.projection.stop_requested or self.control.projection.kill_requested:
+                        raise
+                    self.log.event("commit_lock_timeout", operation="scan", error=str(exc))
+                    await response.wait(self.checkout.sleep(SERVE_POLL_S))
+                    continue
                 if current == previous:
                     await response.wait(self.checkout.sleep(SERVE_POLL_S))
                     continue
