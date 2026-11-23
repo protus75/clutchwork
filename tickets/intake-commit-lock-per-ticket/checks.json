@@ -1,0 +1,195 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "f9e9dddbc97dca7d0b7bd0dba5ee08c8f994990a",
+  "stem": "intake-commit-lock-per-ticket",
+  "passed": false,
+  "changed_files": [
+    "clutch/tickets.py",
+    "docs/how-clutch-works.md",
+    "tests/unit/test_intake_commit_lock_release.py",
+    "tests/unit/test_intake_plan.py"
+  ],
+  "inserted_lines": 136,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "fail",
+      "findings": [
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_git_commit.py::test_intake_skips_concurrent_commit failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        },
+        {
+          "code": "unit",
+          "path": null,
+          "line": null,
+          "message": "tests/unit/test_git_commit.py::test_intake_stem_scope[None-expected1] failed on rerun",
+          "paved_road": "fix the failing test",
+          "kind": null,
+          "unit": null
+        }
+      ],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 27.809022,
+        "passed": 2186,
+        "failed": 2,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.874679976986954,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 2.3049098690098617,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.8939270070113707,
+          "tests/unit/test_tickets_tolerant_reader.py::test_never_raises": 1.847102254978381,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.7929164910165127,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.750271964003332,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.7220286550291348,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.5974934679688886,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.4967373850231525,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.3290675090102013,
+          "tests/unit/test_images_embedding.py::test_embedding_views_and_default": 1.308015782997245,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[True]": 1.294380239007296,
+          "tests/unit/test_index_embeddings.py::test_failure_and_recovery[reply9-not a vector]": 1.2780216250102967,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.2672745010058861,
+          "tests/unit/test_evidence_envelope.py::test_writing_call_records_trees_and_cleans_scratch": 1.2485212699975818,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.2335499449982308,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[breaker]": 1.1922700099821668,
+          "tests/unit/test_index_embeddings.py::test_length_mismatch_new_and_existing": 1.1871659030148294,
+          "tests/unit/test_evidence_envelope.py::test_cli_version_from_preflight[False]": 1.1853261510259472,
+          "tests/unit/test_index_build.py::test_incremental_and_deletion": 1.1749028320191428,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1640910739661194,
+          "tests/unit/test_provider_live_native_ids.py::test_no_id_stays_null": 1.156157142977463,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[failover]": 1.1342794639931526,
+          "tests/unit/test_evidence_envelope.py::test_route_fields[spill]": 1.1341853460180573,
+          "tests/unit/test_index_build.py::test_git_failures_and_calls": 1.1137984620290808,
+          "tests/unit/test_runner_attempt_manifest.py::test_manifest_harvest[gate_failed]": 1.1128261129779276,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.104103326011682,
+          "tests/unit/test_runner_attempt_manifest.py::test_manifest_harvest[premise_failed]": 1.0849125850363635,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.0728447970177513,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.0537145139824133,
+          "tests/unit/test_index_build.py::test_rows_and_open": 1.0383933139964938,
+          "tests/unit/test_evidence_envelope.py::test_cli_version_from_preflight[True]": 1.0181238020013552
+        }
+      },
+      "coverage": {
+        "percent": 77.26861621947543,
+        "files": {
+          "clutch/tickets.py": 84.07534246575342
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.57731,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.00862626102753,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.2216438039613422,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.185884987033205,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.004703732993221
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_intake_commit_lock_release.py",
+        "tests/unit/test_intake_lock_order.py",
+        "tests/unit/test_intake_plan.py",
+        "tests/unit/test_intake_scope.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_intake_commit_lock_release.py tests/unit/test_intake_lock_order.py tests/unit/test_intake_plan.py tests/unit/test_intake_scope.py\nbringing up nodes...\nbringing up nodes...\n\n......                                                                   [100%]\n6 passed in 1.40s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.938127
+    }
+  ]
+}
