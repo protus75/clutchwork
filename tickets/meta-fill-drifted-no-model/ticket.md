@@ -19,7 +19,7 @@ none
 - tests/unit/test_check_meta_fill.py
 
 ## Goal / Why
-`metafill.fill` sends every non-malformed finding to the model, including `drifted` ones whose purpose is already valid, and then overwrites `purpose` (and a default `owner`) with the model's text. Check calls it on the changed files of every ticket, so a mechanical sweep (`disk-io-skip-per-file`) had 181 purpose lines rewritten for no reason, Review raised a scope snag, and the extra model calls cost money. After this ticket a `drifted` file with a non-empty purpose is refreshed mechanically, exactly as `meta.refresh` does (only `verified` and `hash` change), with no model request for that path. Only `missing` and `empty_purpose` files go to the model. Restores the intended split: the model writes missing prose, `meta.refresh` handles drift. Neighbours `meta-path-selects-nothing`, `check-owns-meta-headers` and `implement-spec-meta-untouched-not-reported` cover other meta gaps and are not re-solved.
+`metafill.fill` sends every non-malformed finding to the model, including `drifted` ones whose purpose is already valid, and then overwrites `purpose` (and a default `owner`) with the model's text. Check calls it on the changed files of every ticket, so a mechanical sweep (`disk-io-skip-per-file`) had 181 purpose lines rewritten for no reason, Review raised a scope snag, and the extra model calls cost money. After this ticket a `drifted` file with a non-empty purpose is refreshed mechanically, with only `verified` and `hash` updated, preserving its existing descriptive fields, with no model request for that path. Only `missing` and `empty_purpose` files go to the model. Restores the intended split: the model writes missing prose, `meta.refresh` handles drift. Neighbours `meta-path-selects-nothing`, `check-owns-meta-headers` and `implement-spec-meta-untouched-not-reported` cover other meta gaps and are not re-solved.
 
 ## Boundary contract
 ### Meta fill target selection
@@ -33,21 +33,25 @@ none
 - post-merge source of truth: clutch/metafill.py
 
 ## Scope in / Scope out
-Scope in: in `fill`, compute model targets only from `missing` and `empty_purpose` findings; pass the remaining drifted-only paths to `meta.refresh` with the same config, root, fs, tracked, sha, and add changed paths to `written`. Update an existing test in `tests/unit/test_meta_fill.py`, `tests/unit/test_check_meta_fill.py` or `tests/unit/test_main_meta_fill.py` only if it fails because it expected a drifted file to be sent to the model. Scope out: `meta.py`, `stages.py`, the meta prompt spec, and docs; no new flags.
+Scope in:
+- In `clutch/metafill.py::fill`, use the existing `missing` and `empty_purpose` findings to select model targets. Refresh drifted-only paths mechanically and preserve the parsed `purpose`, `owner` and `relates` fields exactly. Use the existing parse, digest and compose functions. Do not pass drifted-only paths through default owner or relation generation.
+- In `clutch/stages.py::check_meta`, refresh the remaining paths without applying the generic refresh to paths already refreshed mechanically by fill. Fenced tests must cover the real Check sequence and a mixed batch that includes both drift and a missing purpose. Keep malformed handling and empty-purpose failures.
+- Update the existing mixed-batch expectation in `tests/unit/test_check_meta_fill.py`. Add `tests/unit/test_meta_fill_drifted.py`. Update the `meta_drift` row in `docs/how-clutch-works.md` to describe the actual Check behavior.
+
+Scope out: a new meta API, provider routing, new flags, and unrelated metadata normalization.
 
 ## Scope fence
 - clutch/metafill.py
+- clutch/stages.py
 - tests/unit/test_meta_fill_drifted.py
-- tests/unit/test_meta_fill.py
 - tests/unit/test_check_meta_fill.py
-- tests/unit/test_main_meta_fill.py
+- docs/how-clutch-works.md
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_meta_fill_drifted.py` passes a test where a drifted file with a valid purpose and non-default owner goes through `fill`: the fake `ask` is called zero times for it, and purpose, relates and owner are byte-identical, not the model's text.
-2. The same test asserts that file's `verified` and `hash` are updated to the current sha and body digest, so `meta.check` returns no finding for it afterward, and the path appears in `written`.
-3. `./dev.py test tests/unit/test_meta_fill_drifted.py` passes a test where one batch holds a drifted file and a `missing` file: `ask` receives only the missing path, not the drifted one.
-4. `./dev.py test tests/unit/test_meta_fill_drifted.py` passes a test where a file is both `drifted` and `empty_purpose`: it is sent to the model and its purpose is filled.
-5. `./dev.py test tests/unit/test_meta_fill.py tests/unit/test_check_meta_fill.py tests/unit/test_main_meta_fill.py` passes.
+1. `./dev.py test tests/unit/test_meta_fill_drifted.py` proves a drifted-only file refreshes its hash and verified fields with no model request and preserves purpose, owner and relates, including an empty owner or a stale relation that generic refresh would normalize.
+2. `./dev.py test tests/unit/test_meta_fill_drifted.py` covers a mixed batch. Only missing and empty-purpose paths reach the model, including a file with both an empty purpose and drift. Malformed files still produce a refusal finding.
+3. `./dev.py test tests/unit/test_check_meta_fill.py` proves the Check sequence preserves the drifted file's existing descriptive fields through its final commit and still fills the separate missing header. It fails if the second refresh rewrites those fields.
+4. Review checks the `meta_drift` row in `docs/how-clutch-works.md` against Check.
 
 ## Verification
 ```
