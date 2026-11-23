@@ -34,7 +34,7 @@ After this ticket, a retry that follows a `premise_failed` terminal at stage `im
 - disposition: extend
 - owner: clutch/runner.py::failure_terminal
 - consumers: clutch/stages.py::implement keep decision
-- observable change: the terminal `STATE_TRANSITION` body gains `fence_gap: true` exactly when `outcome == "premise_failed"`, `stage == "implement"`, there is at least one finding, and every finding has a `path` that is not under the ticket's scope fence per `clutch.tickets.in_fence` and does not start with `tickets/`. Otherwise the key is absent
+- observable change: the terminal `STATE_TRANSITION` body gains `fence_gap: true` exactly when `outcome == "premise_failed"`, `stage == "implement"`, there is at least one finding, and every finding has `code == "fence_gap"` and a `path` that is not under the ticket's scope fence per `clutch.tickets.in_fence` and does not start with `tickets/`. Otherwise the key is absent
 - compatibility: existing terminal keys, dispatch, caps, and premise_bounce accounting are unchanged; readers that ignore the key are unaffected
 - acceptance: criteria 1 and 2
 - tests: tests/unit/test_runner_fence_gap_terminal.py
@@ -62,7 +62,7 @@ After this ticket, a retry that follows a `premise_failed` terminal at stage `im
 
 ## Scope in / Scope out
 Scope in:
-- In the Implement prompt, require the existing `Finding.code` field to be `fence_gap` only for a finding that names a file that must change to satisfy the ticket. In `clutch/runner.py::failure_terminal`, set the terminal marker only for a nonempty set of Implement premise findings each marked `fence_gap` with a concrete path outside the fence. Do not infer this from the path alone.
+- In the Implement prompt, require the existing `Finding.code` field to be `fence_gap` only for a finding that names a file that must change to satisfy the ticket. In `clutch/runner.py::failure_terminal`, set the terminal marker only for a nonempty set of Implement premise findings each marked `fence_gap` with a concrete path outside the fence and outside `tickets/`. Do not infer this from the path alone.
 - clutch/stages.py: extend the keep expression in `implement` with the fence-gap terminal case. The existing merge_conflict_rerun check applies to it too.
 - clutch/specs/implement.md and clutch/specs/diagnose.md: the sentences above; bump each `version` to the next minor above main.
 - After `implement-spec-version-single-pin` merges, update the sole Implement pin in `tests/unit/test_specs.py` and the Diagnose pins in that file and `tests/integration/test_specs_delimiter_note.py`. Update the old premise sentence assertion in `tests/integration/test_retry_prompts_starting_point.py` to match the Diagnose behavior.
@@ -86,7 +86,7 @@ Scope out: Check, Review, Diagnose verdict logic, rework, retry caps, premise_bo
 
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_runner_fence_gap_terminal.py` proves `failure_terminal` with outcome `premise_failed`, stage `implement` and findings all marked `fence_gap` and naming paths outside the fence writes `fence_gap` true on the terminal body, not an absent key.
-2. `./dev.py test tests/unit/test_runner_fence_gap_terminal.py` proves the key is absent when one finding has another code even with an out-of-fence path, when a finding names a path inside the fence, when a finding has no path, when the outcome is `gate_failed`, and when the findings list is empty, not `fence_gap` false or true.
+2. `./dev.py test tests/unit/test_runner_fence_gap_terminal.py` proves the key is absent when one finding has another code even with an out-of-fence path, when a finding names a path inside the fence or under `tickets/`, when a finding has no path, when the outcome is `gate_failed`, and when the findings list is empty, not `fence_gap` false or true.
 3. `./dev.py test tests/unit/test_retry_keep_fence_gap.py` proves `prepare_worktree` receives `keep=True` after a `premise_failed` implement terminal with `fence_gap` true, and `keep=False` after the same terminal without it, after `incomplete`, after `timeout`, and when a `merge_conflict_rerun` signal is newer than the fence-gap terminal.
 4. `./dev.py test tests/integration/test_retry_fence_gap_prompts.py tests/unit/test_specs.py` proves the Implement spec tells Implement to commit in-fence work before a fence-gap-only `premise_failed`, and the Diagnose spec names a fence-gap `premise_failed` as keeping the branch.
 
