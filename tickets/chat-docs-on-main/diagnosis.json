@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "dca7ffee36d55243cce72d8126be1552af3db8a3",
+  "stem": "chat-docs-on-main",
+  "attempt": 0,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "Premise holds: tests/integration/test_hostfiles.py:165 test_core_golden_uses_branch_template asserts hostfiles.render(b\"\") equals the base64 GOLDEN on line 29. Changing CORE_TEMPLATE breaks it, and acceptance criterion 2 requires that file to pass, but it is outside the fence.",
+    "Fix the ticket: add tests/integration/test_hostfiles.py to ## Scope fence. Add a Scope-in step to regenerate GOLDEN (line 29) for the new template, using the existing rewrite helper near line 411 rather than hand-editing the base64.",
+    "After the fence fix, the work is unchanged: add exception (6) and its Why clause to the first HARD rule in clutch/hostfiles.py CORE_TEMPLATE. Keep it within 8192 bytes, then refresh the CLAUDE.md, AGENTS.md and hosts/fixture/CLAUDE.md blocks and add tests/unit/test_hostfiles_docs_on_main.py."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
