@@ -1,0 +1,149 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "0bbffffdc8b1fb2fbd7878c19eea4da763e0d58c",
+  "stem": "chat-docs-on-main",
+  "passed": true,
+  "changed_files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "clutch/hostfiles.py",
+    "hosts/fixture/CLAUDE.md",
+    "tests/integration/test_hostfiles.py",
+    "tests/unit/test_hostfiles_docs_on_main.py"
+  ],
+  "inserted_lines": 102,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.056894,
+        "passed": 2233,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.460380948992679,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.1609061699709855,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1433805520064197,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1175511819892563
+        }
+      },
+      "coverage": {
+        "percent": 77.49131311398052,
+        "files": {
+          "clutch/hostfiles.py": 85.24590163934427
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.477376,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7969801249855664,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0989227539976127,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0624523909937125,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039404359995387
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_hostfiles_docs_on_main.py",
+        "tests/integration/test_hostfiles.py",
+        "tests/integration/test_core_supervisor_verdicts.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_hostfiles_docs_on_main.py tests/integration/test_hostfiles.py tests/integration/test_core_supervisor_verdicts.py\nbringing up nodes...\nbringing up nodes...\n\nss.sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 17%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 34%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 51%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 68%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 85%]\nsssssssssssssssssssssssssssssssssssssssssssssssssssssss..sss.s           [100%]\n4 passed, 418 skipped in 1.39s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.212387
+    }
+  ]
+}
