@@ -1,0 +1,188 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ecada1be8dea814c5b70ab5fe965eb3893c59c63",
+  "stem": "panel-facts-journal-signal",
+  "passed": true,
+  "changed_files": [
+    "clutch/journal.py",
+    "clutch/scorecard.py",
+    "clutch/stages.py",
+    "clutch/triage.py",
+    "docs/how-clutch-works.md",
+    "tests/integration/test_closed_sets.py",
+    "tests/unit/test_diagnosis_panel_use.py",
+    "tests/unit/test_panel_scorecard_kinds.py",
+    "tests/unit/test_review_panel_use.py",
+    "tests/unit/test_triage_panel_use.py"
+  ],
+  "inserted_lines": 195,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 18.013429,
+        "passed": 2167,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7080762710247654,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.6209519559924956,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.2288521930167917,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1183814459946007,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[False]": 1.0860358780191746
+        }
+      },
+      "coverage": {
+        "percent": 76.8826242510453,
+        "files": {
+          "clutch/journal.py": 83.98576512455516,
+          "clutch/scorecard.py": 90.8675799086758,
+          "clutch/stages.py": 70.39586919104991,
+          "clutch/triage.py": 55.61959654178674
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.488006,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3291,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.9354508539836388,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1997732199670281,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1686345839989372,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0042958089907188
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_review_panel_use.py",
+        "tests/unit/test_diagnosis_panel_use.py",
+        "tests/unit/test_triage_panel_use.py",
+        "tests/unit/test_panel_scorecard_kinds.py",
+        "tests/unit/test_panel_scorecard.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_review_panel_use.py tests/unit/test_diagnosis_panel_use.py tests/unit/test_triage_panel_use.py tests/unit/test_panel_scorecard_kinds.py tests/unit/test_panel_scorecard.py\nbringing up nodes...\nbringing up nodes...\n\n.........................................                                [100%]\n41 passed in 1.51s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.686499
+    },
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_closed_sets.py",
+        "tests/integration/test_vocabularies.py",
+        "tests/integration/test_scorecard.py",
+        "tests/integration/test_status.py",
+        "tests/integration/test_retro.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_closed_sets.py tests/integration/test_vocabularies.py tests/integration/test_scorecard.py tests/integration/test_status.py tests/integration/test_retro.py\nbringing up nodes...\nbringing up nodes...\n\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 51%]\nssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss     [100%]\n140 skipped in 1.46s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.734791
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "clutch",
+        "meta",
+        "check",
+        "tests/unit/test_panel_scorecard_kinds.py"
+      ],
+      "rc": 0,
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.503697
+    }
+  ]
+}
