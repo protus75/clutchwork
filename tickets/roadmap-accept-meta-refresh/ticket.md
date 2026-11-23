@@ -22,14 +22,14 @@ none
 - disposition: extend
 - owner: clutch/acceptance.py
 - consumers: `clutch roadmap accept`, release gates running `clutch meta check`
-- observable change: when accept adds rows, it calls `meta.refresh` on `docs/roadmap.md` after writing the rows and before the commit, so the one commit holds rows and a current header; with no added rows nothing is written or committed, as before
-- compatibility: the commit message, the `only=[roadmap.ROADMAP]` pathspec, refusals and the printed summary stay unchanged; `meta.refresh` is reused as is, with no new meta API
+- observable change: when accept adds rows, it computes the refreshed header with the functions used by `meta.refresh` before writing `docs/roadmap.md` inside the exact-path commit callback, so the one commit holds rows and a current header; with no added rows nothing is written or committed, as before
+- compatibility: the commit message, the `only=[roadmap.ROADMAP]` pathspec, refusals and the printed summary stay unchanged; the existing metadata functions are reused with no new meta API
 - acceptance: a unit test reads the committed roadmap text and runs `meta.check` on it; the result has no finding for `docs/roadmap.md`
 - tests: tests/unit/test_roadmap_accept.py
 - post-merge source of truth: clutch/acceptance.py
 
 ## Scope in / Scope out
-Scope in: in `clutch/acceptance.py`, after `checkout.fs.write(path, text.encode())` and before the commit, list tracked files with `checkout.git.ls_files(repo)`, take the head sha with `checkout.git.rev_parse(repo, "HEAD")`, and call `meta.refresh(checkout.config, repo, checkout.fs, tracked, sha, [roadmap.ROADMAP])`, adding the `meta` import. A refresh that reports the file malformed raises `Refusal` naming the roadmap file (via `roadmap.ROADMAP`) and the road `fix the meta block, then run clutch roadmap accept <release> again`, before the commit. In `tests/unit/test_roadmap_accept.py`, extend the `checkout` fixture so its config carries `meta.paths` covering `docs` and its git fake answers `ls_files` and `rev_parse`; this is the only fixture edit, and the new tests go in that file because it covers the edited unit. Scope out: `clutch/roadmap.py`, the roadmap author commit, `clutch/meta.py`, and every document, since no documented behavior changes.
+Scope in: In `clutch/acceptance.py`, use `checkout.git.commit_edit` for the exact roadmap path, with the second clean check, the pre-write header check and the write in its callback. Compute the refreshed text in memory with the same `meta.parse`, `meta.generated` and `meta.compose` functions that `meta.refresh` uses. Read the tracked paths and HEAD before writing inside the callback. A malformed configured header raises `Refusal` with the existing roadmap path and the road `fix the meta block, then run clutch roadmap accept <release> again` before any write. Preserve the metadata path selection used by `meta.refresh` and write the finished text once. In `tests/unit/test_roadmap_accept.py`, extend the `checkout` fixture so its config carries `meta.paths` covering `docs` and its git fake answers `ls_files`, `rev_parse` and `commit_edit`; this is the only fixture edit, and the new tests go in that file because it covers the edited unit. Scope out: `clutch/roadmap.py`, the roadmap author commit, `clutch/meta.py`, and every document, since no documented behavior changes.
 
 ## Scope fence
 - clutch/acceptance.py
@@ -38,8 +38,8 @@ Scope in: in `clutch/acceptance.py`, after `checkout.fs.write(path, text.encode(
 ## Acceptance criteria
 1. After accept adds a gap row, the roadmap text of the recorded commit is meta-clean: `./dev.py test tests/unit/test_roadmap_accept.py -k meta_header` shows `meta.check` returning `[]`, not a `(docs/roadmap.md, "drifted")` finding, with a roadmap that starts with a stale meta header.
 2. The refresh runs before the commit and the commit still uses `only=[roadmap.ROADMAP]`: the same test asserts the recorded `only` equals `[roadmap.ROADMAP]` and the recorded text already holds the refreshed hash, not the stale one.
-3. When no promise has a `new_row`, accept makes no commit and does not call refresh: `./dev.py test tests/unit/test_roadmap_accept.py -k passes` asserts `git.commits == []`, not one commit.
-4. A malformed meta block makes accept raise `Refusal` and records no commit: `./dev.py test tests/unit/test_roadmap_accept.py -k meta_malformed` asserts `git.commits == []`.
+3. When no promise has a `new_row`, accept makes no commit and does not enter the commit edit: `./dev.py test tests/unit/test_roadmap_accept.py -k passes` asserts `git.commits == []`, not one commit.
+4. A malformed meta block makes accept raise `Refusal` before changing any roadmap bytes: `./dev.py test tests/unit/test_roadmap_accept.py -k meta_malformed` asserts the original bytes remain and `git.commits == []`.
 5. The existing accept tests still pass: `./dev.py test tests/unit/test_roadmap_accept.py`.
 
 ## Verification
