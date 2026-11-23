@@ -10,41 +10,50 @@ state: confirmed
 ## Depends on
 none
 
+## Runs before
+- serve-commit-lock-timeout-contained
+
 ## Context
 - clutch/tickets.py::intake
 - tests/unit/test_intake_lock_order.py
+- tests/unit/test_commit_lock.py
 
 ## Goal / Why
-On 2026-11-22 (05:23Z and 05:27Z) serve stopped twice with `CommitLockTimeout` (box-001081). `Serve.scan` calls `tickets.intake(stems=None)`. `intake` enters `git._commit_lock` once, outside the `for stem in sorted(pending)` loop, and commits every pending ticket inside that single hold. About 40 `restore-*` drafts landed at once, and intake held the lock about 110 s. A running ticket's worker waited `COMMIT_LOCK_WAIT_S` (60 s) for the same lock and raised `CommitLockTimeout`. Serve treats a worker failure as fatal.
+On 2026-11-22, Serve stopped repeatedly with `CommitLockTimeout` while mass intake of `restore-*` tickets was underway (Box 001081 and 001082). The engine log at 05:23:20Z records that Serve's own commit-lock hold had started at 05:21:29Z. `tickets.intake` holds that lock during the status read, a separate Git evidence query per pending stem, and the whole commit batch. Both loops keep unrelated commit writers from taking a turn.
 
-When this is done, no commit-lock hold in `intake` grows with the number of pending tickets. The status read and stray check form one hold. Each stem's plan, stamp write and commit form its own hold. The lock is released between stems, so a waiting `commit` gets it after at most one stem's commit.
-
-Merged `intake-holds-commit-lock` added the lock but did not bound how long it is held. The open ticket `serve-commit-lock-timeout-contained` makes serve survive a timeout; it excludes hold durations, and this ticket excludes its retry and containment behaviour.
+Make the initial Git inventory a batch read and give competing commit writers opportunities to acquire the production lock between single-stem commit sections. Keep one outer `main_write` guard and the pre-write stray-staging refusal. `serve-commit-lock-timeout-contained` covers recovery after an actual wait timeout.
 
 ## Boundary contract
 ### Intake commit-lock scope
 - disposition: extend
 - owner: clutch/tickets.py
-- consumers: `Serve.scan`, `clutch ticket` verbs that call `tickets.intake`, and any concurrent `git.commit` caller waiting on `git._commit_lock`
-- observable change: the commit lock is taken once for status plus the stray check, then once per stem for plan, stamp and commit, and released between stems; `git.main_write()` stays held for the whole pass
-- compatibility: `IntakeResult`, commit messages, pathspec-limited commits, journal signals, refusal behaviour and the main_write then commit-lock acquisition order are unchanged; stems are still processed in sorted order
-- acceptance: with N pending tickets, a competing waiter on the commit lock acquires it between per-stem commits, and the longest single hold covers one stem's commit, not N
-- tests: a new unit test with a fake git and a lock-hold recorder; the existing `tests/unit/test_intake_lock_order.py` still passes unmodified
-- post-merge source of truth: clutch/tickets.py
+- consumers: `Serve.scan`, ticket verbs and competing Git commit writers
+- observable change: one short status and evidence inventory precedes ordered per-stem commit sections, with a chance for the production polling lock's waiters to run between sections
+- compatibility: preserve the whole-pass `main_write` guard, stray staging refusal before any commit, exact allowed evidence and commit paths, result and journal shapes, and sorted stem order
+- acceptance: a waiter on the production `CommitLock` algorithm completes during a batch against fake platform calls and controlled time
+- tests: `tests/unit/test_intake_commit_lock_release.py` and current intake tests
+- post-merge source of truth: clutch/tickets.py and clutch/lockfile.py
 
 ## Scope in / Scope out
-Scope in: in `clutch/tickets.py` `intake`, split the single `async with git._commit_lock` block. Hold the lock for `git.status_porcelain`, `intake_pending` and the stray raise. Then, for each stem, hold it around `_intake_plan_stem`, the stamp write, `git._commit` and the journal append. Update the `intake` docstring to say the commit lock is held per phase rather than across the whole pass. `main_write` stays an outer whole-pass guard and the stray check stays one whole-pass guard.
-Scope out: serve retry or containment of `CommitLockTimeout` (`serve-commit-lock-timeout-contained`); the `COMMIT_LOCK_WAIT_S` value; other lock holders; docs.
+Scope in:
+- In `clutch/tickets.py`, batch the Git evidence listing in `intake_pending` under the tickets path and partition results by an exact pending stem's evidence directory. Keep `_regular_evidence` checks and current treatment of staged, untracked and ignored files. Keep the admissible staged paths and pre-write refusal unchanged.
+- In `intake`, keep the outer `main_write` guard. Split the initial inventory and stray check from one commit-lock section per stem. Use the existing lock and its injected scheduling seam if needed for a waiting caller to make progress. Do not rely on the fairness of `asyncio.Lock` for the process-shared commit lock. Update the intake docstring and section 10.2 of `docs/how-clutch-works.md`.
+- Add a unit test using the real `CommitLock` algorithm and the fake syscall and clock setup from `tests/unit/test_commit_lock.py`, alongside fake Git commands. Update existing intake test stubs only where the batched evidence argv forces the change.
+
+Scope out: changes to the lock wait threshold, global lock semantics or Serve's timeout handling.
 
 ## Scope fence
 - clutch/tickets.py
+- docs/how-clutch-works.md
 - tests/unit/test_intake_commit_lock_release.py
+- tests/unit/test_intake_plan.py
+- tests/unit/test_intake_scope.py
 
 ## Acceptance criteria
-1. With three pending stems and a fake `git._commit` that records `lock.locked()` on entry and exit, `./dev.py test tests/unit/test_intake_commit_lock_release.py` shows the lock is not held between consecutive stems' commits, not one continuous hold across all three.
-2. A waiter that tries to acquire the commit lock while intake is committing stem two acquires it before stem three's commit starts, not after intake returns; checked by `./dev.py test tests/unit/test_intake_commit_lock_release.py`.
-3. The commit order of the three stems is sorted and `IntakeResult.committed` equals all three stems, not fewer; checked by `./dev.py test tests/unit/test_intake_commit_lock_release.py`.
-4. `git.main_write()` stays locked from the first status call through the last commit and a competing main_write waiter enters only after intake returns; checked by `./dev.py test tests/unit/test_intake_lock_order.py`.
+1. `./dev.py test tests/unit/test_intake_commit_lock_release.py` proves that a batch of pending stems takes one Git evidence inventory call and admits the same regular evidence as per-stem lookup. Include disallowed staged paths, ignored or symlink evidence, and another stem's evidence.
+2. The same test holds a commit across a contender's initial poll. The contender acquires during the intake batch, before its final stem commits, with the real `CommitLock` polling algorithm and fake platform calls. A single lock hold over the batch fails the test.
+3. The same test proves sorted exact-path commits and all resulting stems are recorded, and a stray staged path yields zero commits. `./dev.py test tests/unit/test_intake_lock_order.py` still checks the acquisition order and outer guard.
+4. Review checks the updated lock description in `docs/how-clutch-works.md` against the implemented sections.
 
 ## Verification
 ```
@@ -52,8 +61,8 @@ Scope out: serve retry or containment of `CommitLockTimeout` (`serve-commit-lock
 ```
 
 ## Definition of rejected
-The branch still commits all pending stems inside one continuous commit-lock hold, or it drops the `main_write` whole-pass guard, or it changes serve's handling of `CommitLockTimeout`.
+A branch that keeps a Git query per pending stem under the initial lock, still locks the whole batch, weakens the pre-write refusal or evidence checks, or relies on a FIFO-only fake to prove scheduling progress.
 
 ## Time budget
-- expected: 15m
-- stuck: 30m
+- expected: 25m
+- stuck: 50m
