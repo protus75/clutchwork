@@ -10,6 +10,9 @@ agent_effort: medium
 ## Depends on
 none
 
+## Runs before
+- lint-refuses-grep-verification
+
 ## Context
 - clutch/tickets.py::lint_findings
 - clutch/tickets.py::_criteria
