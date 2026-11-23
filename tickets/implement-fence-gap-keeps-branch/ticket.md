@@ -8,7 +8,7 @@ agent_effort: medium
 ---
 
 ## Depends on
-none
+- implement-spec-version-single-pin
 
 ## Context
 - clutch/stages.py::implement

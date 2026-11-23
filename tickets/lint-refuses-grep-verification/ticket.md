@@ -8,7 +8,7 @@ agent_effort: medium
 ---
 
 ## Depends on
-none
+- lint-refuses-two-dot-git-diff-main
 
 ## Context
 - clutch/tickets.py::lint_findings
