@@ -12,9 +12,12 @@ none
 
 ## Context
 - clutch/serve.py::Serve.__init__
+- clutch/serve.py::Serve.publish
 - clutch/stages.py::gather_safety_evidence
 - tests/unit/test_serve_scan_head.py
 - clutch/scheduler.py::Scheduler.dispatch_next
+- clutch/scheduler.py::Scheduler.update
+- clutch/scheduler.py::Scheduler.remove
 - tests/unit/test_serve_dispatch_containment.py
 
 ## Goal / Why
@@ -35,7 +38,7 @@ Bind selection, callback content and the journaled blob to one revision. If the 
 
 ## Scope in / Scope out
 Scope in:
-- In the prepared dispatch closure in `clutch/serve.py`, resolve the current main ticket blob ID once and read that exact object by ID. The selected revision must match the committed parse and published identity before journal and callback. When it differs, publish the valid revision back through the scheduler and return without starting work. Revalidate through the ordinary selection path, including overlaps. Keep unparseable content out of the callback.
+- In the prepared dispatch closure in `clutch/serve.py`, resolve the current main ticket blob ID once and read that exact object by ID. Parse the resolved blob and compare the resulting `Ticket` to the originally selected `Ticket` by content. This path receives parsed tickets before capability normalization and the comparison does not need a match in `self.published`. When the parsed ticket differs, call `self.publish(fresh, committed)`, which uses `scheduler.update` to put it in pending, and return before `runner.mark_running` or the callback. The existing task completion handler removes the old `flying` entry. The next selection then rechecks parallel overlaps using the new fence. For equal content call the callback with the committed parse and journal its resolved blob ID. Keep unparseable content out of the callback.
 - Add the new fake-driven test and update the existing dispatch fixture in `tests/unit/test_serve_dispatch_containment.py` only where the exact blob read or valid parsed tickets force it. Confirm the basic race with a test that fails on main.
 
 Scope out: continuation ownership, covered by `daemon-continuation-fresh-ticket`; branch retry policy and edits after a run starts.
@@ -46,7 +49,7 @@ Scope out: continuation ownership, covered by `daemon-continuation-fresh-ticket`
 - tests/unit/test_serve_dispatch_containment.py
 
 ## Acceptance criteria
-1. `./dev.py test tests/unit/test_serve_dispatch_fresh_ticket.py` simulates a widened fence between selection and dispatch, including an offered object other than the most recent publication. The first dispatch republishes and records no running event. The scheduler conflicts with the newly overlapping live run until its slot clears.
+1. `./dev.py test tests/unit/test_serve_dispatch_fresh_ticket.py` simulates a widened fence between selection and dispatch, including an offered object other than the most recent publication. Set the last publication to the fresh ticket and leave the earlier selected one in the first dispatch. Its return puts the fresh ticket in pending, clears the stale flying entry on task completion, and records no running event. The scheduler keeps the fresh ticket pending while the overlapping run occupies its slot.
 2. `./dev.py test tests/unit/test_serve_dispatch_fresh_ticket.py` moves main between ID resolution and content read. The read uses the resolved ID. When a selected revision runs, the callback's parsed ticket and the running event identify the same blob. A second lookup against mutable main fails this criterion.
 3. The same test shows an unchanged revision runs and an invalid one never reaches the callback. Existing scan and exception containment behavior passes `./dev.py test tests/unit/test_serve_scan_head.py tests/unit/test_serve_dispatch_containment.py`.
 
