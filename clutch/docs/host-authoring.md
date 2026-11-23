@@ -4,8 +4,8 @@ kind: guide
 purpose: Host guide to writing ticket content: the authoring workflow, what each section holds, how to keep tickets apart, unit vs integration test I/O rules, path matching, and how graphics and bug tickets prove their results
 relates: [clutch/docs/host-running.md]
 owner: clutch/docs/host-running.md
-verified: 981eb002
-hash: 1c700ddafbc93ba37961a52a22135f69950fef6499fface70c21018cca0c5bf7
+verified: 6a14858a
+hash: 1c07bd8cc01fd9b1a57b76b05396b62d8855dd8be692bb353bbb1c6161bbc66c
 -->
 # Host ticket authoring
 
@@ -123,7 +123,7 @@ what content its tickets carry, never the format. See the [host run guide](host-
   The words `improved`, `better` and `cleaner` are refused as unmeasurable.
   Lint requires that every criterion names a check in backticks.
   A changed-files check against main uses `main...HEAD`, never `main`.
-- `Verification`: the commands Check runs; every one must exit 0.
+- `Verification`: the commands Check runs; every one must exit 0. Search programs such as `rg` or `grep` exit 1 on no match, so use direct searches to inspect acceptance criteria; Verification refuses standalone search commands, including positive searches, so put positive and negative assertions in a ticket-owned test or check command with a pass/fail exit code instead.
 - `Definition of rejected`: outcomes that mean the branch is thrown away even if it passes.
 - `Time budget`: `expected` is your estimate; `stuck` is the deadline that stops the run.
   Both `expected` and `stuck` are AI time: the actual Implement minutes on the model that runs the ticket, never human working time.

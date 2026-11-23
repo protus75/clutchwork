@@ -745,6 +745,15 @@ def lint_findings(ticket: Ticket, repo: Path) -> list[Finding]:
     ):
         if re.search(r"\bgit[ \t]+diff\b[^\n]*--name-only\b[^\n]*(?<![\w./-])main(?![\w/-]|\.\.\.)", text):
             findings.append(_f(f"`## {section}` compares changed files against main", "compare with the merge base: `git diff --name-only main...HEAD`", path))
+    for command in ticket.verification:
+        if Path(command[0]).name in {"rg", "grep", "egrep", "fgrep", "ripgrep"}:
+            findings.append(
+                _f(
+                    f"`## Verification` runs search program {command[0]}",
+                    "put the intended positive or negative assertion in a ticket-owned unit test or check command with a pass/fail exit code",
+                    path,
+                )
+            )
     expected, stuck = ticket.expected_minutes, ticket.stuck_minutes
     if expected > 60:
         findings.append(_f(f"`## Time budget` expected {expected}m exceeds 60m", "split into more tickets, each its own stem; never raise the budget instead", path))
