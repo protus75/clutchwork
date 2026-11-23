@@ -1,0 +1,151 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "fad898bd1b5dda5b0034708e2a84a16a436add13",
+  "stem": "daemon-continuation-fresh-ticket",
+  "passed": true,
+  "changed_files": [
+    "clutch/scheduler.py",
+    "clutch/serve.py",
+    "tests/unit/test_daemon_ticket_writer_continuation.py"
+  ],
+  "inserted_lines": 115,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 20.485843,
+        "passed": 2195,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.793932328990195,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2800469459907617,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.2573767300054897,
+          "tests/unit/test_stage_events_seam.py::test_stage_event_writers_are_confined_to_driver_stage": 1.0473373220302165,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[parse]": 1.0196874489774927,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.007856552983867
+        }
+      },
+      "coverage": {
+        "percent": 77.39478440485412,
+        "files": {
+          "clutch/scheduler.py": 97.43589743589743,
+          "clutch/serve.py": 59.62732919254658
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 14.749443,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.234270456014201,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.4156236310082022,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.3643408700008877,
+          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.112386772991158,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0051264469802845
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_daemon_ticket_writer_continuation.py",
+        "tests/unit/test_serve_dispatch_containment.py",
+        "tests/unit/test_serve_scheduler_lifecycle.py",
+        "tests/unit/test_conflict_rerun_swap.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_daemon_ticket_writer_continuation.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_scheduler_lifecycle.py tests/unit/test_conflict_rerun_swap.py\nbringing up nodes...\nbringing up nodes...\n\n....................                                                     [100%]\n20 passed in 1.52s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.36326
+    }
+  ]
+}
