@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: bc0ddbe3
-hash: 01a547b99f68d7b466b8f504624f4588130316478580d36534ab0178ff9e7bfc
+verified: 3c098ad2
+hash: e82e3aca9639175814e928ac55fcc93e334061aa3ba15c5cde4685b43331bf7d
 -->
 # clutch roadmap
 
