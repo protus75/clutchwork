@@ -43,7 +43,7 @@ Scope out: roadmap row edits (the driver owns them), other documentation, and th
 4. `choose` over a parsed row whose Owner is `document-agent plan` with files containing `docs/document-agent/plan.md` yields the row as ready and no Wait whose reason starts with `no unique plan`; checked by `./dev.py test tests/unit/test_roadmap_nested_plan.py`.
 5. Existing flat resolutions still hold, including `plan_path("roadmap (decision 4)", files) == "docs/roadmap.md"`; checked by `./dev.py test tests/unit/test_roadmap_table.py`.
 
-Review checks that `docs/roadmap.md` describes the supported nested lookup and no longer describes rows 75–77 as held by that limitation. The `./dev.py test tests/unit/test_roadmap_nested_plan.py` fixture exercises the real Owner spellings through `choose`, with other dependencies settled.
+6. Review checks that `docs/roadmap.md` describes the supported nested lookup and no longer describes rows 75–77 as held by that limitation. The `./dev.py test tests/unit/test_roadmap_nested_plan.py` fixture exercises the real Owner spellings through `choose`, with other dependencies settled.
 
 ## Verification
 ```
@@ -51,7 +51,7 @@ Review checks that `docs/roadmap.md` describes the supported nested lookup and n
 ```
 
 ## Definition of rejected
-A branch that resolves nested plans by a second parallel lookup path, loosens the single-match rule, or edits `docs/roadmap.md` or existing tests is thrown away.
+A branch that resolves nested plans by a second parallel lookup path, loosens the single-match rule, or edits `docs/roadmap.md` outside the paragraph describing the rows 75–77 hold, or edits existing tests is thrown away.
 
 ## Time budget
 - expected: 10m
