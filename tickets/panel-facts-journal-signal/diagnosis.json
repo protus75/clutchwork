@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ecada1be8dea814c5b70ab5fe965eb3893c59c63",
+  "stem": "panel-facts-journal-signal",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "tests/unit/test_triage_panel_use.py: at the size-1, timeout, all-dropped and failed-member negative checks (near lines 98, 104, 177, 180, 184), add an assert that d.journal.events holds no signal event whose body has signal == \"panel_facts\" (AC3).",
+    "tests/unit/test_review_panel_use.py: next to the engine-log-only negative checks for single-member and non-ok paths (near lines 109, 209, 219, 279), assert driver.journal holds no signal event with signal == \"panel_facts\" (Definition of rejected).",
+    "tests/unit/test_diagnosis_panel_use.py: next to the single-model and failure checks (near lines 88, 92, 159, 171), assert driver.journal.events / d.journal.events holds no panel_facts signal event.",
+    "Keep the existing engine-log assertions and the source changes in clutch/stages.py, clutch/triage.py and clutch/scorecard.py; review found the signal move and scorecard fold correct. Only strengthen the negative test checks."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
