@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 800fa1a3
-hash: b492f673f1d919fd0894d529b253e84a0ddce913f0418883d16169e708f33362
+verified: c8bbefc9
+hash: 1d1fd87c5d4c9d1fdb1934d3934277b32c6a48d75a13a8f1972034293574ecf5
 -->
 # How ClutchWork works
 
@@ -50,9 +50,9 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 |---|---|---|
 | `context suggest <stem>` | no | Suggest ticket context from the index. |
 | `index build` | yes | Build or refresh the project index. |
-| `meta refresh [paths]` | commit only | Insert or refresh metadata blocks under configured roots. |
-| `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks. |
-| `meta fill [paths]` | yes | Fill metadata using a read-only model. |
+| `meta refresh [paths]` | commit only | Insert or refresh metadata blocks under configured roots; refuse a named path selecting no tracked file under a configured root. |
+| `meta check [paths]` | no | Report missing, malformed, empty-purpose and drifted blocks; refuse a named path selecting no tracked file under a configured root. |
+| `meta fill [paths]` | yes | Fill metadata using a read-only model; refuse a named path selecting no tracked file under a configured root. |
 | `view watch [--once]` | no | Prints a live text view of the configured host state, refreshing every three seconds unless `--once` is supplied. |
 | `view snapshot [--all-merged]` | no | Refreshes the rebuildable journal cache and prints the extension snapshot as JSON, including the absolute state directory and `configPath`. The `snapshot_merged_limit` cap defaults to 100 merged rows; `--all-merged` includes all. |
 | `view status` | no | Prints the journal projection, overdue retro and calibration reminders, and any evidence size warning (section 10.3). Read-only. |

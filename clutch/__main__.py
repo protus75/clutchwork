@@ -1222,6 +1222,12 @@ async def _run_index(config, root, *, fs, git, exec_, env, store, creator, build
 async def _run_meta(verb, config, root, fs, tracked, sha, paths=(), ask=None):
     from clutch import meta
 
+    missing = [path for path in paths if not any(meta._files(config, tracked, (path,)))]
+    if missing:
+        for path in missing:
+            _fail(f"meta {verb}", f"{path}: selects no tracked file -- for a new file, run git add -N {path} then rerun; otherwise name a .md or .py path under a configured meta.paths root")
+        return 2
+
     if verb == "refresh":
         changed, malformed = meta.refresh(config, root, fs, tracked, sha, paths)
         for path in changed:
