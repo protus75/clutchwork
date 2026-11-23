@@ -203,7 +203,7 @@ class Serve:
         self.core.restart.admissions = self.reconstruct_admissions
         self.box = self.control._recover.__self__
         self.storm = StormLedger(journal=checkout.journal, clock=checkout.clock)
-        self.core.scheduler.continuations = lambda: (c.ticket for w in self.writers.values() for c in w.continuations.values())
+        self.core.scheduler.continuations = lambda: ((c.ticket, c.run.ticket_sha) for w in self.writers.values() for c in w.continuations.values())
         self.core.scheduler.next_stage = self.next_stage
         self.core.scheduler.select = self.select
         self.core.admission.resume = self.resume
@@ -260,14 +260,23 @@ class Serve:
             and not any(target["emitting_origin"] == ticket.stem and target["emitting_stage"] == stage for target in self.storm.held_stages().values())
         )
 
+    def resume(self, ticket: Ticket):
+        writer = self.writers.get(ticket.stem)
+        prior = writer.continuations.get(ticket.stem) if writer is not None else None
+        if prior is None:
+            return None
+        latest = (last_transition(self.checkout.journal.read(), ticket.stem) or {}).get("to")
+        published = self.published.get(ticket.stem)
+        if latest == "running" or ticket is prior.ticket or (published is not None and published[0] is ticket and published[1] == prior.run.ticket_sha):
+            return writer
+        writer.continuations.pop(ticket.stem, None)
+        return None
+
     def next_stage(self, ticket: Ticket) -> str:
         writer = self.writers.get(ticket.stem)
         prior = writer.continuations.get(ticket.stem) if writer is not None else None
-        return prior.next_stage if prior is not None else "implement"
-
-    def resume(self, ticket: Ticket):
-        writer = self.writers.get(ticket.stem)
-        return writer if writer is not None and ticket.stem in writer.continuations else None
+        latest = (last_transition(self.checkout.journal.read(), ticket.stem) or {}).get("to")
+        return prior.next_stage if prior is not None and (latest == "running" or ticket is prior.ticket) else "implement"
 
     @asynccontextmanager
     async def mutations(self):

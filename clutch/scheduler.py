@@ -48,7 +48,7 @@ class Scheduler:
         self.log: Callable[..., None] = lambda *args, **kwargs: None
         self._slot = asyncio.Lock()
         self.flake_fixes: Callable[[], Set[str]] = lambda: set()
-        self.continuations: Callable[[], Iterable[Ticket]] = lambda: ()
+        self.continuations: Callable[[], Iterable[tuple[Ticket, str | None]]] = lambda: ()
         self.next_stage: Callable[[Ticket], str] = lambda _: "implement"
         self.select: Callable[[Ticket, str], bool] = lambda _ticket, _stage: True
 
@@ -88,7 +88,10 @@ class Scheduler:
             settled = settled_dependencies(events)
             maps = supersedes_maps(events)
             authored = authored_at(events)
-            retained = {t.stem: t for t in self.continuations()}
+            retained = {}
+            for ticket, sha in self.continuations():
+                if last.get(ticket.stem) == "running" or sha is not None and sha == await self.ticket_sha(ticket.stem):
+                    retained[ticket.stem] = ticket
             candidates = {**self.pending, **retained}
             for stem in candidates:
                 if (blob := parked_blob(events, stem)) is not None and blob == await self.ticket_sha(stem):
