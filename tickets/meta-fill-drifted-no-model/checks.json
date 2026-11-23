@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "759fd65f22197e15d80eace616bc9644cfcef1d6",
+  "produced_at_sha": "8344d1e6782746ac77a54faa3a6561101e65c3e9",
   "stem": "meta-fill-drifted-no-model",
   "passed": true,
   "changed_files": [
@@ -13,7 +13,7 @@
     "tests/unit/test_check_meta_fill.py",
     "tests/unit/test_meta_fill_drifted.py"
   ],
-  "inserted_lines": 83,
+  "inserted_lines": 114,
   "bypassed": [],
   "reports": [
     {
@@ -82,22 +82,23 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 16.00439,
-        "passed": 2222,
+        "seconds": 16.132882,
+        "passed": 2223,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5808687650423963,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1731017910060473,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1281692929915152,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.0047549149603583
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5505116909916978,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1961726279987488,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1638496670057066,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0198350230057258,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.005858623975655
         }
       },
       "coverage": {
-        "percent": 77.47101760412194,
+        "percent": 77.48358580440286,
         "files": {
-          "clutch/metafill.py": 92.74193548387096,
-          "clutch/stages.py": 70.68867387592488
+          "clutch/metafill.py": 93.38235294117646,
+          "clutch/stages.py": 70.70534698521047
         }
       }
     },
@@ -107,15 +108,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 11.688752,
+        "seconds": 12.64515,
         "passed": 297,
         "failed": 0,
         "skipped": 3290,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.7943469059537165,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.112714666989632,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0724470450077206,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0046066450304352
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.812480738008162,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.148048203001963,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1237784019904211,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.004604516987456
         }
       }
     },
@@ -146,9 +147,9 @@
         "tests/integration/test_check_meta_fill_stage.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_meta_fill_drifted.py tests/unit/test_meta_fill.py tests/unit/test_check_meta_fill.py tests/unit/test_main_meta_fill.py tests/unit/test_meta_refresh.py tests/integration/test_check_meta_fill_stage.py\nbringing up nodes...\nbringing up nodes...\n\n............................                                             [100%]\n28 passed in 1.51s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_meta_fill_drifted.py tests/unit/test_meta_fill.py tests/unit/test_check_meta_fill.py tests/unit/test_main_meta_fill.py tests/unit/test_meta_refresh.py tests/integration/test_check_meta_fill_stage.py\nbringing up nodes...\nbringing up nodes...\n\n.............................                                            [100%]\n29 passed in 1.37s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 4.220901
+      "seconds": 4.531052
     }
   ]
 }
