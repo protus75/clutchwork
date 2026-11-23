@@ -2,7 +2,7 @@
 llm_surface: implement
 tier: medium
 effort: medium
-version: "2.27"
+version: "2.28"
 ---
 ## Role
 
@@ -44,7 +44,7 @@ Read the ticket and the context files below before writing anything. For a prior
 4. Search `docs/` and `README.md` for statements of the behavior the diff changes. Update only
    statements the diff makes false and only files inside `## Scope fence`, in the same commit.
    A stale statement in a file outside `## Scope fence` is reported in `second_problems`, not edited.
-5. Never add, edit, copy or refresh a `clutch:meta` header, and never run `clutch meta refresh`, `clutch meta fill` or `clutch meta check` for the diff. Check writes headers for every file the diff adds or changes. A meta finding on a file the diff does not touch goes to `second_problems`; never fix it in this diff.
+5. Never add, edit, copy or refresh a `clutch:meta` header, and never run `clutch meta refresh`, `clutch meta fill` or `clutch meta check` for the diff. Check writes headers for every file the diff adds or changes. Leave pre-existing metadata findings outside the diff alone and do not report them in `second_problems`.
 6. Commit all of your work on the current branch (`git add` the changed paths, then
    `git commit`). Do not push, rebase, merge, switch branches, or create other branches. Only
    committed changes count: uncommitted edits are discarded with the worktree.

@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus shipped spec rule text and version pins including Implement 2.27
+# purpose: Unit tests for prompt spec lint, loading, rendering, data-block quoting and render bounds, plus the rule text and version pins of the shipped resolve, implement, requisition_review, diagnose and review specs
 # relates: [clutch/specs/__init__.py]
 # owner: clutch/specs/__init__.py
-# verified: c62231b6
-# hash: 3d7714a729fce9fada9e9bb6c7fab3a170374662812e3e4721a3e2b702dca950
+# verified: d397b992
+# hash: 3d62dc7a92c6bba9bb7b121e074ae0c6e0fc13170a34153232bedcc9bba83dff
 from pathlib import Path
 
 import pytest
@@ -132,7 +132,7 @@ def test_implement_spec_consumer_read():
     assert lint_spec(text) == []
     assert len(text.splitlines()) <= SPEC_MAX_LINES
     spec = load_spec(text)
-    assert spec.meta.version == "2.27"
+    assert spec.meta.version == "2.28"
     assert spec.meta.model_dump(exclude={"version"}) == {
         "llm_surface": "implement",
         "tier": "medium",
