@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "5390734314a3313e8c0f8d0f43fd0abf3e2bd4da",
+  "stem": "implement-context-unresolved-selector-notice",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "Narrow the guard in clutch/stages.py implement_inputs: read `text = (repo / context_path(p)).read_text()` outside the try, then wrap only `context_excerpt(p, text)` in `except ValueError`. Both helpers already exist in clutch/tickets.py; leave that file unchanged.",
+    "UnicodeDecodeError is a subclass of ValueError, so it must not become the notice. A non-UTF-8 Context file and a missing file must still raise as before. Definition of rejected: do not swallow errors other than the selector ValueError.",
+    "In tests/unit/test_stages_context_unresolved.py, add a tmp_path case: a Context file with invalid UTF-8 bytes makes implement_inputs raise UnicodeDecodeError. Keep the existing criteria 1-4 tests, and use only tmp_path so the coverage floor on stages.py still holds."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
