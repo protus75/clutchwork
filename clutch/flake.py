@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 
-from clutch.box import Box
+from clutch.box import Box, Message
 from clutch.journal import EventType, Journal
 
 
@@ -15,6 +15,13 @@ class FlakeError(ValueError):
 
 def _nonblank(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
+
+
+def release_identity(message: Message) -> tuple[str | None, str | None]:
+    resolution = message.resolution
+    kind = resolution.kind if message.status == "resolved" and resolution is not None else None
+    fix = resolution.link if kind == "ticket" else f"declined:{message.id}" if kind == "declined" else None
+    return kind, fix
 
 
 @dataclass(frozen=True)
@@ -105,10 +112,10 @@ class Flake:
         return Quarantine(detected, active)
 
     def release(self, *, box_id: str, evidence: GreenRerunEvidence | None = None) -> Quarantine:
-        """Resolve the report to its fix ticket, merge it, then supply its named green rerun.
+        """Release with a named green rerun after a merged fix or declined report.
 
-        Pending and non-ticket resolutions are idle; insufficient observations refuse
-        with that same road. Recorded releases replay without fresh observations.
+        Pending and tombstone resolutions are idle; insufficient observations refuse.
+        Recorded releases replay without fresh observations.
         """
         projection = self.quarantine()
         road = "resolve the report to its fix ticket, merge that fix, and supply the named test's green rerun"
@@ -123,8 +130,7 @@ class Flake:
         ):
             raise FlakeError("Box identity mismatch; repair the source report against its detection evidence")
         events = self.journal.read()
-        resolution = message.resolution
-        fix = resolution.link if message.status == "resolved" and resolution is not None and resolution.kind == "ticket" else None
+        kind, fix = release_identity(message)
         if box_id not in projection.active:
             recorded = next(event.body["fix_stem"] for event in events if event.type == EventType.SIGNAL and event.body.get("kind") == "flake_released" and event.body.get("box_id") == box_id)
             if fix != recorded:
@@ -135,7 +141,7 @@ class Flake:
         merges = [datetime.fromisoformat(event.ts) for event in events if event.type == EventType.STATE_TRANSITION and event.ticket == fix and event.body.get("to") == "merged"]
         if (
             not _nonblank(fix)
-            or not merges
+            or (kind == "ticket" and not merges)
             or not isinstance(evidence, GreenRerunEvidence)
             or evidence.test_id != identity.test_id
             or evidence.fix_stem != fix
@@ -145,7 +151,7 @@ class Flake:
             or evidence.unchanged_code is not True
             or not isinstance(evidence.observed_at, datetime)
             or evidence.observed_at.utcoffset() is None
-            or evidence.observed_at < max(merges)
+            or (kind == "ticket" and evidence.observed_at < max(merges))
         ):
             raise FlakeError(f"insufficient release evidence; {road}")
         self.journal.append(

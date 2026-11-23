@@ -1237,7 +1237,7 @@ def flake_covered(report: dict, changed: dict[str, set[int]]) -> bool:
 async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
     from clutch.covgate import percentages
     from clutch.daemon import flake_detection, storm_producer_for_config
-    from clutch.flake import GreenRerunEvidence, RerunEvidence
+    from clutch.flake import GreenRerunEvidence, RerunEvidence, release_identity
     from clutch.gates import TestCoverage, TestTiming
     from clutch.testreport import ResultsInvalid, read_results, slow_tests
 
@@ -1367,9 +1367,8 @@ async def _check_host_results(ctx, ticket, entry, n, attempt, changed_files):
         if {**first, **last}.get(identity.test_id) != "passed":
             continue
         message = box.get(identity.box_id)
-        resolution = message.resolution
-        fix = resolution.link if message.status == "resolved" and resolution is not None and resolution.kind == "ticket" else None
-        if fix and any(event.type == EventType.STATE_TRANSITION and event.ticket == fix and event.body.get("to") == "merged" for event in events):
+        kind, fix = release_identity(message)
+        if fix and (kind == "declined" or any(event.type == EventType.STATE_TRANSITION and event.ticket == fix and event.body.get("to") == "merged" for event in events)):
             flake.release(box_id=identity.box_id, evidence=GreenRerunEvidence(identity.test_id, fix, ctx.driver.clock(), "pass", True, True, True))
     return recorded(report)
 

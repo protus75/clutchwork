@@ -5,8 +5,8 @@
 # purpose: Tests flake detection and release: the bare-rerun evidence rules, Suggestion Box identity, journaled quarantine projection, cap escalation, and crash replay.
 # relates: [clutch/__main__.py, clutch/box.py, clutch/config.py, clutch/daemon.py, clutch/flake.py, clutch/journal.py, clutch/seams.py]
 # owner: engine
-# verified: 92889fdb
-# hash: 54a6698985b14779fe18f43103c72abb72416bf515b5a8b3141298a4fc5a2b06
+# verified: b2c11bd1
+# hash: 60544b687ac5b73f3359831712260076404f9279f03e8f022520b1bca83c257e
 
 import asyncio
 from dataclasses import replace
@@ -323,7 +323,7 @@ async def test_release_construction_is_idle(monkeypatch):
     await test_flake_construction_is_idle(monkeypatch)
 
 
-@pytest.mark.parametrize("resolution", [None, "tombstone", "declined", "ticket"])
+@pytest.mark.parametrize("resolution", [None, "tombstone", "ticket"])
 def test_release_resolves_exact_box_identity(rig, resolution, monkeypatch):
     (identity,) = detect(rig).active.values()
     # A merge whose name resembles the report and summary supplies no resolution.

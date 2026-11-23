@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, panels, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 06deb66c
-hash: 0dbb083006cce8801ff00b17d2c8953b3252e23d0627a8540c4adedd70646747
+verified: 97f3403f
+hash: 3def293d16a0745cbc929a9ae04e1d904d7314709362f1e35588eb48b385114c
 -->
 # How ClutchWork works
 
@@ -368,7 +368,7 @@ sections 4.5 and 7.2.1. All use one shared command runner, and `triggered_hosts(
 An entry may declare a worktree-relative `results` file written by `clutch.testreport`. Check
 clears it before each run and reruns a failing command with failed tests once. Edited flakes
 block; unedited flakes are quarantined unless the cap is full. Quarantined unedited failures
-do not block, and a passing quarantined test is released when its resolved fix has merged.
+do not block. Check releases a passing quarantined test when its resolved fix has merged or its report was declined; declined releases use `declined:<box_id>` as the fix identity and need no merge.
 Missing or invalid results after a successful run or rerun fail the entry. Check records command wall time, outcome counts and slow tests from the first run, bounded by `slow_test_seconds` (default 1.0) and `slow_test_limit` (default 100). Readable coverage records the repository percentage and percentages for changed files. With a declared coverage.py JSON report, Check runs `flake_coverage_argv` for each flake whose test file is unchanged, and counts it as edited when executed lines include a changed line or a line adjacent to a pure deletion. Missing configuration or an invalid report fails classification.
 
 
@@ -500,7 +500,7 @@ Keep and kill normally require a person at an interactive terminal to answer `y`
   (or with an unfinished effect) is reaped: harvested, journaled `abandoned`, worktree removed.
   A stem with a `HELD` merge-queue receipt for its current attempt is not reaped, nor is a stem whose only unfinished effects are standalone review `llm/review-<stem>/` calls. `abandoned` stems stay eligible. With no engine running, `view status` shows such a stem as interrupted, `ticket reject`
   reaps and rejects it, and `ticket order` treats it as open.
-- **Flaky tests:** Check quarantines unedited fail-then-pass tests and releases them after a merged fix and a passing observation. Edited flakes and cap-blocked flakes fail Check.
+- **Flaky tests:** Check quarantines unedited fail-then-pass tests and releases them on a passing observation after a merged fix or a declined report (using `declined:<box_id>` without a merge). Edited flakes and cap-blocked flakes fail Check.
 
 ## 7. Drain and serve
 
