@@ -12,6 +12,7 @@ none
 
 ## Context
 - clutch/metafill.py::fill
+- clutch/stages.py::check_meta
 - clutch/meta.py::check
 - clutch/meta.py::refresh
 - clutch/meta.py::generated
