@@ -1,22 +1,21 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f9e9dddbc97dca7d0b7bd0dba5ee08c8f994990a",
+  "produced_at_sha": "2acfe24f37a700c165fedacbcc8d0f5fbff068e3",
   "stem": "intake-commit-lock-per-ticket",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "check",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "The fence omits tests/unit/test_git_commit.py. Its test_intake_skips_concurrent_commit asserts `git._commit_lock.entries == 1` (line 110), which pins the single hold over the whole batch. Criterion 2 forbids exactly that, so no in-fence diff can pass both. Add the file to `## Scope fence` and `##",
-    "tests/unit/test_git_commit.py::test_intake_stem_scope also fails. Its GitFake/FakeLock stubs (lines 123-125) do not handle the batched evidence call or the CommitLock sleep seam the new intake uses. The refiled ticket's scope must allow updating these stubs, as it already does for",
-    "When refiled, keep the attempt-0 approach: one batched ls-files call under tickets/, then one commit-lock section per stem that yields through the CommitLock sleep seam. Releasing and immediately reacquiring the lock did not let the polling contender in.",
-    "Class prevention: the fence check should grep tests/ for every test that calls the changed function (here `tickets.intake`) and require each such test file in the fence. test_git_commit.py calls intake but was not fenced."
+    "The fence is missing a forced file. tests/unit/test_git_commit.py:110 (test_intake_skips_concurrent_commit) asserts `git._commit_lock.entries == 1`, but the Goal and AC2 require separate lock sections for the inventory and each stem, so this ticket cannot pass the full suite as written.",
+    "Re-author with tests/unit/test_git_commit.py in `## Scope fence`. Allow it to change the CountingLock entry-count assertion at line 110 and the FakeLock used by test_intake_stem_scope so they match one inventory section plus one commit section per stem.",
+    "Before re-filing, grep every caller of tickets.intake and intake_pending and fence each test whose assertions or stubs the per-stem lock change breaks. The attempt found tests/unit/test_menu_admission.py and tests/integration/test_menu_verb_parity.py passing; only test_git_commit.py failed.",
+    "After the fence is fixed, a later attempt can keep the existing diff to clutch/tickets.py, docs/how-clutch-works.md, tests/unit/test_intake_commit_lock_release.py and tests/unit/test_intake_plan.py. The run record says the ticket's 6 verification tests passed; only the 2 out-of-fence failures in"
   ],
   "mechanical": null,
   "trimmed_lessons": [
-    0,
-    1
+    3
   ],
   "spec_version": "1.10",
   "provider": "claude",
