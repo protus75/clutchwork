@@ -39,11 +39,12 @@ none
 Scope in:
 - In `clutch/metafill.py::fill`, use the existing `missing` and `empty_purpose` findings to select model targets. Refresh drifted-only paths mechanically by updating only `verified` and `hash` and preserve the parsed `purpose`, `owner` and `relates` fields exactly. Use the existing parse, digest and compose functions. Do not pass drifted-only paths through `meta.refresh`, default owner or relation generation.
 - In `clutch/stages.py::check_meta`, refresh the remaining paths without applying the generic refresh to paths already refreshed mechanically by fill. Fenced tests must cover the real Check sequence and a mixed batch that includes both drift and a missing purpose. Keep malformed handling and empty-purpose failures.
-- Update the existing mixed-batch expectation in `tests/unit/test_check_meta_fill.py`. Add `tests/unit/test_meta_fill_drifted.py`. Update the `meta_drift` row in `docs/how-clutch-works.md` to describe the actual Check behavior.
-- In `tests/integration/test_check_meta_fill_stage.py`, seed the fixture with an empty purpose (`purpose=""`, an `empty_purpose` finding) instead of the drift-only `old purpose`, so Check still fills through FakeLLM and commits `clutch(work): meta`. Reword its `# purpose:` header line, which says it fills a drifted metadata purpose, to say it fills an empty purpose.
+- Update the existing mixed-batch expectation in `tests/unit/test_check_meta_fill.py`. Keep its clean-rerun assertions (a second `check_meta` call, `factory.assert_not_called()`, no new commit) in a test whose drifted fixture has a normal owner and valid relates. Put the empty-owner and stale-relates preservation check in its own test function that runs Check once, because a second Check sends that file through generic `meta.refresh`, which rewrites the owner to `engine` and drops the stale relation.
+- Add `tests/unit/test_meta_fill_drifted.py`. Update the `meta_drift` row in `docs/how-clutch-works.md` to describe the actual Check behavior.
+- In `tests/integration/test_check_meta_fill_stage.py`, seed the fixture with an empty purpose (`purpose=""`, an `empty_purpose` finding) instead of the drift-only `old purpose`, so Check still fills through FakeLLM and commits `clutch(work): meta`. Leave the file's `clutch:meta` header untouched; Implement may not edit metadata headers.
 - In `README.md`, reword the `clutch meta fill` sentence so it says the model fills missing or empty blocks and drifted blocks are refreshed without the model.
 
-Scope out: a new meta API, provider routing, new flags, and unrelated metadata normalization.
+Scope out: a new meta API, provider routing, new flags, unrelated metadata normalization, and any edit to a `clutch:meta` header line (including the stale `# purpose:` line of `tests/integration/test_check_meta_fill_stage.py`).
 
 ## Scope fence
 - clutch/metafill.py
@@ -57,7 +58,7 @@ Scope out: a new meta API, provider routing, new flags, and unrelated metadata n
 ## Acceptance criteria
 1. `./dev.py test tests/unit/test_meta_fill_drifted.py` proves a drifted-only file refreshes its hash and verified fields with no model request and preserves purpose, owner and relates, including an empty owner or a stale relation that generic refresh would normalize.
 2. `./dev.py test tests/unit/test_meta_fill_drifted.py` covers a mixed batch. Only missing and empty-purpose paths reach the model, including a file with both an empty purpose and drift. Malformed files still produce a refusal finding.
-3. `./dev.py test tests/unit/test_check_meta_fill.py` proves the Check sequence preserves the drifted file's existing descriptive fields through its final commit and still fills the separate missing header. It fails if the second refresh rewrites those fields.
+3. `./dev.py test tests/unit/test_check_meta_fill.py` proves the Check sequence preserves the drifted file's existing descriptive fields through its final commit and still fills the separate missing header. It fails if the second refresh rewrites those fields. The clean-rerun test (second `check_meta`, `factory.assert_not_called()`, no new commit) uses a fixture with a normal owner and valid relates, and the empty-owner and stale-relates preservation check is a separate test function.
 4. `./dev.py test tests/integration/test_check_meta_fill_stage.py` proves Check fills an empty-purpose file through the scripted model and commits `clutch(work): meta`.
 5. Review checks the `meta_drift` row in `docs/how-clutch-works.md` and the `clutch meta fill` sentence in `README.md` against Check and `metafill.fill`.
 
