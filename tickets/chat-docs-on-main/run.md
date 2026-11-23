@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The integration suite contains a byte-for-byte golden of the entire current template, so any required template wording change makes its golden assertion fail.
+The verification command passed with 4 tests passed and 418 skipped by existing disk-I/O markers; template budget, neutrality, and golden render were also checked directly. The template is 8,183 bytes. A simpler uncompressed addition would exceed its budget.
 
 ## Dead ends
 
-none
+None.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 20 minutes; inspection identified the scope conflict before implementation.
+The ticket estimated 20 minutes; elapsed time was not measured.
 
