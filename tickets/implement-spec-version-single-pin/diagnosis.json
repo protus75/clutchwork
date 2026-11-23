@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "3bd59f9801a45db21ae4586492689bd7abaa8e29",
+  "stem": "implement-spec-version-single-pin",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
+  "lessons": [
+    "The premise finding is valid. clutch/specs/implement.md rule 5 (line 47) says: never add, edit or refresh a clutch:meta header, because Check writes headers for every file the diff changes. Scope in still tells the implementer to edit purpose lines, which the spec forbids.",
+    "Rewrite Scope in for tests/integration/test_specs_delimiter_note.py, test_implement_spec_meta_headers.py and test_implement_spec_mutation_check.py. Delete each 'edit/drop 2.27 from the purpose header' instruction and say that Check owns the purpose-line update for those changed files.",
+    "Example: tests/integration/test_implement_spec_mutation_check.py line 4 purpose ends 'and pins version 2.27'. The implementer leaves it as is. Acceptance criteria 1 and 2 grep only '\"2.27\"' and 'implement 2.27', so a stale purpose line does not break them.",
+    "Keep the test-body work unchanged: unit pin in test_implement_spec_consumer_read; skip implement version in delimiter-note; delete test_implement_spec_meta_header_version; drop the == \"2.27\" assert and the load_spec import (line 11); build the test_stages.py spec line from the loaded spec version."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
