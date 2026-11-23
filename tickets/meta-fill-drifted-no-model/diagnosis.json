@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "4fb61d91c373365de2f282cf83c4884fb52109d4",
+  "stem": "meta-fill-drifted-no-model",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "reject",
+  "lessons": [
+    "Ticket fence misses tests/integration/test_check_meta_fill_stage.py: test_check_fills_meta_inside_check_stage writes docs/edited.md with purpose 'old purpose' and hash 'stale' (drift only) and asserts the model's 'scripted purpose' lands, which pins the behavior this ticket removes.",
+    "Re-author: add tests/integration/test_check_meta_fill_stage.py to ## Scope fence and ## Context, and add a Scope-in line to change that test to seed an empty purpose (empty_purpose finding) so Check still fills through FakeLLM and commits 'clutch(work): meta'.",
+    "Also re-author the test's '# purpose:' header line, which says 'fills a drifted metadata purpose'. After this change that header is false, and Check meta-refreshes the changed file anyway.",
+    "The implementation itself passed Verification (27 tests): clutch/metafill.py and clutch/stages.py changes are sound. The only failure is the unfenced integration test pinning the old drifted-to-model behavior."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.10",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
