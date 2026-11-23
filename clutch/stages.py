@@ -70,10 +70,11 @@ from clutch.tickets import (
     Ticket,
     _criteria,
     artifact_path,
+    context_excerpt,
+    context_path,
     harvest_path,
     in_fence,
     parse_render,
-    render_context,
     ticket_path,
 )
 from clutch.tickets import validate_ticket as validate_ticket
@@ -649,7 +650,18 @@ async def lift_prior_diff(ctx: StageContext, stem: str, *, attempt: int, diff: s
 def implement_inputs(repo: Path, ticket_text: str, ticket: Ticket, context_files: Sequence[Path], *, related_files: str = "none") -> dict[str, str]:
     """The production Implement inputs, also used to measure a ticket at authoring."""
     paths = list(dict.fromkeys([*ticket.context, *(str(p) for p in context_files)]))
-    context = "\n\n".join(f"### {p}\n{render_context(repo, p) if p in ticket.context else (repo / p).read_text()}" for p in paths) or "none"
+    entries = []
+    for p in paths:
+        if p in ticket.context:
+            text = (repo / context_path(p)).read_text()
+            try:
+                body = context_excerpt(p, text)
+            except ValueError as exc:
+                body = f"(selector does not resolve in this worktree: {exc}; read the file directly)"
+        else:
+            body = (repo / p).read_text()
+        entries.append(f"### {p}\n{body}")
+    context = "\n\n".join(entries) or "none"
     return {
         "ticket": ticket_text,
         "context": context,
