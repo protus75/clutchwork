@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: 3c098ad2
-hash: e82e3aca9639175814e928ac55fcc93e334061aa3ba15c5cde4685b43331bf7d
+verified: 832f8056
+hash: 581d95a6832bdabcc956facb4a30960958354f7289c6b3bf00b42282ad4d9012
 -->
 # clutch roadmap
 
@@ -115,7 +115,7 @@ Tickets: `test-fakes-and-conftest`, `contention-authoring-rules` (done).
 - `docs/remote-view-plan.md`: Phase 1 leaves the service owner path, command, routes, response fields, errors and limits to authoring, and Delivery sequence has phases rather than ticket-sized units with prerequisites and discriminating checks. Anchor Status to a revision and specify those contracts and bounded units before admission; the remote-controls decision remains separate.
 - `docs/training-backup-plan.md`: Status explicitly waits for the owner to schedule backup; it lacks a revision anchor, release fit and ticket-level kind, priority, dependencies and discriminating checks. Resolve scheduling and add those to Status and Ticket breakdown before admission; settle evidence retention for the optional evidence work.
 - `docs/mcp-server-notes.md` is exploratory notes, not a plan: decide whether an adapter is needed and establish the multi-host registry prerequisite, then provide a revision-anchored plan with ownership, bounded tickets and checks before admission.
-- Rows 75-77 are held: `clutch/roadmap.py::plan_path` only resolves `docs/*-plan.md`, but their owner is `docs/document-agent/plan.md`. No Owner spelling can select that nested path; the parser needs nested-plan resolution. The nested-plan resolution repair still needs to be filed as a suggestion on main. The same limitation affects the remaining document-agent rows.
+- Rows 75-77 use `docs/document-agent/plan.md`: `clutch/roadmap.py::plan_path` resolves both `docs/*-plan.md` and single-level `docs/<name>/plan.md` paths, matching the nested directory's whole name or a hyphen-separated part of it. The match must be unique across both forms.
 - Row 210 remains held on the authored replacement: the rejected `state-verdict-ticket-service` exhausted its premise-bounce cap. Its attempt findings require a service-aware ticket-change check, coordinated Author publication, and an evidence publication and recovery contract compatible with checkpoints; the replacement must resolve these before it can run.
 
 ### 3.1 Defects found by the audit

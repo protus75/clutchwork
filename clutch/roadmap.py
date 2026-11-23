@@ -174,7 +174,11 @@ def plan_path(owner: str, files: set[str]) -> str | None:
     name = words[0]
     if name == "roadmap":
         return ROADMAP
-    matches = [path for path in files if re.fullmatch(r"docs/[^/]+-plan\.md", path) and name in path[5:-3].split("-")]
+    matches = []
+    for path in files:
+        nested = re.fullmatch(r"docs/([^/]+)/plan\.md", path)
+        if (re.fullmatch(r"docs/[^/]+-plan\.md", path) and name in path[5:-3].split("-")) or (nested and (name == nested.group(1) or name in nested.group(1).split("-"))):
+            matches.append(path)
     return matches[0] if len(matches) == 1 else None
 
 
@@ -252,7 +256,7 @@ def choose(rows: list[Row], *, states: dict[str, str], files: set[str], current:
         if row.kind not in kinds or row.priority not in priorities:
             waits.append(Wait(row, f"invalid kind or priority: {row.kind}, {row.priority}", "use a ticket kind and priority"))
         elif plan_path(row.owner, files) is None:
-            waits.append(Wait(row, f"no unique plan for {row.owner}", "start Owner with roadmap or a word from exactly one docs/*-plan.md name"))
+            waits.append(Wait(row, f"no unique plan for {row.owner}", "start Owner with roadmap or a matching name from exactly one docs/*-plan.md or docs/<name>/plan.md"))
         else:
             directory = f"tickets/{row.stem}/evidence/"
             named = [token for token in TOKEN.findall(row.content) if token.startswith(directory)]
