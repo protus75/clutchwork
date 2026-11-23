@@ -1,11 +1,12 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "d94c1e9bc7c7e7cfb47af048501cfe4b31a5081d",
+  "produced_at_sha": "3bdd8ce916adbf792aacad95bcc0dcabf4f24cbd",
   "stem": "serve-dispatch-fresh-ticket",
-  "passed": false,
+  "passed": true,
   "changed_files": [
     "clutch/serve.py",
+    "tests/unit/test_serve_commit_lock_timeout.py",
     "tests/unit/test_serve_dispatch_containment.py",
     "tests/unit/test_serve_dispatch_fresh_ticket.py"
   ],
@@ -74,39 +75,26 @@
     },
     {
       "code": "unit",
-      "verdict": "fail",
-      "findings": [
-        {
-          "code": "unit",
-          "path": null,
-          "line": null,
-          "message": "tests/unit/test_serve_commit_lock_timeout.py::test_scan_retries_owned_pending_ticket failed on rerun",
-          "paved_road": "fix the failing test",
-          "kind": null,
-          "unit": null
-        }
-      ],
+      "verdict": "pass",
+      "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 134.748305,
-        "passed": 2197,
-        "failed": 1,
+        "seconds": 17.386937,
+        "passed": 2198,
+        "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.4475990600185469,
-          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2026562709943391,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1294782299955841,
-          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.129366710985778,
-          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.1110789369849954,
-          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0805356159980875,
-          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[parse]": 1.077645981014939,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.0224816239788197
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5420462130277883,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.2494079659809358,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1664706290175673,
+          "tests/unit/test_index_sources.py::test_read_failures_preserve_rows": 1.0036722680088133,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.0026813979784492
         }
       },
       "coverage": {
-        "percent": 14.829159135898099,
+        "percent": 77.43254292722813,
         "files": {
-          "clutch/serve.py": 19.503105590062113
+          "clutch/serve.py": 60.69651741293532
         }
       }
     },
@@ -116,16 +104,15 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 13.856985,
+        "seconds": 13.642975,
         "passed": 297,
         "failed": 0,
         "skipped": 3290,
         "slow": {
-          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.20779125901754,
-          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.4856243929825723,
-          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.4421764869766776,
-          "tests/integration/test_projection_helpers_source.py::test_projection_owners": 1.2616155839932617,
-          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0090876159956679
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8742302179744001,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1390295950113796,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1209852189931553,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0038779739988968
         }
       }
     },
@@ -150,12 +137,14 @@
         "test",
         "tests/unit/test_serve_dispatch_fresh_ticket.py",
         "tests/unit/test_serve_scan_head.py",
-        "tests/unit/test_serve_dispatch_containment.py"
+        "tests/unit/test_serve_dispatch_containment.py",
+        "tests/unit/test_serve_commit_lock_timeout.py",
+        "tests/unit/test_no_automatic_retro_calibration.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_serve_dispatch_fresh_ticket.py tests/unit/test_serve_scan_head.py tests/unit/test_serve_dispatch_containment.py\nbringing up nodes...\nbringing up nodes...\n\n..............                                                           [100%]\n14 passed in 1.54s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_serve_dispatch_fresh_ticket.py tests/unit/test_serve_scan_head.py tests/unit/test_serve_dispatch_containment.py tests/unit/test_serve_commit_lock_timeout.py tests/unit/test_no_automatic_retro_calibration.py\nbringing up nodes...\nbringing up nodes...\n\n........................                                                 [100%]\n24 passed in 1.51s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.880963
+      "seconds": 6.20104
     }
   ]
 }
