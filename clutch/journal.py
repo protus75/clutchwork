@@ -58,6 +58,7 @@ SIGNAL_NAMES: frozenset[str] = frozenset(
         "merge_conflict_rerun",
         "merge_red_streak",
         "merge_tree_mismatch",
+        "panel_facts",
         "provider_call_outcome",
         "provider_cap_wait",
         "recovery_alert",

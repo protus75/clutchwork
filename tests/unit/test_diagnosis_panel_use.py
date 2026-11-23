@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Checks diagnosis on a single model and on a majority-verdict panel: verdict aggregation, cost totals, panel facts logging, dropped members and fallback to a no-verdict result
+# purpose: Tests diagnosis with a single model and with a majority-verdict panel, covering verdict choice, cost totals, the panel_facts journal signal, dropped members and the fallback when no verdict passes the schema
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/panel.py, clutch/stages.py, tests/fakes.py, tests/unit/test_route_kinds_filter.py]
 # owner: engine
-# verified: c015c627
-# hash: da96650c92e4976f8078dddd4c7afc9f35b019ceb1f3c252d1c220fe801d0dc1
+# verified: 90b9b520
+# hash: 7abda78cb6867656dd42857743c9c906ad5d534fb0f35618878738f4f38f6d6b
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -15,7 +15,7 @@ from clutch import stages
 from clutch.artifacts import Cost, Diagnosis, DiagnosisReply, Finding, StageResult
 from clutch.driver import PanelResult, ProviderDroughtResult
 from clutch.panel import DroppedMember
-from tests.fakes import FakeFileSystem
+from tests.fakes import FakeFileSystem, FakeJournal
 from tests.git_fake import GitFake
 from tests.unit.test_route_kinds_filter import config
 
@@ -35,6 +35,7 @@ class Driver:
         self.panel = panel
         self.calls = []
         self.events = []
+        self.journal = FakeJournal()
         self.log = SimpleNamespace(event=lambda name, **kw: self.events.append((name, kw)))
 
     async def run(self, stage, material, **kwargs):
@@ -86,10 +87,12 @@ async def test_single(setup, size):
     assert ctx.fs.files[ctx.repo / "tickets/item/diagnosis.json"] == (expected.model_dump_json(indent=2) + "\n").encode()
     assert driver.calls == [("run", dict(ticket="item", kind="bug", attempt=1, tier="medium", effort="low", stuck_budget=600.0, expected_budget=60.0, scope_fence=(), workspace=ctx.repo))]
     assert driver.events == []
+    assert driver.journal.events == []
     driver = Driver(single=StageResult("timeout", None, [], Cost(seconds=4)))
     result = await stages.diagnose(build(driver, size), ticket, material, attempt=1)
     assert (result.verdict, result.mechanical, result.provider) == ("abandon-human", "no schema-valid verdict (timeout)", None)
     assert not driver.events
+    assert driver.journal.events == []
 
 
 @pytest.mark.asyncio
@@ -103,24 +106,22 @@ async def test_majority_and_facts(setup, monkeypatch):
     result = await stages.diagnose(build(driver, 2), ticket, material, attempt=1)
     assert (result.verdict, result.lessons, result.provider, result.model) == ("escalate", ["needs a stronger model"], "claude", "b")
     assert capture.await_args.kwargs["cost"] == Cost(tokens=30, seconds=5, attempts=3, usd=0.75, provider="claude", model="b")
-    assert driver.events == [
-        (
-            "panel_facts",
-            dict(
-                stem="item",
-                attempt=1,
-                surface="diagnose",
-                combiner="majority-verdict",
-                member_count=2,
-                members=[dict(provider="codex", model="a", verdict="retry"), dict(provider="claude", model="b", verdict="escalate")],
-                verdict_counts={"retry": 1, "escalate": 1},
-                dropped=[],
-                merged=[],
-                kept_index=None,
-                agreement_kind="models",
-            ),
-        )
-    ]
+    (event,) = driver.journal.events
+    assert (event.type, event.ticket, event.key) == ("signal", "item", None)
+    assert event.body == dict(
+        signal="panel_facts",
+        attempt=1,
+        surface="diagnose",
+        combiner="majority-verdict",
+        member_count=2,
+        members=[dict(provider="codex", model="a", verdict="retry"), dict(provider="claude", model="b", verdict="escalate")],
+        verdict_counts={"retry": 1, "escalate": 1},
+        dropped=[],
+        merged=[],
+        kept_index=None,
+        agreement_kind="models",
+    )
+    assert driver.events == []
     single = Driver()
     await stages.diagnose(build(single), ticket, material, attempt=1)
     assert driver.calls[0][1] == dict(single.calls[0][1], size=2)
@@ -150,13 +151,14 @@ async def test_failures_and_drops(setup, monkeypatch):
     d = Driver(panel=PanelResult([member("split", "survivor", Cost())], dropped, [quota]))
     r = await stages.diagnose(build(d, 2), ticket, material, attempt=1)
     assert (r.verdict, r.lessons, r.provider, r.model) == ("split", ["survivor"], "claude", "b")
-    facts = d.events[0][1]
+    facts = d.journal.events[0].body
     assert (facts["dropped"], facts["member_count"], facts["verdict_counts"], facts["members"][0]["provider"]) == ([{"index": 0, "failure_class": "infra_error"}], 2, {"split": 1}, "claude")
     records = []
     for findings in ([quota], []):
         d = Driver(panel=PanelResult([], dropped + [DroppedMember(index=1, failure_class="infra_error")], findings))
         records.append(await stages.diagnose(build(d, 2), ticket, material, attempt=1))
         assert capture.await_args.kwargs["cost"] == Cost() and not d.events
+        assert d.journal.events == []
     d = Driver(single=StageResult("infra_error", None, [quota], Cost()))
     records.append(await stages.diagnose(build(d), ticket, material, attempt=1))
     assert records[0] == records[1] == records[2]
@@ -169,6 +171,7 @@ async def test_failures_and_drops(setup, monkeypatch):
         r = await stages.diagnose(build(d, 2), ticket, material, attempt=1)
         assert (r.verdict, r.lessons, r.mechanical) == ("abandon-human", [], f"no schema-valid verdict ({bad.outcome})")
         assert capture.await_args.kwargs["cost"] == bad.cost and not d.events
+        assert d.journal.events == []
     d = Driver()
     ctx = build(d)
     ctx.config.routing = []

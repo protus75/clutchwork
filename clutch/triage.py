@@ -332,7 +332,7 @@ async def _settle_pass(checkout, driver, box, spec, history, pass_no, ids):
                 assert all(isinstance(reply, TriageReply) for reply in replies)
                 reply, facts = majority_verdict(replies, TRIAGE_ORDER, members, panel.dropped)
                 result = StageResult("ok", reply, [], Cost())
-                driver.log.event("panel_facts", box_id=message.id, attempt=pass_no, surface="triage", **facts.model_dump())
+                driver.journal.append(EventType.SIGNAL, {"signal": "panel_facts", "box_id": message.id, "attempt": pass_no, "surface": "triage", **facts.model_dump()})
         if result.outcome != "ok":
             line = f"{message.id}: {result.outcome}; remains pending"
         else:

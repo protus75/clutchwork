@@ -1,11 +1,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Verifies the review stage in single and panel modes: verdict and finding merging, cost totals, panel_facts logging, dropped members, non-ok results, and effect keys
+# purpose: Tests the review stage with a single model and with a findings-union panel, covering verdict and finding merges, cost totals, the panel_facts journal signal, dropped members, non-ok results and effect keys
 # relates: [clutch/artifacts.py, clutch/driver.py, clutch/llm.py, clutch/panel.py, clutch/providers.py, clutch/redact.py, clutch/seams.py, clutch/stages.py]
 # owner: engine
-# verified: df236100
-# hash: 8c056468b220613508740075c43ad4a75f7cdcae4a223b35a3169d279fae7786
+# verified: 90b9b520
+# hash: bb96d3be32ffc0726145d235ce87636e882c103adb6154dba8ffed0201fbc4c7
 import asyncio
 from pathlib import Path
 from types import SimpleNamespace
@@ -57,6 +57,7 @@ class Recording:
         self.panel = panel
         self.calls = []
         self.log = Log()
+        self.journal = FakeJournal()
 
     async def run(self, stage, invoice, **kwargs):
         self.calls.append(("run", kwargs))
@@ -107,6 +108,7 @@ async def test_single(setup, size):
     assert result == StageResult("gate_failed", artifact, [finding()], Cost(tokens=10, seconds=2, attempts=1, usd=0.5, provider="codex", model="a"))
     assert [x[0] for x in driver.calls] == ["run"]
     assert driver.log.events == []
+    assert driver.journal.events == []
     assert (
         output(ctx)
         == """# Review: snag
@@ -162,8 +164,12 @@ async def test_shared_kwargs_and_combination(setup):
     assert result.cost == Cost(tokens=30, seconds=5, attempts=3, usd=0.75, provider="codex", model="a")
     artifact = stages.read_review(output(ctx))
     assert (artifact.verdict, artifact.summary, artifact.findings, artifact.provider) == ("snag", "bad loop\nfine", [finding()], "codex")
-    assert driver.log.events[0][0] == "panel_facts"
-    assert driver.log.events[0][1]["verdict_counts"] == {"snag": 1, "approve": 1}
+    (event,) = driver.journal.events
+    assert (event.type, event.ticket, event.key) == ("signal", "item", None)
+    assert event.body["signal"] == "panel_facts" and event.body["surface"] == "review" and event.body["attempt"] == 1
+    assert event.body["members"] == [dict(provider="codex", model="a", verdict="snag"), dict(provider="claude", model="b", verdict="approve")]
+    assert event.body["agreement_kind"] == "models" and event.body["verdict_counts"] == {"snag": 1, "approve": 1}
+    assert driver.log.events == []
 
 
 @pytest.mark.asyncio
@@ -187,7 +193,7 @@ async def test_merged_and_unknown_tokens(setup):
     result = await stages.review(ctx, ticket, None, attempt=1)
     assert result.cost.tokens is None
     assert result.artifact.findings == [finding("off by one\ndifferent")]
-    merged = driver.log.events[0][1]["merged"]
+    merged = driver.journal.events[0].body["merged"]
     assert len(merged) == 1 and merged[0]["agreement"] == "2/2" and merged[0]["members"] == [0, 1]
 
 
@@ -198,7 +204,7 @@ async def test_dropped_and_empty(setup):
     driver = Recording(panel=PanelResult([member(cost=Cost())], dropped))
     ctx = build(driver, 2)
     result = await stages.review(ctx, ticket, None, attempt=1)
-    facts = driver.log.events[0][1]
+    facts = driver.journal.events[0].body
     assert result.outcome == "gate_failed" and result.artifact.summary == "bad loop"
     assert facts["dropped"] == [{"index": 0, "failure_class": "infra_error"}]
     assert facts["member_count"] == 2 and facts["members"][0]["provider"] == "claude"
@@ -207,6 +213,7 @@ async def test_dropped_and_empty(setup):
     ctx = build(driver, 2)
     assert await stages.review(ctx, ticket, None, attempt=1) == StageResult("infra_error", None, [], Cost())
     assert not ctx.fs.files and not driver.log.events
+    assert driver.journal.events == []
 
 
 @pytest.mark.asyncio
@@ -217,6 +224,7 @@ async def test_non_ok(setup, bad):
     ctx = build(driver, 2)
     assert await stages.review(ctx, ticket, None, attempt=1) is bad
     assert not ctx.fs.files and not driver.log.events
+    assert driver.journal.events == []
 
 
 @pytest.mark.asyncio
@@ -250,7 +258,7 @@ async def test_effect_keys_and_provider_failures(setup, tmp_path, size):
     keys = [e.key for e in driver.journal.read() if e.type == "effect_completion"]
     assert keys == (["llm/item/m1-0/review/1/1"] if size == 2 else ["llm/item/0/review/1/1"])
     if size == 2:
-        facts = next(fields for name, fields in driver.log.events if name == "panel_facts")
+        facts = next(e.body for e in driver.journal.events if e.type == "signal" and e.body.get("signal") == "panel_facts")
         assert facts["dropped"] == [{"index": 0, "failure_class": "infra_error"}]
 
 
@@ -277,3 +285,4 @@ async def test_all_provider_calls_fail(setup, tmp_path):
     ctx = build(driver, 2)
     assert await stages.review(ctx, ticket, None, attempt=1) == StageResult("infra_error", None, [], Cost())
     assert not ctx.fs.files and all(name != "panel_facts" for name, _ in driver.log.events)
+    assert not any(e.type == "signal" and e.body.get("signal") == "panel_facts" for e in driver.journal.events)

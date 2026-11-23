@@ -1,11 +1,11 @@
 <!-- clutch:meta
 schema: clutch.meta/1.0
 kind: plan
-purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
+purpose: Maintained description of how ClutchWork behaves today: commands, tickets, stages, gates, failure handling, drain and serve, providers, panels, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: 45e4e081
-hash: d97ffc58648cbe4a7e3c1642b27a3a7def97315ce8266dcdae06f13c23d10fb3
+verified: 06deb66c
+hash: 0dbb083006cce8801ff00b17d2c8953b3252e23d0627a8540c4adedd70646747
 -->
 # How ClutchWork works
 
@@ -754,7 +754,7 @@ scorecard, proposals) and files new proposals as `retro_finding` messages. It su
 
 - The **scorecard** counts, per gate and review surface, catches, escapes, and bypasses, and flags
   a surface with 25+ evaluations and no catch and no escape as a prune candidate.
-- The **panel scorecard** folds journaled review replies and costs by member slot, counting unique findings confirmed by a later merge per 100 reviews and the total cost relative to the lowest present slot. Its outcomes are `no_panel_reviews`, `no_cost_data`, and `measured`.
+- The **panel scorecard** folds journaled review replies and costs by member slot, counting unique findings confirmed by a later merge per 100 reviews and the total cost relative to the lowest present slot. It also reads journaled `panel_facts` signals to separate distinct-model (`models`) from repeated-sample (`samples`) reviews. Its outcomes are `no_panel_reviews`, `no_cost_data`, and `measured`.
 - The **review baseline** is a GO / NO_GO verdict recorded by the eval harness
   (`eval/harness.py`). GO counts only while the recorded review and author models and spec
   versions still match the config. It gates Author starting state only.

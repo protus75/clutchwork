@@ -11,8 +11,8 @@ plan change first (the owning section names the set), then a deliberate edit her
 # purpose: Pins every closed vocabulary, enumerated set and shipped engine constant by exact value, and checks the seams refuse values outside those sets
 # relates: [clutch/artifacts.py, clutch/audit.py, clutch/author.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/config.py]
 # owner: engine
-# verified: a6482110
-# hash: fc79d240525d525ec9040a9d41545782bd3a55732134c271b9089d98b9569784
+# verified: 06deb66c
+# hash: 24a6152262ed6ddaf11331478083cb8aa12847383a9eaabde49e277145fc66e3
 
 import typing
 from typing import get_args
@@ -220,6 +220,7 @@ def test_journal_closed_sets_and_constants():
             "merge_conflict_rerun",
             "merge_red_streak",
             "merge_tree_mismatch",
+            "panel_facts",
             "provider_call_outcome",
             "provider_cap_wait",
             "recovery_alert",

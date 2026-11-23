@@ -524,7 +524,7 @@ async def diagnose(ctx: StageContext, ticket: Ticket, material: DiagnosisMateria
             winner = next(i for i, candidate in enumerate(replies) if candidate is reply)
             cost = Cost(tokens=cost.tokens, seconds=cost.seconds, attempts=cost.attempts, usd=cost.usd, provider=members[winner].provider, model=members[winner].model)
             result = StageResult("ok", reply, [], cost)
-            ctx.driver.log.event("panel_facts", stem=ticket.stem, attempt=attempt, surface="diagnose", **facts.model_dump())
+            ctx.driver.journal.append(EventType.SIGNAL, {"signal": "panel_facts", "attempt": attempt, "surface": "diagnose", **facts.model_dump()}, ticket=ticket.stem)
     reply = result.artifact
     if result.outcome == "ok" and isinstance(reply, DiagnosisReply):
         return await write_diagnosis(
@@ -2030,7 +2030,7 @@ async def review(ctx: StageContext, ticket: Ticket, invoice: Invoice, *, attempt
         replies, members, cost = _panel_combine(panel, selected)
         assert all(isinstance(reply, ReviewVerdict) for reply in replies)
         verdict, facts = findings_union(replies, members, panel.dropped)
-        ctx.driver.log.event("panel_facts", stem=stem, attempt=attempt, surface="review", **facts.model_dump())
+        ctx.driver.journal.append(EventType.SIGNAL, {"signal": "panel_facts", "attempt": attempt, "surface": "review", **facts.model_dump()}, ticket=stem)
         result = StageResult(outcome="ok", artifact=verdict, findings=[], cost=cost)
     artifact = EMITS_BY_VERDICT[verdict.verdict](
         produced_by_spec_version=_major(spec),

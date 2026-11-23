@@ -39,11 +39,20 @@ class PanelSlotRow:
 
 
 @dataclass(frozen=True)
+class PanelKindRow:
+    kind: str
+    reviews: int
+    agreed_findings: int
+    unique_catches: int
+
+
+@dataclass(frozen=True)
 class PanelScorecard:
     outcome: str
     panel_reviews: int
     slots: tuple[PanelSlotRow, ...]
     cost_multiplier: float | None
+    kinds: tuple[PanelKindRow, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -64,7 +73,7 @@ def project_scorecard(window: Window) -> Scorecard:
     evaluated, caught, bypasses, pending, used_bypasses = {}, {}, {}, {}, {}
     seen = set()
     escapes = {}
-    groups, merges = {}, {}
+    groups, merges, signals_by_group = {}, {}, {}
 
     def observe(surface, ticket, failed=False, bypassed=False):
         evaluated.setdefault(surface, set()).add(ticket)
@@ -97,7 +106,7 @@ def project_scorecard(window: Window) -> Scorecard:
                 cost = body.get("cost")
                 usd = 0.0 if "cost" not in body else cost.get("usd") if isinstance(cost, dict) else None
                 if isinstance(usd, (int, float)) and not isinstance(usd, bool):
-                    group = groups.setdefault((stem, parts[2].split("-")[1], parts[4]), {"last": index, "slots": {}})
+                    group = groups.setdefault((stem, parts[2].split("-")[1], parts[4]), {"first": index, "last": index, "slots": {}})
                     group["last"] = index
                     member = group["slots"].setdefault(slot, {"cost": 0.0, "reply": None, "seq": -1})
                     member["cost"] += usd
@@ -114,6 +123,10 @@ def project_scorecard(window: Window) -> Scorecard:
                 except KeyError, TypeError, AttributeError, ValidationError:
                     continue  # Schema-invalid calls are spend, not a review verdict.
                 observe("review", stem, verdict.verdict in {"snag", "rma"})
+        elif event.type == EventType.SIGNAL and stem and isinstance(body, dict):
+            attempt = body.get("attempt")
+            if body.get("signal") == "panel_facts" and body.get("surface") == "review" and type(attempt) is int:
+                signals_by_group.setdefault((stem, str(attempt)), []).append((index, body))
         elif event.type == EventType.STATE_TRANSITION and stem:
             state = body.get("to")
             if state == "merged":
@@ -128,7 +141,8 @@ def project_scorecard(window: Window) -> Scorecard:
                     caught[surface].add(stem)
 
     counts, panel_reviews, total_cost, baseline = {}, 0, 0.0, 0.0
-    for (stem, _run, _attempt), group in sorted(groups.items(), key=lambda item: item[1]["last"]):
+    kind_counts = {}
+    for (stem, _run, attempt), group in sorted(groups.items(), key=lambda item: item[1]["last"]):
         slots = group["slots"]
         present = sorted(slot for slot, member in slots.items() if member["reply"] is not None)
         if len(present) < 2:
@@ -140,14 +154,42 @@ def project_scorecard(window: Window) -> Scorecard:
             counts.setdefault(slot, [0, 0])[0] += 1
         replies = [slots[slot]["reply"] for slot in present]
         members = [PanelMember(provider="unknown", model="unknown", verdict=reply.verdict) for reply in replies]
+        next_group = min(
+            (
+                other["first"]
+                for (other_stem, other_run, other_attempt), other in groups.items()
+                if other_stem == stem and other_attempt == attempt and other_run != _run and other["first"] > group["last"]
+            ),
+            default=len(window.events),
+        )
+        candidates = [body for index, body in signals_by_group.get((stem, attempt), ()) if group["last"] < index < next_group]
+        kind = None
+        if candidates:
+            signal = candidates[-1]
+            raw_members = signal.get("members")
+            if isinstance(raw_members, list) and len(raw_members) == len(present) and signal.get("agreement_kind") in ("models", "samples"):
+                try:
+                    members = [PanelMember.model_validate(member) for member in raw_members]
+                except ValidationError:
+                    pass
+                else:
+                    kind = signal["agreement_kind"]
         _, facts = findings_union(replies, members)
+        unique = 0
         if any(position > group["last"] for position in merges.get(stem, ())):
             for finding in facts.merged:
                 if len(finding.members) == 1:
                     counts[present[finding.members[0]]][1] += 1
+                    unique += 1
+        if kind is not None:
+            row = kind_counts.setdefault(kind, [0, 0, 0])
+            row[0] += 1
+            row[1] += sum(len(finding.members) >= 2 for finding in facts.merged)
+            row[2] += unique
     panel_rows = tuple(PanelSlotRow(slot, reviews, catches, 100 * catches / reviews) for slot, (reviews, catches) in sorted(counts.items()))
     outcome = "no_panel_reviews" if not panel_reviews else "no_cost_data" if not baseline else "measured"
-    panel = PanelScorecard(outcome, panel_reviews, panel_rows, total_cost / baseline if baseline else None)
+    kinds = tuple(PanelKindRow(kind, *kind_counts[kind]) for kind in ("models", "samples") if kind in kind_counts)
+    panel = PanelScorecard(outcome, panel_reviews, panel_rows, total_cost / baseline if baseline else None, kinds)
 
     rows = []
     for surface in sorted(evaluated.keys() | escapes.keys()):
@@ -176,4 +218,7 @@ def panel_lines(card: Scorecard) -> list[str]:
         "| ---: | ---: | ---: | ---: |",
     ]
     lines.extend(f"| {row.slot} | {row.reviews} | {row.unique_catches} | {row.unique_per_100:.2f} |" for row in panel.slots)
+    if panel.kinds:
+        lines.extend(["", "| Agreement | Reviews | Agreed findings | Unique catches |", "| --- | ---: | ---: | ---: |"])
+        lines.extend(f"| {row.kind} | {row.reviews} | {row.agreed_findings} | {row.unique_catches} |" for row in panel.kinds)
     return lines
