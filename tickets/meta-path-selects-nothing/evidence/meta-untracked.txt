@@ -1,0 +1,10 @@
+$ git status --short docs/zz-meta-repro.md
+?? docs/zz-meta-repro.md
+$ head -1 docs/zz-meta-repro.md
+# Repro
+$ uv run clutch meta check docs/zz-meta-repro.md
+exit=0
+$ uv run clutch meta refresh docs/zz-meta-repro.md
+exit=0
+$ head -1 docs/zz-meta-repro.md  (unchanged: no block written)
+# Repro
