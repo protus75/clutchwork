@@ -1,0 +1,145 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "61ed46fbfb6b663beac3eee2461dc3a730dd53dc",
+  "stem": "roadmap-nested-plan-path",
+  "passed": true,
+  "changed_files": [
+    "clutch/roadmap.py",
+    "docs/roadmap.md",
+    "tests/unit/test_roadmap_nested_plan.py"
+  ],
+  "inserted_lines": 54,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.566068,
+        "passed": 2231,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5681827700173017,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.171862872026395,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.1384210200340021,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.1242295970150735
+        }
+      },
+      "coverage": {
+        "percent": 77.49131311398052,
+        "files": {
+          "clutch/roadmap.py": 94.06392694063926
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.678295,
+        "passed": 297,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.8445510920137167,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.1184215740067884,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.112681209022412,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0039644959906582
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_roadmap_nested_plan.py",
+        "tests/unit/test_roadmap_table.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_roadmap_nested_plan.py tests/unit/test_roadmap_table.py\nbringing up nodes...\nbringing up nodes...\n\n..................                                                       [100%]\n18 passed in 1.28s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.047803
+    }
+  ]
+}
