@@ -138,16 +138,15 @@ class Serve:
                     return "running"
                 try:
                     sha = await local.git.rev_parse(local.repo, f"main:{ticket_path(ticket.stem)}")
-                    committed = await local.git._run(local.repo, "show", f"main:{ticket_path(ticket.stem)}")
+                    committed = await local.git._run(local.repo, "show", sha)
                 except GitError:
                     self.core.scheduler.update(ticket)
                     return "running"
-                published = self.published.get(ticket.stem)
-                if published is not None and published[0] is ticket and published[1] != sha:
-                    try:
-                        fresh = parse_ticket(ticket.stem, committed, local.repo)
-                    except TicketInvalid:
-                        return "running"
+                try:
+                    fresh = parse_ticket(ticket.stem, committed, local.repo)
+                except TicketInvalid:
+                    return "running"
+                if fresh != ticket:
                     self.publish(fresh, committed)
                     return "running"
                 self.writers[ticket.stem] = callback
@@ -157,7 +156,7 @@ class Serve:
                     record_reoffer(local.journal, events, ticket.stem, sha)
                 runner.mark_running(local.journal, ticket.stem, sha)
                 try:
-                    return await callback(ticket)
+                    return await callback(fresh)
                 except Exception as exc:
                     if self.stopping:
                         raise

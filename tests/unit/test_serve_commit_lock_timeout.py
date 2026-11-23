@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests checking that Serve's watcher logs a commit-lock timeout during a ticket scan, keeps the pending ticket and other running work, and retries at the next poll. They also check that ordinary errors and stop, kill or shutdown requests are raised without a retry.
+# purpose: Unit tests that Serve's watcher logs a commit-lock timeout during a ticket scan, keeps the pending ticket and in-flight work, and retries at the next poll, while ordinary errors and stop, kill or shutdown are raised without retry
 # relates: [clutch/journal.py, clutch/lockfile.py, clutch/serve.py, clutch/tickets.py, tests/fakes.py, tests/unit/test_commit_lock.py]
 # owner: engine
-# verified: 96361957
-# hash: 50857b4f2fccc5b8f89f05d6119722537396c06ec9111385a63ab96ad3f0d232
+# verified: 333d8906
+# hash: 64a18986ff76f1d01f100871925d4ac16d144313729790babd3be5494caa2655
 
 import asyncio
 from pathlib import Path
@@ -18,6 +18,7 @@ import pytest
 from clutch import serve, tickets
 from clutch.journal import EventType
 from clutch.lockfile import CommitLock, CommitLockTimeout
+from clutch.tickets import parse_ticket
 from tests.fakes import turn
 from tests.unit.test_commit_lock import memory  # noqa: F401
 from tests.unit.test_serve_dispatch_containment import rig  # noqa: F401
@@ -31,7 +32,7 @@ async def test_scan_retries_owned_pending_ticket(rig, memory, monkeypatch):
     pending = True
     commits = []
     git._overrides["status_porcelain"] = lambda *args: "?? tickets/alpha/ticket.md\n" if pending else ""
-    git._overrides["_run"] = lambda *args: ""
+    git._overrides["_run"] = lambda *args: rig.text
     owner.checkout.fs.entries.return_value = ["alpha"]
     owner.stems = lambda: ["alpha"]
     owner.read = lambda stem: "ticket text"
@@ -65,7 +66,7 @@ async def test_scan_retries_owned_pending_ticket(rig, memory, monkeypatch):
         await asyncio.Event().wait()
 
     rig.callback.side_effect = active_run
-    other = asyncio.create_task(rig.dispatch(SimpleNamespace(stem="active")))
+    other = asyncio.create_task(rig.dispatch(parse_ticket("aa", rig.text, rig.repo)))
     await entered.wait()
     task = asyncio.create_task(owner.watch())
     try:

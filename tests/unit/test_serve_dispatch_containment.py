@@ -2,11 +2,11 @@
 # clutch:meta
 # schema: clutch.meta/1.0
 # kind: test
-# purpose: Unit tests that serve contains a ticket's dispatch exception as an infra_error terminal while other tickets complete, but lets stop, cancellation and consumer failures propagate
+# purpose: Unit tests that Serve contains a ticket's dispatch exception as an infra_error terminal while other tickets complete, but lets stop, cancellation and consumer failures propagate; also provides the shared serve dispatch rig fixture
 # relates: [clutch/__main__.py, clutch/daemon.py, clutch/journal.py, clutch/runner.py, clutch/scheduler.py, clutch/serve.py, tests/fakes.py, tests/git_fake.py]
 # owner: engine
-# verified: 18f3cf87
-# hash: 4300153ba9e10c7d658c3921be6d84734f0ce8cc3c5a859177910e0877b3475e
+# verified: 333d8906
+# hash: 2ecee8cefd07c2885ebb581332f8c90446d1757d303b0706498cb097046fe8c6
 
 import asyncio
 from types import SimpleNamespace
@@ -21,12 +21,16 @@ from clutch.daemon import TicketWriter
 from clutch.journal import EventType
 from clutch.runner import Checkout
 from clutch.scheduler import Scheduler
+from clutch.tickets import parse_ticket
 from tests.fakes import FakeClock, FakeJournal
 from tests.git_fake import GitFake
+from tests.unit.test_parse_ticket_evidence import ticket_text
 
 
 @pytest_asyncio.fixture
 async def rig(monkeypatch, tmp_path):
+    (tmp_path / "context.txt").write_text("context")
+    text = ticket_text("feature")
     journal = FakeJournal()
     core = MagicMock()
     core.control._recover = [].clear
@@ -44,7 +48,7 @@ async def rig(monkeypatch, tmp_path):
     log = MagicMock()
     monkeypatch.setattr(serve, "engine_log", lambda *args: log)
     monkeypatch.setattr(serve.Redactor, "from_config", MagicMock())
-    checkout = Checkout(repo=tmp_path, config=SimpleNamespace(state_dir=tmp_path), env={}, exec_=None, fs=MagicMock(), clock=FakeClock(), journal=journal, git=GitFake(rev_parse="sha"))
+    checkout = Checkout(repo=tmp_path, config=SimpleNamespace(state_dir=tmp_path), env={}, exec_=None, fs=MagicMock(), clock=FakeClock(), journal=journal, git=GitFake(rev_parse="sha", _run=text))
     callback = MagicMock(spec=TicketWriter)
     callback.ctx = SimpleNamespace(boundary=SimpleNamespace())
     callback.queue = SimpleNamespace(pending={}, contexts={})
@@ -57,7 +61,7 @@ async def rig(monkeypatch, tmp_path):
     owner.select = lambda *_: True
     owner.check_retro = AsyncMock()
     dispatch = await prepared["call"](checkout)
-    return SimpleNamespace(owner=owner, dispatch=dispatch, callback=callback, journal=journal, scheduler=scheduler, log=log)
+    return SimpleNamespace(owner=owner, dispatch=dispatch, callback=callback, journal=journal, scheduler=scheduler, log=log, text=text, repo=tmp_path)
 
 
 def bodies(rig, stem):
@@ -66,33 +70,33 @@ def bodies(rig, stem):
 
 @pytest.mark.asyncio
 async def test_raises_contained_while_other_ticket_completes(rig):
-    a, b = SimpleNamespace(stem="a"), SimpleNamespace(stem="b")
+    a, b = parse_ticket("aa", rig.text, rig.repo), parse_ticket("bb", rig.text, rig.repo)
     entered, release = asyncio.Event(), asyncio.Event()
 
     async def run(ticket):
-        if ticket is a:
+        if ticket.stem == "aa":
             entered.set()
             await release.wait()
             raise ValueError("boom")
         await entered.wait()
-        rig.journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="b")
+        rig.journal.append(EventType.STATE_TRANSITION, {"to": "merged"}, ticket="bb")
         release.set()
         return "merged"
 
     rig.callback.side_effect = run
     assert await asyncio.gather(rig.dispatch(a), rig.dispatch(b)) == ["infra_error", "merged"]
-    assert bodies(rig, "a") == [{"to": "running", "ticket_sha": "sha"}, {"to": "infra_error", "stage": "dispatch", "reason": "dispatch_exception", "error": "ValueError: boom"}]
-    assert bodies(rig, "b")[-1] == {"to": "merged"}
-    assert rig.scheduler.pending == {"a": a}
+    assert bodies(rig, "aa") == [{"to": "running", "ticket_sha": "sha"}, {"to": "infra_error", "stage": "dispatch", "reason": "dispatch_exception", "error": "ValueError: boom"}]
+    assert bodies(rig, "bb")[-1] == {"to": "merged"}
+    assert rig.scheduler.pending == {"aa": a}
     assert rig.scheduler.failures == [] and not rig.owner.stopping
-    rig.log.event.assert_any_call("dispatch_exception", stem="a", error="ValueError: boom")
+    rig.log.event.assert_any_call("dispatch_exception", stem="aa", error="ValueError: boom")
     assert all(call.args[0] != "worker_failure" for call in rig.log.event.call_args_list)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("ending", ["stopping", "cancel"])
 async def test_stopping_and_cancel_propagate(rig, ending):
-    ticket = SimpleNamespace(stem="a")
+    ticket = parse_ticket("aa", rig.text, rig.repo)
 
     async def run(_):
         if ending == "stopping":
@@ -103,7 +107,7 @@ async def test_stopping_and_cancel_propagate(rig, ending):
     rig.callback.side_effect = run
     with pytest.raises(ValueError if ending == "stopping" else asyncio.CancelledError):
         await rig.dispatch(ticket)
-    assert bodies(rig, "a") == [{"to": "running", "ticket_sha": "sha"}]
+    assert bodies(rig, "aa") == [{"to": "running", "ticket_sha": "sha"}]
     assert rig.log.event.call_count == 0
 
 
