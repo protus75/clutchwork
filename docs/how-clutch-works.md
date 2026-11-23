@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: c3c5fa35
-hash: 277e788bbbcfd709725eb6ce14206cd724129ddaaf2518b1de4d61d116454588
+verified: 9dc8c407
+hash: 6c7a49d3ae1df6f7dcd3fe22a49fad9ba2696c32b7bc530a16443348e1a6e2c8
 -->
 # How ClutchWork works
 
@@ -321,7 +321,7 @@ conflict is simply refused.
 
 | Code | Fails when |
 |---|---|
-| `meta_drift` | After Check fills empty or drift-flagged purposes and refreshes headers, changed metadata remains malformed or has an empty purpose. |
+| `meta_drift` | After Check fills missing or empty purposes and refreshes headers, changed metadata remains malformed or has an empty purpose. |
 | `scope_fence` | A changed file is outside `## Scope fence` (the stem's own outbox is exempt, except `ticket.md`). |
 | `verification` | A Verification command fails and was green at the base; or `already_satisfied` came with a diff; or a required report is missing or invalid. |
 | `run_record` | `run.md` is missing, or lacks its six fixed sections in order, or has an unknown outcome. |

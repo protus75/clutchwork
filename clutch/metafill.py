@@ -68,9 +68,28 @@ def _line(value):
 async def fill(config, root, fs, tracked, sha, spec, ask, paths=()):
     findings = meta.check(config, root, fs, tracked, sha, paths)
     rejected = [(p, reason) for p, reason in findings if reason == "malformed"]
-    targets = {p for p, reason in findings if reason != "malformed"}
+    targets = {p for p, reason in findings if reason in {"missing", "empty_purpose"}}
     kinds = dict(meta._files(config, tracked, paths))
     written = []
+    for path in sorted({p for p, reason in findings if reason == "drifted"} - targets):
+        text = fs.read_bytes(root / path).decode()
+        suffix = Path(path).suffix
+        fields, body, offset = meta.parse(text, suffix)
+        fields["verified"], fields["hash"] = sha[:8], meta.digest(body)
+        composed, _ = meta.compose(fields, body, offset, suffix)
+        # Keep all original lines except the two generated values, including formatting.
+        prefix = "" if suffix == ".md" else "# "
+        replacements = {line.split(":", 1)[0]: line for line in composed[offset:].splitlines(keepends=True)[:8] if line.startswith((prefix + "verified:", prefix + "hash:"))}
+        lines = text.splitlines(keepends=True)
+        start = len(text[:offset].splitlines(keepends=True))
+        for i in range(start + 1, start + 8):
+            key = lines[i].split(":", 1)[0]
+            if key in replacements:
+                lines[i] = replacements[key]
+        result = "".join(lines)
+        if result != text:
+            fs.write(root / path, result.encode())
+            written.append(path)
     targets = sorted(targets)
     for start in range(0, len(targets), 20):
         batch = targets[start : start + 20]

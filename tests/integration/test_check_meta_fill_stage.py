@@ -4,8 +4,8 @@
 # purpose: Check stage fills a drifted metadata purpose through a scripted model call and commits the rewrite as a clutch(<stem>): meta commit
 # relates: [clutch/driver.py, clutch/gates.py, clutch/llm.py, clutch/meta.py, clutch/redact.py, clutch/stages.py, tests/fakes.py, tests/git_fake.py]
 # owner: engine
-# verified: d80fccb7
-# hash: a0074d812489934e2a295ad8e8f0fc233f714d9fc5181789518dbe881e8cb341
+# verified: 9dc8c407
+# hash: f64f6a21f5fea6ac5bff7537b9b6ce6082bb119b9ebb3d1ea139d5ca02332817
 import asyncio
 import json
 from pathlib import Path
@@ -25,7 +25,7 @@ def test_check_fills_meta_inside_check_stage(monkeypatch):
     root = Path("/work/work")
     path = "docs/edited.md"
     fs = FakeFileSystem()
-    fields = dict(schema="clutch.meta/1.0", kind="plan", purpose="old purpose", relates=[], owner="engine", verified="12345678", hash="stale")
+    fields = dict(schema="clutch.meta/1.0", kind="plan", purpose="", relates=[], owner="engine", verified="12345678", hash="stale")
     fs.write(root / path, meta.compose(fields, "edited body\n", 0, ".md")[0].encode())
     git = GitFake(diff_names=[path], ls_files=[path], rev_parse="123456789")
     clock = FakeClock()

@@ -1752,7 +1752,9 @@ async def check_meta(ctx, ticket) -> list[Finding]:
         spec = load_spec((ctx.specs_dir / "meta.md").read_text())
         ask = metafill.make_ask(ctx.driver, spec, worktree, len(ctx.driver.journal.read()))
         filled, _ = await metafill.fill(ctx.config, worktree, ctx.fs, tracked, sha, spec, ask, files)
-    changed, malformed = meta.refresh(ctx.config, worktree, ctx.fs, tracked, sha, files)
+    drift_only = {path for path, reason in before if reason == "drifted"} - {path for path, reason in before if reason in {"missing", "empty_purpose"}}
+    remaining = [path for path in files if path not in drift_only or path not in filled]
+    changed, malformed = meta.refresh(ctx.config, worktree, ctx.fs, tracked, sha, remaining) if remaining else ([], [])
     changed = sorted(set(filled) | set(changed))
     after = set(meta.check(ctx.config, worktree, ctx.fs, tracked, sha, files))
     if changed:
