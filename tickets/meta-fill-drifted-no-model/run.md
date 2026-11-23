@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The integration test’s existing metadata purpose header was left unchanged because the implementation instructions prohibit editing clutch:meta headers; Check owns their refresh.
+The existing branch contains the prior implementation commits; the integration test header still describes a drifted purpose.
 
 ## Dead ends
 
-Mutation checks confirmed that sending drifted files to the model and applying generic refresh after fill cause the new tests to fail.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 15 minutes; actual time was not measured.
+none
 
