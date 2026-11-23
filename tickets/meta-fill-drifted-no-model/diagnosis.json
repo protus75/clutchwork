@@ -1,18 +1,16 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "759fd65f22197e15d80eace616bc9644cfcef1d6",
+  "produced_at_sha": "148c11ef73aa74ac1d0bd745100dfe87aa521250",
   "stem": "meta-fill-drifted-no-model",
-  "attempt": 2,
-  "terminal": "gate_failed",
-  "stage": "review",
+  "attempt": 3,
+  "terminal": "premise_failed",
+  "stage": "implement",
   "verdict": "reject",
   "lessons": [
-    "Ticket Scope in requires rewording the `# purpose:` header line of tests/integration/test_check_meta_fill_stage.py, but clutch/specs/implement.md rule 5 forbids Implement to edit any `clutch:meta` header, so Implement cannot meet that Scope in item.",
-    "Once this ticket merges, Check keeps a drifted file's existing purpose and does not call the model, so Check will never reword that header either. Re-scope: drop the header-reword item, or have a human edit the header outside Implement.",
-    "Also fix in the revised ticket: keep the clean-rerun assertions in tests/unit/test_check_meta_fill.py (second check_meta call, factory.assert_not_called(), no new commit) in a test whose fixture has a normal owner and valid relates.",
-    "Put the empty-owner and stale-relates preservation check in its own test function. A second Check sends the file through generic meta.refresh, which rewrites owner to `engine` and drops the stale relation, so that fixture cannot also serve as the clean-rerun guard.",
-    "The rest of attempt 2 passed Verification (28 tests) and Review accepted it: drifted-only paths are refreshed in metafill.fill without the model, and check_meta skips generic refresh for those paths. Keep that approach."
+    "Ticket contradicts the implement spec: Scope in asks Implement to reword the `# purpose:` clutch:meta line at tests/integration/test_check_meta_fill_stage.py:4, but Implement may not add, edit, copy or refresh any clutch:meta header. Remove that rewording from Scope in.",
+    "Do not ask Implement for any metadata header edit. Keep the fixture change in test_check_meta_fill_stage.py: seed `purpose=\"\"` instead of `old purpose`. A stale header purpose needs its own ticket or a stage that is allowed to edit headers.",
+    "The branch already holds a complete diff (metafill.py, stages.py, test_meta_fill_drifted.py, test_check_meta_fill.py, docs/how-clutch-works.md, README.md). After the ticket is fixed, the next attempt only needs to confirm that diff against the Verification command."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
