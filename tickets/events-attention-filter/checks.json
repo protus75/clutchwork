@@ -1,0 +1,151 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "a26caa10e1d657aa20ee5e2ea75edc7d68b081f1",
+  "stem": "events-attention-filter",
+  "passed": true,
+  "changed_files": [
+    "clutch/events.py",
+    "tests/unit/test_events_gate_repeat.py"
+  ],
+  "inserted_lines": 55,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.863072,
+        "passed": 2270,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.5675942699890584,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.3368738439748995,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.2775665629305877,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.1676179119967856,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[cancel]": 1.1104575130157173,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.0737505430006422,
+          "tests/unit/test_provider_live_native_ids.py::test_first_id_is_visible_before_return": 1.0338385200011544,
+          "tests/unit/test_evidence_envelope.py::test_end_record_on_success[True]": 1.0180639330064878,
+          "tests/unit/test_evidence_envelope.py::test_failed_calls_still_end[consumer]": 1.0102024441002868
+        }
+      },
+      "coverage": {
+        "percent": 77.52505782575173,
+        "files": {
+          "clutch/events.py": 100.0
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.340874,
+        "passed": 298,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.0226164390332997,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2605399680323899,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1563079680199735,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0047372470144182
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_events_gate_repeat.py",
+        "tests/unit/test_view_events.py",
+        "tests/unit/test_main_view_events.py",
+        "tests/unit/test_events_upgrade_pending.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q -p clutch.testguard tests/unit/test_events_gate_repeat.py tests/unit/test_view_events.py tests/unit/test_main_view_events.py tests/unit/test_events_upgrade_pending.py\nbringing up nodes...\nbringing up nodes...\n\n......                                                                   [100%]\n6 passed in 1.33s\n",
+      "base_red": false,
+      "seconds": 4.619103
+    }
+  ]
+}
