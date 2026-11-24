@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.6.1 - 2026-11-24
+- plan-prompts-session-handoff: `clutch prompt plan-ticket-drain` and `clutch prompt plan-ticket-serve` run one supervising session for as long as the plan takes.
+- events-attention-filter: `clutch view events` prints a `gate - <release> failed -- clutch roadmap status` line every time the journal records a `roadmap_gate` signal, even when the release's last recorded result was the same.
+- lint-refuses-grep-verification: Check requires every Verification command to exit 0, but `rg` and `grep` exit 1 when they find no match.
+- meta-path-selects-nothing: `clutch meta check`, `meta refresh` and `meta fill` given a path argument that selects no file exit 0 and print nothing.
+- implement-fence-gap-keeps-branch: When Implement replies `premise_failed` and every finding names a file outside `## Scope fence` (a fence gap), the whole candidate diff is thrown away on the retry.
+- chat-docs-on-main: The first HARD rule in `CORE_TEMPLATE` (`clutch/hostfiles.py`) sends every requested chat change to repo content, docs included, through a drafted ticket unless the owner types an explicit override.
+- requisition-review-context-selector-deleted: Requisition review approves a ticket whose `## Context` selects a Python definition (`path.py::Name`) or Markdown heading that the ticket's `## Scope in / Scope out` deletes or renames.
+- roadmap-nested-plan-path: `plan_path` accepts only `docs/<name>-plan.md`, so an Owner naming the nested plan `docs/document-agent/plan.md` never resolves.
+- meta-fill-drifted-no-model: `metafill.fill` sends every non-malformed finding to the model, including `drifted` ones whose purpose is already valid, and then overwrites `purpose` (and a default `owner`) with the model's text.
+- implement-spec-meta-untouched-not-reported: Step 5 of `clutch/specs/implement.md` tells Implement that a meta finding on a file the diff does not touch goes to `second_problems`.
+- implement-spec-version-single-pin: After this ticket, the literal Implement spec version (now `2.27`) appears in exactly one test, `test_implement_spec_consumer_read` in `tests/unit/test_specs.py`.
+- implement-context-unresolved-selector-notice: On 2026-11-22 serve stopped with `ValueError: Python selector 'implement_reply' must match exactly one definition`.
+- lint-refuses-two-dot-git-diff-main: A criterion or `## Verification` command that runs `git diff --name-only main` (two dots, or a bare `main`) compares the worktree to main as it is now.
+- roadmap-accept-meta-refresh: `clutch roadmap accept` appends gap rows to `docs/roadmap.md` and commits with `only=[roadmap.ROADMAP]` without refreshing the file's meta header.
+- verdict-worker-contains-intake-refused: When an operator session leaves a non-ticket file staged in the shared checkout (for example `config.yaml` or `vscode-clutchwork/package.json`) and a verdict (confirm or reject) is queued, serve must log `verdict_refused` and keep running.
+- serve-dispatch-fresh-ticket: A ticket selected before an edit can reach Serve's ordinary dispatch carrying an earlier edit fence.
+- daemon-continuation-fresh-ticket: `shared-git-fake-unit-5` attempts 1 and 2 judged a fence older than the edited ticket.
+- serve-commit-lock-timeout-contained: Serve stopped with `CommitLockTimeout` on 2026-11-22 at 05:23:29Z, 05:27:38Z and 05:50:19Z.
+- intake-commit-lock-per-ticket: On 2026-11-22, Serve stopped repeatedly with `CommitLockTimeout` while mass intake of `restore-*` tickets was underway (Box 001081 and 001082).
+- flake-release-declined-resolution: A quarantined flake whose Box report was resolved as `declined` can never be released.
+
 ## 0.6.0 - 2026-11-23
 - panel-facts-journal-signal: Row 217 of the roadmap.
 - retro-calibration-manual: Owner decision (2026-11-22): retro and estimate calibration stay as features but never run on their own.
