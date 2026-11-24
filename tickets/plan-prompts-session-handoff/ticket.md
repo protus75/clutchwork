@@ -26,7 +26,9 @@ After this ticket both prompts make the operator end its own session at a fixed 
 - A starting session that finds a HANDOFF section reads it before the before-start checks finish, then reads the live queue.
 - Arm `clutch view events` under the monitor facility once, with the longest timeout the facility allows, and re-arm only when it expires. Never write a loop that polls `clutch view status`, `clutch prompt drafts` or a process list on a timer: it wakes the operator on every change of its own digest, which measured 16 hand-built loops across five sessions.
 
-This is the cause fix for session-length cost. The repeated gate lines are `events-attention-filter`.
+- Run `clutch roadmap gate <release>` through one Sonnet subagent, once per release after the queue drains, never from the operator's own context. The subagent returns only pass or fail, the first failing command and its output tail. The operator never reruns a gate it already has a result for, unless a merge landed since that result. The engine no longer journals gate runs, so the journal did not repeat them after 2026-11-22; before it, 613 of 619 `roadmap_gate` signals repeated the previous result and 116 of 675 monitor wakeups were gate lines.
+
+This is the cause fix for session-length cost.
 
 ## Boundary contract
 ### Supervisor prompt session lifecycle
@@ -41,8 +43,9 @@ This is the cause fix for session-length cost. The repeated gate lines are `even
 
 ## Scope in / Scope out
 Scope in:
+- Edit the `clutch roadmap gate <release>` bullet in both specs to delegate the gate to one Sonnet subagent that returns pass or fail and the first failing command's output tail.
 - Edit the "Keep a log the next tick reads" bullet in both specs to add the handoff rule, and the "Run `clutch view events` under your agent's monitor facility" sentence in the tick bullet to add the arm-once rule. Keep the two specs' shared lines identical.
-- Add `tests/integration/test_ask_plan_handoff.py`, parametrized over `plan-ticket-drain` and `plan-ticket-serve`, pinning the phrases: `20 merged tickets`, `HANDOFF`, `never wall-clock`, `clutch view snapshot`, `never copies`, `longest timeout`, and `never write a loop`.
+- Add `tests/integration/test_ask_plan_handoff.py`, parametrized over `plan-ticket-drain` and `plan-ticket-serve`, pinning the phrases: `20 merged tickets`, `HANDOFF`, `never wall-clock`, `clutch view snapshot`, `never copies`, `longest timeout`, `never write a loop`, and `one Sonnet subagent`.
 - In `docs/how-clutch-works.md`, update only the `prompt plan-ticket-serve` and `prompt plan-ticket-drain` rows of the verb table to say the operator stops for a handoff after 20 merged tickets.
 
 Scope out:
@@ -58,9 +61,10 @@ Scope out:
 ## Acceptance criteria
 1. Both rendered prompts contain `20 merged tickets`, `HANDOFF` and `never wall-clock`, and the handoff bullet follows the first tick bullet's "Supervising" rule; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
 2. Both rendered prompts say the HANDOFF section never copies ticket stems or queue state and name `clutch view snapshot` and `clutch view status` as where the next session reads them, not "copy the queue"; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
-3. Both rendered prompts say to arm `clutch view events` once with the longest timeout the facility allows and never write a loop polling status on a timer; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
-4. The two specs' handoff and monitor wording is identical in both rendered prompts; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
-5. The existing plan-prompt tests still pass unchanged; checked by `./dev.py test tests/unit/test_ask_plan_drain.py tests/unit/test_ask_plan_serve.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_plan_read_queue.py tests/integration/test_ask_plan_priority_order.py tests/integration/test_ask_plan_subagent_models.py tests/integration/test_ask_plan_shared_paths.py tests/integration/test_ask_plan_conduct_covered.py`.
+3. Both rendered prompts say the release gate runs through `one Sonnet subagent` that returns only pass or fail and the first failing command's output tail, and that the operator does not rerun a gate with an existing result unless a merge landed since; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
+4. Both rendered prompts say to arm `clutch view events` once with the longest timeout the facility allows and never write a loop polling status on a timer; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
+5. The two specs' handoff, gate and monitor wording is identical in both rendered prompts; checked by `./dev.py test tests/integration/test_ask_plan_handoff.py`.
+6. The existing plan-prompt tests still pass unchanged; checked by `./dev.py test tests/unit/test_ask_plan_drain.py tests/unit/test_ask_plan_serve.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_plan_read_queue.py tests/integration/test_ask_plan_priority_order.py tests/integration/test_ask_plan_subagent_models.py tests/integration/test_ask_plan_shared_paths.py tests/integration/test_ask_plan_conduct_covered.py`.
 
 ## Verification
 ```
