@@ -4,8 +4,8 @@ kind: plan
 purpose: Maintained description of how ClutchWork behaves today: commands, tickets, intake, stages, gates, failure handling, drain and serve, providers, the Suggestion Box, state on disk, config and the project index
 relates: [clutch/docs/host-authoring.md, clutch/docs/host-contract.md, clutch/docs/host-running.md]
 owner: engine
-verified: c8bbefc9
-hash: 1d1fd87c5d4c9d1fdb1934d3934277b32c6a48d75a13a8f1972034293574ecf5
+verified: c3fcaf81
+hash: 60e2931a324d14dccae4146e126a49419be311909507ee7322f9bec49a8426a2
 -->
 # How ClutchWork works
 
@@ -106,8 +106,8 @@ prints `clutch <verb>: <message> -- <what to do instead>`.
 | `prompt drafts` | no | Print an assessment prompt for all committed drafts awaiting a verdict. |
 | `prompt author <stem>` | no | Print the hand-authoring prompt for one ticket from its roadmap row or a request; the ticket need not exist yet. |
 | `prompt roadmap` | no | Print the roadmap creation and maintenance procedure; follow with `clutch roadmap status` and `clutch prompt plan-ticket-drain`. |
-| `prompt plan-ticket-serve` | no | Print the unattended roadmap kickoff prompt for the continuous daemon with explicit Sonnet selection for Claude subagents, without writing state. |
-| `prompt plan-ticket-drain` | no | Print the kickoff prompt that runs the roadmap to completion unattended, authoring its rows as tickets and draining them, with explicit Sonnet selection for Claude subagents, without writing state. |
+| `prompt plan-ticket-serve` | no | Print the unattended roadmap kickoff prompt for the continuous daemon with explicit Sonnet selection for Claude subagents, stopping for a handoff after 20 merged tickets, without writing state. |
+| `prompt plan-ticket-drain` | no | Print the kickoff prompt that runs the roadmap to completion unattended, authoring its rows as tickets and draining them, with explicit Sonnet selection for Claude subagents, stopping for a handoff after 20 merged tickets, without writing state. |
 | `engine pause` / `engine resume` / `engine kill` / `engine stop` | try | With a running engine, publish a control request to it (section 7.3). With a non-engine holder, refuses and asks the operator to wait. With none: `engine kill` and `engine stop` refuse (exit 2); `engine pause`/`engine resume` print "nothing running". |
 | `ticket confirm <stem> [--yes|--extension]` | try | A person at a terminal answers `y` to keep (or uses `--yes` to skip the prompt): promotes a draft to confirmed, keeps a Reject-queue item (section 6.6). Same-content repeat keeps are refused for command-line confirms; the extension uses `--extension` to allow them. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
 | `ticket reject <stem> [--yes|--extension] [--reason TEXT]` | try | A person at a terminal answers `y` to kill (or uses `--yes` or `--extension` to skip the prompt): stamps the ticket `rejected` (section 6.6). Refuses settled stems. Intakes only the named ticket’s pending changes; with drain or serve running, does so before publishing the verdict to the engine; refuses while a non-engine holder has the lock. |
