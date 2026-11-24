@@ -12,9 +12,16 @@ def changes(seen, events, log, state):
     rows = sorted(observe.recent_steps(state, log, len(log)), key=lambda row: row["ts"])
     rows = [row for row in rows if row["kind"] in ("engine_start", "engine_stop", "engine_lost")]
     keys = {(row["kind"], row["ts"]) for row in rows}
-    current = (len(events), set(queue), keys if seen is None else seen[2] | keys)
     if seen is None or len(events) < seen[0]:
-        return (len(events), set(queue), keys), []
+        gates = {}
+        for event in events:
+            body = event.get("body", {})
+            if event.get("type") == "signal" and body.get("signal") == "roadmap_gate":
+                gates[body["release"]] = body["passed"]
+        return (len(events), set(queue), keys, gates), []
+
+    gates = seen[3].copy()
+    current = (len(events), set(queue), seen[2] | keys, gates)
 
     lines = []
     for event in events[seen[0] :]:
@@ -33,8 +40,11 @@ def changes(seen, events, log, state):
             elif signal == "ticket_intake" and body.get("state") == "draft" and body.get("source", "").startswith("box:"):
                 lines.append(f"draft {stem} {body['source']} -- clutch prompt drafts")
             elif signal == "roadmap_gate":
-                result = "passed" if body["passed"] else "failed"
-                lines.append(f"gate - {body['release']} {result} -- clutch roadmap status")
+                release, passed = body["release"], body["passed"]
+                if release not in gates or gates[release] != passed:
+                    result = "passed" if passed else "failed"
+                    lines.append(f"gate - {release} {result} -- clutch roadmap status")
+                gates[release] = passed
             elif signal == "release":
                 lines.append(f"release - {body['tag']} -- clutch roadmap status")
     for stem in sorted(set(queue) - seen[1]):
