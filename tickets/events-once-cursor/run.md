@@ -1,14 +1,14 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The test command passed with 49 passed and 1 skipped; the metadata verification command was not run because the task explicitly prohibits it.
+The final verification passed with 56 tests passed and 1 skipped; targeted mutation checks confirmed the tested behaviors reject representative incorrect implementations.
 
 ## Dead ends
 
-Inspected the metadata generator: the test's two related files cause its generated owner to default to engine.
+A mutation that removed CLI refusal entered the streaming loop; the test now uses a fake stream so that incorrect behavior fails without hanging.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 10 minutes; actual time was not measured.
 
