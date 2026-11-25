@@ -1,16 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "c5fdd91007ff4f775f7a8ba87466162c71df05b2",
+  "produced_at_sha": "b99c050635a9d9730b0ec75cc34c3a4aa9ae7362",
   "stem": "events-once-cursor",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "review",
-  "verdict": "abandon-human",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
   "lessons": [
-    "An engine step wrote the failing line after Implement. Check's meta refresh, `generated()` in clutch/meta.py:140-142, defaulted the owner of tests/unit/test_main_view_events_once.py to `engine` because no relates path made up a majority. Clutch/meta.py is outside this ticket's fence.",
-    "clutch/specs/implement.md:47 forbids Implement from adding or editing a `clutch:meta` header. So a retry cannot set `owner: clutch/__main__.py` as the ticket's Scope in requires. Retrying gives the same review snag.",
-    "A human must choose: let a supervisor fix the owner line on the branch, remove the `owner:` requirement from the ticket's Scope in, or fix how clutch/meta.py derives the owner (or let tickets pin it). The rest of the diff passed Verification and review."
+    "Criteria clash with clutch/specs/implement.md rule 5: Implement may never add or edit `clutch:meta` headers or run `clutch meta check`. Check writes the headers. AC7 and `## Verification` still require that check, and Scope in requires owner headers, so Implement cannot do it.",
+    "Rewrite the ticket: remove `uv run clutch meta check ...` from AC7 and `## Verification`, and remove the `# clutch:meta` header and `owner:` requirements for tests/unit/test_events_once_cursor.py and tests/unit/test_main_view_events_once.py from Scope in.",
+    "If tests/unit/test_main_view_events_once.py really must have owner clutch/__main__.py, the ticket must say which engine mechanism sets that owner. Per the run record, the generator defaults it to engine because the test relates to two files.",
+    "Everything else already passed in attempt 1: the `./dev.py test ...` Verification line ran 49 passed, 1 skipped, and the 8-file diff stays in the fence. Once the meta requirement is gone, keep the same events.py `wait_once`/cursor design and the CLI changes."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
