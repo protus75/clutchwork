@@ -1,0 +1,175 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "c5fdd91007ff4f775f7a8ba87466162c71df05b2",
+  "stem": "events-once-cursor",
+  "passed": true,
+  "changed_files": [
+    "README.md",
+    "clutch/__main__.py",
+    "clutch/docs/host-running.md",
+    "clutch/events.py",
+    "docs/how-clutch-works.md",
+    "tests/unit/test_events_once_cursor.py",
+    "tests/unit/test_main_view_events.py",
+    "tests/unit/test_main_view_events_once.py"
+  ],
+  "inserted_lines": 224,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 18.160628,
+        "passed": 2285,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7089954860275611,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.4834948619827628,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4615715919644572,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.1231072529917583
+        }
+      },
+      "coverage": {
+        "percent": 77.58370345063204,
+        "files": {
+          "clutch/__main__.py": 81.57134604274985,
+          "clutch/events.py": 98.74213836477988
+        }
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 11.557843,
+        "passed": 301,
+        "failed": 0,
+        "skipped": 3290,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.824169308936689,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0878311690175906,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.0792541860137135,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.003289395943284
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_events_once_cursor.py",
+        "tests/unit/test_main_view_events_once.py",
+        "tests/unit/test_main_view_events.py",
+        "tests/unit/test_view_events.py",
+        "tests/unit/test_events_gate_repeat.py",
+        "tests/unit/test_events_upgrade_pending.py",
+        "tests/unit/test_main_help.py",
+        "tests/unit/test_host_running.py",
+        "tests/unit/test_readme.py",
+        "tests/unit/test_main_view_group.py",
+        "tests/integration/test_ask_view_events.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_events_once_cursor.py tests/unit/test_main_view_events_once.py tests/unit/test_main_view_events.py tests/unit/test_view_events.py tests/unit/test_events_gate_repeat.py tests/unit/test_events_upgrade_pending.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_main_view_group.py tests/integration/test_ask_view_events.py\nbringing up nodes...\nbringing up nodes...\n\n.................................................s                       [100%]\n49 passed, 1 skipped in 2.08s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.078388
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "clutch",
+        "meta",
+        "check",
+        "tests/unit/test_events_once_cursor.py",
+        "tests/unit/test_main_view_events_once.py"
+      ],
+      "rc": 0,
+      "tail": "warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 4.325402
+    }
+  ]
+}
