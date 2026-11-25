@@ -1,14 +1,14 @@
 ## Outcome
 
-ok
+infra_error
 
 ## Surprises / judgment calls
 
-Enabled esbuild minification to satisfy the 1,500-line diff budget; final diff adds 1,419 lines. All 83 applied mutations were caught and restored.
+none
 
 ## Dead ends
 
-Rejected raw postMessage bridging and full launcher snapshots; reused the SDK, shared renderers, and app-only data tools. Mutation testing exposed identical detail fixtures, which were made distinct.
+none
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-25m expected / 50m stuck; approximately 25m actual.
+none
 
