@@ -1,22 +1,20 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "71c332820aff9d2e3384fc1578e7bfb36a90c9a7",
+  "produced_at_sha": "43e6a549d767acfc8b549f3b5dbd667a9dec240e",
   "stem": "mcp-server-contract-and-concurrency",
-  "attempt": 0,
-  "terminal": "gate_failed",
-  "stage": "check",
-  "verdict": "retry",
+  "attempt": 1,
+  "terminal": "premise_failed",
+  "stage": "implement",
+  "verdict": "reject",
   "lessons": [
-    "tests/unit/test_mcp_index_query.py::test_schema_and_validation asserts `\"_meta\" not in tool` for clutch_index_query, but the ticket requires `_meta.ui.visibility` on every tool. Add that file to `## Scope fence` and change the assertion to `tool[\"_meta\"][\"ui\"][\"visibility\"] == [\"model\", \"app\"]`.",
-    "tests/integration/test_git_fake_adoption.py flags tests/unit/test_mcp_surface_contract.py. Its PATTERN matches `git = SimpleNamespace(`/`Mock(`, `class FakeGit`/`Git`, `spec=Git`, or the names FakeGit/fake_git. Remove that stand-in and use GitFake from tests/git_fake.py, or drop the git stub if the",
-    "The branch rebases onto main with the MCP changes kept. Fix only these two findings. Then run the ticket's `## Verification` command plus `./dev.py test tests/unit/test_mcp_index_query.py tests/integration/test_git_fake_adoption.py`. The Check gate runs the full suite, not just the verification"
+    "The scope fence is missing tests/unit/test_mcp_index_query.py. Its line 36 asserts `\"_meta\" not in tool` for clutch_index_query, which contradicts acceptance criterion 1: every tool in tools/list must emit _meta.ui.visibility. The ticket must add this file to `## Scope fence` and `## Scope in`.",
+    "Change the line 36 assertion in tests/unit/test_mcp_index_query.py to require tool[\"_meta\"][\"ui\"][\"visibility\"] == [\"model\", \"app\"] for clutch_index_query. Keep the existing `schema[\"additionalProperties\"] is False` check.",
+    "Before refiling, check every other tests/unit/test_mcp_*.py and tests/integration/test_mcp_*.py file for assertions that `_meta` is absent or that tools/list or prompts/list equals an exact value. Fence every match, because the new ToolSpec visibility and host prompt change those results.",
+    "The prior branch already passes all 73 Verification tests and the regression reproducer. The next attempt starts from that branch rebased onto main, so it only needs the test_mcp_index_query.py update. It should not redo the mcp.py or antigravity.py work."
   ],
   "mechanical": null,
-  "trimmed_lessons": [
-    1,
-    2
-  ],
+  "trimmed_lessons": [],
   "spec_version": "1.11",
   "provider": "claude",
   "model": "claude-opus-5-5"
