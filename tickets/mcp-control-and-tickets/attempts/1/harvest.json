@@ -1,0 +1,54 @@
+{
+  "attempt": 1,
+  "stage": "check",
+  "terminal": "gate_failed",
+  "findings": [
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_stale_running.py::test_order_refuses_only_a_live_running_stem failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "unit",
+      "path": null,
+      "line": null,
+      "message": "tests/unit/test_verdict_submitted_message.py::test_verdict_submitted_names_the_clutch_verb failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "integration",
+      "path": null,
+      "line": null,
+      "message": "tests/integration/test_closed_sets_single_owner.py::test_closed_set_literals_have_one_home failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    },
+    {
+      "code": "integration",
+      "path": null,
+      "line": null,
+      "message": "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard failed on rerun",
+      "paved_road": "fix the failing test",
+      "kind": null,
+      "unit": null
+    }
+  ],
+  "reason": null,
+  "diff_stat": " clutch/__main__.py                         | 330 +++++---------------\n clutch/box.py                              |   8 +\n clutch/docs/host-running.md                |   6 +-\n clutch/mcp.py                              | 158 +++++++++-\n clutch/observe.py                          |  11 +\n clutch/runner.py                           | 160 +++++++++-\n clutch/serve.py                            |  14 +-\n clutch/tickets.py                          | 205 +++++++++++++\n docs/how-clutch-works.md                   |   6 +-\n tests/unit/test_mcp_control_and_tickets.py | 468 +++++++++++++++++++++++++++++\n tests/unit/test_mcp_tools.py               |  17 +-\n 11 files changed, 1110 insertions(+), 273 deletions(-)\n",
+  "stage_log_tail": "ets/tests/integration/test_shared_fakes_guard.py:69: AssertionError\n=========================== short test summary info ============================\nFAILED tests/integration/test_closed_sets_single_owner.py::test_closed_set_literals_have_one_home\nFAILED tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard\n================= 2 failed, 310 passed, 3290 skipped in 9.27s ==================\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ uv run ruff check .\n[exit 0]\n--- stdout\nAll checks passed!\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ uv run ruff format --check .\n[exit 0]\n--- stdout\n886 files already formatted\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n$ ./dev.py test tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_docs_verb.py tests/unit/test_new_evidence.py tests/unit/test_graphics_new.py tests/unit/test_ticket_lint_rules.py tests/unit/test_route_kinds_judge.py tests/unit/test_main_ticket_group.py tests/unit/test_main_box_group.py tests/unit/test_lock_holder.py tests/unit/test_reject_reason_paths.py tests/unit/test_verdict_extension.py tests/unit/test_verdict_menu_parity.py tests/unit/test_main_serve_detach.py tests/unit/test_drain_detach_cli.py tests/unit/test_serve_detach.py tests/unit/test_manual_retro_calibration_verbs.py tests/integration/test_help.py tests/integration/test_mcp_read_server.py\n[exit 0]\n--- stdout\n$ uv run pytest -q tests/unit/test_mcp_control_and_tickets.py tests/unit/test_mcp_tools.py tests/unit/test_mcp_protocol.py tests/unit/test_main_mcp_serve.py tests/unit/test_main_help.py tests/unit/test_host_running.py tests/unit/test_readme.py tests/unit/test_docs_verb.py tests/unit/test_new_evidence.py tests/unit/test_graphics_new.py tests/unit/test_ticket_lint_rules.py tests/unit/test_route_kinds_judge.py tests/unit/test_main_ticket_group.py tests/unit/test_main_box_group.py tests/unit/test_lock_holder.py tests/unit/test_reject_reason_paths.py tests/unit/test_verdict_extension.py tests/unit/test_verdict_menu_parity.py tests/unit/test_main_serve_detach.py tests/unit/test_drain_detach_cli.py tests/unit/test_serve_detach.py tests/unit/test_manual_retro_calibration_verbs.py tests/integration/test_help.py tests/integration/test_mcp_read_server.py\nbringing up nodes...\nbringing up nodes...\n\n........................................................................ [ 39%]\n........................................................................ [ 79%]\n.....................................                                    [100%]\n181 passed in 3.14s\n\n--- stderr\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n{\"outcome\":\"ok\",\"summary\":\"Committed fbabb2aad: shared domain helpers, 13 MCP mutation/control tools, CLI delegation, documentation, and tests; final verification passed all 181 tests.\",\"surprises\":\"Omitted reject reasons remain valid; supplied blank reasons are refused. Shared lint preserves CLI output order, protected by the MCP stdout guard; all 88 mutation checks passed.\",\"second_problems\":[],\"dead_ends\":\"Replaced an import-cycle-producing triage import with runtime callback resolution; invalidated bytecode caches during mutation checks.\",\"predicted_vs_actual\":\"Expected 25 minutes; completed in approximately 15 minutes.\",\"findings\":[]}",
+  "events_tail": "at().st_mtime)/60,1))\\nPY\\\"\",\"aggregated_output\":\"warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\\nImplementation elapsed minutes: 12.6\\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_56\",\"type\":\"agent_message\",\"text\":\"Verification passed: 181 tests, with no remaining failures. Lint, formatting, and the whitespace check also passed. I’m committing the 11 scoped files now.\\n\"}}\n{\"type\":\"item.started\",\"item\":{\"id\":\"item_57\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"uv run python - <<'PY'\\nimport asyncio,os\\nfrom datetime import UTC,datetime\\nfrom pathlib import Path\\nfrom clutch.git import Git\\nfrom clutch.lockfile import CommitLock\\nfrom clutch.seams import SubprocessExec\\npaths=['clutch/mcp.py','clutch/tickets.py','clutch/box.py','clutch/observe.py','clutch/serve.py','clutch/runner.py','clutch/__main__.py','clutch/docs/host-running.md','docs/how-clutch-works.md','tests/unit/test_mcp_tools.py','tests/unit/test_mcp_control_and_tickets.py']\\nasync def main():\\n root=Path.cwd()\\n g=Git(SubprocessExec(),env=dict(os.environ),timeout=60,commit_lock=CommitLock(root/'.clutch/state',clock=lambda:datetime.now(UTC),sleep=asyncio.sleep))\\n print('Branch:',await g._run(root,'symbolic-ref','--short','HEAD'))\\n await g.add(root,paths)\\n print('Commit:',await g.commit(root,'feat: expose shared ticket and engine control through MCP',only=paths))\\n print('Status:',await g.status_porcelain(root))\\nasyncio.run(main())\\nPY\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_57\",\"type\":\"command_execution\",\"command\":\"/bin/bash -lc \\\"uv run python - <<'PY'\\nimport asyncio,os\\nfrom datetime import UTC,datetime\\nfrom pathlib import Path\\nfrom clutch.git import Git\\nfrom clutch.lockfile import CommitLock\\nfrom clutch.seams import SubprocessExec\\npaths=['clutch/mcp.py','clutch/tickets.py','clutch/box.py','clutch/observe.py','clutch/serve.py','clutch/runner.py','clutch/__main__.py','clutch/docs/host-running.md','docs/how-clutch-works.md','tests/unit/test_mcp_tools.py','tests/unit/test_mcp_control_and_tickets.py']\\nasync def main():\\n root=Path.cwd()\\n g=Git(SubprocessExec(),env=dict(os.environ),timeout=60,commit_lock=CommitLock(root/'.clutch/state',clock=lambda:datetime.now(UTC),sleep=asyncio.sleep))\\n print('Branch:',await g._run(root,'symbolic-ref','--short','HEAD'))\\n await g.add(root,paths)\\n print('Commit:',await g.commit(root,'feat: expose shared ticket and engine control through MCP',only=paths))\\n print('Status:',await g.status_porcelain(root))\\nasyncio.run(main())\\nPY\\\"\",\"aggregated_output\":\"warning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\\nBranch: mcp-control-and-tickets\\n\\nCommit: fbabb2aad5e52e4409b3807cb4865f2290022565\\nStatus: \\n\",\"exit_code\":0,\"status\":\"completed\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_58\",\"type\":\"agent_message\",\"text\":\"{\\\"outcome\\\":\\\"ok\\\",\\\"summary\\\":\\\"Committed fbabb2aad: shared domain helpers, 13 MCP mutation/control tools, CLI delegation, documentation, and tests; final verification passed all 181 tests.\\\",\\\"surprises\\\":\\\"Omitted reject reasons remain valid; supplied blank reasons are refused. Shared lint preserves CLI output order, protected by the MCP stdout guard; all 88 mutation checks passed.\\\",\\\"second_problems\\\":[],\\\"dead_ends\\\":\\\"Replaced an import-cycle-producing triage import with runtime callback resolution; invalidated bytecode caches during mutation checks.\\\",\\\"predicted_vs_actual\\\":\\\"Expected 25 minutes; completed in approximately 15 minutes.\\\",\\\"findings\\\":[]}\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":5807129,\"cached_input_tokens\":5676800,\"cache_write_input_tokens\":0,\"output_tokens\":32398,\"reasoning_output_tokens\":7435}}\n",
+  "wall_seconds": 1012.7420279999999,
+  "usd": 1.0,
+  "run_record": "tickets/mcp-control-and-tickets/run.md",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "usd_estimated": true,
+  "budget_capable": false
+}
