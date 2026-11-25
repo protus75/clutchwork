@@ -1,12 +1,10 @@
 # Review: snag
 
-The server tools and dashboard wiring are correct, but the tests the ticket requires leave several promised checks out, and a fractional Refresh seconds value drives polling but never gets saved.
+The earlier review findings are fixed, but box auto-open is now dead because the client treats the server's default open.box as a saved preference.
 
 ## Findings
 
-- [acceptance] tests/mcp_app_dashboard.js:49 Criteria 4, 5 and 7 say tests/integration/test_mcp_app_dashboard.py verifies them by running this harness, and Scope in lists the checks it must make. The harness only checks that the step-time span is the second child and that the last row has step-warning. It never checks step-passed on engine_start or *_ok rows, step-failed on engine_stop or *_failed rows, or step-muted on *_start rows. It never checks the engine_start/engine_stop outline paths or the preflight rocket path. It makes none of the dashboard.css checks: `.step-row:disabled { opacity: 1`, the four outcome color rules, no bold on .step-stem, no `margin-left: auto` on .step-time, and .step-text using descriptionForeground. It never checks that a section toggle, a resize pointerup or a drag-and-drop calls clutch_app_ui_state set; only the ▲ click is checked. On polling, it never checks that an overlapping refresh is skipped or that changing to a nonzero refreshSeconds resets the interval at the new period. So these criteria pass whether or not the behavior is there. (do instead: Add harness assertions: the class on each step row by kind (engine_start → step-passed, engine_stop → step-failed, *_start → step-muted); the icon paths; regexes over dashboard.css for each required CSS rule and for the absent bold and margin-left rules; a set call after a toggle dispatch, a resizer pointerup and a drop; and for polling, a nonzero change that clears the old interval and schedules one at the new ms, plus a second refresh during an in-flight one that makes no extra clutch_app_snapshot call.)
-- [acceptance] tests/unit/test_mcp_ui_state_and_config.py:35 Criterion 2 and Definition of rejected require that clutch_app_config set keeps unrelated config.yaml keys. The test only checks the returned max_runs and never checks that other keys from VALID are still in the written file, so a set that drops keys would still pass. (do instead: After the successful set, load config.yaml with yaml.safe_load and assert that the top-level keys from VALID other than scheduler.parallel are still there with their original values.)
-- [logic] clutch/ui/app.js:90 The Refresh seconds handler takes any non-negative number with `Math.max(0, Number(n.value) || 0)`, so 2.5 becomes the polling period. But clutch_app_ui_state merge only accepts an int refreshSeconds, so the server quietly keeps the old value. The dashboard then polls at a period that is never saved, and the preference is lost on reopen, which Definition of rejected forbids. (do instead: Round the client value to an integer (for example `Math.max(0, Math.round(Number(n.value)) || 0)`) and set `step = 1` on the number input, so the client and server accept the same values.)
+- [logic] clutch/ui/app.js:203 The client sets `boxInitialized = typeof state.open?.box === "boolean"`. But clutch_app_ui_state get always merges the saved file over full defaults, and those defaults include `open.box: false`. So `open.box` is always a boolean and `boxInitialized` is always true. The existing auto-open in refresh (`sections.box.open = snap.boxCounts.pending > 0`) can then never run, even on a fresh install with no saved state. Scope in says to auto-open `box` whenever `open.box` was not saved. The harness hides this: its snapshot has pending=2, and it now asserts the box section is closed. (do instead: Let the client tell a saved open.box from the default. One way: the get reply also reports which `open` keys came from the file, such as a `saved` list or a flag for whether the file was read. Set `boxInitialized` only when `box` was actually saved. Add a harness case with no saved state and pending > 0 that asserts the Suggestion Box opens, plus one with saved `box: false` that asserts it stays closed.)
 
 ## Record
 
@@ -14,35 +12,17 @@ The server tools and dashboard wiring are correct, but the tests the ticket requ
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "f8a85a8516fa9448044d1f21fdea7a038a939a5b",
+  "produced_at_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
   "stem": "mcp-dashboard-settings-and-layout",
-  "reviewed_sha": "f8a85a8516fa9448044d1f21fdea7a038a939a5b",
-  "summary": "The server tools and dashboard wiring are correct, but the tests the ticket requires leave several promised checks out, and a fractional Refresh seconds value drives polling but never gets saved.",
+  "reviewed_sha": "6f659b6bc5df6450ce3e05cf87fec87132a5778e",
+  "summary": "The earlier review findings are fixed, but box auto-open is now dead because the client treats the server's default open.box as a saved preference.",
   "findings": [
-    {
-      "code": "acceptance",
-      "path": "tests/mcp_app_dashboard.js",
-      "line": 49,
-      "message": "Criteria 4, 5 and 7 say tests/integration/test_mcp_app_dashboard.py verifies them by running this harness, and Scope in lists the checks it must make. The harness only checks that the step-time span is the second child and that the last row has step-warning. It never checks step-passed on engine_start or *_ok rows, step-failed on engine_stop or *_failed rows, or step-muted on *_start rows. It never checks the engine_start/engine_stop outline paths or the preflight rocket path. It makes none of the dashboard.css checks: `.step-row:disabled { opacity: 1`, the four outcome color rules, no bold on .step-stem, no `margin-left: auto` on .step-time, and .step-text using descriptionForeground. It never checks that a section toggle, a resize pointerup or a drag-and-drop calls clutch_app_ui_state set; only the ▲ click is checked. On polling, it never checks that an overlapping refresh is skipped or that changing to a nonzero refreshSeconds resets the interval at the new period. So these criteria pass whether or not the behavior is there.",
-      "paved_road": "Add harness assertions: the class on each step row by kind (engine_start → step-passed, engine_stop → step-failed, *_start → step-muted); the icon paths; regexes over dashboard.css for each required CSS rule and for the absent bold and margin-left rules; a set call after a toggle dispatch, a resizer pointerup and a drop; and for polling, a nonzero change that clears the old interval and schedules one at the new ms, plus a second refresh during an in-flight one that makes no extra clutch_app_snapshot call.",
-      "kind": null,
-      "unit": null
-    },
-    {
-      "code": "acceptance",
-      "path": "tests/unit/test_mcp_ui_state_and_config.py",
-      "line": 35,
-      "message": "Criterion 2 and Definition of rejected require that clutch_app_config set keeps unrelated config.yaml keys. The test only checks the returned max_runs and never checks that other keys from VALID are still in the written file, so a set that drops keys would still pass.",
-      "paved_road": "After the successful set, load config.yaml with yaml.safe_load and assert that the top-level keys from VALID other than scheduler.parallel are still there with their original values.",
-      "kind": null,
-      "unit": null
-    },
     {
       "code": "logic",
       "path": "clutch/ui/app.js",
-      "line": 90,
-      "message": "The Refresh seconds handler takes any non-negative number with `Math.max(0, Number(n.value) || 0)`, so 2.5 becomes the polling period. But clutch_app_ui_state merge only accepts an int refreshSeconds, so the server quietly keeps the old value. The dashboard then polls at a period that is never saved, and the preference is lost on reopen, which Definition of rejected forbids.",
-      "paved_road": "Round the client value to an integer (for example `Math.max(0, Math.round(Number(n.value)) || 0)`) and set `step = 1` on the number input, so the client and server accept the same values.",
+      "line": 203,
+      "message": "The client sets `boxInitialized = typeof state.open?.box === \"boolean\"`. But clutch_app_ui_state get always merges the saved file over full defaults, and those defaults include `open.box: false`. So `open.box` is always a boolean and `boxInitialized` is always true. The existing auto-open in refresh (`sections.box.open = snap.boxCounts.pending > 0`) can then never run, even on a fresh install with no saved state. Scope in says to auto-open `box` whenever `open.box` was not saved. The harness hides this: its snapshot has pending=2, and it now asserts the box section is closed.",
+      "paved_road": "Let the client tell a saved open.box from the default. One way: the get reply also reports which `open` keys came from the file, such as a `saved` list or a flag for whether the file was read. Set `boxInitialized` only when `box` was actually saved. Add a harness case with no saved state and pending > 0 that asserts the Suggestion Box opens, plus one with saved `box: false` that asserts it stays closed.",
       "kind": null,
       "unit": null
     }
