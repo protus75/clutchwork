@@ -1,18 +1,19 @@
 ## Outcome
 
-premise_failed
+ok
 
 ## Surprises / judgment calls
 
-The test command passed with 61 tests; the required metadata command was not run, and changes remain uncommitted.
+A startup timeout returns a refusal with a direction to inspect the output and engine status.
 
 ## Dead ends
 
-none
+An initial mutation check used a non-advancing fake clock; the test was corrected and the mutation check rerun.
 
 ## Second problems filed
 
-none
+- box-001154-a6e797fc: The historical introduction in docs/antigravity-plan.md still says serve has no --detach option; the file is outside the scope fence.
+- box-001155-ce8b16ea: The prior attempt identified that ticket authoring could prevent forbidden clutch meta verification commands through its guide or lint.
 
 ## Resolved engine/model
 
