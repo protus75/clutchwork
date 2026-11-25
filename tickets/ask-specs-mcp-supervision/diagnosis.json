@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ddfa9b799b83e1f3709a1bd76a41b1c5ef1b161e",
+  "stem": "ask-specs-mcp-supervision",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In clutch/specs/ask/plan-ticket-serve.md line 35 (wedging pending message), restore the stop-then-restart order: run `clutch_engine_control(action=\"stop\")` or `clutch engine stop` (running ticket finishes first), take that message through the no-engine Suggestion Box step, then restart serve.",
+    "Name the restart path on that line as `clutch_engine_start(mode=\"serve\")` or `clutch engine serve --detach`, matching every other stop/start in the diff. Mark the wedging-message triage as an exception to the phase-end triage cadence.",
+    "If plan-ticket-drain.md has a matching wedging-message line, keep its behavior intact. Keep the shared segments identical so test_ask_plan_handoff.py::test_shared_session_rules_match still passes. Then rerun the full ## Verification command until it exits 0."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
