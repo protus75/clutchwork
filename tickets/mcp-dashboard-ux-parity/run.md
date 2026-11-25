@@ -4,15 +4,15 @@ ok
 
 ## Surprises / judgment calls
 
-The worktree lacked local JavaScript dependencies; verification used the existing checkout’s node_modules temporarily. Both new assertions failed against the previous handler before the fix. The ticket verification passed with 18 tests, and the regression reproducer passed.
+The unmodified worktree lacks node_modules, so verification initially failed at test_dashboard_bundle; the same test failed for missing esbuild on the base. The exact base verification command could not collect because the new test file does not exist there. A temporary dependency link enabled the final passing run and was removed afterward.
 
 ## Dead ends
 
-npm ci could not run because the repository has no package-lock.json.
+none
 
 ## Second problems filed
 
-none
+- box-001181-c4d3edba: Ticket worktree provisioning does not provide esbuild, causing dashboard bundle checks to fail; provisioning the JavaScript dependencies would prevent this class of failure.
 
 ## Resolved engine/model
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Ticket budget: 25 minutes expected; completed within that budget.
+none
 
