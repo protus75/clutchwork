@@ -1,10 +1,10 @@
 ## Outcome
 
-ok
+premise_failed
 
 ## Surprises / judgment calls
 
-The regression reproducer reported defect on the merge base and pass on the fixed branch; declarative tool specifications and focused regression tests prevent recurrence.
+The ticket verification passed all 73 tests, the regression reproducer passed, and Git fake adoption passed; the index-query retry test still fails because it expects metadata to be absent.
 
 ## Dead ends
 
