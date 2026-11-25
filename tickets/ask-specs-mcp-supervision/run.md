@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-The final verification command passed with 20 tests passed and 41 skipped; 102 targeted mutations were detected and restored.
+The verification command passed with 21 tests passed and 41 skipped.
 
 ## Dead ends
 
@@ -12,7 +12,7 @@ none
 
 ## Second problems filed
 
-- box-001161-4ece8026: docs/antigravity-plan.md section 5 still describes the superseded flash model routing for row authors.
+none
 
 ## Resolved engine/model
 
