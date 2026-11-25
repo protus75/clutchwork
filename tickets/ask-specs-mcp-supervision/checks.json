@@ -1,0 +1,168 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "ddfa9b799b83e1f3709a1bd76a41b1c5ef1b161e",
+  "stem": "ask-specs-mcp-supervision",
+  "passed": true,
+  "changed_files": [
+    "clutch/specs/ask/drain-loop.md",
+    "clutch/specs/ask/plan-ticket-drain.md",
+    "clutch/specs/ask/plan-ticket-serve.md",
+    "docs/how-clutch-works.md",
+    "tests/integration/test_ask_drain_loop.py",
+    "tests/integration/test_ask_drain_loop_agent.py",
+    "tests/integration/test_ask_mcp_supervision.py",
+    "tests/integration/test_ask_plan_serve.py"
+  ],
+  "inserted_lines": 123,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 18.505814,
+        "passed": 2366,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.60416410502512,
+          "tests/unit/test_evidence_envelope.py::test_reexecuted_key_never_overwrites": 1.4067584819858894,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.378729853022378,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.1986185740679502,
+          "tests/unit/test_spool_store_switch.py::test_harvest_filters_and_skips_unreadable": 1.1761315020848997,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0481029269867577,
+          "tests/unit/test_evidence_scoped_key.py::test_scoped_key_evidence": 1.0200967149576172
+        }
+      },
+      "coverage": {
+        "percent": 78.36220865013087,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 12.589687,
+        "passed": 317,
+        "failed": 0,
+        "skipped": 3294,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 2.01576129096793,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2332957120379433,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.0906824370031245,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0037848359788768
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_ask_mcp_supervision.py",
+        "tests/integration/test_ask_drain_loop.py",
+        "tests/integration/test_ask_drain_loop_agent.py",
+        "tests/integration/test_ask_plan_drain.py",
+        "tests/integration/test_ask_plan_serve.py",
+        "tests/integration/test_ask_plan_handoff.py",
+        "tests/integration/test_ask_plan_subagent_models.py",
+        "tests/integration/test_ask_plan_priority_order.py",
+        "tests/integration/test_ask_plan_read_queue.py",
+        "tests/integration/test_ask_plan_conduct_covered.py",
+        "tests/integration/test_ask_plan_shared_paths.py",
+        "tests/integration/test_ask_depends_rule.py",
+        "tests/integration/test_ask_view_events.py",
+        "tests/integration/test_box_triage_inbox.py",
+        "tests/integration/test_ask.py",
+        "tests/integration/test_mcp_read_server.py",
+        "tests/unit/test_ask_drain_loop.py",
+        "tests/unit/test_ask_plan_drain.py",
+        "tests/unit/test_ask_plan_serve.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_ask_mcp_supervision.py tests/integration/test_ask_drain_loop.py tests/integration/test_ask_drain_loop_agent.py tests/integration/test_ask_plan_drain.py tests/integration/test_ask_plan_serve.py tests/integration/test_ask_plan_handoff.py tests/integration/test_ask_plan_subagent_models.py tests/integration/test_ask_plan_priority_order.py tests/integration/test_ask_plan_read_queue.py tests/integration/test_ask_plan_conduct_covered.py tests/integration/test_ask_plan_shared_paths.py tests/integration/test_ask_depends_rule.py tests/integration/test_ask_view_events.py tests/integration/test_box_triage_inbox.py tests/integration/test_ask.py tests/integration/test_mcp_read_server.py tests/unit/test_ask_drain_loop.py tests/unit/test_ask_plan_drain.py tests/unit/test_ask_plan_serve.py\nbringing up nodes...\nbringing up nodes...\n\nssssss.ssss.ss.s.ss..sssssssss.sssss.sss..s.sssss.ss...s.....            [100%]\n20 passed, 41 skipped in 1.84s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 5.09587
+    }
+  ]
+}
