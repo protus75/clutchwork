@@ -1,16 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "dc02d1c208bdc1ce6f02c8d7b4ee49283c79b229",
+  "produced_at_sha": "230908cbbc28bfc4d4010d1328b60b9498903af7",
   "stem": "host-antigravity-plugin",
-  "attempt": 0,
+  "attempt": 1,
   "terminal": "gate_failed",
-  "stage": "check",
+  "stage": "review",
   "verdict": "retry",
   "lessons": [
-    "README.md line 99 adds the markdown link `[ClutchWork](customization://clutchwork)`. tests/unit/test_readme.py::test_links_are_absolute requires every `](target)` in README.md to start with `https://`, so this link fails the test.",
-    "Fix README.md only: write the refresh hint as inline code (`customization://clutchwork`) or plain text, not a markdown link. Keep the `## Antigravity plugin` section and the `uv run clutch host antigravity` setup line. The ticket requires the link form only in CLI output and host-contract.md.",
-    "Before committing, run `./dev.py test tests/unit/test_readme.py` together with the ticket's `## Verification` command. README.md is fenced, and test_readme.py checks it even though the ticket does not list that test."
+    "In clutch/docs/host-running.md, restore the `view status` row (line ~26) to its text on main. handle_status in clutch/__main__.py never calls antigravity.doctor_finding, so status does not warn about Antigravity drift. Review finding, acceptance code.",
+    "Put the Antigravity drift sentence only in the `| `host doctor` |` row of clutch/docs/host-running.md and docs/how-clutch-works.md §2.1. The ticket's Scope-in asks only for that row to change. Check that no other verb row mentions Antigravity drift.",
+    "Keep the rest of the implementation as it is. Review found it meets the ticket, and the Verification command passed (39 passed). The test_mcp_app_dashboard esbuild failure is outside the fence and is not this ticket's to fix.",
+    "After editing, rerun the ticket's Verification command as written. test_host_running.py and test_help.py pin the verb table and doc links, so the restored row text must exactly match main."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
