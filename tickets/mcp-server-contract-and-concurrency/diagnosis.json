@@ -1,0 +1,23 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "71c332820aff9d2e3384fc1578e7bfb36a90c9a7",
+  "stem": "mcp-server-contract-and-concurrency",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
+  "lessons": [
+    "tests/unit/test_mcp_index_query.py::test_schema_and_validation asserts `\"_meta\" not in tool` for clutch_index_query, but the ticket requires `_meta.ui.visibility` on every tool. Add that file to `## Scope fence` and change the assertion to `tool[\"_meta\"][\"ui\"][\"visibility\"] == [\"model\", \"app\"]`.",
+    "tests/integration/test_git_fake_adoption.py flags tests/unit/test_mcp_surface_contract.py. Its PATTERN matches `git = SimpleNamespace(`/`Mock(`, `class FakeGit`/`Git`, `spec=Git`, or the names FakeGit/fake_git. Remove that stand-in and use GitFake from tests/git_fake.py, or drop the git stub if the",
+    "The branch rebases onto main with the MCP changes kept. Fix only these two findings. Then run the ticket's `## Verification` command plus `./dev.py test tests/unit/test_mcp_index_query.py tests/integration/test_git_fake_adoption.py`. The Check gate runs the full suite, not just the verification"
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [
+    1,
+    2
+  ],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
