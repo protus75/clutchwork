@@ -1,0 +1,20 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "de4cfd9634e33ea4f43bfb6cd3659b338e80e825",
+  "stem": "mcp-dashboard-ux-parity",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In clutch/ui/app.js (summary `drop` handler near line 77), if the dragged .sidebar-section comes before the target among its siblings, call root.insertBefore(dragged, section.nextSibling). Otherwise call root.insertBefore(dragged, section). Scope in requires a drop before or after the target.",
+    "In tests/mcp_app_dashboard.js, add a drag-and-drop assertion: dragging a section's summary onto the section directly below moves it past that section. Also assert that a drag onto the last section places it last. Keep the existing upward-drag assertion.",
+    "Change only the drop logic and its JS test. Review approved everything else: roots resolution, palette, context menu, header, hover/pin, and the boot notice. Then rerun the ## Verification command and tests/regression/mcp_dashboard_ux_parity.py."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
