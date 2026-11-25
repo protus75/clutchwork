@@ -19,7 +19,7 @@ MCP_SERVER_NAME = "clutchwork"
 MCP_ARGS = ("-m", "clutch", "mcp", "serve")
 PORTABLE_MCP_COMMAND = "uvx"
 PORTABLE_MCP_ARGS = ("--from", "clutchwork", "clutch", "mcp", "serve")
-DEFAULT_LOGO_PATH = Path(__file__).parent / "assets" / "logo.svg"
+DEFAULT_LOGO_PATH = Path(__file__).parent / "assets" / "logo.png"
 SUGGESTED_PROMPTS = ["Open the ClutchWork dashboard", "Supervise the Clutch queue (drain-loop)", "Run docs/roadmap.md unattended with serve"]
 
 
@@ -55,7 +55,7 @@ def plugin_manifest(version_str: str | None = None) -> dict[str, object]:
         "author": AUTHOR,
         "homepage": HOMEPAGE_URL,
         "repository": REPOSITORY_URL,
-        "logo": "assets/logo.svg",
+        "logo": "assets/logo.png",
         "suggestedPrompts": SUGGESTED_PROMPTS,
     }
 
@@ -72,7 +72,7 @@ def portable_bundle_files(*, version_str: str | None = None, logo_bytes: bytes) 
     return {
         "plugin.json": (json.dumps(plugin_manifest(version_str=version_str), indent=2) + "\n").encode(),
         "mcp_config.json": (json.dumps(portable_mcp_config(), indent=2) + "\n").encode(),
-        "assets/logo.svg": logo_bytes,
+        "assets/logo.png": logo_bytes,
         **{f"skills/{name}/SKILL.md": text.encode() for name, text in SKILLS.items()},
     }
 
@@ -83,7 +83,7 @@ def install_plugin(
     files = {
         plugin_dir / "plugin.json": (json.dumps(plugin_manifest(version_str), indent=2) + "\n").encode(),
         plugin_dir / "mcp_config.json": (json.dumps(mcp_config(executable), indent=2) + "\n").encode(),
-        plugin_dir / "assets/logo.svg": fs.read_bytes(logo_path) if logo_bytes is None else logo_bytes,
+        plugin_dir / "assets/logo.png": fs.read_bytes(logo_path) if logo_bytes is None else logo_bytes,
         **{plugin_dir / "skills" / name / "SKILL.md": text.encode() for name, text in SKILLS.items()},
     }
     for path, data in files.items():

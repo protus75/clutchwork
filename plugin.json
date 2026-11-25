@@ -6,7 +6,7 @@
   "author": "ClutchWork",
   "homepage": "https://github.com/protus75/clutchwork",
   "repository": "https://github.com/protus75/clutchwork",
-  "logo": "assets/logo.svg",
+  "logo": "assets/logo.png",
   "suggestedPrompts": [
     "Open the ClutchWork dashboard",
     "Supervise the Clutch queue (drain-loop)",

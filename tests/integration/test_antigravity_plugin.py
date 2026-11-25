@@ -5,8 +5,8 @@
 # purpose: Checks that the packaged Antigravity plugin logo, skill kinds and tool names, and the host documentation match their production owners.
 # relates: [clutch/antigravity.py, clutch/ask.py, clutch/mcp.py, tests/fakes.py]
 # owner: engine
-# verified: 1324cf62
-# hash: c57d3d9e3a499bd165d34577f7593f7e9dd447f77e09b56bd48904c03b830c77
+# verified: 5e56ddef
+# hash: 968811d79b47afa06df1ab539c25016ccb4a64e0078f9653a5d7dc98516ca995
 
 import re
 from pathlib import Path
@@ -18,12 +18,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_logo_and_registered_tools():
-    logo = (ROOT / "clutch/assets/logo.svg").read_bytes()
-    assert logo.startswith(b"<svg") and logo == (ROOT / "vscode-clutchwork/media/icon.svg").read_bytes()
+    assert antigravity.DEFAULT_LOGO_PATH == ROOT / "clutch/assets/logo.png"
+    logo = (ROOT / "clutch/assets/logo.png").read_bytes()
+    assert logo == (ROOT / "assets/hatchling-512.png").read_bytes()
+    assert not (ROOT / "clutch/assets/logo.svg").exists()
     fs = FakeFileSystem()
     fs.write(antigravity.DEFAULT_LOGO_PATH, logo)
-    antigravity.install_plugin(plugin_dir=Path("/plugin"), fs=fs, version_str="1")
-    assert fs.read_bytes(Path("/plugin/assets/logo.svg")) == logo
+    antigravity.install_plugin(plugin_dir=Path("/plugin"), fs=fs, logo_bytes=None, version_str="1")
+    assert fs.read_bytes(Path("/plugin/assets/logo.png")) == logo
     for skill in antigravity.SKILLS.values():
         assert set(re.findall(r'kind: "([^"]+)"', skill)) <= set(ask.KINDS)
         assert set(re.findall(r"clutch_[a-z_]+", skill)) <= set(mcp.TOOLS)

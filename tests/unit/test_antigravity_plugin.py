@@ -5,8 +5,8 @@
 # purpose: Unit tests for the Antigravity plugin and workspace skill install, default paths, doctor drift findings, and the `clutch host antigravity` CLI dispatch.
 # relates: [clutch/__main__.py, clutch/antigravity.py, clutch/doctor.py, tests/fakes.py]
 # owner: engine
-# verified: 8342251d
-# hash: 97cc7222683bca45a92456299c3379136186b469ee2378c56c374cf629d79eb2
+# verified: 5e56ddef
+# hash: 6606b1eeb47683da725289d69abe0bc55c038f75bac9ddff49a04e02c0ab6fa2
 
 import json
 from pathlib import Path
@@ -35,11 +35,11 @@ def test_bundle_and_skills(tmp_path):
         "author": "ClutchWork",
         "homepage": "https://github.com/protus75/clutchwork",
         "repository": "https://github.com/protus75/clutchwork",
-        "logo": "assets/logo.svg",
+        "logo": "assets/logo.png",
         "suggestedPrompts": ["Open the ClutchWork dashboard", "Supervise the Clutch queue (drain-loop)", "Run docs/roadmap.md unattended with serve"],
     }
     assert json.loads(fs.files[target / "mcp_config.json"]) == {"mcpServers": {"clutchwork": {"command": "/venv/python", "args": ["-m", "clutch", "mcp", "serve"]}}}
-    assert fs.files[target / "assets/logo.svg"] == b"logo"
+    assert fs.files[target / "assets/logo.png"] == b"logo"
     assert len(paths) == 6
     for name, kind in [("clutch-drain-loop", "drain-loop"), ("clutch-plan-drain", "plan-ticket-drain"), ("clutch-plan-serve", "plan-ticket-serve")]:
         text = fs.files[target / "skills" / name / "SKILL.md"].decode()
