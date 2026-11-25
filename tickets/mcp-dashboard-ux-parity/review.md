@@ -1,10 +1,10 @@
-# Review: snag
+# Review: approve
 
-The server-side roots resolution, palette, context menu, header, hover/pin and boot-notice changes match the ticket, but dragging a section's summary can only drop it before the target, so a section cannot be dragged downward onto its next sibling or into the last position.
+The diff fixes the prior downward-drag drop defect with a covering test, implements roots-then-cwd-then-last_repo resolution with best-effort persistence, the roots/list request and response handling, the exact palette, hover/pin/model-context gating, the grouped context menu, sections that can be resized and reordered, and the icon-first top bar, all inside the fence with no out-of-fence breakage or stale docs found.
 
 ## Findings
 
-- [logic] clutch/ui/app.js:77 The summary `drop` handler always calls `root.insertBefore(dragged, section)`. Dragging a section onto the section directly below it does nothing, any downward drag lands one slot short, and a section can never be dragged into the last position. The ticket's Scope in requires drop to reorder the dragged `.sidebar-section` "before or after the drop target section", and acceptance criterion 7 requires drag-and-drop reordering. The JS test only covers an upward drag. (do instead: In `drop`, insert after the target when the dragged section comes before it among `.sidebar-section` siblings (`root.insertBefore(dragged, section.nextSibling)`); otherwise insert before it. Add a `tests/mcp_app_dashboard.js` assertion that dragging a section onto the section below it moves it past that section.)
+none
 
 ## Record
 
@@ -12,24 +12,14 @@ The server-side roots resolution, palette, context menu, header, hover/pin and b
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "de4cfd9634e33ea4f43bfb6cd3659b338e80e825",
+  "produced_at_sha": "73cb9e58bfe0153e8c8a2313e7ec22f4b922995e",
   "stem": "mcp-dashboard-ux-parity",
-  "reviewed_sha": "de4cfd9634e33ea4f43bfb6cd3659b338e80e825",
-  "summary": "The server-side roots resolution, palette, context menu, header, hover/pin and boot-notice changes match the ticket, but dragging a section's summary can only drop it before the target, so a section cannot be dragged downward onto its next sibling or into the last position.",
-  "findings": [
-    {
-      "code": "logic",
-      "path": "clutch/ui/app.js",
-      "line": 77,
-      "message": "The summary `drop` handler always calls `root.insertBefore(dragged, section)`. Dragging a section onto the section directly below it does nothing, any downward drag lands one slot short, and a section can never be dragged into the last position. The ticket's Scope in requires drop to reorder the dragged `.sidebar-section` \"before or after the drop target section\", and acceptance criterion 7 requires drag-and-drop reordering. The JS test only covers an upward drag.",
-      "paved_road": "In `drop`, insert after the target when the dragged section comes before it among `.sidebar-section` siblings (`root.insertBefore(dragged, section.nextSibling)`); otherwise insert before it. Add a `tests/mcp_app_dashboard.js` assertion that dragging a section onto the section below it moves it past that section.",
-      "kind": null,
-      "unit": null
-    }
-  ],
+  "reviewed_sha": "73cb9e58bfe0153e8c8a2313e7ec22f4b922995e",
+  "summary": "The diff fixes the prior downward-drag drop defect with a covering test, implements roots-then-cwd-then-last_repo resolution with best-effort persistence, the roots/list request and response handling, the exact palette, hover/pin/model-context gating, the grouped context menu, sections that can be resized and reordered, and the icon-first top bar, all inside the fence with no out-of-fence breakage or stale docs found.",
+  "findings": [],
   "spec_version": "1.9",
   "provider": "claude",
   "model": "claude-opus-5-5",
-  "verdict": "snag"
+  "verdict": "approve"
 }
 ```
