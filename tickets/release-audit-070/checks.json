@@ -1,7 +1,7 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "41b5d3a5b3ddc8561870df1415b7ee385c5055be",
+  "produced_at_sha": "3154dc9d8c5c9427c9102825c48d69c79bcfcb55",
   "stem": "release-audit-070",
   "passed": true,
   "changed_files": [
@@ -14,7 +14,7 @@
     "tests/integration/test_roadmap_gate.py",
     "tests/unit/test_release_audit_070_gates.py"
   ],
-  "inserted_lines": 233,
+  "inserted_lines": 234,
   "bypassed": [],
   "reports": [
     {
@@ -83,18 +83,18 @@
       "findings": [],
       "autofix_applied": false,
       "timing": {
-        "seconds": 21.845982,
+        "seconds": 20.195837,
         "passed": 2430,
         "failed": 0,
         "skipped": 0,
         "slow": {
-          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 2.096927222039085,
-          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.5901517539750785,
-          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.4725449660327286,
-          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4092540590208955,
-          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.2431886939448304,
-          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0770106519921683,
-          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0188881158828735
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.7901736379717477,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.5759759510401636,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3246198880369775,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.3188022309914231,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.2552105750073679,
+          "tests/unit/test_evidence_envelope.py::test_start_record_precedes_spawn": 1.0497837930452079,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.0114617500221357
         }
       },
       "coverage": {
@@ -140,9 +140,9 @@
         "tests/integration/test_roadmap_table.py"
       ],
       "rc": 0,
-      "tail": "$ uv run pytest -q tests/unit/test_release_audit_070_gates.py tests/unit/test_main_mcp_serve.py tests/unit/test_antigravity_plugin.py tests/unit/test_main_help.py tests/unit/test_roadmap_table.py tests/integration/test_roadmap_gate.py tests/integration/test_roadmap_table.py\nbringing up nodes...\nbringing up nodes...\n\n...................s..s....................                              [100%]\n41 passed, 2 skipped in 2.18s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "tail": "$ uv run pytest -q tests/unit/test_release_audit_070_gates.py tests/unit/test_main_mcp_serve.py tests/unit/test_antigravity_plugin.py tests/unit/test_main_help.py tests/unit/test_roadmap_table.py tests/integration/test_roadmap_gate.py tests/integration/test_roadmap_table.py\nbringing up nodes...\nbringing up nodes...\n\n.....................s......s..............                              [100%]\n41 passed, 2 skipped in 2.07s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
       "base_red": false,
-      "seconds": 5.542136
+      "seconds": 5.312515
     }
   ]
 }
