@@ -1,0 +1,21 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "4010677b82195017cca7d36448e02daa6c63fb57",
+  "stem": "mcp-dashboard-surfaces",
+  "attempt": 0,
+  "terminal": "gate_failed",
+  "stage": "review",
+  "verdict": "retry",
+  "lessons": [
+    "In clutch/ui/app.js Help & Lifecycle tab (~line 93): for a snap.help entry whose link has `path` and no `url` (clutch/help.py help_map lines 234, 240 build {label, path, line}), render a control whose click calls openFile(link.path). Keep href only when link.url exists.",
+    "In clutch/ui/app.js host.openHelp (~line 52), called by vscode-clutchwork/media/detail.js line 40: call openFile(link.path) when the link has path and no url. Use window.open(link.url) only for URL links.",
+    "In tests/mcp_app_dashboard.js add a path-only help entry ({label, path, line}) and a URL help entry to the fake snapshot. Assert that clicking the path link in Help & Lifecycle and calling host.openHelp both send a com.google.antigravity/toggle-aux-pane request.",
+    "Stay inside the scope fence: no edits to clutch/help.py or vscode-clutchwork/. Rerun the full ## Verification command with ./dev.py test before finishing."
+  ],
+  "mechanical": null,
+  "trimmed_lessons": [],
+  "spec_version": "1.11",
+  "provider": "claude",
+  "model": "claude-opus-5-5"
+}
