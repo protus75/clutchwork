@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The repository path input refreshes the dashboard when tool input arrives after connection.
+The worktree lacked JavaScript dependencies, so they were installed locally before verification.
 
 ## Dead ends
 
-The initial harness did not model the SDK’s theme attribute; correcting the fake DOM resolved the failure.
+The first mutation check exposed a weak assertion, which was corrected and rechecked.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-none
+Expected 25 minutes; completed within the budget.
 
