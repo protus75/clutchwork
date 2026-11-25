@@ -4,11 +4,11 @@ ok
 
 ## Surprises / judgment calls
 
-The worktree lacked JavaScript dependencies, so they were installed locally before verification.
+The worktree lacked local UI dependencies; installing the declared packages allowed verification to pass. The final verification command passed all 16 tests, and mutation checks caught both ungated control variants.
 
 ## Dead ends
 
-The first mutation check exposed a weak assertion, which was corrected and rechecked.
+npm ci could not run because the repository has no package lock; installed the declared dependencies without creating one.
 
 ## Second problems filed
 
@@ -22,5 +22,5 @@ none
 
 ## Predicted vs actual
 
-Expected 25 minutes; completed within the budget.
+The ticket budget was 25 minutes; the retry took approximately 2 minutes.
 
