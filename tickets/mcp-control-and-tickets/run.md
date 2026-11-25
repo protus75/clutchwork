@@ -4,7 +4,7 @@ ok
 
 ## Surprises / judgment calls
 
-Preserved minimal CLI validation fakes by defaulting their omitted runs_before field to empty; production validation retains the actual value.
+The integration ownership tests are skipped by the repository’s I/O guard; all nine ownership expectations were checked directly against added wrong call sites. Mutation checks were not completed for every assertion in the existing ticket tests.
 
 ## Dead ends
 
@@ -17,10 +17,10 @@ none
 ## Resolved engine/model
 
 - provider: codex
-- model: gpt-6.1-sol
+- model: gpt-6.1-terra
 - spec: implement 2.29
 
 ## Predicted vs actual
 
-Expected 25 minutes; retry completed in approximately 6 minutes, including mutation checks for all 73 new-test assertions and exception checks.
+none
 
