@@ -1,0 +1,149 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "4010677b82195017cca7d36448e02daa6c63fb57",
+  "stem": "mcp-dashboard-surfaces",
+  "passed": true,
+  "changed_files": [
+    "clutch/ui/app.js",
+    "clutch/ui/dashboard.css",
+    "tests/integration/conftest.py",
+    "tests/integration/test_mcp_app_dashboard.py",
+    "tests/mcp_app_dashboard.js"
+  ],
+  "inserted_lines": 189,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "ruff-fix",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "ruff-format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 17.291679,
+        "passed": 2398,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.8762796789524145,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.3082444189931266,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.282224366965238,
+          "tests/unit/test_evidence_store.py::test_prune_protects_newer_and_inflight_references": 1.167995736002922,
+          "tests/unit/test_index_neighbors.py::test_fallbacks_and_exec_seam": 1.007211206946522
+        }
+      },
+      "coverage": {
+        "percent": 78.528999257487,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 13.83459,
+        "passed": 319,
+        "failed": 0,
+        "skipped": 3294,
+        "slow": {
+          "tests/integration/test_journal.py::test_concurrent_processes_keep_every_append": 1.915956503013149,
+          "tests/integration/test_daemon_helpers_sources.py::test_source_import_closure_without_core": 1.2044878240558319,
+          "tests/integration/test_shared_fakes_guard.py::test_shared_fakes_guard": 1.1574411920155399,
+          "tests/integration/test_exec_seam_unwind_capture.py::test_timeout_captures_stdout_and_stderr": 1.0047923640231602
+        }
+      }
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/integration/test_mcp_app_dashboard.py",
+        "tests/integration/test_disk_io_skip_list.py",
+        "tests/integration/test_ui_shared_renderers.py",
+        "tests/integration/test_mcp_read_server.py",
+        "tests/unit/test_mcp_app_dashboard.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/integration/test_mcp_app_dashboard.py tests/integration/test_disk_io_skip_list.py tests/integration/test_ui_shared_renderers.py tests/integration/test_mcp_read_server.py tests/unit/test_mcp_app_dashboard.py\nbringing up nodes...\nbringing up nodes...\n\n................                                                         [100%]\n16 passed in 1.50s\nwarning: `VIRTUAL_ENV=/home/djp/source/clutch/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n",
+      "base_red": false,
+      "seconds": 6.788611
+    }
+  ]
+}
