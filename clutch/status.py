@@ -291,9 +291,43 @@ def project(events: Iterable[Event], *, alive: bool = True, box=None, policy=Non
     )
 
 
-def render(status: Status) -> str:
+def render(status: Status, *, short: bool = False) -> str:
     def block(name: str, lines: Iterable[str]) -> str:
         return f"{name}:\n" + ("\n".join(f"- {line}" for line in lines) or "(none)")
+
+    pending_box = tuple(row for row in status.box if row[2] in {"pending", "reopened"})
+    resolved_count = len(status.box) - len(pending_box)
+    box_rows = pending_box if short else status.box
+    sections = [
+        f"merged:\n{len(status.merged)}",
+        block("in flight", status.in_flight),
+        *((block("interrupted (the engine stopped mid-run; reject it, or start the engine to rerun it)", status.interrupted),) if status.interrupted else ()),
+        block("blocked", (f"{stem}: {to}" for stem, to in status.blocked)),
+        block("intake", (f"{stem}: source: {source}, state: {state}, commit {commit[:12]}" for stem, source, state, commit in status.intake)),
+        f"spend:\n${status.spend_usd:.2f}",
+        block("Reject queue", (f"{stem}: {body['to']} at {body.get('stage', 'unknown')} -- ticket confirm {stem} after editing, or ticket reject {stem}" for stem, body in status.reject)),
+        block(
+            f"Suggestion Box ({len(pending_box)} pending, {resolved_count} resolved)",
+            (f"{id}: {cls}: {label}: {summary}" for id, cls, label, summary in box_rows),
+        ),
+    ]
+    if not short:
+        sections.append(block("Confirmed-class tombstones", (f"{id}: {cls}, {reports} re-reports" for id, cls, reports in status.tombstones)))
+    sections.extend(
+        (
+            block("Tombstone reopens", (f"{body['box_id']}: reopened at {body['reports']} re-reports" for body in status.reopens)),
+            *((block("Verdict refusals", (f"{stem}: {reason}" for stem, reason in status.verdict_refusals)),) if status.verdict_refusals else ()),
+            *(
+                (block("Verdict decisions", (f"{request}: {verb} {stem}: {decision} -- {reason}" for request, verb, stem, decision, reason in status.verdict_decisions)),)
+                if status.verdict_decisions
+                else ()
+            ),
+            *((block("overdue", status.overdue),) if status.overdue else ()),
+        )
+    )
+    if short:
+        sections.append(block("window provenance", (f"{key}: {value}" for key, value in sorted(status.provenance.items()))))
+        return "\n\n".join(sections) + "\n"
 
     card = status.scorecard
     totals = [f"boundary: {card.boundary}", f"merged tickets: {card.merged_ticket_count}", f"spend: ${card.spend_usd:.2f}"]
@@ -312,33 +346,11 @@ def render(status: Status) -> str:
             f"| {surface} | {row.evaluated_tickets} | {row.catches} | {row.escapes} | {row.bypass_count} | {row.catch_rate:.4f} | {row.escape_rate:.4f} | {str(row.prune_candidate).lower()} |"
         )
     table.extend(panel_lines(card))
-    return (
-        "\n\n".join(
-            (
-                f"merged:\n{len(status.merged)}",
-                block("in flight", status.in_flight),
-                *((block("interrupted (the engine stopped mid-run; reject it, or start the engine to rerun it)", status.interrupted),) if status.interrupted else ()),
-                block("blocked", (f"{stem}: {to}" for stem, to in status.blocked)),
-                block("intake", (f"{stem}: source: {source}, state: {state}, commit {commit[:12]}" for stem, source, state, commit in status.intake)),
-                f"spend:\n${status.spend_usd:.2f}",
-                block("Reject queue", (f"{stem}: {body['to']} at {body.get('stage', 'unknown')} -- ticket confirm {stem} after editing, or ticket reject {stem}" for stem, body in status.reject)),
-                block(
-                    f"Suggestion Box ({sum(row[2] in {'pending', 'reopened'} for row in status.box)} pending, {sum(row[2] not in {'pending', 'reopened'} for row in status.box)} resolved)",
-                    (f"{id}: {cls}: {label}: {summary}" for id, cls, label, summary in status.box),
-                ),
-                block("Confirmed-class tombstones", (f"{id}: {cls}, {reports} re-reports" for id, cls, reports in status.tombstones)),
-                block("Tombstone reopens", (f"{body['box_id']}: reopened at {body['reports']} re-reports" for body in status.reopens)),
-                *((block("Verdict refusals", (f"{stem}: {reason}" for stem, reason in status.verdict_refusals)),) if status.verdict_refusals else ()),
-                *(
-                    (block("Verdict decisions", (f"{request}: {verb} {stem}: {decision} -- {reason}" for request, verb, stem, decision, reason in status.verdict_decisions)),)
-                    if status.verdict_decisions
-                    else ()
-                ),
-                *((block("overdue", status.overdue),) if status.overdue else ()),
-                block("current-window scorecard", totals),
-                block("window provenance", (f"{key}: {value}" for key, value in sorted(status.provenance.items()))),
-                "\n".join(table),
-            )
+    sections.extend(
+        (
+            block("current-window scorecard", totals),
+            block("window provenance", (f"{key}: {value}" for key, value in sorted(status.provenance.items()))),
+            "\n".join(table),
         )
-        + "\n"
     )
+    return "\n\n".join(sections) + "\n"
