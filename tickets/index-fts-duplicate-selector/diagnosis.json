@@ -1,17 +1,17 @@
 {
   "artifact_schema_version": 1,
   "produced_by_spec_version": 1,
-  "produced_at_sha": "10c904f9f3ca8c932fdce309e6633c0a870f0bc1",
+  "produced_at_sha": "b4123eaac27b48d0d54a3adf9c091e9f6f05262a",
   "stem": "index-fts-duplicate-selector",
-  "attempt": 0,
-  "terminal": "premise_failed",
-  "stage": "implement",
-  "verdict": "reject",
+  "attempt": 1,
+  "terminal": "gate_failed",
+  "stage": "check",
+  "verdict": "retry",
   "lessons": [
-    "Premise false: clutch/index.py:416 skips files whose stored hash matches, so changing _extract never rewrites existing duplicate rows. Rebuilding with `clutch index build` cannot refresh them, and the ticket names no forced re-extract or migration path.",
-    "Contradiction: headings `Dup`, `Dup`, `Dup (2)` make the suffixed second `Dup` and the unchanged unique `Dup (2)` both `doc.md#Dup (2)`. Redraft with a collision-safe scheme and state which existing selector strings may change.",
-    "clutch/tickets.py:360-362 resolves `#heading` by title equality or prefix and requires exactly one match. A suffixed `Dup (2)` selector, or the first bare `Dup`, cannot resolve. Fence tickets.py and its tests, or keep suffixed selectors out of context suggestions.",
-    "Redraft the scope fence to cover every forced file: clutch/index.py (_extract plus the build skip or migration), clutch/tickets.py heading resolution if suffixed selectors reach Context, and their unit tests. Then lint and review the ticket again."
+    "Check failed on tests/integration/test_git_fake_adoption.py. Its PATTERN rejects `class Git` at line 32 of the new tests/unit/test_index_fts_duplicate_selector.py. Delete that hand-built Git stand-in class.",
+    "In tests/unit/test_index_fts_duplicate_selector.py, use `from tests.git_fake import GitFake` and pass `git=GitFake()` to index.build. Override ls_files (and ticket_touches if needed) via `git._overrides.update(...)`, as the rig fixture in tests/unit/test_index_build.py does at lines 99-115.",
+    "Keep the rest of the branch as it is. The index.py and context.py changes, the regression reproducer (defect on base, pass on head) and the 29 verification tests all passed. Only the adoption-lint violation in the new unit test needs fixing.",
+    "Before committing, run `./dev.py test tests/integration/test_git_fake_adoption.py` along with the ## Verification command. Do not name any new test helper Git, FakeGit, fake_git, EmptyGit or DiffGit, and do not use SimpleNamespace or Mock for git."
   ],
   "mechanical": null,
   "trimmed_lessons": [],
