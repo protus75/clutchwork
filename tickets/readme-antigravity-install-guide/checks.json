@@ -1,0 +1,121 @@
+{
+  "artifact_schema_version": 1,
+  "produced_by_spec_version": 1,
+  "produced_at_sha": "219fa628e859410b8d1ef914123614c3d138fe4f",
+  "stem": "readme-antigravity-install-guide",
+  "passed": true,
+  "changed_files": [
+    "README.md"
+  ],
+  "inserted_lines": 34,
+  "bypassed": [],
+  "reports": [
+    {
+      "code": "scope_fence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "verification",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "run_record",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "diff_budget",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "core_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "bug_evidence",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "image_quality",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "meta_drift",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "unit",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false,
+      "timing": {
+        "seconds": 19.479122,
+        "passed": 2413,
+        "failed": 0,
+        "skipped": 0,
+        "slow": {
+          "tests/unit/test_main_help.py::test_commands_have_description_and_examples": 1.9558645010110922,
+          "tests/unit/test_index_sources.py::test_incremental_box_and_embeddings": 1.4909343459876254,
+          "tests/unit/test_evidence_warn_threshold.py::test_provider_preserves_old_blob": 1.478347242984455,
+          "tests/unit/test_index_neighbors.py::test_ranking_filters_ties_and_read_only": 1.240732030943036,
+          "tests/unit/test_evidence_envelope.py::test_latest_stdout": 1.1924535889993422
+        }
+      },
+      "coverage": {
+        "percent": 78.62949581212021,
+        "files": {}
+      }
+    },
+    {
+      "code": "integration",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "lint",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    },
+    {
+      "code": "format",
+      "verdict": "pass",
+      "findings": [],
+      "autofix_applied": false
+    }
+  ],
+  "seeds": [],
+  "verification": [
+    {
+      "argv": [
+        "./dev.py",
+        "test",
+        "tests/unit/test_readme.py",
+        "tests/integration/test_antigravity_plugin.py",
+        "tests/integration/test_antigravity_bundle.py",
+        "tests/integration/test_context_suggest_cli.py",
+        "tests/integration/test_ask_view_events.py"
+      ],
+      "rc": 0,
+      "tail": "$ uv run pytest -q tests/unit/test_readme.py tests/integration/test_antigravity_plugin.py tests/integration/test_antigravity_bundle.py tests/integration/test_context_suggest_cli.py tests/integration/test_ask_view_events.py\nbringing up nodes...\nbringing up nodes...\n\nss.....s...                                                              [100%]\n8 passed, 3 skipped in 1.41s\n",
+      "base_red": false,
+      "seconds": 7.04299
+    }
+  ]
+}
