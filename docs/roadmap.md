@@ -4,8 +4,8 @@ kind: plan
 purpose: Orders clutch's planned work: release slots, priorities, cross-plan and owner decisions, the duplication/gap/drift audit, and the master ticket table with each release's start and gate blocks
 relates: [clutch/__main__.py, clutch/acceptance.py, clutch/baseline.py, clutch/box.py, clutch/caps.py, clutch/checkpoint.py, clutch/daemon.py, clutch/drain.py, clutch/driver.py, clutch/evidence/codex.py, clutch/hostfiles.py, clutch/llmeffect.py, clutch/observe.py, clutch/policy.py, clutch/providers.py, clutch/release.py, clutch/requisition.py, clutch/retro.py, clutch/rework.py, clutch/roadmap.py, clutch/runner.py, clutch/scheduler.py, clutch/specs/__init__.py, clutch/stages.py, clutch/supervise_idle.py, clutch/tickets.py, docs/boundary-contract-plan.md, eval/harness.py, tests/integration/test_git.py, tests/integration/test_providers.py, tests/integration/test_scheduler.py, vscode-clutchwork/extension.js]
 owner: engine
-verified: f1a8b34e
-hash: 6d1007a6ea6fad137846300626e561b8bb424033e1d7d71236806f44810074df
+verified: 974804ad
+hash: 16a0d4049cd52779d09078dd433f8890aaacc4947c22c12eec564433a47346ba
 -->
 # clutch roadmap
 
@@ -514,6 +514,9 @@ uv run clutch roadmap merged --release 0.6.0 --since v0.6.0 --at-least 1
 | 226 | `antigravity-plugin-bundle` | antigravity plan 9 | feature | P1 | `host-antigravity-plugin` | | Commit the publishable Antigravity plugin root (`plugin.json` with full Marketplace metadata, portable `mcp_config.json` using `uvx --from clutchwork clutch mcp serve`, `assets/logo.png`, and thin `skills/clutch-*/SKILL.md`) generated from `clutch/antigravity.py`, with a unit test preventing drift and README install/Marketplace instructions. |
 | 227 | `mcp-index-query` | antigravity plan 10 | feature | P2 | `mcp-read-server`, `index-query-verb`, `index-fts-duplicate-selector` | | Expose `clutch_index_query` in `clutch/mcp.py` calling `clutch.index.query` read-only with typed `structuredContent` (`selector`, `path`, `kind`, `purpose`, `relates`, `owner`, `score`), zero lock contention, and unit tests. |
 | 208 | ~~`boundary-contract-outcome-compare`~~ | boundary | chore | P1 | | | **Merged** (`tickets/boundary-contract-outcome-compare/`). docs/boundary-contract-plan.md Rollout Phase 3 and row 153 compare premise failures, rework and duplicate-owner findings with the trial baseline, but the plan records only the baseline (Trial results); once tickets have run after row 153, record that comparison in the plan. |
+| 229 | `mcp-dashboard-in-wheel` | antigravity | feature | P1 | | | docs/antigravity-plan.md Target design section 4 serves ui://clutch/dashboard.html from the installed package, but clutch/ui/dashboard.html is gitignored and no release step runs ./dev.py ui-bundle (config.yaml release.packages builds only the VSIX), so clutch/mcp.py::dispatch resources/read returns dashboard_unavailable from a PyPI or uvx install; build the bundle into the published clutchwork distribution and test that it is present. |
+| 230 | `plugin-version-on-bump` | antigravity | feature | P1 | | | docs/antigravity-plan.md Target design section 6 keeps the committed plugin.json version equal to pyproject.toml (tests/integration/test_antigravity_bundle.py), but clutch/release.py bumps only pyproject.toml, so the 0.7.0 release commit leaves plugin.json at 0.6.1 and fails the drift test; regenerate the bundle from clutch/antigravity.py::portable_bundle_files in the release commit. |
+| 231 | `release-audit-070` | roadmap | chore | P1 | | | docs/roadmap.md section 1 0.7.0 ship clause (mcp serve serves the dashboard resource and tools; host antigravity installs the plugin) has no gate command and the 0.7.0 table has no audit row: re-run the sections 2-4 passes and add gate commands that check clutch/mcp.py resources/read and clutch/antigravity.py::install_plugin output. |
 
 ```gate
 uv run clutch roadmap merged --release 0.7.0
