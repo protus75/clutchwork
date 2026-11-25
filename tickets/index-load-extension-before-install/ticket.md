@@ -25,12 +25,13 @@ none
 - observable change: restore `_Creator.load(connection, kind)` to try `connection.execute(f"LOAD {kind}")` first, and only run `INSTALL {kind}` followed by `LOAD {kind}` if the initial `LOAD` raises `duckdb.Error`.
 - compatibility: when `LOAD` fails and `INSTALL` succeeds, the extension still loads transparently; when both fail, the returned finding format `[f"{kind} unavailable: {exc}"]` is unchanged.
 - acceptance: when `LOAD` succeeds, `INSTALL` is never executed (not called at all); when `LOAD` fails, `INSTALL` then `LOAD` are attempted; when `INSTALL` or the retry `LOAD` fails, `[f"{kind} unavailable: ..."]` is returned.
-- tests: `tests/unit/test_index_load_before_install.py` and `tests/regress_index_load_before_install.py`
+- tests: `tests/unit/test_index_load_before_install.py`, `tests/unit/test_index_build.py::test_default_creator`, and `tests/regress_index_load_before_install.py`
 - post-merge source of truth: `clutch/index.py`
 
 ## Scope in / Scope out
 Scope in:
 - In `clutch/index.py::_Creator.load`: attempt `connection.execute(f"LOAD {kind}")` first; only on `duckdb.Error`, run `connection.execute(f"INSTALL {kind}")` and retry `connection.execute(f"LOAD {kind}")`, returning `[f"{kind} unavailable: {exc}"]` if the fallback raises `duckdb.Error`.
+- In `tests/unit/test_index_build.py::test_default_creator`, update the line asserting the old successful load sequence (`assert conn.calls == [f"INSTALL {kind}", f"LOAD {kind}"]`, currently line 283) to `assert conn.calls == [f"LOAD {kind}"]`, since that test pins the changed behavior. Leave the `Recorder(True)` failure assertion unchanged: every execute fails, so the fallback still returns `[f"{kind} unavailable: offline"]`.
 - Add `tests/unit/test_index_load_before_install.py` (using a fake connection; no disk I/O or subprocesses) verifying:
   - When `LOAD fts` succeeds, executed SQL is `["LOAD fts"]` (never calling `INSTALL fts`) and returns `[]`.
   - When the first `LOAD fts` raises `duckdb.Error`, executed SQL is `["LOAD fts", "INSTALL fts", "LOAD fts"]` and returns `[]` if the fallback succeeds.
@@ -39,14 +40,16 @@ Scope in:
 
 Scope out:
 - Do not change `_Creator.create`, `_extract`, `build`, `query`, `neighbors`, or `clutch/__main__.py`.
+- In `tests/unit/test_index_build.py`, change only the `test_default_creator` successful-load assertion; no other test edits.
 
 ## Scope fence
 - clutch/index.py
+- tests/unit/test_index_build.py
 - tests/unit/test_index_load_before_install.py
 - tests/regress_index_load_before_install.py
 
 ## Acceptance criteria
-1. `clutch.index.default_creator.load(conn, "fts")` executes only `LOAD fts` (never `INSTALL fts`) and returns `[]` when `LOAD` succeeds, falls back to `INSTALL fts` + `LOAD fts` when `LOAD` raises `duckdb.Error`, and returns `["fts unavailable: ..."]` when fallback fails; verified by `./dev.py test tests/unit/test_index_load_before_install.py tests/unit/test_index_build.py`.
+1. `clutch.index.default_creator.load(conn, "fts")` executes only `LOAD fts` (never `INSTALL fts`) and returns `[]` when `LOAD` succeeds, falls back to `INSTALL fts` + `LOAD fts` when `LOAD` raises `duckdb.Error`, and returns `["fts unavailable: ..."]` when fallback fails; `tests/unit/test_index_build.py::test_default_creator` asserts the successful load sequence `[f"LOAD {kind}"]`; verified by `./dev.py test tests/unit/test_index_load_before_install.py tests/unit/test_index_build.py`.
 2. The carried regression reproducer exits `0` with `{"regression_result": "pass"}` on the branch head and exits non-zero with `{"regression_result": "defect"}` on merge base; verified by `uv run python tests/regress_index_load_before_install.py`.
 
 ## Verification
@@ -61,7 +64,7 @@ uv run python tests/regress_index_load_before_install.py
 ```
 
 ## Definition of rejected
-`_Creator.load` still executes `INSTALL` before `LOAD`, breaks fallback installation when `LOAD` raises `duckdb.Error`, or `tests/regress_index_load_before_install.py` fails to report `defect` on base and `pass` on head.
+`_Creator.load` still executes `INSTALL` before `LOAD`, breaks fallback installation when `LOAD` raises `duckdb.Error`, `tests/unit/test_index_build.py::test_default_creator` still asserts the INSTALL-before-LOAD sequence, or `tests/regress_index_load_before_install.py` fails to report `defect` on base and `pass` on head.
 
 ## Time budget
 - expected: 5m
