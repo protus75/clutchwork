@@ -304,7 +304,7 @@ def _parser() -> argparse.ArgumentParser:
         "serve",
         summary="serve MCP tools over stdio",
         does="Serve read, ticket, Suggestion Box, and detached engine-control MCP tools and prompts over stdio, including the MCP App resource ui://clutch/dashboard.html and tools clutch_open_dashboard, clutch_app_snapshot, and clutch_app_stats.",
-        reads="Repository config, tickets, journal, evidence and git state.",
+        reads="Repository config, tickets, journal, evidence, project index and git state.",
         writes="Tickets, Suggestion Box, control inbox, detached engine output, and rebuildable journal cache.",
         lock="Per-tool domain locks; no lock held by the stdio server.",
         exits="0 on EOF or interruption; 2 on refusal.",

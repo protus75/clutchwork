@@ -16,7 +16,7 @@ from typing import Literal
 import duckdb
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from clutch import ask, box, context, events, hostfiles, observe, roadmap, runner, seams, serve, stats, tickets
+from clutch import ask, box, context, events, hostfiles, index, observe, roadmap, runner, seams, serve, stats, tickets
 from clutch.box import UnknownBoxId
 from clutch.config import ConfigError, load_config
 from clutch.evidence import views
@@ -71,6 +71,11 @@ class Show(Repo):
 
 class Suggest(Repo):
     stem: str
+
+
+class IndexQuery(Repo):
+    text: str
+    limit: int = 10
 
 
 class Prompt(Repo):
@@ -132,6 +137,7 @@ TOOLS = {
     "clutch_evidence_captures": Captures,
     "clutch_evidence_show": Show,
     "clutch_context_suggest": Suggest,
+    "clutch_index_query": IndexQuery,
     "clutch_prompt": Prompt,
     "clutch_ticket_new": TicketNew,
     "clutch_ticket_lint": TicketLint,
@@ -187,9 +193,11 @@ class ClutchMCPServer:
         exec_factory=SubprocessExec,
         git_factory=Git,
         connect=duckdb.connect,
+        creator=index.default_creator,
         spawn=seams.spawn_detached,
     ):
         self.ui_html_path = ui_html_path if ui_html_path is not None else DEFAULT_DASHBOARD_HTML
+        self.creator = creator
         self.spawn = spawn
         self.cwd = Path(default_cwd or Path.cwd()).resolve()
         self.config_path = config_path
@@ -291,6 +299,18 @@ class ClutchMCPServer:
         elif name == "clutch_context_suggest":
             files, chunks = context.suggest_for_stem(cfg.state_dir, checkout.repo, args.stem, fs=fs, connect=self.connect)
             value = {"stem": args.stem, "files": files, "chunks": chunks}
+        elif name == "clutch_index_query":
+            value = asyncio.run(
+                index.query(cfg, checkout.repo, args.text, fs=fs, exec_=checkout.exec_, env=child_env(self.env, cfg, serving=None), creator=self.creator, limit=args.limit, connect=self.connect)
+            )
+            if value.outcome not in ("found", "no_match"):
+                remedies = {
+                    "invalid_input": "provide non-blank text and a limit from 1 to 50",
+                    "no_index": "run clutch index build",
+                    "index_unreadable": "retry after refresh or run clutch index build",
+                    "fulltext_unavailable": "run clutch index build with full-text search available",
+                }
+                raise runner.Refusal(value.findings[-1] if value.findings else value.outcome, remedies[value.outcome], code=value.outcome)
         elif name == "clutch_ticket_new":
             rel, guide, findings = tickets.new_ticket(checkout.repo, args.stem, args.kind, evidence=args.evidence, reference=args.reference, inputs=args.inputs, fs=fs)
             value = {"stem": args.stem, "path": rel, "guide": guide, "findings": findings}

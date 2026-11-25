@@ -4,8 +4,8 @@
 # purpose: Unit tests for the MCP dashboard: the ui://clutch/dashboard.html resource protocol (list, read, wrong URI, missing or empty bundle) and the clutch_open_dashboard, clutch_app_snapshot and clutch_app_stats tools
 # relates: [clutch/mcp.py]
 # owner: clutch/mcp.py
-# verified: 66bcb385
-# hash: 3c81b0c16ee1e68bba8e7d76fd8f08527e9458e4446816a4bc7499f0408f28b1
+# verified: f065d98a
+# hash: ab7a77ceab43e3f7605452a450399b5879354bd4f556e983e7078626c4a77b73
 import io
 import json
 from datetime import UTC, datetime
@@ -56,7 +56,7 @@ def test_dashboard_tools(tmp_path, monkeypatch):
     server = mcp.ClutchMCPServer(default_cwd=tmp_path, clock=lambda: datetime(2026, 1, 2, tzinfo=UTC))
     catalog = {t["name"]: t for t in server.dispatch("tools/list", {})["tools"]}
     # Wrong: expose app data to the model or omit host entrypoints.
-    assert len(catalog) == 25
+    assert len(catalog) == 26
     assert catalog["clutch_open_dashboard"]["_meta"] == {
         "ui": {"resourceUri": "ui://clutch/dashboard.html"},
         "com.google.antigravity/ui": {"entrypoints": [{"type": "aux_pane", "title": "ClutchWork"}, {"type": "global", "title": "ClutchWork"}]},
